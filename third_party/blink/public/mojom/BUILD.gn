@@ -168,6 +168,7 @@ mojom("mojom_platform") {
     "webdatabase/web_database.mojom",
     "websockets/websocket_connector.mojom",
     "webtransport/quic_transport_connector.mojom",
+    "widget/screen_orientation.mojom",
     "window_features/window_features.mojom",
     "worker/shared_worker_client.mojom",
     "worker/shared_worker_creation_context_type.mojom",

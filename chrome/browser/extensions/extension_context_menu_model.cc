@@ -555,9 +555,8 @@ void ExtensionContextMenuModel::CreatePageAccessSubmenu(
       PAGE_ACCESS_RUN_ON_SITE,
       l10n_util::GetStringFUTF16(
           IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_SITE,
-          url_formatter::StripWWW(base::UTF8ToUTF16(
-              url::Origin::Create(web_contents->GetLastCommittedURL())
-                  .host()))),
+          url_formatter::IDNToUnicode(url_formatter::StripWWW(
+              web_contents->GetLastCommittedURL().host()))),
       kRadioGroup);
   page_access_submenu_->AddRadioItemWithStringId(
       PAGE_ACCESS_RUN_ON_ALL_SITES,

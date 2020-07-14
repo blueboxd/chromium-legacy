@@ -664,13 +664,14 @@ GetProtocolBlockedCookieReason(net::CookieInclusionStatus status) {
 }
 
 std::unique_ptr<Array<Network::BlockedSetCookieWithReason>>
-BuildProtocolBlockedSetCookies(const net::CookieAndLineStatusList& net_list) {
+BuildProtocolBlockedSetCookies(
+    const net::CookieAndLineAccessResultList& net_list) {
   std::unique_ptr<Array<Network::BlockedSetCookieWithReason>> protocol_list =
       std::make_unique<Array<Network::BlockedSetCookieWithReason>>();
 
-  for (const net::CookieAndLineWithStatus& cookie : net_list) {
+  for (const net::CookieAndLineWithAccessResult& cookie : net_list) {
     std::unique_ptr<Array<Network::SetCookieBlockedReason>> blocked_reasons =
-        GetProtocolBlockedSetCookieReason(cookie.status);
+        GetProtocolBlockedSetCookieReason(cookie.access_result.status);
     if (!blocked_reasons->size())
       continue;
 
@@ -2132,7 +2133,7 @@ void NetworkHandler::OnRequestWillBeSentExtraInfo(
 
 void NetworkHandler::OnResponseReceivedExtraInfo(
     const std::string& devtools_request_id,
-    const net::CookieAndLineStatusList& response_cookie_list,
+    const net::CookieAndLineAccessResultList& response_cookie_list,
     const std::vector<network::mojom::HttpRawHeaderPairPtr>& response_headers,
     const base::Optional<std::string>& response_headers_text) {
   if (!enabled_)

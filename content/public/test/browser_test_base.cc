@@ -56,7 +56,7 @@
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
-#include "content/test/content_browser_sequence_checker.h"
+#include "content/test/content_browser_consistency_checker.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
@@ -335,7 +335,7 @@ void BrowserTestBase::SetUp() {
   if (!allow_network_access_to_host_resolutions_)
     test_host_resolver_ = std::make_unique<TestHostResolver>();
 
-  ContentBrowserSequenceChecker scoped_enable_sequence_checks;
+  ContentBrowserConsistencyChecker scoped_enable_consistency_checks;
 
   SetUpInProcessBrowserTestFixture();
 

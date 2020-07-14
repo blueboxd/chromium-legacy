@@ -23,7 +23,7 @@ struct CookieAccessDetails {
   url.mojom.Url url;
 
   SiteForCookies site_for_cookies;
-  array<CookieWithStatus> cookie_list;
+  array<CookieWithAccessResult> cookie_list;
 
   // |devtools_request_id| contains the DevTools request id of the request
   // that triggered the cookie change, if the read was triggered by a request.

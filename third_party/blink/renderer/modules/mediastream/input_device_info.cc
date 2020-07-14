@@ -13,32 +13,12 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_double_range.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_long_range.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_capabilities.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 
 namespace blink {
-
-namespace {
-
-// TODO(c.padhi): Merge this method with ToWebFacingMode() in
-// media_stream_constraints_util_video_device.h, see https://crbug.com/821668.
-WebMediaStreamTrack::FacingMode ToWebFacingMode(
-    media::VideoFacingMode facing_mode) {
-  switch (facing_mode) {
-    case media::MEDIA_VIDEO_FACING_NONE:
-      return WebMediaStreamTrack::FacingMode::kNone;
-    case media::MEDIA_VIDEO_FACING_USER:
-      return WebMediaStreamTrack::FacingMode::kUser;
-    case media::MEDIA_VIDEO_FACING_ENVIRONMENT:
-      return WebMediaStreamTrack::FacingMode::kEnvironment;
-    default:
-      NOTREACHED();
-      return WebMediaStreamTrack::FacingMode::kNone;
-  }
-}
-
-}  // namespace
 
 InputDeviceInfo::InputDeviceInfo(const String& device_id,
                                  const String& label,
@@ -53,7 +33,7 @@ void InputDeviceInfo::SetVideoInputCapabilities(
   // ComputeCapabilitiesForVideoSource() in media_stream_constraints_util.h, see
   // https://crbug.com/821668.
   platform_capabilities_.facing_mode =
-      ToWebFacingMode(video_input_capabilities->facing_mode);
+      ToPlatformFacingMode(video_input_capabilities->facing_mode);
   if (!video_input_capabilities->formats.IsEmpty()) {
     int max_width = 1;
     int max_height = 1;
@@ -166,19 +146,19 @@ MediaTrackCapabilities* InputDeviceInfo::getCapabilities() const {
     }
     Vector<String> facing_mode;
     switch (platform_capabilities_.facing_mode) {
-      case WebMediaStreamTrack::FacingMode::kUser:
+      case MediaStreamTrackPlatform::FacingMode::kUser:
         facing_mode.push_back("user");
         break;
-      case WebMediaStreamTrack::FacingMode::kEnvironment:
+      case MediaStreamTrackPlatform::FacingMode::kEnvironment:
         facing_mode.push_back("environment");
         break;
-      case WebMediaStreamTrack::FacingMode::kLeft:
+      case MediaStreamTrackPlatform::FacingMode::kLeft:
         facing_mode.push_back("left");
         break;
-      case WebMediaStreamTrack::FacingMode::kRight:
+      case MediaStreamTrackPlatform::FacingMode::kRight:
         facing_mode.push_back("right");
         break;
-      case WebMediaStreamTrack::FacingMode::kNone:
+      case MediaStreamTrackPlatform::FacingMode::kNone:
         break;
     }
     capabilities->setFacingMode(facing_mode);

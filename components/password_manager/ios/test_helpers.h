@@ -8,6 +8,7 @@
 #include <string>
 
 namespace autofill {
+struct FormData;
 struct PasswordFormFillData;
 }  // namespace autofill
 
@@ -40,6 +41,15 @@ void SetFillData(const std::string& origin,
                  uint32_t password_field_id,
                  const char* password_value,
                  password_manager::FillData* fill_data);
+
+// Populates |form_data| with test values.
+void SetFormData(const std::string& origin,
+                 uint32_t unique_renderer_id,
+                 uint32_t username_field_id,
+                 const char* username_value,
+                 uint32_t password_field_id,
+                 const char* password_value,
+                 autofill::FormData* form_data);
 
 }  // namespace test_helpers
 

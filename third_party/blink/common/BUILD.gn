@@ -228,6 +228,7 @@ jumbo_source_set("common_unittests_sources") {
     "//base/test:test_support",
     "//mojo/core/embedder",
     "//net",
+    "//services/device:test_support",
     "//services/network:test_support",
     "//skia/public/mojom",
     "//testing/gmock",

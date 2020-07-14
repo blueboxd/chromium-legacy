@@ -13,13 +13,16 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * A simple activity that allows Chrome to expose send tab to self as an option in the share menu.
  */
 public class SendTabToSelfShareActivity extends ChromeAccessorActivity {
     private static BottomSheetContent sBottomSheetContentForTesting;
+    private static BottomSheetController sBottomSheetControllerForTesting;
 
     @Override
     protected void handleAction(ChromeActivity triggeringActivity) {
@@ -28,7 +31,7 @@ public class SendTabToSelfShareActivity extends ChromeAccessorActivity {
         NavigationEntry entry = tab.getWebContents().getNavigationController().getVisibleEntry();
         if (entry == null) return;
         actionHandler(triggeringActivity, entry.getUrl(), entry.getTitle(), entry.getTimestamp(),
-                triggeringActivity.getBottomSheetController());
+                getBottomSheetController(triggeringActivity.getWindowAndroid()));
     }
 
     public static void actionHandler(Context context, String url, String title, long navigationTime,
@@ -54,6 +57,16 @@ public class SendTabToSelfShareActivity extends ChromeAccessorActivity {
 
     public static boolean featureIsAvailable(Tab currentTab) {
         return SendTabToSelfAndroidBridge.isFeatureAvailable(currentTab.getWebContents());
+    }
+
+    private BottomSheetController getBottomSheetController(WindowAndroid window) {
+        if (sBottomSheetControllerForTesting != null) return sBottomSheetControllerForTesting;
+        return BottomSheetControllerProvider.from(window);
+    }
+
+    @VisibleForTesting
+    public static void setBottomSheetControllerForTesting(BottomSheetController controller) {
+        sBottomSheetControllerForTesting = controller;
     }
 
     @VisibleForTesting

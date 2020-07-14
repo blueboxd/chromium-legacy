@@ -70,6 +70,7 @@
 <translation id="808894953321890993">Ndrysho fjalëkalimin</translation>
 <translation id="8208861521865154048">Avantazhet</translation>
 <translation id="8347227221149377169">Printimet</translation>
+<translation id="8623849191266582420">Kjo pajisje <ph name="DEVICE_TYPE" /> menaxhohet nga <ph name="ENROLLMENT_DOMAIN" />. Administratorët mund ta konfigurojnë dhe monitorojnë në distancë pajisjen.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> e menaxhon këtë përdorues. Ai domen mund të menaxhojë në distancë cilësimet dhe të monitorojë aktivitetin e përdoruesit.</translation>
 <translation id="871560550817059752">Dështoi - Nuk ka bojë</translation>
 <translation id="8747900814994928677">Konfirmo ndryshimin</translation>

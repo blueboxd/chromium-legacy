@@ -423,6 +423,10 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     _lastTypedfieldIdentifier = formQuery.uniqueFieldID;
     _lastTypedValue = formQuery.typedValue;
 
+    if ([formQuery.type isEqual:@"text"]) {
+      [self.formHelper updateFieldDataOnUserInput:formQuery.uniqueFieldID
+                                       inputValue:formQuery.typedValue];
+    }
     self.passwordManager->UpdateStateOnUserInput(
         self.passwordManagerDriver, formQuery.uniqueFormID,
         formQuery.uniqueFieldID, SysNSStringToUTF16(formQuery.typedValue));

@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">Тохиргоог удирдах</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 цагийн дараа}other{# цагийн дараа}}</translation>
 <translation id="2583543531130364912">Мэдрэмтгий дэлгэцээ шалгах</translation>
+<translation id="2586657967955657006">Түр санах ой</translation>
 <translation id="2666092431469916601">Дээд</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" />-с хуваалцсан</translation>
 <translation id="271033894570825754">Шинэ</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">Ярьж эхлэх</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" />-г <ph name="FOLDER_NAME" /> фолдерт зөөсөн.</translation>
 <translation id="4316910396681052118">БҮХ АПП</translation>
+<translation id="4491109536499578614">Зураг</translation>
 <translation id="4588090240171750605">Баруун тийш гүйлгэх</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, <ph name="RATING_SCORE" /> одтой үнэлгээ</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, аппын зөвлөмж</translation>

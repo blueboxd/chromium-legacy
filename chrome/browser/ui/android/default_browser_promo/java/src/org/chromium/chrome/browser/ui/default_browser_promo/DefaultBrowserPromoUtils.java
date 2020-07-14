@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ui.default_browser_promo;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.text.TextUtils;
 
 import androidx.annotation.IntDef;
@@ -189,6 +190,17 @@ public class DefaultBrowserPromoUtils {
         if (promoed) {
             DefaultBrowserPromoMetrics.recordLaunchedByDisambiguationSheet(
                     getCurrentDefaultBrowserState());
+        }
+    }
+
+    /**
+     * Remove intent data if this intent is triggered by default browser promo; Otherwise,
+     * chrome will open a new tab.
+     */
+    public static void maybeRemoveIntentData(Intent intent) {
+        if (intent.getBooleanExtra(DISAMBIGUATION_SHEET_PROMOED_KEY, false)) {
+            // Intent with Uri.EMPTY as data will be ignored by the IntentHandler.
+            intent.setData(Uri.EMPTY);
         }
     }
 

@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">Instellingen beheren</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{over 1 u}other{over # u}}</translation>
 <translation id="2583543531130364912">Je touchscreen kalibreren</translation>
+<translation id="2586657967955657006">Klembord</translation>
 <translation id="2666092431469916601">Boven</translation>
 <translation id="2701330563083355633">Gedeeld vanaf <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">Nieuw</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">Inspreken starten</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> is verplaatst naar de map <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">ALLE APPS</translation>
+<translation id="4491109536499578614">Afbeelding</translation>
 <translation id="4588090240171750605">Naar rechts bladeren</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, sterbeoordeling <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, app-aanbeveling</translation>

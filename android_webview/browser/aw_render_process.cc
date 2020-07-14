@@ -84,7 +84,7 @@ bool AwRenderProcess::IsLockedToOriginForTesting(
     const base::android::JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  return render_process_host_->IsLockedToOriginForTesting();
+  return render_process_host_->IsProcessLockedForTesting();
 }
 
 base::android::ScopedJavaLocalRef<jobject> AwRenderProcess::GetJavaObject() {

@@ -43,7 +43,8 @@ function UrlToText(origin) {
 
   let result = origin.scheme + '://' + origin.host;
 
-  if (origin.scheme == 'https' && origin.port != '443') {
+  if ((origin.scheme == 'https' && origin.port != '443') ||
+      (origin.scheme == 'http' && origin.port != '80')) {
     result += ':' + origin.port;
   }
   return result;

@@ -70,6 +70,7 @@
 <translation id="808894953321890993">Cambiar contraseña</translation>
 <translation id="8208861521865154048">Ventajas</translation>
 <translation id="8347227221149377169">Trabajos de impresión</translation>
+<translation id="8623849191266582420">El administrador de este <ph name="DEVICE_TYPE" /> es <ph name="ENROLLMENT_DOMAIN" />. Los administradores pueden configurar y monitorizar de forma remota el dispositivo.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> gestiona este usuario. Puede gestionar ajustes y supervisar la actividad del usuario de forma remota.</translation>
 <translation id="871560550817059752">No se ha podido imprimir - Sin tinta</translation>
 <translation id="8747900814994928677">Confirmar cambio</translation>

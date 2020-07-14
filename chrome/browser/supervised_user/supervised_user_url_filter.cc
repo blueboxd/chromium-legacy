@@ -256,8 +256,7 @@ bool SupervisedUserURLFilter::HostMatchesPattern(
 
   std::string trimmed_host = canonical_host;
   if (is_host_www && !patern_accepts) {
-    trimmed_host = base::UTF16ToASCII(
-        url_formatter::StripWWW(base::ASCIIToUTF16(canonical_host)));
+    trimmed_host = url_formatter::StripWWW(canonical_host);
   }
 
   std::string trimmed_pattern = pattern;

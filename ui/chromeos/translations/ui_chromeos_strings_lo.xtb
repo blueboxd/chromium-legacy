@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">ການປ່ຽນ​ຖ່າຍ​ຕົວ​ອັກສອນ (namaska​​ram →​ນາມາສກາຣໍາ)</translation>
 <translation id="2925966894897775835">ແຜ່ນ</translation>
 <translation id="2938685643439809023">ພາສາມົງໂກລີ</translation>
-<translation id="2939410873710774399">ເພື່ອເປີດໄຟລ໌ດ້ວຍ <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), ກະລຸນາຍ້າຍພວກມັນໄປໃສ່ໂຟນເດີ <ph name="FOLDER_NAME" /> ກ່ອນ.</translation>
 <translation id="2942290791863759244">ຄີບອດພາສາເຢຍ​ລະ​ມັນ NEO 2</translation>
 <translation id="2943400156390503548">ສະໄລດ໌</translation>
 <translation id="2943503720238418293">ກະ​ລຸ​ນາໃຊ້ຊື່ທີ່ສັ້ນກວ່າ</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242">ເລືອກ <ph name="SELCTED_FILES_COUNT" /> ລາຍ​ການແລ້ວ</translation>
 <translation id="4850886885716139402">ເບິ່ງ</translation>
 <translation id="485316830061041779">ພາສາເຢຍລະມັນ</translation>
-<translation id="4859297381873413734">ເພື່ອເປີດໄຟລ໌ດ້ວຍ <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), ກະລຸນາສຳເນົາພວກມັນໄປໃສ່ໂຟນເດີ <ph name="FOLDER_NAME" /> ກ່ອນ.</translation>
 <translation id="4867079195717347957">ຄລິກເພື່ອຮຽງລຳດັບຖັນແຕ່ໃຫຍ່ຫານ້ອຍ.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> ໄບຕ໌</translation>
 <translation id="4880214202172289027">​ແຖບ​ເລື່ອນປັບ​ລະດັບ​ສຽງ</translation>
 <translation id="4880520557730313061">ແກ້​ໄຂ​ອັດ​ຕະ​ໂນ​ມັດ</translation>
 <translation id="4881695831933465202">ເປີດ</translation>
 <translation id="4886021172213954916">ຄີບອດພາສາຕາມິນ (ພິມດີດ​)</translation>
-<translation id="4892969127351273348">ບໍ່ສາມາດເປີດດ້ວຍ <ph name="APP_NAME" /> ໄດ້</translation>
 <translation id="4900532980794411603">ແບ່ງປັນກັບ Parallels Desktop</translation>
 <translation id="4905417359854579806">ພ້ອມສຳຮອງ <ph name="FILE_COUNT" /> ໄວ້ແລ້ວ</translation>
 <translation id="4924638091161556692">ກໍາ​ນົດໄວ້</translation>

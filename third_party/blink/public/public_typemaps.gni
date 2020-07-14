@@ -14,6 +14,5 @@ typemaps = [
   "//third_party/blink/public/common/messaging/message_port_descriptor.typemap",
   "//third_party/blink/public/common/notifications/notification_types.typemap",
   "//third_party/blink/public/common/peerconnection/peer_connection_tracker.typemap",
-  "//third_party/blink/public/common/screen_orientation/screen_orientation_lock_types.typemap",
   "//third_party/blink/public/common/user_agent/user_agent_metadata.typemap",
 ]

@@ -26,6 +26,7 @@ android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckBridge.java",
     "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckCoordinator.java",
+    "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckElementPreference.java",
     "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckMediator.java",
     "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckProperties.java",
     "java/src/org/chromium/chrome/browser/safety_check/SafetyCheckSettingsFragment.java",
@@ -36,6 +37,7 @@ android_library("java") {
     ":java_resources",
     "//base:base_java",
     "//base:jni_java",
+    "//chrome/browser/preferences:java",
     "//components/browser_ui/settings/android:java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_fragment_fragment_java",
@@ -96,6 +98,7 @@ android_library("junit") {
 android_resources("java_resources") {
   sources = [
     "java/res/layout/safety_check_button.xml",
+    "java/res/layout/safety_check_status.xml",
     "java/res/values/dimens.xml",
     "java/res/xml/safety_check_preferences.xml",
   ]

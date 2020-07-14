@@ -183,13 +183,13 @@ bool SwapFile::GetDirectoryForSwapFile(base::FilePath* file_path) {
     // we're encrypted before writing to an encrypted file system so we log a
     // warning.
     const base::FilePath swap_folder(
-        "/mnt/stateful_partition/unencrypted/swap/");
+        "/mnt/stateful_partition/unencrypted/userspace_swap.tmp/");
     if (base::PathExists(swap_folder)) {
       return swap_folder;
     }
 
-    LOG(WARNING) << "Swap folder " << swap_folder
-                 << " did not exist so userspace swap will be be disabled";
+    PLOG(WARNING) << "Swap folder " << swap_folder
+                  << " did not exist so userspace swap will be be disabled";
     return base::FilePath();
   }();
 

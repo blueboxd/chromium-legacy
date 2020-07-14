@@ -45,11 +45,14 @@ js_modulizer("modulize") {
     "multidevice_feature_toggle_tests.js",
     "nearby_share_subpage_tests.js",
     "os_reset_page_test.js",
+    "people_page_account_manager_test.js",
+    "people_page_change_picture_test.js",
+    "people_page_kerberos_accounts_test.js",
+    "personalization_page_test.js",
     "test_os_reset_browser_proxy.js",
     "test_os_lifetime_browser_proxy.js",
     "test_multidevice_browser_proxy.js",
     "test_wallpaper_browser_proxy.js",
-    "personalization_page_test.js",
   ]
   namespace_rewrites =
       os_settings_namespace_rewrites + os_test_namespace_rewrites

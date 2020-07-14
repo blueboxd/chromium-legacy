@@ -192,7 +192,7 @@ void MarkSameSiteCompatPairs(
 }
 
 void MarkSameSiteCompatPairs(
-    std::vector<net::CookieAndLineWithStatus>& cookie_list,
+    std::vector<net::CookieAndLineWithAccessResult>& cookie_list,
     const net::CookieOptions& options) {
   for (size_t i = 0; i < cookie_list.size() - 1; ++i) {
     if (!cookie_list[i].cookie.has_value())
@@ -203,9 +203,9 @@ void MarkSameSiteCompatPairs(
         continue;
       const net::CanonicalCookie& c2 = cookie_list[j].cookie.value();
       if (net::cookie_util::IsSameSiteCompatPair(c1, c2, options)) {
-        cookie_list[i].status.AddWarningReason(
+        cookie_list[i].access_result.status.AddWarningReason(
             net::CookieInclusionStatus::WARN_SAMESITE_COMPAT_PAIR);
-        cookie_list[j].status.AddWarningReason(
+        cookie_list[j].access_result.status.AddWarningReason(
             net::CookieInclusionStatus::WARN_SAMESITE_COMPAT_PAIR);
       }
     }
@@ -380,9 +380,9 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   ProcessStrictTransportSecurityHeader();
   ProcessExpectCTHeader();
 
-  // Clear |set_cookie_status_list_| after any processing in case
+  // Clear |set_cookie_access_result_list_| after any processing in case
   // SaveCookiesAndNotifyHeadersComplete is called again.
-  request_->set_maybe_stored_cookies(std::move(set_cookie_status_list_));
+  request_->set_maybe_stored_cookies(std::move(set_cookie_access_result_list_));
 
   // The HTTP transaction may be restarted several times for the purposes
   // of sending authorization information. Each time it restarts, we get
@@ -698,7 +698,7 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
 }
 
 void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
-  DCHECK(set_cookie_status_list_.empty());
+  DCHECK(set_cookie_access_result_list_.empty());
   DCHECK_EQ(0, num_cookie_lines_left_);
 
   // End of the call started in OnStartCompleted.
@@ -791,10 +791,11 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   num_cookie_lines_left_--;
 
   if (num_cookie_lines_left_ == 0) {
-    // Mark the CookieInclusionStatuses of items in |set_cookie_status_list_| if
-    // they are part of a presumed SameSite compatibility pair.
-    if (ShouldMarkSameSiteCompatPairs(set_cookie_status_list_, options))
-      MarkSameSiteCompatPairs(set_cookie_status_list_, options);
+    // Mark the CookieInclusionStatuses of items in
+    // |set_cookie_access_result_list_| if they are part of a presumed SameSite
+    // compatibility pair.
+    if (ShouldMarkSameSiteCompatPairs(set_cookie_access_result_list_, options))
+      MarkSameSiteCompatPairs(set_cookie_access_result_list_, options);
 
     NotifyHeadersComplete();
   }
@@ -816,19 +817,20 @@ void URLRequestHttpJob::OnSetCookieResult(
                                        access_result.status, capture_mode);
                                  });
   }
-  set_cookie_status_list_.emplace_back(
-      std::move(cookie), std::move(cookie_string), access_result.status);
+  set_cookie_access_result_list_.emplace_back(
+      std::move(cookie), std::move(cookie_string), access_result);
 
   num_cookie_lines_left_--;
 
-  // If all the cookie lines have been handled, |set_cookie_status_list_| now
-  // reflects the result of all Set-Cookie lines, and the request can be
+  // If all the cookie lines have been handled, |set_cookie_access_result_list_|
+  // now reflects the result of all Set-Cookie lines, and the request can be
   // continued.
   if (num_cookie_lines_left_ == 0) {
-    // Mark the CookieInclusionStatuses of items in |set_cookie_status_list_| if
-    // they are part of a presumed SameSite compatibility pair.
-    if (ShouldMarkSameSiteCompatPairs(set_cookie_status_list_, options))
-      MarkSameSiteCompatPairs(set_cookie_status_list_, options);
+    // Mark the CookieInclusionStatuses of items in
+    // |set_cookie_access_result_list_| if they are part of a presumed SameSite
+    // compatibility pair.
+    if (ShouldMarkSameSiteCompatPairs(set_cookie_access_result_list_, options))
+      MarkSameSiteCompatPairs(set_cookie_access_result_list_, options);
 
     NotifyHeadersComplete();
   }

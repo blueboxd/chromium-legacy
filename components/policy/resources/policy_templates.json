@@ -446,6 +446,7 @@
       'desc': '''Configures extension-related policies. The user is not allowed to install blacklisted extensions unless they are whitelisted. You can also force <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to automatically install extensions by specifying them in <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>. Force-installed extensions are installed regardless whether they are present in the blacklist.''',
       'policies': [
         'ExtensionInstallAllowlist',
+        'ExtensionInstallBlocklist',
         'ExtensionInstallBlacklist',
         'ExtensionInstallWhitelist',
         'ExtensionInstallForcelist',
@@ -4277,11 +4278,38 @@
       },
       'example_value': ['extension_id1', 'extension_id2'],
       'id': 32,
+      'deprecated': True,
       'caption': '''Configure extension installation blacklist''',
       'tags': [],
-      'desc': '''Allows you to specify which extensions the users can NOT install. Extensions already installed will be disabled if blacklisted, without a way for the user to enable them. Once an extension disabled due to the blacklist is removed from it, it will automatically get re-enabled.
+      'desc': '''This policy is deprecated, please use the '<ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME">ExtensionInstallBlocklist</ph>' policy instead.
+          Allows you to specify which extensions the users can NOT install. Extensions already installed will be disabled if blacklisted, without a way for the user to enable them. Once an extension disabled due to the blacklist is removed from it, it will automatically get re-enabled.
 
           A blacklist value of '*' means all extensions are blacklisted unless they are explicitly listed in the whitelist.
+
+          If this policy is left not set the user can install any extension in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      'label': '''Extension IDs the user should be prevented from installing (or * for all)''',
+    },
+    {
+
+      'name': 'ExtensionInstallBlocklist',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:86-', 'chrome_os:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['extension_id1', 'extension_id2'],
+      'id': 740,
+      'caption': '''Configure extension installation blocklist''',
+      'tags': [],
+      'desc': '''Allows you to specify which extensions the users can NOT install. Extensions already installed will be disabled if blocked, without a way for the user to enable them. Once an extension disabled due to the blocklist is removed from it, it will automatically get re-enabled.
+
+          A blocklist value of '*' means all extensions are blocked unless they are explicitly listed in the allowlist.
 
           If this policy is left not set the user can install any extension in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
       'label': '''Extension IDs the user should be prevented from installing (or * for all)''',
@@ -4305,9 +4333,9 @@
       'tags': [],
       'desc': '''Allows you to specify which extensions are not subject to the blocklist.
 
-          A blocklist value of * means all extensions are blocklisted and users can only install extensions listed in the allow list.
+          A blocklist value of * means all extensions are blocked and users can only install extensions listed in the allow list.
 
-          By default, all extensions are allowed, but if all extensions have been blocklisted by policy, the allow list can be used to override that policy.''',
+          By default, all extensions are allowed, but if all extensions have been blocked by policy, the allow list can be used to override that policy.''',
       'label': '''Extension IDs to exempt from the blocklist''',
     },
     {
@@ -4328,13 +4356,12 @@
       'deprecated': True,
       'caption': '''Configure extension installation whitelist''',
       'tags': [],
-      'desc': '''Allows you to specify which extensions are not subject to the blacklist.
+      'desc': '''This policy is deprecated, please use the '<ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME">ExtensionInstallAllowlist</ph>' policy instead.
+          Allows you to specify which extensions are not subject to the blacklist.
 
           A blacklist value of * means all extensions are blacklisted and users can only install extensions listed in the whitelist.
 
-          By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.
-
-          This policy is deprecated in favor of <ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME">ExtensionInstallAllowlist</ph>. If both <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME">ExtensionInstallWhitelist</ph> and <ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME">ExtensionInstallAllowlist</ph> are set, <ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME">ExtensionInstallAllowlist</ph> will be used and <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME">ExtensionInstallWhitelist</ph> ignored.''',
+          By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.''',
       'label': '''Extension IDs to exempt from the blacklist''',
     },
     {
@@ -4364,7 +4391,7 @@
           APIs. (These two APIs are not available to apps/extensions that are
           not force-installed.)
 
-          This policy takes precedence over a potentially conflicting <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph> policy. If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+          This policy takes precedence over a potentially conflicting <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME">ExtensionInstallBlocklist</ph> policy. If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
           Forced installation is limited to apps and extensions listed in the Chrome Web Store For instances that are not one of the following: Windows instances that are joined to a Microsoft® Active Directory® domain. or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are managed via MDM or joined to a domain via MCX.
 
@@ -4404,7 +4431,7 @@
 
           Each item in this list is an extension-style match pattern (see https://developer.chrome.com/extensions/match_patterns). Users will be able to easily install items from any URL that matches an item in this list. Both the location of the *.crx file and the page where the download is started from (i.e. the referrer) must be allowed by these patterns.
 
-          <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph> takes precedence over this policy. That is, an extension on the blacklist won't be installed, even if it happens from a site on this list.''',
+          <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME">ExtensionInstallBlocklist</ph> takes precedence over this policy. That is, an extension on the blacklist won't be installed, even if it happens from a site on this list.''',
       'label': '''URL patterns to allow extension, app, and user script installs from''',
     },
     {
@@ -4635,7 +4662,7 @@
       'id': 544,
       'caption': '''Merge extension install list policies from multiple sources''',
       'tags': [],
-      'desc': '''Enables merging of the extension install list policies <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph>, <ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME">ExtensionInstallAllowlist</ph> and <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>.
+      'desc': '''Enables merging of the extension install list policies <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME">ExtensionInstallBlocklist</ph>, <ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME">ExtensionInstallAllowlist</ph> and <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>.
 
       If you enable this setting, the values from machine platform policy, machine cloud policy and user platform policy are merged into a single list and used as a whole instead of only using the values from the single source with highest priority.
 
@@ -7250,7 +7277,7 @@
 
       From Chrome 73 you can block 'javascript://*' URLs. However, it affects only JavaScript typed in address bar (or, for example, bookmarklets). Note that in-page JavaScript URLs, as long as dynamically loaded data, are not subject to this policy. For example, if you block 'example.com/abc', page 'example.com' will still be able to load 'example.com/abc' via XMLHTTPRequest.
 
-      If this policy is not set no URL will be blocklisted in the browser.''',
+      If this policy is not set no URL will be blocked in the browser.''',
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
     {
@@ -7326,7 +7353,7 @@
 
       You can block 'javascript://*' URLs. However, it affects only JavaScript typed in address bar (or, for example, bookmarklets). Note that in-page JavaScript URLs, as long as dynamically loaded data, are not subject to this policy. For example, if you block 'example.com/abc', page 'example.com' will still be able to load 'example.com/abc' via XMLHTTPRequest.
 
-      If this policy is not set no URL will be blocklisted in the browser.''',
+      If this policy is not set no URL will be blocked in the browser.''',
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
     },
     {
@@ -7400,7 +7427,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['ExtensionInstallAllowlist', 'ExtensionInstallBlacklist'],
+      'example_value': ['ExtensionInstallAllowlist', 'ExtensionInstallBlocklist'],
       'id': 554,
       'caption': '''Allow merging list policies from different sources''',
       'tags': [],
@@ -7494,7 +7521,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['ExtensionInstallAllowlist', 'ExtensionInstallBlacklist'],
+      'example_value': ['ExtensionInstallAllowlist', 'ExtensionInstallBlocklist'],
       'id': 711,
       'caption': '''Enables experimental policies''',
       'tags': [],
@@ -13523,17 +13550,9 @@
       'id': 311,
       'caption': '''Set default display rotation, reapplied on every reboot''',
       'tags': [],
-      'desc': '''If this policy is set, each display is rotated to the
-      specified orientation on every reboot, and the first time it is connected
-      after the policy value has changed. Users may change the display
-      rotation via the settings page after logging in, but their
-      setting will be overridden by the policy value at the next reboot.
+      'desc': '''Setting the policy has each display rotate to the specified orientation on every reboot and the first time it's connected after the policy value changes. Users may change the display rotation through the settings page after signing in, but it changes back at the next reboot. This policy applies to primary and secondary displays.
 
-      This policy applies to both the primary and all secondary displays.
-
-      If the policy is not set, the default value is 0 degrees and the user is
-      free to change it. In this case, the default value is not reapplied at
-      restart.''',
+      If not set, the default value is 0 degrees and users are free to change it. In this case, the default value isn't reapplied at restart.''',
     },
     {
       'name': 'ArcEnabled',
@@ -18347,29 +18366,13 @@
       'id': 502,
       'caption': '''Set display resolution and scale factor''',
       'tags': [],
-      'desc': '''When this policy is set, resolution and scale factor of each
-      display are set to the specified values. External display settings are
-      applied to all connected external displays.
+      'desc': '''Setting the policy sets the resolution and scale factor for each display. External display settings apply to connected displays. (The policy doesn't apply if a display doesn't support the specified resolution or scale.)
 
-      Values of "external_width" and "external_height" should be specified in
-      pixels. Values of "external_scale_percentage" and
-      "internal_scale_percentage" should be specified in percents.
+      Setting <ph name="EXTERNAL_USE_NATIVE">external_use_native</ph> to True means the policy ignores <ph name="EXTERNAL_WIDTH">external_width</ph> and <ph name="EXTERNAL_HEIGHT">external_height</ph> and sets external displays to their native resolution. Setting <ph name="EXTERNAL_USE_NATIVE">external_use_native</ph> to False or leaving it and <ph name="EXTERNAL_WIDTH">external_width</ph> or <ph name="EXTERNAL_HEIGHT">external_height</ph> unset means the policy doesn't affect external displays.
 
-      If "external_use_native" is set to true, policy will ignore values of
-      "external_height" and "external_width" and set resolution of the external
-      displays to their native resolution.
+      Setting the recommended flag to True lets users change resolution and scale factor of any display through the settings page, but their settings change back at the next reboot. Setting the recommended flag to False or leaving it unset means users can't change the display settings.
 
-      If "external_use_native" is false or not provided and either
-      "external_height" or "external_width" is not provided, policy doesn't
-      affect the external display settings. If specified resolution or
-      scale factor is not supported by some display, policy is not applied to
-      that display.
-
-      If "recommended" flag is set to true, users may change resolution and
-      scale factor of any display via the settings page after logging in, but
-      their settings will be overriden by the policy value at the next reboot.
-      If "recommended" flag is set to false or not set, users can't change the
-      display settings.''',
+      Note: Set <ph name="EXTERNAL_WIDTH">external_width</ph> and <ph name="EXTERNAL_HEIGHT">external_height</ph> in pixels and <ph name="EXTERNAL_SCALE_PERCENTAGE">external_scale_percentage</ph> and <ph name="INTERNAL_SCALE_PERCENTAGE">internal_scale_percentage</ph> in percents.''',
     },
     {
       'name': 'PluginVmAllowed',
@@ -22531,6 +22534,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       'caption': '''Extensions''',
       'policies': [
         'ExtensionInstallAllowlist',
+        'ExtensionInstallBlocklist',
         'ExtensionInstallBlacklist',
         'ExtensionInstallWhitelist',
         'ExtensionInstallForcelist',
@@ -22931,6 +22935,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 739,
+  'highest_id_currently_used': 740,
   'highest_atomic_group_id_currently_used': 38
 }

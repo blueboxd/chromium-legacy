@@ -160,8 +160,8 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
     content_capture_receiver_manager_helper_ =
         static_cast<ContentCaptureReceiverManagerHelper*>(
             ContentCaptureReceiverManager::FromWebContents(web_contents()));
-    // This needed to keep the WebContentsObserverSequenceChecker checks happy
-    // for when AppendChild is called.
+    // This needed to keep the WebContentsObserverConsistencyChecker checks
+    // happy for when AppendChild is called.
     NavigateAndCommit(GURL(kMainFrameUrl));
     content_capture_sender_ = std::make_unique<FakeContentCaptureSender>();
     main_frame_ = web_contents()->GetMainFrame();
@@ -644,8 +644,8 @@ class ContentCaptureReceiverMultipleFrameTest
   void SetUp() override {
     // Setup multiple frames before creates ContentCaptureReceiverManager.
     content::RenderViewHostTestHarness::SetUp();
-    // This needed to keep the WebContentsObserverSequenceChecker checks happy
-    // for when AppendChild is called.
+    // This needed to keep the WebContentsObserverConsistencyChecker checks
+    // happy for when AppendChild is called.
     NavigateAndCommit(GURL("about:blank"));
     content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
         ->AppendChild("child");

@@ -52,8 +52,8 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
-    // This needed to keep the WebContentsObserverSequenceChecker checks happy
-    // for when AppendChild is called.
+    // This needed to keep the WebContentsObserverConsistencyChecker checks
+    // happy for when AppendChild is called.
     NavigateAndCommit(GURL("about:blank"));
 
     EXPECT_CALL(mock_delegate_, AddObserver(_, _, _)).Times(1);

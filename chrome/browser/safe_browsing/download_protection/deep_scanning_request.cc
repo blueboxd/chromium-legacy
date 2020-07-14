@@ -41,10 +41,9 @@ void ResponseToDownloadCheckResult(
     DownloadCheckResult* download_result) {
   bool malware_scan_failure = false;
   bool dlp_scan_failure = false;
-  auto malware_action = enterprise_connectors::ContentAnalysisResponse::Result::
-      TriggeredRule::ACTION_UNSPECIFIED;
-  auto dlp_action = enterprise_connectors::ContentAnalysisResponse::Result::
-      TriggeredRule::ACTION_UNSPECIFIED;
+  auto malware_action =
+      enterprise_connectors::TriggeredRule::ACTION_UNSPECIFIED;
+  auto dlp_action = enterprise_connectors::TriggeredRule::ACTION_UNSPECIFIED;
 
   for (const auto& result : response.results()) {
     if (result.tag() == "malware") {
@@ -74,34 +73,26 @@ void ResponseToDownloadCheckResult(
   if (malware_action == enterprise_connectors::GetHighestPrecedenceAction(
                             malware_action, dlp_action)) {
     switch (malware_action) {
-      case enterprise_connectors::ContentAnalysisResponse::Result::
-          TriggeredRule::BLOCK:
+      case enterprise_connectors::TriggeredRule::BLOCK:
         *download_result = DownloadCheckResult::DANGEROUS;
         return;
-      case enterprise_connectors::ContentAnalysisResponse::Result::
-          TriggeredRule::WARN:
+      case enterprise_connectors::TriggeredRule::WARN:
         *download_result = DownloadCheckResult::POTENTIALLY_UNWANTED;
         return;
-      case enterprise_connectors::ContentAnalysisResponse::Result::
-          TriggeredRule::REPORT_ONLY:
-      case enterprise_connectors::ContentAnalysisResponse::Result::
-          TriggeredRule::ACTION_UNSPECIFIED:
+      case enterprise_connectors::TriggeredRule::REPORT_ONLY:
+      case enterprise_connectors::TriggeredRule::ACTION_UNSPECIFIED:
         break;
     }
   } else {
     switch (dlp_action) {
-      case enterprise_connectors::ContentAnalysisResponse::Result::
-          TriggeredRule::BLOCK:
+      case enterprise_connectors::TriggeredRule::BLOCK:
         *download_result = DownloadCheckResult::SENSITIVE_CONTENT_BLOCK;
         return;
-      case enterprise_connectors::ContentAnalysisResponse::Result::
-          TriggeredRule::WARN:
+      case enterprise_connectors::TriggeredRule::WARN:
         *download_result = DownloadCheckResult::SENSITIVE_CONTENT_WARNING;
         return;
-      case enterprise_connectors::ContentAnalysisResponse::Result::
-          TriggeredRule::REPORT_ONLY:
-      case enterprise_connectors::ContentAnalysisResponse::Result::
-          TriggeredRule::ACTION_UNSPECIFIED:
+      case enterprise_connectors::TriggeredRule::REPORT_ONLY:
+      case enterprise_connectors::TriggeredRule::ACTION_UNSPECIFIED:
         break;
     }
   }

@@ -33,7 +33,7 @@ using testing::ReturnRef;
 // Arbitrary policy names used for testing.
 const char kTestPolicy1[] = "Test Policy 1";
 const char kTestPolicy2[] = "Test Policy 2";
-const char* kTestPolicy3 = key::kExtensionInstallBlacklist;
+const char* kTestPolicy3 = key::kExtensionInstallBlocklist;
 
 const int kTestPolicy1Id = 42;
 const int kTestPolicy2Id = 123;
@@ -45,7 +45,7 @@ const char kTestChromeSchema[] =
     "  \"properties\": {"
     "    \"Test Policy 1\": { \"type\": \"string\" },"
     "    \"Test Policy 2\": { \"type\": \"string\" },"
-    "    \"ExtensionInstallBlacklist\": { \"type\": \"string\" },"
+    "    \"ExtensionInstallBlocklist\": { \"type\": \"string\" },"
     "  }"
     "}";
 

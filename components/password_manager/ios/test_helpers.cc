@@ -5,11 +5,14 @@
 #include "components/password_manager/ios/test_helpers.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
 #include "url/gurl.h"
 
 using autofill::FieldRendererId;
+using autofill::FormData;
+using autofill::FormFieldData;
 using autofill::FormRendererId;
 using autofill::PasswordFormFillData;
 using password_manager::FillData;
@@ -68,6 +71,29 @@ void SetFillData(const std::string& origin,
   fill_data->username_value = base::UTF8ToUTF16(username_value);
   fill_data->password_element_id = FieldRendererId(password_field_id);
   fill_data->password_value = base::UTF8ToUTF16(password_value);
+}
+
+void SetFormData(const std::string& origin,
+                 uint32_t form_id,
+                 uint32_t username_field_id,
+                 const char* username_value,
+                 uint32_t password_field_id,
+                 const char* password_value,
+                 FormData* form_data) {
+  DCHECK(form_data);
+  form_data->url = GURL(origin);
+  form_data->unique_renderer_id = FormRendererId(form_id);
+
+  FormFieldData field;
+  field.value = base::UTF8ToUTF16(username_value);
+  field.form_control_type = "text";
+  field.unique_renderer_id = FieldRendererId(username_field_id);
+  form_data->fields.push_back(field);
+
+  field.value = base::UTF8ToUTF16(password_value);
+  field.form_control_type = "password";
+  field.unique_renderer_id = FieldRendererId(password_field_id);
+  form_data->fields.push_back(field);
 }
 
 }  // namespace  test_helpers

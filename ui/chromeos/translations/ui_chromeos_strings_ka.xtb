@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">ტრანსლიტერაცია (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">ფურცლები</translation>
 <translation id="2938685643439809023">მონღოლური</translation>
-<translation id="2939410873710774399">ფაილების <ph name="APP_NAME" />-ით (<ph name="VM_SOFTWARE_NAME" />) გასახსნელად, პირველ რიგში, გადაიტანეთ ისინი <ph name="FOLDER_NAME" />-ის საქაღალდეში.</translation>
 <translation id="2942290791863759244">გერმანული NEO 2 კლავიატურა</translation>
 <translation id="2943400156390503548">სლაიდები</translation>
 <translation id="2943503720238418293">გამოიყენეთ უფრო მოკლე სახელი</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> ელემენტი არჩეულია</translation>
 <translation id="4850886885716139402">გადახედვა</translation>
 <translation id="485316830061041779">გერმანული</translation>
-<translation id="4859297381873413734">ფაილების <ph name="APP_NAME" />-ით (<ph name="VM_SOFTWARE_NAME" />) გასახსნელად, პირველ რიგში, დააკოპირეთ ისინი <ph name="FOLDER_NAME" />-ის საქაღალდეში.</translation>
 <translation id="4867079195717347957">დააწკაპუნეთ სვეტის კლებადი მიმდევრობით დასალაგებლად.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> ბაიტი</translation>
 <translation id="4880214202172289027">ხმის სლაიდერი</translation>
 <translation id="4880520557730313061">ავტომატური ფიქსაცია</translation>
 <translation id="4881695831933465202">გახსნა</translation>
 <translation id="4886021172213954916">ტამილური კლავიატურა (საბეჭდი მანქანა)</translation>
-<translation id="4892969127351273348"><ph name="APP_NAME" />-ით გახსნა ვერ მოხერხდა</translation>
 <translation id="4900532980794411603">Parallels Desktop-თან გაზიარება</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> სარეზერვო კოპირებისთვის მზადაა</translation>
 <translation id="4924638091161556692">ფიქსირებული</translation>

@@ -8,6 +8,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 
 namespace headless {
 
@@ -131,8 +132,12 @@ void HeadlessClipboard::ReadData(const ui::ClipboardFormatType& format,
     *result = it->second;
 }
 
-void HeadlessClipboard::WritePortableRepresentations(ui::ClipboardBuffer buffer,
-                                                     const ObjectMap& objects) {
+// |data_src| is not used. It's only passed to be consistent with other
+// platforms.
+void HeadlessClipboard::WritePortableRepresentations(
+    ui::ClipboardBuffer buffer,
+    const ObjectMap& objects,
+    std::unique_ptr<ui::ClipboardDataEndpoint> data_src) {
   Clear(buffer);
   default_store_buffer_ = buffer;
   for (const auto& kv : objects)
@@ -140,9 +145,12 @@ void HeadlessClipboard::WritePortableRepresentations(ui::ClipboardBuffer buffer,
   default_store_buffer_ = ui::ClipboardBuffer::kCopyPaste;
 }
 
+// |data_src| is not used. It's only passed to be consistent with other
+// platforms.
 void HeadlessClipboard::WritePlatformRepresentations(
     ui::ClipboardBuffer buffer,
-    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+    std::vector<Clipboard::PlatformRepresentation> platform_representations,
+    std::unique_ptr<ui::ClipboardDataEndpoint> data_src) {
   Clear(buffer);
   default_store_buffer_ = buffer;
   DispatchPlatformRepresentations(std::move(platform_representations));

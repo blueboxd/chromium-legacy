@@ -174,6 +174,8 @@ MediaHistoryStore::MediaHistoryStore(
     scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner)
     : db_task_runner_(db_task_runner),
       db_path_(GetDBPath(profile)),
+      db_(std::make_unique<sql::Database>()),
+      meta_table_(std::make_unique<sql::MetaTable>()),
       origin_table_(new MediaHistoryOriginTable(db_task_runner_)),
       playback_table_(new MediaHistoryPlaybackTable(db_task_runner_)),
       session_table_(new MediaHistorySessionTable(db_task_runner_)),
@@ -186,7 +188,14 @@ MediaHistoryStore::MediaHistoryStore(
       feed_items_table_(IsMediaFeedsEnabled()
                             ? new MediaHistoryFeedItemsTable(db_task_runner_)
                             : nullptr),
-      initialization_successful_(false) {}
+      initialization_successful_(false) {
+  db_->set_histogram_tag("MediaHistory");
+  db_->set_exclusive_locking();
+
+  // To recover from corruption.
+  db_->set_error_callback(
+      base::BindRepeating(&DatabaseErrorCallback, db_.get(), db_path_));
+}
 
 MediaHistoryStore::~MediaHistoryStore() {
   // The connection pointer needs to be deleted on the DB sequence since there
@@ -303,16 +312,6 @@ void MediaHistoryStore::Initialize(const bool should_reset) {
 
 MediaHistoryStore::InitResult MediaHistoryStore::InitializeInternal() {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
-
-  db_ = std::make_unique<sql::Database>();
-  db_->set_histogram_tag("MediaHistory");
-  db_->set_exclusive_locking();
-
-  // To recover from corruption.
-  db_->set_error_callback(
-      base::BindRepeating(&DatabaseErrorCallback, db_.get(), db_path_));
-
-  meta_table_ = std::make_unique<sql::MetaTable>();
 
   if (db_path_.empty()) {
     if (IsCancelled() || !db_ || !db_->OpenInMemory()) {

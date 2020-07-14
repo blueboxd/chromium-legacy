@@ -72,7 +72,7 @@ void DisplayUtil::GetNativeViewScreenInfo(ScreenInfo* screen_info,
 }
 
 // static
-ScreenOrientationValues DisplayUtil::GetOrientationTypeForMobile(
+blink::mojom::ScreenOrientation DisplayUtil::GetOrientationTypeForMobile(
     const display::Display& display) {
   int angle = display.PanelRotationAsDegree();
   const gfx::Rect& bounds = display.bounds();
@@ -86,25 +86,29 @@ ScreenOrientationValues DisplayUtil::GetOrientationTypeForMobile(
 
   switch (angle) {
     case 0:
-      return natural_portrait ? SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY
-                              : SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
+      return natural_portrait
+                 ? blink::mojom::ScreenOrientation::kPortraitPrimary
+                 : blink::mojom::ScreenOrientation::kLandscapePrimary;
     case 90:
-      return natural_portrait ? SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY
-                              : SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
+      return natural_portrait
+                 ? blink::mojom::ScreenOrientation::kLandscapePrimary
+                 : blink::mojom::ScreenOrientation::kPortraitSecondary;
     case 180:
-      return natural_portrait ? SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY
-                              : SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
+      return natural_portrait
+                 ? blink::mojom::ScreenOrientation::kPortraitSecondary
+                 : blink::mojom::ScreenOrientation::kLandscapeSecondary;
     case 270:
-      return natural_portrait ? SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY
-                              : SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
+      return natural_portrait
+                 ? blink::mojom::ScreenOrientation::kLandscapeSecondary
+                 : blink::mojom::ScreenOrientation::kPortraitPrimary;
     default:
       NOTREACHED();
-      return SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
+      return blink::mojom::ScreenOrientation::kPortraitPrimary;
   }
 }
 
 // static
-ScreenOrientationValues DisplayUtil::GetOrientationTypeForDesktop(
+blink::mojom::ScreenOrientation DisplayUtil::GetOrientationTypeForDesktop(
     const display::Display& display) {
   static int primary_landscape_angle = -1;
   static int primary_portrait_angle = -1;
@@ -121,13 +125,13 @@ ScreenOrientationValues DisplayUtil::GetOrientationTypeForDesktop(
 
   if (is_portrait) {
     return primary_portrait_angle == angle
-               ? SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY
-               : SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
+               ? blink::mojom::ScreenOrientation::kPortraitPrimary
+               : blink::mojom::ScreenOrientation::kPortraitSecondary;
   }
 
   return primary_landscape_angle == angle
-             ? SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY
-             : SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
+             ? blink::mojom::ScreenOrientation::kLandscapePrimary
+             : blink::mojom::ScreenOrientation::kLandscapeSecondary;
 }
 
 }  // namespace content

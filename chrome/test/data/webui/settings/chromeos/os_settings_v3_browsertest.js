@@ -46,6 +46,9 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
  ['MultideviceFeatureItem', 'multidevice_feature_item_tests.m.js'],
  ['MultideviceFeatureToggle', 'multidevice_feature_toggle_tests.m.js'],
  ['PersonalizationPage', 'personalization_page_test.m.js'],
+ ['PeoplePageAccountManager', 'people_page_account_manager_test.m.js'],
+ ['PeoplePageChangePicture', 'people_page_change_picture_test.m.js'],
+ ['PeoplePageKerberosAccounts', 'people_page_kerberos_accounts_test.m.js'],
 ].forEach(test => registerTest(...test));
 
 function registerTest(testName, module, caseName) {

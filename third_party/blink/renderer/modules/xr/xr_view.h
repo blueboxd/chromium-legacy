@@ -35,6 +35,13 @@ class MODULES_EXPORT XRView final : public ScriptWrappable {
   DOMFloat32Array* projectionMatrix() const;
   XRRigidTransform* transform() const;
 
+  // isFirstPersonObserver is only true for views that composed with a video
+  // feed that is not directly displayed on the viewer device. Primarily this is
+  // used for video streams from optically transparent AR headsets. Since Chrome
+  // does not directly support any such headset at this time we return false
+  // unconditionally.
+  bool isFirstPersonObserver() const { return false; }
+
   void Trace(Visitor*) const override;
 
  private:

@@ -2,15 +2,19 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="1282031177488366470">Hjælp med at forbedre Chromes funktioner og effektivitet</translation>
+<translation id="1479202195792305274">Chrome kan tjekke dine adgangskoder, når du er logget ind med din Google-konto.</translation>
+<translation id="1647024380514430932">Chrome kunne ikke tjekke alle adgangskoder. Prøv igen.</translation>
 <translation id="1682483655351012182">Synkroniser dine Chrome-data</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1917964099031477364">Denne konto og data, som ikke er gemt, fjernes fra Chrome og andre Google-apps på denne enhed.</translation>
+<translation id="2009224836393115614">Chrome kunne ikke tjekke dine adgangskoder. Prøv at tjekke din internetforbindelse.</translation>
 <translation id="2147651015520127414">Chrome bekræftede, at <ph name="ISSUER" /> har udstedt certifikatet for dette website.</translation>
 <translation id="2199719347983604670">Data fra Chrome-synkronisering</translation>
 <translation id="2347208864470321755">Når denne funktion er aktiveret, vil Chrome tilbyde at oversætte sider, der er skrevet på andre sprog, ved hjælp af Google Oversæt. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="2574249610672786438">Log ind på alle de enheder, hvor du bruger Chrome, for at se dine faner på dem</translation>
 <translation id="2576431527583832481">Chrome er lige blevet bedre! Der er en ny tilgængelig version.</translation>
 <translation id="257708665678654955">Skal Google Chrome tilbyde at oversætte sider på <ph name="LANGUAGE_NAME" /> fra dette website næste gang?</translation>
+<translation id="2732745070297234559">Chrome kunne ikke tjekke alle adgangskoder. Prøv igen i morgen.</translation>
 <translation id="2919738076569633423">Når du bruger Chrome, accepterer du <ph name="BEGIN_LINK_TOS" />servicevilkårene<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">Da du er ved at logge ud af en konto, der administreres af <ph name="SIGNOUT_MANAGED_DOMAIN" />, slettes dine Chrome-data på denne enhed. Dine data forbliver på din Google-konto.</translation>
 <translation id="3148688391461398285">Angiv din placering og få en bedre oplevelse, når du bruger Chrome.</translation>
@@ -28,6 +32,7 @@
 <translation id="424864128008805179">Vil du logge ud af Chrome?</translation>
 <translation id="4249068189593983585">Chrome-tip. Hvis du vil se flere faneindstillinger, skal du trykke på knappen Vis faner på værktøjslinjen og holde fingeren nede. Du finder knappen nederst eller øverst på skærmen.</translation>
 <translation id="4523886039239821078">Nogle tilføjelser får Chrome til at gå ned. Prøv at afinstallere:</translation>
+<translation id="4698415050768537821">Chrome kunne ikke tjekke alle adgangskoder. Prøv igen i morgen, eller <ph name="BEGIN_LINK" />tjek adgangskoder på din Google-konto<ph name="END_LINK" />.</translation>
 <translation id="5389212809648216794">Google Chrome kan ikke bruge dit kamera, da det bruges af en anden app</translation>
 <translation id="5639704535586432836">Åbn Indstillinger &gt; Privatliv &gt; Kamera &gt; Google Chrome, og slå kameraet til.</translation>
 <translation id="5642200033778930880">Google Chrome kan ikke bruge dit kamera i tilstanden Opdelt visning</translation>
@@ -42,7 +47,9 @@
 <translation id="7165736900384873061">Begynd at bruge QR-scanneren fra Google Chrome.</translation>
 <translation id="7172660552945675509">Tip! <ph name="BEGIN_LINK" />Flyt Chrome til din dock<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome bruger Face ID til at sikre autoriseret adgang til dine adgangskoder.</translation>
+<translation id="7261678641327190792">Chrome kan ikke tjekke dine adgangskoder</translation>
 <translation id="7265369419224458312">Få adgang til de faner, der er åbne på din computer, lige her. Du åbner blot Chrome på din computer, går til menuen og vælger "Log ind i Chrome…"</translation>
+<translation id="7272930098487145294">Hvis du vil gemme billeder, kan du trykke på Indstillinger for at give Chrome tilladelse til at tilføje billeder</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
 <translation id="756809126120519699">Chrome-dataene blev ryddet</translation>
 <translation id="7626032353295482388">Velkommen til Chrome</translation>

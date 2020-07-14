@@ -1413,13 +1413,15 @@ public class AwContents implements SmartClipProvider {
     @CalledByNative
     private void onRendererResponsive(AwRenderProcess renderProcess) {
         if (isDestroyed(NO_WARN)) return;
-        mContentsClient.onRendererResponsive(renderProcess);
+        AwThreadUtils.postToCurrentLooper(
+                () -> mContentsClient.onRendererResponsive(renderProcess));
     }
 
     @CalledByNative
     private void onRendererUnresponsive(AwRenderProcess renderProcess) {
         if (isDestroyed(NO_WARN)) return;
-        mContentsClient.onRendererUnresponsive(renderProcess);
+        AwThreadUtils.postToCurrentLooper(
+                () -> mContentsClient.onRendererUnresponsive(renderProcess));
     }
 
     @VisibleForTesting

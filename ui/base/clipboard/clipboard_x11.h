@@ -49,12 +49,14 @@ class ClipboardX11 : public Clipboard {
   void ReadBookmark(base::string16* title, std::string* url) const override;
   void ReadData(const ClipboardFormatType& format,
                 std::string* result) const override;
-  void WritePortableRepresentations(ClipboardBuffer buffer,
-                                    const ObjectMap& objects) override;
+  void WritePortableRepresentations(
+      ClipboardBuffer buffer,
+      const ObjectMap& objects,
+      std::unique_ptr<ClipboardDataEndpoint> data_src) override;
   void WritePlatformRepresentations(
       ClipboardBuffer buffer,
-      std::vector<Clipboard::PlatformRepresentation> platform_representations)
-      override;
+      std::vector<Clipboard::PlatformRepresentation> platform_representations,
+      std::unique_ptr<ClipboardDataEndpoint> data_src) override;
   void WriteText(const char* text_data, size_t text_len) override;
   void WriteHTML(const char* markup_data,
                  size_t markup_len,

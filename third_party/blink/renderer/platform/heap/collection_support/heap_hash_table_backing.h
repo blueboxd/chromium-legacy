@@ -111,7 +111,8 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
   template <WTF::WeakHandlingFlag WeakHandling = WTF::kNoWeakHandling>
   static void Trace(Visitor* visitor, const void* self) {
     if (!Traits::kCanTraceConcurrently && self) {
-      if (visitor->DeferredTraceIfConcurrent({self, &Trace}))
+      if (visitor->DeferredTraceIfConcurrent({self, &Trace},
+                                             GetBackingStoreSize(self)))
         return;
     }
 
@@ -123,6 +124,15 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
   }
 
  private:
+  static size_t GetBackingStoreSize(const void* backing_store) {
+    const HeapObjectHeader* header =
+        HeapObjectHeader::FromPayload(backing_store);
+    return header->IsLargeObject<HeapObjectHeader::AccessMode::kAtomic>()
+               ? static_cast<LargeObjectPage*>(PageFromObject(header))
+                     ->ObjectSize()
+               : header->size<HeapObjectHeader::AccessMode::kAtomic>();
+  }
+
   template <typename ValueType>
   struct GetWeakTraceDescriptorImpl {
     static TraceDescriptor GetWeakTraceDescriptor(const void* backing) {

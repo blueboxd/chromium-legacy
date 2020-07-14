@@ -140,11 +140,20 @@
   [ChromeEarlGrey loadURL:testURL];
   [ChromeEarlGrey waitForWebStateContainingText:"File Picker Test"];
 
-  // Invoke the file picker and tap on the "Cancel" button to dismiss the file
-  // picker.
+  // Invoke the file picker.
   [ChromeEarlGrey tapWebStateElementWithID:@"file"];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
-      performAction:grey_tap()];
+
+  if (@available(iOS 14, *)) {
+    // Tap on the toolbar to dismiss the file picker on iOS14.  In iOS14 a
+    // UIDropShadowView covers the entire app, so tapping anywhere should
+    // dismiss the file picker.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::PrimaryToolbar()]
+        performAction:grey_tap()];
+  } else {
+    // Tap on the "Cancel" button to dismiss the file picker before iOS14.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
+        performAction:grey_tap()];
+  }
   [ChromeEarlGreyUI waitForAppToIdle];
 }
 

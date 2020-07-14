@@ -20,6 +20,7 @@
 
 namespace content {
 class BrowsingInstance;
+class ProcessLock;
 class RenderProcessHostFactory;
 
 // SiteInfo represents the principal of a SiteInstance. All documents and
@@ -50,7 +51,7 @@ class CONTENT_EXPORT SiteInfo {
  public:
   static SiteInfo CreateForErrorPage();
 
-  explicit SiteInfo(const GURL& site_url);
+  SiteInfo(const GURL& site_url, const GURL& process_lock_url);
   SiteInfo() = default;
 
   // Returns the site URL associated with all of the documents and workers in
@@ -71,6 +72,21 @@ class CONTENT_EXPORT SiteInfo {
   //   the same site_url() but that differ in other properties.
   const GURL& site_url() const { return site_url_; }
 
+  // Returns the URL which should be used in a SetProcessLock call for this
+  // SiteInfo's process.  This is the same as |site_url_| except for cases
+  // involving effective URLs, such as hosted apps.  In those cases, this URL is
+  // a site URL that is computed without the use of effective URLs.
+  //
+  // NOTE: This URL is currently set even in cases where this SiteInstance's
+  //       process is *not* going to be locked to it.  Callers should be careful
+  //       to consider this case when comparing lock URLs; ShouldLockProcess()
+  //       may be used to determine whether the process lock will actually be
+  //       used.
+  //
+  // TODO(alexmos): See if we can clean this up and not set |process_lock_url_|
+  //                if the SiteInstance's process isn't going to be locked.
+  const GURL& process_lock_url() const { return process_lock_url_; }
+
   bool operator==(const SiteInfo& other) const;
   bool operator!=(const SiteInfo& other) const;
 
@@ -79,6 +95,11 @@ class CONTENT_EXPORT SiteInfo {
 
  private:
   GURL site_url_;
+  // The URL to use when locking a process to this SiteInstance's site via
+  // SetProcessLock(). This is the same as |site_url_| except for cases
+  // involving effective URLs, such as hosted apps.  In those cases, this URL is
+  // a site URL that is computed without the use of effective URLs.
+  GURL process_lock_url_;
   // TODO(crbug.com/1067389): Add site vs origin granularity.
 };
 
@@ -131,12 +152,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
       const GURL& url);
 
   static bool ShouldAssignSiteForURL(const GURL& url);
-
-  // Returns whether |lock_url| is at least at the granularity of a site (i.e.,
-  // a scheme plus eTLD+1, like https://google.com).  Also returns true if the
-  // lock is to a more specific origin (e.g., https://accounts.google.com), but
-  // not if the lock is empty or applies to an entire scheme (e.g., file://).
-  static bool IsOriginLockASite(const GURL& lock_url);
 
   // Return whether both URLs are part of the same web site, for the purpose of
   // assigning them to processes accordingly.  The decision is currently based
@@ -213,8 +228,9 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // another SiteInstance from the same site.
   bool is_for_service_worker() const { return is_for_service_worker_; }
 
-  // Returns the URL which was used to set the |site_| for this SiteInstance.
-  // May be empty if this SiteInstance does not have a |site_|.
+  // Returns the URL which was used to set the |site_info_| for this
+  // SiteInstance. May be empty if this SiteInstance does not have a
+  // |site_info_|.
   const GURL& original_url() {
     DCHECK(!IsDefaultSiteInstance());
     return original_url_;
@@ -225,20 +241,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // considered the same site as |dest_url|.
   bool IsOriginalUrlSameSite(const GURL& dest_url,
                              bool should_compare_effective_urls);
-
-  // Returns the URL which should be used in a LockToOrigin call for this
-  // SiteInstance's process.  This is the same as |site_| except for cases
-  // involving effective URLs, such as hosted apps.  In those cases, this URL
-  // is a site URL that is computed without the use of effective URLs.
-  //
-  // NOTE: This URL is currently set even in cases where this SiteInstance's
-  // process is *not* going to be locked to it.  Callers should be careful to
-  // consider this case when comparing lock URLs; ShouldLockToOrigin() may be
-  // used to determine whether the process lock will actually be used.
-  //
-  // TODO(alexmos): See if we can clean this up and not set |lock_url_| if the
-  // SiteInstance's process isn't going to be locked.
-  const GURL& lock_url() { return lock_url_; }
 
   // True if |url| resolves to an effective URL that is different from |url|.
   // See GetEffectiveURL().  This will be true for hosted apps as well as NTP
@@ -253,6 +255,13 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // GetSiteURL().
   const SiteInfo& GetSiteInfo();
 
+  // Returns a ProcessLock that can be used with SetProcessLock to lock a
+  // process to this SiteInstance's SiteInfo. The ProcessLock relies heavily on
+  // the SiteInfo's process_lock_url() for security decisions.
+  const ProcessLock GetProcessLock() const;
+
+  // This function returns a SiteInfo with the appropriate site_url and
+  // process_lock_url computed.
   // Note: eventually this function will replace GetSiteForURL().
   static SiteInfo ComputeSiteInfo(const IsolationContext& isolation_context,
                                   const GURL& url);
@@ -379,13 +388,15 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   //
   // Note that this function currently requires passing in a site URL (which
   // may use effective URLs), and not a lock URL to which the process may
-  // eventually be locked via LockToOrigin().  See comments on lock_url() for
-  // more info. |is_guest| should be set to true if the call is being made for
-  // a <webview> guest SiteInstance(i.e. SiteInstance::IsGuest() returns true).
+  // eventually be locked via SetProcessLock().  See comments on SiteInfo's
+  // process_lock_url() for more info. |is_guest| should be set to true if the
+  // call is being made for a <webview> guest SiteInstance(i.e.
+  // SiteInstance::IsGuest() returns true).
   // TODO(alexmos):  See if this can take a lock URL instead.
-  static bool ShouldLockToOrigin(const IsolationContext& isolation_context,
-                                 const GURL& site_url,
-                                 const bool is_guest);
+  // TODO(wjmaclean): Or see if this can take a SiteInfo or ProcessLock instead.
+  static bool ShouldLockProcess(const IsolationContext& isolation_context,
+                                const GURL& site_url,
+                                const bool is_guest);
 
   // Converts |lock_url| into an origin that can be used as
   // |URLLoaderFactoryParams::request_initiator_site_lock|.
@@ -447,7 +458,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
                            const ChildProcessTerminationInfo& info) override;
 
   // Used to restrict a process' origin access rights.
-  void LockToOriginIfNeeded();
+  void LockProcessIfNeeded();
 
   // If kProcessSharingWithStrictSiteInstances is enabled, this will check
   // whether both a site and a process have been assigned to this SiteInstance,
@@ -456,12 +467,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // a dedicated process.
   void MaybeSetBrowsingInstanceDefaultProcess();
 
-  // Sets |site_| and |lock_| with |site_url| and |lock_url| respectively
-  // and registers this object with |browsing_instance_|. SetSite() calls
-  // this method to set the site and lock for a user provided URL. This
-  // method should only be called by code that need to set the site and
-  // lock directly without any "url to site URL" transformation.
-  void SetSiteAndLockInternal(const GURL& site_url, const GURL& lock_url);
+  // Sets |site_info_| with |site_info| and registers this object with
+  // |browsing_instance_|. SetSite() calls this method to set the site and lock
+  // for a user provided URL. This method should only be called by code that
+  // need to set the site and lock directly without any "url to site URL"
+  // transformation.
+  void SetSiteInfoInternal(const SiteInfo& site_info);
 
   // Helper method to set the process of this SiteInstance, only in cases
   // where it is safe. It is not generally safe to change the process of a
@@ -531,20 +542,14 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // |process_|.
   bool can_associate_with_spare_process_;
 
-  // The web site that this SiteInstance is rendering pages for.
-  SiteInfo site_;
+  // The SiteInfo that this SiteInstance is rendering pages for.
+  SiteInfo site_info_;
 
   // Whether SetSite has been called.
   bool has_site_;
 
-  // The URL which was used to set the |site_| for this SiteInstance.
+  // The URL which was used to set the |site_info_| for this SiteInstance.
   GURL original_url_;
-
-  // The URL to use when locking a process to this SiteInstance's site via
-  // LockToOrigin().  This is the same as |site_| except for cases involving
-  // effective URLs, such as hosted apps.  In those cases, this URL is a site
-  // URL that is computed without the use of effective URLs.
-  GURL lock_url_;
 
   // The ProcessReusePolicy to use when creating a RenderProcessHost for this
   // SiteInstance.

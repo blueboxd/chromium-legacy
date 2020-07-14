@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">จัดการการตั้งค่า</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{ใน 1 ชม.}other{ใน # ชม.}}</translation>
 <translation id="2583543531130364912">ปรับเทียบหน้าจอสัมผัส</translation>
+<translation id="2586657967955657006">คลิปบอร์ด</translation>
 <translation id="2666092431469916601">ด้านบน</translation>
 <translation id="2701330563083355633">แชร์จาก <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">ใหม่</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">เริ่มพูด</translation>
 <translation id="430191667033048642">ย้าย <ph name="MOVED_APP_NAME" /> ไปยังโฟลเดอร์ <ph name="FOLDER_NAME" /> แล้ว</translation>
 <translation id="4316910396681052118">แอปทั้งหมด</translation>
+<translation id="4491109536499578614">รูปภาพ</translation>
 <translation id="4588090240171750605">เลื่อนทางขวา</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, การให้ดาว <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, แอปแนะนำ</translation>

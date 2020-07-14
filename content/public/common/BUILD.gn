@@ -168,7 +168,6 @@ jumbo_source_set("common_sources") {
     "sandboxed_process_launcher_delegate.h",
     "screen_info.cc",
     "screen_info.h",
-    "screen_orientation_values.h",
     "service_manager_connection.h",
     "socket_permission_request.h",
     "stop_find_action.h",

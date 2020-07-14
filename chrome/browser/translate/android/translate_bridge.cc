@@ -158,9 +158,6 @@ static void JNI_TranslateBridge_GetModelLanguages(
 }
 
 // static
-// This logic should be kept in sync with prependToAcceptLanguagesIfNecessary in
-// chrome/android/java/src/org/chromium/chrome/browser/
-//     physicalweb/PwsClientImpl.java
 // Input |locales| is a comma separated locale representation that consists of
 // language tags (BCP47 compliant format). Each language tag contains a language
 // code and a country code or a language code only.

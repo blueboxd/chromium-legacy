@@ -264,7 +264,7 @@ TEST_F(MediaStreamVideoTrackTest, SourceDetached) {
   sink.ConnectEncodedToTrack(track);
   video_track->SetEnabled(true);
   video_track->SetEnabled(false);
-  WebMediaStreamTrack::Settings settings;
+  MediaStreamTrackPlatform::Settings settings;
   video_track->GetSettings(settings);
   sink.DisconnectFromTrack();
   sink.DisconnectEncodedFromTrack();
@@ -337,13 +337,13 @@ TEST_F(MediaStreamVideoTrackTest, GetSettings) {
   WebMediaStreamTrack track = CreateTrack();
   MediaStreamVideoTrack* const native_track =
       MediaStreamVideoTrack::GetVideoTrack(track);
-  WebMediaStreamTrack::Settings settings;
+  MediaStreamTrackPlatform::Settings settings;
   native_track->GetSettings(settings);
   // These values come straight from the mock video track implementation.
   EXPECT_EQ(640, settings.width);
   EXPECT_EQ(480, settings.height);
   EXPECT_EQ(30.0, settings.frame_rate);
-  EXPECT_EQ(WebMediaStreamTrack::FacingMode::kNone, settings.facing_mode);
+  EXPECT_EQ(MediaStreamTrackPlatform::FacingMode::kNone, settings.facing_mode);
 }
 
 TEST_F(MediaStreamVideoTrackTest, GetSettingsWithAdjustment) {
@@ -357,12 +357,12 @@ TEST_F(MediaStreamVideoTrackTest, GetSettingsWithAdjustment) {
   WebMediaStreamTrack track = CreateTrackWithSettings(adapter_settings);
   MediaStreamVideoTrack* const native_track =
       MediaStreamVideoTrack::GetVideoTrack(track);
-  WebMediaStreamTrack::Settings settings;
+  MediaStreamTrackPlatform::Settings settings;
   native_track->GetSettings(settings);
   EXPECT_EQ(kAdjustedWidth, settings.width);
   EXPECT_EQ(kAdjustedHeight, settings.height);
   EXPECT_EQ(kAdjustedFrameRate, settings.frame_rate);
-  EXPECT_EQ(WebMediaStreamTrack::FacingMode::kNone, settings.facing_mode);
+  EXPECT_EQ(MediaStreamTrackPlatform::FacingMode::kNone, settings.facing_mode);
 }
 
 TEST_F(MediaStreamVideoTrackTest, GetSettingsStopped) {
@@ -371,12 +371,12 @@ TEST_F(MediaStreamVideoTrackTest, GetSettingsStopped) {
   MediaStreamVideoTrack* const native_track =
       MediaStreamVideoTrack::GetVideoTrack(track);
   native_track->Stop();
-  WebMediaStreamTrack::Settings settings;
+  MediaStreamTrackPlatform::Settings settings;
   native_track->GetSettings(settings);
   EXPECT_EQ(-1, settings.width);
   EXPECT_EQ(-1, settings.height);
   EXPECT_EQ(-1, settings.frame_rate);
-  EXPECT_EQ(WebMediaStreamTrack::FacingMode::kNone, settings.facing_mode);
+  EXPECT_EQ(MediaStreamTrackPlatform::FacingMode::kNone, settings.facing_mode);
   EXPECT_TRUE(settings.device_id.IsNull());
 }
 
@@ -387,7 +387,7 @@ TEST_F(MediaStreamVideoTrackTest, DeliverFramesAndGetSettings) {
   sink.ConnectToTrack(track);
   MediaStreamVideoTrack* const native_track =
       MediaStreamVideoTrack::GetVideoTrack(track);
-  WebMediaStreamTrack::Settings settings;
+  MediaStreamTrackPlatform::Settings settings;
 
   auto frame1 = media::VideoFrame::CreateBlackFrame(gfx::Size(600, 400));
   DeliverVideoFrameAndWaitForRenderer(std::move(frame1), &sink);

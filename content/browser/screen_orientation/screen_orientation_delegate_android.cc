@@ -27,14 +27,15 @@ bool ScreenOrientationDelegateAndroid::FullScreenRequired(
 
 void ScreenOrientationDelegateAndroid::Lock(
     WebContents* web_contents,
-    blink::WebScreenOrientationLockType lock_orientation) {
+    device::mojom::ScreenOrientationLockType lock_orientation) {
   base::android::ScopedJavaLocalRef<jobject> java_instance =
       Java_ScreenOrientationProviderImpl_getInstance(
           base::android::AttachCurrentThread());
   gfx::NativeWindow window = web_contents->GetTopLevelNativeWindow();
   Java_ScreenOrientationProviderImpl_lockOrientation(
       base::android::AttachCurrentThread(), java_instance,
-      window ? window->GetJavaObject() : nullptr, lock_orientation);
+      window ? window->GetJavaObject() : nullptr,
+      static_cast<jbyte>(lock_orientation));
 }
 
 bool ScreenOrientationDelegateAndroid::ScreenOrientationProviderSupported() {

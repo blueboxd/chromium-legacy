@@ -14,16 +14,21 @@ import './multidevice_page/multidevice_page.m.js';
 import '../prefs/prefs.m.js';
 import './personalization_page/personalization_page.m.js';
 import './personalization_page/change_picture.m.js';
+import './os_people_page/account_manager.m.js';
+import './os_people_page/kerberos_accounts.m.js';
 
 // clang-format off
 export {AmbientModeBrowserProxyImpl} from './ambient_mode_page/ambient_mode_browser_proxy.m.js';
 export {CrSettingsPrefs} from '../prefs/prefs_types.m.js';
+export {AccountManagerBrowserProxy,AccountManagerBrowserProxyImpl} from '../people_page/account_manager_browser_proxy.m.js';
 export {LifetimeBrowserProxy, LifetimeBrowserProxyImpl} from '../lifetime_browser_proxy.m.js';
 export {bluetoothApis} from './bluetooth_page/bluetooth_page.m.js';
 export {OsResetBrowserProxyImpl} from './os_reset_page/os_reset_browser_proxy.m.js';
 export {MultiDeviceSettingsMode, MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, SmartLockSignInEnabledState} from './multidevice_page/multidevice_constants.m.js';
 export {MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from './multidevice_page/multidevice_browser_proxy.m.js';
+export {KerberosAccountsBrowserProxyImpl, KerberosConfigErrorCode,KerberosErrorType} from './os_people_page/kerberos_accounts_browser_proxy.m.js';
 export {Route, Router} from '../router.m.js';
 export {routes} from './os_route.m.js';
 export {WallpaperBrowserProxyImpl} from './personalization_page/wallpaper_browser_proxy.m.js';
-// clang-format off
+export {ChangePictureBrowserProxy,ChangePictureBrowserProxyImpl} from './personalization_page/change_picture_browser_proxy.m.js';
+// clang-format on

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1005230401424685968">JJJJ</translation>
+<translation id="1013952917065545813">Hier können Sie kürzlich geschlossene Tabs wieder öffnen</translation>
 <translation id="1016495303386450659">Element aktualisiert</translation>
 <translation id="1044891598689252897">Websites funktionieren normal</translation>
 <translation id="1047726139967079566">Lesezeichen für diese Seite erstellen</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1283524564873030414">Letzte 24 Stunden</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
+<translation id="1321993286294231467">Beim Speichern des Bilds ist ein Fehler aufgetreten.</translation>
 <translation id="1323735185997015385">Löschen</translation>
 <translation id="132683371494960526">Tippen Sie hier doppelt, um den übergeordneten Ordner zu ändern.</translation>
 <translation id="1340643665687018190">Menü schließen</translation>
@@ -147,7 +149,7 @@ Websites können Cookies nicht verwenden, um Ihre Browseraktivitäten auf andere
 <translation id="2702801445560668637">Leseliste</translation>
 <translation id="2704491540504985681">Downloads</translation>
 <translation id="2704606927547763573">Kopiert</translation>
-<translation id="2709516037105925701">AutoFill</translation>
+<translation id="2709516037105925701">Automatisches Ausfüllen</translation>
 <translation id="2712127207578915686">Fehler beim Öffnen der Datei</translation>
 <translation id="2718352093833049315">Nur bei WLAN</translation>
 <translation id="2747003861858887689">Vorheriges Feld</translation>
@@ -228,7 +230,7 @@ Wenn der Inkognitomodus aktiviert ist, können Websites Cookies nicht verwenden,
 <translation id="3581564640715911333">Übersetzung für Seiten in andere Sprachen anbieten</translation>
 <translation id="3588820906588687999">Bild in neuem Tab öffnen</translation>
 <translation id="3603009562372709545">Link-URL kopieren</translation>
-<translation id="3607167657931203000">AutoFill-Daten</translation>
+<translation id="3607167657931203000">Daten automatisch ausfüllen</translation>
 <translation id="3609785682760573515">Synchronisieren...</translation>
 <translation id="3638472932233958418">Webseiten vorabladen</translation>
 <translation id="3670030362669914947">Nummer</translation>
@@ -560,6 +562,7 @@ Websites können Cookies nicht verwenden, um Ihre Browseraktivitäten auf andere
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="766891008101699113">Fügen Sie einen neuen Tab hinzu, um privat im Web zu surfen.</translation>
 <translation id="7671141431838911305">Installieren</translation>
+<translation id="7701040980221191251">Keine</translation>
 <translation id="7765158879357617694">Verschieben</translation>
 <translation id="7771470029643830783">Wenn Sie sich abmelden, werden Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter und andere Chrome-Daten nicht mehr mit Ihrem Google-Konto synchronisiert.
 

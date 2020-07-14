@@ -4,6 +4,7 @@
 
 #include "ash/wm/wm_highlight_item_border.h"
 
+#include "ash/style/ash_color_provider.h"
 #include "cc/paint/paint_flags.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -21,6 +22,15 @@ constexpr int kBorderPadding = 2;
 
 WmHighlightItemBorder::WmHighlightItemBorder(int corner_radius)
     : views::Border(SK_ColorTRANSPARENT), corner_radius_(corner_radius) {}
+
+void WmHighlightItemBorder::SetFocused(bool focused) {
+  // Note that all WM features that use this custom border currently have dark
+  // mode as the default color mode.
+  set_color(focused ? AshColorProvider::Get()->GetControlsLayerColor(
+                          AshColorProvider::ControlsLayerType::kFocusRingColor,
+                          AshColorProvider::AshColorMode::kDark)
+                    : SK_ColorTRANSPARENT);
+}
 
 void WmHighlightItemBorder::Paint(const views::View& view,
                                   gfx::Canvas* canvas) {

@@ -71,6 +71,7 @@
 <translation id="808894953321890993">Промяна на паролата</translation>
 <translation id="8208861521865154048">Предимства</translation>
 <translation id="8347227221149377169">Задания за отпечатване</translation>
+<translation id="8623849191266582420">Това устройство <ph name="DEVICE_TYPE" /> се управлява от <ph name="ENROLLMENT_DOMAIN" />. Администраторите може отдалечено да го конфигурират и наблюдават.</translation>
 <translation id="8701136875688985581">Този потребител се управлява от <ph name="ENROLLMENT_DOMAIN" />. Възможно е отдалечено управление на настройките и наблюдение на потребителската активност.</translation>
 <translation id="871560550817059752">Неуспешно – няма мастило</translation>
 <translation id="8747900814994928677">Потвърждаване на промяната</translation>

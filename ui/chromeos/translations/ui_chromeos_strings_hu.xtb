@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">Átírás (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Táblázatok</translation>
 <translation id="2938685643439809023">mongol</translation>
-<translation id="2939410873710774399">Ha a következővel szeretne fájlokat megnyitni, először helyezze át őket a(z) <ph name="FOLDER_NAME" /> mappába: <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />).</translation>
 <translation id="2942290791863759244">Német NEO 2 billentyűzet</translation>
 <translation id="2943400156390503548">Diák</translation>
 <translation id="2943503720238418293">Rövidebb nevet adjon meg</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> elem kiválasztva</translation>
 <translation id="4850886885716139402">Nézet</translation>
 <translation id="485316830061041779">német</translation>
-<translation id="4859297381873413734">Ha a következővel szeretne fájlokat megnyitni, először másolja át őket a(z) <ph name="FOLDER_NAME" /> mappába: <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />).</translation>
 <translation id="4867079195717347957">Kattintson az oszlop csökkenő sorrendben való rendezéséhez.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bájt</translation>
 <translation id="4880214202172289027">Hangerőcsúszka</translation>
 <translation id="4880520557730313061">Automatikus javítás</translation>
 <translation id="4881695831933465202">Megnyitás</translation>
 <translation id="4886021172213954916">Tamil billentyűzet (írógép)</translation>
-<translation id="4892969127351273348">Nem lehet megnyitni a(z) <ph name="APP_NAME" /> alkalmazással</translation>
 <translation id="4900532980794411603">Megosztás a Parallels Desktoppal</translation>
 <translation id="4905417359854579806">A rendszer készen áll <ph name="FILE_COUNT" /> biztonsági mentésére</translation>
 <translation id="4924638091161556692">Javított</translation>

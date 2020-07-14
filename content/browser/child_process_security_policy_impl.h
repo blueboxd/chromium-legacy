@@ -23,6 +23,7 @@
 #include "content/browser/can_commit_status.h"
 #include "content/browser/isolated_origin_util.h"
 #include "content/browser/isolation_context.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "url/origin.h"
@@ -47,7 +48,69 @@ namespace content {
 class BrowserContext;
 class IsolationContext;
 class ResourceContext;
-class SiteInstance;
+
+// ProcessLock is a core part of Site Isolation, which is used to determine
+// which documents are allowed to load in a process and which site data the
+// process is allowed to access, based on the SiteInfo principal. If a process
+// has a non-empty ProcessLock, documents with incompatible SiteInfos will not
+// be allowed into the process, and the process will not be able to access site
+// data from other sites.
+//
+// ProcessLock is currently defined in terms of a single SiteInfo with a process
+// lock URL, but it could be possible to define it in terms of multiple
+// SiteInfos that are compatible with each other (e.g., multiple extensions
+// sharing an extension process).
+//
+// TODO(wjmaclean): Move this into its own .h file.
+class CONTENT_EXPORT ProcessLock {
+ public:
+  // Error page processes are locked to a special error URL, to avoid loading
+  // real pages into the process.
+  static ProcessLock CreateForErrorPage();
+
+  explicit ProcessLock(const SiteInfo& site_info);
+  ProcessLock();
+
+  // An empty ProcessLock indicates that a process is not restricted to pages
+  // from a particular SiteInfo.
+  bool is_empty() const { return lock_url().is_empty(); }
+
+  // Returns the url that corresponds to the SiteInfo the lock is used with. It
+  // will always be the same as the site URL, except in cases where effective
+  // urls are in use. Always empty if the SiteInfo uses the default site url.
+  // TODO(wjmaclean): Delete this accessor once we get to the point where we can
+  // safely just compare ProcessLocks directly.
+  const GURL lock_url() const { return site_info_.process_lock_url(); }
+
+  // Returns whether lock_url() is at least at the granularity of a site (i.e.,
+  // a scheme plus eTLD+1, like https://google.com).  Also returns true if the
+  // lock is to a more specific origin (e.g., https://accounts.google.com), but
+  // not if the lock is empty or applies to an entire scheme (e.g., file://).
+  bool IsASiteOrOrigin() const;
+
+  bool matches_scheme(const std::string& scheme) const {
+    return scheme == lock_url().scheme();
+  }
+
+  // Returns true if lock_url() has an opaque origin.
+  bool HasOpaqueOrigin() const;
+
+  // Returns true if |origin| matches the lock's origin.
+  bool MatchesOrigin(const url::Origin& origin) const;
+
+  bool operator==(const ProcessLock& rhs) const;
+  bool operator!=(const ProcessLock& rhs) const;
+
+  std::string ToString() const {
+    return site_info_.process_lock_url().possibly_invalid_spec();
+  }
+
+ private:
+  // TODO(creis): Consider tracking multiple compatible SiteInfos in ProcessLock
+  // (e.g., multiple extensions). This can better restrict what the process has
+  // access to in cases that we don't currently use a ProcessLock.
+  SiteInfo site_info_;
+};
 
 class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
     : public ChildProcessSecurityPolicy {
@@ -399,25 +462,25 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                                const IsolationContext& isolation_context);
 
   // Sets the process identified by |child_id| as only permitted to access data
-  // for the origin specified by |lock_url|. Most callers should use
-  // RenderProcessHostImpl::LockToOrigin instead of calling this directly.
-  // |isolation_context| provides the context, such as BrowsingInstance, from
-  // which this process was locked to origin.  This information is used when
-  // making isolation decisions for this process, such as determining which
-  // isolated origins pertain to it.
-  void LockToOrigin(const IsolationContext& isolation_context,
-                    int child_id,
-                    const GURL& lock_url);
+  // for the origin specified by |site_info|'s process_lock_url(). Most callers
+  // should use RenderProcessHostImpl::SetProcessLock instead of calling this
+  // directly. |isolation_context| provides the context, such as
+  // BrowsingInstance, from which this process locked was created. This
+  // information is used when making isolation decisions for this process, such
+  // as determining which isolated origins pertain to it.
+  void LockProcess(const IsolationContext& isolation_context,
+                   int child_id,
+                   const ProcessLock& process_lock);
 
   // Testing helper method that generates a lock_url from |url| and then
-  // calls LockToOrigin() with that lock URL.
+  // calls LockProcess() with that lock URL.
   void LockProcessForTesting(const IsolationContext& isolation_context,
                              int child_id,
                              const GURL& url);
 
-  // Retrieves the current origin lock of process |child_id|.  Returns an empty
-  // GURL if the process does not exist or if it is not locked to an origin.
-  GURL GetOriginLock(int child_id);
+  // Retrieves the current ProcessLock of process |child_id|.  Returns an empty
+  // lock if the process does not exist or if it is not locked.
+  ProcessLock GetProcessLock(int child_id);
 
   // Register FileSystem type and permission policy which should be used
   // for the type.  The |policy| must be a bitwise-or'd value of

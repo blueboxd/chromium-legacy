@@ -71,6 +71,7 @@
 <translation id="808894953321890993">เปลี่ยนรหัสผ่าน</translation>
 <translation id="8208861521865154048">สิทธิประโยชน์</translation>
 <translation id="8347227221149377169">งานพิมพ์</translation>
+<translation id="8623849191266582420"><ph name="DEVICE_TYPE" /> นี้ได้รับการจัดการโดย <ph name="ENROLLMENT_DOMAIN" /> ผู้ดูแลระบบอาจกำหนดค่าและตรวจสอบอุปกรณ์จากระยะไกล</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> จัดการผู้ใช้รายนี้ โดยอาจจัดการการตั้งค่าและตรวจสอบกิจกรรมของผู้ใช้จากระยะไกล</translation>
 <translation id="871560550817059752">ไม่สำเร็จ - หมึกหมด</translation>
 <translation id="8747900814994928677">ยืนยันการเปลี่ยนแปลง</translation>

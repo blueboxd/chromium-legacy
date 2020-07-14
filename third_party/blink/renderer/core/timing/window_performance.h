@@ -32,6 +32,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_WINDOW_PERFORMANCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_WINDOW_PERFORMANCE_H_
 
+#include "base/rand_util.h"
 #include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
@@ -123,6 +124,8 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   void DispatchFirstInputTiming(PerformanceEventTiming* entry);
 
+  void MeasureMemoryExperimentTimerFired(TimerBase*);
+
   // Counter of the current frame index, based on calls to OnPaintFinished().
   uint64_t frame_index_ = 1;
   // Monotonically increasing value with the last frame index on which a swap
@@ -147,6 +150,11 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   Member<EventCounts> event_counts_;
   mutable Member<PerformanceNavigation> navigation_;
   mutable Member<PerformanceTiming> timing_;
+
+  // This is used in a Finch experiment to perform a memory measurement without
+  // reporting the results to evaluate its impact on stability and performance.
+  TaskRunnerTimer<WindowPerformance> measure_memory_experiment_timer_;
+  static const int kMaxMeasureMemoryExperimentDelayInMs = 30000;
 };
 
 }  // namespace blink

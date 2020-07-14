@@ -37,7 +37,7 @@ namespace blink {
 // static
 WebMixedContentContextType WebMixedContent::ContextTypeFromRequestContext(
     mojom::RequestContextType context,
-    bool strict_mixed_content_checking_for_plugin) {
+    WebMixedContent::CheckModeForPlugin check_mode_for_plugin) {
   switch (context) {
     // "Optionally-blockable" mixed content
     case mojom::RequestContextType::AUDIO:
@@ -47,7 +47,8 @@ WebMixedContentContextType WebMixedContent::ContextTypeFromRequestContext(
 
     // Plugins! Oh how dearly we love plugin-loaded content!
     case mojom::RequestContextType::PLUGIN: {
-      return strict_mixed_content_checking_for_plugin
+      return check_mode_for_plugin ==
+                     WebMixedContent::CheckModeForPlugin::kStrict
                  ? WebMixedContentContextType::kBlockable
                  : WebMixedContentContextType::kOptionallyBlockable;
     }

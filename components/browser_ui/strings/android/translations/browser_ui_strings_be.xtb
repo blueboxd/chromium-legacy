@@ -25,6 +25,7 @@
 <translation id="169515064810179024">Заблакіраваць сайтам доступ да датчыкаў руху</translation>
 <translation id="1717218214683051432">Датчыкі руху</translation>
 <translation id="1743802530341753419">Запытваць дазвол на падключэнне сайтаў да прылады (рэкамендуецца)</translation>
+<translation id="1818308510395330587">Каб праграма "<ph name="APP_NAME" />" магла выкарыстоўваць дапоўненую рэальнасць, уключыце таксама камеру ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="1887786770086287077">Доступ да месцазнаходжання для гэтай прылады выключаны. Уключыце яго ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Рэклама</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">Сёння</translation>
 <translation id="2182457891543959921">Пытацца, перш чым дазволіць сайтам ствараць 3D-карту вашага асяроддзя і адсочваць становішча камеры (рэкамендуецца)</translation>
 <translation id="2212565012507486665">Дазволіць файлы cookie</translation>
+<translation id="2228071138934252756">Каб праграма "<ph name="APP_NAME" />" атрымала доступ да камеры, уключыце камеру таксама ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="2289270750774289114">Пытацца, калі сайт спрабуе выявіць прылады Bluetooth паблізу (рэкамендуецца)</translation>
 <translation id="2315043854645842844">Аперацыйная сістэма не падтрымлівае выбар сертыфіката кліента.</translation>
 <translation id="2359808026110333948">Працягнуць</translation>
@@ -56,6 +58,7 @@
 <translation id="2586657967955657006">Буфер абмену</translation>
 <translation id="2621115761605608342">Дазвол JavaScript на канкрэтным сайце.</translation>
 <translation id="2653659639078652383">Адправіць</translation>
+<translation id="2677748264148917807">Выйсці</translation>
 <translation id="2687403674020088961">Блакіраваць усе файлы cookie (не рэкамендуецца)</translation>
 <translation id="2704606927547763573">Скапіравана</translation>
 <translation id="2822354292072154809">Сапраўды скінуць усе дазволы сайта для <ph name="CHOSEN_OBJECT_NAME" />?</translation>
@@ -69,6 +72,7 @@
 <translation id="3115898365077584848">Паказаць інфармацыю</translation>
 <translation id="3123473560110926937">Заблакіравана на некаторых сайтах</translation>
 <translation id="3198916472715691905">Аб'ём захаваных даных: <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="321187648315454507">Каб праграма "<ph name="APP_NAME" />" магла адпраўляць вам апавяшчэнні, таксама ўключыце іх у <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Мікрафон</translation>
 <translation id="3277252321222022663">Дазволіць сайтам доступ да датчыкаў (рэкамендуецца)</translation>
 <translation id="3295602654194328831">Схаваць інфармацыю</translation>
@@ -100,6 +104,7 @@
 <translation id="445467742685312942">Дазволіць сайтам прайграваць абароненае змесціва</translation>
 <translation id="4468959413250150279">Выключыць гук на канкрэтным сайце.</translation>
 <translation id="4479647676395637221">Пытацца, перш чым дазволіць сайтам выкарыстоўваць камеру (рэкамендуецца)</translation>
+<translation id="4534723447064627427">Каб даць праграме "<ph name="APP_NAME" />" доступ да мікрафона, уключыце апошні ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="4570913071927164677">Падрабязныя звесткі</translation>
 <translation id="4645575059429386691">Пад кіраваннем вашых бацькоў</translation>
 <translation id="4670064810192446073">Віртуальная рэальнасць</translation>
@@ -122,6 +127,7 @@
 <translation id="5335288049665977812">Дазволіць сайтам запускаць JavaScript (рэкамендавана)</translation>
 <translation id="534295439873310000">Прылады NFC</translation>
 <translation id="5354152178998424783">Будуць выдалены файлы cookie і даныя (<ph name="DATASIZE" />), захаваныя сайтамі.</translation>
+<translation id="5384883051496921101">Гэты сайт будзе абагульваць звесткі з праграмай па-за рэжымам інкогніта.</translation>
 <translation id="5391532827096253100">Ваша падключэнне да гэтага сайта небяспечнае. Звесткі пра сайт</translation>
 <translation id="5494752089476963479">Блакіраваць рэкламу на сайтах, якія паказваюць назойлівую рэкламу або рэкламу, якая ўводзіць у зман</translation>
 <translation id="5505264765875738116">Сайтам забаронена запытваць дазвол на паказ апавяшчэнняў</translation>
@@ -161,6 +167,7 @@
 <translation id="6561560012278703671">Забараніць сайтам адцягваць вашу ўвагу запытамі дазволу на паказ апавяшчэнняў. Паказваць замест іх індыкатар блакіроўкі ў адрасным радку</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6612358246767739896">Абароненае змесціва</translation>
+<translation id="662080504995468778">Застацца</translation>
 <translation id="6643016212128521049">Ачысціць</translation>
 <translation id="6697925417670533197">Актыўныя спампоўкі</translation>
 <translation id="6746124502594467657">Перамясціць ніжэй</translation>
@@ -224,6 +231,7 @@
 <translation id="8394832520002899662">Каб вярнуцца на сайт, націсніце тут</translation>
 <translation id="8425213833346101688">Змяніць</translation>
 <translation id="8441146129660941386">Перайсці назад</translation>
+<translation id="8444433999583714703">Каб даць праграме "<ph name="APP_NAME" />" доступ да даных пра ваша месцазнаходжанне, уключыце апошнія ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Адклікаць дазвол на доступ да прылады</translation>
 <translation id="8463851957836045671">Сайт хуткі</translation>
 <translation id="851751545965956758">Блакіраваць сайтам падключэнне да прылад</translation>
@@ -231,6 +239,7 @@
 <translation id="8609465669617005112">Перамясціць уверх</translation>
 <translation id="8676374126336081632">Ачысціць поле ўводу</translation>
 <translation id="8702612070107455751">Усе пазасеткавыя даныя будуць выдалены.</translation>
+<translation id="8719283222052720129">Уключыце для праграмы "<ph name="APP_NAME" />" дазвол у <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="8725066075913043281">Паўтарыць спробу</translation>
 <translation id="8730621377337864115">Гатова</translation>
 <translation id="8737217482364735741">Будуць выдалены файлы cookie і даныя, захаваныя сайтам <ph name="ORIGIN" />.</translation>
@@ -241,10 +250,12 @@
 <translation id="8926666909099850184">Функцыя NFC выключана на гэтай прыладзе. Уключыце яе ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">У большасці карыстальнікаў гэты сайт адкрываецца і працуе хутка</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">Выйсці з рэжыму інкогніта?</translation>
 <translation id="8958424370300090006">Блакіраваць файлы cookie для пэўнага сайта.</translation>
 <translation id="8959122750345127698">Пераход па наступным адрасе недаступны: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Пад кіраваннем вашых бацькоў</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="913657688200966289">Уключыце для праграмы "<ph name="APP_NAME" />" дазволы ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Доступ да мікрафона</translation>
 <translation id="965817943346481315">Блакіраваць, калі сайт паказвае назойлівую рэкламу або рэкламу, якая ўводзіць у зман (рэкамендуецца)</translation>
 </translationbundle>

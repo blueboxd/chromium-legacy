@@ -656,10 +656,10 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
   EXPECT_EQ(main_frame_url, webui_rfh->GetLastCommittedURL());
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
       webui_rfh->GetProcess()->GetID()));
-  EXPECT_FALSE(webui_site_instance->lock_url().is_empty());
-  EXPECT_EQ(ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+  EXPECT_TRUE(webui_site_instance->GetSiteInfo().process_lock_url().is_valid());
+  EXPECT_EQ(ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
                 root->current_frame_host()->GetProcess()->GetID()),
-            webui_site_instance->lock_url());
+            webui_site_instance->GetProcessLock());
 
   TestUntrustedDataSourceCSP csp;
   std::vector<std::string> frame_ancestors({"chrome://web-ui"});
@@ -851,9 +851,9 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest, WebUIMainFrameToWebAllowed) {
   EXPECT_EQ(chrome_url, webui_rfh->GetLastCommittedURL());
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
       webui_rfh->GetProcess()->GetID()));
-  EXPECT_EQ(ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+  EXPECT_EQ(ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
                 root->current_frame_host()->GetProcess()->GetID()),
-            webui_site_instance->lock_url());
+            webui_site_instance->GetProcessLock());
 
   GURL web_url(embedded_test_server()->GetURL("/title2.html"));
   std::string script =
@@ -870,9 +870,9 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest, WebUIMainFrameToWebAllowed) {
       root->current_frame_host()->GetSiteInstance()));
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
       root->current_frame_host()->GetProcess()->GetID()));
-  EXPECT_NE(ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+  EXPECT_NE(ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
                 root->current_frame_host()->GetProcess()->GetID()),
-            webui_site_instance->lock_url());
+            webui_site_instance->GetProcessLock());
 }
 
 #if !defined(OS_ANDROID)

@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/memory/ref_counted_memory.h"
 #include "components/autofill/core/common/renderer_id.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #import "ios/web/public/web_state_observer_bridge.h"
@@ -18,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class PasswordFormHelper;
 
 namespace autofill {
+class FieldDataManager;
 struct FormData;
 struct PasswordFormFillData;
 }  // namespace autofill
@@ -53,6 +55,15 @@ class WebState;
 // Last committed URL of current web state.
 // Returns empty URL if current web state is not available.
 @property(nonatomic, readonly) const GURL& lastCommittedURL;
+
+// Maps UniqueFieldId of an input element to the pair of:
+// 1) The most recent text that user typed or PasswordManager autofilled in
+// input elements. Used for storing username/password before JavaScript
+// changes them.
+// 2) Field properties mask, i.e. whether the field was autofilled, modified
+// by user, etc. (see FieldPropertiesMask).
+@property(nonatomic, readonly) scoped_refptr<autofill::FieldDataManager>
+    fieldDataManager;
 
 // Uses JavaScript to find password forms. Calls |completionHandler| with the
 // extracted information used for matching and saving passwords. Calls
@@ -96,6 +107,11 @@ class WebState;
 // in |frame|.
 - (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID
                                   inFrame:(web::WebFrame*)frame;
+
+// Updates the stored field data. In case if there is a presaved credential it
+// updates the presaved credential.
+- (void)updateFieldDataOnUserInput:(autofill::FieldRendererId)field_id
+                        inputValue:(NSString*)field_value;
 
 // Creates a instance with the given WebState, observer and delegate.
 - (instancetype)initWithWebState:(web::WebState*)webState

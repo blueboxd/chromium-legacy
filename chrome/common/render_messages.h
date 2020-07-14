@@ -5,26 +5,10 @@
 #ifndef CHROME_COMMON_RENDER_MESSAGES_H_
 #define CHROME_COMMON_RENDER_MESSAGES_H_
 
-#include <stdint.h>
 #include <string>
-#include <vector>
 
-#include "base/files/file_path.h"
-#include "base/strings/string16.h"
-#include "base/time/time.h"
-#include "build/build_config.h"
-#include "chrome/common/buildflags.h"
 #include "chrome/common/web_application_info_provider_param_traits.h"
-#include "components/content_settings/core/common/content_settings.h"
-#include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/content_settings/core/common/content_settings_types.h"
-#include "components/offline_pages/buildflags/buildflags.h"
-#include "content/public/common/webplugininfo.h"
-#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_platform_file.h"
-#include "media/media_buildflags.h"
-#include "ppapi/buildflags/buildflags.h"
 #include "url/gurl.h"
 #include "url/ipc/url_param_traits.h"
 

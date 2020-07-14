@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 
 /** Facade for starting Autofill Assistant on a custom tab. */
 public class AutofillAssistantFacade {
@@ -104,7 +105,8 @@ public class AutofillAssistantFacade {
                             return;
                         }
 
-                        moduleEntry.start(activity.getBottomSheetController(),
+                        moduleEntry.start(
+                                BottomSheetControllerProvider.from(activity.getWindowAndroid()),
                                 activity.getBrowserControlsManager(),
                                 activity.getCompositorViewHolder(), activity.getScrim(), activity,
                                 tab.getWebContents(),

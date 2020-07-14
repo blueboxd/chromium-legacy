@@ -58,6 +58,7 @@
 <translation id="2586657967955657006">Schowek</translation>
 <translation id="2621115761605608342">Zezwól na użycie JavaScriptu w określonej witrynie.</translation>
 <translation id="2653659639078652383">Prześlij</translation>
+<translation id="2677748264148917807">Wyjdź</translation>
 <translation id="2687403674020088961">Blokuj wszystkie pliki cookie (niezalecane)</translation>
 <translation id="2704606927547763573">Skopiowane</translation>
 <translation id="2822354292072154809">Czy na pewno chcesz zresetować wszystkie uprawnienia witryny dla obiektu <ph name="CHOSEN_OBJECT_NAME" />?</translation>
@@ -126,6 +127,7 @@
 <translation id="5335288049665977812">Zezwalaj na wykonywanie kodu JavaScript w witrynach (zalecane)</translation>
 <translation id="534295439873310000">Urządzenia z funkcją NFC</translation>
 <translation id="5354152178998424783">Spowoduje to usunięcie <ph name="DATASIZE" /> danych i plików cookie zapisanych przez strony.</translation>
+<translation id="5384883051496921101">Ta strona zamierza udostępnić informacje aplikacji poza trybem incognito.</translation>
 <translation id="5391532827096253100">Twoje połączenie z tą witryną nie jest bezpieczne. Informacje o witrynie</translation>
 <translation id="5494752089476963479">Blokuj reklamy na stronach, które wyświetlają reklamy uciążliwe lub wprowadzające w błąd</translation>
 <translation id="5505264765875738116">Strony nie mogą prosić o zgodę na wysyłanie powiadomień</translation>
@@ -165,6 +167,7 @@
 <translation id="6561560012278703671">Pokazuj wiadomości dyskretnie (blokuje powiadomienia, by Ci nie przeszkadzały)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Treść chroniona</translation>
+<translation id="662080504995468778">Zostań</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="6697925417670533197">W trakcie pobierania</translation>
 <translation id="6746124502594467657">W dół</translation>
@@ -247,6 +250,7 @@
 <translation id="8926666909099850184">Funkcja NFC na tym urządzeniu jest wyłączona. Włącz ją w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">U większości użytkowników ta strona szybko się otwiera i umożliwia płynną interakcję</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">Zamknąć tryb incognito?</translation>
 <translation id="8958424370300090006">Blokuj pliki cookie z określonej strony internetowej.</translation>
 <translation id="8959122750345127698">Adres nieosiągalny: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Zarządzany przez Twoich rodziców</translation>

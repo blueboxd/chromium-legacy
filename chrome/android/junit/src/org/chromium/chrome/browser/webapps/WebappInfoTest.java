@@ -16,7 +16,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestHelper;
-import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.device.mojom.ScreenOrientationLockType;
 
 /**
  * Tests the WebappInfo class's ability to parse various URLs.
@@ -130,11 +130,11 @@ public class WebappInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
         intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.FULLSCREEN);
-        intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
+        intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationLockType.DEFAULT);
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
         WebappInfo info = createWebappInfo(intent);
         Assert.assertEquals(WebDisplayMode.FULLSCREEN, info.displayMode());
-        Assert.assertEquals(ScreenOrientationValues.DEFAULT, info.orientation());
+        Assert.assertEquals(ScreenOrientationLockType.DEFAULT, info.orientation());
         Assert.assertEquals(ShortcutSource.UNKNOWN, info.source());
     }
 
@@ -212,9 +212,9 @@ public class WebappInfoTest {
     @Test
     public void testIntentOrientation() {
         Intent intent = createIntentWithUrlAndId();
-        intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.LANDSCAPE);
+        intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationLockType.LANDSCAPE);
         WebappInfo info = createWebappInfo(intent);
-        Assert.assertEquals(ScreenOrientationValues.LANDSCAPE, info.orientation());
+        Assert.assertEquals(ScreenOrientationLockType.LANDSCAPE, info.orientation());
     }
 
     @Test

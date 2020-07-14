@@ -25,6 +25,7 @@
 <translation id="169515064810179024">禁止網站存取動作感應器</translation>
 <translation id="1717218214683051432">動作感應器</translation>
 <translation id="1743802530341753419">允許網站連接裝置前先詢問您 (建議)</translation>
+<translation id="1818308510395330587">如要讓 <ph name="APP_NAME" /> 使用 AR，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟相機。</translation>
 <translation id="1887786770086287077">此裝置的位置資訊存取權已關閉，請在「<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />」中開啟。</translation>
 <translation id="1919345977826869612">廣告</translation>
 <translation id="1923695749281512248">已下載：<ph name="BYTES_DOWNLOADED_WITH_UNITS" />，總大小：<ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">今天</translation>
 <translation id="2182457891543959921">在允許網站建立您身處環境的 3D 地圖或追蹤攝錄機位置前先詢問您 (建議)</translation>
 <translation id="2212565012507486665">允許 Cookie</translation>
+<translation id="2228071138934252756">如要讓 <ph name="APP_NAME" /> 存取您的相機，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟相機。</translation>
 <translation id="2289270750774289114">在網站要探索附近的藍牙裝置時詢問您 (建議)</translation>
 <translation id="2315043854645842844">作業系統不支援由客戶端選取憑證。</translation>
 <translation id="2359808026110333948">繼續</translation>
@@ -56,6 +58,7 @@
 <translation id="2586657967955657006">剪貼簿</translation>
 <translation id="2621115761605608342">允許特定網站執行 JavaScript。</translation>
 <translation id="2653659639078652383">提交</translation>
+<translation id="2677748264148917807">離開</translation>
 <translation id="2687403674020088961">封鎖所有 Cookie (不建議)</translation>
 <translation id="2704606927547763573">已複製</translation>
 <translation id="2822354292072154809">確定要重設「<ph name="CHOSEN_OBJECT_NAME" />」的所有網站權限嗎？</translation>
@@ -69,6 +72,7 @@
 <translation id="3115898365077584848">顯示資料</translation>
 <translation id="3123473560110926937">在部分網站上設定封鎖</translation>
 <translation id="3198916472715691905">已使用 <ph name="STORAGE_AMOUNT" /> 儲存空間</translation>
+<translation id="321187648315454507">如要讓 <ph name="APP_NAME" /> 傳送通知，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟通知功能。</translation>
 <translation id="3227137524299004712">麥克風</translation>
 <translation id="3277252321222022663">允許網站存取感應器 (建議)</translation>
 <translation id="3295602654194328831">隱藏資料</translation>
@@ -100,6 +104,7 @@
 <translation id="445467742685312942">允許網站播放受保護的內容</translation>
 <translation id="4468959413250150279">將特定網站設為靜音。</translation>
 <translation id="4479647676395637221">允許網站使用相機前先詢問您 (建議)</translation>
+<translation id="4534723447064627427">如要讓 <ph name="APP_NAME" /> 存取您的麥克風，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟麥克風。</translation>
 <translation id="4570913071927164677">詳細資料</translation>
 <translation id="4645575059429386691">由您的家長管理</translation>
 <translation id="4670064810192446073">虛擬實境</translation>
@@ -122,6 +127,7 @@
 <translation id="5335288049665977812">允許網站執行 JavaScript (建議)</translation>
 <translation id="534295439873310000">NFC 裝置</translation>
 <translation id="5354152178998424783">此操作會清除網站儲存的資料和 Cookie (共 <ph name="DATASIZE" />)。</translation>
+<translation id="5384883051496921101">此網站即將與外部應用程式分享資料，分享時會離開無痕模式。</translation>
 <translation id="5391532827096253100">呢個網站嘅連線唔安全。網站資料</translation>
 <translation id="5494752089476963479">在顯示滋擾或誤導廣告的網站上封鎖廣告</translation>
 <translation id="5505264765875738116">網站將無法要求向您傳送通知</translation>
@@ -161,6 +167,7 @@
 <translation id="6561560012278703671">使用靜態訊息功能 (免受通知提示干擾)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">受保護內容</translation>
+<translation id="662080504995468778">不離開</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6697925417670533197">正在下載的項目</translation>
 <translation id="6746124502594467657">下移</translation>
@@ -224,6 +231,7 @@
 <translation id="8394832520002899662">輕按即可返回網站</translation>
 <translation id="8425213833346101688">變更</translation>
 <translation id="8441146129660941386">向後回轉</translation>
+<translation id="8444433999583714703">如要讓 <ph name="APP_NAME" /> 存取您的位置，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟「位置資訊」功能。</translation>
 <translation id="8447861592752582886">撤消裝置權限</translation>
 <translation id="8463851957836045671">網站快速</translation>
 <translation id="851751545965956758">禁止網站連接裝置</translation>
@@ -231,6 +239,7 @@
 <translation id="8609465669617005112">上移</translation>
 <translation id="8676374126336081632">清除輸入</translation>
 <translation id="8702612070107455751">所有離線資料將會被清除</translation>
+<translation id="8719283222052720129">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 <ph name="APP_NAME" /> 啟用此權限。</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8737217482364735741">此操作會清除 <ph name="ORIGIN" /> 儲存的所有資料和 Cookie。</translation>
@@ -241,10 +250,12 @@
 <translation id="8926666909099850184">此裝置的 NFC 已關閉，請在「<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />」中開啟。</translation>
 <translation id="8929372349074745002">對大部分人來說，此網站能快速開啟並作出回應</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">要離開無痕模式嗎？</translation>
 <translation id="8958424370300090006">禁止特定網站存取 Cookie。</translation>
 <translation id="8959122750345127698">無法存取瀏覽網址：<ph name="URL" /></translation>
 <translation id="9019902583201351841">由您的家長管理</translation>
 <translation id="9074739597929991885">藍牙</translation>
+<translation id="913657688200966289">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 <ph name="APP_NAME" /> 啟用這些權限。</translation>
 <translation id="945632385593298557">存取您的麥克風</translation>
 <translation id="965817943346481315">封鎖顯示滋擾性或誤導廣告網站上的廣告 (建議)</translation>
 </translationbundle>

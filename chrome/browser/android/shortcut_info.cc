@@ -37,7 +37,7 @@ ShareTarget::~ShareTarget() {}
 ShortcutInfo::ShortcutInfo(const GURL& shortcut_url)
     : url(shortcut_url),
       display(blink::mojom::DisplayMode::kBrowser),
-      orientation(blink::kWebScreenOrientationLockDefault),
+      orientation(device::mojom::ScreenOrientationLockType::DEFAULT),
       source(SOURCE_ADD_TO_HOMESCREEN_SHORTCUT),
       ideal_splash_image_size_in_px(0),
       minimum_splash_image_size_in_px(0) {}
@@ -75,7 +75,8 @@ void ShortcutInfo::UpdateFromManifest(const blink::Manifest& manifest) {
     source = SOURCE_ADD_TO_HOMESCREEN_STANDALONE;
     // Set the orientation based on the manifest value, or ignore if the display
     // mode is different from 'standalone', 'fullscreen' or 'minimal-ui'.
-    if (manifest.orientation != blink::kWebScreenOrientationLockDefault) {
+    if (manifest.orientation !=
+        device::mojom::ScreenOrientationLockType::DEFAULT) {
       // TODO(mlamouri): Send a message to the developer console if we ignored
       // Manifest orientation because display property is not set.
       orientation = manifest.orientation;

@@ -480,7 +480,7 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
     scoped_refptr<SiteInstanceImpl> site_instance =
         SiteInstanceImpl::CreateForURL(browser_context.get(), test_url);
     EXPECT_EQ(expected_app_site_url, site_instance->GetSiteURL());
-    EXPECT_EQ(nonapp_site_url, site_instance->lock_url());
+    EXPECT_EQ(nonapp_site_url, site_instance->GetSiteInfo().process_lock_url());
   }
 
   // New related SiteInstance from an existing SiteInstance with a
@@ -494,7 +494,8 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
     auto* site_instance_impl =
         static_cast<SiteInstanceImpl*>(site_instance.get());
     EXPECT_EQ(expected_app_site_url, site_instance->GetSiteURL());
-    EXPECT_EQ(nonapp_site_url, site_instance_impl->lock_url());
+    EXPECT_EQ(nonapp_site_url,
+              site_instance_impl->GetSiteInfo().process_lock_url());
   }
 
   // New SiteInstance with a lazily assigned site URL.
@@ -504,7 +505,7 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
     EXPECT_FALSE(site_instance->HasSite());
     site_instance->SetSite(test_url);
     EXPECT_EQ(expected_app_site_url, site_instance->GetSiteURL());
-    EXPECT_EQ(nonapp_site_url, site_instance->lock_url());
+    EXPECT_EQ(nonapp_site_url, site_instance->GetSiteInfo().process_lock_url());
   }
 
   SetBrowserClientForTesting(regular_client);
@@ -876,7 +877,7 @@ TEST_F(SiteInstanceTest, NoProcessPerSiteForEmptySite) {
   EXPECT_FALSE(RenderProcessHostImpl::GetSoleProcessHostForURL(
       instance->GetIsolationContext(), GURL()));
   EXPECT_FALSE(RenderProcessHostImpl::GetSoleProcessHostForSite(
-      instance->GetIsolationContext(), SiteInfo(), GURL(), false));
+      instance->GetIsolationContext(), SiteInfo(), false));
 
   DrainMessageLoop();
 }
@@ -1336,17 +1337,26 @@ TEST_F(SiteInstanceTest, OriginalURL) {
   SetBrowserClientForTesting(regular_client);
 }
 
-TEST_F(SiteInstanceTest, IsOriginLockASite) {
-  EXPECT_FALSE(SiteInstanceImpl::IsOriginLockASite(GURL("http://")));
-  EXPECT_FALSE(SiteInstanceImpl::IsOriginLockASite(GURL("")));
-  EXPECT_FALSE(SiteInstanceImpl::IsOriginLockASite(GURL("google.com")));
-  EXPECT_FALSE(SiteInstanceImpl::IsOriginLockASite(GURL("http:")));
-  EXPECT_FALSE(SiteInstanceImpl::IsOriginLockASite(GURL("chrome:")));
+namespace {
 
-  EXPECT_TRUE(SiteInstanceImpl::IsOriginLockASite(GURL("http://foo.com")));
-  EXPECT_TRUE(SiteInstanceImpl::IsOriginLockASite(GURL("http://bar.foo.com")));
-  EXPECT_TRUE(SiteInstanceImpl::IsOriginLockASite(
-      GURL("http://user:pass@google.com:99/foo;bar?q=a#ref")));
+ProcessLock ProcessLockFromString(const std::string& url) {
+  return ProcessLock(SiteInfo(GURL(url), GURL(url)));
+}
+
+}  // namespace
+
+TEST_F(SiteInstanceTest, IsProcessLockASite) {
+  EXPECT_FALSE(ProcessLockFromString("http://").IsASiteOrOrigin());
+  EXPECT_FALSE(ProcessLockFromString("").IsASiteOrOrigin());
+  EXPECT_FALSE(ProcessLockFromString("google.com").IsASiteOrOrigin());
+  EXPECT_FALSE(ProcessLockFromString("http:").IsASiteOrOrigin());
+  EXPECT_FALSE(ProcessLockFromString("chrome:").IsASiteOrOrigin());
+
+  EXPECT_TRUE(ProcessLockFromString("http://foo.com").IsASiteOrOrigin());
+  EXPECT_TRUE(ProcessLockFromString("http://bar.foo.com").IsASiteOrOrigin());
+  EXPECT_TRUE(
+      ProcessLockFromString("http://user:pass@google.com:99/foo;bar?q=a#ref")
+          .IsASiteOrOrigin());
 }
 
 TEST_F(SiteInstanceTest, StartIsolatingSite) {

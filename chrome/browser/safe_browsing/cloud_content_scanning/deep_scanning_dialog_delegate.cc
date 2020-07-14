@@ -142,18 +142,13 @@ bool DlpVerdictAllowsDataUse(
 }
 
 bool ContentAnalysisActionAllowsDataUse(
-    enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        Action action) {
+    enterprise_connectors::TriggeredRule::Action action) {
   switch (action) {
-    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        ACTION_UNSPECIFIED:
-    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        REPORT_ONLY:
+    case enterprise_connectors::TriggeredRule::ACTION_UNSPECIFIED:
+    case enterprise_connectors::TriggeredRule::REPORT_ONLY:
       return true;
-    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        WARN:
-    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        BLOCK:
+    case enterprise_connectors::TriggeredRule::WARN:
+    case enterprise_connectors::TriggeredRule::BLOCK:
       return false;
   }
 }
@@ -605,8 +600,7 @@ void DeepScanningDialogDelegate::CompleteConnectorFileRequestCallback(
   auto action = GetHighestPrecedenceAction(response);
   bool file_complies = ResultShouldAllowDataUse(result, data_.settings) &&
                        ContentAnalysisActionAllowsDataUse(action);
-  bool should_warn = action == enterprise_connectors::ContentAnalysisResponse::
-                                   Result::TriggeredRule::WARN;
+  bool should_warn = action == enterprise_connectors::TriggeredRule::WARN;
   result_.paths_results[index] = file_complies;
 
   MaybeReportDeepScanningVerdict(

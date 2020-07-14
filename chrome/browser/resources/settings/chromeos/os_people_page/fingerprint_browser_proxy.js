@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 cr.define('settings', function() {
   /**
    * @enum {number}
    * These values must be kept in sync with the values in
    * third_party/cros_system_api/dbus/service_constants.h.
    */
-  const FingerprintResultType = {
+  /* #export */ const FingerprintResultType = {
     SUCCESS: 0,
     PARTIAL: 1,
     INSUFFICIENT: 2,
@@ -26,7 +30,7 @@ cr.define('settings', function() {
    *   indexes: !Array<number>,
    * }}
    */
-  let FingerprintAttempt;
+  /* #export */ let FingerprintAttempt;
 
   /**
    * An object describing a scan from the fingerprint hardware. The structure of
@@ -37,7 +41,7 @@ cr.define('settings', function() {
    *   percentComplete: number,
    * }}
    */
-  let FingerprintScan;
+  /* #export */ let FingerprintScan;
 
   /**
    * An object describing the necessary info to display on the fingerprint
@@ -48,10 +52,10 @@ cr.define('settings', function() {
    *   isMaxed: boolean,
    * }}
    */
-  let FingerprintInfo;
+  /* #export */ let FingerprintInfo;
 
   /** @interface */
-  class FingerprintBrowserProxy {
+  /* #export */ class FingerprintBrowserProxy {
     /**
      * @return {!Promise<!settings.FingerprintInfo>}
      */
@@ -102,7 +106,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.FingerprintBrowserProxy}
    */
-  class FingerprintBrowserProxyImpl {
+  /* #export */ class FingerprintBrowserProxyImpl {
     /** @override */
     getFingerprintsList() {
       return cr.sendWithPromise('getFingerprintsList');

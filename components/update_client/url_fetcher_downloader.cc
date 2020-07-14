@@ -26,9 +26,7 @@ UrlFetcherDownloader::UrlFetcherDownloader(
     : CrxDownloader(std::move(successor)),
       network_fetcher_factory_(network_fetcher_factory) {}
 
-UrlFetcherDownloader::~UrlFetcherDownloader() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
+UrlFetcherDownloader::~UrlFetcherDownloader() = default;
 
 void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -604,22 +604,27 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
     Vector<NGLogicalOutOfFlowPositionedNode>* descendants) {
   while (descendants->size() > 0) {
     for (auto& descendant : *descendants) {
-      scoped_refptr<const NGLayoutResult> result =
-          LayoutFragmentainerDescendant(descendant);
-
-      // TODO(almaher): Add children to the correct fragmentainer. For now, it
-      // always get added to the first one.
-      AddOOFResultToFragmentainer(result, /* index */ 0);
+      LayoutFragmentainerDescendant(descendant);
     }
     // Sweep any descendants that might have been added.
     // This happens when an absolute container has a fixed child.
     descendants->Shrink(0);
     container_builder_->SwapOutOfFlowFragmentainerDescendants(descendants);
   }
+
+  // Add all of the descendant layout results as children to the fragment at
+  // the associated index.
+  for (const auto& descendant_result : fragmentainer_descendant_results_) {
+    // We don't allow keys of 0, so shift the index back by 1 when adding to the
+    // fragmentainer.
+    wtf_size_t index = descendant_result.key - 1;
+    const Vector<scoped_refptr<const NGLayoutResult>>& results =
+        descendant_result.value;
+    AddOOFResultsToFragmentainer(results, index);
+  }
 }
 
-scoped_refptr<const NGLayoutResult>
-NGOutOfFlowLayoutPart::LayoutFragmentainerDescendant(
+void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendant(
     const NGLogicalOutOfFlowPositionedNode& descendant) {
   // TODO(almaher): Properly implement the layout algorithm for fragmented
   // positioned elements.
@@ -662,8 +667,9 @@ NGOutOfFlowLayoutPart::LayoutFragmentainerDescendant(
   // TODO(almaher): The index should be based on the fragmentainer that we will
   // start layout in (skipping any column spanner fragments) rather than 0 every
   // time.
+  wtf_size_t fragmentainer_index = 0;
   const NGConstraintSpace& fragmentainer_constraint_space =
-      GetFragmentainerConstraintSpace(/* index */ 0);
+      GetFragmentainerConstraintSpace(fragmentainer_index);
 
   // Need a constraint space to resolve offsets.
   // TODO(almaher): The block offset should be based on the descendant rather
@@ -674,9 +680,11 @@ NGOutOfFlowLayoutPart::LayoutFragmentainerDescendant(
           container_info.container_offset.block_offset,
           fragmentainer_constraint_space, default_writing_mode);
 
-  return Layout(node, descendant_constraint_space, descendant_static_position,
-                container_content_size, container_info, default_writing_mode,
-                default_direction, nullptr);
+  scoped_refptr<const NGLayoutResult> result =
+      Layout(node, descendant_constraint_space, descendant_static_position,
+             container_content_size, container_info, default_writing_mode,
+             default_direction, nullptr);
+  AddOOFResultToFragmentainerResults(result, fragmentainer_index);
 }
 
 scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
@@ -975,8 +983,8 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   return node.Layout(space);
 }
 
-void NGOutOfFlowLayoutPart::AddOOFResultToFragmentainer(
-    scoped_refptr<const NGLayoutResult> result,
+void NGOutOfFlowLayoutPart::AddOOFResultsToFragmentainer(
+    const Vector<scoped_refptr<const NGLayoutResult>>& results,
     const wtf_size_t index) {
   DCHECK_LT(index, container_builder_->Children().size());
 
@@ -997,9 +1005,12 @@ void NGOutOfFlowLayoutPart::AddOOFResultToFragmentainer(
   // NGSimplifiedOOFLayoutAlgorithm::Layout, we can append new items to it.
   NGSimplifiedOOFLayoutAlgorithm algorithm(params, fragment);
 
-  // TODO(bebeaudr): Is the offset returned by OutOfFlowPositionedOffset the one
-  // to use?
-  algorithm.AppendOutOfFlowResult(result, result->OutOfFlowPositionedOffset());
+  for (const auto& result : results) {
+    // TODO(bebeaudr): Is the offset returned by OutOfFlowPositionedOffset the
+    // one to use?
+    algorithm.AppendOutOfFlowResult(result,
+                                    result->OutOfFlowPositionedOffset());
+  }
   container_builder_->ReplaceChild(
       index, algorithm.Layout()->PhysicalFragment(), fragmentainer.offset);
 }
@@ -1053,6 +1064,22 @@ NGOutOfFlowLayoutPart::CreateConstraintSpaceForFragmentainerDescendant(
                                     block_offset, &builder,
                                     /* is_new_fc */ true);
   return builder.ToConstraintSpace();
+}
+
+void NGOutOfFlowLayoutPart::AddOOFResultToFragmentainerResults(
+    const scoped_refptr<const NGLayoutResult> result,
+    const wtf_size_t index) {
+  DCHECK_LT(index, container_builder_->Children().size());
+
+  // Increase the index by 1 to avoid a key of 0.
+  wtf_size_t stored_index = index + 1;
+  Vector<scoped_refptr<const NGLayoutResult>> results;
+
+  auto it = fragmentainer_descendant_results_.find(stored_index);
+  if (it != fragmentainer_descendant_results_.end())
+    results = it->value;
+  results.emplace_back(result);
+  fragmentainer_descendant_results_.Set(stored_index, results);
 }
 
 }  // namespace blink

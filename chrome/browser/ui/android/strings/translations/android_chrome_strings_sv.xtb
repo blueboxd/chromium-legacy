@@ -209,7 +209,6 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="2650751991977523696">Vill du ladda ned filen igen?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ljudfil}other{# ljudfiler}}</translation>
 <translation id="2656405586795711023">Webbappar</translation>
-<translation id="2677748264148917807">Lämna</translation>
 <translation id="2689830683995595741">Genom att använda Chrome godkänner du <ph name="BEGIN_LINK1" />Googles användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />de ytterligare användarvillkoren för Google Chrome och Chrome OS<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Sekretessmeddelandet för Google-konton som hanteras med Family Link<ph name="END_LINK3" /> gäller också.</translation>
 <translation id="2707726405694321444">Uppdatera sidan</translation>
 <translation id="2709516037105925701">Autofyll</translation>
@@ -290,6 +289,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="3303414029551471755">Vill du ladda ned innehållet?</translation>
 <translation id="3306398118552023113">Den här appen körs i Chrome</translation>
 <translation id="3315103659806849044">Du anpassar nu dina inställningar för synkronisering och Google-tjänster. Aktivera synkroniseringen genom att trycka på Bekräfta längst ned på skärmen. Navigera uppåt</translation>
+<translation id="3320630259304269485">Säker webbsökning (skydd mot farliga webbplatser) och andra säkerhetsinställningar</translation>
 <translation id="3328801116991980348">Platsinformation</translation>
 <translation id="3333961966071413176">Alla kontakter</translation>
 <translation id="3334729583274622784">Vill du ändra filnamnstillägget?</translation>
@@ -306,6 +306,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="3389286852084373014">Texten är för stor</translation>
 <translation id="3398320232533725830">Öppna bokmärkeshanteraren</translation>
 <translation id="3414952576877147120">Storlek:</translation>
+<translation id="3435738964857648380">Säkerhet</translation>
 <translation id="3443221991560634068">Läs in den aktuella sidan igen</translation>
 <translation id="3478363558367712427">Du kan välja din sökmotor</translation>
 <translation id="3492207499832628349">Ny inkognitoflik</translation>
@@ -534,7 +535,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5355191726083956201">Förbättrat skydd är aktiverat</translation>
 <translation id="5357811892247919462">En flik har tagits emot</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> flik öppen, tryck här om du vill byta flik}other{<ph name="OPEN_TABS_MANY" /> flikar öppna, tryck här om du vill byta flik}}</translation>
-<translation id="5384883051496921101">Data på den här webbplatsen delas med en app utanför inkognitoläget.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 till)}other{(+ # till)}}</translation>
 <translation id="5403592356182871684">Namn</translation>
 <translation id="5403644198645076998">Tillåt endast vissa webbplatser</translation>
@@ -705,7 +705,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6593061639179217415">Datoranpassad webbplats</translation>
 <translation id="6597891566292541626">Rama in QR-koden/streckkoden i den här rutan.</translation>
 <translation id="6600954340915313787">Kopierat till Chrome</translation>
-<translation id="662080504995468778">Stanna kvar</translation>
 <translation id="6627583120233659107">Redigera mapp</translation>
 <translation id="6643016212128521049">Rensa</translation>
 <translation id="6643649862576733715">Sortera efter databesparing</translation>
@@ -988,7 +987,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8922289737868596582">Ladda ned sidor via knappen Fler alternativ så att du kan använda dem offline</translation>
 <translation id="8937772741022875483">Vill du ta bort din aktivitet i Chrome från Digitalt välmående?</translation>
 <translation id="8942627711005830162">Öppna i ett annat fönster</translation>
-<translation id="894871326938397531">Inaktivera inkognitoläget?</translation>
 <translation id="8951232171465285730">Du har sparat <ph name="MEGABYTES" /> MB med Chrome</translation>
 <translation id="8965591936373831584">väntar</translation>
 <translation id="8970887620466824814">Något gick fel.</translation>
@@ -999,6 +997,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="9028914725102941583">Aktivera synkronisering om du vill dela mellan enheter</translation>
 <translation id="9040142327097499898">Aviseringar tillåts. Plats har inaktiverats på enheten.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videor}}</translation>
+<translation id="9042893549633094279">Sekretess och säkerhet</translation>
 <translation id="9050666287014529139">Lösenfras</translation>
 <translation id="9063523880881406963">Inaktivera begäran av webbplats för stationär dator</translation>
 <translation id="9065203028668620118">Redigera</translation>

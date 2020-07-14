@@ -1807,14 +1807,19 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
 TEST_F(TemplateURLTest, GenerateKeyword) {
   ASSERT_EQ(ASCIIToUTF16("foo"),
             TemplateURL::GenerateKeyword(GURL("http://foo")));
-  // www. should be stripped.
-  ASSERT_EQ(ASCIIToUTF16("foo"),
+  ASSERT_EQ(ASCIIToUTF16("foo."),
+            TemplateURL::GenerateKeyword(GURL("http://foo.")));
+  // www. should be stripped for a public hostname but not a private/intranet
+  // hostname.
+  ASSERT_EQ(ASCIIToUTF16("google.com"),
+            TemplateURL::GenerateKeyword(GURL("http://www.google.com")));
+  ASSERT_EQ(ASCIIToUTF16("www.foo"),
             TemplateURL::GenerateKeyword(GURL("http://www.foo")));
   // Make sure we don't get a trailing '/'.
   ASSERT_EQ(ASCIIToUTF16("blah"),
             TemplateURL::GenerateKeyword(GURL("http://blah/")));
   // Don't generate the empty string.
-  ASSERT_EQ(ASCIIToUTF16("www"),
+  ASSERT_EQ(ASCIIToUTF16("www."),
             TemplateURL::GenerateKeyword(GURL("http://www.")));
   ASSERT_EQ(
       base::UTF8ToUTF16("\xd0\xb0\xd0\xb1\xd0\xb2"),

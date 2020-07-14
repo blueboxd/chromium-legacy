@@ -67,7 +67,8 @@ PushSubscription::PushSubscription(
     const WTF::Vector<uint8_t>& application_server_key,
     const WTF::Vector<unsigned char>& p256dh,
     const WTF::Vector<unsigned char>& auth,
-    ServiceWorkerRegistration* service_worker_registration)
+    ServiceWorkerRegistration* service_worker_registration,
+    const base::Optional<DOMTimeStamp> expiration_time)
     : endpoint_(endpoint),
       options_(MakeGarbageCollected<PushSubscriptionOptions>(
           user_visible_only,
@@ -76,7 +77,8 @@ PushSubscription::PushSubscription(
                                      SafeCast<unsigned>(p256dh.size()))),
       auth_(
           DOMArrayBuffer::Create(auth.data(), SafeCast<unsigned>(auth.size()))),
-      service_worker_registration_(service_worker_registration) {}
+      service_worker_registration_(service_worker_registration),
+      expiration_time_(expiration_time) {}
 
 PushSubscription::~PushSubscription() = default;
 
@@ -84,7 +86,7 @@ base::Optional<DOMTimeStamp> PushSubscription::expirationTime() const {
   // This attribute reflects the time at which the subscription will expire,
   // which is not relevant to this implementation yet as subscription refreshes
   // are not supported.
-  return base::nullopt;
+  return expiration_time_;
 }
 
 DOMArrayBuffer* PushSubscription::getKey(const AtomicString& name) const {
@@ -113,7 +115,12 @@ ScriptValue PushSubscription::toJSONForBinding(ScriptState* script_state) {
 
   V8ObjectBuilder result(script_state);
   result.AddString("endpoint", endpoint());
-  result.AddNull("expirationTime");
+
+  if (expiration_time_) {
+    result.AddNumber("expirationTime", *expiration_time_);
+  } else {
+    result.AddNull("expirationTime");
+  }
 
   V8ObjectBuilder keys(script_state);
   keys.Add("p256dh", ToBase64URLWithoutPadding(p256dh_));

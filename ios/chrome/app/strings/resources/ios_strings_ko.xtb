@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="1005230401424685968">연도</translation>
+<translation id="1013952917065545813">여기에 다시 돌아와 최근에 닫았던 탭을 다시 열 수 있습니다.</translation>
 <translation id="1016495303386450659">북마크가 업데이트되었습니다.</translation>
 <translation id="1044891598689252897">사이트가 정상적으로 작동합니다.</translation>
 <translation id="1047726139967079566">현재 페이지를 북마크에 추가...</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">중지</translation>
 <translation id="1283524564873030414">지난 24시간</translation>
 <translation id="1285320974508926690">이 사이트 번역 안함</translation>
+<translation id="1321993286294231467">이미지를 저장하는 중에 오류가 발생했습니다.</translation>
 <translation id="1323735185997015385">삭제</translation>
 <translation id="132683371494960526">상위 폴더를 변경하려면 두 번 탭하세요.</translation>
 <translation id="1340643665687018190">메뉴 닫기</translation>
@@ -560,6 +562,7 @@
 <translation id="7658239707568436148">취소</translation>
 <translation id="766891008101699113">비공개로 웹을 탐색하려면 새 탭을 추가하세요.</translation>
 <translation id="7671141431838911305">설치</translation>
+<translation id="7701040980221191251">없음</translation>
 <translation id="7765158879357617694">이동</translation>
 <translation id="7771470029643830783">로그아웃하면 북마크, 방문 기록, 비밀번호 및 기타 Chrome 데이터가 더 이상 Google 계정과 동기화되지 않습니다.
 

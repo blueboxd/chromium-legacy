@@ -72,6 +72,7 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   // actually tracing through an already marked object. Logically, this means
   // accounting for the bytes when transitioning from grey to black.
   ALWAYS_INLINE void AccountMarkedBytes(HeapObjectHeader*);
+  ALWAYS_INLINE void AccountMarkedBytes(size_t);
 
  protected:
   MarkingVisitorBase(ThreadState*, MarkingMode, int task_id);
@@ -101,10 +102,14 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
 
 ALWAYS_INLINE void MarkingVisitorBase::AccountMarkedBytes(
     HeapObjectHeader* header) {
-  marked_bytes_ +=
+  AccountMarkedBytes(
       header->IsLargeObject<HeapObjectHeader::AccessMode::kAtomic>()
           ? static_cast<LargeObjectPage*>(PageFromObject(header))->ObjectSize()
-          : header->size<HeapObjectHeader::AccessMode::kAtomic>();
+          : header->size<HeapObjectHeader::AccessMode::kAtomic>());
+}
+
+ALWAYS_INLINE void MarkingVisitorBase::AccountMarkedBytes(size_t marked_bytes) {
+  marked_bytes_ += marked_bytes;
 }
 
 ALWAYS_INLINE bool MarkingVisitorBase::MarkHeaderNoTracing(
@@ -240,8 +245,15 @@ class PLATFORM_EXPORT ConcurrentMarkingVisitor : public MarkingVisitorBase {
 
   bool IsConcurrent() const override { return true; }
 
-  bool DeferredTraceIfConcurrent(TraceDescriptor desc) override {
-    not_safe_to_concurrently_trace_worklist_.Push(desc);
+  bool DeferredTraceIfConcurrent(TraceDescriptor desc,
+                                 size_t bailout_size) override {
+    not_safe_to_concurrently_trace_worklist_.Push({desc, bailout_size});
+    // The object is bailed out from concurrent marking, so updating
+    // marked_bytes_ to reflect how many bytes were actually traced.
+    // This deducted bytes will be added to the mutator thread marking
+    // visitor's marked_bytes_ count when the object is popped from
+    // the bailout worklist.
+    marked_bytes_ -= bailout_size;
     return true;
   }
 

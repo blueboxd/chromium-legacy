@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestions;
 import org.chromium.chrome.features.start_surface.StartSurface;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.module_installer.builder.ModuleInterface;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -109,9 +110,11 @@ public interface TabManagementDelegate {
      * Create the {@link StartSurface}
      * @param activity The {@link ChromeActivity} creates this {@link StartSurface}.
      * @param scrimCoordinator The {@link ScrimCoordinator} to control the scrim view.
+     * @param sheetController A {@link BottomSheetController} to show content in the bottom sheet.
      * @return the {@link StartSurface}
      */
-    StartSurface createStartSurface(ChromeActivity activity, ScrimCoordinator scrimCoordinator);
+    StartSurface createStartSurface(ChromeActivity activity, ScrimCoordinator scrimCoordinator,
+            BottomSheetController sheetController);
 
     /**
      * Create a {@link TabGroupModelFilter} for the given {@link TabModel}.

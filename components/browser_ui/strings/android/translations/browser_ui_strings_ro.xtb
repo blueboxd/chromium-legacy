@@ -25,6 +25,7 @@
 <translation id="169515064810179024">Împiedică site-urile să acceseze senzorii de mișcare</translation>
 <translation id="1717218214683051432">Senzori de mișcare</translation>
 <translation id="1743802530341753419">Întreabă înainte de a permite site-urilor să se conecteze la un dispozitiv (recomandat)</translation>
+<translation id="1818308510395330587">Pentru a permite ca <ph name="APP_NAME" /> să folosească RA, activează camera foto și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
 <translation id="1887786770086287077">Accesul la locație este dezactivat pentru acest dispozitiv. Activează-l în <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Anunțuri</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">Astăzi</translation>
 <translation id="2182457891543959921">Întreabă înainte de a permite site-urilor să creeze o hartă 3D a lucrurilor din jur sau să urmărească poziția camerei video (recomandat)</translation>
 <translation id="2212565012507486665">Permite cookie-urile</translation>
+<translation id="2228071138934252756">Pentru a permite <ph name="APP_NAME" /> să acceseze camera, activează camera și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
 <translation id="2289270750774289114">Întreabă-mă când un site dorește să descopere dispozitive Bluetooth din apropiere (recomandat)</translation>
 <translation id="2315043854645842844">Selectarea certificatelor pe partea de client nu este acceptată de sistemul de operare.</translation>
 <translation id="2359808026110333948">Continuă</translation>
@@ -56,6 +58,7 @@
 <translation id="2586657967955657006">Clipboard</translation>
 <translation id="2621115761605608342">Permite JavaScript pentru un anumit site.</translation>
 <translation id="2653659639078652383">Trimite</translation>
+<translation id="2677748264148917807">Ieși</translation>
 <translation id="2687403674020088961">Blochează toate cookie-urile (nu este recomandat)</translation>
 <translation id="2704606927547763573">Copiat</translation>
 <translation id="2822354292072154809">Sigur dorești să resetezi toate permisiunile la nivel de site pentru <ph name="CHOSEN_OBJECT_NAME" />?</translation>
@@ -69,6 +72,7 @@
 <translation id="3115898365077584848">Afișează informațiile</translation>
 <translation id="3123473560110926937">Blocate pe anumite site-uri</translation>
 <translation id="3198916472715691905">Date stocate: <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="321187648315454507">Pentru a permite ca <ph name="APP_NAME" /> să îți trimită notificări, activează notificările și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Microfon</translation>
 <translation id="3277252321222022663">Permite accesul site-urilor la senzori (recomandat)</translation>
 <translation id="3295602654194328831">Ascunde informațiile</translation>
@@ -100,6 +104,7 @@
 <translation id="445467742685312942">Permite site-urilor să redea conținut protejat</translation>
 <translation id="4468959413250150279">Dezactivează sunetul pentru un anumit site.</translation>
 <translation id="4479647676395637221">Întreabă înainte de a permite site-urilor să folosească camera foto (recomandat)</translation>
+<translation id="4534723447064627427">Ca să permiți ca <ph name="APP_NAME" /> să acceseze microfonul, activează microfonul și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
 <translation id="4570913071927164677">Detalii</translation>
 <translation id="4645575059429386691">Gestionat de părintele tău</translation>
 <translation id="4670064810192446073">Realitate virtuală</translation>
@@ -122,6 +127,7 @@
 <translation id="5335288049665977812">Permite site-urilor să ruleze JavaScript (recomandat)</translation>
 <translation id="534295439873310000">Dispozitive NFC</translation>
 <translation id="5354152178998424783">Astfel, se vor șterge <ph name="DATASIZE" /> din datele și cookie-urile stocate de site-uri.</translation>
+<translation id="5384883051496921101">Site-ul este pe cale să permită accesul la informații unei aplicații în afara modului incognito.</translation>
 <translation id="5391532827096253100">Conexiunea la acest site nu este sigură. Informații despre site</translation>
 <translation id="5494752089476963479">Blochează anunțurile pe site-urile care afișează anunțuri deranjante sau înșelătoare</translation>
 <translation id="5505264765875738116">Site-urile nu îți pot solicita să îți trimită notificări</translation>
@@ -161,6 +167,7 @@
 <translation id="6561560012278703671">Folosește mesageria mai discretă (împiedică solicitările de notificări astfel încât să nu te întrerupă)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Conținut protejat</translation>
+<translation id="662080504995468778">Rămâi pe pagină</translation>
 <translation id="6643016212128521049">Șterge</translation>
 <translation id="6697925417670533197">Descărcări active</translation>
 <translation id="6746124502594467657">Mutați în jos</translation>
@@ -224,6 +231,7 @@
 <translation id="8394832520002899662">Atinge pentru a reveni la site</translation>
 <translation id="8425213833346101688">Modificați</translation>
 <translation id="8441146129660941386">Derulează înapoi</translation>
+<translation id="8444433999583714703">Pentru a permite ca <ph name="APP_NAME" /> să acceseze locația, activează locația și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Revocă permisiunea de accesare a dispozitivului</translation>
 <translation id="8463851957836045671">Site-ul este rapid</translation>
 <translation id="851751545965956758">Blochează conectarea site-urilor la dispozitive</translation>
@@ -231,6 +239,7 @@
 <translation id="8609465669617005112">Mutați mai sus</translation>
 <translation id="8676374126336081632">Șterge textul introdus</translation>
 <translation id="8702612070107455751">Toate datele offline vor fi șterse.</translation>
+<translation id="8719283222052720129">Activează permisiunea pentru <ph name="APP_NAME" /> în <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="8725066075913043281">Încearcă din nou</translation>
 <translation id="8730621377337864115">Terminat</translation>
 <translation id="8737217482364735741">Astfel, se vor șterge toate datele și cookie-urile stocate de <ph name="ORIGIN" />.</translation>
@@ -241,10 +250,12 @@
 <translation id="8926666909099850184">NFC este dezactivat pentru acest dispozitiv. Activează-l în <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Site-ul se deschide și reacționează rapid în majoritatea cazurilor.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">Ieși din modul incognito?</translation>
 <translation id="8958424370300090006">Blochează cookie-urile pentru un anumit site.</translation>
 <translation id="8959122750345127698">Navigarea nu este accesibilă: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Gestionat de părinții tăi</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="913657688200966289">Activează permisiunile pentru <ph name="APP_NAME" /> din <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Accesează microfonul</translation>
 <translation id="965817943346481315">Blochează dacă site-ul afișează anunțuri deranjante sau înșelătoare (recomandat)</translation>
 </translationbundle>

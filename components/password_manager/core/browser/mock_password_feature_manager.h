@@ -19,7 +19,7 @@ class MockPasswordFeatureManager : public PasswordFeatureManager {
 
   MOCK_CONST_METHOD0(IsOptedInForAccountStorage, bool());
   MOCK_CONST_METHOD0(ShouldShowAccountStorageOptIn, bool());
-  MOCK_CONST_METHOD0(ShouldShowAccountStorageReSignin, bool());
+  MOCK_CONST_METHOD1(ShouldShowAccountStorageReSignin, bool(const GURL&));
   MOCK_METHOD0(OptInToAccountStorage, void());
   MOCK_METHOD0(OptOutOfAccountStorageAndClearSettings, void());
 

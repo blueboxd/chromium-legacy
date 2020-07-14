@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.app.role.RoleManager;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 
@@ -32,6 +33,7 @@ import org.chromium.ui.base.WindowAndroid;
 public class DefaultBrowserPromoManager implements PauseResumeWithNativeObserver, Destroyable {
     private static final String SKIP_PRIMER_PARAM = "skip_primer";
     private static final String DISABLE_DISAMBIGUATION_SHEET = "disable_disambiguation_sheet";
+    private static final String DISAMBIGUATION_PROMO_URL = "disambiguation_promo_url";
 
     private final Activity mActivity;
     private DefaultBrowserPromoDialog mDialog;
@@ -145,8 +147,17 @@ public class DefaultBrowserPromoManager implements PauseResumeWithNativeObserver
             DefaultBrowserPromoMetrics.recordUiDismissalReason(
                     mCurrentState, UIDismissalReason.CHANGE_DEFAULT);
 
-            Intent intent = new Intent(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_APP_BROWSER);
+            Intent intent = new Intent();
+            String url = ChromeFeatureList.getFieldTrialParamByFeature(
+                    ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO, DISAMBIGUATION_PROMO_URL);
+            if (url != null && !url.isEmpty()) {
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                intent.setData(Uri.parse(url));
+            } else {
+                intent.setAction(Intent.ACTION_MAIN);
+                intent.addCategory(Intent.CATEGORY_APP_BROWSER);
+            }
             intent.putExtra(DefaultBrowserPromoUtils.DISAMBIGUATION_SHEET_PROMOED_KEY, true);
             mActivity.startActivity(intent);
         });

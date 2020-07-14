@@ -94,6 +94,7 @@ android_library("content_java") {
     "//net/android:net_java",
     "//services/device:java",
     "//services/device/public/java:nfc_java",
+    "//services/device/public/mojom:mojom_java",
     "//services/media_session/public/cpp/android:media_session_java",
     "//services/service_manager/public/java:service_manager_java",
     "//services/service_manager/public/mojom:mojom_java",
@@ -347,7 +348,6 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
     "//content/public/browser/visibility.h",
     "//content/public/common/browser_controls_state.h",
     "//content/public/common/console_message_level.h",
-    "//content/public/common/screen_orientation_values.h",
   ]
 }
 
@@ -451,6 +451,7 @@ android_library("content_javatests") {
     "//net/android:net_java_test_support",
     "//services/device/public/java:geolocation_java",
     "//services/device/public/java:geolocation_java_test_support",
+    "//services/device/public/mojom:mojom_java",
     "//services/service_manager/public/java:service_manager_java",
     "//services/test/echo/public/mojom:mojom_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
@@ -570,6 +571,7 @@ junit_binary("content_junit_tests") {
     "//media/mojo/mojom:mojom_java",
     "//mojo/public/java:bindings_java",
     "//mojo/public/mojom/base:base_java",
+    "//services/device/public/mojom:mojom_java",
     "//third_party/android_deps:androidx_test_core_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
     "//third_party/hamcrest:hamcrest_java",

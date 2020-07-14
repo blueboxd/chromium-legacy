@@ -42,8 +42,7 @@ namespace ml {
 
 namespace {
 // Count number of key, mouse and touch events in the past hour.
-constexpr base::TimeDelta kUserInputEventsDuration =
-    base::TimeDelta::FromMinutes(60);
+constexpr auto kUserInputEventsDuration = base::TimeDelta::FromHours(1);
 
 // Granularity of input events is per minute.
 constexpr int kNumUserInputEventsBuckets = kUserInputEventsDuration.InMinutes();

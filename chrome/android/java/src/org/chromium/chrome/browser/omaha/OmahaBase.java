@@ -176,8 +176,14 @@ public class OmahaBase {
         // Since this update check is synchronous and blocking on the network
         // connection, it should not be run on the UI thread.
         assert !ThreadUtils.runningOnUiThread();
+        Log.i(TAG,
+                "OmahaBase::checkForUpdates(): Current version String: \"" + getInstalledVersion()
+                        + "\"");
         // This is not available on developer builds.
         if (getRequestGenerator() == null) {
+            Log.w(TAG,
+                    "OmahaBase::checkForUpdates(): Request generator is null. This is probably "
+                            + "a developer build.");
             return UpdateStatus.FAILED;
         }
         // Create all the metadata needed for an Omaha request.
@@ -193,10 +199,14 @@ public class OmahaBase {
         VersionConfig versionConfig = generateAndPostRequest(
                 currentTimestamp, sessionID, currentRequest, timestampOfInstall);
         if (versionConfig == null) {
+            Log.w(TAG, "OmahaBase::checkForUpdates(): versionConfig parsed from response is null.");
             return (mRequestErrorCode == RequestFailureException.ERROR_CONNECTIVITY)
                     ? UpdateStatus.OFFLINE
                     : UpdateStatus.FAILED;
         }
+        Log.i(TAG,
+                "OmahaBase::checkForUpdates(): Received latest version String from Omaha "
+                        + "server: \"" + versionConfig.latestVersion + "\"");
         // Compare the current version with the latest received from the server.
         VersionNumber current = VersionNumber.fromString(getInstalledVersion());
         VersionNumber latest = VersionNumber.fromString(versionConfig.latestVersion);
@@ -320,9 +330,13 @@ public class OmahaBase {
                     installAgeInDays,
                     mVersionConfig == null ? UNKNOWN_DATE : mVersionConfig.serverDate,
                     currentRequest);
+            Log.i(TAG, "OmahaBase::generateAndPostRequest(): Sending request to Omaha:\n" + xml);
 
             // Send the request to the server & wait for a response.
             String response = postRequest(currentTimestamp, xml);
+            Log.i(TAG,
+                    "OmahaBase::generateAndPostRequest(): Received response from Omaha:\n"
+                            + response);
 
             // Parse out the response.
             String appId = getRequestGenerator().getAppId();

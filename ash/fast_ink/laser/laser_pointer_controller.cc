@@ -48,7 +48,9 @@ void LaserPointerController::SetEnabled(bool enabled) {
 }
 
 views::View* LaserPointerController::GetPointerView() const {
-  return laser_pointer_view_widget_->GetContentsView();
+  return laser_pointer_view_widget_
+             ? laser_pointer_view_widget_->GetContentsView()
+             : nullptr;
 }
 
 void LaserPointerController::CreatePointerView(

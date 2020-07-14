@@ -126,7 +126,9 @@ public class ShareDelegateImplIntegrationTest {
                 }
             };
 
-            new ShareDelegateImpl(mActivityTestRule.getActivity().getBottomSheetController(),
+            new ShareDelegateImpl(mActivityTestRule.getActivity()
+                                          .getRootUiCoordinatorForTesting()
+                                          .getBottomSheetController(),
                     mActivityTestRule.getActivity().getActivityTabProvider(), delegate, false)
                     .share(mActivityTestRule.getActivity().getActivityTab(), false);
         });

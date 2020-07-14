@@ -56,7 +56,7 @@ void ResourceLoadObserverForWorker::DidReceiveResponse(
   if (response.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(
         response, request.GetRequestContext(),
-        /*strict_mixed_content_checking_for_plugin=*/false,
+        WebMixedContent::CheckModeForPlugin::kLax,
         worker_fetch_context_->GetContentSecurityNotifier());
   }
   probe::DidReceiveResourceResponse(probe_, identifier, nullptr, response,

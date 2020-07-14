@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">избери</translation>
 <translation id="1859234291848436338">Насока на пишување</translation>
 <translation id="1860796786778352021">Затворање на известување</translation>
+<translation id="186476001994626254">Содржини од интернет за паметно лепење</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Избери ги &amp;сите</translation>
@@ -67,6 +68,7 @@
 <translation id="2570734079541893434">Управувајте со поставките</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{за 1 ч.}one{за # ч.}other{за # ч.}}</translation>
 <translation id="2583543531130364912">Калибрирање на екранот на допир</translation>
+<translation id="2586657967955657006">Табла со исечоци</translation>
 <translation id="2666092431469916601">Горе</translation>
 <translation id="2701330563083355633">Споделено од <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">Ново</translation>
@@ -74,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Отвори папка</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Пред 1 година}one{Пред # година}other{Пред # години}}</translation>
+<translation id="2878511608894704031">Избриши ги сите</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{за 1 д.}one{за # д.}other{за # д.}}</translation>
 <translation id="2931838996092594335">кликни</translation>
 <translation id="2981684127883932071">Се прикажуваат предлози</translation>
@@ -114,6 +117,7 @@
 <translation id="4289300219472526559">Започни со говорење</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> е преместена во папката <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">СИТЕ АПЛИКАЦИИ</translation>
+<translation id="4491109536499578614">Слика</translation>
 <translation id="4588090240171750605">Лизгај надесно</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, оцена со ѕвезди: <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, препорачана апликација</translation>
@@ -170,6 +174,7 @@
 <translation id="6417265370957905582">Помошник на Google</translation>
 <translation id="6430678249303439055">Блокирај ги сите известувања од апликацијава</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Пред 1 секунда}one{Пред # секунда}other{Пред # секунди}}</translation>
+<translation id="6503257047630241175">Содржини во RTF-формат</translation>
 <translation id="6539092367496845964">Нешто тргна наопаку. Обидете се повторно подоцна.</translation>
 <translation id="654149438358937226">Блокирај ги сите известувања</translation>
 <translation id="6567071839949112727">кликнете на претходникот</translation>

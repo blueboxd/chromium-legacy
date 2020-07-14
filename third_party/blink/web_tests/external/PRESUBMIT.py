@@ -38,6 +38,7 @@ def _LintWPT(input_api, output_api):
         'lint',
         '--repo-root=%s' % wpt_path,
         '--ignore-glob=*-expected.txt',
+        '--ignore-glob=DIR_METADATA',
     ] + paths_in_wpt
 
     proc = input_api.subprocess.Popen(

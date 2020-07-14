@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">設定を管理</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1時間}other{#時間}}</translation>
 <translation id="2583543531130364912">タッチスクリーンのキャリブレーション</translation>
+<translation id="2586657967955657006">クリップボード</translation>
 <translation id="2666092431469916601">一番上</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> から共有しました</translation>
 <translation id="271033894570825754">新しいファイル</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">読み上げを開始</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> をフォルダ <ph name="FOLDER_NAME" /> に移動しました。</translation>
 <translation id="4316910396681052118">すべてのアプリ</translation>
+<translation id="4491109536499578614">画像</translation>
 <translation id="4588090240171750605">右にスクロール</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />、評価 <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />、おすすめのアプリ</translation>

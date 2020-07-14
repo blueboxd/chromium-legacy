@@ -117,6 +117,7 @@ class P2PSocketDispatcherHost;
 class PermissionServiceContext;
 class PeerConnectionTrackerHost;
 class PluginRegistryImpl;
+class ProcessLock;
 class PushMessagingManager;
 class RenderFrameMessageFilter;
 class RenderProcessHostCreationObserver;
@@ -259,9 +260,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void SetIsUsed() override;
 
   bool HostHasNotBeenUsed() override;
-  void LockToOrigin(const IsolationContext& isolation_context,
-                    const GURL& lock_url) override;
-  bool IsLockedToOriginForTesting() override;
+  void SetProcessLock(const IsolationContext& isolation_context,
+                      const ProcessLock& process_lock) override;
+  bool IsProcessLockedForTesting() override;
   void BindCacheStorage(
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
@@ -332,19 +333,16 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void FilterURL(RenderProcessHost* rph, bool empty_allowed, GURL* url);
 
   // Returns true if |host| is suitable for rendering a page in the given
-  // |isolation_context|, where the page would utilize |site_url| as its
-  // SiteInstance site URL, and its process would be locked to |lock_url|.
-  // |site_url| and |lock_url| may differ in cases where an effective URL is
-  // not the actual site that the process is locked to, which happens for
-  // hosted apps. |is_guest| should be set to true if the call is being made
-  // for a <webview> guest SiteInstance.
-  // TODO(wjmaclean): Rethink |how site_url|/|lock_url| parameters are passed.
-  // |site_url| will probably become a SiteInfo, but whether we want to combine
-  // |lock_url| into that or keep it separate needs to be decided.
+  // |isolation_context|, where the page would utilize |site_info.site_url()| as
+  // its SiteInstance site URL, and its process would be locked to
+  // |site_info.lock_url()|. Site and lock urls may differ in cases where
+  // an effective URL is not the actual site that the process is locked to,
+  // which happens for hosted apps. |is_guest| should be set to true if the call
+  // is being made for a <webview> guest SiteInstance.
+  // TODO(wjmaclean): move is_guest into SiteInfo at some point.
   static bool IsSuitableHost(RenderProcessHost* host,
                              const IsolationContext& isolation_context,
-                             const GURL& site_url,
-                             const GURL& lock_url,
+                             const SiteInfo& site_info,
                              bool is_guest);
 
   // Returns an existing RenderProcessHost for |url| in |isolation_context|, if
@@ -358,13 +356,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const IsolationContext& isolation_context,
       const GURL& url);
 
-  // Variant of the above that takes in a SiteInstance site URL and the
-  // process's origin lock URL, when they are known. |is_guest| should be set
-  // to true if the call is being made for a <webview> guest SiteInstance.
+  // Variant of the above that takes in a SiteInfo. |is_guest| should be set to
+  // true if the call is being made for a <webview> guest SiteInstance.
+  // TODO(wjmaclean): Move is_guest into SiteInfo at some point.
   static RenderProcessHost* GetSoleProcessHostForSite(
       const IsolationContext& isolation_context,
       const SiteInfo& site_info,
-      const GURL& lock_url,
       const bool is_guest);
 
   // Registers the given |process| to be used for all sites identified by

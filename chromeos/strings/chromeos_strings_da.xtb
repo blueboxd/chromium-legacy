@@ -70,6 +70,7 @@
 <translation id="808894953321890993">Skift adgangskode</translation>
 <translation id="8208861521865154048">Fordele</translation>
 <translation id="8347227221149377169">Udskriftsjobs</translation>
+<translation id="8623849191266582420">Denne <ph name="DEVICE_TYPE" /> administreres af <ph name="ENROLLMENT_DOMAIN" />. Administratorer fjernkonfigurerer og overvåger muligvis enheden.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> administrerer denne bruger. Det kan administrere indstillinger via fjernadgang og overvåge brugeraktivitet.</translation>
 <translation id="871560550817059752">Handlingen mislykkedes – Mangler blæk</translation>
 <translation id="8747900814994928677">Bekræft ændring</translation>

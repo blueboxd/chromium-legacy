@@ -256,6 +256,8 @@ class CORE_EXPORT InspectorCSSAgent final
   void ResetNonPersistentData();
   InspectorStyleSheetForInlineStyle* AsInspectorStyleSheet(Element* element);
 
+  void TriggerFontsUpdatedForDocument(Document*);
+
   void UpdateActiveStyleSheets(Document*);
   void SetActiveStyleSheets(Document*,
                             const HeapVector<Member<CSSStyleSheet>>&);

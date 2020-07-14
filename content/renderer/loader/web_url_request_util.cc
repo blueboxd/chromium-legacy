@@ -264,7 +264,7 @@ blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
     const WebURLRequest& request) {
   return blink::WebMixedContent::ContextTypeFromRequestContext(
       request.GetRequestContext(),
-      /*strict_mixed_content_checking_for_plugin=*/false);
+      blink::WebMixedContent::CheckModeForPlugin::kLax);
 }
 
 #undef STATIC_ASSERT_ENUM

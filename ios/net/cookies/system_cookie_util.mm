@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/net/ios_net_buildflags.h"
 #include "net/cookies/cookie_constants.h"
 #include "url/gurl.h"
 
@@ -77,9 +76,6 @@ net::CanonicalCookie CanonicalCookieFromSystemCookie(
     NSHTTPCookie* cookie,
     const base::Time& ceation_time) {
   net::CookieSameSite same_site = net::CookieSameSite::NO_RESTRICTION;
-// TODO(crbug.com/1027279): Remove this once Cronet can have
-// iOS 13 symbols.
-#if !BUILDFLAG(CRONET_BUILD)
   if (@available(iOS 13, *)) {
     same_site = net::CookieSameSite::UNSPECIFIED;
     if ([cookie.sameSitePolicy isEqual:NSHTTPCookieSameSiteLax])
@@ -92,7 +88,6 @@ net::CanonicalCookie CanonicalCookieFromSystemCookie(
             isEqual:kNSHTTPCookieSameSiteNone])
       same_site = net::CookieSameSite::NO_RESTRICTION;
   }
-#endif
 
   return net::CanonicalCookie(
       base::SysNSStringToUTF8([cookie name]),
@@ -165,9 +160,6 @@ NSHTTPCookie* SystemCookieFromCanonicalCookie(
     [properties setObject:expiry forKey:NSHTTPCookieExpires];
   }
 
-// TODO(crbug.com/1027279): Remove this once Cronet can have
-// iOS 13 symbols.
-#if !BUILDFLAG(CRONET_BUILD)
   if (@available(iOS 13, *)) {
     // In iOS 13 sameSite property in NSHTTPCookie is used to specify the
     // samesite policy.
@@ -188,7 +180,6 @@ NSHTTPCookie* SystemCookieFromCanonicalCookie(
     }
     properties[NSHTTPCookieSameSitePolicy] = same_site;
   }
-#endif
 
   if (cookie.IsSecure())
     [properties setObject:@"Y" forKey:NSHTTPCookieSecure];

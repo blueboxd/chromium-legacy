@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">Хөрвүүлэлт (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Sheets</translation>
 <translation id="2938685643439809023">Монгол</translation>
-<translation id="2939410873710774399">Файлуудыг <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />) аппаар нээхийн тулд эхлээд тэдгээрийг <ph name="FOLDER_NAME" /> фолдер луу зөөнө үү.</translation>
 <translation id="2942290791863759244">Герман хэлний NEO 2 гар</translation>
 <translation id="2943400156390503548">Слайдууд</translation>
 <translation id="2943503720238418293">Богино нэр ашиглах</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> сонгогдсон зүйлс</translation>
 <translation id="4850886885716139402">Харах</translation>
 <translation id="485316830061041779">Герман</translation>
-<translation id="4859297381873413734">Файлуудыг <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />) аппаар нээхийн тулд эхлээд тэдгээрийг <ph name="FOLDER_NAME" /> фолдер луу хуулна уу.</translation>
 <translation id="4867079195717347957">Баганыг буурах дарааллаар эрэмбэлэхийн тулд товшино уу.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> байт</translation>
 <translation id="4880214202172289027">Дууны түвшин тохируулагч</translation>
 <translation id="4880520557730313061">Автоматаар-засах</translation>
 <translation id="4881695831933465202">Нээх</translation>
 <translation id="4886021172213954916">Тамил хэлний гар (бичгийн машин)</translation>
-<translation id="4892969127351273348"><ph name="APP_NAME" />-р нээх боломжгүй байна</translation>
 <translation id="4900532980794411603">Parallels Desktop-тай хуваалцах</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" />-г нөөцлөхөд бэлэн</translation>
 <translation id="4924638091161556692">Засагдсан</translation>

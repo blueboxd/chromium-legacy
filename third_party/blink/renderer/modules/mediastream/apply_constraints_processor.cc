@@ -259,7 +259,7 @@ blink::VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
   // values. However, initialize |settings| with the default values as a
   // fallback in case GetSettings returns nothing and leaves |settings|
   // unmodified.
-  blink::WebMediaStreamTrack::Settings settings;
+  MediaStreamTrackPlatform::Settings settings;
   settings.width = blink::MediaStreamVideoSource::kDefaultWidth;
   settings.height = blink::MediaStreamVideoSource::kDefaultHeight;
   settings.frame_rate = blink::MediaStreamVideoSource::kDefaultFrameRate;

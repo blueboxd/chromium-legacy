@@ -1262,7 +1262,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2537178555904266562">Produciuse un erro ao sincronizar os contrasinais</translation>
 <translation id="2537296579376733324">Todas as cookies, só neste sitio</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> pode ver e editar os seguintes ficheiros e cartafoles</translation>
-<translation id="2537464584626495441">Abre a aplicación da chave de seguranza no teléfono</translation>
 <translation id="2537927931785713436">Comprobando imaxe da máquina virtual</translation>
 <translation id="2538361623464451692">Desactivouse a sincronización</translation>
 <translation id="2540449034743108469">Para escoitar as actividades da extensión, preme Iniciar</translation>
@@ -3015,7 +3014,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4763408175235639573">Establecéronse as seguintes cookies cando visualizaches esta páxina</translation>
 <translation id="4765582662863429759">Permite que a aplicación Mensaxes Android transmita as mensaxes do teu teléfono ao Chromebook</translation>
 <translation id="4768332406694066911">Tes certificados destas organizacións que te identifican</translation>
-<translation id="4774824109040330448">Escanea o código QR cunha aplicación de autenticación compatible do teu teléfono.</translation>
 <translation id="4776917500594043016">Contrasinal de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4777943778632837590">Configurar servidores de nomes de redes</translation>
@@ -4220,7 +4218,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6298962879096096191">Utiliza Google Play para instalar aplicacións Android</translation>
 <translation id="630065524203833229">Sa&amp;ír</translation>
 <translation id="6300718114348072351"><ph name="PRINTER_NAME" /> non se puido configurar automaticamente. Indica os detalles avanzados da impresora. <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
-<translation id="6301974545577285230">Cambiouse correctamente o contrasinal vulnerado. Comproba os teus contrasinais en calquera momento en Configuración.</translation>
 <translation id="630292539633944562">Suxestións de información persoal</translation>
 <translation id="6305607932814307878">Política global:</translation>
 <translation id="6307990684951724544">Sistema ocupado</translation>
@@ -5057,7 +5054,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7377451353532943397">Continuar bloqueando o acceso aos sensores</translation>
 <translation id="73786666777299047">Abrir Chrome Web Store</translation>
 <translation id="7378812711085314936">Conseguir conexión de datos</translation>
-<translation id="7378962964415201590">Vincular novo teléfono</translation>
 <translation id="7380768571499464492">Actualizouse a impresora <ph name="PRINTER_NAME" /></translation>
 <translation id="7384687527486377545">Repetición automática do teclado</translation>
 <translation id="7385854874724088939">Produciuse un erro ao tentar imprimir. Comproba a túa impresora e téntao de novo.</translation>

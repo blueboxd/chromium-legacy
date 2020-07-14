@@ -23,7 +23,7 @@ logging.basicConfig(
 def _call_profdata_tool(profile_input_file_paths,
                         profile_output_file_path,
                         profdata_tool_path,
-                        sparse=True):
+                        sparse=False):
   """Calls the llvm-profdata tool.
 
   Args:
@@ -82,7 +82,7 @@ def _get_profile_paths(input_dir,
 
 def _validate_and_convert_profraws(profraw_files,
                                    profdata_tool_path,
-                                   sparse=True):
+                                   sparse=False):
   """Validates and converts profraws to profdatas.
 
   For each given .profraw file in the input, this method first validates it by
@@ -135,7 +135,7 @@ def _validate_and_convert_profraws(profraw_files,
 
 def _validate_and_convert_profraw(profraw_file, output_profdata_files,
                                   invalid_profraw_files, counter_overflows,
-                                  profdata_tool_path, sparse=True):
+                                  profdata_tool_path, sparse=False):
   output_profdata_file = profraw_file.replace('.profraw', '.profdata')
   subprocess_cmd = [
       profdata_tool_path,
@@ -223,7 +223,7 @@ def merge_profiles(input_dir,
                    input_extension,
                    profdata_tool_path,
                    input_filename_pattern='.*',
-                   sparse=True,
+                   sparse=False,
                    skip_validation=False):
   """Merges the profiles produced by the shards using llvm-profdata.
 

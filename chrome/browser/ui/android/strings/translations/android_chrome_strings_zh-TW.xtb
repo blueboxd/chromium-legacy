@@ -209,7 +209,6 @@
 <translation id="2650751991977523696">要再次下載檔案嗎？</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# 個音訊檔案}other{# 個音訊檔案}}</translation>
 <translation id="2656405586795711023">網頁應用程式</translation>
-<translation id="2677748264148917807">離開</translation>
 <translation id="2689830683995595741">使用 Chrome 即表示您同意《<ph name="BEGIN_LINK1" />Google 服務條款<ph name="END_LINK1" />》以及 <ph name="BEGIN_LINK2" />Google Chrome 和 Chrome 作業系統的《附加服務條款》<ph name="END_LINK2" />。您也必須遵守《<ph name="BEGIN_LINK3" />透過 Family Link 管理的 Google 帳戶所適用的隱私權聲明<ph name="END_LINK3" />》。</translation>
 <translation id="2707726405694321444">重新整理頁面</translation>
 <translation id="2709516037105925701">自動填入</translation>
@@ -290,6 +289,7 @@
 <translation id="3303414029551471755">繼續下載這項內容？</translation>
 <translation id="3306398118552023113">Chrome 正在執行這個應用程式</translation>
 <translation id="3315103659806849044">你正在自訂同步功能和 Google 服務設定。如要完成開啟同步功能，請輕觸畫面底部附近的 [確認] 按鈕。向上瀏覽</translation>
+<translation id="3320630259304269485">安全瀏覽功能 (可防範不安全的網站) 和其他安全性設定</translation>
 <translation id="3328801116991980348">網站資訊</translation>
 <translation id="3333961966071413176">所有聯絡人</translation>
 <translation id="3334729583274622784">是否要變更副檔名？</translation>
@@ -306,6 +306,7 @@
 <translation id="3389286852084373014">文字過多</translation>
 <translation id="3398320232533725830">開啟書籤管理員</translation>
 <translation id="3414952576877147120">空間大小：</translation>
+<translation id="3435738964857648380">安全性</translation>
 <translation id="3443221991560634068">重新載入目前網頁</translation>
 <translation id="3478363558367712427">你可以選擇搜尋引擎</translation>
 <translation id="3492207499832628349">新無痕式分頁</translation>
@@ -534,7 +535,6 @@
 <translation id="5355191726083956201">已啟用強化防護功能</translation>
 <translation id="5357811892247919462">已收到分頁</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{已開啟 <ph name="OPEN_TABS_ONE" /> 個分頁，輕觸即可切換分頁}other{已開啟 <ph name="OPEN_TABS_MANY" /> 個分頁，輕觸即可切換分頁}}</translation>
-<translation id="5384883051496921101">這個網站即將與外部應用程式分享資訊，分享時會自動退出無痕模式。</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(還有 1 個)}other{(還有 # 個)}}</translation>
 <translation id="5403592356182871684">名稱</translation>
 <translation id="5403644198645076998">只允許特定網站</translation>
@@ -705,7 +705,6 @@
 <translation id="6593061639179217415">電腦版網站</translation>
 <translation id="6597891566292541626">將這個方框對準 QR 圖碼/條碼。</translation>
 <translation id="6600954340915313787">已複製到 Chrome</translation>
-<translation id="662080504995468778">不離開</translation>
 <translation id="6627583120233659107">編輯資料夾</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6643649862576733715">依儲存資料量排序</translation>
@@ -988,7 +987,6 @@
 <translation id="8922289737868596582">透過「更多選項」按鈕下載網頁，以便離線存取</translation>
 <translation id="8937772741022875483">要將你的 Chrome 活動記錄從數位健康中移除嗎？</translation>
 <translation id="8942627711005830162">在其他視窗中開啟</translation>
-<translation id="894871326938397531">要退出無痕模式嗎？</translation>
 <translation id="8951232171465285730">Chrome 為你節省了 <ph name="MEGABYTES" /> MB</translation>
 <translation id="8965591936373831584">正在等待下載</translation>
 <translation id="8970887620466824814">發生錯誤。</translation>
@@ -999,6 +997,7 @@
 <translation id="9028914725102941583">開啟同步功能即可將內容分享至其他裝置</translation>
 <translation id="9040142327097499898">允許顯示通知。這部裝置的定位功能已關閉。</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# 部影片}other{# 部影片}}</translation>
+<translation id="9042893549633094279">隱私權和安全性</translation>
 <translation id="9050666287014529139">通關密語</translation>
 <translation id="9063523880881406963">關閉「要求電腦版網站」</translation>
 <translation id="9065203028668620118">編輯</translation>

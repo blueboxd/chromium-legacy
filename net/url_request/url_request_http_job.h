@@ -181,7 +181,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
                          std::string cookie_string,
                          CookieAccessResult access_result);
   int num_cookie_lines_left_;
-  CookieAndLineStatusList set_cookie_status_list_;
+  CookieAndLineAccessResultList set_cookie_access_result_list_;
 
   // Some servers send the body compressed, but specify the content length as
   // the uncompressed size. If this is the case, we return true in order

@@ -579,8 +579,7 @@ void ObjectPainterBase::PaintOutlineRects(
     return;
   }
 
-  IntRect united_outline_rect =
-      UnionRectEvenIfEmpty(pixel_snapped_outline_rects);
+  IntRect united_outline_rect = UnionRect(pixel_snapped_outline_rects);
   if (united_outline_rect == pixel_snapped_outline_rects[0]) {
     PaintSingleRectangleOutline(paint_info, united_outline_rect, style, color);
     return;

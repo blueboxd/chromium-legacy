@@ -288,14 +288,12 @@ bool GetWWWSubDomainMatch(const GURL& request_url,
           !HostNameHasKnownTLD(dns_name)) {
         continue;
       } else if (dns_name.length() > host_name.length()) {
-        if (url_formatter::StripWWW(base::ASCIIToUTF16(dns_name)) ==
-            base::ASCIIToUTF16(host_name)) {
+        if (url_formatter::StripWWW(dns_name) == host_name) {
           *www_match_host_name = dns_name;
           return true;
         }
       } else {
-        if (url_formatter::StripWWW(base::ASCIIToUTF16(host_name)) ==
-            base::ASCIIToUTF16(dns_name)) {
+        if (url_formatter::StripWWW(host_name) == dns_name) {
           *www_match_host_name = dns_name;
           return true;
         }

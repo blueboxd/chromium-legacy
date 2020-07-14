@@ -5,11 +5,14 @@
 package org.chromium.chrome.browser.safety_check;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import android.support.test.InstrumentationRegistry;
 
 import androidx.preference.Preference;
 import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -18,6 +21,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SafeBrowsingState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.UpdatesState;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
@@ -44,6 +49,35 @@ public class SafetyCheckSettingsFragmentTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+    }
+
+    @Test
+    @SmallTest
+    public void testGetSafetyCheckSettingsElementTitleNew() {
+        SharedPreferencesManager preferenceManager = SharedPreferencesManager.getInstance();
+        // The "NEW" label should still be shown after one run.
+        preferenceManager.writeInt(ChromePreferenceKeys.SETTINGS_SAFETY_CHECK_RUN_COUNTER, 1);
+        String title = SafetyCheckSettingsFragment
+                               .getSafetyCheckSettingsElementTitle(
+                                       InstrumentationRegistry.getTargetContext())
+                               .toString();
+        assertTrue(title.contains("New"));
+    }
+
+    @Test
+    @SmallTest
+    public void testGetSafetyCheckSettingsElementTitleNoNew() {
+        SharedPreferencesManager preferenceManager = SharedPreferencesManager.getInstance();
+        // The "NEW" label disappears after 3 runs.
+        preferenceManager.writeInt(ChromePreferenceKeys.SETTINGS_SAFETY_CHECK_RUN_COUNTER, 3);
+        String title = SafetyCheckSettingsFragment
+                               .getSafetyCheckSettingsElementTitle(
+                                       InstrumentationRegistry.getTargetContext())
+                               .toString();
+        assertFalse(title.contains("New"));
+    }
+
+    private void createFragmentAndModel() {
         mSettingsActivityTestRule.startSettingsActivity();
         mFragment = (SafetyCheckSettingsFragment) mSettingsActivityTestRule.getFragment();
         mModel = SafetyCheckCoordinator.createModelAndMcp(mFragment);
@@ -52,24 +86,20 @@ public class SafetyCheckSettingsFragmentTest {
     @Test
     @MediumTest
     public void testNullStateDisplayedCorrectly() {
+        createFragmentAndModel();
         Preference passwords = mFragment.findPreference(PASSWORDS);
         Preference safeBrowsing = mFragment.findPreference(SAFE_BROWSING);
         Preference updates = mFragment.findPreference(UPDATES);
 
-        assertEquals(InstrumentationRegistry.getTargetContext().getString(
-                             R.string.safety_check_unchecked),
-                passwords.getSummary());
-        assertEquals(InstrumentationRegistry.getTargetContext().getString(
-                             R.string.safety_check_unchecked),
-                safeBrowsing.getSummary());
-        assertEquals(InstrumentationRegistry.getTargetContext().getString(
-                             R.string.safety_check_unchecked),
-                updates.getSummary());
+        assertEquals("", passwords.getSummary());
+        assertEquals("", safeBrowsing.getSummary());
+        assertEquals("", updates.getSummary());
     }
 
     @Test
     @MediumTest
     public void testStateChangeDisplayedCorrectly() {
+        createFragmentAndModel();
         Preference passwords = mFragment.findPreference(PASSWORDS);
         Preference safeBrowsing = mFragment.findPreference(SAFE_BROWSING);
         Preference updates = mFragment.findPreference(UPDATES);
@@ -82,12 +112,8 @@ public class SafetyCheckSettingsFragmentTest {
             mModel.set(SafetyCheckProperties.UPDATES_STATE, UpdatesState.OUTDATED);
         });
 
-        assertEquals(InstrumentationRegistry.getTargetContext().getString(
-                             R.string.safety_check_unchecked),
-                passwords.getSummary());
-        assertEquals(InstrumentationRegistry.getTargetContext().getString(
-                             R.string.safety_check_checking),
-                safeBrowsing.getSummary());
+        assertEquals("", passwords.getSummary());
+        assertEquals("", safeBrowsing.getSummary());
         assertEquals(InstrumentationRegistry.getTargetContext().getString(
                              R.string.safety_check_updates_outdated),
                 updates.getSummary());

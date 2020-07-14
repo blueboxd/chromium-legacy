@@ -858,8 +858,9 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // TODO(creis): Remove this check after we've gathered enough information to
   // debug issues with browser-side security checks. https://crbug.com/931895.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  const GURL& lock_url = navigation_rfh->GetSiteInstance()->lock_url();
-  if (lock_url != GURL(kUnreachableWebDataURL) &&
+  const ProcessLock process_lock =
+      navigation_rfh->GetSiteInstance()->GetProcessLock();
+  if (process_lock != ProcessLock::CreateForErrorPage() &&
       request->common_params().url.IsStandard() &&
       !policy->CanAccessDataForOrigin(navigation_rfh->GetProcess()->GetID(),
                                       request->common_params().url) &&
@@ -867,7 +868,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("lock_url",
                                             base::debug::CrashKeySize::Size64),
-        lock_url.possibly_invalid_spec());
+        process_lock.ToString());
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("commit_origin",
                                             base::debug::CrashKeySize::Size64),
@@ -880,8 +881,9 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
         base::debug::AllocateCrashKeyString("use_current_rfh",
                                             base::debug::CrashKeySize::Size32),
         use_current_rfh ? "true" : "false");
-    NOTREACHED() << "Picked an incompatible process for URL: " << lock_url
-                 << " lock vs " << request->common_params().url.GetOrigin();
+    NOTREACHED() << "Picked an incompatible process for URL: "
+                 << process_lock.lock_url() << " lock vs "
+                 << request->common_params().url.GetOrigin();
     base::debug::DumpWithoutCrashing();
   }
 

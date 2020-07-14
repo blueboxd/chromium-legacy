@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">tanlash</translation>
 <translation id="1859234291848436338">Yozuv yo‘nalishi</translation>
 <translation id="1860796786778352021">Bildirishnomani yopish</translation>
+<translation id="186476001994626254">Internetdan smart joylangan kontent</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Hammasini belgilash</translation>
@@ -67,6 +68,7 @@
 <translation id="2570734079541893434">Sozlamalarni boshqarish</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 soatdan keyin}other{# soatdan keyin}}</translation>
 <translation id="2583543531130364912">Sensorli ekranni kalibrlang</translation>
+<translation id="2586657967955657006">Klipbord</translation>
 <translation id="2666092431469916601">Tepaga</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> orqali ulashilgan</translation>
 <translation id="271033894570825754">Yangi</translation>
@@ -74,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Jildni ochish</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 yil oldin}other{# yil oldin}}</translation>
+<translation id="2878511608894704031">Hammasini tozalash</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 kundan keyin}other{# kundan keyin}}</translation>
 <translation id="2931838996092594335">bosish</translation>
 <translation id="2981684127883932071">Takliflar chiqarildi</translation>
@@ -114,6 +117,7 @@
 <translation id="4289300219472526559">Gapirishni boshlang</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> ilovasi <ph name="FOLDER_NAME" /> jildiga olindi.</translation>
 <translation id="4316910396681052118">BARCHA ILOVALAR</translation>
+<translation id="4491109536499578614">Tasvir</translation>
 <translation id="4588090240171750605">O‘ngga aylantirish</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Bahosi: <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Ilova tavsiyasi</translation>
@@ -170,6 +174,7 @@
 <translation id="6417265370957905582">Google Assistent</translation>
 <translation id="6430678249303439055">Bu ilovadagi barcha bildirishnomalar bloklansin</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 soniya oldin}other{# soniya oldin}}</translation>
+<translation id="6503257047630241175">RTF kontent</translation>
 <translation id="6539092367496845964">Xatolik yuz berdi. Keyinroq qaytadan urining.</translation>
 <translation id="654149438358937226">Barcha bildirishnomalar bloklansin</translation>
 <translation id="6567071839949112727">yuqori darajali obyekt ustiga bosish</translation>

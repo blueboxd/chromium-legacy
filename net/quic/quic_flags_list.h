@@ -49,11 +49,6 @@ QUIC_FLAG(double, FLAGS_quic_bbr_rtt_variation_weight, 0.0f)
 // Congestion window gain for QUIC BBR during PROBE_BW phase.
 QUIC_FLAG(double, FLAGS_quic_bbr_cwnd_gain, 2.0f)
 
-// If true, adjust congestion window when doing bandwidth resumption in BBR.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_fix_bbr_cwnd_in_bandwidth_resumption,
-          true)
-
 // When true, defaults to BBR congestion control instead of Cubic.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_to_bbr, false)
 
@@ -186,16 +181,8 @@ QUIC_FLAG(int32_t,
           FLAGS_quic_max_aggressive_retransmittable_on_wire_ping_count,
           0)
 
-// If true, re-calculate pacing rate when cwnd gets bootstrapped.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_fix_pacing_rate, true)
-
 // The maximum congestion window in packets.
 QUIC_FLAG(int32_t, FLAGS_quic_max_congestion_window, 2000)
-
-// If true, do not inject bandwidth in BbrSender::AdjustNetworkParameters.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bbr_donot_inject_bandwidth,
-          true)
 
 // The default minimum duration for BBRv2-native probes, in milliseconds.
 QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_probe_bw_base_duration_ms, 2000)
@@ -244,12 +231,6 @@ QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_testonly_default_false, false)
 
 // A testonly restart flag that will always default to true.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_testonly_default_true, true)
-
-// In BBR, slow pacing rate if it is likely causing overshoot.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_bbr_mitigate_overly_large_bandwidth_sample,
-    true)
 
 // The default initial value of the max ack height filter's window length.
 QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_initial_ack_height_filter_window, 10)
@@ -323,10 +304,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_always_send_earliest_ack, true)
 // If true, disable QUIC version h3-T050.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_t050, false)
 
-// If true, do not arm PTO on half RTT packets if they are the only ones in
-// flight.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_server_pto_timeout, true)
-
 // If true, default-enable 5RTO blachole detection.
 QUIC_FLAG(
     bool,
@@ -369,10 +346,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_gquic_stream_type, true)
 // packet containing the CHLO will still be padded.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_dont_pad_chlo, false)
 
-// If true, include MinPlaintextPacketSize when determine whether removing soft
-// limit for crypto frames.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_min_crypto_frame_size, true)
-
 // When true, QuicDispatcher supports decapsulation of Legacy Version
 // Encapsulation packets.
 QUIC_FLAG(
@@ -382,10 +355,6 @@ QUIC_FLAG(
 
 // If true, update packet size when the first frame gets queued.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_update_packet_size, false)
-
-// If true, use 0 as ack_delay when calculate PTO timeout for INITIAL and
-// HANDSHAKE packet number space.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_pto_timeout, true)
 
 // If true, consider frame expansion when calculating extra padding bytes to
 // meet minimum plaintext packet size required for header protection.

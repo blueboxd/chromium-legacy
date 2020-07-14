@@ -40,7 +40,7 @@
       u'DisableSpdy': True,
       u'DisabledPlugins': [u'*Viewer'],
       u'DnsPrefetchingEnabled': False,
-      u'ExtensionInstallBlacklist': [u'*'],
+      u'ExtensionInstallBlocklist': [u'*'],
       u'ExtensionInstallForcelist': [
         (u'kcnhkahnjcbndmmehfkdnkjomaanaooo;'
          'https://clients2.google.com/service/update2/crx'),
@@ -104,7 +104,7 @@
       u'Disable3DAPIs': True,
       u'DisabledPlugins': [u'Chrome PDF Viewer'],
       u'DnsPrefetchingEnabled': True,
-      u'ExtensionInstallBlacklist': [
+      u'ExtensionInstallBlocklist': [
         u'khgabmflimjjbclkmljlpmgaleanedem',
         u'boidnimkebefpfgbeekbjoponilnomle'],
       u'ExtensionInstallForcelist': [
@@ -184,7 +184,7 @@
       u'DefaultSearchProviderKeyword': u'mis',
       u'DnsPrefetchingEnabled': True,
       u'DisabledPlugins': [u'Shockwave Flash'],
-      u'ExtensionInstallBlacklist': [u'*'],
+      u'ExtensionInstallBlocklist': [u'*'],
       u'AlternateErrorPagesEnabled': True,
       u'HomepageLocation': u'http://finance.yahoo.com',
       u'SyncDisabled': False,
@@ -218,7 +218,7 @@
         u'O3D Plugin',
         u'Shockwave Flash'],
       u'DnsPrefetchingEnabled': True,
-      u'ExtensionInstallBlacklist': [u'*'],
+      u'ExtensionInstallBlocklist': [u'*'],
       u'ExtensionInstallForcelist': [
         (u'kcnhkahnjcbndmmehfkdnkjomaanaooo;'
          'https://clients2.google.com/service/update2/crx'),
@@ -291,7 +291,7 @@
       u'DisableSpdy': True,
       u'DisabledPlugins': [u'*Viewer'],
       u'DnsPrefetchingEnabled': False,
-      u'ExtensionInstallBlacklist': [u'*'],
+      u'ExtensionInstallBlocklist': [u'*'],
       u'ExtensionInstallForcelist': [
         (u'kcnhkahnjcbndmmehfkdnkjomaanaooo;'
          'https://clients2.google.com/service/update2/crx'),
@@ -355,7 +355,7 @@
       u'Disable3DAPIs': True,
       u'DisabledPlugins': [u'Chrome PDF Viewer'],
       u'DnsPrefetchingEnabled': True,
-      u'ExtensionInstallBlacklist': [
+      u'ExtensionInstallBlocklist': [
         u'khgabmflimjjbclkmljlpmgaleanedem',
         u'boidnimkebefpfgbeekbjoponilnomle'],
       u'ExtensionInstallForcelist': [
@@ -435,7 +435,7 @@
       u'DefaultSearchProviderKeyword': u'mis',
       u'DnsPrefetchingEnabled': True,
       u'DisabledPlugins': [u'Shockwave Flash'],
-      u'ExtensionInstallBlacklist': [u'*'],
+      u'ExtensionInstallBlocklist': [u'*'],
       u'AlternateErrorPagesEnabled': True,
       u'HomepageLocation': u'http://finance.yahoo.com',
       u'SyncDisabled': False,
@@ -469,7 +469,7 @@
         u'O3D Plugin',
         u'Shockwave Flash'],
       u'DnsPrefetchingEnabled': True,
-      u'ExtensionInstallBlacklist': [u'*'],
+      u'ExtensionInstallBlocklist': [u'*'],
       u'ExtensionInstallForcelist': [
         (u'kcnhkahnjcbndmmehfkdnkjomaanaooo;'
          'https://clients2.google.com/service/update2/crx'),

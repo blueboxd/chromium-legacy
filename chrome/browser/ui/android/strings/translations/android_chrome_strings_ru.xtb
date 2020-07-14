@@ -209,7 +209,6 @@
 <translation id="2650751991977523696">Скачать файл ещё раз?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиофайл}one{# аудиофайл}few{# аудиофайла}many{# аудиофайлов}other{# аудиофайла}}</translation>
 <translation id="2656405586795711023">Веб-приложения</translation>
-<translation id="2677748264148917807">Закрыть</translation>
 <translation id="2689830683995595741">Используя Chrome, вы принимаете <ph name="BEGIN_LINK1" />Условия использования Google<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Дополнительные условия использования Chrome и Chrome OS<ph name="END_LINK2" />. Кроме этих документов, также действует <ph name="BEGIN_LINK3" />Примечание о конфиденциальности данных в аккаунтах Google, управляемых с помощью Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">Обновить страницу</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
@@ -290,6 +289,7 @@
 <translation id="3303414029551471755">Скачать?</translation>
 <translation id="3306398118552023113">Это приложение запущено в Chrome.</translation>
 <translation id="3315103659806849044">Сейчас вы находитесь на странице настроек сервисов Google и синхронизации. Чтобы включить синхронизацию, нажмите кнопку "Подтвердить" в нижней части экрана. Перейти вверх</translation>
+<translation id="3320630259304269485">Безопасный просмотр (защита от опасных сайтов) и другие настройки безопасности</translation>
 <translation id="3328801116991980348">Информация о сайте</translation>
 <translation id="3333961966071413176">Все контакты</translation>
 <translation id="3334729583274622784">Изменить расширение имени файла?</translation>
@@ -306,6 +306,7 @@
 <translation id="3389286852084373014">Сообщение слишком длинное</translation>
 <translation id="3398320232533725830">Открыть диспетчер закладок</translation>
 <translation id="3414952576877147120">Размер:</translation>
+<translation id="3435738964857648380">Безопасность</translation>
 <translation id="3443221991560634068">Обновить страницу</translation>
 <translation id="3478363558367712427">Вы можете выбрать другую поисковую систему.</translation>
 <translation id="3492207499832628349">Новая вкладка инкогнито</translation>
@@ -534,7 +535,6 @@
 <translation id="5355191726083956201">Улучшенная защита включена.</translation>
 <translation id="5357811892247919462">Вкладка получена.</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{Открыта <ph name="OPEN_TABS_ONE" /> вкладка. Нажмите для переключения.}one{Открыта <ph name="OPEN_TABS_MANY" /> вкладка. Нажмите для переключения.}few{Открыто <ph name="OPEN_TABS_MANY" /> вкладки. Нажмите для переключения.}many{Открыто <ph name="OPEN_TABS_MANY" /> вкладок. Нажмите для переключения.}other{Открыто <ph name="OPEN_TABS_MANY" /> вкладки. Нажмите для переключения.}}</translation>
-<translation id="5384883051496921101">Этот сайт передает информацию стороннему приложению, пока вы в режиме инкогнито.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(и ещё 1)}one{(и ещё #)}few{(и ещё #)}many{(и ещё #)}other{(и ещё #)}}</translation>
 <translation id="5403592356182871684">Имена</translation>
 <translation id="5403644198645076998">Разрешить доступ только к определенным сайтам</translation>
@@ -705,7 +705,6 @@
 <translation id="6593061639179217415">Версия для ПК</translation>
 <translation id="6597891566292541626">Поместите QR-код или штрихкод в эту рамку.</translation>
 <translation id="6600954340915313787">Скопировано в Chrome</translation>
-<translation id="662080504995468778">Остаться</translation>
 <translation id="6627583120233659107">Изменить папку</translation>
 <translation id="6643016212128521049">Удалить</translation>
 <translation id="6643649862576733715">Сортировать по объему сохраненного трафика</translation>
@@ -988,7 +987,6 @@
 <translation id="8922289737868596582">Скачивайте страницы через меню кнопки "Ещё" и открывайте их без подключения к Интернету</translation>
 <translation id="8937772741022875483">Удалить данные о ваших действиях в Chrome из сервиса "Цифровое благополучие"?</translation>
 <translation id="8942627711005830162">Открыть в новом окне</translation>
-<translation id="894871326938397531">Выйти из режима инкогнито?</translation>
 <translation id="8951232171465285730">Благодаря Chrome вы сэкономили <ph name="MEGABYTES" /> МБ свободного места</translation>
 <translation id="8965591936373831584">ожидание</translation>
 <translation id="8970887620466824814">Произошла ошибка</translation>
@@ -999,6 +997,7 @@
 <translation id="9028914725102941583">Включите синхронизацию</translation>
 <translation id="9040142327097499898">Отправка уведомлений разрешена, но определение местоположения отключено.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# видеофайл}one{# видеофайл}few{# видеофайла}many{# видеофайлов}other{# видеофайла}}</translation>
+<translation id="9042893549633094279">Конфиденциальность и безопасность</translation>
 <translation id="9050666287014529139">Кодовая фраза</translation>
 <translation id="9063523880881406963">Выключить полную версию сайта</translation>
 <translation id="9065203028668620118">Изменить</translation>

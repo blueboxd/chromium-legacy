@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">管理設定</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 小時內}other{# 小時內}}</translation>
 <translation id="2583543531130364912">校正觸控螢幕</translation>
+<translation id="2586657967955657006">剪貼簿</translation>
 <translation id="2666092431469916601">置頂</translation>
 <translation id="2701330563083355633">透過 <ph name="DEVICE_NAME" /> 分享</translation>
 <translation id="271033894570825754">新</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">Start Speaking</translation>
 <translation id="430191667033048642">已將「<ph name="MOVED_APP_NAME" />」移至「<ph name="FOLDER_NAME" />」資料夾。</translation>
 <translation id="4316910396681052118">所有應用程式</translation>
+<translation id="4491109536499578614">圖片</translation>
 <translation id="4588090240171750605">向右捲動</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />，星級評等 <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />，推薦的應用程式</translation>

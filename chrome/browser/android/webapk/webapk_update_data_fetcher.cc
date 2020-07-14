@@ -280,7 +280,7 @@ void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
       java_primary_icon_url, java_primary_icon_murmur2_hash, java_primary_icon,
       java_is_primary_icon_maskable, java_splash_icon_url,
       java_splash_icon_murmur2_hash, java_splash_icon, java_icon_urls,
-      static_cast<int>(info_.display), info_.orientation,
+      static_cast<int>(info_.display), static_cast<int>(info_.orientation),
       OptionalSkColorToJavaColor(info_.theme_color),
       OptionalSkColorToJavaColor(info_.background_color), java_share_action,
       java_share_params_title, java_share_params_text,

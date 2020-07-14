@@ -1168,6 +1168,7 @@ if (!is_android) {
       "../browser/ssl/crlset_browsertest.cc",
       "../browser/ssl/known_interception_disclosure_infobar_browsertest.cc",
       "../browser/ssl/known_interception_disclosure_ui_browsertest.cc",
+      "../browser/ssl/ocsp_browsertest.cc",
       "../browser/ssl/security_state_tab_helper_browsertest.cc",
       "../browser/ssl/ssl_browsertest.cc",
       "../browser/ssl/ssl_client_certificate_selector_test.cc",
@@ -4340,8 +4341,8 @@ test("unit_tests") {
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
       "//chrome/browser/resource_coordinator/tab_ranker:tab_features_test_helper",
       "//chrome/services/sharing:unit_tests",
+      "//chrome/services/sharing/nearby/decoder:unit_tests",
       "//chrome/services/sharing/nearby/platform_v2:unit_tests",
-      "//chrome/services/sharing/nearby_decoder:unit_tests",
       "//chrome/services/sharing/public/cpp:unit_tests",
       "//chrome/services/speech:unit_tests",
       "//components/chrome_cleaner/test:test_name_helper",
@@ -6001,11 +6002,15 @@ if (!is_android) {
     ]
 
     if (include_js_tests) {
-      deps += [ "//chrome/test/data/webui:interactive_ui_tests_js_webui" ]
+      deps += [
+        "//chrome/test/data/webui:interactive_ui_tests_js_mojo_lite_webui",
+        "//chrome/test/data/webui:interactive_ui_tests_js_webui",
+      ]
     }
 
     # Runtime dependencies
     data_deps = [
+      "//chrome:browser_tests_pak",
       "//ppapi:ppapi_tests",
       "//testing/buildbot/filters:interactive_ui_tests_filters",
       "//third_party/mesa_headers",

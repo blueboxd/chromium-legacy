@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1005230401424685968">YYYY</translation>
+<translation id="1013952917065545813">您只需回到这里，便可轻松地重新打开最近关闭的标签页</translation>
 <translation id="1016495303386450659">书签已更新</translation>
 <translation id="1044891598689252897">网站将能够正常运行</translation>
 <translation id="1047726139967079566">为此页添加书签...</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">停止</translation>
 <translation id="1283524564873030414">过去 24 小时</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
+<translation id="1321993286294231467">保存图片时出错。</translation>
 <translation id="1323735185997015385">删除</translation>
 <translation id="132683371494960526">点按两次即可更改父文件夹。</translation>
 <translation id="1340643665687018190">关闭菜单</translation>
@@ -560,6 +562,7 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="766891008101699113">要以私密方式浏览网页，请添加新标签页。</translation>
 <translation id="7671141431838911305">安装</translation>
+<translation id="7701040980221191251">无</translation>
 <translation id="7765158879357617694">移动</translation>
 <translation id="7771470029643830783">退出帐号后，您的书签、历史记录、密码及其他 Chrome 数据将不再同步到您的 Google 帐号中。
 

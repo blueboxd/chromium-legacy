@@ -50,7 +50,7 @@ public class ScrimTest {
         final ChromeTabbedActivity activity = mActivityTestRule.getActivity();
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mSheetController = activity.getBottomSheetController();
+            mSheetController = activity.getRootUiCoordinatorForTesting().getBottomSheetController();
             mScrim = activity.getScrim();
         });
     }

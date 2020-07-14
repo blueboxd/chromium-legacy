@@ -34,7 +34,7 @@ sort_headers = __import__('sort-headers')
 import sort_sources
 
 
-HANDLED_EXTENSIONS = ['.cc', '.mm', '.h', '.hh', '.cpp']
+HANDLED_EXTENSIONS = ['.cc', '.mm', '.h', '.hh', '.cpp', '.mojom']
 
 
 def IsHandledFile(path):
@@ -87,6 +87,35 @@ def MoveFile(from_path, to_path):
     raise Exception('Fatal: Failed to run git mv command.')
 
 
+def UpdateIncludes(from_path, to_path, in_blink):
+  """Updates any includes of |from_path| to |to_path|. Paths supplied to this
+  function have been mapped to forward slashes.
+  """
+  from_include_path = from_path
+  to_include_path = to_path
+  if in_blink:
+    from_include_path = UpdateIncludePathForBlink(from_include_path)
+    to_include_path = UpdateIncludePathForBlink(to_include_path)
+
+  # This handles three types of include/imports:
+  # . C++ includes.
+  # . Object-C imports
+  # . Imports in mojom files.
+  files_with_changed_includes = mffr.MultiFileFindReplace(
+      r'(#?(include|import)\s*["<])%s([>"]);?' % re.escape(from_include_path),
+      r'\1%s\3' % to_include_path,
+      ['*.cc', '*.h', '*.m', '*.mm', '*.cpp', '*.mojom'])
+
+  # Reorder headers in files that changed.
+  for changed_file in files_with_changed_includes:
+
+    def AlwaysConfirm(a, b):
+      return True
+
+    sort_headers.FixFileWithConfirmFunction(changed_file, AlwaysConfirm, True,
+                                            in_blink)
+
+
 def UpdatePostMove(from_path, to_path, in_blink):
   """Given a file that has moved from |from_path| to |to_path|,
   updates the moved file's include guard to match the new path and
@@ -96,27 +125,15 @@ def UpdatePostMove(from_path, to_path, in_blink):
   # Include paths always use forward slashes.
   from_path = from_path.replace('\\', '/')
   to_path = to_path.replace('\\', '/')
+  extension = os.path.splitext(from_path)[1]
 
-  if os.path.splitext(from_path)[1] in ['.h', '.hh']:
-    UpdateIncludeGuard(from_path, to_path)
-
-    from_include_path = from_path
-    to_include_path = to_path
-    if in_blink:
-      from_include_path = UpdateIncludePathForBlink(from_include_path)
-      to_include_path = UpdateIncludePathForBlink(to_include_path)
-
-    # Update include/import references.
-    files_with_changed_includes = mffr.MultiFileFindReplace(
-        r'(#(include|import)\s*["<])%s([>"])' % re.escape(from_include_path),
-        r'\1%s\3' % to_include_path,
-        ['*.cc', '*.h', '*.m', '*.mm', '*.cpp'])
-
-    # Reorder headers in files that changed.
-    for changed_file in files_with_changed_includes:
-      def AlwaysConfirm(a, b): return True
-      sort_headers.FixFileWithConfirmFunction(changed_file, AlwaysConfirm, True,
-                                              in_blink)
+  if extension in ['.h', '.hh', '.mojom']:
+    UpdateIncludes(from_path, to_path, in_blink)
+    if extension == '.mojom':
+      # For mojom files, update includes of the generated header.
+      UpdateIncludes(from_path + '.h', to_path + '.h', in_blink)
+    else:
+      UpdateIncludeGuard(from_path, to_path)
 
   # Update comments; only supports // comments, which are primarily
   # used in our code.

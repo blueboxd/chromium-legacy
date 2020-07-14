@@ -25,6 +25,7 @@
 <translation id="169515064810179024">Сайттардын сенсорлорду колдонуусун бөгөттөө</translation>
 <translation id="1717218214683051432">Кыймыл сенсорлору</translation>
 <translation id="1743802530341753419">Сайттар түзмөккө туташуудан мурун уруксат суралсын (сунушталат)</translation>
+<translation id="1818308510395330587"><ph name="APP_NAME" /> колдонмосуна AR'ди колдоонуусуна уруксат берүү үчүн камераны <ph name="BEGIN_LINK" />Android жөндөөлөрүнөн<ph name="END_LINK" /> күйгүзүңүз.</translation>
 <translation id="1887786770086287077">Жайгашкан жерди аныктоо жөндөөсү бул түзмөктө өчүрүлгөн. Аны <ph name="BEGIN_LINK" />Android жөндөөлөрүнө<ph name="END_LINK" /> өтүп, күйгүзүңүз.</translation>
 <translation id="1919345977826869612">Жарнамалар</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">Бүгүн</translation>
 <translation id="2182457891543959921">Сайттар айланаңыздын 3D картасын түзгөнү же камераңыздын абалын көргөнү жатканда уруксат суралсын (сунушталат)</translation>
 <translation id="2212565012507486665">Cookies файлдарына уруксат берүү</translation>
+<translation id="2228071138934252756"><ph name="APP_NAME" /> колдонмосуна камерага кирүүгө уруксат берүү үчүн, <ph name="BEGIN_LINK" />Android Жөндөөлөрүнөн<ph name="END_LINK" /> камераны күйгүзүңүз.</translation>
 <translation id="2289270750774289114">Сайт жакын жердеги Bluetooth түзмөктөрүн колдонгону жатканда уруксат суралсын (сунушталат)</translation>
 <translation id="2315043854645842844">Кардар тандаган тастыктама операциялык тутумда колдоого алынбайт.</translation>
 <translation id="2359808026110333948">Улантуу</translation>
@@ -56,6 +58,7 @@
 <translation id="2586657967955657006">Алмашуу буфери</translation>
 <translation id="2621115761605608342">Белгилүү бир сайтта JavaScript иштешине уруксат берүү.</translation>
 <translation id="2653659639078652383">Тапшыруу</translation>
+<translation id="2677748264148917807">Чыгуу</translation>
 <translation id="2687403674020088961">Бардык cookie файлдарды бөгөттөө (сунушталбайт)</translation>
 <translation id="2704606927547763573">Көчүрүлдү</translation>
 <translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" /> үчүн сайттагы бардык уруксаттар баштапкы абалга келтирилсинби?</translation>
@@ -69,6 +72,7 @@
 <translation id="3115898365077584848">Маалыматты көрсөтүү</translation>
 <translation id="3123473560110926937">Айрым сайттарда бөгөттөлдү</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> сакталган дайындар</translation>
+<translation id="321187648315454507"><ph name="APP_NAME" /> колдонмосуна билдирмелерди жөнөтүүгө уруксат берүү үчүн, <ph name="BEGIN_LINK" />Android Жөндөөлөрүнөн<ph name="END_LINK" /> билдирмелерди күйгүзүңүз.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3277252321222022663">Сайттарга сенсорлорду колдонууга уруксат берүү (сунушталат)</translation>
 <translation id="3295602654194328831">Маалыматты жашыруу</translation>
@@ -100,6 +104,7 @@
 <translation id="445467742685312942">Сайттарга корголгон мазмунду ойнотууга уруксат берүү</translation>
 <translation id="4468959413250150279">Белгилүү бир сайттын үнүн өчүрүү.</translation>
 <translation id="4479647676395637221">Сайттар камераңызды колдоноордон мурун уруксат суралсын (сунушталат)</translation>
+<translation id="4534723447064627427"><ph name="APP_NAME" /> колдонмосуна микрофонго кирүүгө уруксат берүү үчүн, <ph name="BEGIN_LINK" />Android Жөндөөлөрүнөн<ph name="END_LINK" /> микрофонду күйгүзүңүз.</translation>
 <translation id="4570913071927164677">Чоо-жайы</translation>
 <translation id="4645575059429386691">Ата-энеңиз башкарат</translation>
 <translation id="4670064810192446073">Виртуалдык дүйнө</translation>
@@ -122,6 +127,7 @@
 <translation id="5335288049665977812">Сайттарга JavaScript'ти иштетүүгө уруксат берилсин (сунушталат)</translation>
 <translation id="534295439873310000">NFC түзмөктөрү</translation>
 <translation id="5354152178998424783">Ушуну менен маалымат жана cookie-файлдары ээлеп турган <ph name="DATASIZE" /> орун бошотулат.</translation>
+<translation id="5384883051496921101">Бул сайт жашыруун режиминен сырткары колдонмо менен маалыматты бөлүшкөнү турат.</translation>
 <translation id="5391532827096253100">Бул сайтка туташуу корголгон эмес. Сайт тууралуу маалымат</translation>
 <translation id="5494752089476963479">Тажатма же адаштыруучу жарнамаларды көрсөткөн сайттан келген жарнамалар бөгөттөлсүн</translation>
 <translation id="5505264765875738116">Сайттар билдирмелерди жөнөтүүнү сурана алышпайт</translation>
@@ -161,6 +167,7 @@
 <translation id="6561560012278703671">Даректер тилкесинде көрсөтүлгөн билдирмелерди колдонуңуз (сизди алаксыткан билдирмелерди бөгөттөйт)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> Гб</translation>
 <translation id="6612358246767739896">Корголгон мазмун</translation>
+<translation id="662080504995468778">Калуу</translation>
 <translation id="6643016212128521049">Тазалоо</translation>
 <translation id="6697925417670533197">Жүктөлүп алынган файлдар</translation>
 <translation id="6746124502594467657">Төмөн жылдыруу</translation>
@@ -224,6 +231,7 @@
 <translation id="8394832520002899662">Сайтка кайтуу үчүн таптаңыз</translation>
 <translation id="8425213833346101688">Өзгөртүү</translation>
 <translation id="8441146129660941386">Артка түрдүрүү</translation>
+<translation id="8444433999583714703"><ph name="APP_NAME" /> колдонмосуна жайгашкан жериңизге кирүүгө уруксат берүү үчүн, <ph name="BEGIN_LINK" />Android Жөндөөлөрүнөн<ph name="END_LINK" /> жайгашкан жер кызматын күйгүзүңүз.</translation>
 <translation id="8447861592752582886">Түзмөккө болгон уруксатты жоюу</translation>
 <translation id="8463851957836045671">Сайт тез жүктөлөт</translation>
 <translation id="851751545965956758">Сайттардын түзмөктөргө туташуусун бөгөттөө</translation>
@@ -231,6 +239,7 @@
 <translation id="8609465669617005112">Өйдө жылуу</translation>
 <translation id="8676374126336081632">Киргизилген нерсени тазалоо</translation>
 <translation id="8702612070107455751">Оффлайн режиминдеги бардык дайын-даректер өчүрүлөт.</translation>
+<translation id="8719283222052720129"><ph name="APP_NAME" /> колдонмосу үчүн уруксатты <ph name="BEGIN_LINK" />Android Жөндөөлөрүнөн<ph name="END_LINK" /> күйгүзүңүз.</translation>
 <translation id="8725066075913043281">Кайра аракет кылып көрүү</translation>
 <translation id="8730621377337864115">Бүттү</translation>
 <translation id="8737217482364735741">Ушуну менен <ph name="ORIGIN" /> сактаган бардык маалымат менен cookie-файлдары тазаланат.</translation>
@@ -241,10 +250,12 @@
 <translation id="8926666909099850184">NFC бул түзмөктө өчүрүлгөн. <ph name="BEGIN_LINK" />Android жөндөөлөрүнө<ph name="END_LINK" /> өтүп, аны күйгүзүңүз.</translation>
 <translation id="8929372349074745002">Адатта бул сайт тез ачылат</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">Жашыруун режимден чыгасызбы?</translation>
 <translation id="8958424370300090006">Белгилүү бир сайттын cookie файлдарын бөгөттөө.</translation>
 <translation id="8959122750345127698">Чабыттоо жеткиликсиз: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Ата-энеңиз башкарат</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="913657688200966289"><ph name="APP_NAME" /> колдонмосу үчүн уруксаттарды <ph name="BEGIN_LINK" />Android Жөндөөлөрүнөн<ph name="END_LINK" /> күйгүзүңүз.</translation>
 <translation id="945632385593298557">Микрофонуңузга мүмкүнчүлүк алуу</translation>
 <translation id="965817943346481315">Эгер сайт тажатма же адаштыруучу жарнамаларды көрсөтүп баштаса, бөгөттөлсүн (сунушталат)</translation>
 </translationbundle>

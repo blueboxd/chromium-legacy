@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 #include "ui/base/clipboard/clipboard_metrics.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -667,8 +668,12 @@ void ClipboardX11::ReadData(const ClipboardFormatType& format,
     data.AssignTo(result);
 }
 
-void ClipboardX11::WritePortableRepresentations(ClipboardBuffer buffer,
-                                                const ObjectMap& objects) {
+// |data_src| is not used. It's only passed to be consistent with other
+// platforms.
+void ClipboardX11::WritePortableRepresentations(
+    ClipboardBuffer buffer,
+    const ObjectMap& objects,
+    std::unique_ptr<ClipboardDataEndpoint> data_src) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardBuffer(buffer));
 
@@ -692,9 +697,12 @@ void ClipboardX11::WritePortableRepresentations(ClipboardBuffer buffer,
   }
 }
 
+// |data_src| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardX11::WritePlatformRepresentations(
     ClipboardBuffer buffer,
-    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+    std::vector<Clipboard::PlatformRepresentation> platform_representations,
+    std::unique_ptr<ClipboardDataEndpoint> data_src) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardBuffer(buffer));
 

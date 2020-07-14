@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">Ayarları yönet</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 saat içinde}other{# saat içinde}}</translation>
 <translation id="2583543531130364912">Dokunmatik ekranınızı ayarlayın</translation>
+<translation id="2586657967955657006">Pano</translation>
 <translation id="2666092431469916601">Üst</translation>
 <translation id="2701330563083355633">Paylaşan: <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">Yeni</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">Konuşmaya Başla</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" />, <ph name="FOLDER_NAME" />klasörüne taşındı</translation>
 <translation id="4316910396681052118">TÜM UYGULAMALAR</translation>
+<translation id="4491109536499578614">Resim</translation>
 <translation id="4588090240171750605">Sağa Kaydır</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, <ph name="RATING_SCORE" /> Yıldız puanı</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Uygulama önerisi</translation>

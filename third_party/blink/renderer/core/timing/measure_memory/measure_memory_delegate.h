@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class LocalDOMWindow;
+
 // Specifies V8 contexts to be measured and resolves the promise once V8
 // completes the memory measurement.
 class MeasureMemoryDelegate : public v8::MeasureMemoryDelegate {
@@ -19,12 +21,17 @@ class MeasureMemoryDelegate : public v8::MeasureMemoryDelegate {
                         v8::Local<v8::Context> context,
                         v8::Local<v8::Promise::Resolver> promise_resolver);
 
+  // Constructor for a Finch experiment. It does not resolve any promise and
+  // will be removed after the experiment.
+  MeasureMemoryDelegate(v8::Isolate* isolate, v8::Local<v8::Context> context);
+
   // v8::MeasureMemoryDelegate overrides.
   bool ShouldMeasure(v8::Local<v8::Context> context) override;
   void MeasurementComplete(
       const std::vector<std::pair<v8::Local<v8::Context>, size_t>>&
           context_sizes,
       size_t unattributed_size) override;
+  static bool IsMeasureMemoryAvailable(LocalDOMWindow* window);
 
  private:
   v8::Isolate* isolate_;

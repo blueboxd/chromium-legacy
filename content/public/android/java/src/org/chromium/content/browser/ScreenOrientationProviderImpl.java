@@ -22,7 +22,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.ScreenOrientationDelegate;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.content_public.common.ScreenOrientationConstants;
-import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.device.mojom.ScreenOrientationLockType;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 
@@ -61,23 +61,23 @@ public class ScreenOrientationProviderImpl
     private static int getOrientationFromWebScreenOrientations(byte orientation,
             @Nullable WindowAndroid window, Context context) {
         switch (orientation) {
-            case ScreenOrientationValues.DEFAULT:
+            case ScreenOrientationLockType.DEFAULT:
                 return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-            case ScreenOrientationValues.PORTRAIT_PRIMARY:
+            case ScreenOrientationLockType.PORTRAIT_PRIMARY:
                 return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-            case ScreenOrientationValues.PORTRAIT_SECONDARY:
+            case ScreenOrientationLockType.PORTRAIT_SECONDARY:
                 return ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
-            case ScreenOrientationValues.LANDSCAPE_PRIMARY:
+            case ScreenOrientationLockType.LANDSCAPE_PRIMARY:
                 return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-            case ScreenOrientationValues.LANDSCAPE_SECONDARY:
+            case ScreenOrientationLockType.LANDSCAPE_SECONDARY:
                 return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
-            case ScreenOrientationValues.PORTRAIT:
+            case ScreenOrientationLockType.PORTRAIT:
                 return ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
-            case ScreenOrientationValues.LANDSCAPE:
+            case ScreenOrientationLockType.LANDSCAPE:
                 return ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
-            case ScreenOrientationValues.ANY:
+            case ScreenOrientationLockType.ANY:
                 return ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
-            case ScreenOrientationValues.NATURAL:
+            case ScreenOrientationLockType.NATURAL:
                 // If the tab is being reparented, we don't have a display strongly associated with
                 // it, so we get the default display.
                 DisplayAndroid displayAndroid = (window != null) ? window.getDisplay()
@@ -145,8 +145,7 @@ public class ScreenOrientationProviderImpl
         // Activities opened from a shortcut may have EXTRA_ORIENTATION set. In
         // which case, we want to use that as the default orientation.
         int orientation = activity.getIntent().getIntExtra(
-                ScreenOrientationConstants.EXTRA_ORIENTATION,
-                ScreenOrientationValues.DEFAULT);
+                ScreenOrientationConstants.EXTRA_ORIENTATION, ScreenOrientationLockType.DEFAULT);
         defaultOrientation = getOrientationFromWebScreenOrientations(
                 (byte) orientation, window, activity);
 

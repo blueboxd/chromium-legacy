@@ -17,7 +17,6 @@
 
 namespace reporting {
 
-// TODO(b/153659559) Temporary StorageModule until the real one is ready.
 class StorageModule : public base::RefCountedThreadSafe<StorageModule> {
  public:
   // Factory method creates |StorageModule| object.

@@ -68,16 +68,16 @@ base::string16 TimeFormat::DetailedWithMonthAndYear(
   const TimeDelta one_hour(TimeDelta::FromHours(1));
   const TimeDelta one_day(TimeDelta::FromDays(1));
 
-  // An average month is a twelfth of a year.
-  const TimeDelta one_month(TimeDelta::FromDays(365) / 12);
-
   // Simplify one year to be 365 days.
-  const TimeDelta one_year(TimeDelta::FromDays(365));
+  const TimeDelta one_year(365 * one_day);
 
-  const TimeDelta half_second(TimeDelta::FromMilliseconds(500));
-  const TimeDelta half_minute(TimeDelta::FromSeconds(30));
-  const TimeDelta half_hour(TimeDelta::FromMinutes(30));
-  const TimeDelta half_day(TimeDelta::FromHours(12));
+  // An average month is a twelfth of a year.
+  const TimeDelta one_month(one_year / 12);
+
+  const TimeDelta half_second(TimeDelta::FromSeconds(1) / 2);
+  const TimeDelta half_minute(one_minute / 2);
+  const TimeDelta half_hour(one_hour / 2);
+  const TimeDelta half_day(one_day / 2);
 
   // Rationale: Start by determining major (first) unit, then add minor (second)
   // unit if mandated by |cutoff|.
@@ -161,7 +161,7 @@ base::string16 TimeFormat::RelativeDate(
   base::Time midnight_today = optional_midnight_today
                                   ? *optional_midnight_today
                                   : base::Time::Now().LocalMidnight();
-  TimeDelta day = TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerDay);
+  TimeDelta day = TimeDelta::FromDays(1);
   base::Time tomorrow = midnight_today + day;
   base::Time yesterday = midnight_today - day;
   if (time >= tomorrow)

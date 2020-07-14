@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">Translitterointi (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Taulukot</translation>
 <translation id="2938685643439809023">mongolia</translation>
-<translation id="2939410873710774399">Jos haluat avata tiedostoja sovelluksella <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), siirrä ne ensin kansioon <ph name="FOLDER_NAME" />.</translation>
 <translation id="2942290791863759244">Saksan NEO 2 -näppäimistö</translation>
 <translation id="2943400156390503548">Slides</translation>
 <translation id="2943503720238418293">Nimi on liian pitkä.</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> kohdetta on valittu</translation>
 <translation id="4850886885716139402">Näytä</translation>
 <translation id="485316830061041779">saksa</translation>
-<translation id="4859297381873413734">Jos haluat avata tiedostoja sovelluksella <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), kopioi ne ensin kansioon <ph name="FOLDER_NAME" />.</translation>
 <translation id="4867079195717347957">Klikkaa, jos haluat lajitella laskevaan järjestykseen.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> tavua</translation>
 <translation id="4880214202172289027">Äänenvoimakkuuden liukusäädin</translation>
 <translation id="4880520557730313061">Automaattinen korjaus</translation>
 <translation id="4881695831933465202">Avaa</translation>
 <translation id="4886021172213954916">Tamilinkielinen näppäimistö (kirjoituskone)</translation>
-<translation id="4892969127351273348"><ph name="APP_NAME" /> ei onnistunut avaamaan tiedostoa</translation>
 <translation id="4900532980794411603">Jaa Parallels Desktopille</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> valmiina varmuuskopiointiin</translation>
 <translation id="4924638091161556692">Korjattu</translation>

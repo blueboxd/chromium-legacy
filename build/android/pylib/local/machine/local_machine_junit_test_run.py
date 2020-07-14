@@ -76,7 +76,9 @@ class LocalMachineJunitTestRun(test_run.TestRun):
           jacoco_agent_path = os.path.join(host_paths.DIR_SOURCE_ROOT,
                                            'third_party', 'jacoco', 'lib',
                                            'jacocoagent.jar')
-          jacoco_args = '-javaagent:{}=destfile={},inclnolocationclasses=true'
+
+          # inclnolocationclasses is false to prevent no class def found error.
+          jacoco_args = '-javaagent:{}=destfile={},inclnolocationclasses=false'
           jvm_args.append(
               jacoco_args.format(jacoco_agent_path, jacoco_coverage_file))
         else:

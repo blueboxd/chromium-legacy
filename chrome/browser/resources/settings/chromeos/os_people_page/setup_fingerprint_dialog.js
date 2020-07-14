@@ -7,7 +7,7 @@ cr.define('settings', function() {
    * The steps in the fingerprint setup flow.
    * @enum {number}
    */
-  const FingerprintSetupStep = {
+  /* #export */ const FingerprintSetupStep = {
     LOCATE_SCANNER: 1,  // The user needs to locate the scanner.
     MOVE_FINGER: 2,     // The user needs to move finger around the scanner.
     READY: 3            // The scanner has read the fingerprint successfully.
@@ -19,7 +19,7 @@ cr.define('settings', function() {
    * /chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h
    * @enum {number}
    */
-  const FingerprintLocation = {
+  /* #export */ const FingerprintLocation = {
     TABLET_POWER_BUTTON: 0,
     KEYBOARD_BOTTOM_LEFT: 1,
     KEYBOARD_BOTTOM_RIGHT: 2,

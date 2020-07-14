@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">Chuyển ngữ (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Bảng tính</translation>
 <translation id="2938685643439809023">Tiếng Mông Cổ</translation>
-<translation id="2939410873710774399">Để mở tệp bằng <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), trước tiên, hãy di chuyển các tệp đó vào thư mục <ph name="FOLDER_NAME" />.</translation>
 <translation id="2942290791863759244">Bàn phím tiếng Đức NEO 2</translation>
 <translation id="2943400156390503548">Trang trình bày</translation>
 <translation id="2943503720238418293">Hãy sử dụng tên ngắn hơn</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> mục được chọn</translation>
 <translation id="4850886885716139402">Xem</translation>
 <translation id="485316830061041779">Tiếng Đức</translation>
-<translation id="4859297381873413734">Để mở tệp bằng <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), trước tiên, hãy sao chép các tệp đó vào thư mục <ph name="FOLDER_NAME" />.</translation>
 <translation id="4867079195717347957">Nhấp để sắp xếp cột theo thứ tự giảm dần.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> byte</translation>
 <translation id="4880214202172289027">Thanh trượt âm lượng</translation>
 <translation id="4880520557730313061">Tự động sửa</translation>
 <translation id="4881695831933465202">Mở</translation>
 <translation id="4886021172213954916">Bàn phím tiếng Tamil (Máy đánh chữ)</translation>
-<translation id="4892969127351273348">Không thể mở bằng <ph name="APP_NAME" /></translation>
 <translation id="4900532980794411603">Chia sẻ với ứng dụng Parallels Desktop</translation>
 <translation id="4905417359854579806">Đã sẵn sàng sao lưu <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Đã sửa</translation>

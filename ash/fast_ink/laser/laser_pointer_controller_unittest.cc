@@ -114,6 +114,18 @@ TEST_F(LaserPointerControllerTest, LaserPointerRenderer) {
   event_generator->MoveTouch(gfx::Point(11, 11));
   EXPECT_FALSE(controller_test_api_->IsShowingLaserPointer());
   event_generator->ReleaseTouch();
+
+  // Make sure that event can be sent after the pointer widget is destroyed
+  // by release. This can happen if the pen event causes the deletion of
+  // the pointer event in an earlier event handler.
+  ui::PointerDetails pointer_details;
+  pointer_details.pointer_type = ui::EventPointerType::kPen;
+
+  ui::TouchEvent touch(ui::ET_TOUCH_MOVED, gfx::PointF(), gfx::PointF(),
+                       base::TimeTicks(), pointer_details, 0);
+  ui::Event::DispatcherApi api(&touch);
+  api.set_target(Shell::GetPrimaryRootWindow());
+  static_cast<ui::EventHandler*>(controller_.get())->OnTouchEvent(&touch);
 }
 
 // Test to ensure the class responsible for drawing the laser pointer handles

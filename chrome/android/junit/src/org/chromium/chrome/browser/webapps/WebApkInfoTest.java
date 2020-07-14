@@ -30,7 +30,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
-import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.device.mojom.ScreenOrientationLockType;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 import org.chromium.webapk.test.WebApkTestHelper;
@@ -218,7 +218,7 @@ public class WebApkInfoTest {
         Assert.assertEquals(NAME, info.name());
         Assert.assertEquals(SHORT_NAME, info.shortName());
         Assert.assertEquals(WebDisplayMode.MINIMAL_UI, info.displayMode());
-        Assert.assertEquals(ScreenOrientationValues.PORTRAIT, info.orientation());
+        Assert.assertEquals(ScreenOrientationLockType.PORTRAIT, info.orientation());
         Assert.assertTrue(info.hasValidToolbarColor());
         Assert.assertEquals(1L, info.toolbarColor());
         Assert.assertTrue(info.hasValidBackgroundColor());

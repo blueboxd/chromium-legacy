@@ -1124,6 +1124,11 @@ bool ChromeDownloadManagerDelegate::ShouldShowDownloadLaterDialog() const {
   bool require_cellular = base::GetFieldTrialParamByFeatureAsBool(
       download::features::kDownloadLater,
       download::features::kDownloadLaterRequireCellular, true);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          download::switches::kDownloadLaterDebugOnWifi)) {
+    require_cellular = false;
+  }
+
   bool on_cellular = network::NetworkConnectionTracker::IsConnectionCellular(
       network::mojom::ConnectionType(
           net::NetworkChangeNotifier::GetConnectionType()));

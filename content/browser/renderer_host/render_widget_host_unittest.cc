@@ -956,7 +956,8 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   screen_info.rect = blink::WebRect(0, 0, 800, 600);
   screen_info.available_rect = blink::WebRect(0, 0, 800, 600);
   screen_info.orientation_angle = 0;
-  screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
+  screen_info.orientation_type =
+      blink::mojom::ScreenOrientation::kPortraitPrimary;
 
   sink_->ClearMessages();
   view_->SetScreenInfo(screen_info);
@@ -969,7 +970,8 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
 
   screen_info.orientation_angle = 180;
-  screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
+  screen_info.orientation_type =
+      blink::mojom::ScreenOrientation::kLandscapePrimary;
 
   sink_->ClearMessages();
   view_->SetScreenInfo(screen_info);
@@ -1012,7 +1014,8 @@ TEST_F(RenderWidgetHostTest, OverrideScreenInfoDuringFullscreenMode) {
   screen_info.rect = kScreenBounds;
   screen_info.available_rect = kScreenBounds;
   screen_info.orientation_angle = 0;
-  screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
+  screen_info.orientation_type =
+      blink::mojom::ScreenOrientation::kPortraitPrimary;
   view_->SetScreenInfo(screen_info);
 
   sink_->ClearMessages();
@@ -1060,7 +1063,8 @@ TEST_F(RenderWidgetHostTest, RootWindowSegments) {
   screen_info.rect = screen_rect;
   screen_info.available_rect = screen_rect;
   screen_info.orientation_angle = 0;
-  screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
+  screen_info.orientation_type =
+      blink::mojom::ScreenOrientation::kPortraitPrimary;
   view_->SetScreenInfo(screen_info);
 
   // Set a vertical display feature which must result in two window segments,

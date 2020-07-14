@@ -20,15 +20,15 @@
 
 const char kChromeCmdLineFile[] = "/data/local/tmp/chrome-command-line";
 
-Device::Device(
-    const std::string& device_serial, Adb* adb,
-    base::Callback<void()> release_callback)
+Device::Device(const std::string& device_serial,
+               Adb* adb,
+               base::OnceCallback<void()> release_callback)
     : serial_(device_serial),
       adb_(adb),
-      release_callback_(release_callback) {}
+      release_callback_(std::move(release_callback)) {}
 
 Device::~Device() {
-  release_callback_.Run();
+  std::move(release_callback_).Run();
 }
 
 // Only allow completely alpha exec names.
@@ -264,8 +264,8 @@ void DeviceManager::ReleaseDevice(const std::string& device_serial) {
 Device* DeviceManager::LockDevice(const std::string& device_serial) {
   active_devices_.push_back(device_serial);
   return new Device(device_serial, adb_,
-      base::Bind(&DeviceManager::ReleaseDevice, base::Unretained(this),
-                 device_serial));
+                    base::BindOnce(&DeviceManager::ReleaseDevice,
+                                   base::Unretained(this), device_serial));
 }
 
 bool DeviceManager::IsDeviceLocked(const std::string& device_serial) {

@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_fieldset_painter.h"
 
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
@@ -56,27 +55,8 @@ void NGFieldsetPainter::PaintFieldsetDecorationBackground(
   const ComputedStyle& style = fieldset_.Style();
   PhysicalRect legend_border_box;
   if (legend) {
+    legend_border_box.offset = legend->Offset();
     legend_border_box.size = (*legend)->Size();
-
-    // Recalculate the legend offset without the relative position offset.
-    const WritingDirectionMode writing_direction = style.GetWritingDirection();
-    const LogicalSize logical_fieldset_size =
-        fieldset_size.ConvertToLogical(writing_direction.GetWritingMode());
-    const NGBoxStrut border_padding =
-        (fragment.Borders() + fragment.Padding())
-            .ConvertToLogical(writing_direction.GetWritingMode(),
-                              writing_direction.Direction());
-    const NGBoxStrut legend_margins = ComputeMarginsFor(
-        (*legend)->Style(),
-        (logical_fieldset_size.inline_size - border_padding.InlineSum())
-            .ClampNegativeToZero(),
-        writing_direction.GetWritingMode(), writing_direction.Direction());
-
-    const LogicalOffset offset = {
-        border_padding.inline_start + legend_margins.inline_start,
-        legend_margins.block_start};
-    legend_border_box.offset = offset.ConvertToPhysical(
-        writing_direction, fieldset_size, legend_border_box.size);
   }
   FieldsetPaintInfo fieldset_paint_info(style, fieldset_size, fieldset_borders,
                                         legend_border_box);

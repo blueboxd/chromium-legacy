@@ -49,6 +49,9 @@ class PlayerCompositorDelegateAndroid : public PlayerCompositorDelegate {
                jint j_x,
                jint j_y);
 
+  // Called to set if compression should happen at close time.
+  void SetCompressOnClose(JNIEnv* env, jboolean compress_on_close);
+
   void Destroy(JNIEnv* env);
 
   static void CompositeResponseFramesToVectors(

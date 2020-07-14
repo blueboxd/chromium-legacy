@@ -65,32 +65,6 @@ core_config_add += [
   "//build/config/compiler:noshadowing",
 ]
 
-source_set("generated") {
-  deps = [
-    ":core_generated",
-    ":prerequisites",
-    "//gin",
-    "//skia",
-    "//third_party/blink/renderer/bindings/core/v8:bindings_core_origin_trial_features",
-    "//third_party/blink/renderer/bindings/core/v8:bindings_core_v8_generated",
-    "//third_party/blink/renderer/core/inspector:generated",
-    "//third_party/blink/renderer/core/probe:generated",
-    "//third_party/iccjpeg",
-    "//third_party/libpng",
-    "//third_party/libwebp",
-    "//third_party/libxml",
-    "//third_party/libxslt",
-
-    # FIXME: don't depend on bindings/modules http://crbug.com/358074
-    "//third_party/blink/renderer/bindings/modules:bindings_modules_generated",
-    "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_v8_generated",
-    "//third_party/blink/renderer/platform:make_platform_generated",
-    "//third_party/blink/renderer/platform/wtf",
-    "//url",
-    "//v8",
-  ]
-}
-
 source_set("prerequisites") {
   public_deps = [
     "//services/network/public/cpp:cpp",

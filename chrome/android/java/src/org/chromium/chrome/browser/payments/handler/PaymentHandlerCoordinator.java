@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.thinwebview.ThinWebView;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewConstraints;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.components.browser_ui.styles.R;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.payments.PaymentFeatureList;
@@ -91,9 +92,11 @@ public class PaymentHandlerCoordinator {
                 mWebContents, uiObserver, activity.getActivityTab().getView(),
                 mToolbarCoordinator.getToolbarHeightPx(),
                 calculateBottomSheetToolbarContainerTopPadding(activity),
-                activity.getLifecycleDispatcher());
+                activity.getLifecycleDispatcher(),
+                BottomSheetControllerProvider.from(activity.getWindowAndroid()));
         activity.getWindow().getDecorView().addOnLayoutChangeListener(mediator);
-        BottomSheetController bottomSheetController = activity.getBottomSheetController();
+        BottomSheetController bottomSheetController =
+                BottomSheetControllerProvider.from(activity.getWindowAndroid());
         bottomSheetController.addObserver(mediator);
         mWebContents.addObserver(mediator);
 

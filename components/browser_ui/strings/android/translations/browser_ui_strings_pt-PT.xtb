@@ -58,6 +58,7 @@
 <translation id="2586657967955657006">Área de transferência</translation>
 <translation id="2621115761605608342">Permitir JavaScript num site específico.</translation>
 <translation id="2653659639078652383">Submeter</translation>
+<translation id="2677748264148917807">Sair</translation>
 <translation id="2687403674020088961">Bloquear todos os cookies (não recomendado).</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2822354292072154809">Tem a certeza de que pretende repor todas as autorizações do site para <ph name="CHOSEN_OBJECT_NAME" />?</translation>
@@ -126,6 +127,7 @@
 <translation id="5335288049665977812">Permitir que os sites executem JavaScript (recomendado)</translation>
 <translation id="534295439873310000">Dispositivos NFC</translation>
 <translation id="5354152178998424783">Esta ação eliminará <ph name="DATASIZE" /> de dados e cookies armazenados pelos sites.</translation>
+<translation id="5384883051496921101">Este site está prestes a partilhar informações com uma aplicação fora do modo de navegação anónima.</translation>
 <translation id="5391532827096253100">A sua ligação a este site não é segura. Informações do site</translation>
 <translation id="5494752089476963479">Bloquear anúncios em sites que apresentam anúncios intrusivos ou enganadores</translation>
 <translation id="5505264765875738116">Os sites não podem pedir para enviar notificações.</translation>
@@ -165,6 +167,7 @@
 <translation id="6561560012278703671">Utilizar mensagens mais discretas (impede interrupções de pedidos de notificação)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
+<translation id="662080504995468778">Ficar</translation>
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="6697925417670533197">Transferências ativas</translation>
 <translation id="6746124502594467657">Mover para baixo</translation>
@@ -247,6 +250,7 @@
 <translation id="8926666909099850184">O NFC está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Este site é aberto e responde rapidamente para a maioria das pessoas.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">Sair da navegação anónima?</translation>
 <translation id="8958424370300090006">Bloqueie cookies para um site específico.</translation>
 <translation id="8959122750345127698">A navegação está inacessível: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Gerido pelos teus pais</translation>

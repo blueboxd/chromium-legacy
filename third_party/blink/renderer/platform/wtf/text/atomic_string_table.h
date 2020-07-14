@@ -57,15 +57,17 @@ class WTF_EXPORT AtomicStringTable final {
       CHECK(!str || str->IsAtomic() || str == StringImpl::empty_);
     }
 
-    bool operator==(const AtomicString& s) const { return *this == s.Impl(); }
-    bool operator==(const String& s) const { return *this == s.Impl(); }
-    bool operator==(const StringImpl* str) const {
-      return reinterpret_cast<uintptr_t>(str) == ptr_value_;
-    }
-
-    bool IsNull() const { return ptr_value_ != 0; }
+    bool IsNull() const { return ptr_value_ == 0; }
 
    private:
+    friend bool operator==(const WeakResult& lhs, const WeakResult& rhs);
+    friend bool operator==(const WeakResult& lhs, const String& rhs);
+    friend bool operator==(const String& rhs, const WeakResult& lhs);
+    friend bool operator==(const WeakResult& lhs, const AtomicString& rhs);
+    friend bool operator==(const AtomicString& rhs, const WeakResult& lhs);
+    friend bool operator==(const WeakResult& lhs, const StringImpl* rhs);
+    friend bool operator==(const StringImpl* lhs, const WeakResult& rhs);
+
     // Contains the pointer a string in a non-deferenceable form. Do NOT cast
     // back to a StringImpl and dereference. The object may no longer be alive.
     uintptr_t ptr_value_ = 0;
@@ -134,6 +136,41 @@ class WTF_EXPORT AtomicStringTable final {
 
   DISALLOW_COPY_AND_ASSIGN(AtomicStringTable);
 };
+
+inline bool operator==(const AtomicStringTable::WeakResult& lhs,
+                       const AtomicStringTable::WeakResult& rhs) {
+  return lhs.ptr_value_ == rhs.ptr_value_;
+}
+
+inline bool operator==(const AtomicStringTable::WeakResult& lhs,
+                       const String& rhs) {
+  return lhs == rhs.Impl();
+}
+
+inline bool operator==(const String& lhs,
+                       const AtomicStringTable::WeakResult& rhs) {
+  return lhs.Impl() == rhs;
+}
+
+inline bool operator==(const AtomicStringTable::WeakResult& lhs,
+                       const AtomicString& rhs) {
+  return lhs == rhs.Impl();
+}
+
+inline bool operator==(const AtomicString& lhs,
+                       const AtomicStringTable::WeakResult& rhs) {
+  return lhs.Impl() == rhs;
+}
+
+inline bool operator==(const AtomicStringTable::WeakResult& lhs,
+                       const StringImpl* rhs) {
+  return rhs == lhs;
+}
+
+inline bool operator==(const StringImpl* lhs,
+                       const AtomicStringTable::WeakResult& rhs) {
+  return reinterpret_cast<uintptr_t>(lhs) == rhs.ptr_value_;
+}
 
 }  // namespace WTF
 

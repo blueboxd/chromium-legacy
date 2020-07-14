@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">Настройки</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{через 1 ч.}one{через # ч.}few{через # ч.}many{через # ч.}other{через # ч.}}</translation>
 <translation id="2583543531130364912">Откалибруйте сенсорный экран</translation>
+<translation id="2586657967955657006">Буфер обмена</translation>
 <translation id="2666092431469916601">Наверх</translation>
 <translation id="2701330563083355633">С устройства "<ph name="DEVICE_NAME" />"</translation>
 <translation id="271033894570825754">Новый</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">Начать голосовой ввод</translation>
 <translation id="430191667033048642">Приложение "<ph name="MOVED_APP_NAME" />" перемещено в папку "<ph name="FOLDER_NAME" />".</translation>
 <translation id="4316910396681052118">ВСЕ ПРИЛОЖЕНИЯ</translation>
+<translation id="4491109536499578614">Изображение</translation>
 <translation id="4588090240171750605">Прокрутка вправо</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, рейтинг – <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, рекомендуемое приложение</translation>

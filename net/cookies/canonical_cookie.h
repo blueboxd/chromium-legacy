@@ -26,13 +26,12 @@ namespace net {
 class ParsedCookie;
 class CanonicalCookie;
 
-struct CookieWithStatus;
 struct CookieWithAccessResult;
-struct CookieAndLineWithStatus;
+struct CookieAndLineWithAccessResult;
 
 using CookieList = std::vector<CanonicalCookie>;
-using CookieStatusList = std::vector<CookieWithStatus>;
-using CookieAndLineStatusList = std::vector<CookieAndLineWithStatus>;
+using CookieAndLineAccessResultList =
+    std::vector<CookieAndLineWithAccessResult>;
 using CookieAccessResultList = std::vector<CookieWithAccessResult>;
 
 class NET_EXPORT CanonicalCookie {
@@ -362,34 +361,27 @@ class NET_EXPORT CanonicalCookie {
   CookieSourceScheme source_scheme_;
 };
 
-// These enable us to pass along a list of excluded cookie with the reason they
-// were excluded
-struct CookieWithStatus {
-  CanonicalCookie cookie;
-  CookieInclusionStatus status;
-};
-
 // Used to pass excluded cookie information when it's possible that the
 // canonical cookie object may not be available.
-struct NET_EXPORT CookieAndLineWithStatus {
-  CookieAndLineWithStatus();
-  CookieAndLineWithStatus(base::Optional<CanonicalCookie> cookie,
-                          std::string cookie_string,
-                          CookieInclusionStatus status);
-  CookieAndLineWithStatus(
-      const CookieAndLineWithStatus& cookie_and_line_with_status);
+struct NET_EXPORT CookieAndLineWithAccessResult {
+  CookieAndLineWithAccessResult();
+  CookieAndLineWithAccessResult(base::Optional<CanonicalCookie> cookie,
+                                std::string cookie_string,
+                                CookieAccessResult access_result);
+  CookieAndLineWithAccessResult(
+      const CookieAndLineWithAccessResult& cookie_and_line_with_access_result);
 
-  CookieAndLineWithStatus& operator=(
-      const CookieAndLineWithStatus& cookie_and_line_with_status);
+  CookieAndLineWithAccessResult& operator=(
+      const CookieAndLineWithAccessResult& cookie_and_line_with_access_result);
 
-  CookieAndLineWithStatus(
-      CookieAndLineWithStatus&& cookie_and_line_with_status);
+  CookieAndLineWithAccessResult(
+      CookieAndLineWithAccessResult&& cookie_and_line_with_access_result);
 
-  ~CookieAndLineWithStatus();
+  ~CookieAndLineWithAccessResult();
 
   base::Optional<CanonicalCookie> cookie;
   std::string cookie_string;
-  CookieInclusionStatus status;
+  CookieAccessResult access_result;
 };
 
 struct CookieWithAccessResult {

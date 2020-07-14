@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="1005230401424685968">yyyy</translation>
+<translation id="1013952917065545813">می‌توانید به اینجا برگردید و برگه‌هایی را که اخیراً بسته‌اید مجدداً باز کنید</translation>
 <translation id="1016495303386450659">مورد به‌روز شد</translation>
 <translation id="1044891598689252897">عملکرد سایت‌ها عادی خواهد بود</translation>
 <translation id="1047726139967079566">نشانک گذاری این صفحه...</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">توقف</translation>
 <translation id="1283524564873030414">۲۴ ساعت گذشته</translation>
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
+<translation id="1321993286294231467">خطایی هنگام ذخیره کردن تصویر روی داد.</translation>
 <translation id="1323735185997015385">حذف</translation>
 <translation id="132683371494960526">برای تغییر پوشه والد دو ضربه سریع بزنید.</translation>
 <translation id="1340643665687018190">بستن منو</translation>
@@ -560,6 +562,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7658239707568436148">لغو</translation>
 <translation id="766891008101699113">برای مرور وب به‌صورت خصوصی، برگه جدیدی اضافه کنید.</translation>
 <translation id="7671141431838911305">نصب</translation>
+<translation id="7701040980221191251">هیچ‌کدام</translation>
 <translation id="7765158879357617694">انتقال</translation>
 <translation id="7771470029643830783">‏با خروج از سیستم، نشانک‌ها، سابقه، گذرواژه‌ها، و سایر داده‌های Chrome دیگر با «حساب Google» شما همگام‌سازی نمی‌شوند.
 

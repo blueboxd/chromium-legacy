@@ -27,6 +27,11 @@ void UpdateSkpPaths(const base::FilePath& test_data_dir,
                     const DirectoryKey& key,
                     PaintPreviewBaseService::OnReadProtoCallback callback,
                     std::unique_ptr<PaintPreviewProto> proto) {
+  if (proto == nullptr) {
+    std::move(callback).Run(std::move(proto));
+    return;
+  }
+
   // Update the file path for the root SKP to match the isolated test
   // environment.
   std::string root_skp_file_name =

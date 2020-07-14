@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.components.webapk.lib.common.WebApkConstants;
-import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.device.mojom.ScreenOrientationLockType;
 
 import java.io.File;
 
@@ -222,7 +222,7 @@ public class WebappDataStorage {
                 mPreferences.getString(KEY_SHORT_NAME, null),
                 mPreferences.getString(KEY_ICON, null), version,
                 mPreferences.getInt(KEY_DISPLAY_MODE, WebDisplayMode.STANDALONE),
-                mPreferences.getInt(KEY_ORIENTATION, ScreenOrientationValues.DEFAULT),
+                mPreferences.getInt(KEY_ORIENTATION, ScreenOrientationLockType.DEFAULT),
                 mPreferences.getLong(
                         KEY_THEME_COLOR, ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING),
                 mPreferences.getLong(

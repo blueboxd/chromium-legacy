@@ -24,6 +24,7 @@
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 #include "ui/base/clipboard/clipboard_metrics.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -271,8 +272,12 @@ void ClipboardMac::ReadData(const ClipboardFormatType& format,
     result->assign(static_cast<const char*>([data bytes]), [data length]);
 }
 
-void ClipboardMac::WritePortableRepresentations(ClipboardBuffer buffer,
-                                                const ObjectMap& objects) {
+// |data_src| is not used. It's only passed to be consistent with other
+// platforms.
+void ClipboardMac::WritePortableRepresentations(
+    ClipboardBuffer buffer,
+    const ObjectMap& objects,
+    std::unique_ptr<ClipboardDataEndpoint> data_src) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 
@@ -283,9 +288,12 @@ void ClipboardMac::WritePortableRepresentations(ClipboardBuffer buffer,
     DispatchPortableRepresentation(object.first, object.second);
 }
 
+// |data_src| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardMac::WritePlatformRepresentations(
     ClipboardBuffer buffer,
-    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+    std::vector<Clipboard::PlatformRepresentation> platform_representations,
+    std::unique_ptr<ClipboardDataEndpoint> data_src) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 

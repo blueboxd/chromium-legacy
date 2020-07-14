@@ -34,4 +34,10 @@ public interface PlayerCompositorDelegate {
      * @param y The y coordinate of the click event, relative to the frame.
      */
     void onClick(UnguessableToken frameGuid, int x, int y);
+
+    /**
+     * Sets whether to compress the directory when closing the player.
+     * @param compressOnClose Whether to compress the directory when closing.
+     */
+    default void setCompressOnClose(boolean compressOnClose) {}
 }

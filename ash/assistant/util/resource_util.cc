@@ -4,6 +4,7 @@
 
 #include "ash/assistant/util/resource_util.h"
 
+#include <map>
 #include <sstream>
 #include <string>
 
@@ -34,6 +35,14 @@ constexpr char kIconResourceType[] = "icon";
 
 // Icon names.
 constexpr char kAssistantIconName[] = "assistant";
+constexpr char kCalculateIconName[] = "calculate";
+constexpr char kConversionPathIconName[] = "conversationPath";
+constexpr char kPersonPinCircleIconName[] = "personPinCircle";
+constexpr char kScreenshotIconName[] = "screenshot";
+constexpr char kSentimentVerySatisfiedIconName[] = "sentimentVerySatisfied";
+constexpr char kStraightenIconName[] = "straighten";
+constexpr char kTimerIconName[] = "timer";
+constexpr char kTranslateIconName[] = "translate";
 
 // Helpers ---------------------------------------------------------------------
 
@@ -45,8 +54,20 @@ SkColor ToColor(const std::string& aarrggbb) {
 }
 
 IconName ToIconName(const std::string& name) {
-  DCHECK_EQ(name, kAssistantIconName);
-  return IconName::kAssistant;
+  const std::map<std::string, IconName> icon_names_by_string_name = {
+      {kAssistantIconName, IconName::kAssistant},
+      {kCalculateIconName, IconName::kCalculate},
+      {kConversionPathIconName, IconName::kConversionPath},
+      {kPersonPinCircleIconName, IconName::kPersonPinCircle},
+      {kScreenshotIconName, IconName::kScreenshot},
+      {kSentimentVerySatisfiedIconName, IconName::kSentimentVerySatisfied},
+      {kStraightenIconName, IconName::kStraighten},
+      {kTimerIconName, IconName::kTimer},
+      {kTranslateIconName, IconName::kTranslate},
+  };
+  auto it = icon_names_by_string_name.find(name);
+  DCHECK(it != icon_names_by_string_name.end());
+  return it->second;
 }
 
 std::string ToString(SkColor color) {
@@ -59,6 +80,22 @@ std::string ToString(IconName name) {
   switch (name) {
     case IconName::kAssistant:
       return kAssistantIconName;
+    case IconName::kCalculate:
+      return kCalculateIconName;
+    case IconName::kConversionPath:
+      return kConversionPathIconName;
+    case IconName::kPersonPinCircle:
+      return kPersonPinCircleIconName;
+    case IconName::kScreenshot:
+      return kScreenshotIconName;
+    case IconName::kSentimentVerySatisfied:
+      return kSentimentVerySatisfiedIconName;
+    case IconName::kStraighten:
+      return kStraightenIconName;
+    case IconName::kTimer:
+      return kTimerIconName;
+    case IconName::kTranslate:
+      return kTranslateIconName;
   }
   NOTREACHED();
   return std::string();
@@ -98,6 +135,22 @@ const gfx::VectorIcon& ToVectorIcon(IconName name) {
   switch (name) {
     case IconName::kAssistant:
       return ash::kAssistantIcon;
+    case IconName::kCalculate:
+      return ash::kCalculateIcon;
+    case IconName::kConversionPath:
+      return ash::kConversionPathIcon;
+    case IconName::kPersonPinCircle:
+      return ash::kPersonPinCircleIcon;
+    case IconName::kScreenshot:
+      return ash::kScreenshotIcon;
+    case IconName::kSentimentVerySatisfied:
+      return ash::kSentimentVerySatisfiedIcon;
+    case IconName::kStraighten:
+      return ash::kStraightenIcon;
+    case IconName::kTimer:
+      return ash::kTimerIcon;
+    case IconName::kTranslate:
+      return ash::kTranslateIcon;
   }
   NOTREACHED();
   return gfx::kNoneIcon;

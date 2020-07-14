@@ -7,12 +7,24 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"  // nogncheck
 
 #if defined(USE_X11)
 #include "chrome/browser/ui/views/frame/global_menu_bar_x11.h"  // nogncheck
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"  // nogncheck
+#else
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"  // nogncheck
 #endif
+
+// TODO(https://crbug.com/990756): Make sure correct
+// DesktopWindowTreeHost is used while the DWTHX11 is being refactored and
+// merged into the DWTHLinux and the DWTHPlatform. Non-Ozone X11 must use
+// the DWTHX11 now, but Ozone must use DWTHLinux. Remove this guard once
+// DWTHX11 is finally merged into DWTHPlatform and DWTHLinux.
+#if defined(USE_X11)
+using DesktopWindowTreeHostLinuxImpl = views::DesktopWindowTreeHostX11;
+#else
 using DesktopWindowTreeHostLinuxImpl = views::DesktopWindowTreeHostLinux;
+#endif
 
 class BrowserFrame;
 class BrowserView;

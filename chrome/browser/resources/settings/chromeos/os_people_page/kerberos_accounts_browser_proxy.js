@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// clang-format on
+
 /**
  * @fileoverview A helper object used from the "Kerberos Accounts" subsection of
  * the "People" section of Settings, to interact with the browser. Chrome OS
@@ -22,7 +26,7 @@ cr.define('settings', function() {
    *   validForDuration: string
    * }}
    */
-  let KerberosAccount;
+  /* #export */ let KerberosAccount;
 
   /**
    * @typedef {{
@@ -33,14 +37,14 @@ cr.define('settings', function() {
    *   }
    * }}
    */
-  let ValidateKerberosConfigResult;
+  /* #export */ let ValidateKerberosConfigResult;
 
   /**
    *  @enum {number}
    *  These values must be kept in sync with the ErrorType enum in
    *  third_party/cros_system_api/dbus/kerberos/kerberos_service.proto.
    */
-  const KerberosErrorType = {
+  /* #export */ const KerberosErrorType = {
     kNone: 0,
     kUnknown: 1,
     kDBusFailure: 2,
@@ -70,7 +74,7 @@ cr.define('settings', function() {
    *  These values must be kept in sync with the KerberosConfigErrorCode enum in
    *  third_party/cros_system_api/dbus/kerberos/kerberos_service.proto.
    */
-  const KerberosConfigErrorCode = {
+  /* #export */ const KerberosConfigErrorCode = {
     kNone: 0,
     kSectionNestedInGroup: 1,
     kSectionSyntax: 2,
@@ -83,7 +87,7 @@ cr.define('settings', function() {
   };
 
   /** @interface */
-  class KerberosAccountsBrowserProxy {
+  /* #export */ class KerberosAccountsBrowserProxy {
     /**
      * Returns a Promise for the list of Kerberos accounts held in the kerberosd
      * system daemon.
@@ -129,7 +133,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.KerberosAccountsBrowserProxy}
    */
-  class KerberosAccountsBrowserProxyImpl {
+  /* #export */ class KerberosAccountsBrowserProxyImpl {
     /** @override */
     getAccounts() {
       return cr.sendWithPromise('getKerberosAccounts');

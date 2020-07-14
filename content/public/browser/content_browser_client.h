@@ -366,9 +366,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // isolation is enabled for this URL, and is a bug workaround.
   //
   // TODO(nick): Remove this function once https://crbug.com/160576 is fixed,
-  // and origin lock can be applied to all URLs.
-  virtual bool ShouldLockToOrigin(BrowserContext* browser_context,
-                                  const GURL& effective_url);
+  // and ProcessLock can be applied to all URLs.
+  virtual bool ShouldLockProcess(BrowserContext* browser_context,
+                                 const GURL& effective_url);
 
   // Returns a boolean indicating whether the WebUI |scheme| requires its
   // process to be locked to the WebUI origin.

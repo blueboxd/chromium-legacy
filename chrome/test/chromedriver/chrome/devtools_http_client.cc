@@ -113,10 +113,10 @@ Status DevToolsHttpClient::GetWebViewsInfo(WebViewsInfo* views_info) {
 
 std::unique_ptr<DevToolsClient> DevToolsHttpClient::CreateClient(
     const std::string& id) {
-  return std::unique_ptr<DevToolsClient>(
-      new DevToolsClientImpl(socket_factory_, endpoint_.GetDebuggerUrl(id), id,
-                             base::Bind(&DevToolsHttpClient::CloseFrontends,
-                                        base::Unretained(this), id)));
+  return std::unique_ptr<DevToolsClient>(new DevToolsClientImpl(
+      socket_factory_, endpoint_.GetDebuggerUrl(id), id,
+      base::BindRepeating(&DevToolsHttpClient::CloseFrontends,
+                          base::Unretained(this), id)));
 }
 
 Status DevToolsHttpClient::CloseWebView(const std::string& id) {

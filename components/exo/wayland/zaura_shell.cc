@@ -471,18 +471,12 @@ void aura_shell_get_aura_output(wl_client* client,
                                 wl_resource* output_resource) {
   WaylandDisplayObserver* display_observer =
       GetUserDataAs<WaylandDisplayObserver>(output_resource);
-  if (display_observer->HasScaleObserver()) {
-    wl_resource_post_error(
-        resource, ZAURA_SHELL_ERROR_AURA_OUTPUT_EXISTS,
-        "an aura output object for that output already exists");
-    return;
-  }
 
   wl_resource* aura_output_resource = wl_resource_create(
       client, &zaura_output_interface, wl_resource_get_version(resource), id);
 
   auto aura_output = std::make_unique<AuraOutput>(aura_output_resource);
-  display_observer->SetScaleObserver(aura_output->AsWeakPtr());
+  display_observer->AddScaleObserver(aura_output.get());
 
   SetImplementation(aura_output_resource, nullptr, std::move(aura_output));
 }

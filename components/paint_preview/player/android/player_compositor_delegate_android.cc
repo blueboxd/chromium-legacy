@@ -268,6 +268,13 @@ void PlayerCompositorDelegateAndroid::OnClick(
       base::android::ConvertUTF8ToJavaString(env, res[0]->spec()));
 }
 
+void PlayerCompositorDelegateAndroid::SetCompressOnClose(
+    JNIEnv* env,
+    jboolean compress_on_close) {
+  PlayerCompositorDelegate::SetCompressOnClose(
+      static_cast<bool>(compress_on_close));
+}
+
 void PlayerCompositorDelegateAndroid::Destroy(JNIEnv* env) {
   delete this;
 }

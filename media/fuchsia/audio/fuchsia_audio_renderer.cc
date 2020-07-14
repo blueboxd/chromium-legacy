@@ -307,8 +307,9 @@ bool FuchsiaAudioRenderer::GetWallClockTimes(
 
   base::AutoLock lock(timeline_lock_);
 
-  const bool is_time_moving = state_ == PlaybackState::kPlaying ||
-                              state_ == PlaybackState::kEndOfStream;
+  const bool is_time_moving = (state_ == PlaybackState::kPlaying ||
+                               state_ == PlaybackState::kEndOfStream) &&
+                              (media_delta_ > 0);
 
   if (media_timestamps.empty()) {
     wall_clock_times->push_back(is_time_moving ? now : base::TimeTicks());

@@ -128,21 +128,20 @@ TEST(MixedContentCheckerTest, HandleCertificateError) {
   EXPECT_CALL(mock_notifier, NotifyContentWithCertificateErrorsRan()).Times(1);
   MixedContentChecker::HandleCertificateError(
       response1, mojom::RequestContextType::SCRIPT,
-      /*strict_mixed_content_checking_for_plugin=*/false, *notifier_remote);
+      WebMixedContent::CheckModeForPlugin::kLax, *notifier_remote);
 
   ResourceResponse response2(displayed_url);
   mojom::RequestContextType request_context = mojom::RequestContextType::IMAGE;
   ASSERT_EQ(
       WebMixedContentContextType::kOptionallyBlockable,
       WebMixedContent::ContextTypeFromRequestContext(
-          request_context, dummy_page_holder->GetFrame()
-                               .GetSettings()
-                               ->GetStrictMixedContentCheckingForPlugin()));
+          request_context, MixedContentChecker::DecideCheckModeForPlugin(
+                               dummy_page_holder->GetFrame().GetSettings())));
   EXPECT_CALL(mock_notifier, NotifyContentWithCertificateErrorsDisplayed())
       .Times(1);
   MixedContentChecker::HandleCertificateError(
-      response2, request_context,
-      /*strict_mixed_content_checking_for_plugin=*/false, *notifier_remote);
+      response2, request_context, WebMixedContent::CheckModeForPlugin::kLax,
+      *notifier_remote);
 
   notifier_remote.FlushForTesting();
 }

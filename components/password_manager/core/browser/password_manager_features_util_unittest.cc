@@ -81,7 +81,8 @@ TEST(PasswordFeatureManagerUtil, ShowAccountStorageResignIn) {
   sync_service.SetDisableReasons(
       {syncer::SyncService::DisableReason::DISABLE_REASON_NOT_SIGNED_IN});
 
-  EXPECT_TRUE(ShouldShowAccountStorageReSignin(&pref_service, &sync_service));
+  EXPECT_TRUE(
+      ShouldShowAccountStorageReSignin(&pref_service, &sync_service, GURL()));
 }
 
 TEST(PasswordFeatureManagerUtil, ShowAccountStorageResignIn_FeatureDisabled) {
@@ -101,7 +102,8 @@ TEST(PasswordFeatureManagerUtil, ShowAccountStorageResignIn_FeatureDisabled) {
   sync_service.SetDisableReasons(
       {syncer::SyncService::DisableReason::DISABLE_REASON_NOT_SIGNED_IN});
 
-  EXPECT_FALSE(ShouldShowAccountStorageReSignin(&pref_service, &sync_service));
+  EXPECT_FALSE(
+      ShouldShowAccountStorageReSignin(&pref_service, &sync_service, GURL()));
 }
 
 TEST(PasswordFeatureManagerUtil, DontShowAccountStorageResignIn_SyncActive) {
@@ -119,7 +121,8 @@ TEST(PasswordFeatureManagerUtil, DontShowAccountStorageResignIn_SyncActive) {
   // SyncService is running (e.g for a different signed-in user).
   sync_service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
 
-  EXPECT_FALSE(ShouldShowAccountStorageReSignin(&pref_service, &sync_service));
+  EXPECT_FALSE(
+      ShouldShowAccountStorageReSignin(&pref_service, &sync_service, GURL()));
 }
 
 TEST(PasswordFeatureManagerUtil, DontShowAccountStorageResignIn_NoPrefs) {
@@ -137,7 +140,42 @@ TEST(PasswordFeatureManagerUtil, DontShowAccountStorageResignIn_NoPrefs) {
   sync_service.SetDisableReasons(
       {syncer::SyncService::DisableReason::DISABLE_REASON_NOT_SIGNED_IN});
 
-  EXPECT_FALSE(ShouldShowAccountStorageReSignin(&pref_service, &sync_service));
+  EXPECT_FALSE(
+      ShouldShowAccountStorageReSignin(&pref_service, &sync_service, GURL()));
+}
+
+TEST(PasswordFeatureManagerUtil, DontShowAccountStorageResignIn_GaiaUrl) {
+  TestingPrefServiceSimple pref_service;
+  syncer::TestSyncService sync_service;
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kEnablePasswordsAccountStorage);
+
+  // Add an account to prefs which opted into using the account-storage.
+  pref_service.registry()->RegisterDictionaryPref(
+      prefs::kAccountStoragePerAccountSettings);
+  pref_service.Set(prefs::kAccountStoragePerAccountSettings,
+                   CreateOptedInAccountPref());
+
+  // SyncService is not running (because no user is signed-in).
+  sync_service.SetTransportState(syncer::SyncService::TransportState::DISABLED);
+  sync_service.SetDisableReasons(
+      {syncer::SyncService::DisableReason::DISABLE_REASON_NOT_SIGNED_IN});
+
+  // The re-signin promo should show up in contexts without a URL (e.g. native
+  // UI).
+  EXPECT_TRUE(
+      ShouldShowAccountStorageReSignin(&pref_service, &sync_service, GURL()));
+  // The re-signin promo should show up on all regular pages.
+  EXPECT_TRUE(ShouldShowAccountStorageReSignin(&pref_service, &sync_service,
+                                               GURL("http://www.example.com")));
+  EXPECT_TRUE(ShouldShowAccountStorageReSignin(
+      &pref_service, &sync_service, GURL("https://www.example.com")));
+  // The re-signin promo should NOT show up on Google sign-in pages.
+  EXPECT_FALSE(ShouldShowAccountStorageReSignin(
+      &pref_service, &sync_service, GURL("https://accounts.google.com")));
+  EXPECT_FALSE(ShouldShowAccountStorageReSignin(
+      &pref_service, &sync_service,
+      GURL("https://accounts.google.com/some/path")));
 }
 
 TEST(PasswordFeatureManagerUtil, AccountStoragePerAccountSettings) {

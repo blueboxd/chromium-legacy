@@ -478,7 +478,8 @@ void RecordReadyToCommitMetrics(
   {
     ChildProcessSecurityPolicyImpl* policy =
         ChildProcessSecurityPolicyImpl::GetInstance();
-    GURL process_lock = policy->GetOriginLock(new_rfh->GetProcess()->GetID());
+    ProcessLock process_lock =
+        policy->GetProcessLock(new_rfh->GetProcess()->GetID());
     UMA_HISTOGRAM_BOOLEAN("Navigation.IsLockedProcess",
                           !process_lock.is_empty());
     if (common_params.url.SchemeIsHTTPOrHTTPS()) {

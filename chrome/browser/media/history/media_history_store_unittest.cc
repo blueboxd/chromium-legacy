@@ -286,13 +286,7 @@ INSTANTIATE_TEST_SUITE_P(
                     TestState::kIncognito,
                     TestState::kSavingBrowserHistoryDisabled));
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_SavePlayback DISABLED_SavePlayback
-#else
-#define MAYBE_SavePlayback SavePlayback
-#endif
-TEST_P(MediaHistoryStoreUnitTest, MAYBE_SavePlayback) {
+TEST_P(MediaHistoryStoreUnitTest, SavePlayback) {
   base::HistogramTester histogram_tester;
 
   const auto now_before =
@@ -360,13 +354,7 @@ TEST_P(MediaHistoryStoreUnitTest, MAYBE_SavePlayback) {
       MediaHistoryStore::PlaybackWriteResult::kSuccess, IsReadOnly() ? 0 : 2);
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_SavePlayback_BadOrigin DISABLED_SavePlayback_BadOrigin
-#else
-#define MAYBE_SavePlayback_BadOrigin SavePlayback_BadOrigin
-#endif
-TEST_P(MediaHistoryStoreUnitTest, MAYBE_SavePlayback_BadOrigin) {
+TEST_P(MediaHistoryStoreUnitTest, SavePlayback_BadOrigin) {
   GURL url("http://google.com/test");
   GURL url2("http://google.co.uk/test");
   content::MediaPlayerWatchTime watch_time(url, url2.GetOrigin(),
@@ -382,13 +370,7 @@ TEST_P(MediaHistoryStoreUnitTest, MAYBE_SavePlayback_BadOrigin) {
   EXPECT_TRUE(origins.empty());
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_GetStats DISABLED_GetStats
-#else
-#define MAYBE_GetStats GetStats
-#endif
-TEST_P(MediaHistoryStoreUnitTest, MAYBE_GetStats) {
+TEST_P(MediaHistoryStoreUnitTest, GetStats) {
   {
     // Check all the tables are empty.
     mojom::MediaHistoryStatsPtr stats = GetStatsSync(service());
@@ -448,13 +430,7 @@ TEST_P(MediaHistoryStoreUnitTest, MAYBE_GetStats) {
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_UrlShouldBeUniqueForSessions DISABLED_UrlShouldBeUniqueForSessions
-#else
-#define MAYBE_UrlShouldBeUniqueForSessions UrlShouldBeUniqueForSessions
-#endif
-TEST_P(MediaHistoryStoreUnitTest, MAYBE_UrlShouldBeUniqueForSessions) {
+TEST_P(MediaHistoryStoreUnitTest, UrlShouldBeUniqueForSessions) {
   base::HistogramTester histogram_tester;
 
   GURL url_a("https://www.google.com");
@@ -528,16 +504,7 @@ TEST_P(MediaHistoryStoreUnitTest, MAYBE_UrlShouldBeUniqueForSessions) {
       MediaHistoryStore::SessionWriteResult::kSuccess, IsReadOnly() ? 0 : 3);
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_SavePlayback_IncrementAggregateWatchtime \
-  DISABLED_SavePlayback_IncrementAggregateWatchtime
-#else
-#define MAYBE_SavePlayback_IncrementAggregateWatchtime \
-  SavePlayback_IncrementAggregateWatchtime
-#endif
-TEST_P(MediaHistoryStoreUnitTest,
-       MAYBE_SavePlayback_IncrementAggregateWatchtime) {
+TEST_P(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
   GURL url("http://google.com/test");
   GURL url_alt("http://example.org/test");
 
@@ -643,13 +610,7 @@ TEST_P(MediaHistoryStoreUnitTest,
   EXPECT_EQ(origins, GetOriginRowsSync(otr_service()));
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_GetOriginsWithHighWatchTime DISABLED_GetOriginsWithHighWatchTime
-#else
-#define MAYBE_GetOriginsWithHighWatchTime GetOriginsWithHighWatchTime
-#endif
-TEST_P(MediaHistoryStoreUnitTest, MAYBE_GetOriginsWithHighWatchTime) {
+TEST_P(MediaHistoryStoreUnitTest, GetOriginsWithHighWatchTime) {
   const GURL url("http://google.com/test");
   const GURL url_alt("http://example.org/test");
   const base::TimeDelta min_watch_time = base::TimeDelta::FromMinutes(30);
@@ -994,13 +955,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Values(TestState::kNormal,
                                          TestState::kIncognito));
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_DiscoverMediaFeed DISABLED_DiscoverMediaFeed
-#else
-#define MAYBE_DiscoverMediaFeed DiscoverMediaFeed
-#endif
-TEST_P(MediaHistoryStoreFeedsTest, MAYBE_DiscoverMediaFeed) {
+TEST_P(MediaHistoryStoreFeedsTest, DiscoverMediaFeed) {
   GURL url_a("https://www.google.com/feed");
   GURL url_b("https://www.google.co.uk/feed");
   GURL url_c("https://www.google.com/feed2");
@@ -1067,13 +1022,7 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_DiscoverMediaFeed) {
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_StoreMediaFeedFetchResult DISABLED_StoreMediaFeedFetchResult
-#else
-#define MAYBE_StoreMediaFeedFetchResult StoreMediaFeedFetchResult
-#endif
-TEST_P(MediaHistoryStoreFeedsTest, MAYBE_StoreMediaFeedFetchResult) {
+TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
   const GURL feed_url("https://www.google.com/feed");
   DiscoverMediaFeed(feed_url);
   WaitForDB();
@@ -1228,15 +1177,7 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_StoreMediaFeedFetchResult) {
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_StoreMediaFeedFetchResult_WithEmpty \
-  DISABLED_StoreMediaFeedFetchResult_WithEmpty
-#else
-#define MAYBE_StoreMediaFeedFetchResult_WithEmpty \
-  StoreMediaFeedFetchResult_WithEmpty
-#endif
-TEST_P(MediaHistoryStoreFeedsTest, MAYBE_StoreMediaFeedFetchResult_WithEmpty) {
+TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_WithEmpty) {
   DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -1280,16 +1221,7 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_StoreMediaFeedFetchResult_WithEmpty) {
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_StoreMediaFeedFetchResult_MultipleFeeds \
-  DISABLED_StoreMediaFeedFetchResult_MultipleFeeds
-#else
-#define MAYBE_StoreMediaFeedFetchResult_MultipleFeeds \
-  StoreMediaFeedFetchResult_MultipleFeeds
-#endif
-TEST_P(MediaHistoryStoreFeedsTest,
-       MAYBE_StoreMediaFeedFetchResult_MultipleFeeds) {
+TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_MultipleFeeds) {
   const GURL feed_a_url("https://www.google.com/feed");
   const GURL feed_b_url("https://www.google.co.uk/feed");
 
@@ -1367,13 +1299,7 @@ TEST_P(MediaHistoryStoreFeedsTest,
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_RediscoverMediaFeed DISABLED_RediscoverMediaFeed
-#else
-#define MAYBE_RediscoverMediaFeed RediscoverMediaFeed
-#endif
-TEST_P(MediaHistoryStoreFeedsTest, MAYBE_RediscoverMediaFeed) {
+TEST_P(MediaHistoryStoreFeedsTest, RediscoverMediaFeed) {
   GURL feed_url("https://www.google.com/feed");
   DiscoverMediaFeed(feed_url);
   WaitForDB();
@@ -1466,16 +1392,7 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_RediscoverMediaFeed) {
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_StoreMediaFeedFetchResult_IncreaseFailed \
-  DISABLED_StoreMediaFeedFetchResult_IncreaseFailed
-#else
-#define MAYBE_StoreMediaFeedFetchResult_IncreaseFailed \
-  StoreMediaFeedFetchResult_IncreaseFailed
-#endif
-TEST_P(MediaHistoryStoreFeedsTest,
-       MAYBE_StoreMediaFeedFetchResult_IncreaseFailed) {
+TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_IncreaseFailed) {
   DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -1558,16 +1475,7 @@ TEST_P(MediaHistoryStoreFeedsTest,
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_StoreMediaFeedFetchResult_CheckLogoMax \
-  DISABLED_StoreMediaFeedFetchResult_CheckLogoMax
-#else
-#define MAYBE_StoreMediaFeedFetchResult_CheckLogoMax \
-  StoreMediaFeedFetchResult_CheckLogoMax
-#endif
-TEST_P(MediaHistoryStoreFeedsTest,
-       MAYBE_StoreMediaFeedFetchResult_CheckLogoMax) {
+TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_CheckLogoMax) {
   DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -1644,16 +1552,7 @@ TEST_P(MediaHistoryStoreFeedsTest,
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_StoreMediaFeedFetchResult_CheckImageMax \
-  DISABLED_StoreMediaFeedFetchResult_CheckImageMax
-#else
-#define MAYBE_StoreMediaFeedFetchResult_CheckImageMax \
-  StoreMediaFeedFetchResult_CheckImageMax
-#endif
-TEST_P(MediaHistoryStoreFeedsTest,
-       MAYBE_StoreMediaFeedFetchResult_CheckImageMax) {
+TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_CheckImageMax) {
   DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -1733,16 +1632,8 @@ TEST_P(MediaHistoryStoreFeedsTest,
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_StoreMediaFeedFetchResult_DefaultSafeSearchResult \
-  DISABLED_StoreMediaFeedFetchResult_DefaultSafeSearchResult
-#else
-#define MAYBE_StoreMediaFeedFetchResult_DefaultSafeSearchResult \
-  StoreMediaFeedFetchResult_DefaultSafeSearchResult
-#endif
 TEST_P(MediaHistoryStoreFeedsTest,
-       MAYBE_StoreMediaFeedFetchResult_DefaultSafeSearchResult) {
+       StoreMediaFeedFetchResult_DefaultSafeSearchResult) {
   DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -1780,13 +1671,7 @@ TEST_P(MediaHistoryStoreFeedsTest,
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_SafeSearchCheck DISABLED_SafeSearchCheck
-#else
-#define MAYBE_SafeSearchCheck SafeSearchCheck
-#endif
-TEST_P(MediaHistoryStoreFeedsTest, MAYBE_SafeSearchCheck) {
+TEST_P(MediaHistoryStoreFeedsTest, SafeSearchCheck) {
   const GURL feed_url_a("https://www.google.com/feed");
   const GURL feed_url_b("https://www.google.co.uk/feed");
 
@@ -1913,16 +1798,7 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_SafeSearchCheck) {
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_GetMediaFeedsSortByWatchtimePercentile \
-  DISABLED_GetMediaFeedsSortByWatchtimePercentile
-#else
-#define MAYBE_GetMediaFeedsSortByWatchtimePercentile \
-  GetMediaFeedsSortByWatchtimePercentile
-#endif
-TEST_P(MediaHistoryStoreFeedsTest,
-       MAYBE_GetMediaFeedsSortByWatchtimePercentile) {
+TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
   // We add 111 origins with watchtime and feeds for all but one of these. Half
   // of the feeds will have items.
   const unsigned kNumberOfOrigins = 111;
@@ -2178,13 +2054,7 @@ TEST_P(MediaHistoryStoreFeedsTest,
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_FeedItemsClickAndShown DISABLED_FeedItemsClickAndShown
-#else
-#define MAYBE_FeedItemsClickAndShown FeedItemsClickAndShown
-#endif
-TEST_P(MediaHistoryStoreFeedsTest, MAYBE_FeedItemsClickAndShown) {
+TEST_P(MediaHistoryStoreFeedsTest, FeedItemsClickAndShown) {
   DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -2300,13 +2170,7 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_FeedItemsClickAndShown) {
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_ResetMediaFeed DISABLED_ResetMediaFeed
-#else
-#define MAYBE_ResetMediaFeed ResetMediaFeed
-#endif
-TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeed) {
+TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeed) {
   const GURL feed_url_a("https://www.google.com/feed");
   const GURL feed_url_b("https://www.google.co.uk/feed");
 
@@ -2468,14 +2332,7 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeed) {
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_ResetMediaFeedDueToCacheClearing \
-  DISABLED_ResetMediaFeedDueToCacheClearing
-#else
-#define MAYBE_ResetMediaFeedDueToCacheClearing ResetMediaFeedDueToCacheClearing
-#endif
-TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeedDueToCacheClearing) {
+TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeedDueToCacheClearing) {
   const GURL feed_url_a("https://www.google.com/feed");
   const GURL feed_url_b("https://www.google.co.uk/feed");
 
@@ -2728,13 +2585,7 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeedDueToCacheClearing) {
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_DeleteMediaFeed DISABLED_DeleteMediaFeed
-#else
-#define MAYBE_DeleteMediaFeed DeleteMediaFeed
-#endif
-TEST_P(MediaHistoryStoreFeedsTest, MAYBE_DeleteMediaFeed) {
+TEST_P(MediaHistoryStoreFeedsTest, DeleteMediaFeed) {
   DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   DiscoverMediaFeed(GURL("https://www.google.co.uk/feed"));
   WaitForDB();
@@ -2805,13 +2656,7 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_DeleteMediaFeed) {
   }
 }
 
-// TODO(crbug.com/1087974).
-#if defined(THREAD_SANITIZER)
-#define MAYBE_GetMediaFeedFetchDetails DISABLED_GetMediaFeedFetchDetails
-#else
-#define MAYBE_GetMediaFeedFetchDetails GetMediaFeedFetchDetails
-#endif
-TEST_P(MediaHistoryStoreFeedsTest, MAYBE_GetMediaFeedFetchDetails) {
+TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedFetchDetails) {
   const GURL feed_url("https://www.google.com/feed");
 
   DiscoverMediaFeed(feed_url);

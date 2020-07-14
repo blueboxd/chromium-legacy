@@ -27,7 +27,7 @@ empty `base::Optional<T>` is equal to `base::nullopt`.
 ```C++
 base::Optional<int> opt;
 opt == true; // false
-opt.value(); // illegal, will DCHECK
+opt.value(); // illegal, will CHECK
 opt == base::nullopt; // true
 ```
 

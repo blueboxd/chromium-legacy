@@ -168,6 +168,12 @@ public class PlayerManager {
         }
     }
 
+    public void setCompressOnClose(boolean compressOnClose) {
+        if (mDelegate != null) {
+            mDelegate.setCompressOnClose(compressOnClose);
+        }
+    }
+
     public void destroy() {
         if (mDelegate != null) {
             mDelegate.destroy();

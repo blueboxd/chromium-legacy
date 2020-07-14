@@ -74,7 +74,7 @@ interface NetworkServiceClient {
     int32 process_id,
     int32 routing_id,
     string devtool_request_id,
-    array<CookieAndLineWithStatus> cookies_with_status,
+    array<CookieAndLineWithAccessResult> cookies_with_access_result,
     array<HttpRawHeaderPair> headers,
     string? raw_response_headers);
 

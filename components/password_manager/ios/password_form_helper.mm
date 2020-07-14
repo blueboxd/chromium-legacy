@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
+#include "components/autofill/core/common/field_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/ios/browser/autofill_util.h"
@@ -25,6 +26,7 @@
 #error "This file requires ARC support."
 #endif
 
+using autofill::FieldPropertiesFlags;
 using autofill::FormData;
 using autofill::FormRendererId;
 using autofill::FieldRendererId;
@@ -103,6 +105,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
 @synthesize delegate = _delegate;
 @synthesize jsPasswordManager = _jsPasswordManager;
+@synthesize fieldDataManager = _fieldDataManager;
 
 - (const GURL&)lastCommittedURL {
   return _webState ? _webState->GetLastCommittedURL() : GURL::EmptyGURL();
@@ -123,6 +126,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
     _formActivityObserverBridge =
         std::make_unique<autofill::FormActivityObserverBridge>(_webState, self);
     _jsPasswordManager = [[JsPasswordManager alloc] init];
+    _fieldDataManager = base::MakeRefCounted<autofill::FieldDataManager>();
 
     __weak PasswordFormHelper* weakSelf = self;
     auto callback = base::BindRepeating(
@@ -213,6 +217,9 @@ constexpr char kCommandPrefix[] = "passwordForm";
     return NO;
   }
 
+  // Extract FieldDataManager data for observed fields.
+  [self extractKnownFieldData:form];
+
   if (_webState && self.delegate) {
     [self.delegate formHelper:self didSubmitForm:form inMainFrame:YES];
     return YES;
@@ -229,9 +236,13 @@ constexpr char kCommandPrefix[] = "passwordForm";
                                   pageURL.GetOrigin(), &formsData)) {
     return;
   }
+  // Extract FieldDataManager data for observed form fields.
+  for (FormData& form : formsData)
+    [self extractKnownFieldData:form];
   *forms = std::move(formsData);
 }
 
+// TODO(kazinova): remove unnecessary arguments.
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
             withUsername:(const base::string16&)username
                 password:(const base::string16&)password
@@ -254,6 +265,18 @@ constexpr char kCommandPrefix[] = "passwordForm";
           completionHandler([result isEqual:@"true"]);
         }
       }];
+}
+
+// Extracts known field data.
+- (void)extractKnownFieldData:(FormData&)form {
+  for (auto& field : form.fields) {
+    if (self.fieldDataManager->HasFieldData(field.unique_renderer_id)) {
+      field.typed_value =
+          self.fieldDataManager->GetUserTypedValue(field.unique_renderer_id);
+      field.properties_mask = self.fieldDataManager->GetFieldPropertiesMask(
+          field.unique_renderer_id);
+    }
+  }
 }
 
 #pragma mark - Private methods for test only
@@ -307,6 +330,23 @@ constexpr char kCommandPrefix[] = "passwordForm";
     return;
   }
 
+  // Do not refill the form if a field has user typed input or input filled
+  // on user trigger.
+  FieldRendererId passwordId = formData.password_field.unique_renderer_id;
+  if (self.fieldDataManager->WasAutofilledOnUserTrigger(passwordId) ||
+      self.fieldDataManager->DidUserType(passwordId)) {
+    if (completionHandler) {
+      completionHandler(NO);
+    }
+    return;
+  }
+
+  self.fieldDataManager->UpdateFieldDataMapWithNullValue(
+      formData.username_field.unique_renderer_id,
+      FieldPropertiesFlags::kAutofilledOnPageLoad);
+  self.fieldDataManager->UpdateFieldDataMapWithNullValue(
+      formData.password_field.unique_renderer_id,
+      FieldPropertiesFlags::kAutofilledOnPageLoad);
   [self fillPasswordForm:formData
             withUsername:formData.username_field.value
                 password:formData.password_field.value
@@ -318,6 +358,12 @@ constexpr char kCommandPrefix[] = "passwordForm";
     confirmPasswordIdentifier:(FieldRendererId)confirmPasswordIdentifier
             generatedPassword:(NSString*)generatedPassword
             completionHandler:(nullable void (^)(BOOL))completionHandler {
+  self.fieldDataManager->UpdateFieldDataMapWithNullValue(
+      newPasswordIdentifier, FieldPropertiesFlags::kAutofilledOnUserTrigger);
+  self.fieldDataManager->UpdateFieldDataMapWithNullValue(
+      confirmPasswordIdentifier,
+      FieldPropertiesFlags::kAutofilledOnUserTrigger);
+
   // Send JSON over to the web view.
   [self.jsPasswordManager fillPasswordForm:formIdentifier
                                    inFrame:GetMainFrame(_webState)
@@ -334,6 +380,13 @@ constexpr char kCommandPrefix[] = "passwordForm";
 - (void)fillPasswordFormWithFillData:(const password_manager::FillData&)fillData
                    completionHandler:
                        (nullable void (^)(BOOL))completionHandler {
+  self.fieldDataManager->UpdateFieldDataMapWithNullValue(
+      fillData.username_element_id,
+      FieldPropertiesFlags::kAutofilledOnUserTrigger);
+  self.fieldDataManager->UpdateFieldDataMapWithNullValue(
+      fillData.password_element_id,
+      FieldPropertiesFlags::kAutofilledOnUserTrigger);
+
   [self.jsPasswordManager
        fillPasswordForm:SerializeFillData(fillData)
                 inFrame:GetMainFrame(_webState)
@@ -390,6 +443,13 @@ constexpr char kCommandPrefix[] = "passwordForm";
                                   inFrame:(web::WebFrame*)frame {
   [self.jsPasswordManager setUpForUniqueIDsWithInitialState:nextAvailableID
                                                     inFrame:frame];
+}
+
+- (void)updateFieldDataOnUserInput:(autofill::FieldRendererId)field_id
+                        inputValue:(NSString*)value {
+  self.fieldDataManager->UpdateFieldDataMap(
+      field_id, base::SysNSStringToUTF16(value),
+      autofill::FieldPropertiesFlags::kUserTyped);
 }
 
 @end

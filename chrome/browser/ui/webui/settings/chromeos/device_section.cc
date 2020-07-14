@@ -654,6 +654,10 @@ void AddDeviceDisplayStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddString("invalidDisplayId",
                          base::NumberToString(display::kInvalidDisplayId));
+
+  html_source->AddBoolean(
+      "allowDisplayAlignmentApi",
+      base::FeatureList::IsEnabled(ash::features::kDisplayAlignAssist));
 }
 
 void AddDeviceStorageStrings(content::WebUIDataSource* html_source,
@@ -845,7 +849,8 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 }
 
 void DeviceSection::AddHandlers(content::WebUI* web_ui) {
-  if (ash::features::IsDisplayIdentificationEnabled()) {
+  if (ash::features::IsDisplayIdentificationEnabled() ||
+      ash::features::IsDisplayAlignmentAssistanceEnabled()) {
     web_ui->AddMessageHandler(
         std::make_unique<chromeos::settings::DisplayHandler>());
   }

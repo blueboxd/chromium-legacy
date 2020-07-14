@@ -84,22 +84,15 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURL(
   return instance;
 }
 
-void BrowsingInstance::GetSiteAndLockForURL(const GURL& url,
-                                            bool allow_default_instance,
-                                            GURL* site_url,
-                                            GURL* lock_url) {
+SiteInfo BrowsingInstance::GetSiteInfoForURL(const GURL& url,
+                                             bool allow_default_instance) {
   scoped_refptr<SiteInstanceImpl> site_instance =
       GetSiteInstanceForURLHelper(url, allow_default_instance);
 
-  if (site_instance) {
-    *site_url = site_instance->GetSiteURL();
-    *lock_url = site_instance->lock_url();
-    return;
-  }
+  if (site_instance)
+    return site_instance->GetSiteInfo();
 
-  *site_url = GetSiteInfoForURL(url).site_url();
-  *lock_url =
-      SiteInstanceImpl::DetermineProcessLockURL(isolation_context_, url);
+  return SiteInstanceImpl::ComputeSiteInfo(isolation_context_, url);
 }
 
 bool BrowsingInstance::TrySettingDefaultSiteInstance(

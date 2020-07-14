@@ -450,7 +450,6 @@
 <translation id="2799223571221894425">បើកដំណើរការឡើងវិញ</translation>
 <translation id="2803306138276472711">ការរុករកសុវត្ថិភាព Google <ph name="BEGIN_LINK" />បានរកឃើញមេរោគ<ph name="END_LINK" /> នៅលើ <ph name="SITE" />កន្លងទៅថ្មីៗនេះ។ គេហទំព័រដែលជាធម្មតាមានសុវត្ថិភាពអាចឆ្លងមេរោគនៅពេលខ្លះ។</translation>
 <translation id="2807052079800581569">ទីតាំង​រូបភាព Y</translation>
-<translation id="2824514415781424867">ចែក​រំលែក​ទីតាំងឬ?</translation>
 <translation id="2824775600643448204">អាសយដ្ឋាន និងរបាស្វែងរក</translation>
 <translation id="2826760142808435982">ការភ្ជាប់ត្រូវបានអ៊ីនគ្រីប និងសម្គាល់អត្តសញ្ញាណ ដោយប្រើ <ph name="CIPHER" /> និងប្រើ <ph name="KX" /> ជាយន្តការផ្តោះប្តូរសោ។</translation>
 <translation id="2835170189407361413">ជម្រះបែបបទ</translation>
@@ -927,6 +926,7 @@
 <translation id="480334179571489655">បញ្ហា​គោលការណ៍​ប្រភពដើម</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">អ្នកមិនអាចចូលទៅកាន់ <ph name="SITE" /> ឥឡូវនេះបានទេ ពីព្រោះគេហទំព័ររបស់អ្នកបានព័ត៌មានអត្តសញ្ញាណរញេរញៃដែល Google Chrome មិនអាចដំណើរការបាន។ ជាធម្មតាកំហុស និងការវាយប្រហារបណ្តាញជារឿងបណ្ណោះអាសន្ន ដូច្នេះទំព័រនេះនឹងអាចដំណើរការប្រក្រតីនៅពេលក្រោយ។</translation>
+<translation id="4809079943450490359">ការណែនាំពីអ្នកគ្រប់គ្រងឧបករណ៍របស់អ្នក៖</translation>
 <translation id="4813512666221746211">កំហុសឆ្គងបណ្តាញ</translation>
 <translation id="4816492930507672669">សមនឹងទំព័រ</translation>
 <translation id="484462545196658690">ស្វ័យប្រវត្តិ</translation>

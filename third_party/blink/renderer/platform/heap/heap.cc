@@ -400,8 +400,9 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
         // with smaller objects).
         finished = DrainWorklistWithDeadline<kDefaultDeadlineCheckInterval / 5>(
             deadline, not_safe_to_concurrently_trace_worklist_.get(),
-            [visitor](const MarkingItem& item) {
-              item.callback(visitor, item.base_object_payload);
+            [visitor](const NotSafeToConcurrentlyTraceItem& item) {
+              item.desc.callback(visitor, item.desc.base_object_payload);
+              visitor->AccountMarkedBytes(item.bailout_size);
             },
             WorklistTaskId::MutatorThread);
         if (!finished)

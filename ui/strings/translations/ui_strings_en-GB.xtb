@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">select</translation>
 <translation id="1859234291848436338">Writing Direction</translation>
 <translation id="1860796786778352021">Notification close</translation>
+<translation id="186476001994626254">Web smart paste content</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Select &amp;all</translation>
@@ -67,6 +68,7 @@
 <translation id="2570734079541893434">Manage settings</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{in 1 h}other{in # h}}</translation>
 <translation id="2583543531130364912">Calibrate your touchscreen</translation>
+<translation id="2586657967955657006">Clipboard</translation>
 <translation id="2666092431469916601">Top</translation>
 <translation id="2701330563083355633">Shared from <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">New</translation>
@@ -74,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Open folder</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 year ago}other{# years ago}}</translation>
+<translation id="2878511608894704031">Delete all</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{in 1 d}other{in # d}}</translation>
 <translation id="2931838996092594335">click</translation>
 <translation id="2981684127883932071">Displaying suggestions</translation>
@@ -114,6 +117,7 @@
 <translation id="4289300219472526559">Start Speaking</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> moved to folder <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">ALL APPS</translation>
+<translation id="4491109536499578614">Image</translation>
 <translation id="4588090240171750605">Scroll Right</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, star rating <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, app recommendation</translation>
@@ -170,6 +174,7 @@
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6430678249303439055">Block all notifications from this app</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 second ago}other{# seconds ago}}</translation>
+<translation id="6503257047630241175">RTF content</translation>
 <translation id="6539092367496845964">Something went wrong. Try again later.</translation>
 <translation id="654149438358937226">Block all notifications</translation>
 <translation id="6567071839949112727">click ancestor</translation>

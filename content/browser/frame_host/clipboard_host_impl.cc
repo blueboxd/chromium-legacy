@@ -22,6 +22,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -78,16 +79,20 @@ ClipboardHostImpl::ClipboardHostImpl(
     RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver)
     : receiver_(this, std::move(receiver)),
-      clipboard_(ui::Clipboard::GetForCurrentThread()),
-      clipboard_writer_(
-          new ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)) {
+      clipboard_(ui::Clipboard::GetForCurrentThread()) {
   // |render_frame_host| may be null in unit tests.
   if (render_frame_host) {
     render_frame_routing_id_ = render_frame_host->GetRoutingID();
     render_frame_pid_ = render_frame_host->GetProcess()->GetID();
+    clipboard_writer_ = std::make_unique<ui::ScopedClipboardWriter>(
+        ui::ClipboardBuffer::kCopyPaste,
+        std::make_unique<ui::ClipboardDataEndpoint>(
+            render_frame_host->GetLastCommittedURL()));
   } else {
     render_frame_routing_id_ = MSG_ROUTING_NONE;
     render_frame_pid_ = ChildProcessHost::kInvalidUniqueID;
+    clipboard_writer_ = std::make_unique<ui::ScopedClipboardWriter>(
+        ui::ClipboardBuffer::kCopyPaste);
   }
 }
 

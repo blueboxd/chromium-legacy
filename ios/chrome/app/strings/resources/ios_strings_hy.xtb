@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hy">
 <translation id="1005230401424685968">ՏՏՏՏ</translation>
+<translation id="1013952917065545813">Դուք կարող եք վերադառնալ այստեղ՝ ձեր վերջերս փակած ներդիրները նորից բացելու համար։</translation>
 <translation id="1016495303386450659">Տարրը թարմացվեց</translation>
 <translation id="1044891598689252897">Կայքերը կաշխատեն սովորական ռեժիմով</translation>
 <translation id="1047726139967079566">Էջանշել այս էջը...</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">Դադարեցնել</translation>
 <translation id="1283524564873030414">Վերջին 24 ժամվա</translation>
 <translation id="1285320974508926690">Երբեք չթարգմանել այս կայքը</translation>
+<translation id="1321993286294231467">Չհաջողվեց պահել պատկերը։</translation>
 <translation id="1323735185997015385">Ջնջել</translation>
 <translation id="132683371494960526">Կրկնակի հպեք՝ վերադաս պանակը փոխելու համար:</translation>
 <translation id="1340643665687018190">Փակել ընտրացանկը</translation>
@@ -560,6 +562,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="7658239707568436148">Չեղարկել</translation>
 <translation id="766891008101699113">Համացանցում անանուն կերպով կայքէջեր այցելելու համար ավելացրեք նոր ներդիր:</translation>
 <translation id="7671141431838911305">ՏԵՂԱԴՐԵԼ</translation>
+<translation id="7701040980221191251">Չկա</translation>
 <translation id="7765158879357617694">Տեղափոխել</translation>
 <translation id="7771470029643830783">Դուրս գրվելու դեպքում էջանիշները, պատմությունը, գաղտնաբառերը և Chrome-ի մյուս տվյալներն այլևս չեն համաժամացվի ձեր Google հաշվի հետ։
 

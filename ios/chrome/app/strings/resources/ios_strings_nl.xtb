@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="1005230401424685968">JJJJ</translation>
+<translation id="1013952917065545813">Je kunt hier terugkomen om tabbladen die je onlangs hebt gesloten opnieuw te openen</translation>
 <translation id="1016495303386450659">Item geüpdated</translation>
 <translation id="1044891598689252897">Sites werken naar behoren</translation>
 <translation id="1047726139967079566">Bookmark instellen voor deze pagina...</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1283524564873030414">Afgelopen 24 uur</translation>
 <translation id="1285320974508926690">Deze site nooit vertalen</translation>
+<translation id="1321993286294231467">Fout bij opslaan van afbeelding.</translation>
 <translation id="1323735185997015385">Verwijderen</translation>
 <translation id="132683371494960526">Dubbeltik om de hoofdmap te wijzigen.</translation>
 <translation id="1340643665687018190">Menu sluiten</translation>
@@ -560,6 +562,7 @@ Sites mogen geen cookies gebruiken om je browse-activiteit op verschillende site
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="766891008101699113">Voeg een nieuw tabblad toe als je privé wilt browsen.</translation>
 <translation id="7671141431838911305">INSTALLEER</translation>
+<translation id="7701040980221191251">Geen</translation>
 <translation id="7765158879357617694">Verplaatsen</translation>
 <translation id="7771470029643830783">Als je uitlogt, worden je bookmarks, geschiedenis, wachtwoorden en andere Chrome-gegevens niet meer gesynchroniseerd met je Google-account.
 

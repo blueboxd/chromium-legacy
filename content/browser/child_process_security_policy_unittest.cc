@@ -85,12 +85,12 @@ void LockProcessIfNeeded(int process_id,
   scoped_refptr<SiteInstanceImpl> site_instance =
       SiteInstanceImpl::CreateForURL(browser_context, url);
   if (site_instance->RequiresDedicatedProcess() &&
-      SiteInstanceImpl::ShouldLockToOrigin(site_instance->GetIsolationContext(),
-                                           site_instance->GetSiteURL(),
-                                           site_instance->IsGuest())) {
-    ChildProcessSecurityPolicyImpl::GetInstance()->LockToOrigin(
+      SiteInstanceImpl::ShouldLockProcess(site_instance->GetIsolationContext(),
+                                          site_instance->GetSiteURL(),
+                                          site_instance->IsGuest())) {
+    ChildProcessSecurityPolicyImpl::GetInstance()->LockProcess(
         site_instance->GetIsolationContext(), process_id,
-        site_instance->lock_url());
+        site_instance->GetProcessLock());
   }
 }
 

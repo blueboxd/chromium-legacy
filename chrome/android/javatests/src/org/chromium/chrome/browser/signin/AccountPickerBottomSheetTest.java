@@ -104,8 +104,7 @@ public class AccountPickerBottomSheetTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AccountPickerBottomSheetCoordinator accountPickerBottomSheetCoordinator =
                     new AccountPickerBottomSheetCoordinator(mActivityTestRule.getActivity(),
-                            mActivityTestRule.getActivity().getBottomSheetController(),
-                            mAccountPickerDelegateMock);
+                            getBottomSheetController(), mAccountPickerDelegateMock);
         });
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
@@ -159,8 +158,7 @@ public class AccountPickerBottomSheetTest {
     public void testDismissCollapsedSheet() {
         buildAndShowAccountPickerBottomSheet();
         onView(withText(ACCOUNT_NAME1)).check(matches(isDisplayed()));
-        BottomSheetController controller =
-                mActivityTestRule.getActivity().getBottomSheetController();
+        BottomSheetController controller = getBottomSheetController();
         Assert.assertTrue(controller.isSheetOpen());
         Assert.assertEquals(2, mFakeProfileDataSource.getNumberOfObservers());
         onView(isRoot()).perform(pressBack());
@@ -173,8 +171,7 @@ public class AccountPickerBottomSheetTest {
     public void testDismissExpandedSheet() {
         buildAndShowAccountPickerBottomSheet();
         onView(withText(FULL_NAME1)).perform(click());
-        BottomSheetController controller =
-                mActivityTestRule.getActivity().getBottomSheetController();
+        BottomSheetController controller = getBottomSheetController();
         Assert.assertTrue(controller.isSheetOpen());
         Assert.assertEquals(2, mFakeProfileDataSource.getNumberOfObservers());
         onView(isRoot()).perform(pressBack());
@@ -307,5 +304,11 @@ public class AccountPickerBottomSheetTest {
                        withEffectiveVisibility(VISIBLE)))
                 .perform(click());
         verify(mAccountPickerDelegateMock).addAccount();
+    }
+
+    private BottomSheetController getBottomSheetController() {
+        return mActivityTestRule.getActivity()
+                .getRootUiCoordinatorForTesting()
+                .getBottomSheetController();
     }
 }

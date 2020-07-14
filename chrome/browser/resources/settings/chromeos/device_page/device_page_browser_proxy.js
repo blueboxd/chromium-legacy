@@ -206,6 +206,15 @@ cr.define('settings', function() {
      * @return {!Promise<boolean>} Whether purging of DLC was successful.
      */
     purgeDlc(dlcId) {}
+
+    /**
+     * Updates the position of the dragged display to render preview indicators
+     * as the display is being dragged around.
+     * @param {string} id Display id of selected display.
+     * @param {number} deltaX x-axis position change since the last update.
+     * @param {number} deltaY y-axis position change since the last update.
+     */
+    dragDisplayDelta(id, deltaX, deltaY) {}
   }
 
   /**
@@ -315,6 +324,11 @@ cr.define('settings', function() {
     /** @override */
     purgeDlc(dlcId) {
       return cr.sendWithPromise('purgeDlc', dlcId);
+    }
+
+    /** @override */
+    dragDisplayDelta(id, deltaX, deltaY) {
+      chrome.send('dragDisplayDelta', [id, deltaX, deltaY]);
     }
   }
 

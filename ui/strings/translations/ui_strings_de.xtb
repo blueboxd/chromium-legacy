@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">Einstellungen verwalten</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{in 1 h}other{in # h}}</translation>
 <translation id="2583543531130364912">Touchscreen kalibrieren</translation>
+<translation id="2586657967955657006">Zwischenablage</translation>
 <translation id="2666092431469916601">Oben</translation>
 <translation id="2701330563083355633">Geteilt von <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">Neu</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">Sprachausgabe starten</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> verschoben in <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">ALLE APPS</translation>
+<translation id="4491109536499578614">Bild</translation>
 <translation id="4588090240171750605">Nach rechts blättern</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Bewertung von <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, App-Empfehlung</translation>

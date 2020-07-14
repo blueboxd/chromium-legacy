@@ -2,13 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import datetime
 import json
 import unittest
 
 from blinkpy.common.checkout.git_mock import MockGit
 from blinkpy.common.host_mock import MockHost
-from blinkpy.common.net.git_cl import CLStatus
 from blinkpy.common.net.git_cl import TryJobStatus
 from blinkpy.common.net.git_cl_mock import MockGitCL
 from blinkpy.common.net.network_transaction import NetworkTimeout
@@ -23,7 +21,6 @@ from blinkpy.w3c.local_wpt_mock import MockLocalWPT
 from blinkpy.w3c.test_importer import TestImporter, ROTATIONS_URL, TBR_FALLBACK
 from blinkpy.w3c.wpt_github_mock import MockWPTGitHub
 from blinkpy.w3c.wpt_manifest import BASE_MANIFEST_NAME
-from blinkpy.web_tests.builder_list import BuilderList
 from blinkpy.web_tests.port.android import PRODUCTS_TO_EXPECTATION_FILE_PATHS
 
 MOCK_WEB_TESTS = '/mock-checkout/' + RELATIVE_WEB_TESTS
@@ -592,6 +589,7 @@ class TestImporterTest(LoggingTestCase):
         host.filesystem.write_text_file(dest_path + '/foo-test-expected.txt',
                                         '')
         host.filesystem.write_text_file(dest_path + '/OWNERS', '')
+        host.filesystem.write_text_file(dest_path + '/DIR_METADATA', '')
         host.filesystem.write_text_file(dest_path + '/bar/baz/OWNERS', '')
         # When the destination path is cleared, OWNERS files and baselines
         # are kept.
@@ -600,4 +598,5 @@ class TestImporterTest(LoggingTestCase):
         self.assertTrue(
             host.filesystem.exists(dest_path + '/foo-test-expected.txt'))
         self.assertTrue(host.filesystem.exists(dest_path + '/OWNERS'))
+        self.assertTrue(host.filesystem.exists(dest_path + '/DIR_METADATA'))
         self.assertTrue(host.filesystem.exists(dest_path + '/bar/baz/OWNERS'))

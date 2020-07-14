@@ -52,8 +52,7 @@ const int kExtraPassingMargin = 2;
 const int kMinNumClicksToDecay = 30;
 
 // Time between two consecutive decays (assuming enough clicks).
-constexpr base::TimeDelta kTimeBetweenDecays =
-    base::TimeDelta::FromHours(24);  // 24 hours = 1 day
+constexpr auto kTimeBetweenDecays = base::TimeDelta::FromDays(1);
 
 // Decay factor as a fraction. The current value approximates the seventh root
 // of 0.5. This yields a 50% decay per seven decays. Seven weak decays are used

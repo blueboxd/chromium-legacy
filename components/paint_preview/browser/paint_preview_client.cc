@@ -168,6 +168,9 @@ void PaintPreviewClient::RenderFrameDeleted(
   // TODO(crbug/1044983): Investigate possible issues with cleanup if just
   // a single subframe gets deleted.
   auto maybe_token = render_frame_host->GetEmbeddingToken();
+  if (!maybe_token.has_value())
+    return;
+
   bool is_main_frame = render_frame_host->GetParent() == nullptr;
   base::UnguessableToken frame_guid = maybe_token.value();
   auto it = pending_previews_on_subframe_.find(frame_guid);

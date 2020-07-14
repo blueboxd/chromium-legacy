@@ -98,6 +98,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="1995660704900986789">Sluk</translation>
 <translation id="2012624427112548395">Ctrl+Søg+H</translation>
 <translation id="2016340657076538683">Skriv en besked</translation>
+<translation id="2018630726571919839">Fortæl en vittighed</translation>
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2067602449040652523">Lysstyrke for tastatur</translation>
 <translation id="209965399369889474">Der er ingen netværksforbindelse</translation>
@@ -125,6 +126,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="2354174487190027830">Aktiverer <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Fortsæt</translation>
 <translation id="2365393535144473978">Bluetooth aktiveres, når du aktiverer mobildata.</translation>
+<translation id="2369165858548251131">"Hej" på kinesisk</translation>
 <translation id="2390318262976603432">Lokale indstillinger</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Der er en tilgængelig opdatering</translation>
@@ -142,6 +144,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="256712445991462162">den fastgjorte lup</translation>
 <translation id="2575685495496069081">Samlet login fra flere konti er deaktiveret</translation>
 <translation id="2582112259361606227">Genstart for at opdatere</translation>
+<translation id="2595239820337756193">5000 i mil</translation>
 <translation id="2617342710774726426">SIM-kortet er låst</translation>
 <translation id="2621713457727696555">Beskyttet</translation>
 <translation id="2653659639078652383">Indsend</translation>
@@ -195,6 +198,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="3154351730702813399">Administratoren af enheden kan overvåge din browseraktivitet.</translation>
 <translation id="3181441307743005334">Genstarten kan tage lidt tid</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Forbundet til en enhed}one{Forbundet til # enhed}other{Forbundet til # enheder}}</translation>
+<translation id="320207200541803018">Indstil timer</translation>
 <translation id="3203405173652969239">Kontaktadgang blev aktiveret</translation>
 <translation id="3207953481422525583">Brugerindstillinger</translation>
 <translation id="3217205077783620295">Lydstyrken er slået til. Tryk på knappen for at sætte på lydløs.</translation>
@@ -207,6 +211,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan stadig logge ind senere.</translation>
 <translation id="3321628682574733415">Forkert forældrekode</translation>
 <translation id="332587331255250389">Udskift batteriet</translation>
+<translation id="334252345105450327">Tag et screenshot</translation>
 <translation id="3351879221545518001">Du caster i øjeblikket skærmen.</translation>
 <translation id="3364721542077212959">Styluspenværktøjer</translation>
 <translation id="3368922792935385530">Tilsluttet</translation>
@@ -239,6 +244,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="3631369015426612114">Tillad notifikationer fra følgende</translation>
 <translation id="3638400994746983214">Slå privatlivsskærmen til eller fra. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Administreret bruger</translation>
+<translation id="3702846122927433391">Befolkningstallet i Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Tag et screenshot af området</translation>
 <translation id="371370241367527062">Mikrofon på forsiden</translation>
@@ -520,6 +526,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS" /> sekunder.</translation>
 <translation id="7188494361780961876">Menuen blev flyttet til øverste venstre hjørne af skærmen.</translation>
+<translation id="7189412385142492784">Hvor langt væk er Venus?</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Denne Chromebook skal genstartes, før opdateringen kan anvendes. Dette kan tage op til 1 minut.</translation>
 <translation id="7256634071279256947">Mikrofon på bagsiden</translation>
 <translation id="726276584504105859">Træk hertil for at bruge opdelt skærm</translation>
@@ -646,6 +653,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8649101189709089199">Tekstoplæsning</translation>
 <translation id="8652175077544655965">Luk indstillinger</translation>
 <translation id="8653151467777939995">Vis indstillinger for notifikationer. Notifikationer er slået til</translation>
+<translation id="8660331759611631213">Kvadratroden af 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, signalstyrke <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Vis netværksliste. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

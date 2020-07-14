@@ -213,7 +213,7 @@ void UserMediaClient::MaybeProcessNextRequestInfo() {
                   WrapWeakPersistent(this)));
   } else {
     DCHECK(current_request->IsStopTrack());
-    WebPlatformMediaStreamTrack* track = WebPlatformMediaStreamTrack::GetTrack(
+    MediaStreamTrackPlatform* track = MediaStreamTrackPlatform::GetTrack(
         WebMediaStreamTrack(current_request->track_to_stop()));
     if (track) {
       track->StopAndNotify(WTF::Bind(&UserMediaClient::CurrentRequestCompleted,

@@ -147,7 +147,7 @@
 <translation id="2154710561487035718">URL କପି କରନ୍ତୁ</translation>
 <translation id="2156074688469523661">ବାକିଥିବା ସାଇଟ୍‍ଗୁଡ଼ିକ (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">ଆପଣଙ୍କ ଫୋନ୍‍ରୁ ଅନ୍ୟ ଏକ ଡିଭାଇସ୍ ସହ କିଛି ସେୟାର୍ କରିବା ପାଇଁ, ଉଭୟ ଡିଭାଇସ୍‍ର Chrome ସେଟିଂସ୍‍‍ରେ ସିଙ୍କ୍ ଚାଲୁ କରନ୍ତୁ</translation>
-<translation id="2169830938017475061">ବର୍ତ୍ତମାନ</translation>
+<translation id="2169830938017475061">Now</translation>
 <translation id="2175927920773552910">QR କୋଡ୍</translation>
 <translation id="218608176142494674">ସେୟାରିଂ</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> ଭାବେ ଜାରି ରଖନ୍ତୁ</translation>
@@ -209,7 +209,6 @@
 <translation id="2650751991977523696">ଫାଇଲ୍‌ଟି ପୁଣି ଡାଉନ୍‌ଲୋଡ୍ କରିବେ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{#ଟି ଅଡିଓ ଫାଇଲ୍‌}other{#ଟି ଅଡିଓ ଫାଇଲ୍‌}}</translation>
 <translation id="2656405586795711023">ୱେବ୍ ଆପଗୁଡ଼ିକ</translation>
-<translation id="2677748264148917807">ଛାଡ଼ନ୍ତୁ</translation>
 <translation id="2689830683995595741">Chrome ବ୍ୟବହାର କରିବା ଦ୍ୱାରା, ଆପଣ <ph name="BEGIN_LINK1" />Google ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK1" /> ଏବଂ <ph name="BEGIN_LINK2" />Google Chrome ଏବଂ Chrome OS ଅତିରିକ୍ତ ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK2" /> ସହିତ ସହମତ ହେଉଛନ୍ତି। <ph name="BEGIN_LINK3" />Family Link ମାଧ୍ୟମରେ ପରିଚାଳନା କରାଯାଇଥିବା Google ଆକାଉଣ୍ଟଗୁଡ଼ିକ ପାଇଁ ଗୋପନୀୟତା ନୋଟିସ୍<ph name="END_LINK3" /> ମଧ୍ୟ ଲାଗୁ ହୋଇଥାଏ।</translation>
 <translation id="2707726405694321444">ପୃଷ୍ଠା ରିଫ୍ରେସ୍ କରନ୍ତୁ</translation>
 <translation id="2709516037105925701">ସ୍ୱତଃପୂରଣ</translation>
@@ -290,6 +289,7 @@
 <translation id="3303414029551471755">ବିଷୟବସ୍ତୁ ଡାଉନ୍‍‍ଲୋଡ୍ କରିବା ପାଇଁ ଆଗକୁ ବଢ଼ିବେ?</translation>
 <translation id="3306398118552023113">Chromeରେ ଏହି ଆପ୍‍ ଚାଲୁଛି</translation>
 <translation id="3315103659806849044">ଆପଣ ବର୍ତ୍ତମାନ ଆପଣଙ୍କର ସିଙ୍କ ଏବଂ Google ସେବାର ସେଟିଂସ୍‌ଗୁଡ଼ିକ କଷ୍ଟମାଇଜ୍ କରୁଛନ୍ତି। ସିଙ୍କ ଚାଲୁ କରିବା ଶେଷ କରିବା ପାଇଁ, ସ୍କ୍ରିନ୍‌ର ତଳ ପାର୍ଶ୍ୱରେ ଥିବା ନିଶ୍ଚିତ ବଟନ୍‌ରେ ଟାପ୍ କରନ୍ତୁ। ଉପରକୁ ନାଭିଗେଟ୍ କରନ୍ତୁ</translation>
+<translation id="3320630259304269485">ସେଫ୍ ବ୍ରାଉଜିଂ (ବିପଦଜନକ ସାଇଟଗୁଡ଼ିକରୁ ସୁରକ୍ଷା) ଏବଂ ଅନ୍ୟ ସୁରକ୍ଷା ସେଟିଂସ୍</translation>
 <translation id="3328801116991980348">ସାଇଟ୍‌ ସୂଚନା</translation>
 <translation id="3333961966071413176">ସମସ୍ତ ଯୋଗାଯୋଗଗୁଡ଼ିକ</translation>
 <translation id="3334729583274622784">ଫାଇଲ୍‍‍ର ଏକ୍ସଟେନ୍‌ସନ୍ ବଦଳାଇବେ କି?</translation>
@@ -306,6 +306,7 @@
 <translation id="3389286852084373014">ଟେକ୍ସଟ୍ ବହୁତ ଲମ୍ବା ଅଟେ</translation>
 <translation id="3398320232533725830">ବୁକ୍‌ମାର୍କ ପରିଚାଳକ ଖୋଲନ୍ତୁ</translation>
 <translation id="3414952576877147120">ଆକାର:</translation>
+<translation id="3435738964857648380">ସୁରକ୍ଷା</translation>
 <translation id="3443221991560634068">ବର୍ତ୍ତମାନର ପୃଷ୍ଠାକୁ ରିଲୋଡ୍ କରନ୍ତୁ</translation>
 <translation id="3478363558367712427">ଆପଣ ଆପଣଙ୍କର ସର୍ଚ୍ଚ ଇଞ୍ଜିନ୍ ବାଛିପାରିବେ</translation>
 <translation id="3492207499832628349">ନୂଆ ଇନ୍‌କଗ୍ନିଟୋ ଟାବ୍</translation>
@@ -534,7 +535,6 @@
 <translation id="5355191726083956201">ଉନ୍ନତ ସୁରକ୍ଷା ଚାଲୁ ଅଛି</translation>
 <translation id="5357811892247919462">ଟାବ୍ ପ୍ରାପ୍ତ ହୋଇଛି</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" />ଟି ଖୋଲାଥିବା ଟାବ୍, ଟାବ୍‌ଗୁଡ଼ିକ ସ୍ୱିଚ୍ କରିବାକୁ ଟାପ୍ କରନ୍ତୁ}other{<ph name="OPEN_TABS_MANY" />ଟି ଖୋଲାଥିବା ଟାବ୍, ଟାବ୍‌ଗୁଡ଼ିକ ସ୍ୱିଚ୍ କରିବାକୁ ଟାପ୍ କରନ୍ତୁ}}</translation>
-<translation id="5384883051496921101">ଏହି ସାଇଟ୍ ଇନ୍‌କଗ୍ନିଟୋ ମୋଡ୍‍‍ରେ ବାହାରର କୌଣସି ଆପ୍ ସହ ସୂଚନା ସେୟାର୍ କରିବାକୁ ଯାଉଛି।</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1ଟି ଅଧିକ)}other{(+ #ଟି ଅଧିକ)}}</translation>
 <translation id="5403592356182871684">ନାମଗୁଡ଼ିକ</translation>
 <translation id="5403644198645076998">କେବଳ ନିର୍ଦ୍ଦିଷ୍ଟ ସାଇଟ୍‌ଗୁଡିକୁ ଅନୁମତି ଦିଏ</translation>
@@ -705,7 +705,6 @@
 <translation id="6593061639179217415">ଡେସ୍କଟପ୍ ସାଇଟ୍</translation>
 <translation id="6597891566292541626">ଏହି ଫ୍ରେମରେ QR/ବାରକୋଡର ସ୍ଥିତି।</translation>
 <translation id="6600954340915313787">କପି କରାଯାଇ Chromeକୁ ନିଆଗଲା</translation>
-<translation id="662080504995468778">ରୁହନ୍ତୁ</translation>
 <translation id="6627583120233659107">ଫୋଲ୍ଡର୍ ଏଡିଟ୍ କରନ୍ତୁ</translation>
 <translation id="6643016212128521049">ଖାଲି କରନ୍ତୁ</translation>
 <translation id="6643649862576733715">ସେଭ୍ କରାଯାଇଥିବା ଡାଟାର ପରିଣାମ ଅନୁଯାୟୀ କ୍ରମବଦ୍ଧ କରାଯାଇଛି</translation>
@@ -988,7 +987,6 @@
 <translation id="8922289737868596582">ସେଗୁଡ଼ିକୁ ଅଫ୍‌ଲାଇନ୍‌ରେ ବ୍ୟବହାର କରିବାକୁ ’ଅଧିକ ବିକଳ୍ପଗୁଡ଼ିକ’ ବଟନ୍‌ରୁ ପୃଷ୍ଠାଗୁଡ଼ିକ ଡାଉନ୍‌ଲୋଡ୍‌ କରନ୍ତୁ</translation>
 <translation id="8937772741022875483">ଡିଜିଟାଲ୍ ୱେଲ୍‍ବିଂରୁ ଆପଣଙ୍କର Chromeର କାର୍ଯ୍ୟକଳାପ କାଢ଼ିବେ?</translation>
 <translation id="8942627711005830162">ଅନ୍ୟ ୱିଣ୍ଡୋରେ ଖୋଲନ୍ତୁ</translation>
-<translation id="894871326938397531">ଇନ୍‌କଗ୍ନିଟୋ ମୋଡ୍ ଛାଡ଼ିବେ?</translation>
 <translation id="8951232171465285730">Chrome ଆପଣଙ୍କର <ph name="MEGABYTES" /> MB ସେଭ୍ କରିଛି</translation>
 <translation id="8965591936373831584">ବାକି ଅଛି</translation>
 <translation id="8970887620466824814">କିଛି ଭୁଲ ହୋଇଗଲା।</translation>
@@ -999,6 +997,7 @@
 <translation id="9028914725102941583">ସମସ୍ତ ଡିଭାଇସ୍‍‍ରେ ସେୟାର୍ କରିବା ପାଇଁ ସିଙ୍କ୍ ଚାଲୁ କରନ୍ତୁ</translation>
 <translation id="9040142327097499898">ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ଅନୁମତି ଦିଆଯାଏ। ଏହି ଡିଭାଇସ୍‌ ପାଇଁ ଲୋକେସନ୍‌ ବନ୍ଦ ଅଛି।</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{#ଟି ଭିଡିଓ}other{#ଟି ଭିଡିଓ}}</translation>
+<translation id="9042893549633094279">ଗୋପନୀୟତା ଏବଂ ସୁରକ୍ଷା</translation>
 <translation id="9050666287014529139">ପାସ୍‌ଫ୍ରେଜ୍</translation>
 <translation id="9063523880881406963">ଡେସ୍କଟପ୍ ସାଇଟ୍ ଅନୁରୋଧକୁ ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="9065203028668620118">ସମ୍ପାଦନ</translation>

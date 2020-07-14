@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/widget/screen_orientation.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -68,7 +69,8 @@ class FakeChromeClient : public EmptyChromeClient {
   // ChromeClient overrides.
   WebScreenInfo GetScreenInfo(LocalFrame&) const override {
     WebScreenInfo screen_info;
-    screen_info.orientation_type = kWebScreenOrientationLandscapePrimary;
+    screen_info.orientation_type =
+        mojom::blink::ScreenOrientation::kLandscapePrimary;
     return screen_info;
   }
 };

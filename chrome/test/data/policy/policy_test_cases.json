@@ -1402,6 +1402,16 @@
     ]
   },
 
+  "ExtensionInstallBlocklist": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "ExtensionInstallBlocklist": ["*"] },
+        "prefs": { "extensions.install.denylist": {} }
+      }
+    ]
+  },
+
   "ExtensionInstallWhitelist": {
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [

@@ -71,6 +71,7 @@
 <translation id="808894953321890993">שינוי הסיסמה</translation>
 <translation id="8208861521865154048">הטבות</translation>
 <translation id="8347227221149377169">משימות הדפסה</translation>
+<translation id="8623849191266582420"><ph name="DEVICE_TYPE" /> זה מנוהל על-ידי <ph name="ENROLLMENT_DOMAIN" />. מנהלי מערכת עשויים להגדיר מרחוק את המכשיר הזה ולעקוב אחריו.</translation>
 <translation id="8701136875688985581">משתמש זה מנוהל על ידי <ph name="ENROLLMENT_DOMAIN" />. הדומיין עשוי לנהל מרחוק את ההגדרות ולעקוב אחרי פעילות המשתמש.</translation>
 <translation id="871560550817059752">נכשלה – הדיו נגמר</translation>
 <translation id="8747900814994928677">אישור השינוי</translation>

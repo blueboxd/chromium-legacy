@@ -71,6 +71,7 @@ Intenta presionar el micrófono para hacerme una pregunta.</translation>
 <translation id="808894953321890993">Cambiar contraseña</translation>
 <translation id="8208861521865154048">Beneficios</translation>
 <translation id="8347227221149377169">Trabajos de impresión</translation>
+<translation id="8623849191266582420"><ph name="ENROLLMENT_DOMAIN" /> administra el dispositivo <ph name="DEVICE_TYPE" />. Es posible que los administradores configuren y supervisen el dispositivo de forma remota.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> administra a este usuario. Puede supervisar la actividad del usuario y cambiar la configuración de forma remota.</translation>
 <translation id="871560550817059752">Error: Sin tinta</translation>
 <translation id="8747900814994928677">Confirmar cambio</translation>

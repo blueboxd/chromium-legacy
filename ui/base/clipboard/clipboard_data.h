@@ -10,6 +10,7 @@
 
 #include "base/component_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 
 class SkBitmap;
 
@@ -90,6 +91,12 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardData {
     format_ |= static_cast<int>(ClipboardInternalFormat::kWeb);
   }
 
+  ClipboardDataEndpoint* source() const { return src_.get(); }
+
+  void set_source(std::unique_ptr<ClipboardDataEndpoint> src) {
+    src_ = std::move(src);
+  }
+
  private:
   // Plain text in UTF8 format.
   std::string text_;
@@ -116,6 +123,9 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardData {
   bool web_smart_paste_;
 
   int format_;
+
+  // The source of the data.
+  std::unique_ptr<ClipboardDataEndpoint> src_ = nullptr;
 };
 
 }  // namespace ui

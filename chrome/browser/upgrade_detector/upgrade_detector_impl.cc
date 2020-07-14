@@ -50,27 +50,24 @@
 namespace {
 
 // The default thresholds for reaching annoyance levels.
-constexpr base::TimeDelta kDefaultVeryLowThreshold =
-    base::TimeDelta::FromHours(1);
-constexpr base::TimeDelta kDefaultLowThreshold = base::TimeDelta::FromDays(2);
-constexpr base::TimeDelta kDefaultElevatedThreshold =
-    base::TimeDelta::FromDays(4);
-constexpr base::TimeDelta kDefaultHighThreshold = base::TimeDelta::FromDays(7);
+constexpr auto kDefaultVeryLowThreshold = base::TimeDelta::FromHours(1);
+constexpr auto kDefaultLowThreshold = base::TimeDelta::FromDays(2);
+constexpr auto kDefaultElevatedThreshold = base::TimeDelta::FromDays(4);
+constexpr auto kDefaultHighThreshold = base::TimeDelta::FromDays(7);
 
 // How long to wait (each cycle) before checking which severity level we should
 // be at. Once we reach the highest severity, the timer will stop.
-constexpr base::TimeDelta kNotifyCycleTime = base::TimeDelta::FromMinutes(20);
+constexpr auto kNotifyCycleTime = base::TimeDelta::FromMinutes(20);
 
 // Same as kNotifyCycleTimeMs but only used during testing.
-constexpr base::TimeDelta kNotifyCycleTimeForTesting =
+constexpr auto kNotifyCycleTimeForTesting =
     base::TimeDelta::FromMilliseconds(500);
 
 // How often to check to see if the build has become outdated.
-constexpr base::TimeDelta kOutdatedBuildDetectorPeriod =
-    base::TimeDelta::FromDays(1);
+constexpr auto kOutdatedBuildDetectorPeriod = base::TimeDelta::FromDays(1);
 
 // The number of days after which we identify a build/install as outdated.
-constexpr base::TimeDelta kOutdatedBuildAge = base::TimeDelta::FromDays(12 * 7);
+constexpr auto kOutdatedBuildAge = base::TimeDelta::FromDays(7) * 12;
 
 constexpr bool ShouldDetectOutdatedBuilds() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)

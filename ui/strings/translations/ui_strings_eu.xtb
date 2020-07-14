@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">Kudeatu ezarpenak</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 h barru}other{# h barru}}</translation>
 <translation id="2583543531130364912">Kalibratu ukipen-pantaila</translation>
+<translation id="2586657967955657006">Arbela</translation>
 <translation id="2666092431469916601">Goiko elementua</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> gailutik partekatu da</translation>
 <translation id="271033894570825754">Berria</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">Hasi hitz egiten</translation>
 <translation id="430191667033048642">Eraman da <ph name="MOVED_APP_NAME" /> aplikazioa <ph name="FOLDER_NAME" /> karpetara.</translation>
 <translation id="4316910396681052118">APLIKAZIO GUZTIAK</translation>
+<translation id="4491109536499578614">Irudia</translation>
 <translation id="4588090240171750605">Joan eskuinera</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" /> aplikazioa. <ph name="RATING_SCORE" /> izarreko balorazioa dauka.</translation>
 <translation id="4648249871170053485">Gomendatutako aplikazioa (<ph name="APP_NAME" />)</translation>

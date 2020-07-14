@@ -34,6 +34,7 @@ class SkBitmap;
 namespace ui {
 class TestClipboard;
 class ScopedClipboardWriter;
+class ClipboardDataEndpoint;
 
 // Clipboard:
 // - reads from and writes to the system clipboard.
@@ -250,15 +251,23 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
   virtual ~Clipboard();
 
   // Write a bunch of objects to the system clipboard. Copies are made of the
-  // contents of |objects|.
-  virtual void WritePortableRepresentations(ClipboardBuffer buffer,
-                                            const ObjectMap& objects) = 0;
+  // contents of |objects|. Also, adds the source of the data to the clipboard,
+  // which can be used when we need to restrict the clipboard data between a set
+  // of confidential documents. The data source maybe passed as nullptr.
+  virtual void WritePortableRepresentations(
+      ClipboardBuffer buffer,
+      const ObjectMap& objects,
+      std::unique_ptr<ClipboardDataEndpoint> data_src) = 0;
+
   // Write |platform_representations|, in the order of their appearance in
-  // |platform_representations|.
+  // |platform_representations|. Also, adds the source of the data to the
+  // clipboard, which can be used when we need to restrict the clipboard data
+  // between a set of confidential documents. The data source maybe passed as
+  // nullptr.
   virtual void WritePlatformRepresentations(
       ClipboardBuffer buffer,
-      std::vector<Clipboard::PlatformRepresentation>
-          platform_representations) = 0;
+      std::vector<Clipboard::PlatformRepresentation> platform_representations,
+      std::unique_ptr<ClipboardDataEndpoint> data_src) = 0;
 
   void DispatchPortableRepresentation(PortableFormat format,
                                       const ObjectMapParams& params);

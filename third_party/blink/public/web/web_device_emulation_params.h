@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DEVICE_EMULATION_PARAMS_H_
 
 #include "base/optional.h"
-#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
+#include "third_party/blink/public/mojom/widget/screen_orientation.mojom-shared.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "ui/gfx/geometry/point.h"
@@ -18,7 +18,7 @@ namespace blink {
 struct WebDeviceEmulationParams {
   enum ScreenPosition { kDesktop, kMobile, kScreenPositionLast = kMobile };
 
-  ScreenPosition screen_position;
+  ScreenPosition screen_position = kDesktop;
 
   // Emulated screen size. Typically full / physical size of the device screen
   // in DIP. Empty size means using default value: original one for kDesktop
@@ -35,37 +35,31 @@ struct WebDeviceEmulationParams {
   WebSize view_size;
 
   // If zero, the original device scale factor is preserved.
-  float device_scale_factor;
+  float device_scale_factor = 0;
 
   // Scale the contents of the main frame. The view's size will be scaled by
   // this number when they are not specified in |view_size|.
-  float scale;
+  float scale = 1;
 
   // Forced viewport offset for screenshots during emulation, (-1, -1) for
   // disabled.
-  gfx::PointF viewport_offset;
+  gfx::PointF viewport_offset = gfx::PointF(-1, -1);
 
   // Viewport scale for screenshots during emulation, 0 for current.
-  float viewport_scale;
+  float viewport_scale = 0;
 
-  // Optional screen orientation type, with WebScreenOrientationUndefined
+  // Optional screen orientation type, with mojom::ScreenOrientation::kUndefined
   // value meaning no emulation necessary.
-  WebScreenOrientationType screen_orientation_type;
+  mojom::ScreenOrientation screen_orientation_type =
+      mojom::ScreenOrientation::kUndefined;
 
   // Screen orientation angle, used together with screenOrientationType.
-  int screen_orientation_angle;
+  int screen_orientation_angle = 0;
 
   // Screen window segments dimensions.
   std::vector<gfx::Rect> window_segments;
 
-  WebDeviceEmulationParams()
-      : screen_position(kDesktop),
-        device_scale_factor(0),
-        scale(1),
-        viewport_offset(-1, -1),
-        viewport_scale(0),
-        screen_orientation_type(kWebScreenOrientationUndefined),
-        screen_orientation_angle(0) {}
+  WebDeviceEmulationParams() = default;
 };
 
 inline bool operator==(const WebDeviceEmulationParams& a,

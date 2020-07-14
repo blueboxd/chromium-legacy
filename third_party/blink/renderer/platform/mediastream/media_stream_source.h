@@ -41,6 +41,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/renderer/platform/audio/audio_destination_consumer.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_track_platform.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -102,7 +103,7 @@ class PLATFORM_EXPORT MediaStreamSource final
                                     bool auto_gain_control,
                                     bool noise_supression);
 
-  void GetSettings(WebMediaStreamTrack::Settings&);
+  void GetSettings(MediaStreamTrackPlatform::Settings&);
 
   struct Capabilities {
     // Vector is used to store an optional range for the below numeric
@@ -120,8 +121,8 @@ class PLATFORM_EXPORT MediaStreamSource final
     Vector<int32_t> sample_rate;
     Vector<double> latency;
 
-    WebMediaStreamTrack::FacingMode facing_mode =
-        WebMediaStreamTrack::FacingMode::kNone;
+    MediaStreamTrackPlatform::FacingMode facing_mode =
+        MediaStreamTrackPlatform::FacingMode::kNone;
     String device_id;
     String group_id;
   };

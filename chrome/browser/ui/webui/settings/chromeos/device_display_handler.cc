@@ -26,10 +26,13 @@ DisplayHandler::~DisplayHandler() {
 void DisplayHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "highlightDisplay",
-      base::BindRepeating(
-          &DisplayHandler::HandleHighlightDisplay,
-          base::Unretained(this)));  // base::Unretained(this) is acceptable
-                                     // here as |this| is owned by web_ui().
+      base::BindRepeating(&DisplayHandler::HandleHighlightDisplay,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "dragDisplayDelta",
+      base::BindRepeating(&DisplayHandler::HandleDragDisplayDelta,
+                          base::Unretained(this)));
 }
 
 void DisplayHandler::HandleHighlightDisplay(const base::ListValue* args) {
@@ -45,6 +48,24 @@ void DisplayHandler::HandleHighlightDisplay(const base::ListValue* args) {
   }
 
   cros_display_config_->HighlightDisplay(display_id);
+}
+
+void DisplayHandler::HandleDragDisplayDelta(const base::ListValue* args) {
+  DCHECK_EQ(3U, args->GetSize());
+  AllowJavascript();
+
+  const auto& args_list = args->GetList();
+  const std::string& display_id_str = args_list[0].GetString();
+  int32_t delta_x = static_cast<int32_t>(args_list[1].GetInt());
+  int32_t delta_y = static_cast<int32_t>(args_list[2].GetInt());
+
+  int64_t display_id;
+  if (!base::StringToInt64(display_id_str, &display_id)) {
+    NOTREACHED() << "Unable to parse |display_id| for HandleDragDisplayDelta";
+    return;
+  }
+
+  cros_display_config_->DragDisplayDelta(display_id, delta_x, delta_y);
 }
 
 }  // namespace settings

@@ -16,6 +16,7 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "google_apis/gaia/gaia_urls.h"
 
 using autofill::GaiaIdHash;
 using autofill::PasswordForm;
@@ -186,7 +187,8 @@ bool IsOptedInForAccountStorage(const PrefService* pref_service,
 }
 
 bool ShouldShowAccountStorageReSignin(const PrefService* pref_service,
-                                      const syncer::SyncService* sync_service) {
+                                      const syncer::SyncService* sync_service,
+                                      const GURL& current_page_url) {
   DCHECK(pref_service);
 
   // Checks that the sync_service is not null and the feature is enabled.
@@ -197,6 +199,11 @@ bool ShouldShowAccountStorageReSignin(const PrefService* pref_service,
   // In order to show a re-signin prompt, no user may be logged in.
   if (!sync_service->HasDisableReason(
           syncer::SyncService::DisableReason::DISABLE_REASON_NOT_SIGNED_IN)) {
+    return false;
+  }
+
+  if (current_page_url.GetOrigin() ==
+      GaiaUrls::GetInstance()->gaia_url().GetOrigin()) {
     return false;
   }
 
@@ -385,7 +392,7 @@ PasswordAccountStorageUserState ComputePasswordAccountStorageUserState(
   if (sync_service->HasDisableReason(
           syncer::SyncService::DisableReason::DISABLE_REASON_NOT_SIGNED_IN)) {
     // Signed out. Check if any account storage opt-in exists.
-    return ShouldShowAccountStorageReSignin(pref_service, sync_service)
+    return ShouldShowAccountStorageReSignin(pref_service, sync_service, GURL())
                ? PasswordAccountStorageUserState::kSignedOutAccountStoreUser
                : PasswordAccountStorageUserState::kSignedOutUser;
   }

@@ -100,7 +100,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                             const NGLineHeightMetrics&,
                             const NGLineLayoutOpportunity&,
                             NGExclusionSpace*);
-  void PlaceRelativePositionedItems();
   void PlaceListMarker(const NGInlineItem&,
                        NGInlineItemResult*,
                        const NGLineInfo&);

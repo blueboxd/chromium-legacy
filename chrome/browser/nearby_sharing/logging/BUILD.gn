@@ -22,3 +22,15 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
+
+source_set("util") {
+  sources = [
+    "proto_to_dictionary_conversion.cc",
+    "proto_to_dictionary_conversion.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/browser/nearby_sharing/proto",
+  ]
+}

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
 <translation id="1005230401424685968">RRRR</translation>
+<translation id="1013952917065545813">Tady můžete znovu otevřít karty, které jste nedávno zavřeli</translation>
 <translation id="1016495303386450659">Položka byla aktualizována</translation>
 <translation id="1044891598689252897">Weby budou fungovat normálně</translation>
 <translation id="1047726139967079566">Přidat stránku do záložek...</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">Zastavit</translation>
 <translation id="1283524564873030414">Posledních 24 hodin</translation>
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
+<translation id="1321993286294231467">Při ukládání obrázku došlo k chybě.</translation>
 <translation id="1323735185997015385">Smazat</translation>
 <translation id="132683371494960526">Dvojitým klepnutím změníte nadřazenou složku.</translation>
 <translation id="1340643665687018190">Zavřít nabídku</translation>
@@ -560,6 +562,7 @@ Weby pomocí souborů cookie nemohou sledovat vaši aktivitu prohlížení mezi 
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="766891008101699113">Chcete-li procházet web v soukromí, přidejte novou kartu.</translation>
 <translation id="7671141431838911305">INSTALOVAT</translation>
+<translation id="7701040980221191251">Žádné</translation>
 <translation id="7765158879357617694">Přesunout</translation>
 <translation id="7771470029643830783">Pokud se odhlásíte, vaše záložky, historie, hesla a další data v Chromu se již nebudou synchronizovat do vašeho účtu Google.
 

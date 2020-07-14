@@ -7,31 +7,36 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/base/buildflags.h"
-#include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/x/x11_cursor.h"
 #include "ui/base/x/x11_desktop_window_move_client.h"
-#include "ui/base/x/x11_os_exchange_data_provider.h"
-#include "ui/base/x/x11_pointer_grab.h"
-#include "ui/base/x/x11_topmost_window_finder.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/x/x11_event_translation.h"
-#include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
 #include "ui/platform_window/extensions/workspace_extension_delegate.h"
 #include "ui/platform_window/extensions/x11_extension_delegate.h"
+#include "ui/platform_window/x11/x11_window_manager.h"
+
+#if defined(USE_OZONE)
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/ui_base_features.h"
+#include "ui/base/x/x11_os_exchange_data_provider.h"
+#include "ui/base/x/x11_pointer_grab.h"
+#include "ui/base/x/x11_topmost_window_finder.h"
+#include "ui/events/ozone/events_ozone.h"
+#include "ui/events/x/x11_window_event_manager.h"
 #include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
 #include "ui/platform_window/x11/x11_topmost_window_finder.h"
-#include "ui/platform_window/x11/x11_window_manager.h"
+#else
+#include "ui/base/dragdrop/os_exchange_data_provider_x11.h"
+#endif  // defined(USE_OZONE)
 
 #if BUILDFLAG(USE_ATK)
 #include "ui/platform_window/x11/atk_event_conversion.h"
@@ -113,11 +118,13 @@ bool CoalesceEventsIfNeeded(x11::Event* const x11_event,
   return false;
 }
 
+#if defined(USE_OZONE)
 int GetKeyModifiers(const XDragDropClient* client) {
   if (!client)
     return ui::XGetMaskAsEventFlags();
   return client->current_modifier_state();
 }
+#endif  // defined(USE_OZONE)
 
 }  // namespace
 
@@ -164,9 +171,11 @@ void X11Window::Initialize(PlatformWindowInitProperties properties) {
     SetOpacity(kDragWidgetOpacity);
   }
 
+#if defined(USE_OZONE)
   SetWmDragHandler(this, this);
 
   drag_drop_client_ = std::make_unique<XDragDropClient>(this, window());
+#endif
 }
 
 void X11Window::SetXEventDelegate(XEventDelegate* delegate) {
@@ -573,12 +582,14 @@ PlatformEventDispatcher* X11Window::GetPlatformEventDispatcher() {
 }
 
 bool X11Window::DispatchXEvent(x11::Event* xev) {
+#if defined(USE_OZONE)
   auto* prop = xev->As<x11::PropertyNotifyEvent>();
   auto* target_current_context = drag_drop_client_->target_current_context();
   if (prop && target_current_context &&
       prop->window == target_current_context->source_window()) {
     return target_current_context->DispatchPropertyNotifyEvent(*prop);
   }
+#endif
 
   if (!XWindow::IsTargetedBy(*xev))
     return false;
@@ -771,15 +782,19 @@ void X11Window::OnXWindowLostPointerGrab() {
 void X11Window::OnXWindowSelectionEvent(x11::Event* xev) {
   if (x_event_delegate_)
     x_event_delegate_->OnXWindowSelectionEvent(xev);
+#if defined(USE_OZONE)
   DCHECK(drag_drop_client_);
   drag_drop_client_->OnSelectionNotify(*xev->As<x11::SelectionNotifyEvent>());
+#endif
 }
 
 void X11Window::OnXWindowDragDropEvent(x11::Event* xev) {
   if (x_event_delegate_)
     x_event_delegate_->OnXWindowDragDropEvent(xev);
+#if defined(USE_OZONE)
   DCHECK(drag_drop_client_);
   drag_drop_client_->HandleXdndEvent(*xev->As<x11::ClientMessageEvent>());
+#endif
 }
 
 base::Optional<gfx::Size> X11Window::GetMinimumSizeForXWindow() {
@@ -810,6 +825,7 @@ void X11Window::EndMoveLoop() {
   x11_window_move_client_->EndMoveLoop();
 }
 
+#if defined(USE_OZONE)
 bool X11Window::StartDrag(const OSExchangeData& data,
                           int operation,
                           gfx::NativeCursor cursor,
@@ -947,6 +963,8 @@ void X11Window::QuitDragLoop() {
   DCHECK(drag_loop_);
   drag_loop_->EndMoveLoop();
 }
+
+#endif  // defined(USE_OZONE)
 
 gfx::Size X11Window::AdjustSizeForDisplay(
     const gfx::Size& requested_size_in_pixels) {

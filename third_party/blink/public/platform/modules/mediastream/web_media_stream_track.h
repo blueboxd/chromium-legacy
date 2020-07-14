@@ -31,15 +31,12 @@
 #include "media/mojo/mojom/display_media_information.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
-#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
 class MediaStreamComponent;
-class MediaStreamTrack;
 class WebAudioSourceProvider;
 class WebMediaStreamSource;
-class WebString;
 
 class WebMediaStreamTrack {
  public:
@@ -47,45 +44,6 @@ class WebMediaStreamTrack {
 
   BLINK_PLATFORM_EXPORT static const char kResizeModeNone[];
   BLINK_PLATFORM_EXPORT static const char kResizeModeRescale[];
-
-  struct Settings {
-    bool HasFrameRate() const { return frame_rate >= 0.0; }
-    bool HasWidth() const { return width >= 0; }
-    bool HasHeight() const { return height >= 0; }
-    bool HasAspectRatio() const { return aspect_ratio >= 0.0; }
-    bool HasFacingMode() const { return facing_mode != FacingMode::kNone; }
-    bool HasSampleRate() const { return sample_rate >= 0; }
-    bool HasSampleSize() const { return sample_size >= 0; }
-    bool HasChannelCount() const { return channel_count >= 0; }
-    bool HasLatency() const { return latency >= 0; }
-    bool HasVideoKind() const { return !video_kind.IsNull(); }
-    // The variables are read from
-    // MediaStreamTrack::GetSettings only.
-    double frame_rate = -1.0;
-    int32_t width = -1;
-    int32_t height = -1;
-    double aspect_ratio = -1.0;
-    WebString device_id;
-    WebString group_id;
-    FacingMode facing_mode = FacingMode::kNone;
-    WebString resize_mode;
-    base::Optional<bool> echo_cancellation;
-    base::Optional<bool> auto_gain_control;
-    base::Optional<bool> noise_supression;
-    WebString echo_cancellation_type;
-    int32_t sample_rate = -1;
-    int32_t sample_size = -1;
-    int32_t channel_count = -1;
-    double latency = -1.0;
-
-    // Media Capture Depth Stream Extensions.
-    WebString video_kind;
-
-    // Screen Capture extensions
-    base::Optional<media::mojom::DisplayCaptureSurfaceType> display_surface;
-    base::Optional<bool> logical_surface;
-    base::Optional<media::mojom::CursorCaptureType> cursor;
-  };
 
   enum class ContentHintType {
     kNone,

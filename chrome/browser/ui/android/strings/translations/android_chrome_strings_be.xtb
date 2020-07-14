@@ -209,7 +209,6 @@
 <translation id="2650751991977523696">Спампаваць файл зноў?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аўдыяфайл}one{# аўдыяфайл}few{# аўдыяфайлы}many{# аўдыяфайлаў}other{# аўдыяфайла}}</translation>
 <translation id="2656405586795711023">Вэб-праграмы</translation>
-<translation id="2677748264148917807">Выйсці</translation>
 <translation id="2689830683995595741">Выкарыстоўваючы Chrome, вы згаджаецеся з <ph name="BEGIN_LINK1" />Умовамі выкарыстання Google<ph name="END_LINK1" /> і <ph name="BEGIN_LINK2" />Дадатковымі ўмовамі выкарыстання Google Chrome і Chrome OS<ph name="END_LINK2" />. Таксама прымяняецца <ph name="BEGIN_LINK3" />Паведамленне аб прыватнасці ў дачыненні да Уліковых запісаў Google, якія кіруюцца праз Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">Абнавіць старонку</translation>
 <translation id="2709516037105925701">Аўтазапаўненне</translation>
@@ -290,6 +289,7 @@
 <translation id="3303414029551471755">Перайсці да спампоўкі змесціва?</translation>
 <translation id="3306398118552023113">Гэта праграма працуе ў браўзеры Chrome</translation>
 <translation id="3315103659806849044">Вы змяняеце налады сэрвісаў Google і сінхранізацыі. Каб завяршыць уключэнне сінхранізацыі, націсніце кнопку "Пацвердзіць" унізе экрана. Перайсці ўверх</translation>
+<translation id="3320630259304269485">Бяспечны прагляд (абарона ад небяспечных сайтаў) і іншыя налады бяспекі</translation>
 <translation id="3328801116991980348">Звесткі пра сайт</translation>
 <translation id="3333961966071413176">Усе кантакты</translation>
 <translation id="3334729583274622784">Змяніць пашырэнне файла?</translation>
@@ -306,6 +306,7 @@
 <translation id="3389286852084373014">Тэкст занадта вялікі</translation>
 <translation id="3398320232533725830">Адкрыць менеджар закладак</translation>
 <translation id="3414952576877147120">Памер:</translation>
+<translation id="3435738964857648380">Бяспека</translation>
 <translation id="3443221991560634068">Перазагрузіць бягучую старонку</translation>
 <translation id="3478363558367712427">Вы можаце выбраць пошукавую сістэму</translation>
 <translation id="3492207499832628349">Новая ўкладка інкогніта</translation>
@@ -534,7 +535,6 @@
 <translation id="5355191726083956201">Палепшаная абарона ўключана</translation>
 <translation id="5357811892247919462">Атрымана ўкладка</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> адкрытая ўкладка. Націсніце, каб пераключыцца паміж укладкамі.}one{<ph name="OPEN_TABS_MANY" /> адкрытая ўкладка. Націсніце, каб пераключыцца паміж укладкамі.}few{<ph name="OPEN_TABS_MANY" /> адкрытыя ўкладкі. Націсніце, каб пераключыцца паміж укладкамі.}many{<ph name="OPEN_TABS_MANY" /> адкрытых укладак. Націсніце, каб пераключыцца паміж укладкамі.}other{<ph name="OPEN_TABS_MANY" /> адкрытай укладкі. Націсніце, каб пераключыцца паміж укладкамі.}}</translation>
-<translation id="5384883051496921101">Гэты сайт будзе абагульваць звесткі з праграмай па-за рэжымам інкогніта.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(і яшчэ 1)}one{(і яшчэ #)}few{(і яшчэ #)}many{(і яшчэ #)}other{(і яшчэ #)}}</translation>
 <translation id="5403592356182871684">Імёны</translation>
 <translation id="5403644198645076998">Дазваляць толькі пэўныя сайты</translation>
@@ -705,7 +705,6 @@
 <translation id="6593061639179217415">Версія для ПК</translation>
 <translation id="6597891566292541626">Змясціце QR-код або штрыхкод у гэтай рамцы.</translation>
 <translation id="6600954340915313787">Скапіравана ў Chrome</translation>
-<translation id="662080504995468778">Застацца</translation>
 <translation id="6627583120233659107">Рэдагаваць папку</translation>
 <translation id="6643016212128521049">Ачысціць</translation>
 <translation id="6643649862576733715">Сартаваць па аб'ёме сэканомленага трафіка</translation>
@@ -988,7 +987,6 @@
 <translation id="8922289737868596582">Спампуйце старонкі з меню кнопкі Дадатковыя параметры, каб праглядаць іх па-за сеткай</translation>
 <translation id="8937772741022875483">Выдаліць вашы дзеянні ў Chrome са службы лічбавага камфорту?</translation>
 <translation id="8942627711005830162">Адкрыць у іншым акне</translation>
-<translation id="894871326938397531">Выйсці з рэжыму інкогніта?</translation>
 <translation id="8951232171465285730">Chrome сэканоміў вам <ph name="MEGABYTES" /> МБ</translation>
 <translation id="8965591936373831584">у стане чакання</translation>
 <translation id="8970887620466824814">Нешта пайшло не так.</translation>
@@ -999,6 +997,7 @@
 <translation id="9028914725102941583">Каб абагульваць файлы паміж прыладамі, уключыце сінхранізацыю</translation>
 <translation id="9040142327097499898">Апавяшчэнні дазволены. Вызначэнне месцазнаходжання для гэтай прылады выключана.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{1 відэа}one{# відэа}few{# відэа}many{# відэа}other{# відэа}}</translation>
+<translation id="9042893549633094279">Прыватнасць і бяспека</translation>
 <translation id="9050666287014529139">Фраза-пароль</translation>
 <translation id="9063523880881406963">Выключыць запытванне версіі для настольнага камп'ютара</translation>
 <translation id="9065203028668620118">Змяніць</translation>

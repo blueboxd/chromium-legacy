@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
@@ -56,9 +57,14 @@ public class NavigationSheetTest {
     private static final int NAVIGATION_INDEX_1 = 1;
     private static final int NAVIGATION_INDEX_2 = 5;
 
+    private BottomSheetController mBottomSheetController;
+
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
+        mBottomSheetController = mActivityTestRule.getActivity()
+                                         .getRootUiCoordinatorForTesting()
+                                         .getBottomSheetController();
     }
 
     private static class TestNavigationEntry extends NavigationEntry {
@@ -200,9 +206,8 @@ public class NavigationSheetTest {
     private NavigationSheet showPopup(NavigationController controller) throws ExecutionException {
         return TestThreadUtils.runOnUiThreadBlocking(() -> {
             Tab tab = mActivityTestRule.getActivity().getActivityTabProvider().get();
-            NavigationSheet navigationSheet =
-                    NavigationSheet.create(tab.getContentView(), mActivityTestRule.getActivity(),
-                            mActivityTestRule.getActivity()::getBottomSheetController);
+            NavigationSheet navigationSheet = NavigationSheet.create(tab.getContentView(),
+                    mActivityTestRule.getActivity(), () -> mBottomSheetController);
             navigationSheet.setDelegate(new TestSheetDelegate(controller));
             navigationSheet.startAndExpand(false, false);
             return navigationSheet;

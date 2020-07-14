@@ -12,6 +12,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.base.WindowAndroid;
 
 /** A factory for producing a {@link BottomSheetController}. */
 public class BottomSheetControllerFactory {
@@ -21,7 +22,6 @@ public class BottomSheetControllerFactory {
      * @param window The activity's window.
      * @param keyboardDelegate A means of hiding the keyboard.
      * @param root The view that should contain the sheet.
-     * @param inflater A mechanism for building views from XML.
      * @return A new instance of the {@link BottomSheetController}.
      */
     public static ManagedBottomSheetController createBottomSheetController(
@@ -29,5 +29,27 @@ public class BottomSheetControllerFactory {
             Window window, KeyboardVisibilityDelegate keyboardDelegate, Supplier<ViewGroup> root) {
         return new BottomSheetControllerImpl(
                 scrim, initializedCallback, window, keyboardDelegate, root);
+    }
+
+    // Redirect methods to provider to make them only accessible to classes that have access to the
+    // factory.
+
+    /**
+     * Attach a shared {@link BottomSheetController} to a {@link WindowAndroid}.
+     * @param windowAndroid The window to attach the sheet's controller to.
+     * @param controller The controller to attach.
+     */
+    public static void attach(
+            WindowAndroid windowAndroid, ManagedBottomSheetController controller) {
+        BottomSheetControllerProvider.attach(windowAndroid, controller);
+    }
+
+    /**
+     * Detach the specified {@link BottomSheetController} from any {@link WindowAndroid}s it is
+     * associated with.
+     * @param controller The controller to remove from any associated windows.
+     */
+    public static void detach(ManagedBottomSheetController controller) {
+        BottomSheetControllerProvider.detach(controller);
     }
 }

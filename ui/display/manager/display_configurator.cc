@@ -568,7 +568,6 @@ DisplayConfigurator::DisplayConfigurator()
       configure_display_(chromeos::IsRunningAsSystemCompositor()),
       current_display_state_(MULTIPLE_DISPLAY_STATE_INVALID),
       current_power_state_(chromeos::DISPLAY_POWER_ALL_ON),
-      current_internal_display_(nullptr),
       requested_display_state_(MULTIPLE_DISPLAY_STATE_INVALID),
       pending_power_state_(chromeos::DISPLAY_POWER_ALL_ON),
       has_pending_power_state_(false),
@@ -783,43 +782,27 @@ bool DisplayConfigurator::SetGammaCorrection(
                      display_id, degamma_lut, gamma_lut));
 }
 
-bool DisplayConfigurator::IsPrivacyScreenSupportedOnInternalDisplay() const {
-  return current_internal_display_ &&
-         current_internal_display_->privacy_screen_state() != kNotSupported &&
-         current_internal_display_->current_mode();
-}
-
-bool DisplayConfigurator::SetPrivacyScreenOnInternalDisplay(bool enabled) {
-  if (IsPrivacyScreenSupportedOnInternalDisplay()) {
-    native_display_delegate_->SetPrivacyScreen(
-        current_internal_display_->display_id(), enabled);
-    return true;
+void DisplayConfigurator::SetPrivacyScreen(int64_t display_id, bool enabled) {
+#if DCHECK_IS_ON()
+  DisplaySnapshot* internal_display = nullptr;
+  for (DisplaySnapshot* display : cached_displays_) {
+    if (display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
+      internal_display = display;
+      break;
+    }
   }
+  DCHECK(internal_display);
+  DCHECK_EQ(internal_display->display_id(), display_id);
+  DCHECK_NE(internal_display->privacy_screen_state(), kNotSupported);
+  DCHECK(internal_display->current_mode());
+#endif
 
-  if (!current_internal_display_) {
-    LOG(ERROR) << "This device does not have an internal display.";
-  } else if (current_internal_display_->privacy_screen_state() ==
-             kNotSupported) {
-    LOG(ERROR) << "The internal display of this device does not support "
-                  "privacy screen.";
-  }
-
-  return false;
+  native_display_delegate_->SetPrivacyScreen(display_id, enabled);
 }
 
 chromeos::DisplayPowerState DisplayConfigurator::GetRequestedPowerState()
     const {
   return requested_power_state_.value_or(chromeos::DISPLAY_POWER_ALL_ON);
-}
-
-void DisplayConfigurator::UpdateInternalDisplayCache() {
-  for (DisplaySnapshot* display : cached_displays_) {
-    if (display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
-      current_internal_display_ = display;
-      return;
-    }
-  }
-  current_internal_display_ = nullptr;
 }
 
 void DisplayConfigurator::PrepareForExit() {
@@ -1034,9 +1017,6 @@ void DisplayConfigurator::OnConfigured(
   if (success) {
     current_display_state_ = new_display_state;
     UpdatePowerState(new_power_state);
-    UpdateInternalDisplayCache();
-  } else {
-    current_internal_display_ = nullptr;
   }
 
   configuration_task_.reset();

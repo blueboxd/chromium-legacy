@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="1005230401424685968">РРРР</translation>
+<translation id="1013952917065545813">Ви можете повернутися сюди, щоб відкрити нещодавно закриті вкладки</translation>
 <translation id="1016495303386450659">Закладку оновлено</translation>
 <translation id="1044891598689252897">Сайти працюватимуть у звичному режимі</translation>
 <translation id="1047726139967079566">Додати цю сторінку до закладок...</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">Зупинити</translation>
 <translation id="1283524564873030414">Останні 24 години</translation>
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
+<translation id="1321993286294231467">Не вдалося зберегти зображення.</translation>
 <translation id="1323735185997015385">Видалити</translation>
 <translation id="132683371494960526">Двічі торкніться, щоб змінити батьківську папку.</translation>
 <translation id="1340643665687018190">Закрити меню</translation>
@@ -560,6 +562,7 @@
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="766891008101699113">Щоб переглядати веб-сторінки конфіденційно, додайте нову вкладку.</translation>
 <translation id="7671141431838911305">INSTALL</translation>
+<translation id="7701040980221191251">Немає</translation>
 <translation id="7765158879357617694">Перемістити</translation>
 <translation id="7771470029643830783">Якщо ви вийдете, дані Chrome (зокрема закладки, історія та паролі) більше не синхронізуватимуться з вашим обліковим записом Google.
 

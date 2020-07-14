@@ -27,6 +27,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+using autofill::FieldRendererId;
 using autofill::FormData;
 using autofill::FormRendererId;
 using autofill::PasswordForm;
@@ -36,6 +37,7 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 using password_manager::FillData;
 using test_helpers::SetPasswordFormFillData;
 using test_helpers::SetFillData;
+using test_helpers::SetFormData;
 
 namespace {
 // Returns a string containing the JavaScript loaded from a
@@ -316,6 +318,66 @@ TEST_F(PasswordFormHelperTest, ExtractPasswordFormData) {
     return call_counter == 1;
   }));
   EXPECT_EQ(0, success_counter);
+}
+
+// Tests that a form with credentials fillied on user trigger
+// is not autorefilled.
+TEST_F(PasswordFormHelperTest, RefillFormFilledOnUserTrigger) {
+  LoadHtml(@"<form><input id='u1' type='text' name='un1'>"
+            "<input id='p1' type='password' name='pw1'></form>");
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+  // Run password forms search to set up unique IDs.
+  EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
+
+  // Fill the form on user trigger.
+  const std::string base_url = BaseUrl();
+  FillData fill_data;
+  SetFillData(base_url, 0, 1, "john.doe@gmail.com", 2, "super!secret",
+              &fill_data);
+  __block int call_counter = 0;
+  [helper_ fillPasswordFormWithFillData:fill_data
+                      completionHandler:^(BOOL complete) {
+                        ++call_counter;
+                        EXPECT_TRUE(complete);
+                      }];
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return call_counter == 1;
+  }));
+
+  // Try to autofill the form.
+  FormData form_data;
+  SetFormData(base_url, 0, 1, "someacc@store.com", 2, "store!pw", &form_data);
+
+  // Verify that the form has not been refilled.
+  id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
+  EXPECT_NSEQ(@"u1=john.doe@gmail.com;p1=super!secret;", result);
+}
+
+// Tests that a form with credentials typed by user
+// is not autorefilled.
+TEST_F(PasswordFormHelperTest, RefillFormWithUserTypedInput) {
+  LoadHtml(@"<form><input id='u1' type='text' name='un1'>"
+            "<input id='p1' type='password' name='pw1'></form>");
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+  // Run password forms search to set up unique IDs.
+  EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
+
+  ExecuteJavaScript(
+      @"document.getElementById('u1').value = 'john.doe@gmail.com';");
+  [helper_ updateFieldDataOnUserInput:FieldRendererId(1)
+                           inputValue:@"john.doe@gmail.com"];
+
+  ExecuteJavaScript(@"document.getElementById('p1').value = 'super!secret';");
+  [helper_ updateFieldDataOnUserInput:FieldRendererId(2)
+                           inputValue:@"super!secret"];
+
+  // Try to autofill the form.
+  FormData form_data;
+  SetFormData(BaseUrl(), 0, 1, "someacc@store.com", 2, "store!pw", &form_data);
+
+  // Verify that the form has not been refilled.
+  id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
+  EXPECT_NSEQ(@"u1=john.doe@gmail.com;p1=super!secret;", result);
 }
 
 }  // namespace

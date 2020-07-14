@@ -4,17 +4,32 @@
 
 #include "ui/base/clipboard/clipboard_data.h"
 
+#include <memory>
 #include <ostream>
 
 #include "base/notreached.h"
 #include "skia/ext/skia_utils_base.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 #include "ui/gfx/skia_util.h"
 
 namespace ui {
 
 ClipboardData::ClipboardData() : web_smart_paste_(false), format_(0) {}
 
-ClipboardData::ClipboardData(const ClipboardData&) = default;
+ClipboardData::ClipboardData(const ClipboardData& other) {
+  format_ = other.format_;
+  text_ = other.text_;
+  markup_data_ = other.markup_data_;
+  url_ = other.url_;
+  rtf_data_ = other.rtf_data_;
+  bookmark_title_ = other.bookmark_title_;
+  bookmark_url_ = other.bookmark_url_;
+  custom_data_format_ = other.custom_data_format_;
+  custom_data_data_ = other.custom_data_data_;
+  web_smart_paste_ = other.web_smart_paste_;
+  src_ = other.src_ ? std::make_unique<ClipboardDataEndpoint>(*other.src_.get())
+                    : nullptr;
+}
 
 ClipboardData::~ClipboardData() = default;
 

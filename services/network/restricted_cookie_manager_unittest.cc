@@ -60,13 +60,13 @@ class RecordingCookieObserver : public network::mojom::CookieAccessObserver {
   }
 
   void OnCookiesAccessed(mojom::CookieAccessDetailsPtr details) override {
-    for (const auto& cookie_and_status : details->cookie_list) {
+    for (const auto& cookie_and_access_result : details->cookie_list) {
       CookieOp op;
       op.get = details->type == mojom::CookieAccessDetails::Type::kRead;
       op.url = details->url;
       op.site_for_cookies = details->site_for_cookies.RepresentativeUrl();
-      op.cookie.push_back(cookie_and_status.cookie);
-      op.status = cookie_and_status.status;
+      op.cookie.push_back(cookie_and_access_result.cookie);
+      op.status = cookie_and_access_result.access_result.status;
       op.devtools_request_id = details->devtools_request_id;
       recorded_activity_.push_back(op);
     }

@@ -246,6 +246,7 @@ js_type_check("closure_compile_module") {
   is_polymer3 = true
   deps = [
     ":mojo_interface_provider.m",
+
     #  ":cr_policy_network_behavior_mojo.m",
     #  ":cr_policy_network_indicator_mojo.m",
     #  ":network_apnlist.m",
@@ -256,11 +257,13 @@ js_type_check("closure_compile_module") {
     #  ":network_config_select.m",
     #  ":network_config_toggle.m",
     ":network_icon.m",
+
     #  ":network_ip_config.m",
     #  ":network_list.m",
     #  ":network_list_item.m",
     #  ":network_list_types.m",
     ":network_listener_behavior.m",
+
     #  ":network_nameservers.m",
     #  ":network_password_input.m",
     #  ":network_property_list_mojo.m",

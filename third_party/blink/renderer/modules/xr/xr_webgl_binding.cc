@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_texture.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_unowned_texture.h"
 #include "third_party/blink/renderer/modules/xr/xr_cube_map.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_light_probe.h"
@@ -101,7 +102,8 @@ WebGLTexture* XRWebGLBinding::getCameraImage(XRFrame* frame, XRView* view) {
 
   GLuint texture_id = base_layer->CameraImageTextureId();
 
-  WebGLTexture* texture = MakeGarbageCollected<WebGLTexture>(
+  // This resource is owned by the renderer, and is freed OnFrameEnd();
+  WebGLUnownedTexture* texture = MakeGarbageCollected<WebGLUnownedTexture>(
       webgl_context_, texture_id, GL_TEXTURE_2D);
   return texture;
 }

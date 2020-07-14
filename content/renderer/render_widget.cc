@@ -1380,27 +1380,7 @@ blink::WebScreenInfo RenderWidget::GetScreenInfo() {
   web_screen_info.is_monochrome = info.is_monochrome;
   web_screen_info.rect = info.rect;
   web_screen_info.available_rect = info.available_rect;
-  switch (info.orientation_type) {
-    case SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationPortraitPrimary;
-      break;
-    case SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationPortraitSecondary;
-      break;
-    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationLandscapePrimary;
-      break;
-    case SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY:
-      web_screen_info.orientation_type =
-          blink::kWebScreenOrientationLandscapeSecondary;
-      break;
-    default:
-      web_screen_info.orientation_type = blink::kWebScreenOrientationUndefined;
-      break;
-  }
+  web_screen_info.orientation_type = info.orientation_type;
   web_screen_info.orientation_angle = info.orientation_angle;
 
   return web_screen_info;

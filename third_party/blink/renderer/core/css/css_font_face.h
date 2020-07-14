@@ -53,6 +53,10 @@ class CORE_EXPORT CSSFontFace final : public GarbageCollected<CSSFontFace> {
     DCHECK(font_face_);
   }
 
+  // Front source is the first successfully loaded source.
+  const CSSFontFaceSource* FrontSource() const {
+    return sources_.IsEmpty() ? nullptr : sources_.front();
+  }
   FontFace* GetFontFace() const { return font_face_; }
 
   scoped_refptr<UnicodeRangeSet> Ranges() { return ranges_; }

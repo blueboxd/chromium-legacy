@@ -142,15 +142,10 @@ struct CookieInclusionStatus {
   uint32 warning_reasons;
 };
 
-struct CookieWithStatus {
-  CanonicalCookie cookie;
-  CookieInclusionStatus status;
-};
-
-struct CookieAndLineWithStatus {
+struct CookieAndLineWithAccessResult {
   CanonicalCookie? cookie;
   string cookie_string;
-  CookieInclusionStatus status;
+  CookieAccessResult access_result;
 };
 
 struct CookieAccessResult {

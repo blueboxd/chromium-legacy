@@ -12,6 +12,7 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/assistant/util/resource_util.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/assistant/conversation_starter.h"
 #include "ash/public/cpp/assistant/conversation_starters_client.h"
@@ -257,44 +258,70 @@ void AssistantSuggestionsControllerImpl::ProvideConversationStarters() {
   model_.SetConversationStarters(std::move(conversation_starters));
 }
 
-// TODO(dmblack): Replace w/ actual icons.
 void AssistantSuggestionsControllerImpl::UpdateOnboardingSuggestions() {
   DCHECK(IsBetterOnboardingEnabled());
 
+  auto CreateIconResourceLink = [](int message_id) {
+    switch (message_id) {
+      case IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_CONVERSION:
+        return assistant::util::CreateIconResourceLink(
+            assistant::util::IconName::kConversionPath);
+      case IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_KNOWLEDGE:
+        return assistant::util::CreateIconResourceLink(
+            assistant::util::IconName::kPersonPinCircle);
+      case IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_KNOWLEDGE_EDU:
+        return assistant::util::CreateIconResourceLink(
+            assistant::util::IconName::kStraighten);
+      case IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_LANGUAGE:
+        return assistant::util::CreateIconResourceLink(
+            assistant::util::IconName::kTranslate);
+      case IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_MATH:
+        return assistant::util::CreateIconResourceLink(
+            assistant::util::IconName::kCalculate);
+      case IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PERSONALITY:
+        return assistant::util::CreateIconResourceLink(
+            assistant::util::IconName::kSentimentVerySatisfied);
+      case IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PRODUCTIVITY:
+        return assistant::util::CreateIconResourceLink(
+            assistant::util::IconName::kTimer);
+      case IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_TECHNICAL:
+        return assistant::util::CreateIconResourceLink(
+            assistant::util::IconName::kScreenshot);
+      default:
+        NOTREACHED();
+        return GURL();
+    }
+  };
+
   std::vector<AssistantSuggestion> onboarding_suggestions;
 
-  auto AddSuggestion =
-      [&onboarding_suggestions](int message_id) {
-        onboarding_suggestions.emplace_back();
-        auto& suggestion = onboarding_suggestions.back();
-        suggestion.id = base::UnguessableToken::Create();
-        suggestion.type = AssistantSuggestionType::kBetterOnboarding;
-        suggestion.text = l10n_util::GetStringUTF8(message_id);
-        suggestion.icon_url = GURL(
-            "https://www.gstatic.com/images/branding/product/2x/"
-            "googleg_48dp.png");
-        suggestion.action_url = GURL();
-      };
+  auto AddSuggestion = [&CreateIconResourceLink,
+                        &onboarding_suggestions](int message_id) {
+    onboarding_suggestions.emplace_back();
+    auto& suggestion = onboarding_suggestions.back();
+    suggestion.id = base::UnguessableToken::Create();
+    suggestion.type = AssistantSuggestionType::kBetterOnboarding;
+    suggestion.text = l10n_util::GetStringUTF8(message_id);
+    suggestion.icon_url = CreateIconResourceLink(message_id);
+    suggestion.action_url = GURL();
+  };
 
   switch (AssistantState::Get()->onboarding_mode().value_or(
       AssistantOnboardingMode::kDefault)) {
     case AssistantOnboardingMode::kEducation:
       AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_MATH);
       AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_KNOWLEDGE_EDU);
-      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PRODUCTIVITY);
-      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PERSONALITY);
-      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_LANGUAGE);
-      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_TECHNICAL);
       break;
     case AssistantOnboardingMode::kDefault:
       AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_CONVERSION);
       AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_KNOWLEDGE);
-      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PRODUCTIVITY);
-      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PERSONALITY);
-      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_LANGUAGE);
-      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_TECHNICAL);
       break;
   }
+
+  AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PRODUCTIVITY);
+  AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PERSONALITY);
+  AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_LANGUAGE);
+  AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_TECHNICAL);
 
   model_.SetOnboardingSuggestions(std::move(onboarding_suggestions));
 }

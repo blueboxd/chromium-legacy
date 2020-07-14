@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ne">
 <translation id="1005230401424685968">YYYY</translation>
+<translation id="1013952917065545813">तपाईं पछि यहाँ फर्केर आफूले हालसालै बन्द गरेका ट्याबहरू पुनः खोल्न सक्नुहुन्छ</translation>
 <translation id="1016495303386450659">वस्तु अद्यावधिक गरियो</translation>
 <translation id="1044891598689252897">साइटहरू सामान्य रूपमा चल्ने छन्</translation>
 <translation id="1047726139967079566">यो पृष्ठलाई बुकमार्क गर्नुहोस्...</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">रोक्नुहोस्</translation>
 <translation id="1283524564873030414">पछिल्ला २४ घन्टा</translation>
 <translation id="1285320974508926690">यो साइट कहिले पनि अनुवाद नगर्नुहोस्</translation>
+<translation id="1321993286294231467">फोटो सुरक्षित गर्ने क्रममा त्रुटि भयो।</translation>
 <translation id="1323735185997015385">मेट्नुहोस्</translation>
 <translation id="132683371494960526">मूल फोल्डरलाई परिवर्तन गर्न डबल ट्याप गर्नुहोस्।</translation>
 <translation id="1340643665687018190">बन्द मेनु</translation>
@@ -560,6 +562,7 @@
 <translation id="7658239707568436148">रद्द गर्नुहोस्</translation>
 <translation id="766891008101699113">निजी रूपमा वेब ब्राउज गर्न कुनै नयाँ ट्याब थप्नुहोस्।</translation>
 <translation id="7671141431838911305">स्थापना गर्नुहोस्</translation>
+<translation id="7701040980221191251">कुनै पनि होइन</translation>
 <translation id="7765158879357617694">सार्नुहोस्</translation>
 <translation id="7771470029643830783">साइन आउट गरेपछि, तपाईंका पुस्तक चिन्ह, इतिहास, पासवर्ड र Chrome का अन्य डेटा तपाईंको Google खातासँग सिंक हुने छैनन्।
 

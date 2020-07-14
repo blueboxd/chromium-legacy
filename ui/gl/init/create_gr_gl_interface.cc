@@ -356,11 +356,17 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
       gl->glDrawArraysInstancedANGLEFn, progress_reporter);
   functions->fDrawArraysInstancedBaseInstance = bind_slow_on_mac<true>(
       gl->glDrawArraysInstancedBaseInstanceANGLEFn, progress_reporter);
+  functions->fMultiDrawArraysInstancedBaseInstance = bind_slow_on_mac<true>(
+      gl->glMultiDrawArraysInstancedBaseInstanceANGLEFn, progress_reporter);
   functions->fDrawElementsInstanced = bind_slow_on_mac<true>(
       gl->glDrawElementsInstancedANGLEFn, progress_reporter);
   functions->fDrawElementsInstancedBaseVertexBaseInstance =
       bind_slow_on_mac<true>(
           gl->glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn,
+          progress_reporter);
+  functions->fMultiDrawElementsInstancedBaseVertexBaseInstance =
+      bind_slow_on_mac<true>(
+          gl->glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLEFn,
           progress_reporter);
 
   // GL 4.0 or GL_ARB_draw_indirect or ES 3.1

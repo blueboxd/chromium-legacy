@@ -71,6 +71,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="808894953321890993">Změnit heslo</translation>
 <translation id="8208861521865154048">Výhody</translation>
 <translation id="8347227221149377169">Tiskové úlohy</translation>
+<translation id="8623849191266582420">Toto zařízení <ph name="DEVICE_TYPE" /> spravuje doména <ph name="ENROLLMENT_DOMAIN" />. Administrátoři mohou zařízení vzdáleně konfigurovat a sledovat.</translation>
 <translation id="8701136875688985581">Tohoto uživatele spravuje doména <ph name="ENROLLMENT_DOMAIN" />. Může vzdáleně spravovat nastavení a sledovat aktivitu uživatele.</translation>
 <translation id="871560550817059752">Tisk selhal – došel inkoust</translation>
 <translation id="8747900814994928677">Potvrdit změnu</translation>

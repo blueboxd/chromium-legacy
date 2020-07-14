@@ -25,6 +25,7 @@
 <translation id="169515064810179024">საიტებისთვის მოძრაობის სენსორებზე წვდომის აკრძალვა</translation>
 <translation id="1717218214683051432">მოძრაობის სენსორები</translation>
 <translation id="1743802530341753419">შეკითხვა საიტებისთვის მოწყობილობასთან დაკავშირების დაშვებამდე (რეკომენდებული)</translation>
+<translation id="1818308510395330587"><ph name="APP_NAME" />-მა AR რომ გამოიყენოს, გაააქტიურეთ კამერაზე წვდომის ნებართვაც <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
 <translation id="1887786770086287077">მდებარეობაზე წვდომა გამორთულია ამ მოწყობილობისთვის. ჩართეთ ის <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">რეკლამა</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" />დან</translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">დღეს</translation>
 <translation id="2182457891543959921">შეკითხვა საიტებისთვის თქვენი გარემოს 3-განზომილებიანი რუკის შექმნის ან კამერის პოზიციისთვის თვალის მიდევნების დაშვებამდე (რეკომენდებული)</translation>
 <translation id="2212565012507486665">ქუქი-ჩანაწერების დაშვება</translation>
+<translation id="2228071138934252756"><ph name="APP_NAME" />-მა კამერით რომ ისარგებლოს, გაააქტიურეთ კამერაზე წვდომის ნებართვაც <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
 <translation id="2289270750774289114">საიტების მიერ ახლომდებარე Bluetooth მოწყობილობების აღმოჩენის მოთხოვნა (რეკომენდებული)</translation>
 <translation id="2315043854645842844">კლიენტის სერტიფიკატების არჩევა არ არის მხარდაჭერილი ოპერაციული სისტემის მიერ.</translation>
 <translation id="2359808026110333948">გაგრძელება</translation>
@@ -56,6 +58,7 @@
 <translation id="2586657967955657006">გაცვლის ბუფერი</translation>
 <translation id="2621115761605608342">კონკრეტულ საიტზე JavaScript-ის დაშვება.</translation>
 <translation id="2653659639078652383">გაგზავნა</translation>
+<translation id="2677748264148917807">დატოვება</translation>
 <translation id="2687403674020088961">ყველა ქუქი-ჩანაწერის დაბლოკვა (არარეკომენდებული)</translation>
 <translation id="2704606927547763573">დაკოპირდა</translation>
 <translation id="2822354292072154809">ნამდვილად გსურთ, საიტის ყველა ნებართვის გადაყენება <ph name="CHOSEN_OBJECT_NAME" />-ისთვის?</translation>
@@ -69,6 +72,7 @@
 <translation id="3115898365077584848">ინფორმაციის ჩვენება</translation>
 <translation id="3123473560110926937">დაბლოკილია ზოგიერთ საიტზე</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> შენახული მონაცემები</translation>
+<translation id="321187648315454507"><ph name="APP_NAME" />-მა შეტყობინებები რომ გამოგიგზავნოთ, გაააქტიურეთ შეტყობინებებზე წვდომის ნებართვაც <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">მიკროფონი</translation>
 <translation id="3277252321222022663">საიტებისთვის სენსორებზე წვდომის დაშვება (რეკომენდებული)</translation>
 <translation id="3295602654194328831">ინფორმაციის დამალვა</translation>
@@ -100,6 +104,7 @@
 <translation id="445467742685312942">საიტებისთვის დაცული კონტენტის დაკვრის დაშვება</translation>
 <translation id="4468959413250150279">ხმის დადუმება კონკრეტული საიტისთვის.</translation>
 <translation id="4479647676395637221">შეკითხვა საიტებისთვის თქვენი კამერის გამოყენების დაშვებამდე (რეკომენდებული)</translation>
+<translation id="4534723447064627427"><ph name="APP_NAME" />-მა მიკროფონით რომ ისარგებლოს, გაააქტიურეთ მიკროფონზე წვდომის ნებართვაც <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
 <translation id="4570913071927164677">დეტალები</translation>
 <translation id="4645575059429386691">იმართება თქვენი მშობლის მიერ</translation>
 <translation id="4670064810192446073">ვირტუალური რეალობა</translation>
@@ -122,6 +127,7 @@
 <translation id="5335288049665977812">საიტებისთვის JavaScript-ის გაშვების დაშვება (რეკომენდებული)</translation>
 <translation id="534295439873310000">NFC მოწყობილობები</translation>
 <translation id="5354152178998424783">ამ მოქმედებით გასუფთავდება საიტების მიერ შენახული მონაცემებისა და ქუქი-ჩანაწერების <ph name="DATASIZE" />.</translation>
+<translation id="5384883051496921101">ეს საიტი აპირებს ინფორმაციის გაზიარებას აპთან ინკოგნიტო რეჟიმის გარეთ.</translation>
 <translation id="5391532827096253100">თქვენი კავშირი ამ საიტთან არ არის დაცული. საიტის ინფორმაცია.</translation>
 <translation id="5494752089476963479">რეკლამის დაბლოკვა იმ საიტებზე, რომლებიც აჩვენებს მომაბეზრებელ ან შეცდომაში შემყვან რეკლამას</translation>
 <translation id="5505264765875738116">საიტები ვერ გთხოვთ შეტყობინებების გამოგზავნას</translation>
@@ -161,6 +167,7 @@
 <translation id="6561560012278703671">ჩუმი შეტყობინების გამოყენება (დაბლოკავს შეტყობინებებთან დაკავშირებულ ხელისშემშლელ მოთხოვნებს)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> გბაიტი</translation>
 <translation id="6612358246767739896">დაცული შიგთავსი</translation>
+<translation id="662080504995468778">დარჩენა</translation>
 <translation id="6643016212128521049">გასუფთავება</translation>
 <translation id="6697925417670533197">მიმდინარე ჩამოტვირთვები</translation>
 <translation id="6746124502594467657">გადაადგილება ქვემოთ</translation>
@@ -224,6 +231,7 @@
 <translation id="8394832520002899662">შეეხეთ საიტზე დასაბრუნებლად</translation>
 <translation id="8425213833346101688">შეცვლა</translation>
 <translation id="8441146129660941386">უკან ძიება</translation>
+<translation id="8444433999583714703"><ph name="APP_NAME" />-მა თქვენი მდებარეობით რომ ისარგებლოს, გაააქტიურეთ მდებარეობაზე წვდომის ნებართვაც <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">მოწყობილობაზე წვდომის ნებართვის გაუქმება</translation>
 <translation id="8463851957836045671">საიტი სწრაფია</translation>
 <translation id="851751545965956758">საიტებისთვის მოწყობილობებთან დაკავშირების აკრძალვა</translation>
@@ -231,6 +239,7 @@
 <translation id="8609465669617005112">გადაადგილება ზემოთ</translation>
 <translation id="8676374126336081632">შეყვანილი ტექსტის გასუფთავება</translation>
 <translation id="8702612070107455751">გასუფთავდება ხაზგარეშე მონაცემები.</translation>
+<translation id="8719283222052720129"><ph name="APP_NAME" />-ისთვის ნებართვის გააქტიურება <ph name="BEGIN_LINK" />Android-ის პარამეტრებში<ph name="END_LINK" /> შეგიძლიათ.</translation>
 <translation id="8725066075913043281">ხელახლა სცადეთ</translation>
 <translation id="8730621377337864115">მზადაა</translation>
 <translation id="8737217482364735741">ეს მოქმედება გაასუფთავებს <ph name="ORIGIN" />-ის მიერ შენახულ ყველა მონაცემსა და ქუქი-ჩანაწერს.</translation>
@@ -241,10 +250,12 @@
 <translation id="8926666909099850184">NFC გამორთულია ამ მოწყობილობისთვის. მისი ჩართვა შეგიძლიათ <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">მომხმარებელთა უმეტესობისთვის ეს საიტი სწრაფად იხსნება და რეაგირებს</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">გსურთ ინკოგნიტო რეჟიმიდან გამოსვლა?</translation>
 <translation id="8958424370300090006">ქუქი-ჩანაწერების დაბლოკვა კონკრეტული საიტისთვის.</translation>
 <translation id="8959122750345127698">ნავიგაცია მიუწვდომელია: <ph name="URL" /></translation>
 <translation id="9019902583201351841">იმართება თქვენი მშობლების მიერ</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="913657688200966289"><ph name="APP_NAME" />-ისთვის ნებართვების გააქტიურება <ph name="BEGIN_LINK" />Android-ის პარამეტრებში<ph name="END_LINK" /> შეგიძლიათ.</translation>
 <translation id="945632385593298557">თქვენი მიკროფონი ხელმისაწვდომია</translation>
 <translation id="965817943346481315">დაბლოკვა, თუ საიტი აჩვენებს მომაბეზრებელ ან შეცდომაში შემყვან რეკლამას (რეკომენდებული)</translation>
 </translationbundle>

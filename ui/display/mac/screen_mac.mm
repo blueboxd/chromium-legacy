@@ -20,6 +20,7 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/display/display.h"
 #include "ui/display/display_change_notifier.h"
 #include "ui/display/mac/display_link_mac.h"
@@ -54,6 +55,7 @@ NSScreen* GetMatchingScreen(const gfx::Rect& match_rect) {
 }
 
 Display BuildDisplayForScreen(NSScreen* screen) {
+  TRACE_EVENT0("ui", "BuildDisplayForScreen");
   NSRect frame = [screen frame];
 
   CGDirectDisplayID display_id = [[[screen deviceDescription]
@@ -152,6 +154,8 @@ Display BuildPrimaryDisplay() {
 }
 
 std::vector<Display> BuildDisplaysFromQuartz() {
+  TRACE_EVENT0("ui", "BuildDisplaysFromQuartz");
+
   // Don't just return all online displays.  This would include displays
   // that mirror other displays, which are not desired in this list.  It's
   // tempting to use the count returned by CGGetActiveDisplayList, but active
@@ -390,6 +394,7 @@ class ScreenMac : public Screen {
   }
 
   void OnNSScreensMayHaveChanged() {
+    TRACE_EVENT0("ui", "OnNSScreensMayHaveChanged");
     auto new_displays = BuildDisplaysFromQuartz();
     if (displays_ == new_displays)
       return;

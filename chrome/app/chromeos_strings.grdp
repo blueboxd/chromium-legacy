@@ -3447,7 +3447,7 @@
   <message name="IDS_NETWORK_UI_GLOBAL_POLICY" desc="Label for global policy properties">
     Global Policy:
   </message>
-  <message name="IDS_NETWORK_UI_NETWORK_HEALTH" desc="Label for network health section">
+  <message name="IDS_NETWORK_UI_NETWORK_HEALTH" desc="Label for network health snapshot. 'Network Health' is a condensend summary of all networking devices on the system and their active networks">
     Network Health Snapshot
   </message>
   <message name="IDS_NETWORK_UI_NETWORK_LISTS" desc="Label for network lists section">
@@ -3528,31 +3528,31 @@
   </message>
 
   <!-- Network Health display strings -->
-  <message name="IDS_NETWORK_HEALTH_STATE" desc="Network Health State label">
+  <message name="IDS_NETWORK_HEALTH_STATE" desc="Label for the current state of a networking device.">
     State
   </message>
-  <message name="IDS_NETWORK_HEALTH_STATE_UNINITIALIZED" desc="Network Health State - Uninitialized">
+  <message name="IDS_NETWORK_HEALTH_STATE_UNINITIALIZED" desc="Network State - Uninitialized. This states is when a network device has not been initialized by the device.">
     Uninitialized
   </message>
-  <message name="IDS_NETWORK_HEALTH_STATE_DISABLED" desc="Network Health State - Disabled">
+  <message name="IDS_NETWORK_HEALTH_STATE_DISABLED" desc="Network State - Disabled. This state is when the network device has been disabled (Turning off WiFi).">
     Disabled
   </message>
-  <message name="IDS_NETWORK_HEALTH_STATE_PROHIBITED" desc="Network Health State - Prohibited">
+  <message name="IDS_NETWORK_HEALTH_STATE_PROHIBITED" desc="Network State - Prohibited. This state represents a network device that has been explicitly disabled by admin policy.">
     Prohibited
   </message>
-  <message name="IDS_NETWORK_HEALTH_STATE_NOT_CONNECTED" desc="Network Health State - Not Connected">
+  <message name="IDS_NETWORK_HEALTH_STATE_NOT_CONNECTED" desc="Network State - Not Connected. This state represents when a device is enabled, but has no active network connection.">
     Not Connected
   </message>
-  <message name="IDS_NETWORK_HEALTH_STATE_CONNECTING" desc="Network Health State - Connecting">
+  <message name="IDS_NETWORK_HEALTH_STATE_CONNECTING" desc="Network State - Connecting. This is a transient state when the network device is in the process of connecting to a network.">
     Connecting
   </message>
-  <message name="IDS_NETWORK_HEALTH_STATE_PORTAL" desc="Network Health State - Portal">
+  <message name="IDS_NETWORK_HEALTH_STATE_PORTAL" desc="Network State - Portal. This state represents a connected network device, but the active network is in a captive portal. (When you login at an airport and need to enter additional information before accessing the internet).">
     Portal
   </message>
-  <message name="IDS_NETWORK_HEALTH_STATE_CONNECTED" desc="Network Health State - Connected">
+  <message name="IDS_NETWORK_HEALTH_STATE_CONNECTED" desc="Network State - Connected. This state is when a network device is connected to network, but cannot access the internet.">
     Connected
   </message>
-  <message name="IDS_NETWORK_HEALTH_STATE_ONLINE" desc="Network Health State - Online">
+  <message name="IDS_NETWORK_HEALTH_STATE_ONLINE" desc="Network State - Online. This state is when a network device is connected to a network and can access the internet.">
     Online
   </message>
 

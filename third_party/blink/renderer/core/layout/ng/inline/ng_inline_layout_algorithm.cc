@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -109,8 +108,8 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::HandleCloseTag(
     NGInlineBoxState* box) {
   if (UNLIKELY(quirks_mode_ && !item.IsEmptyItem()))
     box->EnsureTextMetrics(*item.Style(), baseline_type_);
-  box = box_states_->OnCloseTag(ConstraintSpace(), &line_box_, box,
-                                baseline_type_, item.HasEndEdge());
+  box = box_states_->OnCloseTag(&line_box_, box, baseline_type_,
+                                item.HasEndEdge());
   // Just clear |NeedsLayout| flags. Culled inline boxes do not need paint
   // invalidations. If this object produces box fragments,
   // |NGInlineBoxStateStack| takes care of invalidations.
@@ -218,7 +217,6 @@ void NGInlineLayoutAlgorithm::CreateLine(
 
   bool has_out_of_flow_positioned_items = false;
   bool has_floating_items = false;
-  bool has_relative_positioned_items = false;
 
   // List items trigger strict line height, i.e. we make room for the line box
   // strut, for *every* line. This matches other browsers. The intention may
@@ -275,8 +273,6 @@ void NGInlineLayoutAlgorithm::CreateLine(
       box = HandleCloseTag(item, item_result, box);
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
       box = PlaceAtomicInline(item, *line_info, &item_result);
-      has_relative_positioned_items |=
-          item.Style()->GetPosition() == EPosition::kRelative;
     } else if (item.Type() == NGInlineItem::kListMarker) {
       PlaceListMarker(item, &item_result, *line_info);
     } else if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
@@ -306,14 +302,12 @@ void NGInlineLayoutAlgorithm::CreateLine(
         line_box_.AddChild(item.GetLayoutObject(), item.BidiLevel());
       }
       has_floating_items = true;
-      has_relative_positioned_items |=
-          item.Style()->GetPosition() == EPosition::kRelative;
     } else if (item.Type() == NGInlineItem::kBidiControl) {
       line_box_.AddChild(item.BidiLevel());
     }
   }
 
-  box_states_->OnEndPlaceItems(ConstraintSpace(), &line_box_, baseline_type_);
+  box_states_->OnEndPlaceItems(&line_box_, baseline_type_);
 
   if (UNLIKELY(Node().IsBidiEnabled())) {
     box_states_->PrepareForReorder(&line_box_);
@@ -392,15 +386,6 @@ void NGInlineLayoutAlgorithm::CreateLine(
     PlaceFloatingObjects(*line_info, line_box_metrics, opportunity,
                          exclusion_space);
   }
-
-  // Apply any relative positioned offsets to *items* which have relative
-  // positioning, (atomic-inlines, and floats). This will only move the
-  // individual item.
-  if (has_relative_positioned_items)
-    PlaceRelativePositionedItems();
-
-  // Apply any relative positioned offsets to any boxes (and their children).
-  box_states_->ApplyRelativePositioning(ConstraintSpace(), &line_box_);
 
   NGAnnotationMetrics annotation_metrics;
   if (Node().HasRuby() &&
@@ -565,8 +550,7 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
   NGInlineBoxState* box =
       box_states_->OnOpenTag(item, *item_result, baseline_type_, line_box_);
   PlaceLayoutResult(item_result, box, box->margin_inline_start);
-  return box_states_->OnCloseTag(ConstraintSpace(), &line_box_, box,
-                                 baseline_type_);
+  return box_states_->OnCloseTag(&line_box_, box, baseline_type_);
 }
 
 // Place a NGLayoutResult into the line box.
@@ -761,19 +745,6 @@ void NGInlineLayoutAlgorithm::PlaceFloatingObjects(
 
     child.rect.offset = {child.bfc_offset.line_offset - bfc_line_offset,
                          block_offset};
-  }
-}
-
-void NGInlineLayoutAlgorithm::PlaceRelativePositionedItems() {
-  for (auto& child : line_box_) {
-    const auto* physical_fragment = child.PhysicalFragment();
-    if (!physical_fragment)
-      continue;
-    if (physical_fragment->IsText())
-      continue;
-
-    child.rect.offset += ComputeRelativeOffsetForInline(
-        ConstraintSpace(), physical_fragment->Style());
   }
 }
 

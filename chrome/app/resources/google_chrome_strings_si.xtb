@@ -126,7 +126,6 @@
 <translation id="4458462641685292929">Google Chrome මත තවත් මෙහෙයුමක් ක්‍රියාත්මක වෙමින් පවතී. පසුව නැවත උත්සාහ කරන්න.</translation>
 <translation id="4480040274068703980">පිවිසුම් දෝශයක් හේතුවෙන් Chrome OS හට ඔබේ දත්ත සම්මුහු කළ නොහැක.</translation>
 <translation id="4521185804071812304">විකල්පමය: Google වෙත දෝෂහරණ සහ භාවිතයේ දත්ත ස්වයංක්‍රීයව යැවීමෙන් Chrome OS විශේෂාංග සහ ක්‍රියාකාරිත්වය වැඩි දියුණු කිරීමට උදවු කරන්න.</translation>
-<translation id="4552702433620284371">Chrome හට ඔබේ උපාංග මෘදුකාංගය පරීක්ෂා කළ නොහැකිය. ඔබේ අන්තර්ජාල සම්බන්ධතාව පරීක්‍ෂා කිරීමට උත්සාහ කරන්න.</translation>
 <translation id="4561051373932531560">වෙබ් මත දුරකථනයක් ක්ලික් කර ඊට Skype! මඟින් කථා කිරීමට Google Chrome ඔබට ඉඩ ලබා දේ!</translation>
 <translation id="4567424176335768812">ඔබ <ph name="USER_EMAIL_ADDRESS" /> ලෙස සයින් ඉන් වී තිබේ. ඔබට දැන් ඔබේ පිටු සලකුණු, ඉතිහාසය, සහ අනෙක් පසුතල වෙත ඔබේ අත්සන් කළ උපාංගයෙන් පිවිසිය හැකිය.</translation>
 <translation id="4571503333518166079">Chrome දැනුම් දීම් සැකසීම්වලට යන්න</translation>
@@ -234,6 +233,7 @@ Google Chrome හට ඔබගේ සැකසුම් ප්‍රතිසා
 <translation id="7962410387636238736">Windows XP සහ Windows Vista සඳහා තවදුරටත් සහය නොදක්වන නිසා, මෙම පරිගණකයට තවදුරටත් Google Chrome යාවත්කාලීන නොලැබෙනු ඇත.</translation>
 <translation id="8008534537613507642">Chrome යළි ස්ථාපනය කරන්න</translation>
 <translation id="8013993649590906847">රූපයකට ප්‍රයෝජනවත් විස්තරයක් නොමැති නම්, Chrome ඔබට විස්තරයක් ලබා දීමට උත්සාහ කරයි. විස්තර නිර්මාණ කිරීමට, රූප Google වෙත යවනු ලැබේ.</translation>
+<translation id="8034040214409724683">Chrome උපාංග මෘදුකාංගය පරීක්ෂා කිරීමේදී දෝෂයක් ඇති විය</translation>
 <translation id="8129812357326543296">&amp;Google Chrome පිළිබඳ</translation>
 <translation id="8255190535488645436">Google Chrome ඔබේ කැමරාව හා මයික්‍රෆෝනය භාවිත කරයි.</translation>
 <translation id="8286862437124483331">Google Chrome විසින් මුරපද පෙන්වීමට උත්සහ කරයි. එයට ඉඩදීම සඳහා Windows මුරපදය යොදන්න.</translation>

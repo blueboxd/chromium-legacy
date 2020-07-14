@@ -440,7 +440,6 @@
 <translation id="2799223571221894425">重新啟動</translation>
 <translation id="2803306138276472711">Google 安全瀏覽功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />偵測到惡意軟件<ph name="END_LINK" />。即使是平常可以安全使用的網站，有時也會被惡意軟件感染。</translation>
 <translation id="2807052079800581569">圖片 Y 位置</translation>
-<translation id="2824514415781424867">要分享位置資訊嗎？</translation>
 <translation id="2824775600643448204">網址與搜尋列</translation>
 <translation id="2826760142808435982">連線採用 <ph name="CIPHER" /> 加密，並設有 <ph name="KX" /> 金鑰交換機制。</translation>
 <translation id="2835170189407361413">清除表格</translation>
@@ -910,6 +909,7 @@
 <translation id="480334179571489655">來源政策錯誤</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">您目前無法瀏覽 <ph name="SITE" />，因為這個網站傳送的憑證經過編碼，導致 Google Chrome 無法處理。網絡錯誤和攻擊行為通常是暫時性問題，所以這個網頁應會在稍後回復正常。</translation>
+<translation id="4809079943450490359">來自裝置管理員的指示：</translation>
 <translation id="4813512666221746211">網絡錯誤</translation>
 <translation id="4816492930507672669">依頁面大小調整</translation>
 <translation id="484462545196658690">自動</translation>

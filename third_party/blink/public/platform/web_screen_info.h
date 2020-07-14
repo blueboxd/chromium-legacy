@@ -31,7 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCREEN_INFO_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCREEN_INFO_H_
 
-#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
+#include "third_party/blink/public/mojom/widget/screen_orientation.mojom-shared.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -74,8 +74,9 @@ struct WebScreenInfo {
 
   // This is the orientation 'type' or 'name', as in landscape-primary or
   // portrait-secondary for examples.
-  // See WebScreenOrientationType.h for the full list.
-  WebScreenOrientationType orientation_type = kWebScreenOrientationUndefined;
+  // See public/mojom/screen_orientation.mojom for the full list.
+  mojom::ScreenOrientation orientation_type =
+      mojom::ScreenOrientation::kUndefined;
 
   // This is the orientation angle of the displayed content in degrees.
   // It is the opposite of the physical rotation.

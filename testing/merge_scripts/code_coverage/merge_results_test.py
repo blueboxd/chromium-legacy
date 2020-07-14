@@ -41,7 +41,7 @@ class MergeProfilesTest(unittest.TestCase):
         build_properties, '--summary-json', 'summary.json', '--task-output-dir',
         task_output_dir, '--profdata-dir', profdata_dir, '--llvm-profdata',
         'llvm-profdata', 'a.json', 'b.json', 'c.json', '--test-target-name',
-        'base_unittests'
+        'base_unittests', '--sparse'
     ]
     with mock.patch.object(merger, 'merge_profiles') as mock_merge:
       mock_merge.return_value = None, None
@@ -75,7 +75,7 @@ class MergeProfilesTest(unittest.TestCase):
         self.assertEqual(
             mock_merge.call_args,
             mock.call(input_dir, output_file, '.profdata', 'llvm-profdata',
-                '.*', sparse=True))
+                '.*', sparse=False))
 
   @mock.patch.object(merger, '_validate_and_convert_profraws')
   def test_merge_profraw(self, mock_validate_and_convert_profraws):
@@ -110,7 +110,6 @@ class MergeProfilesTest(unittest.TestCase):
                       'merge',
                       '-o',
                       'output/dir/default.profdata',
-                      '-sparse=true',
                       '/b/some/path/0/default-1.profdata',
                       '/b/some/path/1/default-2.profdata',
                   ],
@@ -145,7 +144,6 @@ class MergeProfilesTest(unittest.TestCase):
                       'merge',
                       '-o',
                       'output/dir/default.profdata',
-                      '-sparse=true',
                       '/b/some/path/0/default-1.profraw',
                       '/b/some/path/0/default-2.profraw',
                       '/b/some/path/1/default-1.profraw',
@@ -193,7 +191,6 @@ class MergeProfilesTest(unittest.TestCase):
                       'merge',
                       '-o',
                       'output/dir/default.profdata',
-                      '-sparse=true',
                       '/b/some/path/base_unittests/default.profdata',
                       '/b/some/path/url_unittests/default.profdata',
                   ],
@@ -231,7 +228,6 @@ class MergeProfilesTest(unittest.TestCase):
                       'merge',
                       '-o',
                       'output/dir/default.profdata',
-                      '-sparse=true',
                       '/b/some/path/base_unittests/base_unittests.profdata',
                       '/b/some/path/url_unittests/url_unittests.profdata',
                   ],
@@ -330,29 +326,13 @@ class MergeProfilesTest(unittest.TestCase):
 
     test_scenarios = [
       {
-        # Base set of args should set --sparse to true by default
+        # Base set of args should set --sparse to false by default
         'args': None,
-        'expected_outcome': True,
-      },
-      {
-        # Sparse should parse to False when --no-sparse is specified
-        'args': ['--no-sparse'],
         'expected_outcome': False,
       },
       {
         # Sparse should parse True when only --sparse is specified
         'args': ['--sparse'],
-        'expected_outcome': True,
-      },
-      {
-        # Sparse should take the last arg specified, so with --no-sparse at the
-        # end this should resolve false.
-        'args': ['--sparse', '--no-sparse'],
-        'expected_outcome': False,
-      },
-      {
-        # --sparse specified at end should resolve true.
-        'args': ['--no-sparse', '--sparse'],
         'expected_outcome': True,
       }
     ]

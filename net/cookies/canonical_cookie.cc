@@ -945,25 +945,26 @@ bool CanonicalCookie::IsRecentlyCreated(base::TimeDelta age_threshold) const {
   return (base::Time::Now() - creation_date_) <= age_threshold;
 }
 
-CookieAndLineWithStatus::CookieAndLineWithStatus() = default;
+CookieAndLineWithAccessResult::CookieAndLineWithAccessResult() = default;
 
-CookieAndLineWithStatus::CookieAndLineWithStatus(
+CookieAndLineWithAccessResult::CookieAndLineWithAccessResult(
     base::Optional<CanonicalCookie> cookie,
     std::string cookie_string,
-    CookieInclusionStatus status)
+    CookieAccessResult access_result)
     : cookie(std::move(cookie)),
       cookie_string(std::move(cookie_string)),
-      status(status) {}
+      access_result(access_result) {}
 
-CookieAndLineWithStatus::CookieAndLineWithStatus(
-    const CookieAndLineWithStatus&) = default;
+CookieAndLineWithAccessResult::CookieAndLineWithAccessResult(
+    const CookieAndLineWithAccessResult&) = default;
 
-CookieAndLineWithStatus& CookieAndLineWithStatus::operator=(
-    const CookieAndLineWithStatus& cookie_and_line_with_status) = default;
-
-CookieAndLineWithStatus::CookieAndLineWithStatus(CookieAndLineWithStatus&&) =
+CookieAndLineWithAccessResult& CookieAndLineWithAccessResult::operator=(
+    const CookieAndLineWithAccessResult& cookie_and_line_with_access_result) =
     default;
 
-CookieAndLineWithStatus::~CookieAndLineWithStatus() = default;
+CookieAndLineWithAccessResult::CookieAndLineWithAccessResult(
+    CookieAndLineWithAccessResult&&) = default;
+
+CookieAndLineWithAccessResult::~CookieAndLineWithAccessResult() = default;
 
 }  // namespace net

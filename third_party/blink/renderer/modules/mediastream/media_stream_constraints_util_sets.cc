@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 

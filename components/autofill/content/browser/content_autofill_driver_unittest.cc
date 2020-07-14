@@ -289,8 +289,8 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
  public:
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
-    // This needed to keep the WebContentsObserverSequenceChecker checks happy
-    // for when AppendChild is called.
+    // This needed to keep the WebContentsObserverConsistencyChecker checks
+    // happy for when AppendChild is called.
     NavigateAndCommit(GURL("about:blank"));
 
     test_autofill_client_.reset(new MockAutofillClient());

@@ -6,6 +6,7 @@ include_rules = [
   "+components/payments",
   "+device/base/synchronization",
   "+services/media_session/public/cpp",
+  "+services/device/public/mojom",
   "+services/network/public/cpp",
   "+services/network/public/mojom",
   "+services/resource_coordinator/public/mojom",

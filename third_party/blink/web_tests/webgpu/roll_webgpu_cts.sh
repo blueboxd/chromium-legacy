@@ -10,7 +10,7 @@
 # It does the following for each branch:
 #   - Updates Chromium's DEPS to the latest origin/{master,glsl-dependent}.
 #   - Runs gclient sync.
-#   - Builds the CTS (requires a local installation of node/npm + yarn).
+#   - Builds the CTS (requires a local installation of node/npm).
 #   - Copies the built out-wpt/ directory into
 #     {external/wpt,wpt_internal}/webgpu/.
 #   - Adds {external/wpt,wpt_internal}/webgpu/ to the git index
@@ -50,7 +50,7 @@ roll_cts_to() {
 
   pushd third_party/webgpu-cts/src > /dev/null
 
-    yarn install --frozen-lockfile
+    npm install --frozen-lockfile
     npx grunt wpt  # build third_party/webgpu-cts/src/out-wpt/
 
   popd > /dev/null

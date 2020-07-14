@@ -120,7 +120,7 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
   OnSynchronizeVisualProperties(visual_properties);
 
   visual_properties.screen_info.orientation_type =
-      SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
+      blink::mojom::ScreenOrientation::kPortraitPrimary;
   OnSynchronizeVisualProperties(visual_properties);
 }
 

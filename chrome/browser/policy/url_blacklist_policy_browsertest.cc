@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   blacklist.AppendString("bbb.com");
   PolicyMap policies;
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, blacklist.CreateDeepCopy(), nullptr);
+               POLICY_SOURCE_CLOUD, blacklist.Clone(), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
   // All bbb.com URLs are blocked, and "aaa.com" is still unblocked.
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   whitelist.AppendString("sub.bbb.com");
   whitelist.AppendString("bbb.com/policy");
   policies.Set(key::kURLWhitelist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, whitelist.CreateDeepCopy(), nullptr);
+               POLICY_SOURCE_CLOUD, whitelist.Clone(), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
   CheckURLIsBlocked(browser(), kURLS[1]);
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistIncognito) {
   blacklist.AppendString("bbb.com");
   PolicyMap policies;
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, blacklist.CreateDeepCopy(), nullptr);
+               POLICY_SOURCE_CLOUD, blacklist.Clone(), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
   // All bbb.com URLs are blocked, and "aaa.com" is still unblocked.
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistIncognito) {
   whitelist.AppendString("sub.bbb.com");
   whitelist.AppendString("bbb.com/policy");
   policies.Set(key::kURLWhitelist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, whitelist.CreateDeepCopy(), nullptr);
+               POLICY_SOURCE_CLOUD, whitelist.Clone(), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
   CheckURLIsBlocked(incognito_browser, kURLS[1]);
@@ -156,12 +156,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistAndWhitelist) {
   blacklist.AppendString("*");
   PolicyMap policies;
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, blacklist.CreateDeepCopy(), nullptr);
+               POLICY_SOURCE_CLOUD, blacklist.Clone(), nullptr);
 
   base::ListValue whitelist;
   whitelist.AppendString("aaa.com");
   policies.Set(key::kURLWhitelist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, whitelist.CreateDeepCopy(), nullptr);
+               POLICY_SOURCE_CLOUD, whitelist.Clone(), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
   CheckCanOpenURL(
@@ -187,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistSubresources) {
   blacklist.AppendString(subframe_url.spec().c_str());
   PolicyMap policies;
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, blacklist.CreateDeepCopy(), nullptr);
+               POLICY_SOURCE_CLOUD, blacklist.Clone(), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 
@@ -228,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistClientRedirect) {
   blacklist.AppendString(redirected_url.spec().c_str());
   PolicyMap policies;
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, blacklist.CreateDeepCopy(), nullptr);
+               POLICY_SOURCE_CLOUD, blacklist.Clone(), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 
@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistServerRedirect) {
   blacklist.AppendString(redirected_url.spec().c_str());
   PolicyMap policies;
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, blacklist.CreateDeepCopy(), nullptr);
+               POLICY_SOURCE_CLOUD, blacklist.Clone(), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 
@@ -294,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_FileURLBlacklist) {
   blacklist.AppendString("file://*");
   PolicyMap policies;
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, blacklist.CreateDeepCopy(), nullptr);
+               POLICY_SOURCE_CLOUD, blacklist.Clone(), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_FileURLBlacklist) {
   // Replace the URLblacklist with disabling the file scheme.
   blacklist.Remove(base::Value("file://*"), nullptr);
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, blacklist.CreateDeepCopy(), nullptr);
+               POLICY_SOURCE_CLOUD, blacklist.Clone(), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 
@@ -315,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_FileURLBlacklist) {
   base::ListValue disabledscheme;
   disabledscheme.AppendString("file");
   policies.Set(key::kDisabledSchemes, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, disabledscheme.CreateDeepCopy(), nullptr);
+               POLICY_SOURCE_CLOUD, disabledscheme.Clone(), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 
@@ -326,10 +326,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_FileURLBlacklist) {
   base::ListValue whitelist;
   whitelist.AppendString(base_path);
   policies.Set(key::kURLWhitelist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, whitelist.CreateDeepCopy(), nullptr);
+               POLICY_SOURCE_CLOUD, whitelist.Clone(), nullptr);
   blacklist.AppendString(folder_path);
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, blacklist.CreateDeepCopy(), nullptr);
+               POLICY_SOURCE_CLOUD, blacklist.Clone(), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 

@@ -77,6 +77,15 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     unpositioned_list_marker_ = marker;
   }
 
+  void AddChild(const NGPhysicalContainerFragment&,
+                const LogicalOffset&,
+                const LayoutInline* inline_container = nullptr);
+
+  void AddChild(scoped_refptr<const NGPhysicalTextFragment> child,
+                const LogicalOffset& offset) {
+    AddChildInternal(child, offset);
+  }
+
   void ReplaceChild(wtf_size_t index,
                     const NGPhysicalContainerFragment& new_child,
                     const LogicalOffset offset);
@@ -262,6 +271,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   bool has_descendant_that_depends_on_percentage_block_size_ = false;
   bool has_block_fragmentation_ = false;
   bool is_fragmentation_context_root_ = false;
+  bool may_have_descendant_above_block_start_ = false;
 
   bool has_oof_candidate_that_needs_block_offset_adjustment_ = false;
 };

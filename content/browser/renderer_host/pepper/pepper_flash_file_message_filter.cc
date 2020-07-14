@@ -175,7 +175,13 @@ int32_t PepperFlashFileMessageFilter::OnDeleteFileOrDir(
     return ppapi::FileErrorToPepperError(base::File::FILE_ERROR_ACCESS_DENIED);
   }
 
-  bool result = base::DeleteFile(full_path, recursive);
+  bool result;
+  if (recursive) {
+    result = base::DeletePathRecursively(full_path);
+  } else {
+    result = base::DeleteFile(full_path);
+  }
+
   return ppapi::FileErrorToPepperError(
       result ? base::File::FILE_OK : base::File::FILE_ERROR_ACCESS_DENIED);
 }

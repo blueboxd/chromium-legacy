@@ -121,46 +121,45 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
   // TODO(https://crbug.com/1015784): Finalize disallowed feature list, and test
   // for each disallowed feature.
   constexpr uint64_t kAlwaysDisallowedFeatures =
-      FeatureToBit(WebSchedulerTrackedFeature::kWebSocket) |
-      FeatureToBit(WebSchedulerTrackedFeature::kWebRTC) |
+      FeatureToBit(WebSchedulerTrackedFeature::kAppBanner) |
+      FeatureToBit(WebSchedulerTrackedFeature::kBroadcastChannel) |
       FeatureToBit(WebSchedulerTrackedFeature::kContainsPlugins) |
       FeatureToBit(WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet) |
+      FeatureToBit(WebSchedulerTrackedFeature::kIdleManager) |
+      FeatureToBit(WebSchedulerTrackedFeature::kIndexedDBConnection) |
+      FeatureToBit(WebSchedulerTrackedFeature::kKeyboardLock) |
       FeatureToBit(
           WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction) |
-      FeatureToBit(
-          WebSchedulerTrackedFeature::kRequestedNotificationsPermission) |
-      FeatureToBit(WebSchedulerTrackedFeature::kRequestedMIDIPermission) |
+      FeatureToBit(WebSchedulerTrackedFeature::kPaymentManager) |
+      FeatureToBit(WebSchedulerTrackedFeature::kPictureInPicture) |
+      FeatureToBit(WebSchedulerTrackedFeature::kPortal) |
+      FeatureToBit(WebSchedulerTrackedFeature::kPrinting) |
       FeatureToBit(
           WebSchedulerTrackedFeature::kRequestedAudioCapturePermission) |
-      FeatureToBit(
-          WebSchedulerTrackedFeature::kRequestedVideoCapturePermission) |
       FeatureToBit(WebSchedulerTrackedFeature::
                        kRequestedBackForwardCacheBlockedSensors) |
       FeatureToBit(
           WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission) |
-      FeatureToBit(WebSchedulerTrackedFeature::kBroadcastChannel) |
-      FeatureToBit(WebSchedulerTrackedFeature::kIndexedDBConnection) |
-      FeatureToBit(WebSchedulerTrackedFeature::kWebGL) |
-      FeatureToBit(WebSchedulerTrackedFeature::kWebVR) |
-      FeatureToBit(WebSchedulerTrackedFeature::kWebXR) |
+      FeatureToBit(WebSchedulerTrackedFeature::kRequestedMIDIPermission) |
+      FeatureToBit(
+          WebSchedulerTrackedFeature::kRequestedNotificationsPermission) |
+      FeatureToBit(
+          WebSchedulerTrackedFeature::kRequestedVideoCapturePermission) |
       FeatureToBit(WebSchedulerTrackedFeature::kSharedWorker) |
-      FeatureToBit(WebSchedulerTrackedFeature::kWebXR) |
-      FeatureToBit(WebSchedulerTrackedFeature::kWebLocks) |
-      FeatureToBit(WebSchedulerTrackedFeature::kWebHID) |
-      FeatureToBit(WebSchedulerTrackedFeature::kWakeLock) |
-      FeatureToBit(WebSchedulerTrackedFeature::kWebShare) |
-      FeatureToBit(WebSchedulerTrackedFeature::kWebFileSystem) |
-      FeatureToBit(WebSchedulerTrackedFeature::kAppBanner) |
-      FeatureToBit(WebSchedulerTrackedFeature::kPrinting) |
-      FeatureToBit(WebSchedulerTrackedFeature::kWebDatabase) |
-      FeatureToBit(WebSchedulerTrackedFeature::kPictureInPicture) |
-      FeatureToBit(WebSchedulerTrackedFeature::kPortal) |
+      FeatureToBit(WebSchedulerTrackedFeature::kSmsService) |
       FeatureToBit(WebSchedulerTrackedFeature::kSpeechRecognizer) |
-      FeatureToBit(WebSchedulerTrackedFeature::kIdleManager) |
-      FeatureToBit(WebSchedulerTrackedFeature::kPaymentManager) |
       FeatureToBit(WebSchedulerTrackedFeature::kSpeechSynthesis) |
-      FeatureToBit(WebSchedulerTrackedFeature::kKeyboardLock) |
-      FeatureToBit(WebSchedulerTrackedFeature::kSmsService);
+      FeatureToBit(WebSchedulerTrackedFeature::kWakeLock) |
+      FeatureToBit(WebSchedulerTrackedFeature::kWebDatabase) |
+      FeatureToBit(WebSchedulerTrackedFeature::kWebFileSystem) |
+      FeatureToBit(WebSchedulerTrackedFeature::kWebGL) |
+      FeatureToBit(WebSchedulerTrackedFeature::kWebHID) |
+      FeatureToBit(WebSchedulerTrackedFeature::kWebLocks) |
+      FeatureToBit(WebSchedulerTrackedFeature::kWebRTC) |
+      FeatureToBit(WebSchedulerTrackedFeature::kWebShare) |
+      FeatureToBit(WebSchedulerTrackedFeature::kWebSocket) |
+      FeatureToBit(WebSchedulerTrackedFeature::kWebVR) |
+      FeatureToBit(WebSchedulerTrackedFeature::kWebXR);
 
   uint64_t result = kAlwaysDisallowedFeatures;
 

@@ -8,6 +8,7 @@
 #include <memory>
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -33,12 +34,14 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
       mojom::blink::PushSubscriptionPtr subscription,
       ServiceWorkerRegistration* service_worker_registration);
 
-  PushSubscription(const KURL& endpoint,
-                   bool user_visible_only,
-                   const WTF::Vector<uint8_t>& application_server_key,
-                   const WTF::Vector<unsigned char>& p256dh,
-                   const WTF::Vector<unsigned char>& auth,
-                   ServiceWorkerRegistration* service_worker_registration);
+  PushSubscription(
+      const KURL& endpoint,
+      bool user_visible_only,
+      const WTF::Vector<uint8_t>& application_server_key,
+      const WTF::Vector<unsigned char>& p256dh,
+      const WTF::Vector<unsigned char>& auth,
+      ServiceWorkerRegistration* service_worker_registration,
+      const base::Optional<DOMTimeStamp> expiration_time = base::nullopt);
 
   ~PushSubscription() override;
 
@@ -66,6 +69,8 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
   Member<DOMArrayBuffer> auth_;
 
   Member<ServiceWorkerRegistration> service_worker_registration_;
+
+  base::Optional<DOMTimeStamp> expiration_time_;
 };
 
 }  // namespace blink

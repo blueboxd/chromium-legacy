@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.touch_to_fill;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.Arrays;
@@ -22,9 +22,9 @@ class TouchToFillBridge implements TouchToFillComponent.Delegate {
 
     private TouchToFillBridge(long nativeView, WindowAndroid windowAndroid) {
         mNativeView = nativeView;
-        ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
         mTouchToFillComponent = new TouchToFillCoordinator();
-        mTouchToFillComponent.initialize(activity, activity.getBottomSheetController(), this);
+        mTouchToFillComponent.initialize(windowAndroid.getContext().get(),
+                BottomSheetControllerProvider.from(windowAndroid), this);
     }
 
     @CalledByNative

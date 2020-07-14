@@ -1806,9 +1806,13 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::make_unique<extensions::ExtensionListPolicyHandler>(
           key::kExtensionInstallAllowlist,
           extensions::pref_names::kInstallAllowList, false)));
-  handlers->AddHandler(std::make_unique<extensions::ExtensionListPolicyHandler>(
-      key::kExtensionInstallBlacklist, extensions::pref_names::kInstallDenyList,
-      true));
+  handlers->AddHandler(std::make_unique<policy::SimpleDeprecatingPolicyHandler>(
+      std::make_unique<extensions::ExtensionListPolicyHandler>(
+          key::kExtensionInstallBlacklist,
+          extensions::pref_names::kInstallDenyList, true),
+      std::make_unique<extensions::ExtensionListPolicyHandler>(
+          key::kExtensionInstallBlocklist,
+          extensions::pref_names::kInstallDenyList, true)));
   handlers->AddHandler(
       std::make_unique<extensions::ExtensionInstallForcelistPolicyHandler>());
   handlers->AddHandler(

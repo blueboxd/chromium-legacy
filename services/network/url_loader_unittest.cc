@@ -49,6 +49,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/internal/parse_name.h"
 #include "net/cert/test_root_certs.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_util.h"
@@ -2631,13 +2632,13 @@ class MockCookieObserver : public network::mojom::CookieAccessObserver {
 
   struct CookieDetails {
     CookieDetails(const mojom::CookieAccessDetailsPtr& details,
-                  const net::CookieWithStatus cookie)
+                  const net::CookieWithAccessResult cookie)
         : type(details->type),
           name(cookie.cookie.Name()),
           value(cookie.cookie.Value()),
-          is_include(cookie.status.IsInclude()),
+          is_include(cookie.access_result.status.IsInclude()),
           url(details->url),
-          status(cookie.status) {}
+          status(cookie.access_result.status) {}
 
     CookieDetails(CookieAccessType type,
                   std::string name,
@@ -2735,12 +2736,12 @@ class MockNetworkServiceClient : public TestNetworkServiceClient {
       int32_t process_id,
       int32_t routing_id,
       const std::string& devtools_request_id,
-      const net::CookieAndLineStatusList& cookies_with_status,
+      const net::CookieAndLineAccessResultList& cookies_with_access_result,
       std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
       const base::Optional<std::string>& raw_response_headers) override {
     raw_response_cookies_.insert(raw_response_cookies_.end(),
-                                 cookies_with_status.begin(),
-                                 cookies_with_status.end());
+                                 cookies_with_access_result.begin(),
+                                 cookies_with_access_result.end());
 
     devtools_request_id_ = devtools_request_id;
 
@@ -2775,7 +2776,7 @@ class MockNetworkServiceClient : public TestNetworkServiceClient {
     EXPECT_EQ(goal, raw_request_cookies_.size());
   }
 
-  const net::CookieAndLineStatusList& raw_response_cookies() const {
+  const net::CookieAndLineAccessResultList& raw_response_cookies() const {
     return raw_response_cookies_;
   }
 
@@ -2790,7 +2791,7 @@ class MockNetworkServiceClient : public TestNetworkServiceClient {
   }
 
  private:
-  net::CookieAndLineStatusList raw_response_cookies_;
+  net::CookieAndLineAccessResultList raw_response_cookies_;
   base::OnceClosure wait_for_raw_response_;
   size_t wait_for_raw_response_goal_ = 0u;
   std::string devtools_request_id_;
@@ -4341,8 +4342,8 @@ TEST_F(URLLoaderTest, RawResponseCookies) {
               network_service_client.raw_response_cookies()[0].cookie->Name());
     EXPECT_EQ("b",
               network_service_client.raw_response_cookies()[0].cookie->Value());
-    EXPECT_TRUE(
-        network_service_client.raw_response_cookies()[0].status.IsInclude());
+    EXPECT_TRUE(network_service_client.raw_response_cookies()[0]
+                    .access_result.status.IsInclude());
 
     EXPECT_EQ("TEST", network_service_client.devtools_request_id());
 
@@ -4390,7 +4391,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesInvalid) {
     EXPECT_FALSE(network_service_client.raw_response_cookies()[0].cookie);
     EXPECT_TRUE(
         network_service_client.raw_response_cookies()[0]
-            .status.HasExactlyExclusionReasonsForTesting(
+            .access_result.status.HasExactlyExclusionReasonsForTesting(
                 {net::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE}));
 
     EXPECT_EQ("TEST", network_service_client.devtools_request_id());
@@ -4446,8 +4447,8 @@ TEST_F(URLLoaderTest, RawResponseCookiesRedirect) {
               network_service_client.raw_response_cookies()[0].cookie->Name());
     EXPECT_EQ("true",
               network_service_client.raw_response_cookies()[0].cookie->Value());
-    EXPECT_TRUE(
-        network_service_client.raw_response_cookies()[0].status.IsInclude());
+    EXPECT_TRUE(network_service_client.raw_response_cookies()[0]
+                    .access_result.status.IsInclude());
 
     EXPECT_EQ("TEST", network_service_client.devtools_request_id());
   }
@@ -4494,7 +4495,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesRedirect) {
     EXPECT_TRUE(
         network_service_client.raw_response_cookies()[0].cookie->IsSecure());
     EXPECT_TRUE(network_service_client.raw_response_cookies()[0]
-                    .status.HasExactlyExclusionReasonsForTesting(
+                    .access_result.status.HasExactlyExclusionReasonsForTesting(
                         {net::CookieInclusionStatus::EXCLUDE_SECURE_ONLY}));
   }
 }
@@ -4541,8 +4542,8 @@ TEST_F(URLLoaderTest, RawResponseCookiesAuth) {
               network_service_client.raw_response_cookies()[0].cookie->Name());
     EXPECT_EQ("true",
               network_service_client.raw_response_cookies()[0].cookie->Value());
-    EXPECT_TRUE(
-        network_service_client.raw_response_cookies()[0].status.IsInclude());
+    EXPECT_TRUE(network_service_client.raw_response_cookies()[0]
+                    .access_result.status.IsInclude());
 
     EXPECT_EQ("TEST", network_service_client.devtools_request_id());
   }
@@ -4587,7 +4588,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesAuth) {
     EXPECT_TRUE(
         network_service_client.raw_response_cookies()[0].cookie->IsSecure());
     EXPECT_TRUE(network_service_client.raw_response_cookies()[0]
-                    .status.HasExactlyExclusionReasonsForTesting(
+                    .access_result.status.HasExactlyExclusionReasonsForTesting(
                         {net::CookieInclusionStatus::EXCLUDE_SECURE_ONLY}));
 
     EXPECT_EQ("TEST", network_service_client.devtools_request_id());

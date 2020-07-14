@@ -695,11 +695,11 @@ Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
   // Bail out for concurrent marking.
   if (!VectorTraits<T>::kCanTraceConcurrently && buffer) {
     if (visitor->DeferredTraceIfConcurrent(
-            {this, [](blink::Visitor* visitor, const void* object) {
-               reinterpret_cast<const Deque<T, inlineCapacity, Allocator>*>(
-                   object)
-                   ->Trace(visitor);
-             }}))
+            {this,
+             [](blink::Visitor* visitor, const void* object) {
+               reinterpret_cast<const Deque*>(object)->Trace(visitor);
+             }},
+            sizeof(Deque)))
       return;
   }
 

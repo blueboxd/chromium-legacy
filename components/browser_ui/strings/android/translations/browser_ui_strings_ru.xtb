@@ -25,6 +25,7 @@
 <translation id="169515064810179024">Закрыть сайтам доступ к датчикам движения</translation>
 <translation id="1717218214683051432">Датчики движения</translation>
 <translation id="1743802530341753419">Запрашивать разрешение на подключение к устройству (рекомендуется)</translation>
+<translation id="1818308510395330587">Чтобы браузер "<ph name="APP_NAME" />" мог использовать дополненную реальность, также предоставьте ему доступ к камере в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="1887786770086287077">Для устройства отключено определение местоположения. Включите эту функцию в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Реклама</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> из <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">Сегодня</translation>
 <translation id="2182457891543959921">Запрашивать для сайтов разрешение на создание 3D-карты места, в котором вы находитесь, и отслеживание положения камеры (рекомендуется)</translation>
 <translation id="2212565012507486665">Разрешить файлы cookie</translation>
+<translation id="2228071138934252756">Чтобы у приложения "<ph name="APP_NAME" />" был доступ к камере, включите ее в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="2289270750774289114">Запрашивать для сайтов разрешение на поиск Bluetooth-устройств поблизости (рекомендуется)</translation>
 <translation id="2315043854645842844">Сертификат, выбранный клиентом, не поддерживается операционной системой.</translation>
 <translation id="2359808026110333948">Продолжить</translation>
@@ -56,6 +58,7 @@
 <translation id="2586657967955657006">Буфер обмена</translation>
 <translation id="2621115761605608342">Разрешить JavaScript для конкретного сайта.</translation>
 <translation id="2653659639078652383">Отправить</translation>
+<translation id="2677748264148917807">Закрыть</translation>
 <translation id="2687403674020088961">Заблокировать все файлы cookie (не рекомендуется)</translation>
 <translation id="2704606927547763573">Скопировано</translation>
 <translation id="2822354292072154809">Сбросить разрешения для сайта <ph name="CHOSEN_OBJECT_NAME" />?</translation>
@@ -69,6 +72,7 @@
 <translation id="3115898365077584848">Показать информацию</translation>
 <translation id="3123473560110926937">Заблокировано на некоторых сайтах</translation>
 <translation id="3198916472715691905">В памяти занято: <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="321187648315454507">Чтобы <ph name="APP_NAME" /> отправлял вам уведомления, включите их в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3277252321222022663">Предоставить сайтам доступ к датчикам (рекомендуется)</translation>
 <translation id="3295602654194328831">Скрыть информацию</translation>
@@ -100,6 +104,7 @@
 <translation id="445467742685312942">Разрешить сайтам воспроизводить защищенный контент</translation>
 <translation id="4468959413250150279">Отключить звуки на определенном сайте.</translation>
 <translation id="4479647676395637221">Запрашивать разрешение на доступ к камере (рекомендуется)</translation>
+<translation id="4534723447064627427">Чтобы <ph name="APP_NAME" /> получил доступ к микрофону, включите его в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="4570913071927164677">Подробнее…</translation>
 <translation id="4645575059429386691">Управляется вашими родителями</translation>
 <translation id="4670064810192446073">Виртуальная реальность</translation>
@@ -122,6 +127,7 @@
 <translation id="5335288049665977812">Разрешить сайтам использовать JavaScript (рекомендуется)</translation>
 <translation id="534295439873310000">Устройства с функцией NFC</translation>
 <translation id="5354152178998424783">Будут удалены данные и файлы cookie (всего <ph name="DATASIZE" />), сохраненные сайтами.</translation>
+<translation id="5384883051496921101">Этот сайт передает информацию стороннему приложению, пока вы в режиме инкогнито.</translation>
 <translation id="5391532827096253100">Подключение к сайту не защищено. Информация о сайте</translation>
 <translation id="5494752089476963479">Блокировать объявления на сайтах, которые показывают навязчивую или вводящую в заблуждение рекламу</translation>
 <translation id="5505264765875738116">Сайты не могут запрашивать разрешения на отправку уведомлений</translation>
@@ -161,6 +167,7 @@
 <translation id="6561560012278703671">Не прерывать мою работу при запросе разрешения на показ уведомлений</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6612358246767739896">Защищенный контент</translation>
+<translation id="662080504995468778">Остаться</translation>
 <translation id="6643016212128521049">Удалить</translation>
 <translation id="6697925417670533197">Текущие скачивания</translation>
 <translation id="6746124502594467657">Переместить вниз</translation>
@@ -224,6 +231,7 @@
 <translation id="8394832520002899662">Нажмите, чтобы вернуться на сайт.</translation>
 <translation id="8425213833346101688">Изменить</translation>
 <translation id="8441146129660941386">Перемотать назад</translation>
+<translation id="8444433999583714703">Чтобы <ph name="APP_NAME" /> получил доступ к данным о местоположении, включите геолокацию в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Отключить доступ к устройству</translation>
 <translation id="8463851957836045671">Сайт работает быстро</translation>
 <translation id="851751545965956758">Не разрешать сайтам подключаться к устройствам</translation>
@@ -231,6 +239,7 @@
 <translation id="8609465669617005112">Переместить вверх</translation>
 <translation id="8676374126336081632">Очистить</translation>
 <translation id="8702612070107455751">Все офлайн-данные будут удалены.</translation>
+<translation id="8719283222052720129">Предоставьте приложению "<ph name="APP_NAME" />" разрешение в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8737217482364735741">Будут удалены все данные и файлы cookie, которые сохранены сайтом <ph name="ORIGIN" />.</translation>
@@ -241,10 +250,12 @@
 <translation id="8926666909099850184">Функция NFC на этом устройстве отключена. Включите ее в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">У большинства пользователей этот сайт быстро загружается и без задержек отвечает на запросы.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">Выйти из режима инкогнито?</translation>
 <translation id="8958424370300090006">Блокировать файлы cookie для определенного сайта.</translation>
 <translation id="8959122750345127698">Страница не найдена: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Управляется вашими родителями</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="913657688200966289">Предоставьте приложению "<ph name="APP_NAME" />" разрешения в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Доступ к микрофону</translation>
 <translation id="965817943346481315">Блокировать, если сайт показывает навязчивую или вводящую в заблуждение рекламу (рекомендуется)</translation>
 </translationbundle>

@@ -26,7 +26,7 @@ void SendLogMessage(const std::string& message) {
 }  // namespace
 
 MediaStreamAudioTrack::MediaStreamAudioTrack(bool is_local_track)
-    : WebPlatformMediaStreamTrack(is_local_track), is_enabled_(1) {
+    : MediaStreamTrackPlatform(is_local_track), is_enabled_(1) {
   SendLogMessage(
       base::StringPrintf("MediaStreamAudioTrack([this=%p] {is_local_track=%s})",
                          this, (is_local_track ? "true" : "false")));

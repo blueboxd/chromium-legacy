@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">ဆက်တင်များ စီမံခန့်ခွဲရန်</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{၁နာရီ အတွင်း}other{#နာရီ အတွင်း}}</translation>
 <translation id="2583543531130364912">သင်၏ တို့ထိမျက်နှာပြင်ကို တိုင်းတာချိန်ညှိပါ</translation>
+<translation id="2586657967955657006">ကလစ်ဘုတ်</translation>
 <translation id="2666092431469916601">ထိပ်</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> ထံမှ မျှဝေထားပါသည်</translation>
 <translation id="271033894570825754">အသစသ်</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">စတင် စကားပြော</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> ကို <ph name="FOLDER_NAME" /> ဖိုင်တွဲသို့ ရွှေ့လိုက်ပါပြီ။</translation>
 <translation id="4316910396681052118">အက်ပ်များ အားလုံး</translation>
+<translation id="4491109536499578614">ပုံ</translation>
 <translation id="4588090240171750605">ညာဖက်သို့ ရွှေ့ရန်</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />၊ ကြယ်ပွင့် အဆင့်သတ်မှတ်ချက် <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />၊ အက်ပ်အကြံပြုချက်</translation>

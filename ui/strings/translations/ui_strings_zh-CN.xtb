@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">管理设置</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 小时后}other{# 小时后}}</translation>
 <translation id="2583543531130364912">校准您的触摸屏</translation>
+<translation id="2586657967955657006">剪贴板</translation>
 <translation id="2666092431469916601">顶部</translation>
 <translation id="2701330563083355633">共享自 <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">新建</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">开始讲话</translation>
 <translation id="430191667033048642">“<ph name="MOVED_APP_NAME" />”已移至文件夹“<ph name="FOLDER_NAME" />”</translation>
 <translation id="4316910396681052118">所有应用</translation>
+<translation id="4491109536499578614">图片</translation>
 <translation id="4588090240171750605">向右滚动</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />，星级评分为 <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />，推荐的应用</translation>

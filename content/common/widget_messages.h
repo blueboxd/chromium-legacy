@@ -16,7 +16,6 @@
 #include "content/common/visual_properties.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "ui/base/ime/text_input_action.h"

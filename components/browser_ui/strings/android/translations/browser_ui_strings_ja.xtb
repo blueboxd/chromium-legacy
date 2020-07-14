@@ -25,6 +25,7 @@
 <translation id="169515064810179024">サイトによるモーション センサーへのアクセスをブロックする</translation>
 <translation id="1717218214683051432">モーション センサー</translation>
 <translation id="1743802530341753419">サイトがデバイスに接続する前に確認する（推奨）</translation>
+<translation id="1818308510395330587"><ph name="APP_NAME" /> に AR の使用を許可するには、<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でもカメラをオンにしてください。</translation>
 <translation id="1887786770086287077">位置情報へのアクセスがデバイスでオフになっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でオンにしてください。</translation>
 <translation id="1919345977826869612">広告</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">今日</translation>
 <translation id="2182457891543959921">サイトに周囲の 3D マップの作成またはカメラ位置の追跡を許可する前に確認します（推奨）</translation>
 <translation id="2212565012507486665">Cookie を許可</translation>
+<translation id="2228071138934252756"><ph name="APP_NAME" /> にカメラへのアクセスを許可するには、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />でもカメラをオンにしてください。</translation>
 <translation id="2289270750774289114">サイトから近くにある Bluetooth デバイスの検出を求められたときに確認する（推奨）</translation>
 <translation id="2315043854645842844">オペレーティング システムでサポートされていないため、クライアント側で証明書を選択することはできません。</translation>
 <translation id="2359808026110333948">続行</translation>
@@ -56,6 +58,7 @@
 <translation id="2586657967955657006">クリップボード</translation>
 <translation id="2621115761605608342">特定のサイトに対して JavaScript を許可します。</translation>
 <translation id="2653659639078652383">送信</translation>
+<translation id="2677748264148917807">このページを離れる</translation>
 <translation id="2687403674020088961">すべての Cookie をブロックする（推奨されません）</translation>
 <translation id="2704606927547763573">コピーしました</translation>
 <translation id="2822354292072154809">「<ph name="CHOSEN_OBJECT_NAME" />」に関するすべてのサイト権限をリセットしてもよろしいですか？</translation>
@@ -69,6 +72,7 @@
 <translation id="3115898365077584848">情報を表示</translation>
 <translation id="3123473560110926937">一部のサイトでブロックされています</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> の保存データ</translation>
+<translation id="321187648315454507"><ph name="APP_NAME" /> に通知の送信を許可するには、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />でも通知をオンにしてください。</translation>
 <translation id="3227137524299004712">マイク</translation>
 <translation id="3277252321222022663">サイトによるセンサーへのアクセスを許可する（推奨）</translation>
 <translation id="3295602654194328831">情報を表示しない</translation>
@@ -100,6 +104,7 @@
 <translation id="445467742685312942">保護されたコンテンツの再生をサイトに許可する</translation>
 <translation id="4468959413250150279">特定のサイトの音声をミュートします。</translation>
 <translation id="4479647676395637221">サイトにカメラの使用を許可する前に確認する（推奨）</translation>
+<translation id="4534723447064627427"><ph name="APP_NAME" /> にマイクへのアクセスを許可するには、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />でもマイクをオンにしてください。</translation>
 <translation id="4570913071927164677">詳細</translation>
 <translation id="4645575059429386691">保護者により管理されています</translation>
 <translation id="4670064810192446073">バーチャル リアリティ（VR）</translation>
@@ -122,6 +127,7 @@
 <translation id="5335288049665977812">サイトに JavaScript の実行を許可する（推奨）</translation>
 <translation id="534295439873310000">NFC デバイス</translation>
 <translation id="5354152178998424783">サイトにより保存された <ph name="DATASIZE" /> のデータと Cookie が削除されます。</translation>
+<translation id="5384883051496921101">このサイトの情報がシークレット モードの外部のアプリに共有されようとしています。</translation>
 <translation id="5391532827096253100">このサイトへの接続は保護されていません。サイト情報</translation>
 <translation id="5494752089476963479">煩わしい広告や誤解を招く広告が表示されるサイトで広告をブロックする</translation>
 <translation id="5505264765875738116">通知を送信するかどうかの確認をサイトに許可しない</translation>
@@ -161,6 +167,7 @@
 <translation id="6561560012278703671">静かな方法で通知する（割り込み通知を行わない）</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">保護されたコンテンツ</translation>
+<translation id="662080504995468778">とどまる</translation>
 <translation id="6643016212128521049">削除</translation>
 <translation id="6697925417670533197">アクティブなダウンロード</translation>
 <translation id="6746124502594467657">下に移動</translation>
@@ -224,6 +231,7 @@
 <translation id="8394832520002899662">タップしてサイトに戻る</translation>
 <translation id="8425213833346101688">変更</translation>
 <translation id="8441146129660941386">後方にシーク再生</translation>
+<translation id="8444433999583714703"><ph name="APP_NAME" /> に現在地へのアクセスを許可するには、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />でも位置情報をオンにしてください。</translation>
 <translation id="8447861592752582886">デバイスの許可を取り消します</translation>
 <translation id="8463851957836045671">サイトは高速です</translation>
 <translation id="851751545965956758">サイトからデバイスへの接続をブロックする</translation>
@@ -231,6 +239,7 @@
 <translation id="8609465669617005112">上に移動</translation>
 <translation id="8676374126336081632">入力内容を消去</translation>
 <translation id="8702612070107455751">オフライン データも削除されます。</translation>
+<translation id="8719283222052720129"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で <ph name="APP_NAME" /> の権限を有効にしてください。</translation>
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="8730621377337864115">完了</translation>
 <translation id="8737217482364735741"><ph name="ORIGIN" /> により保存されたすべてのデータと Cookie が削除されます。</translation>
@@ -241,10 +250,12 @@
 <translation id="8926666909099850184">このデバイスでは NFC がオフになっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でオンにしてください。</translation>
 <translation id="8929372349074745002">このサイトは、ほとんどの環境ですばやく表示され応答しています</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">シークレット モードを終了しますか？</translation>
 <translation id="8958424370300090006">特定のサイトの Cookie をブロックします。</translation>
 <translation id="8959122750345127698"><ph name="URL" /> にアクセスできません</translation>
 <translation id="9019902583201351841">保護者により管理されています</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="913657688200966289"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で <ph name="APP_NAME" /> の権限を有効にしてください。</translation>
 <translation id="945632385593298557">マイクへのアクセス</translation>
 <translation id="965817943346481315">煩わしい広告や誤解を招く広告が表示されるサイトの場合にブロック（推奨）</translation>
 </translationbundle>

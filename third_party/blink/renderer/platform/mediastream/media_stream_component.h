@@ -35,10 +35,10 @@
 #include <memory>
 
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
-#include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_track_platform.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
@@ -93,14 +93,14 @@ class PLATFORM_EXPORT MediaStreamComponent final
     source_provider_.Wrap(provider);
   }
 
-  WebPlatformMediaStreamTrack* GetPlatformTrack() const {
+  MediaStreamTrackPlatform* GetPlatformTrack() const {
     return platform_track_.get();
   }
   void SetPlatformTrack(
-      std::unique_ptr<WebPlatformMediaStreamTrack> platform_track) {
+      std::unique_ptr<MediaStreamTrackPlatform> platform_track) {
     platform_track_ = std::move(platform_track);
   }
-  void GetSettings(WebMediaStreamTrack::Settings&);
+  void GetSettings(MediaStreamTrackPlatform::Settings&);
 
   void Trace(Visitor*) const;
 
@@ -136,7 +136,7 @@ class PLATFORM_EXPORT MediaStreamComponent final
   WebMediaStreamTrack::ContentHintType content_hint_ =
       WebMediaStreamTrack::ContentHintType::kNone;
   MediaConstraints constraints_;
-  std::unique_ptr<WebPlatformMediaStreamTrack> platform_track_;
+  std::unique_ptr<MediaStreamTrackPlatform> platform_track_;
 };
 
 typedef HeapVector<Member<MediaStreamComponent>> MediaStreamComponentVector;

@@ -7,11 +7,11 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
 namespace safe_browsing {
@@ -505,13 +505,11 @@ ContentAnalysisScanResult MalwareVerdictToResult(
     ContentAnalysisTrigger trigger;
     switch (verdict.verdict()) {
       case MalwareDeepScanningVerdict::UWS:
-        trigger.action = enterprise_connectors::ContentAnalysisResponse::
-            Result::TriggeredRule::BLOCK;
+        trigger.action = enterprise_connectors::TriggeredRule::BLOCK;
         trigger.name = "UWS";
         break;
       case MalwareDeepScanningVerdict::MALWARE:
-        trigger.action = enterprise_connectors::ContentAnalysisResponse::
-            Result::TriggeredRule::BLOCK;
+        trigger.action = enterprise_connectors::TriggeredRule::BLOCK;
         trigger.name = "MALWARE";
         break;
       default:

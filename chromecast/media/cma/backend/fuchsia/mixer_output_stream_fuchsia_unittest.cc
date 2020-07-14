@@ -32,8 +32,7 @@ TEST_F(MixerOutputStreamFuchsiaTest, StartAndStop) {
 TEST_F(MixerOutputStreamFuchsiaTest, Play1s) {
   EXPECT_TRUE(output_.Start(kSampleRate, kNumChannels));
 
-  constexpr base::TimeDelta kTestStreamDuration =
-      base::TimeDelta::FromMilliseconds(300);
+  constexpr auto kTestStreamDuration = base::TimeDelta::FromMilliseconds(300);
   constexpr float kSignalFrequencyHz = 1000;
 
   auto started = base::TimeTicks::Now();

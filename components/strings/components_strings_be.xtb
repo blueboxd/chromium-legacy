@@ -447,7 +447,6 @@
 <translation id="2799223571221894425">Перазапусціць</translation>
 <translation id="2803306138276472711">Google Бяспечны прагляд толькі што <ph name="BEGIN_LINK" />выявіў шкоднае ПЗ<ph name="END_LINK" /> на сайце <ph name="SITE" />. Сайты, якія звычайна з'яўляюцца надзейнымі, часам заражаюцца шкодным ПЗ.</translation>
 <translation id="2807052079800581569">Размяшчэнне відарыса па восі Y</translation>
-<translation id="2824514415781424867">Абагуліць месцазнаходжанне?</translation>
 <translation id="2824775600643448204">Адрасны радок і панэль пошуку</translation>
 <translation id="2826760142808435982">Падключэнне зашыфравана і аўтэнтыфікавана з дапамогай <ph name="CIPHER" />, механізм абмену ключамі – <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Ачысціць форму</translation>
@@ -922,6 +921,7 @@
 <translation id="480334179571489655">Памылка палітыкі крыніцы</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">Вы не можаце адкрыць вэб-сайт <ph name="SITE" />, бо ён адправіў зашыфраваныя ўліковыя даныя, якія Google Chrome не можа апрацаваць. Сеткавыя памылкі і атакі звычайна маюць часовы характар. Хутчэй за ўсё, праз некаторы час вэб-сайт будзе працаваць зноў.</translation>
+<translation id="4809079943450490359">Інструкцыі ад адміністратара прылады:</translation>
 <translation id="4813512666221746211">Памылка сеткі</translation>
 <translation id="4816492930507672669">Дапасаваць да памераў старонкі</translation>
 <translation id="484462545196658690">Аўтаматычна</translation>

@@ -8,6 +8,7 @@
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/common/channel_info.h"
@@ -25,6 +26,9 @@ namespace {
 // thread while FetchProfiles() is invoked on the main thread.
 class ProfileInterceptor {
  public:
+  using Predicate =
+      base::RepeatingCallback<bool(const metrics::SampledProfile&)>;
+
   // Get the static object instance. This object must leak because there is no
   // synchronization between it and the profiler thread which can invoke
   // Intercept at any time.
@@ -33,22 +37,63 @@ class ProfileInterceptor {
     return *instance;
   }
 
-  void Intercept(metrics::SampledProfile profile) {
+  void SetFoundClosure(const base::RepeatingClosure& found_closure) {
     base::AutoLock lock(lock_);
-    profiles_.push_back(std::move(profile));
+    found_closure_ = found_closure;
   }
 
-  std::vector<metrics::SampledProfile> FetchProfiles() {
+  void SetPredicate(const Predicate& predicate) {
     base::AutoLock lock(lock_);
-    std::vector<metrics::SampledProfile> profiles;
-    profiles.swap(profiles_);
-    return profiles;
+    predicate_ = predicate;
+  }
+
+  bool ProfileWasFound() {
+    base::AutoLock lock(lock_);
+    return found_profile_;
+  }
+
+  void Intercept(metrics::SampledProfile profile) {
+    base::AutoLock lock(lock_);
+    if (predicate_.is_null()) {
+      pending_profiles_.push_back(profile);
+    } else {
+      CHECK(!found_closure_.is_null());
+      if (predicate_.Run(profile)) {
+        OnProfileFound();
+        return;
+      }
+      for (const auto& pending_profile : pending_profiles_) {
+        if (predicate_.Run(pending_profile)) {
+          OnProfileFound();
+          break;
+        }
+      }
+      pending_profiles_.clear();
+    }
   }
 
  private:
+  void OnProfileFound() EXCLUSIVE_LOCKS_REQUIRED(lock_) {
+    found_profile_ = true;
+    found_closure_.Run();
+  }
+
   base::Lock lock_;
-  std::vector<metrics::SampledProfile> profiles_ GUARDED_BY(lock_);
+  base::RepeatingClosure found_closure_ GUARDED_BY(lock_);
+  Predicate predicate_ GUARDED_BY(lock_);
+  std::vector<metrics::SampledProfile> pending_profiles_ GUARDED_BY(lock_);
+  bool found_profile_ GUARDED_BY(lock_) = false;
 };
+
+// Returns true if |profile| has the specified properties |trigger_event|,
+// |process| and |thread|. Returns false otherwise.
+bool MatchesProfile(metrics::SampledProfile::TriggerEvent trigger_event,
+                    metrics::Process process,
+                    metrics::Thread thread,
+                    const metrics::SampledProfile& profile) {
+  return profile.trigger_event() == trigger_event &&
+         profile.process() == process && profile.thread() == thread;
+}
 
 class StackSamplingBrowserTest : public InProcessBrowserTest {
  public:
@@ -69,8 +114,7 @@ class StackSamplingBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// Wait for a profile with the specified properties. Checks once per second
-// until the profile is seen or we time out.
+// Wait for a profile with the specified properties.
 bool WaitForProfile(metrics::SampledProfile::TriggerEvent trigger_event,
                     metrics::Process process,
                     metrics::Thread thread) {
@@ -85,33 +129,17 @@ bool WaitForProfile(metrics::SampledProfile::TriggerEvent trigger_event,
     default:
       return true;
   }
+  auto predicate =
+      base::BindRepeating(&MatchesProfile, trigger_event, process, thread);
 
-  // The profiling duration is one second when enabling browser test mode via
-  // the kStartStackProfilerBrowserTest switch argument. We expect to see the
-  // profiles shortly thereafter, but wait up to 30 seconds to give ample time
-  // to avoid flaky failures.
-  int seconds_to_wait = 30;
-  do {
-    std::vector<metrics::SampledProfile> profiles =
-        ProfileInterceptor::GetInstance().FetchProfiles();
-    const bool was_received =
-        std::find_if(profiles.begin(), profiles.end(),
-                     [&](const metrics::SampledProfile& profile) {
-                       return profile.trigger_event() == trigger_event &&
-                              profile.process() == process &&
-                              profile.thread() == thread;
-                     }) != profiles.end();
-    if (was_received)
-      return true;
-    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
-    // Manually spinning message loop is fine here because the main thread
-    // message loop will not be continuously busy at Chrome startup, and we will
-    // spin it enough over 30 seconds to ensure that any necessary processing is
-    // done.
-    base::RunLoop().RunUntilIdle();
-  } while (--seconds_to_wait > 0);
+  base::RunLoop run_loop;
+  ProfileInterceptor::GetInstance().SetFoundClosure(run_loop.QuitClosure());
+  ProfileInterceptor::GetInstance().SetPredicate(predicate);
 
-  return false;
+  base::test::ScopedRunLoopTimeout timeout(FROM_HERE,
+                                           base::TimeDelta::FromSeconds(30));
+  run_loop.Run();
+  return ProfileInterceptor::GetInstance().ProfileWasFound();
 }
 
 }  // namespace

@@ -64,6 +64,13 @@ Yet more randome contents that we don't care about.
 More random contents that we don't care about.
 )";
 
+// Known number of public method calls that the PpdProvider will defer
+// before posting failures directly.
+// *  This value is left unspecified in the header.
+// *  This value must be kept in sync with the exact value in the
+//    implementation of PpdProvider.
+constexpr int kMethodDeferralLimitForTesting = 20;
+
 // Unowned raw pointers to helper classes composed into the
 // PpdProvider at construct time. Used throughout to activate testing
 // codepaths.
@@ -331,6 +338,38 @@ class PpdProviderTest : public ::testing::Test {
   // Misc extra stuff needed for the test environment to function.
   base::SimpleTestClock clock_;
 };
+
+// Tests that PpdProvider enqueues a bounded number of calls to
+// ResolveManufacturers() and fails the oldest call when the queue is
+// deemed full (implementation-specified detail).
+TEST_F(PpdProviderTest, FailsOldestQueuedResolveManufacturers) {
+  auto provider = CreateProvider("en", false);
+  for (int i = kMethodDeferralLimitForTesting; i >= 0; i--) {
+    provider->ResolveManufacturers(base::BindOnce(
+        &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
+  }
+  task_environment_.RunUntilIdle();
+  ASSERT_EQ(1UL, captured_resolve_manufacturers_.size());
+  EXPECT_EQ(PpdProvider::CallbackResultCode::INTERNAL_ERROR,
+            captured_resolve_manufacturers_[0].first);
+}
+
+// Tests that PpdProvider enqueues a bounded number of calls to
+// ReverseLookup() and fails the oldest call when the queue is deemed
+// full (implementation-specified detail).
+TEST_F(PpdProviderTest, FailsOldestQueuedReverseLookup) {
+  auto provider = CreateProvider("en", false);
+  for (int i = kMethodDeferralLimitForTesting; i >= 0; i--) {
+    provider->ReverseLookup(
+        "some effective-make-and-model string",
+        base::BindOnce(&PpdProviderTest::CaptureReverseLookup,
+                       base::Unretained(this)));
+  }
+  task_environment_.RunUntilIdle();
+  ASSERT_EQ(1UL, captured_reverse_lookup_.size());
+  EXPECT_EQ(PpdProvider::CallbackResultCode::INTERNAL_ERROR,
+            captured_reverse_lookup_[0].code);
+}
 
 // Test that we get back manufacturer maps as expected.
 TEST_F(PpdProviderTest, ManufacturersFetch) {

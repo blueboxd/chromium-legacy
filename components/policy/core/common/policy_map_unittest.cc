@@ -736,7 +736,7 @@ TEST_F(PolicyMapTest, MergeValuesGroup) {
       POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
       POLICY_SOURCE_ENTERPRISE_DEFAULT, base::Value(ef), nullptr));
 
-  // Case 2 - policy::key::kExtensionInstallBlacklist
+  // Case 2 - policy::key::kExtensionInstallBlocklist
   // This policy is part of the atomic group "Extensions" and has the highest
   // source in its group, its value should remain the same.
   PolicyMap::Entry cloud_machine_mandatory(
@@ -749,7 +749,7 @@ TEST_F(PolicyMapTest, MergeValuesGroup) {
 
   // Case 3 - policy::key::kExtensionInstallAllowlist
   // This policy is part of the atomic group "Extensions" and has a lower
-  // source than policy::key::kExtensionInstallBlacklist from the same group,
+  // source than policy::key::kExtensionInstallBlocklist from the same group,
   // its value should be ignored.
   PolicyMap::Entry ad_machine_mandatory(
       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
@@ -757,7 +757,7 @@ TEST_F(PolicyMapTest, MergeValuesGroup) {
   auto ad_machine_mandatory_ignored = ad_machine_mandatory.DeepCopy();
   ad_machine_mandatory_ignored.SetIgnoredByPolicyAtomicGroup();
 
-  // Case 4 - policy::key::kExtensionInstallBlacklist
+  // Case 4 - policy::key::kExtensionInstallBlocklist
   // This policy is part of the atomic group "Extensions" and has the highest
   // source in its group, its value should remain the same.
   PolicyMap::Entry cloud_machine_recommended(
@@ -766,7 +766,7 @@ TEST_F(PolicyMapTest, MergeValuesGroup) {
 
   PolicyMap policy_not_merged;
   policy_not_merged.Set(kTestPolicyName1, platform_user_mandatory.DeepCopy());
-  policy_not_merged.Set(policy::key::kExtensionInstallBlacklist,
+  policy_not_merged.Set(policy::key::kExtensionInstallBlocklist,
                         cloud_machine_mandatory.DeepCopy());
   policy_not_merged.Set(policy::key::kExtensionInstallAllowlist,
                         ad_machine_mandatory.DeepCopy());
@@ -781,7 +781,7 @@ TEST_F(PolicyMapTest, MergeValuesGroup) {
   PolicyMap expected_group_merged;
   expected_group_merged.Set(kTestPolicyName1,
                             platform_user_mandatory.DeepCopy());
-  expected_group_merged.Set(policy::key::kExtensionInstallBlacklist,
+  expected_group_merged.Set(policy::key::kExtensionInstallBlocklist,
                             cloud_machine_mandatory.DeepCopy());
   expected_group_merged.Set(policy::key::kExtensionInstallAllowlist,
                             ad_machine_mandatory_ignored.DeepCopy());

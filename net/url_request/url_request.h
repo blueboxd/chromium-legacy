@@ -560,7 +560,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   bool disable_secure_dns() { return disable_secure_dns_; }
 
   void set_maybe_sent_cookies(CookieAccessResultList cookies);
-  void set_maybe_stored_cookies(CookieAndLineStatusList cookies);
+  void set_maybe_stored_cookies(CookieAndLineAccessResultList cookies);
 
   // These lists contain a list of cookies that are associated with the given
   // request, both those that were sent and accepted, and those that were
@@ -577,7 +577,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     return maybe_sent_cookies_;
   }
   // Populated after the response headers are received.
-  const CookieAndLineStatusList& maybe_stored_cookies() const {
+  const CookieAndLineAccessResultList& maybe_stored_cookies() const {
     return maybe_stored_cookies_;
   }
 
@@ -898,7 +898,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   bool disable_secure_dns_;
 
   CookieAccessResultList maybe_sent_cookies_;
-  CookieAndLineStatusList maybe_stored_cookies_;
+  CookieAndLineAccessResultList maybe_stored_cookies_;
 
 #if BUILDFLAG(ENABLE_REPORTING)
   int reporting_upload_depth_;

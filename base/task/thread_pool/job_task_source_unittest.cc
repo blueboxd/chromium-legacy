@@ -476,13 +476,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, InvalidDidProcessTask) {
   EXPECT_DCHECK_DEATH(registered_task_source.DidProcessTask());
 }
 
-// Disabled on Android, see https://crbug.com/1104240.
-#if defined(OS_ANDROID)
-#define MAYBE_AcquireTaskId DISABLED_AcquireTaskId
-#else
-#define MAYBE_AcquireTaskId AcquireTaskId
-#endif
-TEST_F(ThreadPoolJobTaskSourceTest, MAYBE_AcquireTaskId) {
+TEST_F(ThreadPoolJobTaskSourceTest, AcquireTaskId) {
   auto job_task =
       base::MakeRefCounted<test::MockJobTask>(DoNothing(),
                                               /* num_tasks_to_run */ 4);

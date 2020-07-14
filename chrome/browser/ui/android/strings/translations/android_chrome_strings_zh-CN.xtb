@@ -209,7 +209,6 @@
 <translation id="2650751991977523696">是否重新下载文件？</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# 个音频文件}other{# 个音频文件}}</translation>
 <translation id="2656405586795711023">Web 应用</translation>
-<translation id="2677748264148917807">离开</translation>
 <translation id="2689830683995595741">使用 Chrome 即表示您同意接受 <ph name="BEGIN_LINK1" />Google 服务条款<ph name="END_LINK1" />以及 <ph name="BEGIN_LINK2" />Google Chrome 和 Chrome 操作系统附加服务条款<ph name="END_LINK2" />。<ph name="BEGIN_LINK3" />针对通过 Family Link 管理的 Google 帐号的隐私权声明<ph name="END_LINK3" />也适用。</translation>
 <translation id="2707726405694321444">刷新网页</translation>
 <translation id="2709516037105925701">自动填充</translation>
@@ -290,6 +289,7 @@
 <translation id="3303414029551471755">要开始下载该内容吗？</translation>
 <translation id="3306398118552023113">此应用正在 Chrome 中运行</translation>
 <translation id="3315103659806849044">您正在自定义您的“同步功能和 Google 服务”设置。要完成开启同步功能的操作，请点按屏幕底部附近的“确认”按钮。转到上一层级</translation>
+<translation id="3320630259304269485">安全浏览（保护您免受危险网站的侵害）和其他安全设置</translation>
 <translation id="3328801116991980348">网站信息</translation>
 <translation id="3333961966071413176">所有联系人</translation>
 <translation id="3334729583274622784">更改文件扩展名？</translation>
@@ -306,6 +306,7 @@
 <translation id="3389286852084373014">文本过长</translation>
 <translation id="3398320232533725830">打开书签管理器</translation>
 <translation id="3414952576877147120">大小：</translation>
+<translation id="3435738964857648380">安全</translation>
 <translation id="3443221991560634068">重新加载当前网页</translation>
 <translation id="3478363558367712427">您可自行选择要使用的搜索引擎</translation>
 <translation id="3492207499832628349">打开新的无痕式标签页</translation>
@@ -534,7 +535,6 @@
 <translation id="5355191726083956201">已开启增强型保护</translation>
 <translation id="5357811892247919462">收到了标签页</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> 个打开的标签页，点按即可切换标签页}other{<ph name="OPEN_TABS_MANY" /> 个打开的标签页，点按即可切换标签页}}</translation>
-<translation id="5384883051496921101">该网站即将与某个并非处于隐身模式下的应用共享信息。</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{（以及另外 1 个）}other{（以及另外 # 个）}}</translation>
 <translation id="5403592356182871684">名称</translation>
 <translation id="5403644198645076998">只允许访问某些网站</translation>
@@ -705,7 +705,6 @@
 <translation id="6593061639179217415">桌面版网站</translation>
 <translation id="6597891566292541626">将二维码/条形码放到框内。</translation>
 <translation id="6600954340915313787">已复制到 Chrome</translation>
-<translation id="662080504995468778">留下</translation>
 <translation id="6627583120233659107">修改文件夹</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6643649862576733715">按已节省的数据流量排序</translation>
@@ -988,7 +987,6 @@
 <translation id="8922289737868596582">通过“更多选项”按钮下载网页以供离线查看</translation>
 <translation id="8937772741022875483">从“数字健康”应用中移除您的 Chrome 活动记录？</translation>
 <translation id="8942627711005830162">在其他窗口中打开</translation>
-<translation id="894871326938397531">退出隐身模式？</translation>
 <translation id="8951232171465285730">Chrome 已为您保存的数据量：<ph name="MEGABYTES" /> MB</translation>
 <translation id="8965591936373831584">待下载</translation>
 <translation id="8970887620466824814">出了点问题。</translation>
@@ -999,6 +997,7 @@
 <translation id="9028914725102941583">开启同步功能以跨设备分享内容</translation>
 <translation id="9040142327097499898">允许显示通知。但此设备的位置信息功能已关闭。</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# 个视频}other{# 个视频}}</translation>
+<translation id="9042893549633094279">隐私设置和安全性</translation>
 <translation id="9050666287014529139">密码</translation>
 <translation id="9063523880881406963">关闭“请求切换到桌面版网站”</translation>
 <translation id="9065203028668620118">编辑</translation>

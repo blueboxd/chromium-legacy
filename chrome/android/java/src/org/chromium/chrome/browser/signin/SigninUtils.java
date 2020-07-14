@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerBottomSheetCoordinator;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerDelegate;
 import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.signin.GAIAServiceType;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -78,7 +79,7 @@ public class SigninUtils {
             ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
             AccountPickerBottomSheetCoordinator coordinator =
                     new AccountPickerBottomSheetCoordinator(activity,
-                            activity.getBottomSheetController(),
+                            BottomSheetControllerProvider.from(activity.getWindowAndroid()),
                             new AccountPickerDelegate(activity, continueUrl));
         }
     }

@@ -42,6 +42,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 
@@ -70,6 +71,8 @@ public class TouchToFillIntegrationTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
+    private BottomSheetController mBottomSheetController;
+
     public TouchToFillIntegrationTest() {
         MockitoAnnotations.initMocks(this);
     }
@@ -78,8 +81,10 @@ public class TouchToFillIntegrationTest {
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         runOnUiThreadBlocking(() -> {
-            mTouchToFill.initialize(mActivityTestRule.getActivity(),
-                    mActivityTestRule.getActivity().getBottomSheetController(), mMockBridge);
+            mBottomSheetController = BottomSheetControllerProvider.from(
+                    mActivityTestRule.getActivity().getWindowAndroid());
+            mTouchToFill.initialize(
+                    mActivityTestRule.getActivity(), mBottomSheetController, mMockBridge);
         });
     }
 
@@ -117,8 +122,6 @@ public class TouchToFillIntegrationTest {
     @MediumTest
     @SuppressLint("SetTextI18n")
     public void testDismissedIfUnableToShow() throws Exception {
-        BottomSheetController bottomSheetController =
-                mActivityTestRule.getActivity().getBottomSheetController();
         BottomSheetContent otherBottomSheetContent = runOnUiThreadBlocking(() -> {
             TextView highPriorityBottomSheetContentView =
                     new TextView(mActivityTestRule.getActivity());
@@ -173,7 +176,7 @@ public class TouchToFillIntegrationTest {
                     return 0;
                 }
             };
-            bottomSheetController.requestShowContent(content, /* animate = */ false);
+            mBottomSheetController.requestShowContent(content, /* animate = */ false);
             return content;
         });
         pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
@@ -187,7 +190,7 @@ public class TouchToFillIntegrationTest {
         Espresso.onView(withText("Another bottom sheet content")).check(matches(isDisplayed()));
 
         runOnUiThreadBlocking(() -> {
-            bottomSheetController.hideContent(otherBottomSheetContent, /* animate = */ false);
+            mBottomSheetController.hideContent(otherBottomSheetContent, /* animate = */ false);
         });
         pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.HIDDEN);
     }
@@ -202,6 +205,6 @@ public class TouchToFillIntegrationTest {
     }
 
     private @SheetState int getBottomSheetState() {
-        return mActivityTestRule.getActivity().getBottomSheetController().getSheetState();
+        return mBottomSheetController.getSheetState();
     }
 }

@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="28">
+  <interface name="zcr_remote_shell_v1" version="29">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -245,6 +245,35 @@
       <arg name="id" type="new_id" interface="zcr_toast_surface_v1"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
+
+    <!-- Version 29 additions -->
+
+    <event name="layout_mode" since="29">
+      <description summary="sends the layout_mode">
+	Sends the layout_mode used by the server.
+      </description>
+      <arg name="layout_mode" type="int" summary="layout_mode enum"/>
+    </event>
+
+    <request name="get_remote_output" since="29">
+      <description summary="extend output interface for remote shell">
+	Instantiate an interface extension for the given wl_output to
+	provide remote shell functionality.
+      </description>
+      <arg name="id" type="new_id" interface="zcr_remote_output_v1" summary="the new remote output interface id"/>
+      <arg name="output" type="object" interface="wl_output" summary="the output"/>
+    </request>
+
+    <request name="set_use_default_device_scale_cancellation" since="29">
+      <description summary="set use default device scale cancellation">
+	Request the compositor to use the default_device_scale_factor to undo any
+	scaling applied to the client's buffers. When this is disabled, the
+	compositor will use the device_scale_factor of the display of the buffer to
+	cancel any buffer scaling.
+      </description>
+      <arg name="use_default_device_scale_factor" type="int" summary="0 if false"/>
+    </request>
+
   </interface>
 
   <interface name="zcr_remote_surface_v1" version="27">
@@ -1192,5 +1221,70 @@
       <arg name="height" type="int"/>
     </request>
   </interface>
+
+  <interface name="zcr_remote_output_v1" version="29">
+    <description summary="remote shell interface to a wl_output">
+	An additional interface to a wl_output object, which allows the
+	client to access additional functionality for output.
+    </description>
+
+    <request name="destroy" type="destructor" since="29">
+      <description summary="destroy remote_output">
+	Destroy this remote_output object.
+      </description>
+    </request>
+
+    <event name="display_id" since="29">
+      <description summary="the identifier for the display">
+	Sends the display identifier used by the server for the display.
+      </description>
+      <arg name="display_id_hi" type="uint"/>
+      <arg name="display_id_lo" type="uint"/>
+    </event>
+
+    <event name="port" since="29">
+      <description summary="the port of the display">
+	Sends the port to which the display is connected for the server.
+      </description>
+      <arg name="port" type="uint"/>
+    </event>
+
+    <event name="identification_data" since="29">
+      <description summary="the identification data for the display">
+	Sends the identification data for the display, typically in the EDID format.
+      </description>
+      <arg name="identification_data" type="array"/>
+    </event>
+
+    <event name="insets" since="29">
+      <description summary="insets for the display in pixels">
+	Sends inset information about a particular display in the display's native coordinates.
+      </description>
+      <arg name="inset_left" type="int"/>
+      <arg name="inset_top" type="int"/>
+      <arg name="inset_right" type="int"/>
+      <arg name="inset_bottom" type="int"/>
+    </event>
+
+    <event name="stable_insets" since="29">
+      <description summary="stable insets for a display in pixels">
+	Sends stable inset information about a particular display in the display's native
+	coordinates.
+      </description>
+      <arg name="stable_inset_left" type="int"/>
+      <arg name="stable_inset_top" type="int"/>
+      <arg name="stable_inset_right" type="int"/>
+      <arg name="stable_inset_bottom" type="int"/>
+    </event>
+
+    <event name="systemui_visibility" since="29">
+      <description summary="systemui_visibility_state for a display">
+	Sends information about whether the systemui is visible. The "systemui_visibility"
+	value is of enum type "systemui_visibility_state".
+      </description>
+      <arg name="systemui_visibility" type="int" summary="systemui_visibility_state enum"/>
+    </event>
+
+ </interface>
 
 </protocol>

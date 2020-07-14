@@ -60,7 +60,7 @@ class DevToolsClientImpl : public DevToolsClient {
                      const std::string& url,
                      const std::string& id);
 
-  typedef base::Callback<Status()> FrontendCloserFunc;
+  typedef base::RepeatingCallback<Status()> FrontendCloserFunc;
   DevToolsClientImpl(const SyncWebSocketFactory& factory,
                      const std::string& url,
                      const std::string& id,
@@ -68,12 +68,12 @@ class DevToolsClientImpl : public DevToolsClient {
 
   DevToolsClientImpl(DevToolsClientImpl* parent, const std::string& session_id);
 
-  typedef base::Callback<bool(const std::string&,
-                              int,
-                              std::string*,
-                              internal::InspectorMessageType*,
-                              internal::InspectorEvent*,
-                              internal::InspectorCommandResponse*)>
+  typedef base::RepeatingCallback<bool(const std::string&,
+                                       int,
+                                       std::string*,
+                                       internal::InspectorMessageType*,
+                                       internal::InspectorEvent*,
+                                       internal::InspectorCommandResponse*)>
       ParserFunc;
   DevToolsClientImpl(const SyncWebSocketFactory& factory,
                      const std::string& url,

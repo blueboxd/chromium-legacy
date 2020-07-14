@@ -37,6 +37,12 @@ MeasureMemoryDelegate::MeasureMemoryDelegate(
   // To avoid that we should store the promise resolver in V8PerContextData.
 }
 
+MeasureMemoryDelegate::MeasureMemoryDelegate(v8::Isolate* isolate,
+                                             v8::Local<v8::Context> context)
+    : isolate_(isolate), context_(isolate, context) {
+  context_.SetPhantom();
+}
+
 // Returns true if the given context should be included in the current memory
 // measurement. Currently it is very conservative and allows only the same
 // origin contexts that belong to the same JavaScript origin.
@@ -288,10 +294,31 @@ void MeasureMemoryDelegate::MeasurementComplete(
         unknown_frame_size, Vector<String>{kWindow, kJS}, ""));
   }
   result->setBreakdown(breakdown);
-  v8::Local<v8::Promise::Resolver> promise_resolver =
-      promise_resolver_.NewLocal(isolate_);
-  promise_resolver->Resolve(context, ToV8(result, promise_resolver, isolate_))
-      .ToChecked();
+  if (!promise_resolver_.IsEmpty()) {
+    v8::Local<v8::Promise::Resolver> promise_resolver =
+        promise_resolver_.NewLocal(isolate_);
+    promise_resolver->Resolve(context, ToV8(result, promise_resolver, isolate_))
+        .ToChecked();
+  }
+}
+
+bool MeasureMemoryDelegate::IsMeasureMemoryAvailable(LocalDOMWindow* window) {
+  // TODO(ulan): We should check for window.crossOriginIsolated when it ships.
+  // Until then we enable the API only for processes locked to a site
+  // similar to the precise mode of the legacy performance.memory API.
+  if (!Platform::Current()->IsLockedToSite()) {
+    return false;
+  }
+  // The window.crossOriginIsolated will be true only for the top-level frame.
+  // Until the flag is available we check for the top-level condition manually.
+  if (!window) {
+    return false;
+  }
+  LocalFrame* local_frame = window->GetFrame();
+  if (!local_frame || !local_frame->IsMainFrame()) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace blink

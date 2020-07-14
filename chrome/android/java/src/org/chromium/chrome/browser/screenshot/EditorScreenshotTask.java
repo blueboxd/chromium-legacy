@@ -18,6 +18,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
@@ -30,6 +31,7 @@ import org.chromium.ui.base.WindowAndroid;
 @JNINamespace("chrome::android")
 public final class EditorScreenshotTask implements EditorScreenshotSource {
     private final Activity mActivity;
+    private final BottomSheetController mBottomSheetController;
 
     private boolean mDone;
     private Bitmap mBitmap;
@@ -39,9 +41,11 @@ public final class EditorScreenshotTask implements EditorScreenshotSource {
      * Creates a {@link EditorScreenshotTask} instance that, will grab a screenshot of {@code
      * activity}.
      * @param activity The {@link Activity} to grab a screenshot of.
+     * @param sheetController A {@link BottomSheetController} to check if the sheet is showing.
      */
-    public EditorScreenshotTask(Activity activity) {
+    public EditorScreenshotTask(Activity activity, BottomSheetController sheetController) {
         mActivity = activity;
+        mBottomSheetController = sheetController;
     }
 
     // ScreenshotSource implementation.
@@ -126,7 +130,7 @@ public final class EditorScreenshotTask implements EditorScreenshotSource {
         // so that the Android View for the bottom sheet will be captured.
         // TODO(https://crbug.com/835862): When the sheet is partially opened both the compositor
         // and Android views should be captured in the screenshot.
-        if (chromeActivity.getBottomSheetController().isSheetOpen()) return false;
+        if (mBottomSheetController.isSheetOpen()) return false;
 
         // If the tab is null, assume in the tab switcher so a Compositor snapshot is good.
         if (currentTab == null) return true;

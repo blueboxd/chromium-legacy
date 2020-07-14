@@ -444,7 +444,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2799223571221894425">Nis sërish</translation>
 <translation id="2803306138276472711">Kohët e fundit "Shfletimi i sigurt me Google" <ph name="BEGIN_LINK" />zbuloi softuerin keqdashës<ph name="END_LINK" /> në <ph name="SITE" />. Faqet që zakonisht janë të sigurta ndonjëherë infektohen me softuerë keqdashës.</translation>
 <translation id="2807052079800581569">Pozicioni i imazhit në boshtin Y</translation>
-<translation id="2824514415781424867">Të ndahet vendndodhja?</translation>
 <translation id="2824775600643448204">Shiriti i adresës dhe i kërkimit</translation>
 <translation id="2826760142808435982">Lidhja është e enkriptuar dhe e vërtetuar me <ph name="CIPHER" /> dhe përdor <ph name="KX" /> si mekanizëm kryesor shkëmbimi.</translation>
 <translation id="2835170189407361413">Pastro formularin</translation>
@@ -918,6 +917,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="480334179571489655">Gabim i politikës së origjinës</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4807049035289105102">Nuk mund ta vizitosh <ph name="SITE" /> tani sepse sajti i uebit dërgoi kredenciale të koduara që nuk mund të përpunohen nga Google Chrome. Gabimet dhe sulmet në rrjet zakonisht janë të përkohshme, kështu që kjo faqe ndoshta do të punojë më vonë.</translation>
+<translation id="4809079943450490359">Udhëzimet nga administratori i pajisjes sate:</translation>
 <translation id="4813512666221746211">Gabim në rrjet</translation>
 <translation id="4816492930507672669">Përshtate me faqen</translation>
 <translation id="484462545196658690">Automatike</translation>

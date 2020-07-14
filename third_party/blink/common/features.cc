@@ -59,6 +59,9 @@ const base::Feature kFreezeUserAgent{"FreezeUserAgent",
 const base::Feature kMaxOverlapBoundsForFixed{"MaxOverlapBoundsForFixed",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kMeasureMemoryExperiment{"MeasureMemoryExperiment",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable Display Locking JavaScript APIs.
 const base::Feature kDisplayLocking{"DisplayLocking",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

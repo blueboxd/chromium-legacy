@@ -240,6 +240,11 @@
           'scripts': 'public_build_scripts',
         },
       },
+      'mac-official': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'win-archive-dbg': {
         'additional_compile_targets': [
           'all',

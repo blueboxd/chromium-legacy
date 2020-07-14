@@ -13,6 +13,9 @@
 
 namespace enterprise_connectors {
 
+// Alias to reduce verbosity when using TriggeredRule::Actions.
+using TriggeredRule = ContentAnalysisResponse::Result::TriggeredRule;
+
 // Keys used to read a connector's policy values.
 constexpr char kKeyServiceProvider[] = "service_provider";
 constexpr char kKeyEnable[] = "enable";
@@ -71,12 +74,11 @@ const char* ConnectorPref(AnalysisConnector connector);
 const char* ConnectorPref(ReportingConnector connector);
 
 // Returns the highest precedence action in the given parameters.
-ContentAnalysisResponse::Result::TriggeredRule::Action
-GetHighestPrecedenceAction(const ContentAnalysisResponse& response);
-ContentAnalysisResponse::Result::TriggeredRule::Action
-GetHighestPrecedenceAction(
-    const ContentAnalysisResponse::Result::TriggeredRule::Action& action_1,
-    const ContentAnalysisResponse::Result::TriggeredRule::Action& action_2);
+TriggeredRule::Action GetHighestPrecedenceAction(
+    const ContentAnalysisResponse& response);
+TriggeredRule::Action GetHighestPrecedenceAction(
+    const TriggeredRule::Action& action_1,
+    const TriggeredRule::Action& action_2);
 
 }  // namespace enterprise_connectors
 

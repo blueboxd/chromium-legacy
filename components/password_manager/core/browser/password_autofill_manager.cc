@@ -584,7 +584,8 @@ std::vector<autofill::Suggestion> PasswordAutofillManager::BuildSuggestions(
                               ->ShouldShowAccountStorageOptIn();
   bool show_account_storage_resignin =
       password_client_ && password_client_->GetPasswordFeatureManager()
-                              ->ShouldShowAccountStorageReSignin();
+                              ->ShouldShowAccountStorageReSignin(
+                                  password_client_->GetLastCommittedURL());
 
   if (!fill_data_ && !show_account_storage_optin &&
       !show_account_storage_resignin) {

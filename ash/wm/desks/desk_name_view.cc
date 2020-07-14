@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ui/gfx/canvas.h"
@@ -44,7 +45,9 @@ DeskNameView::DeskNameView() {
   SetBorder(std::move(border));
 
   SetBackgroundColor(SK_ColorTRANSPARENT);
-  SetTextColor(SK_ColorWHITE);
+  SetTextColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary,
+      AshColorProvider::AshColorMode::kDark));
   SetCursorEnabled(true);
   SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
 }
@@ -116,8 +119,7 @@ void DeskNameView::OnViewUnhighlighted() {
 }
 
 void DeskNameView::UpdateBorderState() {
-  border_ptr_->set_color(IsViewHighlighted() ? gfx::kGoogleBlue300
-                                             : SK_ColorTRANSPARENT);
+  border_ptr_->SetFocused(IsViewHighlighted());
   SchedulePaint();
 }
 

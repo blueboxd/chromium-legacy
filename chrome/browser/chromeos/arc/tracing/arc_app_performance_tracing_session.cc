@@ -19,8 +19,7 @@ namespace {
 // TODO(khmel), detect this per device.
 constexpr uint64_t kTargetFps = 60;
 
-constexpr base::TimeDelta kTargetFrameTime =
-    base::TimeDelta::FromSeconds(1) / kTargetFps;
+constexpr auto kTargetFrameTime = base::TimeDelta::FromSeconds(1) / kTargetFps;
 
 // Used for detection the idle. App considered in idle state when there is no
 // any commit for |kIdleThresholdFrames| frames.

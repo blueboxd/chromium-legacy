@@ -116,18 +116,14 @@ class CONTENT_EXPORT BrowsingInstance final
       const GURL& url,
       bool allow_default_instance);
 
-  // Gets site and lock URLs for |url| that are identical with what these
-  // values would be if we called GetSiteInstanceForURL() with the same
-  // |url| and |allow_default_instance|. This method is used when we need this
-  // information, but do not want to create a SiteInstance yet.
-  // TODO(wjmaclean): Convert the |site_url| parameter to be SiteInfo. See
-  // https://crbug.com/1085275/#c2.
-  void GetSiteAndLockForURL(const GURL& url,
-                            bool allow_default_instance,
-                            GURL* site_url,
-                            GURL* lock_url);
+  // Returns a SiteInfo with site and process-lock URLs for |url| that are
+  // identical with what these values would be if we called
+  // GetSiteInstanceForURL() with the same |url| and |allow_default_instance|.
+  // This method is used when we need this information, but do not want to
+  // create a SiteInstance yet.
+  SiteInfo GetSiteInfoForURL(const GURL& url, bool allow_default_instance);
 
-  // Helper function used by GetSiteInstanceForURL() and GetSiteAndLockForURL()
+  // Helper function used by GetSiteInstanceForURL() and GetSiteInfoForURL()
   // that returns an existing SiteInstance from |site_instance_map_| or
   // returns |default_site_instance_| if |allow_default_instance| is true and
   // other conditions are met. If there is no existing SiteInstance that is

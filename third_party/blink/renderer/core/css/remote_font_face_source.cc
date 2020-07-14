@@ -196,6 +196,7 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
   histograms_.RecordRemoteFont(font);
 
   custom_font_data_ = font->GetCustomFontData();
+  url_ = resource->Url().GetString();
 
   // FIXME: Provide more useful message such as OTS rejection reason.
   // See crbug.com/97467

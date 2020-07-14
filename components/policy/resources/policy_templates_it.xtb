@@ -163,6 +163,9 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="1297961932043741908">Imposta un limite sui megabyte di memoria che una istanza singola di Chrome può usare.</translation>
 <translation id="1304973015437969093">ID app/estensioni e URL di aggiornamento da installare automaticamente</translation>
 <translation id="1307454923744766368">Origini o schemi di nomi host a cui non dovrebbero essere applicate limitazioni previste per le origini non sicure.</translation>
+<translation id="1309465583050255779">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'impostazione di <ph name="DEFAULT_SEARCH_PROVIDER_NAME_POLICY_NAME" /> consente di specificare il nome del provider di ricerca predefinito.
+
+      Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_NAME_POLICY_NAME" /> non viene configurato, viene utilizzato il nome host specificato dall'URL di ricerca.</translation>
 <translation id="1312799700549720683">Consente di gestire le impostazioni di visualizzazione.</translation>
 <translation id="131353325527891113">Mostra nomi utente nella schermata di accesso</translation>
 <translation id="1327466551276625742">Attivazione richiesta di configurazione della rete offline</translation>
@@ -175,11 +178,6 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
       Se attivi questa impostazione, la funzione SafeSearch della Ricerca Google e il livello medio della Modalità con restrizioni su YouTube saranno sempre attivi.
 
       Se disattivi questa impostazione o non imposti un valore, la funzione SafeSearch della Ricerca Google e la Modalità con restrizioni di YouTube non verranno applicate.</translation>
-<translation id="1352174694615491349">Questa norma consente la coalescenza di connessioni HTTP/2 quando sono in uso i certificati client. Per ottenere la coalescenza delle connessioni, i nomi host della nuova potenziale connessione e della connessione esistente devono corrispondere a uno o più schemi descritti da questa norma. La norma è un elenco di host che utilizzano il formato del filtro URLBlacklist: "example.com" corrispondente a "example.com" e tutti i sottodomini (ad esempio "sub.example.com"), mentre ".example.net" corrisponde esattamente a "example.net".
-
-Le richieste di coalescenza indirizzate a diversi host tra connessioni che utilizzano certificati client possono creare problemi di privacy o di sicurezza, perché l'ambient authority viene comunicata a tutte le richieste anche se l'utente non ha dato alcuna autorizzazione esplicita. Questa norma è provvisoria e verrà rimossa in una release futura. Consulta il sito https://crbug.com/855690.
-
-Se questa norma non viene impostata, verrà applicato il comportamento predefinito che non consente la coalescenza di connessioni HTTP/2 per le connessioni che utilizzano certificati client.</translation>
 <translation id="1354424209129232709">Massimo:</translation>
 <translation id="1359553908012294236">Se questa norma viene impostata su true o non viene configurata, in <ph name="PRODUCT_NAME" /> verranno attivati gli accessi come ospite, che sono profili <ph name="PRODUCT_NAME" /> in cui tutte le finestre sono in modalità di navigazione in incognito.
 
@@ -241,9 +239,9 @@ Se attivi o non configuri questo criterio, viene attivato lo scorrimento della p
 Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di testo specifici tramite URL viene disattivato.</translation>
 <translation id="1474273443907024088">Disattiva TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1480412981546860793">Questo criterio consente di specificare la lingua da usare per <ph name="PRODUCT_NAME" />.
+<translation id="1479427764273213107">L'impostazione del criterio consente di definire l'elenco di dispositivi USB che gli utenti possono scollegare dal proprio driver del kernel per essere utilizzati tramite l'API chrome.usb direttamente all'interno di un'app web. Le voci sono coppie costituite dall'ID fornitore USB e dall'ID prodotto per identificare un hardware specifico.
 
-      Se il criterio viene disattivato o non viene impostato, gli utenti possono specificare la lingua (se configurata), la lingua di sistema o la lingua di riserva (en-US).</translation>
+      Se non viene configurato, l'elenco di dispositivi USB scollegabili è vuoto.</translation>
 <translation id="1481508277421549404">Se il criterio è impostato su true, le estensioni installate dal criterio aziendale usano l'API Enterprise Hardware Platform.
 
       Se il criterio è impostato su false o non viene configurato, le estensioni non possono usare tale API.
@@ -449,17 +447,6 @@ Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca ist
 
 Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="1852294065645015766">Consenti la riproduzione automatica dei contenuti multimediali</translation>
-<translation id="1857152770025485173">Questa norma impedisce agli utenti di caricare le pagine web degli URL vietati. Nella lista nera è presente un elenco di pattern URL che indicano gli URL vietati.
-
-      Un pattern URL deve essere nel formato indicato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      È possibile definire eccezioni nella norma relativa alla whitelist di URL. Per queste norme è possibile definire massimo 1000 voci; le voci in più vengono ignorate.
-
-      È sconsigliato bloccare gli URL "chrome://*" interni perché ciò potrebbe generare errori imprevisti.
-
-      Dalla versione M73 è possibile bloccare gli URL "javascript://*" . Tuttavia, interessa solo il codice JavaScript digitato nella barra degli indirizzi (o, ad esempio, nei bookmarklet). Tieni presente che gli URL JavaScript in-page, in presenza di un caricamento dinamico dei dati, non sono soggetti a questa norma. Ad esempio, se blocchi "example.com/abc", la pagina "example.com" continuerà a caricare "example.com/abc" tramite XMLHTTPRequest.
-
-      Se questa norma non viene impostata, non sarà vietato alcun URL nel browser.</translation>
 <translation id="1859859319036806634">Avviso. Il fallback della versione TLS sarà rimosso da <ph name="PRODUCT_NAME" /> dopo la versione 52 (nel periodo settembre 2016), dopodiché questa norma non sarà più attiva.
 
       Se lo handshake TLS non riesce, <ph name="PRODUCT_NAME" /> proverà a stabilire una connessione con una versione precedente di TLS per risolvere i bug nei server HTTPS. Con questa impostazione viene configurata la versione in cui si interrompe il processo di fallback. Se un server esegue correttamente la negoziazione della versione (cioè senza interrompere la connessione), questa impostazione non viene applicata. In ogni caso, la connessione risultante deve essere conforme a SSLVersionMin.
@@ -510,22 +497,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Questa funzione è attualmente disattivata lato server.</translation>
 <translation id="1919802376548418720">Utilizza la norma KDC per delegare credenziali.</translation>
 <translation id="1920046221095339924">Consenti la sessione gestita sul dispositivo</translation>
-<translation id="1929709556673267855">Consente di specificare le configurazioni delle stampanti aziendali associate ai dispositivi.
-
-      Questa norma ti consente di specificare le configurazioni delle stampanti per i dispositivi <ph name="PRODUCT_OS_NAME" />. Il formato corrisponde a quello del dizionario NativePrinters, con un campo "id" o "guid" aggiuntivo obbligatorio per ciascuna stampante ai fini dell'autorizzazione o della negazione della stessa.
-
-       Le dimensioni del file non devono superare 5 MB e il file deve essere codificato in JSON. È stato stimato che un file contenente circa 21.000 stampanti viene codificato come file di 5 MB. L'hash crittografico viene usato per verificare l'integrità del download.
-
-      Il file viene scaricato e memorizzato nella cache. Verrà scaricato di nuovo ogni volta che cambierà l'URL o l'hash.
-
-      Se questa norma viene impostata, <ph name="PRODUCT_OS_NAME" /> scaricherà il file per le configurazioni delle stampanti e renderà disponibili le stampanti in base alle norme <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> e <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Questa norma non influisce sulla capacità degli utenti di configurare le stampanti su singoli dispositivi. È supplementare alla configurazione di stampanti da parte dei singoli utenti.
-
-       Si tratta di una norma aggiuntiva alla norma <ph name="BULK_PRINTERS_POLICY" />.
-
-      Se questa norma non viene impostata, non ci saranno stampanti per i dispositivi e le altre norme <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> verranno ignorate.
-      </translation>
 <translation id="1930127294345368978">Numero massimo consentito di fogli da utilizzare per un singolo processo di stampa</translation>
 <translation id="193259052151668190">Whitelist di dispositivi USB scollegabili</translation>
 <translation id="1933378685401357864">Immagine di sfondo</translation>
@@ -545,6 +516,22 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
           Il valore viene analizzato come un dizionario JSON di associazioni tra nomi e valori di norme.</translation>
 <translation id="1969808853498848952">Esegue sempre i plug-in che richiedono l'autorizzazione (ritirata)</translation>
+<translation id="1988345404999458987">Consente di specificare le configurazioni dei server di stampa disponibili.
+
+      Questo criterio consente di specificare le configurazioni dei server di stampa esterni sui dispositivi <ph name="PRODUCT_OS_NAME" /> come file JSON.
+
+      Le dimensioni del file non devono superare 1MB e devono contenere un array di record (oggetti JSON). Ogni record deve contenere i campi "id", "url" e "display_name" con stringhe come valori. I valori dei campi "id" devono essere univoci.
+
+      Il file viene scaricato e memorizzato nella cache. L'hash di crittografia viene utilizzato per verificare l'integrità del download. Il file viene scaricato nuovamente ogni volta che l'URL o l'hash cambiano.
+
+      Se il criterio viene impostato su un valore corretto, i dispositivi provano a inviare query ai server di stampa specificati per le stampanti disponibili che utilizzano il protocollo IPP.
+
+      Se il criterio non viene configurato o se viene impostato un valore non corretto, gli utenti non possono visualizzare alcuna stampante fornita.
+
+      Attualmente, il numero di server di stampa è limitato a 16. Solo ai primi 16 server di stampa dell'elenco vengono inviate query.
+
+      Questo criterio è simile a <ph name="EXTERNAL_PRINT_SERVERS_POLICY" />, ma viene applicato per dispositivo.
+      </translation>
 <translation id="1988371335297483117">I payload di aggiornamento automatico su <ph name="PRODUCT_OS_NAME" /> possono essere scaricati tramite HTTP anziché tramite HTTPS. Ciò consente la memorizzazione nella cache HTTP trasparente dei download HTTP.
 
       Se questa norma viene impostata su true, <ph name="PRODUCT_OS_NAME" /> tenterà di scaricare payload di aggiornamento automatico tramite HTTP. Se la norma viene impostata su false o non viene impostata, per il download di payload di aggiornamento automatico verrà utilizzato HTTPS.</translation>
@@ -639,6 +626,9 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       I criteri vengono applicati solo se la macchina è registrata con <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> per <ph name="PRODUCT_NAME" />.
       I criteri vengono sempre applicati per <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2134437727173969994">Consenti blocco dello schermo</translation>
+<translation id="2135335181634291106">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'impostazione di <ph name="DEFAULT_SEARCH_PROVIDER_ICON_URL_POLICY_NAME" /> consente di specificare l'URL dell'icona preferita del provider di ricerca predefinito.
+
+      Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ICON_URL_POLICY_NAME" /> non viene configurato, non è presente alcuna icona per il provider di ricerca.</translation>
 <translation id="2137064848866899664">Se la norma viene impostata, ogni schermo viene ruotato secondo l'orientamento specificato, a ogni riavvio e la prima volta che viene collegato in seguito alla modifica della norma. Dopo aver eseguito l'accesso, gli utenti possono modificare la rotazione dello schermo tramite la pagina delle impostazioni ma, al successivo riavvio, la loro impostazione viene sostituita dal valore della norma.
 
       La norma si applica allo schermo principale e a tutti gli schermi secondari.
@@ -1184,6 +1174,11 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Ai dispositivi non sarà consentito verificare automaticamente la disponibilità di aggiornamenti durante gli intervalli di tempo specificati. A causa di possibili problemi di sicurezza, questa norma non avrà conseguenze sui dispositivi che richiedono il rollback o dispongono di una versione inferiore alla versione minima di <ph name="PRODUCT_OS_NAME" />. Inoltre, questa norma non impedirà le verifiche degli aggiornamenti richieste dagli utenti o dagli amministratori.
       Quando la norma non viene impostata o non contiene intervalli di tempo:
       Le verifiche automatiche degli aggiornamenti non verranno bloccate da questa norma, ma potrebbero essere bloccate da altre norme. Questa funzionalità è attiva solo sui dispositivi Chrome configurati come kiosk ad avvio automatico. Gli altri dispositivi non risulteranno limitati da questa norma.</translation>
+<translation id="2818074121667686266">Se il criterio viene attivato o se non viene configurato, agli utenti viene richiesto l'accesso all'acquisizione audio, fatta eccezione per gli URL configurati nell'elenco AudioCaptureAllowedUrls.
+
+      Se il criterio viene disattivato, le richieste vengono disabilitate e l'acquisizione audio è disponibile solo per gli URL configurati nell'elenco AudioCaptureAllowedUrls.
+
+      Nota: il criterio si applica a tutti gli input audio (non solo al microfono integrato).</translation>
 <translation id="2823870601012066791">Posizione del Registro di sistema di Windows per client <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Attiva modalità di navigazione in incognito</translation>
 <translation id="2829975392104323514">Questo criterio consente di stabilire se segnalare o meno le informazioni che possono essere utilizzate per identificare le macchine, come il nome della macchina e gli indirizzi di rete.
@@ -1206,12 +1201,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
           Se questa norma non viene impostata, non è applicata alcuna lunghezza massima.</translation>
 <translation id="2838830882081735096">Non consentire migrazione dei dati e ARC</translation>
 <translation id="2839294585867804686">Impostazioni di Condivisioni file di rete</translation>
-<translation id="2840269525054388612">Consente di specificare le stampanti utilizzabili dagli utenti.
-
-      Questa norma viene usata soltanto se viene selezionata l'opzione <ph name="PRINTERS_WHITELIST" /> per la norma <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Se viene usata questa norma, solo le stampanti con ID corrispondenti ai valori della norma saranno disponibili per gli utenti. Gli ID devono corrispondere ai campi "id" o "guid" del file specificato nella norma <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="284288632677954003">URL di un file XML che contiene URL che non devono mai attivare il cambio di browser.</translation>
 <translation id="2854607717796010700">Consente di segnalare informazioni sulla memoria del dispositivo.
 
@@ -1431,13 +1420,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3143265893557969814">Se questo criterio viene impostato, tutti i tipi di dati specificati verranno esclusi dalla sincronizzazione sia per Google Sync sia per la sincronizzazione del profilo di roaming. Questa operazione può essere utile per ridurre le dimensioni del profilo di roaming o per limitare il tipo di dati caricati sui server di Google Sync.
 
       Attualmente i tipi di dati per questo criterio sono: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfigurations". Per tali nomi viene fatta distinzione tra maiuscole e minuscole.</translation>
-<translation id="3148152738273574834">Questo criterio consente di specificare un elenco di siti web installati automaticamente, senza interazione dell'utente, e che non possono essere disinstallati o disattivati dagli utenti.
-
-      Ogni voce del criterio è un oggetto con un componente obbligatorio: <ph name="URL_LABEL" /> (l'URL dell'app web da installare) e due componenti facoltativi: <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (per indicare la modalità di apertura dell'app web, che per impostazione predefinita è una nuova scheda) e <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> (True, se vengono creati collegamenti sul desktop <ph name="LINUX_OS_NAME" /> e Windows®).
-
-      Gli utenti possono cambiare il contenitore in cui aprire l'app e ignorare i collegamenti sul desktop.
-
-      Vedi il criterio <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> per bloccare app sullo shelf di <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3152425128389603870">Rendi disponibile la modalità Desktop unificato e attivala per impostazione predefinita</translation>
 <translation id="3159375329008977062">L'utente è abilitato a importare/esportare contenitori Crostini tramite l'interfaccia</translation>
 <translation id="3165808775394012744">Queste norme sono incluse qui in modo che sia più facile rimuoverle.</translation>
@@ -1456,6 +1438,11 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3184161739683646075">Controlla la modalità di DNS over HTTPS</translation>
 <translation id="3185009703220253572">a partire dalla versione <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Le app Android non possono accedere alle chiavi aziendali. Questa norma non influisce su di esse.</translation>
+<translation id="3190338425427039045">Se il criterio viene attivato o se non viene configurato, tutti gli output audio supportati sono consentiti sui dispositivi degli utenti.
+
+      Se il criterio viene disattivato, nessun output audio è consentito se gli utenti hanno effettuato l'accesso.
+
+      Nota: il criterio si applica a tutti gli input audio (non solo al microfono integrato), incluse le funzioni di accessibilità audio. Non attivare il criterio se un utente richiede uno screen reader.</translation>
 <translation id="3196585866522778760">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 85 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Consente di specificare il periodo di tempo senza input utente trascorso il quale viene compiuta l'azione stabilita per l'inattività quando viene usata la batteria.
@@ -1486,6 +1473,9 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       I siti web configurati verranno aperti automaticamente in un browser diverso da <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3264793472749429012">Codifiche del provider di ricerca predefinito</translation>
 <translation id="3273221114520206906">Impostazione JavaScript predefinita</translation>
+<translation id="328108936611091281">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'impostazione di <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POLICY_NAME" /> consente di specificare l'URL del motore di ricerca utilizzato durante una ricerca predefinita. L'URL dovrebbe includere la stringa <ph name="SEARCH_TERM_MARKER" />, sostituita nella query dai termini di ricerca degli utenti.
+
+      Puoi specificare l'URL di ricerca di Google come: <ph name="GOOGLE_SEARCH_URL" />.</translation>
 <translation id="3284094172359247914">Controlla l'utilizzo dell'API WebUSB</translation>
 <translation id="3288595667065905535">Canale di rilascio</translation>
 <translation id="3292147213643666827">Consente a <ph name="PRODUCT_NAME" /> di fungere da proxy tra <ph name="CLOUD_PRINT_NAME" /> e le stampanti preesistenti collegate al computer.
@@ -1589,6 +1579,9 @@ Se questo criterio viene impostato su False, <ph name="PRODUCT_NAME" /> non util
       Se questa impostazione viene impostata su Livello medio, l'utente può scegliere il Livello medio o massimo della Modalità con restrizioni su YouTube, ma non può disattivare la modalità.
 
       Se questa impostazione viene disattivata o non viene impostato alcun valore, la Modalità con restrizioni di YouTube non viene imposta da <ph name="PRODUCT_NAME" />. La Modalità con restrizioni potrebbe essere comunque imposta da norme esterne, ad esempio dalle norme di YouTube.</translation>
+<translation id="3420141485959154417">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'impostazione di <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POLICY_NAME" /> consente di specificare l'URL del motore di ricerca utilizzato per le immagini. Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POST_PARMS_POLICY_NAME" /> viene configurato, la ricerca di immagini richiede invece l'utilizzo del metodo POST.
+
+      Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POLICY_NAME" /> non viene configurato, non viene utilizzata alcuna ricerca di immagini.</translation>
 <translation id="3428247105888806363">Attiva previsione di rete</translation>
 <translation id="3432863169147125747">Consente di gestire le impostazioni di stampa.</translation>
 <translation id="3434053014926283175">Imposta il pulsante destro come pulsante principale del mouse.
@@ -2061,6 +2054,9 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
       L'omissione di un campo implica la corrispondenza di tutti i valori; ad esempio, se non viene specificata la connettività, nell'Anteprima di stampa viene avviato il rilevamento di tutti i tipi di stampanti, locali e cloud.
       I pattern di espressioni regolari devono seguire la sintassi JavaScript RegExp e per le corrispondenze viene fatta distinzione tra maiuscole e minuscole.</translation>
 <translation id="4088589230932595924">Modalità di navigazione in incognito forzata</translation>
+<translation id="4089849819635523136">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'impostazione del criterio <ph name="DEFAULT_SEARCH_PROVIDER_KEYWORD_POLICY_NAME" /> consente di specificare la parola chiave o la scorciatoia utilizzata nella barra degli indirizzi per attivare la ricerca per questo provider.
+
+      Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_KEYWORD_POLICY_NAME" /> non viene configurato, il provider di ricerca non viene attivato da alcuna parola chiave.</translation>
 <translation id="4093716537292423758">Non bloccare i tipi di file non supportati</translation>
 <translation id="4097556069183835428">Se il criterio è impostato su None, la Lente d'ingrandimento è disattivata.
 
@@ -2223,6 +2219,9 @@ Il valore della norma dovrebbe essere specificato in secondi. Il valore minimo d
 <translation id="4322842393287974810">Consenti all'app kiosk avviata automaticamente senza ritardo di controllare la versione di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Aggiungi un pulsante di uscita all'area di notifica</translation>
 <translation id="4332177773549877617">Registra eventi per le installazioni di app Android</translation>
+<translation id="4341199399451274159">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'impostazione di <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" /> consente di specificare le codifiche dei caratteri supportate dal provider di ricerca. Le codifiche sono nomi di pagine codificati come UTF-8, GB2312 e ISO-8859-1. Vengono provate nell'ordine indicato.
+
+      Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" /> non viene configurato, viene utilizzato il valore UTF-8.</translation>
 <translation id="4343382787226139147">Consente di specificare i certificati client che dovrebbero essere registrati usando il protocollo di gestione del dispositivo.</translation>
 <translation id="4347908978527632940">Se la norma viene impostata su true e l'utente è supervisionato, le altre app Android possono chiedere le restrizioni web dell'utente tramite un provider di contenuti.
 
@@ -2481,6 +2480,11 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 <translation id="4834526953114077364">Gli utenti utilizzati meno di recente che non hanno eseguito l'accesso negli ultimi tre mesi vengono rimossi fino alla disponibilità di spazio libero sufficiente</translation>
 <translation id="4835470005923546373">Disattiva la modalità di stampa delle immagini di sfondo per impostazione predefinita</translation>
 <translation id="4835622243021053389">Attiva autenticazione NTLMv2</translation>
+<translation id="4855636880814771207">Se il criterio viene attivato o se non viene configurato, gli utenti possono attivare o disattivare il Bluetooth.
+
+      Se il criterio viene disattivato, <ph name="PRODUCT_OS_NAME" /> disattiva il Bluetooth e gli utenti non possono attivarlo.
+
+      Nota: per attivare il Bluetooth, gli utenti devono scollegarsi ed effettuare nuovamente l'accesso.</translation>
 <translation id="4856471929724652373">Consente di segnalare informazioni sull'aggiornamento del sistema operativo, ad esempio stato di aggiornamento, versione della piattaforma,
       controllo dell'ultimo aggiornamento e ultimo riavvio.
 
@@ -2625,11 +2629,6 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
       Se il criterio viene impostato su false o non viene impostato, le informazioni non vengono segnalate.
       Se viene impostato su true, per ogni CPU vengono segnalate informazioni quali nome del modello, architettura e velocità di clock massima.</translation>
 <translation id="5124368997194894978">Attiva avvio tramite CA (corrente alternata)</translation>
-<translation id="5131211790949066746">Consente di unire i criteri relativi all'elenco di installazione delle estensioni <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> e <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
-
-      Se attivi questa impostazione, i valori dei criteri relativi alla piattaforma del computer, al cloud del computer e alla piattaforma dell'utente vengono uniti in un unico elenco e usati in toto; in questo modo non vengono usati soltanto i valori di una singola origine con la massima priorità.
-
-      Se disattivi questa impostazione o non la imposti, vengono recuperate soltanto le voci dell'elenco dell'origine con la massima priorità e tutte le altre origini risultano in conflitto, ma vengono ignorate.</translation>
 <translation id="513798533865657610">La funzionalità di invio automatico del PIN modifica il modo in cui i PIN vengono inseriti in Chrome OS.
           Invece di mostrare lo stesso campo di testo utilizzato per l'inserimento della password, questa
           funzionalità mostra un'interfaccia utente speciale che indica chiaramente all'utente da quante
@@ -2689,7 +2688,6 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
       Questo criterio può essere impostato solo dalla Console di amministrazione Google.</translation>
 <translation id="5182055907976889880">Configura Google Drive in <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="5182483318861266793">Posiziona la shelf sul lato destro dello schermo</translation>
-<translation id="5183383917553127163">Consente di specificare le estensioni da non includere nella blacklist. Un valore di * riportato nella blacklist indica che tutte le estensioni sono state inserite nella blacklist e che gli utenti possono installare solo quelle elencate nella whitelist. Per impostazione predefinita, tutte le estensioni si trovano nella whitelist, ma se in base alla norma applicata tutte le estensioni sono state inserite nella blacklist, la whitelist può essere utilizzata per annullare tale norma.</translation>
 <translation id="519247340330463721">Configura le norme relative alla Navigazione sicura.</translation>
 <translation id="5196520640744454600">Attiva i tasti permanenti nella schermata di accesso</translation>
 <translation id="5196805177499964601">Blocca la modalità sviluppatore.
@@ -2705,12 +2703,6 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
 <translation id="5212810195096589189">Specifica l'autorizzazione per l'interfaccia a riga di comando delle macchine virtuali</translation>
 <translation id="5213038356678567351">Siti web che non devono mai attivare il cambio di browser.</translation>
 <translation id="5219844027738217407">Nell'ambito delle app Android, la norma influisce solo sul microfono. Se la norma viene impostata su true, il microfono viene disattivato per tutte le app Android, senza alcuna eccezione.</translation>
-<translation id="5220124265517241823">Elenco di pattern URL per i quali non è necessario controllare la presenza di violazioni delle regole relative alla protezione dei dati sensibili nei file caricati oppure nei dati incollati dagli appunti o trascinati.  Questo criterio viene utilizzato solo se il criterio <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> è attivato.
-
-      Se questo criterio non viene impostato o viene impostato su un elenco di pattern URL vuoto, verrà controllata la presenza di violazioni delle regole relative alla protezione dei dati sensibili in tutti i contenuti.
-
-      I pattern URL hanno lo stesso formato del criterio "URLBlacklist" documentato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format.
-      </translation>
 <translation id="5228316810085661003">Il ritardo prima dell'accesso automatico all'account locale del dispositivo.
 
       Se non è impostata, la norma |DeviceLocalAccountAutoLoginId| non ha effetto. In caso contrario:
@@ -3002,6 +2994,13 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se questo criterio è impostato su False o non viene impostato, gli avvisi verranno mostrati su tali computer o sistemi operativi non supportati.</translation>
 <translation id="5565178130821694365">Inserimento della password richiesto ogni due giorni (48 ore)</translation>
 <translation id="5566210228171064229">Consenti la stampa con e senza PIN</translation>
+<translation id="5572971233886879856">Consente di specificare il sottoinsieme di server di stampa a cui verranno inviate query sulle stampanti. Si applica solo al criterio <ph name="DEVICE_EXTERNAL_PRINT_SERVERS_POLICY" />.
+
+      Se viene utilizzato questo criterio, gli utenti hanno a disposizione soltanto le stampanti con ID corrispondenti ai valori specificati in questo criterio.
+
+      Gli ID devono corrispondere al campo "id" del file specificato nel criterio <ph name="DEVICE_EXTERNAL_PRINT_SERVERS_POLICY" />.
+
+      Se il criterio non è configurato, il filtro viene omesso e vengono considerati tutti i server di stampa forniti da <ph name="DEVICE_EXTERNAL_PRINT_SERVERS_POLICY" />.</translation>
 <translation id="557360560705413259">Quando questa impostazione è attiva, <ph name="PRODUCT_NAME" /> usa il nome comune di un certificato server per associare un nome host se il certificato è privo di un'estensione subjectAlternativeName, purché venga convalidato correttamente e collegato a un certificato CA installato in una posizione locale.
 
       Tieni presente che è sconsigliato farlo, perché potrebbe essere consentita l'elusione dell'estensione nameConstraints, che limita i nomi host per cui può essere autorizzato un determinato certificato.
@@ -3072,6 +3071,13 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5645779841392247734">Consenti i cookie in questi siti</translation>
 <translation id="5646234199535103501">Criterio di configurazione per il connettore OnBulkDataEntry di Chrome Enterprise</translation>
 <translation id="5656177735561364047">Attiva la funzione Appunti condivisi</translation>
+<translation id="5657576769650058122">Se il criterio viene attivato, la tastiera virtuale (un dispositivo di immissione Chrome OS) rimane attiva sullo schermo. Se il criterio viene disattivato, questa tastiera rimane disabilitata.
+
+      Se il criterio viene configurato, gli utenti possono modificare questa impostazione. Gli utenti possono attivare o disattivare una tastiera sullo schermo di accessibilità che ha la precedenza sulla tastiera virtuale. Vedi il criterio VirtualKeyboardEnabled.
+
+      Se non viene configurato, la tastiera è disattivata, ma gli utenti possono modificare questa impostazione.
+
+       Nota: potrebbero essere utilizzate anche regole euristiche per stabilire quando viene visualizzata la tastiera.</translation>
 <translation id="5666457529647159548">Consenti agli utenti di gestire i certificati client installati.</translation>
 <translation id="567377007899266033">Se il criterio viene impostato su True, Google riceverà rapporti sui principali eventi di installazione delle estensioni attivati dal criterio. Se il criterio viene impostato su False, non viene acquisito alcun evento. Se il criterio non viene impostato, il valore predefinito è True.</translation>
 <translation id="5676740747107495269">Mostra le opzioni di accessibilità nel menu della barra delle applicazioni nella schermata di accesso</translation>
@@ -3120,12 +3126,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
           Quando la norma non è impostata, viene eseguita l'azione predefinita, ossia la sospensione.
 
           Se l'azione è la sospensione, è possibile configurare separatamente il blocco o meno dello schermo prima della sospensione di <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="5746196829700407864">Elenco di pattern URL per i quali è necessario controllare la presenza di malware nei contenuti scaricati.  Questo criterio viene utilizzato solo se il criterio <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> viene impostato su un valore che consente o applica i controlli della presenza di malware per i download.
-
-      Se questo criterio non viene impostato o viene impostato su un elenco di pattern URL vuoto, verrà controllata la presenza di malware in tutti i contenuti scaricati.
-
-      I pattern URL hanno lo stesso formato del criterio "URLBlacklist" documentato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format.
-      </translation>
 <translation id="574983287620584622">Attiva le scorciatoie delle funzioni di accessibilità nella schermata di accesso</translation>
 <translation id="5755002458331714762"> Le API Web Components v0 (Shadow DOM v0, Custom Elements v0 e HTML Imports) sono state ritirate nel 2018 e sono state disattivate per impostazione predefinita a partire dalla versione M80. Questo criterio consente di riattivare selettivamente queste funzionalità fino alla versione M84.
 
@@ -3652,13 +3652,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           Se questa norma è impostata su false o non è configurata, la creazione di utenti supervisionati e il relativo accesso saranno disattivati. Tutti gli utenti supervisionati esistenti saranno nascosti.
 
           NOTA. Il comportamento predefinito per dispositivi consumer ed enterprise è diverso: sui dispositivi consumer, gli utenti supervisionati sono abilitati per impostazione predefinita, mentre sui dispositivi enterprise sono disabilitati per impostazione predefinita.</translation>
-<translation id="6649397154027560979">Questa norma non è più supportata; utilizza la norma URLBlacklist.
-
-Consente di disattivare gli schemi dei protocolli elencati in <ph name="PRODUCT_NAME" />.
-
-Gli URL che utilizzano uno schema di questo elenco non verranno caricati e non potranno essere visitati.
-
-Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile accedere a tutti gli schemi in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Impostazioni degli utenti gestiti localmente</translation>
 <translation id="6658129069061688328">Se il criterio è impostato su True, i consigli di app possono essere visualizzati nella ricerca a stato nullo. Se il criterio è impostato su False, tali consigli non vengono visualizzati.
 
@@ -3693,6 +3686,9 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
           A partire dalla versione 76 di <ph name="PRODUCT_NAME" />, qualora il criterio non sia impostato, viene invece applicato per impostazione predefinita il comportamento previsto in caso di criterio disattivato.
 
           A partire dalla versione 78 di <ph name="PRODUCT_NAME" />, questo criterio viene ignorato e considerato come disattivato.</translation>
+<translation id="6724116921710627162">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'impostazione di <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" /> consente di specificare l'URL utilizzato da un motore di ricerca per fornire una pagina Nuova scheda.
+
+      Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" /> non viene configurato, non è fornita alcuna pagina Nuova scheda.</translation>
 <translation id="672496466524161417">Se il criterio è impostato su None o se non viene configurato, gli utenti possono gestire i certificati. Se il criterio è impostato su 2, gli utenti possono solo visualizzare i certificati senza gestirli.
 
       Se il criterio è impostato su 1, gli utenti possono gestire i certificati, ma non quelli a livello di dispositivo.</translation>
@@ -3703,6 +3699,9 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 
       Se il criterio è impostato su False o non viene impostato, <ph name="PLUGIN_VM_NAME" /> non viene attivato per l'utente.
       Se è impostato su True, <ph name="PLUGIN_VM_NAME" /> viene attivato per l'utente, a condizione che anche le altre impostazioni lo permettano. Il valore dei criteri <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> e <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> deve essere True ed è necessario impostare i criteri <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> o <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> per consentire l'esecuzione di <ph name="PLUGIN_VM_NAME" />.</translation>
+<translation id="6752711782954612641">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'impostazione di <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> consente di specificare i parametri durante la ricerca di un URL con POST. Si tratta di coppie di tipo nome-valore separate da virgole. Se un valore è il parametro di un modello, ad esempio <ph name="SEARCH_TERM_MARKER" />, viene sostituito con i dati dei termini di ricerca reali.
+
+      Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> non viene configurato, le richieste di ricerca vengono inviate utilizzando il metodo Get.</translation>
 <translation id="6757613329154374267">Backup e ripristino attivato</translation>
 <translation id="6758659208493449452">Questo criterio consente di stabilire se gli utenti registrati al programma di protezione avanzata ricevono o meno ulteriori livelli di protezione. Alcune di queste funzionalità potrebbero prevedere la condivisione di dati con Google (ad esempio, gli utenti che usano la protezione avanzata potranno inviare i propri download a Google per verificare l'eventuale presenza di malware). Se questo criterio viene impostato su True o non viene impostato, gli utenti registrati al programma riceveranno ulteriori livelli di protezione. Se viene impostato su False, gli utenti che usano la protezione avanzata riceveranno soltanto le funzionalità standard per i consumatori.</translation>
 <translation id="6766216162565713893">Consenti ai siti di chiedere all'utente di concedere l'accesso a un dispositivo Bluetooth nelle vicinanze.</translation>
@@ -3736,6 +3735,11 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="684856667300805181">Questa norma è stata rimossa in <ph name="PRODUCT_NAME" /> 68 e sostituita da <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6851199885688265233">Attiva la funzione di accessibilità di evidenziazione del cursore</translation>
 <translation id="6851315055469993882">Attiva cache di autenticazione HTTP con ambito globale</translation>
+<translation id="6854767649023671426">Se il criterio viene attivato o se non viene configurato, agli utenti viene richiesto l'accesso all'acquisizione video, fatta eccezione per gli URL configurati nell'elenco VideoCaptureAllowedUrls.
+
+      Se il criterio viene disattivato, le richieste vengono disabilitate e l'acquisizione video è disponibile solo per gli URL configurati nell'elenco VideoCaptureAllowedUrls.
+
+      Nota: il criterio si applica a tutti gli input video (non solo alla videocamera integrata).</translation>
 <translation id="6856743875250214792">Questa norma è obsoleta ed è stata rimossa su M66, poiché era utilizzata solo per test interni e rappresenta un rischio per la sicurezza.
 
       Consente di specificare i flag da applicare all'avvio di <ph name="PRODUCT_NAME" />. I flag specificati vengono applicati soltanto alla schermata di accesso. I flag impostati tramite questa norma non vengono applicati anche alle sessioni utente.</translation>
@@ -3750,6 +3754,20 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="68798513449385583">Ritarda download finché il risultato dell'analisi non viene reso noto</translation>
 <translation id="6894178810167845842">URL della pagina Nuova scheda</translation>
 <translation id="6899705656741990703">Rileva automaticamente impostazioni proxy</translation>
+<translation id="6902561336084511004">Consente di specificare le configurazioni dei server di stampa disponibili.
+
+      Questo criterio consente di specificare le configurazioni dei server di stampa esterni sui dispositivi <ph name="PRODUCT_OS_NAME" /> come file JSON.
+
+      Le dimensioni del file non devono superare 1MB e devono contenere un array di record (oggetti JSON). Ogni record deve contenere i campi "id", "url" e "display_name" con stringhe come valori. I valori dei campi "id" devono essere univoci.
+
+      Il file viene scaricato e memorizzato nella cache. L'hash di crittografia viene utilizzato per verificare l'integrità del download. Il file viene scaricato nuovamente ogni volta che l'URL o l'hash cambiano.
+
+      Se il criterio viene impostato su un valore corretto, i dispositivi provano a inviare query ai server di stampa specificati per le stampanti disponibili che utilizzano il protocollo IPP.
+
+      Se il criterio non viene configurato o se viene impostato un valore non corretto, gli utenti non possono visualizzare alcuna stampante fornita.
+
+      Attualmente, il numero di server di stampa è limitato a 16. Solo ai primi 16 server di stampa dell'elenco vengono inviate query.
+      </translation>
 <translation id="6903814433019432303">Questa norma è attiva soltanto in modalità retail.
 
       Consente di stabilire l'insieme di URL da caricare all'avvio della sessione demo. Questa norma sostituirà qualsiasi altro meccanismo di impostazione dell'URL iniziale ed è quindi possibile applicarla soltanto a una sessione non associata a un determinato utente.</translation>
@@ -4018,6 +4036,9 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
           Se questo criterio non viene impostato, inizialmente la variazione dei picchi energetici è disattivata e non può essere attivata dall'utente.</translation>
 <translation id="718956142899066210">Tipi di connessioni consentiti per gli aggiornamenti</translation>
 <translation id="7190286937411178540">Attiva la funzione di accessibilità di evidenziazione dell'elemento attivo tramite tastiera</translation>
+<translation id="7193489339723768342">Se il criterio viene configurato, specifica l'elenco di URL i cui pattern vengono confrontati con l'origine di sicurezza dell'URL richiedente. Una corrispondenza assicura l'accesso ai dispositivi di acquisizione audio senza richieste
+
+      Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita la pagina https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="7194407337890404814">Nome del provider di ricerca predefinito</translation>
 <translation id="7199304109870655950">Configura le opzioni di accesso remoto nell'host Chrome Remote Desktop.
 
@@ -4149,12 +4170,6 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 
           Questa funzione è attualmente disattivata lato server.</translation>
 <translation id="749556411189861380">Consente di indicare la versione del sistema operativo e del firmware dei dispositivi registrati. Se questa impostazione non è impostata o viene impostata su True, i dispositivi registrati indicheranno periodicamente la versione del sitema operativo e del firmware. Se l'impostazione viene impostata su False, le informazioni sulla versione non verranno indicate.</translation>
-<translation id="7498946151094347510">Consente di specificare le stampanti non utilizzabili dagli utenti.
-
-      Questa norma viene usata soltanto se viene selezionata l'opzione <ph name="PRINTERS_BLACKLIST" /> per la norma <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Se viene usata questa norma, gli utenti avranno a disposizione tutte le stampanti tranne quelle i cui ID sono elencati in questa norma. Gli ID devono corrispondere ai campi "id" o "guid" del file specificato nella norma <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="7506758875409719208">Consente di configurare i nomi di dominio client richiesti che verranno imposti ai client di accesso remoto e impedisce agli utenti di modificarli.
 
           Se questa impostazione viene attivata e configurata su uno o più domini, solo i client di uno dei domini specificati potranno connettersi all'host.
@@ -4176,6 +4191,11 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
       Se sul dispositivo è disponibile il controller DTC wilco e la norma viene impostata su true, vengono attivati la raccolta, il trattamento e la segnalazione di dati telemetrici e diagnostici.</translation>
 <translation id="7519251620064708155">Consenti la generazione di chiavi su questi siti</translation>
 <translation id="7529144158022474049">Fattore di dispersione aggiornamento automatico</translation>
+<translation id="7529963829662387349">L'impostazione del criterio consente agli utenti di scegliere uno dei metodi di immissione (layout da tastiera) per le sessioni <ph name="PRODUCT_OS_NAME" /> specificate.
+
+       Se il criterio non viene configurato o se viene lasciato vuoto, gli utenti possono selezionare tutti i metodi di immissione supportati.
+
+      Nota: se il metodo di immissione corrente non è supportato, viene effettuato il passaggio al layout da tastiera hardware (se consentito) o alla prima voce valida in questo elenco. I metodi non supportati o non validi vengono ignorati.</translation>
 <translation id="7534199150025803530">Questa norma non influisce sull'app Google Drive per Android. Se vuoi impedire l'utilizzo di Google Drive tramite rete cellulare, non devi consentire l'installazione dell'app Google Drive per Android.</translation>
 <translation id="7540622499178214923">Permette di consentire l'uso del controller DTC (Diagnostics and Telemetry Controller) wilco</translation>
 <translation id="7547549430720182663">Unisci</translation>
@@ -4189,12 +4209,6 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
       Se viene impostata su False, gli aggiornamenti dei componenti vengono disattivati. Tuttavia, alcuni componenti sono esclusi da questa norma: gli aggiornamenti dei componenti che non contengono codice eseguibile, che non alterano in modo significativo il comportamento del browser o che sono fondamentali per la sicurezza non vengono disattivati.
       Esempi di tali componenti sono gli elenchi di revoche di certificati e i dati di Navigazione sicura.
       Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
-<translation id="75599127817486754">Elenco di pattern URL per cui è necessario controllare la presenza di malware nei contenuti caricati.  Questo criterio viene utilizzato solo se il criterio <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> viene impostato su un valore che consente o applica i controlli della presenza di malware per i caricamenti.
-
-      Se questo criterio non viene impostato o viene impostato su un elenco di pattern URL vuoto, non verrà controllata la presenza di malware nei contenuti caricati.
-
-      I pattern URL hanno lo stesso formato del criterio "URLBlacklist" documentato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format.
-      </translation>
 <translation id="7566878661979235378">Tipo di autenticazione per gli accessi SAML</translation>
 <translation id="7567373982693549834">Questo criterio consente di controllare l'utilizzo delle app Android di fonti non attendibili (diverse dal Google Play Store) per ogni utente.
 
@@ -4341,6 +4355,9 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
       Se il criterio non viene configurato, i cookie di terze parti vengono attivati, ma gli utenti possono modificare l'impostazione.</translation>
 <translation id="7731026922044991970">Ripristina il comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> precedente per i cookie su tutti i siti</translation>
 <translation id="7732907212083471072">Criteri rimossi</translation>
+<translation id="77379430721695807">Se il criterio viene configurato, specifica l'elenco di URL i cui pattern vengono confrontati con l'origine di sicurezza dell'URL richiedente. Una corrispondenza assicura l'accesso ai dispositivi di acquisizione video senza richieste
+
+      Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita la pagina https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="7747447585227954402">Consenti ai dispositivi di usare <ph name="PLUGIN_VM_NAME" /> su <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7748793371045612978">Consente di specificare un elenco di app ed estensioni che vengono installate automaticamente,
           senza l'interazione dell'utente, e che non possono essere disinstallate né
@@ -4513,6 +4530,9 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
        I dispositivi non gestiti sono autorizzati a eseguire macchine virtuali.</translation>
 <translation id="8001701200415781021">Limita gli Account Google che è possibile impostare come account principali del browser in <ph name="PRODUCT_NAME" /></translation>
 <translation id="8003853057959146975">Invia file per l'ispezione di eventuali violazioni delle regole relative alla protezione dei dati sensibili</translation>
+<translation id="8006219716745491366">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'impostazione di <ph name="DEFAULT_SEARCH_PROVIDER_ALTERNATE_URLS_POLICY_NAME" /> consente di specificare un elenco di URL alternativi per l'estrazione dei termini di ricerca dal motore di ricerca. Gli URL devono includere la stringa <ph name="SEARCH_TERM_MARKER" />.
+
+      Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ALTERNATE_URLS_POLICY_NAME" /> non viene configurato, per l'estrazione dei termini di ricerca non vengono utilizzati URL alternativi.</translation>
 <translation id="8009554972280451023">Se attivi questa impostazione, le impostazioni memorizzate nei profili <ph name="PRODUCT_NAME" />, come i preferiti, i dati della compilazione automatica, le password e così via, saranno scritte anche in un file memorizzato nella cartella del profilo utente Roaming o in una posizione specificata dall'amministratore tramite la norma <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Se si attiva questa norma, viene disattivata la sincronizzazione nella cloud.
 
       Se questa norma viene disattivata o non viene impostata, saranno utilizzati solo i normali profili locali.
@@ -4627,17 +4647,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy viene inizial
 
           Se questo criterio non viene impostato, inizialmente l'evidenziazione del cursore è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="8171924760436219650">Imposta il pulsante destro come pulsante principale del mouse nella schermata di accesso</translation>
-<translation id="817455428376641507">Consente l'accesso agli URL elencati, sotto forma di eccezioni alla blacklist di URL.
-
-      Consulta la descrizione della norma sulle blacklist di URL per il formato delle voci di questo elenco.
-
-      Questa norma può essere utilizzata per aprire eccezioni alle blacklist restrittive. Ad esempio "*" può essere incluso nella blacklist per bloccare tutte le richieste e questa norma può essere utilizzata per consentire l'accesso a un elenco limitato di URL. Può essere utilizzata per aprire eccezioni rispetto a determinati schemi, sottodomini di altri domini, porte o percorsi specifici.
-
-      Il filtro più specifico consente di determinare se un URL è bloccato o consentito. La whitelist ha la precedenza sulla blacklist.
-
-       Per questa norma è possibile definire massimo 1000 voci; le voci in più vengono ignorate.
-
-      Se questa norma non viene impostata, non ci saranno eccezioni alla blacklist dalla norma "URLBlacklist".</translation>
 <translation id="8176035528522326671">Consenti all'utente aziendale di essere solo l'utente multiprofilo principale (comportamento predefinito per gli utenti gestiti dall'azienda)</translation>
 <translation id="8183108371184777472">Impedisci l'avvio della finestra del browser</translation>
 <translation id="8186911565834244165">Consenti il feedback degli utenti</translation>
@@ -4730,6 +4739,9 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8312129124898414409">Consente di stabilire se consentire o meno l'utilizzo della generazione di chiavi sui siti web. L'utilizzo della generazione di chiavi può essere consentito o negato per tutti i siti web.
 
           Se questa norma non viene impostata, verrà utilizzato il valore della norma "BlockKeygen", che potrà essere modificato dagli utenti.</translation>
+<translation id="8313927126392971570">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'impostazione di <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POST_PARMS_POLICY_NAME" /> consente di specificare i parametri durante la ricerca di immagini con POST. Si tratta di coppie di tipo nome-valore separate da virgole. Se un valore è il parametro di un modello, ad esempio {imageThumbnail}, viene sostituito con i dati delle miniature di immagini reali.
+
+      Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POST_PARMS_POLICY_NAME" /> non viene configurato, la richiesta di ricerca di immagini viene inviata utilizzando il metodo Get.</translation>
 <translation id="8314214821702356835">Permette di consentire agli utenti di riprodurre contenuti multimediali con il dispositivo bloccato</translation>
 <translation id="8320149248919453401">Modalità di carica della batteria</translation>
 <translation id="8329984337216493753">Questa norma è attiva soltanto in modalità retail.
@@ -4738,15 +4750,9 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
       Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="8331479227794770304">Attiva tasti permanenti</translation>
-<translation id="8338124703579032277">Consente di impostare un elenco di protocolli, e per ogni protocollo un elenco associato di pattern di origini consentite, che possono lanciare un'applicazione esterna senza chiedere conferma all'utente. Il separatore finale non deve essere incluso nell'elenco di protocolli, quindi usa "skype" anziché "skype:" o "skype://".
+<translation id="8337114537412769126">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'impostazione di <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POST_PARAMS_POLICY_NAME" /> consente di specificare i parametri durante la ricerca di suggerimenti con POST. Si tratta di coppie di tipo nome-valore separate da virgole. Se un valore è il parametro di un modello, ad esempio <ph name="SEARCH_TERM_MARKER" />, viene sostituito con i dati dei termini di ricerca reali.
 
-      Se questo criterio viene impostato, un protocollo sarà autorizzato a lanciare un'applicazione esterna senza chiedere conferma in base al criterio soltanto se il protocollo è nell'elenco e se l'origine del sito che prova a lanciare il protocollo corrisponde a uno dei pattern di origini nell'elenco allowed_origins del protocollo. Se una delle condizioni è falsa, la richiesta di lancio di un protocollo esterno non sarà omessa, in base al criterio.
-
-      Se questo criterio non viene impostato, per impostazione predefinita nessun protocollo può essere lanciato senza chiedere conferma. Gli utenti possono disattivare le richieste di conferma per ogni singolo protocollo/sito, a meno che il criterio <ph name="EXTERNAL_PROTOCOL_DIALOG_SHOW_ALWAYS_OPEN_CHECKBOX_POLICY_NAME" /> sia impostato su Disattivato. Questo criterio non influisce sulle esenzioni delle richieste di conferma per ogni singolo protocollo/sito impostate dagli utenti.
-
-      Per i pattern corrispondenti alle origini viene usato un formato simile a quello usato per i pattern del criterio "URLBlacklist", documentati all'indirizzo http://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      I pattern corrispondenti alle origini di questo criterio non possono però contenere elementi "/percorso" o "@query". I pattern contenenti un elemento "/percorso" o "@query" verranno ignorati.</translation>
+      Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POST_PARAMS_POLICY_NAME" /> non viene configurato, le richieste di ricerca di suggerimenti vengono inviate utilizzando il metodo Get.</translation>
 <translation id="8339420913453596618">Autenticazione a due fattori disattivata</translation>
 <translation id="8344454543174932833">Importa Preferiti dal browser predefinito alla prima esecuzione</translation>
 <translation id="8347993687936322631">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 85 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
@@ -4818,6 +4824,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
       Se il criterio non è configurato, <ph name="PRODUCT_NAME" /> consente agli utenti di controllare se è impostato come browser predefinito e, in caso contrario, se devono essere visualizzate le notifiche per gli utenti.
 
       Nota per gli amministratori di <ph name="MS_WIN_NAME" />: la configurazione di questa impostazione funziona solo con le macchine che eseguono Windows 7. Per le versioni successive, è necessario eseguire il deployment di un file con associazioni di applicazioni predefinite che imposti <ph name="PRODUCT_NAME" /> come gestore dei protocolli <ph name="HTTPS_PROTOCOL" /> e <ph name="HTTP_PROTOCOL" /> (e facoltativamente del protocollo <ph name="FTP_PROTOCOL" /> e di altri formati di file). Consulta la guida di Chrome (https://support.google.com/chrome?p=make_chrome_default_win).</translation>
+<translation id="8442489215829828465">Configura il messaggio della scadenza dell'aggiornamento automatico per il criterio MinimumChromeVersionEnforced</translation>
 <translation id="8445576299806775661">Dopo ogni importante aggiornamento della versione, Chrome crea un'istantanea di alcune parti dei dati di navigazione dell'utente da usare in caso di un successivo rollback di versione di emergenza. Se viene eseguito un rollback di emergenza a una versione di cui l'utente ha un'istantanea corrispondente, vengono ripristinati i dati nell'istantanea. In questo modo gli utenti possono mantenere impostazioni quali preferiti e dati di compilazione automatica.
 
       Se questo criterio non viene impostato, viene usato il valore predefinito 3.
@@ -4859,6 +4866,14 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
           Per avere pattern di esempio, visita il sito https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Disabilita salvataggio della cronologia del browser</translation>
+<translation id="8498143772090164675">Questo criterio viene applicato soltanto se il dispositivo ha raggiunto la scadenza dell'aggiornamento automatico e non rispetta la versione minima consentita di <ph name="PRODUCT_NAME" /> impostata tramite il criterio <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />.
+
+      Se il criterio viene impostato su una stringa non vuota:
+      Se il tempo di avviso menzionato nel criterio <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> è scaduto, questo messaggio viene mostrato nella schermata di accesso quando il dispositivo è bloccato e nessun utente può accedervi.
+      Se il tempo di avviso menzionato nel criterio <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> non è scaduto, questo messaggio viene mostrato nella pagina Impostazioni dopo che gli utenti avranno eseguito l'accesso.
+
+      Se il criterio non viene configurato o se viene lasciato vuoto, il messaggio predefinito di fine del ciclo di vita viene mostrato agli utenti in entrambi i casi citati.
+      Il messaggio di fine del ciclo di vita deve essere composto da un testo normale, senza alcuna formattazione. Non sono consentiti markup. </translation>
 <translation id="8499172469244085141">Impostazioni predefinite (gli utenti possono ignorarle)</translation>
 <translation id="849962487677588458">Questo criterio è obsoleto ed è prevista la rimozione in Chrome 78. Non verrà sostituito da altri criteri.
 
@@ -4879,6 +4894,9 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
       "1412.24.34": aggiornamento soltanto a questa versione specifica
 
       Avviso: non è consigliabile configurare restrizioni alle versioni, poiché potrebbero impedire agli utenti di ricevere aggiornamenti software e correzioni di sicurezza fondamentali. Limitare gli aggiornamenti a uno specifico prefisso per la versione potrebbe mettere a rischio gli utenti.</translation>
+<translation id="8516298370361397304">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'impostazione di <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POLICY_NAME" /> consente di specificare l'URL del motore di ricerca per fornire suggerimenti per le ricerche. L'URL dovrebbe includere la stringa <ph name="SEARCH_TERM_MARKER" />, sostituita nella query dai termini di ricerca degli utenti.
+
+      Puoi specificare l'URL di ricerca di Google come: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.</translation>
 <translation id="8519264904050090490">URL delle eccezioni manuali per gli utenti gestiti</translation>
 <translation id="8519516251436131647">Consente di attivare le scorciatoie delle funzioni di accessibilità.
 
@@ -5116,12 +5134,6 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
       Se il criterio viene impostato su false o non viene impostato, gli stati relativi a display e grafica non vengono segnalati. Se viene impostato su true, gli stati relativi a display e grafica vengono segnalati.</translation>
 <translation id="891435090623616439">codificato sotto forma di stringa JSON; per informazioni dettagliate, visita la pagina <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Consenti agli utenti di gestire i certificati CA installati.</translation>
-<translation id="8934944553121392674">Consente di stabilire quali stampanti della norma <ph name="DEVICE_PRINTERS_POLICY" /> mettere a disposizione degli utenti.
-
-      Determina quale norma di accesso usare per la configurazione collettiva delle stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_ALLOW_ALL" />, vengono mostrate tutte le stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_BLACKLIST" />, viene usata la norma <ph name="DEVICE_PRINTERS_BLACKLIST" /> per limitare l'accesso a stampanti specifiche. Se viene selezionata l'opzione <ph name="PRINTERS_WHITELIST" />, la norma <ph name="DEVICE_PRINTERS_WHITELIST" /> stabilisce soltanto le stampanti selezionabili.
-
-      Se questa norma non viene impostata, viene usata l'opzione <ph name="PRINTERS_ALLOW_ALL" />.
-      </translation>
 <translation id="8937282917198525844"> A partire dalla versione M81, abbiamo rinnovato aspetto e design degli elementi di controllo modulo standard (ad esempio, &lt;select&gt;, &lt;button&gt;, &lt;input type=date&gt;), con una superiore accessibilità e una migliore uniformità della piattaforma. Questo criterio ripristina i precedenti controlli modulo "legacy" fino alla versione M84.
 
       Se questo criterio viene impostato su True, gli elementi di controllo modulo "legacy" verranno utilizzati per tutti i siti.
@@ -5210,9 +5222,6 @@ https://www.w3.org/TR/secure-contexts/
 
       Il valore della norma deve essere specificato in secondi.</translation>
 <translation id="9021334785554745279">Pattern URL per il controllo della presenza di violazioni delle regole relative alla protezione dei dati sensibili nei contenuti scaricati</translation>
-<translation id="9030094532108679680">Se il criterio viene configurato (solo come consigliato), puoi registrare un elenco di gestori di protocolli che vengono uniti a quelli registrati dall'utente. Vengono quindi usati entrambi i gruppi. Imposta lo schema per la proprietà "protocollo", ad esempio mailto, e il pattern URL dell'applicazione che gestisce lo schema per la proprietà "URL". Il pattern può includere %s, che viene sostituito dall'URL gestito.
-
-      Gli utenti non possono rimuovere un gestore di protocollo registrato tramite il criterio. Se però installano un nuovo gestore predefinito, possono cambiare i gestori di protocolli installati in base al criterio.</translation>
 <translation id="9035086760683255833">Consente di attivare la funzione di accessibilità di evidenziazione dell'elemento attivo tramite tastiera.
 
           Questa funzione consente di evidenziare l'elemento attivo impostato tramite tastiera.
@@ -5308,18 +5317,17 @@ https://www.w3.org/TR/secure-contexts/
       Se il criterio non viene impostato o viene impostato un elenco vuoto, gli utenti possono specificare le lingue che preferiscono.
 
       Se viene impostato un elenco di valori non validi, tali valori vengono ignorati. Se gli utenti hanno aggiunto all'elenco di lingue preferite alcune lingue non consentite da questo criterio, tali lingue vengono rimosse. Se la lingua usata dagli utenti per <ph name="PRODUCT_OS_NAME" /> non è consentita da questo criterio, all'accesso successivo la lingua di visualizzazione viene impostata su una lingua dell'interfaccia utente consentita. Se invece questo criterio ha soltanto voci non valide, <ph name="PRODUCT_OS_NAME" /> passa al primo valore valido specificato in questo criterio o a una lingua di riserva come en-US.</translation>
-<translation id="9156175786579877198">Elenco di pattern URL per i quali è necessario controllare la presenza di violazioni delle regole relative alla protezione dei dati sensibili nei contenuti scaricati prima che vengano salvati nello spazio di archiviazione locale.  Questo criterio viene utilizzato solo se il criterio <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> è attivato.
-
-      Se questo criterio non viene impostato o viene impostato su un elenco di pattern URL vuoto, non verrà controllata la presenza di violazioni delle regole relative alla protezione dei dati sensibili nei contenuti scaricati.
-
-      I pattern URL hanno lo stesso formato del criterio "URLBlacklist" documentato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format.
-      </translation>
 <translation id="9159126470527871268">Consente di inviare agli utenti una notifica che comunica che <ph name="PRODUCT_NAME" /> o <ph name="PRODUCT_OS_NAME" /> deve essere riavviato per applicare un aggiornamento in sospeso
 
       Questa impostazione della norma attiva le notifiche che informano l'utente che è consigliabile oppure obbligatorio riavviare il browser o il dispositivo. Se non è impostata, <ph name="PRODUCT_NAME" /> indica all'utente che è necessario un riavvio tramite piccole modifiche al menu, mentre <ph name="PRODUCT_OS_NAME" /> indica ciò con una notifica nella barra delle applicazioni. Se l'impostazione è "Recommended", all'utente verrà mostrato un avviso ricorrente con un riavvio consigliato. L'utente può ignorare questo avviso e rimandare il riavvio. Se impostata su "Required", verrà visualizzato un avviso ricorrente all'utente che indica che il riavvio del browser sarà forzato una volta trascorso il periodo di notifica. Per impostazione predefinita, il periodo di notifica è di sette giorni per <ph name="PRODUCT_NAME" /> e di quattro giorni per <ph name="PRODUCT_OS_NAME" /> e può essere configurato tramite l'impostazione della norma <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
 
       La sessione dell'utente viene ripristinata dopo il riavvio.</translation>
 <translation id="9167719789236691545">Disattiva Drive nell'app File di <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="917514578273777202">Se il criterio viene attivato, viene eseguita una ricerca predefinita quando un utente inserisce un testo che non è un URL nella barra degli indirizzi. Per specificare il provider di ricerca predefinito, imposta gli altri criteri di ricerca predefiniti. Se non configuri questi criteri, l'utente può scegliere il provider predefinito. Se il criterio viene disattivato, non viene eseguita alcuna ricerca quando l'utente inserisce un testo che non è un URL nella barra degli indirizzi.
+
+      Se il criterio viene configurato, gli utenti non possono modificarlo in <ph name="PRODUCT_NAME" />. Se non viene configurato, il provider di ricerca predefinito è attivo e gli utenti possono configurare l'elenco dei provider di ricerca.
+
+      Nota: questo criterio è disponibile solo per le istanze di Windows® che fanno parte di un dominio <ph name="MS_AD_NAME" />, così come per le istanze di Windows 10 Pro o di Chrome Enterprise Upgrade e macOS che vengono gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
 <translation id="9185107612228451403">Configura le norme relative alle estensioni. L'utente non può installare estensioni presenti nella lista nera, a meno che non siano inserite nella lista bianca. È possibile anche forzare <ph name="PRODUCT_NAME" /> affinché installi automaticamente le estensioni specificandole in <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />. Le estensioni a installazione forzata sono installate indipendentemente dalla loro presenza nella lista nera.</translation>
 <translation id="9187743794267626640">Disabilita il montaggio di una memoria esterna</translation>
 <translation id="9190456586252617675">Questo criterio consente di stabilire la modalità dell'esperienza di onboarding dell'assistente.
@@ -5338,6 +5346,26 @@ https://www.w3.org/TR/secure-contexts/
       Se la norma viene impostata su true, l'opzione "Intestazioni e piè di pagina" viene selezionata nella finestra di dialogo dell'anteprima di stampa e l'utente non può modificarla.</translation>
 <translation id="9213751049772256263">Disattiva tutte le varianti</translation>
 <translation id="9217154963008402249">Frequenza dei pacchetti di rete di monitoraggio</translation>
+<translation id="9222882926274278513">Consente di configurare il requisito della versione minima consentita di <ph name="PRODUCT_NAME" />.
+
+      Quando questo criterio è impostato su un elenco non vuoto :
+      Se nessuna voce ha una "chrome_version" successiva alla versione corrente nel dispositivo, non vengono applicate limitazioni e le limitazioni esistenti vengono revocate.
+      Se almeno una voce ha una "chrome_version" successiva alla versione corrente, viene scelta la voce più forte la cui versione è la più vicina a quella corrente.
+      In caso di conflitto, la preferenza è assegnata a quella con il valore "warning_period" o "aue_warning_period" inferiore e il criterio viene applicato usando tale voce.
+
+      Se la versione corrente diventa obsoleta durante la sessione utente e la rete corrente limita gli aggiornamenti automatici, sullo schermo appare una notifica che invita l'utente ad aggiornare il dispositivo entro il "warning_period" indicato in tale notifica.
+      Se la rete corrente consente gli aggiornamenti automatici, non viene mostrata alcuna notifica e il dispositivo deve essere aggiornato entro il "warning_period".
+      Il "warning_period" parte dal momento in cui viene applicato il criterio.
+      Se il dispositivo non viene aggiornato prima che il "warning_period" scada, l'utente viene disconnesso dalla sessione.
+      Se la versione corrente risulta obsoleta al momento dell'accesso con un "warning_period" scaduto, all'utente viene richiesto di aggiornare il dispositivo prima di accedere.
+
+      Se la versione corrente diventa obsoleta durante la sessione utente e il dispositivo ha raggiunto la scadenza dell'aggiornamento automatico, sullo schermo appare una notifica che invita l'utente a restituire il dispositivo entro "eol_warning_period".
+      Se il dispositivo risulta aver raggiunto la scadenza dell'aggiornamento automatico al momento dell'accesso con "eol_warning_period" scaduto, il dispositivo viene bloccato e nessun utente potrà accedervi.
+
+      Se il criterio non viene configurato o se viene lasciato vuoto, non vengono applicate limitazioni, vengono revocate quelle esistenti e l'utente può accedere qualunque sia la versione di <ph name="PRODUCT_NAME" />.
+
+      Per "chrome_version" si intende sia una versione esatta, ad esempio "61.0.3163.120", sia un prefisso di versione, ad esempio "61.0".
+      I valori "warning_period" e "aue_warning_period" sono facoltativi e specificati in un numero di giorni. Il valore predefinito è 0 giorni, a indicare nessun periodo di avviso. </translation>
 <translation id="922540222991413931">Configura fonti di installazione di estensioni, applicazioni e script utente</translation>
 <translation id="924557436754151212">Importa password salvate dal browser predefinito alla prima esecuzione</translation>
 <translation id="927444535723396977">Se il criterio è impostato su 1, i siti web possono eseguire JavaScript. Se il criterio è impostato su 2, JavaScript viene negato.

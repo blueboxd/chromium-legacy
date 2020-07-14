@@ -227,7 +227,7 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
 }  // namespace
 
 NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui, true),
+    : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/false),
       content::WebContentsObserver(web_ui->GetWebContents()),
       page_factory_receiver_(this),
       profile_(Profile::FromWebUI(web_ui)),

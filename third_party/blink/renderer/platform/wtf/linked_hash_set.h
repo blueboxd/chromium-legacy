@@ -345,12 +345,11 @@ class LinkedHashSet {
 
     if (!NodeHashTraits::kCanTraceConcurrently && table) {
       if (visitor->DeferredTraceIfConcurrent(
-              {this, [](blink::Visitor* visitor, const void* object) {
-                 reinterpret_cast<const LinkedHashSet<ValueArg, HashFunctions,
-                                                      TraitsArg, Allocator>*>(
-                     object)
-                     ->Trace(visitor);
-               }}))
+              {this,
+               [](blink::Visitor* visitor, const void* object) {
+                 reinterpret_cast<const LinkedHashSet*>(object)->Trace(visitor);
+               }},
+              sizeof(LinkedHashSet)))
         return;
     }
 

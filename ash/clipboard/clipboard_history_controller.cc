@@ -173,15 +173,12 @@ bool ClipboardHistoryController::CanShowMenu() const {
 void ClipboardHistoryController::ShowMenu() {
   auto* host = ash::GetWindowTreeHostForDisplay(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  // Some web apps render the caret in an IFrame, and we will not get the
+  // bounds in that case.
+  // TODO(https://crbug.com/1099930): Show the menu in the middle of the
+  // webview if the bounds are empty.
   const gfx::Rect textfield_bounds =
       host->GetInputMethod()->GetTextInputClient()->GetCaretBounds();
-  if (textfield_bounds.IsEmpty()) {
-    // Some web apps render the caret in an IFrame, and we will not get the
-    // bounds in that case.
-    // TODO(https://crbug.com/1099930): Show the menu in the middle of the
-    // webview if the bounds are empty.
-    return;
-  }
 
   if (!CanShowMenu())
     return;

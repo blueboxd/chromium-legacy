@@ -1431,7 +1431,7 @@ PhysicalRect LayoutInline::PhysicalVisualOverflowRect() const {
                       OutlineRectsShouldIncludeBlockVisualOverflow());
     }
     if (!rects.IsEmpty()) {
-      PhysicalRect outline_rect = UnionRectEvenIfEmpty(rects);
+      PhysicalRect outline_rect = UnionRect(rects);
       outline_rect.Inflate(outline_outset);
       overflow_rect.Unite(outline_rect);
     }

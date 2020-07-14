@@ -21,6 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
@@ -30,18 +31,36 @@
 namespace discardable_memory {
 namespace {
 
-// Default allocation size.
-#if defined(OS_WIN) && defined(ARCH_CPU_32_BITS)
-// On Windows 32 bit, use a smaller chunk, as address space fragmentation may
-// make a 4MiB allocation impossible to fulfill in the browser process.
-// See crbug.com/983348 for details.
-const size_t kAllocationSize = 1 * 1024 * 1024;
-#else
-const size_t kAllocationSize = 4 * 1024 * 1024;
-#endif
-
 // Global atomic to generate unique discardable shared memory IDs.
 base::AtomicSequenceNumber g_next_discardable_shared_memory_id;
+
+size_t GetDefaultAllocationSize() {
+  const size_t kOneMegabyteInBytes = 1024 * 1024;
+
+  // There is a trade-off between round-trip cost to the browser process and
+  // memory usage overhead. 4MB is measured as the ideal size according to the
+  // usage statistics. For low-end devices, we care about lowering the memory
+  // usage and 1MB is good for the most basic cases.
+  const size_t kDefaultAllocationSize = 4 * kOneMegabyteInBytes;
+  const size_t kDefaultLowEndDeviceAllocationSize = kOneMegabyteInBytes;
+
+#if defined(OS_WIN) && defined(ARCH_CPU_32_BITS)
+  // On Windows 32 bit, use a smaller chunk, as address space fragmentation may
+  // make a 4MiB allocation impossible to fulfill in the browser process.
+  // See crbug.com/983348 for details.
+  ALLOW_UNUSED_LOCAL(kDefaultAllocationSize);
+  return kDefaultLowEndDeviceAllocationSize;
+#elif defined(OS_FUCHSIA)
+  // Low end Fuchsia devices may be very constrained, so use smaller allocations
+  // to save memory. See https://fxbug.dev/55760.
+  return base::SysInfo::IsLowEndDevice() ? kDefaultLowEndDeviceAllocationSize
+                                         : kDefaultAllocationSize;
+
+#else
+  ALLOW_UNUSED_LOCAL(kDefaultLowEndDeviceAllocationSize);
+  return kDefaultAllocationSize;
+#endif
+}
 
 class DiscardableMemoryImpl : public base::DiscardableMemory {
  public:
@@ -164,13 +183,15 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
       std::max((size + base::GetPageSize() - 1) / base::GetPageSize(),
                static_cast<size_t>(1));
 
+  static const size_t allocation_size = GetDefaultAllocationSize();
+  DCHECK(allocation_size % base::GetPageSize() == 0);
   // Default allocation size in pages.
-  size_t allocation_pages = kAllocationSize / base::GetPageSize();
+  size_t allocation_pages = allocation_size / base::GetPageSize();
 
   size_t slack = 0;
   // When searching the free lists, allow a slack between required size and
-  // free span size that is less or equal to kAllocationSize. This is to
-  // avoid segments larger then kAllocationSize unless they are a perfect
+  // free span size that is less or equal to |allocation_size|. This is to
+  // avoid segments larger then |allocation_size| unless they are a perfect
   // fit. The result is that large allocations can be reused without reducing
   // the ability to discard memory.
   if (pages < allocation_pages)
@@ -216,7 +237,7 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     MemoryUsageChanged(heap_->GetSize(), heap_->GetSizeOfFreeLists());
 
   size_t pages_to_allocate =
-      std::max(kAllocationSize / base::GetPageSize(), pages);
+      std::max(allocation_size / base::GetPageSize(), pages);
   size_t allocation_size_in_bytes = pages_to_allocate * base::GetPageSize();
 
   int32_t new_id = g_next_discardable_shared_memory_id.GetNext();

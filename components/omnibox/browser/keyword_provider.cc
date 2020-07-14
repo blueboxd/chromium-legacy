@@ -572,7 +572,14 @@ base::string16 KeywordProvider::CleanUserInputKeyword(
   }
 
   // Remove leading "www.", if any, and again try to find a matching keyword.
-  result = url_formatter::StripWWW(result);
+  // The 'www.' stripping is done directly here instead of calling
+  // url_formatter::StripWWW because we're not assuming that the keyword is a
+  // hostname.
+  const base::string16 kWww(base::ASCIIToUTF16("www."));
+  constexpr size_t kWwwLength = 4;
+  result = base::StartsWith(result, kWww, base::CompareCase::SENSITIVE)
+               ? result.substr(kWwwLength)
+               : result;
   if (template_url_service->GetTemplateURLForKeyword(result) != nullptr)
     return result;
 

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
+#include "services/device/public/mojom/screen_orientation_lock_types.mojom-shared.h"
 
 namespace content {
 
@@ -25,8 +25,9 @@ class CONTENT_EXPORT ScreenOrientationDelegate {
   virtual bool FullScreenRequired(WebContents* web_contents) = 0;
 
   // Lock display to the given orientation.
-  virtual void Lock(WebContents* web_contents,
-                    blink::WebScreenOrientationLockType lock_orientation) = 0;
+  virtual void Lock(
+      WebContents* web_contents,
+      device::mojom::ScreenOrientationLockType lock_orientation) = 0;
 
   // Are ScreenOrientationProvider requests currently supported by the platform.
   virtual bool ScreenOrientationProviderSupported() = 0;
@@ -41,4 +42,3 @@ class CONTENT_EXPORT ScreenOrientationDelegate {
 } // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_SCREEN_ORIENTATION_DELEGATE_H_
-

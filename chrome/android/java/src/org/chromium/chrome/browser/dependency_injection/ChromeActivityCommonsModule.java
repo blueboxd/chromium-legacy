@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
@@ -62,10 +63,7 @@ public class ChromeActivityCommonsModule {
 
     @Provides
     public BottomSheetController provideBottomSheetController() {
-        // Once the BottomSheetController is in the dependency graph, this method would no longer
-        // be necessary, as well as the getter in ChromeActivity. Same is true for a few other
-        // methods below.
-        return mActivity.getBottomSheetController();
+        return BottomSheetControllerProvider.from(mActivity.getWindowAndroid());
     }
 
     @Provides

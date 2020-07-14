@@ -1907,6 +1907,33 @@ TEST_F(FrameSequenceTrackerTest, UniversalTrackerSubmitThroughput) {
   EXPECT_FALSE(collection_.HasThroughputData());
 }
 
+// Test that when an impl frame caused no damage is due to waiting on main, the
+// computation of aggregated throughput is correct.
+TEST_F(FrameSequenceTrackerTest, ImplFrameNoDamageWaitingOnMain1) {
+  GenerateSequence("b(1)B(0,1)n(1)N(1,1)e(1,0)");
+  EXPECT_EQ(AggregatedThroughput().frames_expected, 0u);
+}
+
+TEST_F(FrameSequenceTrackerTest, ImplFrameNoDamageWaitingOnMain2) {
+  GenerateSequence("b(1)B(0,1)n(1)e(1,0)N(1,1)");
+  EXPECT_EQ(AggregatedThroughput().frames_expected, 0u);
+}
+
+TEST_F(FrameSequenceTrackerTest, ImplFrameNoDamageWaitingOnMain3) {
+  GenerateSequence("b(1)n(1)B(0,1)Re(1,0)N(0,1)");
+  EXPECT_EQ(AggregatedThroughput().frames_expected, 0u);
+}
+
+TEST_F(FrameSequenceTrackerTest, ImplFrameNoDamageWaitingOnMain4) {
+  GenerateSequence("b(1)B(0,1)n(1)e(1,0)b(2)n(2)e(2,0)N(1,1)");
+  EXPECT_EQ(AggregatedThroughput().frames_expected, 0u);
+}
+
+TEST_F(FrameSequenceTrackerTest, ImplFrameNoDamageWaitingOnMain5) {
+  GenerateSequence("b(2)B(0,2)n(2)e(2,0)b(3)s(1)S(1)e(3,0)N(2,2)");
+  EXPECT_EQ(AggregatedThroughput().frames_expected, 1u);
+}
+
 TEST_F(FrameSequenceTrackerTest, CustomTrackers) {
   // Start custom tracker 1.
   collection_.StartCustomSequence(1);

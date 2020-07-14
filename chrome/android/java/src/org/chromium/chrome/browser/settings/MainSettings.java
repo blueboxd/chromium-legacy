@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.safety_check.SafetyCheckSettingsFragment;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -199,6 +200,10 @@ public class MainSettings extends PreferenceFragmentCompat
         // Only display the Safety check section if a corresponding flag is enabled.
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SAFETY_CHECK_ANDROID)) {
             getPreferenceScreen().removePreference(findPreference(PREF_SAFETY_CHECK));
+        } else {
+            findPreference(PREF_SAFETY_CHECK)
+                    .setTitle(SafetyCheckSettingsFragment.getSafetyCheckSettingsElementTitle(
+                            getContext()));
         }
     }
 

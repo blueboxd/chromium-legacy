@@ -35,7 +35,8 @@ bool WebViewPasswordFeatureManager::ShouldShowAccountStorageOptIn() const {
   return false;
 }
 
-bool WebViewPasswordFeatureManager::ShouldShowAccountStorageReSignin() const {
+bool WebViewPasswordFeatureManager::ShouldShowAccountStorageReSignin(
+    const GURL& current_page_url) const {
   return false;
 }
 

@@ -33,10 +33,9 @@ def CheckStyleOnCommit(input_api, output_api):
   return _CommonChecks(input_api, output_api)
 
 
-def IncludedFiles(input_api):
+def IncludedFiles(input_api, allow_list=helpers.INCLUDED_PATHS):
   # Filter out XML files outside included paths and files that were deleted.
-  files = lambda f: input_api.FilterSourceFile(
-      f, white_list=helpers.INCLUDED_PATHS)
+  files = lambda f: input_api.FilterSourceFile(f, allow_list)
   return input_api.AffectedFiles(include_deletes=False, file_filter=files)
 
 
@@ -52,6 +51,7 @@ def _CommonChecks(input_api, output_api):
   result.extend(_CheckTextAppearance(input_api, output_api))
   result.extend(_CheckLineSpacingAttribute(input_api, output_api))
   result.extend(_CheckButtonCompatWidgetUsage(input_api, output_api))
+  result.extend(_CheckStringResourcePunctuations(input_api, output_api))
   # Add more checks here
   return result
 
@@ -467,6 +467,63 @@ def _CheckButtonCompatWidgetUsage(input_api, output_api):
     ]
 
   return []
+
+
+### String resource check ###
+def _CheckStringResourcePunctuations(input_api, output_api):
+  """Check whether inappropriate punctuations are used"""
+  warnings = []
+  result = []
+  # Removing placeholders for parsing purpose:
+  # placeholders will be parsed as children of the parent node.
+  ph = re.compile(r'<ph>.*</ph>')
+  quote_re = re.compile(u'[\u0022\u0027\u0060\u00B4]')
+  for f in IncludedFiles(input_api, helpers.INCLUDED_GRD_PATHS):
+    contents = input_api.ReadFile(f)
+
+    contents = re.sub(ph, '', contents)
+    tree = ET.fromstring(contents)
+
+    # some grds don't contain release and messages tags
+    if tree.find('release') is None:
+      continue
+    if tree.find('release').find('messages') is None:
+      continue
+
+    messages = tree.find('release').find('messages')
+
+    quotes = set()
+    for child in messages:
+      lines = child.text.split('\n')
+      quotes.update(l for l in lines if quote_re.search(l))
+
+    # Only report the lines in the changed contents of the current workspace
+    for line_number, line in f.ChangedContents():
+      lineWithoutPh = re.sub(ph, '', line)
+      if lineWithoutPh in quotes:
+        warnings.append('  %s:%d\n    \t%s' %
+                        (f.LocalPath(), line_number, line))
+
+  if warnings:
+    result += [
+        output_api.PresubmitPromptWarning(
+            u'''
+  Android String Resources Check failed:
+    Your new string is using one or more of generic quotes(\u0022 \\u0022, \u0027 \\u0027,
+    \u0060 \\u0060, \u00B4 \\u00B4), which is not encouraged. Instead, quotations marks
+    (\u201C \\u201C, \u201D \\u201D, \u2018 \\u2018, \u2019 \\u2019) are usually preferred.
+
+    Use prime (\u2032 \\u2032) only in abbreviations for feet, arcminutes, and minutes.
+    Use Double-prime (\u2033 \\u2033) only in abbreviations for inches, arcminutes, and minutes.
+
+    Please reach out to the UX designer/writer in your team to double check
+    which punctuation should be correctly used. Ignore this warning if UX has confirmed.
+
+    Reach out to writing-strings@chromium.org if you have any question about writing strings.
+  '''.encode('utf-8'), warnings)
+    ]
+  return result
+
 
 ### helpers ###
 def _colorXml2Dict(content):

@@ -21,7 +21,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
@@ -203,10 +202,8 @@ void NewDeskButton::OnViewUnhighlighted() {
 }
 
 void NewDeskButton::UpdateBorderState() {
-  border_ptr_->set_color(
-      (IsViewHighlighted() && DesksController::Get()->CanCreateDesks())
-          ? gfx::kGoogleBlue300
-          : SK_ColorTRANSPARENT);
+  border_ptr_->SetFocused(IsViewHighlighted() &&
+                          DesksController::Get()->CanCreateDesks());
   SchedulePaint();
 }
 

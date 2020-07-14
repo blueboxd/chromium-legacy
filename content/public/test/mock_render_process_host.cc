@@ -441,19 +441,19 @@ bool MockRenderProcessHost::HostHasNotBeenUsed() {
   return IsUnused() && listeners_.IsEmpty() && GetKeepAliveRefCount() == 0;
 }
 
-void MockRenderProcessHost::LockToOrigin(
+void MockRenderProcessHost::SetProcessLock(
     const IsolationContext& isolation_context,
-    const GURL& lock_url) {
-  ChildProcessSecurityPolicyImpl::GetInstance()->LockToOrigin(
-      isolation_context, GetID(), lock_url);
-  if (SiteInstanceImpl::IsOriginLockASite(lock_url))
+    const ProcessLock& process_lock) {
+  ChildProcessSecurityPolicyImpl::GetInstance()->LockProcess(
+      isolation_context, GetID(), process_lock);
+  if (process_lock.IsASiteOrOrigin())
     is_renderer_locked_to_site_ = true;
 }
 
-bool MockRenderProcessHost::IsLockedToOriginForTesting() {
-  GURL lock_url =
-      ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(GetID());
-  return !lock_url.is_empty();
+bool MockRenderProcessHost::IsProcessLockedForTesting() {
+  ProcessLock lock =
+      ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(GetID());
+  return !lock.is_empty();
 }
 
 void MockRenderProcessHost::BindCacheStorage(

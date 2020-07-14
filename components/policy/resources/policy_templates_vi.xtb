@@ -190,11 +190,6 @@
       Nếu bạn bật tùy chọn cài đặt này, tính năng Tìm kiếm an toàn trong Google Tìm kiếm và Chế độ hạn chế trung bình trên YouTube sẽ luôn hoạt động.
 
       Nếu bạn tắt tùy chọn cài đặt này hoặc không đặt giá trị, tính năng Tìm kiếm an toàn trong Google Tìm kiếm và Chế độ hạn chế trên YouTube sẽ không được thực thi.</translation>
-<translation id="1352174694615491349">Chính sách này cho phép hợp nhất đường kết nối HTTP/2 khi sử dụng chứng chỉ ứng dụng khách. Để hợp nhất, cả tên máy chủ của đường kết nối tiềm năng mới và tên máy chủ của đường kết nối hiện có phải phù hợp với một hoặc nhiều mẫu như mô tả trong chính sách này. Chính sách này là một danh sách các máy chủ sử dụng định dạng bộ lọc URLBlacklist: "example.com" phù hợp với "example.com" và mọi tên miền phụ (chẳng hạn như "sub.example.com"), trong khi đó, ".example.net" lại hoàn toàn phù hợp với "example.net".
-
-      Yêu cầu hợp nhất gửi tới các máy chủ khác nhau qua đường kết nối dùng chứng chỉ ứng dụng khách có thể gây ra các vấn đề về bảo mật và quyền riêng tư, bởi vì tất cả các yêu cầu đều được cấp phép rộng rãi, kể cả khi người dùng không cho phép rõ ràng. Chính sách này là tạm thời và sẽ bị xóa bỏ trong bản phát hành tương lai. Hãy truy cập vào https://crbug.com/855690 để tìm hiểu thêm.
-
-      Nếu bạn không đặt chính sách này, thì hoạt động mặc định sẽ được sử dụng, trong đó không cho phép hợp nhất đường kết nối HTTP/2 đối với các đường kết nối sử dụng chứng chỉ ứng dụng khách.</translation>
 <translation id="1354424209129232709">Tối đa:</translation>
 <translation id="1359553908012294236">Nếu chính sách này được đặt thành true hoặc không được định cấu hình, <ph name="PRODUCT_NAME" /> sẽ bật chế độ đăng nhập khách. Chế độ đăng nhập khách là hồ sơ <ph name="PRODUCT_NAME" /> trong đó tất cả cửa sổ đều ở chế độ ẩn danh.
 
@@ -256,9 +251,6 @@ Nếu bạn bật hoặc không định cấu hình chính sách này, thì vi�
 Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các phần văn bản cụ thể qua URL sẽ bị tắt.</translation>
 <translation id="1474273443907024088">Tắt Khởi động giả TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1480412981546860793">Việc đặt chính sách này sẽ chỉ định ngôn ngữ mà <ph name="PRODUCT_NAME" /> sử dụng.
-
-      Nếu bạn tắt hoặc không đặt chính sách này, thì người dùng có thể chỉ định ngôn ngữ (nếu đã định cấu hình), ngôn ngữ hệ thống hoặc ngôn ngữ dự phòng (en-US).</translation>
 <translation id="1481508277421549404">Khi bạn đặt chính sách này thành True, các tiện ích cài đặt theo chính sách doanh nghiệp sẽ được phép dùng API Enterprise Hardware Platform.
 
       Việc đặt chính sách này thành False hoặc không đặt chính sách này sẽ ngăn các tiện ích dùng API này.
@@ -482,17 +474,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 
           Chính sách này chỉ được tuân theo nếu kích hoạt chính sách 'DefaultSearchProviderEnabled'.</translation>
 <translation id="1852294065645015766">Cho phép tự động phát nội dung nghe nhìn</translation>
-<translation id="1857152770025485173">Chính sách này ngăn người dùng tải trang web từ các URL có trong danh sách cấm. Danh sách cấm cung cấp một danh sách các mẫu URL cho biết URL nào bị cấm.
-
-      Bạn phải định dạng mẫu URL theo định dạng trên trang web https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Bạn có thể xác định các trường hợp ngoại lệ trong chính sách về danh sách URL được cho phép. Những chính sách này chỉ giới hạn trong 1000 mục; các mục sau đó sẽ bị bỏ qua.
-
-      Lưu ý rằng bạn không nên chặn các URL 'chrome://*' nội bộ vì điều này có thể dẫn đến các lỗi không mong muốn.
-
-      Bạn có thể chặn các URL 'javascript://*' từ M73. Tuy nhiên, chính sách này chỉ ảnh hưởng đến JavaScript đã nhập trong thanh địa chỉ (hoặc các bookmarklet). Lưu ý rằng, nếu dữ liệu được tải động thì các URL JavaScript trong trang không phải tuân theo chính sách này. Ví dụ: nếu bạn chặn 'example.com/abc', thì trang 'example.com' sẽ vẫn có thể tải 'example.com/abc' qua XMLHTTPRequest.
-
-      Nếu bạn không đặt chính sách này, thì không có URL nào sẽ bị đưa vào danh sách cấm trong trình duyệt.</translation>
 <translation id="1859859319036806634">Cảnh báo: Phiên bản dự phòng TLS sẽ bị xóa khỏi <ph name="PRODUCT_NAME" /> sau phiên bản 52 (khoảng tháng 9 năm 2016) và chính sách này sẽ ngừng hoạt động ngay sau đó.
 
       Khi không kết hợp được qua TLS, trước đó <ph name="PRODUCT_NAME" /> sẽ thử kết nối lại với phiên bản TLS thấp hơn để khắc phục các lỗi trong máy chủ HTTPS. Cài đặt này sẽ định cấu hình phiên bản mà tại đó quá trình dự phòng này sẽ ngừng. Nếu máy chủ thực hiện đúng cách việc dàn xếp phiên bản (tức là không phá vỡ kết nối) thì cài đặt này sẽ không áp dụng. Tuy nhiên, kết nối đầu ra vẫn phải tuân thủ SSLVersionMin.
@@ -544,22 +525,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
           Tính năng này hiện bị tắt phía máy chủ.</translation>
 <translation id="1919802376548418720">Sử dụng chính sách KDC để ủy quyền thông tin xác thực.</translation>
 <translation id="1920046221095339924">Cho phép phiên được quản lý trên thiết bị</translation>
-<translation id="1929709556673267855">Cung cấp cấu hình máy in dành cho doanh nghiệp được kết nối với các thiết bị.
-
-      Chính sách này cho phép bạn cung cấp cấu hình máy in cho các thiết bị <ph name="PRODUCT_OS_NAME" />.  Định dạng này giống với định dạng của từ điển NativePrinters với trường "id" hoặc "guid" bổ sung bắt buộc trên mỗi máy in để đưa vào danh sách cho phép hoặc danh sách cấm.
-
-      Kích thước tệp không được vượt quá 5MB và phải được mã hóa ở định dạng JSON.  Theo ước tính, tệp có chứa khoảng 21.000 máy in sẽ mã hóa dưới dạng tệp 5MB.  Hàm băm mật mã được sử dụng để xác minh tính toàn vẹn của nội dung tải xuống.
-
-      Tệp sẽ được tải xuống và lưu vào bộ nhớ đệm. Bất cứ khi nào URL hoặc hàm băm thay đổi thì tệp này sẽ được tải xuống lại.
-
-      Nếu bạn đặt chính sách này, <ph name="PRODUCT_OS_NAME" /> sẽ tải tệp cấu hình máy in xuống và cung cấp các máy in theo đúng <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_WHITELIST" /> và <ph name="DEVICE_PRINTERS_BLACKLIST" />.
-
-      Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu hình máy in trên từng thiết bị hay không.  Chính sách này nhằm bổ sung cho cấu hình của các máy in theo từng người dùng.
-
-      Chính sách này bổ sung cho <ph name="BULK_PRINTERS_POLICY" />.
-
-      Nếu chưa đặt chính sách này thì bạn sẽ không được bỏ qua máy in được kết nối với thiết bị cũng như các chính sách <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> khác.
-      </translation>
 <translation id="1930127294345368978">Số trang tính tối đa được phép sử dụng cho một lệnh in</translation>
 <translation id="193259052151668190">Danh sách cho phép các thiết bị USB có thể tách</translation>
 <translation id="1933378685401357864">Hình nền</translation>
@@ -1249,12 +1214,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn không đặt chính sách này, thì sẽ không có độ dài tối đa nào được thực thi.</translation>
 <translation id="2838830882081735096">Không cho phép di chuyển dữ liệu và ARC</translation>
 <translation id="2839294585867804686">Tùy chọn cài đặt tính năng Chia sẻ tệp trong mạng</translation>
-<translation id="2840269525054388612">Chỉ định các máy in mà người dùng có thể sử dụng.
-
-      Chỉ dùng chính sách này nếu đã chọn <ph name="PRINTERS_WHITELIST" /> cho <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
-
-      Nếu bạn sử dụng chính sách này thì chỉ những máy in có id khớp với các giá trị trong chính sách này mới được cung cấp cho người dùng. Các id này phải tương ứng với các trường "id" hoặc "guid" trong tệp đã chỉ định trong <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="284288632677954003">URL của một tệp XML chứa các URL sẽ không bao giờ kích hoạt quá trình chuyển trình duyệt.</translation>
 <translation id="2854607717796010700">Báo cáo thông tin về bộ nhớ của thiết bị.
 
@@ -1473,13 +1432,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3143265893557969814">Nếu bạn đặt chính sách này thì tất cả các loại dữ liệu đã chỉ định sẽ bị loại trừ khỏi cả quá trình đồng bộ hóa của Google Sync lẫn quá trình đồng bộ hóa cấu hình chuyển vùng. Điều này có thể giúp giảm kích thước của cấu hình chuyển vùng hoặc giới hạn loại dữ liệu đã tải lên các máy chủ Google Sync.
 
       Chính sách này hiện áp dụng cho các loại dữ liệu sau: "bookmarks", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs", "wifiConfigurations". Tên của các loại dữ liệu đó phân biệt chữ hoa chữ thường!</translation>
-<translation id="3148152738273574834">Việc đặt chính sách này sẽ chỉ định danh sách các trang web được cài đặt tự động mà không cần sự can thiệp của người dùng và các trang web mà người dùng không thể gỡ cài đặt hay tắt đi.
-
-      Mỗi mục trong danh sách của chính sách này là một đối tượng chứa một thành phần bắt buộc: <ph name="URL_LABEL" /> (URL của ứng dụng web sẽ cài đặt) và 2 thành phần không bắt buộc: <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (về cách mở ứng dụng web – mặc định là một thẻ mới) và <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> (là True nếu tạo lối tắt trên màn hình <ph name="LINUX_OS_NAME" /> và Windows®).
-
-      Người dùng có thể thay đổi việc ứng dụng mở trong vùng chứa nào và bỏ qua lối tắt trên màn hình.
-
-      Xem <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> để biết cách ghim ứng dụng vào kệ <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3152425128389603870">Cho phép Màn hình hợp nhất và chính sách này bật theo mặc định.</translation>
 <translation id="3159375329008977062">Người dùng được phép xuất/nhập các vùng chứa Crostini qua giao diện người dùng</translation>
 <translation id="3165808775394012744">Những chính sách này được đưa vào đây để dễ xóa.</translation>
@@ -2694,11 +2646,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Nếu bạn đặt chính sách này thành true, thì tên kiểu máy, cấu trúc và tốc độ xung nhịp tối đa của mỗi CPU sẽ
       được báo cáo.</translation>
 <translation id="5124368997194894978">Bật tính năng khởi động trên AC (dòng điện xoay chiều)</translation>
-<translation id="5131211790949066746">Cho phép hợp nhất các chính sách trong danh sách cài đặt tiện ích <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> và <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
-
-      Nếu bạn bật tùy chọn cài đặt này, thì các giá trị từ chính sách nền tảng của máy, chính sách đám mây của máy cũng như chính sách nền tảng của người dùng sẽ được hợp nhất thành một danh sách và được sử dụng toàn bộ thay vì chỉ sử dụng các giá trị từ một nguồn có mức ưu tiên cao nhất.
-
-      Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, thì chỉ các mục danh sách từ nguồn có mức ưu tiên cao nhất mới được sử dụng, còn tất cả các nguồn khác sẽ hiển thị dưới dạng nguồn xung đột nhưng bị bỏ qua.</translation>
 <translation id="513798533865657610">Tính năng tự động gửi mã PIN thay đổi cách nhập mã PIN trên Chrome OS.
           Thay vì hiển thị cùng một trường văn bản dùng để nhập mật khẩu, tính năng này
           hiển thị một giao diện người dùng đặc biệt để cho người dùng biết rõ cần bao nhiêu
@@ -2760,7 +2707,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Bạn chỉ có thể đặt chính sách này trên Bảng điều khiển dành cho quản trị viên của Google.</translation>
 <translation id="5182055907976889880">Định cấu hình Google Drive trong <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="5182483318861266793">Đặt giá ở bên phải màn hình</translation>
-<translation id="5183383917553127163">Cho phép bạn chỉ định các tiện ích không thuộc danh sách đen. Giá trị danh sách đen là * có nghĩa là tất cả tiện ích đều được đưa vào danh sách đen và người dùng chỉ có thể cài đặt các tiện ích trong danh sách trắng. Theo mặc định, tất cả tiện ích đều được đưa vào danh sách trắng nhưng nếu tất cả tiện ích đều đã được đưa vào danh sách đen theo chính sách thì có thể sử dụng danh sách trắng để ghi đè chính sách đó.</translation>
 <translation id="519247340330463721">Định cấu hình các chính sách liên quan đến Duyệt web an toàn.</translation>
 <translation id="5196520640744454600">Bật phím cố định trên màn hình đăng nhập</translation>
 <translation id="5196805177499964601">Chặn chế độ của nhà phát triển.
@@ -2776,12 +2722,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="5212810195096589189">Chỉ định quyền của CLI máy ảo</translation>
 <translation id="5213038356678567351">Các trang web sẽ không bao giờ kích hoạt quá trình chuyển trình duyệt.</translation>
 <translation id="5219844027738217407">Đối với các ứng dụng Android, chính sách này chỉ ảnh hưởng đến micrô. Khi chính sách này được đặt thành true, micrô sẽ bị tắt tiếng cho tất cả ứng dụng Android mà không có ngoại lệ nào.</translation>
-<translation id="5220124265517241823">Danh sách mẫu URL không cần phải kiểm tra xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không đối với tệp đã tải lên, dữ liệu được dán từ khay nhớ tạm hoặc dữ liệu được kéo và thả.  Chỉ dùng chính sách này nếu bạn đặt <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> thành bật.
-
-      Nếu bạn không đặt hoặc đặt chính sách này thành danh sách mẫu URL trống, thì tất cả nội dung sẽ được kiểm tra để xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không.
-
-      Các mẫu URL có cùng định dạng với chính sách 'URLBlacklist' được nêu tại https://www.chromium.org/administrators/url-blacklist-filter-format.
-      </translation>
 <translation id="5228316810085661003">Độ trễ của tính năng tự động đăng nhập vào tài khoản trên thiết bị.
 
       Nếu chưa đặt chính sách |DeviceLocalAccountAutoLoginId|, thì chính sách này sẽ không có hiệu lực. Ngược lại:
@@ -3199,12 +3139,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
           Khi bạn không đặt chính sách này, hành động mặc định là tạm ngưng sẽ được thực hiện.
 
           Nếu hành động là tạm ngưng, bạn có thể định cấu hình <ph name="PRODUCT_OS_NAME" /> một cách riêng biệt thành khóa hoặc không khóa màn hình trước khi tạm ngưng.</translation>
-<translation id="5746196829700407864">Không cần kiểm tra danh sách các mẫu URL mà nội dung được tải xuống từ đó để xem có phần mềm độc hại hay không.  Chỉ dùng chính sách này nếu bạn đặt <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> thành giá trị cho phép hoặc thực hiện quá trình kiểm tra phần mềm độc hại đối với các tệp đã tải xuống.
-
-      Nếu bạn không đặt hoặc đặt chính sách này thành danh sách mẫu URL trống, thì mọi nội dung đã tải xuống đều được kiểm tra xem có phần mềm độc hại hay không.
-
-      Các mẫu URL có cùng định dạng với chính sách 'URLBlacklist' được nêu tại https://www.chromium.org/administrators/url-blacklist-filter-format.
-      </translation>
 <translation id="574983287620584622">Bật phím tắt của tính năng hỗ trợ tiếp cận trên màn hình đăng nhập</translation>
 <translation id="5755002458331714762"> Các API Thành phần web phiên bản 0 (Shadow DOM v0, Custom Elements v0 và HTML Imports) đã ngừng hoạt động vào năm 2018 và bị tắt theo mặc định kể từ M80. Theo chính sách này, bạn có thể lựa chọn (các) tính năng nào trong số này sẽ bật lại cho đến M84.
 
@@ -3741,12 +3675,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
           Nếu đặt thành sai hoặc không định cấu hình, tính năng tạo và đăng nhập tài khoản người dùng bị giám sát sẽ bị tắt. Tất cả tài khoản người dùng bị giám sát hiện có sẽ bị ẩn.
 
           LƯU Ý: Chế độ mặc định đối với các thiết bị dành cho người tiêu dùng và doanh nghiệp khác nhau: trên thiết bị dành cho người tiêu dùng, tài khoản người dùng bị giám sát được bật theo mặc định nhưng trên thiết bị dành cho doanh nghiệp, các tài khoản này được tắt theo mặc định.</translation>
-<translation id="6649397154027560979">Chính sách này không còn được dùng nữa, thay vào đó hãy sử dụng URLBlacklist.
-
-      Tắt các lược đồ giao thức được liệt kê trong <ph name="PRODUCT_NAME" />.
-
-      Không thể tải và điều hướng đến URL sử dụng lược đồ từ danh sách này.
-      Nếu không đặt chính sách này hoặc danh sách trống, tất cả lược đồ sẽ có thể truy cập được trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Cài đặt người dùng được quản lý cục bộ</translation>
 <translation id="6658129069061688328">Nếu bạn đặt chính sách này thành True, thì các đề xuất ứng dụng sẽ xuất hiện trong nội dung tìm kiếm ở trạng thái 0. Nếu bạn đặt chính sách này thành False, thì các đề xuất này sẽ không xuất hiện.
 
@@ -4248,12 +4176,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="749556411189861380">Báo cáo phiên bản hệ điều hành và chương trình cơ sở của thiết bị đã đăng ký.
 
       Nếu cài đặt này không được đặt hoặc được đặt thành Đúng, các thiết bị đã đăng ký sẽ báo cáo định kỳ phiên bản hệ điều hành và chương trình cơ sở. Nếu cài đặt này được đặt thành Sai, thông tin phiên bản sẽ không được báo cáo.</translation>
-<translation id="7498946151094347510">Chỉ định các máy in mà người dùng không thể sử dụng.
-
-      Chỉ sử dụng chính sách này nếu đã chọn <ph name="PRINTERS_BLACKLIST" /> cho <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
-
-      Nếu bạn sử dụng chính sách này thì tất cả các máy in sẽ được cung cấp cho người dùng ngoại trừ những id được liệt kê trong chính sách này. Các id này phải tương ứng với các trường "id" hoặc "guid" trong tệp đã chỉ định trong <ph name="DEVICE_PRINTERS_POLICY" />.
-      </translation>
 <translation id="7506758875409719208">Định cấu hình tên miền của ứng dụng bắt buộc sẽ được áp dụng trên các ứng dụng truy cập từ xa và ngăn người dùng thay đổi tên miền này.
 
           Nếu bạn bật và đặt tùy chọn cài đặt này cho một hoặc nhiều miền, thì chỉ những ứng dụng từ một trong số miền đã chỉ định này mới có thể kết nối với máy chủ.
@@ -4288,12 +4210,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Nếu bạn đặt thành False, các bản cập nhật thành phần sẽ bị tắt. Tuy nhiên, chính sách này không áp dụng cho một số thành phần: các bản cập nhật cho bất kỳ thành phần nào không chứa mã thực thi hoặc không làm thay đổi đáng kể hoạt động của trình duyệt hay có ý nghĩa quan trọng đối với tính bảo mật của trình duyệt sẽ không bị tắt.
       Ví dụ về các thành phần như vậy gồm có danh sách thu hồi chứng chỉ và dữ liệu Duyệt web an toàn.
       Truy cập vào https://developers.google.com/safe-browsing để biết thêm thông tin về dịch vụ Duyệt web an toàn.</translation>
-<translation id="75599127817486754">Danh sách mẫu URL cần phải kiểm tra nội dung đã tải lên để xem có chứa phần mềm độc hại hay không.  Chỉ dùng chính sách này nếu bạn đặt <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> thành giá trị cho phép hoặc thực thi quá trình kiểm tra để phát hiện phần mềm độc hại đối với nội dung đã tải lên.
-
-      Nếu bạn không đặt hoặc đặt chính sách này thành danh sách mẫu URL trống, thì sẽ không có nội dung đã tải lên nào được kiểm tra để xem có chứa phần mềm độc hại hay không.
-
-      Các mẫu URL có cùng định dạng với chính sách 'URLBlacklist' được nêu tại https://www.chromium.org/administrators/url-blacklist-filter-format.
-      </translation>
 <translation id="7566878661979235378">Loại xác thực đăng nhập SAML</translation>
 <translation id="7567373982693549834">Chính sách này kiểm soát việc sử dụng ứng dụng Android từ những nguồn không tin cậy (không phải là Cửa hàng Google Play) của từng người dùng.
 
@@ -4729,17 +4645,6 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
 
           Nếu bạn không đặt chính sách này, thì ban đầu, tính năng làm nổi bật con trỏ sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="8171924760436219650">Chuyển nút chuột chính thành nút phải trên màn hình đăng nhập</translation>
-<translation id="817455428376641507">Cho phép truy cập vào các URL đã liệt kê, ngoại trừ danh sách đen URL.
-
-      Xem mô tả về chính sách danh sách đen URL để biết định dạng của các mục nhập trong danh sách này.
-
-      Có thể sử dụng chính sách này để mở ngoại lệ ra danh sách đen giới hạn. Ví dụ: '*' có thể bị liệt vào danh sách đen để chặn tất cả các yêu cầu và có thể sử dụng chính sách này để cho phép truy cập vào danh sách các URL giới hạn. Có thể sử dụng chính sách này để mở ngoại lệ ra các giao thức nhất định, miền phụ của các miền khác, cổng hoặc đường dẫn cụ thể.
-
-      Bộ lọc cụ thể nhất sẽ xác định xem URL bị chặn hay được cho phép. Danh sách trắng được ưu tiên hơn so với danh sách đen.
-
-      Chính sách này được giới hạn đến 1000 mục nhập; các mục nhập tiếp theo sẽ bị bỏ qua.
-
-      Nếu không thiết lập chính sách này, sẽ không có ngoại lệ nào cho danh sách đen từ chính sách 'URLBlacklist'.</translation>
 <translation id="8176035528522326671">Cho phép người dùng doanh nghiệp trở thành người dùng chính duy nhất có nhiều hồ sơ (Hành vi mặc định cho người dùng do doanh nghiệp quản lý)</translation>
 <translation id="8183108371184777472">Ngăn cửa sổ trình duyệt chạy</translation>
 <translation id="8186911565834244165">Cho phép người dùng phản hồi</translation>
@@ -4840,15 +4745,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Giá trị của chính sách phải được chỉ định theo mili giây.</translation>
 <translation id="8331479227794770304">Bật phím cố định</translation>
-<translation id="8338124703579032277">Cho phép bạn thiết lập danh sách các giao thức (và danh sách liên kết gồm các mẫu nguồn được phép cho mỗi giao thức) có thể chạy một ứng dụng bên ngoài mà không cần nhắc người dùng. Bạn không được thêm dấu phân cách ở phần cuối khi liệt kê giao thức, vì vậy, hãy liệt kê là "skype" thay cho "skype:" hoặc "skype://".
-
-      Nếu bạn đặt chính sách này, thì một giao thức sẽ chỉ được phép chạy một ứng dụng bên ngoài mà không cần nhắc theo chính sách khi giao thức đó được liệt kê, và nguồn của trang web đang cố chạy giao thức khớp với một trong các mẫu nguồn thuộc danh sách allowed_origins của giao thức đó. Nếu bạn đặt một trong hai điều kiện thành false, thì chính sách sẽ không bỏ qua lời nhắc chạy giao thức bên ngoài.
-
-      Nếu bạn không đặt chính sách này, thì không giao thức nào có thể chạy khi không có lời nhắc theo mặc định. Người dùng có thể chọn không nhận lời nhắc theo từng giao thức/từng trang web trừ khi bạn đặt chính sách <ph name="EXTERNAL_PROTOCOL_DIALOG_SHOW_ALWAYS_OPEN_CHECKBOX_POLICY_NAME" /> thành Tắt. Chính sách này sẽ không ảnh hưởng đến các trường hợp miễn trừ theo từng giao thức/từng trang web do người dùng đặt.
-
-      Mẫu so khớp nguồn sẽ có định dạng giống với các mẫu của chính sách 'URLBlacklist' nêu tại http://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Tuy nhiên, các mẫu so khớp nguồn của chính sách này không được chứa các thành phần "/path" hoặc "@query". Mọi mẫu chứa thành phần "/path" hoặc "@query" đều bị bỏ qua.</translation>
 <translation id="8339420913453596618">Đã tắt hai yếu tố</translation>
 <translation id="8344454543174932833">Nhập dấu trang từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
 <translation id="8347993687936322631">Lưu ý rằng chúng tôi không dùng chính sách này nữa và sẽ xóa khỏi <ph name="PRODUCT_OS_NAME" /> phiên bản 85. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
@@ -5240,12 +5136,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       sẽ được báo cáo.</translation>
 <translation id="891435090623616439">được mã hóa dưới dạng chuỗi JSON, để biết chi tiết hãy xem <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Cho phép người dùng quản lý các chứng chỉ CA đã cài đặt.</translation>
-<translation id="8934944553121392674">Kiểm soát máy in người dùng được phép sử dụng từ <ph name="DEVICE_PRINTERS_POLICY" />.
-
-      Chỉ định chính sách truy cập dùng cho cấu hình máy in số lượng lớn. Nếu bạn chọn <ph name="PRINTERS_ALLOW_ALL" />, thì tất cả máy in sẽ hiển thị. Nếu bạn chọn <ph name="PRINTERS_BLACKLIST" />, thì <ph name="DEVICE_PRINTERS_BLACKLIST" /> sẽ dùng để hạn chế truy cập vào các máy in đã chỉ định. Nếu bạn chọn <ph name="PRINTERS_WHITELIST" />, thì <ph name="DEVICE_PRINTERS_WHITELIST" /> sẽ chỉ chỉ định những máy in có thể chọn được.
-
-      Nếu bạn chưa đặt chính sách này, thì <ph name="PRINTERS_ALLOW_ALL" /> sẽ là tùy chọn mặc định.
-      </translation>
 <translation id="8937282917198525844"> Kể từ phiên bản M81, các thành phần điều khiển biểu mẫu tiêu chuẩn (ví dụ: &lt;select&gt;, &lt;button&gt;, &lt;input type=date&gt;) đều có giao diện mới, với khả năng tiếp cận tốt hơn và nền tảng đồng nhất hơn. Chính sách này khôi phục các thành phần điều khiển biểu mẫu "cũ" cho đến phiên bản M84.
 
       Nếu bạn đặt chính sách này thành True, thì các thành phần điều khiển biểu mẫu "cũ" sẽ được dùng cho tất cả các trang web.
@@ -5348,9 +5238,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Bạn nên chỉ định giá trị tính bằng giây cho chính sách này.</translation>
 <translation id="9021334785554745279">Các mẫu URL cần phải kiểm tra nội dung đã tải xuống để xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không</translation>
-<translation id="9030094532108679680">Nếu đặt chính sách này (chỉ khi khuyên dùng), thì bạn có thể đăng ký danh sách các trình xử lý giao thức (sẽ hợp nhất với các trình xử lý giao thức mà người dùng đăng ký) để đưa vào sử dụng. Hãy đặt thuộc tính (giao thức) thành lược đồ, chẳng hạn như mailto, và đặt thuộc tính (URL) thành mẫu URL của ứng dụng xử lý lược đồ đó. Mẫu này có thể bao gồm %s, sẽ thay bằng URL đã xử lý.
-
-      Người dùng không thể xóa trình xử lý giao thức do chính sách đăng ký. Tuy nhiên, họ có thể thay đổi các trình xử lý giao thức do chính sách cài đặt bằng cách cài đặt một trình xử lý mặc định mới.</translation>
 <translation id="9035086760683255833">Bật tính năng hỗ trợ tiếp cận về làm nổi bật tiêu điểm bằng bàn phím.
 
           Tính năng này giúp bạn làm nổi bật đối tượng có tiêu điểm bằng bàn phím.
@@ -5453,12 +5340,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu bạn không đặt hoặc đặt chính sách này thành một danh sách trống, thì người dùng có thể chỉ định các ngôn ngữ mà họ muốn dùng.
 
       Nếu bạn đặt chính sách này thành một danh sách chứa các giá trị không hợp lệ, thì các giá trị đó sẽ bị bỏ qua. Nếu người dùng thêm những ngôn ngữ mà chính sách này không cho phép vào danh sách ngôn ngữ mà họ muốn dùng, thì các ngôn ngữ đó sẽ bị xóa. Nếu <ph name="PRODUCT_OS_NAME" /> hiển thị bằng ngôn ngữ mà chính sách này không cho phép, thì vào lần tiếp theo họ đăng nhập, ngôn ngữ hiển thị sẽ chuyển sang ngôn ngữ mà giao diện người dùng được phép sử dụng. Nếu không, trong trường hợp chính sách này chỉ chứa các mục nhập không hợp lệ, <ph name="PRODUCT_OS_NAME" /> sẽ chuyển sang giá trị hợp lệ đầu tiên mà chính sách này chỉ định hoặc một ngôn ngữ dự phòng như en-US.</translation>
-<translation id="9156175786579877198">Danh sách mẫu URL cần phải kiểm tra nội dung đã tải xuống để xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không trước khi lưu trên bộ nhớ cục bộ.  Chỉ dùng chính sách này nếu bạn đặt <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> thành bật.
-
-      Nếu bạn không đặt hoặc đặt chính sách này thành danh sách mẫu URL trống, thì nội dung đã tải xuống sẽ không được kiểm tra để xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không.
-
-      Các mẫu URL có cùng định dạng với chính sách 'URLBlacklist' được nêu tại https://www.chromium.org/administrators/url-blacklist-filter-format.
-      </translation>
 <translation id="9159126470527871268">Thông báo cho người dùng biết phải chạy lại <ph name="PRODUCT_NAME" /> hoặc khởi động lại <ph name="PRODUCT_OS_NAME" /> để áp dụng bản cập nhật đang chờ xử lý.
 
       Tùy chọn cài đặt chính sách này sẽ bật thông báo nhắc nhở người dùng rằng họ cần hoặc bắt buộc phải chạy lại trình duyệt hoặc khởi động lại thiết bị. Nếu bạn không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cho người dùng biết rằng họ cần chạy lại thông qua các thay đổi nhỏ đối với menu của sản phẩm, trong khi <ph name="PRODUCT_OS_NAME" /> cho biết điều đó thông qua thông báo trong khay hệ thống. Nếu bạn đặt chính sách thành 'Đề xuất', một cảnh báo lặp lại sẽ hiển thị cho người dùng biết rằng họ nên chạy lại. Người dùng có thể bỏ qua cảnh báo này để hoãn việc chạy lại. Nếu bạn đặt chính sách thành 'Bắt buộc', một cảnh báo lặp lại sẽ hiển thị cho người dùng biết rằng họ bắt buộc phải chạy lại trình duyệt sau khi hết khoảng thời gian thông báo. Khoảng thời gian này mặc định là 7 ngày đối với <ph name="PRODUCT_NAME" /> và 4 ngày đối với <ph name="PRODUCT_OS_NAME" /> và có thể định cấu hình thông qua phần cài đặt chính sách <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.

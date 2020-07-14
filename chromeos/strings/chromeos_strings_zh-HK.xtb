@@ -71,6 +71,7 @@
 <translation id="808894953321890993">變更密碼</translation>
 <translation id="8208861521865154048">獎賞</translation>
 <translation id="8347227221149377169">列印工作</translation>
+<translation id="8623849191266582420">此 <ph name="DEVICE_TYPE" /> 由 <ph name="ENROLLMENT_DOMAIN" /> 管理。管理員可能會遠端設定和監察裝置。</translation>
 <translation id="8701136875688985581">由 <ph name="ENROLLMENT_DOMAIN" /> 管理這位使用者，因此可能會從遠端管理設定並監察用戶活動。</translation>
 <translation id="871560550817059752">失敗 - 墨水已用完</translation>
 <translation id="8747900814994928677">確認變更</translation>

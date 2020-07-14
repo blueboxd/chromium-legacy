@@ -25,6 +25,7 @@
 <translation id="169515064810179024">سایت‌ها نمی‌توانند به حسگرهای حرکتی دسترسی داشته باشند</translation>
 <translation id="1717218214683051432">حسگرهای حرکتی</translation>
 <translation id="1743802530341753419">قبل از اجازه دادن به سایت‌ها برای اتصال به دستگاه سؤال شود (توصیه می‌شود)</translation>
+<translation id="1818308510395330587">‏برای اینکه به <ph name="APP_NAME" /> اجازه دهید از AR استفاده کند، دوربین را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> نیز روشن کنید.</translation>
 <translation id="1887786770086287077">‏دسترسی به مکان برای این دستگاه خاموش است. آن را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="1919345977826869612">آگهی‌ها</translation>
 <translation id="1923695749281512248">‎<ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" />‎</translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">امروز</translation>
 <translation id="2182457891543959921">قبل از اینکه به سایت‌ها اجازه داده شود نقشه سه‌بعدی از محیط ایجاد کنند یا موقعیت دوربین را ردیابی کنند سؤال شود (توصیه می‌شود)</translation>
 <translation id="2212565012507486665">مجاز کردن کوکی ها</translation>
+<translation id="2228071138934252756">‏برای اینکه به <ph name="APP_NAME" /> اجازه دهید به دوربین دسترسی پیدا کند، دوربین را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> نیز روشن کنید.</translation>
 <translation id="2289270750774289114">وقتی سایتی می‌خواهد دستگا‌ه‌های بلوتوث اطراف را پیدا کند، سؤال شود (توصیه می‌شود)</translation>
 <translation id="2315043854645842844">انتخاب گواهی سمت کلاینت توسط سیستم‌عامل پشتیبانی نمی‌شود.</translation>
 <translation id="2359808026110333948">ادامه</translation>
@@ -56,6 +58,7 @@
 <translation id="2586657967955657006">بریده‌دان</translation>
 <translation id="2621115761605608342">جاوااسکریپت را برای سایتی خاص مجاز کنید.</translation>
 <translation id="2653659639078652383">ارائه</translation>
+<translation id="2677748264148917807">خروج</translation>
 <translation id="2687403674020088961">مسدود کردن همه کوکی‌ها (توصیه نمی‌شود)</translation>
 <translation id="2704606927547763573">کپی شد</translation>
 <translation id="2822354292072154809">مطمئن‌اید می‌خواهید همه مجوزهای سایت مربوط به <ph name="CHOSEN_OBJECT_NAME" /> را بازنشانی کنید؟</translation>
@@ -69,6 +72,7 @@
 <translation id="3115898365077584848">نمایش دادن اطلاعات</translation>
 <translation id="3123473560110926937">در برخی سایت‌ها مسدود می‌شود</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> داده‌های ذخیره شده</translation>
+<translation id="321187648315454507">‏برای اینکه به <ph name="APP_NAME" /> اجازه دهید برایتان اعلان ارسال کند، اعلان‌ها را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> نیز روشن کنید.</translation>
 <translation id="3227137524299004712">میکروفن</translation>
 <translation id="3277252321222022663">مجاز بودن دسترسی سایت‌ها به حسگرها (توصیه می‌شود)</translation>
 <translation id="3295602654194328831">پنهان کردن اطلاعات</translation>
@@ -100,6 +104,7 @@
 <translation id="445467742685312942">به سایت‌ها اجازه داده شود محتوای محافظت‌شده پخش کنند</translation>
 <translation id="4468959413250150279">سایتی خاص بی‌صدا شود.</translation>
 <translation id="4479647676395637221">قبل از اجازه به سایت‌ها برای استفاده از دوربین، ابتدا سؤال شود (توصیه می‌شود)</translation>
+<translation id="4534723447064627427">‏برای اینکه به <ph name="APP_NAME" /> اجازه دهید به میکروفون دسترسی پیدا کند، میکروفون را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> نیز روشن کنید.</translation>
 <translation id="4570913071927164677">جزئیات</translation>
 <translation id="4645575059429386691">مدیریت شده توسط والدین شما</translation>
 <translation id="4670064810192446073">واقعیت مجازی</translation>
@@ -122,6 +127,7 @@
 <translation id="5335288049665977812">مجاز کردن همه سایت‌ها برای اجرای جاوااسکریپت (توصیه‌ می‌شود)</translation>
 <translation id="534295439873310000">‏دستگاه‌های NFC</translation>
 <translation id="5354152178998424783">با این کار <ph name="DATASIZE" /> از داده‌ها و کوکی‌هایی که سایت ذخیره کرده است پاک خواهد شد.</translation>
+<translation id="5384883051496921101">این سایت می‌خواهد خارج از حالت ناشناس، اطلاعاتی را با برنامه‌ای به اشتراک بگذارد.</translation>
 <translation id="5391532827096253100">اتصال شما به این سایت امن نیست. اطلاعات سایت</translation>
 <translation id="5494752089476963479">آگهی سایت‌هایی که آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهند، مسدود می‌شود</translation>
 <translation id="5505264765875738116">سایت‌ها نمی‌توانند برای ارسال اعلان درخواست دهند</translation>
@@ -161,6 +167,7 @@
 <translation id="6561560012278703671">استفاده از پیام‌رسانی کم‌صداتر (درخواست‌های اعلان را مسدود می‌کند تا مزاحمتان نشود)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> گیگابایت</translation>
 <translation id="6612358246767739896">محتوای محافظت‌شده</translation>
+<translation id="662080504995468778">ماندن</translation>
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="6697925417670533197">بارگیری‌های فعال</translation>
 <translation id="6746124502594467657">انتقال به پایین</translation>
@@ -224,6 +231,7 @@
 <translation id="8394832520002899662">برای برگشتن به سایت ضربه بزنید</translation>
 <translation id="8425213833346101688">تغییر</translation>
 <translation id="8441146129660941386">جستجو به عقب</translation>
+<translation id="8444433999583714703">‏برای اینکه به <ph name="APP_NAME" /> اجازه دهید به مکانتان دسترسی پیدا کند، مکان را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> نیز روشن کنید.</translation>
 <translation id="8447861592752582886">لغو مجوز دستگاه</translation>
 <translation id="8463851957836045671">سایت سریع است</translation>
 <translation id="851751545965956758">مسدود کردن سایت‌ها برای اتصال به دستگاه‌ها</translation>
@@ -231,6 +239,7 @@
 <translation id="8609465669617005112">انتقال به بالا</translation>
 <translation id="8676374126336081632">پاک کردن ورودی</translation>
 <translation id="8702612070107455751">همه داده‌های آفلاین پاک خواهند شد.</translation>
+<translation id="8719283222052720129">‏اجازه <ph name="APP_NAME" /> را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8730621377337864115">تمام</translation>
 <translation id="8737217482364735741">با این کار همه داده‌ها و کوکی‌های ذخیره‌شده توسط <ph name="ORIGIN" /> پاک می‌شود.</translation>
@@ -241,10 +250,12 @@
 <translation id="8926666909099850184">‏NFC برای این دستگاه خاموش است. در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> آن را روشن کنید.</translation>
 <translation id="8929372349074745002">این سایت برای اکثر افراد سریع باز می‌شود و پاسخ می‌دهد</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">از حالت ناشناس خارج می‌شوید؟</translation>
 <translation id="8958424370300090006">کوکی‌ها را برای سایت خاصی مسدود کنید.</translation>
 <translation id="8959122750345127698">پیمایش غیرقابل دسترسی است: <ph name="URL" /></translation>
 <translation id="9019902583201351841">مدیریت شده توسط والدین شما</translation>
 <translation id="9074739597929991885">بلوتوث</translation>
+<translation id="913657688200966289">‏اجازه‌های <ph name="APP_NAME" /> را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="945632385593298557">دسترسی به میکروفن</translation>
 <translation id="965817943346481315">اگر سایتْ آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهد مسدود شود (توصیه می‌شود)</translation>
 </translationbundle>

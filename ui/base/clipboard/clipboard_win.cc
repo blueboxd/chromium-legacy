@@ -30,6 +30,7 @@
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 #include "ui/base/clipboard/clipboard_metrics.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -508,8 +509,12 @@ void ClipboardWin::ReadData(const ClipboardFormatType& format,
   ::GlobalUnlock(data);
 }
 
-void ClipboardWin::WritePortableRepresentations(ClipboardBuffer buffer,
-                                                const ObjectMap& objects) {
+// |data_src| is not used. It's only passed to be consistent with other
+// platforms.
+void ClipboardWin::WritePortableRepresentations(
+    ClipboardBuffer buffer,
+    const ObjectMap& objects,
+    std::unique_ptr<ClipboardDataEndpoint> data_src) {
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 
   ScopedClipboard clipboard;
@@ -522,9 +527,12 @@ void ClipboardWin::WritePortableRepresentations(ClipboardBuffer buffer,
     DispatchPortableRepresentation(object.first, object.second);
 }
 
+// |data_src| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardWin::WritePlatformRepresentations(
     ClipboardBuffer buffer,
-    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+    std::vector<Clipboard::PlatformRepresentation> platform_representations,
+    std::unique_ptr<ClipboardDataEndpoint> data_src) {
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 
   ScopedClipboard clipboard;

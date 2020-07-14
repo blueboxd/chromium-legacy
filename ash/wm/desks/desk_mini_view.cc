@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/wm/desks/close_desk_button.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_name_view.h"
@@ -31,7 +32,8 @@ constexpr int kLabelPreviewSpacing = 4;
 
 constexpr int kCloseButtonMargin = 8;
 
-constexpr SkColor kActiveColor = SK_ColorWHITE;
+constexpr SkColor kDarkModeActiveColor = SK_ColorWHITE;
+constexpr SkColor kLightModeActiveColor = SK_ColorBLACK;
 constexpr SkColor kInactiveColor = SK_ColorTRANSPARENT;
 
 constexpr SkColor kDraggedOverColor = SkColorSetARGB(0xFF, 0x5B, 0xBC, 0xFF);
@@ -125,14 +127,22 @@ void DeskMiniView::OnWidgetGestureTap(const gfx::Rect& screen_rect,
 
 void DeskMiniView::UpdateBorderColor() {
   DCHECK(desk_);
+  auto* color_provider = AshColorProvider::Get();
   if (owner_bar_->dragged_item_over_bar() &&
       IsPointOnMiniView(owner_bar_->last_dragged_item_screen_location())) {
     desk_preview_->SetBorderColor(kDraggedOverColor);
   } else if (IsViewHighlighted()) {
-    desk_preview_->SetBorderColor(gfx::kGoogleBlue300);
+    desk_preview_->SetBorderColor(color_provider->GetControlsLayerColor(
+        AshColorProvider::ControlsLayerType::kFocusRingColor,
+        AshColorProvider::AshColorMode::kDark));
+  } else if (!desk_->is_active()) {
+    desk_preview_->SetBorderColor(kInactiveColor);
   } else {
-    desk_preview_->SetBorderColor(desk_->is_active() ? kActiveColor
-                                                     : kInactiveColor);
+    // Default theme for desks is dark mode.
+    desk_preview_->SetBorderColor(color_provider->color_mode() ==
+                                          AshColorProvider::AshColorMode::kLight
+                                      ? kLightModeActiveColor
+                                      : kDarkModeActiveColor);
   }
 }
 

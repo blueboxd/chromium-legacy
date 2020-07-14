@@ -138,8 +138,8 @@ DesksBarView::DesksBarView(OverviewGrid* overview_grid)
   background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   background_view_->layer()->SetFillsBoundsOpaquely(false);
   background_view_->layer()->SetColor(
-      AshColorProvider::Get()->GetBaseLayerColor(
-          AshColorProvider::BaseLayerType::kTransparent80,
+      AshColorProvider::Get()->GetShieldLayerColor(
+          AshColorProvider::ShieldLayerType::kShield80,
           AshColorProvider::AshColorMode::kDark));
 
   AddChildView(background_view_);

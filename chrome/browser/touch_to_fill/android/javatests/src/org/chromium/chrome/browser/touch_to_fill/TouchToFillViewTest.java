@@ -81,6 +81,7 @@ public class TouchToFillViewTest {
 
     private PropertyModel mModel;
     private TouchToFillView mTouchToFillView;
+    private BottomSheetController mBottomSheetController;
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -90,9 +91,11 @@ public class TouchToFillViewTest {
         MockitoAnnotations.initMocks(this);
         mActivityTestRule.startMainActivityOnBlankPage();
         mModel = TouchToFillProperties.createDefaultModel(mDismissHandler);
+        mBottomSheetController = mActivityTestRule.getActivity()
+                                         .getRootUiCoordinatorForTesting()
+                                         .getBottomSheetController();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mTouchToFillView =
-                    new TouchToFillView(getActivity(), getActivity().getBottomSheetController());
+            mTouchToFillView = new TouchToFillView(getActivity(), mBottomSheetController);
             TouchToFillCoordinator.setUpModelChangeProcessors(mModel, mTouchToFillView);
         });
     }
@@ -340,7 +343,7 @@ public class TouchToFillViewTest {
     }
 
     private @SheetState int getBottomSheetState() {
-        return getActivity().getBottomSheetController().getSheetState();
+        return mBottomSheetController.getSheetState();
     }
 
     private RecyclerView getCredentials() {

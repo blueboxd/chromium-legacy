@@ -31,17 +31,11 @@
 
 namespace blink {
 
-class WebGLTexture final : public WebGLSharedPlatform3DObject {
+class WebGLTexture : public WebGLSharedPlatform3DObject {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   explicit WebGLTexture(WebGLRenderingContextBase*);
-
-  // The provided GLuint must have been created in the same
-  // WebGLRenderingContextBase that is provided.
-  explicit WebGLTexture(WebGLRenderingContextBase* ctx,
-                        GLuint texture,
-                        GLenum target);
 
   ~WebGLTexture() override;
 
@@ -76,6 +70,12 @@ class WebGLTexture final : public WebGLSharedPlatform3DObject {
   bool lastUploadedVideoFrameWasSkipped() const {
     return last_uploaded_video_frame_metadata_.skipped;
   }
+
+ protected:
+  // Constructor for WebGLUnownedTexture.
+  explicit WebGLTexture(WebGLRenderingContextBase* ctx,
+                        GLuint texture,
+                        GLenum target);
 
  private:
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;

@@ -312,7 +312,7 @@ bool ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
 }
 
 // static
-bool ChromeContentBrowserClientExtensionsPart::ShouldLockToOrigin(
+bool ChromeContentBrowserClientExtensionsPart::ShouldLockProcess(
     content::BrowserContext* browser_context,
     const GURL& effective_site_url) {
   if (!effective_site_url.SchemeIs(kExtensionScheme))

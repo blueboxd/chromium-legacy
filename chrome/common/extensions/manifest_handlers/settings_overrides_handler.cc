@@ -115,12 +115,9 @@ std::unique_ptr<ChromeSettingsOverrides::Search_provider> ParseSearchEngine(
 }
 
 std::string FormatUrlForDisplay(const GURL& url) {
-  base::StringPiece host = url.host_piece();
   // A www. prefix is not informative and thus not worth the limited real estate
   // in the permissions UI.
-  // TODO(catmullings): Ideally, we wouldn't be using custom code to format URLs
-  // here, since we have a number of methods that do that more universally.
-  return base::UTF16ToUTF8(url_formatter::StripWWW(base::UTF8ToUTF16(host)));
+  return url_formatter::StripWWW(url.host());
 }
 
 }  // namespace

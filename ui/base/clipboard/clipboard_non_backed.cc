@@ -22,6 +22,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_data.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/clipboard_metrics.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
@@ -41,7 +42,7 @@ const size_t kMaxClipboardSize = 1;
 // conversion, versioning, etc.
 class ClipboardInternal {
  public:
-  ClipboardInternal() : sequence_number_(0) {}
+  ClipboardInternal() = default;
 
   ~ClipboardInternal() = default;
 
@@ -210,7 +211,7 @@ class ClipboardInternal {
   std::list<std::unique_ptr<ClipboardData>> data_list_;
 
   // Sequence number uniquely identifying clipboard state.
-  uint64_t sequence_number_;
+  uint64_t sequence_number_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardInternal);
 };
@@ -218,7 +219,13 @@ class ClipboardInternal {
 // Helper class to build a ClipboardData object and write it to clipboard.
 class ClipboardDataBuilder {
  public:
-  static void CommitToClipboard(ClipboardInternal* clipboard) {
+  // If |data_src| is nullptr, this means that the data source isn't
+  // confidential and the data can be pasted in any document.
+  static void CommitToClipboard(
+      ClipboardInternal* clipboard,
+      std::unique_ptr<ClipboardDataEndpoint> data_src) {
+    ClipboardData* data = GetCurrentData();
+    data->set_source(std::move(data_src));
     clipboard->WriteData(TakeCurrentData());
   }
 
@@ -459,23 +466,27 @@ void ClipboardNonBacked::ReadData(const ClipboardFormatType& format,
 
 void ClipboardNonBacked::WritePortableRepresentations(
     ClipboardBuffer buffer,
-    const ObjectMap& objects) {
+    const ObjectMap& objects,
+    std::unique_ptr<ClipboardDataEndpoint> data_src) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardBuffer(buffer));
   for (const auto& object : objects)
     DispatchPortableRepresentation(object.first, object.second);
-  ClipboardDataBuilder::CommitToClipboard(clipboard_internal_.get());
+  ClipboardDataBuilder::CommitToClipboard(clipboard_internal_.get(),
+                                          std::move(data_src));
 }
 
 void ClipboardNonBacked::WritePlatformRepresentations(
     ClipboardBuffer buffer,
-    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+    std::vector<Clipboard::PlatformRepresentation> platform_representations,
+    std::unique_ptr<ClipboardDataEndpoint> data_src) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardBuffer(buffer));
 
   DispatchPlatformRepresentations(std::move(platform_representations));
 
-  ClipboardDataBuilder::CommitToClipboard(clipboard_internal_.get());
+  ClipboardDataBuilder::CommitToClipboard(clipboard_internal_.get(),
+                                          std::move(data_src));
 }
 
 void ClipboardNonBacked::WriteText(const char* text_data, size_t text_len) {

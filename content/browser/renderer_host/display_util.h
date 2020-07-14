@@ -23,11 +23,11 @@ class CONTENT_EXPORT DisplayUtil {
   static void GetDefaultScreenInfo(ScreenInfo* screen_info);
 
   // Compute the orientation type of the display assuming it is a mobile device.
-  static ScreenOrientationValues GetOrientationTypeForMobile(
+  static blink::mojom::ScreenOrientation GetOrientationTypeForMobile(
       const display::Display& display);
 
   // Compute the orientation type of the display assuming it is a desktop.
-  static ScreenOrientationValues GetOrientationTypeForDesktop(
+  static blink::mojom::ScreenOrientation GetOrientationTypeForDesktop(
       const display::Display& display);
 };
 

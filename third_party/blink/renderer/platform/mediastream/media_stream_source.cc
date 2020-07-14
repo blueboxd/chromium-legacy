@@ -71,9 +71,8 @@ const char* ReadyStateToString(MediaStreamSource::ReadyState state) {
 }
 
 void GetSourceSettings(const blink::WebMediaStreamSource& web_source,
-                       blink::WebMediaStreamTrack::Settings& settings) {
-  blink::MediaStreamAudioSource* const source =
-      blink::MediaStreamAudioSource::From(web_source);
+                       MediaStreamTrackPlatform::Settings& settings) {
+  auto* const source = blink::MediaStreamAudioSource::From(web_source);
   if (!source)
     return;
 
@@ -245,7 +244,8 @@ bool MediaStreamSource::RemoveAudioConsumer(
   return true;
 }
 
-void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
+void MediaStreamSource::GetSettings(
+    MediaStreamTrackPlatform::Settings& settings) {
   settings.device_id = Id();
   settings.group_id = GroupId();
 
@@ -253,22 +253,22 @@ void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
     switch (*echo_cancellation_mode_) {
       case EchoCancellationMode::kDisabled:
         settings.echo_cancellation = false;
-        settings.echo_cancellation_type.Reset();
+        settings.echo_cancellation_type = String();
         break;
       case EchoCancellationMode::kBrowser:
         settings.echo_cancellation = true;
         settings.echo_cancellation_type =
-            WebString::FromASCII(blink::kEchoCancellationTypeBrowser);
+            String::FromUTF8(blink::kEchoCancellationTypeBrowser);
         break;
       case EchoCancellationMode::kAec3:
         settings.echo_cancellation = true;
         settings.echo_cancellation_type =
-            WebString::FromASCII(blink::kEchoCancellationTypeAec3);
+            String::FromUTF8(blink::kEchoCancellationTypeAec3);
         break;
       case EchoCancellationMode::kSystem:
         settings.echo_cancellation = true;
         settings.echo_cancellation_type =
-            WebString::FromASCII(blink::kEchoCancellationTypeSystem);
+            String::FromUTF8(blink::kEchoCancellationTypeSystem);
         break;
     }
   }

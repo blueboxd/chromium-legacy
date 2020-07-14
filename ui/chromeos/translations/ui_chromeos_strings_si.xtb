@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">ජපන් ආදානය (එක්සත් ජනපද යතුරු පුවරුව සඳහා)</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> අයිතම මකාදමමින්...</translation>
 <translation id="1049926623896334335">Word ලේඛනය</translation>
+<translation id="1060368002126861100"><ph name="APP_NAME" /> සමඟ ගොනු විවෘත කිරීමට, පළමුව ඒවා Windows ගොනු ෆෝල්ඩරයට ගෙන යන්න.</translation>
 <translation id="1062407476771304334">ප්‍රතිස්ථාපනය කරන්න</translation>
 <translation id="1065449928621190041">කැනෙඩියානු ප්‍රංශ යතුරු පුවරුව</translation>
 <translation id="1119069657431255176">Bzip2 සම්පීඩනය කළ ටාර් සංරක්ෂිතය</translation>
@@ -168,7 +169,6 @@
 <translation id="2924296707677495905">අක්ෂර පරිවර්තනය (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">පත්</translation>
 <translation id="2938685643439809023">මොන්ගෝලියානු</translation>
-<translation id="2939410873710774399"><ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />) සමඟ ගොනු විවෘත කිරීමට, පළමුව ඒවා <ph name="FOLDER_NAME" /> ෆෝල්ඩරයට ගෙන යන්න.</translation>
 <translation id="2942290791863759244">ජර්මානු නියෝ 2 යතුරු පුවරුව</translation>
 <translation id="2943400156390503548">ස්ලයිඩ</translation>
 <translation id="2943503720238418293">කෙටි නමක් භාවිතා කරන්න</translation>
@@ -222,6 +222,7 @@
 <translation id="3524311639100184459">අවවාදය: මෙම ගොනු තාවකාලික වන අතර, තැටි ඉඩ නිදහස් කිරීමට ස්වයංක්‍රීයව මකනු ලැබිය හැක.  <ph name="BEGIN_LINK" />තවත් දැන ගන්න<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">ෆෝල්ඩරය</translation>
 <translation id="3549797760399244642">drive.google.com වෙත යන්න...</translation>
+<translation id="3553048479571901246"><ph name="APP_NAME" /> සමඟ ගොනු විවෘත කිරීමට, පළමුව ඒවා Windows ගොනු ෆෝල්ඩරයට පිටපත් කරන්න.</translation>
 <translation id="357479282490346887">ලිතුවේනියානු</translation>
 <translation id="3583509704582854624">අක්ෂරාංක ආදානය (ජපන් යතුරු පුවරුව සඳහා)</translation>
 <translation id="3603385196401704894">කැනේඩියානු ප්‍රංශ</translation>
@@ -333,14 +334,12 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> අයිතම තෝරා ඇත</translation>
 <translation id="4850886885716139402">දසුන</translation>
 <translation id="485316830061041779">ජර්මානු</translation>
-<translation id="4859297381873413734"><ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />) සමඟ ගොනු විවෘත කිරීමට, පළමුව ඒවා <ph name="FOLDER_NAME" /> ෆෝල්ඩරයට පිටපත් කරන්න.</translation>
 <translation id="4867079195717347957">තීරුව බසින පිළිවෙළට සැකසීමට ක්ලික් කරන්න.</translation>
 <translation id="4873265419374180291">බයිට් <ph name="NUMBER_OF_BYTES" /></translation>
 <translation id="4880214202172289027">හඬ සර්පණය</translation>
 <translation id="4880520557730313061">ස්වයං-සැකසුම්</translation>
 <translation id="4881695831933465202">විවෘත කරන්න</translation>
 <translation id="4886021172213954916">දෙමළ යතුරු පුවරුව (යතුරු ලියනය)</translation>
-<translation id="4892969127351273348"><ph name="APP_NAME" /> මඟින් විවෘත කළ නොහැක</translation>
 <translation id="4900532980794411603">Parallels Desktop සමග බෙදා ගන්න</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> උපස්ථ කිරීමට සූදානම්</translation>
 <translation id="4924638091161556692">සවි කරන ලදි</translation>

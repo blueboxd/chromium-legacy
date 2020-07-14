@@ -187,12 +187,10 @@ base::string16 IDNToUnicode(base::StringPiece host);
 // DO NOT use this for displaying URLs.
 IDNConversionResult UnsafeIDNToUnicodeWithDetails(base::StringPiece host);
 
-// If |text| starts with "www." it is removed, otherwise |text| is returned
-// unmodified.
-base::string16 StripWWW(const base::string16& text);
-
-// Runs |url|'s host through StripWWW().  |url| must be valid.
-base::string16 StripWWWFromHost(const GURL& url);
+// Strips a "www." prefix from |host| if present and if |host| is eligible.
+// |host| is only eligible for www-stripping if it is not a private or intranet
+// hostname, and if "www." is part of the subdomain (not the eTLD+1).
+std::string StripWWW(const std::string& host);
 
 // Returns skeleton strings computed from |host| for spoof checking.
 Skeletons GetSkeletons(const base::string16& host);

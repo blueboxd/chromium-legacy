@@ -25,6 +25,7 @@
 <translation id="169515064810179024">No permitir que los sitios web accedan a los sensores de movimiento</translation>
 <translation id="1717218214683051432">Sensores de movimiento</translation>
 <translation id="1743802530341753419">Preguntar antes de permitir que los sitios web se conecten a un dispositivo (recomendado)</translation>
+<translation id="1818308510395330587">Para que <ph name="APP_NAME" /> pueda usar la realidad aumentada, activa la cámara también en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="1887786770086287077">El acceso a la ubicación está desactivado en este dispositivo. Actívalo en los <ph name="BEGIN_LINK" />Ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Anuncios</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/<ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">Hoy</translation>
 <translation id="2182457891543959921">Preguntar antes de permitir que los sitios web creen un mapa 3D de tu entorno o hagan un seguimiento de la posición de la cámara (recomendado)</translation>
 <translation id="2212565012507486665">Permitir cookies</translation>
+<translation id="2228071138934252756">Para que <ph name="APP_NAME" /> pueda acceder a tu cámara, activa la cámara también en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="2289270750774289114">Preguntar cuando un sitio web quiera buscar dispositivos Bluetooth cercanos (recomendado)</translation>
 <translation id="2315043854645842844">El sistema operativo no admite la selección de certificados de cliente.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -56,6 +58,7 @@
 <translation id="2586657967955657006">Portapapeles</translation>
 <translation id="2621115761605608342">Habilita JavaScript en un sitio web específico.</translation>
 <translation id="2653659639078652383">Enviar</translation>
+<translation id="2677748264148917807">Salir</translation>
 <translation id="2687403674020088961">Bloquear todas las cookies (no recomendado)</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2822354292072154809">¿Seguro que quieres restablecer todos los permisos de los sitios web de <ph name="CHOSEN_OBJECT_NAME" />?</translation>
@@ -69,6 +72,7 @@
 <translation id="3115898365077584848">Mostrar información</translation>
 <translation id="3123473560110926937">Bloqueados en algunos sitios web</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de datos almacenados</translation>
+<translation id="321187648315454507">Para que <ph name="APP_NAME" /> pueda enviarte notificaciones, actívalas también en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Micrófono</translation>
 <translation id="3277252321222022663">Permitir que los sitios web accedan a los sensores (recomendado)</translation>
 <translation id="3295602654194328831">Ocultar información</translation>
@@ -100,6 +104,7 @@
 <translation id="445467742685312942">Permitir que los sitios web reproduzcan contenido protegido</translation>
 <translation id="4468959413250150279">Silencia el sonido de un sitio web específico.</translation>
 <translation id="4479647676395637221">Preguntar antes de permitir que los sitios web utilicen la cámara (recomendado)</translation>
+<translation id="4534723447064627427">Para que <ph name="APP_NAME" /> pueda acceder al micrófono, actívalo también en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="4570913071927164677">Detalles</translation>
 <translation id="4645575059429386691">Administrado por uno de tus padres</translation>
 <translation id="4670064810192446073">Realidad virtual</translation>
@@ -122,6 +127,7 @@
 <translation id="5335288049665977812">Permitir que los sitios web utilicen JavaScript (recomendado)</translation>
 <translation id="534295439873310000">Dispositivos NFC</translation>
 <translation id="5354152178998424783">Esta acción borrará <ph name="DATASIZE" /> de datos y cookies almacenados por sitios web.</translation>
+<translation id="5384883051496921101">Este sitio web va a compartir información con una aplicación con la que no se utilizará el modo de incógnito.</translation>
 <translation id="5391532827096253100">Tu conexión a este sitio web no es segura. Información del sitio web</translation>
 <translation id="5494752089476963479">Bloquea anuncios invasivos o engañosos en los sitios web que los muestran</translation>
 <translation id="5505264765875738116">Los sitios web no pueden preguntarte si quieres que te envíen notificaciones</translation>
@@ -161,6 +167,7 @@
 <translation id="6561560012278703671">Usa un tipo de aviso más discreto (bloquea las notificaciones emergentes para evitar interrupciones)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Contenido protegido</translation>
+<translation id="662080504995468778">Seguir aquí</translation>
 <translation id="6643016212128521049">Eliminar</translation>
 <translation id="6697925417670533197">Descargas activas</translation>
 <translation id="6746124502594467657">Bajar</translation>
@@ -224,6 +231,7 @@
 <translation id="8394832520002899662">Toca para volver al sitio web</translation>
 <translation id="8425213833346101688">Cambiar</translation>
 <translation id="8441146129660941386">Buscar hacia atrás</translation>
+<translation id="8444433999583714703">Para que <ph name="APP_NAME" /> tenga acceso a tu ubicación, actívala también en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Revocar permiso de dispositivo</translation>
 <translation id="8463851957836045671">El sitio web es rápido</translation>
 <translation id="851751545965956758">No permitir que los sitios web se conecten a dispositivos</translation>
@@ -231,6 +239,7 @@
 <translation id="8609465669617005112">Subir</translation>
 <translation id="8676374126336081632">Borrar entrada</translation>
 <translation id="8702612070107455751">Se borrarán todos los datos offline.</translation>
+<translation id="8719283222052720129">Activa el permiso para <ph name="APP_NAME" /> en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="8725066075913043281">Volver a intentarlo</translation>
 <translation id="8730621377337864115">Listo</translation>
 <translation id="8737217482364735741">Esta acción borrará todos los datos y cookies guardados por <ph name="ORIGIN" />.</translation>
@@ -241,10 +250,12 @@
 <translation id="8926666909099850184">La tecnología NFC está desactivada en este dispositivo. Actívala en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Este sitio web se abre y responde con rapidez en la mayoría de los casos</translation>
 <translation id="8941729603749328384">www.ejemplo.com</translation>
+<translation id="894871326938397531">¿Salir del modo de incógnito?</translation>
 <translation id="8958424370300090006">Bloquear las cookies de un sitio web específico.</translation>
 <translation id="8959122750345127698">No se puede realizar la navegación: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="913657688200966289">Activa los permisos para <ph name="APP_NAME" /> en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Acceder al micrófono</translation>
 <translation id="965817943346481315">Bloquear si el sitio web muestra anuncios invasivos o engañosos (recomendado)</translation>
 </translationbundle>

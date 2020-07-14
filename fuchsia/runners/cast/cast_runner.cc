@@ -213,7 +213,7 @@ fuchsia::web::CreateContextParams CastRunner::GetCommonContextParams() {
   const char kCastPlayreadyKeySystem[] = "com.chromecast.playready";
   params.set_playready_key_system(kCastPlayreadyKeySystem);
 
-  // TODO(b/141956135): Use CrKey version provided by the Agent.
+  // See http://b/141956135.
   params.set_user_agent_product("CrKey");
   params.set_user_agent_version("1.43.000000");
 

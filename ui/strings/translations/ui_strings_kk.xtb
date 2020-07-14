@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">Параметрлерді басқару</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 сағатта}other{# сағатта}}</translation>
 <translation id="2583543531130364912">Сенсорлық экранды калибрлеңіз</translation>
+<translation id="2586657967955657006">Буфер</translation>
 <translation id="2666092431469916601">Жоғары</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> құрылғысынан бөлісілді.</translation>
 <translation id="271033894570825754">Жаңа</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">Сөйлеуді бастау</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> қолданбасы <ph name="FOLDER_NAME" /> қалтасына ауысты.</translation>
 <translation id="4316910396681052118">БАРЛЫҚ ҚОЛДАНБАЛАР</translation>
+<translation id="4491109536499578614">Кескін</translation>
 <translation id="4588090240171750605">Оңға айналдыру</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, рейтингісі: <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, қолданба ұсынысы</translation>

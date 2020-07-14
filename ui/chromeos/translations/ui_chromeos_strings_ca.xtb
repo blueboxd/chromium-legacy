@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">Transliteració (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Fulls</translation>
 <translation id="2938685643439809023">Mongol</translation>
-<translation id="2939410873710774399">Per obrir fitxers amb <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), primer mou-los a la carpeta <ph name="FOLDER_NAME" />.</translation>
 <translation id="2942290791863759244">Teclat alemany (NEO 2)</translation>
 <translation id="2943400156390503548">Diapositives</translation>
 <translation id="2943503720238418293">Utilitza un nom més curt</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> elements seleccionats</translation>
 <translation id="4850886885716139402">Mostra</translation>
 <translation id="485316830061041779">Alemany</translation>
-<translation id="4859297381873413734">Per obrir fitxers amb <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), primer copia'ls a la carpeta <ph name="FOLDER_NAME" />.</translation>
 <translation id="4867079195717347957">Fes clic per veure les dades de la columna en ordre descendent.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bytes</translation>
 <translation id="4880214202172289027">Control lliscant de volum</translation>
 <translation id="4880520557730313061">Correcció automàtica</translation>
 <translation id="4881695831933465202">Obre</translation>
 <translation id="4886021172213954916">Teclat tàmil (màquina d'escriure)</translation>
-<translation id="4892969127351273348">No es pot obrir amb <ph name="APP_NAME" /></translation>
 <translation id="4900532980794411603">Comparteix amb Parallels Desktop</translation>
 <translation id="4905417359854579806">A punt per afegir <ph name="FILE_COUNT" /> a la còpia de seguretat</translation>
 <translation id="4924638091161556692">Corregida</translation>

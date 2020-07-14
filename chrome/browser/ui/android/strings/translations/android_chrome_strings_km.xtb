@@ -209,7 +209,6 @@
 <translation id="2650751991977523696">ទាញយក​ឯកសារ​ម្ដងទៀត​មែនទេ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{ឯកសារសំឡេង #}other{ឯកសារ​សំឡេង #}}</translation>
 <translation id="2656405586795711023">កម្មវិធីលើ​អ៊ីនធឺណិត</translation>
-<translation id="2677748264148917807">ចាកចេញ</translation>
 <translation id="2689830683995595741">ប្រសិនបើប្រើ Chrome មានន័យថាអ្នកយល់ព្រមតាម<ph name="BEGIN_LINK1" />លក្ខខណ្ឌប្រើប្រាស់ Google<ph name="END_LINK1" /> និង<ph name="BEGIN_LINK2" />លក្ខខណ្ឌប្រើប្រាស់បន្ថែមរបស់ Google Chrome និង Chrome OS<ph name="END_LINK2" />។ <ph name="BEGIN_LINK3" />ការជូន​ដំណឹង​អំពី​ឯកជនភាព​សម្រាប់​គណនី Google ដែល​គ្រប់គ្រង​ដោយ​ប្រើ Family Link<ph name="END_LINK3" /> ក៏អនុវត្តផងដែរ។</translation>
 <translation id="2707726405694321444">ធ្វើឲ្យទំព័រថ្មីឡើងវិញ</translation>
 <translation id="2709516037105925701">បំពេញស្វ័យប្រវត្តិ</translation>
@@ -290,6 +289,7 @@
 <translation id="3303414029551471755">បន្តដើម្បីទាញយកមាតិកានេះ?</translation>
 <translation id="3306398118552023113">កម្មវិធីនេះ​កំពុងដំណើរការនៅក្នុង Chrome</translation>
 <translation id="3315103659806849044">ឥឡូវនេះ អ្នកកំពុងប្ដូរ​ការកំណត់សេវាកម្ម Google និង​សមកាលកម្ម​របស់អ្នកតាមបំណង។ ដើម្បីបញ្ចប់ការបើក​សមកាលកម្ម សូមចុចប៊ូតុង "បញ្ជាក់" នៅជិតផ្នែកខាងក្រោម​នៃអេក្រង់។ រំកិលឡើងលើ</translation>
+<translation id="3320630259304269485">ការរុករក​ដោយសុវត្ថិភាព (ការការពារ​ពី​គេហទំព័រ​ដែលមានគ្រោះថ្នាក់) និង​ការកំណត់​សុវត្ថិភាព​ផ្សេងទៀត</translation>
 <translation id="3328801116991980348">ព័ត៌មានគេហទំព័រ</translation>
 <translation id="3333961966071413176">ទំនាក់​ទំនង​ទាំងអស់</translation>
 <translation id="3334729583274622784">ប្ដូរកន្ទុយ​ឯកសារឬ?</translation>
@@ -306,6 +306,7 @@
 <translation id="3389286852084373014">អត្ថបទធំពេក</translation>
 <translation id="3398320232533725830">បើកកម្មវិធីគ្រប់គ្រងចំណាំ</translation>
 <translation id="3414952576877147120">ទំហំ៖</translation>
+<translation id="3435738964857648380">សុវត្ថិភាព</translation>
 <translation id="3443221991560634068">ផ្ទុកទំព័របច្ចុប្បន្នឡើងវិញ</translation>
 <translation id="3478363558367712427">អ្នកអាច​ជ្រើសរើស​ម៉ាស៊ីន​ស្វែងរក​របស់អ្នក​បាន</translation>
 <translation id="3492207499832628349">ផ្ទាំងអនាមិកថ្មី</translation>
@@ -534,7 +535,6 @@
 <translation id="5355191726083956201">ការការពារបន្ថែម​ត្រូវបានបើក</translation>
 <translation id="5357811892247919462">បាន​ទទួលផ្ទាំង</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{ផ្ទាំងបើក <ph name="OPEN_TABS_ONE" /> ចុច​ដើម្បីប្ដូរផ្ទាំង}other{ផ្ទាំងបើក <ph name="OPEN_TABS_MANY" /> ចុច​ដើម្បីប្ដូរផ្ទាំង}}</translation>
-<translation id="5384883051496921101">ទំព័រនេះ​ត្រៀមនឹង​ចែករំលែក​ព័ត៌មាន​ជាមួយ​កម្មវិធី​ខាងក្រៅ​មុខងារអនាមិក។</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 ទៀត)}other{(+ # ទៀត)}}</translation>
 <translation id="5403592356182871684">ឈ្មោះ</translation>
 <translation id="5403644198645076998">អនុញ្ញាត​ទំព័រ​មួយចំនួន​តែ​ប៉ុណ្ណោះ</translation>
@@ -705,7 +705,6 @@
 <translation id="6593061639179217415">ទំព័រ​អេក្រង់​កុំព្យូទ័រ</translation>
 <translation id="6597891566292541626">ដាក់កូដ QR/បារកូដនៅក្នុងស៊ុមនេះ។</translation>
 <translation id="6600954340915313787">បានចម្លងទៅ Chrome</translation>
-<translation id="662080504995468778">នៅដដែល</translation>
 <translation id="6627583120233659107">កែសម្រួលថតឯកសារ</translation>
 <translation id="6643016212128521049">ជម្រះ</translation>
 <translation id="6643649862576733715">តម្រៀបតាម​បរិមាណ​ទិន្នន័យ​ដែលបានសន្សំ</translation>
@@ -988,7 +987,6 @@
 <translation id="8922289737868596582">ទាញយកទំព័រ​ពីប៊ូតុង​ជម្រើសច្រើនទៀត ដើម្បីប្រើប្រាស់​ពួកវា​ដោយគ្មានអ៊ីនធឺណិត</translation>
 <translation id="8937772741022875483">លុបសកម្មភាព Chrome របស់អ្នកពី​សុខុមាលភាព​ឌីជីថល?</translation>
 <translation id="8942627711005830162">បើកនៅក្នុងផ្ទាំងវិនដូផ្សេងទៀត</translation>
-<translation id="894871326938397531">ចាកចេញ​ពី​មុខងារ​អនាមិក?</translation>
 <translation id="8951232171465285730">Chrome សន្សំឲ្យអ្នកបាន <ph name="MEGABYTES" /> MB</translation>
 <translation id="8965591936373831584">មិនទាន់សម្រេច</translation>
 <translation id="8970887620466824814">មានអ្វីមួយ​ខុសប្រក្រតី។</translation>
@@ -999,6 +997,7 @@
 <translation id="9028914725102941583">បើក​សមកាលកម្ម ដើម្បី​ចែករំលែកនៅលើ​ឧបករណ៍​នានា</translation>
 <translation id="9040142327097499898">ការជូន​ដំណឹង​ត្រូវបាន​អនុញ្ញាត។ ទីតាំង​ត្រូវ​បាន​បិទសម្រាប់ឧបករណ៍​នេះ។</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{វីដេអូ #}other{វីដេអូ #}}</translation>
+<translation id="9042893549633094279">ភាពឯកជន និងសុវត្ថិភាព</translation>
 <translation id="9050666287014529139">ឃ្លាសម្ងាត់</translation>
 <translation id="9063523880881406963">បិទសំណើគេហទំព័រសម្រាប់កុំព្យូទ័រ</translation>
 <translation id="9065203028668620118">កែប្រែ</translation>

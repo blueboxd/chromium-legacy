@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">Umritun (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Töflureiknar</translation>
 <translation id="2938685643439809023">Mongólskt</translation>
-<translation id="2939410873710774399">Til að opna skrár með <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />) skaltu fyrst færa þær í möppuna <ph name="FOLDER_NAME" />.</translation>
 <translation id="2942290791863759244">Þýskt NEO 2 lyklaborð</translation>
 <translation id="2943400156390503548">Skyggnur</translation>
 <translation id="2943503720238418293">Notaðu styttra heiti</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> atriði valin</translation>
 <translation id="4850886885716139402">Yfirlit</translation>
 <translation id="485316830061041779">Þýskt</translation>
-<translation id="4859297381873413734">Til að opna skrár með <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />) skaltu fyrst afrita þær í möppuna <ph name="FOLDER_NAME" />.</translation>
 <translation id="4867079195717347957">Smelltu til að raða dálkinum í lækkandi röð.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bæti</translation>
 <translation id="4880214202172289027">Sleði fyrir hljóð</translation>
 <translation id="4880520557730313061">Sjálfvirk lagfæring</translation>
 <translation id="4881695831933465202">Opna</translation>
 <translation id="4886021172213954916">Tamil-lyklaborð (ritvél)</translation>
-<translation id="4892969127351273348">Ekki tókst að opna með <ph name="APP_NAME" /></translation>
 <translation id="4900532980794411603">Deila með Parallels Desktop</translation>
 <translation id="4905417359854579806">Tilbúið að afrita <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Lagfærð</translation>

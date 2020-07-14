@@ -88,6 +88,7 @@ class CommonTest(unittest.TestCase):
 
     def test_is_basename_skipped(self):
         self.assertTrue(is_basename_skipped('MANIFEST.json'))
+        self.assertTrue(is_basename_skipped('DIR_METADATA'))
         self.assertTrue(is_basename_skipped('OWNERS'))
         self.assertTrue(is_basename_skipped('reftest.list'))
         self.assertTrue(is_basename_skipped('.gitignore'))
@@ -106,6 +107,8 @@ class CommonTest(unittest.TestCase):
         self.assertFalse(
             is_file_exportable(CHROMIUM_WPT_DIR + 'MANIFEST.json'))
         self.assertFalse(is_file_exportable(CHROMIUM_WPT_DIR + 'dom/OWNERS'))
+        self.assertFalse(
+            is_file_exportable(CHROMIUM_WPT_DIR + 'dom/DIR_METADATA'))
 
     def test_is_file_exportable_asserts_path(self):
         # Rejects basenames.

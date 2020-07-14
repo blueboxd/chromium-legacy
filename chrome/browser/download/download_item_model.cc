@@ -222,38 +222,8 @@ bool DownloadItemModel::IsDangerous() const {
 }
 
 bool DownloadItemModel::MightBeMalicious() const {
-  if (!IsDangerous())
-    return false;
-  switch (download_->GetDangerType()) {
-    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
-    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-    case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
-    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
-    case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
-    case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
-    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
-    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE:
-    case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
-    case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING:
-    case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK:
-    case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
-    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
-      return true;
-
-    case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
-    case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
-    case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
-    case download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
-    case download::DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY:
-    case download::DOWNLOAD_DANGER_TYPE_MAX:
-      // We shouldn't get any of these due to the IsDangerous() test above.
-      NOTREACHED();
-      FALLTHROUGH;
-    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
-      return false;
-  }
-  NOTREACHED();
-  return false;
+  return IsDangerous() && (download_->GetDangerType() !=
+                           download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
 }
 
 // If you change this definition of malicious, also update

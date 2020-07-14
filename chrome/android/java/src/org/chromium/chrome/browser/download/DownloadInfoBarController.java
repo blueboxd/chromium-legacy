@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.infobars.InfoBar;
@@ -410,7 +411,9 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     public IPHInfoBarSupport.TrackerParameters getTrackerParameters() {
         if (getDownloadCount().inProgress == 0) return null;
 
-        if (getActivity() == null || getActivity().getBottomSheetController().isSheetOpen()) {
+        if (getActivity() == null
+                || BottomSheetControllerProvider.from(getActivity().getWindowAndroid())
+                           .isSheetOpen()) {
             return null;
         }
 
@@ -1065,6 +1068,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                 DownloadLaterUiEvent.DOWNLOAD_INFOBAR_CHANGE_SCHEDULE_CLICKED);
         mDownloadLaterDialogHelper.showChangeScheduleDialog(
                 currentSchedule, Source.DOWNLOAD_INFOBAR, (newSchedule) -> {
+                    if (newSchedule == null) return;
                     if (mUseNewDownloadPath) {
                         OfflineContentAggregatorFactory.get().changeSchedule(id, newSchedule);
                     } else {

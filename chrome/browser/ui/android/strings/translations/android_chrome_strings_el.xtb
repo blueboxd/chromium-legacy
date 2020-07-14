@@ -209,7 +209,6 @@
 <translation id="2650751991977523696">Επανάληψη λήψης αρχείου;</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Αρχείο ήχου}other{# Αρχεία ήχου}}</translation>
 <translation id="2656405586795711023">Εφαρμογές ιστού</translation>
-<translation id="2677748264148917807">Αποχώρηση</translation>
 <translation id="2689830683995595741">Χρησιμοποιώντας το Chrome, συμφωνείτε με τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών της Google<ph name="END_LINK1" /> και τους<ph name="BEGIN_LINK2" />Πρόσθετους Όρους Παροχής Υπηρεσιών του Google Chrome και του Chrome OS<ph name="END_LINK2" />. Ισχύει επίσης η <ph name="BEGIN_LINK3" />Σημείωση απορρήτου για Λογαριασμούς Google που διαχειρίζονται από το Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">Ανανέωση σελίδας</translation>
 <translation id="2709516037105925701">Αυτόματη συμπλήρωση</translation>
@@ -290,6 +289,7 @@
 <translation id="3303414029551471755">Συνέχεια για λήψη του περιεχομένου;</translation>
 <translation id="3306398118552023113">Αυτή η εφαρμογή εκτελείται στο Chrome</translation>
 <translation id="3315103659806849044">Αυτήν τη στιγμή, προσαρμόζετε τις ρυθμίσεις του Συγχρονισμού και των Υπηρεσιών Google. Για να ολοκληρώσετε την ενεργοποίηση του συγχρονισμού, πατήστε το κουμπί Επιβεβαίωσης κοντά στην κορυφή της οθόνης. Πλοήγηση προς τα επάνω</translation>
+<translation id="3320630259304269485">Ασφαλής περιήγηση (προστασία από επικίνδυνους ιστοτόπους) και άλλες ρυθμίσεις ασφαλείας</translation>
 <translation id="3328801116991980348">Πληροφορίες ιστοτόπου</translation>
 <translation id="3333961966071413176">Όλες οι επαφές</translation>
 <translation id="3334729583274622784">Θέλετε να αλλάξετε την επέκταση αρχείου;</translation>
@@ -306,6 +306,7 @@
 <translation id="3389286852084373014">Το κείμενο είναι υπερβολικά μεγάλο</translation>
 <translation id="3398320232533725830">Άνοιγμα του διαχειριστή σελιδοδεικτών</translation>
 <translation id="3414952576877147120">Μέγεθος:</translation>
+<translation id="3435738964857648380">Ασφάλεια</translation>
 <translation id="3443221991560634068">Επαναφόρτωση της τρέχουσας σελίδας</translation>
 <translation id="3478363558367712427">Μπορείτε να επιλέξετε τη μηχανή αναζήτησής σας</translation>
 <translation id="3492207499832628349">Νέα καρτέλα ανωνυμ. περιήγ.</translation>
@@ -534,7 +535,6 @@
 <translation id="5355191726083956201">Η Βελτιωμένη προστασία είναι ενεργή</translation>
 <translation id="5357811892247919462">Έγινε λήψη της καρτέλας</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ανοιχτή καρτέλα, πατήστε για εναλλαγή καρτελών}other{<ph name="OPEN_TABS_MANY" /> ανοιχτές καρτέλες, πατήστε για εναλλαγή καρτελών}}</translation>
-<translation id="5384883051496921101">Αυτός ο ιστότοπος πρόκειται να κοινοποιήσει πληροφορίες με μια εφαρμογή εκτός της κατάστασης ανώνυμης περιήγησης.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 ακόμη)}other{(+ # ακόμη)}}</translation>
 <translation id="5403592356182871684">Ονόματα</translation>
 <translation id="5403644198645076998">Να επιτρέπονται μόνο συγκεκριμένοι ιστότοποι</translation>
@@ -705,7 +705,6 @@
 <translation id="6593061639179217415">Για υπολογιστή</translation>
 <translation id="6597891566292541626">Τοποθετήστε τον κωδικό QR/γραμμωτό κώδικα σε αυτό το πλαίσιο.</translation>
 <translation id="6600954340915313787">Αντιγράφηκε στο Chrome</translation>
-<translation id="662080504995468778">Παραμονή</translation>
 <translation id="6627583120233659107">Επεξεργασία φακέλου</translation>
 <translation id="6643016212128521049">Διαγραφή</translation>
 <translation id="6643649862576733715">Ταξινόμηση κατά όγκο δεδομένων που εξοικονομήθηκαν</translation>
@@ -988,7 +987,6 @@
 <translation id="8922289737868596582">Κατεβάστε σελίδες από το κουμπί "Περισσότερες επιλογές" για να τις χρησιμοποιήσετε εκτός σύνδεσης</translation>
 <translation id="8937772741022875483">Να καταργηθεί η δραστηριότητα του Chrome από το Digital Wellbeing;</translation>
 <translation id="8942627711005830162">Άνοιγμα σε άλλο παράθυρο</translation>
-<translation id="894871326938397531">Έξοδος από την κατάσταση ανώνυμης περιήγησης;</translation>
 <translation id="8951232171465285730">Το Chrome έχει εξοικονομήσει <ph name="MEGABYTES" /> MB</translation>
 <translation id="8965591936373831584">σε εκκρεμότητα</translation>
 <translation id="8970887620466824814">Προέκυψε πρόβλημα.</translation>
@@ -999,6 +997,7 @@
 <translation id="9028914725102941583">Ενεργοποιήστε τον συγχρονισμό για κοινοποίηση μεταξύ συσκευών.</translation>
 <translation id="9040142327097499898">Οι ειδοποιήσεις επιτρέπονται. Η Τοποθεσία είναι απενεργοποιημένη σε αυτήν τη συσκευή.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Βίντεο}other{# Βίντεο}}</translation>
+<translation id="9042893549633094279">Απόρρητο και ασφάλεια</translation>
 <translation id="9050666287014529139">Φράση πρόσβασής σας</translation>
 <translation id="9063523880881406963">Απενεργοποίηση αιτήματος ιστότοπου για υπολογιστές</translation>
 <translation id="9065203028668620118">Επεξεργασία</translation>

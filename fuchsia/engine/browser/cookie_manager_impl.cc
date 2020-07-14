@@ -65,7 +65,8 @@ class CookiesIteratorImpl : public fuchsia::web::CookiesIterator,
           ConvertCanonicalCookie(cookie, net::CookieChangeCause::INSERTED);
     }
   }
-  // Same as above except it takes CookieStatusList instead of just CookieList.
+  // Same as above except it takes CookieAccessResultList instead of just
+  // CookieList.
   CookiesIteratorImpl(
       const std::vector<net::CookieWithAccessResult>&
           cookies_with_access_results,

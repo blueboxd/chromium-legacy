@@ -58,6 +58,7 @@
 <translation id="2586657967955657006">Memorija</translation>
 <translation id="2621115761605608342">Dozvolite JavaScript za određeni sajt.</translation>
 <translation id="2653659639078652383">Pošalji</translation>
+<translation id="2677748264148917807">Zatvori</translation>
 <translation id="2687403674020088961">Blokiraj sve kolačiće (ne preporučuje se)</translation>
 <translation id="2704606927547763573">Kopirano</translation>
 <translation id="2822354292072154809">Želite li stvarno da resetujete sve dozvole za sajt za <ph name="CHOSEN_OBJECT_NAME" />?</translation>
@@ -126,6 +127,7 @@
 <translation id="5335288049665977812">Dozvoli sajtovima da pokreću JavaScript (preporučeno)</translation>
 <translation id="534295439873310000">NFC uređaji</translation>
 <translation id="5354152178998424783">Ovim brišete <ph name="DATASIZE" /> podataka i kolačića koje čuvaju sajtovi.</translation>
+<translation id="5384883051496921101">Ovaj sajt će deliti informacije sa aplikacijom izvan režima bez arhiviranja.</translation>
 <translation id="5391532827096253100">Veza sa ovim sajtom nije bezbedna. Informacije o sajtu</translation>
 <translation id="5494752089476963479">Blokiraj oglase na sajtovima koji prikazuju oglase koji ometaju aktivnosti ili obmanjujuće oglase</translation>
 <translation id="5505264765875738116">Sajtovi ne mogu da traže da šalju obaveštenja</translation>
@@ -165,6 +167,7 @@
 <translation id="6561560012278703671">Koristite nenametljivu razmenu poruka (sprečava upite sa obaveštenjima da vas ometaju)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Zaštićeni sadržaj</translation>
+<translation id="662080504995468778">Ne zatvaraj</translation>
 <translation id="6643016212128521049">Obriši</translation>
 <translation id="6697925417670533197">Aktivna preuzimanja</translation>
 <translation id="6746124502594467657">Premesti nadole</translation>
@@ -247,6 +250,7 @@
 <translation id="8926666909099850184">NFC je isključen za ovaj uređaj. Uključite ga u <ph name="BEGIN_LINK" />Android podešavanjima<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Ovaj sajt se brzo otvara i brzo reaguje za većinu ljudi</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">Izlazite iz režima bez arhiviranja?</translation>
 <translation id="8958424370300090006">Blokirajte kolačiće za određeni sajt.</translation>
 <translation id="8959122750345127698">Navigacija je nedostupna: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Ovim upravljaju tvoji roditelji</translation>

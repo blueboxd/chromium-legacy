@@ -71,6 +71,7 @@
 <translation id="808894953321890993">Сменить пароль</translation>
 <translation id="8208861521865154048">Преимущества</translation>
 <translation id="8347227221149377169">Задания печати</translation>
+<translation id="8623849191266582420">Этот <ph name="DEVICE_TYPE" /> зарегистрирован в домене <ph name="ENROLLMENT_DOMAIN" /> Администраторы могут удаленно настраивать и отслеживать это устройство.</translation>
 <translation id="8701136875688985581">Этот аккаунт находится под управлением домена <ph name="ENROLLMENT_DOMAIN" />, из которого можно отслеживать действия пользователя и удаленно изменять настройки.</translation>
 <translation id="871560550817059752">Сбой: закончились чернила</translation>
 <translation id="8747900814994928677">Подтверждение изменений</translation>

@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">Transliteratsioon (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Arvutustabelid</translation>
 <translation id="2938685643439809023">mongoolia keel</translation>
-<translation id="2939410873710774399">Failide avamiseks rakendusega <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />) teisaldage need esmalt kausta <ph name="FOLDER_NAME" />.</translation>
 <translation id="2942290791863759244">Saksa NEO 2 klaviatuur</translation>
 <translation id="2943400156390503548">Esitlused</translation>
 <translation id="2943503720238418293">Kasutage lühemat nime</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242">Valitud on <ph name="SELCTED_FILES_COUNT" /> üksust</translation>
 <translation id="4850886885716139402">Kuva</translation>
 <translation id="485316830061041779">saksa keel</translation>
-<translation id="4859297381873413734">Failide avamiseks rakendusega <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />) kopeerige need esmalt kausta <ph name="FOLDER_NAME" />.</translation>
 <translation id="4867079195717347957">Klõpsake, et veerg kahanevas järjestuses sortida.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> baiti</translation>
 <translation id="4880214202172289027">Helitugevuse liugur</translation>
 <translation id="4880520557730313061">Automaatparandus</translation>
 <translation id="4881695831933465202">Ava</translation>
 <translation id="4886021172213954916">Tamili klaviatuur (kirjutusmasin)</translation>
-<translation id="4892969127351273348">Ei saa rakendusega <ph name="APP_NAME" /> avada</translation>
 <translation id="4900532980794411603">Jagamine üksusega Parallels Desktop</translation>
 <translation id="4905417359854579806">Valmis, et varundada <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Fikseeritud</translation>

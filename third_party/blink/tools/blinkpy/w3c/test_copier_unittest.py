@@ -42,6 +42,7 @@ FAKE_FILES = {
     '/blink/w3c/dir/has_shebang.txt': '#!',
     '/blink/w3c/dir/README.txt': '',
     '/blink/w3c/dir/OWNERS': '',
+    '/blink/w3c/dir/DIR_METADATA': '',
     '/blink/w3c/dir/reftest.list': '',
     MOCK_WEB_TESTS + 'external/README.txt': '',
     MOCK_WEB_TESTS + 'W3CImportExpectations': '',

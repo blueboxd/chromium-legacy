@@ -11,6 +11,7 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -51,7 +52,8 @@ public class TabGroupPopupUiCoordinator
                 model, mTabGroupPopupUiParent, TabGroupPopupUiViewBinder::bind);
         mMediator = new TabGroupPopupUiMediator(model, activity.getTabModelSelector(),
                 activity.getOverviewModeBehavior(), activity.getBrowserControlsManager(), this,
-                mTabGroupUiCoordinator, activity.getBottomSheetController());
+                mTabGroupUiCoordinator,
+                BottomSheetControllerProvider.from(activity.getWindowAndroid()));
         mMediator.onAnchorViewChanged(mAnchorView, mAnchorView.getId());
     }
 

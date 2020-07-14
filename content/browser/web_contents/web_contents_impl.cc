@@ -4895,8 +4895,7 @@ WebContentsImpl::GetJavaRenderFrameHostDelegate() {
 }
 #endif
 
-void WebContentsImpl::OnDidDisplayContentWithCertificateErrors(
-    RenderFrameHostImpl* source) {
+void WebContentsImpl::OnDidDisplayContentWithCertificateErrors() {
   controller_.ssl_manager()->DidDisplayContentWithCertErrors();
 }
 

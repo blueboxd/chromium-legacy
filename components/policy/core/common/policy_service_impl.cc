@@ -296,6 +296,7 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   if (value && value->GetBool()) {
     policy_lists_to_merge.insert(key::kExtensionInstallForcelist);
     policy_lists_to_merge.insert(key::kExtensionInstallBlacklist);
+    policy_lists_to_merge.insert(key::kExtensionInstallBlocklist);
     policy_lists_to_merge.insert(key::kExtensionInstallWhitelist);
     policy_lists_to_merge.insert(key::kExtensionInstallAllowlist);
   }

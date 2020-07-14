@@ -60,7 +60,7 @@ class CONTENT_EXPORT NetworkServiceClient
       int32_t process_id,
       int32_t routing_id,
       const std::string& devtools_request_id,
-      const net::CookieAndLineStatusList& cookies_with_status,
+      const net::CookieAndLineAccessResultList& cookies_with_access_result,
       std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
       const base::Optional<std::string>& raw_response_headers) override;
   void OnCorsPreflightRequest(int32_t process_id,

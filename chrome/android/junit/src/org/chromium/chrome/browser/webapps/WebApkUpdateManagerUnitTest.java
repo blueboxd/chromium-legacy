@@ -47,7 +47,7 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.embedder_support.util.ShadowUrlUtilities;
 import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
-import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.device.mojom.ScreenOrientationLockType;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 import org.chromium.webapk.test.WebApkTestHelper;
@@ -86,7 +86,7 @@ public class WebApkUpdateManagerUnitTest {
     private static final String PRIMARY_ICON_URL = "/icon.png";
     private static final String PRIMARY_ICON_MURMUR2_HASH = "3";
     private static final @WebDisplayMode int DISPLAY_MODE = WebDisplayMode.UNDEFINED;
-    private static final int ORIENTATION = ScreenOrientationValues.DEFAULT;
+    private static final int ORIENTATION = ScreenOrientationLockType.DEFAULT;
     private static final long THEME_COLOR = 1L;
     private static final long BACKGROUND_COLOR = 2L;
     private static final int DEFAULT_BACKGROUND_COLOR = 3;
@@ -1054,9 +1054,9 @@ public class WebApkUpdateManagerUnitTest {
     @Test
     public void testManifestOrientationChangedShouldUpgrade() {
         ManifestData oldData = defaultManifestData();
-        oldData.orientation = ScreenOrientationValues.LANDSCAPE;
+        oldData.orientation = ScreenOrientationLockType.LANDSCAPE;
         ManifestData fetchedData = defaultManifestData();
-        fetchedData.orientation = ScreenOrientationValues.PORTRAIT;
+        fetchedData.orientation = ScreenOrientationLockType.PORTRAIT;
         assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
     }
 

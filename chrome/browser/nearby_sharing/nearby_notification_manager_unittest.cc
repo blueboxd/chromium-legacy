@@ -278,3 +278,74 @@ INSTANTIATE_TEST_SUITE_P(
     NearbyNotificationManagerProgressNotificationTest,
     testing::Combine(testing::ValuesIn(kProgressNotificationTestParams),
                      testing::Bool()));
+
+TEST_F(NearbyNotificationManagerTest, ShowConnectionRequest_ShowsNotification) {
+  std::string device_name = "device";
+  ShareTargetBuilder share_target_builder;
+  share_target_builder.set_device_name(device_name);
+  share_target_builder.add_attachment(
+      CreateFileAttachment(FileAttachment::Type::kImage));
+  ShareTarget share_target = share_target_builder.build();
+
+  manager()->ShowConnectionRequest(share_target);
+
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+
+  const message_center::Notification& notification = notifications[0];
+
+  base::string16 expected_title = l10n_util::GetStringUTF16(
+      IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_TITLE);
+
+  base::string16 expected_message = l10n_util::GetStringFUTF16(
+      IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_MESSAGE,
+      base::ASCIIToUTF16(device_name),
+      l10n_util::GetPluralStringFUTF16(IDS_NEARBY_FILE_ATTACHMENTS_IMAGES, 1));
+
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE, notification.type());
+  EXPECT_EQ(expected_title, notification.title());
+  EXPECT_EQ(expected_message, notification.message());
+  // TODO(crbug.com/1102348): verify notification.icon()
+  EXPECT_EQ(GURL(), notification.origin_url());
+  EXPECT_TRUE(notification.never_timeout());
+  EXPECT_FALSE(notification.renotify());
+  EXPECT_EQ(&kNearbyShareIcon, &notification.vector_small_image());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SOURCE),
+            notification.display_source());
+
+  const std::vector<message_center::ButtonInfo>& buttons =
+      notification.buttons();
+  ASSERT_EQ(2u, buttons.size());
+
+  const message_center::ButtonInfo& receive_button = buttons[0];
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_RECEIVE_ACTION),
+            receive_button.title);
+  const message_center::ButtonInfo& decline_button = buttons[1];
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_DECLINE_ACTION),
+            decline_button.title);
+}
+
+TEST_F(NearbyNotificationManagerTest, ShowOnboarding_ShowsNotification) {
+  manager()->ShowOnboarding();
+
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+
+  const message_center::Notification& notification = notifications[0];
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE, notification.type());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_ONBOARDING_TITLE),
+            notification.title());
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_ONBOARDING_MESSAGE),
+      notification.message());
+  EXPECT_TRUE(notification.icon().IsEmpty());
+  EXPECT_EQ(GURL(), notification.origin_url());
+  EXPECT_FALSE(notification.never_timeout());
+  EXPECT_FALSE(notification.renotify());
+  EXPECT_EQ(&kNearbyShareIcon, &notification.vector_small_image());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SOURCE),
+            notification.display_source());
+  EXPECT_EQ(0u, notification.buttons().size());
+}

@@ -112,8 +112,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   void LayoutFragmentainerDescendants(
       Vector<NGLogicalOutOfFlowPositionedNode>* descendants);
 
-  scoped_refptr<const NGLayoutResult> LayoutFragmentainerDescendant(
-      const NGLogicalOutOfFlowPositionedNode&);
+  void LayoutFragmentainerDescendant(const NGLogicalOutOfFlowPositionedNode&);
 
   scoped_refptr<const NGLayoutResult> Layout(NGBlockNode,
                                              const NGConstraintSpace&,
@@ -126,8 +125,9 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
   bool IsContainingBlockForCandidate(const NGLogicalOutOfFlowPositionedNode&);
 
-  void AddOOFResultToFragmentainer(scoped_refptr<const NGLayoutResult> result,
-                                   const wtf_size_t index);
+  void AddOOFResultsToFragmentainer(
+      const Vector<scoped_refptr<const NGLayoutResult>>& results,
+      const wtf_size_t index);
   NGConstraintSpace CreateConstraintSpaceForFragmentainerDescendant(
       const NGBlockNode& descendant,
       const LogicalSize& content_size,
@@ -135,6 +135,9 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const NGConstraintSpace& fragmentainer_constraint_space,
       const WritingMode default_writing_mode) const;
   const NGConstraintSpace& GetFragmentainerConstraintSpace(
+      const wtf_size_t index);
+  void AddOOFResultToFragmentainerResults(
+      const scoped_refptr<const NGLayoutResult> result,
       const wtf_size_t index);
   scoped_refptr<const NGLayoutResult> GenerateFragment(
       NGBlockNode node,
@@ -147,6 +150,10 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   ContainingBlockInfo default_containing_block_;
   HashMap<const LayoutObject*, ContainingBlockInfo> containing_blocks_map_;
   HashMap<wtf_size_t, NGConstraintSpace> fragmentainer_constraint_space_map_;
+  // Map of fragmentainer indexes to a list of descendant layout results to
+  // be added as children.
+  HashMap<wtf_size_t, Vector<scoped_refptr<const NGLayoutResult>>>
+      fragmentainer_descendant_results_;
   const WritingMode writing_mode_;
   bool is_absolute_container_;
   bool is_fixed_container_;

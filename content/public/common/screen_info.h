@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/public/common/screen_orientation_values.h"
+#include "third_party/blink/public/mojom/widget/screen_orientation.mojom-shared.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/icc_profile.h"
@@ -50,8 +50,8 @@ struct CONTENT_EXPORT ScreenInfo {
     gfx::Rect available_rect;
 
     // The monitor's orientation.
-    ScreenOrientationValues orientation_type =
-        SCREEN_ORIENTATION_VALUES_DEFAULT;
+    blink::mojom::ScreenOrientation orientation_type =
+        blink::mojom::ScreenOrientation::kUndefined;
 
     // This is the orientation angle of the displayed content in degrees.
     // It is the opposite of the physical rotation.

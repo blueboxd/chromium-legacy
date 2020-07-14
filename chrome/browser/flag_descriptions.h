@@ -512,6 +512,9 @@ extern const char kDownloadAutoResumptionNativeDescription[];
 extern const char kDownloadLaterName[];
 extern const char kDownloadLaterDescription[];
 
+extern const char kDownloadLaterDebugOnWifiName[];
+extern const char kDownloadLaterDebugOnWifiNameDescription[];
+
 extern const char kDuetTabStripIntegrationAndroidName[];
 extern const char kDuetTabStripIntegrationAndroidDescription[];
 

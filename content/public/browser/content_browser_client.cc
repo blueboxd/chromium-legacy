@@ -145,8 +145,8 @@ bool ContentBrowserClient::DoesSiteRequireDedicatedProcess(
   return false;
 }
 
-bool ContentBrowserClient::ShouldLockToOrigin(BrowserContext* browser_context,
-                                              const GURL& effective_url) {
+bool ContentBrowserClient::ShouldLockProcess(BrowserContext* browser_context,
+                                             const GURL& effective_url) {
   DCHECK(browser_context);
   return true;
 }

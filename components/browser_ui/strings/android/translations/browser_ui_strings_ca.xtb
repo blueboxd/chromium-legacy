@@ -58,6 +58,7 @@
 <translation id="2586657967955657006">Porta-retalls</translation>
 <translation id="2621115761605608342">Permet JavaScript en un lloc web concret.</translation>
 <translation id="2653659639078652383">Envia</translation>
+<translation id="2677748264148917807">Surt</translation>
 <translation id="2687403674020088961">Bloqueja totes les galetes (opció no recomanada)</translation>
 <translation id="2704606927547763573">Copiada</translation>
 <translation id="2822354292072154809">Confirmes que vols restablir tots els permisos del lloc web concedits a <ph name="CHOSEN_OBJECT_NAME" />?</translation>
@@ -126,6 +127,7 @@
 <translation id="5335288049665977812">Permet que els llocs web executin JavaScript (opció recomanada)</translation>
 <translation id="534295439873310000">Dispositius amb NFC</translation>
 <translation id="5354152178998424783">Amb aquesta acció s'esborraran dades i galetes (<ph name="DATASIZE" />) emmagatzemades per llocs web.</translation>
+<translation id="5384883051496921101">Aquest lloc està a punt de compartir informació amb una aplicació fora del mode d'incògnit.</translation>
 <translation id="5391532827096253100">La connexió amb aquest lloc web no és segura. Informació del lloc web</translation>
 <translation id="5494752089476963479">Bloqueja els anuncis als llocs web que mostren publicitat intrusiva o enganyosa</translation>
 <translation id="5505264765875738116">Els llocs web no poden demanar-te permís per enviar-te notificacions</translation>
@@ -165,6 +167,7 @@
 <translation id="6561560012278703671">Utilitza missatges més silenciosos (bloqueja les sol·licituds de notificacions per evitar interrupcions)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Contingut protegit</translation>
+<translation id="662080504995468778">No surtis</translation>
 <translation id="6643016212128521049">Esborra</translation>
 <translation id="6697925417670533197">Baixades actives</translation>
 <translation id="6746124502594467657">Mou avall</translation>
@@ -247,6 +250,7 @@
 <translation id="8926666909099850184">L'NFC està desactivada en aquest dispositiu. Activa-la a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Aquest lloc web s'obre i respon ràpidament per a la majoria de persones</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">Vols sortir del mode d'incògnit?</translation>
 <translation id="8958424370300090006">Bloqueja les galetes d'un lloc web concret.</translation>
 <translation id="8959122750345127698">No es pot accedir a la navegació: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Gestionat pels pares</translation>

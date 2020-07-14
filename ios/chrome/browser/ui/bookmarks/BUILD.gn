@@ -53,6 +53,7 @@ source_set("bookmarks") {
     "resources:bookmark_blue_check",
     "resources:bookmark_blue_folder",
     "resources:bookmark_blue_new_folder",
+    "resources:bookmark_empty",
     "resources:bookmark_empty_star",
     "//base",
     "//base:i18n",

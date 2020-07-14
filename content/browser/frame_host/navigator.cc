@@ -120,11 +120,11 @@ bool Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
 
   ChildProcessSecurityPolicyImpl* security_policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  GURL process_lock_url =
-      security_policy->GetOriginLock(render_frame_host->GetProcess()->GetID());
+  ProcessLock process_lock =
+      security_policy->GetProcessLock(render_frame_host->GetProcess()->GetID());
 
   // In the case of error page process, any URL is allowed to commit.
-  if (process_lock_url == GURL(kUnreachableWebDataURL))
+  if (process_lock == ProcessLock::CreateForErrorPage())
     return true;
 
   bool frame_has_bindings = ((render_frame_host->GetEnabledBindings() &
@@ -135,7 +135,7 @@ bool Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
 
   // Embedders might disable locking for WebUI URLs, which is bad idea, however
   // this method should take this into account.
-  bool should_lock_to_origin = SiteInstanceImpl::ShouldLockToOrigin(
+  bool should_lock_process = SiteInstanceImpl::ShouldLockProcess(
       render_frame_host->GetSiteInstance()->GetIsolationContext(), url,
       render_frame_host->GetSiteInstance()->IsGuest());
 
@@ -154,7 +154,7 @@ bool Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
 
     // Check whether the process must be locked and if so that the process lock
     // is indeed in place.
-    if (should_lock_to_origin && process_lock_url.is_empty())
+    if (should_lock_process && process_lock.is_empty())
       return false;
 
     // There must be a WebUI on the frame.
@@ -180,9 +180,8 @@ bool Navigator::CheckWebUIRendererDoesNotDisplayNormalURL(
     url::Origin url_origin = url::Origin::Create(url.GetOrigin());
 
     // Verify |url| matches the origin of the process lock, if one is in place.
-    if (should_lock_to_origin) {
-      url::Origin process_lock_origin = url::Origin::Create(process_lock_url);
-      if (!url_origin.opaque() && process_lock_origin != url_origin)
+    if (should_lock_process) {
+      if (!url_origin.opaque() && !process_lock.MatchesOrigin(url_origin))
         return false;
     }
   }

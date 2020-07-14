@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">লিপ্যন্তরকরণ (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Sheets</translation>
 <translation id="2938685643439809023">মঙ্গোলীয়</translation>
-<translation id="2939410873710774399"><ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />) ব্যবহার করে ফাইল খুলতে, সেটি প্রথমে <ph name="FOLDER_NAME" /> ফোল্ডারে সরিয়ে রাখুন।</translation>
 <translation id="2942290791863759244">জার্মান NEO 2 কীবোর্ড</translation>
 <translation id="2943400156390503548">স্লাইড</translation>
 <translation id="2943503720238418293">অন্য একটি ছোট নাম ব্যবহার করুন</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> টি আইটেম নির্বাচিত</translation>
 <translation id="4850886885716139402">দেখুন</translation>
 <translation id="485316830061041779">জার্মান</translation>
-<translation id="4859297381873413734"><ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />) ব্যবহার করে ফাইল খুলতে, সেটি প্রথমে কপি করে <ph name="FOLDER_NAME" /> ফোল্ডারে পেস্ট করুন।</translation>
 <translation id="4867079195717347957">কলামের মানগুলি বড় থেকে ছোট ক্রমানুযায়ী সাজাতে ক্লিক করুন।</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> বাইট</translation>
 <translation id="4880214202172289027">ভলিউম স্লাইডার</translation>
 <translation id="4880520557730313061">স্বতঃ-ফিক্স</translation>
 <translation id="4881695831933465202">খুলুন</translation>
 <translation id="4886021172213954916">তামিল কীবোর্ড (টাইপরাইটার)</translation>
-<translation id="4892969127351273348"><ph name="APP_NAME" /> দিয়ে খোলা যায়নি</translation>
 <translation id="4900532980794411603">Parallels Desktop-এর সাথে শেয়ার করুন</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" />টির ব্যাকআপ নিতে প্রস্তুত</translation>
 <translation id="4924638091161556692">স্থির</translation>

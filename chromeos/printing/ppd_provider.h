@@ -188,6 +188,11 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   // localized in the default browser locale or the closest available fallback.
   //
   // |cb| will be called on the invoking thread, and will be sequenced.
+  //
+  // PpdProvider will enqueue calls to this method and answer them in
+  // the order received; it will opt to invoke |cb| with failure if the
+  // queue grows overlong, failing the oldest calls first. The exact
+  // queue length at which this occurs is unspecified.
   virtual void ResolveManufacturers(ResolveManufacturersCallback cb) = 0;
 
   // Get all models from a given manufacturer, localized in the
@@ -223,6 +228,11 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
 
   // For a given PpdReference, retrieve the make and model strings used to
   // construct that reference.
+  //
+  // PpdProvider will enqueue calls to this method and answer them in
+  // the order received; it will opt to invoke |cb| with failure if the
+  // queue grows overlong, failing the oldest calls first. The exact
+  // queue length at which this occurs is unspecified.
   virtual void ReverseLookup(const std::string& effective_make_and_model,
                              ReverseLookupCallback cb) = 0;
 

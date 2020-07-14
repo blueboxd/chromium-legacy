@@ -50,7 +50,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/screen_info.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/browser_test.h"
@@ -8639,9 +8638,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
             error_site_instance->GetProcess()->GetID());
   EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
 
-  // Verify that the error page process is locked to origin.
-  EXPECT_EQ(GURL(kUnreachableWebDataURL),
-            policy->GetOriginLock(error_site_instance->GetProcess()->GetID()));
+  EXPECT_EQ(ProcessLock::CreateForErrorPage(),
+            policy->GetProcessLock(error_site_instance->GetProcess()->GetID()));
 }
 
 // Test to verify that LoadPostCommitErrorPage loads an error page in a subframe

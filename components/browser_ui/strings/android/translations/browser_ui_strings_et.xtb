@@ -58,6 +58,7 @@
 <translation id="2586657967955657006">Lõikelaud</translation>
 <translation id="2621115761605608342">Lubage JavaScript konkreetse saidi jaoks.</translation>
 <translation id="2653659639078652383">Esita</translation>
+<translation id="2677748264148917807">Lahku</translation>
 <translation id="2687403674020088961">Blokeeri kõik küpsised (ei ole soovitatav)</translation>
 <translation id="2704606927547763573">Kopeeritud</translation>
 <translation id="2822354292072154809">Kas soovite objekti <ph name="CHOSEN_OBJECT_NAME" /> jaoks kindlasti lähtestada kõik saidi load?</translation>
@@ -126,6 +127,7 @@
 <translation id="5335288049665977812">Luba saitidel käitada JavaScripti (soovitatav)</translation>
 <translation id="534295439873310000">NFC-seadmed</translation>
 <translation id="5354152178998424783">See kustutab <ph name="DATASIZE" /> andmed ja küpsisefailid, mille saidid on salvestanud.</translation>
+<translation id="5384883051496921101">See sait jagab teavet väljaspool inkognito režiimi oleva rakendusega.</translation>
 <translation id="5391532827096253100">Teie ühendus selle saidiga ei ole turvaline. Saidi teave</translation>
 <translation id="5494752089476963479">Blokeeri reklaamid saitidel, mis kuvavad sekkuvaid või eksitavaid reklaame</translation>
 <translation id="5505264765875738116">Saidid ei saa küsida luba märguannete saatmiseks</translation>
@@ -165,6 +167,7 @@
 <translation id="6561560012278703671">Kasuta vaiksemat sõnumsidet (märguandeviibad blokeeritakse)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Kaitstud sisu</translation>
+<translation id="662080504995468778">Jää siia</translation>
 <translation id="6643016212128521049">Tühjenda</translation>
 <translation id="6697925417670533197">Aktiivsed allalaadimised</translation>
 <translation id="6746124502594467657">Liiguta alla</translation>
@@ -247,6 +250,7 @@
 <translation id="8926666909099850184">NFC on selle seadme puhul välja lülitatud. Lülitage see <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" /> sisse.</translation>
 <translation id="8929372349074745002">See sait avaneb ja vastab enamikule inimestele kiirelt</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">Kas lahkuda inkognito režiimist?</translation>
 <translation id="8958424370300090006">Blokeerige konkreetse saidi küpsisefailid.</translation>
 <translation id="8959122750345127698">Navigeerimine ei ole saadaval: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Vanemate hallatud</translation>

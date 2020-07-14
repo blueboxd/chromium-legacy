@@ -32,8 +32,7 @@ void ContentSecurityNotifier::NotifyContentWithCertificateErrorsDisplayed() {
       WebContents::FromRenderFrameHost(render_frame_host));
   if (!web_contents)
     return;
-  // TODO(nhiroki): |render_frame_host| argument could be removed.
-  web_contents->OnDidDisplayContentWithCertificateErrors(render_frame_host);
+  web_contents->OnDidDisplayContentWithCertificateErrors();
 }
 
 void ContentSecurityNotifier::NotifyInsecureContentRan(

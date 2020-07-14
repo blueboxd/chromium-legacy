@@ -14,6 +14,8 @@ source_set("scheduling") {
     "nearby_share_scheduler.h",
     "nearby_share_scheduler_base.cc",
     "nearby_share_scheduler_base.h",
+    "nearby_share_scheduler_factory.cc",
+    "nearby_share_scheduler_factory.h",
   ]
 
   deps = [
@@ -22,6 +24,22 @@ source_set("scheduling") {
     "//components/prefs",
     "//content/public/browser",
     "//services/network/public/cpp",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "fake_nearby_share_scheduler.cc",
+    "fake_nearby_share_scheduler.h",
+    "fake_nearby_share_scheduler_factory.cc",
+    "fake_nearby_share_scheduler_factory.h",
+  ]
+
+  deps = [
+    ":scheduling",
+    "//base",
   ]
 }
 

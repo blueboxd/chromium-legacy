@@ -171,7 +171,10 @@ SafeBrowsingPrivateEventRouter::SafeBrowsingPrivateEventRouter(
   event_router_ = EventRouter::Get(context_);
 }
 
-SafeBrowsingPrivateEventRouter::~SafeBrowsingPrivateEventRouter() {}
+SafeBrowsingPrivateEventRouter::~SafeBrowsingPrivateEventRouter() {
+  if (client_)
+    client_->RemoveObserver(this);
+}
 
 void SafeBrowsingPrivateEventRouter::OnPolicySpecifiedPasswordReuseDetected(
     const GURL& url,
@@ -815,6 +818,8 @@ void SafeBrowsingPrivateEventRouter::OnCloudPolicyClientAvailable(
     return;
   }
 
+  client_->AddObserver(this);
+
   VLOG(1) << "Ready for safe browsing real-time event reporting.";
 }
 
@@ -874,9 +879,14 @@ void SafeBrowsingPrivateEventRouter::ReportRealtimeEventCallback(
   wrapper.SetStringKey("time", now_str);
   wrapper.SetKey(name, std::move(event_builder).Run());
 
-  // Show the report on chrome://safe-browsing, if appropriate.
-  safe_browsing::WebUIInfoSingleton::GetInstance()->AddToReportingEvents(
-      wrapper);
+  auto upload_callback = base::BindOnce(
+      [](base::Value wrapper, bool uploaded) {
+        // Show the report on chrome://safe-browsing, if appropriate.
+        wrapper.SetBoolKey("uploaded_successfully", uploaded);
+        safe_browsing::WebUIInfoSingleton::GetInstance()->AddToReportingEvents(
+            wrapper);
+      },
+      wrapper.Clone());
 
   base::Value event_list(base::Value::Type::LIST);
   event_list.Append(std::move(wrapper));
@@ -885,7 +895,7 @@ void SafeBrowsingPrivateEventRouter::ReportRealtimeEventCallback(
       policy::RealtimeReportingJobConfiguration::BuildReport(
           std::move(event_list),
           reporting::GetContext(Profile::FromBrowserContext(context_))),
-      base::DoNothing());
+      std::move(upload_callback));
 }
 
 std::string SafeBrowsingPrivateEventRouter::GetProfileUserName() const {
@@ -917,6 +927,16 @@ bool SafeBrowsingPrivateEventRouter::IsRealtimeReportingAvailable() {
 #else
   return policy::ChromeBrowserCloudManagementController::IsEnabled();
 #endif
+}
+
+void SafeBrowsingPrivateEventRouter::OnClientError(
+    policy::CloudPolicyClient* client) {
+  base::Value error_value(base::Value::Type::DICTIONARY);
+  error_value.SetStringKey(
+      "error", "An event got an error status and hasn't been reported");
+  error_value.SetIntKey("status", client->status());
+  safe_browsing::WebUIInfoSingleton::GetInstance()->AddToReportingEvents(
+      error_value);
 }
 
 }  // namespace extensions

@@ -15,6 +15,8 @@
 #include "base/values.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/policy/core/common/cloud/cloud_policy_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_core.h"
 
 namespace content {
 class BrowserContext;
@@ -31,7 +33,6 @@ class IdentityManager;
 class GURL;
 
 namespace policy {
-class CloudPolicyClient;
 class DeviceManagementService;
 }
 
@@ -54,7 +55,9 @@ namespace extensions {
 // An event router that observes Safe Browsing events and notifies listeners.
 // The router also uploads events to the chrome reporting server side API if
 // the kRealtimeReportingFeature feature is enabled.
-class SafeBrowsingPrivateEventRouter : public KeyedService {
+class SafeBrowsingPrivateEventRouter
+    : public KeyedService,
+      public policy::CloudPolicyClient::Observer {
  public:
   // Feature that controls whether real-time reports are sent.
   static const base::Feature kRealtimeReportingFeature;
@@ -193,6 +196,11 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
       safe_browsing::BinaryUploadService* binary_upload_service);
 
   void SetIdentityManagerForTesting(signin::IdentityManager* identity_manager);
+
+  // policy::CloudPolicyClient::Observer:
+  void OnClientError(policy::CloudPolicyClient* client) override;
+  void OnPolicyFetched(policy::CloudPolicyClient* client) override {}
+  void OnRegistrationStateChanged(policy::CloudPolicyClient* client) override {}
 
  protected:
   // Callback to report safe browsing event through real-time reporting channel,

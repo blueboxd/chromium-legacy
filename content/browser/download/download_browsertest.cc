@@ -4307,9 +4307,16 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest,
                                   parameters);
 }
 
+#if defined(OS_WIN)
+// Flaky https://crbug.com/1105429, windows probably use a large receiving
+// buffer size and cause the first slice to start at a offset > 0.
+#define MAYBE_MiddleSliceDelayedError DISABLED_MiddleSliceDelayedError
+#else
+#define MAYBE_MiddleSliceDelayedError MiddleSliceDelayedError
+#endif
 // Verify that if the second request fails after the beginning request takes
 // over and completes its slice, download should complete.
-IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, MiddleSliceDelayedError) {
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, MAYBE_MiddleSliceDelayedError) {
   scoped_refptr<TestFileErrorInjector> injector(
       TestFileErrorInjector::Create(DownloadManagerForShell(shell())));
 

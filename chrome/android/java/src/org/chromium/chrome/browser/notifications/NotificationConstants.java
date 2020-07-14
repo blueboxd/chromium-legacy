@@ -55,8 +55,9 @@ public class NotificationConstants {
     @SuppressWarnings("unused")
     public static final int NOTIFICATION_ID_SIGNED_IN = 2;
     /**
-     * Unique identifier for the Physical Web notification.
+     * Unique identifier for the Physical Web notification. No longer used.
      */
+    @SuppressWarnings("unused")
     public static final int NOTIFICATION_ID_PHYSICAL_WEB = 3;
 
     /**

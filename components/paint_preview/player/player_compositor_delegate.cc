@@ -142,7 +142,8 @@ PlayerCompositorDelegate::PlayerCompositorDelegate(
     bool skip_service_launch)
     : compositor_error_(std::move(compositor_error)),
       paint_preview_service_(paint_preview_service),
-      key_(key) {
+      key_(key),
+      compress_on_close_(true) {
   if (skip_service_launch) {
     paint_preview_service_->GetCapturedPaintPreviewProto(
         key, base::BindOnce(&PlayerCompositorDelegate::OnProtoAvailable,
@@ -167,10 +168,12 @@ PlayerCompositorDelegate::PlayerCompositorDelegate(
 }
 
 PlayerCompositorDelegate::~PlayerCompositorDelegate() {
-  paint_preview_service_->GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&FileManager::CompressDirectory),
-                     paint_preview_service_->GetFileManager(), key_));
+  if (compress_on_close_) {
+    paint_preview_service_->GetTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&FileManager::CompressDirectory),
+                       paint_preview_service_->GetFileManager(), key_));
+  }
 }
 
 void PlayerCompositorDelegate::OnCompositorServiceDisconnected() {

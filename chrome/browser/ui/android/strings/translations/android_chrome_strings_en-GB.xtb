@@ -209,7 +209,6 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="2650751991977523696">Download file again?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Audio file}other{# Audio files}}</translation>
 <translation id="2656405586795711023">Web apps</translation>
-<translation id="2677748264148917807">Leave</translation>
 <translation id="2689830683995595741">By using Chrome, you agree to the <ph name="BEGIN_LINK1" />Google Terms of Service<ph name="END_LINK1" />, and the <ph name="BEGIN_LINK2" />Google Chrome and Chrome OS Additional Terms of Service<ph name="END_LINK2" />. The <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts managed with Family Link<ph name="END_LINK3" /> also applies.</translation>
 <translation id="2707726405694321444">Refresh page</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
@@ -290,6 +289,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="3303414029551471755">Proceed to download the content?</translation>
 <translation id="3306398118552023113">This app is running in Chrome</translation>
 <translation id="3315103659806849044">You are currently customising your Sync and Google service settings. To finish turning on sync, tap the Confirm button near the bottom of the screen. Navigate up</translation>
+<translation id="3320630259304269485">Safe Browsing (protection from dangerous sites) and other security settings</translation>
 <translation id="3328801116991980348">Site information</translation>
 <translation id="3333961966071413176">All contacts</translation>
 <translation id="3334729583274622784">Change file extension?</translation>
@@ -306,6 +306,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="3389286852084373014">Text is too large</translation>
 <translation id="3398320232533725830">Open the bookmarks manager</translation>
 <translation id="3414952576877147120">Size:</translation>
+<translation id="3435738964857648380">Security</translation>
 <translation id="3443221991560634068">Reload the current page</translation>
 <translation id="3478363558367712427">You can choose your search engine</translation>
 <translation id="3492207499832628349">New incognito tab</translation>
@@ -458,6 +459,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4749960740855309258">Open a new tab</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download complete.}other{# downloads complete.}}</translation>
+<translation id="4766678251456904326">Add account to device</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 download scheduled.}other{# downloads scheduled.}}</translation>
 <translation id="478981486571169252">You'll see your <ph name="SITE_NAME" /> sign-in status, browsing data and site data in Chrome.</translation>
 <translation id="4802417911091824046">Passphrase encryption doesn’t include payment methods and addresses from Google Pay.
@@ -534,7 +536,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5355191726083956201">Enhanced protection is on</translation>
 <translation id="5357811892247919462">Tab received</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> open tab, tap to switch tabs}other{<ph name="OPEN_TABS_MANY" /> open tabs, tap to switch tabs}}</translation>
-<translation id="5384883051496921101">This site is about to share information with an app outside of incognito mode.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 more)}other{(+ # more)}}</translation>
 <translation id="5403592356182871684">Names</translation>
 <translation id="5403644198645076998">Only allow certain sites</translation>
@@ -705,7 +706,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6593061639179217415">Desktop site</translation>
 <translation id="6597891566292541626">Position QR/barcode in this frame.</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
-<translation id="662080504995468778">Stay</translation>
 <translation id="6627583120233659107">Edit folder</translation>
 <translation id="6643016212128521049">Clear</translation>
 <translation id="6643649862576733715">Sort by amount of data saved</translation>
@@ -988,7 +988,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8922289737868596582">Download pages from the More Options button to use them offline</translation>
 <translation id="8937772741022875483">Remove your Chrome activity from Digital Wellbeing?</translation>
 <translation id="8942627711005830162">Open in other window</translation>
-<translation id="894871326938397531">Leave incognito mode?</translation>
 <translation id="8951232171465285730">Chrome has saved you <ph name="MEGABYTES" /> MB</translation>
 <translation id="8965591936373831584">pending</translation>
 <translation id="8970887620466824814">Something went wrong.</translation>
@@ -999,6 +998,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="9028914725102941583">Turn on sync to share across devices</translation>
 <translation id="9040142327097499898">Notifications are allowed. Location is off for this device.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Video}other{# Videos}}</translation>
+<translation id="9042893549633094279">Privacy and security</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9063523880881406963">Turn off Request desktop site</translation>
 <translation id="9065203028668620118">Edit</translation>

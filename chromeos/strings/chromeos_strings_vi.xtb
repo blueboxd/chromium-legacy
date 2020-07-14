@@ -71,6 +71,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="808894953321890993">Đổi mật khẩu</translation>
 <translation id="8208861521865154048">Đặc quyền</translation>
 <translation id="8347227221149377169">Lệnh in</translation>
+<translation id="8623849191266582420"><ph name="DEVICE_TYPE" /> này do <ph name="ENROLLMENT_DOMAIN" /> quản lý. Quản trị viên có thể định cấu hình và giám sát thiết bị từ xa.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> quản lý người dùng này. Miền này có thể quản lý từ xa các tùy chọn cài đặt và giám sát hoạt động của người dùng.</translation>
 <translation id="871560550817059752">Không thành công – Hết mực</translation>
 <translation id="8747900814994928677">Xác nhận thay đổi</translation>

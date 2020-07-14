@@ -288,7 +288,6 @@ public class ManualFillingControllerTest {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
         KeyboardVisibilityDelegate.setInstance(mMockKeyboard);
-        when(mMockActivity.getBottomSheetController()).thenReturn(mMockBottomSheetController);
         when(mMockWindow.getKeyboardDelegate()).thenReturn(mMockKeyboard);
         when(mMockWindow.getActivity()).thenReturn(new WeakReference<>(mMockActivity));
         when(mMockWindow.getApplicationBottomInsetProvider())
@@ -320,7 +319,8 @@ public class ManualFillingControllerTest {
         config.hardKeyboardHidden = HARDKEYBOARDHIDDEN_UNDEFINED;
         when(mMockResources.getConfiguration()).thenReturn(config);
         AccessorySheetTabCoordinator.IconProvider.setIconForTesting(mock(Drawable.class));
-        mController.initialize(mMockWindow, mMockKeyboardAccessory, mMockAccessorySheet);
+        mController.initialize(mMockWindow, mMockKeyboardAccessory, mMockAccessorySheet,
+                mMockBottomSheetController);
     }
 
     @Test

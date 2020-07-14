@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">პარამეტრების მართვა</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 სთ-ში}other{# სთ-ში}}</translation>
 <translation id="2583543531130364912">განახორციელეთ თქვენი სენსორული ეკრანის კალიბრაცია</translation>
+<translation id="2586657967955657006">გაცვლის ბუფერი</translation>
 <translation id="2666092431469916601">ზედა</translation>
 <translation id="2701330563083355633">გაზიარებულია <ph name="DEVICE_NAME" />-დან</translation>
 <translation id="271033894570825754">ახალი</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">დაიწყეთ ლაპარაკი</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> გადატანილია საქაღალდეში <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">ყველა აპი</translation>
+<translation id="4491109536499578614">გამოსახულება</translation>
 <translation id="4588090240171750605">გადაადგილება მარჯვნივ</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, შეფასებულია <ph name="RATING_SCORE" /> ვარსკვლავით</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, აპის რეკომენდაცია</translation>

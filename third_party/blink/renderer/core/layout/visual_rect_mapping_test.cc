@@ -843,10 +843,11 @@ TEST_P(VisualRectMappingTest, FloatUnderInline) {
 
   rect = target_visual_rect;
 
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    CheckVisualRect(*target, *span, rect, PhysicalRect(200, 100, 33, 44));
-  else
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    CheckVisualRect(*target, *span, rect, PhysicalRect(0, 0, 33, 44));
+  } else {
     CheckVisualRect(*target, *span, rect, PhysicalRect(-200, -100, 33, 44));
+  }
 }
 
 TEST_P(VisualRectMappingTest, FloatUnderInlineVerticalRL) {
@@ -883,7 +884,7 @@ TEST_P(VisualRectMappingTest, FloatUnderInlineVerticalRL) {
   // the right edge of the coordinate space whose width is 600.
   rect = target_visual_rect;
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    CheckVisualRect(*target, *span, rect, PhysicalRect(367, 100, 33, 44));
+    CheckVisualRect(*target, *span, rect, PhysicalRect(600 - 33, 0, 33, 44));
   } else {
     CheckVisualRect(*target, *span, rect,
                     PhysicalRect(600 + 200 - 33, -100, 33, 44));
@@ -913,10 +914,7 @@ TEST_P(VisualRectMappingTest, InlineBlock) {
   EXPECT_EQ(EnclosingIntRect(rect), target->FirstFragment().VisualRect());
 
   rect = target_visual_rect;
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    CheckVisualRect(*target, *span, rect, PhysicalRect(200, 100, 33, 44));
-  else
-    CheckVisualRect(*target, *span, rect, PhysicalRect(0, 0, 33, 44));
+  CheckVisualRect(*target, *span, rect, PhysicalRect(0, 0, 33, 44));
 }
 
 TEST_P(VisualRectMappingTest, InlineBlockVerticalRL) {
@@ -946,10 +944,7 @@ TEST_P(VisualRectMappingTest, InlineBlockVerticalRL) {
   // space shifted by the inline's relative offset. |target|'s left is -33 from
   // the right edge of the coordinate space whose width is 600.
   rect = target_visual_rect;
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    CheckVisualRect(*target, *span, rect, PhysicalRect(367, 100, 33, 44));
-  else
-    CheckVisualRect(*target, *span, rect, PhysicalRect(600 - 33, 0, 33, 44));
+  CheckVisualRect(*target, *span, rect, PhysicalRect(600 - 33, 0, 33, 44));
 }
 
 TEST_P(VisualRectMappingTest, AbsoluteUnderRelativeInline) {
@@ -975,10 +970,7 @@ TEST_P(VisualRectMappingTest, AbsoluteUnderRelativeInline) {
   EXPECT_EQ(EnclosingIntRect(rect), target->FirstFragment().VisualRect());
 
   rect = target_visual_rect;
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    CheckVisualRect(*target, *span, rect, PhysicalRect(300, 150, 33, 44));
-  else
-    CheckVisualRect(*target, *span, rect, PhysicalRect(100, 50, 33, 44));
+  CheckVisualRect(*target, *span, rect, PhysicalRect(100, 50, 33, 44));
 }
 
 TEST_P(VisualRectMappingTest, AbsoluteUnderRelativeInlineVerticalRL) {
@@ -1008,10 +1000,7 @@ TEST_P(VisualRectMappingTest, AbsoluteUnderRelativeInlineVerticalRL) {
   // space shifted by the inline's relative offset. |target|'s left is 100 from
   // the right edge of the coordinate space whose width is 600.
   rect = target_visual_rect;
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    CheckVisualRect(*target, *span, rect, PhysicalRect(500, 150, 33, 44));
-  else
-    CheckVisualRect(*target, *span, rect, PhysicalRect(600 + 100, 50, 33, 44));
+  CheckVisualRect(*target, *span, rect, PhysicalRect(600 + 100, 50, 33, 44));
 }
 
 TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3d) {

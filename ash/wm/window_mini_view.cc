@@ -14,7 +14,6 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -108,7 +107,7 @@ void WindowMiniView::UpdatePreviewRoundedCorners(bool show) {
 }
 
 void WindowMiniView::UpdateBorderState(bool show) {
-  border_ptr_->set_color(show ? gfx::kGoogleBlue300 : SK_ColorTRANSPARENT);
+  border_ptr_->SetFocused(show);
   SchedulePaint();
 }
 

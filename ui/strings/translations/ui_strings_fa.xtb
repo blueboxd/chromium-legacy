@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">مدیریت تنظیمات</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{تا ۱ ساعت دیگر}one{تا # ساعت دیگر}other{تا # ساعت دیگر}}</translation>
 <translation id="2583543531130364912">کالیبراسیون صفحه لمسی</translation>
+<translation id="2586657967955657006">بریده‌دان</translation>
 <translation id="2666092431469916601">بالا</translation>
 <translation id="2701330563083355633">هم‌رسانی‌شده از <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">جدید</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">شروع صحبت</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> به پوشه <ph name="FOLDER_NAME" /> منتقل شد.</translation>
 <translation id="4316910396681052118">همه برنامه‌ها</translation>
+<translation id="4491109536499578614">تصویر</translation>
 <translation id="4588090240171750605">پیمایش به راست</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />، رتبه‌بندی با ستاره <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />، توصیه برنامه</translation>

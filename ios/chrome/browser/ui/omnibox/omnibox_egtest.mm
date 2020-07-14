@@ -638,6 +638,12 @@ id<GREYMatcher> SearchCopiedTextButton() {
 #define MAYBE_testNoDefaultMatch DISABLED_testNoDefaultMatch
 #endif
 - (void)MAYBE_testNoDefaultMatch {
+  // TODO(crbug.com/1098722) Omnibox pasteboard suggestions are currently
+  // disabled on iOS14.
+  if (@available(iOS 14, *)) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS14.");
+  }
+
   NSString* copiedText = @"test no default match1";
 
   // Put some text in pasteboard.

@@ -832,46 +832,36 @@ TEST_F(MotionEventBufferTest, ExtrapolationHorizonLimited) {
 }
 
 TEST_F(MotionEventBufferTest, Resampling30to60) {
-  base::TimeDelta flush_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 60.);
-  base::TimeDelta event_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 30.);
+  base::TimeDelta flush_time_delta = base::TimeDelta::FromSeconds(1) / 60;
+  base::TimeDelta event_time_delta = base::TimeDelta::FromSeconds(1) / 30;
 
   RunResample(flush_time_delta, event_time_delta);
 }
 
 TEST_F(MotionEventBufferTest, Resampling60to60) {
-  base::TimeDelta flush_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 60.);
-  base::TimeDelta event_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 60.);
+  base::TimeDelta flush_time_delta = base::TimeDelta::FromSeconds(1) / 60;
+  base::TimeDelta event_time_delta = base::TimeDelta::FromSeconds(1) / 60;
 
   RunResample(flush_time_delta, event_time_delta);
 }
 
 TEST_F(MotionEventBufferTest, Resampling100to60) {
-  base::TimeDelta flush_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 60.);
-  base::TimeDelta event_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 100.);
+  base::TimeDelta flush_time_delta = base::TimeDelta::FromSeconds(1) / 60;
+  base::TimeDelta event_time_delta = base::TimeDelta::FromSeconds(1) / 100;
 
   RunResample(flush_time_delta, event_time_delta);
 }
 
 TEST_F(MotionEventBufferTest, Resampling120to60) {
-  base::TimeDelta flush_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 60.);
-  base::TimeDelta event_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 120.);
+  base::TimeDelta flush_time_delta = base::TimeDelta::FromSeconds(1) / 60;
+  base::TimeDelta event_time_delta = base::TimeDelta::FromSeconds(1) / 120;
 
   RunResample(flush_time_delta, event_time_delta);
 }
 
 TEST_F(MotionEventBufferTest, Resampling150to60) {
-  base::TimeDelta flush_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 60.);
-  base::TimeDelta event_time_delta =
-      base::TimeDelta::FromMillisecondsD(1000. / 150.);
+  base::TimeDelta flush_time_delta = base::TimeDelta::FromSeconds(1) / 60;
+  base::TimeDelta event_time_delta = base::TimeDelta::FromSeconds(1) / 150;
 
   RunResample(flush_time_delta, event_time_delta);
 }

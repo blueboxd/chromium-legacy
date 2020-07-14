@@ -179,9 +179,7 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
   if (response.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(
         response, request.GetRequestContext(),
-        frame->GetSettings()
-            ? frame->GetSettings()->GetStrictMixedContentCheckingForPlugin()
-            : false,
+        MixedContentChecker::DecideCheckModeForPlugin(frame->GetSettings()),
         document_loader_->GetContentSecurityNotifier());
   }
 

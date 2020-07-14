@@ -33,6 +33,12 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   bool IsLoaded() const override;
   bool IsValid() const override;
 
+  String GetURL() const override { return url_; }
+
+  const FontCustomPlatformData* GetCustomPlaftormData() const override {
+    return custom_font_data_.get();
+  }
+
   void BeginLoadIfNeeded() override;
   void SetDisplay(FontDisplay) override;
 
@@ -143,6 +149,8 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
 
   // |nullptr| if font is not loaded or failed to decode.
   scoped_refptr<FontCustomPlatformData> custom_font_data_;
+  // |nullptr| if font is not loaded or failed to decode.
+  String url_;
 
   FontDisplay display_;
   Phase phase_;

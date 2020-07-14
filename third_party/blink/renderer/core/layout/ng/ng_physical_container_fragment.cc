@@ -52,6 +52,8 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
   has_adjoining_object_descendants_ =
       builder->has_adjoining_object_descendants_;
   has_orthogonal_flow_roots_ = builder->has_orthogonal_flow_roots_;
+  may_have_descendant_above_block_start_ =
+      builder->may_have_descendant_above_block_start_;
   depends_on_percentage_block_size_ = DependsOnPercentageBlockSize(*builder);
 
   PhysicalSize size = Size();
@@ -168,6 +170,7 @@ void NGPhysicalContainerFragment::AddScrollableOverflowForInlineChild(
          (cursor.Current().Item()->BoxFragment() == this ||
           cursor.Current().Item()->LineBoxFragment() == this));
   const WritingMode container_writing_mode = container_style.GetWritingMode();
+  const TextDirection container_direction = container_style.Direction();
   for (NGInlineCursor descendants = cursor.CursorForDescendants();
        descendants;) {
     const NGFragmentItem* item = descendants.CurrentItem();
@@ -210,6 +213,9 @@ void NGPhysicalContainerFragment::AddScrollableOverflowForInlineChild(
             child_box->ScrollableOverflowForPropagation(container, height_type);
         child_scroll_overflow.offset += item->OffsetInContainerBlock();
       }
+      child_scroll_overflow.offset +=
+          ComputeRelativeOffset(child_box->Style(), container_writing_mode,
+                                container_direction, container.Size());
       overflow->Unite(child_scroll_overflow);
       descendants.MoveToNextSkippingChildren();
       continue;

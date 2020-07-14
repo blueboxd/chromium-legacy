@@ -173,14 +173,14 @@ class ChromeProvidedSharingOptionsProvider {
         PropertyModel propertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(mActivity, R.drawable.screenshot),
                 mActivity.getResources().getString(R.string.sharing_screenshot),
-                (shareParams)
+                (view)
                         -> {
                     RecordUserAction.record("SharingHubAndroid.ScreenshotSelected");
                     RecordHistogram.recordMediumTimesHistogram(
                             "Sharing.SharingHubAndroid.TimeToShare",
                             System.currentTimeMillis() - mShareStartTime);
-                    mScreenshotCoordinator = new ScreenshotCoordinator(
-                            mActivity, mTabProvider.get(), mChromeOptionShareCallback);
+                    mScreenshotCoordinator = new ScreenshotCoordinator(mActivity,
+                            mTabProvider.get(), mChromeOptionShareCallback, mBottomSheetController);
                     // Capture a screenshot once the bottom sheet is fully hidden. The
                     // observer will then remove itself.
                     mBottomSheetController.addObserver(mSheetObserver);
@@ -195,7 +195,7 @@ class ChromeProvidedSharingOptionsProvider {
         PropertyModel propertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(mActivity, R.drawable.ic_content_copy_black),
                 mActivity.getResources().getString(R.string.sharing_copy_url),
-                (shareParams)
+                (view)
                         -> {
                     RecordUserAction.record("SharingHubAndroid.CopyURLSelected");
                     RecordHistogram.recordMediumTimesHistogram(
@@ -217,7 +217,7 @@ class ChromeProvidedSharingOptionsProvider {
         PropertyModel propertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(mActivity, R.drawable.ic_content_copy_black),
                 mActivity.getResources().getString(R.string.sharing_copy_text),
-                (shareParams)
+                (view)
                         -> {
                     RecordUserAction.record("SharingHubAndroid.CopyTextSelected");
                     RecordHistogram.recordMediumTimesHistogram(
@@ -238,7 +238,7 @@ class ChromeProvidedSharingOptionsProvider {
         PropertyModel propertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(mActivity, R.drawable.send_tab),
                 mActivity.getResources().getString(R.string.send_tab_to_self_share_activity_title),
-                (shareParams)
+                (view)
                         -> {
                     RecordUserAction.record("SharingHubAndroid.SendTabToSelfSelected");
                     RecordHistogram.recordMediumTimesHistogram(
@@ -264,7 +264,7 @@ class ChromeProvidedSharingOptionsProvider {
         PropertyModel propertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(mActivity, R.drawable.qr_code),
                 mActivity.getResources().getString(R.string.qr_code_share_icon_label),
-                (currentActivity)
+                (view)
                         -> {
                     RecordUserAction.record("SharingHubAndroid.QRCodeSelected");
                     RecordHistogram.recordMediumTimesHistogram(
@@ -284,7 +284,7 @@ class ChromeProvidedSharingOptionsProvider {
         PropertyModel propertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(mActivity, R.drawable.sharing_print),
                 mActivity.getResources().getString(R.string.print_share_activity_title),
-                (currentActivity)
+                (view)
                         -> {
                     RecordUserAction.record("SharingHubAndroid.PrintSelected");
                     RecordHistogram.recordMediumTimesHistogram(

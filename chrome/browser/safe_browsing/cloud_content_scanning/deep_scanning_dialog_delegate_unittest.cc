@@ -257,20 +257,17 @@ DlpVerdictToContentAnalysisResult(const DlpDeepScanningVerdict& dlp_verdict) {
     rule->set_rule_id(base::NumberToString(dlp_rule.rule_id()));
     switch (dlp_rule.action()) {
       case DlpDeepScanningVerdict::TriggeredRule::ACTION_UNKNOWN:
-        rule->set_action(enterprise_connectors::ContentAnalysisResponse::
-                             Result::TriggeredRule::ACTION_UNSPECIFIED);
+        rule->set_action(
+            enterprise_connectors::TriggeredRule::ACTION_UNSPECIFIED);
         break;
       case DlpDeepScanningVerdict::TriggeredRule::REPORT_ONLY:
-        rule->set_action(enterprise_connectors::ContentAnalysisResponse::
-                             Result::TriggeredRule::REPORT_ONLY);
+        rule->set_action(enterprise_connectors::TriggeredRule::REPORT_ONLY);
         break;
       case DlpDeepScanningVerdict::TriggeredRule::WARN:
-        rule->set_action(enterprise_connectors::ContentAnalysisResponse::
-                             Result::TriggeredRule::WARN);
+        rule->set_action(enterprise_connectors::TriggeredRule::WARN);
         break;
       case DlpDeepScanningVerdict::TriggeredRule::BLOCK:
-        rule->set_action(enterprise_connectors::ContentAnalysisResponse::
-                             Result::TriggeredRule::BLOCK);
+        rule->set_action(enterprise_connectors::TriggeredRule::BLOCK);
         break;
     }
   }

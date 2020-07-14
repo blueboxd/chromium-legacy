@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.screenshot.EditorScreenshotTask;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.modules.image_editor.ImageEditorModuleProvider;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 
 /**
  * Handles the screenshot action in the Sharing Hub and launches the screenshot editor.
@@ -26,22 +27,25 @@ public class ScreenshotCoordinator {
     private final Activity mActivity;
     private final Tab mTab;
     private final ChromeOptionShareCallback mChromeOptionShareCallback;
+    private final BottomSheetController mBottomSheetController;
 
     private EditorScreenshotTask mScreenshotTask;
     private Bitmap mScreenshot;
 
-    public ScreenshotCoordinator(
-            Activity activity, Tab tab, ChromeOptionShareCallback chromeOptionShareCallback) {
+    public ScreenshotCoordinator(Activity activity, Tab tab,
+            ChromeOptionShareCallback chromeOptionShareCallback,
+            BottomSheetController sheetController) {
         mActivity = activity;
         mTab = tab;
         mChromeOptionShareCallback = chromeOptionShareCallback;
+        mBottomSheetController = sheetController;
     }
 
     /**
      * Takes a screenshot of the current tab and attempts to launch the screenshot image editor.
      */
     public void captureScreenshot() {
-        mScreenshotTask = new EditorScreenshotTask(mActivity);
+        mScreenshotTask = new EditorScreenshotTask(mActivity, mBottomSheetController);
         mScreenshotTask.capture(() -> {
             mScreenshot = mScreenshotTask.getScreenshot();
             if (mScreenshot == null) {

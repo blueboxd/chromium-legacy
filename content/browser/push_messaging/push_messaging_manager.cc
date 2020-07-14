@@ -609,7 +609,8 @@ void PushMessagingManager::SendSubscriptionSuccess(
 
   std::move(data.callback)
       .Run(status, blink::mojom::PushSubscription::New(
-                       endpoint, std::move(data.options), p256dh, auth));
+                       endpoint, base::nullopt /* expiration_time */,
+                       std::move(data.options), p256dh, auth));
 
   RecordRegistrationStatus(status);
 }
@@ -860,11 +861,14 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
     blink::mojom::PushGetRegistrationStatus status =
         blink::mojom::PushGetRegistrationStatus::SUCCESS;
 
+    // TODO(crbug.com/1104215): Get expiration_time from push_service in
+    // Core::GetSubscriptionInfoOnUI
     RunOrPostTaskOnThread(
         FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
         base::BindOnce(std::move(callback), status,
                        blink::mojom::PushSubscription::New(
-                           endpoint, std::move(options), p256dh, auth)));
+                           endpoint, base::nullopt /* expiration_time */,
+                           std::move(options), p256dh, auth)));
 
     RecordGetRegistrationStatus(status);
   } else {

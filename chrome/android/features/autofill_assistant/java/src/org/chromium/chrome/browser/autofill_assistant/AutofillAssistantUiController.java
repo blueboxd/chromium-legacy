@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -89,8 +90,10 @@ class AutofillAssistantUiController {
     private static AutofillAssistantUiController create(ChromeActivity activity,
             boolean allowTabSwitching, long nativeUiController,
             @Nullable AssistantOnboardingCoordinator onboardingCoordinator) {
+        BottomSheetController sheetController =
+                BottomSheetControllerProvider.from(activity.getWindowAndroid());
         assert activity != null;
-        assert activity.getBottomSheetController() != null;
+        assert sheetController != null;
 
         if (sActiveChromeActivities == null) {
             sActiveChromeActivities = new HashSet<>();
@@ -99,7 +102,7 @@ class AutofillAssistantUiController {
 
         // TODO(crbug.com/1048983): Have the params be passed in to the constructor directly rather
         //         than obtaining them from ChromeActivity getters.
-        return new AutofillAssistantUiController(activity, activity.getBottomSheetController(),
+        return new AutofillAssistantUiController(activity, sheetController,
                 activity.getTabObscuringHandler(), allowTabSwitching, nativeUiController,
                 onboardingCoordinator);
     }

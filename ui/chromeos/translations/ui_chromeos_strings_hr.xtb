@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">Unos za japanski (za američku tipkovnicu)</translation>
 <translation id="1047956942837015229">Brisanje stavki (<ph name="COUNT" />)...</translation>
 <translation id="1049926623896334335">Wordov dokument</translation>
+<translation id="1060368002126861100">Da biste otvarali datoteke pomoću aplikacije <ph name="APP_NAME" />, najprije ih premjestite u mapu datoteka u Windowsima.</translation>
 <translation id="1062407476771304334">Zamijeni</translation>
 <translation id="1065449928621190041">Kanadsko-francuska tipkovnica</translation>
 <translation id="1119069657431255176">Sažeta tar arhiva Bzip2</translation>
@@ -168,7 +169,6 @@
 <translation id="2924296707677495905">transliteracija (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Tablice</translation>
 <translation id="2938685643439809023">Mongolski</translation>
-<translation id="2939410873710774399">Da biste otvorili datoteke s <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), prvo ih premjestite u mapu <ph name="FOLDER_NAME" />.</translation>
 <translation id="2942290791863759244">njemačka NEO 2 tipkovnica</translation>
 <translation id="2943400156390503548">Prezentacije</translation>
 <translation id="2943503720238418293">Upotrijebite kraći naziv</translation>
@@ -222,6 +222,7 @@
 <translation id="3524311639100184459">Oprez: ove su datoteke privremene i mogu se automatski izbrisati za oslobađanje prostora na disku.  <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Mapa</translation>
 <translation id="3549797760399244642">Idite na drive.google.com...</translation>
+<translation id="3553048479571901246">Da biste otvarali datoteke pomoću aplikacije <ph name="APP_NAME" />, najprije ih kopirajte u mapu datoteka u Windowsima.</translation>
 <translation id="357479282490346887">Litavski</translation>
 <translation id="3583509704582854624">Alfanumerički unos (za japansku tipkovnicu)</translation>
 <translation id="3603385196401704894">francuska (kanadska)</translation>
@@ -333,14 +334,12 @@
 <translation id="4839847978919684242">Odabrane stavke: <ph name="SELCTED_FILES_COUNT" /></translation>
 <translation id="4850886885716139402">Prikaz</translation>
 <translation id="485316830061041779">Njemački</translation>
-<translation id="4859297381873413734">Da biste otvorili datoteke s <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), prvo ih kopirajte u mapu <ph name="FOLDER_NAME" />.</translation>
 <translation id="4867079195717347957">Kliknite da biste stavke u stupcu poredali silaznim redoslijedom.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> B</translation>
 <translation id="4880214202172289027">Klizač za glasnoću</translation>
 <translation id="4880520557730313061">Automatska obrada</translation>
 <translation id="4881695831933465202">Otvori</translation>
 <translation id="4886021172213954916">tamilska tipkovnica (pisaći stroj)</translation>
-<translation id="4892969127351273348">Otvaranje pomoću aplikacije <ph name="APP_NAME" /> nije moguće</translation>
 <translation id="4900532980794411603">Dijeli s Parallels Desktopom</translation>
 <translation id="4905417359854579806">Sigurnosno kopiranje datoteka (ukupno <ph name="FILE_COUNT" />) je spremno</translation>
 <translation id="4924638091161556692">Obrađeno</translation>

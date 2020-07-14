@@ -341,13 +341,6 @@ class PluginPowerSaverPixelTest : public PluginPowerSaverBrowserTest {
     PluginPowerSaverBrowserTest::SetUp();
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // The pixel tests run more reliably in software mode.
-    command_line->AppendSwitch(switches::kDisableGpu);
-
-    PluginPowerSaverBrowserTest::SetUpCommandLine(command_line);
-  }
-
  protected:
   void LoadHTML(const std::string& file) override {
     gfx::Rect bounds(gfx::Rect(0, 0, kBrowserWidth, kBrowserHeight));
@@ -363,10 +356,8 @@ class PluginPowerSaverPixelTest : public PluginPowerSaverBrowserTest {
 
 // This test fail on macOS 10.12. https://crbug.com/599484.
 // Flaky on Windows, Asan, and Msan. See crbug.com/549285 and crbug.com/512140.
-// Because ChromeOS cannot use software rendering and the pixel tests continue
-// to flake with hardware acceleration, disable these on ChromeOS.
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(ADDRESS_SANITIZER) || \
-    defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)
+    defined(MEMORY_SANITIZER)
 #define MAYBE_SmallCrossOrigin DISABLED_SmallCrossOrigin
 #else
 #define MAYBE_SmallCrossOrigin SmallCrossOrigin
@@ -388,10 +379,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverPixelTest, MAYBE_SmallCrossOrigin) {
 }
 
 // Flaky on Windows, Asan, and Msan. See crbug.com/549285 and crbug.com/512140.
-// Because ChromeOS cannot use software rendering and the pixel tests continue
-// to flake with hardware acceleration, disable these on ChromeOS.
-#if defined(OS_WIN) || defined(ADDRESS_SANITIZER) || \
-    defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_SmallerThanPlayIcon DISABLED_SmallerThanPlayIcon
 #else
 #define MAYBE_SmallerThanPlayIcon SmallerThanPlayIcon
@@ -413,10 +401,8 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverPixelTest, MAYBE_SmallerThanPlayIcon) {
 
 // This test fail on macOS 10.12. https://crbug.com/599484.
 // Flaky on Windows, Asan, and Msan. See crbug.com/549285 and crbug.com/512140.
-// Because ChromeOS cannot use software rendering and the pixel tests continue
-// to flake with hardware acceleration, disable these on ChromeOS.
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(ADDRESS_SANITIZER) || \
-    defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)
+    defined(MEMORY_SANITIZER)
 #define MAYBE_PosterTests DISABLED_PosterTests
 #else
 #define MAYBE_PosterTests PosterTests

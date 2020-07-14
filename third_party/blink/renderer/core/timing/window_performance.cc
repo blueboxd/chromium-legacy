@@ -31,9 +31,11 @@
 
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
@@ -45,6 +47,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/timing/largest_contentful_paint.h"
 #include "third_party/blink/renderer/core/timing/layout_shift.h"
+#include "third_party/blink/renderer/core/timing/measure_memory/measure_memory_delegate.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_observer.h"
@@ -145,11 +148,21 @@ static base::TimeTicks ToTimeOrigin(LocalDOMWindow* window) {
 WindowPerformance::WindowPerformance(LocalDOMWindow* window)
     : Performance(ToTimeOrigin(window),
                   window->GetTaskRunner(TaskType::kPerformanceTimeline)),
-      ExecutionContextClient(window) {
+      ExecutionContextClient(window),
+      measure_memory_experiment_timer_(
+          task_runner_,
+          this,
+          &WindowPerformance::MeasureMemoryExperimentTimerFired) {
   DCHECK(GetFrame());
   DCHECK(GetFrame()->GetPerformanceMonitor());
   GetFrame()->GetPerformanceMonitor()->Subscribe(
       PerformanceMonitor::kLongTask, kLongTaskObserverThreshold, this);
+  if (MeasureMemoryDelegate::IsMeasureMemoryAvailable(window) &&
+      base::FeatureList::IsEnabled(blink::features::kMeasureMemoryExperiment)) {
+    int delay_in_ms = base::RandInt(0, kMaxMeasureMemoryExperimentDelayInMs);
+    measure_memory_experiment_timer_.StartOneShot(
+        base::TimeDelta::FromMilliseconds(delay_in_ms), FROM_HERE);
+  }
 }
 
 WindowPerformance::~WindowPerformance() = default;
@@ -488,6 +501,18 @@ void WindowPerformance::OnLargestContentfulPaintUpdated(
 
 void WindowPerformance::OnPaintFinished() {
   ++frame_index_;
+}
+
+void WindowPerformance::MeasureMemoryExperimentTimerFired(TimerBase*) {
+  if (!GetFrame() || !GetExecutionContext())
+    return;
+  v8::Isolate* isolate = GetExecutionContext()->GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context =
+      ToV8Context(GetFrame(), DOMWrapperWorld::MainWorld());
+  isolate->MeasureMemory(
+      std::make_unique<MeasureMemoryDelegate>(isolate, context),
+      v8::MeasureMemoryExecution::kDefault);
 }
 
 }  // namespace blink

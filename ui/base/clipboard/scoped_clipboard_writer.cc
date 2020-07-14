@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include <memory>
+#include <utility>
 
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,8 +17,10 @@
 // be found in clipboard.h.
 namespace ui {
 
-ScopedClipboardWriter::ScopedClipboardWriter(ClipboardBuffer buffer)
-    : buffer_(buffer) {}
+ScopedClipboardWriter::ScopedClipboardWriter(
+    ClipboardBuffer buffer,
+    std::unique_ptr<ClipboardDataEndpoint> data_src)
+    : buffer_(buffer), data_src_(std::move(data_src)) {}
 
 ScopedClipboardWriter::~ScopedClipboardWriter() {
   static constexpr size_t kMaxRepresentations = 1 << 12;
@@ -25,13 +29,13 @@ ScopedClipboardWriter::~ScopedClipboardWriter() {
          "same write.";
   DCHECK(platform_representations_.size() < kMaxRepresentations);
   if (!objects_.empty()) {
-    Clipboard::GetForCurrentThread()->WritePortableRepresentations(buffer_,
-                                                                   objects_);
-  }
-  if (!platform_representations_.empty()) {
+    Clipboard::GetForCurrentThread()->WritePortableRepresentations(
+        buffer_, objects_, std::move(data_src_));
+  } else if (!platform_representations_.empty()) {
     Clipboard::GetForCurrentThread()->WritePlatformRepresentations(
-        buffer_, std::move(platform_representations_));
+        buffer_, std::move(platform_representations_), std::move(data_src_));
   }
+
   if (confidential_)
     Clipboard::GetForCurrentThread()->MarkAsConfidential();
 }

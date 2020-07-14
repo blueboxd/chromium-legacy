@@ -26,14 +26,9 @@ WaylandDisplayObserver::~WaylandDisplayObserver() {
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 
-void WaylandDisplayObserver::SetScaleObserver(
-    base::WeakPtr<ScaleObserver> scale_observer) {
-  scale_observer_ = scale_observer;
+void WaylandDisplayObserver::AddScaleObserver(ScaleObserver* scale_observer) {
+  scale_observers_.AddObserver(scale_observer);
   SendDisplayMetrics();
-}
-
-bool WaylandDisplayObserver::HasScaleObserver() const {
-  return !!scale_observer_;
 }
 
 void WaylandDisplayObserver::OnDisplayMetricsChanged(
@@ -101,8 +96,8 @@ void WaylandDisplayObserver::SendDisplayMetrics() {
                       WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED,
                       bounds.width(), bounds.height(), static_cast<int>(60000));
 
-  if (HasScaleObserver())
-    scale_observer_->OnDisplayScalesChanged(display);
+  for (auto& observer : scale_observers_)
+    observer.OnDisplayScalesChanged(display);
 
   if (wl_resource_get_version(output_resource_) >=
       WL_OUTPUT_DONE_SINCE_VERSION) {

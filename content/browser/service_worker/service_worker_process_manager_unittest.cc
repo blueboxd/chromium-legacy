@@ -104,12 +104,14 @@ TEST_F(ServiceWorkerProcessManagerTest,
        AllocateWorkerProcess_WithProcessReuse) {
   const int kEmbeddedWorkerId = 100;
   const GURL kSiteUrl = GURL("http://example.com");
+  SiteInfo site_info = SiteInstanceImpl::ComputeSiteInfo(
+      IsolationContext(browser_context_.get()), kSiteUrl);
 
   // Create a process that is hosting a frame with kSiteUrl.
   std::unique_ptr<MockRenderProcessHost> host(CreateRenderProcessHost());
   host->Init();
   RenderProcessHostImpl::AddFrameWithSite(browser_context_.get(), host.get(),
-                                          SiteInfo(kSiteUrl));
+                                          site_info);
 
   const std::map<int, scoped_refptr<SiteInstance>>& processes =
       worker_process_map();
@@ -139,18 +141,20 @@ TEST_F(ServiceWorkerProcessManagerTest,
   EXPECT_TRUE(processes.empty());
 
   RenderProcessHostImpl::RemoveFrameWithSite(browser_context_.get(), host.get(),
-                                             SiteInfo(kSiteUrl));
+                                             site_info);
 }
 
 TEST_F(ServiceWorkerProcessManagerTest,
        AllocateWorkerProcess_WithoutProcessReuse) {
   const int kEmbeddedWorkerId = 100;
   const GURL kSiteUrl = GURL("http://example.com");
+  SiteInfo site_info = SiteInstanceImpl::ComputeSiteInfo(
+      IsolationContext(browser_context_.get()), kSiteUrl);
 
   // Create a process that is hosting a frame with kSiteUrl.
   std::unique_ptr<MockRenderProcessHost> host(CreateRenderProcessHost());
   RenderProcessHostImpl::AddFrameWithSite(browser_context_.get(), host.get(),
-                                          SiteInfo(kSiteUrl));
+                                          site_info);
 
   const std::map<int, scoped_refptr<SiteInstance>>& processes =
       worker_process_map();
@@ -179,7 +183,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
   EXPECT_TRUE(processes.empty());
 
   RenderProcessHostImpl::RemoveFrameWithSite(browser_context_.get(), host.get(),
-                                             SiteInfo(kSiteUrl));
+                                             site_info);
 }
 
 TEST_F(ServiceWorkerProcessManagerTest, AllocateWorkerProcess_InShutdown) {

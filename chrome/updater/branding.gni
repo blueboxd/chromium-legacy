@@ -9,6 +9,7 @@ if (is_chrome_branded) {
   updater_company_short_name = "Google"
   updater_product_full_name = "GoogleUpdater"
   browser_name = "Chrome"
+  browser_product_name = "Google Chrome"
   updater_copyright =
       "Copyright 2020 The Chromium Authors. All rights reserved."
   mac_updater_bundle_identifier = "com.google.GoogleUpdater"
@@ -18,6 +19,7 @@ if (is_chrome_branded) {
   updater_company_short_name = "Chromium"
   updater_product_full_name = "ChromiumUpdater"
   browser_name = "Chromium"
+  browser_product_name = "Chromium"
   updater_copyright =
       "Copyright 2020 The Chromium Authors. All rights reserved."
   mac_updater_bundle_identifier = "org.chromium.ChromiumUpdater"

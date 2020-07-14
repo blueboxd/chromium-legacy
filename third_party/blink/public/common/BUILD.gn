@@ -157,8 +157,6 @@ source_set("headers") {
     "permissions/permission_utils.h",
     "prerender/prerender_rel_type.h",
     "scheduler/web_scheduler_tracked_feature.h",
-    "screen_orientation/web_screen_orientation_lock_type.h",
-    "screen_orientation/web_screen_orientation_type.h",
     "security/security_style.h",
     "security_context/insecure_request_policy.h",
     "service_worker/service_worker_status_code.h",

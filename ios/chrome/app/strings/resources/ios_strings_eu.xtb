@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="eu">
 <translation id="1005230401424685968">UUUU</translation>
+<translation id="1013952917065545813">Itzuli hona duela gutxi itxi dituzun fitxak berriro irekitzeko</translation>
 <translation id="1016495303386450659">Eguneratu da elementua</translation>
 <translation id="1044891598689252897">Webguneek ohiko moduan funtzionatuko dute</translation>
 <translation id="1047726139967079566">Ezarri laster-marka orriari…</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">Gelditu</translation>
 <translation id="1283524564873030414">Azken 24 orduetakoak</translation>
 <translation id="1285320974508926690">Ez itzuli inoiz webgune hau</translation>
+<translation id="1321993286294231467">Errore bat gertatu da irudia gordetzean.</translation>
 <translation id="1323735185997015385">Ezabatu</translation>
 <translation id="132683371494960526">Sakatu birritan karpeta nagusia aldatzeko.</translation>
 <translation id="1340643665687018190">Itxi menua</translation>
@@ -141,7 +143,7 @@ Webguneek ezin dituzte erabili cookieak beste webguneetan egiten dituzun arakatz
 <translation id="2647269890314209800">Erabiltzen diren cookieak</translation>
 <translation id="2648803196158606475">Ezabatu irakurritakoak</translation>
 <translation id="2653659639078652383">Bidali</translation>
-<translation id="2690858294534178585">Aplikazioren bat kamera erabiltzen ari da</translation>
+<translation id="2690858294534178585">Kamera abian da</translation>
 <translation id="2691653761409724435">Ez dago erabilgarri konexiorik gabe</translation>
 <translation id="2695507686909505111">Itzuli da orria</translation>
 <translation id="2702801445560668637">Zerrenda</translation>
@@ -560,6 +562,7 @@ Webguneek ezin dituzte erabili cookieak beste webguneetan egiten dituzun arakatz
 <translation id="7658239707568436148">Utzi</translation>
 <translation id="766891008101699113">Sarea modu pribatuan arakatzeko, gehitu fitxa berri bat.</translation>
 <translation id="7671141431838911305">INSTALATU</translation>
+<translation id="7701040980221191251">Bat ere ez</translation>
 <translation id="7765158879357617694">Eraman</translation>
 <translation id="7771470029643830783">Saioa amaitzen baduzu, aurrerantzean ez dira sinkronizatuko laster-markak, historia, pasahitzak eta Chrome-ko beste datu batzuk Google-ko kontuarekin.
 

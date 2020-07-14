@@ -32,6 +32,7 @@ class DisplayHandler : public ::settings::SettingsPageUIHandler {
 
  private:
   void HandleHighlightDisplay(const base::ListValue* args);
+  void HandleDragDisplayDelta(const base::ListValue* args);
 
   mojo::Remote<ash::mojom::CrosDisplayConfigController> cros_display_config_;
 };

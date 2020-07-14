@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="1005230401424685968">ÅÅÅÅ</translation>
+<translation id="1013952917065545813">Du kan komme tilbake hit for å gjenåpne faner du nylig har lukket</translation>
 <translation id="1016495303386450659">Elementet er oppdatert</translation>
 <translation id="1044891598689252897">Nettsteder kommer til å fungere som normalt</translation>
 <translation id="1047726139967079566">Legg til bokmerke for denne siden...</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1283524564873030414">Siste døgn</translation>
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
+<translation id="1321993286294231467">Feil ved lagring av bilde.</translation>
 <translation id="1323735185997015385">Slett</translation>
 <translation id="132683371494960526">Dobbelttrykk for å bytte overordnet mappe.</translation>
 <translation id="1340643665687018190">Lukk menyen</translation>
@@ -560,6 +562,7 @@ Nettsteder kan ikke bruke informasjonskapsler til å se nettleseraktiviteten din
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="766891008101699113">For å surfe på nettet privat, legg til en ny fane.</translation>
 <translation id="7671141431838911305">INSTALLER</translation>
+<translation id="7701040980221191251">Ingen</translation>
 <translation id="7765158879357617694">Flytt</translation>
 <translation id="7771470029643830783">Når du logger av, blir ikke bokmerker, loggen, passord og andre Chrome-data synkronisert med Google-kontoen din lenger.
 

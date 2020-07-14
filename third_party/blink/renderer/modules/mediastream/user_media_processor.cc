@@ -1473,15 +1473,15 @@ void UserMediaProcessor::OnCreateNativeTracksCompleted(
     GetUserMediaRequestFailed(result, constraint_name);
 
     for (auto web_track : request_info->descriptor()->AudioComponents()) {
-      WebPlatformMediaStreamTrack* track =
-          WebPlatformMediaStreamTrack::GetTrack(WebMediaStreamTrack(web_track));
+      MediaStreamTrackPlatform* track =
+          MediaStreamTrackPlatform::GetTrack(WebMediaStreamTrack(web_track));
       if (track)
         track->Stop();
     }
 
     for (auto web_track : request_info->descriptor()->VideoComponents()) {
-      WebPlatformMediaStreamTrack* track =
-          WebPlatformMediaStreamTrack::GetTrack(WebMediaStreamTrack(web_track));
+      MediaStreamTrackPlatform* track =
+          MediaStreamTrackPlatform::GetTrack(WebMediaStreamTrack(web_track));
       if (track)
         track->Stop();
     }

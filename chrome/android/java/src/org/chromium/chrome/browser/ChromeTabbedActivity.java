@@ -659,8 +659,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 TabManagementDelegate tabManagementDelegate =
                         TabManagementModuleProvider.getDelegate();
                 if (tabManagementDelegate != null) {
-                    mStartSurface = tabManagementDelegate.createStartSurface(
-                            this, mRootUiCoordinator.getScrimCoordinator());
+                    mStartSurface = tabManagementDelegate.createStartSurface(this,
+                            mRootUiCoordinator.getScrimCoordinator(),
+                            mRootUiCoordinator.getBottomSheetController());
                 }
             }
             mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder, mStartSurface);
@@ -862,6 +863,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             return;
         }
 
+        DefaultBrowserPromoUtils.maybeRemoveIntentData(intent);
         mIntentHandlingTimeMs = SystemClock.uptimeMillis();
         super.onNewIntent(intent);
     }
@@ -1690,7 +1692,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     protected Pair<ChromeTabCreator, ChromeTabCreator> createTabCreators() {
         Supplier<TabDelegateFactory> tabDelegateFactorySupplier = () -> {
             return new TabbedModeTabDelegateFactory(this, getAppBrowserControlsVisibilityDelegate(),
-                    getShareDelegateSupplier(), mEphemeralTabCoordinatorSupplier);
+                    getShareDelegateSupplier(), mEphemeralTabCoordinatorSupplier,
+                    mRootUiCoordinator.getBottomSheetController());
         };
 
         ChromeTabCreator.OverviewNTPCreator overviewNTPCreator = null;
@@ -2215,7 +2218,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             mShowHistoryRunnable = null;
             if (event.getEventTime() - event.getDownTime()
                             >= ViewConfiguration.getLongPressTimeout()
-                    && NavigationSheet.isInstanceShowing(getBottomSheetController())) {
+                    && NavigationSheet.isInstanceShowing(
+                            mRootUiCoordinator.getBottomSheetController())) {
                 // If tab history popup is showing, do not process the keyUp event
                 // which will dismiss it immediately.
                 return true;

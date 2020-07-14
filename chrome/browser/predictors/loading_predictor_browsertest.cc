@@ -1887,7 +1887,7 @@ class LoadingPredictorPrefetchBrowserTest
     expected_requests_.erase(it);
 
     // Finish if done.
-    if (expected_requests_.empty())
+    if (expected_requests_.empty() && quit_)
       std::move(quit_).Run();
   }
 

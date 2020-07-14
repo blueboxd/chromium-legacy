@@ -267,39 +267,106 @@ TEST_F(AssistantOnboardingViewTest, ShouldHaveExpectedIntro) {
 }
 
 TEST_F(AssistantOnboardingViewTest, ShouldHaveExpectedSuggestions) {
+  struct VectorIconWithColor {
+    VectorIconWithColor(const gfx::VectorIcon& icon, SkColor color)
+        : icon(icon), color(color) {}
+
+    const gfx::VectorIcon& icon;
+    SkColor color;
+  };
+
+  struct ExpectedSuggestion {
+    std::string message;
+    std::unique_ptr<VectorIconWithColor> icon_with_color;
+  };
+
   // Iterate over each onboarding mode.
   for (int mode = 0;
        mode <= static_cast<int>(AssistantOnboardingMode::kMaxValue); ++mode) {
     auto onboarding_mode = static_cast<AssistantOnboardingMode>(mode);
     SetOnboardingMode(onboarding_mode);
 
-    // Determine expected messages based on onboarding mode.
-    std::vector<std::string> expected_messages;
+    // Determine expected suggestions based on onboarding mode.
+    std::vector<ExpectedSuggestion> expected_suggestions;
     switch (onboarding_mode) {
       case AssistantOnboardingMode::kEducation:
-        expected_messages = {
-            "Square root of 71", "How far is Venus",     "Set timer",
-            "Tell me a joke",    "\"Hello\" in Chinese", "Take a screenshot",
-        };
+        expected_suggestions.push_back(
+            {/*message=*/"Square root of 71",
+             /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
+                 ash::kCalculateIcon, gfx::kGoogleBlue700)});
+        expected_suggestions.push_back(
+            {/*message=*/"How far is Venus",
+             /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
+                 ash::kStraightenIcon, gfx::kGoogleYellow900)});
+        expected_suggestions.push_back(
+            {/*message=*/"Set timer",
+             /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
+                 ash::kTimerIcon, gfx::kGoogleGreen800)});
+        expected_suggestions.push_back(
+            {/*message=*/"Tell me a joke",
+             /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
+                 ash::kSentimentVerySatisfiedIcon, gfx::kGoogleYellow900)});
+        expected_suggestions.push_back(
+            {/*message=*/"\"Hello\" in Chinese",
+             /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
+                 ash::kTranslateIcon, gfx::kGoogleGreen800)});
+        expected_suggestions.push_back(
+            {/*message=*/"Take a screenshot",
+             /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
+                 ash::kScreenshotIcon, gfx::kGoogleRed800)});
         break;
       case AssistantOnboardingMode::kDefault:
-        expected_messages = {
-            "5K in miles",    "Population in Nigeria", "Set timer",
-            "Tell me a joke", "\"Hello\" in Chinese",  "Take a screenshot",
-        };
+        expected_suggestions.push_back(
+            {/*message=*/"5K in miles",
+             /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
+                 ash::kConversionPathIcon, gfx::kGoogleBlue700)});
+        expected_suggestions.push_back(
+            {/*message=*/"Population in Nigeria",
+             /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
+                 ash::kPersonPinCircleIcon, gfx::kGoogleYellow900)});
+        expected_suggestions.push_back(
+            {/*message=*/"Set timer",
+             /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
+                 ash::kTimerIcon, gfx::kGoogleGreen800)});
+        expected_suggestions.push_back(
+            {/*message=*/"Tell me a joke",
+             /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
+                 ash::kSentimentVerySatisfiedIcon, gfx::kGoogleYellow900)});
+        expected_suggestions.push_back(
+            {/*message=*/"\"Hello\" in Chinese",
+             /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
+                 ash::kTranslateIcon, gfx::kGoogleGreen800)});
+        expected_suggestions.push_back(
+            {/*message=*/"Take a screenshot",
+             /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
+                 ash::kScreenshotIcon, gfx::kGoogleRed800)});
         break;
     }
 
     // Show Assistant UI and verify the expected number of suggestion views.
     ShowAssistantUi();
-    ASSERT_EQ(suggestions_grid()->children().size(), expected_messages.size());
+    ASSERT_EQ(suggestions_grid()->children().size(),
+              expected_suggestions.size());
 
-    // Verify that each suggestion view has the expected message.
-    for (size_t i = 0; i < expected_messages.size(); ++i) {
+    // Verify that each suggestion view has the expected message and icon.
+    for (size_t i = 0; i < expected_suggestions.size(); ++i) {
+      auto* suggestion_view = suggestions_grid()->children().at(i);
+      const auto& expected_suggestion = expected_suggestions.at(i);
+
       views::Label* label = nullptr;
-      FindDescendentByClassName(suggestions_grid()->children().at(i), &label);
+      FindDescendentByClassName(suggestion_view, &label);
       ASSERT_NE(label, nullptr);
-      EXPECT_EQ(label->GetText(), base::UTF8ToUTF16(expected_messages.at(i)));
+      EXPECT_EQ(label->GetText(),
+                base::UTF8ToUTF16(expected_suggestion.message));
+
+      views::ImageView* icon = nullptr;
+      FindDescendentByClassName(suggestion_view, &icon);
+      ASSERT_NE(icon, nullptr);
+      ASSERT_PIXELS_EQ(
+          icon->GetImage(),
+          gfx::CreateVectorIcon(expected_suggestion.icon_with_color->icon,
+                                /*size=*/24,
+                                expected_suggestion.icon_with_color->color));
     }
   }
 }

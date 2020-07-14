@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">إدارة الإعدادات</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{خلال ساعة واحدة}zero{خلال # ساعة}two{خلال ساعتين (#)}few{خلال # ساعات}many{خلال # ساعة}other{خلال # ساعة}}</translation>
 <translation id="2583543531130364912">معايرة الشاشة التي تعمل باللمس</translation>
+<translation id="2586657967955657006">الحافظة</translation>
 <translation id="2666092431469916601">أعلى</translation>
 <translation id="2701330563083355633">تمت المشاركة من <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">جديدة</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">بدء التحدث</translation>
 <translation id="430191667033048642">تم نقل <ph name="MOVED_APP_NAME" /> إلى المجلد <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">جميع التطبيقات</translation>
+<translation id="4491109536499578614">صورة</translation>
 <translation id="4588090240171750605">التمرير إلى اليسار</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />، التقييم بالنجوم <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />، اقتراح تطبيق</translation>

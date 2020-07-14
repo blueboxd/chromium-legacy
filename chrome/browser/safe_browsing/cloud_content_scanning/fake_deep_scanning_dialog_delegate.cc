@@ -150,8 +150,7 @@ DeepScanningClientResponse FakeDeepScanningDialogDelegate::MalwareResponse(
 // static
 enterprise_connectors::ContentAnalysisResponse
 FakeDeepScanningDialogDelegate::MalwareResponse(
-    enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        Action action) {
+    enterprise_connectors::TriggeredRule::Action action) {
   enterprise_connectors::ContentAnalysisResponse response;
 
   auto* result = response.mutable_results()->Add();
@@ -188,8 +187,7 @@ enterprise_connectors::ContentAnalysisResponse
 FakeDeepScanningDialogDelegate::DlpResponse(
     enterprise_connectors::ContentAnalysisResponse::Result::Status status,
     const std::string& rule_name,
-    enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        Action action) {
+    enterprise_connectors::TriggeredRule::Action action) {
   enterprise_connectors::ContentAnalysisResponse response;
 
   auto* result = response.mutable_results()->Add();
@@ -222,12 +220,10 @@ FakeDeepScanningDialogDelegate::MalwareAndDlpResponse(
 
 // static
 enterprise_connectors::ContentAnalysisResponse MalwareAndDlpResponse(
-    enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        Action malware_action,
+    enterprise_connectors::TriggeredRule::Action malware_action,
     enterprise_connectors::ContentAnalysisResponse::Result::Status dlp_status,
     const std::string& dlp_rule_name,
-    enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-        Action dlp_action) {
+    enterprise_connectors::TriggeredRule::Action dlp_action) {
   enterprise_connectors::ContentAnalysisResponse response;
 
   auto* malware_result = response.mutable_results()->Add();

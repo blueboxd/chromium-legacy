@@ -101,7 +101,8 @@ TEST_F(ManifestParserTest, ValidNoContentParses) {
   ASSERT_TRUE(manifest->short_name.IsNull());
   ASSERT_TRUE(manifest->start_url.IsEmpty());
   ASSERT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
-  ASSERT_EQ(manifest->orientation, kWebScreenOrientationLockDefault);
+  ASSERT_EQ(manifest->orientation,
+            device::mojom::ScreenOrientationLockType::DEFAULT);
   ASSERT_FALSE(manifest->has_theme_color);
   ASSERT_FALSE(manifest->has_background_color);
   ASSERT_TRUE(manifest->gcm_sender_id.IsNull());
@@ -539,7 +540,8 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
   // Smoke test.
   {
     auto& manifest = ParseManifest("{ \"orientation\": \"natural\" }");
-    EXPECT_EQ(manifest->orientation, kWebScreenOrientationLockNatural);
+    EXPECT_EQ(manifest->orientation,
+              device::mojom::ScreenOrientationLockType::NATURAL);
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -547,14 +549,16 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
   // Trim whitespaces.
   {
     auto& manifest = ParseManifest("{ \"orientation\": \"natural\" }");
-    EXPECT_EQ(manifest->orientation, kWebScreenOrientationLockNatural);
+    EXPECT_EQ(manifest->orientation,
+              device::mojom::ScreenOrientationLockType::NATURAL);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Don't parse if name isn't a string.
   {
     auto& manifest = ParseManifest("{ \"orientation\": {} }");
-    EXPECT_EQ(manifest->orientation, kWebScreenOrientationLockDefault);
+    EXPECT_EQ(manifest->orientation,
+              device::mojom::ScreenOrientationLockType::DEFAULT);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'orientation' ignored, type string expected.",
               errors()[0]);
@@ -563,7 +567,8 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
   // Don't parse if name isn't a string.
   {
     auto& manifest = ParseManifest("{ \"orientation\": 42 }");
-    EXPECT_EQ(manifest->orientation, kWebScreenOrientationLockDefault);
+    EXPECT_EQ(manifest->orientation,
+              device::mojom::ScreenOrientationLockType::DEFAULT);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'orientation' ignored, type string expected.",
               errors()[0]);
@@ -572,7 +577,8 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
   // Parse fails if string isn't known.
   {
     auto& manifest = ParseManifest("{ \"orientation\": \"naturalish\" }");
-    EXPECT_EQ(manifest->orientation, kWebScreenOrientationLockDefault);
+    EXPECT_EQ(manifest->orientation,
+              device::mojom::ScreenOrientationLockType::DEFAULT);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("unknown 'orientation' value ignored.", errors()[0]);
   }
@@ -580,21 +586,24 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
   // Accept 'any'.
   {
     auto& manifest = ParseManifest("{ \"orientation\": \"any\" }");
-    EXPECT_EQ(manifest->orientation, kWebScreenOrientationLockAny);
+    EXPECT_EQ(manifest->orientation,
+              device::mojom::ScreenOrientationLockType::ANY);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept 'natural'.
   {
     auto& manifest = ParseManifest("{ \"orientation\": \"natural\" }");
-    EXPECT_EQ(manifest->orientation, kWebScreenOrientationLockNatural);
+    EXPECT_EQ(manifest->orientation,
+              device::mojom::ScreenOrientationLockType::NATURAL);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept 'landscape'.
   {
     auto& manifest = ParseManifest("{ \"orientation\": \"landscape\" }");
-    EXPECT_EQ(manifest->orientation, kWebScreenOrientationLockLandscape);
+    EXPECT_EQ(manifest->orientation,
+              device::mojom::ScreenOrientationLockType::LANDSCAPE);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -602,7 +611,8 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
   {
     auto& manifest =
         ParseManifest("{ \"orientation\": \"landscape-primary\" }");
-    EXPECT_EQ(manifest->orientation, kWebScreenOrientationLockLandscapePrimary);
+    EXPECT_EQ(manifest->orientation,
+              device::mojom::ScreenOrientationLockType::LANDSCAPE_PRIMARY);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -611,21 +621,23 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
     auto& manifest =
         ParseManifest("{ \"orientation\": \"landscape-secondary\" }");
     EXPECT_EQ(manifest->orientation,
-              kWebScreenOrientationLockLandscapeSecondary);
+              device::mojom::ScreenOrientationLockType::LANDSCAPE_SECONDARY);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept 'portrait'.
   {
     auto& manifest = ParseManifest("{ \"orientation\": \"portrait\" }");
-    EXPECT_EQ(manifest->orientation, kWebScreenOrientationLockPortrait);
+    EXPECT_EQ(manifest->orientation,
+              device::mojom::ScreenOrientationLockType::PORTRAIT);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept 'portrait-primary'.
   {
     auto& manifest = ParseManifest("{ \"orientation\": \"portrait-primary\" }");
-    EXPECT_EQ(manifest->orientation, kWebScreenOrientationLockPortraitPrimary);
+    EXPECT_EQ(manifest->orientation,
+              device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -634,14 +646,15 @@ TEST_F(ManifestParserTest, OrientationParseRules) {
     auto& manifest =
         ParseManifest("{ \"orientation\": \"portrait-secondary\" }");
     EXPECT_EQ(manifest->orientation,
-              kWebScreenOrientationLockPortraitSecondary);
+              device::mojom::ScreenOrientationLockType::PORTRAIT_SECONDARY);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Case insensitive.
   {
     auto& manifest = ParseManifest("{ \"orientation\": \"LANDSCAPE\" }");
-    EXPECT_EQ(manifest->orientation, kWebScreenOrientationLockLandscape);
+    EXPECT_EQ(manifest->orientation,
+              device::mojom::ScreenOrientationLockType::LANDSCAPE);
     EXPECT_EQ(0u, GetErrorCount());
   }
 }

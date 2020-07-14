@@ -2786,17 +2786,17 @@ MockScreenOrientationClient* TestRunner::GetMockScreenOrientationClient() {
 }
 
 void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
-  blink::WebScreenOrientationType orientation;
+  blink::mojom::ScreenOrientation orientation;
 
   if (orientation_str == "portrait-primary") {
-    orientation = blink::kWebScreenOrientationPortraitPrimary;
+    orientation = blink::mojom::ScreenOrientation::kPortraitPrimary;
   } else if (orientation_str == "portrait-secondary") {
-    orientation = blink::kWebScreenOrientationPortraitSecondary;
+    orientation = blink::mojom::ScreenOrientation::kPortraitSecondary;
   } else if (orientation_str == "landscape-primary") {
-    orientation = blink::kWebScreenOrientationLandscapePrimary;
+    orientation = blink::mojom::ScreenOrientation::kLandscapePrimary;
   } else {
     DCHECK_EQ("landscape-secondary", orientation_str);
-    orientation = blink::kWebScreenOrientationLandscapeSecondary;
+    orientation = blink::mojom::ScreenOrientation::kLandscapeSecondary;
   }
 
   // TODO(lukasza): Need to make MockScreenOrientation updates work for

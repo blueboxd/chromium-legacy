@@ -55,12 +55,14 @@ void SplitCookiesIntoAllowedAndBlocked(
                            {},
                            /* blocked_by_policy=*/true});
 
-  for (auto& cookie_and_status : cookie_details->cookie_list) {
-    if (cookie_and_status.status.HasExclusionReason(
+  for (auto& cookie_and_access_result : cookie_details->cookie_list) {
+    if (cookie_and_access_result.access_result.status.HasExclusionReason(
             net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES)) {
-      blocked->cookie_list.push_back(std::move(cookie_and_status.cookie));
-    } else if (cookie_and_status.status.IsInclude()) {
-      allowed->cookie_list.push_back(std::move(cookie_and_status.cookie));
+      blocked->cookie_list.push_back(
+          std::move(cookie_and_access_result.cookie));
+    } else if (cookie_and_access_result.access_result.status.IsInclude()) {
+      allowed->cookie_list.push_back(
+          std::move(cookie_and_access_result.cookie));
     }
   }
 }
@@ -77,21 +79,21 @@ void EmitSameSiteCookiesDeprecationWarning(
   bool samesite_none_insecure_cookies = false;
   bool breaking_context_downgrade = false;
 
-  for (const net::CookieWithStatus& excluded_cookie :
+  for (const net::CookieWithAccessResult& excluded_cookie :
        cookie_details->cookie_list) {
-    if (excluded_cookie.status.ShouldWarn()) {
+    if (excluded_cookie.access_result.status.ShouldWarn()) {
       samesite_treated_as_lax_cookies =
           samesite_treated_as_lax_cookies ||
-          excluded_cookie.status.HasWarningReason(
+          excluded_cookie.access_result.status.HasWarningReason(
               net::CookieInclusionStatus::
                   WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT) ||
-          excluded_cookie.status.HasWarningReason(
+          excluded_cookie.access_result.status.HasWarningReason(
               net::CookieInclusionStatus::
                   WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE);
 
       samesite_none_insecure_cookies =
           samesite_none_insecure_cookies ||
-          excluded_cookie.status.HasWarningReason(
+          excluded_cookie.access_result.status.HasWarningReason(
               net::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE);
 
       devtools_instrumentation::ReportSameSiteCookieIssue(
@@ -103,13 +105,15 @@ void EmitSameSiteCookiesDeprecationWarning(
           cookie_details->devtools_request_id);
     }
 
-    breaking_context_downgrade = breaking_context_downgrade ||
-                                 excluded_cookie.status.HasDowngradeWarning();
+    breaking_context_downgrade =
+        breaking_context_downgrade ||
+        excluded_cookie.access_result.status.HasDowngradeWarning();
 
-    if (excluded_cookie.status.HasDowngradeWarning()) {
+    if (excluded_cookie.access_result.status.HasDowngradeWarning()) {
       // Unlike with UMA, do not record cookies that have no downgrade warning.
       RecordContextDowngradeUKM(rfh, cookie_details->type,
-                                excluded_cookie.status, cookie_details->url);
+                                excluded_cookie.access_result.status,
+                                cookie_details->url);
     }
   }
 

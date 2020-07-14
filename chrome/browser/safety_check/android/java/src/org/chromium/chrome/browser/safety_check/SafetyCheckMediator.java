@@ -10,6 +10,8 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.password_check.BulkLeakCheckServiceState;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.safety_check.SafetyCheckBridge.SafetyCheckCommonObserver;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.PasswordsState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SafeBrowsingState;
@@ -25,6 +27,8 @@ class SafetyCheckMediator implements SafetyCheckCommonObserver {
     private PropertyModel mModel;
     /** Client to interact with Omaha for the updates check. */
     private SafetyCheckUpdatesDelegate mUpdatesClient;
+
+    private final SharedPreferencesManager mPreferenceManager;
 
     /**
      * Callback that gets invoked once the result of the updates check is available. Not inlined
@@ -54,6 +58,7 @@ class SafetyCheckMediator implements SafetyCheckCommonObserver {
         mModel = model;
         mUpdatesClient = client;
         mSafetyCheckBridge = bridge;
+        mPreferenceManager = SharedPreferencesManager.getInstance();
         // Set the listener for clicking the Check button.
         mModel.set(SafetyCheckProperties.SAFETY_CHECK_BUTTON_CLICK_LISTENER,
                 (View.OnClickListener) (v) -> performSafetyCheck());
@@ -61,6 +66,8 @@ class SafetyCheckMediator implements SafetyCheckCommonObserver {
 
     /** Triggers all safety check child checks. */
     public void performSafetyCheck() {
+        // Increment the stored number of Safety check starts.
+        mPreferenceManager.incrementInt(ChromePreferenceKeys.SETTINGS_SAFETY_CHECK_RUN_COUNTER);
         // Set the checking state for all elements.
         mModel.set(SafetyCheckProperties.PASSWORDS_STATE, PasswordsState.CHECKING);
         mModel.set(SafetyCheckProperties.SAFE_BROWSING_STATE, SafeBrowsingState.CHECKING);

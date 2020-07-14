@@ -1262,7 +1262,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2537178555904266562">Erro ao sincronizar as palavras-passe.</translation>
 <translation id="2537296579376733324">Todos os cookies, apenas neste site</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> pode ver e editar os seguintes ficheiros e pastas</translation>
-<translation id="2537464584626495441">Abrir a app da chave de segurança no telemóvel</translation>
 <translation id="2537927931785713436">A verificar a imagem da máquina virtual…</translation>
 <translation id="2538361623464451692">Sincronização desativada</translation>
 <translation id="2540449034743108469">Prima "Iniciar" para ouvir atividades de extensões</translation>
@@ -1956,6 +1955,7 @@ Pretende pará-lo?</translation>
 <translation id="3433621910545056227">Ups! Falha do sistema ao estabelecer o bloqueio dos atributos de hora-instalação do dispositivo.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3434272557872943250">Se a definição Atividade da Web e de apps adicional estiver ativada para a criança, estes dados podem ser guardados na respetiva Conta Google. Saiba mais acerca destas definições e como as pode ajustar em families.google.com.</translation>
+<translation id="3435541101098866721">Adicionar novo telefone</translation>
 <translation id="3435688026795609344">"<ph name="EXTENSION_NAME" />" está a solicitar o seu <ph name="CODE_TYPE" /></translation>
 <translation id="3435738964857648380">Segurança</translation>
 <translation id="343578350365773421">Sem papel</translation>
@@ -3016,7 +3016,6 @@ Pretende pará-lo?</translation>
 <translation id="4763408175235639573">Foram definidos os seguintes cookies quando viu esta página</translation>
 <translation id="4765582662863429759">Permite às Mensagens Android retransmitir as mensagens de texto do telemóvel para o Chromebook.</translation>
 <translation id="4768332406694066911">Tem certificados destas entidades que o identificam</translation>
-<translation id="4774824109040330448">Leia o código QR com uma aplicação de autenticação compatível no telemóvel.</translation>
 <translation id="4776917500594043016">Palavra-passe para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4777943778632837590">Configurar servidores de nomes da rede</translation>
@@ -4222,7 +4221,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6298962879096096191">Utilizar o Google Play para instalar aplicações para Android</translation>
 <translation id="630065524203833229">&amp;Sair</translation>
 <translation id="6300718114348072351">Não foi possível configurar automaticamente a <ph name="PRINTER_NAME" />. Especifique detalhes avançados da impressora. <ph name="LINK_BEGIN" />Saber mais<ph name="LINK_END" /></translation>
-<translation id="6301974545577285230">Alterou com êxito a palavra-passe comprometida. Verifique as suas palavras-passes em qualquer altura nas Definições.</translation>
 <translation id="630292539633944562">Sugestões de informações pessoais</translation>
 <translation id="6305607932814307878">Política Global:</translation>
 <translation id="6307990684951724544">Sistema ocupado</translation>
@@ -5059,7 +5057,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7377451353532943397">Continuar a impedir o acesso aos sensores</translation>
 <translation id="73786666777299047">Abrir a Web Store do Chrome</translation>
 <translation id="7378812711085314936">Obter ligação de dados</translation>
-<translation id="7378962964415201590">Sincronize o novo telemóvel</translation>
 <translation id="7380768571499464492"><ph name="PRINTER_NAME" /> foi atualizada.</translation>
 <translation id="7384687527486377545">Repetição automática do teclado</translation>
 <translation id="7385854874724088939">Ocorreu um erro ao tentar imprimir. Verifique a impressora e tente novamente.</translation>

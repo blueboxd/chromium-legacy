@@ -9,12 +9,14 @@ android_library("java") {
   sources = [
     "java/src/org/chromium/components/browser_ui/bottomsheet/BottomSheetContent.java",
     "java/src/org/chromium/components/browser_ui/bottomsheet/BottomSheetController.java",
+    "java/src/org/chromium/components/browser_ui/bottomsheet/BottomSheetControllerProvider.java",
     "java/src/org/chromium/components/browser_ui/bottomsheet/BottomSheetObserver.java",
     "java/src/org/chromium/components/browser_ui/bottomsheet/EmptyBottomSheetObserver.java",
   ]
 
   deps = [
     ":java_resources",
+    "//base:base_java",
     "//components/browser_ui/widget/android:java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_java",

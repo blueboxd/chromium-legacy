@@ -38,7 +38,7 @@ import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.webapps.WebApkExtras.ShortcutItem;
 import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
-import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.device.mojom.ScreenOrientationLockType;
 import org.chromium.webapk.lib.common.WebApkCommonUtils;
 import org.chromium.webapk.lib.common.WebApkMetaDataUtils;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
@@ -510,34 +510,35 @@ public class WebApkIntentDataProviderFactory {
     }
 
     /**
-     * Returns the ScreenOrientationValue which matches {@link orientation}.
+     * Returns the ScreenOrientationLockType which matches {@link orientation}.
      * @param orientation One of https://w3c.github.io/screen-orientation/#orientationlocktype-enum
-     * @return The matching ScreenOrientationValue. {@link ScreenOrientationValues#DEFAULT} if there
+     * @return The matching ScreenOrientationLockType. {@link ScreenOrientationLockType#DEFAULT} if
+     *         there
      * is no match.
      */
     private static int orientationFromString(String orientation) {
         if (orientation == null) {
-            return ScreenOrientationValues.DEFAULT;
+            return ScreenOrientationLockType.DEFAULT;
         }
 
         if (orientation.equals("any")) {
-            return ScreenOrientationValues.ANY;
+            return ScreenOrientationLockType.ANY;
         } else if (orientation.equals("natural")) {
-            return ScreenOrientationValues.NATURAL;
+            return ScreenOrientationLockType.NATURAL;
         } else if (orientation.equals("landscape")) {
-            return ScreenOrientationValues.LANDSCAPE;
+            return ScreenOrientationLockType.LANDSCAPE;
         } else if (orientation.equals("landscape-primary")) {
-            return ScreenOrientationValues.LANDSCAPE_PRIMARY;
+            return ScreenOrientationLockType.LANDSCAPE_PRIMARY;
         } else if (orientation.equals("landscape-secondary")) {
-            return ScreenOrientationValues.LANDSCAPE_SECONDARY;
+            return ScreenOrientationLockType.LANDSCAPE_SECONDARY;
         } else if (orientation.equals("portrait")) {
-            return ScreenOrientationValues.PORTRAIT;
+            return ScreenOrientationLockType.PORTRAIT;
         } else if (orientation.equals("portrait-primary")) {
-            return ScreenOrientationValues.PORTRAIT_PRIMARY;
+            return ScreenOrientationLockType.PORTRAIT_PRIMARY;
         } else if (orientation.equals("portrait-secondary")) {
-            return ScreenOrientationValues.PORTRAIT_SECONDARY;
+            return ScreenOrientationLockType.PORTRAIT_SECONDARY;
         } else {
-            return ScreenOrientationValues.DEFAULT;
+            return ScreenOrientationLockType.DEFAULT;
         }
     }
 

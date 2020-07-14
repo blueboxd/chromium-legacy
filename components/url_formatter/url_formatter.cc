@@ -27,6 +27,9 @@ namespace url_formatter {
 
 namespace {
 
+const char kWww[] = "www.";
+constexpr size_t kWwwLength = 4;
+
 IDNConversionResult IDNToUnicodeWithAdjustments(
     base::StringPiece host,
     base::OffsetAdjuster::Adjustments* adjustments);
@@ -75,32 +78,18 @@ class HostComponentTransform : public AppendComponentTransform {
     if (!trim_trivial_subdomains_)
       return IDNToUnicodeWithAdjustments(component_text, adjustments).result;
 
-    // Exclude the registry and domain from trivial subdomain stripping.
-    // To get the adjustment offset calculations correct, we need to transform
-    // the registry and domain portion of the host as well.
-    std::string domain_and_registry =
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            component_text,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-
-    // If there is no domain and registry, we may be looking at an intranet
-    // or otherwise non-standard host. Leave those alone.
-    if (domain_and_registry.empty())
+    std::string www_stripped_component_text = StripWWW(component_text);
+    // If StripWWW() did nothing, then "www." wasn't a prefix, or it otherwise
+    // didn't meet conditions for stripping "www." (such as intranet hostnames).
+    // In this case, no adjustments for trivial subdomains are needed.
+    if (www_stripped_component_text == component_text)
       return IDNToUnicodeWithAdjustments(component_text, adjustments).result;
-
     base::OffsetAdjuster::Adjustments trivial_subdomains_adjustments;
-    std::string transformed_host = component_text;
-    constexpr char kWww[] = "www.";
-    constexpr size_t kWwwLength = 4;
-    if (component_text.size() - domain_and_registry.length() >= kWwwLength &&
-        StartsWith(component_text, kWww, base::CompareCase::SENSITIVE)) {
-      transformed_host.erase(0, kWwwLength);
-      trivial_subdomains_adjustments.push_back(
-          base::OffsetAdjuster::Adjustment(0, kWwwLength, 0));
-    }
-
+    trivial_subdomains_adjustments.push_back(
+        base::OffsetAdjuster::Adjustment(0, kWwwLength, 0));
     base::string16 unicode_result =
-        IDNToUnicodeWithAdjustments(transformed_host, adjustments).result;
+        IDNToUnicodeWithAdjustments(www_stripped_component_text, adjustments)
+            .result;
     base::OffsetAdjuster::MergeSequentialAdjustments(
         trivial_subdomains_adjustments, adjustments);
     return unicode_result;
@@ -741,15 +730,19 @@ base::string16 IDNToUnicode(base::StringPiece host) {
   return IDNToUnicodeWithAdjustments(host, nullptr).result;
 }
 
-base::string16 StripWWW(const base::string16& text) {
-  const base::string16 www(base::ASCIIToUTF16("www."));
-  return base::StartsWith(text, www, base::CompareCase::SENSITIVE)
-      ? text.substr(www.length()) : text;
-}
-
-base::string16 StripWWWFromHost(const GURL& url) {
-  DCHECK(url.is_valid());
-  return StripWWW(base::ASCIIToUTF16(url.host_piece()));
+std::string StripWWW(const std::string& text) {
+  // Exclude the registry and domain from trivial subdomain stripping.
+  std::string domain_and_registry =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          text, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  // If there is no domain and registry, we may be looking at an intranet
+  // or otherwise non-standard host. Leave those alone.
+  if (domain_and_registry.empty())
+    return text;
+  return text.size() - domain_and_registry.length() >= kWwwLength &&
+                 base::StartsWith(text, kWww, base::CompareCase::SENSITIVE)
+             ? text.substr(kWwwLength)
+             : text;
 }
 
 Skeletons GetSkeletons(const base::string16& host) {

@@ -157,8 +157,7 @@ bool ConstraintsHaveImageCapture(const MediaTrackConstraints* constraints) {
 std::unique_ptr<WebAudioSourceProvider>
 CreateWebAudioSourceFromMediaStreamTrack(MediaStreamComponent* component,
                                          int context_sample_rate) {
-  WebPlatformMediaStreamTrack* media_stream_track =
-      component->GetPlatformTrack();
+  MediaStreamTrackPlatform* media_stream_track = component->GetPlatformTrack();
   if (!media_stream_track) {
     DLOG(ERROR) << "Native track missing for webaudio source.";
     return nullptr;
@@ -193,7 +192,7 @@ void CloneNativeVideoMediaStreamTrack(MediaStreamComponent* original,
 
 void DidSetMediaStreamTrackEnabled(MediaStreamComponent* component) {
   auto* native_track =
-      WebPlatformMediaStreamTrack::GetTrack(WebMediaStreamTrack(component));
+      MediaStreamTrackPlatform::GetTrack(WebMediaStreamTrack(component));
   if (native_track)
     native_track->SetEnabled(component->Enabled());
 }
@@ -504,16 +503,16 @@ MediaTrackCapabilities* MediaStreamTrack::getCapabilities() const {
     }
     Vector<String> facing_mode;
     switch (platform_capabilities.facing_mode) {
-      case WebMediaStreamTrack::FacingMode::kUser:
+      case MediaStreamTrackPlatform::FacingMode::kUser:
         facing_mode.push_back("user");
         break;
-      case WebMediaStreamTrack::FacingMode::kEnvironment:
+      case MediaStreamTrackPlatform::FacingMode::kEnvironment:
         facing_mode.push_back("environment");
         break;
-      case WebMediaStreamTrack::FacingMode::kLeft:
+      case MediaStreamTrackPlatform::FacingMode::kLeft:
         facing_mode.push_back("left");
         break;
-      case WebMediaStreamTrack::FacingMode::kRight:
+      case MediaStreamTrackPlatform::FacingMode::kRight:
         facing_mode.push_back("right");
         break;
       default:
@@ -548,7 +547,7 @@ MediaTrackConstraints* MediaStreamTrack::getConstraints() const {
 
 MediaTrackSettings* MediaStreamTrack::getSettings() const {
   MediaTrackSettings* settings = MediaTrackSettings::Create();
-  WebMediaStreamTrack::Settings platform_settings;
+  MediaStreamTrackPlatform::Settings platform_settings;
   component_->GetSettings(platform_settings);
   if (platform_settings.HasFrameRate())
     settings->setFrameRate(platform_settings.frame_rate);
@@ -568,16 +567,16 @@ MediaTrackSettings* MediaStreamTrack::getSettings() const {
     settings->setGroupId(platform_settings.group_id);
   if (platform_settings.HasFacingMode()) {
     switch (platform_settings.facing_mode) {
-      case WebMediaStreamTrack::FacingMode::kUser:
+      case MediaStreamTrackPlatform::FacingMode::kUser:
         settings->setFacingMode("user");
         break;
-      case WebMediaStreamTrack::FacingMode::kEnvironment:
+      case MediaStreamTrackPlatform::FacingMode::kEnvironment:
         settings->setFacingMode("environment");
         break;
-      case WebMediaStreamTrack::FacingMode::kLeft:
+      case MediaStreamTrackPlatform::FacingMode::kLeft:
         settings->setFacingMode("left");
         break;
-      case WebMediaStreamTrack::FacingMode::kRight:
+      case MediaStreamTrackPlatform::FacingMode::kRight:
         settings->setFacingMode("right");
         break;
       default:

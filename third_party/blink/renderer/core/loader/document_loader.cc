@@ -1268,11 +1268,8 @@ void DocumentLoader::StartLoadingInternal() {
   if (!frame_->IsMainFrame() && response_.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(
         response_, mojom::RequestContextType::HYPERLINK,
-        GetFrame()->GetSettings()
-            ? GetFrame()
-                  ->GetSettings()
-                  ->GetStrictMixedContentCheckingForPlugin()
-            : false,
+        MixedContentChecker::DecideCheckModeForPlugin(
+            GetFrame()->GetSettings()),
         GetContentSecurityNotifier());
   }
   GetFrameLoader().Progress().IncrementProgress(main_resource_identifier_,

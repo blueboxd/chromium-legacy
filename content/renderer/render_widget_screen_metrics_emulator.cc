@@ -109,29 +109,13 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
   if (emulation_params_.device_scale_factor)
     device_scale_factor = emulation_params_.device_scale_factor;
 
-  ScreenOrientationValues orientation_type =
+  blink::mojom::ScreenOrientation orientation_type =
       original_screen_info().orientation_type;
   uint16_t orientation_angle = original_screen_info().orientation_angle;
-
-  switch (emulation_params_.screen_orientation_type) {
-    case blink::kWebScreenOrientationUndefined:
-      break;  // Leave as the real value.
-    case blink::kWebScreenOrientationPortraitPrimary:
-      orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
-      orientation_angle = emulation_params_.screen_orientation_angle;
-      break;
-    case blink::kWebScreenOrientationPortraitSecondary:
-      orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
-      orientation_angle = emulation_params_.screen_orientation_angle;
-      break;
-    case blink::kWebScreenOrientationLandscapePrimary:
-      orientation_type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
-      orientation_angle = emulation_params_.screen_orientation_angle;
-      break;
-    case blink::kWebScreenOrientationLandscapeSecondary:
-      orientation_type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
-      orientation_angle = emulation_params_.screen_orientation_angle;
-      break;
+  if (emulation_params_.screen_orientation_type !=
+      blink::mojom::ScreenOrientation::kUndefined) {
+    orientation_type = emulation_params_.screen_orientation_type;
+    orientation_angle = emulation_params_.screen_orientation_angle;
   }
 
   // Pass three emulation parameters to the blink side:

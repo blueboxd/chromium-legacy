@@ -95,10 +95,9 @@ public class SendTabToSelfShareActivityTest {
         when(mNavigationController.getVisibleEntry()).thenReturn(mNavigationEntry);
 
         // Setup the mocked object chain to get the bottom controller.
-        when(mChromeActivity.getBottomSheetController()).thenReturn(mBottomSheetController);
-
         SendTabToSelfShareActivity shareActivity = new SendTabToSelfShareActivity();
         SendTabToSelfShareActivity.setBottomSheetContentForTesting(mBottomSheetContent);
+        SendTabToSelfShareActivity.setBottomSheetControllerForTesting(mBottomSheetController);
         shareActivity.handleAction(mChromeActivity);
         verify(mBottomSheetController).requestShowContent(any(BottomSheetContent.class), eq(true));
     }

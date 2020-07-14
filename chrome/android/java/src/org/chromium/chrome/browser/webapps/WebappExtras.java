@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.webapps;
 import androidx.annotation.NonNull;
 
 import org.chromium.chrome.browser.ShortcutSource;
-import org.chromium.content_public.common.ScreenOrientationValues;
 
 /**
  * Stores webapp specific information on behalf of {@link BrowserServicesIntentDataProvider}.
@@ -46,7 +45,7 @@ public class WebappExtras {
     /**
      * The screen orientation to lock the webapp to.
      */
-    public final @ScreenOrientationValues int orientation;
+    public final int orientation;
 
     /**
      * If the webapp was launched from the home screen or the app list: source where the webapp was

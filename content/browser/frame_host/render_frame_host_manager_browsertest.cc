@@ -4363,8 +4363,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
     // Verify that the error page process is locked to origin
     EXPECT_EQ(
-        GURL(kUnreachableWebDataURL),
-        policy->GetOriginLock(error_site_instance->GetProcess()->GetID()));
+        ProcessLock::CreateForErrorPage(),
+        policy->GetProcessLock(error_site_instance->GetProcess()->GetID()));
     EXPECT_TRUE(
         IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
   }
@@ -4375,8 +4375,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   success_site_instance =
       shell()->web_contents()->GetMainFrame()->GetSiteInstance();
   EXPECT_NE(
-      GURL(kUnreachableWebDataURL),
-      policy->GetOriginLock(
+      ProcessLock::CreateForErrorPage(),
+      policy->GetProcessLock(
           shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
 
   {
@@ -4399,8 +4399,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
     // Verify that the error page process is locked to origin
     EXPECT_EQ(
-        GURL(kUnreachableWebDataURL),
-        policy->GetOriginLock(error_site_instance->GetProcess()->GetID()));
+        ProcessLock::CreateForErrorPage(),
+        policy->GetProcessLock(error_site_instance->GetProcess()->GetID()));
   }
 }
 
@@ -4476,8 +4476,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
 
   // Verify that the error page process is locked to origin
-  EXPECT_EQ(GURL(kUnreachableWebDataURL),
-            ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+  EXPECT_EQ(ProcessLock::CreateForErrorPage(),
+            ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
                 error_site_instance->GetProcess()->GetID()));
   EXPECT_TRUE(
       IsMainFrameOriginOpaqueAndCompatibleWithURL(new_shell, error_url));
@@ -4535,8 +4535,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Verify that the process is locked to origin
   EXPECT_EQ(
-      GURL(kUnreachableWebDataURL),
-      ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+      ProcessLock::CreateForErrorPage(),
+      ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
           shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
 }
 
@@ -4603,7 +4603,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
       shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
   int process_id =
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
-  EXPECT_EQ(GURL(kUnreachableWebDataURL), policy->GetOriginLock(process_id));
+  EXPECT_EQ(ProcessLock::CreateForErrorPage(),
+            policy->GetProcessLock(process_id));
   EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
 
   // Reload while it will still fail to ensure it stays in the same process.
@@ -4640,8 +4641,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
       GURL(kUnreachableWebDataURL),
       shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
   EXPECT_NE(
-      GURL(kUnreachableWebDataURL),
-      policy->GetOriginLock(
+      ProcessLock::CreateForErrorPage(),
+      policy->GetProcessLock(
           shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
   EXPECT_EQ(expected_origin,
             shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin());
@@ -4666,8 +4667,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
       GURL(kUnreachableWebDataURL),
       shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
   EXPECT_EQ(
-      GURL(kUnreachableWebDataURL),
-      policy->GetOriginLock(
+      ProcessLock::CreateForErrorPage(),
+      policy->GetProcessLock(
           shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
   EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
 
@@ -4688,8 +4689,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
       GURL(kUnreachableWebDataURL),
       shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
   EXPECT_NE(
-      GURL(kUnreachableWebDataURL),
-      policy->GetOriginLock(
+      ProcessLock::CreateForErrorPage(),
+      policy->GetProcessLock(
           shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
   EXPECT_EQ(expected_origin,
             shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin());
@@ -5020,8 +5021,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
       GURL(kUnreachableWebDataURL),
       shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
   EXPECT_EQ(
-      GURL(kUnreachableWebDataURL),
-      ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+      ProcessLock::CreateForErrorPage(),
+      ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
           shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
   EXPECT_EQ(2, nav_controller.GetEntryCount());
   EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
@@ -5056,8 +5057,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
       GURL(kUnreachableWebDataURL),
       shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
   EXPECT_EQ(
-      GURL(kUnreachableWebDataURL),
-      ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+      ProcessLock::CreateForErrorPage(),
+      ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
           shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
   EXPECT_EQ(4, nav_controller.GetEntryCount());
   {
@@ -5101,8 +5102,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_FALSE(NavigateToURL(shell(), error_url));
   EXPECT_EQ(GURL(kUnreachableWebDataURL),
             web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL());
-  EXPECT_EQ(GURL(kUnreachableWebDataURL),
-            ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+  EXPECT_EQ(ProcessLock::CreateForErrorPage(),
+            ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
                 web_contents->GetSiteInstance()->GetProcess()->GetID()));
   EXPECT_EQ(2, nav_controller.GetEntryCount());
   EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
@@ -5169,8 +5170,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   EXPECT_EQ(GURL(kUnreachableWebDataURL),
             web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL());
-  EXPECT_EQ(GURL(kUnreachableWebDataURL),
-            ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+  EXPECT_EQ(ProcessLock::CreateForErrorPage(),
+            ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
                 web_contents->GetSiteInstance()->GetProcess()->GetID()));
   EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), url1));
 }
@@ -5199,8 +5200,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_FALSE(NavigateToURL(shell(), url2));
   EXPECT_EQ(GURL(kUnreachableWebDataURL),
             web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL());
-  EXPECT_EQ(GURL(kUnreachableWebDataURL),
-            ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+  EXPECT_EQ(ProcessLock::CreateForErrorPage(),
+            ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
                 web_contents->GetSiteInstance()->GetProcess()->GetID()));
   EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), url2));
 
@@ -5226,8 +5227,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   EXPECT_NE(GURL(kUnreachableWebDataURL),
             web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL());
-  EXPECT_NE(GURL(kUnreachableWebDataURL),
-            ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+  EXPECT_NE(ProcessLock::CreateForErrorPage(),
+            ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
                 web_contents->GetSiteInstance()->GetProcess()->GetID()));
 }
 
@@ -5260,8 +5261,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
       shell()->web_contents()->GetMainFrame()->GetSiteInstance();
   EXPECT_TRUE(observer.is_error());
   EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
-  EXPECT_EQ(GURL(kUnreachableWebDataURL),
-            ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+  EXPECT_EQ(ProcessLock::CreateForErrorPage(),
+            ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
                 error_site_instance->GetProcess()->GetID()));
   EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
       error_site_instance->GetProcess()->GetID()));
@@ -7213,7 +7214,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_EQ(siteless_url, web_contents->GetMainFrame()->GetLastCommittedURL());
   RenderProcessHost* process1 = web_contents->GetMainFrame()->GetProcess();
   EXPECT_FALSE(web_contents->GetMainFrame()->GetSiteInstance()->HasSite());
-  EXPECT_EQ(GURL(), policy->GetOriginLock(process1->GetID()));
+  EXPECT_EQ(ProcessLock(), policy->GetProcessLock(process1->GetID()));
 
   // Now wait for second navigation to finish and ensure it also succeeds.
   foo_manager.WaitForNavigationFinished();
@@ -7227,7 +7228,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_NE(process1, process2);
   EXPECT_EQ(GURL("http://foo.com"),
             web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL());
-  EXPECT_EQ(GURL("http://foo.com"), policy->GetOriginLock(process2->GetID()));
+  EXPECT_EQ(
+      ProcessLock(SiteInfo(GURL("http://foo.com"), GURL("http://foo.com"))),
+      policy->GetProcessLock(process2->GetID()));
 
   // Ensure also that the foo.com process didn't change midway through the
   // navigation.

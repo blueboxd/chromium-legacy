@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">Japanese input (for US keyboard)</translation>
 <translation id="1047956942837015229">Deleting <ph name="COUNT" /> items...</translation>
 <translation id="1049926623896334335">Word document</translation>
+<translation id="1060368002126861100">To open files with <ph name="APP_NAME" />, first move them to the Windows files folder.</translation>
 <translation id="1062407476771304334">Replace</translation>
 <translation id="1065449928621190041">Canadian French keyboard</translation>
 <translation id="1119069657431255176">Bzip2 compressed tar archive</translation>
@@ -168,7 +169,6 @@
 <translation id="2924296707677495905">Transliteration (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Sheets</translation>
 <translation id="2938685643439809023">Mongolian</translation>
-<translation id="2939410873710774399">To open files with <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), first move them to the <ph name="FOLDER_NAME" /> folder.</translation>
 <translation id="2942290791863759244">German NEO 2 keyboard</translation>
 <translation id="2943400156390503548">Slides</translation>
 <translation id="2943503720238418293">Use a shorter name</translation>
@@ -222,6 +222,7 @@
 <translation id="3524311639100184459">Caution: These files are temporary and may be automatically deleted to free up disk space.  <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3549797760399244642">Go to drive.google.com...</translation>
+<translation id="3553048479571901246">To open files with <ph name="APP_NAME" />, first copy them to the Windows files folder.</translation>
 <translation id="357479282490346887">Lithuanian</translation>
 <translation id="3583509704582854624">Alphanumeric input (for Japanese keyboard)</translation>
 <translation id="3603385196401704894">Canadian French</translation>
@@ -333,14 +334,12 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> items selected</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="485316830061041779">German</translation>
-<translation id="4859297381873413734">To open files with <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), first copy them to the <ph name="FOLDER_NAME" /> folder.</translation>
 <translation id="4867079195717347957">Click to sort the column in descending order.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bytes</translation>
 <translation id="4880214202172289027">Volume slider</translation>
 <translation id="4880520557730313061">Auto-fix</translation>
 <translation id="4881695831933465202">Open</translation>
 <translation id="4886021172213954916">Tamil keyboard (Typewriter)</translation>
-<translation id="4892969127351273348">Unable to open with <ph name="APP_NAME" /></translation>
 <translation id="4900532980794411603">Share with Parallels Desktop</translation>
 <translation id="4905417359854579806">Ready to backup <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Fixed</translation>

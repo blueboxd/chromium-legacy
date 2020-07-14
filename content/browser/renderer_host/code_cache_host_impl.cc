@@ -57,38 +57,39 @@ base::Optional<GURL> GetSecondaryKeyForCodeCache(const GURL& resource_url,
   if (!resource_url.is_valid() || !resource_url.SchemeIsHTTPOrHTTPS())
     return base::nullopt;
 
-  GURL origin_lock =
-      ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+  ProcessLock process_lock =
+      ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
           render_process_id);
 
-  // Case 1: If origin lock is empty, it means the render process is not locked
+  // Case 1: If process lock is empty, it means the render process is not locked
   // to any origin. It is safe to just use the |resource_url| of the requested
   // resource as the key. Return an empty GURL as the second key.
-  if (origin_lock.is_empty())
+  if (process_lock.is_empty())
     return GURL::EmptyGURL();
 
-  // Case 2: Don't use invalid origin_lock as a key.
-  if (!origin_lock.is_valid())
+  // Case 2: Don't use invalid lock_url as a key.
+  if (!process_lock.lock_url().is_valid())
     return base::nullopt;
 
   // Case 2: Don't cache the code corresponding to opaque origins. The same
   // origin checks should always fail for opaque origins but the serialized
   // value of opaque origins does not ensure this.
-  if (url::Origin::Create(origin_lock).opaque())
+  if (process_lock.HasOpaqueOrigin())
     return base::nullopt;
 
-  // Case 3: origin_lock is used to enfore site-isolation in code caches.
+  // Case 3: process_lock_url is used to enfore site-isolation in code caches.
   // Http/https/chrome schemes are safe to be used as a secondary key. Other
   // schemes could be enabled if they are known to be safe and if it is
   // required to cache code from those origins.
   //
-  // file:// URLs will have a "file:" origin lock and would thus share a
+  // file:// URLs will have a "file:" process lock and would thus share a
   // cache across all file:// URLs. That would likely be ok for security, but
   // since this case is not performance sensitive we will keep things simple and
   // limit the cache to http/https/chrome processes.
-  if (origin_lock.SchemeIsHTTPOrHTTPS() ||
-      origin_lock.SchemeIs(content::kChromeUIScheme)) {
-    return origin_lock;
+  if (process_lock.matches_scheme(url::kHttpScheme) ||
+      process_lock.matches_scheme(url::kHttpsScheme) ||
+      process_lock.matches_scheme(content::kChromeUIScheme)) {
+    return process_lock.lock_url();
   }
 
   return base::nullopt;

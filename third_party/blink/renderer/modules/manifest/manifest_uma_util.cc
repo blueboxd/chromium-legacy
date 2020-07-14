@@ -46,7 +46,8 @@ void ManifestUmaUtil::ParseSucceeded(
       manifest->display != blink::mojom::DisplayMode::kUndefined);
   UMA_HISTOGRAM_BOOLEAN(
       "Manifest.HasProperty.orientation",
-      manifest->orientation != kWebScreenOrientationLockDefault);
+      manifest->orientation !=
+          device::mojom::blink::ScreenOrientationLockType::DEFAULT);
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.icons",
                         !manifest->icons.IsEmpty());
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.share_target",

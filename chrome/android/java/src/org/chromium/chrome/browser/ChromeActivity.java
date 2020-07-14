@@ -1300,9 +1300,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     @Override
     public SnackbarManager getSnackbarManager() {
-        if (mRootUiCoordinator != null && getBottomSheetController() != null
-                && getBottomSheetController().isSheetOpen()
-                && !getBottomSheetController().isSheetHiding()) {
+        BottomSheetController controller =
+                mRootUiCoordinator == null ? null : mRootUiCoordinator.getBottomSheetController();
+        if (mRootUiCoordinator != null && controller != null && controller.isSheetOpen()
+                && !controller.isSheetHiding()) {
             return mRootUiCoordinator.getBottomSheetSnackbarManager();
         }
         return mSnackbarManager;
@@ -1368,6 +1369,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         super.finishNativeInitialization();
 
         mManualFillingComponent.initialize(getWindowAndroid(),
+                mRootUiCoordinator.getBottomSheetController(),
                 findViewById(R.id.keyboard_accessory_stub),
                 findViewById(R.id.keyboard_accessory_sheet_stub));
 
@@ -1531,7 +1533,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     public TabDelegateFactory getTabDelegateFactory() {
         return new TabbedModeTabDelegateFactory(this,
-                new ComposedBrowserControlsVisibilityDelegate(), getShareDelegateSupplier(), null);
+                new ComposedBrowserControlsVisibilityDelegate(), getShareDelegateSupplier(), null,
+                mRootUiCoordinator.getBottomSheetController());
     }
 
     /**
@@ -2324,14 +2327,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public boolean supportsFindInPage() {
         return true;
-    }
-
-    /**
-     * @return A lazily created {@link BottomSheetController}. The first time this method is called,
-     *         a new controller is created.
-     */
-    public BottomSheetController getBottomSheetController() {
-        return mRootUiCoordinator.getBottomSheetController();
     }
 
     @VisibleForTesting

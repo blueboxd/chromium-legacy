@@ -58,6 +58,7 @@
 <translation id="2586657967955657006">Πρόχειρο</translation>
 <translation id="2621115761605608342">Να επιτρέπεται η JavaScript για έναν συγκεκριμένο ιστότοπο.</translation>
 <translation id="2653659639078652383">Υποβολή</translation>
+<translation id="2677748264148917807">Αποχώρηση</translation>
 <translation id="2687403674020088961">Αποκλεισμός όλων των cookie (δεν συνιστάται)</translation>
 <translation id="2704606927547763573">Αντιγράφ.</translation>
 <translation id="2822354292072154809">Είστε βέβαοι ότι θέλετε να αναιρεθούν όλες οι άδειες ιστοτόπου για το αντικείμενο <ph name="CHOSEN_OBJECT_NAME" />;</translation>
@@ -126,6 +127,7 @@
 <translation id="5335288049665977812">Να επιτρέπεται στους ιστότοπους να εκτελούν JavaScript (συνιστάται)</translation>
 <translation id="534295439873310000">Συσκευές NFC</translation>
 <translation id="5354152178998424783">Αυτή η ενέργεια θα διαγράψει <ph name="DATASIZE" /> δεδομένων και cookie που έχουν αποθηκευτεί από ιστοτόπους.</translation>
+<translation id="5384883051496921101">Αυτός ο ιστότοπος πρόκειται να κοινοποιήσει πληροφορίες με μια εφαρμογή εκτός της κατάστασης ανώνυμης περιήγησης.</translation>
 <translation id="5391532827096253100">Η σύνδεσή σας σε αυτόν τον ιστότοπο δεν είναι ασφαλής. Πληροφορίες ιστοτόπου</translation>
 <translation id="5494752089476963479">Αποκλεισμός διαφημίσεων σε ιστοτόπους που εμφανίζουν παρεμβατικές ή παραπλανητικές διαφημίσεις</translation>
 <translation id="5505264765875738116">Οι ιστότοποι δεν μπορούν να ζητούν να στέλνουν ειδοποιήσεις.</translation>
@@ -165,6 +167,7 @@
 <translation id="6561560012278703671">Χρήση πιο διακριτικών μηνυμάτων (αποκλεισμός διακοπών από τα μηνύματα ειδοποιήσεων)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Προστατ. περιεχ.</translation>
+<translation id="662080504995468778">Παραμονή</translation>
 <translation id="6643016212128521049">Διαγραφή</translation>
 <translation id="6697925417670533197">Ενεργές λήψεις</translation>
 <translation id="6746124502594467657">Μετακίνηση προς τα κάτω</translation>
@@ -247,6 +250,7 @@
 <translation id="8926666909099850184">Το NFC είναι ανενεργό για αυτήν τη συσκευή. Ενεργοποιήστε το στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Αυτός ο ιστότοπος ανοίγει και αποκρίνεται γρήγορα για τους περισσότερους χρήστες.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">Έξοδος από την κατάσταση ανώνυμης περιήγησης;</translation>
 <translation id="8958424370300090006">Αποκλεισμός cookie για έναν συγκεκριμένο ιστοτόπο.</translation>
 <translation id="8959122750345127698">Δεν είναι δυνατή η μετάβαση στη διεύθυνση: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Διαχειρίζεται από τους γονείς σου</translation>

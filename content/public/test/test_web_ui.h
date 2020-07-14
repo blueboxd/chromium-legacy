@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui.h"
 
@@ -95,7 +97,23 @@ class TestWebUI : public WebUI {
     return call_data_;
   }
 
+  // An observer that will be notified of javascript calls.
+  class JavascriptCallObserver : public base::CheckedObserver {
+   public:
+    virtual void OnJavascriptFunctionCalled(const CallData& call_data) = 0;
+  };
+
+  void AddJavascriptCallObserver(JavascriptCallObserver* obs) {
+    javascript_call_observers_.AddObserver(obs);
+  }
+
+  void RemoveJavascriptCallObserver(JavascriptCallObserver* obs) {
+    javascript_call_observers_.RemoveObserver(obs);
+  }
+
  private:
+  void OnJavascriptCall(const CallData& call_data);
+
   base::flat_map<std::string, std::vector<MessageCallback>> message_callbacks_;
   std::vector<std::unique_ptr<CallData>> call_data_;
   std::vector<std::unique_ptr<WebUIMessageHandler>> handlers_;
@@ -103,6 +121,9 @@ class TestWebUI : public WebUI {
   base::string16 temp_string_;
   WebContents* web_contents_;
   std::unique_ptr<WebUIController> controller_;
+
+  // Observers to be notified on all javascript calls.
+  base::ObserverList<JavascriptCallObserver> javascript_call_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebUI);
 };

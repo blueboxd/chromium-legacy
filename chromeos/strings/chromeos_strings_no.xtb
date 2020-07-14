@@ -71,6 +71,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="808894953321890993">Endre passord</translation>
 <translation id="8208861521865154048">Fordeler</translation>
 <translation id="8347227221149377169">Utskriftsjobber</translation>
+<translation id="8623849191266582420">Denne <ph name="DEVICE_TYPE" />-enheten administreres av <ph name="ENROLLMENT_DOMAIN" />. Administratorer kan konfigurere og overvåke enheten eksternt.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> administrerer denne brukeren. Domenet kan administrere innstillinger og overvåke brukeraktivitet eksternt.</translation>
 <translation id="871560550817059752">Mislykket – tom for blekk</translation>
 <translation id="8747900814994928677">Bekreft endringen</translation>

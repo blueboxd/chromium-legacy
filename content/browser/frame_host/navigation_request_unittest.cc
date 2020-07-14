@@ -72,7 +72,7 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
 
   void TearDown() override {
     // Release the |request_| before destroying the WebContents, to match
-    // the WebContentsObserverSequenceChecker expectations.
+    // the WebContentsObserverConsistencyChecker expectations.
     request_.reset();
     RenderViewHostImplTestHarness::TearDown();
   }

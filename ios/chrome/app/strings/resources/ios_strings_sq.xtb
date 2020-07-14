@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sq">
 <translation id="1005230401424685968">VVVV</translation>
+<translation id="1013952917065545813">Mund të kthehesh përsëri këtu për të rihapur skedat që ke mbyllur së fundi</translation>
 <translation id="1016495303386450659">Elementi u përditësua</translation>
 <translation id="1044891598689252897">Sajtet do të punojnë normalisht</translation>
 <translation id="1047726139967079566">Regjistroje këtë faqe në faqeshënues...</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">Ndalo</translation>
 <translation id="1283524564873030414">24 orët e fundit</translation>
 <translation id="1285320974508926690">Asnjëherë mos e përkthe këtë sajt</translation>
+<translation id="1321993286294231467">Gabim në ruajtjen e imazhit.</translation>
 <translation id="1323735185997015385">Fshi</translation>
 <translation id="132683371494960526">Trokit dy herë për të ndryshuar dosjen mëmë.</translation>
 <translation id="1340643665687018190">Mbylle menynë</translation>
@@ -560,6 +562,7 @@ Sajtet nuk mund t'i përdorin kukit për të parë aktivitetin tënd të shfleti
 <translation id="7658239707568436148">Anulo</translation>
 <translation id="766891008101699113">Për të shfletuar uebin në mënyrë private, shto një skedë të re.</translation>
 <translation id="7671141431838911305">INSTALO</translation>
+<translation id="7701040980221191251">Asnjë</translation>
 <translation id="7765158879357617694">Zhvendos</translation>
 <translation id="7771470029643830783">Nëse del, faqeshënuesit, historiku, fjalëkalimet dhe të dhënat e tjera të Chrome nuk do të sinkronizohen më në "Llogarinë tënde të Google".
 

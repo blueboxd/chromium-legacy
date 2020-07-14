@@ -1317,13 +1317,9 @@ base::string16 TemplateURL::GenerateKeyword(const GURL& url) {
   // properly.  See http://code.google.com/p/chromium/issues/detail?id=6984 .
   // |url|'s hostname may be IDN-encoded. Before generating |keyword| from it,
   // convert to Unicode, so it won't look like a confusing punycode string.
-  base::string16 keyword = url_formatter::StripWWW(
-      url_formatter::IDNToUnicode(url.host()));
-  // Special case: if the host was exactly "www." (not sure this can happen but
-  // perhaps with some weird intranet and custom DNS server?), ensure we at
-  // least don't return the empty string.
-  return keyword.empty() ? base::ASCIIToUTF16("www")
-                         : base::i18n::ToLower(keyword);
+  base::string16 keyword =
+      url_formatter::IDNToUnicode(url_formatter::StripWWW(url.host()));
+  return base::i18n::ToLower(keyword);
 }
 
 // static

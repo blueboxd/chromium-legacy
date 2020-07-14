@@ -272,7 +272,9 @@ class PLATFORM_EXPORT Visitor {
   //
   // This can be used to defer processing data structures to the main thread
   // when support for concurrent processing is missing.
-  virtual bool DeferredTraceIfConcurrent(TraceDescriptor desc) { return false; }
+  virtual bool DeferredTraceIfConcurrent(TraceDescriptor, size_t) {
+    return false;
+  }
 
  protected:
   // Visits an object through a strong reference.

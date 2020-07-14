@@ -14,7 +14,7 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
-import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.device.mojom.ScreenOrientationLockType;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
 import javax.inject.Inject;
@@ -28,7 +28,7 @@ public class CustomTabOrientationController implements InflationObserver {
     private final ActivityWindowAndroid mActivityWindowAndroid;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
 
-    private @ScreenOrientationValues int mLockScreenOrientation = ScreenOrientationValues.DEFAULT;
+    private int mLockScreenOrientation = ScreenOrientationLockType.DEFAULT;
 
     @Inject
     public CustomTabOrientationController(ActivityWindowAndroid activityWindowAndroid,

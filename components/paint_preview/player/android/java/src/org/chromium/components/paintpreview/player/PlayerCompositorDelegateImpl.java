@@ -105,6 +105,16 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
                 mNativePlayerCompositorDelegate, frameGuid, x, y);
     }
 
+    @Override
+    public void setCompressOnClose(boolean compressOnClose) {
+        if (mNativePlayerCompositorDelegate == 0) {
+            return;
+        }
+
+        PlayerCompositorDelegateImplJni.get().setCompressOnClose(
+                mNativePlayerCompositorDelegate, compressOnClose);
+    }
+
     @CalledByNative
     public void onLinkClicked(String url) {
         PlayerUserActionRecorder.recordLinkClick();
@@ -130,5 +140,7 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
                 int clipX, int clipY, int clipWidth, int clipHeight);
         void onClick(long nativePlayerCompositorDelegateAndroid, UnguessableToken frameGuid, int x,
                 int y);
+        void setCompressOnClose(
+                long nativePlayerCompositorDelegateAndroid, boolean compressOnClose);
     }
 }

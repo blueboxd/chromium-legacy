@@ -248,6 +248,7 @@ public class RootUiCoordinator
             if (mContextualSearchSuppressor != null) {
                 mBottomSheetController.removeObserver(mContextualSearchSuppressor);
             }
+            BottomSheetControllerFactory.detach(mBottomSheetController);
             mBottomSheetController.destroy();
         }
 
@@ -642,6 +643,7 @@ public class RootUiCoordinator
                 () -> mScrimCoordinator, sheetInitializedCallback, mActivity.getWindow(),
                 mActivity.getWindowAndroid().getKeyboardDelegate(),
                 () -> mActivity.findViewById(R.id.coordinator));
+        BottomSheetControllerFactory.attach(mActivity.getWindowAndroid(), mBottomSheetController);
 
         mBottomSheetManager = new BottomSheetManager(mBottomSheetController, mActivityTabProvider,
                 mActivity.getBrowserControlsManager(), mActivity.getFullscreenManager(),
@@ -686,7 +688,7 @@ public class RootUiCoordinator
         TabModelSelector tabModelSelector = mActivity.getTabModelSelector();
         mDirectActionInitializer = new DirectActionInitializer(mActivity, activityType, mActivity,
                 mActivity::onBackPressed, tabModelSelector, mFindToolbarManager,
-                mActivity.getBottomSheetController(), mActivity.getBrowserControlsManager(),
+                getBottomSheetController(), mActivity.getBrowserControlsManager(),
                 mActivity.getCompositorViewHolder(), mActivity.getActivityTabProvider(),
                 mScrimView);
         mActivity.getLifecycleDispatcher().register(mDirectActionInitializer);

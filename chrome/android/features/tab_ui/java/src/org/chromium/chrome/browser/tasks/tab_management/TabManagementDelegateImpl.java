@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestio
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionsOrchestrator;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceDelegate;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -92,9 +93,9 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
     }
 
     @Override
-    public StartSurface createStartSurface(
-            ChromeActivity activity, ScrimCoordinator scrimCoordinator) {
-        return StartSurfaceDelegate.createStartSurface(activity, scrimCoordinator);
+    public StartSurface createStartSurface(ChromeActivity activity,
+            ScrimCoordinator scrimCoordinator, BottomSheetController sheetController) {
+        return StartSurfaceDelegate.createStartSurface(activity, scrimCoordinator, sheetController);
     }
 
     @Override

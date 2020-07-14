@@ -24,7 +24,7 @@ namespace blink {
 
 // When a page is backgrounded this is the absolute smallest amount of time
 // that can elapse between timer wake-ups.
-constexpr base::TimeDelta kDefaultThrottledWakeUpInterval =
+constexpr auto kDefaultThrottledWakeUpInterval =
     base::TimeDelta::FromSeconds(1);
 
 class DisableBackgroundThrottlingIsRespectedTest
@@ -122,8 +122,7 @@ class IntensiveWakeUpThrottlingTest : public SimTest {
     // Beyond this point intensive background throttling will not apply anymore
     // since the page is communicating in the background from onTimer().
 
-    constexpr base::TimeDelta kTimeUntilNextCheck =
-        base::TimeDelta::FromSeconds(30);
+    constexpr auto kTimeUntilNextCheck = base::TimeDelta::FromSeconds(30);
     platform_->RunForPeriod(kTimeUntilNextCheck);
 
     // Tasks are not throttled beyond the default backgroynd throttling behavior

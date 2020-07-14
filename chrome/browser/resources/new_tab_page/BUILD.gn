@@ -38,7 +38,6 @@ js_library("browser_proxy") {
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:cr.m",
   ]
-  externs_list = [ "externs.js" ]
 }
 
 js_library("app") {

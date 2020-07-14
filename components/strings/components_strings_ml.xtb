@@ -444,7 +444,6 @@
 <translation id="2799223571221894425">വീണ്ടും സമാരംഭിക്കുക</translation>
 <translation id="2803306138276472711"><ph name="SITE" /> എന്നതിൽ Google സുരക്ഷിത ബ്രൗസിംഗ് ഈയിടെ <ph name="BEGIN_LINK" />മാൽവെയർ കണ്ടെത്തി<ph name="END_LINK" />. സാധാരണ നിലയിൽ സുരക്ഷിതമായ വെബ്സൈറ്റുകളിൽ ചിലപ്പോൾ മാൽവെയർ ഉണ്ടായേക്കാം.</translation>
 <translation id="2807052079800581569">ചിത്രം Y സ്ഥാനം</translation>
-<translation id="2824514415781424867">ലൊക്കേഷൻ പങ്കിടണോ?</translation>
 <translation id="2824775600643448204">വിലാസവും തിരയൽ ബാറും</translation>
 <translation id="2826760142808435982"><ph name="CIPHER" /> ഉപയോഗിച്ച് കണക്ഷൻ എൻക്രിപ്‌റ്റുചെയ്‌ത് പ്രാമാണീകരിക്കുന്നു, ഒപ്പം പ്രധാന എക്‌സേഞ്ച് മെക്കാനിസമായി <ph name="KX" /> ഉപയോഗിക്കുന്നു.</translation>
 <translation id="2835170189407361413">ഫോം മായ്‌ക്കുക</translation>
@@ -917,6 +916,7 @@
 <translation id="480334179571489655">ഒറിജിൻ നയത്തിൽ പിശക്</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">Google Chrome-ന് പ്രോസസ് ചെയ്യാനാകാത്ത രൂപമാറ്റം വരുത്തിയ ക്രെഡൻഷ്യലുകൾ വെബ്സൈറ്റ് അയയ്ക്കുന്നതിനാൽ നിങ്ങൾക്കിപ്പോൾ <ph name="SITE" /> സന്ദർശിക്കാനാകില്ല.നെറ്റ്‌വർക്ക് പിശകുകളും ആക്രമണങ്ങളും സാധാരണയായി താൽക്കാലികമായതിനാൽ, ഈ പേജ് മിക്കവാറും പിന്നീട് പ്രവർത്തിക്കും.</translation>
+<translation id="4809079943450490359">നിങ്ങളുടെ ഉപകരണ അഡ്‌മിന്റെ നിർദ്ദേശങ്ങൾ:</translation>
 <translation id="4813512666221746211">നെറ്റ്‌വര്‍ക്ക് പിശക്</translation>
 <translation id="4816492930507672669">പേജിന് യുക്തമാക്കുക</translation>
 <translation id="484462545196658690">സ്വയമേവ</translation>

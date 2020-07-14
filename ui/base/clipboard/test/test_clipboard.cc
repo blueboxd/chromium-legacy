@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "skia/ext/skia_utils_base.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 
 namespace ui {
@@ -176,8 +177,11 @@ void TestClipboard::ClearLastModifiedTime() {
   last_modified_time_ = base::Time();
 }
 
-void TestClipboard::WritePortableRepresentations(ClipboardBuffer buffer,
-                                                 const ObjectMap& objects) {
+// TODO(crbug.com/1103215): |data_src| should be supported
+void TestClipboard::WritePortableRepresentations(
+    ClipboardBuffer buffer,
+    const ObjectMap& objects,
+    std::unique_ptr<ClipboardDataEndpoint> data_src) {
   Clear(buffer);
   default_store_buffer_ = buffer;
   for (const auto& kv : objects)
@@ -185,9 +189,11 @@ void TestClipboard::WritePortableRepresentations(ClipboardBuffer buffer,
   default_store_buffer_ = ClipboardBuffer::kCopyPaste;
 }
 
+// TODO(crbug.com/1103215): |data_src| should be supported
 void TestClipboard::WritePlatformRepresentations(
     ClipboardBuffer buffer,
-    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+    std::vector<Clipboard::PlatformRepresentation> platform_representations,
+    std::unique_ptr<ClipboardDataEndpoint> data_src) {
   Clear(buffer);
   default_store_buffer_ = buffer;
   DispatchPlatformRepresentations(std::move(platform_representations));

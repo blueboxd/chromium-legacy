@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import contextlib
 import collections
 import itertools
 import logging
@@ -525,25 +526,17 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
         for f in flags:
           logging.info('  %s', f)
 
-        try:
+        with self._ArchiveLogcat(dev, 'list_tests'):
           raw_test_list = crash_handler.RetryOnSystemCrash(
               lambda d: self._delegate.Run(
                   None, d, flags=' '.join(flags), timeout=timeout),
               device=dev)
-        except device_errors.AdbCommandFailedError:
-          logging.exception('Test listing failed.')
-          # Allow subsequent error handling to dump logcat.
-          raw_test_list = []
 
         tests = gtest_test_instance.ParseGTestListTests(raw_test_list)
         if not tests:
           logging.info('No tests found. Output:')
           for l in raw_test_list:
             logging.info('  %s', l)
-          logging.info('Logcat:')
-          for line in dev.adb.Logcat(dump=True):
-            logging.info(line)
-          dev.adb.Logcat(clear=True)
           if i < retries:
             logging.info('Retrying...')
         else:
@@ -585,6 +578,35 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
           return link
     return None
 
+  @contextlib.contextmanager
+  def _ArchiveLogcat(self, device, test):
+    if isinstance(test, str):
+      desc = test
+    else:
+      desc = hash(tuple(test))
+
+    stream_name = 'logcat_%s_%s_%s' % (
+        desc, time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()), device.serial)
+
+    logcat_file = None
+    logmon = None
+    try:
+      with self._env.output_manager.ArchivedTempfile(stream_name,
+                                                     'logcat') as logcat_file:
+        with logcat_monitor.LogcatMonitor(
+            device.adb,
+            filter_specs=local_device_environment.LOGCAT_FILTERS,
+            output_file=logcat_file.name,
+            check_error=False) as logmon:
+          with contextlib_ext.Optional(trace_event.trace(str(test)),
+                                       self._env.trace_output):
+            yield logcat_file
+    finally:
+      if logmon:
+        logmon.Close()
+      if logcat_file and logcat_file.Link():
+        logging.info('Logcat saved to %s', logcat_file.Link())
+
   #override
   def _RunTest(self, device, test):
     # Run the test.
@@ -624,28 +646,12 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
           for f in flags:
             logging.info('  %s', f)
 
-          stream_name = 'logcat_%s_%s_%s' % (
-              hash(tuple(test)),
-              time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
-              device.serial)
-
-          with self._env.output_manager.ArchivedTempfile(
-              stream_name, 'logcat') as logcat_file:
-            with logcat_monitor.LogcatMonitor(
-                device.adb,
-                filter_specs=local_device_environment.LOGCAT_FILTERS,
-                output_file=logcat_file.name,
-                check_error=False) as logmon:
-              with contextlib_ext.Optional(
-                  trace_event.trace(str(test)),
-                  self._env.trace_output):
-                output = self._delegate.Run(
-                    test, device, flags=' '.join(flags),
-                    timeout=timeout, retries=0)
-            logmon.Close()
-
-          if logcat_file.Link():
-            logging.info('Logcat saved to %s', logcat_file.Link())
+          with self._ArchiveLogcat(device, test) as logcat_file:
+            output = self._delegate.Run(test,
+                                        device,
+                                        flags=' '.join(flags),
+                                        timeout=timeout,
+                                        retries=0)
 
           if self._test_instance.enable_xml_result_parsing:
             try:

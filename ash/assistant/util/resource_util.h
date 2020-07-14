@@ -32,6 +32,14 @@ enum class ResourceLinkParam {
 // Enumeration of icon names.
 enum class IconName {
   kAssistant,
+  kCalculate,
+  kConversionPath,
+  kPersonPinCircle,
+  kScreenshot,
+  kSentimentVerySatisfied,
+  kStraighten,
+  kTimer,
+  kTranslate,
 };
 
 // Returns a new resource link, having appended or replaced the color param from

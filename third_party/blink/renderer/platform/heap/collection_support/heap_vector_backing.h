@@ -110,7 +110,8 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
 
   static void Trace(Visitor* visitor, const void* self) {
     if (!Traits::kCanTraceConcurrently && self) {
-      if (visitor->DeferredTraceIfConcurrent({self, &Trace}))
+      if (visitor->DeferredTraceIfConcurrent({self, &Trace},
+                                             GetBackingStoreSize(self)))
         return;
     }
 
@@ -121,6 +122,16 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
                                   HeapVectorBacking<T, Traits>,
                                   void>::Trace(visitor, self);
     }
+  }
+
+ private:
+  static size_t GetBackingStoreSize(const void* backing_store) {
+    const HeapObjectHeader* header =
+        HeapObjectHeader::FromPayload(backing_store);
+    return header->IsLargeObject<HeapObjectHeader::AccessMode::kAtomic>()
+               ? static_cast<LargeObjectPage*>(PageFromObject(header))
+                     ->ObjectSize()
+               : header->size<HeapObjectHeader::AccessMode::kAtomic>();
   }
 };
 

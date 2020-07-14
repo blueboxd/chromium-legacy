@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1647391597548383849">Пристапи до камерата</translation>
 <translation id="1660204651932907780">Дозволи сајтовите да пуштаат звук (се препорачува)</translation>
+<translation id="1677097821151855053">Колачињата и другите сајтови се користат за да ве запомнат, на пр., за најавување или за персонализирање реклами. За да управувате со колачињата за сите сајтови, погледнете ги <ph name="BEGIN_LINK" />Поставките<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Дали да се исчистат сите податоци?</translation>
 <translation id="169515064810179024">Блокирајте го пристапот до сензорите за движење за сајтовите</translation>
 <translation id="1717218214683051432">Сензори за движење</translation>
@@ -58,6 +59,7 @@
 <translation id="2586657967955657006">Табла со исечоци</translation>
 <translation id="2621115761605608342">Дозволи JavaScript за одреден сајт.</translation>
 <translation id="2653659639078652383">Поднеси</translation>
+<translation id="2677748264148917807">Напушти</translation>
 <translation id="2687403674020088961">Блокирај ги сите колачиња (не се препорачува)</translation>
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="2822354292072154809">Сигурно ли сакате да ги ресетирате сите дозволи на сајтот за <ph name="CHOSEN_OBJECT_NAME" />?</translation>
@@ -93,6 +95,7 @@
 <translation id="4008040567710660924">Дозволете колачиња за конкретен сајт.</translation>
 <translation id="4046123991198612571">Следна песна</translation>
 <translation id="4165986682804962316">Поставки на локација</translation>
+<translation id="4200726100658658164">Отворете ги поставките за локација</translation>
 <translation id="4226663524361240545">Известувањата може да предизвикаат вибрации на уредот</translation>
 <translation id="4242533952199664413">Отвори ги поставките</translation>
 <translation id="4259722352634471385">Навигацијата е блокирана: <ph name="URL" /></translation>
@@ -126,6 +129,7 @@
 <translation id="5335288049665977812">Дозволи сајтовите да извршуваат JavaScript (се препорачува)</translation>
 <translation id="534295439873310000">NFC-уреди</translation>
 <translation id="5354152178998424783">Ова ќе избрише <ph name="DATASIZE" /> податоци и колачиња складирани од сајтовите.</translation>
+<translation id="5384883051496921101">Сајтов ќе сподели информации со една апликација надвор од режимот „Инкогнито“.</translation>
 <translation id="5391532827096253100">Врската со сајтов не е безбедна. Информации за сајтот</translation>
 <translation id="5494752089476963479">Блокирај ги рекламите на сајтови што прикажуваат нападни или лажни реклами</translation>
 <translation id="5505264765875738116">Сајтовите не можат да прашуваат дали да испраќаат известувања</translation>
@@ -158,6 +162,7 @@
 <translation id="6295158916970320988">Сите локации</translation>
 <translation id="6320088164292336938">Вибрации</translation>
 <translation id="6388207532828177975">Исчисти и ресетирај</translation>
+<translation id="6423924377271166037">Избриши ги колачињата</translation>
 <translation id="6439114592976064011">Не дозволувај сајтовите да ги користат уредот и податоците за виртуелна реалност</translation>
 <translation id="6447842834002726250">Колачиња</translation>
 <translation id="6527303717912515753">Сподели</translation>
@@ -165,6 +170,7 @@
 <translation id="6561560012278703671">Користете потивки пораки (не дозволува известувањата да ве попречуваат)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Заштитена содржина</translation>
+<translation id="662080504995468778">Остани</translation>
 <translation id="6643016212128521049">Исчисти</translation>
 <translation id="6697925417670533197">Активни преземања</translation>
 <translation id="6746124502594467657">Премести долу</translation>
@@ -230,6 +236,7 @@
 <translation id="8441146129660941386">Барај поназад</translation>
 <translation id="8444433999583714703">За да овозможите <ph name="APP_NAME" /> да пристапува до вашата локација, вклучете ја дозволата за локацијата и во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Отповикај ја дозволата за пристап до уредот</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Се користи 1 колаче}one{Се користи # колаче}other{Се користат # колачиња}}</translation>
 <translation id="8463851957836045671">Сајтот е брз</translation>
 <translation id="851751545965956758">Блокирај ги сајтовите од поврзување со уреди</translation>
 <translation id="857943718398505171">Дозволено (препорачано)</translation>
@@ -247,6 +254,7 @@
 <translation id="8926666909099850184">NFC е исклучена за уредов. Вклучете ја во <ph name="BEGIN_LINK" />„Поставки за Android“<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Сајтов се отвора и реагира брзо за повеќето луѓе</translation>
 <translation id="8941729603749328384">www.primer.com</translation>
+<translation id="894871326938397531">Да се напушти режимот „Инкогнито“?</translation>
 <translation id="8958424370300090006">Блокирајте колачиња за одреден сајт.</translation>
 <translation id="8959122750345127698">Навигацијата е недостапна: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Управувано од вашите родители</translation>

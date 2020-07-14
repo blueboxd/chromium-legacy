@@ -39,7 +39,7 @@ class Device {
 
   Device(const std::string& device_serial,
          Adb* adb,
-         base::Callback<void()> release_callback);
+         base::OnceCallback<void()> release_callback);
 
   Status ForwardDevtoolsPort(const std::string& package,
                              const std::string& process,
@@ -49,7 +49,7 @@ class Device {
   const std::string serial_;
   std::string active_package_;
   Adb* adb_;
-  base::Callback<void()> release_callback_;
+  base::OnceCallback<void()> release_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Device);
 };

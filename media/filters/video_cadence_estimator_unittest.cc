@@ -19,7 +19,8 @@
 namespace media {
 
 // See VideoCadenceEstimator header for more details.
-const int kMinimumAcceptableTimeBetweenGlitchesSecs = 8;
+constexpr auto kMinimumAcceptableTimeBetweenGlitches =
+    base::TimeDelta::FromSeconds(8);
 
 // Slows down the given |fps| according to NTSC field reduction standards; see
 // http://en.wikipedia.org/wiki/Frame_rate#Digital_video_and_television
@@ -118,8 +119,7 @@ static void VerifyCadenceVector(VideoCadenceEstimator* estimator,
 
 // Spot check common display and frame rate pairs for correctness.
 TEST(VideoCadenceEstimatorTest, CadenceCalculations) {
-  VideoCadenceEstimator estimator(
-      base::TimeDelta::FromSeconds(kMinimumAcceptableTimeBetweenGlitchesSecs));
+  VideoCadenceEstimator estimator(kMinimumAcceptableTimeBetweenGlitches);
   estimator.set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
 
   const std::string kEmptyCadence = "[]";
@@ -172,8 +172,7 @@ TEST(VideoCadenceEstimatorTest, CadenceCalculations) {
 // Check the extreme case that max_acceptable_drift is larger than
 // minimum_time_until_max_drift.
 TEST(VideoCadenceEstimatorTest, CadenceCalculationWithLargeDrift) {
-  VideoCadenceEstimator estimator(
-      base::TimeDelta::FromSeconds(kMinimumAcceptableTimeBetweenGlitchesSecs));
+  VideoCadenceEstimator estimator(kMinimumAcceptableTimeBetweenGlitches);
   estimator.set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
 
   base::TimeDelta drift = base::TimeDelta::FromHours(1);
@@ -196,8 +195,7 @@ TEST(VideoCadenceEstimatorTest, CadenceCalculationWithLargeDrift) {
 
 // Check the case that the estimator excludes variable FPS case from Cadence.
 TEST(VideoCadenceEstimatorTest, CadenceCalculationWithLargeDeviation) {
-  VideoCadenceEstimator estimator(
-      base::TimeDelta::FromSeconds(kMinimumAcceptableTimeBetweenGlitchesSecs));
+  VideoCadenceEstimator estimator(kMinimumAcceptableTimeBetweenGlitches);
   estimator.set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
 
   const base::TimeDelta deviation = base::TimeDelta::FromMilliseconds(30);
@@ -211,8 +209,7 @@ TEST(VideoCadenceEstimatorTest, CadenceCalculationWithLargeDeviation) {
 }
 
 TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableDrift) {
-  VideoCadenceEstimator estimator(
-      base::TimeDelta::FromSeconds(kMinimumAcceptableTimeBetweenGlitchesSecs));
+  VideoCadenceEstimator estimator(kMinimumAcceptableTimeBetweenGlitches);
   estimator.set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
 
   const base::TimeDelta render_interval = Interval(NTSC(60));
@@ -233,8 +230,8 @@ TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableDrift) {
 }
 
 TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableGlitchTime) {
-  std::unique_ptr<VideoCadenceEstimator> estimator(new VideoCadenceEstimator(
-      base::TimeDelta::FromSeconds(kMinimumAcceptableTimeBetweenGlitchesSecs)));
+  std::unique_ptr<VideoCadenceEstimator> estimator(
+      new VideoCadenceEstimator(kMinimumAcceptableTimeBetweenGlitches));
   estimator->set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
 
   const base::TimeDelta render_interval = Interval(NTSC(60));
@@ -247,8 +244,8 @@ TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableGlitchTime) {
 
   // Decreasing the acceptable glitch time should be result in more permissive
   // detection of cadence.
-  estimator.reset(new VideoCadenceEstimator(base::TimeDelta::FromSeconds(
-      kMinimumAcceptableTimeBetweenGlitchesSecs / 2)));
+  estimator.reset(
+      new VideoCadenceEstimator(kMinimumAcceptableTimeBetweenGlitches / 2));
   estimator->set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
   EXPECT_TRUE(estimator->UpdateCadenceEstimate(
       render_interval, frame_interval, base::TimeDelta(), acceptable_drift));
@@ -257,8 +254,8 @@ TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableGlitchTime) {
 }
 
 TEST(VideoCadenceEstimatorTest, CadenceHystersisPreventsOscillation) {
-  std::unique_ptr<VideoCadenceEstimator> estimator(new VideoCadenceEstimator(
-      base::TimeDelta::FromSeconds(kMinimumAcceptableTimeBetweenGlitchesSecs)));
+  std::unique_ptr<VideoCadenceEstimator> estimator(
+      new VideoCadenceEstimator(kMinimumAcceptableTimeBetweenGlitches));
 
   const base::TimeDelta render_interval = Interval(30);
   const base::TimeDelta frame_interval = Interval(60);

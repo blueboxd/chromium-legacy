@@ -25,6 +25,7 @@
 <translation id="169515064810179024">Sites geen toegang tot bewegingssensoren geven</translation>
 <translation id="1717218214683051432">Bewegingssensoren</translation>
 <translation id="1743802530341753419">Vragen of sites verbinding mogen maken met een apparaat (aanbevolen)</translation>
+<translation id="1818308510395330587">Als je <ph name="APP_NAME" /> AR wilt laten gebruiken, moet je ook de camera inschakelen via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="1887786770086287077">Locatietoegang is uitgeschakeld voor dit apparaat. Schakel dit in via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Advertenties</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> van <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">Vandaag</translation>
 <translation id="2182457891543959921">Vragen voordat sites een 3D-kaart van je omgeving mogen maken of de camerapositie mogen volgen (aanbevolen)</translation>
 <translation id="2212565012507486665">Cookies toestaan</translation>
+<translation id="2228071138934252756">Als je <ph name="APP_NAME" /> toegang wilt geven tot je camera, moet je de camera ook inschakelen via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="2289270750774289114">Vragen wanneer een site Bluetooth-apparaten in de buurt wilt detecteren (aanbevolen)</translation>
 <translation id="2315043854645842844">Certificaatselectie aan clientzijde wordt niet ondersteund door het besturingssysteem.</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
@@ -56,6 +58,7 @@
 <translation id="2586657967955657006">Klembord</translation>
 <translation id="2621115761605608342">JavaScript toestaan voor een specfieke site.</translation>
 <translation id="2653659639078652383">Verzenden</translation>
+<translation id="2677748264148917807">Verlaten</translation>
 <translation id="2687403674020088961">Alle cookies blokkeren (niet aanbevolen)</translation>
 <translation id="2704606927547763573">Gekopieerd</translation>
 <translation id="2822354292072154809">Weet je zeker dat je alle siterechten voor <ph name="CHOSEN_OBJECT_NAME" /> wilt resetten?</translation>
@@ -69,6 +72,7 @@
 <translation id="3115898365077584848">Informatie weergeven</translation>
 <translation id="3123473560110926937">Geblokkeerd op bepaalde sites</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> opgeslagen gegevens</translation>
+<translation id="321187648315454507">Als je wilt dat <ph name="APP_NAME" /> je meldingen stuurt, moet je meldingen ook inschakelen via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Microfoon</translation>
 <translation id="3277252321222022663">Sites toegang geven tot sensoren (aanbevolen)</translation>
 <translation id="3295602654194328831">Informatie verbergen</translation>
@@ -100,6 +104,7 @@
 <translation id="445467742685312942">Sites toestaan om beschermde content af te spelen</translation>
 <translation id="4468959413250150279">Geluid dempen voor een specifieke site.</translation>
 <translation id="4479647676395637221">Eerst vragen voordat sites je camera mogen gebruiken (aanbevolen)</translation>
+<translation id="4534723447064627427">Als je <ph name="APP_NAME" /> toegang wilt geven tot je microfoon, moet je de microfoon ook inschakelen via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="4570913071927164677">Details</translation>
 <translation id="4645575059429386691">Beheerd door je ouder</translation>
 <translation id="4670064810192446073">Virtual reality</translation>
@@ -122,6 +127,7 @@
 <translation id="5335288049665977812">Sites toestaan JavaScript uit te voeren (aanbevolen)</translation>
 <translation id="534295439873310000">NFC-apparaten</translation>
 <translation id="5354152178998424783">Hiermee wis je <ph name="DATASIZE" /> aan gegevens en cookies die zijn opgeslagen door sites.</translation>
+<translation id="5384883051496921101">Deze site staat op het punt buiten de incognitomodus informatie met een app te delen.</translation>
 <translation id="5391532827096253100">Je verbinding met deze site is niet beveiligd. Site-informatie</translation>
 <translation id="5494752089476963479">Advertenties blokkeren op sites die opdringerige of misleidende advertenties weergeven</translation>
 <translation id="5505264765875738116">Sites kunnen niet vragen of ze je meldingen mogen sturen</translation>
@@ -161,6 +167,7 @@
 <translation id="6561560012278703671">Stillere meldingen gebruiken (zorgt ervoor dat je niet wordt gestoord door meldingprompts)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Beschermde content</translation>
+<translation id="662080504995468778">Blijven</translation>
 <translation id="6643016212128521049">Wissen</translation>
 <translation id="6697925417670533197">Actieve downloads</translation>
 <translation id="6746124502594467657">Omlaag</translation>
@@ -224,6 +231,7 @@
 <translation id="8394832520002899662">Tik hier om terug te gaan naar de site</translation>
 <translation id="8425213833346101688">Wijzigen</translation>
 <translation id="8441146129660941386">Achteruit zoeken</translation>
+<translation id="8444433999583714703">Als je <ph name="APP_NAME" /> toegang wilt geven tot je locatie, moet je je locatie ook inschakelen via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Rechten voor apparaat intrekken</translation>
 <translation id="8463851957836045671">Site is snel</translation>
 <translation id="851751545965956758">Voorkomen dat sites verbinding maken met apparaten</translation>
@@ -231,6 +239,7 @@
 <translation id="8609465669617005112">Omhoog</translation>
 <translation id="8676374126336081632">Invoer wissen</translation>
 <translation id="8702612070107455751">Alle offline gegevens worden gewist.</translation>
+<translation id="8719283222052720129">Schakel rechten voor <ph name="APP_NAME" /> in via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="8725066075913043281">Opnieuw proberen</translation>
 <translation id="8730621377337864115">Gereed</translation>
 <translation id="8737217482364735741">Hiermee wis je alle gegevens en cookies die zijn opgeslagen door <ph name="ORIGIN" />.</translation>
@@ -241,10 +250,12 @@
 <translation id="8926666909099850184">NFC is uitgeschakeld voor dit apparaat. Schakel deze functie in via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Deze site opent en reageert snel voor de meeste mensen</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">Incognitomodus verlaten?</translation>
 <translation id="8958424370300090006">Cookies voor een specifieke site blokkeren.</translation>
 <translation id="8959122750345127698">Navigatie is onbereikbaar: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Beheerd door je ouders</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="913657688200966289">Schakel rechten voor <ph name="APP_NAME" /> in via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="945632385593298557">Toegang tot je microfoon</translation>
 <translation id="965817943346481315">Blokkeren als site opdringerige of misleidende advertenties weergeeft (aanbevolen)</translation>
 </translationbundle>

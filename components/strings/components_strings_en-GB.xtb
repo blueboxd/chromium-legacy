@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="1008557486741366299">Not Now</translation>
+<translation id="100957008357583611">Use your location?</translation>
 <translation id="1010200102790553230">Load page later</translation>
 <translation id="1015730422737071372">Provide additional details.</translation>
 <translation id="1019413721762100891">Off</translation>
@@ -446,7 +447,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="2799223571221894425">Relaunch</translation>
 <translation id="2803306138276472711">Google Safe Browsing recently <ph name="BEGIN_LINK" />detected malware<ph name="END_LINK" /> on <ph name="SITE" />. Websites that are normally safe are sometimes infected with malware.</translation>
 <translation id="2807052079800581569">Image Y position</translation>
-<translation id="2824514415781424867">Share location?</translation>
 <translation id="2824775600643448204">Address and search bar</translation>
 <translation id="2826760142808435982">The connection is encrypted and authenticated using <ph name="CIPHER" /> and uses <ph name="KX" /> as the key exchange mechanism.</translation>
 <translation id="2835170189407361413">Clear form</translation>
@@ -922,6 +922,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="480334179571489655">Origin Policy Error</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">You cannot visit <ph name="SITE" /> at the moment because the website sent scrambled credentials that Google Chrome cannot process. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
+<translation id="4809079943450490359">Instructions from your device administrator:</translation>
 <translation id="4813512666221746211">Network error</translation>
 <translation id="4816492930507672669">Fit to page</translation>
 <translation id="484462545196658690">Auto</translation>
@@ -1180,6 +1181,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="5869405914158311789">This site can’t be reached</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
 <translation id="5887400589839399685">Card saved</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> requires you to back up your data and return this device.</translation>
 <translation id="5895138241574237353">Restart</translation>
 <translation id="5895187275912066135">Issued On</translation>
 <translation id="5901630391730855834">Yellow</translation>

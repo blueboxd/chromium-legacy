@@ -39,6 +39,8 @@ class PlayerCompositorDelegate {
   PlayerCompositorDelegate(const PlayerCompositorDelegate&) = delete;
   PlayerCompositorDelegate& operator=(const PlayerCompositorDelegate&) = delete;
 
+  void SetCompressOnClose(bool compress) { compress_on_close_ = compress; }
+
   virtual void OnCompositorReady(
       mojom::PaintPreviewCompositor::Status status,
       mojom::PaintPreviewBeginCompositeResponsePtr composite_response) {}
@@ -73,6 +75,7 @@ class PlayerCompositorDelegate {
 
   PaintPreviewBaseService* paint_preview_service_;
   DirectoryKey key_;
+  bool compress_on_close_;
   std::unique_ptr<PaintPreviewCompositorService>
       paint_preview_compositor_service_;
   std::unique_ptr<PaintPreviewCompositorClient>

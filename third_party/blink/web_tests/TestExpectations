@@ -6860,7 +6860,7 @@ crbug.com/1102167 virtual/omt-worker-fetch/external/wpt/fetch/redirect-navigate/
 crbug.com/1104186 [ Win ] fast/forms/color-scheme/suggestion-picker/time-suggestion-picker-appearance.html [ Pass Failure ]
 
 crbug.com/1104195 inspector-protocol/css/css-set-effective-property-value.js [ Pass Failure Crash ]
-crbug.com/1104333 http/tests/devtools/bindings/inline-styles-binding.js [ Pass Failure ]
+crbug.com/1104333 http/tests/devtools/bindings/inline-styles-binding.js [ Pass Failure Crash ]
 
 # Sheriff 2020-07-13
 
@@ -6871,7 +6871,6 @@ crbug.com/1104910 inspector-protocol/stylesheet-tracking-restart.js [ Pass Failu
 crbug.com/1104910 virtual/web-components-v0-disabled/fast/dom/cssTarget-crash.html [ Pass Timeout Failure ]
 crbug.com/1104910 [ Win ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Pass Failure ]
 crbug.com/1104910 [ Win ] http/tests/devtools/elements/styles-1/dynamic-style-tag.js [ Pass Failure ]
-
 crbug.com/1104910 [ Mac10.15 ] editing/selection/selection-background.html [ Pass Failure ]
 crbug.com/1104910 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/unsafe-url/worker-classic.http.html [ Pass Failure ]
 crbug.com/1104910 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/unset/worker-module.http.html [ Pass Failure ]

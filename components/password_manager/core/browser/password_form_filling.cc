@@ -144,7 +144,8 @@ LikelyFormFilling SendFillInformationToRenderer(
   if (best_matches.empty()) {
     bool should_show_popup_without_passwords =
         client->GetPasswordFeatureManager()->ShouldShowAccountStorageOptIn() ||
-        client->GetPasswordFeatureManager()->ShouldShowAccountStorageReSignin();
+        client->GetPasswordFeatureManager()->ShouldShowAccountStorageReSignin(
+            client->GetLastCommittedURL());
     driver->InformNoSavedCredentials(should_show_popup_without_passwords);
     metrics_recorder->RecordFillEvent(
         PasswordFormMetricsRecorder::kManagerFillEventNoCredential);

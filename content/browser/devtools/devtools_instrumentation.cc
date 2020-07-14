@@ -654,7 +654,7 @@ void OnResponseReceivedExtraInfo(
     int process_id,
     int routing_id,
     const std::string& devtools_request_id,
-    const net::CookieAndLineStatusList& response_cookie_list,
+    const net::CookieAndLineAccessResultList& response_cookie_list,
     const std::vector<network::mojom::HttpRawHeaderPairPtr>& response_headers,
     const base::Optional<std::string>& response_headers_text) {
   FrameTreeNode* ftn = GetFtnForNetworkRequest(process_id, routing_id);
@@ -819,7 +819,7 @@ protocol::String BuildCookieOperation(
 
 void ReportSameSiteCookieIssue(
     RenderFrameHostImpl* render_frame_host_impl,
-    const net::CookieWithStatus& excluded_cookie,
+    const net::CookieWithAccessResult& excluded_cookie,
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     blink::mojom::SameSiteCookieOperation operation,
@@ -844,8 +844,9 @@ void ReportSameSiteCookieIssue(
       protocol::Audits::SameSiteCookieIssueDetails::Create()
           .SetCookie(std::move(affected_cookie))
           .SetCookieExclusionReasons(
-              BuildExclusionReasons(excluded_cookie.status))
-          .SetCookieWarningReasons(BuildWarningReasons(excluded_cookie.status))
+              BuildExclusionReasons(excluded_cookie.access_result.status))
+          .SetCookieWarningReasons(
+              BuildWarningReasons(excluded_cookie.access_result.status))
           .SetOperation(BuildCookieOperation(operation))
           .SetCookieUrl(url.spec())
           .SetRequest(std::move(affected_request))

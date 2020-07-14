@@ -7,7 +7,7 @@
 
 #include "base/optional.h"
 #include "services/device/public/mojom/screen_orientation.mojom-blink.h"
-#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
+#include "services/device/public/mojom/screen_orientation_lock_types.mojom-shared.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
@@ -93,7 +93,8 @@ class MediaControlsOrientationLockDelegate final : public NativeEventListener {
 
   // Returns the orientation in which the video should be locked based on its
   // size.
-  MODULES_EXPORT WebScreenOrientationLockType ComputeOrientationLock() const;
+  MODULES_EXPORT device::mojom::blink::ScreenOrientationLockType
+  ComputeOrientationLock() const;
 
   // Locks the screen orientation if the video has metadata information
   // available. Delays locking orientation until metadata are available
@@ -129,8 +130,8 @@ class MediaControlsOrientationLockDelegate final : public NativeEventListener {
   State state_ = State::kPendingFullscreen;
 
   // Which lock is currently applied by this delegate.
-  WebScreenOrientationLockType locked_orientation_ =
-      kWebScreenOrientationLockDefault /* unlocked */;
+  device::mojom::blink::ScreenOrientationLockType locked_orientation_ =
+      device::mojom::blink::ScreenOrientationLockType::DEFAULT /* unlocked */;
 
   TaskHandle lock_to_any_task_;
 

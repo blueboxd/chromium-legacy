@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="mk">
 <translation id="1008557486741366299">Не сега</translation>
+<translation id="100957008357583611">Да се користи локацијата?</translation>
 <translation id="1010200102790553230">Вчитај ја страницата подоцна</translation>
 <translation id="1015730422737071372">Дајте дополнителни детали</translation>
 <translation id="1019413721762100891">Исклучено</translation>
@@ -447,7 +448,6 @@
 <translation id="2799223571221894425">Рестартирај</translation>
 <translation id="2803306138276472711">Google Safe Browsing неодамна <ph name="BEGIN_LINK" />откри злонамерен софтвер<ph name="END_LINK" /> на <ph name="SITE" />. Веб-локациите што обично се безбедни, некогаш се инфицираат со злонамерен софтвер.</translation>
 <translation id="2807052079800581569">Позиција на сликата Y</translation>
-<translation id="2824514415781424867">Да се сподели локацијата?</translation>
 <translation id="2824775600643448204">Лента за адреса и за пребарување</translation>
 <translation id="2826760142808435982">Поврзувањето е шифрирано и автентицирано со употреба на <ph name="CIPHER" /> и користи <ph name="KX" /> како клучен механизам за размена.</translation>
 <translation id="2835170189407361413">Исчисти формулар</translation>
@@ -923,6 +923,7 @@
 <translation id="480334179571489655">Грешка на правилото за потекло</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4807049035289105102">Не може сега да го посетите <ph name="SITE" /> затоа што веб-сајтот испратил измешани акредитиви што Google Chrome не може да ги обработи. Грешките на мрежата и нападите обично се привремени, така што страницава веројатно ќе работи подоцна.</translation>
+<translation id="4809079943450490359">Упатства од администраторот на уредот:</translation>
 <translation id="4813512666221746211">Грешка на мрежа</translation>
 <translation id="4816492930507672669">Скрој во страница</translation>
 <translation id="484462545196658690">Автоматски</translation>
@@ -1181,6 +1182,7 @@
 <translation id="5869405914158311789">Не може да се достапи до сајтот</translation>
 <translation id="5869522115854928033">Зачувани лозинки</translation>
 <translation id="5887400589839399685">Картичката е зачувана</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> бара да направите бекап на вашите податоци и да го вратите уредов.</translation>
 <translation id="5895138241574237353">Рестартирај</translation>
 <translation id="5895187275912066135">Издадено на</translation>
 <translation id="5901630391730855834">Жолта боја</translation>

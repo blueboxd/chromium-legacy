@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">ਸੈਟਿੰਗਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 ਘੰ. ਵਿੱਚ}one{# ਘੰ. ਵਿੱਚ}other{# ਘੰ. ਵਿੱਚ}}</translation>
 <translation id="2583543531130364912">ਆਪਣੀ ਟੱਚਸਕ੍ਰੀਨ ਨੂੰ ਕੈਲੀਬਰੇਟ ਕਰੋ</translation>
+<translation id="2586657967955657006">ਕਲਿੱਪਬੋਰਡ</translation>
 <translation id="2666092431469916601">ਟੌਪ</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> ਤੋਂ ਸਾਂਝਾ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="271033894570825754">ਨਵਾਂ</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">ਬੋਲਣਾ ਸ਼ੁਰੂ ਕਰੋ</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> ਨੂੰ <ph name="FOLDER_NAME" /> ਫੋਲਡਰ ਵਿੱਚ ਲਿਜਾਇਆ ਗਿਆ।</translation>
 <translation id="4316910396681052118">ਸਭ ਐਪਾਂ</translation>
+<translation id="4491109536499578614">ਚਿੱਤਰ</translation>
 <translation id="4588090240171750605">ਸੱਜੇ ਪਾਸੇ ਸਕ੍ਰੌਲ ਕਰੋ</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, ਤਾਰਾ ਰੇਟਿੰਗ <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, ਐਪ ਸਿਫ਼ਾਰਸ਼</translation>

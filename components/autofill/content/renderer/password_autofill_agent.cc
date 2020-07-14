@@ -558,7 +558,8 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
   WebInputElement mutable_element = element;  // We need a non-const.
 
   const base::string16 element_value = element.Value().Utf16();
-  field_data_manager_->UpdateFieldDataMap(element, element_value,
+  const FieldRendererId element_id(element.UniqueRendererFormControlId());
+  field_data_manager_->UpdateFieldDataMap(element_id, element_value,
                                           FieldPropertiesFlags::kUserTyped);
 
   ProvisionallySavePassword(element.Form(), element, RESTRICTION_NONE);
@@ -645,8 +646,9 @@ void PasswordAutofillAgent::FillField(WebInputElement* input,
   DCHECK(!input->IsNull());
   input->SetAutofillValue(WebString::FromUTF16(credential));
   input->SetAutofillState(WebAutofillState::kAutofilled);
+  const FieldRendererId input_id(input->UniqueRendererFormControlId());
   field_data_manager_->UpdateFieldDataMap(
-      *input, credential, FieldPropertiesFlags::kAutofilledOnUserTrigger);
+      input_id, credential, FieldPropertiesFlags::kAutofilledOnUserTrigger);
 }
 
 void PasswordAutofillAgent::FillPasswordFieldAndSave(
@@ -1360,8 +1362,9 @@ void PasswordAutofillAgent::FocusedNodeHasChanged(const blink::WebNode& node) {
   }
 
   focus_state_notifier_.FocusedInputChanged(focused_field_type);
+  const FieldRendererId input_id(input_element->UniqueRendererFormControlId());
   field_data_manager_->UpdateFieldDataMapWithNullValue(
-      *input_element, FieldPropertiesFlags::kHadFocus);
+      input_id, FieldPropertiesFlags::kHadFocus);
 }
 
 std::unique_ptr<FormData> PasswordAutofillAgent::GetFormDataFromWebForm(
@@ -1858,7 +1861,7 @@ void PasswordAutofillAgent::AutofillField(const base::string16& value,
   // intentionally interacting with the page.
   gatekeeper_.RegisterElement(&field);
   field_data_manager_.get()->UpdateFieldDataMap(
-      field, value, FieldPropertiesFlags::kAutofilledOnPageLoad);
+      field_id, value, FieldPropertiesFlags::kAutofilledOnPageLoad);
   autofilled_elements_cache_.emplace(field_id, WebString::FromUTF16(value));
   all_autofilled_elements_.insert(field_id);
 }

@@ -126,7 +126,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4458462641685292929">Another operation on Google Chrome is in progress. Please try again later.</translation>
 <translation id="4480040274068703980">Chrome OS could not sync your data due to an error signing in.</translation>
 <translation id="4521185804071812304">Optional: Help improve Chrome OS features and performance by automatically sending diagnostic and usage data to Google.</translation>
-<translation id="4552702433620284371">Chrome can't check your device software. Try checking your Internet connection.</translation>
 <translation id="4561051373932531560">Google Chrome lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="4567424176335768812">You're signed in as <ph name="USER_EMAIL_ADDRESS" />. Now you can access your bookmarks, history and other settings on all your signed in devices.</translation>
 <translation id="4571503333518166079">Go to Chrome notification settings</translation>
@@ -234,6 +233,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7962410387636238736">This computer will no longer receive Google Chrome updates because Windows XP and Windows Vista are no longer supported</translation>
 <translation id="8008534537613507642">Reinstall Chrome</translation>
 <translation id="8013993649590906847">If an image doesn’t have a useful description, Chrome will try to provide one for you. To create descriptions, images are sent to Google.</translation>
+<translation id="8034040214409724683">An error occurred while Chrome was checking the device software</translation>
 <translation id="8129812357326543296">About &amp;Google Chrome</translation>
 <translation id="8255190535488645436">Google Chrome is using your camera and microphone.</translation>
 <translation id="8286862437124483331">Google Chrome is trying to show passwords. Type your Windows password to allow this.</translation>

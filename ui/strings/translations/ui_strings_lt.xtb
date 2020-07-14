@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">Tvarkyti nustatymus</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{po 1 val.}one{po # val.}few{po # val.}many{po # val.}other{po # val.}}</translation>
 <translation id="2583543531130364912">Jutiklinio ekrano kalibravimas</translation>
+<translation id="2586657967955657006">Iškarpinė</translation>
 <translation id="2666092431469916601">Į viršų</translation>
 <translation id="2701330563083355633">Bendrinta iš „<ph name="DEVICE_NAME" />“</translation>
 <translation id="271033894570825754">Naujiena</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">Pradėti kalbėti</translation>
 <translation id="430191667033048642">„<ph name="MOVED_APP_NAME" />“ perkelta į aplanką „<ph name="FOLDER_NAME" />“.</translation>
 <translation id="4316910396681052118">VISOS PROGRAMOS</translation>
+<translation id="4491109536499578614">Vaizdas</translation>
 <translation id="4588090240171750605">Slinkti į dešinę</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, įvertinimas žvaigždutėmis <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485">„<ph name="APP_NAME" />“, programos rekomendacija</translation>

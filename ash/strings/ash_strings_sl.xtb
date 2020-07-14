@@ -98,6 +98,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="1995660704900986789">Izklop</translation>
 <translation id="2012624427112548395">Ctrl+ tipka za iskanje + H</translation>
 <translation id="2016340657076538683">Vnesite sporočilo</translation>
+<translation id="2018630726571919839">Povej mi šalo</translation>
 <translation id="2050339315714019657">Pokončno</translation>
 <translation id="2067602449040652523">Svetlost tipkovnice</translation>
 <translation id="209965399369889474">Ni povezave z omrežjem</translation>
@@ -125,6 +126,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="2354174487190027830">Aktiviranje omrežja <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Naprej</translation>
 <translation id="2365393535144473978">Če omogočite prenos podatkov v mobilnem omrežju, bo omogočen Bluetooth.</translation>
+<translation id="2369165858548251131">»Živijo« po kitajsko</translation>
 <translation id="2390318262976603432">Nastavitve jezika</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Na voljo je posodobitev</translation>
@@ -142,6 +144,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="256712445991462162">zasidrana lupa</translation>
 <translation id="2575685495496069081">Prijava z več računi je onemogočena</translation>
 <translation id="2582112259361606227">Znova zaženite za posodobitev</translation>
+<translation id="2595239820337756193">5 km v miljah</translation>
 <translation id="2617342710774726426">Kartica SIM je zaklenjena</translation>
 <translation id="2621713457727696555">Varno</translation>
 <translation id="2653659639078652383">Pošlji</translation>
@@ -195,6 +198,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="3154351730702813399">Skrbnik naprave morda nadzira vašo dejavnost brskanja.</translation>
 <translation id="3181441307743005334">Vnovičen zagon lahko traja nekaj časa</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Vzpostavljena je povezava z eno napravo}one{Vzpostavljena je povezava z # napravo}two{Vzpostavljena je povezava z # napravama}few{Vzpostavljena je povezava s # napravami}other{Vzpostavljena je povezava s # napravami}}</translation>
+<translation id="320207200541803018">Nastavitev merilnika časa</translation>
 <translation id="3203405173652969239">Stikalni dostop je omogočen</translation>
 <translation id="3207953481422525583">Uporabniške nastavitve</translation>
 <translation id="3217205077783620295">Glasnost je vklopljena: če to preklopite, bo zvok izklopljen.</translation>
@@ -207,6 +211,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> se še vedno lahko prijavi pozneje.</translation>
 <translation id="3321628682574733415">Nepravilna koda starša</translation>
 <translation id="332587331255250389">Zamenjajte baterijo</translation>
+<translation id="334252345105450327">Ustvarjanje posnetka zaslona</translation>
 <translation id="3351879221545518001">Trenutno predvajate vsebino zaslona.</translation>
 <translation id="3364721542077212959">Orodja pisala</translation>
 <translation id="3368922792935385530">Povezano</translation>
@@ -239,6 +244,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="3631369015426612114">Omogočanje obvestil teh virov</translation>
 <translation id="3638400994746983214">Preklop zaslona za zasebnost. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Upravljani uporabnik</translation>
+<translation id="3702846122927433391">Število prebivalcev v Nigeriji</translation>
 <translation id="3705722231355495246">–</translation>
 <translation id="3712407551474845318">Zajem območja</translation>
 <translation id="371370241367527062">Sprednji mikrofon</translation>
@@ -519,6 +525,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Ponastavitev na prejšnjo ločljivost čez <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Meni je bil premaknjen v zgornji levi kot zaslona.</translation>
+<translation id="7189412385142492784">Kako daleč je Venera</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Ta Chromebook je treba znova zagnati, če želite uveljaviti posodobitev. Traja lahko največ eno minuto.</translation>
 <translation id="7256634071279256947">Zadnji mikrofon</translation>
 <translation id="726276584504105859">Povlecite sem za razdeljeni zaslon</translation>
@@ -645,6 +652,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="8649101189709089199">Izberite in poslušajte</translation>
 <translation id="8652175077544655965">Zapiranje nastavitev</translation>
 <translation id="8653151467777939995">Prikaz nastavitev obvestil. Obvestila so vklopljena.</translation>
+<translation id="8660331759611631213">Kvadratni koren števila 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, moč signala je <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Prikaz seznama omrežij. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

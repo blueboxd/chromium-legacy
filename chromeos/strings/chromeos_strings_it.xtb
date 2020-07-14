@@ -71,6 +71,7 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="808894953321890993">Cambia password</translation>
 <translation id="8208861521865154048">Vantaggi</translation>
 <translation id="8347227221149377169">Processi di stampa</translation>
+<translation id="8623849191266582420">Questo dispositivo <ph name="DEVICE_TYPE" /> è gestito da <ph name="ENROLLMENT_DOMAIN" />. Gli amministratori possono configurare da remoto e monitorare il dispositivo.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> gestisce questo utente. Può gestire in remoto le impostazioni e monitorare l'attività utente.</translation>
 <translation id="871560550817059752">Operazione non riuscita - Inchiostro esaurito</translation>
 <translation id="8747900814994928677">Conferma modifica</translation>

@@ -336,6 +336,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   PerformanceEntryVector getEntriesByTypeInternal(
       PerformanceEntry::EntryType type);
 
+  void MeasureMemoryExperimentTimerFired(TimerBase*);
+
  protected:
   Performance(base::TimeTicks time_origin,
               scoped_refptr<base::SingleThreadTaskRunner>);

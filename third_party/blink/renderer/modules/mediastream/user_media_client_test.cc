@@ -23,7 +23,6 @@
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
-#include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -44,6 +43,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_track_platform.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -133,7 +133,7 @@ void CheckVideoSourceAndTrack(blink::MediaStreamVideoSource* source,
       MediaStreamVideoTrack::GetVideoTrack(WebMediaStreamTrack(component));
   EXPECT_EQ(track->source(), source);
 
-  WebMediaStreamTrack::Settings settings;
+  MediaStreamTrackPlatform::Settings settings;
   track->GetSettings(settings);
   EXPECT_EQ(settings.width, expected_track_width);
   EXPECT_EQ(settings.height, expected_track_height);
@@ -720,17 +720,15 @@ TEST_F(UserMediaClientTest, StopLocalTracks) {
   MediaStreamDescriptor* mixed_desc = RequestLocalMediaStream();
 
   auto audio_components = mixed_desc->AudioComponents();
-  WebPlatformMediaStreamTrack* audio_track =
-      WebPlatformMediaStreamTrack::GetTrack(
-          WebMediaStreamTrack(audio_components[0]));
+  MediaStreamTrackPlatform* audio_track = MediaStreamTrackPlatform::GetTrack(
+      WebMediaStreamTrack(audio_components[0]));
   audio_track->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_audio_device_counter());
 
   auto video_components = mixed_desc->VideoComponents();
-  WebPlatformMediaStreamTrack* video_track =
-      WebPlatformMediaStreamTrack::GetTrack(
-          WebMediaStreamTrack(video_components[0]));
+  MediaStreamTrackPlatform* video_track = MediaStreamTrackPlatform::GetTrack(
+      WebMediaStreamTrack(video_components[0]));
   video_track->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_video_device_counter());
@@ -746,33 +744,29 @@ TEST_F(UserMediaClientTest, StopLocalTracksWhenTwoStreamUseSameDevices) {
   MediaStreamDescriptor* desc2 = RequestLocalMediaStream();
 
   auto audio_components1 = desc1->AudioComponents();
-  WebPlatformMediaStreamTrack* audio_track1 =
-      WebPlatformMediaStreamTrack::GetTrack(
-          WebMediaStreamTrack(audio_components1[0]));
+  MediaStreamTrackPlatform* audio_track1 = MediaStreamTrackPlatform::GetTrack(
+      WebMediaStreamTrack(audio_components1[0]));
   audio_track1->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, mock_dispatcher_host_.stop_audio_device_counter());
 
   auto audio_components2 = desc2->AudioComponents();
-  WebPlatformMediaStreamTrack* audio_track2 =
-      WebPlatformMediaStreamTrack::GetTrack(
-          WebMediaStreamTrack(audio_components2[0]));
+  MediaStreamTrackPlatform* audio_track2 = MediaStreamTrackPlatform::GetTrack(
+      WebMediaStreamTrack(audio_components2[0]));
   audio_track2->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_audio_device_counter());
 
   auto video_components1 = desc1->VideoComponents();
-  WebPlatformMediaStreamTrack* video_track1 =
-      WebPlatformMediaStreamTrack::GetTrack(
-          WebMediaStreamTrack(video_components1[0]));
+  MediaStreamTrackPlatform* video_track1 = MediaStreamTrackPlatform::GetTrack(
+      WebMediaStreamTrack(video_components1[0]));
   video_track1->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, mock_dispatcher_host_.stop_video_device_counter());
 
   auto video_components2 = desc2->VideoComponents();
-  WebPlatformMediaStreamTrack* video_track2 =
-      WebPlatformMediaStreamTrack::GetTrack(
-          WebMediaStreamTrack(video_components2[0]));
+  MediaStreamTrackPlatform* video_track2 = MediaStreamTrackPlatform::GetTrack(
+      WebMediaStreamTrack(video_components2[0]));
   video_track2->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_video_device_counter());
@@ -882,17 +876,15 @@ TEST_F(UserMediaClientTest, StopTrackAfterReload) {
   EXPECT_EQ(1, mock_dispatcher_host_.stop_video_device_counter());
 
   auto audio_components = mixed_desc->AudioComponents();
-  WebPlatformMediaStreamTrack* audio_track =
-      WebPlatformMediaStreamTrack::GetTrack(
-          WebMediaStreamTrack(audio_components[0]));
+  MediaStreamTrackPlatform* audio_track = MediaStreamTrackPlatform::GetTrack(
+      WebMediaStreamTrack(audio_components[0]));
   audio_track->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_audio_device_counter());
 
   auto video_components = mixed_desc->VideoComponents();
-  WebPlatformMediaStreamTrack* video_track =
-      WebPlatformMediaStreamTrack::GetTrack(
-          WebMediaStreamTrack(video_components[0]));
+  MediaStreamTrackPlatform* video_track = MediaStreamTrackPlatform::GetTrack(
+      WebMediaStreamTrack(video_components[0]));
   video_track->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_video_device_counter());
@@ -1261,7 +1253,7 @@ TEST_F(UserMediaClientTest, ApplyConstraintsVideoDeviceTwoTracks) {
   // Try to use applyConstraints() to change the first track to 800x600@30Hz.
   // after stopping the second track. In this case, the source is left with a
   // single track and it supports reconfiguration to the requested mode.
-  blink::WebPlatformMediaStreamTrack::GetTrack(WebMediaStreamTrack(component2))
+  blink::MediaStreamTrackPlatform::GetTrack(WebMediaStreamTrack(component2))
       ->Stop();
   ApplyConstraintsVideoMode(component, 800, 600, 30.0);
   CheckVideoSourceAndTrack(source, 800, 600, 30.0, component, 800, 600, 30.0);
@@ -1322,14 +1314,14 @@ TEST_F(UserMediaClientTest, ApplyConstraintsVideoDeviceStopped) {
   CheckVideoSourceAndTrack(source, 1024, 768, 20.0, component, 1024, 768, 20.0);
 
   // Try to switch the source and track to 640x480 after stopping the track.
-  WebPlatformMediaStreamTrack* track =
-      WebPlatformMediaStreamTrack::GetTrack(WebMediaStreamTrack(component));
+  MediaStreamTrackPlatform* track =
+      MediaStreamTrackPlatform::GetTrack(WebMediaStreamTrack(component));
   track->Stop();
   EXPECT_EQ(component->Source()->GetReadyState(),
             MediaStreamSource::kReadyStateEnded);
   EXPECT_FALSE(source->IsRunning());
   {
-    WebMediaStreamTrack::Settings settings;
+    MediaStreamTrackPlatform::Settings settings;
     track->GetSettings(settings);
     EXPECT_EQ(settings.width, -1);
     EXPECT_EQ(settings.height, -1);
@@ -1341,7 +1333,7 @@ TEST_F(UserMediaClientTest, ApplyConstraintsVideoDeviceStopped) {
             MediaStreamSource::kReadyStateEnded);
   EXPECT_FALSE(source->IsRunning());
   {
-    WebMediaStreamTrack::Settings settings;
+    MediaStreamTrackPlatform::Settings settings;
     track->GetSettings(settings);
     EXPECT_EQ(settings.width, -1);
     EXPECT_EQ(settings.height, -1);

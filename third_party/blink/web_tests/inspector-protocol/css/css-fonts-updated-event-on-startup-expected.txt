@@ -1,0 +1,13 @@
+Verifies that CSS.fontsUpdated events are sent after CSS domain is enabled
+{
+    fontFamily : Noto Mono
+    fontStretch : normal
+    fontStyle : normal
+    fontVariant : normal
+    fontWeight : normal
+    platformFontFamily : ಠ_ಠNoto Monoಠ_ಠ
+    src : <string>
+    unicodeRange : U+0-10FFFE
+}
+SUCCESS: CSS.FontsUpdated events received.
+

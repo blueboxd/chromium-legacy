@@ -73,10 +73,11 @@
     [Custom, NotEnumerable, CrossOrigin] getter object (DOMString name);
 
     // the user agent
-    // includes https://github.com/whatwg/html/pull/5545 (originIsolationRestricted)
+    // includes an older version https://github.com/whatwg/html/pull/5545 (originIsolationRestricted)
+    // TODO(https://crbug.com/1103866): rename to originIsolated when the time comes
     [Affects=Nothing, LogActivity=GetterOnly] readonly attribute Navigator navigator;
     [LogActivity=GetterOnly, SecureContext, RuntimeEnabled=AppCache] readonly attribute ApplicationCache applicationCache;
-    [RuntimeEnabled=OriginIsolationHeader, SecureContext] readonly attribute boolean originIsolationRestricted;
+    [RuntimeEnabled=OriginIsolationHeader] readonly attribute boolean originIsolationRestricted;
 
     // user prompts
     [Measure, CallWith=ScriptState] void alert();

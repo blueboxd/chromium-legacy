@@ -66,4 +66,10 @@ const base::Feature kDeleteExpiredDownloads{"DeleteExpiredDownloads",
 
 }  // namespace features
 
+namespace switches {
+
+const char kDownloadLaterDebugOnWifi[] = "download-later-debug-on-wifi";
+
+}  // namespace switches
+
 }  // namespace download

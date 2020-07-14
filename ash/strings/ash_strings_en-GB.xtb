@@ -98,6 +98,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="1995660704900986789">Power off</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Type a message</translation>
+<translation id="2018630726571919839">Tell me a joke</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2067602449040652523">Keyboard brightness</translation>
 <translation id="209965399369889474">Not connected to network</translation>
@@ -125,6 +126,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="2354174487190027830">Activating <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="2365393535144473978">Enabling mobile data will enable Bluetooth.</translation>
+<translation id="2369165858548251131">"Hello" in Chinese</translation>
 <translation id="2390318262976603432">Locale settings</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Update available</translation>
@@ -142,6 +144,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="256712445991462162">the docked magnifier</translation>
 <translation id="2575685495496069081">Multiple sign-in has been disabled</translation>
 <translation id="2582112259361606227">Restart to update</translation>
+<translation id="2595239820337756193">5 K in miles</translation>
 <translation id="2617342710774726426">SIM card is locked</translation>
 <translation id="2621713457727696555">Secured</translation>
 <translation id="2653659639078652383">Submit</translation>
@@ -195,6 +198,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="3154351730702813399">The device admin may monitor your browsing activity.</translation>
 <translation id="3181441307743005334">Restart may take a while</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connected to a device}other{Connected to # devices}}</translation>
+<translation id="320207200541803018">Set timer</translation>
 <translation id="3203405173652969239">Switch access enabled</translation>
 <translation id="3207953481422525583">User settings</translation>
 <translation id="3217205077783620295">Volume is on; toggling will mute audio.</translation>
@@ -207,6 +211,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> can still sign in later.</translation>
 <translation id="3321628682574733415">Incorrect parent code</translation>
 <translation id="332587331255250389">Please replace the battery</translation>
+<translation id="334252345105450327">Take a screenshot</translation>
 <translation id="3351879221545518001">You are currently casting the screen.</translation>
 <translation id="3364721542077212959">Stylus tools</translation>
 <translation id="3368922792935385530">Connected</translation>
@@ -239,6 +244,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="3631369015426612114">Allow notifications from the following</translation>
 <translation id="3638400994746983214">Toggle privacy screen. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> managed user</translation>
+<translation id="3702846122927433391">Population in Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Capture region</translation>
 <translation id="371370241367527062">Front microphone</translation>
@@ -519,6 +525,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Reverting to old resolution in <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Menu moved to the top-left corner of the screen.</translation>
+<translation id="7189412385142492784">How far is Venus</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. This Chromebook needs to restart to apply an update. This can take up to one minute.</translation>
 <translation id="7256634071279256947">Rear microphone</translation>
 <translation id="726276584504105859">Drag here to use split screen</translation>
@@ -645,6 +652,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="8649101189709089199">Select to Speak</translation>
 <translation id="8652175077544655965">Close settings</translation>
 <translation id="8653151467777939995">Show notification settings. Notifications are on</translation>
+<translation id="8660331759611631213">Square root of 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Show network list. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

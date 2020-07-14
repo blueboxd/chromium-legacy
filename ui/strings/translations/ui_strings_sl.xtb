@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">izberi</translation>
 <translation id="1859234291848436338">Smer pisanja</translation>
 <translation id="1860796786778352021">Zapri obvestilo</translation>
+<translation id="186476001994626254">Spletna vsebina za pametno lepljenje</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Izberi &amp;vse</translation>
@@ -67,6 +68,7 @@
 <translation id="2570734079541893434">Upravljanje nastavitev</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{čez 1 h}one{čez # h}two{čez # h}few{čez # h}other{čez # h}}</translation>
 <translation id="2583543531130364912">Umerjanje zaslona na dotik</translation>
+<translation id="2586657967955657006">Odložišče</translation>
 <translation id="2666092431469916601">Na vrh</translation>
 <translation id="2701330563083355633">V skupno rabo dala naprava: <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">Novo</translation>
@@ -74,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Odpri mapo</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Pred 1 letom}one{Pred # letom}two{Pred # letoma}few{Pred # leti}other{Pred # leti}}</translation>
+<translation id="2878511608894704031">Izbriši vse</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{čez 1 d}one{čez # d}two{čez # d}few{čez # d}other{čez # d}}</translation>
 <translation id="2931838996092594335">klikniti</translation>
 <translation id="2981684127883932071">Prikazovanje predlogov</translation>
@@ -114,6 +117,7 @@
 <translation id="4289300219472526559">Start Speaking</translation>
 <translation id="430191667033048642">Aplikacija <ph name="MOVED_APP_NAME" /> premaknjena v mapo <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">VSE APLIKACIJE</translation>
+<translation id="4491109536499578614">Slika</translation>
 <translation id="4588090240171750605">Pomik desno</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, ocena z zvezdicami (<ph name="RATING_SCORE" />)</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, priporočilo aplikacije</translation>
@@ -169,6 +173,7 @@
 <translation id="6417265370957905582">Pomočnik Google</translation>
 <translation id="6430678249303439055">Blokiraj vsa obvestila iz te aplikacije</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Pred 1 sekundo}one{Pred # sekundo}two{Pred # sekundama}few{Pred # sekundami}other{Pred # sekundami}}</translation>
+<translation id="6503257047630241175">Vsebina v obliki RTF</translation>
 <translation id="6539092367496845964">Prišlo je do napake. Poskusite znova pozneje.</translation>
 <translation id="654149438358937226">Blokiraj vsa obvestila</translation>
 <translation id="6567071839949112727">kliknite prednika</translation>

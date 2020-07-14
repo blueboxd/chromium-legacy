@@ -5,4 +5,5 @@
 
 <resources xmlns:tools="http://schemas.android.com/tools">
     <dimen name="safety_check_button_margin">16dp</dimen>
+    <dimen name="safety_check_status_icon_size">24dp</dimen>
 </resources>

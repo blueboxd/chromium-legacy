@@ -143,6 +143,8 @@ blink_modules_sources("webgl") {
     "webgl_transform_feedback.h",
     "webgl_uniform_location.cc",
     "webgl_uniform_location.h",
+    "webgl_unowned_texture.cc",
+    "webgl_unowned_texture.h",
     "webgl_vertex_array_object.cc",
     "webgl_vertex_array_object.h",
     "webgl_vertex_array_object_base.cc",

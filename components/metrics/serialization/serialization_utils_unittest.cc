@@ -20,15 +20,15 @@ namespace {
 class SerializationUtilsTest : public testing::Test {
  protected:
   SerializationUtilsTest() {
-    bool success = temporary_dir.CreateUniqueTempDir();
+    bool success = temporary_dir_.CreateUniqueTempDir();
     if (success) {
-      base::FilePath dir_path = temporary_dir.GetPath();
-      filename = dir_path.value() + "chromeossampletest";
-      filepath = base::FilePath(filename);
+      base::FilePath dir_path = temporary_dir_.GetPath();
+      filename_ = dir_path.value() + "chromeossampletest";
+      filepath_ = base::FilePath(filename_);
     }
   }
 
-  void SetUp() override { base::DeleteFile(filepath); }
+  void SetUp() override { base::DeleteFile(filepath_); }
 
   void TestSerialization(MetricSample* sample) {
     std::string serialized(sample->ToString());
@@ -39,9 +39,13 @@ class SerializationUtilsTest : public testing::Test {
     EXPECT_TRUE(sample->IsEqual(*deserialized.get()));
   }
 
-  std::string filename;
-  base::ScopedTempDir temporary_dir;
-  base::FilePath filepath;
+  const std::string& filename() const { return filename_; }
+  const base::FilePath& filepath() const { return filepath_; }
+
+ private:
+  std::string filename_;
+  base::ScopedTempDir temporary_dir_;
+  base::FilePath filepath_;
 };
 
 TEST_F(SerializationUtilsTest, CrashSerializeTest) {
@@ -72,11 +76,13 @@ TEST_F(SerializationUtilsTest, IllegalNameAreFilteredTest) {
   std::unique_ptr<MetricSample> sample2 = MetricSample::LinearHistogramSample(
       base::StringPrintf("here%cbhe", '\0'), 1, 3);
 
-  EXPECT_FALSE(SerializationUtils::WriteMetricToFile(*sample1.get(), filename));
-  EXPECT_FALSE(SerializationUtils::WriteMetricToFile(*sample2.get(), filename));
+  EXPECT_FALSE(
+      SerializationUtils::WriteMetricToFile(*sample1.get(), filename()));
+  EXPECT_FALSE(
+      SerializationUtils::WriteMetricToFile(*sample2.get(), filename()));
   int64_t size = 0;
 
-  ASSERT_TRUE(!PathExists(filepath) || base::GetFileSize(filepath, &size));
+  ASSERT_TRUE(!PathExists(filepath()) || base::GetFileSize(filepath(), &size));
 
   EXPECT_EQ(0, size);
 }
@@ -90,9 +96,9 @@ TEST_F(SerializationUtilsTest, BadInputIsCaughtTest) {
 TEST_F(SerializationUtilsTest, MessageSeparatedByZero) {
   std::unique_ptr<MetricSample> crash = MetricSample::CrashSample("mycrash");
 
-  SerializationUtils::WriteMetricToFile(*crash.get(), filename);
+  SerializationUtils::WriteMetricToFile(*crash.get(), filename());
   int64_t size = 0;
-  ASSERT_TRUE(base::GetFileSize(filepath, &size));
+  ASSERT_TRUE(base::GetFileSize(filepath(), &size));
   // 4 bytes for the size
   // 5 bytes for crash
   // 7 bytes for mycrash
@@ -108,14 +114,14 @@ TEST_F(SerializationUtilsTest, MessagesTooLongAreDiscardedTest) {
   std::string name(SerializationUtils::kMessageMaxLength, 'c');
 
   std::unique_ptr<MetricSample> crash = MetricSample::CrashSample(name);
-  EXPECT_FALSE(SerializationUtils::WriteMetricToFile(*crash.get(), filename));
+  EXPECT_FALSE(SerializationUtils::WriteMetricToFile(*crash.get(), filename()));
   int64_t size = 0;
-  ASSERT_TRUE(base::GetFileSize(filepath, &size));
+  ASSERT_TRUE(base::GetFileSize(filepath(), &size));
   EXPECT_EQ(0, size);
 }
 
 TEST_F(SerializationUtilsTest, ReadLongMessageTest) {
-  base::File test_file(filepath,
+  base::File test_file(filepath(),
                        base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND);
   std::string message(SerializationUtils::kMessageMaxLength + 1, 'c');
 
@@ -126,10 +132,10 @@ TEST_F(SerializationUtilsTest, ReadLongMessageTest) {
   test_file.Close();
 
   std::unique_ptr<MetricSample> crash = MetricSample::CrashSample("test");
-  SerializationUtils::WriteMetricToFile(*crash.get(), filename);
+  SerializationUtils::WriteMetricToFile(*crash.get(), filename());
 
   std::vector<std::unique_ptr<MetricSample>> samples;
-  SerializationUtils::ReadAndTruncateMetricsFromFile(filename, &samples);
+  SerializationUtils::ReadAndTruncateMetricsFromFile(filename(), &samples);
   ASSERT_EQ(size_t(1), samples.size());
   ASSERT_TRUE(samples[0].get() != nullptr);
   EXPECT_TRUE(crash->IsEqual(*samples[0]));
@@ -171,11 +177,11 @@ TEST_F(SerializationUtilsTest, NegativeLengthTest) {
       0xff,
       0xff,
   };
-  CHECK(base::WriteFile(filepath, reinterpret_cast<const char*>(kInput),
+  CHECK(base::WriteFile(filepath(), reinterpret_cast<const char*>(kInput),
                         sizeof(kInput)));
 
   std::vector<std::unique_ptr<MetricSample>> samples;
-  SerializationUtils::ReadAndTruncateMetricsFromFile(filename, &samples);
+  SerializationUtils::ReadAndTruncateMetricsFromFile(filename(), &samples);
   ASSERT_EQ(0U, samples.size());
 }
 
@@ -190,13 +196,13 @@ TEST_F(SerializationUtilsTest, WriteReadTest) {
   std::unique_ptr<MetricSample> action =
       MetricSample::UserActionSample("myaction");
 
-  SerializationUtils::WriteMetricToFile(*hist.get(), filename);
-  SerializationUtils::WriteMetricToFile(*crash.get(), filename);
-  SerializationUtils::WriteMetricToFile(*lhist.get(), filename);
-  SerializationUtils::WriteMetricToFile(*shist.get(), filename);
-  SerializationUtils::WriteMetricToFile(*action.get(), filename);
+  SerializationUtils::WriteMetricToFile(*hist.get(), filename());
+  SerializationUtils::WriteMetricToFile(*crash.get(), filename());
+  SerializationUtils::WriteMetricToFile(*lhist.get(), filename());
+  SerializationUtils::WriteMetricToFile(*shist.get(), filename());
+  SerializationUtils::WriteMetricToFile(*action.get(), filename());
   std::vector<std::unique_ptr<MetricSample>> vect;
-  SerializationUtils::ReadAndTruncateMetricsFromFile(filename, &vect);
+  SerializationUtils::ReadAndTruncateMetricsFromFile(filename(), &vect);
   ASSERT_EQ(vect.size(), size_t(5));
   for (auto& sample : vect) {
     ASSERT_NE(nullptr, sample.get());
@@ -208,7 +214,7 @@ TEST_F(SerializationUtilsTest, WriteReadTest) {
   EXPECT_TRUE(action->IsEqual(*vect[4]));
 
   int64_t size = 0;
-  ASSERT_TRUE(base::GetFileSize(filepath, &size));
+  ASSERT_TRUE(base::GetFileSize(filepath(), &size));
   ASSERT_EQ(0, size);
 }
 

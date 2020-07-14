@@ -1795,14 +1795,13 @@ void URLLoader::SetRawRequestHeadersAndNotify(
   }
 
   if (cookie_observer_) {
-    net::CookieStatusList reported_cookies;
+    net::CookieAccessResultList reported_cookies;
     for (const auto& cookie_with_access_result :
          url_request_->maybe_sent_cookies()) {
       if (ShouldNotifyAboutCookie(
               cookie_with_access_result.access_result.status)) {
-        reported_cookies.push_back(
-            {cookie_with_access_result.cookie,
-             cookie_with_access_result.access_result.status});
+        reported_cookies.push_back({cookie_with_access_result.cookie,
+                                    cookie_with_access_result.access_result});
       }
     }
 
@@ -2010,13 +2009,15 @@ void URLLoader::ReportFlaggedResponseCookies() {
   }
 
   if (cookie_observer_) {
-    net::CookieStatusList reported_cookies;
-    for (const auto& cookie_line_and_status :
+    net::CookieAccessResultList reported_cookies;
+    for (const auto& cookie_line_and_access_result :
          url_request_->maybe_stored_cookies()) {
-      if (ShouldNotifyAboutCookie(cookie_line_and_status.status) &&
-          cookie_line_and_status.cookie) {
-        reported_cookies.push_back({cookie_line_and_status.cookie.value(),
-                                    cookie_line_and_status.status});
+      if (ShouldNotifyAboutCookie(
+              cookie_line_and_access_result.access_result.status) &&
+          cookie_line_and_access_result.cookie) {
+        reported_cookies.push_back(
+            {cookie_line_and_access_result.cookie.value(),
+             cookie_line_and_access_result.access_result});
       }
     }
 

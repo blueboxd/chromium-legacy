@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">Внесување на јапонски (за тастатура на САД)</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> ставки се бришат...</translation>
 <translation id="1049926623896334335">Документ во Word</translation>
+<translation id="1060368002126861100">За да отворате датотеки со <ph name="APP_NAME" />, прво преместете ги во папката со датотеки на Windows.</translation>
 <translation id="1062407476771304334">Замени</translation>
 <translation id="1065449928621190041">канадско француска тастатура</translation>
 <translation id="1119069657431255176">tar-архива компримирана со bzip2</translation>
@@ -168,7 +169,6 @@
 <translation id="2924296707677495905">Транслитерација (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Табели</translation>
 <translation id="2938685643439809023">монголски</translation>
-<translation id="2939410873710774399">За да отворате датотеки со <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), прво преместете ги во папката <ph name="FOLDER_NAME" />.</translation>
 <translation id="2942290791863759244">германска тастатура NEO 2</translation>
 <translation id="2943400156390503548">Слајдови</translation>
 <translation id="2943503720238418293">Користете пократко име</translation>
@@ -222,6 +222,7 @@
 <translation id="3524311639100184459">Внимание: датотекиве се привремени и може да се бришат автоматски за да се ослободи простор на дискот.  <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3549797760399244642">Одете на drive.google.com...</translation>
+<translation id="3553048479571901246">За да отворате датотеки со <ph name="APP_NAME" />, прво копирајте ги во папката со датотеки на Windows.</translation>
 <translation id="357479282490346887">литвански</translation>
 <translation id="3583509704582854624">Алфанумеричко внесување (за јапонска тастатура)</translation>
 <translation id="3603385196401704894">канадско француска</translation>
@@ -333,14 +334,12 @@
 <translation id="4839847978919684242">Избрани ставки: <ph name="SELCTED_FILES_COUNT" /></translation>
 <translation id="4850886885716139402">Приказ</translation>
 <translation id="485316830061041779">германски</translation>
-<translation id="4859297381873413734">За да отворате датотеки со <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), прво ископирајте ги во папката <ph name="FOLDER_NAME" />.</translation>
 <translation id="4867079195717347957">Кликнете за подредување на колоната по опаѓачки редослед.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> бајти</translation>
 <translation id="4880214202172289027">Лизгач за јачина на звук</translation>
 <translation id="4880520557730313061">Автоматска поправка</translation>
 <translation id="4881695831933465202">Отвори</translation>
 <translation id="4886021172213954916">тамилска тастатура (машина за пишување)</translation>
-<translation id="4892969127351273348">Не може да се отвори со <ph name="APP_NAME" /></translation>
 <translation id="4900532980794411603">Сподели со Parallels Desktop</translation>
 <translation id="4905417359854579806">Направете бекап на <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Поправено</translation>

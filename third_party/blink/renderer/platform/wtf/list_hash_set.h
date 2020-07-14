@@ -1097,11 +1097,11 @@ ListHashSet<T, inlineCapacity, U, V>::Trace(VisitorDispatcher visitor) const {
 
   if (!NodeTraits::kCanTraceConcurrently && table) {
     if (visitor->DeferredTraceIfConcurrent(
-            {this, [](blink::Visitor* visitor, const void* object) {
-               reinterpret_cast<const ListHashSet<T, inlineCapacity, U, V>*>(
-                   object)
-                   ->Trace(visitor);
-             }}))
+            {this,
+             [](blink::Visitor* visitor, const void* object) {
+               reinterpret_cast<const ListHashSet*>(object)->Trace(visitor);
+             }},
+            sizeof(ListHashSet)))
       return;
   }
 

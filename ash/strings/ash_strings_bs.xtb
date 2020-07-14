@@ -98,6 +98,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="1995660704900986789">Isključi</translation>
 <translation id="2012624427112548395">Ctrl + Search + H</translation>
 <translation id="2016340657076538683">Napišite poruku</translation>
+<translation id="2018630726571919839">Ispričaj mi vic</translation>
 <translation id="2050339315714019657">Uspravno</translation>
 <translation id="2067602449040652523">Svjetlina tipkovnice</translation>
 <translation id="209965399369889474">Niste povezani na mrežu</translation>
@@ -125,6 +126,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="2354174487190027830">Aktiviranje mreže <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2365393535144473978">Omogućavanjem prijenosa podataka na mobilnoj mreži omogućit će se Bluetooth.</translation>
+<translation id="2369165858548251131">"Zdravo" na kineskom</translation>
 <translation id="2390318262976603432">Postavke jezika/zemlje</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Ažuriranje je dostupno</translation>
@@ -142,6 +144,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="256712445991462162">fiksirano povećalo</translation>
 <translation id="2575685495496069081">Višestruke prijave su onemogućene</translation>
 <translation id="2582112259361606227">Ponovo pokrenite da biste ažurirali</translation>
+<translation id="2595239820337756193">5 km u miljama</translation>
 <translation id="2617342710774726426">SIM kartica je zaključana</translation>
 <translation id="2621713457727696555">Osigurano</translation>
 <translation id="2653659639078652383">Pošalji</translation>
@@ -195,6 +198,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="3154351730702813399">Administrator uređaja može nadzirati vašu aktivnost pregledanja.</translation>
 <translation id="3181441307743005334">Ponovno pokretanje može potrajati</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Povezano s uređajem}one{Povezano s # uređajem}few{Povezano s # uređaja}other{Povezano s # uređaja}}</translation>
+<translation id="320207200541803018">Postavi odbrojavanje</translation>
 <translation id="3203405173652969239">Prekidač za pristup je omogućen</translation>
 <translation id="3207953481422525583">Korisničke postavke</translation>
 <translation id="3217205077783620295">Zvuk je uključen. Deaktiviranjem će se isključiti zvuk.</translation>
@@ -207,6 +211,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> se može ponovo prijaviti kasnije.</translation>
 <translation id="3321628682574733415">Pogrešan kôd za roditelja</translation>
 <translation id="332587331255250389">Zamijenite bateriju</translation>
+<translation id="334252345105450327">Izrada snimke zaslona</translation>
 <translation id="3351879221545518001">Trenutačno emitirate zaslon.</translation>
 <translation id="3364721542077212959">Stilos alati</translation>
 <translation id="3368922792935385530">Spojeno</translation>
@@ -239,6 +244,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="3631369015426612114">Omogućite obavještenja iz sljedećih izvora</translation>
 <translation id="3638400994746983214">Uključite/isključite ekran za privatnost. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733">Korisnik kojim upravlja <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="3702846122927433391">Broj stanovnika u Nigeriji</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Snimi područje</translation>
 <translation id="371370241367527062">Prednji mikrofon</translation>
@@ -519,6 +525,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Vraćanje na staru rezoluciju za <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Meni je pomjeren u gornji lijevi ugao ekrana.</translation>
+<translation id="7189412385142492784">Kolika je udaljenost do Venere</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Ovaj Chromebook se treba ponovo pokrenuti da bi se primijenilo ažuriranje. To može potrajati do jedne minute.</translation>
 <translation id="7256634071279256947">Stražnji mikrofon</translation>
 <translation id="726276584504105859">Povucite ovdje za korištenje podijeljenog ekrana</translation>
@@ -645,6 +652,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="8649101189709089199">Odaberite za govor</translation>
 <translation id="8652175077544655965">Zatvori postavke</translation>
 <translation id="8653151467777939995">Prikaz postavki obavještenja. Obavještenja su uključena</translation>
+<translation id="8660331759611631213">Kvadratni korijen od 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Prikaz popisa mreža. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

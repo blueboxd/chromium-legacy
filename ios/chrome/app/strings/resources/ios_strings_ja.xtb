@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="1005230401424685968">YYYY</translation>
+<translation id="1013952917065545813">ここでは、最近閉じたタブをもう一度開くことができます</translation>
 <translation id="1016495303386450659">更新済みのアイテム</translation>
 <translation id="1044891598689252897">サイトは通常どおり動作します</translation>
 <translation id="1047726139967079566">ブックマークに追加...</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">中止</translation>
 <translation id="1283524564873030414">過去 24 時間</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
+<translation id="1321993286294231467">画像の保存中にエラーが発生しました。</translation>
 <translation id="1323735185997015385">削除</translation>
 <translation id="132683371494960526">ダブルタップして親フォルダを変更。</translation>
 <translation id="1340643665687018190">メニューを閉じる</translation>
@@ -560,6 +562,7 @@
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="766891008101699113">ウェブをプライベートに閲覧するには新しいタブを追加してください。</translation>
 <translation id="7671141431838911305">インストール</translation>
+<translation id="7701040980221191251">なし</translation>
 <translation id="7765158879357617694">移動</translation>
 <translation id="7771470029643830783">ログアウトすると、ブックマーク、履歴、パスワード、その他の Chrome データは、Google アカウントに同期されなくなります。
 

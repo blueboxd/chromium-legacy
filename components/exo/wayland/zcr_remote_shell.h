@@ -27,13 +27,12 @@ void bind_remote_shell(wl_client* client,
                        uint32_t version,
                        uint32_t id);
 
-// Create the insets in client's pixel coordinates in such way that
+// Create the insets in pixel coordinates in such way that
 // work area will be within the chrome's work area.
-gfx::Insets GetWorkAreaInsetsInClientPixel(
-    const display::Display& display,
-    float default_dsf,
-    const gfx::Size& size_in_client_pixel,
-    const gfx::Rect& work_area_in_dp);
+gfx::Insets GetWorkAreaInsetsInPixel(const display::Display& display,
+                                     float default_dsf,
+                                     const gfx::Size& size_in_client_pixel,
+                                     const gfx::Rect& work_area_in_dp);
 
 // Returns a work area where the shelf is considered visible.
 gfx::Rect GetStableWorkArea(const display::Display& display);

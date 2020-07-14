@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">Տառադարձություն (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Աղյուսակներ</translation>
 <translation id="2938685643439809023">Մոնղոլական</translation>
-<translation id="2939410873710774399">«<ph name="APP_NAME" />» (<ph name="VM_SOFTWARE_NAME" />) հավելվածի միջոցով ֆայլերը բացելու համար նախ տեղափոխեք դրանք «<ph name="FOLDER_NAME" />» պանակ։</translation>
 <translation id="2942290791863759244">Գերմաներենի NEO 2 ստեղնաշար</translation>
 <translation id="2943400156390503548">Սլայդներ</translation>
 <translation id="2943503720238418293">Նշեք ավելի կարճ անուն</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242">Ընտրված է <ph name="SELCTED_FILES_COUNT" /> տարր</translation>
 <translation id="4850886885716139402">Տեսք</translation>
 <translation id="485316830061041779">Գերմանական</translation>
-<translation id="4859297381873413734">«<ph name="APP_NAME" />» (<ph name="VM_SOFTWARE_NAME" />) հավելվածի միջոցով ֆայլերը բացելու համար նախ պատճենեք դրանք «<ph name="FOLDER_NAME" />» պանակ։</translation>
 <translation id="4867079195717347957">Սեղմեք՝ սյունակներն ըստ նվազման կարգի տեսակավորելու համար։</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> բայթ</translation>
 <translation id="4880214202172289027">Ձայնի սահիչ</translation>
 <translation id="4880520557730313061">Ավտոմատ ուղղում</translation>
 <translation id="4881695831933465202">Բացել</translation>
 <translation id="4886021172213954916">Թամիլերենի ստեղնաշար (մեքենագրում)</translation>
-<translation id="4892969127351273348">Չհաջողվեց բացել ֆայլը <ph name="APP_NAME" /> հավելվածով</translation>
 <translation id="4900532980794411603">Հասանելի դարձնել Parallels Desktop-ին</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> ֆայլ պատրաստ է պահուստավորման</translation>
 <translation id="4924638091161556692">Ուղղված</translation>

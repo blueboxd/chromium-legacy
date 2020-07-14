@@ -21,8 +21,19 @@ class NearbyNotificationManager {
   explicit NearbyNotificationManager(Profile* profile);
   ~NearbyNotificationManager();
 
+  // Shows a progress notification of the data being transferred to or from
+  // |share_target|. Has a cancel action to cancel the transfer.
   void ShowProgress(const ShareTarget& share_target,
                     const TransferMetadata& transfer_metadata);
+
+  // Shows an incoming connection request notification from |share_target|
+  // wanting to send data to this device. Has accept & decline actions.
+  void ShowConnectionRequest(const ShareTarget& share_target);
+
+  // Shows an onboarding notification when a nearby device is attempting to
+  // share. Clicking it will make the local device visible to all nearby
+  // devices.
+  void ShowOnboarding();
 
  private:
   Profile* profile_;

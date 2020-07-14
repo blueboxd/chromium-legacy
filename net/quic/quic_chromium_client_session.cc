@@ -2769,23 +2769,22 @@ bool QuicChromiumClientSession::CheckIdleTimeExceedsIdleMigrationPeriod() {
 void QuicChromiumClientSession::ResetNonMigratableStreams() {
   // TODO(zhongyi): may close non-migratable draining streams as well to avoid
   // sending additional data on alternate networks.
-  auto it = stream_map().begin();
-  // Stream may be deleted when iterating through the map.
-  while (it != stream_map().end()) {
-    if (it->second->is_static()) {
-      it++;
+  std::vector<QuicChromiumClientStream*> streams_to_reset;
+  for (auto& it : stream_map()) {
+    if (it.second->is_static()) {
       continue;
     }
     QuicChromiumClientStream* stream =
-        static_cast<QuicChromiumClientStream*>(it->second.get());
+        static_cast<QuicChromiumClientStream*>(it.second.get());
     if (!stream->can_migrate_to_cellular_network()) {
-      // Close the stream in both direction by resetting the stream.
-      // TODO(zhongyi): use a different error code to reset streams for
-      // connection migration.
-      stream->Reset(quic::QUIC_STREAM_CANCELLED);
-    } else {
-      it++;
+      streams_to_reset.push_back(stream);
     }
+  }
+  for (auto* stream : streams_to_reset) {
+    // Close the stream in both direction by resetting the stream.
+    // TODO(zhongyi): use a different error code to reset streams for
+    // connection migration.
+    stream->Reset(quic::QUIC_STREAM_CANCELLED);
   }
 }
 

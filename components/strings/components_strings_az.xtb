@@ -447,7 +447,6 @@
 <translation id="2799223571221894425">Yenidən başladın</translation>
 <translation id="2803306138276472711">Google Güvənlik Baxış <ph name="SITE" /> saytında <ph name="BEGIN_LINK" />zərərli proqram aşkar etdi<ph name="END_LINK" />. Adətən güvənli olan veb saytlar bəzən zərərli proqramlar ilə yoluxur.</translation>
 <translation id="2807052079800581569">Şəklin Y oxu üzrə mövqeyi</translation>
-<translation id="2824514415781424867">Məkan paylaşılsın?</translation>
 <translation id="2824775600643448204">Ünvan və axtarış paneli</translation>
 <translation id="2826760142808435982">Bağlantı şifrələnib və <ph name="CIPHER" /> işlədərək doğrulanıb və açar mübadiləsi olaraq <ph name="KX" /> işlədir.</translation>
 <translation id="2835170189407361413">Formanı təmizləyin</translation>
@@ -918,6 +917,7 @@
 <translation id="480334179571489655">Mənbə Siyasəti Xətası</translation>
 <translation id="4803924862070940586"><ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="4807049035289105102">Sayt güvənsiz kredensiallar göndərdiyi üçün <ph name="SITE" /> ünvanına girə bilməzsiniz. Şəbəkə xətaları və hücumlar müvəqqəti olur, ona görə də bu səhifə daha sonra giriş üçün açıq ola bilər.</translation>
+<translation id="4809079943450490359">Cihaz adminindən təlimatlar:</translation>
 <translation id="4813512666221746211">Şəbəkə xətası</translation>
 <translation id="4816492930507672669">Səhifəyə uyğunlaşsın</translation>
 <translation id="484462545196658690">Avtomatik</translation>

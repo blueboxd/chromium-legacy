@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Fotoaparat</translation>
 <translation id="1647391597548383849">Pristup fotoaparatu</translation>
 <translation id="1660204651932907780">Web-lokacije mogu reproducirati zvuk (preporučeno)</translation>
+<translation id="1677097821151855053">Kolačići i drugi podaci web-lokacije koriste se kako bi vas web-lokacija zapamtila, na primjer kako bi vas prijavila na račun ili vam prilagodila oglase. Da biste upravljali kolačićima za sve web-lokacije, idite na <ph name="BEGIN_LINK" />Postavke<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Želite li izbrisati podatke web-lokacije?</translation>
 <translation id="169515064810179024">Blokiranje pristupa senzorima kretanja za web-lokacije</translation>
 <translation id="1717218214683051432">Senzori kretanja</translation>
@@ -58,6 +59,7 @@
 <translation id="2586657967955657006">Međuspremnik</translation>
 <translation id="2621115761605608342">Dopuštanje JavaScripta za određenu web-lokaciju.</translation>
 <translation id="2653659639078652383">Pošalji</translation>
+<translation id="2677748264148917807">Napusti</translation>
 <translation id="2687403674020088961">Blokiranje svih kolačića (ne preporučuje se)</translation>
 <translation id="2704606927547763573">Kopirano</translation>
 <translation id="2822354292072154809">Jeste li sigurni da želite poništiti sva dopuštenja za aplikaciju <ph name="CHOSEN_OBJECT_NAME" />?</translation>
@@ -93,6 +95,7 @@
 <translation id="4008040567710660924">Dopusti kolačiće za određenu web-lokaciju.</translation>
 <translation id="4046123991198612571">Sljedeća pjesma</translation>
 <translation id="4165986682804962316">Postavke web-lokacije</translation>
+<translation id="4200726100658658164">Otvori postavke lokacije</translation>
 <translation id="4226663524361240545">Obavijesti mogu uključiti vibriranje uređaja</translation>
 <translation id="4242533952199664413">Otvori postavke</translation>
 <translation id="4259722352634471385">Otvaranje je blokirano: <ph name="URL" /></translation>
@@ -126,6 +129,7 @@
 <translation id="5335288049665977812">Web-lokacije mogu pokretati JavaScript (preporučeno)</translation>
 <translation id="534295439873310000">NFC uređaji</translation>
 <translation id="5354152178998424783">Izbrisat će se <ph name="DATASIZE" /> podataka i kolačića koje su spremile web-lokacije.</translation>
+<translation id="5384883051496921101">Ova će web-lokacija dijeliti podatke s aplikacijom izvan anonimnog načina.</translation>
 <translation id="5391532827096253100">Veza s web-lokacijom nije sigurna. Informacije o web-lokaciji</translation>
 <translation id="5494752089476963479">Blokiraj oglase na web-lokacijama koje prikazuju ometajuće ili obmanjujuće oglase</translation>
 <translation id="5505264765875738116">Web-lokacije ne mogu postavljati pitanja o slanju obavijesti</translation>
@@ -158,6 +162,7 @@
 <translation id="6295158916970320988">Sve web-lokacije</translation>
 <translation id="6320088164292336938">Omogući vibraciju</translation>
 <translation id="6388207532828177975">Izbriši i poništi</translation>
+<translation id="6423924377271166037">Izbriši kolačiće</translation>
 <translation id="6439114592976064011">Onemogući web-lokacijama da koriste uređaj i podatke virtualne stvarnosti</translation>
 <translation id="6447842834002726250">Kolačići</translation>
 <translation id="6527303717912515753">Podijeli</translation>
@@ -165,6 +170,7 @@
 <translation id="6561560012278703671">Koristi tiše poruke (onemogućuje upitima za obavijesti da vas ometaju)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Zaštićeni sadržaj</translation>
+<translation id="662080504995468778">Ostani</translation>
 <translation id="6643016212128521049">Izbriši</translation>
 <translation id="6697925417670533197">Aktivna preuzimanja</translation>
 <translation id="6746124502594467657">Pomakni dolje</translation>
@@ -230,6 +236,7 @@
 <translation id="8441146129660941386">Traži unatrag</translation>
 <translation id="8444433999583714703">Da bi aplikacija <ph name="APP_NAME" /> mogla pristupiti vašoj lokaciji, uključite lokaciju i u <ph name="BEGIN_LINK" />Androidovim postavkama<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Opozovi odobrenje uređaja</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Koristi se jedan kolačić}one{Koristi se # kolačić}few{Koriste se # kolačića}other{Koristi se # kolačića}}</translation>
 <translation id="8463851957836045671">Web-lokacija je brza</translation>
 <translation id="851751545965956758">Blokiraj povezivanje web-lokacija s uređajima</translation>
 <translation id="857943718398505171">Dopušteno (preporučeno)</translation>
@@ -247,6 +254,7 @@
 <translation id="8926666909099850184">NFC je isključen za ovaj uređaj. Uključite ga u <ph name="BEGIN_LINK" />postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="8929372349074745002">Za većinu ljudi ova se web-lokacija brzo otvara i reagira</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">Želite li napustiti anonimno?</translation>
 <translation id="8958424370300090006">Blokiraj kolačiće za određenu web-lokaciju.</translation>
 <translation id="8959122750345127698">Otvaranje je nedostupno: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Upravljaju tvoji roditelji</translation>

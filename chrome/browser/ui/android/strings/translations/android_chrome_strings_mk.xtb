@@ -209,7 +209,6 @@
 <translation id="2650751991977523696">Дали да се преземе датотеката повторно?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиодатотека}one{# аудиодатотека}other{# аудиодатотеки}}</translation>
 <translation id="2656405586795711023">Веб-апликации</translation>
-<translation id="2677748264148917807">Напушти</translation>
 <translation id="2689830683995595741">Ако користите Chrome, се согласувате со <ph name="BEGIN_LINK1" />Условите за користење на Google<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Дополнителните услови за користење на Google Chrome и Chrome OS<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Известувањето за приватност за сметките на Google управувани со Family Link<ph name="END_LINK3" /> исто така важи.</translation>
 <translation id="2707726405694321444">Освежи ја страницата</translation>
 <translation id="2709516037105925701">Автоматско пополнување</translation>
@@ -290,6 +289,7 @@
 <translation id="3303414029551471755">Продолжете со преземање на содржината?</translation>
 <translation id="3306398118552023113">Апликацијава се извршува во Chrome</translation>
 <translation id="3315103659806849044">Моментално ги приспособувате поставките за синхронизација и услугата Google. За да го завршите вклучувањето на синхронизацијата, допрете на копчето „Потврди“ долу на екранот. Движете се нагоре</translation>
+<translation id="3320630259304269485">Безбедно прелистување (заштита од опасни сајтови) и други безбедносни поставки</translation>
 <translation id="3328801116991980348">Информации за веб-локација</translation>
 <translation id="3333961966071413176">Сите контакти</translation>
 <translation id="3334729583274622784">Дали да се промени наставката на датотеката?</translation>
@@ -306,6 +306,7 @@
 <translation id="3389286852084373014">Премногу е долго</translation>
 <translation id="3398320232533725830">Отворете го управникот на обележувачи</translation>
 <translation id="3414952576877147120">Големина:</translation>
+<translation id="3435738964857648380">Безбедност</translation>
 <translation id="3443221991560634068">Вчитајте ја тековната страница</translation>
 <translation id="3478363558367712427">Може да го изберете вашиот пребарувач</translation>
 <translation id="3492207499832628349">Нова инкогнито картичка</translation>
@@ -458,6 +459,7 @@
 <translation id="4749960740855309258">Отворете нова картичка</translation>
 <translation id="4759238208242260848">Преземања</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 преземање е завршено.}one{# преземање е завршено.}other{# преземања се завршени.}}</translation>
+<translation id="4766678251456904326">Додајте сметка на уредов</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{Закажано е 1 преземање.}one{Закажано е # преземање.}other{Закажани се # преземања.}}</translation>
 <translation id="478981486571169252">Ќе ги видите статусот на најавување на <ph name="SITE_NAME" />, податоците од прелистување и податоците од сајтовите во Chrome.</translation>
 <translation id="4802417911091824046">Шифрирањето на лозинката не ги вклучува начините на плаќање и адресите од Google Pay.
@@ -534,7 +536,6 @@
 <translation id="5355191726083956201">Вклучена е „Подобрената заштита“</translation>
 <translation id="5357811892247919462">Примена е картичка</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> отворена ка​ртичка, допрете за да се префрлите помеѓу картичките}one{<ph name="OPEN_TABS_MANY" /> отворена ка​ртичка, допрете за да се префрлите помеѓу картичките}other{<ph name="OPEN_TABS_MANY" /> отворени ка​ртички, допрете за да се префрлите помеѓу картичките}}</translation>
-<translation id="5384883051496921101">Сајтов ќе сподели информации со една апликација надвор од режимот „Инкогнито“.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(и уште 1)}one{(и уште #)}other{(и уште #)}}</translation>
 <translation id="5403592356182871684">Имиња</translation>
 <translation id="5403644198645076998">Дозволи само одредени сајтови</translation>
@@ -705,7 +706,6 @@
 <translation id="6593061639179217415">Сајт за десктоп</translation>
 <translation id="6597891566292541626">Ставете го QR/линискиот код во оваа рамка.</translation>
 <translation id="6600954340915313787">Копирано на Chrome</translation>
-<translation id="662080504995468778">Остани</translation>
 <translation id="6627583120233659107">Уредувај папка</translation>
 <translation id="6643016212128521049">Исчисти</translation>
 <translation id="6643649862576733715">Подреди по количина на заштеден сообраќај</translation>
@@ -988,7 +988,6 @@
 <translation id="8922289737868596582">Преземете ги страниците преку копчето „Повеќе опции“ за да ги користите офлајн</translation>
 <translation id="8937772741022875483">Да се отстрани вашата активност на Chrome од „Дигитална благосостојба“?</translation>
 <translation id="8942627711005830162">Отвори во друг прозорец</translation>
-<translation id="894871326938397531">Да се напушти режимот „Инкогнито“?</translation>
 <translation id="8951232171465285730">Chrome ви заштеди <ph name="MEGABYTES" /> мб</translation>
 <translation id="8965591936373831584">чека на ред</translation>
 <translation id="8970887620466824814">Нешто тргна наопаку.</translation>
@@ -999,6 +998,7 @@
 <translation id="9028914725102941583">Вклучете ја синхронизацијата за да споделувате на сите уреди</translation>
 <translation id="9040142327097499898">Дозволени се известувања. Локацијата е исклучена за уредов.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# видео}one{# видео}other{# видеа}}</translation>
+<translation id="9042893549633094279">Приватност и безбедност</translation>
 <translation id="9050666287014529139">Пристапна фраза</translation>
 <translation id="9063523880881406963">Исклучи „Барај локација на работна површина“</translation>
 <translation id="9065203028668620118">Измени</translation>

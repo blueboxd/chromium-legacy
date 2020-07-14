@@ -449,8 +449,7 @@ class SourceBufferStreamTest : public testing::Test {
   }
 
   base::TimeDelta ConvertToFrameDuration(int frames_per_second) {
-    return base::TimeDelta::FromMicroseconds(
-        base::Time::kMicrosecondsPerSecond / frames_per_second);
+    return base::TimeDelta::FromSeconds(1) / frames_per_second;
   }
 
   void AppendBuffers(int starting_position,

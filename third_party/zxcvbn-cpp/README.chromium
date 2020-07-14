@@ -1,0 +1,49 @@
+Name: C++ port of zxcvbn, an advanced password strength estimation library.
+Short Name: zxcvbn-cpp
+URL: https://github.com/rianhunter/zxcvbn-cpp
+Version: 0
+Date: Dec 4, 2016
+Revision: cf092c952cd2325ce390b2691231a8f1cb195d59
+License: MIT
+License File: LICENSE.txt
+Security Critical: yes
+
+Description:
+A realistic password strength estimator. https://tech.dropbox.com/2012/04/zxcvbn-realistic-password-strength-estimation/
+Used in the Password Manager to inform users about weak passwords.
+
+Local Modifications:
+
+Applied the following patches:
+- patches/compilation.diff: To fix compilation under clang with -Werror and
+  -DUNICODE.
+- patches/adjacency_graphs.diff: Removes static initializers in
+  adjacency_graphs.hpp and adjacency_graphs.cpp and greatly reduces binary size
+  impact by replacing optional std::strings with base::StringPiece.
+- patches/no_static_initializers.diff: Removes static initializers elsewhere by
+  either inlining the expression, or making use of static base::NoDestructors.
+- patches/dictionary_component.diff: Adds a ParseRankedDictionary API to
+  frequency_lists.hpp to support providing the dictionaries via component
+  updater and adds an option to build_frequency_lists.py to output the processed
+  text files. Furthermore, removes the need to auto generate
+  _frequency_lists.hpp and _frequency_lists.cpp
+- patches/base_utf8.diff: Replaced string utilities from utils.cpp with //base's
+  UTF8 API.
+- Dropped the data dictionary from the check-out, as the data will now be
+  provided via component updater. The used dictionaries can be found at
+  https://github.com/rianhunter/zxcvbn-cpp/tree/cf092c952cd2325ce390b2691231a8f1cb195d59/data
+- Removed the demo/ folder and zxcvbnn_post.js from the checkout. They only
+  contained JavaScript that is irrevelant for the intended usage in Chromium.
+- Removed Python sources, unneeded config files, JavaScript bindings, C wrapper
+  and incomplete C++ entrypoints from native-src, since they are unused / not
+  necessary for Chromium, includes applying patches/no-c-api.diff.
+
+Ran the following commands to generate adjacency graphs:
+$ python ./data-scripts/build_keyboard_adjacency_graphs.py ./native-src/zxcvbn/adjacency_graphs.hpp
+$ python ./data-scripts/build_keyboard_adjacency_graphs.py ./native-src/zxcvbn/adjacency_graphs.cpp
+
+Ported test/test-matching.coffee and test/test-scoring.coffee to C++ unitests
+(test/matching_unittest.cc and test/scoring_unittest.cc).
+
+Added fuzzers for matching and scoring (test/matching_fuzzer.cc and
+test/scoring_fuzzer.cc).

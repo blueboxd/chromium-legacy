@@ -346,7 +346,7 @@ uint8_t JobTaskSource::AcquireTaskId() {
     // |assigned_task_ids|.
     task_id = bits::CountTrailingZeroBits(~assigned_task_ids);
     new_assigned_task_ids = assigned_task_ids | (uint32_t(1) << task_id);
-  } while (assigned_task_ids_.compare_exchange_weak(
+  } while (!assigned_task_ids_.compare_exchange_weak(
       assigned_task_ids, new_assigned_task_ids, std::memory_order_relaxed));
   return task_id;
 }

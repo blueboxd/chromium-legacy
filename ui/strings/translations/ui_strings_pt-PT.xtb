@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">Faça a gestão das definições</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{em 1 h}other{em # h}}</translation>
 <translation id="2583543531130364912">Calibrar o ecrã tátil</translation>
+<translation id="2586657967955657006">Área de transferência</translation>
 <translation id="2666092431469916601">Parte superior</translation>
 <translation id="2701330563083355633">Partilhado a partir do <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">Novo</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">Comece a Falar</translation>
 <translation id="430191667033048642">A aplicação <ph name="MOVED_APP_NAME" /> foi movida para a pasta <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">TODAS AS APLICAÇÕES</translation>
+<translation id="4491109536499578614">Imagem</translation>
 <translation id="4588090240171750605">Deslocar-se para a direita</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, número de estrelas: <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, recomendação de aplicação</translation>

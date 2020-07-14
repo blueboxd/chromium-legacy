@@ -771,6 +771,11 @@ const char kDownloadAutoResumptionNativeDescription[] =
 const char kDownloadLaterName[] = "Enable download later";
 const char kDownloadLaterDescription[] = "Enables download later feature.";
 
+const char kDownloadLaterDebugOnWifiName[] =
+    "Show download later dialog on WIFI.";
+const char kDownloadLaterDebugOnWifiNameDescription[] =
+    "Show download later dialog on WIFI.";
+
 const char kEnableLayoutNGName[] = "Enable LayoutNG";
 const char kEnableLayoutNGDescription[] =
     "Enable Blink's next generation layout engine.";

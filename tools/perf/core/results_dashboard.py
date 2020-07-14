@@ -99,7 +99,7 @@ def SendResults(data, data_label, url, send_as_histograms=False,
         _SendHistogramJson(url, dashboard_data_str, token_generator_callback)
       else:
         # TODO(eakuefner): Remove this logic once all bots use histograms.
-        _SendResultsJson(url, dashboard_data_str)
+        _SendResultsJson(url, dashboard_data_str, token_generator_callback)
       all_data_uploaded = True
       break
     except SendResultsRetryException as e:
@@ -425,7 +425,7 @@ def _TestPath(test_name, chart_name, trace_name):
   return test_path
 
 
-def _SendResultsJson(url, results_json):
+def _SendResultsJson(url, results_json, token_generator_callback):
   """Make a HTTP POST with the given JSON to the Performance Dashboard.
 
   Args:
@@ -441,6 +441,9 @@ def _SendResultsJson(url, results_json):
   data = urllib.urlencode({'data': results_json})
   req = urllib2.Request(url + SEND_RESULTS_PATH, data)
   try:
+    oauth_token = token_generator_callback()
+    req.headers['Authorization'] = 'Bearer %s' % oauth_token
+
     urllib2.urlopen(req, timeout=60 * 5)
   except (urllib2.HTTPError, urllib2.URLError, httplib.HTTPException):
     error = traceback.format_exc()

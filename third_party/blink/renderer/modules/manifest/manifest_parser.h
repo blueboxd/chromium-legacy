@@ -133,9 +133,11 @@ class MODULES_EXPORT ManifestParser {
 
   // Parses the 'orientation' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-orientation-member
-  // Returns the parsed WebScreenOrientationLockType if any,
-  // WebScreenOrientationLockDefault if the parsing failed.
-  WebScreenOrientationLockType ParseOrientation(const JSONObject* object);
+  // Returns the parsed device::mojom::blink::ScreenOrientationLockType if any,
+  // device::mojom::blink::ScreenOrientationLockType::DEFAULT if the parsing
+  // failed.
+  device::mojom::blink::ScreenOrientationLockType ParseOrientation(
+      const JSONObject* object);
 
   // Parses the 'src' field of an icon, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-src-member-of-an-image

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="1005230401424685968">RRRR</translation>
+<translation id="1013952917065545813">Môžete sa sem vrátiť a znova otvoriť karty, ktoré ste nedávno zatvorili</translation>
 <translation id="1016495303386450659">Položka bola aktualizovaná</translation>
 <translation id="1044891598689252897">Weby budú fungovať normálne</translation>
 <translation id="1047726139967079566">Pridať stránku medzi záložky…</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1283524564873030414">Posledných 24 hodín</translation>
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
+<translation id="1321993286294231467">Chyba pri ukladaní obrázka.</translation>
 <translation id="1323735185997015385">Odstrániť</translation>
 <translation id="132683371494960526">Dvojitým klepnutím zmeníte nadradený priečinok.</translation>
 <translation id="1340643665687018190">Zavrieť ponuku</translation>
@@ -560,6 +562,7 @@ Weby si nemôžu na základe súborov cookie zobraziť vašu históriu prehliada
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="766891008101699113">Ak chcete internet prehliadať v súkromí, pridajte novú kartu.</translation>
 <translation id="7671141431838911305">INŠTALOVAŤ</translation>
+<translation id="7701040980221191251">Žiadne</translation>
 <translation id="7765158879357617694">Presunúť</translation>
 <translation id="7771470029643830783">Po odhlásení nebudú vaše záložky, história, heslá ani ďalšie údaje Chromu naďalej synchronizované s vaším účtom Google
 

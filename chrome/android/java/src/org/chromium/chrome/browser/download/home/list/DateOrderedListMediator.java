@@ -353,8 +353,11 @@ class DateOrderedListMediator {
         UmaUtils.recordItemAction(ViewAction.MENU_CHANGE);
         DownloadLaterMetrics.recordDownloadLaterUiEvent(
                 DownloadLaterUiEvent.DOWNLOAD_HOME_CHANGE_SCHEDULE_CLICKED);
-        mDownloadLaterDialogHelper.showChangeScheduleDialog(item.schedule, Source.DOWNLOAD_HOME,
-                (newSchedule) -> { mProvider.changeSchedule(item, newSchedule); });
+        mDownloadLaterDialogHelper.showChangeScheduleDialog(
+                item.schedule, Source.DOWNLOAD_HOME, (newSchedule) -> {
+                    if (newSchedule == null) return;
+                    mProvider.changeSchedule(item, newSchedule);
+                });
     }
 
     /**

@@ -71,6 +71,7 @@
 <translation id="808894953321890993">Нууц үгийг солих</translation>
 <translation id="8208861521865154048">Нэмэлтүүд</translation>
 <translation id="8347227221149377169">Хэвлэх ажлууд</translation>
+<translation id="8623849191266582420">Энэ <ph name="DEVICE_TYPE" />-г <ph name="ENROLLMENT_DOMAIN" /> удирддаг Администраторууд төхөөрөмжийг алсаас тохируулан, хянаж болзошгүй.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> энэ хэрэглэгчийг удирддаг. Энэ нь алсаас тохиргоог удирдаж, хэрэглэгчийн үйл ажиллагааг хянаж болзошгүй.</translation>
 <translation id="871560550817059752">Амжилтгүй болсон - Бэх дууссан</translation>
 <translation id="8747900814994928677">Өөрчлөлтийг баталгаажуулах</translation>

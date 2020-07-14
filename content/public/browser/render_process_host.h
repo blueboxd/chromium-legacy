@@ -70,6 +70,7 @@ namespace content {
 class BrowserContext;
 class BrowserMessageFilter;
 class IsolationContext;
+class ProcessLock;
 class RenderProcessHostObserver;
 class StoragePartition;
 #if defined(OS_ANDROID)
@@ -460,17 +461,16 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // crbug.com/738634.
   virtual bool HostHasNotBeenUsed() = 0;
 
-  // Locks this RenderProcessHost to the 'origin' |lock_url|. This method is
-  // public so that it can be called from SiteInstanceImpl, and used by
-  // MockRenderProcessHost. It isn't meant to be called outside of content.
-  // TODO(creis): Rename LockToOrigin to LockToPrincipal. See
-  // https://crbug.com/846155.
-  virtual void LockToOrigin(const IsolationContext& isolation_context,
-                            const GURL& lock_url) = 0;
+  // Locks this RenderProcessHost to documents compatible with |process_lock|.
+  // This method is public so that it can be called from SiteInstanceImpl, and
+  // used by MockRenderProcessHost. It isn't meant to be called outside of
+  // content.
+  virtual void SetProcessLock(const IsolationContext& isolation_context,
+                              const ProcessLock& process_lock) = 0;
 
-  // Returns true if this process is locked to a particular 'origin'.  See the
-  // LockToOrigin() call above.
-  virtual bool IsLockedToOriginForTesting() = 0;
+  // Returns true if this process is locked to a particular ProcessLock.  See
+  // the SetProcessLock() call above.
+  virtual bool IsProcessLockedForTesting() = 0;
 
   // The following several methods are for internal use only, and are only
   // exposed here to support MockRenderProcessHost usage in tests.

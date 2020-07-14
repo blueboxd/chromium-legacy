@@ -47,8 +47,8 @@ class IdleEventNotifier : public PowerManagerClient::Observer,
       base::TimeDelta::FromSeconds(30);
 
   // Count number of key, mouse and touch events in the past hour.
-  static constexpr base::TimeDelta kUserInputEventsDuration =
-      base::TimeDelta::FromMinutes(60);
+  static constexpr auto kUserInputEventsDuration =
+      base::TimeDelta::FromHours(1);
 
   // Granularity of input events is per minute.
   static constexpr int kNumUserInputEventsBuckets =

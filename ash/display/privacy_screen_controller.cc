@@ -11,11 +11,13 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "ui/display/manager/display_configurator.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_snapshot.h"
 
 namespace ash {
 
-PrivacyScreenController::PrivacyScreenController() {
+PrivacyScreenController::PrivacyScreenController()
+    : display_id_(display::kInvalidDisplayId) {
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->display_configurator()->AddObserver(this);
 }
@@ -32,9 +34,7 @@ void PrivacyScreenController::RegisterProfilePrefs(
 }
 
 bool PrivacyScreenController::IsSupported() const {
-  return Shell::Get()
-      ->display_configurator()
-      ->IsPrivacyScreenSupportedOnInternalDisplay();
+  return display_id_ != display::kInvalidDisplayId;
 }
 
 bool PrivacyScreenController::IsManaged() const {
@@ -95,8 +95,10 @@ void PrivacyScreenController::OnSigninScreenPrefServiceInitialized(
 
 void PrivacyScreenController::OnDisplayModeChanged(
     const std::vector<display::DisplaySnapshot*>& displays) {
+  UpdateSupport();
+
   // OnDisplayModeChanged() may fire many times during Chrome's lifetime. We
-  // limit it to when applying login screen prefs.
+  // limit automatic user pref initialization to login screen only.
   if (applying_login_screen_prefs_) {
     InitFromUserPrefs();
     applying_login_screen_prefs_ = false;
@@ -106,8 +108,8 @@ void PrivacyScreenController::OnDisplayModeChanged(
 void PrivacyScreenController::OnEnabledPrefChanged(bool notify_observers) {
   if (IsSupported()) {
     const bool is_enabled = GetEnabled();
-    Shell::Get()->display_configurator()->SetPrivacyScreenOnInternalDisplay(
-        is_enabled);
+    Shell::Get()->display_configurator()->SetPrivacyScreen(display_id_,
+                                                           is_enabled);
 
     if (!notify_observers)
       return;
@@ -131,6 +133,22 @@ void PrivacyScreenController::InitFromUserPrefs() {
   // We don't want to notify observers upon initialization or on account change
   // because changes will trigger a toast to show up.
   OnEnabledPrefChanged(/*notify_observers=*/false);
+}
+
+void PrivacyScreenController::UpdateSupport() {
+  const auto& cached_displays =
+      Shell::Get()->display_configurator()->cached_displays();
+
+  for (auto* display : cached_displays) {
+    if (display->type() == display::DISPLAY_CONNECTION_TYPE_INTERNAL &&
+        display->privacy_screen_state() != display::kNotSupported &&
+        display->current_mode()) {
+      display_id_ = display->display_id();
+      return;
+    }
+  }
+
+  display_id_ = display::kInvalidDisplayId;
 }
 
 }  // namespace ash

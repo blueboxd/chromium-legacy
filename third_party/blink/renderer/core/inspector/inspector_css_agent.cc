@@ -30,6 +30,9 @@
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
+#include "third_party/blink/renderer/core/css/css_font_face.h"
+#include "third_party/blink/renderer/core/css/css_font_face_source.h"
+#include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
 #include "third_party/blink/renderer/core/css/css_import_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
@@ -737,9 +740,31 @@ void InspectorCSSAgent::CompleteEnabled() {
   instrumenting_agents_->AddInspectorCSSAgent(this);
   dom_agent_->SetDOMListener(this);
   HeapVector<Member<Document>> documents = dom_agent_->Documents();
-  for (Document* document : documents)
+  for (Document* document : documents) {
     UpdateActiveStyleSheets(document);
+    TriggerFontsUpdatedForDocument(document);
+  }
   enable_completed_ = true;
+}
+
+void InspectorCSSAgent::TriggerFontsUpdatedForDocument(Document* document) {
+  const HeapLinkedHashSet<Member<FontFace>>& faces =
+      document->GetStyleEngine()
+          .GetFontSelector()
+          ->GetFontFaceCache()
+          ->CssConnectedFontFaces();
+  for (FontFace* face : faces) {
+    CSSFontFace* css_face = face->CssFontFace();
+    if (!css_face)
+      continue;
+    const CSSFontFaceSource* source = css_face->FrontSource();
+    if (!source || !source->IsLoaded())
+      continue;
+    const FontCustomPlatformData* data = source->GetCustomPlaftormData();
+    if (!data)
+      continue;
+    FontsUpdated(face, source->GetURL(), data);
+  }
 }
 
 Response InspectorCSSAgent::disable() {

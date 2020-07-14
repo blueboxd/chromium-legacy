@@ -12,24 +12,24 @@
 namespace {
 
 ash::OrientationLockType ToAshOrientationLockType(
-    blink::WebScreenOrientationLockType blink_orientation_lock) {
+    device::mojom::ScreenOrientationLockType blink_orientation_lock) {
   switch (blink_orientation_lock) {
-    case blink::kWebScreenOrientationLockDefault:
-    case blink::kWebScreenOrientationLockAny:
+    case device::mojom::ScreenOrientationLockType::DEFAULT:
+    case device::mojom::ScreenOrientationLockType::ANY:
       return ash::OrientationLockType::kAny;
-    case blink::kWebScreenOrientationLockPortrait:
+    case device::mojom::ScreenOrientationLockType::PORTRAIT:
       return ash::OrientationLockType::kPortrait;
-    case blink::kWebScreenOrientationLockPortraitPrimary:
+    case device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY:
       return ash::OrientationLockType::kPortraitPrimary;
-    case blink::kWebScreenOrientationLockPortraitSecondary:
+    case device::mojom::ScreenOrientationLockType::PORTRAIT_SECONDARY:
       return ash::OrientationLockType::kPortraitSecondary;
-    case blink::kWebScreenOrientationLockLandscape:
+    case device::mojom::ScreenOrientationLockType::LANDSCAPE:
       return ash::OrientationLockType::kLandscape;
-    case blink::kWebScreenOrientationLockLandscapePrimary:
+    case device::mojom::ScreenOrientationLockType::LANDSCAPE_PRIMARY:
       return ash::OrientationLockType::kLandscapePrimary;
-    case blink::kWebScreenOrientationLockLandscapeSecondary:
+    case device::mojom::ScreenOrientationLockType::LANDSCAPE_SECONDARY:
       return ash::OrientationLockType::kLandscapeSecondary;
-    case blink::kWebScreenOrientationLockNatural:
+    case device::mojom::ScreenOrientationLockType::NATURAL:
       return ash::OrientationLockType::kNatural;
   }
   return ash::OrientationLockType::kAny;
@@ -52,7 +52,7 @@ bool ScreenOrientationDelegateChromeos::FullScreenRequired(
 
 void ScreenOrientationDelegateChromeos::Lock(
     content::WebContents* web_contents,
-    blink::WebScreenOrientationLockType orientation_lock) {
+    device::mojom::ScreenOrientationLockType orientation_lock) {
   ash::Shell::Get()->screen_orientation_controller()->LockOrientationForWindow(
       web_contents->GetNativeView(),
       ToAshOrientationLockType(orientation_lock));

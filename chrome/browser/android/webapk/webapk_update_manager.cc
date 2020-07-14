@@ -92,7 +92,7 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
   info.user_title = info.short_name;
   info.display = static_cast<blink::mojom::DisplayMode>(java_display_mode);
   info.orientation =
-      static_cast<blink::WebScreenOrientationLockType>(java_orientation);
+      static_cast<device::mojom::ScreenOrientationLockType>(java_orientation);
   info.theme_color = JavaColorToOptionalSkColor(java_theme_color);
   info.background_color = JavaColorToOptionalSkColor(java_background_color);
   info.best_primary_icon_url =

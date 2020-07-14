@@ -82,6 +82,11 @@ struct CustomCallbackItem {
   const void* parameter;
 };
 
+struct NotSafeToConcurrentlyTraceItem {
+  TraceDescriptor desc;
+  size_t bailout_size;
+};
+
 using V8Reference = const TraceWrapperV8Reference<v8::Value>*;
 
 // Segment size of 512 entries necessary to avoid throughput regressions. Since
@@ -102,7 +107,7 @@ using BackingStoreCallbackWorklist =
     Worklist<BackingStoreCallbackItem, 16 /* local entries */>;
 using V8ReferencesWorklist = Worklist<V8Reference, 16 /* local entries */>;
 using NotSafeToConcurrentlyTraceWorklist =
-    Worklist<MarkingItem, 64 /* local entries */>;
+    Worklist<NotSafeToConcurrentlyTraceItem, 64 /* local entries */>;
 
 class PLATFORM_EXPORT HeapAllocHooks {
   STATIC_ONLY(HeapAllocHooks);

@@ -80,7 +80,7 @@ class ScreenOrientationControllerTest : public PageTestBase {
   }
 
   void LockOrientation(
-      blink::WebScreenOrientationLockType orientation,
+      device::mojom::ScreenOrientationLockType orientation,
       std::unique_ptr<blink::WebLockOrientationCallback> callback) {
     Controller()->lock(orientation, std::move(callback));
   }
@@ -100,7 +100,7 @@ TEST_F(ScreenOrientationControllerTest, CancelPending_Unlocking) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results;
 
   LockOrientation(
-      blink::kWebScreenOrientationLockPortraitPrimary,
+      device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY,
       std::make_unique<MockLockOrientationCallback>(&callback_results));
   UnlockOrientation();
 
@@ -116,11 +116,11 @@ TEST_F(ScreenOrientationControllerTest, CancelPending_DoubleLock) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results2;
 
   LockOrientation(
-      blink::kWebScreenOrientationLockPortraitPrimary,
+      device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY,
       std::make_unique<MockLockOrientationCallback>(&callback_results));
 
   LockOrientation(
-      blink::kWebScreenOrientationLockPortraitPrimary,
+      device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY,
       std::make_unique<MockLockOrientationCallback>(&callback_results2));
 
   EXPECT_FALSE(callback_results.succeeded_);
@@ -144,7 +144,7 @@ TEST_F(ScreenOrientationControllerTest, LockRequest_Error) {
   for (auto it = errors.begin(); it != errors.end(); ++it) {
     MockLockOrientationCallback::LockOrientationResultHolder callback_results;
     LockOrientation(
-        blink::kWebScreenOrientationLockPortraitPrimary,
+        device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY,
         std::make_unique<MockLockOrientationCallback>(&callback_results));
     RunLockResultCallback(GetRequestId(), it->key);
     EXPECT_FALSE(callback_results.succeeded_);
@@ -158,7 +158,7 @@ TEST_F(ScreenOrientationControllerTest, LockRequest_Error) {
 TEST_F(ScreenOrientationControllerTest, LockRequest_Success) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results;
   LockOrientation(
-      blink::kWebScreenOrientationLockPortraitPrimary,
+      device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY,
       std::make_unique<MockLockOrientationCallback>(&callback_results));
 
   RunLockResultCallback(GetRequestId(),
@@ -179,12 +179,12 @@ TEST_F(ScreenOrientationControllerTest, RaceScenario) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results2;
 
   LockOrientation(
-      blink::kWebScreenOrientationLockPortraitPrimary,
+      device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY,
       std::make_unique<MockLockOrientationCallback>(&callback_results1));
   int request_id1 = GetRequestId();
 
   LockOrientation(
-      blink::kWebScreenOrientationLockLandscapePrimary,
+      device::mojom::ScreenOrientationLockType::LANDSCAPE_PRIMARY,
       std::make_unique<MockLockOrientationCallback>(&callback_results2));
 
   // callback_results1 must be rejected, tested in CancelPending_DoubleLock.

@@ -291,7 +291,7 @@ MediaStreamSource::Capabilities ComputeCapabilitiesForVideoSource(
   MediaStreamSource::Capabilities capabilities;
   capabilities.device_id = std::move(device_id);
   if (is_device_capture) {
-    capabilities.facing_mode = ToWebFacingMode(facing_mode);
+    capabilities.facing_mode = ToPlatformFacingMode(facing_mode);
     if (group_id)
       capabilities.group_id = WebString::FromUTF8(*group_id);
   }

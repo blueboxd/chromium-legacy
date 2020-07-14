@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 #include "ui/base/clipboard/clipboard_metrics.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -472,8 +473,11 @@ void ClipboardOzone::ReadData(const ClipboardFormatType& format,
   result->assign(clipboard_data.begin(), clipboard_data.end());
 }
 
-void ClipboardOzone::WritePortableRepresentations(ClipboardBuffer buffer,
-                                                  const ObjectMap& objects) {
+// TODO(crbug.com/1103194): |data_src| should be supported
+void ClipboardOzone::WritePortableRepresentations(
+    ClipboardBuffer buffer,
+    const ObjectMap& objects,
+    std::unique_ptr<ClipboardDataEndpoint> data_src) {
   DCHECK(CalledOnValidThread());
 
   for (const auto& object : objects)
@@ -497,9 +501,11 @@ void ClipboardOzone::WritePortableRepresentations(ClipboardBuffer buffer,
   }
 }
 
+// TODO(crbug.com/1103194): |data_src| should be supported
 void ClipboardOzone::WritePlatformRepresentations(
     ClipboardBuffer buffer,
-    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+    std::vector<Clipboard::PlatformRepresentation> platform_representations,
+    std::unique_ptr<ClipboardDataEndpoint> data_src) {
   DCHECK(CalledOnValidThread());
   DispatchPlatformRepresentations(std::move(platform_representations));
 

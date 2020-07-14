@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">సెట్టింగ్‌లను మేనేజ్ చేయండి</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 గంటలో}other{#గంటలలో}}</translation>
 <translation id="2583543531130364912">మీ టచ్‌స్క్రీన్‌ను క్రమాంకనం చేయండి</translation>
+<translation id="2586657967955657006">క్లిప్‌బోర్డ్</translation>
 <translation id="2666092431469916601">పైన</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> నుండి షేర్ చేయబడింది</translation>
 <translation id="271033894570825754">కొత్తది</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">మాట్లాడటాన్ని ప్రారంభించు</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> అనేది <ph name="FOLDER_NAME" /> ఫోల్డర్‌కు తరలించబడింది.</translation>
 <translation id="4316910396681052118">అన్ని అనువర్తనాలు</translation>
+<translation id="4491109536499578614">చిత్రం</translation>
 <translation id="4588090240171750605">కుడికి స్క్రోల్ చేయి</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, నక్షత్ర రేటింగ్ <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, యాప్ సిఫార్సు</translation>

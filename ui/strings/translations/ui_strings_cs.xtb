@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">Spravovat nastavení</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{za 1 h}few{za # h}many{za # h}other{za # h}}</translation>
 <translation id="2583543531130364912">Zkalibrujte dotykovou obrazovku</translation>
+<translation id="2586657967955657006">Schránka</translation>
 <translation id="2666092431469916601">Nahoru</translation>
 <translation id="2701330563083355633">Sdíleno ze zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">Nové</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">Začít mluvit</translation>
 <translation id="430191667033048642">Aplikace <ph name="MOVED_APP_NAME" /> byla přesunuta do složky <ph name="FOLDER_NAME" /></translation>
 <translation id="4316910396681052118">VŠECHNY APLIKACE</translation>
+<translation id="4491109536499578614">Obrázek</translation>
 <translation id="4588090240171750605">Posuv doprava</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, hodnocení hvězdičkami <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, doporučení aplikace</translation>

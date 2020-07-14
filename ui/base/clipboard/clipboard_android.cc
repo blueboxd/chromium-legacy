@@ -26,6 +26,7 @@
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
 #include "ui/base/clipboard/clipboard_metrics.h"
 #include "ui/base/ui_base_jni_headers/Clipboard_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -502,8 +503,12 @@ void ClipboardAndroid::ClearLastModifiedTime() {
 }
 
 // Main entry point used to write several values in the clipboard.
-void ClipboardAndroid::WritePortableRepresentations(ClipboardBuffer buffer,
-                                                    const ObjectMap& objects) {
+// |data_src| is not used. It's only passed to be consistent with other
+// platforms.
+void ClipboardAndroid::WritePortableRepresentations(
+    ClipboardBuffer buffer,
+    const ObjectMap& objects,
+    std::unique_ptr<ClipboardDataEndpoint> data_src) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   g_map.Get().Clear();
@@ -514,9 +519,12 @@ void ClipboardAndroid::WritePortableRepresentations(ClipboardBuffer buffer,
   g_map.Get().CommitToAndroidClipboard();
 }
 
+// |data_src| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardAndroid::WritePlatformRepresentations(
     ClipboardBuffer buffer,
-    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+    std::vector<Clipboard::PlatformRepresentation> platform_representations,
+    std::unique_ptr<ClipboardDataEndpoint> data_src) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   g_map.Get().Clear();

@@ -235,6 +235,30 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @MediumTest
     @Feature({"Browser"})
+    @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
+    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS
+                    + "<FakeStudyName",
+            "force-fieldtrials=FakeStudyName/Enabled",
+            "force-fieldtrial-params=FakeStudyName.Enabled:"
+                    + "lensShopVariation/SearchSimilarProducts/minAgsaVersionNameForShopping/11.21"})
+    public void
+    testSearchSimilarProductsBelowShoppingMinimumAgsaVersion() throws Throwable {
+        LensUtils.setFakePassableLensEnvironmentForTesting(true);
+        LensUtils.setFakeImageUrlInShoppingAllowlistForTesting(true);
+        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
+        ShareHelper.setIgnoreActivityNotFoundExceptionForTesting(true);
+        hardcodeTestImageForSharing(TEST_JPG_IMAGE_FILE_EXTENSION);
+
+        // Fallback to search with google lens when Agsa below minimum shopping supported version.
+        ContextMenuUtils.selectContextMenuItemWithExpectedIntent(
+                InstrumentationRegistry.getInstrumentation(), mDownloadTestRule.getActivity(), tab,
+                "testImage", R.id.contextmenu_search_with_google_lens,
+                "com.google.android.googlequicksearchbox");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Browser"})
     @CommandLineFlags.Add({"enable-features="
                     + ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS + "<FakeStudyName",
             "force-fieldtrials=FakeStudyName/Enabled",

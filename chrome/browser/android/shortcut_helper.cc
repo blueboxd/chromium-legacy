@@ -118,8 +118,9 @@ void AddWebappWithSkBitmap(const ShortcutInfo& info,
   Java_ShortcutHelper_addWebapp(
       env, java_webapp_id, java_url, java_scope_url, java_user_title, java_name,
       java_short_name, java_best_primary_icon_url, java_bitmap,
-      is_icon_maskable, static_cast<int>(info.display), info.orientation,
-      info.source, OptionalSkColorToJavaColor(info.theme_color),
+      is_icon_maskable, static_cast<int>(info.display),
+      static_cast<int>(info.orientation), info.source,
+      OptionalSkColorToJavaColor(info.theme_color),
       OptionalSkColorToJavaColor(info.background_color), callback_pointer);
 }
 

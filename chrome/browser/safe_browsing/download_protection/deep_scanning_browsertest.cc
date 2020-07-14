@@ -510,8 +510,7 @@ IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest,
     result->set_status(
         enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
     auto* malware_rule = result->add_triggered_rules();
-    malware_rule->set_action(enterprise_connectors::ContentAnalysisResponse::
-                                 Result::TriggeredRule::BLOCK);
+    malware_rule->set_action(enterprise_connectors::TriggeredRule::BLOCK);
     malware_rule->set_rule_name("MALWARE");
     SendFcmMessage(async_response);
   }
@@ -550,8 +549,7 @@ IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest,
     result->set_status(
         enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
     auto* dlp_rule = result->add_triggered_rules();
-    dlp_rule->set_action(enterprise_connectors::ContentAnalysisResponse::
-                             Result::TriggeredRule::BLOCK);
+    dlp_rule->set_action(enterprise_connectors::TriggeredRule::BLOCK);
     ExpectContentAnalysisSynchronousResponse(/*is_advanced_protection=*/false,
                                              sync_response, {"dlp", "malware"});
   }
@@ -676,8 +674,7 @@ IN_PROC_BROWSER_TEST_P(WhitelistedUrlDeepScanningBrowserTest,
     result->set_status(
         enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
     auto* dlp_rule = result->add_triggered_rules();
-    dlp_rule->set_action(enterprise_connectors::ContentAnalysisResponse::
-                             Result::TriggeredRule::BLOCK);
+    dlp_rule->set_action(enterprise_connectors::TriggeredRule::BLOCK);
     ExpectContentAnalysisSynchronousResponse(/*is_advanced_protection=*/false,
                                              sync_response, {"dlp"});
   }

@@ -71,7 +71,7 @@ struct BLINK_COMMON_EXPORT
     return manifest.display;
   }
 
-  static blink::WebScreenOrientationLockType orientation(
+  static device::mojom::ScreenOrientationLockType orientation(
       const ::blink::Manifest& manifest) {
     return manifest.orientation;
   }

@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">Prepis (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Tabuľky</translation>
 <translation id="2938685643439809023">Mongolčina</translation>
-<translation id="2939410873710774399">Ak chcete otvoriť súbory pomocou aplikácie <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), najprv ich presuňte do priečinka <ph name="FOLDER_NAME" />.</translation>
 <translation id="2942290791863759244">Nemecká klávesnica NEO 2</translation>
 <translation id="2943400156390503548">Prezentácie</translation>
 <translation id="2943503720238418293">Použite kratší názov</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242">Počet vybratých položiek: <ph name="SELCTED_FILES_COUNT" /></translation>
 <translation id="4850886885716139402">Zobraziť</translation>
 <translation id="485316830061041779">Nemčina</translation>
-<translation id="4859297381873413734">Ak chcete otvoriť súbory pomocou aplikácie <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), najprv ich skopírujte do priečinka <ph name="FOLDER_NAME" />.</translation>
 <translation id="4867079195717347957">Kliknutím zoradíte stĺpec v zostupnom poradí.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> B</translation>
 <translation id="4880214202172289027">Posúvač hlasitosti</translation>
 <translation id="4880520557730313061">Automatická oprava</translation>
 <translation id="4881695831933465202">Otvoriť</translation>
 <translation id="4886021172213954916">Tamilská klávesnica (písací stroj)</translation>
-<translation id="4892969127351273348">Nedá sa otvoriť pomocou aplikácie <ph name="APP_NAME" /></translation>
 <translation id="4900532980794411603">Zdieľať pomocou aplikácie Parallels Desktop</translation>
 <translation id="4905417359854579806">Môžete začať zálohovať (počet: <ph name="FILE_COUNT" />)</translation>
 <translation id="4924638091161556692">Pevné</translation>

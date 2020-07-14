@@ -46,17 +46,18 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
     RenderWidgetHostImpl* main_frame_rwh = static_cast<RenderWidgetHostImpl*>(
         web_contents()->GetMainFrame()->GetRenderWidgetHost());
 
-    ScreenOrientationValues type = SCREEN_ORIENTATION_VALUES_DEFAULT;
+    blink::mojom::ScreenOrientation type =
+        blink::mojom::ScreenOrientation::kUndefined;
     if (str_type == "portrait-primary") {
-      type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
+      type = blink::mojom::ScreenOrientation::kPortraitPrimary;
     } else if (str_type == "portrait-secondary") {
-      type = SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
+      type = blink::mojom::ScreenOrientation::kPortraitSecondary;
     } else if (str_type == "landscape-primary") {
-      type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
+      type = blink::mojom::ScreenOrientation::kLandscapePrimary;
     } else if (str_type == "landscape-secondary") {
-      type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
+      type = blink::mojom::ScreenOrientation::kLandscapeSecondary;
     }
-    ASSERT_NE(SCREEN_ORIENTATION_VALUES_DEFAULT, type);
+    ASSERT_NE(blink::mojom::ScreenOrientation::kUndefined, type);
 
     ScreenInfo screen_info;
     main_frame_rwh->GetScreenInfo(&screen_info);

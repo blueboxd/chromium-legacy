@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/policy/messaging_layer/storage/storage.h"
 #include "chrome/browser/policy/messaging_layer/storage/storage_module.h"
@@ -24,8 +25,11 @@ StorageModule::~StorageModule() = default;
 void StorageModule::AddRecord(reporting::EncryptedRecord record,
                               reporting::Priority priority,
                               base::OnceCallback<void(Status)> callback) {
-  std::move(callback).Run(
-      Status(error::UNIMPLEMENTED, "AddRecord isn't implemented"));
+  size_t record_size = record.ByteSizeLong();
+  auto data = std::make_unique<uint8_t[]>(record_size);
+  record.SerializeToArray(data.get(), record_size);
+  storage_->Write(priority, base::make_span(data.get(), record_size),
+                  std::move(callback));
 }
 
 // static

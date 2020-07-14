@@ -16,7 +16,7 @@ cr.define('settings', function() {
    * Stages the user can enter while setting up pin unlock.
    * @enum {number}
    */
-  const LockScreenProgress = {
+  /* #export */ const LockScreenProgress = {
     START_SCREEN_LOCK: 0,
     ENTER_PASSWORD_CORRECTLY: 1,
     CHOOSE_PIN_OR_PASSWORD: 2,
@@ -29,7 +29,7 @@ cr.define('settings', function() {
    * histogram.
    * @param {settings.LockScreenProgress} currentProgress
    */
-  const recordLockScreenProgress = function(currentProgress) {
+  /* #export */ const recordLockScreenProgress = function(currentProgress) {
     if (currentProgress >= LockScreenProgress.MAX_BUCKET) {
       console.error(
           'Expected a enumeration value of ' + LockScreenProgress.MAX_BUCKET +

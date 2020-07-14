@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.infobars.InfoBar;
@@ -193,6 +194,9 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
 
     /** A {@link BottomSheetObserver} so this view knows when to show/hide. */
     private @Nullable BottomSheetObserver mBottomSheetObserver;
+
+    /** */
+    private BottomSheetController mBottomSheetController;
 
     public static InfoBarContainer from(Tab tab) {
         InfoBarContainer container = get(tab);
@@ -465,8 +469,9 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
                                                     : View.VISIBLE);
                                 }
                             };
-                            getActivity(mTab).getBottomSheetController().addObserver(
-                                    mBottomSheetObserver);
+                            mBottomSheetController =
+                                    BottomSheetControllerProvider.from(mTab.getWindowAndroid());
+                            mBottomSheetController.addObserver(mBottomSheetObserver);
                         }
 
                         for (InfoBarContainer.InfoBarContainerObserver observer : mObservers) {
@@ -507,7 +512,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
 
         ChromeActivity activity = getActivity(mTab);
         if (activity != null && mBottomSheetObserver != null) {
-            activity.getBottomSheetController().removeObserver(mBottomSheetObserver);
+            mBottomSheetController.removeObserver(mBottomSheetObserver);
         }
 
         mTab.getWindowAndroid().getKeyboardDelegate().removeKeyboardVisibilityListener(this);

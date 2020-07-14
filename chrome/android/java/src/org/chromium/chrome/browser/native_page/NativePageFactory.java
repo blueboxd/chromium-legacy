@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -43,17 +44,20 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class NativePageFactory {
     private final ChromeActivity mActivity;
+    private final BottomSheetController mBottomSheetController;
     private NewTabPageUma mNewTabPageUma;
 
     private NativePageBuilder mNativePageBuilder;
 
-    public NativePageFactory(ChromeActivity activity) {
+    public NativePageFactory(ChromeActivity activity, BottomSheetController sheetController) {
         mActivity = activity;
+        mBottomSheetController = sheetController;
     }
 
     private NativePageBuilder getBuilder() {
         if (mNativePageBuilder == null) {
-            mNativePageBuilder = new NativePageBuilder(mActivity, this::getNewTabPageUma);
+            mNativePageBuilder = new NativePageBuilder(
+                    mActivity, this::getNewTabPageUma, mBottomSheetController);
         }
         return mNativePageBuilder;
     }
@@ -71,11 +75,14 @@ public class NativePageFactory {
     @VisibleForTesting
     static class NativePageBuilder {
         private final ChromeActivity mActivity;
+        private final BottomSheetController mBottomSheetController;
         private final Supplier<NewTabPageUma> mUma;
 
-        public NativePageBuilder(ChromeActivity activity, Supplier<NewTabPageUma> uma) {
+        public NativePageBuilder(ChromeActivity activity, Supplier<NewTabPageUma> uma,
+                BottomSheetController sheetController) {
             mActivity = activity;
             mUma = uma;
+            mBottomSheetController = sheetController;
         }
 
         protected NativePage buildNewTabPage(Tab tab) {
@@ -87,7 +94,7 @@ public class NativePageFactory {
                     mActivity.getSnackbarManager(), mActivity.getLifecycleDispatcher(),
                     mActivity.getTabModelSelector(), mActivity.isTablet(), mUma.get(),
                     mActivity.getNightModeStateProvider().isInNightMode(), nativePageHost, tab,
-                    mActivity.getBottomSheetController());
+                    mBottomSheetController);
         }
 
         protected NativePage buildBookmarksPage(Tab tab) {

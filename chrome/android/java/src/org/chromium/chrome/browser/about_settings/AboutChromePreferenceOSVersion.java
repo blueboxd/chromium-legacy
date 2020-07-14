@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.about_settings;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
@@ -24,7 +25,6 @@ public class AboutChromePreferenceOSVersion extends Preference {
      */
     public AboutChromePreferenceOSVersion(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setLayoutResource(R.layout.os_version_unsupported_preference);
     }
 
     @Override
@@ -33,6 +33,7 @@ public class AboutChromePreferenceOSVersion extends Preference {
         // Show additional information only if the OS version is not supported.
         if (VersionNumberGetter.isCurrentOsVersionSupported()) return;
 
-        holder.findViewById(R.id.os_deprecation_warning).setVisibility(View.VISIBLE);
+        ViewGroup root = (ViewGroup) holder.findViewById(android.R.id.summary).getParent();
+        LayoutInflater.from(getContext()).inflate(R.layout.os_version_unsupported_text, root, true);
     }
 }

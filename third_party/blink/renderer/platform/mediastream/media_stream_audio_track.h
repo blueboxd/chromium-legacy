@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_deliverer.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_track_platform.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
@@ -27,8 +27,7 @@ class MediaStreamComponent;
 // MediaStreamAudioSource to one or more WebMediaStreamAudioSinks. An instance
 // of this class is owned by MediaStreamComponent/WebMediaStreamTrack, and
 // clients should use From() to gain access to a MediaStreamAudioTrack.
-class PLATFORM_EXPORT MediaStreamAudioTrack
-    : public WebPlatformMediaStreamTrack {
+class PLATFORM_EXPORT MediaStreamAudioTrack : public MediaStreamTrackPlatform {
  public:
   explicit MediaStreamAudioTrack(bool is_local_track);
 

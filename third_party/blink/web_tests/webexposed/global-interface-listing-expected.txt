@@ -11501,6 +11501,7 @@ interface XRTransientInputHitTestSource
 interface XRView
     attribute @@toStringTag
     getter eye
+    getter isFirstPersonObserver
     getter projectionMatrix
     getter transform
     method constructor

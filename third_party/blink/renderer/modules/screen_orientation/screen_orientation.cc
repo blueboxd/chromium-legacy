@@ -8,7 +8,6 @@
 
 #include "base/stl_util.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
-#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -19,22 +18,26 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
-// This code assumes that WebScreenOrientationType values are included in
-// WebScreenOrientationLockType.
-STATIC_ASSERT_ENUM(blink::kWebScreenOrientationPortraitPrimary,
-                   blink::kWebScreenOrientationLockPortraitPrimary);
-STATIC_ASSERT_ENUM(blink::kWebScreenOrientationPortraitSecondary,
-                   blink::kWebScreenOrientationLockPortraitSecondary);
-STATIC_ASSERT_ENUM(blink::kWebScreenOrientationLandscapePrimary,
-                   blink::kWebScreenOrientationLockLandscapePrimary);
-STATIC_ASSERT_ENUM(blink::kWebScreenOrientationLandscapeSecondary,
-                   blink::kWebScreenOrientationLockLandscapeSecondary);
+// This code assumes that mojom::blink::ScreenOrientation values are included in
+// device::mojom::blink::ScreenOrientationLockType.
+STATIC_ASSERT_ENUM(
+    blink::mojom::blink::ScreenOrientation::kPortraitPrimary,
+    device::mojom::blink::ScreenOrientationLockType::PORTRAIT_PRIMARY);
+STATIC_ASSERT_ENUM(
+    blink::mojom::blink::ScreenOrientation::kPortraitSecondary,
+    device::mojom::blink::ScreenOrientationLockType::PORTRAIT_SECONDARY);
+STATIC_ASSERT_ENUM(
+    blink::mojom::blink::ScreenOrientation::kLandscapePrimary,
+    device::mojom::blink::ScreenOrientationLockType::LANDSCAPE_PRIMARY);
+STATIC_ASSERT_ENUM(
+    blink::mojom::blink::ScreenOrientation::kLandscapeSecondary,
+    device::mojom::blink::ScreenOrientationLockType::LANDSCAPE_SECONDARY);
 
 namespace blink {
 
 struct ScreenOrientationInfo {
   const AtomicString& name;
-  unsigned orientation;
+  device::mojom::blink::ScreenOrientationLockType orientation;
 };
 
 static ScreenOrientationInfo* OrientationsMap(unsigned& length) {
@@ -52,25 +55,30 @@ static ScreenOrientationInfo* OrientationsMap(unsigned& length) {
   DEFINE_STATIC_LOCAL(const AtomicString, natural, ("natural"));
 
   static ScreenOrientationInfo orientation_map[] = {
-      {portrait_primary, kWebScreenOrientationLockPortraitPrimary},
-      {portrait_secondary, kWebScreenOrientationLockPortraitSecondary},
-      {landscape_primary, kWebScreenOrientationLockLandscapePrimary},
-      {landscape_secondary, kWebScreenOrientationLockLandscapeSecondary},
-      {any, kWebScreenOrientationLockAny},
-      {portrait, kWebScreenOrientationLockPortrait},
-      {landscape, kWebScreenOrientationLockLandscape},
-      {natural, kWebScreenOrientationLockNatural}};
+      {portrait_primary,
+       device::mojom::blink::ScreenOrientationLockType::PORTRAIT_PRIMARY},
+      {portrait_secondary,
+       device::mojom::blink::ScreenOrientationLockType::PORTRAIT_SECONDARY},
+      {landscape_primary,
+       device::mojom::blink::ScreenOrientationLockType::LANDSCAPE_PRIMARY},
+      {landscape_secondary,
+       device::mojom::blink::ScreenOrientationLockType::LANDSCAPE_SECONDARY},
+      {any, device::mojom::blink::ScreenOrientationLockType::ANY},
+      {portrait, device::mojom::blink::ScreenOrientationLockType::PORTRAIT},
+      {landscape, device::mojom::blink::ScreenOrientationLockType::LANDSCAPE},
+      {natural, device::mojom::blink::ScreenOrientationLockType::NATURAL}};
   length = base::size(orientation_map);
 
   return orientation_map;
 }
 
 const AtomicString& ScreenOrientation::OrientationTypeToString(
-    WebScreenOrientationType orientation) {
+    mojom::blink::ScreenOrientation orientation) {
   unsigned length = 0;
   ScreenOrientationInfo* orientation_map = OrientationsMap(length);
   for (unsigned i = 0; i < length; ++i) {
-    if (static_cast<unsigned>(orientation) == orientation_map[i].orientation)
+    if (static_cast<unsigned>(orientation) ==
+        static_cast<unsigned>(orientation_map[i].orientation))
       return orientation_map[i].name;
   }
 
@@ -78,18 +86,17 @@ const AtomicString& ScreenOrientation::OrientationTypeToString(
   return g_null_atom;
 }
 
-static WebScreenOrientationLockType StringToOrientationLock(
+static device::mojom::blink::ScreenOrientationLockType StringToOrientationLock(
     const AtomicString& orientation_lock_string) {
   unsigned length = 0;
   ScreenOrientationInfo* orientation_map = OrientationsMap(length);
   for (unsigned i = 0; i < length; ++i) {
     if (orientation_map[i].name == orientation_lock_string)
-      return static_cast<WebScreenOrientationLockType>(
-          orientation_map[i].orientation);
+      return orientation_map[i].orientation;
   }
 
   NOTREACHED();
-  return kWebScreenOrientationLockDefault;
+  return device::mojom::blink::ScreenOrientationLockType::DEFAULT;
 }
 
 // static
@@ -103,7 +110,7 @@ ScreenOrientation* ScreenOrientation::Create(LocalDOMWindow* window) {
 
 ScreenOrientation::ScreenOrientation(LocalDOMWindow* window)
     : ExecutionContextClient(window),
-      type_(kWebScreenOrientationUndefined),
+      type_(mojom::blink::ScreenOrientation::kUndefined),
       angle_(0) {}
 
 ScreenOrientation::~ScreenOrientation() = default;
@@ -124,7 +131,7 @@ uint16_t ScreenOrientation::angle() const {
   return angle_;
 }
 
-void ScreenOrientation::SetType(WebScreenOrientationType type) {
+void ScreenOrientation::SetType(mojom::blink::ScreenOrientation type) {
   type_ = type;
 }
 

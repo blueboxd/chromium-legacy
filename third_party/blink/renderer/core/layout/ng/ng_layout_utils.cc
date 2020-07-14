@@ -464,8 +464,7 @@ bool MaySkipLayoutWithinBlockFormattingContext(
       !is_margin_strut_equal)
     return false;
 
-  const auto& physical_fragment =
-      To<NGPhysicalBoxFragment>(cached_layout_result.PhysicalFragment());
+  const auto& physical_fragment = cached_layout_result.PhysicalFragment();
 
   // Check we have a descendant that *may* be positioned above the block-start
   // edge. We abort if either the old or new space has floats, as we don't keep

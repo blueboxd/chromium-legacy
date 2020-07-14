@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">音譯 (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">試算表</translation>
 <translation id="2938685643439809023">蒙古語</translation>
-<translation id="2939410873710774399">如要使用「<ph name="APP_NAME" />」(<ph name="VM_SOFTWARE_NAME" />) 開啟檔案，請先將檔案移至「<ph name="FOLDER_NAME" />」資料夾。</translation>
 <translation id="2942290791863759244">德文 Neo 2 鍵盤</translation>
 <translation id="2943400156390503548">投影片</translation>
 <translation id="2943503720238418293">請縮短名稱</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242">已選取 <ph name="SELCTED_FILES_COUNT" /> 個項目</translation>
 <translation id="4850886885716139402">檢視</translation>
 <translation id="485316830061041779">德文</translation>
-<translation id="4859297381873413734">如要使用「<ph name="APP_NAME" />」(<ph name="VM_SOFTWARE_NAME" />) 開啟檔案，請先將檔案複製到「<ph name="FOLDER_NAME" />」資料夾。</translation>
 <translation id="4867079195717347957">按一下即可依遞減順序排列資料欄。</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> 位元組</translation>
 <translation id="4880214202172289027">音量滑桿</translation>
 <translation id="4880520557730313061">自動修正</translation>
 <translation id="4881695831933465202">開啟</translation>
 <translation id="4886021172213954916">坦米爾文鍵盤 (打字機)</translation>
-<translation id="4892969127351273348">無法使用「<ph name="APP_NAME" />」開啟</translation>
 <translation id="4900532980794411603">與 Parallels Desktop 共用</translation>
 <translation id="4905417359854579806">現在可以備份 <ph name="FILE_COUNT" />了</translation>
 <translation id="4924638091161556692">已修正</translation>

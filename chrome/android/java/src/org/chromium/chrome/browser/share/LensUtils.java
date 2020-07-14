@@ -43,6 +43,8 @@ public class LensUtils {
     private static final String REQUIRE_ACCOUNT_DIALOG_KEY = "requiresConfirmation";
 
     private static final String MIN_AGSA_VERSION_FEATURE_PARAM_NAME = "minAgsaVersionName";
+    private static final String MIN_AGSA_VERSION_SHOPPING_FEATURE_PARAM_NAME =
+            "minAgsaVersionNameForShopping";
     private static final String USE_SEARCH_BY_IMAGE_TEXT_FEATURE_PARAM_NAME =
             "useSearchByImageText";
     private static final String LENS_SHOPPING_ALLOWLIST_ENTRIES_FEATURE_PARAM_NAME =
@@ -54,7 +56,7 @@ public class LensUtils {
     private static final String SEND_ALT_PARAM_NAME = "sendAlt";
     private static final String USE_DIRECT_INTENT_FEATURE_PARAM_NAME = "useDirectIntent";
     private static final String MIN_AGSA_VERSION_NAME_FOR_LENS_POSTCAPTURE = "8.19";
-    private static final String MIN_AGSA_VERSION_NAME_FOR_LENS_CHROME_SHOPPING_INTENT = "11.16";
+    private static final String MIN_AGSA_VERSION_NAME_FOR_LENS_CHROME_SHOPPING_INTENT = "11.20";
     private static final String LENS_INTENT_TYPE_LENS_CHROME_SHOPPING = "18";
     private static final String LENS_SHOPPING_FEATURE_FLAG_VARIANT_NAME = "lensShopVariation";
     private static final String LENS_DEFAULT_SHOPPING_URL_PATTERNS =
@@ -184,7 +186,7 @@ public class LensUtils {
             final String serverProvidedMinAgsaVersion =
                     ChromeFeatureList.getFieldTrialParamByFeature(
                             ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS,
-                            MIN_AGSA_VERSION_FEATURE_PARAM_NAME);
+                            MIN_AGSA_VERSION_SHOPPING_FEATURE_PARAM_NAME);
             if (TextUtils.isEmpty(serverProvidedMinAgsaVersion)) {
                 // Falls into this block if the user enabled the feature using chrome://flags
                 // and the param was not set by the server.

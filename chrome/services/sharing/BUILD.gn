@@ -4,10 +4,6 @@
 
 source_set("sharing") {
   sources = [
-    "nearby/nearby_connections.cc",
-    "nearby/nearby_connections.h",
-    "nearby/webrtc/incoming_messages_listener.cc",
-    "nearby/webrtc/incoming_messages_listener.h",
     "sharing_impl.cc",
     "sharing_impl.h",
     "webrtc/ipc_network_manager.cc",
@@ -30,10 +26,8 @@ source_set("sharing") {
   ]
 
   deps = [
-    "nearby/platform_v2",
-    "nearby_decoder",
+    "nearby",
     "//jingle:webrtc_glue",
-    "//third_party/nearby:core",
     "//third_party/webrtc_overrides:webrtc_component",
   ]
 
@@ -49,10 +43,6 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "nearby/test/mock_bluetooth_adapter.cc",
-    "nearby/test/mock_bluetooth_adapter.h",
-    "nearby/test/mock_webrtc_signaling_messenger.cc",
-    "nearby/test/mock_webrtc_signaling_messenger.h",
     "sharing_impl_unittest.cc",
     "webrtc/sharing_webrtc_connection_integration_test.cc",
     "webrtc/sharing_webrtc_connection_unittest.cc",
@@ -62,6 +52,7 @@ source_set("unit_tests") {
 
   deps = [
     ":sharing",
+    "nearby/test_support",
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",

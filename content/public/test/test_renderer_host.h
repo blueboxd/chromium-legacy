@@ -49,7 +49,7 @@ class ScopedOleInitializer;
 namespace content {
 
 class BrowserContext;
-class ContentBrowserSequenceChecker;
+class ContentBrowserConsistencyChecker;
 class MockRenderProcessHost;
 class MockRenderProcessHostFactory;
 class NavigationController;
@@ -279,7 +279,7 @@ class RenderViewHostTestHarness : public testing::Test {
 
   std::unique_ptr<BrowserTaskEnvironment> task_environment_;
 
-  std::unique_ptr<ContentBrowserSequenceChecker> sequence_checker_;
+  std::unique_ptr<ContentBrowserConsistencyChecker> consistency_checker_;
 
   // TODO(crbug.com/1011275): This is a temporary work around to fix flakiness
   // on tests. The default behavior of the network stack is to allocate a

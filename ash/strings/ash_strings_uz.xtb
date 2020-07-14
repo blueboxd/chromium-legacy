@@ -98,6 +98,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1995660704900986789">O‘chirish</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Xabar yozing</translation>
+<translation id="2018630726571919839">Bitta latifa aytib ber</translation>
 <translation id="2050339315714019657">Bo‘yiga</translation>
 <translation id="2067602449040652523">Klaviatura yorqinligi</translation>
 <translation id="209965399369889474">Tarmoqqa ulanmagan</translation>
@@ -125,6 +126,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> faollashtirilmoqda</translation>
 <translation id="2359808026110333948">Davom etish</translation>
 <translation id="2365393535144473978">Mobil internet yoqilsa, Bluetooth ham birga yonadi</translation>
+<translation id="2369165858548251131">Xitoy tilida “Salom”</translation>
 <translation id="2390318262976603432">Mahalliy sozlamalar</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Yangilanish chiqdi</translation>
@@ -142,6 +144,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="256712445991462162">mahkamlangan lupa</translation>
 <translation id="2575685495496069081">Bir nechta hisobdan kirish funksiyasi yoqilmagan</translation>
 <translation id="2582112259361606227">Yangilash uchun qayta ishga tushiring</translation>
+<translation id="2595239820337756193">5Km milyada</translation>
 <translation id="2617342710774726426">SIM karta qulflangan</translation>
 <translation id="2621713457727696555">Qulflandi</translation>
 <translation id="2653659639078652383">Yuborish</translation>
@@ -195,6 +198,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="3154351730702813399">Qurilma administratori brauzeringiz tarixini kuzatishi mumkin.</translation>
 <translation id="3181441307743005334">Oʻchib yonishi biroz vaqt olishi mumkin</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Qurilmaga ulandi}other{# ta qurilmaga ulandi}}</translation>
+<translation id="320207200541803018">Taymer belgilash</translation>
 <translation id="3203405173652969239">Switch Access yoqildi</translation>
 <translation id="3207953481422525583">Foydalanuvchi sozlamalari</translation>
 <translation id="3217205077783620295">Ovoz yoniq. Ovozsiz qilish uchun shu belgini bosing.</translation>
@@ -207,6 +211,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> keyinroq kira oladi.</translation>
 <translation id="3321628682574733415">Ota-ona kodi xato kiritildi</translation>
 <translation id="332587331255250389">Batareyani almashtiring</translation>
+<translation id="334252345105450327">Skrinshot olish</translation>
 <translation id="3351879221545518001">Hozir ekraningiz translatsiya qilinmoqda.</translation>
 <translation id="3364721542077212959">Stilus vositalari</translation>
 <translation id="3368922792935385530">Ulanilgan</translation>
@@ -239,6 +244,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="3631369015426612114">Quyidagilardan bildirishnomalar ko‘rsatilsin</translation>
 <translation id="3638400994746983214">Maxfiylik ekraniga kirish/chiqish. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> boshqariladigan hisob</translation>
+<translation id="3702846122927433391">Nigeriyada aholi soni</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Qisman suratga olish</translation>
 <translation id="371370241367527062">Old mikrofon</translation>
@@ -519,6 +525,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Avvalgi ekran hajmiga qaytishga <ph name="TIMEOUT_SECONDS" /> qoldi.</translation>
 <translation id="7188494361780961876">Menyu ekranning yuqori chap burchagiga surildi.</translation>
+<translation id="7189412385142492784">Venera qanchalik uzoq</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Yangilanish amalga oshishi uchun Chromebook qayta ishga tushirilishi lozim. Bu 1 daqiqacha vaqt olishi mumkin.</translation>
 <translation id="7256634071279256947">Orqa mikrofon</translation>
 <translation id="726276584504105859">Ekranni bo‘lish xususiyatidan foydalanish uchun bu yerga torting</translation>
@@ -645,6 +652,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="8649101189709089199">Teginib tinglash</translation>
 <translation id="8652175077544655965">Sozlamalarni yopish</translation>
 <translation id="8653151467777939995">Bildirishnoma sozlamalarini ochish. Bildirishnomalar yoniq</translation>
+<translation id="8660331759611631213">71 sonining kvadrat ildizi</translation>
 <translation id="8663756353922886599">Himoya: <ph name="CONNECTION_STATUS" />, Signal darajasi: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Tarmoq ro‘yxatini ochish. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

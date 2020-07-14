@@ -10,7 +10,8 @@ import org.chromium.ui.util.AccessibilityUtil;
  * An interface for the owning object to manage interaction between the bottom sheet and the rest
  * of the system.
  */
-public interface ManagedBottomSheetController extends BottomSheetController {
+public interface ManagedBottomSheetController
+        extends BottomSheetController, BottomSheetControllerProvider.Unowned {
     /**
      * Temporarily suppress the bottom sheet while other UI is showing. This will not itself change
      * the content displayed by the sheet.

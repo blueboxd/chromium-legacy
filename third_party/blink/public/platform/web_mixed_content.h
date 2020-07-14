@@ -39,9 +39,11 @@ namespace blink {
 // Helper functions related to mixed content checks.
 class WebMixedContent {
  public:
+  enum class CheckModeForPlugin { kStrict, kLax };
+
   BLINK_PLATFORM_EXPORT static WebMixedContentContextType
-  ContextTypeFromRequestContext(mojom::RequestContextType,
-                                bool strict_mixed_content_checking_for_plugin);
+      ContextTypeFromRequestContext(mojom::RequestContextType,
+                                    CheckModeForPlugin);
 };
 
 }  // namespace blink

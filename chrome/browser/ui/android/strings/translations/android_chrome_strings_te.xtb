@@ -209,7 +209,6 @@
 <translation id="2650751991977523696">ఫైల్‌ను మళ్లీ డౌన్‌లోడ్ చేయాలా?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ఆడియో ఫైల్}other{# ఆడియో ఫైల్‌లు}}</translation>
 <translation id="2656405586795711023">వెబ్ యాప్‌లు</translation>
-<translation id="2677748264148917807">నిష్క్రమించు</translation>
 <translation id="2689830683995595741">Chromeను ఉపయోగించడం ద్వారా, మీరు <ph name="BEGIN_LINK1" />Google సేవా నిబంధనలు<ph name="END_LINK1" />, అలాగే <ph name="BEGIN_LINK2" />Google Chrome, Chrome OS అదనపు సేవా నిబంధనలు<ph name="END_LINK2" />కు అంగీకరిస్తున్నారు. <ph name="BEGIN_LINK3" />Family Linkతో మేనేజ్ చేస్తున్న Google ఖాతాల కోసం గోప్యతా ప్రకటన<ph name="END_LINK3" /> కూడా వర్తిస్తుంది.</translation>
 <translation id="2707726405694321444">పేజీని రిఫ్రెష్ చేయండి</translation>
 <translation id="2709516037105925701">స్వయంపూర్తి</translation>
@@ -290,6 +289,7 @@
 <translation id="3303414029551471755">కంటెంట్‌ను డౌన్‌లోడ్ చేయడం కొనసాగించాలా?</translation>
 <translation id="3306398118552023113">ఈ యాప్ Chromeలో అమలవుతోంది</translation>
 <translation id="3315103659806849044">మీరు ప్రస్తుతం మీ సింక్, Google సేవా సెట్టింగ్‌లను అనుకూలీకరిస్తున్నారు. సింక్‌ను ఆన్ చేయడం పూర్తి చేయడానికి, స్క్రీన్ దిగువ భాగం సమీపంలోని నిర్ధారించు బటన్‌ను నొక్కండి. పైకి నావిగేట్ చేయి</translation>
+<translation id="3320630259304269485">సురక్షిత బ్రౌజింగ్ (హానికరమైన సైట్‌ల నుండి రక్షణ), ఇతర భద్రతా సెట్టింగ్‌లు</translation>
 <translation id="3328801116991980348">సైట్ సమాచారం</translation>
 <translation id="3333961966071413176">మొత్తం పరిచయాలు</translation>
 <translation id="3334729583274622784">ఫైల్ ఎక్స్‌టెన్షన్‌ను మార్చాలా?</translation>
@@ -306,6 +306,7 @@
 <translation id="3389286852084373014">వచనం చాలా పెద్దదిగా ఉంది</translation>
 <translation id="3398320232533725830">బుక్‌మార్క్‌ల నిర్వాహికి తెరవండి</translation>
 <translation id="3414952576877147120">పరిమాణం:</translation>
+<translation id="3435738964857648380">భద్రత</translation>
 <translation id="3443221991560634068">ప్రస్తుత పేజీని మళ్లీ లోడ్ చేయండి</translation>
 <translation id="3478363558367712427">మీరు మీ శోధన ఇంజిన్‌ను ఎంచుకోవచ్చు</translation>
 <translation id="3492207499832628349">కొత్త అజ్ఞాత ట్యాబ్</translation>
@@ -534,7 +535,6 @@
 <translation id="5355191726083956201">మెరుగైన రక్షణ ఆన్‌లో ఉంది</translation>
 <translation id="5357811892247919462">ట్యాబ్‌ను అందుకున్నారు</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ట్యాబ్ తెరవబడి ఉంది, ట్యాబ్‌లను మార్చడం కోసం నొక్కండి}other{<ph name="OPEN_TABS_MANY" /> ట్యాబ్‌లు తెరవబడి ఉన్నాయి, ట్యాబ్‌లను మార్చడం కోసం నొక్కండి}}</translation>
-<translation id="5384883051496921101">ఈ సైట్ అజ్ఞాత మోడ్ వెలుపల ఉన్న ఒక యాప్‌తో సమాచారాన్ని షేర్ చేయబోతోంది.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ మరో 1)}other{(+ మరో #)}}</translation>
 <translation id="5403592356182871684">పేర్లు</translation>
 <translation id="5403644198645076998">నిర్దిష్ట సైట్‌లను మాత్రమే అనుమతించండి</translation>
@@ -705,7 +705,6 @@
 <translation id="6593061639179217415">డెస్క్‌టాప్ సైట్</translation>
 <translation id="6597891566292541626">QR/బార్ కోడ్‌ను ఈ ఫ్రేమ్‌లో ఉంచండి.</translation>
 <translation id="6600954340915313787">Chromeకి కాపీ చేయబడింది</translation>
-<translation id="662080504995468778">ఇందులోనే ఉంచు</translation>
 <translation id="6627583120233659107">ఫోల్డర్‌ను సవరించు</translation>
 <translation id="6643016212128521049">క్లియర్ చేయి</translation>
 <translation id="6643649862576733715">సేవ్ చేసిన డేటా పరిమాణం ద్వారా క్రమీకరించు</translation>
@@ -988,7 +987,6 @@
 <translation id="8922289737868596582">మరిన్ని ఎంపికలు బటన్ నుండి పేజీలను డౌన్‌లోడ్ చేసుకోవడం ద్వారా వాటిని ఆఫ్‌లైన్‌లో ఉపయోగించండి</translation>
 <translation id="8937772741022875483">డిజిటల్ సంక్షేమం నుండి మీ Chrome కార్యకలాపం తీసివేయాలా?</translation>
 <translation id="8942627711005830162">మరొక విండోలో తెరువు</translation>
-<translation id="894871326938397531">అజ్ఞాత మోడ్ నుండి నిష్క్రమించాలా?</translation>
 <translation id="8951232171465285730">Chrome మీకు <ph name="MEGABYTES" /> MB ఆదా చేసింది</translation>
 <translation id="8965591936373831584">పెండింగ్‌లో ఉంది</translation>
 <translation id="8970887620466824814">ఏదో తప్పు జరిగింది.</translation>
@@ -999,6 +997,7 @@
 <translation id="9028914725102941583">పరికరాలలో షేర్ చేయడానికి, సింక్‌ను ఆన్ చేయండి</translation>
 <translation id="9040142327097499898">నోటిఫికేషన్‌లు అనుమతించబడ్డాయి. ఈ పరికరానికి స్థానం ఆఫ్ చేయబడింది.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# వీడియో}other{# వీడియోలు}}</translation>
+<translation id="9042893549633094279">గోప్యత మరియు భద్రత</translation>
 <translation id="9050666287014529139">రహస్య పదబంధం</translation>
 <translation id="9063523880881406963">డెస్క్‌టాప్ సైట్ అభ్యర్థనను ఆఫ్ చేయండి</translation>
 <translation id="9065203028668620118">సవరించు</translation>

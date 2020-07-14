@@ -4,6 +4,16 @@
 
 'use strict';
 
+// clang-format off
+// #import 'chrome://os-settings/chromeos/os_settings.js';
+
+// #import {TestBrowserProxy} from '../../test_browser_proxy.m.js';
+// #import {Router, Route, routes, KerberosErrorType, KerberosConfigErrorCode, KerberosAccountsBrowserProxyImpl} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {flushTasks} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 cr.define('settings_people_page_kerberos_accounts', function() {
   // List of fake accounts.
   const testAccounts = [
@@ -114,14 +124,14 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     };
 
     setup(function() {
-      const routes = {
-        BASIC: new settings.Route('/'),
-      };
-      routes.PEOPLE = routes.BASIC.createSection('/people', 'people');
-      routes.KERBEROS_ACCOUNTS = routes.PEOPLE.createChild('/kerberosAccounts');
+      settings.routes.BASIC = new settings.Route('/'),
+      settings.routes.PEOPLE =
+          settings.routes.BASIC.createSection('/people', 'people');
+      settings.routes.KERBEROS_ACCOUNTS =
+          settings.routes.PEOPLE.createChild('/kerberosAccounts');
 
-      settings.Router.resetInstanceForTesting(new settings.Router(routes));
-      settings.routes = routes;
+      settings.Router.resetInstanceForTesting(
+          new settings.Router(settings.routes));
 
       browserProxy = new TestKerberosAccountsBrowserProxy();
       settings.KerberosAccountsBrowserProxyImpl.instance_ = browserProxy;
@@ -799,4 +809,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
           settings.KerberosErrorType.kUnknown, generalError);
     });
   });
+
+  // #cr_define_end
+  return {};
 });

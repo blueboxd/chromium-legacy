@@ -306,16 +306,17 @@ blink::mojom::DisplayMode ManifestParser::ParseDisplay(
   return display_enum;
 }
 
-WebScreenOrientationLockType ManifestParser::ParseOrientation(
-    const JSONObject* object) {
+device::mojom::blink::ScreenOrientationLockType
+ManifestParser::ParseOrientation(const JSONObject* object) {
   base::Optional<String> orientation = ParseString(object, "orientation", Trim);
 
   if (!orientation.has_value())
-    return kWebScreenOrientationLockDefault;
+    return device::mojom::blink::ScreenOrientationLockType::DEFAULT;
 
-  WebScreenOrientationLockType orientation_enum =
+  device::mojom::blink::ScreenOrientationLockType orientation_enum =
       WebScreenOrientationLockTypeFromString(orientation->Utf8());
-  if (orientation_enum == kWebScreenOrientationLockDefault)
+  if (orientation_enum ==
+      device::mojom::blink::ScreenOrientationLockType::DEFAULT)
     AddErrorInfo("unknown 'orientation' value ignored.");
   return orientation_enum;
 }

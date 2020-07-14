@@ -408,37 +408,21 @@ bool StructTraits<network::mojom::CookieInclusionStatusDataView,
   return out->IsValid();
 }
 
-bool StructTraits<
-    network::mojom::CookieWithStatusDataView,
-    net::CookieWithStatus>::Read(network::mojom::CookieWithStatusDataView c,
-                                 net::CookieWithStatus* out) {
-  net::CanonicalCookie cookie;
-  net::CookieInclusionStatus status;
-  if (!c.ReadCookie(&cookie))
-    return false;
-  if (!c.ReadStatus(&status))
-    return false;
-
-  *out = {cookie, status};
-
-  return true;
-}
-
-bool StructTraits<network::mojom::CookieAndLineWithStatusDataView,
-                  net::CookieAndLineWithStatus>::
-    Read(network::mojom::CookieAndLineWithStatusDataView c,
-         net::CookieAndLineWithStatus* out) {
+bool StructTraits<network::mojom::CookieAndLineWithAccessResultDataView,
+                  net::CookieAndLineWithAccessResult>::
+    Read(network::mojom::CookieAndLineWithAccessResultDataView c,
+         net::CookieAndLineWithAccessResult* out) {
   base::Optional<net::CanonicalCookie> cookie;
   std::string cookie_string;
-  net::CookieInclusionStatus status;
+  net::CookieAccessResult access_result;
   if (!c.ReadCookie(&cookie))
     return false;
   if (!c.ReadCookieString(&cookie_string))
     return false;
-  if (!c.ReadStatus(&status))
+  if (!c.ReadAccessResult(&access_result))
     return false;
 
-  *out = {cookie, cookie_string, status};
+  *out = {cookie, cookie_string, access_result};
 
   return true;
 }

@@ -334,6 +334,14 @@ void SearchBookmarksForText(NSString* search_text) {
   SwipeBookmarkNodeWithLabel(@"First_Managed_URL");
   VerifyDeleteSwipeButtonNil();
 
+  // TODO(crbug.com/1105526) On iOS14 the swipe above will trigger a tap
+  // instead, and dismiss the bookmarks UI.  Since the test is still effectively
+  // testing for swipeButton nil, simply return here.  This test should be
+  // refactored to account for swipe-on-disabled-rows-trigger-a-tap.
+  if (@available(iOS 14, *)) {
+    return;
+  }
+
   SwipeBookmarkNodeWithLabel(@"Managed_Sub_Folder");
   VerifyDeleteSwipeButtonNil();
 

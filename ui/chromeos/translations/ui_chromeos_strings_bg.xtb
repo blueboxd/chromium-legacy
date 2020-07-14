@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">Транслитерация (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Електронни таблици</translation>
 <translation id="2938685643439809023">монголски</translation>
-<translation id="2939410873710774399">За да отваряте файлове с <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), първо ги преместете в папката <ph name="FOLDER_NAME" />.</translation>
 <translation id="2942290791863759244">Немска клавиатура (NEO 2)</translation>
 <translation id="2943400156390503548">Презентации</translation>
 <translation id="2943503720238418293">Използвайте по-кратко име</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242">Избрани са <ph name="SELCTED_FILES_COUNT" /> елемента</translation>
 <translation id="4850886885716139402">Изглед</translation>
 <translation id="485316830061041779">немски</translation>
-<translation id="4859297381873413734">За да отваряте файлове с <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), първо ги копирайте в папката <ph name="FOLDER_NAME" />.</translation>
 <translation id="4867079195717347957">Кликнете, за да сортирате колоната в низходящ ред.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> байта</translation>
 <translation id="4880214202172289027">Плъзгач за силата на звука</translation>
 <translation id="4880520557730313061">Автокоригиране</translation>
 <translation id="4881695831933465202">Отваряне</translation>
 <translation id="4886021172213954916">Тамилска клавиатура (пишеща машина)</translation>
-<translation id="4892969127351273348">Отварянето чрез <ph name="APP_NAME" /> не е възможно</translation>
 <translation id="4900532980794411603">Споделяне с Parallels Desktop</translation>
 <translation id="4905417359854579806">Готови сме да създадем резервно копие на <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Коригирано</translation>

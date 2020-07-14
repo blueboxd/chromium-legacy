@@ -78,6 +78,7 @@ def is_basename_skipped(basename):
         'MANIFEST.json',  # MANIFEST.json is automatically regenerated.
         'OWNERS',  # https://crbug.com/584660 https://crbug.com/702283
         'reftest.list',  # https://crbug.com/582838
+        'DIR_METADATA',  # https://crbug.com/1103374
     ]
     return (basename in skipped_basenames or is_testharness_baseline(basename)
             or basename.startswith('.'))

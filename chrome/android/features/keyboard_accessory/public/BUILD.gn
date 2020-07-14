@@ -8,6 +8,7 @@ android_library("public_java") {
   deps = [
     "//base:base_java",
     "//components/autofill/android:autofill_java",
+    "//components/browser_ui/android/bottomsheet:java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
   sources = [

@@ -451,7 +451,7 @@ TEST_F(MediaStreamVideoSourceTest, ReconfigureTrack) {
 
   MediaStreamVideoTrack* native_track =
       MediaStreamVideoTrack::GetVideoTrack(track);
-  WebMediaStreamTrack::Settings settings;
+  MediaStreamTrackPlatform::Settings settings;
   native_track->GetSettings(settings);
   EXPECT_EQ(settings.width, 640);
   EXPECT_EQ(settings.height, 480);
@@ -482,7 +482,7 @@ TEST_F(MediaStreamVideoSourceTest, ReconfigureStoppedTrack) {
 
   MediaStreamVideoTrack* native_track =
       MediaStreamVideoTrack::GetVideoTrack(track);
-  WebMediaStreamTrack::Settings settings;
+  MediaStreamTrackPlatform::Settings settings;
   native_track->GetSettings(settings);
   EXPECT_EQ(settings.width, 640);
   EXPECT_EQ(settings.height, 480);
@@ -497,7 +497,7 @@ TEST_F(MediaStreamVideoSourceTest, ReconfigureStoppedTrack) {
 
   source()->ReconfigureTrack(
       native_track, VideoTrackAdapterSettings(gfx::Size(630, 470), 30.0));
-  WebMediaStreamTrack::Settings stopped_settings;
+  MediaStreamTrackPlatform::Settings stopped_settings;
   native_track->GetSettings(stopped_settings);
   EXPECT_EQ(stopped_settings.width, -1);
   EXPECT_EQ(stopped_settings.height, -1);
@@ -649,8 +649,8 @@ TEST_F(MediaStreamVideoSourceTest, StartStopAndNotifyRestartSupported) {
             WebMediaStreamSource::kReadyStateLive);
 
   EXPECT_CALL(*this, MockNotification());
-  WebPlatformMediaStreamTrack* track =
-      WebPlatformMediaStreamTrack::GetTrack(web_track);
+  MediaStreamTrackPlatform* track =
+      MediaStreamTrackPlatform::GetTrack(web_track);
   track->StopAndNotify(WTF::Bind(&MediaStreamVideoSourceTest::MockNotification,
                                  base::Unretained(this)));
   EXPECT_EQ(web_track.Source().GetReadyState(),
@@ -667,8 +667,8 @@ TEST_F(MediaStreamVideoSourceTest, StartStopAndNotifyRestartNotSupported) {
             WebMediaStreamSource::kReadyStateLive);
 
   EXPECT_CALL(*this, MockNotification());
-  WebPlatformMediaStreamTrack* track =
-      WebPlatformMediaStreamTrack::GetTrack(web_track);
+  MediaStreamTrackPlatform* track =
+      MediaStreamTrackPlatform::GetTrack(web_track);
   track->StopAndNotify(WTF::Bind(&MediaStreamVideoSourceTest::MockNotification,
                                  base::Unretained(this)));
   EXPECT_EQ(web_track.Source().GetReadyState(),

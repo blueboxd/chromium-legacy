@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
@@ -131,7 +132,9 @@ final class ScreenshotTask implements ScreenshotSource {
         // so that the Android View for the bottom sheet will be captured.
         // TODO(https://crbug.com/835862): When the sheet is partially opened both the compositor
         // and Android views should be captured in the screenshot.
-        if (chromeActivity.getBottomSheetController().isSheetOpen()) return false;
+        if (BottomSheetControllerProvider.from(chromeActivity.getWindowAndroid()).isSheetOpen()) {
+            return false;
+        }
 
         // If the start surface or the grid tab switcher are in use, do not use the compositor, it
         // will snapshot the last active tab instead of the current screen if we try to use it.

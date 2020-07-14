@@ -71,6 +71,7 @@
 <translation id="808894953321890993">Змінити пароль</translation>
 <translation id="8208861521865154048">Бонуси</translation>
 <translation id="8347227221149377169">Завдання друку</translation>
+<translation id="8623849191266582420">Цим пристроєм <ph name="DEVICE_TYPE" /> керує домен <ph name="ENROLLMENT_DOMAIN" />. Адміністратори можуть віддалено налаштовувати та відстежувати його.</translation>
 <translation id="8701136875688985581">Домен <ph name="ENROLLMENT_DOMAIN" /> керує цим користувачем. Він може віддалено змінювати налаштування й відстежувати дії користувача.</translation>
 <translation id="871560550817059752">Не надруковано – закінчилося чорнило</translation>
 <translation id="8747900814994928677">Підтвердити зміни</translation>

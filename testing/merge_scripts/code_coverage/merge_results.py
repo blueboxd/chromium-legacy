@@ -55,18 +55,6 @@ def _MergeAPIArgumentParser(*args, **kwargs):
       '--per-cl-coverage',
       action='store_true',
       help='set to indicate that this is a per-CL coverage build')
-  # TODO(crbug.com/1077304) - migrate this to sparse=False as default, and have
-  # --sparse to set sparse
-  parser.add_argument(
-      '--no-sparse',
-      action='store_false',
-      dest='sparse',
-      help='run llvm-profdata without the sparse flag.')
-  # TODO(crbug.com/1077304) - The intended behaviour is to default sparse to
-  # false. --no-sparse above was added as a workaround, and will be removed.
-  # This is being introduced now in support of the migration to intended
-  # behavior. Ordering of args matters here, as the default is set by the former
-  # (sparse defaults to False because of ordering. See unit tests for details)
   parser.add_argument(
       '--sparse',
       action='store_true',

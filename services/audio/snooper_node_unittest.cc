@@ -336,7 +336,8 @@ TEST_P(SnooperNodeTest, MAYBE_ContinuousAudioFlowAdaptsToSkew) {
            (output_skew * output_delay().InSecondsF())) *
           output_params().sample_rate();
       const double frames_in_one_millisecond =
-          output_params().sample_rate() / 1000.0;
+          output_params().sample_rate() /
+          double{base::Time::kMillisecondsPerSecond};
       EXPECT_NEAR(expected_end_of_silence_position,
                   consumer()->FindEndOfSilence(0, 0),
                   frames_in_one_millisecond);
@@ -416,7 +417,7 @@ TEST_P(SnooperNodeTest, HandlesMissingInput) {
   const int output_frames_in_one_second = output_params().sample_rate();
   const int output_frames_in_a_quarter_second = output_frames_in_one_second / 4;
   const int output_frames_in_20_milliseconds =
-      output_frames_in_one_second * 20 / 1000;
+      output_frames_in_one_second * 20 / base::Time::kMillisecondsPerSecond;
   int output_silence_position =
       ((kInputAdvanceTime + output_delay()).InSecondsF() + 1.0) *
       output_params().sample_rate();

@@ -34,6 +34,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink-forward.h"
+#include "third_party/blink/public/platform/web_mixed_content.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -54,6 +55,7 @@ class LocalFrame;
 class KURL;
 class ResourceResponse;
 class SecurityOrigin;
+class Settings;
 class SourceLocation;
 class WebContentSettingsClient;
 class WorkerFetchContext;
@@ -112,12 +114,10 @@ class CORE_EXPORT MixedContentChecker final {
       LocalFrame*,
       const ResourceRequest&);
 
-  // TODO(nhiroki): Introduce an enum class for
-  // |strict_mixed_content_checking_for_plugin|.
   static void HandleCertificateError(
       const ResourceResponse&,
       mojom::RequestContextType,
-      bool strict_mixed_content_checking_for_plugin,
+      WebMixedContent::CheckModeForPlugin,
       mojom::blink::ContentSecurityNotifier& notifier);
 
   // Receive information about mixed content found externally.
@@ -145,6 +145,9 @@ class CORE_EXPORT MixedContentChecker final {
       ExecutionContext* execution_context_for_logging,
       mojom::RequestContextFrameType,
       WebContentSettingsClient* settings_client);
+
+  static WebMixedContent::CheckModeForPlugin DecideCheckModeForPlugin(
+      Settings*);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MixedContentCheckerTest, HandleCertificateError);

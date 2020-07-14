@@ -168,36 +168,22 @@ struct StructTraits<network::mojom::CookieInclusionStatusDataView,
 };
 
 template <>
-struct StructTraits<network::mojom::CookieWithStatusDataView,
-                    net::CookieWithStatus> {
-  static const net::CanonicalCookie& cookie(const net::CookieWithStatus& c) {
-    return c.cookie;
-  }
-  static const net::CookieInclusionStatus& status(
-      const net::CookieWithStatus& c) {
-    return c.status;
-  }
-  static bool Read(network::mojom::CookieWithStatusDataView cookie,
-                   net::CookieWithStatus* out);
-};
-
-template <>
-struct StructTraits<network::mojom::CookieAndLineWithStatusDataView,
-                    net::CookieAndLineWithStatus> {
+struct StructTraits<network::mojom::CookieAndLineWithAccessResultDataView,
+                    net::CookieAndLineWithAccessResult> {
   static const base::Optional<net::CanonicalCookie>& cookie(
-      const net::CookieAndLineWithStatus& c) {
+      const net::CookieAndLineWithAccessResult& c) {
     return c.cookie;
   }
   static const std::string& cookie_string(
-      const net::CookieAndLineWithStatus& c) {
+      const net::CookieAndLineWithAccessResult& c) {
     return c.cookie_string;
   }
-  static const net::CookieInclusionStatus& status(
-      const net::CookieAndLineWithStatus& c) {
-    return c.status;
+  static const net::CookieAccessResult& access_result(
+      const net::CookieAndLineWithAccessResult& c) {
+    return c.access_result;
   }
-  static bool Read(network::mojom::CookieAndLineWithStatusDataView cookie,
-                   net::CookieAndLineWithStatus* out);
+  static bool Read(network::mojom::CookieAndLineWithAccessResultDataView cookie,
+                   net::CookieAndLineWithAccessResult* out);
 };
 
 template <>

@@ -2146,11 +2146,11 @@ Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
   // Bail out for concurrent marking.
   if (!VectorTraits<T>::kCanTraceConcurrently) {
     if (visitor->DeferredTraceIfConcurrent(
-            {this, [](blink::Visitor* visitor, const void* object) {
-               reinterpret_cast<const Vector<T, inlineCapacity, Allocator>*>(
-                   object)
-                   ->Trace(visitor);
-             }}))
+            {this,
+             [](blink::Visitor* visitor, const void* object) {
+               reinterpret_cast<const Vector*>(object)->Trace(visitor);
+             }},
+            sizeof(Vector)))
       return;
   }
 

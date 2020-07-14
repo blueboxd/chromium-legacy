@@ -274,6 +274,7 @@ android_library("chrome_java_test_support") {
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java",
     "//net/android:net_java_test_support",
+    "//services/device/public/mojom:mojom_java",
     "//testing/android/reporter:reporter_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",

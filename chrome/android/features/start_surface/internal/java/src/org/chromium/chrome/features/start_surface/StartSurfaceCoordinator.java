@@ -89,11 +89,12 @@ public class StartSurfaceCoordinator implements StartSurface {
     private FeedLoadingCoordinator mFeedLoadingCoordinator;
 
     // TODO(http://crbug.com/1093421): Remove dependency on ChromeActivity.
-    public StartSurfaceCoordinator(ChromeActivity activity, ScrimCoordinator scrimCoordinator) {
+    public StartSurfaceCoordinator(ChromeActivity activity, ScrimCoordinator scrimCoordinator,
+            BottomSheetController sheetController) {
         mActivity = activity;
         mScrimCoordinator = scrimCoordinator;
         mSurfaceMode = computeSurfaceMode();
-        mBottomSheetController = mActivity.getBottomSheetController();
+        mBottomSheetController = sheetController;
 
         boolean excludeMVTiles = StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES.getValue()
                 || mSurfaceMode == SurfaceMode.OMNIBOX_ONLY

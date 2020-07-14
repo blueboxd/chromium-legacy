@@ -181,6 +181,19 @@ TEST_F(PrivacyScreenControllerTest, TestOutsidePrefsUpdates) {
   EXPECT_FALSE(controller()->GetEnabled());
 }
 
+TEST_F(PrivacyScreenControllerTest, SupportedOnSingleInternalDisplay) {
+  BuildAndUpdateDisplaySnapshots({{
+      /*id=*/123u,
+      /*is_internal_display=*/true,
+      /*supports_privacy_screen=*/true,
+  }});
+  EXPECT_EQ(1u, display_manager()->GetNumDisplays());
+  ASSERT_TRUE(controller()->IsSupported());
+
+  controller()->SetEnabled(true);
+  EXPECT_TRUE(controller()->GetEnabled());
+}
+
 TEST_F(PrivacyScreenControllerTest, NotSupportedOnSingleInternalDisplay) {
   BuildAndUpdateDisplaySnapshots({{
       /*id=*/123u,
@@ -190,6 +203,30 @@ TEST_F(PrivacyScreenControllerTest, NotSupportedOnSingleInternalDisplay) {
   EXPECT_EQ(1u, display_manager()->GetNumDisplays());
   ASSERT_FALSE(controller()->IsSupported());
 
+  EXPECT_FALSE(controller()->GetEnabled());
+}
+
+// Test that the privacy screen is not supported when the device is connected
+// to an external display and the lid is closed (a.k.a. docked mode).
+TEST_F(PrivacyScreenControllerTest, NotSupportedOnInternalDisplayWhenDocked) {
+  BuildAndUpdateDisplaySnapshots({{
+                                      /*id=*/123u,
+                                      /*is_internal_display=*/true,
+                                      /*supports_privacy_screen=*/true,
+                                  },
+                                  {
+                                      /*id=*/234u,
+                                      /*is_internal_display=*/false,
+                                      /*supports_privacy_screen=*/false,
+                                  }});
+  EXPECT_EQ(2u, display_manager()->GetNumDisplays());
+
+  // Turn off the internal display
+  display_manager()->configurator()->SetDisplayPower(
+      chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
+      display::DisplayConfigurator::kSetDisplayPowerNoFlags, base::DoNothing());
+
+  ASSERT_FALSE(controller()->IsSupported());
   EXPECT_FALSE(controller()->GetEnabled());
 }
 
@@ -209,13 +246,8 @@ TEST_F(PrivacyScreenControllerTest,
                                       /*id=*/3412u,
                                       /*is_internal_display=*/false,
                                       /*supports_privacy_screen=*/false,
-                                  },
-                                  {
-                                      /*id=*/4123u,
-                                      /*is_internal_display=*/false,
-                                      /*supports_privacy_screen=*/false,
                                   }});
-  EXPECT_EQ(4u, display_manager()->GetNumDisplays());
+  EXPECT_EQ(3u, display_manager()->GetNumDisplays());
   ASSERT_TRUE(controller()->IsSupported());
 
   controller()->SetEnabled(true);
@@ -238,41 +270,8 @@ TEST_F(PrivacyScreenControllerTest,
                                       /*id=*/3412u,
                                       /*is_internal_display=*/false,
                                       /*supports_privacy_screen=*/false,
-                                  },
-                                  {
-                                      /*id=*/4123u,
-                                      /*is_internal_display=*/false,
-                                      /*supports_privacy_screen=*/false,
                                   }});
-  EXPECT_EQ(4u, display_manager()->GetNumDisplays());
-  ASSERT_FALSE(controller()->IsSupported());
-
-  EXPECT_FALSE(controller()->GetEnabled());
-}
-
-TEST_F(PrivacyScreenControllerTest,
-       NotSupportedOnMultipleSupportingExternalDisplays) {
-  BuildAndUpdateDisplaySnapshots({{
-                                      /*id=*/1234u,
-                                      /*is_internal_display=*/false,
-                                      /*supports_privacy_screen=*/false,
-                                  },
-                                  {
-                                      /*id=*/2341u,
-                                      /*is_internal_display=*/false,
-                                      /*supports_privacy_screen=*/true,
-                                  },
-                                  {
-                                      /*id=*/3412u,
-                                      /*is_internal_display=*/false,
-                                      /*supports_privacy_screen=*/true,
-                                  },
-                                  {
-                                      /*id=*/4123u,
-                                      /*is_internal_display=*/false,
-                                      /*supports_privacy_screen=*/true,
-                                  }});
-  EXPECT_EQ(4u, display_manager()->GetNumDisplays());
+  EXPECT_EQ(3u, display_manager()->GetNumDisplays());
   ASSERT_FALSE(controller()->IsSupported());
 
   EXPECT_FALSE(controller()->GetEnabled());

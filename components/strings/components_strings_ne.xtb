@@ -447,7 +447,6 @@
 <translation id="2799223571221894425">पुन: सुरुवात गर्नुहोस्</translation>
 <translation id="2803306138276472711">Google सुरक्षित ब्राउजि्ले हालै <ph name="SITE" /> मा <ph name="BEGIN_LINK" />मालवेयर पत्ता<ph name="END_LINK" /> लगायो। सामन्यतया सुरक्षित भनिएका वेबसाइटहरू कहिलेकाहीँ मालवेयरद्वारा संक्रमित हुन्छन्।</translation>
 <translation id="2807052079800581569">छविको Y स्थान</translation>
-<translation id="2824514415781424867">स्थान सेयर गर्ने हो?</translation>
 <translation id="2824775600643448204">ठेगाना र खोज पट्टी</translation>
 <translation id="2826760142808435982">यो जडान गुप्तलेख गरिएको र <ph name="CIPHER" /> प्रयोग गर्दै प्रमाणीकरण गरिएको छ र कुञ्जी साट्ने प्रक्रियाको रूपमा <ph name="KX" /> प्रयोग गर्छ।</translation>
 <translation id="2835170189407361413">फारम खालि गर्नुहोस्</translation>
@@ -919,6 +918,7 @@
 <translation id="480334179571489655">मूल नीतिगत त्रुटि</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">Google Chrome ले प्रशोधन गर्न नसक्ने अमिल्दा प्रमाणहरू वेबसाइटले पठाएको कारण तपाईं अहिले <ph name="SITE" /> मा भ्रमण गर्न सक्नुहुन्न। नेटवर्क त्रुटि र आक्रमणहरू सामान्यत: अस्थायी हुने भएकाले यस पृष्ठ सम्भवत: पछि काम गर्ने छ।</translation>
+<translation id="4809079943450490359">तपाईंको यन्त्रको एड्मिनबाट प्राप्त भएका निर्देशनहरू:</translation>
 <translation id="4813512666221746211">सञ्जाल त्रुटि</translation>
 <translation id="4816492930507672669">पृष्ठमा अटाउनुहोस्</translation>
 <translation id="484462545196658690">स्वतः</translation>

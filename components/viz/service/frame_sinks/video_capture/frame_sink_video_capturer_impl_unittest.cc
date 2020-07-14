@@ -75,8 +75,7 @@ bool CompareVarsInCompositorFrameMetadata(
 constexpr FrameSinkId kFrameSinkId = FrameSinkId(1, 1);
 
 // The compositor frame interval.
-constexpr base::TimeDelta kVsyncInterval =
-    base::TimeDelta::FromSecondsD(1.0 / 60.0);
+constexpr auto kVsyncInterval = base::TimeDelta::FromSeconds(1) / 60;
 
 const struct SizeSet {
   // The size of the compositor frame sink's Surface.

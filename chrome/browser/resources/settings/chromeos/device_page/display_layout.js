@@ -55,6 +55,28 @@ Polymer({
   /** @private {!{left: number, top: number}} */
   visualOffset_: {left: 0, top: 0},
 
+  /**
+   * Stores the previous coordinates of a display once dragging starts. Used to
+   * calculate the delta during each step of the drag. Null when there is no
+   * drag in progress.
+   * @private {?{x: number, y: number}}
+   */
+  lastDragCoordinates_: null,
+
+  /** @private {?settings.DevicePageBrowserProxy} */
+  browserProxy_: null,
+
+  /** @private {boolean} */
+  allowDisplayAlignmentApi_:
+      loadTimeData.getBoolean('allowDisplayAlignmentApi'),
+
+  /** @override */
+  created() {
+    if (this.allowDisplayAlignmentApi_) {
+      this.browserProxy_ = settings.DevicePageBrowserProxyImpl.getInstance();
+    }
+  },
+
   /** @override */
   detached() {
     this.initializeDrag(false);
@@ -249,6 +271,7 @@ Polymer({
     if (!amount) {
       this.finishUpdateDisplayBounds(id);
       newBounds = this.getCalculatedDisplayBounds(id);
+      this.lastDragCoordinates_ = null;
     } else {
       // Make sure the dragged display is also selected.
       if (id != this.selectedDisplay.id) {
@@ -265,7 +288,30 @@ Polymer({
       if (this.displays.length >= 2) {
         newBounds = this.updateDisplayBounds(id, newBounds);
       }
+
+      if (this.allowDisplayAlignmentApi_) {
+        if (!this.lastDragCoordinates_) {
+          this.hasDragStarted_ = true;
+          this.lastDragCoordinates_ = {
+            x: calculatedBounds.left,
+            y: calculatedBounds.top
+          };
+        }
+
+        const deltaX = newBounds.left - this.lastDragCoordinates_.x;
+        const deltaY = newBounds.top - this.lastDragCoordinates_.y;
+
+        this.lastDragCoordinates_.x = newBounds.left;
+        this.lastDragCoordinates_.y = newBounds.top;
+
+        // Only call dragDisplayDelta() when there is a change in position.
+        if (deltaX != 0 || deltaY != 0) {
+          this.browserProxy_.dragDisplayDelta(
+              id, Math.round(deltaX), Math.round(deltaY));
+        }
+      }
     }
+
     const left =
         this.visualOffset_.left + Math.round(newBounds.left * this.visualScale);
     const top =

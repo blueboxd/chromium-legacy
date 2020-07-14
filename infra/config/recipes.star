@@ -35,6 +35,14 @@ build_recipe(
 )
 
 build_recipe(
+    name = 'recipe:angle_chromium',
+)
+
+build_recipe(
+    name = 'recipe:angle_chromium_trybot',
+)
+
+build_recipe(
     name = 'recipe:binary_size_generator_tot',
 )
 

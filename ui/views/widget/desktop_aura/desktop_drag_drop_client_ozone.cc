@@ -44,18 +44,6 @@ aura::Window* GetTargetWindow(aura::Window* root_window,
 // The minimum alpha required so we would treat the pixel as visible.
 constexpr uint32_t kMinAlpha = 32;
 
-bool DragImageIsNeeded() {
-#if defined(USE_OZONE)
-  return !ui::OzonePlatform::GetInstance()
-              ->GetPlatformProperties()
-              .platform_shows_drag_image;
-#elif defined(USE_X11)
-  return true;
-#else
-#error "This file must not be compiled out of Ozone or X11."
-#endif
-}
-
 // Returns true if |image| has any visible regions (defined as having a pixel
 // with alpha > |kMinAlpha|).
 bool IsValidDragImage(const gfx::ImageSkia& image) {
@@ -120,7 +108,7 @@ DesktopDragDropClientOzone::DesktopDragDropClientOzone(
       drag_handler_(drag_handler) {}
 
 DesktopDragDropClientOzone::~DesktopDragDropClientOzone() {
-  ResetDragDropTarget(true);
+  ResetDragDropTarget();
 
   if (IsDragDropInProgress())
     DragCancel();
@@ -155,7 +143,9 @@ int DesktopDragDropClientOzone::StartDragAndDrop(
         ui::mojom::CursorType::kGrabbing));
   }
 
-  if (DragImageIsNeeded()) {
+  if (!ui::OzonePlatform::GetInstance()
+           ->GetPlatformProperties()
+           .platform_shows_drag_image) {
     const auto& provider = data->provider();
     gfx::ImageSkia drag_image = provider.GetDragImage();
     if (IsValidDragImage(drag_image)) {
@@ -272,12 +262,12 @@ void DesktopDragDropClientOzone::OnDragDrop(
     }
     drag_drop_delegate_->OnPerformDrop(*event, std::move(data_to_drop_));
   }
-  ResetDragDropTarget(false);
+  ResetDragDropTarget();
 }
 
 void DesktopDragDropClientOzone::OnDragLeave() {
   data_to_drop_.reset();
-  ResetDragDropTarget(true);
+  ResetDragDropTarget();
 }
 
 void DesktopDragDropClientOzone::OnWindowDestroyed(aura::Window* window) {
@@ -344,14 +334,14 @@ DesktopDragDropClientOzone::UpdateTargetAndCreateDropEvent(
   const gfx::Point point(location.x(), location.y());
   aura::Window* window = GetTargetWindow(root_window_, point);
   if (!window) {
-    ResetDragDropTarget(true);
+    ResetDragDropTarget();
     return nullptr;
   }
 
   auto* new_delegate = aura::client::GetDragDropDelegate(window);
   const bool delegate_has_changed = (new_delegate != drag_drop_delegate_);
   if (delegate_has_changed) {
-    ResetDragDropTarget(true);
+    ResetDragDropTarget();
     drag_drop_delegate_ = new_delegate;
     current_window_ = window;
     current_window_->AddObserver(this);
@@ -389,10 +379,9 @@ void DesktopDragDropClientOzone::UpdateDragWidgetLocation() {
   drag_context_->last_screen_location_px.reset();
 }
 
-void DesktopDragDropClientOzone::ResetDragDropTarget(bool send_exit) {
+void DesktopDragDropClientOzone::ResetDragDropTarget() {
   if (drag_drop_delegate_) {
-    if (send_exit)
-      drag_drop_delegate_->OnDragExited();
+    drag_drop_delegate_->OnDragExited();
     drag_drop_delegate_ = nullptr;
   }
   if (current_window_) {

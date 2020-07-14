@@ -71,13 +71,6 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     break_token_ = std::move(break_token);
   }
 
-  void AddChild(scoped_refptr<const NGPhysicalTextFragment> child,
-                const LogicalOffset& offset) {
-    AddChildInternal(child, offset);
-  }
-
-  void AddChild(const NGPhysicalContainerFragment&, const LogicalOffset&);
-
   // Add all items in ChildList. Skips null Child if any.
   void AddChildren(NGLogicalLineItems&);
 

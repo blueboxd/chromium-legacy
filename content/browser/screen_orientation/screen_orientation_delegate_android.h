@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/public/browser/screen_orientation_delegate.h"
-#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
+#include "services/device/public/mojom/screen_orientation_lock_types.mojom-shared.h"
 
 namespace content {
 
@@ -25,7 +25,7 @@ class ScreenOrientationDelegateAndroid : public ScreenOrientationDelegate {
   // ScreenOrientationDelegate:
   bool FullScreenRequired(WebContents* web_contents) override;
   void Lock(WebContents* web_contents,
-            blink::WebScreenOrientationLockType lock_orientation) override;
+            device::mojom::ScreenOrientationLockType lock_orientation) override;
   bool ScreenOrientationProviderSupported() override;
   void Unlock(WebContents* web_contents) override;
 

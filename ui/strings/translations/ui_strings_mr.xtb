@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">सेटिंग्ज व्यवस्थापित करा</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{१ता मध्ये}other{#ता मध्ये}}</translation>
 <translation id="2583543531130364912">तुमची टचस्क्रीन कॅलिब्रेट करा</translation>
+<translation id="2586657967955657006">क्लिपबोर्ड</translation>
 <translation id="2666092431469916601">शीर्ष</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> वरून शेअर केले</translation>
 <translation id="271033894570825754">नवीन</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">बोलणे प्रारंभ करा</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> फोल्डर <ph name="FOLDER_NAME" /> वर हलवले.</translation>
 <translation id="4316910396681052118">सर्व अ‍ॅप्स</translation>
+<translation id="4491109536499578614">इमेज</translation>
 <translation id="4588090240171750605">उजवे स्क्रोल करा</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, तारा रेटिंग <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, ॲप शिफारस</translation>

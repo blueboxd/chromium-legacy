@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">ຈັດການການຕັ້ງຄ່າ</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{ໃນ 1 ຊມ}other{ໃນ # ຊມ}}</translation>
 <translation id="2583543531130364912">ປັບຕັ້ງຄ່າໜ້າຈໍສຳຜັດຂອງທ່ານ</translation>
+<translation id="2586657967955657006">ຄລິບບອດ</translation>
 <translation id="2666092431469916601">ດ້ານເທິງ</translation>
 <translation id="2701330563083355633">ແບ່ງປັນຈາກ <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">ໃຫມ່</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">ເລີ່ມ​ຕົ້ນ​ເວົ້າ</translation>
 <translation id="430191667033048642">ຍ້າຍ <ph name="MOVED_APP_NAME" /> ໄປຫາໂຟນເດີ <ph name="FOLDER_NAME" /> ແລ້ວ.</translation>
 <translation id="4316910396681052118">ທຸກແອັບ</translation>
+<translation id="4491109536499578614">ຮູບ​</translation>
 <translation id="4588090240171750605">ເລື່ອນໄປທາງຂວາ</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, ການໃຫ້ຄະແນນເປັນດາວ <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, ການແນະນຳແອັບ</translation>

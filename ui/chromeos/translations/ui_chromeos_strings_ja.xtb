@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">文字変換（namaskaram → ನಮಸ್ಕಾರ）</translation>
 <translation id="2925966894897775835">スプレッドシート</translation>
 <translation id="2938685643439809023">モンゴル語</translation>
-<translation id="2939410873710774399"><ph name="APP_NAME" />（<ph name="VM_SOFTWARE_NAME" />）でファイルを開くには、<ph name="FOLDER_NAME" /> フォルダにファイルを移動してください。</translation>
 <translation id="2942290791863759244">ドイツ語（NEO 2）キーボード</translation>
 <translation id="2943400156390503548">スライド</translation>
 <translation id="2943503720238418293">もう少し短い名前にしてください</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> 個のアイテムを選択</translation>
 <translation id="4850886885716139402">表示</translation>
 <translation id="485316830061041779">ドイツ語</translation>
-<translation id="4859297381873413734"><ph name="APP_NAME" />（<ph name="VM_SOFTWARE_NAME" />）でファイルを開くには、<ph name="FOLDER_NAME" /> フォルダにファイルをコピーしてください。</translation>
 <translation id="4867079195717347957">クリックすると、列が降順で並べ替えられます。</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> バイト</translation>
 <translation id="4880214202172289027">音量スライダー</translation>
 <translation id="4880520557730313061">自動修正</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="4886021172213954916">タミル語キーボード（タイプライター）</translation>
-<translation id="4892969127351273348">「<ph name="APP_NAME" />」で開くことができません</translation>
 <translation id="4900532980794411603">Parallels Desktop と共有</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" />をバックアップできます</translation>
 <translation id="4924638091161556692">修正済み</translation>

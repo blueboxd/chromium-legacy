@@ -68,6 +68,10 @@ class ASH_EXPORT PrivacyScreenController
   // OnActiveUserPrefServiceChanged() is called.
   void InitFromUserPrefs();
 
+  // Updates the internal state of the controller to whether or not the
+  // privacy screen feature is currently supported by the device.
+  void UpdateSupport();
+
   // The pref service of the currently active user. Can be null in
   // ash_unittests.
   PrefService* active_user_pref_service_ = nullptr;
@@ -75,6 +79,12 @@ class ASH_EXPORT PrivacyScreenController
   // Set to true when entering the login screen. This should happen once per
   // Chrome restart.
   bool applying_login_screen_prefs_ = false;
+
+  // Cache the display id of the internal display if it supports the privacy
+  // screen feature. If |display_id_| is kInvalidDisplayId then it's not
+  // supported, otherwise, it is. Updates every time there's a reconfiguration
+  // of displays.
+  int64_t display_id_;
 
   base::ObserverList<Observer> observers_;
 

@@ -71,6 +71,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="808894953321890993">Ubah sandi</translation>
 <translation id="8208861521865154048">Keuntungan</translation>
 <translation id="8347227221149377169">Pekerjaan cetak</translation>
+<translation id="8623849191266582420"><ph name="DEVICE_TYPE" /> ini dikelola oleh <ph name="ENROLLMENT_DOMAIN" />. Administrator dapat mengonfigurasi dan memantau perangkat dari jarak jauh.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> mengelola pengguna ini. Domain dapat mengelola setelan dan memantau aktivitas pengguna dari jarak jauh.</translation>
 <translation id="871560550817059752">Gagal - Tinta habis</translation>
 <translation id="8747900814994928677">Konfirmasi perubahan</translation>

@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 
 /** StartSurfaceDelegate. */
@@ -26,8 +27,8 @@ public class StartSurfaceDelegate {
         return new StartSurfaceLayout(context, updateHost, renderHost, startSurface);
     }
 
-    public static StartSurface createStartSurface(
-            ChromeActivity activity, ScrimCoordinator scrimCoordinator) {
-        return new StartSurfaceCoordinator(activity, scrimCoordinator);
+    public static StartSurface createStartSurface(ChromeActivity activity,
+            ScrimCoordinator scrimCoordinator, BottomSheetController sheetController) {
+        return new StartSurfaceCoordinator(activity, scrimCoordinator, sheetController);
     }
 }

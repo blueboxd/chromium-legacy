@@ -40,19 +40,22 @@ TEST(ManifestUtilTest, DisplayModeConversions) {
 
 TEST(ManifestUtilTest, WebScreenOrientationLockTypeConversions) {
   struct ReversibleConversion {
-    blink::WebScreenOrientationLockType orientation;
+    device::mojom::ScreenOrientationLockType orientation;
     std::string lowercase_orientation_string;
   } reversible_conversions[] = {
-      {blink::kWebScreenOrientationLockDefault, ""},
-      {blink::kWebScreenOrientationLockPortraitPrimary, "portrait-primary"},
-      {blink::kWebScreenOrientationLockPortraitSecondary, "portrait-secondary"},
-      {blink::kWebScreenOrientationLockLandscapePrimary, "landscape-primary"},
-      {blink::kWebScreenOrientationLockLandscapeSecondary,
+      {device::mojom::ScreenOrientationLockType::DEFAULT, ""},
+      {device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY,
+       "portrait-primary"},
+      {device::mojom::ScreenOrientationLockType::PORTRAIT_SECONDARY,
+       "portrait-secondary"},
+      {device::mojom::ScreenOrientationLockType::LANDSCAPE_PRIMARY,
+       "landscape-primary"},
+      {device::mojom::ScreenOrientationLockType::LANDSCAPE_SECONDARY,
        "landscape-secondary"},
-      {blink::kWebScreenOrientationLockAny, "any"},
-      {blink::kWebScreenOrientationLockLandscape, "landscape"},
-      {blink::kWebScreenOrientationLockPortrait, "portrait"},
-      {blink::kWebScreenOrientationLockNatural, "natural"},
+      {device::mojom::ScreenOrientationLockType::ANY, "any"},
+      {device::mojom::ScreenOrientationLockType::LANDSCAPE, "landscape"},
+      {device::mojom::ScreenOrientationLockType::PORTRAIT, "portrait"},
+      {device::mojom::ScreenOrientationLockType::NATURAL, "natural"},
   };
 
   for (const ReversibleConversion& conversion : reversible_conversions) {
@@ -65,12 +68,12 @@ TEST(ManifestUtilTest, WebScreenOrientationLockTypeConversions) {
 
   // WebScreenOrientationLockTypeFromString() should work with non-lowercase
   // strings.
-  EXPECT_EQ(blink::kWebScreenOrientationLockNatural,
+  EXPECT_EQ(device::mojom::ScreenOrientationLockType::NATURAL,
             WebScreenOrientationLockTypeFromString("Natural"));
 
   // WebScreenOrientationLockTypeFromString() should return
   // blink::WebScreenOrientationLockDefault if the string isn't known.
-  EXPECT_EQ(blink::kWebScreenOrientationLockDefault,
+  EXPECT_EQ(device::mojom::ScreenOrientationLockType::DEFAULT,
             WebScreenOrientationLockTypeFromString("random"));
 }
 

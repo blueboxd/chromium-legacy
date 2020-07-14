@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">Translittération (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Feuilles de calcul</translation>
 <translation id="2938685643439809023">Mongol</translation>
-<translation id="2939410873710774399">Pour ouvrir les fichiers avec l'application <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), déplacez-les d'abord dans le dossier <ph name="FOLDER_NAME" />.</translation>
 <translation id="2942290791863759244">Clavier allemand NEO 2</translation>
 <translation id="2943400156390503548">Présentations</translation>
 <translation id="2943503720238418293">Utilisez un nom plus court.</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> éléments sélectionnés</translation>
 <translation id="4850886885716139402">Afficher</translation>
 <translation id="485316830061041779">Allemand</translation>
-<translation id="4859297381873413734">Pour ouvrir des fichiers avec l'application <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), copiez-les d'abord dans le dossier <ph name="FOLDER_NAME" />.</translation>
 <translation id="4867079195717347957">Cliquez pour trier la colonne par ordre décroissant.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> octets</translation>
 <translation id="4880214202172289027">Curseur de volume</translation>
 <translation id="4880520557730313061">Correction automatique</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
 <translation id="4886021172213954916">Clavier tamoul (machine à écrire)</translation>
-<translation id="4892969127351273348">Impossible d'ouvrir le fichier avec <ph name="APP_NAME" /></translation>
 <translation id="4900532980794411603">Partager avec Parallels Desktop</translation>
 <translation id="4905417359854579806">Prêt à sauvegarder <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Corrigé</translation>

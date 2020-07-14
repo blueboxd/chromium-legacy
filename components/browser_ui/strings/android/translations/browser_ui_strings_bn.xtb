@@ -25,6 +25,7 @@
 <translation id="169515064810179024">মোশন সেন্সর অ্যাক্সেস করা থেকে সাইটকে ব্লক করুন</translation>
 <translation id="1717218214683051432">মোশন সেন্সর</translation>
 <translation id="1743802530341753419">কোনও সাইটকে ডিভাইসের সাথে কানেক্ট করার আগে অনুমতি দেওয়ার ব্যবস্থা রাখুন (প্রস্তাবিত)</translation>
+<translation id="1818308510395330587">তাছাড়া, যাতে <ph name="APP_NAME" /> এ আর (AR) ব্যবহার করতে পারে, তার জন্য <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> গিয়েও ক্যামেরা চালু করে দিন।</translation>
 <translation id="1887786770086287077">এই ডিভাইসে লোকেশন অ্যাক্সেস বন্ধ আছে। চালু করতে <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> যান।</translation>
 <translation id="1919345977826869612">বিজ্ঞাপন</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -39,6 +40,7 @@
 <translation id="2148716181193084225">আজ</translation>
 <translation id="2182457891543959921">আপনার আশেপাশের এলাকার একটি 3D ম্যাপ তৈরি করতে বা ক্যামেরার অবস্থান ট্র্যাক করতে কোনও সাইট অনুমোদন দেওয়ার আগে, একবার জিজ্ঞাসা করে নিন (সাজেস্ট করা হয়েছে)</translation>
 <translation id="2212565012507486665">কুকিগুলিকে অনুমতি দিন</translation>
+<translation id="2228071138934252756">তাছাড়া, যাতে <ph name="APP_NAME" /> আপনার ক্যামেরা অ্যাক্সেস করতে পারে, তার জন্য <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> গিয়েও ক্যামেরা চালু করে দিন।</translation>
 <translation id="2289270750774289114">কাছাকাছি ব্লুটুথ ডিভাইস আছে কিনা তা কোনও সাইট খুঁজতে চাইলে আমাকে জিজ্ঞাসা করুন (সাজেস্ট করা হচ্ছে)</translation>
 <translation id="2315043854645842844">ক্লায়েন্ট সাইড সার্টিফিকেট নির্বাচন অপারেটিং সিসটেম দ্বারা সমর্থিত নয়।</translation>
 <translation id="2359808026110333948">চালিয়ে যান</translation>
@@ -56,6 +58,7 @@
 <translation id="2586657967955657006">ক্লিপবোর্ড</translation>
 <translation id="2621115761605608342">একটি নির্দিষ্ট সাইটের জন্য জাভাস্ক্রিপ্ট মঞ্জুর করুন।</translation>
 <translation id="2653659639078652383">জমা দিন</translation>
+<translation id="2677748264148917807">ছেড়ে চলে যান</translation>
 <translation id="2687403674020088961">সব কুকি ব্লক করুন (সাজেস্ট করা হচ্ছে না)</translation>
 <translation id="2704606927547763573">প্রতিলিপি করা হয়েছে</translation>
 <translation id="2822354292072154809">আপনি কি <ph name="CHOSEN_OBJECT_NAME" />-এর জন্য সাইটের সব অনুমতি রিসেট করার ব্যাপারে নিশ্চিত?</translation>
@@ -69,6 +72,7 @@
 <translation id="3115898365077584848">তথ্য দেখুন</translation>
 <translation id="3123473560110926937">কিছু সাইটে ব্লক করা হয়েছে</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> সংরক্ষিত ডেটা</translation>
+<translation id="321187648315454507">তাছাড়া, যাতে <ph name="APP_NAME" /> আপনাকে বিজ্ঞপ্তি পাঠাতে পারে, তার জন্য <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> গিয়েও বিজ্ঞপ্তি চালু করে দিন।</translation>
 <translation id="3227137524299004712">মাইক্রোফোন</translation>
 <translation id="3277252321222022663">সাইটকে সেন্সর অ্যাক্সেস করার অনুমতি দিন (সাজেস্ট করা হয়)</translation>
 <translation id="3295602654194328831">তথ্য লুকান</translation>
@@ -100,6 +104,7 @@
 <translation id="445467742685312942">সাইটকে সুরক্ষিত কন্টেন্ট চালানোর জন্য অনুমতি দিন</translation>
 <translation id="4468959413250150279">নির্দিষ্ট কোনও সাইটের জন্য সাউন্ড মিউট করুন।</translation>
 <translation id="4479647676395637221">সাইটগুলিকে আপনার ক্যামেরা ব্যবহার করতে দিতে মঞ্জুরি দেওয়ার আগে প্রথমে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
+<translation id="4534723447064627427">তাছাড়া, যাতে <ph name="APP_NAME" /> আপনার মাইক্রোফোন অ্যাক্সেস করতে পারে, তার জন্য <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> গিয়েও মাইক্রোফোন চালু করে দিন।</translation>
 <translation id="4570913071927164677">বিবরণ</translation>
 <translation id="4645575059429386691">আপনার পিতামাতার দ্বারা পরিচালিত</translation>
 <translation id="4670064810192446073">ভার্চুয়াল রিয়ালিটি</translation>
@@ -122,6 +127,7 @@
 <translation id="5335288049665977812">সাইটগুলিকে JavaScript চালানোর অনুমতি দিন (প্রস্তাবিত)</translation>
 <translation id="534295439873310000">NFC ডিভাইস</translation>
 <translation id="5354152178998424783">এটি করলে, সাইটে সেভ থাকা <ph name="DATASIZE" /> ডেটা ও কুকি মুছে যাবে।</translation>
+<translation id="5384883051496921101">এই সাইটটি ছদ্মবেশী মোডের বাইরের একটি অ্যাপের সাথে তথ্য শেয়ার করতে চলেছে।</translation>
 <translation id="5391532827096253100">এই সাইটে আপনার কানেকশন নিরাপদ নয়। সাইটের তথ্য</translation>
 <translation id="5494752089476963479">সাইটে থাকা ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন ব্লক করুন</translation>
 <translation id="5505264765875738116">সাইট আপনাকে বিজ্ঞপ্তি পাঠাতে পারবে না</translation>
@@ -161,6 +167,7 @@
 <translation id="6561560012278703671">আওয়াজ ছাড়া বিজ্ঞপ্তি (বিজ্ঞপ্তির ক্ষেত্রে আওয়াজ সহ প্রম্পট ব্লক করা হয়, যাতে কাজের সময় ব্যাঘাত না ঘটে)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> জিবি</translation>
 <translation id="6612358246767739896">সুরক্ষিত কন্টেন্ট</translation>
+<translation id="662080504995468778">থাকুন</translation>
 <translation id="6643016212128521049">সাফ করুন</translation>
 <translation id="6697925417670533197">ডাউনলোড করা হচ্ছে</translation>
 <translation id="6746124502594467657">নিচে যান</translation>
@@ -224,6 +231,7 @@
 <translation id="8394832520002899662">সাইটে ফিরে যেতে ট্যাপ করুন</translation>
 <translation id="8425213833346101688">পরিবর্তন</translation>
 <translation id="8441146129660941386">পেছনে যান</translation>
+<translation id="8444433999583714703">তাছাড়া, যাতে <ph name="APP_NAME" /> আপনার লোকেশন অ্যাক্সেস করতে পারে, তার জন্য <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> গিয়েও লোকেশন চালু করে দিন।</translation>
 <translation id="8447861592752582886">ডিভাইসের অনুমতি প্রত্যাহার করুন</translation>
 <translation id="8463851957836045671">সাইট খুব দ্রুত লোড হয়</translation>
 <translation id="851751545965956758">সাইটকে ডিভাইসের সাথে কানেক্ট করা থেকে ব্লক করুন</translation>
@@ -231,6 +239,7 @@
 <translation id="8609465669617005112">উপরে যান</translation>
 <translation id="8676374126336081632">ইনপুট সাফ করুন</translation>
 <translation id="8702612070107455751">যেকোনও অফলাইন ডেটা মুছে ফেলা হবে।</translation>
+<translation id="8719283222052720129"><ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> <ph name="APP_NAME" />-এর জন্য অনুমতি চালু করুন।</translation>
 <translation id="8725066075913043281">আবার চেষ্টা করুন</translation>
 <translation id="8730621377337864115">হয়ে গেছে</translation>
 <translation id="8737217482364735741">এটি করলে, <ph name="ORIGIN" />-এর সেভ করা সমস্ত ডেটা ও কুকি মুছে যাবে।</translation>
@@ -241,10 +250,12 @@
 <translation id="8926666909099850184">এই ডিভাইসে NFC বন্ধ আছে। <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" /> থেকে এটি চালু করুন।</translation>
 <translation id="8929372349074745002">বেশিরভাগ লোকের ক্ষেত্রে এই সাইট খুব কম সময়ের মধ্যেই খুলেও যায় এবং এখান থেকে সব রকম উত্তরও পান</translation>
 <translation id="8941729603749328384">www.example.com</translation>
+<translation id="894871326938397531">ছদ্মবেশী মোড ছেড়ে বেরোবেন?</translation>
 <translation id="8958424370300090006">কোনও নির্দিষ্ট সাইটের জন্য কুকি ব্লক করুন।</translation>
 <translation id="8959122750345127698">নেভিগেশানে পৌছানো যাচ্ছে না: <ph name="URL" /></translation>
 <translation id="9019902583201351841">আপনার পিতামাতার দ্বারা পরিচালিত</translation>
 <translation id="9074739597929991885">ব্লুটুথ</translation>
+<translation id="913657688200966289"><ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> <ph name="APP_NAME" />-এর জন্য অনুমতিগুলি চালু করুন।</translation>
 <translation id="945632385593298557">আপনার মাইক্রোফোন অ্যাক্সেস করুন</translation>
 <translation id="965817943346481315">সাইটে থাকা ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন ব্লক করুন (প্রস্তাবিত)</translation>
 </translationbundle>

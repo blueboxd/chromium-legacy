@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.components.autofill.Completable;
 import org.chromium.components.autofill.EditableOption;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.page_info.CertificateChainHelper;
 import org.chromium.components.payments.AbortReason;
@@ -1135,7 +1136,8 @@ public class PaymentRequestImpl
         mPaymentUisShowStateReconciler.onBottomSheetShown();
 
         mMinimalUi = new MinimalUICoordinator();
-        if (mMinimalUi.show(chromeActivity, chromeActivity.getBottomSheetController(),
+        if (mMinimalUi.show(chromeActivity,
+                    BottomSheetControllerProvider.from(chromeActivity.getWindowAndroid()),
                     (PaymentApp) mPaymentMethodsSection.getSelectedItem(),
                     mCurrencyFormatterMap.get(mRawTotal.amount.currency),
                     mUiShoppingCart.getTotal(), this::onMinimalUIReady, this::onMinimalUiConfirmed,

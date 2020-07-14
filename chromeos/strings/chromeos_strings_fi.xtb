@@ -71,6 +71,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="808894953321890993">Vaihda salasana</translation>
 <translation id="8208861521865154048">Edut</translation>
 <translation id="8347227221149377169">Tulostustyöt</translation>
+<translation id="8623849191266582420">Laitetta (<ph name="DEVICE_TYPE" />) ylläpitää <ph name="ENROLLMENT_DOMAIN" />. Järjestelmänvalvojat voivat määrittää laitteen ja valvoa sitä etänä.</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> on tämän käyttäjän ylläpitäjä. Se voi muuttaa asetuksia ja seurata käyttäjän toimia etänä.</translation>
 <translation id="871560550817059752">Epäonnistui – Muste loppu</translation>
 <translation id="8747900814994928677">Vahvista muutos</translation>

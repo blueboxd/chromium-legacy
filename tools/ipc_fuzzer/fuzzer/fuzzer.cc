@@ -827,11 +827,13 @@ struct FuzzTraits<content::PageState> {
 };
 
 template <>
-struct FuzzTraits<content::ScreenOrientationValues> {
-  static bool Fuzz(content::ScreenOrientationValues* p, Fuzzer* fuzzer) {
+struct FuzzTraits<device::mojom::ScreenOrientationLockType> {
+  static bool Fuzz(device::mojom::ScreenOrientationLockType* p,
+                   Fuzzer* fuzzer) {
     int value = RandInRange(
-        content::ScreenOrientationValues::SCREEN_ORIENTATION_VALUES_LAST + 1);
-    *p = static_cast<content::ScreenOrientationValues>(value);
+        static_cast<int>(device::mojom::ScreenOrientationLockType::kMaxValue) +
+        1);
+    *p = static_cast<device::mojom::ScreenOrientationLockType>(value);
     return true;
   }
 };

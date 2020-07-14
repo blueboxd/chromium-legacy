@@ -150,34 +150,11 @@ EventCounts* Performance::eventCounts() {
   return nullptr;
 }
 
-namespace {
-
-bool IsMeasureMemoryAvailable(ScriptState* script_state) {
-  // TODO(ulan): We should check for window.crossOriginIsolated when it ships.
-  // Until then we enable the API only for processes locked to a site
-  // similar to the precise mode of the legacy performance.memory API.
-  if (!Platform::Current()->IsLockedToSite()) {
-    return false;
-  }
-  // The window.crossOriginIsolated will be true only for the top-level frame.
-  // Until the flag is available we check for the top-level condition manually.
-  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
-  if (!window) {
-    return false;
-  }
-  LocalFrame* local_frame = window->GetFrame();
-  if (!local_frame || !local_frame->IsMainFrame()) {
-    return false;
-  }
-  return true;
-}
-
-}  // anonymous namespace
-
 ScriptPromise Performance::measureMemory(
     ScriptState* script_state,
     ExceptionState& exception_state) const {
-  if (!IsMeasureMemoryAvailable(script_state)) {
+  if (!MeasureMemoryDelegate::IsMeasureMemoryAvailable(
+          LocalDOMWindow::From(script_state))) {
     exception_state.ThrowSecurityError(
         "performance.measureMemory is not available in this context");
     return ScriptPromise();

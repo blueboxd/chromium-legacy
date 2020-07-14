@@ -691,17 +691,17 @@ WebString GetVideoKindForFormat(const media::VideoCaptureFormat& format) {
              : WebString::FromASCII(kVideoKindColor);
 }
 
-WebMediaStreamTrack::FacingMode ToWebFacingMode(
+MediaStreamTrackPlatform::FacingMode ToPlatformFacingMode(
     media::VideoFacingMode video_facing) {
   switch (video_facing) {
     case media::MEDIA_VIDEO_FACING_NONE:
-      return WebMediaStreamTrack::FacingMode::kNone;
+      return MediaStreamTrackPlatform::FacingMode::kNone;
     case media::MEDIA_VIDEO_FACING_USER:
-      return WebMediaStreamTrack::FacingMode::kUser;
+      return MediaStreamTrackPlatform::FacingMode::kUser;
     case media::MEDIA_VIDEO_FACING_ENVIRONMENT:
-      return WebMediaStreamTrack::FacingMode::kEnvironment;
+      return MediaStreamTrackPlatform::FacingMode::kEnvironment;
     default:
-      return WebMediaStreamTrack::FacingMode::kNone;
+      return MediaStreamTrackPlatform::FacingMode::kNone;
   }
 }
 

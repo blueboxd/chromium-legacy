@@ -121,8 +121,6 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   }
 
   is_first_for_node_ = builder->is_first_for_node_;
-  may_have_descendant_above_block_start_ =
-      builder->may_have_descendant_above_block_start_;
   is_fieldset_container_ = builder->is_fieldset_container_;
   is_legacy_layout_root_ = builder->is_legacy_layout_root_;
   is_painted_atomically_ =
@@ -209,9 +207,17 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflow(
     PhysicalRect overflow;
     if (height_type == TextHeightType::kNormalHeight || BoxType() != kInlineBox)
       overflow = PhysicalRect({}, Size());
+    WritingMode container_writing_mode = Style().GetWritingMode();
+    TextDirection container_direction = Style().Direction();
     for (const auto& child_fragment : PostLayoutChildren()) {
       PhysicalRect child_overflow =
           child_fragment->ScrollableOverflowForPropagation(*this, height_type);
+      if (child_fragment->Style() != Style()) {
+        PhysicalOffset relative_offset = ComputeRelativeOffset(
+            child_fragment->Style(), container_writing_mode,
+            container_direction, Size());
+        child_overflow.offset += relative_offset;
+      }
       child_overflow.offset += child_fragment.Offset();
       overflow.Unite(child_overflow);
     }
@@ -281,6 +287,8 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren(
       DCHECK(child.IsFloatingOrOutOfFlowPositioned());
       PhysicalRect child_scrollable_overflow =
           child.ScrollableOverflowForPropagation(container, height_type);
+      child_scrollable_overflow.offset += ComputeRelativeOffset(
+          child.Style(), writing_mode, direction, container.Size());
       child_scrollable_overflow.offset += child_offset;
       AddChild(child_scrollable_overflow);
     }
@@ -411,7 +419,7 @@ PhysicalRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
           PhysicalOffset(),
           GetLayoutObject()->OutlineRectsShouldIncludeBlockVisualOverflow(),
           &outline_rects);
-      PhysicalRect rect = UnionRectEvenIfEmpty(outline_rects);
+      PhysicalRect rect = UnionRect(outline_rects);
       rect.Inflate(LayoutUnit(style.OutlineOutsetExtent()));
       ink_overflow.Unite(rect);
     }

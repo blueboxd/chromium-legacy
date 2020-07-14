@@ -414,14 +414,17 @@ def chromium_mac_ios_builder(
   )
 
 
-def chromium_swangle_builder(*, name, **kwargs):
-  return try_builder(
-      name = name,
-      builderless = True,
-      mastername = 'tryserver.chromium.swangle',
-      service_account = 'chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com',
-      **kwargs
-  )
+def chromium_swangle_builder(*, name, pinned = True, **kwargs):
+    builder_args = dict(kwargs)
+    builder_args.update(
+        name = name,
+        builderless = True,
+        mastername = "tryserver.chromium.swangle",
+        service_account = "chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com",
+    )
+    if pinned:
+        builder_args.update(executable = "recipe:angle_chromium_trybot")
+    return try_builder(**builder_args)
 
 
 def chromium_swangle_linux_builder(*, name, **kwargs):

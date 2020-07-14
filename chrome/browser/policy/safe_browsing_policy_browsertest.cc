@@ -51,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingPolicyManaged) {
   PolicyMap policies;
   policies.Set(key::kSafeBrowsingExtendedReportingEnabled,
                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::Value(false)), nullptr);
+               base::Value(false), nullptr);
   UpdateProviderPolicy(policies);
   // Policy should have overwritten the pref, and it should be managed.
   EXPECT_FALSE(prefs->GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled));
@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingWhitelistDomains) {
   whitelist_domains.AppendString("mydomain.net");
   policies.Set(key::kSafeBrowsingWhitelistDomains, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               whitelist_domains.CreateDeepCopy(), nullptr);
+               whitelist_domains.Clone(), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kSafeBrowsingWhitelistDomains)->IsManaged());
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingWhitelistDomains) {
   whitelist_domains.AppendString(std::string("%EF%BF%BDzyx.com"));
   policies.Set(key::kSafeBrowsingWhitelistDomains, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               whitelist_domains.CreateDeepCopy(), nullptr);
+               whitelist_domains.Clone(), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kSafeBrowsingWhitelistDomains)->IsManaged());
@@ -136,8 +136,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionLoginURLs) {
   login_url_values.AppendString("https://login.mydomain.com");
   login_url_values.AppendString("https://mydomian.com/login.html");
   policies.Set(key::kPasswordProtectionLoginURLs, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               login_url_values.CreateDeepCopy(), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, login_url_values.Clone(),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kPasswordProtectionLoginURLs)->IsManaged());
@@ -151,8 +151,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionLoginURLs) {
   login_url_values.AppendString(std::string("invalid"));
   login_url_values.AppendString(std::string("ftp://login.mydomain.com"));
   policies.Set(key::kPasswordProtectionLoginURLs, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               login_url_values.CreateDeepCopy(), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, login_url_values.Clone(),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kPasswordProtectionLoginURLs)->IsManaged());
@@ -180,11 +180,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionChangePasswordURL) {
 
   // Add change password URL to this enterprise policy .
   PolicyMap policies;
-  policies.Set(
-      key::kPasswordProtectionChangePasswordURL, POLICY_LEVEL_MANDATORY,
-      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::Value("https://changepassword.mydomain.com")),
-      nullptr);
+  policies.Set(key::kPasswordProtectionChangePasswordURL,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::Value("https://changepassword.mydomain.com"), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionChangePasswordURL)
                   ->IsManaged());
@@ -194,8 +192,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionChangePasswordURL) {
   // Verify non-http/https change password URL will be skipped.
   policies.Set(key::kPasswordProtectionChangePasswordURL,
                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::Value("data:text/html,login page")),
-               nullptr);
+               base::Value("data:text/html,login page"), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionChangePasswordURL)
                   ->IsManaged());
@@ -239,8 +236,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   // Sets the enterprise policy to 1 (a.k.a PASSWORD_REUSE).
   PolicyMap policies;
   policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(1), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(1), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
                   ->IsManaged());
@@ -249,8 +245,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
                 ReusedPasswordAccountType()));
   // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
   policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(2), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(2), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_EQ(safe_browsing::PHISHING_REUSE,
             mock_service.GetPasswordProtectionWarningTriggerPref(
@@ -281,8 +276,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGmail) {
   // to.
   PolicyMap policies;
   policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(1), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(1), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
                   ->IsManaged());
@@ -290,8 +284,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGmail) {
             mock_service.GetPasswordProtectionWarningTriggerPref(account_type));
   // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
   policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(2), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(2), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_EQ(safe_browsing::PHISHING_REUSE,
             mock_service.GetPasswordProtectionWarningTriggerPref(account_type));
@@ -314,8 +307,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGSuite) {
                 ReusedPasswordAccountType()));
   // Sets the enterprise policy to 1 (a.k.a PASSWORD_REUSE).
   policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(1), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(1), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
                   ->IsManaged());
@@ -324,8 +316,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGSuite) {
                 ReusedPasswordAccountType()));
   // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
   policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(2), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(2), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_EQ(safe_browsing::PHISHING_REUSE,
             mock_service.GetPasswordProtectionWarningTriggerPref(

@@ -24,7 +24,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/grit/components_resources.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
@@ -34,6 +33,7 @@
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #if BUILDFLAG(FULL_SAFE_BROWSING)
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
 #endif
 #include "components/safe_browsing/core/realtime/policy_engine.h"
@@ -47,6 +47,11 @@
 
 #if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
 #include "components/safe_browsing/core/db/v4_local_database_manager.h"
+#endif
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+using TriggeredRule =
+    enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule;
 #endif
 
 using base::Time;
@@ -1472,20 +1477,16 @@ std::string SerializeContentAnalysisResponse(
       base::DictionaryValue rule_value;
 
       switch (rule.action()) {
-        case enterprise_connectors::ContentAnalysisResponse::Result::
-            TriggeredRule::ACTION_UNSPECIFIED:
+        case TriggeredRule::ACTION_UNSPECIFIED:
           rule_value.SetStringKey("action", "ACTION_UNSPECIFIED");
           break;
-        case enterprise_connectors::ContentAnalysisResponse::Result::
-            TriggeredRule::REPORT_ONLY:
+        case TriggeredRule::REPORT_ONLY:
           rule_value.SetStringKey("action", "REPORT_ONLY");
           break;
-        case enterprise_connectors::ContentAnalysisResponse::Result::
-            TriggeredRule::WARN:
+        case TriggeredRule::WARN:
           rule_value.SetStringKey("action", "WARN");
           break;
-        case enterprise_connectors::ContentAnalysisResponse::Result::
-            TriggeredRule::BLOCK:
+        case TriggeredRule::BLOCK:
           rule_value.SetStringKey("action", "BLOCK");
           break;
       }

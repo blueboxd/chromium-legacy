@@ -67,6 +67,7 @@
 <translation id="2570734079541893434">Gérer les paramètres</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{dans 1 h}one{dans # h}other{dans # h}}</translation>
 <translation id="2583543531130364912">Calibrez votre écran tactile</translation>
+<translation id="2586657967955657006">Presse-papiers</translation>
 <translation id="2666092431469916601">Haut</translation>
 <translation id="2701330563083355633">Partagé à partir de l'appareil suivant : <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">Nouveau</translation>
@@ -114,6 +115,7 @@
 <translation id="4289300219472526559">Commencer la lecture</translation>
 <translation id="430191667033048642">L'application <ph name="MOVED_APP_NAME" /> a été déplacée dans le dossier <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">TOUTES LES APPLICATIONS</translation>
+<translation id="4491109536499578614">Image</translation>
 <translation id="4588090240171750605">Défilement vers la droite</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, note <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, recommandation d'application</translation>

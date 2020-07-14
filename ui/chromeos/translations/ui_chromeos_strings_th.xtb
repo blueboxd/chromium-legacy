@@ -168,7 +168,6 @@
 <translation id="2924296707677495905">การทับศัพท์ (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">แผ่นงาน</translation>
 <translation id="2938685643439809023">มองโกเลีย</translation>
-<translation id="2939410873710774399">หากต้องการเปิดไฟล์ด้วย <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />) ให้ย้ายไปที่โฟลเดอร์ <ph name="FOLDER_NAME" /> ก่อน</translation>
 <translation id="2942290791863759244">แป้นพิมพ์ NEO 2 ภาษาเยอรมัน</translation>
 <translation id="2943400156390503548">สไลด์</translation>
 <translation id="2943503720238418293">ใช้ชื่อที่สั้นลง</translation>
@@ -333,14 +332,12 @@
 <translation id="4839847978919684242">เลือก <ph name="SELCTED_FILES_COUNT" /> รายการ</translation>
 <translation id="4850886885716139402">มุมมอง</translation>
 <translation id="485316830061041779">เยอรมัน</translation>
-<translation id="4859297381873413734">หากต้องการเปิดไฟล์ด้วย <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />) ให้คัดลอกไปที่โฟลเดอร์ <ph name="FOLDER_NAME" /> ก่อน</translation>
 <translation id="4867079195717347957">คลิกเพื่อจัดเรียงคอลัมน์จากมากไปหาน้อย</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> ไบต์</translation>
 <translation id="4880214202172289027">แถบเลื่อนระดับเสียง</translation>
 <translation id="4880520557730313061">แก้ไขอัตโนมัติ</translation>
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="4886021172213954916">แป้นพิมพ์ภาษาทมิฬ (เครื่องพิมพ์ดีด)</translation>
-<translation id="4892969127351273348">เปิดด้วย <ph name="APP_NAME" /> ไม่ได้</translation>
 <translation id="4900532980794411603">แชร์กับ Parallels Desktop</translation>
 <translation id="4905417359854579806">พร้อมสำรอง <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">คงที่</translation>

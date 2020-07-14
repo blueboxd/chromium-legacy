@@ -40,6 +40,7 @@ namespace blink {
 
 class FontDescription;
 class SimpleFontData;
+class FontCustomPlatformData;
 
 class CORE_EXPORT CSSFontFaceSource
     : public GarbageCollected<CSSFontFaceSource> {
@@ -55,6 +56,14 @@ class CORE_EXPORT CSSFontFaceSource
   virtual bool IsLoading() const { return false; }
   virtual bool IsLoaded() const { return true; }
   virtual bool IsValid() const { return true; }
+
+  // Returns nullptr unless the source is a loaded RemoteFontFaceSource.
+  virtual String GetURL() const { return g_null_atom; }
+
+  // Returns nullptr unless the source is a loaded RemoteFontFaceSource.
+  virtual const FontCustomPlatformData* GetCustomPlaftormData() const {
+    return nullptr;
+  }
 
   scoped_refptr<SimpleFontData> GetFontData(const FontDescription&,
                                             const FontSelectionCapabilities&);

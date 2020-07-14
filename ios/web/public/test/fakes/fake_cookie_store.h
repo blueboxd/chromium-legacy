@@ -45,7 +45,7 @@ class FakeCookieStore : public net::CookieStore {
 
  private:
   net::CookieList all_cookies_;
-  net::CookieStatusList excluded_list_;
+  net::CookieAccessResultList excluded_list_;
 };
 
 }  // namespace web

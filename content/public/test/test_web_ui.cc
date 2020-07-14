@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
@@ -95,12 +96,14 @@ bool TestWebUI::CanCallJavascript() {
 
 void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name) {
   call_data_.push_back(base::WrapUnique(new CallData(function_name)));
+  OnJavascriptCall(*call_data_.back());
 }
 
 void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name,
                                              const base::Value& arg1) {
   call_data_.push_back(base::WrapUnique(new CallData(function_name)));
   call_data_.back()->TakeAsArg1(arg1.CreateDeepCopy());
+  OnJavascriptCall(*call_data_.back());
 }
 
 void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name,
@@ -109,6 +112,7 @@ void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name,
   call_data_.push_back(base::WrapUnique(new CallData(function_name)));
   call_data_.back()->TakeAsArg1(arg1.CreateDeepCopy());
   call_data_.back()->TakeAsArg2(arg2.CreateDeepCopy());
+  OnJavascriptCall(*call_data_.back());
 }
 
 void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name,
@@ -119,6 +123,7 @@ void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name,
   call_data_.back()->TakeAsArg1(arg1.CreateDeepCopy());
   call_data_.back()->TakeAsArg2(arg2.CreateDeepCopy());
   call_data_.back()->TakeAsArg3(arg3.CreateDeepCopy());
+  OnJavascriptCall(*call_data_.back());
 }
 
 void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name,
@@ -131,12 +136,18 @@ void TestWebUI::CallJavascriptFunctionUnsafe(const std::string& function_name,
   call_data_.back()->TakeAsArg2(arg2.CreateDeepCopy());
   call_data_.back()->TakeAsArg3(arg3.CreateDeepCopy());
   call_data_.back()->TakeAsArg4(arg4.CreateDeepCopy());
+  OnJavascriptCall(*call_data_.back());
 }
 
 void TestWebUI::CallJavascriptFunctionUnsafe(
     const std::string& function_name,
     const std::vector<const base::Value*>& args) {
   NOTREACHED();
+}
+
+void TestWebUI::OnJavascriptCall(const CallData& call_data) {
+  for (JavascriptCallObserver& observer : javascript_call_observers_)
+    observer.OnJavascriptFunctionCalled(call_data);
 }
 
 std::vector<std::unique_ptr<WebUIMessageHandler>>*

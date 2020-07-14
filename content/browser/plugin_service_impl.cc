@@ -218,8 +218,9 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     // web-controlled content.  This is a defense-in-depth for verifying that
     // ShouldAllowPluginCreation called above is doing the right thing.
     auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-    GURL renderer_lock = policy->GetOriginLock(render_process_id);
-    CHECK(!renderer_lock.SchemeIsHTTPOrHTTPS());
+    ProcessLock renderer_lock = policy->GetProcessLock(render_process_id);
+    CHECK(!renderer_lock.matches_scheme(url::kHttpScheme) &&
+          !renderer_lock.matches_scheme(url::kHttpsScheme));
     CHECK(embedder_origin.scheme() != url::kHttpScheme);
     CHECK(embedder_origin.scheme() != url::kHttpsScheme);
     CHECK(!embedder_origin.opaque());

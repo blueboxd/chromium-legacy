@@ -395,8 +395,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest, Files) {
         enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
     bad_result->set_tag("malware");
     auto* bad_rule = bad_result->add_triggered_rules();
-    bad_rule->set_action(enterprise_connectors::ContentAnalysisResponse::
-                             Result::TriggeredRule::BLOCK);
+    bad_rule->set_action(enterprise_connectors::TriggeredRule::BLOCK);
     bad_rule->set_rule_name("MALWARE");
 
     FakeBinaryUploadServiceStorage()->SetResponseForFile(
@@ -490,14 +489,12 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest, Texts) {
     result->set_tag("dlp");
 
     auto* rule1 = result->add_triggered_rules();
-    rule1->set_action(enterprise_connectors::ContentAnalysisResponse::Result::
-                          TriggeredRule::REPORT_ONLY);
+    rule1->set_action(enterprise_connectors::TriggeredRule::REPORT_ONLY);
     rule1->set_rule_id("1");
     rule1->set_rule_name("resource rule 1");
 
     auto* rule2 = result->add_triggered_rules();
-    rule2->set_action(enterprise_connectors::ContentAnalysisResponse::Result::
-                          TriggeredRule::BLOCK);
+    rule2->set_action(enterprise_connectors::TriggeredRule::BLOCK);
     rule2->set_rule_id("3");
     rule2->set_rule_name("resource rule 2");
 
@@ -942,8 +939,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest,
         enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
     malware_result->set_tag("malware");
     auto* malware_rule = malware_result->add_triggered_rules();
-    malware_rule->set_action(enterprise_connectors::ContentAnalysisResponse::
-                                 Result::TriggeredRule::BLOCK);
+    malware_rule->set_action(enterprise_connectors::TriggeredRule::BLOCK);
     malware_rule->set_rule_name("MALWARE");
 
     auto* dlp_result = response.add_results();
@@ -951,8 +947,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest,
         enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
     dlp_result->set_tag("dlp");
     auto* dlp_rule = dlp_result->add_triggered_rules();
-    dlp_rule->set_action(enterprise_connectors::ContentAnalysisResponse::
-                             Result::TriggeredRule::BLOCK);
+    dlp_rule->set_action(enterprise_connectors::TriggeredRule::BLOCK);
     dlp_rule->set_rule_id("0");
     dlp_rule->set_rule_name("some_dlp_rule");
 

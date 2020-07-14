@@ -9,6 +9,7 @@ import("//chrome/updater/branding.gni")
 group("mac") {
   deps = [
     ":app_install",
+    ":browser_install_script",
     ":updater_bundle",
     ":updater_install_script",
     "//chrome/updater/mac/signing",
@@ -120,7 +121,7 @@ source_set("app_install") {
 }
 
 action("updater_install_script") {
-  script = "setup/embed_version.py"
+  script = "embed_variables.py"
 
   inputs = [
     script,
@@ -134,6 +135,27 @@ action("updater_install_script") {
     rebase_path("setup/.install.sh"),
     "-o",
     rebase_path(root_out_dir + "/chrome/updater/.install"),
+    "-p",
+    updater_product_full_name,
+  ]
+}
+
+action("browser_install_script") {
+  script = "embed_variables.py"
+
+  inputs = [
+    script,
+    ".install.sh",
+  ]
+
+  outputs = [ "$root_out_dir/$browser_product_name Packaging/updater/.install" ]
+
+  args = [
+    "-i",
+    rebase_path(".install.sh"),
+    "-o",
+    rebase_path(
+        root_out_dir + "/$browser_product_name Packaging/updater/.install"),
     "-v",
     chrome_version_full,
   ]

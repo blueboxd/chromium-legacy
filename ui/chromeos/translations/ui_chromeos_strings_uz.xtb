@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">Yapon tilida matn kiritish (AQSH klaviaturasi uchun)</translation>
 <translation id="1047956942837015229">Fayllar (<ph name="COUNT" /> ta) o‘chirilmoqda...</translation>
 <translation id="1049926623896334335">Word hujjati</translation>
+<translation id="1060368002126861100">Fayllarni <ph name="APP_NAME" /> ilovasidan ochishdan avval ularni Windows fayllari jildiga koʻchiring.</translation>
 <translation id="1062407476771304334">Almashtirish</translation>
 <translation id="1065449928621190041">Kanada fransuzchasi klaviaturasi</translation>
 <translation id="1119069657431255176">Bzip2 formatida arxivlangan tar fayl</translation>
@@ -168,7 +169,6 @@
 <translation id="2924296707677495905">Transliteratsiya (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Jadvallar</translation>
 <translation id="2938685643439809023">Mo`g`ul tili</translation>
-<translation id="2939410873710774399">Fayllarni <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />) ilovasida ochish uchun avval ularni <ph name="FOLDER_NAME" /> jildiga koʻchiring.</translation>
 <translation id="2942290791863759244">Nemis NEO 2 klaviaturasi</translation>
 <translation id="2943400156390503548">Slaydlar</translation>
 <translation id="2943503720238418293">Nomni qisqartiring</translation>
@@ -222,6 +222,7 @@
 <translation id="3524311639100184459">Diqqat! Bu vaqtinchalik fayllar diskda joy boʻshatish uchun avtomatik oʻchirib yuborilishi mumkin.  <ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Jild</translation>
 <translation id="3549797760399244642">drive.google.com manziliga o‘tish...</translation>
+<translation id="3553048479571901246">Fayllarni <ph name="APP_NAME" /> ilovasidan ochishdan avval ularni Windows fayllari jildiga nusxalang.</translation>
 <translation id="357479282490346887">Litvan tili</translation>
 <translation id="3583509704582854624">Harf va raqam kiritish (yapon tili klaviaturasi uchun)</translation>
 <translation id="3603385196401704894">Fransuz (Kanada)</translation>
@@ -333,14 +334,12 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> ta element tanlandi</translation>
 <translation id="4850886885716139402">Ko‘rish</translation>
 <translation id="485316830061041779">Nemis</translation>
-<translation id="4859297381873413734">Fayllarni <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />) ilovasida ochish uchun avval ularni <ph name="FOLDER_NAME" /> jildiga nusxalang.</translation>
 <translation id="4867079195717347957">Ustundagi fayllar roʻyxatini kamayish boʻyicha tartiblash.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bayt</translation>
 <translation id="4880214202172289027">Tovush balandligi slayderi</translation>
 <translation id="4880520557730313061">Avtomatik sozlash</translation>
 <translation id="4881695831933465202">Ochish</translation>
 <translation id="4886021172213954916">Tamil klaviaturasi (“yozuv mashinkasi”)</translation>
-<translation id="4892969127351273348"><ph name="APP_NAME" /> bilan ochilmadi</translation>
 <translation id="4900532980794411603">Parallels Desktopga ulashish</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> nusxasi zaxiralash uchun tayyor</translation>
 <translation id="4924638091161556692">Tuzatildi</translation>

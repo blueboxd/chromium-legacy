@@ -207,10 +207,10 @@ URLLoaderFactoryParamsHelper::CreateForRendererProcess(
   // Attempt to use the process lock as |request_initiator_site_lock|.
   base::Optional<url::Origin> request_initiator_site_lock;
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  GURL process_lock = policy->GetOriginLock(process->GetID());
-  if (process_lock.is_valid()) {
+  ProcessLock process_lock = policy->GetProcessLock(process->GetID());
+  if (process_lock.lock_url().is_valid()) {
     request_initiator_site_lock =
-        SiteInstanceImpl::GetRequestInitiatorSiteLock(process_lock);
+        SiteInstanceImpl::GetRequestInitiatorSiteLock(process_lock.lock_url());
   }
 
   // Since this function is about to get deprecated (crbug.com/1098938), it

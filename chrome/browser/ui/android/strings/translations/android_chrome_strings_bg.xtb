@@ -209,7 +209,6 @@
 <translation id="2650751991977523696">Да се изтегли ли отново файлът?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиофайл}other{# аудиофайла}}</translation>
 <translation id="2656405586795711023">Уеб приложения</translation>
-<translation id="2677748264148917807">Излизане</translation>
 <translation id="2689830683995595741">С използването на Chrome приемате <ph name="BEGIN_LINK1" />Общите условия на Google<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Допълнителните общи условия на Chrome и Chrome OS<ph name="END_LINK2" />. В сила е и <ph name="BEGIN_LINK3" />Съобщението за поверителност за профилите в Google, управлявани чрез Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">Опресняване на страницата</translation>
 <translation id="2709516037105925701">Автоматично попълване</translation>
@@ -290,6 +289,7 @@
 <translation id="3303414029551471755">Искате ли да продължите с изтеглянето на съдържанието?</translation>
 <translation id="3306398118552023113">Това приложение се изпълнява в Chrome</translation>
 <translation id="3315103659806849044">Понастоящем персонализирате настройките си за синхронизиране и за услугите на Google. За да включите синхронизирането, докоснете бутона „Потвърждаване“ в долната част на екрана. Навигиране нагоре</translation>
+<translation id="3320630259304269485">Безопасно сърфиране (защита от опасни сайтове) и други настройки за сигурността</translation>
 <translation id="3328801116991980348">Информация за сайта</translation>
 <translation id="3333961966071413176">Всички контакти</translation>
 <translation id="3334729583274622784">Да се промени ли файловото разширение?</translation>
@@ -306,6 +306,7 @@
 <translation id="3389286852084373014">Текстът е твърде голям</translation>
 <translation id="3398320232533725830">Отваряне на диспечера на отметките</translation>
 <translation id="3414952576877147120">Размер:</translation>
+<translation id="3435738964857648380">Сигурност</translation>
 <translation id="3443221991560634068">Презареждане на текущата страница</translation>
 <translation id="3478363558367712427">Можете да изберете търсещата си машина</translation>
 <translation id="3492207499832628349">Нов раздел „инкогнито“</translation>
@@ -534,7 +535,6 @@
 <translation id="5355191726083956201">Режимът за подобрена защита е включен</translation>
 <translation id="5357811892247919462">Получихте раздел</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> отворен раздел. Докоснете за превключване между разделите}other{<ph name="OPEN_TABS_MANY" /> отворени раздела. Докоснете за превключване между тях}}</translation>
-<translation id="5384883051496921101">Този сайт е напът да сподели информация с приложение, което не е в режим „инкогнито“.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(и още 1)}other{(и още #)}}</translation>
 <translation id="5403592356182871684">Имена</translation>
 <translation id="5403644198645076998">Разрешаване само на конкретни сайтове</translation>
@@ -705,7 +705,6 @@
 <translation id="6593061639179217415">Настолен сайт</translation>
 <translation id="6597891566292541626">Поставете QR кода/баркода в тази рамка.</translation>
 <translation id="6600954340915313787">Копирано в Chrome</translation>
-<translation id="662080504995468778">Оставане</translation>
 <translation id="6627583120233659107">Редактиране на папката</translation>
 <translation id="6643016212128521049">Изчистване</translation>
 <translation id="6643649862576733715">Сортирайте по количество спестени данни</translation>
@@ -988,7 +987,6 @@
 <translation id="8922289737868596582">Изтеглете страниците чрез бутона „Още опции“, за да ги използвате офлайн</translation>
 <translation id="8937772741022875483">Искате ли активността ви в Chrome да се премахне от „Дигитално благополучие“?</translation>
 <translation id="8942627711005830162">Отваряне в другия прозорец</translation>
-<translation id="894871326938397531">Излизане от режим „инкогнито“?</translation>
 <translation id="8951232171465285730">Chrome ви спести <ph name="MEGABYTES" /> МБ</translation>
 <translation id="8965591936373831584">изчаква</translation>
 <translation id="8970887620466824814">Нещо се обърка.</translation>
@@ -999,6 +997,7 @@
 <translation id="9028914725102941583">Включете синхронизирането, за да споделяте на всички устройства</translation>
 <translation id="9040142327097499898">Известията са разрешени. Местоположението е изключено за това устройство.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# видеоклип}other{# видеоклипа}}</translation>
+<translation id="9042893549633094279">Поверителност и сигурност</translation>
 <translation id="9050666287014529139">Парола</translation>
 <translation id="9063523880881406963">Изключване на функцията за заявяване на настолни сайтове</translation>
 <translation id="9065203028668620118">Редактиране</translation>

@@ -21139,6 +21139,7 @@ Called by update_document_policy_enum.py.-->
   <int value="737" label="URLAllowlist"/>
   <int value="738" label="ExtensionInstallAllowlist"/>
   <int value="739" label="ShowFullUrlsInAddressBar"/>
+  <int value="740" label="ExtensionInstallBlocklist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -41387,6 +41388,7 @@ from previous Chrome versions.
   <int value="-153299083" label="NewProfilePicker:disabled"/>
   <int value="-152677714" label="AsmJsToWebAssembly:enabled"/>
   <int value="-152632720" label="RuntimeHostPermissions:enabled"/>
+  <int value="-152439608" label="download-later-debug-on-wifi"/>
   <int value="-147283486" label="enable-network-portal-notification"/>
   <int value="-146552997" label="enable-affiliation-based-matching"/>
   <int value="-144134779" label="AndroidPayIntegrationV2:disabled"/>

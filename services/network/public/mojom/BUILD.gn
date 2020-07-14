@@ -385,10 +385,6 @@ mojom("cookies_mojom") {
           move_only = true
         },
         {
-          mojom = "network.mojom.CookieWithStatus"
-          cpp = "::net::CookieWithStatus"
-        },
-        {
           mojom = "network.mojom.CookieAccessResult"
           cpp = "::net::CookieAccessResult"
           move_only = true
@@ -398,8 +394,8 @@ mojom("cookies_mojom") {
           cpp = "::net::CookieWithAccessResult"
         },
         {
-          mojom = "network.mojom.CookieAndLineWithStatus"
-          cpp = "::net::CookieAndLineWithStatus"
+          mojom = "network.mojom.CookieAndLineWithAccessResult"
+          cpp = "::net::CookieAndLineWithAccessResult"
         },
         {
           mojom = "network.mojom.CookieChangeCause"

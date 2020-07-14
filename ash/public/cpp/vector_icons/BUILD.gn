@@ -10,9 +10,17 @@ aggregate_vector_icons("ash_public_vector_icons") {
 
   icons = [
     "assistant.icon",
+    "calculate.icon",
+    "conversion_path.icon",
     "notification_assistant.icon",
     "notification_supervised_user.icon",
     "notification_warning.icon",
+    "person_pin_circle.icon",
+    "screenshot.icon",
+    "sentiment_very_satisfied.icon",
+    "straighten.icon",
+    "timer.icon",
+    "translate.icon",
     "window_control_back.icon",
     "window_control_dezoom.icon",
     "window_control_left_snapped.icon",

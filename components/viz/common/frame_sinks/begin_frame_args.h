@@ -115,7 +115,7 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
   // This is the default interval assuming 60Hz to use to avoid sprinkling the
   // code with magic numbers.
   static constexpr base::TimeDelta DefaultInterval() {
-    return base::TimeDelta::FromMicroseconds(16666);
+    return base::TimeDelta::FromSeconds(1) / 60;
   }
 
   // This is the preferred interval to use when the producer can animate at the

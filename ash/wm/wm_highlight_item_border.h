@@ -24,6 +24,10 @@ class WmHighlightItemBorder : public views::Border {
 
   void set_extra_margin(int extra_margin) { extra_margin_ = extra_margin; }
 
+  // This highlight meant to indicate focus. No border will be painted if
+  // |focused| is false.
+  void SetFocused(bool focused);
+
   // views::Border:
   void Paint(const views::View& view, gfx::Canvas* canvas) override;
   gfx::Insets GetInsets() const override;

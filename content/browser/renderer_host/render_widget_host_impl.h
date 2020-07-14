@@ -742,7 +742,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void ForceFirstFrameAfterNavigationTimeout();
 
   void SetScreenOrientationForTesting(uint16_t angle,
-                                      ScreenOrientationValues type);
+                                      blink::mojom::ScreenOrientation type);
 
   // Requests Keyboard lock.  Note: the lock may not take effect until later.
   // If |codes| has no value then all keys will be locked, otherwise only the
@@ -1282,7 +1282,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   mojo::Remote<viz::mojom::InputTargetClient> input_target_client_;
 
   base::Optional<uint16_t> screen_orientation_angle_for_testing_;
-  base::Optional<ScreenOrientationValues> screen_orientation_type_for_testing_;
+  base::Optional<blink::mojom::ScreenOrientation>
+      screen_orientation_type_for_testing_;
 
   bool force_enable_zoom_ = false;
 

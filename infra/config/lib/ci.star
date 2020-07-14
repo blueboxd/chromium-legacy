@@ -555,14 +555,14 @@ def chromiumos_builder(*, name, **kwargs):
   )
 
 
-def clang_builder(*, name, cores=32, properties=None, **kwargs):
+def clang_builder(*, name, builderless=True, cores=32, properties=None, **kwargs):
   properties = properties or {}
   properties.update({
     'perf_dashboard_machine_group': 'ChromiumClang',
   })
   return ci_builder(
       name = name,
-      builderless = True,
+      builderless = builderless,
       cores = cores,
       # Because these run ToT Clang, goma is not used.
       # Naturally the runtime will be ~4-8h on average, depending on config.
@@ -885,15 +885,18 @@ def memory_builder(
   )
 
 
-def swangle_builder(*, name, builderless=True, **kwargs):
-  return ci.builder(
-      name = name,
-      builderless = builderless,
-      mastername = 'chromium.swangle',
-      service_account =
-      'chromium-ci-gpu-builder@chops-service-accounts.iam.gserviceaccount.com',
-      **kwargs
-  )
+def swangle_builder(*, name, builderless = True, pinned = True, **kwargs):
+    builder_args = dict(kwargs)
+    builder_args.update(
+        name = name,
+        builderless = builderless,
+        mastername = "chromium.swangle",
+        service_account =
+            "chromium-ci-gpu-builder@chops-service-accounts.iam.gserviceaccount.com",
+    )
+    if pinned:
+        builder_args.update(executable = "recipe:angle_chromium")
+    return ci.builder(**builder_args)
 
 
 def swangle_linux_builder(

@@ -62,6 +62,14 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kDeleteExpiredDownloads;
 
 }  // namespace features
 
+namespace switches {
+
+// If set, show the download later dialog without the requirement of being on
+// cellular network.
+COMPONENTS_DOWNLOAD_EXPORT extern const char kDownloadLaterDebugOnWifi[];
+
+}  // namespace switches
+
 }  // namespace download
 
 #endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_FEATURES_H_

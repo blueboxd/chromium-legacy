@@ -97,8 +97,7 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
 
   // Returns a content analysis response with a specific malware action.
   static enterprise_connectors::ContentAnalysisResponse MalwareResponse(
-      enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-          Action action);
+      enterprise_connectors::TriggeredRule::Action action);
 
   // Returns a deep scanning response with a specific DLP verdict.
   static DeepScanningClientResponse DlpResponse(
@@ -110,8 +109,7 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
   static enterprise_connectors::ContentAnalysisResponse DlpResponse(
       enterprise_connectors::ContentAnalysisResponse::Result::Status status,
       const std::string& rule_name,
-      enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-          Action action);
+      enterprise_connectors::TriggeredRule::Action action);
 
   // Returns a deep scanning response with specific malware and DLP verdicts.
   static DeepScanningClientResponse MalwareAndDlpResponse(
@@ -122,12 +120,10 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
 
   // Returns a content analysis response with specific malware and DLP actions.
   static enterprise_connectors::ContentAnalysisResponse MalwareAndDlpResponse(
-      enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-          Action malware_action,
+      enterprise_connectors::TriggeredRule::Action malware_action,
       enterprise_connectors::ContentAnalysisResponse::Result::Status dlp_status,
       const std::string& dlp_rule_name,
-      enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
-          Action dlp_action);
+      enterprise_connectors::TriggeredRule::Action dlp_action);
 
   // Sets the BinaryUploadService::Result to use in the next response callback.
   static void SetResponseResult(BinaryUploadService::Result result);

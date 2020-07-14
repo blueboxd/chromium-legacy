@@ -71,6 +71,7 @@
 <translation id="808894953321890993">パスワードの変更</translation>
 <translation id="8208861521865154048">特典</translation>
 <translation id="8347227221149377169">印刷ジョブ</translation>
+<translation id="8623849191266582420">この <ph name="DEVICE_TYPE" /> は <ph name="ENROLLMENT_DOMAIN" /> で管理されています。管理者はリモートでデバイスを設定、監視できます。</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> がこのユーザーを管理しています。設定の管理とユーザー アクティビティの監視がリモートで行われることがあります。</translation>
 <translation id="871560550817059752">失敗 - インクがありません</translation>
 <translation id="8747900814994928677">変更を確認</translation>

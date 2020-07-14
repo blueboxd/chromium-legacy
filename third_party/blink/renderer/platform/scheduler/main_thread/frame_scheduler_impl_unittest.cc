@@ -52,7 +52,7 @@ namespace {
 
 constexpr base::TimeDelta kDefaultThrottledWakeUpInterval =
     PageSchedulerImpl::kDefaultThrottledWakeUpInterval;
-constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromMilliseconds(10);
+constexpr auto kShortDelay = base::TimeDelta::FromMilliseconds(10);
 
 // This is a wrapper around MainThreadSchedulerImpl::CreatePageScheduler, that
 // returns the PageScheduler as a PageSchedulerImpl.
@@ -718,11 +718,15 @@ void RePostTask(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
 // intensive wake up throttling is disabled. Disable the kStopInBackground
 // feature because it hides the effect of intensive wake up throttling.
 TEST_F(FrameSchedulerImplStopInBackgroundDisabledTest, ThrottledTaskExecution) {
+  constexpr auto kTaskPeriod = base::TimeDelta::FromSeconds(1);
+
   // This test posts enough tasks to run past the default intensive wake up
   // throttling grace period. This allows verifying that intensive wake up
   // throttling is disabled by default.
   constexpr int kNumTasks =
-      base::TimeDelta::FromMinutes(10) / base::TimeDelta::FromSeconds(1);
+      base::TimeDelta::FromSeconds(
+          kIntensiveWakeUpThrottling_GracePeriodSeconds_Default) *
+      2 / kTaskPeriod;
   // This TaskRunner is throttled.
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       frame_scheduler_->GetTaskRunner(TaskType::kJavascriptTimer);
@@ -742,7 +746,7 @@ TEST_F(FrameSchedulerImplStopInBackgroundDisabledTest, ThrottledTaskExecution) {
   // A task should run every second.
   while (num_remaining_tasks > 0) {
     int previous_num_remaining_tasks = num_remaining_tasks;
-    task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    task_environment_.FastForwardBy(kTaskPeriod);
     EXPECT_EQ(previous_num_remaining_tasks - 1, num_remaining_tasks);
   }
 }

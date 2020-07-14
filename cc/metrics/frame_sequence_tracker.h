@@ -255,6 +255,11 @@ class CC_EXPORT FrameSequenceTracker {
   // only when the last impl-frame is ended (ReportFrameEnd).
   bool is_inside_frame_ = false;
 
+  // The number of no damage impl frames accumulated while expecting main. This
+  // main frame could report no damage eventually, then we need to account for
+  // that in the aggregated throughput.
+  uint32_t no_damage_impl_frames_while_expecting_main_ = 0;
+
 #if DCHECK_IS_ON()
   // This stringstream represents a sequence of frame reporting activities on
   // the current tracker. Each letter can be one of the following:

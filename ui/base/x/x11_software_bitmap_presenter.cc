@@ -20,11 +20,13 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/base/x/x11_shm_image_pool.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/xproto.h"
+#include "ui/gfx/x/xproto_types.h"
 
 namespace ui {
 
@@ -195,7 +197,8 @@ void X11SoftwareBitmapPresenter::Resize(const gfx::Size& pixel_size) {
     needs_swap_ = false;
     surface_ = nullptr;
   } else {
-    SkColorType color_type = ColorTypeForVisual(attributes_.visual);
+    SkColorType color_type = ColorTypeForVisual(
+        static_cast<x11::VisualId>(attributes_.visual->visualid));
     if (color_type == kUnknown_SkColorType)
       return;
     SkImageInfo info = SkImageInfo::Make(viewport_pixel_size_.width(),
@@ -247,26 +250,12 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
     return;
   }
 
-  XImage image = {};
-  image.width = viewport_pixel_size_.width();
-  image.height = viewport_pixel_size_.height();
-  image.format = static_cast<int>(x11::ImageFormat::ZPixmap);
-  image.byte_order = static_cast<int>(x11::ImageOrder::LSBFirst);
-  image.bitmap_unit = 8;
-  image.bitmap_bit_order = static_cast<int>(x11::ImageOrder::LSBFirst);
-  image.depth = attributes_.depth;
-
-  image.bits_per_pixel = attributes_.visual->bits_per_rgb;
-  image.bits_per_pixel = skia_pixmap.info().bytesPerPixel() * 8;
-
-  image.bytes_per_line = skia_pixmap.rowBytes();
-  image.red_mask = attributes_.visual->red_mask;
-  image.green_mask = attributes_.visual->green_mask;
-  image.blue_mask = attributes_.visual->blue_mask;
-
-  image.data = reinterpret_cast<char*>(const_cast<void*>(skia_pixmap.addr()));
-  XPutImage(display_, static_cast<uint32_t>(widget_), gc_, &image, rect.x(),
-            rect.y(), rect.x(), rect.y(), rect.width(), rect.height());
+  auto* connection = x11::Connection::Get();
+  auto gc = static_cast<x11::GraphicsContext>(XGContextFromGC(gc_));
+  DrawPixmap(connection,
+             static_cast<x11::VisualId>(attributes_.visual->visualid), widget_,
+             gc, skia_pixmap, rect.x(), rect.y(), rect.x(), rect.y(),
+             rect.width(), rect.height());
 
   FlushAfterPutImage();
 }

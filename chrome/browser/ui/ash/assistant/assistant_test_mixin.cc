@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "ash/assistant/model/ui/assistant_card_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
@@ -21,7 +22,7 @@
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/ash/assistant/test_support/fake_s3_server.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/login/auth/user_context.h"
@@ -30,6 +31,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/controls/label.h"
 
 namespace chromeos {
 namespace assistant {
@@ -42,10 +44,6 @@ constexpr const char kTestUserGaiaId[] = "test_user@gaia.id";
 LoginManagerMixin::TestUserInfo GetTestUserInfo() {
   return LoginManagerMixin::TestUserInfo(
       AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
-}
-
-bool Equals(const char* left, const char* right) {
-  return strcmp(left, right) == 0;
 }
 
 // Waiter that blocks in the |Wait| method until a given |AssistantStatus|
@@ -224,7 +222,7 @@ class TypedResponseWaiter : public ResponseWaiter {
   // ResponseWaiter overrides:
   base::Optional<std::string> GetResponseTextOfView(
       views::View* view) const override {
-    if (Equals(view->GetClassName(), class_name_.c_str())) {
+    if (view->GetClassName() == class_name_) {
       return static_cast<ash::AssistantUiElementView*>(view)
           ->ToStringForTesting();
     }
@@ -252,7 +250,7 @@ class TypedExpectedResponseWaiter : public ExpectedResponseWaiter {
   // ExpectedResponseWaiter overrides:
   base::Optional<std::string> GetResponseTextOfView(
       views::View* view) const override {
-    if (Equals(view->GetClassName(), class_name_.c_str())) {
+    if (view->GetClassName() == class_name_) {
       return static_cast<ash::AssistantUiElementView*>(view)
           ->ToStringForTesting();
     }
@@ -278,6 +276,44 @@ void CheckResult(base::OnceClosure quit,
                      value_callback),
       base::TimeDelta::FromMilliseconds(10));
 }
+
+// Calls a callback when the view hierarchy changes.
+class CallbackViewHierarchyChangedObserver : views::ViewObserver {
+ public:
+  explicit CallbackViewHierarchyChangedObserver(
+      views::View* parent_view,
+      base::RepeatingCallback<void(const views::ViewHierarchyChangedDetails&)>
+          callback)
+      : callback_(callback), parent_view_(parent_view) {
+    parent_view_->AddObserver(this);
+  }
+
+  ~CallbackViewHierarchyChangedObserver() override {
+    if (parent_view_)
+      parent_view_->RemoveObserver(this);
+  }
+
+  // ViewObserver:
+  void OnViewHierarchyChanged(
+      views::View* observed_view,
+      const views::ViewHierarchyChangedDetails& details) override {
+    callback_.Run(details);
+  }
+
+  void OnViewIsDeleting(views::View* view) override {
+    DCHECK_EQ(view, parent_view_);
+
+    if (parent_view_)
+      parent_view_->RemoveObserver(this);
+
+    parent_view_ = nullptr;
+  }
+
+ private:
+  base::RepeatingCallback<void(const views::ViewHierarchyChangedDetails&)>
+      callback_;
+  views::View* parent_view_;
+};
 
 }  // namespace
 
@@ -382,6 +418,10 @@ void AssistantTestMixin::SetUpOnMainThread() {
 
 void AssistantTestMixin::TearDownOnMainThread() {
   DisableAssistant();
+  DisableFakeS3Server();
+}
+
+void AssistantTestMixin::DisableFakeS3Server() {
   fake_s3_server_.Teardown();
 }
 
@@ -495,6 +535,17 @@ void AssistantTestMixin::ExpectAnyOfTheseTextResponses(
   waiter.RunUntilResponseReceived();
 }
 
+void AssistantTestMixin::ExpectErrorResponse(
+    const std::string& expected_response,
+    base::TimeDelta wait_timeout) {
+  const base::test::ScopedRunLoopTimeout run_timeout(FROM_HERE, wait_timeout);
+  TypedExpectedResponseWaiter waiter("AssistantErrorElementView",
+                                     test_api_->ui_element_container(),
+                                     {expected_response});
+
+  waiter.RunUntilResponseReceived();
+}
+
 void AssistantTestMixin::ExpectTimersResponse(
     const std::vector<base::TimeDelta>& timers,
     base::TimeDelta wait_timeout) {
@@ -545,6 +596,30 @@ void AssistantTestMixin::PressAssistantKey() {
 
 bool AssistantTestMixin::IsVisible() {
   return test_api_->IsVisible();
+}
+
+void AssistantTestMixin::ExpectNoChange(base::TimeDelta wait_timeout) {
+  base::test::ScopedDisableRunLoopTimeout disable_timeout;
+
+  base::RunLoop run_loop;
+
+  // Exit the runloop after wait_timeout.
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindRepeating(
+          [](base::RepeatingClosure quit) { std::move(quit).Run(); },
+          run_loop.QuitClosure()),
+      wait_timeout);
+
+  // Fail the runloop when the view hierarchy changes.
+  auto callback = base::BindRepeating(
+      [](const views::ViewHierarchyChangedDetails& change) { FAIL(); });
+
+  CallbackViewHierarchyChangedObserver observer(
+      test_api_->ui_element_container(), std::move(callback));
+
+  EXPECT_NO_FATAL_FAILURE(run_loop.Run())
+      << "View hierarchy changed during ExpectNoChange.";
 }
 
 PrefService* AssistantTestMixin::GetUserPreferences() {

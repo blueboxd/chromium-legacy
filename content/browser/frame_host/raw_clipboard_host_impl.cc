@@ -91,7 +91,7 @@ void RawClipboardHostImpl::ReadAvailableFormatNames(
     return;
   std::vector<base::string16> raw_types =
       clipboard_->ReadAvailablePlatformSpecificFormatNames(
-          ui::ClipboardBuffer::kCopyPaste);
+          ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr);
   std::move(callback).Run(raw_types);
 }
 
@@ -106,7 +106,8 @@ void RawClipboardHostImpl::Read(const base::string16& format,
 
   std::string result;
   clipboard_->ReadData(
-      ui::ClipboardFormatType::GetType(base::UTF16ToUTF8(format)), &result);
+      ui::ClipboardFormatType::GetType(base::UTF16ToUTF8(format)),
+      /* data_dst = */ nullptr, &result);
   base::span<const uint8_t> span(
       reinterpret_cast<const uint8_t*>(result.data()), result.size());
   mojo_base::BigBuffer buffer = mojo_base::BigBuffer(span);

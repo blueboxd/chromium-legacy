@@ -279,11 +279,10 @@ TEST_F(BluetoothAdapterMacTest, AddDiscoverySessionWithLowEnergyFilter) {
 
   adapter_mac_->StartDiscoverySessionWithFilter(
       std::move(discovery_filter),
-      base::BindRepeating(
-          &BluetoothAdapterMacTest::OnStartDiscoverySessionSuccess,
-          base::Unretained(this)),
-      base::BindRepeating(&BluetoothAdapterMacTest::ErrorCallback,
-                          base::Unretained(this)));
+      base::BindOnce(&BluetoothAdapterMacTest::OnStartDiscoverySessionSuccess,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothAdapterMacTest::ErrorCallback,
+                     base::Unretained(this)));
   EXPECT_TRUE(ui_task_runner_->HasPendingTask());
   ui_task_runner_->RunPendingTasks();
   EXPECT_EQ(1, callback_count_);
@@ -311,11 +310,10 @@ TEST_F(BluetoothAdapterMacTest, AddSecondDiscoverySessionWithLowEnergyFilter) {
   discovery_filter->AddDeviceFilter(device_filter);
   adapter_mac_->StartDiscoverySessionWithFilter(
       std::move(discovery_filter),
-      base::BindRepeating(
-          &BluetoothAdapterMacTest::OnStartDiscoverySessionSuccess,
-          base::Unretained(this)),
-      base::BindRepeating(&BluetoothAdapterMacTest::ErrorCallback,
-                          base::Unretained(this)));
+      base::BindOnce(&BluetoothAdapterMacTest::OnStartDiscoverySessionSuccess,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothAdapterMacTest::ErrorCallback,
+                     base::Unretained(this)));
   EXPECT_TRUE(ui_task_runner_->HasPendingTask());
   ui_task_runner_->RunPendingTasks();
   EXPECT_EQ(1, callback_count_);
@@ -328,11 +326,10 @@ TEST_F(BluetoothAdapterMacTest, AddSecondDiscoverySessionWithLowEnergyFilter) {
 
   adapter_mac_->StartDiscoverySessionWithFilter(
       std::move(discovery_filter2),
-      base::BindRepeating(
-          &BluetoothAdapterMacTest::OnStartDiscoverySessionSuccess,
-          base::Unretained(this)),
-      base::BindRepeating(&BluetoothAdapterMacTest::ErrorCallback,
-                          base::Unretained(this)));
+      base::BindOnce(&BluetoothAdapterMacTest::OnStartDiscoverySessionSuccess,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothAdapterMacTest::ErrorCallback,
+                     base::Unretained(this)));
   EXPECT_TRUE(ui_task_runner_->HasPendingTask());
   ui_task_runner_->RunPendingTasks();
   EXPECT_EQ(2, [mock_central_manager_ scanForPeripheralsCallCount]);
@@ -350,11 +347,10 @@ TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilter) {
       new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE));
   adapter_mac_->StartDiscoverySessionWithFilter(
       std::move(discovery_filter),
-      base::BindRepeating(
-          &BluetoothAdapterMacTest::OnStartDiscoverySessionSuccess,
-          base::Unretained(this)),
-      base::BindRepeating(&BluetoothAdapterMacTest::ErrorCallback,
-                          base::Unretained(this)));
+      base::BindOnce(&BluetoothAdapterMacTest::OnStartDiscoverySessionSuccess,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothAdapterMacTest::ErrorCallback,
+                     base::Unretained(this)));
   EXPECT_TRUE(ui_task_runner_->HasPendingTask());
   ui_task_runner_->RunPendingTasks();
   EXPECT_EQ(1, callback_count_);
@@ -363,10 +359,10 @@ TEST_F(BluetoothAdapterMacTest, RemoveDiscoverySessionWithLowEnergyFilter) {
 
   EXPECT_EQ(0, [mock_central_manager_ stopScanCallCount]);
   active_sessions_[0]->Stop(
-      base::BindRepeating(&BluetoothAdapterMacTest::Callback,
-                          base::Unretained(this)),
-      base::BindRepeating(&BluetoothAdapterMacTest::ErrorCallback,
-                          base::Unretained(this)));
+      base::BindOnce(&BluetoothAdapterMacTest::Callback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothAdapterMacTest::ErrorCallback,
+                     base::Unretained(this)));
   EXPECT_EQ(2, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(0, NumDiscoverySessions());

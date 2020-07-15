@@ -152,7 +152,7 @@ void EasyUnlockService::ResetLocalStateForUser(const AccountId& account_id) {
     return;
 
   DictionaryPrefUpdate update(local_state, prefs::kEasyUnlockHardlockState);
-  update->RemoveWithoutPathExpansion(account_id.GetUserEmail(), NULL);
+  update->RemoveKey(account_id.GetUserEmail());
 
   EasyUnlockTpmKeyManager::ResetLocalStateForUser(account_id);
 }

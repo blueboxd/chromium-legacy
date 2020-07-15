@@ -22,6 +22,7 @@ js_type_check("closure_compile") {
   ]
   if (is_chromeos) {
     deps += [
+      ":viewer-annotations-bar",
       ":viewer-form-warning",
       ":viewer-ink-host",
       ":viewer-pen-options",
@@ -46,6 +47,17 @@ js_library("viewer-download-controls") {
 
 js_library("viewer-error-screen") {
   deps = [ "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m" ]
+}
+
+js_library("viewer-annotations-bar") {
+  deps = [
+    ":viewer-pen-options",
+    ":viewer-toolbar-dropdown",
+    "..:annotation_tool",
+    "..:ink_controller",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:event_tracker.m",
+  ]
 }
 
 if (is_chromeos) {
@@ -84,12 +96,13 @@ js_library("viewer-password-screen") {
 
 js_library("viewer-pdf-toolbar") {
   deps = [
+    ":viewer-annotations-bar",
     ":viewer-bookmark",
     ":viewer-download-controls",
     ":viewer-page-selector",
     ":viewer-toolbar-dropdown",
-    "..:annotation_tool",
     "..:constants",
+    "..:ink_controller",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js:promise_resolver.m",
@@ -143,6 +156,7 @@ html_to_js("web_components") {
   ]
   if (is_chromeos) {
     js_files += [
+      "viewer-annotations-bar.js",
       "viewer-form-warning.js",
       "viewer-ink-host.js",
       "viewer-pen-options.js",

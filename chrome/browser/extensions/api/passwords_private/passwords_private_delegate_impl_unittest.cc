@@ -393,7 +393,8 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResult) {
       nullptr);
 
   base::string16 result;
-  test_clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
+  test_clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste,
+                            /* data_dst = */ nullptr, &result);
   EXPECT_EQ(form.password_value, result);
 
   histogram_tester().ExpectUniqueSample(
@@ -465,7 +466,8 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResultFail) {
       nullptr);
   // Clipboard should not be modifiend in case Reauth failed
   base::string16 result;
-  test_clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
+  test_clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste,
+                            /* data_dst = */ nullptr, &result);
   EXPECT_EQ(base::string16(), result);
   EXPECT_EQ(before_call, test_clipboard_->GetLastModifiedTime());
 

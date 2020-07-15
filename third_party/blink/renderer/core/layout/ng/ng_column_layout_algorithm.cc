@@ -442,7 +442,7 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutChildren() {
       if (entry.break_token) {
         // Copy unhandled incoming break tokens, for the next (outer)
         // fragmentainer.
-        container_builder_.AddBreakToken(std::move(entry.break_token));
+        container_builder_.AddBreakToken(entry.break_token);
       } else if (entry.spanner) {
         // Create break tokens for the spanners that were discovered (but not
         // handled) while laying out this (outer) fragmentainer, so that they

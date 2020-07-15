@@ -184,7 +184,8 @@ class OzonePlatformX11 : public OzonePlatform,
 
 #if BUILDFLAG(USE_GTK)
     DCHECK(!GtkUiDelegate::instance());
-    gtk_ui_delegate_ = std::make_unique<GtkUiDelegateX11>(gfx::GetXDisplay());
+    gtk_ui_delegate_ =
+        std::make_unique<GtkUiDelegateX11>(x11::Connection::Get());
     GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
 #endif
   }
@@ -229,10 +230,10 @@ class OzonePlatformX11 : public OzonePlatform,
     if (common_initialized_)
       return;
 
-    // If XOpenDisplay() failed there is nothing we can do. Crash here instead
-    // of crashing later. If you are crashing here, make sure there is an X
-    // server running and $DISPLAY is set.
-    CHECK(gfx::GetXDisplay()) << "Missing X server or $DISPLAY";
+    // If opening the connection failed there is nothing we can do. Crash here
+    // instead of crashing later. If you are crashing here, make sure there is
+    // an X server running and $DISPLAY is set.
+    CHECK(x11::Connection::Get()) << "Missing X server or $DISPLAY";
 
     ui::SetDefaultX11ErrorHandlers();
 
@@ -244,8 +245,8 @@ class OzonePlatformX11 : public OzonePlatform,
     if (event_source_)
       return;
 
-    XDisplay* display = gfx::GetXDisplay();
-    event_source_ = std::make_unique<X11EventSource>(display);
+    auto* connection = x11::Connection::Get();
+    event_source_ = std::make_unique<X11EventSource>(connection);
   }
 
   bool common_initialized_ = false;

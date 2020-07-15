@@ -293,53 +293,53 @@ TEST_F(AssistantOnboardingViewTest, ShouldHaveExpectedSuggestions) {
         expected_suggestions.push_back(
             {/*message=*/"Square root of 71",
              /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
-                 ash::kCalculateIcon, gfx::kGoogleBlue700)});
+                 ash::kCalculateIcon, gfx::kGoogleBlue800)});
         expected_suggestions.push_back(
             {/*message=*/"How far is Venus",
              /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
-                 ash::kStraightenIcon, gfx::kGoogleYellow900)});
+                 ash::kStraightenIcon, gfx::kGoogleRed800)});
         expected_suggestions.push_back(
             {/*message=*/"Set timer",
              /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
-                 ash::kTimerIcon, gfx::kGoogleGreen800)});
+                 ash::kTimerIcon, SkColorSetRGB(0xBF, 0x50, 0x00))});
         expected_suggestions.push_back(
             {/*message=*/"Tell me a joke",
              /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
-                 ash::kSentimentVerySatisfiedIcon, gfx::kGoogleYellow900)});
+                 ash::kSentimentVerySatisfiedIcon, gfx::kGoogleGreen800)});
         expected_suggestions.push_back(
             {/*message=*/"\"Hello\" in Chinese",
              /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
-                 ash::kTranslateIcon, gfx::kGoogleGreen800)});
+                 ash::kTranslateIcon, SkColorSetRGB(0x8A, 0x0E, 0x9E))});
         expected_suggestions.push_back(
             {/*message=*/"Take a screenshot",
              /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
-                 ash::kScreenshotIcon, gfx::kGoogleRed800)});
+                 ash::kScreenshotIcon, gfx::kGoogleBlue800)});
         break;
       case AssistantOnboardingMode::kDefault:
         expected_suggestions.push_back(
             {/*message=*/"5K in miles",
              /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
-                 ash::kConversionPathIcon, gfx::kGoogleBlue700)});
+                 ash::kConversionPathIcon, gfx::kGoogleBlue800)});
         expected_suggestions.push_back(
             {/*message=*/"Population in Nigeria",
              /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
-                 ash::kPersonPinCircleIcon, gfx::kGoogleYellow900)});
+                 ash::kPersonPinCircleIcon, gfx::kGoogleRed800)});
         expected_suggestions.push_back(
             {/*message=*/"Set timer",
              /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
-                 ash::kTimerIcon, gfx::kGoogleGreen800)});
+                 ash::kTimerIcon, SkColorSetRGB(0xBF, 0x50, 0x00))});
         expected_suggestions.push_back(
             {/*message=*/"Tell me a joke",
              /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
-                 ash::kSentimentVerySatisfiedIcon, gfx::kGoogleYellow900)});
+                 ash::kSentimentVerySatisfiedIcon, gfx::kGoogleGreen800)});
         expected_suggestions.push_back(
             {/*message=*/"\"Hello\" in Chinese",
              /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
-                 ash::kTranslateIcon, gfx::kGoogleGreen800)});
+                 ash::kTranslateIcon, SkColorSetRGB(0x8A, 0x0E, 0x9E))});
         expected_suggestions.push_back(
             {/*message=*/"Take a screenshot",
              /*icon_with_color=*/std::make_unique<VectorIconWithColor>(
-                 ash::kScreenshotIcon, gfx::kGoogleRed800)});
+                 ash::kScreenshotIcon, gfx::kGoogleBlue800)});
         break;
     }
 

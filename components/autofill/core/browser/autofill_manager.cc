@@ -2550,6 +2550,20 @@ void AutofillManager::GetAvailableSuggestions(
     }
   }
 
+  // If the feature is enabled and this is a mixed content form, we show a
+  // warning message and don't offer autofill. The warning is shown even if
+  // there are no autofill suggestions available.
+  if (IsFormMixedContent(client_, form) &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillPreventMixedFormsFilling)) {
+    suggestions->clear();
+    Suggestion warning_suggestion(
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_MIXED_FORM));
+    warning_suggestion.frontend_id = POPUP_ITEM_ID_MIXED_FORM_MESSAGE;
+    suggestions->assign(1, warning_suggestion);
+    return;
+  }
+
   context->is_context_secure = !IsFormNonSecure(form);
 
   // TODO(rogerm): Early exit here on !driver()->RendererIsAvailable()?

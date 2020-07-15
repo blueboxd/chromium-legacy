@@ -255,6 +255,102 @@ llvm::StringRef GetFilePath(const clang::SourceManager& source_manager,
   return file_entry->getName();
 }
 
+// |kSeparateRepoPaths| is a list of directories that
+// 1. Contain a ".git" subdirectory
+// 2. Do not contain "third_party" substring in their path.
+//
+// The list below has been generated with:
+/*
+   $ find . -type d -name .git | \
+       sed -e 's/\.git$//g' | \
+       sed -e 's/\.\///g' | \
+       grep -v third_party | \
+       grep -v '^$' | \
+       sort | uniq | \
+       sed -e 's/^\(.*\)$/    "\1",/g' > ~/scratch/git-paths
+*/
+const char* kSeparateRepoPaths[] = {
+    "buildtools/",
+    "buildtools/clang_format/script/",
+    "chrome/app/theme/default_100_percent/google_chrome/",
+    "chrome/app/theme/default_200_percent/google_chrome/",
+    "chrome/app/theme/google_chrome/",
+    "chrome/app/vector_icons/google_chrome/",
+    "chrome/browser/chromeos/arc/voice_interaction/internal/",
+    "chrome/browser/google/linkdoctor_internal/",
+    "chrome/browser/internal/",
+    "chrome/browser/media/engagement_internal/",
+    "chrome/browser/media/kaleidoscope/internal/",
+    "chrome/browser/resources/chromeos/quickoffice/",
+    "chrome/browser/resources/media_router/extension/src/",
+    "chrome/browser/resources/media_router_internal/",
+    "chrome/browser/resources/settings_internal/",
+    "chrome/browser/spellchecker/internal/",
+    "chrome/browser/ui/media_router/internal/",
+    "chrome/installer/mac/internal/",
+    "chromeos/assistant/internal/",
+    "chromeos/assistant/libassistant/deps/",
+    "chromeos/assistant/libassistant/src/",
+    "chromeos/assistant/libassistant/src/buildtools/",
+    "chromeos/assistant/libassistant/src/buildtools/clang_format/script/",
+    "chromeos/components/media_app_ui/resources/app/",
+    "chrome/services/soda/internal/",
+    "chrome/test/data/firefox3_profile/searchplugins/",
+    "chrome/test/data/firefox3_searchplugins/",
+    "chrome/test/data/gpu/vt/",
+    "chrome/test/data/osdd/",
+    "chrome/test/data/pdf_private/",
+    "chrome/test/data/perf/canvas_bench/",
+    "chrome/test/data/perf/frame_rate/content/",
+    "chrome/test/data/perf/frame_rate/private/",
+    "chrome/test/data/perf/private/",
+    "chrome/test/data/xr/webvr_info/",
+    "chrome/test/media_router/internal/",
+    "chrome/test/python_tests/",
+    "chrome/tools/test/reference_build/chrome_linux/",
+    "clank/",
+    "components/ntp_tiles/resources/internal/",
+    "components/resources/default_100_percent/google_chrome/",
+    "components/resources/default_200_percent/google_chrome/",
+    "components/resources/default_300_percent/google_chrome/",
+    "components/site_isolation/internal/",
+    "content/test/data/plugin/",
+    "data/autodiscovery/",
+    "data/dom_perf/",
+    "data/mach_ports/",
+    "data/memory_test/",
+    "data/mozilla_js_tests/",
+    "data/page_cycler/",
+    "data/selenium_core/",
+    "data/tab_switching/",
+    "google_apis/internal/",
+    "libassistant/communication/",
+    "libassistant/contrib/",
+    "libassistant/internal/",
+    "libassistant/resources/",
+    "libassistant/shared/",
+    "media/cdm/api/",
+    "mojo/internal/",
+    "native_client/",
+    "remoting/android/internal/",
+    "remoting/host/installer/linux/internal/",
+    "remoting/internal/",
+    "remoting/test/internal/",
+    "remoting/tools/internal/",
+    "remoting/webapp/app_remoting/internal/",
+    "skia/tools/clusterfuzz-data/",
+    "tools/histograms/",
+    "tools/page_cycler/acid3/",
+    "tools/perf/data/",
+    "tools/swarming_client/",
+    "ui/file_manager/internal/",
+    "ui/webui/internal/",
+    "v8/",
+    "webkit/data/bmp_decoder/",
+    "webkit/data/ico_decoder/",
+    "webkit/data/test_shell/plugins/",
+};
+
 AST_MATCHER(clang::FieldDecl, isInThirdPartyLocation) {
   llvm::StringRef file_path =
       GetFilePath(Finder->getASTContext().getSourceManager(), Node);
@@ -264,14 +360,25 @@ AST_MATCHER(clang::FieldDecl, isInThirdPartyLocation) {
   if (file_path.contains("third_party/blink/"))
     return false;
 
-  // V8 needs to be considered "third party", even though its paths do not
-  // contain the "third_party" substring.  In particular, the rewriter should
-  // not append |.get()| to references to |v8::RegisterState::pc|, because
-  // //v8/include/v8.h will *not* get rewritten.
-  if (file_path.contains("v8/include/"))
-    return true;
+  // |apply_edits.py| won't rewrite content of files that are in a separate git
+  // repository (e.g. //v8, //media/cdm/api).  Because of this, we need to
+  // detect such paths below and report them as third party.
+  //
+  // Examples where this is important:
+  // - the rewriter should not append |.get()| to references to
+  //   |v8::RegisterState::pc|, because //v8/include/v8.h will *not* get
+  //   rewritten.
+  // - the rewriter should not append |.get()| to references to
+  //   |cdm::VideoDecoderConfig_3::extra_data|, because
+  //   //media/cdm/api/content_decryption_module.h will *not* get rewritten.
+  for (const char* kPath : kSeparateRepoPaths) {
+    if (file_path.contains(kPath))
+      return true;
+  }
 
   // Otherwise, just check if the paths contains the "third_party" substring.
+  // We don't want to rewrite content of such paths even if they are in the main
+  // Chromium git repository.
   return file_path.contains("third_party");
 }
 

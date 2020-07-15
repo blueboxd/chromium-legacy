@@ -281,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ClipboardCopyPasteText) {
       writer.WriteText(paste_text);
     }
     base::string16 copy_text;
-    clipboard->ReadText(buffer, &copy_text);
+    clipboard->ReadText(buffer, /* data_dst = */ nullptr, &copy_text);
     EXPECT_EQ(paste_text, copy_text);
   }
 }

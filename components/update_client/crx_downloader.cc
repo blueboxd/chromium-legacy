@@ -33,16 +33,15 @@ CrxDownloader::DownloadMetrics::DownloadMetrics()
 
 // On Windows, the first downloader in the chain is a background downloader,
 // which uses the BITS service.
-scoped_refptr<CrxDownloader> CrxDownloader::Create(
+std::unique_ptr<CrxDownloader> CrxDownloader::Create(
     bool is_background_download,
     scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-  scoped_refptr<CrxDownloader> url_fetcher_downloader =
-      base::MakeRefCounted<UrlFetcherDownloader>(nullptr,
-                                                 network_fetcher_factory);
+  std::unique_ptr<CrxDownloader> url_fetcher_downloader =
+      std::make_unique<UrlFetcherDownloader>(nullptr, network_fetcher_factory);
 
 #if defined(OS_WIN)
   if (is_background_download) {
-    return base::MakeRefCounted<BackgroundDownloader>(
+    return std::make_unique<BackgroundDownloader>(
         std::move(url_fetcher_downloader));
   }
 #endif
@@ -50,7 +49,7 @@ scoped_refptr<CrxDownloader> CrxDownloader::Create(
   return url_fetcher_downloader;
 }
 
-CrxDownloader::CrxDownloader(scoped_refptr<CrxDownloader> successor)
+CrxDownloader::CrxDownloader(std::unique_ptr<CrxDownloader> successor)
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       successor_(std::move(successor)) {}
 
@@ -87,7 +86,7 @@ void CrxDownloader::StartDownloadFromUrl(const GURL& url,
 void CrxDownloader::StartDownload(const std::vector<GURL>& urls,
                                   const std::string& expected_hash,
                                   DownloadCallback download_callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   auto error = CrxDownloaderError::NONE;
   if (urls.empty()) {
@@ -116,22 +115,23 @@ void CrxDownloader::OnDownloadComplete(
     bool is_handled,
     const Result& result,
     const DownloadMetrics& download_metrics) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!result.error)
     base::ThreadPool::PostTask(
         FROM_HERE, kTaskTraits,
-        base::BindOnce(&CrxDownloader::VerifyResponse, this, is_handled, result,
-                       download_metrics));
+        base::BindOnce(&CrxDownloader::VerifyResponse, base::Unretained(this),
+                       is_handled, result, download_metrics));
   else
     main_task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&CrxDownloader::HandleDownloadError, this,
-                                  is_handled, result, download_metrics));
+        FROM_HERE, base::BindOnce(&CrxDownloader::HandleDownloadError,
+                                  base::Unretained(this), is_handled, result,
+                                  download_metrics));
 }
 
 void CrxDownloader::OnDownloadProgress(int64_t downloaded_bytes,
                                        int64_t total_bytes) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (progress_callback_.is_null())
     return;
@@ -164,15 +164,16 @@ void CrxDownloader::VerifyResponse(bool is_handled,
   result.response.clear();
 
   main_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&CrxDownloader::HandleDownloadError, this,
-                                is_handled, result, download_metrics));
+      FROM_HERE, base::BindOnce(&CrxDownloader::HandleDownloadError,
+                                base::Unretained(this), is_handled, result,
+                                download_metrics));
 }
 
 void CrxDownloader::HandleDownloadError(
     bool is_handled,
     const Result& result,
     const DownloadMetrics& download_metrics) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(0, result.error);
   DCHECK(result.response.empty());
   DCHECK_NE(0, download_metrics.error);

@@ -2049,7 +2049,7 @@ void OmniboxViewViews::OnAfterUserAction(views::Textfield* sender) {
 void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardBuffer clipboard_buffer) {
   ui::Clipboard* cb = ui::Clipboard::GetForCurrentThread();
   base::string16 selected_text;
-  cb->ReadText(clipboard_buffer, &selected_text);
+  cb->ReadText(clipboard_buffer, /* data_dst = */ nullptr, &selected_text);
   GURL url;
   bool write_url = false;
   model()->AdjustTextForCopy(GetSelectedRange().GetMin(), &selected_text, &url,
@@ -2234,17 +2234,17 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
   DCHECK(!ranges_surrounding_simplified_domain ||
          ranges_surrounding_simplified_domain->empty());
 
-  url::Component scheme, host;
   base::string16 text = GetText();
-  AutocompleteInput::ParseForEmphasizeComponents(
-      text, model()->client()->GetSchemeClassifier(), &scheme, &host);
+  url::Component host = GetHostComponentAfterTrivialSubdomain();
+  if (ranges_surrounding_simplified_domain) {
+    ranges_surrounding_simplified_domain->push_back(
+        gfx::Range(host.end(), text.size()));
+  }
 
   if (!OmniboxFieldTrial::ShouldElideToRegistrableDomain()) {
-    if (ranges_surrounding_simplified_domain) {
-      ranges_surrounding_simplified_domain->push_back(
-          gfx::Range(host.end(), text.size()));
-    }
-    return gfx::Range(0, host.end());
+    if (ranges_surrounding_simplified_domain)
+      ranges_surrounding_simplified_domain->emplace_back(0, host.begin);
+    return gfx::Range(host.begin, host.end());
   }
 
   // TODO(estark): push this inside ParseForEmphasizeComponents()?
@@ -2254,11 +2254,9 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
           url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 
   if (simplified_domain.empty()) {
-    if (ranges_surrounding_simplified_domain) {
-      ranges_surrounding_simplified_domain->push_back(
-          gfx::Range(host.end(), text.size()));
-    }
-    return gfx::Range(0, host.end());
+    if (ranges_surrounding_simplified_domain)
+      ranges_surrounding_simplified_domain->emplace_back(0, host.begin);
+    return gfx::Range(host.begin, host.end());
   }
 
   size_t simplified_domain_pos =
@@ -2267,8 +2265,6 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
   if (ranges_surrounding_simplified_domain) {
     ranges_surrounding_simplified_domain->push_back(
         gfx::Range(0, simplified_domain_pos));
-    ranges_surrounding_simplified_domain->push_back(
-        gfx::Range(host.end(), text.size()));
   }
   return gfx::Range(simplified_domain_pos, host.end());
 }
@@ -2284,8 +2280,11 @@ bool OmniboxViewViews::IsURLEligibleForSimplifiedDomainEliding() {
       text, model()->client()->GetSchemeClassifier(), &scheme, &host);
 
   const base::string16 url_scheme = text.substr(scheme.begin, scheme.len);
-  return url_scheme != base::UTF8ToUTF16(extensions::kExtensionScheme) &&
-         url_scheme != base::UTF8ToUTF16(url::kDataScheme) &&
+  // Simplified domain display only makes sense for http/https schemes; for now
+  // we don't want to mess with the display of other URLs like data:, blob:,
+  // chrome:, etc.
+  return (url_scheme == base::UTF8ToUTF16(url::kHttpScheme) ||
+          url_scheme == base::UTF8ToUTF16(url::kHttpsScheme)) &&
          host.is_nonempty();
 }
 
@@ -2334,6 +2333,8 @@ void OmniboxViewViews::ElideToSimplifiedDomain() {
       !OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover()) {
     return;
   }
+
+  DCHECK(IsURLEligibleForSimplifiedDomainEliding());
 
   // The simplified domain string must be a substring of the current display
   // text in order to elide to it.
@@ -2388,6 +2389,16 @@ void OmniboxViewViews::UnelideFromSimplifiedDomain() {
   ApplyCaretVisibility();
   FitToLocalBounds();
   GetRenderText()->SetElideBehavior(gfx::ELIDE_TAIL);
+}
+
+url::Component OmniboxViewViews::GetHostComponentAfterTrivialSubdomain() {
+  url::Component host;
+  url::Component unused_scheme;
+  base::string16 text = GetText();
+  AutocompleteInput::ParseForEmphasizeComponents(
+      text, model()->client()->GetSchemeClassifier(), &unused_scheme, &host);
+  url_formatter::StripWWWFromHostComponent(base::UTF16ToUTF8(text), &host);
+  return host;
 }
 
 void OmniboxViewViews::ApplyColor(SkColor color, const gfx::Range& range) {

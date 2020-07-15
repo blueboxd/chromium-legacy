@@ -11,6 +11,7 @@
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/file_info/file_info.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "url/gurl.h"
 
@@ -25,7 +26,7 @@ class OSExchangeDataProviderX11Test : public testing::Test {
  public:
   OSExchangeDataProviderX11Test()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
-        event_source(gfx::GetXDisplay()) {}
+        event_source(x11::Connection::Get()) {}
 
   void AddURLList(const std::string& list_contents) {
     std::string contents_copy = list_contents;

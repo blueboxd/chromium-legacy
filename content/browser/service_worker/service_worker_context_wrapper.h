@@ -488,14 +488,14 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // These methods are used as a callback for GetRegisteredOrigins when
   // initialising on the core thread, so registered origins can be tracked
   // on the UI thread as well.
-  void DidGetRegisteredOrigins(std::vector<url::Origin> origins);
-  void InitializeRegisteredOriginsOnUI(std::vector<url::Origin> origins);
+  void DidGetRegisteredOrigins(const std::vector<url::Origin>& origins);
+  void InitializeRegisteredOriginsOnUI(const std::vector<url::Origin>& origins);
 
   static void DidGetRegisteredOriginsForGetInstalledRegistrationOrigins(
       base::Optional<std::string> host_filter,
       GetInstalledRegistrationOriginsCallback callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback,
-      std::vector<url::Origin> origins);
+      const std::vector<url::Origin>& origins);
 
   // Temporary for crbug.com/824858.
   void GetAllOriginsInfoOnCoreThread(

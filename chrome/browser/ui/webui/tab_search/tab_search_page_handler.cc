@@ -98,7 +98,7 @@ tab_search::mojom::TabPtr TabSearchPageHandler::GetTabData(
       TabRendererData::FromTabInModel(browser->tab_strip_model(), index);
   tab_data->pinned = tab_renderer_data.pinned;
   tab_data->title = base::UTF16ToUTF8(tab_renderer_data.title);
-  tab_data->url = tab_renderer_data.visible_url.GetContent();
+  tab_data->url = tab_renderer_data.visible_url.spec();
 
   if (tab_renderer_data.favicon.isNull()) {
     tab_data->is_default_favicon = true;

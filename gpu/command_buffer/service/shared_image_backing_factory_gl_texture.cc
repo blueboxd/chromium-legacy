@@ -497,6 +497,30 @@ void SharedImageRepresentationSkiaImpl::CheckContext() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// SharedImageRepresentationOverlayImpl
+
+SharedImageRepresentationOverlayImpl::SharedImageRepresentationOverlayImpl(
+    SharedImageManager* manager,
+    SharedImageBacking* backing,
+    MemoryTypeTracker* tracker,
+    scoped_refptr<gl::GLImage> gl_image)
+    : SharedImageRepresentationOverlay(manager, backing, tracker),
+      gl_image_(gl_image) {}
+
+SharedImageRepresentationOverlayImpl::~SharedImageRepresentationOverlayImpl() =
+    default;
+
+bool SharedImageRepresentationOverlayImpl::BeginReadAccess() {
+  return true;
+}
+
+void SharedImageRepresentationOverlayImpl::EndReadAccess() {}
+
+gl::GLImage* SharedImageRepresentationOverlayImpl::GetGLImage() {
+  return gl_image_.get();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // SharedImageBackingGLTexture
 
 SharedImageBackingGLTexture::SharedImageBackingGLTexture(
@@ -804,8 +828,8 @@ std::unique_ptr<SharedImageRepresentationOverlay>
 SharedImageBackingGLImage::ProduceOverlay(SharedImageManager* manager,
                                           MemoryTypeTracker* tracker) {
 #if defined(OS_MACOSX)
-  return SharedImageBackingFactoryIOSurface::ProduceOverlay(manager, this,
-                                                            tracker, image_);
+  return std::make_unique<SharedImageRepresentationOverlayImpl>(
+      manager, this, tracker, image_);
 #else   // defined(OS_MACOSX)
   return SharedImageBacking::ProduceOverlay(manager, tracker);
 #endif  // !defined(OS_MACOSX)

@@ -4,7 +4,7 @@
 
 #include "ui/base/x/x11_gl_egl_utility.h"
 
-#include "ui/base/x/x11_util_internal.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gl/gl_surface_egl.h"
 

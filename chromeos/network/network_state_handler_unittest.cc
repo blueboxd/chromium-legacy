@@ -838,7 +838,7 @@ TEST_F(NetworkStateHandlerTest, TetherTechnologyState) {
 
   // Test SetProhibitedTechnologies() with a Tether network:
   network_state_handler_->SetProhibitedTechnologies(
-      std::vector<std::string>{kTypeTether}, network_handler::ErrorCallback());
+      std::vector<std::string>{kTypeTether});
   EXPECT_EQ(3u, test_observer_->device_list_changed_count());
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_PROHIBITED,

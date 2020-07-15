@@ -849,14 +849,6 @@ void ArcNetHostImpl::NetworkConnectionStateChanged(
   DisconnectArcVpn();
 }
 
-void ReceiveShillPropertiesFailure(
-    const std::string& service_path,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
-  LOG(ERROR) << "Failed to get shill Service properties for " << service_path
-             << ": " << error_name;
-}
-
 void ArcNetHostImpl::NetworkPropertiesUpdated(
     const chromeos::NetworkState* network) {
   if (!IsActiveNetworkState(network))
@@ -867,20 +859,24 @@ void ArcNetHostImpl::NetworkPropertiesUpdated(
       ->GetShillProperties(
           network->path(),
           base::BindOnce(&ArcNetHostImpl::ReceiveShillProperties,
-                         weak_factory_.GetWeakPtr()),
-          base::Bind(&ReceiveShillPropertiesFailure, network->path()));
+                         weak_factory_.GetWeakPtr()));
 }
 
 void ArcNetHostImpl::ReceiveShillProperties(
     const std::string& service_path,
-    const base::DictionaryValue& shill_properties) {
+    base::Optional<base::Value> shill_properties) {
+  if (!shill_properties) {
+    LOG(ERROR) << "Failed to get shill Service properties for " << service_path;
+    return;
+  }
+
   // Ignore properties received after the network has disconnected.
   const auto* network = GetStateHandler()->GetNetworkState(service_path);
   if (!IsActiveNetworkState(network))
     return;
 
   base::InsertOrAssign(shill_network_properties_, service_path,
-                       shill_properties.Clone());
+                       std::move(*shill_properties));
   UpdateActiveNetworks();
 }
 

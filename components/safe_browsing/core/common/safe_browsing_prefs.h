@@ -241,6 +241,9 @@ enum DelayDeliveryUntilVerdictValues {
   DELAY_UPLOADS_AND_DOWNLOADS = 3,
 };
 
+// Enum representing possible values of the Safe Browsing state.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.safe_browsing
 enum SafeBrowsingState {
   // The user is not opted into Safe Browsing.
   NO_SAFE_BROWSING = 0,
@@ -256,6 +259,8 @@ enum EnterpriseRealTimeUrlCheckMode {
 };
 
 SafeBrowsingState GetSafeBrowsingState(const PrefService& prefs);
+
+void SetSafeBrowsingState(PrefService* prefs, SafeBrowsingState state);
 
 // Returns whether Safe Browsing is enabled for the user.
 bool IsSafeBrowsingEnabled(const PrefService& prefs);
@@ -307,7 +312,13 @@ void SetExtendedReportingPrefForTests(PrefService* prefs, bool value);
 
 // Sets the currently active Safe Browsing Enhanced Protection to the specified
 // value.
+void SetEnhancedProtectionPrefForTests(PrefService* prefs, bool value);
+
+// Set prefs to enable Safe Browsing Enhanced Protection.
 void SetEnhancedProtectionPref(PrefService* prefs, bool value);
+
+// Set prefs to enable Safe Browsing Standard Protection.
+void SetStandardProtectionPref(PrefService* prefs, bool value);
 
 // Called when a security interstitial is closed by the user.
 // |on_show_pref_existed| indicates whether the pref existed when the

@@ -4,6 +4,8 @@
 
 import {GraphNode, D3GraphData} from './graph_model.js';
 
+import * as d3 from 'd3';
+
 // The unique HTML IDs for the SVG's `defs`
 // (https://developer.mozilla.org/en-US/docs/Web/SVG/Element/defs)
 const DEF_IDS = {

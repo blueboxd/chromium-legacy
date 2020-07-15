@@ -20,9 +20,9 @@ void X11EventWatcherFdWatch::StartWatching() {
   if (started_ || !base::MessageLoopCurrent::Get())
     return;
 
-  DCHECK(event_source_->display()) << "Unable to get connection to X server";
+  DCHECK(event_source_->connection()) << "Unable to get connection to X server";
 
-  int fd = ConnectionNumber(event_source_->display());
+  int fd = ConnectionNumber(event_source_->connection()->display());
   base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
       fd, true, base::MessagePumpForUI::WATCH_READ, &watcher_controller_, this);
   started_ = true;

@@ -764,6 +764,7 @@ void TouchExplorationController::OnTapTimerFired() {
       return;
     case DOUBLE_TAP_PENDING: {
       SET_STATE(ONE_FINGER_PASSTHROUGH);
+      delegate_->PlayPassthroughEarcon();
       passthrough_offset_ =
           last_unused_finger_event_->location_f() - anchor_point_dip_;
       std::unique_ptr<ui::TouchEvent> passthrough_press(

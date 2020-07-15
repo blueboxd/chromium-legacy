@@ -463,10 +463,10 @@ TEST_F(BluetoothGattBlueZTest, GattConnection) {
   ASSERT_TRUE(gatt_conn_.get());
   EXPECT_TRUE(gatt_conn_->IsConnected());
 
-  device->Disconnect(base::Bind(&BluetoothGattBlueZTest::SuccessCallback,
-                                base::Unretained(this)),
-                     base::Bind(&BluetoothGattBlueZTest::ErrorCallback,
-                                base::Unretained(this)));
+  device->Disconnect(base::BindOnce(&BluetoothGattBlueZTest::SuccessCallback,
+                                    base::Unretained(this)),
+                     base::BindOnce(&BluetoothGattBlueZTest::ErrorCallback,
+                                    base::Unretained(this)));
 
   EXPECT_EQ(3, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
@@ -649,10 +649,10 @@ TEST_F(BluetoothGattBlueZTest, ServicesDiscoveredAfterAdapterIsCreated) {
             observer.last_device_address());
 
   // Disconnect from the device:
-  device->Disconnect(base::Bind(&BluetoothGattBlueZTest::SuccessCallback,
-                                base::Unretained(this)),
-                     base::Bind(&BluetoothGattBlueZTest::ErrorCallback,
-                                base::Unretained(this)));
+  device->Disconnect(base::BindOnce(&BluetoothGattBlueZTest::SuccessCallback,
+                                    base::Unretained(this)),
+                     base::BindOnce(&BluetoothGattBlueZTest::ErrorCallback,
+                                    base::Unretained(this)));
   fake_bluetooth_gatt_service_client_->HideHeartRateService();
   properties->connected.ReplaceValue(false);
   properties->services_resolved.ReplaceValue(false);
@@ -2315,10 +2315,11 @@ TEST_F(BluetoothGattBlueZTest, ReliableWrite) {
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
 
   // Abort.
-  device->AbortWrite(base::Bind(&BluetoothGattBlueZTest::SuccessCallback,
-                                base::Unretained(this)),
-                     base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
-                                base::Unretained(this)));
+  device->AbortWrite(
+      base::BindOnce(&BluetoothGattBlueZTest::SuccessCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                     base::Unretained(this)));
   EXPECT_EQ(1001, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
@@ -2340,10 +2341,11 @@ TEST_F(BluetoothGattBlueZTest, ReliableWrite) {
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
 
   // Execute.
-  device->ExecuteWrite(base::Bind(&BluetoothGattBlueZTest::SuccessCallback,
-                                  base::Unretained(this)),
-                       base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
-                                  base::Unretained(this)));
+  device->ExecuteWrite(
+      base::BindOnce(&BluetoothGattBlueZTest::SuccessCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                     base::Unretained(this)));
   EXPECT_EQ(1001, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(1000, observer.gatt_characteristic_value_changed_count());

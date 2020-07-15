@@ -27,15 +27,21 @@
 #include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_creator.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/runtime_data.h"
 #include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/test/test_background_page_ready_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/zip.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #endif
@@ -68,13 +74,21 @@ class ForceInstallWaiter final {
   ForceInstallWaiter& operator=(const ForceInstallWaiter&) = delete;
   ~ForceInstallWaiter();
 
+  // Waits until the event specified |wait_mode| gets satisfied. Returns false
+  // if the waiting timed out.
   bool Wait();
 
  private:
+  // Implementation of Wait(). Returns the result via |success| in order to be
+  // able to use ASSERT* macros inside.
+  void WaitImpl(bool* success);
+
   const ExtensionForceInstallMixin::WaitMode wait_mode_;
   const extensions::ExtensionId extension_id_;
   Profile* const profile_;
   std::unique_ptr<extensions::TestExtensionRegistryObserver> registry_observer_;
+  std::unique_ptr<extensions::ExtensionBackgroundPageReadyObserver>
+      background_page_ready_observer_;
 };
 
 ForceInstallWaiter::ForceInstallWaiter(
@@ -92,18 +106,36 @@ ForceInstallWaiter::ForceInstallWaiter(
           std::make_unique<extensions::TestExtensionRegistryObserver>(
               extensions::ExtensionRegistry::Get(profile_), extension_id);
       break;
+    case ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady:
+      background_page_ready_observer_ =
+          std::make_unique<extensions::ExtensionBackgroundPageReadyObserver>(
+              profile_, extension_id);
+      break;
   }
 }
 
 ForceInstallWaiter::~ForceInstallWaiter() = default;
 
 bool ForceInstallWaiter::Wait() {
+  bool success = false;
+  WaitImpl(&success);
+  return success;
+}
+
+void ForceInstallWaiter::WaitImpl(bool* success) {
   switch (wait_mode_) {
     case ExtensionForceInstallMixin::WaitMode::kNone:
       // No waiting needed.
-      return true;
+      *success = true;
+      break;
     case ExtensionForceInstallMixin::WaitMode::kLoad:
-      return registry_observer_->WaitForExtensionLoaded() != nullptr;
+      *success = registry_observer_->WaitForExtensionLoaded() != nullptr;
+      break;
+    case ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady: {
+      ASSERT_NO_FATAL_FAILURE(background_page_ready_observer_->Wait());
+      *success = true;
+      break;
+    }
   }
 }
 
@@ -201,6 +233,17 @@ std::string MakeForceInstallPolicyItemValue(
                             update_manifest_url.spec().c_str());
 }
 
+void UpdatePolicyViaDeviceStateMixin(
+    const extensions::ExtensionId& extension_id,
+    const GURL& update_manifest_url,
+    chromeos::DeviceStateMixin* device_state_mixin) {
+  device_state_mixin->RequestDevicePolicyUpdate()
+      ->policy_payload()
+      ->mutable_device_login_screen_extensions()
+      ->add_device_login_screen_extensions(
+          MakeForceInstallPolicyItemValue(extension_id, update_manifest_url));
+}
+
 void UpdatePolicyViaDevicePolicyCrosTestHelper(
     const extensions::ExtensionId& extension_id,
     const GURL& update_manifest_url,
@@ -224,6 +267,17 @@ ExtensionForceInstallMixin::ExtensionForceInstallMixin(
 ExtensionForceInstallMixin::~ExtensionForceInstallMixin() = default;
 
 #if defined(OS_CHROMEOS)
+
+void ExtensionForceInstallMixin::InitWithDeviceStateMixin(
+    Profile* profile,
+    chromeos::DeviceStateMixin* device_state_mixin) {
+  DCHECK(profile);
+  DCHECK(device_state_mixin);
+  DCHECK(!profile_) << "Init already called";
+  DCHECK(!device_state_mixin_);
+  profile_ = profile;
+  device_state_mixin_ = device_state_mixin;
+}
 
 void ExtensionForceInstallMixin::InitWithDevicePolicyCrosTestHelper(
     Profile* profile,
@@ -297,15 +351,33 @@ const extensions::Extension* ExtensionForceInstallMixin::GetEnabledExtension(
   return registry->enabled_extensions().GetByID(extension_id);
 }
 
+bool ExtensionForceInstallMixin::IsExtensionBackgroundPageReady(
+    const extensions::ExtensionId& extension_id) const {
+  DCHECK(crx_file::id_util::IdIsValid(extension_id));
+  DCHECK(profile_) << "Init not called";
+
+  const auto* const extension = GetInstalledExtension(extension_id);
+  if (!extension) {
+    ADD_FAILURE() << "Extension " << extension_id << " not installed";
+    return false;
+  }
+  auto* const extension_system = extensions::ExtensionSystem::Get(profile_);
+  DCHECK(extension_system);
+  return extension_system->runtime_data()->IsBackgroundPageReady(extension);
+}
+
 void ExtensionForceInstallMixin::SetUpOnMainThread() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  ASSERT_TRUE(base::CreateDirectory(GetServedDirPath()));
-  embedded_test_server_.ServeFilesFromDirectory(GetServedDirPath());
+  const base::FilePath served_dir_path =
+      temp_dir_.GetPath().AppendASCII(kServedDirName);
+  ASSERT_TRUE(base::CreateDirectory(served_dir_path));
+  embedded_test_server_.ServeFilesFromDirectory(served_dir_path);
   ASSERT_TRUE(embedded_test_server_.Start());
 }
 
-base::FilePath ExtensionForceInstallMixin::GetServedDirPath() const {
-  return temp_dir_.GetPath().AppendASCII(kServedDirName);
+base::FilePath ExtensionForceInstallMixin::GetPathInServedDir(
+    const std::string& file_name) const {
+  return temp_dir_.GetPath().AppendASCII(kServedDirName).AppendASCII(file_name);
 }
 
 GURL ExtensionForceInstallMixin::GetServedUpdateManifestUrl(
@@ -331,8 +403,8 @@ bool ExtensionForceInstallMixin::ServeExistingCrx(
     const base::Version& extension_version) {
   DCHECK(embedded_test_server_.Started()) << "Called before setup";
 
-  const base::FilePath served_crx_path = GetServedDirPath().AppendASCII(
-      GetServedCrxFileName(extension_id, extension_version));
+  const base::FilePath served_crx_path =
+      GetPathInServedDir(GetServedCrxFileName(extension_id, extension_version));
   base::ScopedAllowBlockingForTesting scoped_allow_blocking;
   if (!base::CopyFile(source_crx_path, served_crx_path)) {
     ADD_FAILURE() << "Failed to copy CRX from " << source_crx_path.value()
@@ -368,7 +440,7 @@ bool ExtensionForceInstallMixin::CreateAndServeCrx(
 
   if (!ParseCrxOuterData(temp_crx_path, extension_id))
     return false;
-  const base::FilePath served_crx_path = GetServedDirPath().AppendASCII(
+  const base::FilePath served_crx_path = GetPathInServedDir(
       GetServedCrxFileName(*extension_id, extension_version));
   if (!base::Move(temp_crx_path, served_crx_path)) {
     ADD_FAILURE() << "Failed to move the created CRX file to "
@@ -404,8 +476,8 @@ bool ExtensionForceInstallMixin::CreateAndServeUpdateManifestFile(
   const GURL crx_url = GetServedCrxUrl(extension_id, extension_version);
   const std::string update_manifest =
       GenerateUpdateManifest(extension_id, extension_version, crx_url);
-  const base::FilePath update_manifest_path = GetServedDirPath().AppendASCII(
-      GetServedUpdateManifestFileName(extension_id));
+  const base::FilePath update_manifest_path =
+      GetPathInServedDir(GetServedUpdateManifestFileName(extension_id));
   // Note: Doing an atomic write, since the embedded test server might
   // concurrently try to access this file from another thread.
   base::ScopedAllowBlockingForTesting scoped_allow_blocking;
@@ -423,6 +495,11 @@ bool ExtensionForceInstallMixin::UpdatePolicy(
   DCHECK(profile_) << "Init not called";
 
 #if defined(OS_CHROMEOS)
+  if (device_state_mixin_) {
+    UpdatePolicyViaDeviceStateMixin(extension_id, update_manifest_url,
+                                    device_state_mixin_);
+    return true;
+  }
   if (device_policy_cros_test_helper_) {
     UpdatePolicyViaDevicePolicyCrosTestHelper(extension_id, update_manifest_url,
                                               device_policy_cros_test_helper_);

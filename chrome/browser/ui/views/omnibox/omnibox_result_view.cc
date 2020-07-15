@@ -362,10 +362,7 @@ void OmniboxResultView::Layout() {
   }
 
   const int suggestion_indent =
-      (popup_contents_view_->InExplicitExperimentalKeywordMode() ||
-       match_.IsSubMatch())
-          ? 70
-          : 0;
+      popup_contents_view_->InExplicitExperimentalKeywordMode() ? 70 : 0;
   const int suggestion_height = suggestion_view_->GetPreferredSize().height();
   suggestion_view_->SetBounds(suggestion_indent, 0,
                               suggestion_width - suggestion_indent,

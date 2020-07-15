@@ -145,6 +145,24 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
 #endif
 };
 
+// Overlay representation for a SharedImageBackingGLImage.
+class SharedImageRepresentationOverlayImpl
+    : public SharedImageRepresentationOverlay {
+ public:
+  SharedImageRepresentationOverlayImpl(SharedImageManager* manager,
+                                       SharedImageBacking* backing,
+                                       MemoryTypeTracker* tracker,
+                                       scoped_refptr<gl::GLImage> gl_image);
+  ~SharedImageRepresentationOverlayImpl() override;
+
+ private:
+  bool BeginReadAccess() override;
+  void EndReadAccess() override;
+  gl::GLImage* GetGLImage() override;
+
+  scoped_refptr<gl::GLImage> gl_image_;
+};
+
 // Implementation of SharedImageBacking that creates a GL Texture that is not
 // backed by a GLImage.
 class SharedImageBackingGLTexture : public SharedImageBacking {

@@ -20,12 +20,13 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 
@@ -52,7 +53,8 @@ public class LanguageListPreference extends Preference {
             ModelList menuItems = new ModelList();
 
             // Show "Offer to translate" option if "Chrome Translate" is enabled.
-            if (PrefServiceBridge.getInstance().getBoolean(Pref.OFFER_TRANSLATE_ENABLED)) {
+            if (UserPrefs.get(Profile.getLastUsedRegularProfile())
+                            .getBoolean(Pref.OFFER_TRANSLATE_ENABLED)) {
                 // Set this row checked if the language is unblocked.
                 int endIconResId = TranslateBridge.isBlockedLanguage(info.getCode())
                         ? 0

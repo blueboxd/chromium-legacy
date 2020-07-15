@@ -386,7 +386,8 @@ class TextfieldFocuser : public views::View {
 
 base::string16 GetClipboardText(ui::ClipboardBuffer clipboard_buffer) {
   base::string16 text;
-  ui::Clipboard::GetForCurrentThread()->ReadText(clipboard_buffer, &text);
+  ui::Clipboard::GetForCurrentThread()->ReadText(
+      clipboard_buffer, /* data_dst = */ nullptr, &text);
   return text;
 }
 

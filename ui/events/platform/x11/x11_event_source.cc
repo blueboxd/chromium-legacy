@@ -31,6 +31,7 @@
 #include "ui/gfx/x/extension_manager.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/xkb.h"
 #include "ui/gfx/x/xproto.h"
 
 #if defined(USE_GLIB)
@@ -51,27 +52,34 @@ namespace ui {
 
 namespace {
 
-bool InitializeXkb(XDisplay* display) {
-  if (!display)
-    return false;
+void InitializeXkb(x11::Connection* connection) {
+  if (!connection)
+    return;
 
-  int opcode, event, error;
-  int major = XkbMajorVersion;
-  int minor = XkbMinorVersion;
-  if (!XkbQueryExtension(display, &opcode, &event, &error, &major, &minor)) {
-    DVLOG(1) << "Xkb extension not available.";
-    return false;
-  }
+  auto& xkb = connection->xkb();
+
+  xkb.UseExtension({x11::Xkb::major_version, x11::Xkb::minor_version})
+      .OnResponse(base::BindOnce([](x11::Xkb::UseExtensionResponse response) {
+        if (!response || !response->supported)
+          DVLOG(1) << "Xkb extension not available.";
+      }));
 
   // Ask the server not to send KeyRelease event when the user holds down a key.
   // crbug.com/138092
-  x11::Bool supported_return;
-  if (!XkbSetDetectableAutoRepeat(display, x11::True, &supported_return)) {
-    DVLOG(1) << "XKB not supported in the server.";
-    return false;
-  }
-
-  return true;
+  xkb
+      .PerClientFlags({
+          .deviceSpec =
+              static_cast<x11::Xkb::DeviceSpec>(x11::Xkb::Id::UseCoreKbd),
+          .change = x11::Xkb::PerClientFlag::DetectableAutoRepeat,
+          .value = x11::Xkb::PerClientFlag::DetectableAutoRepeat,
+      })
+      .OnResponse(base::BindOnce([](x11::Xkb::PerClientFlagsResponse response) {
+        if (!response ||
+            !static_cast<bool>(response->supported &
+                               x11::Xkb::PerClientFlag::DetectableAutoRepeat)) {
+          DVLOG(1) << "Could not set XKB auto repeat flag.";
+        }
+      }));
 }
 
 Time ExtractTimeFromXEvent(const x11::Event& x11_event) {
@@ -123,18 +131,18 @@ using X11EventWatcherImpl = X11EventWatcherFdWatch;
 
 X11EventSource* X11EventSource::instance_ = nullptr;
 
-X11EventSource::X11EventSource(XDisplay* display)
+X11EventSource::X11EventSource(x11::Connection* connection)
     : watcher_(std::make_unique<X11EventWatcherImpl>(this)),
-      display_(display),
+      connection_(connection),
       dispatching_event_(nullptr),
       dummy_initialized_(false),
       distribution_(0, 999) {
   DCHECK(!instance_);
   instance_ = this;
 
-  DCHECK(display_);
+  DCHECK(connection_);
   DeviceDataManagerX11::CreateInstance();
-  InitializeXkb(display_);
+  InitializeXkb(connection_);
 
   watcher_->StartWatching();
 }
@@ -143,7 +151,7 @@ X11EventSource::~X11EventSource() {
   DCHECK_EQ(this, instance_);
   instance_ = nullptr;
   if (dummy_initialized_)
-    XDestroyWindow(display_, static_cast<uint32_t>(dummy_window_));
+    connection_->DestroyWindow({dummy_window_});
 }
 
 bool X11EventSource::HasInstance() {
@@ -161,16 +169,22 @@ X11EventSource* X11EventSource::GetInstance() {
 
 void X11EventSource::DispatchXEvents() {
   continue_stream_ = true;
-  x11::Connection::Get()->Dispatch(this);
+  connection_->Dispatch(this);
 }
 
 Time X11EventSource::GetCurrentServerTime() {
-  DCHECK(display_);
+  DCHECK(connection_);
 
   if (!dummy_initialized_) {
     // Create a new Window and Atom that will be used for the property change.
-    dummy_window_ = static_cast<x11::Window>(XCreateSimpleWindow(
-        display_, DefaultRootWindow(display_), 0, 0, 1, 1, 0, 0, 0));
+    dummy_window_ = connection_->GenerateId<x11::Window>();
+    connection_->CreateWindow({
+        .wid = dummy_window_,
+        .parent = connection_->default_root(),
+        .width = 1,
+        .height = 1,
+        .override_redirect = x11::Bool32(true),
+    });
     dummy_atom_ = gfx::GetAtom("CHROMIUM_TIMESTAMP");
     dummy_window_events_ = std::make_unique<XScopedEventSelector>(
         dummy_window_, PropertyChangeMask);
@@ -186,9 +200,8 @@ Time X11EventSource::GetCurrentServerTime() {
     start = base::TimeTicks::Now();
 
   // Make a no-op property change on |dummy_window_|.
-  auto* connection = x11::Connection::Get();
   std::vector<uint8_t> data{0};
-  connection->ChangeProperty({
+  connection_->ChangeProperty({
       .window = static_cast<x11::Window>(dummy_window_),
       .property = dummy_atom_,
       .type = x11::Atom::STRING,
@@ -198,14 +211,14 @@ Time X11EventSource::GetCurrentServerTime() {
   });
 
   // Observe the resulting PropertyNotify event to obtain the timestamp.
-  connection->Sync();
+  connection_->Sync();
   if (measure_rtt) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Linux.X11.ServerRTT",
         (base::TimeTicks::Now() - start).InMicroseconds(), 1,
         base::TimeDelta::FromMilliseconds(50).InMicroseconds(), 50);
   }
-  connection->ReadResponses();
+  connection_->ReadResponses();
 
   Time time = x11::CurrentTime;
   auto pred = [&](const x11::Event& event) {
@@ -218,7 +231,7 @@ Time X11EventSource::GetCurrentServerTime() {
     return false;
   };
 
-  auto& events = connection->events();
+  auto& events = connection_->events();
   events.erase(std::remove_if(events.begin(), events.end(), pred),
                events.end());
   return time;
@@ -473,7 +486,7 @@ std::unique_ptr<PlatformEventSource> PlatformEventSource::CreateDefault() {
   if (features::IsUsingOzonePlatform())
     return nullptr;
 #endif
-  return std::make_unique<X11EventSource>(gfx::GetXDisplay());
+  return std::make_unique<X11EventSource>(x11::Connection::Get());
 }
 #endif
 

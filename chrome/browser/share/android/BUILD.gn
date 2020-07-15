@@ -9,6 +9,7 @@ android_resources("java_resources") {
     "java/res/drawable/camera_img.xml",
     "java/res/drawable/delete.xml",
     "java/res/drawable/edit.xml",
+    "java/res/drawable/link.xml",
     "java/res/drawable/qrcode_background.xml",
     "java/res/drawable/save.xml",
     "java/res/drawable/share.xml",

@@ -646,7 +646,7 @@ cr.define('ntp', function() {
      * Removes all tiles from the page.
      */
     removeAllTiles() {
-      this.tileGrid_.innerHTML = '';
+      this.tileGrid_.innerHTML = trustedTypes.emptyHTML;
     },
 
     /**

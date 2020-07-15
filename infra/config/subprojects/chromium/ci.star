@@ -510,23 +510,6 @@ ci.chromium_builder(
 )
 
 ci.chromium_builder(
-    name = 'mac-official',
-    # TODO(https://crbug.com/1072012) Use the default console view and add
-    # main_console_view = settings.main_console_name once the build is green
-    console_view = 'chromium.fyi',
-    console_view_entry = ci.console_view_entry(
-        category = 'mac',
-        short_name = 'off',
-    ),
-    cores = None,
-    os = os.MAC_ANY,
-    # TODO: Change this back down to something reasonable once these builders
-    # have populated their cached by getting through the compile step
-    execution_timeout = 10 * time.hour,
-    tree_closing = False,
-)
-
-ci.chromium_builder(
     name = 'win-official',
     main_console_view = settings.main_console_name,
     console_view_entry = ci.console_view_entry(

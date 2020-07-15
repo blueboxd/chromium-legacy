@@ -31,5 +31,5 @@ interface INavigation {
   boolean wasStopCalled() = 10;
 
   // @since 86
-  boolean isRendererInitiated() = 11;
+  boolean isPageInitiated() = 11;
 }

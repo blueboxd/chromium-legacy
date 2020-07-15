@@ -35,6 +35,11 @@ _BRANCH_NOOP_CONFIG = struct(
 
 
 _NON_BRANCHED_TESTERS = (
+    # This tester is triggered by 'Mac Builder', but it is an FYI builder and
+    # not mirrored by any branched try builders, so we do not need to run it on
+    # the branches
+    'mac-osxbeta-rel',
+
     # This tester is triggered by 'Win x64 Builder', but it is an FYI builder
     # and not mirrored by any branched try builders, so we do not need to run it
     # on the branches

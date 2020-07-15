@@ -35,6 +35,10 @@ namespace ash {
 
 namespace {
 
+// The min/max height of this page.
+constexpr int kMaxHeightDip = 440;
+constexpr int kMinHeightDip = 180;
+
 // The height of the search box in this page.
 constexpr int kSearchBoxHeightDip = 56;
 
@@ -48,9 +52,9 @@ int GetPreferredHeightForAppListState(AppListView* app_list_view) {
   switch (app_list_view_state) {
     case AppListViewState::kHalf:
     case AppListViewState::kFullscreenSearch:
-      return kMaxHeightEmbeddedDip;
+      return kMaxHeightDip;
     default:
-      return kMinHeightEmbeddedDip;
+      return kMinHeightDip;
   }
 }
 
@@ -88,10 +92,10 @@ class AssistantPageViewLayout : public views::LayoutManagerBase {
     preferred_height =
         std::max(preferred_height, host->GetMinimumSize().height());
 
-    // Snap to |kMaxHeightEmbeddedDip| if |child| exceeds |preferred_height|.
+    // Snap to |kMaxHeightDip| if |child| exceeds |preferred_height|.
     for (const auto* child : host->children()) {
       if (child->GetHeightForWidth(width) > preferred_height)
-        return kMaxHeightEmbeddedDip;
+        return kMaxHeightDip;
     }
 
     return preferred_height;
@@ -128,7 +132,7 @@ class AssistantPageViewLayout : public views::LayoutManagerBase {
 AssistantPageView::AssistantPageView(
     AssistantViewDelegate* assistant_view_delegate)
     : assistant_view_delegate_(assistant_view_delegate),
-      min_height_dip_(kMinHeightEmbeddedDip) {
+      min_height_dip_(kMinHeightDip) {
   InitLayout();
 
   if (AssistantController::Get())  // May be |nullptr| in tests.
@@ -200,7 +204,7 @@ void AssistantPageView::ChildVisibilityChanged(views::View* child) {
 void AssistantPageView::VisibilityChanged(views::View* starting_from,
                                           bool is_visible) {
   if (starting_from == this && !is_visible)
-    min_height_dip_ = kMinHeightEmbeddedDip;
+    min_height_dip_ = kMinHeightDip;
 }
 
 void AssistantPageView::OnMouseEvent(ui::MouseEvent* event) {
@@ -391,7 +395,7 @@ void AssistantPageView::OnUiVisibilityChanged(
     return;
 
   if (new_visibility != AssistantVisibility::kVisible) {
-    min_height_dip_ = kMinHeightEmbeddedDip;
+    min_height_dip_ = kMinHeightDip;
     return;
   }
 

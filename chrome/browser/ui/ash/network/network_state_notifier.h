@@ -13,13 +13,11 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chromeos/network/network_connection_observer.h"
 #include "chromeos/network/network_state_handler_observer.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace chromeos {
 
@@ -74,19 +72,16 @@ class NetworkStateNotifier : public NetworkConnectionObserver,
       const std::vector<const NetworkState*>& active_networks) override;
   void NetworkPropertiesUpdated(const NetworkState* network) override;
 
-  void ConnectErrorPropertiesSucceeded(
+  void OnConnectErrorGetProperties(
       const std::string& error_name,
       const std::string& service_path,
-      const base::DictionaryValue& shill_properties);
-  void ConnectErrorPropertiesFailed(
-      const std::string& error_name,
-      const std::string& service_path,
-      const std::string& shill_connect_error,
-      std::unique_ptr<base::DictionaryValue> shill_error_data);
+      base::Optional<base::Value> shill_properties);
+
   void ShowConnectErrorNotification(
       const std::string& error_name,
       const std::string& service_path,
-      const base::DictionaryValue& shill_properties);
+      base::Optional<base::Value> shill_properties);
+
   void ShowVpnDisconnectedNotification(VpnDetails* vpn);
 
   // Removes any existing connect notifications.

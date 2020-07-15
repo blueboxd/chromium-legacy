@@ -8,26 +8,42 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/login/auth/stub_authenticator_builder.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/test/browser_test.h"
 
 namespace chromeos {
 
-class DiscoverScreenTest : public OobeBaseTest {
+class DiscoverScreenTest
+    : public OobeBaseTest,
+      public testing::WithParamInterface<user_manager::UserType> {
  public:
   DiscoverScreenTest() {
     // To reuse existing wizard controller in the flow.
     feature_list_.InitAndEnableFeature(
         chromeos::features::kOobeScreensPriority);
+
+    if (GetParam() == user_manager::USER_TYPE_CHILD) {
+      fake_gaia_ =
+          std::make_unique<FakeGaiaMixin>(&mixin_host_, embedded_test_server());
+      policy_server_ =
+          std::make_unique<LocalPolicyTestServerMixin>(&mixin_host_);
+      user_policy_mixin_ = std::make_unique<UserPolicyMixin>(
+          &mixin_host_, test_child_user_.account_id, policy_server_.get());
+    }
   }
   ~DiscoverScreenTest() override = default;
 
@@ -42,8 +58,34 @@ class DiscoverScreenTest : public OobeBaseTest {
     OobeBaseTest::SetUpOnMainThread();
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    // Child users require a user policy, set up an empty one so the user can
+    // get through login.
+    if (GetParam() == user_manager::USER_TYPE_CHILD)
+      ASSERT_TRUE(user_policy_mixin_->RequestPolicyUpdate());
+
+    OobeBaseTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  void LogIn() {
+    if (GetParam() == user_manager::USER_TYPE_CHILD) {
+      UserContext user_context =
+          LoginManagerMixin::CreateDefaultUserContext(test_child_user_);
+      user_context.SetRefreshToken(FakeGaiaMixin::kFakeRefreshToken);
+      fake_gaia_->SetupFakeGaiaForChildUser(
+          test_child_user_.account_id.GetUserEmail(),
+          test_child_user_.account_id.GetGaiaId(),
+          FakeGaiaMixin::kFakeRefreshToken, false /*issue_any_scope_token*/);
+      login_manager_mixin_.AttemptLoginUsingAuthenticator(
+          user_context,
+          std::make_unique<StubAuthenticatorBuilder>(user_context));
+    } else {
+      login_manager_mixin_.LoginAsNewRegularUser();
+    }
+  }
+
   void ShowDiscoverScreen() {
-    login_manager_mixin_.LoginAsNewRegularUser();
+    LogIn();
     OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
     if (!screen_exited_) {
       LoginDisplayHost::default_host()->StartWizard(
@@ -81,9 +123,22 @@ class DiscoverScreenTest : public OobeBaseTest {
   base::RepeatingClosure screen_exit_callback_;
 
   LoginManagerMixin login_manager_mixin_{&mixin_host_};
+
+  // Used for child account test.
+  const LoginManagerMixin::TestUserInfo test_child_user_{
+      AccountId::FromUserEmailGaiaId("user@test.com", "123456789"),
+      user_manager::USER_TYPE_CHILD};
+  std::unique_ptr<FakeGaiaMixin> fake_gaia_;
+  std::unique_ptr<LocalPolicyTestServerMixin> policy_server_;
+  std::unique_ptr<UserPolicyMixin> user_policy_mixin_;
 };
 
-IN_PROC_BROWSER_TEST_F(DiscoverScreenTest, Skipped) {
+INSTANTIATE_TEST_SUITE_P(All,
+                         DiscoverScreenTest,
+                         ::testing::Values(user_manager::USER_TYPE_REGULAR,
+                                           user_manager::USER_TYPE_CHILD));
+
+IN_PROC_BROWSER_TEST_P(DiscoverScreenTest, Skipped) {
   ShowDiscoverScreen();
 
   WaitForScreenExit();
@@ -93,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(DiscoverScreenTest, Skipped) {
   histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Discover", 0);
 }
 
-IN_PROC_BROWSER_TEST_F(DiscoverScreenTest, BasicFlow) {
+IN_PROC_BROWSER_TEST_P(DiscoverScreenTest, BasicFlow) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(true);
   ShowDiscoverScreen();
   WaitForScreenShown();

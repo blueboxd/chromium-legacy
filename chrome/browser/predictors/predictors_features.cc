@@ -42,6 +42,16 @@ const base::Feature kLoadingPredictorUseOptimizationGuide{
 const base::Feature kLoadingPredictorPrefetch{
     "LoadingPredictorPrefetch", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::FeatureParam<PrefetchSubresourceType>::Option
+    kPrefetchSubresourceTypeParamOptions[] = {
+        {PrefetchSubresourceType::kAll, "all"},
+        {PrefetchSubresourceType::kJsAndCss, "js_css"}};
+
+const base::FeatureParam<PrefetchSubresourceType>
+    kLoadingPredictorPrefetchSubresourceType{
+        &kLoadingPredictorPrefetch, "subresource_type",
+        PrefetchSubresourceType::kAll, &kPrefetchSubresourceTypeParamOptions};
+
 bool ShouldUseLocalPredictions() {
   return base::FeatureList::IsEnabled(kLoadingPredictorUseLocalPredictions);
 }

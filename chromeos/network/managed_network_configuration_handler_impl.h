@@ -22,7 +22,7 @@
 namespace base {
 class DictionaryValue;
 class Value;
-}
+}  // namespace base
 
 namespace chromeos {
 
@@ -137,15 +137,17 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   friend class ProhibitedTechnologiesHandlerTest;
 
   struct Policies;
-  typedef base::OnceCallback<void(
-      const std::string& service_path,
-      std::unique_ptr<base::DictionaryValue> properties)>
-      GetDevicePropertiesCallback;
   typedef std::map<std::string, std::unique_ptr<Policies>> UserToPoliciesMap;
   typedef std::map<std::string, std::unique_ptr<PolicyApplicator>>
       UserToPolicyApplicatorMap;
   typedef std::map<std::string, std::set<std::string>>
       UserToModifiedPoliciesMap;
+
+  // The type of properties to send after a Get{Managed}Properties call.
+  enum class PropertiesType {
+    kUnmanaged,
+    kManaged,
+  };
 
   ManagedNetworkConfigurationHandlerImpl();
 
@@ -156,21 +158,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
             NetworkConfigurationHandler* network_configuration_handler,
             NetworkDeviceHandler* network_device_handler,
             ProhibitedTechnologiesHandler* prohibitied_technologies_handler);
-
-  // Sends the response to the caller of GetManagedProperties.
-  void SendManagedProperties(
-      const std::string& userhash,
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback,
-      const std::string& service_path,
-      std::unique_ptr<base::DictionaryValue> shill_properties);
-
-  // Sends the response to the caller of GetProperties.
-  void SendProperties(const std::string& userhash,
-                      network_handler::DictionaryResultCallback callback,
-                      const network_handler::ErrorCallback& error_callback,
-                      const std::string& service_path,
-                      std::unique_ptr<base::DictionaryValue> shill_properties);
 
   // Returns the Policies for the given |userhash|, or the device policies if
   // |userhash| is empty.
@@ -187,7 +174,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
 
   // Helper method to append associated Device properties to |properties|.
   void GetDeviceStateProperties(const std::string& service_path,
-                                base::DictionaryValue* properties);
+                                base::Value* properties);
 
   // Callback for NetworkConfigurationHandler::GetProperties requests from
   // Get{Managed}Properties. This callback fills in properties from
@@ -196,16 +183,29 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   // additional copying of data, so we only do it for Cellular networks which
   // contain a lot of necessary state in the associated Device object.
   void GetPropertiesCallback(
-      GetDevicePropertiesCallback send_callback,
+      PropertiesType properties_type,
+      const std::string& userhash,
+      network_handler::DictionaryResultCallback callback,
+      const network_handler::ErrorCallback& error_callback,
       const std::string& service_path,
-      const base::DictionaryValue& shill_properties);
+      base::Optional<base::Value> shill_properties);
 
   void OnGetDeviceProperties(
+      PropertiesType properties_type,
+      const std::string& userhash,
       const std::string& service_path,
-      std::unique_ptr<base::DictionaryValue> network_properties,
-      GetDevicePropertiesCallback send_callback,
+      network_handler::DictionaryResultCallback callback,
+      const network_handler::ErrorCallback& error_callback,
+      base::Optional<base::Value> network_properties,
       const std::string& device_path,
       base::Optional<base::Value> device_properties);
+
+  void SendProperties(PropertiesType properties_type,
+                      const std::string& userhash,
+                      const std::string& service_path,
+                      network_handler::DictionaryResultCallback callback,
+                      const network_handler::ErrorCallback& error_callback,
+                      base::Optional<base::Value> shill_properties);
 
   // Called from SetProperties, calls NCH::SetShillProperties.
   void SetShillProperties(

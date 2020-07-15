@@ -1751,7 +1751,7 @@ ExtensionFunction::ResponseAction
 AutotestPrivateGetClipboardTextDataFunction::Run() {
   base::string16 data;
   ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, &data);
+      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &data);
   return RespondNow(
       OneArgument(base::Value::ToUniquePtrValue(base::Value(data))));
 }

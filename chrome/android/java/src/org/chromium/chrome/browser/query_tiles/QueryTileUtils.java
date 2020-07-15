@@ -16,7 +16,8 @@ public class QueryTileUtils {
      * @return Whether the query tile feature is enabled.
      */
     public static boolean isFeatureEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.QUERY_TILES);
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.QUERY_TILES_GEO_FILTER)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.QUERY_TILES);
     }
 
     /**

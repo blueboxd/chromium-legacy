@@ -127,7 +127,7 @@ TEST_F(ClipboardProviderTest, MatchesUrl) {
   ASSERT_GE(provider_->matches().size(), 1U);
   EXPECT_EQ(GURL(kClipboardURL), provider_->matches().back().destination_url);
   EXPECT_EQ(AutocompleteMatchType::CLIPBOARD_URL,
-            provider_->matches().back().GetDemotionType());
+            provider_->matches().back().type);
 }
 
 TEST_F(ClipboardProviderTest, MatchesText) {
@@ -142,7 +142,7 @@ TEST_F(ClipboardProviderTest, MatchesText) {
   EXPECT_EQ(base::UTF8ToUTF16(kClipboardText),
             provider_->matches().back().fill_into_edit);
   EXPECT_EQ(AutocompleteMatchType::CLIPBOARD_TEXT,
-            provider_->matches().back().GetDemotionType());
+            provider_->matches().back().type);
 }
 
 TEST_F(ClipboardProviderTest, MatchesImage) {
@@ -163,7 +163,7 @@ TEST_F(ClipboardProviderTest, MatchesImage) {
                                          image_bytes);
   ASSERT_GE(provider_->matches().size(), 1U);
   EXPECT_EQ(AutocompleteMatchType::CLIPBOARD_IMAGE,
-            provider_->matches().back().GetDemotionType());
+            provider_->matches().back().type);
 }
 
 TEST_F(ClipboardProviderTest, DeleteMatch) {

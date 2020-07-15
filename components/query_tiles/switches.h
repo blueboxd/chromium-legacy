@@ -8,7 +8,12 @@
 #include "base/feature_list.h"
 
 namespace query_tiles {
+
 namespace features {
+
+// Main feature flag for the query tiles feature that allows or blocks the
+// feature in the user's country. Must be checked in addition to any other flag.
+extern const base::Feature kQueryTilesGeoFilter;
 
 // Main feature flag for the query tiles feature.
 extern const base::Feature kQueryTiles;
@@ -20,6 +25,9 @@ extern const base::Feature kQueryTilesInOmnibox;
 // query before in the omnibox sumbitting the search. In this mode only one
 // level of tiles will be displayed.
 extern const base::Feature kQueryTilesEnableQueryEditing;
+
+// Helper function to determine whether query tiles should be shown on omnibox.
+bool IsEnabledQueryTilesInOmnibox();
 
 }  // namespace features
 

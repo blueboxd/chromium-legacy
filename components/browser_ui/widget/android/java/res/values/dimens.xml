@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Miscellaneous -->
     <dimen name="action_bar_shadow_height">10dp</dimen>
     <dimen name="card_padding">16dp</dimen>
@@ -29,6 +29,9 @@
 
     <!-- RadioButtonWithDescriptionAndAuxButton -->
     <dimen name="radio_button_with_description_and_aux_button_spacing">10dp</dimen>
+    <!-- The total width of expand_arrow_with_separator.xml, not used on WebView. -->
+    <dimen name="radio_button_with_description_and_aux_button_aux_button_length"
+        tools:ignore="UnusedResources">61dp</dimen>
 
     <!-- RadioButton(WithDescription)Layout dimensions -->
     <dimen name="default_vertical_margin_between_items">8dp</dimen>

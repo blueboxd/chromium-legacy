@@ -187,8 +187,7 @@ void ShillPropertyHandler::SetTechnologyEnabled(
 }
 
 void ShillPropertyHandler::SetProhibitedTechnologies(
-    const std::vector<std::string>& prohibited_technologies,
-    const network_handler::ErrorCallback& error_callback) {
+    const std::vector<std::string>& prohibited_technologies) {
   prohibited_technologies_.clear();
   prohibited_technologies_.insert(prohibited_technologies.begin(),
                                   prohibited_technologies.end());
@@ -201,7 +200,8 @@ void ShillPropertyHandler::SetProhibitedTechnologies(
     shill_manager_->DisableTechnology(
         technology, base::DoNothing(),
         base::BindOnce(&network_handler::ShillErrorCallbackFunction,
-                       "DisableTechnology Failed", technology, error_callback));
+                       "DisableTechnology Failed", technology,
+                       network_handler::ErrorCallback()));
   }
 
   // Send updated prohibited technology list to shill.
@@ -212,7 +212,7 @@ void ShillPropertyHandler::SetProhibitedTechnologies(
       "ProhibitedTechnologies", value, base::DoNothing(),
       base::BindOnce(&network_handler::ShillErrorCallbackFunction,
                      "SetTechnologiesProhibited Failed", prohibited_list,
-                     error_callback));
+                     network_handler::ErrorCallback()));
 }
 
 void ShillPropertyHandler::SetCheckPortalList(

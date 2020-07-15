@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "media/base/media_switches.h"
@@ -20,6 +21,7 @@
 #include "media/mojo/mojom/media_types.mojom-blink.h"
 #include "media/mojo/mojom/video_decode_perf_history.mojom-blink.h"
 #include "media/mojo/mojom/watch_time_recorder.mojom-blink.h"
+#include "media/video/mock_gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -27,11 +29,14 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_configuration.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_capabilities_info.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_configuration.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_decoding_configuration.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_configuration.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -43,7 +48,9 @@ using ::media::learning::FeatureValue;
 using ::media::learning::ObservationCompletion;
 using ::media::learning::TargetValue;
 using ::testing::_;
+using ::testing::InSequence;
 using ::testing::Invoke;
+using ::testing::Return;
 using ::testing::Unused;
 
 namespace blink {
@@ -213,6 +220,10 @@ class CallbackSaver {
     nnr_cb_ = std::move(predict_cb);
   }
 
+  void SaveGpuFactoriesNotifyCallback(base::OnceClosure cb) {
+    gpu_factories_notify_cb_ = std::move(cb);
+  }
+
   MockPerfHistoryService::GetPerfInfoCallback& perf_history_cb() {
     return perf_history_cb_;
   }
@@ -226,10 +237,23 @@ class CallbackSaver {
     return nnr_cb_;
   }
 
+  base::OnceClosure& gpu_factories_notify_cb() {
+    return gpu_factories_notify_cb_;
+  }
+
  private:
   MockPerfHistoryService::GetPerfInfoCallback perf_history_cb_;
   MockLearningTaskControllerService::PredictDistributionCallback bad_window_cb_;
   MockLearningTaskControllerService::PredictDistributionCallback nnr_cb_;
+  base::OnceClosure gpu_factories_notify_cb_;
+};
+
+class MockPlatform : public TestingPlatformSupport {
+ public:
+  MockPlatform() = default;
+  ~MockPlatform() override = default;
+
+  MOCK_METHOD0(GetGpuFactories, media::GpuVideoAcceleratorFactories*());
 };
 
 // This would typically be a test fixture, but we need it to be
@@ -300,14 +324,18 @@ class MediaCapabilitiesTestContext {
     return nnr_service_.get();
   }
 
+  MockPlatform& GetMockPlatform() { return *mock_platform_; }
+
   void VerifyAndClearMockExpectations() {
     testing::Mock::VerifyAndClearExpectations(GetPerfHistoryService());
     testing::Mock::VerifyAndClearExpectations(GetNnrService());
     testing::Mock::VerifyAndClearExpectations(GetBadWindowService());
+    testing::Mock::VerifyAndClearExpectations(&GetMockPlatform());
   }
 
  private:
   V8TestingScope v8_scope_;
+  ScopedTestingPlatformSupport<MockPlatform> mock_platform_;
   std::unique_ptr<MockPerfHistoryService> perf_history_service_;
   std::unique_ptr<FakeMediaMetricsProvider> fake_metrics_provider_;
   Persistent<MediaCapabilities> media_capabilities_;
@@ -317,12 +345,23 @@ class MediaCapabilitiesTestContext {
 
 // |kContentType|, |kCodec|, and |kCodecProfile| must match.
 const char kContentType[] = "video/webm; codecs=\"vp09.00.10.08\"";
+const char kAudioContentType[] = "audio/webm; codecs=\"opus\"";
 const media::VideoCodecProfile kCodecProfile = media::VP9PROFILE_PROFILE0;
 const media::VideoCodec kCodec = media::kCodecVP9;
 const double kFramerate = 20.5;
 const int kWidth = 3840;
 const int kHeight = 2160;
 const int kBitrate = 2391000;
+
+// Construct VideoConfig using the constants above.
+MediaDecodingConfiguration* CreateAudioDecodingConfig() {
+  auto* audio_config = MakeGarbageCollected<AudioConfiguration>();
+  audio_config->setContentType(kAudioContentType);
+  auto* decoding_config = MakeGarbageCollected<MediaDecodingConfiguration>();
+  decoding_config->setType("media-source");
+  decoding_config->setAudio(audio_config);
+  return decoding_config;
+}
 
 // Construct VideoConfig using the constants above.
 MediaDecodingConfiguration* CreateDecodingConfig() {
@@ -375,6 +414,7 @@ enum class PredictionType {
   kDB,
   kBadWindow,
   kNnr,
+  kGpuFactories,
 };
 
 // Makes a TargetHistogram with single count at |target_value|.
@@ -415,6 +455,10 @@ MlCallback(const Vector<media::learning::FeatureValue>& expected_features,
   };
 }
 
+testing::Action<void(base::OnceClosure)> GpuFactoriesNotifyCallback() {
+  return [](base::OnceClosure cb) { std::move(cb).Run(); };
+}
+
 // Helper to constructs field trial params with given ML prediction thresholds.
 base::FieldTrialParams MakeMlParams(double bad_window_threshold,
                                     double nnr_threshold) {
@@ -445,6 +489,16 @@ MediaCapabilitiesInfo* DecodingInfo(
 }
 
 }  // namespace
+
+TEST(MediaCapabilitiesTests, BasicAudio) {
+  MediaCapabilitiesTestContext context;
+  const MediaDecodingConfiguration* kDecodingConfig =
+      CreateAudioDecodingConfig();
+  MediaCapabilitiesInfo* info = DecodingInfo(kDecodingConfig, &context);
+  EXPECT_TRUE(info->supported());
+  EXPECT_TRUE(info->smooth());
+  EXPECT_TRUE(info->powerEfficient());
+}
 
 // Other tests will assume these match. Test to be sure they stay in sync.
 TEST(MediaCapabilitiesTests, ConfigMatchesFeatures) {
@@ -529,6 +583,75 @@ TEST(MediaCapabilitiesTests, PredictWithJustDB) {
   info = DecodingInfo(kDecodingConfig, &context);
   EXPECT_FALSE(info->smooth());
   EXPECT_TRUE(info->powerEfficient());
+}
+
+TEST(MediaCapabilitiesTests, PredictPowerEfficientWithGpuFactories) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      // Enable GpuFactories for power predictions.
+      {media::kMediaCapabilitiesQueryGpuFactories},
+      // Disable ML predictions (may/may not be disabled by default).
+      {media::kMediaLearningSmoothnessExperiment});
+
+  MediaCapabilitiesTestContext context;
+  const auto* kDecodingConfig = CreateDecodingConfig();
+  const media::mojom::blink::PredictionFeatures kFeatures = CreateFeatures();
+
+  // Setup DB to return powerEfficient = false. We later verify that opposite
+  // response from GpuFactories overrides the DB.
+  EXPECT_CALL(*context.GetPerfHistoryService(), GetPerfInfo(_, _))
+      .WillOnce(DbCallback(kFeatures, /*smooth*/ false, /*power_eff*/ false));
+
+  auto mock_gpu_factories =
+      std::make_unique<media::MockGpuVideoAcceleratorFactories>(nullptr);
+  ON_CALL(context.GetMockPlatform(), GetGpuFactories())
+      .WillByDefault(Return(mock_gpu_factories.get()));
+
+  // First, lets simulate the scenario where we ask before support is known. The
+  // async path should notify us when the info arrives. We then get GpuFactroies
+  // again and learn the config is supported.
+  EXPECT_CALL(context.GetMockPlatform(), GetGpuFactories()).Times(2);
+  {
+    // InSequence because we EXPECT two calls to IsDecoderSupportKnown with
+    // different return values.
+    InSequence s;
+    EXPECT_CALL(*mock_gpu_factories, IsDecoderSupportKnown())
+        .WillOnce(Return(false));
+    EXPECT_CALL(*mock_gpu_factories, NotifyDecoderSupportKnown(_))
+        .WillOnce(GpuFactoriesNotifyCallback());
+    EXPECT_CALL(*mock_gpu_factories, IsDecoderSupportKnown())
+        .WillOnce(Return(true));
+    EXPECT_CALL(*mock_gpu_factories, IsDecoderConfigSupported(_, _))
+        .WillOnce(
+            Return(media::GpuVideoAcceleratorFactories::Supported::kTrue));
+  }
+
+  // Info should be powerEfficient, preferring response of GpuFactories over
+  // the DB.
+  MediaCapabilitiesInfo* info = DecodingInfo(kDecodingConfig, &context);
+  EXPECT_TRUE(info->powerEfficient());
+  EXPECT_FALSE(info->smooth());
+  context.VerifyAndClearMockExpectations();
+  testing::Mock::VerifyAndClearExpectations(mock_gpu_factories.get());
+
+  // Now expect a second query with support is already known to be false. Set
+  // DB to respond with the opposite answer.
+  EXPECT_CALL(*context.GetPerfHistoryService(), GetPerfInfo(_, _))
+      .WillOnce(DbCallback(kFeatures, /*smooth*/ false, /*power_eff*/ true));
+  EXPECT_CALL(context.GetMockPlatform(), GetGpuFactories());
+  EXPECT_CALL(*mock_gpu_factories, IsDecoderSupportKnown())
+      .WillOnce(Return(true));
+  EXPECT_CALL(*mock_gpu_factories, IsDecoderConfigSupported(_, _))
+      .WillRepeatedly(
+          Return(media::GpuVideoAcceleratorFactories::Supported::kFalse));
+
+  // Info should be NOT powerEfficient, preferring response of GpuFactories over
+  // the DB.
+  info = DecodingInfo(kDecodingConfig, &context);
+  EXPECT_FALSE(info->powerEfficient());
+  EXPECT_FALSE(info->smooth());
+  context.VerifyAndClearMockExpectations();
+  testing::Mock::VerifyAndClearExpectations(mock_gpu_factories.get());
 }
 
 // Test with smoothness predictions coming solely from "bad window" ML service.
@@ -745,12 +868,18 @@ void RunCallbackPermutationTest(std::vector<PredictionType> callback_order) {
   const double kBadWindowThreshold = 2;
   const double kNnrThreshold = 3;
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      media::kMediaLearningSmoothnessExperiment,
-      MakeMlParams(kBadWindowThreshold, kNnrThreshold));
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      // Enabled features w/ parameters
+      {{media::kMediaLearningSmoothnessExperiment,
+        MakeMlParams(kBadWindowThreshold, kNnrThreshold)},
+       {media::kMediaCapabilitiesQueryGpuFactories, {}}},
+      // Disabled features.
+      {});
 
   MediaCapabilitiesTestContext context;
   const auto* kDecodingConfig = CreateDecodingConfig();
+  auto mock_gpu_factories =
+      std::make_unique<media::MockGpuVideoAcceleratorFactories>(nullptr);
 
   // DB and both ML services should be called. Save their callbacks.
   CallbackSaver cb_saver;
@@ -761,6 +890,26 @@ void RunCallbackPermutationTest(std::vector<PredictionType> callback_order) {
   EXPECT_CALL(*context.GetNnrService(), PredictDistribution(_, _))
       .WillOnce(Invoke(&cb_saver, &CallbackSaver::SaveNnrCallback));
 
+  // GpuFactories should also be called. Set it up to be async with arrival of
+  // support info. Save the "notify" callback.
+  EXPECT_CALL(context.GetMockPlatform(), GetGpuFactories())
+      .WillRepeatedly(Return(mock_gpu_factories.get()));
+  {
+    // InSequence because we EXPECT two calls to IsDecoderSupportKnown with
+    // different return values.
+    InSequence s;
+    EXPECT_CALL(*mock_gpu_factories, IsDecoderSupportKnown())
+        .WillOnce(Return(false));
+    EXPECT_CALL(*mock_gpu_factories, NotifyDecoderSupportKnown(_))
+        .WillOnce(
+            Invoke(&cb_saver, &CallbackSaver::SaveGpuFactoriesNotifyCallback));
+    EXPECT_CALL(*mock_gpu_factories, IsDecoderSupportKnown())
+        .WillOnce(Return(true));
+    EXPECT_CALL(*mock_gpu_factories, IsDecoderConfigSupported(_, _))
+        .WillRepeatedly(
+            Return(media::GpuVideoAcceleratorFactories::Supported::kFalse));
+  }
+
   // Call decodingInfo() to kick off the calls to prediction services.
   ScriptPromise promise = context.GetMediaCapabilities()->decodingInfo(
       context.GetScriptState(), kDecodingConfig, context.GetExceptionState());
@@ -769,7 +918,7 @@ void RunCallbackPermutationTest(std::vector<PredictionType> callback_order) {
   // Callbacks should all be saved after mojo's pending tasks have run.
   test::RunPendingTasks();
   ASSERT_TRUE(cb_saver.perf_history_cb() && cb_saver.bad_window_cb() &&
-              cb_saver.nnr_cb());
+              cb_saver.nnr_cb() && cb_saver.gpu_factories_notify_cb());
 
   // Complete callbacks in whatever order.
   for (size_t i = 0; i < callback_order.size(); ++i) {
@@ -784,9 +933,12 @@ void RunCallbackPermutationTest(std::vector<PredictionType> callback_order) {
       case PredictionType::kNnr:
         std::move(cb_saver.nnr_cb()).Run(MakeHistogram(kNnrThreshold + 0.5));
         break;
+      case PredictionType::kGpuFactories:
+        std::move(cb_saver.gpu_factories_notify_cb()).Run();
+        break;
     }
 
-    // Give mojo callbacks a chance to run.
+    // Give callbacks/tasks a chance to run.
     test::RunPendingTasks();
 
     // Promise should only be resolved once the final callback has run.
@@ -805,15 +957,16 @@ void RunCallbackPermutationTest(std::vector<PredictionType> callback_order) {
 
   // Smooth=false because NNR prediction exceeds threshold.
   EXPECT_FALSE(info->smooth());
-  // DB predicted power_efficient = true.
-  EXPECT_TRUE(info->powerEfficient());
+  // DB predicted power_efficient = true, but GpuFactories overrides w/ false.
+  EXPECT_FALSE(info->powerEfficient());
 }
 
 // Test that decodingInfo() behaves correctly for all orderings/timings of the
 // underlying prediction services.
 TEST(MediaCapabilitiesTests, PredictionCallbackPermutations) {
   std::vector<PredictionType> callback_order(
-      {PredictionType::kDB, PredictionType::kBadWindow, PredictionType::kNnr});
+      {PredictionType::kDB, PredictionType::kBadWindow, PredictionType::kNnr,
+       PredictionType::kGpuFactories});
   do {
     RunCallbackPermutationTest(callback_order);
   } while (std::next_permutation(callback_order.begin(), callback_order.end()));

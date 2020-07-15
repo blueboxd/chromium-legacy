@@ -12,6 +12,7 @@
 
 namespace ash {
 
+class AssistantErrorElement;
 class AssistantTextElement;
 class AssistantViewDelegate;
 
@@ -28,6 +29,7 @@ class AssistantResponseContainerView : public AnimatedContainerView {
  private:
   void InitLayout();
   void AddTextElementView(const AssistantTextElement* text_element);
+  void AddErrorElementView(const AssistantErrorElement* error_element);
 
   // AnimatedContainerView:
   std::unique_ptr<ElementAnimator> HandleUiElement(

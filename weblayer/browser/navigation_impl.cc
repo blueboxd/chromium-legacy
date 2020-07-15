@@ -87,7 +87,7 @@ jboolean NavigationImpl::SetUserAgentString(
 
 #endif
 
-bool NavigationImpl::IsRendererInitiated() {
+bool NavigationImpl::IsPageInitiated() {
   return navigation_handle_->IsRendererInitiated();
 }
 

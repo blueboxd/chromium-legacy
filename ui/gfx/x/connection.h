@@ -28,6 +28,11 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
     virtual ~Delegate() = default;
   };
 
+  struct VisualInfo {
+    const Format* format;
+    const VisualType* visual_type;
+  };
+
   // Gets or creates the singleton connection.
   static Connection* Get();
 
@@ -77,6 +82,10 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   // Dispatch any buffered events, errors, or replies.
   void Dispatch(Delegate* delegate);
 
+  // Returns the visual data for |id|, or nullptr if the visual with that ID
+  // doesn't exist or only exists on a non-default screen.
+  const VisualInfo* GetVisualInfoFromId(VisualId id) const;
+
   // Access the event buffer.  Clients can add, delete, or modify events.
   std::list<Event>& events() { return events_; }
 
@@ -108,6 +117,8 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   Screen* default_screen_ = nullptr;
   Depth* default_root_depth_ = nullptr;
   VisualType* default_root_visual_ = nullptr;
+
+  std::unordered_map<VisualId, VisualInfo> default_screen_visuals_;
 
   std::list<Event> events_;
 

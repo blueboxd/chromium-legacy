@@ -323,8 +323,9 @@ void BluetoothSocketBlueZ::AdapterPresentChanged(BluetoothAdapter* adapter,
 
   static_cast<BluetoothAdapterBlueZ*>(adapter)->UseProfile(
       uuid_, device_path_, *options_, this,
-      base::Bind(&BluetoothSocketBlueZ::OnInternalRegisterProfile, this),
-      base::Bind(&BluetoothSocketBlueZ::OnInternalRegisterProfileError, this));
+      base::BindOnce(&BluetoothSocketBlueZ::OnInternalRegisterProfile, this),
+      base::BindOnce(&BluetoothSocketBlueZ::OnInternalRegisterProfileError,
+                     this));
 }
 
 void BluetoothSocketBlueZ::OnInternalRegisterProfile(

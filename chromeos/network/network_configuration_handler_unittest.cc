@@ -14,6 +14,7 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -43,10 +44,10 @@ void CopyProperties(bool* called,
                     std::string* service_path_out,
                     base::Value* result_out,
                     const std::string& service_path,
-                    const base::DictionaryValue& result) {
+                    base::Optional<base::Value> result) {
   *called = true;
   *service_path_out = service_path;
-  *result_out = result.Clone();
+  *result_out = result ? std::move(*result) : base::Value();
 }
 
 // Copies service_path and guid returned for CreateShillConfiguration.
@@ -215,9 +216,10 @@ class NetworkConfigurationHandlerTest : public testing::Test {
   }
 
   void GetPropertiesCallback(const std::string& service_path,
-                             const base::DictionaryValue& dictionary) {
+                             base::Optional<base::Value> dictionary) {
     get_properties_path_ = service_path;
-    get_properties_ = dictionary.Clone();
+    if (dictionary)
+      get_properties_ = std::move(*dictionary);
   }
 
   void ManagerGetPropertiesCallback(const std::string& success_callback_name,
@@ -367,8 +369,7 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties) {
   base::DictionaryValue result;
   network_configuration_handler_->GetShillProperties(
       kServicePath,
-      base::BindOnce(&CopyProperties, &success, &service_path, &result),
-      base::Bind(&ErrorCallback));
+      base::BindOnce(&CopyProperties, &success, &service_path, &result));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(success);
@@ -399,8 +400,7 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties_TetherNetwork) {
   network_configuration_handler_->GetShillProperties(
       // Tether networks use service path and GUID interchangeably.
       kTetherGuid,
-      base::BindOnce(&CopyProperties, &success, &service_path, &result),
-      base::Bind(&ErrorCallback));
+      base::BindOnce(&CopyProperties, &success, &service_path, &result));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(success);
@@ -604,7 +604,7 @@ TEST_F(NetworkConfigurationHandlerTest, StubSetAndClearProperties) {
   EXPECT_EQ("SetProperties", success_callback_name_);
   std::string check_portal, passphrase;
   EXPECT_TRUE(GetServiceStringProperty(
-                  service_path, shill::kCheckPortalProperty, &check_portal));
+      service_path, shill::kCheckPortalProperty, &check_portal));
   EXPECT_TRUE(GetServiceStringProperty(service_path, shill::kPassphraseProperty,
                                        &passphrase));
   EXPECT_EQ(test_check_portal, check_portal);
@@ -625,9 +625,9 @@ TEST_F(NetworkConfigurationHandlerTest, StubSetAndClearProperties) {
 
   EXPECT_EQ("ClearProperties", success_callback_name_);
   EXPECT_FALSE(GetServiceStringProperty(
-                   service_path, shill::kCheckPortalProperty, &check_portal));
+      service_path, shill::kCheckPortalProperty, &check_portal));
   EXPECT_FALSE(GetServiceStringProperty(
-                   service_path, shill::kPassphraseProperty, &passphrase));
+      service_path, shill::kPassphraseProperty, &passphrase));
   EXPECT_EQ(2, network_state_handler_observer_->PropertyUpdatesForService(
                    service_path));
 }
@@ -654,8 +654,7 @@ TEST_F(NetworkConfigurationHandlerTest, StubGetNameFromWifiHex) {
   network_configuration_handler_->GetShillProperties(
       service_path,
       base::BindOnce(&NetworkConfigurationHandlerTest::GetPropertiesCallback,
-                     base::Unretained(this)),
-      base::Bind(&ErrorCallback));
+                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(service_path, get_properties_path_);

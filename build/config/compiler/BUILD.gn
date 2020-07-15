@@ -397,8 +397,8 @@ config("compiler") {
       ]
     }
     if (use_lld && !is_chromeos_device) {
-      # TODO(thakis): File bug against breakpad, and one that's fixed, remove
-      # these again. See https://crbug.com/1102223
+      # TODO(thakis): Fix dump_syms to not need this and then remove it,
+      # https://crbug.com/1105559
       ldflags += [
         "-Wl,-z,dead-reloc-in-nonalloc=*=0",
         "-Wl,-z,dead-reloc-in-nonalloc=.debug_ranges=1",

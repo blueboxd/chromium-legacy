@@ -45,7 +45,8 @@ ClipboardRecentContentGeneric::GetRecentURLFromClipboard() {
   // Get and clean up the clipboard before processing.
   std::string gurl_string;
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  clipboard->ReadAsciiText(ui::ClipboardBuffer::kCopyPaste, &gurl_string);
+  clipboard->ReadAsciiText(ui::ClipboardBuffer::kCopyPaste,
+                           /* data_dst = */ nullptr, &gurl_string);
   base::TrimWhitespaceASCII(gurl_string, base::TrimPositions::TRIM_ALL,
                             &gurl_string);
 
@@ -63,7 +64,8 @@ ClipboardRecentContentGeneric::GetRecentURLFromClipboard() {
     // Fall back to unicode / UTF16, as some URLs may use international domain
     // names, not punycode.
     base::string16 gurl_string16;
-    clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &gurl_string16);
+    clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste,
+                        /* data_dst = */ nullptr, &gurl_string16);
     base::TrimWhitespace(gurl_string16, base::TrimPositions::TRIM_ALL,
                          &gurl_string16);
     if (gurl_string16.find_first_of(base::kWhitespaceUTF16) !=
@@ -85,7 +87,8 @@ ClipboardRecentContentGeneric::GetRecentTextFromClipboard() {
 
   base::string16 text_from_clipboard;
   ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, &text_from_clipboard);
+      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr,
+      &text_from_clipboard);
   base::TrimWhitespace(text_from_clipboard, base::TrimPositions::TRIM_ALL,
                        &text_from_clipboard);
   if (text_from_clipboard.empty()) {
@@ -102,6 +105,7 @@ void ClipboardRecentContentGeneric::GetRecentImageFromClipboard(
 
   ui::Clipboard::GetForCurrentThread()->ReadImage(
       ui::ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr,
       base::BindOnce(&OnGetRecentImageFromClipboard, std::move(callback)));
 }
 
@@ -110,8 +114,8 @@ bool ClipboardRecentContentGeneric::HasRecentImageFromClipboard() {
     return false;
 
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
-      ui::ClipboardFormatType::GetBitmapType(),
-      ui::ClipboardBuffer::kCopyPaste);
+      ui::ClipboardFormatType::GetBitmapType(), ui::ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr);
 }
 
 base::TimeDelta ClipboardRecentContentGeneric::GetClipboardContentAge() const {

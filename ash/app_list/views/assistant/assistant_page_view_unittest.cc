@@ -27,6 +27,10 @@ namespace {
 using chromeos::assistant::AssistantInteractionMetadata;
 using chromeos::assistant::AssistantInteractionType;
 
+// The min/max height of the embedded Assistant.
+constexpr int kMaxHeightDip = 440;
+constexpr int kMinHeightDip = 180;
+
 #define EXPECT_INTERACTION_OF_TYPE(type_)                      \
   ({                                                           \
     base::Optional<AssistantInteractionMetadata> interaction = \
@@ -262,7 +266,7 @@ TEST_F(AssistantPageViewTest, ShouldStartAtMinimumHeight) {
   ShowAssistantUi();
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kMinHeightEmbeddedDip, main_view()->size().height());
+  EXPECT_EQ(kMinHeightDip, main_view()->size().height());
 }
 
 TEST_F(AssistantPageViewTest,
@@ -272,7 +276,7 @@ TEST_F(AssistantPageViewTest,
   MockTextInteraction().WithTextResponse("Short one-liner");
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kMinHeightEmbeddedDip, main_view()->size().height());
+  EXPECT_EQ(kMinHeightDip, main_view()->size().height());
 }
 
 TEST_F(AssistantPageViewTest, ShouldGetBiggerWithMultilineText) {
@@ -282,7 +286,7 @@ TEST_F(AssistantPageViewTest, ShouldGetBiggerWithMultilineText) {
       "This\ntext\nhas\na\nlot\nof\nlinebreaks.");
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kMaxHeightEmbeddedDip, main_view()->size().height());
+  EXPECT_EQ(kMaxHeightDip, main_view()->size().height());
 }
 
 TEST_F(AssistantPageViewTest, ShouldGetBiggerWhenWrappingTextLine) {
@@ -294,7 +298,7 @@ TEST_F(AssistantPageViewTest, ShouldGetBiggerWhenWrappingTextLine) {
       "If it doesn't, this looks really bad. This is what caused b/134963994.");
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kMaxHeightEmbeddedDip, main_view()->size().height());
+  EXPECT_EQ(kMaxHeightDip, main_view()->size().height());
 }
 
 TEST_F(AssistantPageViewTest, ShouldNotRequestFocusWhenOtherAppWindowOpens) {

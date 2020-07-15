@@ -1670,7 +1670,10 @@ EVENT_TYPE(HTTP2_PROXY_CLIENT_SESSION)
 // Measures the time taken to execute the QuicStreamFactory::Job.
 // The event parameters are:
 //   {
-//     "server_id": <The quic::QuicServerId that the Job serves>,
+//     "host": <The origin hostname that the Job serves>,
+//     "port": <The origin port>,
+//     "privacy_mode": <The privacy mode of the Job>,
+//     "network_isolation_key": <The NetworkIsolationKey of the Job>,
 //   }
 EVENT_TYPE(QUIC_STREAM_FACTORY_JOB)
 
@@ -1714,7 +1717,14 @@ EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_MATCHED)
 
 // The start/end of a quic::QuicSession.
 //   {
-//     "host": <The host-port string>,
+//     "host": <The origin hostname string>,
+//     "port": <The origin port>,
+//     "privacy_mode": <The privacy mode of the session>,
+//     "network_isolation_key": <The NetworkIsolationKey of the session>,
+//     "require_confirmation": <True if the session will wait for a successful
+//                              QUIC handshake before vending streams>,
+//     "cert_verify_flags": <The certificate verification flags for the
+//                           session>,
 //   }
 EVENT_TYPE(QUIC_SESSION)
 

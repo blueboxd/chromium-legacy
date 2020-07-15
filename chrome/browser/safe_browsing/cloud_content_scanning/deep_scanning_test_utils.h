@@ -49,7 +49,8 @@ class EventReportValidator {
       const std::string& expected_trigger,
       const ContentAnalysisScanResult& expected_dlp_verdict,
       const std::set<std::string>* expected_mimetypes,
-      int expected_content_size);
+      int expected_content_size,
+      const std::string& expected_result);
 
   void ExpectDangerousDeepScanningResultAndSensitiveDataEvent(
       const std::string& expected_url,
@@ -59,7 +60,8 @@ class EventReportValidator {
       const std::string& expected_trigger,
       const ContentAnalysisScanResult& expected_dlp_verdict,
       const std::set<std::string>* expected_mimetypes,
-      int expected_content_size);
+      int expected_content_size,
+      const std::string& expected_result);
 
   void ExpectUnscannedFileEvent(const std::string& expected_url,
                                 const std::string& expected_filename,
@@ -99,7 +101,6 @@ class EventReportValidator {
   base::Optional<ContentAnalysisScanResult> dlp_verdict_ = base::nullopt;
   base::Optional<std::string> threat_type_ = base::nullopt;
   base::Optional<std::string> unscanned_reason_ = base::nullopt;
-  base::Optional<bool> clicked_through_ = base::nullopt;
   base::Optional<int> content_size_ = base::nullopt;
   const std::set<std::string>* mimetypes_ = nullptr;
   base::Optional<std::string> result_ = base::nullopt;

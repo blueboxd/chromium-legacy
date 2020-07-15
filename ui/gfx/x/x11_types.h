@@ -44,41 +44,6 @@ GFX_EXPORT XDisplay* GetXDisplay();
 // same X server.  It's the caller's responsibility to call XCloseDisplay().
 GFX_EXPORT XDisplay* CloneXDisplay(XDisplay* display);
 
-// Return the number of bits-per-pixel for a pixmap of the given depth
-GFX_EXPORT int BitsPerPixelForPixmapDepth(XDisplay* display, int depth);
-
-// Draws ARGB data on the given pixmap using the given GC, converting to the
-// server side visual depth as needed.  Destination is assumed to be the same
-// dimensions as |data| or larger.  |data| is also assumed to be in row order
-// with each line being exactly |width| * 4 bytes long.
-GFX_EXPORT void PutARGBImage(XDisplay* display,
-                             void* visual,
-                             int depth,
-                             XID pixmap,
-                             void* pixmap_gc,
-                             const uint8_t* data,
-                             int width,
-                             int height);
-
-// Same as above only more general:
-// - |data_width| and |data_height| refer to the data image
-// - |src_x|, |src_y|, |copy_width| and |copy_height| define source region
-// - |dst_x|, |dst_y|, |copy_width| and |copy_height| define destination region
-GFX_EXPORT void PutARGBImage(XDisplay* display,
-                             void* visual,
-                             int depth,
-                             XID pixmap,
-                             void* pixmap_gc,
-                             const uint8_t* data,
-                             int data_width,
-                             int data_height,
-                             int src_x,
-                             int src_y,
-                             int dst_x,
-                             int dst_y,
-                             int copy_width,
-                             int copy_height);
-
 }  // namespace gfx
 
 #endif  // UI_GFX_X_X11_UTIL_H_

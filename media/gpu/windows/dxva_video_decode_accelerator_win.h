@@ -582,7 +582,10 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   bool using_angle_device_;
   bool using_debug_device_;
 
-  // Enables hardware acceleration for VP9 video decoding.
+  // Enables hardware acceleration for AV1 video decoding.
+  const bool enable_accelerated_av1_decode_;
+
+  // Enables hardware acceleration for VP8/VP9 video decoding.
   const bool enable_accelerated_vpx_decode_;
 
   // The media foundation H.264 decoder has problems handling changes like

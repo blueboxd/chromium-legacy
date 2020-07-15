@@ -20,6 +20,7 @@ class DiscoverScreen : public BaseScreen {
   enum class Result { NEXT, NOT_APPLICABLE };
 
   static std::string GetResultString(Result result);
+  static bool ShouldSkip();
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   DiscoverScreen(DiscoverScreenView* view,

@@ -92,7 +92,8 @@ void AutofillPopupViewAndroid::OnSuggestionsChanged() {
     bool is_label_multiline =
         suggestion.frontend_id ==
             POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE ||
-        suggestion.frontend_id == POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO;
+        suggestion.frontend_id == POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO ||
+        suggestion.frontend_id == POPUP_ITEM_ID_MIXED_FORM_MESSAGE;
     Java_AutofillPopupBridge_addToAutofillSuggestionArray(
         env, data_array, i, value, label, android_icon_id,
         /*icon_at_start=*/false, suggestion.frontend_id, is_deletable,

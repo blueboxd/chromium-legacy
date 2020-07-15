@@ -134,6 +134,7 @@ MEDIA_EXPORT extern const base::Feature kInternalMediaSession;
 MEDIA_EXPORT extern const base::Feature kKaleidoscope;
 MEDIA_EXPORT extern const base::Feature kLiveCaption;
 MEDIA_EXPORT extern const base::Feature kLowDelayVideoRenderingOnLiveStream;
+MEDIA_EXPORT extern const base::Feature kMediaCapabilitiesQueryGpuFactories;
 MEDIA_EXPORT extern const base::Feature kMediaCapabilitiesWithParameters;
 MEDIA_EXPORT extern const base::Feature kMediaCastOverlayButton;
 MEDIA_EXPORT extern const base::Feature kMediaEngagementBypassAutoplayPolicies;

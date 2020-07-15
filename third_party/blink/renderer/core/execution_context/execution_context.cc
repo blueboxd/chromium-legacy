@@ -324,8 +324,10 @@ String ExecutionContext::OutgoingReferrer() const {
   return Url().StrippedForUseAsReferrer();
 }
 
-void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,
-                                                 bool support_legacy_keywords) {
+void ExecutionContext::ParseAndSetReferrerPolicy(
+    const String& policies,
+    bool support_legacy_keywords,
+    bool from_meta_tag_with_list_of_policies) {
   network::mojom::ReferrerPolicy referrer_policy;
 
   if (!SecurityPolicy::ReferrerPolicyFromHeaderValue(
@@ -349,16 +351,20 @@ void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,
     return;
   }
 
-  SetReferrerPolicy(referrer_policy);
+  SetReferrerPolicy(referrer_policy, from_meta_tag_with_list_of_policies);
 }
 
 void ExecutionContext::SetReferrerPolicy(
-    network::mojom::ReferrerPolicy referrer_policy) {
+    network::mojom::ReferrerPolicy referrer_policy,
+    bool from_meta_tag_with_list_of_policies) {
   // When a referrer policy has already been set, the latest value takes
   // precedence.
   UseCounter::Count(this, WebFeature::kSetReferrerPolicy);
   if (referrer_policy_ != network::mojom::ReferrerPolicy::kDefault)
     UseCounter::Count(this, WebFeature::kResetReferrerPolicy);
+
+  if (!from_meta_tag_with_list_of_policies)
+    referrer_policy_but_for_meta_tags_with_lists_of_policies_ = referrer_policy;
 
   referrer_policy_ = referrer_policy;
 }

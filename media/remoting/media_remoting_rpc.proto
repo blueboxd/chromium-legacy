@@ -16,7 +16,7 @@ message DecoderBuffer {
   optional int64 timestamp_usec = 1;
   optional int64 duration_usec = 2;
   optional bool is_key_frame = 3;
-  optional DecryptConfig decrypt_config = 4;
+  optional DecryptConfig decrypt_config = 4 [deprecated = true];
   optional int64 front_discard_usec = 5;
   optional int64 back_discard_usec = 6;
   optional int64 splice_timestamp_usec = 7 [deprecated=true];
@@ -35,14 +35,14 @@ message EncryptionScheme {
   // Proto version of EncryptionScheme::CipherMode.
   // NEVER change these numbers or re-use old ones; only add new ones.
   enum CipherMode {
-    CIPHER_MODE_UNENCRYPTED = 0;
-    CIPHER_MODE_AES_CTR = 1;
-    CIPHER_MODE_AES_CBC = 2;
+    CIPHER_MODE_UNENCRYPTED = 0 [deprecated = true];
+    CIPHER_MODE_AES_CTR = 1 [deprecated = true];
+    CIPHER_MODE_AES_CBC = 2 [deprecated = true];
   }
 
-  optional CipherMode mode = 1;
-  optional uint32 encrypt_blocks = 2;
-  optional uint32 skip_blocks = 3;
+  optional CipherMode mode = 1 [deprecated = true];
+  optional uint32 encrypt_blocks = 2 [deprecated = true];
+  optional uint32 skip_blocks = 3 [deprecated = true];
 }
 
 message AudioDecoderConfig {
@@ -125,7 +125,7 @@ message AudioDecoderConfig {
   };
 
   optional Codec codec = 1;
-  optional EncryptionScheme encryption_scheme = 2;
+  optional EncryptionScheme encryption_scheme = 2 [deprecated = true];
   optional SampleFormat sample_format = 3;
   optional ChannelLayout channel_layout = 4;
   optional int32 samples_per_second = 5;
@@ -239,7 +239,7 @@ message VideoDecoderConfig {
   };
 
   optional Codec codec = 1;
-  optional EncryptionScheme encryption_scheme = 2;
+  optional EncryptionScheme encryption_scheme = 2 [deprecated = true];
   optional Profile profile = 3;
   optional Format format = 4;
   optional ColorSpace color_space = 5;
@@ -252,29 +252,29 @@ message VideoDecoderConfig {
 // Proto version of media::EncryptionMode
 // NEVER change these numbers or re-use old ones; only add new ones.
 enum EncryptionMode {
-  kUnencrypted = 0;
-  kCenc = 1;
-  kCbcs = 2;
+  kUnencrypted = 0 [deprecated = true];
+  kCenc = 1 [deprecated = true];
+  kCbcs = 2 [deprecated = true];
 }
 
 message DecryptConfig {
   message SubSample {
-    optional uint32 clear_bytes = 1;
-    optional uint32 cypher_bytes = 2;
+    optional uint32 clear_bytes = 1 [deprecated = true];
+    optional uint32 cypher_bytes = 2 [deprecated = true];
   }
 
-  optional bytes key_id = 1;
-  optional bytes iv = 2;
-  repeated SubSample sub_samples = 3;
-  optional EncryptionMode mode = 4;
-  optional uint32 crypt_byte_block = 5;
-  optional uint32 skip_byte_block = 6;
+  optional bytes key_id = 1 [deprecated = true];
+  optional bytes iv = 2 [deprecated = true];
+  repeated SubSample sub_samples = 3 [deprecated = true];
+  optional EncryptionMode mode = 4 [deprecated = true];
+  optional uint32 crypt_byte_block = 5 [deprecated = true];
+  optional uint32 skip_byte_block = 6 [deprecated = true];
 }
 
 message PipelineDecoderInfo {
   optional string decoder_name = 1;
   optional bool is_platform_decoder = 2;
-  optional bool has_decrypting_demuxer_stream = 3;
+  optional bool has_decrypting_demuxer_stream = 3 [deprecated = true];
 };
 
 message PipelineStatistics {
@@ -293,48 +293,48 @@ message CdmKeyInformation {
   // Proto version of media::CdmKeyInformation::KeyStatus.
   // NEVER change these numbers or re-use old ones; only add new ones.
   enum KeyStatus {
-    USABLE = 0;
-    INTERNAL_ERROR = 1;
-    EXPIRED = 2;
-    OUTPUT_RESTRICTED = 3;
-    OUTPUT_DOWNSCALED = 4;
-    KEY_STATUS_PENDING = 5;
-    RELEASED = 6;
+    USABLE = 0 [deprecated = true];
+    INTERNAL_ERROR = 1 [deprecated = true];
+    EXPIRED = 2 [deprecated = true];
+    OUTPUT_RESTRICTED = 3 [deprecated = true];
+    OUTPUT_DOWNSCALED = 4 [deprecated = true];
+    KEY_STATUS_PENDING = 5 [deprecated = true];
+    RELEASED = 6 [deprecated = true];
   }
 
-  optional bytes key_id = 1;
-  optional KeyStatus status = 2;
-  optional uint32 system_code = 3;
+  optional bytes key_id = 1 [deprecated = true];
+  optional KeyStatus status = 2 [deprecated = true];
+  optional uint32 system_code = 3 [deprecated = true];
 }
 
 // Proto version of media::CdmPromise::Exception.
 // NEVER change these numbers or re-use old ones; only add new ones.
 enum CdmException {
-  NOT_SUPPORTED_ERROR = 0;
-  INVALID_STATE_ERROR = 1;
+  NOT_SUPPORTED_ERROR = 0 [deprecated = true];
+  INVALID_STATE_ERROR = 1 [deprecated = true];
   INVALID_ACCESS_ERROR = 2 [deprecated = true];
-  QUOTA_EXCEEDED_ERROR = 3;
+  QUOTA_EXCEEDED_ERROR = 3 [deprecated = true];
   UNKNOWN_ERROR = 4 [deprecated = true];
   CLIENT_ERROR = 5 [deprecated = true];
   OUTPUT_ERROR = 6 [deprecated = true];
-  TYPE_ERROR = 7;
+  TYPE_ERROR = 7 [deprecated = true];
 }
 
 // Proto version of media::CdmMessageType.
 // NEVER change these numbers or re-use old ones; only add new ones.
 enum CdmMessageType {
-  LICENSE_REQUEST = 0;
-  LICENSE_RENEWAL = 1;
-  LICENSE_RELEASE = 2;
-  INDIVIDUALIZATION_REQUEST = 3;
+  LICENSE_REQUEST = 0 [deprecated = true];
+  LICENSE_RENEWAL = 1 [deprecated = true];
+  LICENSE_RELEASE = 2 [deprecated = true];
+  INDIVIDUALIZATION_REQUEST = 3 [deprecated = true];
 }
 
 // Proto version of media::CdmSessionType.
 // NEVER change these numbers or re-use old ones; only add new ones.
 enum CdmSessionType {
-  kTemporary = 0;
-  kPersistentLicense = 1;
-  kPersistentUsageRecord = 2;
+  kTemporary = 0 [deprecated = true];
+  kPersistentLicense = 1 [deprecated = true];
+  kPersistentUsageRecord = 2 [deprecated = true];
 };
 
 message AcquireDemuxer {
@@ -356,8 +356,8 @@ message RendererFlushUntil {
 }
 
 message RendererSetCdm {
-  optional int32 cdm_id = 1;
-  optional int32 callback_handle = 2;
+  optional int32 cdm_id = 1 [deprecated = true];
+  optional int32 callback_handle = 2 [deprecated = true];
 }
 
 message RendererClientOnTimeUpdate {
@@ -412,84 +412,84 @@ message DemuxerStreamReadUntilCallback {
 }
 
 message CdmInitialize {
-  optional string key_system = 1;
-  optional string security_origin = 2;
-  optional bool allow_distinctive_identifier = 3;
-  optional bool allow_persistent_state = 4;
-  optional bool use_hw_secure_codecs = 5;
-  optional int32 callback_handle = 6;
+  optional string key_system = 1 [deprecated = true];
+  optional string security_origin = 2 [deprecated = true];
+  optional bool allow_distinctive_identifier = 3 [deprecated = true];
+  optional bool allow_persistent_state = 4 [deprecated = true];
+  optional bool use_hw_secure_codecs = 5 [deprecated = true];
+  optional int32 callback_handle = 6 [deprecated = true];
 }
 
 message CdmSetServerCertificate {
-  optional int32 callback_handle = 1;
-  optional bytes certificate_data = 2;
+  optional int32 callback_handle = 1 [deprecated = true];
+  optional bytes certificate_data = 2 [deprecated = true];
 }
 
 message CdmCreateSessionAndGenerateRequest {
   // Proto version of media::EmeInitDataType.
   // NEVER change these numbers or re-use old ones; only add new ones.
   enum EmeInitDataType {
-    UNKNOWN = 0;
-    WEBM = 1;
-    CENC = 2;
-    KEYIDS = 3;
+    UNKNOWN = 0 [deprecated = true];
+    WEBM = 1 [deprecated = true];
+    CENC = 2 [deprecated = true];
+    KEYIDS = 3 [deprecated = true];
   };
 
-  optional CdmSessionType session_type = 1;
-  optional EmeInitDataType init_data_type = 2;
-  optional int32 callback_handle = 3;
-  optional bytes init_data = 4;
+  optional CdmSessionType session_type = 1 [deprecated = true];
+  optional EmeInitDataType init_data_type = 2 [deprecated = true];
+  optional int32 callback_handle = 3 [deprecated = true];
+  optional bytes init_data = 4 [deprecated = true];
 }
 
 message CdmLoadSession {
-  optional CdmSessionType session_type = 1;
-  optional string session_id = 2;
-  optional int32 callback_handle = 3;
+  optional CdmSessionType session_type = 1 [deprecated = true];
+  optional string session_id = 2 [deprecated = true];
+  optional int32 callback_handle = 3 [deprecated = true];
 }
 
 message CdmUpdateSession {
-  optional string session_id = 1;
-  optional int32 callback_handle = 2;
-  optional bytes response = 3;
+  optional string session_id = 1 [deprecated = true];
+  optional int32 callback_handle = 2 [deprecated = true];
+  optional bytes response = 3 [deprecated = true];
 }
 
 message CdmCloseSession {
-  optional string session_id = 1;
-  optional int32 callback_handle = 2;
+  optional string session_id = 1 [deprecated = true];
+  optional int32 callback_handle = 2 [deprecated = true];
 }
 
 message CdmRemoveSession {
-  optional string session_id = 1;
-  optional int32 callback_handle = 2;
+  optional string session_id = 1 [deprecated = true];
+  optional int32 callback_handle = 2 [deprecated = true];
 }
 
 message CdmPromise {
   // These two fields are used only for RPC_CDM_INITIALIZE_CALLBACK
-  optional int32 cdm_id = 1;
-  optional int32 decryptor_handle = 2;
+  optional int32 cdm_id = 1 [deprecated = true];
+  optional int32 decryptor_handle = 2 [deprecated = true];
 
-  optional string session_id = 3;
-  optional bool success = 4;
-  optional CdmException exception = 5;
-  optional uint32 system_code = 6;
-  optional string error_message = 7;
+  optional string session_id = 3 [deprecated = true];
+  optional bool success = 4 [deprecated = true];
+  optional CdmException exception = 5 [deprecated = true];
+  optional uint32 system_code = 6 [deprecated = true];
+  optional string error_message = 7 [deprecated = true];
 }
 
 message CdmClientOnSessionMessage {
-  optional string session_id = 1;
-  optional CdmMessageType message_type = 2;
-  optional bytes message = 3;
+  optional string session_id = 1 [deprecated = true];
+  optional CdmMessageType message_type = 2 [deprecated = true];
+  optional bytes message = 3 [deprecated = true];
 }
 
 message CdmClientOnSessionKeysChange {
-  optional string session_id = 1;
-  optional bool has_additional_usable_key = 2;
-  repeated CdmKeyInformation key_information = 3;
+  optional string session_id = 1 [deprecated = true];
+  optional bool has_additional_usable_key = 2 [deprecated = true];
+  repeated CdmKeyInformation key_information = 3 [deprecated = true];
 }
 
 message CdmClientOnSessionExpirationUpdate {
-  optional string session_id = 1;
-  optional double new_expiry_time_sec = 2;
+  optional string session_id = 1 [deprecated = true];
+  optional double new_expiry_time_sec = 2 [deprecated = true];
 }
 
 message RpcMessage {
@@ -498,8 +498,8 @@ message RpcMessage {
     RPC_INTERNAL = 0;
     RPC_ACQUIRE_RENDERER = 1;
     RPC_ACQUIRE_RENDERER_DONE = 2;
-    RPC_ACQUIRE_CDM = 3;
-    RPC_ACQUIRE_CDM_DONE = 4;
+    RPC_ACQUIRE_CDM = 3 [deprecated = true];
+    RPC_ACQUIRE_CDM_DONE = 4 [deprecated = true];
     RPC_ACQUIRE_DEMUXER = 5;
     // Renderer message
     RPC_R_INITIALIZE = 1000;
@@ -507,7 +507,7 @@ message RpcMessage {
     RPC_R_STARTPLAYINGFROM = 1002;
     RPC_R_SETPLAYBACKRATE = 1003;
     RPC_R_SETVOLUME = 1004;
-    RPC_R_SETCDM = 1005;
+    RPC_R_SETCDM = 1005 [deprecated = true];
     // Renderer callbacks
     RPC_R_INITIALIZE_CALLBACK = 1100;
     RPC_R_FLUSHUNTIL_CALLBACK = 1101;
@@ -520,7 +520,7 @@ message RpcMessage {
     RPC_RC_ONVIDEONATURALSIZECHANGE = 2004;
     RPC_RC_ONVIDEOOPACITYCHANGE = 2005;
     RPC_RC_ONSTATISTICSUPDATE = 2006;
-    RPC_RC_ONWAITINGFORDECRYPTIONKEY = 2007;
+    RPC_RC_ONWAITINGFORDECRYPTIONKEY = 2007 [deprecated = true];
     RPC_RC_ONDURATIONCHANGE = 2008 [deprecated = true];  // Never actually used
     RPC_RC_ONAUDIOCONFIGCHANGE = 2009;
     RPC_RC_ONVIDEOCONFIGCHANGE = 2010;
@@ -533,27 +533,27 @@ message RpcMessage {
     RPC_DS_INITIALIZE_CALLBACK = 3100;
     RPC_DS_READUNTIL_CALLBACK = 3101;
     // ContentDecryptionModule
-    RPC_CDM_SETCLIENT = 4000;
-    RPC_CDM_INITIALIZE = 4001;
-    RPC_CDM_SETSERVERCERTIFICATE = 4002;
-    RPC_CDM_CREATESESSIONANDGENERATEREQUEST = 4003;
-    RPC_CDM_LOADSESSION = 4004;
-    RPC_CDM_UPDATESESSION = 4005;
-    RPC_CDM_CLOSESESSION = 4006;
-    RPC_CDM_REMOVESESSION = 4007;
+    RPC_CDM_SETCLIENT = 4000 [deprecated = true];
+    RPC_CDM_INITIALIZE = 4001 [deprecated = true];
+    RPC_CDM_SETSERVERCERTIFICATE = 4002 [deprecated = true];
+    RPC_CDM_CREATESESSIONANDGENERATEREQUEST = 4003 [deprecated = true];
+    RPC_CDM_LOADSESSION = 4004 [deprecated = true];
+    RPC_CDM_UPDATESESSION = 4005 [deprecated = true];
+    RPC_CDM_CLOSESESSION = 4006 [deprecated = true];
+    RPC_CDM_REMOVESESSION = 4007 [deprecated = true];
     // ContentDecryptionModule callbacks
-    RPC_CDM_INITIALIZE_CALLBACK = 4100;
-    RPC_CDM_SETSERVERCERTIFICATE_CALLBACK = 4101;
-    RPC_CDM_CREATESESSIONANDGENERATEREQUEST_CALLBACK = 4102;
-    RPC_CDM_LOADSESSION_CALLBACK = 4103;
-    RPC_CDM_UPDATESESSION_CALLBACK = 4104;
-    RPC_CDM_CLOSESESSION_CALLBACK = 4105;
-    RPC_CDM_REMOVESESSION_CALLBACK = 4106;
+    RPC_CDM_INITIALIZE_CALLBACK = 4100 [deprecated = true];
+    RPC_CDM_SETSERVERCERTIFICATE_CALLBACK = 4101 [deprecated = true];
+    RPC_CDM_CREATESESSIONANDGENERATEREQUEST_CALLBACK = 4102 [deprecated = true];
+    RPC_CDM_LOADSESSION_CALLBACK = 4103 [deprecated = true];
+    RPC_CDM_UPDATESESSION_CALLBACK = 4104 [deprecated = true];
+    RPC_CDM_CLOSESESSION_CALLBACK = 4105 [deprecated = true];
+    RPC_CDM_REMOVESESSION_CALLBACK = 4106 [deprecated = true];
     // ContentDecryptionModule client
-    RPC_CDMC_ONSESSIONMESSAGE = 5000;
-    RPC_CDMC_ONSESSIONCLOSED = 5001;
-    RPC_CDMC_ONSESSIONKEYSCHANGE = 5002;
-    RPC_CDMC_ONSESSIONEXPIRATIONUPDATE = 5003;
+    RPC_CDMC_ONSESSIONMESSAGE = 5000 [deprecated = true];
+    RPC_CDMC_ONSESSIONCLOSED = 5001 [deprecated = true];
+    RPC_CDMC_ONSESSIONKEYSCHANGE = 5002 [deprecated = true];
+    RPC_CDMC_ONSESSIONEXPIRATIONUPDATE = 5003 [deprecated = true];
   };
 
   // Component base of RPC message handle. This allows both sender and receiver
@@ -599,7 +599,7 @@ message RpcMessage {
     RendererFlushUntil renderer_flushuntil_rpc = 101;
 
     // RPC_R_SETCDM
-    RendererSetCdm renderer_set_cdm_rpc = 102;
+    RendererSetCdm renderer_set_cdm_rpc = 102 [deprecated = true];
 
     // RPC_ACQUIRE_DEMUXER
     AcquireDemuxer acquire_demuxer_rpc = 103;
@@ -629,20 +629,21 @@ message RpcMessage {
     DemuxerStreamReadUntilCallback demuxerstream_readuntilcb_rpc = 401;
 
     // RPC_CDM_INITIALIZE
-    CdmInitialize cdm_initialize_rpc = 500;
+    CdmInitialize cdm_initialize_rpc = 500 [deprecated = true];
     // RPC_CDM_SETSERVERCERTIFICATE
-    CdmSetServerCertificate cdm_setservercertificate_rpc = 501;
+    CdmSetServerCertificate cdm_setservercertificate_rpc = 501
+        [deprecated = true];
     // RPC_CDM_CREATESESSIONANDGENERATEREQUEST
     CdmCreateSessionAndGenerateRequest cdm_createsessionandgeneraterequest_rpc =
-        502;
+        502 [deprecated = true];
     // RPC_CDM_LOADSESSION
-    CdmLoadSession cdm_loadsession_rpc = 503;
+    CdmLoadSession cdm_loadsession_rpc = 503 [deprecated = true];
     // RPC_CDM_UPDATESESSION
-    CdmUpdateSession cdm_updatesession_rpc = 504;
+    CdmUpdateSession cdm_updatesession_rpc = 504 [deprecated = true];
     // RPC_CDM_CLOSESESSION
-    CdmCloseSession cdm_closesession_rpc = 505;
+    CdmCloseSession cdm_closesession_rpc = 505 [deprecated = true];
     // RPC_CDM_REMOVESESSION
-    CdmRemoveSession cdm_removesession_rpc = 506;
+    CdmRemoveSession cdm_removesession_rpc = 506 [deprecated = true];
 
     // CdmPromise message type used for the following procedure
     // RPC_CDM_INITIALIZE_CALLBACK
@@ -652,14 +653,16 @@ message RpcMessage {
     // RPC_CDM_UPDATESESSION_CALLBACK
     // RPC_CDM_CLOSESESSION_CALLBACK
     // RPC_CDM_REMOVESESSION_CALLBACK
-    CdmPromise cdm_promise_rpc = 600;
+    CdmPromise cdm_promise_rpc = 600 [deprecated = true];
 
     // RPC_CDMC_ONSESSIONMESSAGE
-    CdmClientOnSessionMessage cdmclient_onsessionmessage_rpc = 601;
+    CdmClientOnSessionMessage cdmclient_onsessionmessage_rpc = 601
+        [deprecated = true];
     // RPC_CDMC_ONSESSIONKEYSCHANGE
-    CdmClientOnSessionKeysChange cdmclient_onsessionkeychange_rpc = 602;
+    CdmClientOnSessionKeysChange cdmclient_onsessionkeychange_rpc = 602
+        [deprecated = true];
     // RPC_CDMC_ONSESSIONEXPIRATIONUPDATE
     CdmClientOnSessionExpirationUpdate cdmclient_onsessionexpirationupdate_rpc =
-        603;
+        603 [deprecated = true];
   };
 }

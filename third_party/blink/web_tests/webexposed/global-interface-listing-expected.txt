@@ -2439,13 +2439,10 @@ interface FileReader : EventTarget
     setter onloadstart
     setter onprogress
 interface FileSystemDirectoryHandle : FileSystemHandle
-    static method getSystemDirectory
     attribute @@toStringTag
     method constructor
-    method getDirectory
     method getDirectoryHandle
     method getEntries
-    method getFile
     method getFileHandle
     method removeEntry
     method resolve
@@ -2456,8 +2453,6 @@ interface FileSystemFileHandle : FileSystemHandle
     method getFile
 interface FileSystemHandle
     attribute @@toStringTag
-    getter isDirectory
-    getter isFile
     getter kind
     getter name
     method constructor
@@ -11921,7 +11916,6 @@ interface webkitURL
     method cancelAnimationFrame
     method cancelIdleCallback
     method captureEvents
-    method chooseFileSystemEntries
     method clearInterval
     method clearTimeout
     method close

@@ -493,13 +493,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method readAsDataURL
 [Worker]     method readAsText
 [Worker] interface FileSystemDirectoryHandle : FileSystemHandle
-[Worker]     static method getSystemDirectory
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
-[Worker]     method getDirectory
 [Worker]     method getDirectoryHandle
 [Worker]     method getEntries
-[Worker]     method getFile
 [Worker]     method getFileHandle
 [Worker]     method removeEntry
 [Worker]     method resolve
@@ -510,8 +507,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method getFile
 [Worker] interface FileSystemHandle
 [Worker]     attribute @@toStringTag
-[Worker]     getter isDirectory
-[Worker]     getter isFile
 [Worker]     getter kind
 [Worker]     getter name
 [Worker]     method constructor

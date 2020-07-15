@@ -26,6 +26,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_activity_monitor.h"
 #include "net/base/network_isolation_key.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/url_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_event_type.h"
@@ -270,25 +271,28 @@ std::string MigrationCauseToString(MigrationCause cause) {
 }
 
 base::Value NetLogQuicClientSessionParams(
-    const quic::QuicServerId* server_id,
+    const QuicSessionKey* session_key,
     const quic::QuicConnectionId& connection_id,
     const quic::QuicConnectionId& client_connection_id,
     const quic::ParsedQuicVersionVector& supported_versions,
     int cert_verify_flags,
     bool require_confirmation) {
-  base::DictionaryValue dict;
-  dict.SetString("host", server_id->host());
-  dict.SetInteger("port", server_id->port());
-  dict.SetBoolean("privacy_mode", server_id->privacy_mode_enabled());
-  dict.SetBoolean("require_confirmation", require_confirmation);
-  dict.SetInteger("cert_verify_flags", cert_verify_flags);
-  dict.SetString("connection_id", connection_id.ToString());
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("host", session_key->server_id().host());
+  dict.SetIntKey("port", session_key->server_id().port());
+  dict.SetStringKey("privacy_mode",
+                    PrivacyModeToDebugString(session_key->privacy_mode()));
+  dict.SetStringKey("network_isolation_key",
+                    session_key->network_isolation_key().ToDebugString());
+  dict.SetBoolKey("require_confirmation", require_confirmation);
+  dict.SetIntKey("cert_verify_flags", cert_verify_flags);
+  dict.SetStringKey("connection_id", connection_id.ToString());
   if (!client_connection_id.IsEmpty()) {
-    dict.SetString("client_connection_id", client_connection_id.ToString());
+    dict.SetStringKey("client_connection_id", client_connection_id.ToString());
   }
-  dict.SetString("versions",
-                 ParsedQuicVersionVectorToString(supported_versions));
-  return std::move(dict);
+  dict.SetStringKey("versions",
+                    ParsedQuicVersionVectorToString(supported_versions));
+  return dict;
 }
 
 base::Value NetLogQuicPushPromiseReceivedParams(
@@ -881,9 +885,8 @@ QuicChromiumClientSession::QuicChromiumClientSession(
   migrate_back_to_default_timer_.SetTaskRunner(task_runner_);
   net_log_.BeginEvent(NetLogEventType::QUIC_SESSION, [&] {
     return NetLogQuicClientSessionParams(
-        &session_key.server_id(), connection_id(),
-        connection->client_connection_id(), supported_versions(),
-        cert_verify_flags, require_confirmation_);
+        &session_key, connection_id(), connection->client_connection_id(),
+        supported_versions(), cert_verify_flags, require_confirmation_);
   });
   IPEndPoint address;
   if (socket_raw && socket_raw->GetLocalAddress(&address) == OK &&

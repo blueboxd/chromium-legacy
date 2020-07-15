@@ -37,71 +37,74 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface, bluetooth_agent::kRelease,
-        base::Bind(&BluetoothAgentServiceProviderImpl::Release,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&BluetoothAgentServiceProviderImpl::Release,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BluetoothAgentServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kRequestPinCode,
-        base::Bind(&BluetoothAgentServiceProviderImpl::RequestPinCode,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&BluetoothAgentServiceProviderImpl::RequestPinCode,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BluetoothAgentServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kDisplayPinCode,
-        base::Bind(&BluetoothAgentServiceProviderImpl::DisplayPinCode,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&BluetoothAgentServiceProviderImpl::DisplayPinCode,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BluetoothAgentServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kRequestPasskey,
-        base::Bind(&BluetoothAgentServiceProviderImpl::RequestPasskey,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&BluetoothAgentServiceProviderImpl::RequestPasskey,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BluetoothAgentServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kDisplayPasskey,
-        base::Bind(&BluetoothAgentServiceProviderImpl::DisplayPasskey,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&BluetoothAgentServiceProviderImpl::DisplayPasskey,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BluetoothAgentServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kRequestConfirmation,
-        base::Bind(&BluetoothAgentServiceProviderImpl::RequestConfirmation,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(
+            &BluetoothAgentServiceProviderImpl::RequestConfirmation,
+            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BluetoothAgentServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kRequestAuthorization,
-        base::Bind(&BluetoothAgentServiceProviderImpl::RequestAuthorization,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(
+            &BluetoothAgentServiceProviderImpl::RequestAuthorization,
+            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BluetoothAgentServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kAuthorizeService,
-        base::Bind(&BluetoothAgentServiceProviderImpl::AuthorizeService,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(
+            &BluetoothAgentServiceProviderImpl::AuthorizeService,
+            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BluetoothAgentServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface, bluetooth_agent::kCancel,
-        base::Bind(&BluetoothAgentServiceProviderImpl::Cancel,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&BluetoothAgentServiceProviderImpl::Cancel,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BluetoothAgentServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
   }

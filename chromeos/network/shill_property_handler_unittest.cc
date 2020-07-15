@@ -525,8 +525,7 @@ TEST_F(ShillPropertyHandlerTest, ProhibitedTechnologies) {
   prohibited_technologies.push_back(shill::kTypeEthernet);
   EXPECT_TRUE(
       shill_property_handler_->IsTechnologyEnabled(shill::kTypeEthernet));
-  shill_property_handler_->SetProhibitedTechnologies(
-      prohibited_technologies, network_handler::ErrorCallback());
+  shill_property_handler_->SetProhibitedTechnologies(prohibited_technologies);
   base::RunLoop().RunUntilIdle();
   // Disabled
   EXPECT_FALSE(
@@ -541,8 +540,7 @@ TEST_F(ShillPropertyHandlerTest, ProhibitedTechnologies) {
 
   // Can enable it back after policy changes
   prohibited_technologies.clear();
-  shill_property_handler_->SetProhibitedTechnologies(
-      prohibited_technologies, network_handler::ErrorCallback());
+  shill_property_handler_->SetProhibitedTechnologies(prohibited_technologies);
   shill_property_handler_->SetTechnologyEnabled(
       shill::kTypeEthernet, true, network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();

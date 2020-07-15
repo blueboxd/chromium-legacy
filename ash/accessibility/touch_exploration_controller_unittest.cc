@@ -694,11 +694,13 @@ TEST_F(TouchExplorationTest, DoubleTapPassthrough) {
   generator_->set_current_screen_location(first_tap_location);
   generator_->PressTouchId(1);
   generator_->ReleaseTouchId(1);
+  ASSERT_EQ(0U, delegate_.NumPassthroughSounds());
   gfx::Point second_tap_location(15, 16);
   generator_->set_current_screen_location(second_tap_location);
   generator_->PressTouchId(1);
   // Advance to the finger passing through.
   AdvanceSimulatedTimePastTapDelay();
+  ASSERT_EQ(1U, delegate_.NumPassthroughSounds());
 
   gfx::Vector2d passthrough_offset = second_tap_location - tap_location;
 
@@ -752,6 +754,9 @@ TEST_F(TouchExplorationTest, DoubleTapPassthrough) {
   EXPECT_FALSE(IsInNoFingersDownState());
   generator_->ReleaseTouchId(3);
   EXPECT_TRUE(IsInNoFingersDownState());
+
+  // There should have only ever been one pass through earcon played.
+  ASSERT_EQ(1U, delegate_.NumPassthroughSounds());
 }
 
 // Double-tapping, going into passthrough, and holding for the longpress

@@ -146,7 +146,7 @@ GURL GetUrlFromClipboard() {
   base::string16 url_text;
 #if !defined(OS_IOS)
   ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, &url_text);
+      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &url_text);
 #endif
   return GURL(url_text);
 }

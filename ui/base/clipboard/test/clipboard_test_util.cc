@@ -24,6 +24,7 @@ class ReadImageHelper {
     SkBitmap bitmap;
     clipboard->ReadImage(
         ClipboardBuffer::kCopyPaste,
+        /* data_dst = */ nullptr,
         base::BindLambdaForTesting([&](const SkBitmap& result) {
           bitmap = result;
           event.Signal();

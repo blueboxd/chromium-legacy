@@ -3505,7 +3505,8 @@ void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
           ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
           CHECK(clipboard);
           base::string16 clipboard_text;
-          clipboard->ReadText(ui::ClipboardBuffer::kSelection, &clipboard_text);
+          clipboard->ReadText(ui::ClipboardBuffer::kSelection,
+                              /* data_dst = */ nullptr, &clipboard_text);
           if (!clipboard_text.empty())
             controller_->CreateNewTabWithLocation(clipboard_text);
         }

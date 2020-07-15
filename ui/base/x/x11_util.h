@@ -15,6 +15,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/component_export.h"
@@ -22,16 +23,25 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/synchronization/lock.h"
+#include "build/build_config.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/platform_event.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/x/event.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gfx/x/xproto_types.h"
 
 typedef unsigned long Cursor;
+class SkPixmap;
+
+namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
+}
 
 namespace gfx {
 class Insets;
@@ -236,13 +246,25 @@ x11::Window CreateDummyWindow(const std::string& name = "");
 COMPONENT_EXPORT(UI_BASE_X)
 x11::KeyCode KeysymToKeycode(x11::Connection* connection, x11::KeySym keysym);
 
+// Draws an SkPixmap on |drawable| using the given |gc|, converting to the
+// server side visual as needed.
+COMPONENT_EXPORT(UI_BASE_X)
+void DrawPixmap(x11::Connection* connection,
+                x11::VisualId visual,
+                x11::Drawable drawable,
+                x11::GraphicsContext gc,
+                const SkPixmap& skia_pixmap,
+                int src_x,
+                int src_y,
+                int dst_x,
+                int dst_y,
+                int width,
+                int height);
+
 // These functions cache their results ---------------------------------
 
 // Returns true if the system supports XINPUT2.
 COMPONENT_EXPORT(UI_BASE_X) bool IsXInput2Available();
-
-// Return true iff the display supports Xrender
-COMPONENT_EXPORT(UI_BASE_X) bool QueryRenderSupport(XDisplay* dpy);
 
 // Return true iff the display supports MIT-SHM.
 COMPONENT_EXPORT(UI_BASE_X) bool QueryShmSupport();
@@ -514,8 +536,8 @@ COMPONENT_EXPORT(UI_BASE_X) bool IsWmTiling(WindowManagerName window_manager);
 COMPONENT_EXPORT(UI_BASE_X) bool IsCompositingManagerPresent();
 
 // Enable the default X error handlers. These will log the error and abort
-// the process if called. Use SetX11ErrorHandlers() from x11_util_internal.h
-// to set your own error handlers.
+// the process if called. Use SetX11ErrorHandlers() to set your own error
+// handlers.
 COMPONENT_EXPORT(UI_BASE_X) void SetDefaultX11ErrorHandlers();
 
 // Returns true if a given window is in full-screen mode.
@@ -531,10 +553,10 @@ gfx::ICCProfile GetICCProfileForMonitor(int monitor);
 // Return true if the display supports SYNC extension.
 COMPONENT_EXPORT(UI_BASE_X) bool IsSyncExtensionAvailable();
 
-// Returns the preferred Skia colortype for an X11 visual.  LOG(FATAL)'s if
-// there isn't a suitable colortype.
+// Returns the preferred Skia colortype for an X11 visual.  Returns
+// kUnknown_SkColorType if there isn't a suitable colortype.
 COMPONENT_EXPORT(UI_BASE_X)
-SkColorType ColorTypeForVisual(void* visual);
+SkColorType ColorTypeForVisual(x11::VisualId visual_id);
 
 COMPONENT_EXPORT(UI_BASE_X)
 x11::Future<void> SendClientMessage(
@@ -588,6 +610,88 @@ struct COMPONENT_EXPORT(UI_BASE_X) XImageDeleter {
   void operator()(XImage* image) const;
 };
 using XScopedImage = std::unique_ptr<XImage, XImageDeleter>;
+
+// --------------------------------------------------------------------------
+// X11 error handling.
+// Sets the X Error Handlers. Passing NULL for either will enable the default
+// error handler, which if called will log the error and abort the process.
+COMPONENT_EXPORT(UI_BASE_X)
+void SetX11ErrorHandlers(XErrorHandler error_handler,
+                         XIOErrorHandler io_error_handler);
+
+// NOTE: This function should not be called directly from the
+// X11 Error handler because it queries the server to decode the
+// error message, which may trigger other errors. A suitable workaround
+// is to post a task in the error handler to call this function.
+COMPONENT_EXPORT(UI_BASE_X)
+void LogErrorEventDescription(Display* dpy, const XErrorEvent& error_event);
+
+// --------------------------------------------------------------------------
+// Selects a visual with a preference for alpha support on compositing window
+// managers.
+class COMPONENT_EXPORT(UI_BASE_X) XVisualManager {
+ public:
+  static XVisualManager* GetInstance();
+
+  // Picks the best argb or opaque visual given |want_argb_visual|.
+  void ChooseVisualForWindow(bool want_argb_visual,
+                             x11::VisualId* visual_id,
+                             uint8_t* depth,
+                             bool* visual_has_alpha);
+
+  bool GetVisualInfo(x11::VisualId visual_id,
+                     uint8_t* depth,
+                     bool* visual_has_alpha);
+
+  // Called by GpuDataManagerImplPrivate when GPUInfo becomes available.  It is
+  // necessary for the GPU process to find out which visuals are best for GL
+  // because we don't want to load GL in the browser process.  Returns false iff
+  // |default_visual_id| or |transparent_visual_id| are invalid.
+  bool OnGPUInfoChanged(bool software_rendering,
+                        x11::VisualId default_visual_id,
+                        x11::VisualId transparent_visual_id);
+
+  // Are all of the system requirements met for using transparent visuals?
+  bool ArgbVisualAvailable() const;
+
+  ~XVisualManager();
+
+ private:
+  friend struct base::DefaultSingletonTraits<XVisualManager>;
+
+  class XVisualData {
+   public:
+    XVisualData(uint8_t depth, const x11::VisualType* info);
+    ~XVisualData();
+
+    uint8_t depth = 0;
+    const x11::VisualType* info = nullptr;
+  };
+
+  XVisualManager();
+
+  bool GetVisualInfoImpl(x11::VisualId visual_id,
+                         uint8_t* depth,
+                         bool* visual_has_alpha);
+
+  mutable base::Lock lock_;
+
+  std::unordered_map<x11::VisualId, std::unique_ptr<XVisualData>> visuals_;
+
+  x11::Connection* const connection_;
+
+  x11::VisualId default_visual_id_{};
+
+  // The system visual is usually the same as the default visual, but
+  // may not be in general.
+  x11::VisualId system_visual_id_{};
+  x11::VisualId transparent_visual_id_{};
+
+  bool using_software_rendering_ = false;
+  bool have_gpu_argb_visual_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(XVisualManager);
+};
 
 namespace test {
 

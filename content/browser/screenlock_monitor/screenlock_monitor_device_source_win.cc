@@ -49,7 +49,7 @@ bool ScreenlockMonitorDeviceSource::SessionMessageWindow::OnWndProc(
   if (message == WM_WTSSESSION_CHANGE) {
     ProcessWTSSessionLockMessage(wparam);
   }
-  return true;
+  return false;
 }
 
 void ScreenlockMonitorDeviceSource::SessionMessageWindow::

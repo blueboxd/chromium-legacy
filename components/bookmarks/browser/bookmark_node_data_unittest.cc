@@ -289,7 +289,8 @@ TEST_F(BookmarkNodeDataTest, DISABLED_WriteToClipboardURL) {
 
   // Now read the data back in.
   base::string16 clipboard_result;
-  clipboard().ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_result);
+  clipboard().ReadText(ui::ClipboardBuffer::kCopyPaste,
+                       /* data_dst = */ nullptr, &clipboard_result);
   EXPECT_EQ(base::UTF8ToUTF16(url.spec()), clipboard_result);
 }
 
@@ -324,7 +325,8 @@ TEST_F(BookmarkNodeDataTest, MAYBE_WriteToClipboardMultipleURLs) {
   combined_text = base::UTF8ToUTF16(url.spec()) + new_line
     + base::UTF8ToUTF16(url2.spec());
   base::string16 clipboard_result;
-  clipboard().ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_result);
+  clipboard().ReadText(ui::ClipboardBuffer::kCopyPaste,
+                       /* data_dst = */ nullptr, &clipboard_result);
   EXPECT_EQ(combined_text, clipboard_result);
 }
 
@@ -345,7 +347,8 @@ TEST_F(BookmarkNodeDataTest, MAYBE_WriteToClipboardEmptyFolder) {
 
   // Now read the data back in.
   base::string16 clipboard_result;
-  clipboard().ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_result);
+  clipboard().ReadText(ui::ClipboardBuffer::kCopyPaste,
+                       /* data_dst = */ nullptr, &clipboard_result);
   EXPECT_EQ(base::ASCIIToUTF16("g1"), clipboard_result);
 }
 
@@ -364,7 +367,8 @@ TEST_F(BookmarkNodeDataTest, WriteToClipboardFolderWithChildren) {
 
   // Now read the data back in.
   base::string16 clipboard_result;
-  clipboard().ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_result);
+  clipboard().ReadText(ui::ClipboardBuffer::kCopyPaste,
+                       /* data_dst = */ nullptr, &clipboard_result);
   EXPECT_EQ(base::ASCIIToUTF16("g1"), clipboard_result);
 }
 
@@ -394,7 +398,8 @@ TEST_F(BookmarkNodeDataTest, DISABLED_WriteToClipboardFolderAndURL) {
   base::string16 folder_title = ASCIIToUTF16("g1");
   combined_text = base::ASCIIToUTF16(url.spec()) + new_line + folder_title;
   base::string16 clipboard_result;
-  clipboard().ReadText(ui::ClipboardBuffer::kCopyPaste, &clipboard_result);
+  clipboard().ReadText(ui::ClipboardBuffer::kCopyPaste,
+                       /* data_dst = */ nullptr, &clipboard_result);
   EXPECT_EQ(combined_text, clipboard_result);
 }
 

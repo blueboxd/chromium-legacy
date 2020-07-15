@@ -1084,6 +1084,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
   base::RunLoop run_loop;
   tab_helper_observer.SetOnPrefetchSuccessfulClosure(run_loop.QuitClosure());
 
+  base::HistogramTester histogram_tester;
+
   GURL doc_url("https://www.google.com/search?q=test");
   MakeNavigationPrediction(doc_url, {
                                         eligible_link_1,
@@ -1097,6 +1099,15 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
   // This run loop will quit when all the prefetch responses have been
   // successfully done and processed.
   run_loop.Run();
+
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.RespCode", 3);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.BodyLength", 3);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.TotalTime", 3);
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.Prefetch.Mainframe.ConnectTime", 3);
 
   // Navigate to a prefetched page to trigger UKM recording.
   ui_test_utils::NavigateToURL(browser(), eligible_link_2);

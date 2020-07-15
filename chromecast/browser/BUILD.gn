@@ -134,6 +134,16 @@ cast_source_set("browser") {
     "tts/tts_platform.h",
     "tts/tts_platform_stub.cc",
     "tts/tts_platform_stub.h",
+    "webui/cast_resource_data_source.cc",
+    "webui/cast_resource_data_source.h",
+    "webui/cast_webui.cc",
+    "webui/cast_webui.h",
+    "webui/cast_webui_controller_factory.cc",
+    "webui/cast_webui_controller_factory.h",
+    "webui/cast_webui_message_handler.cc",
+    "webui/cast_webui_message_handler.h",
+    "webui/constants.cc",
+    "webui/constants.h",
   ]
 
   if (chromecast_branding == "public") {
@@ -168,6 +178,8 @@ cast_source_set("browser") {
     "//chromecast/base:cast_version",
     "//chromecast/browser/bluetooth/public/mojom",
     "//chromecast/browser/general_audience_browsing/mojom",
+    "//chromecast/browser/mojom",
+    "//chromecast/browser/webui/mojom",
     "//chromecast/common",
     "//chromecast/common:queryable_data",
     "//chromecast/common/media",
@@ -211,6 +223,7 @@ cast_source_set("browser") {
     "//media",
     "//media/mojo/mojom:remoting",
     "//media/mojo/services",
+    "//mojo/public/cpp/bindings",
     "//net",
     "//services/media_session/public/mojom",
     "//services/network/public/mojom",
@@ -368,6 +381,8 @@ cast_source_set("browser") {
       "extensions/cast_kiosk_delegate.h",
       "extensions/cast_prefs.cc",
       "extensions/cast_prefs.h",
+      "webui/cast_extension_webui.cc",
+      "webui/cast_extension_webui.h",
     ]
     if (use_aura) {
       sources += [
@@ -405,6 +420,8 @@ cast_source_set("browser") {
       "//ui/views:views",
       "//ui/wm/public:public",
     ]
+  } else {
+    sources += [ "webui/cast_webui_default.cc" ]
   }
 
   if (is_linux && use_ozone) {

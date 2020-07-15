@@ -24,6 +24,7 @@ InternalsUI::InternalsUI(content::WebUI* web_ui)
   source_ = content::WebUIDataSource::Create(chrome::kChromeUIInternalsHost);
 
   // Add your sub-URL internals WebUI here.
+  // Keep this set of sub-URLs in sync with |kChromeInternalsPathURLs|.
 #if defined(OS_ANDROID)
   // chrome://internals/query-tiles
   AddNotificationsInternals(web_ui);

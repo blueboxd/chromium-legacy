@@ -1456,6 +1456,9 @@ extern const char kChromeDuetLabelsDescription[];
 extern const char kShareButtonInTopToolbarName[];
 extern const char kShareButtonInTopToolbarDescription[];
 
+extern const char kChromeShareHighlightsAndroidName[];
+extern const char kChromeShareHighlightsAndroidDescription[];
+
 extern const char kChromeShareQRCodeName[];
 extern const char kChromeShareQRCodeDescription[];
 
@@ -1979,6 +1982,9 @@ extern const char kCdmFactoryDaemonDescription[];
 
 extern const char kContextualNudgesName[];
 extern const char kContextualNudgesDescription[];
+
+extern const char kCrosLanguageSettingsUpdateName[];
+extern const char kCrosLanguageSettingsUpdateDescription[];
 
 extern const char kCrosRegionsModeName[];
 extern const char kCrosRegionsModeDescription[];

@@ -92,10 +92,11 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
 
     adapter_->RegisterAdvertisement(
         CreateAdvertisementData(),
-        base::Bind(&BluetoothAdvertisementBlueZTest::RegisterCallback,
-                   base::Unretained(this)),
-        base::Bind(&BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&BluetoothAdvertisementBlueZTest::RegisterCallback,
+                       base::Unretained(this)),
+        base::BindOnce(
+            &BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
+            base::Unretained(this)));
 
     base::RunLoop().RunUntilIdle();
     return advertisement_;
@@ -104,10 +105,11 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
   void UnregisterAdvertisement(
       scoped_refptr<BluetoothAdvertisement> advertisement) {
     advertisement->Unregister(
-        base::Bind(&BluetoothAdvertisementBlueZTest::Callback,
-                   base::Unretained(this)),
-        base::Bind(&BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&BluetoothAdvertisementBlueZTest::Callback,
+                       base::Unretained(this)),
+        base::BindOnce(
+            &BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
+            base::Unretained(this)));
 
     base::RunLoop().RunUntilIdle();
   }
@@ -270,10 +272,11 @@ TEST_F(BluetoothAdvertisementBlueZTest, ResetAdvertising) {
   EXPECT_EQ(2, adv_client->currently_registered());
 
   adapter_->ResetAdvertising(
-      base::Bind(&BluetoothAdvertisementBlueZTest::Callback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&BluetoothAdvertisementBlueZTest::Callback,
+                     base::Unretained(this)),
+      base::BindOnce(
+          &BluetoothAdvertisementBlueZTest::AdvertisementErrorCallback,
+          base::Unretained(this)));
   ExpectSuccess();
 
   // Checks that the advertisements have been cleared after ResetAdvertising.

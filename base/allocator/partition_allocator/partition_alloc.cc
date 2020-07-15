@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
@@ -807,5 +808,33 @@ void PartitionRoot<thread_safe>::DumpStats(const char* partition_name,
 
 template struct BASE_EXPORT PartitionRoot<internal::ThreadSafe>;
 template struct BASE_EXPORT PartitionRoot<internal::NotThreadSafe>;
+
+namespace internal {
+
+template <bool thread_safe>
+PartitionAllocator<thread_safe>::~PartitionAllocator() {
+  PartitionAllocMemoryReclaimer::Instance()->UnregisterPartition(
+      &partition_root_);
+}
+
+template <bool thread_safe>
+void PartitionAllocator<thread_safe>::init(
+    PartitionAllocatorAlignment alignment) {
+  partition_root_.Init(
+      alignment ==
+      PartitionAllocatorAlignment::kAlignedAlloc /* enforce_alignment */);
+  PartitionAllocMemoryReclaimer::Instance()->RegisterPartition(
+      &partition_root_);
+}
+
+template void PartitionAllocator<internal::ThreadSafe>::~PartitionAllocator();
+template void PartitionAllocator<internal::ThreadSafe>::init(
+    PartitionAllocatorAlignment alignment);
+template void
+    PartitionAllocator<internal::NotThreadSafe>::~PartitionAllocator();
+template void PartitionAllocator<internal::NotThreadSafe>::init(
+    PartitionAllocatorAlignment alignment);
+
+}  // namespace internal
 
 }  // namespace base

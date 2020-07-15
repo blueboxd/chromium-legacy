@@ -14,6 +14,7 @@
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/model/ui/assistant_card_element.h"
+#include "ash/assistant/model/ui/assistant_error_element.h"
 #include "ash/assistant/model/ui/assistant_text_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/util/assistant_util.h"
@@ -396,16 +397,15 @@ void AssistantInteractionControllerImpl::OnInteractionStarted(
 
 void AssistantInteractionControllerImpl::OnInteractionFinished(
     AssistantInteractionResolution resolution) {
+  model_.SetMicState(MicState::kClosed);
+
   // If we don't have an active interaction, that indicates that this
   // interaction was explicitly stopped outside of LibAssistant. In this case,
   // we ensure that the mic is closed but otherwise ignore this event.
-  if (IsResponseProcessingV2Enabled() && !HasActiveInteraction()) {
-    model_.SetMicState(MicState::kClosed);
+  if (IsResponseProcessingV2Enabled() && !HasActiveInteraction())
     return;
-  }
 
   model_.SetInteractionState(InteractionState::kInactive);
-  model_.SetMicState(MicState::kClosed);
 
   // The mic timeout resolution is delivered inconsistently by LibAssistant. To
   // account for this, we need to check if the interaction resolved normally
@@ -432,23 +432,28 @@ void AssistantInteractionControllerImpl::OnInteractionFinished(
   if (model_.pending_query().type() != AssistantQueryType::kNull)
     model_.CommitPendingQuery();
 
-  if (!IsResponseProcessingV2Enabled()) {
-    // It's possible that the pending response has already been committed. This
-    // occurs if the response contained TTS, as we flush the response to the UI
-    // when TTS is started to reduce latency.
-    if (!model_.pending_response())
-      return;
-  }
+  // It's possible that the pending response has already been committed. This
+  // occurs if the response contained TTS, as we flush the response to the UI
+  // when TTS is started to reduce latency.
+  if (!IsResponseProcessingV2Enabled() && !model_.pending_response())
+    return;
 
   AssistantResponse* response = GetResponseForActiveInteraction();
 
   // Some interaction resolutions require special handling.
   switch (resolution) {
-    case AssistantInteractionResolution::kError:
-      // In the case of error, we show an appropriate message to the user.
-      response->AddUiElement(std::make_unique<AssistantTextElement>(
-          l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_ERROR_GENERIC)));
+    case AssistantInteractionResolution::kError: {
+      // In the case of error, we show an appropriate message to the user. Do
+      // not show another error if an identical one already exists in the
+      // response.
+      auto err = std::make_unique<AssistantErrorElement>(
+          IDS_ASH_ASSISTANT_ERROR_GENERIC);
+
+      if (!response->ContainsUiElement(err.get()))
+        response->AddUiElement(std::move(err));
+
       break;
+    }
     case AssistantInteractionResolution::kMultiDeviceHotwordLoss:
       // In the case of hotword loss to another device, we show an appropriate
       // message to the user.
@@ -691,9 +696,13 @@ void AssistantInteractionControllerImpl::OnTtsStarted(bool due_to_error) {
       }
     }
 
-    // Add an error message to the response.
-    response->AddUiElement(std::make_unique<AssistantTextElement>(
-        l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_ERROR_GENERIC)));
+    // Create an error and add it to response. Do not add it if another
+    // identical error already exists in response.
+    auto err = std::make_unique<AssistantErrorElement>(
+        IDS_ASH_ASSISTANT_ERROR_GENERIC);
+
+    if (!response->ContainsUiElement(err.get()))
+      response->AddUiElement(std::move(err));
   }
 
   response->set_has_tts(true);
@@ -967,12 +976,13 @@ AssistantResponse*
 AssistantInteractionControllerImpl::GetResponseForActiveInteraction() {
   // Returns the response for the active interaction. In response processing v2,
   // this may be the pending response (if no client ops have yet been received)
-  // or else is the committed response. In response processing v2, this is
-  // always the pending response.
-  return IsResponseProcessingV2Enabled() ? model_.pending_response()
-                                               ? model_.pending_response()
-                                               : model_.response()
-                                         : model_.pending_response();
+  // or else is the committed response.
+  if (IsResponseProcessingV2Enabled()) {
+    return model_.pending_response() ? model_.pending_response()
+                                     : model_.response();
+  }
+  // In response processing v1, this is always the pending response.
+  return model_.pending_response();
 }
 
 AssistantVisibility AssistantInteractionControllerImpl::GetVisibility() const {

@@ -82,16 +82,16 @@ FakeBluetoothAdapterClient::FakeBluetoothAdapterClient()
       set_discovery_filter_should_fail_(false),
       simulation_interval_ms_(kSimulationIntervalMs),
       last_handle_(0) {
-  properties_.reset(new Properties(base::Bind(
-      &FakeBluetoothAdapterClient::OnPropertyChanged, base::Unretained(this))));
+  properties_ = std::make_unique<Properties>(base::BindRepeating(
+      &FakeBluetoothAdapterClient::OnPropertyChanged, base::Unretained(this)));
 
   properties_->address.ReplaceValue(kAdapterAddress);
   properties_->name.ReplaceValue("Fake Adapter (Name)");
   properties_->alias.ReplaceValue(kAdapterName);
   properties_->pairable.ReplaceValue(true);
 
-  second_properties_.reset(new Properties(base::Bind(
-      &FakeBluetoothAdapterClient::OnPropertyChanged, base::Unretained(this))));
+  second_properties_ = std::make_unique<Properties>(base::BindRepeating(
+      &FakeBluetoothAdapterClient::OnPropertyChanged, base::Unretained(this)));
 
   second_properties_->address.ReplaceValue(kSecondAdapterAddress);
   second_properties_->name.ReplaceValue("Second Fake Adapter (Name)");

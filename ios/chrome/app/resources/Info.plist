@@ -59,6 +59,15 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
+			<string>Web site URL</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>http</string>
+				<string>https</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
 			<string>${IOS_BUNDLE_ID_PREFIX}.${CHROMIUM_BUNDLE_ID:rfc1034identifier}</string>
 			<key>CFBundleURLSchemes</key>
 			<array>

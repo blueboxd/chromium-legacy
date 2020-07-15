@@ -588,6 +588,7 @@ void IsolatedPrerenderTabHelper::Prefetch() {
       std::make_unique<network::ResourceRequest>();
   request->url = url;
   request->method = "GET";
+  request->enable_load_timing = true;
   request->load_flags = net::LOAD_DISABLE_CACHE | net::LOAD_PREFETCH;
   request->credentials_mode = network::mojom::CredentialsMode::kInclude;
   request->headers.SetHeader(content::kCorsExemptPurposeHeaderName, "prefetch");

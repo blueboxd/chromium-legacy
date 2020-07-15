@@ -10,7 +10,6 @@
 #include "ui/base/x/x11_cursor.h"
 #include "ui/base/x/x11_desktop_window_move_client.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/base/x/x11_util_internal.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"

@@ -109,14 +109,15 @@ enum class ConnectionStateAfterDNS {
 };
 
 base::Value NetLogQuicStreamFactoryJobParams(
-    const quic::QuicServerId* server_id) {
-  base::DictionaryValue dict;
-  dict.SetString(
-      "server_id",
-      "https://" +
-          HostPortPair(server_id->host(), server_id->port()).ToString() +
-          (server_id->privacy_mode_enabled() ? "/private" : ""));
-  return std::move(dict);
+    const QuicStreamFactory::QuicSessionAliasKey* key) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("host", key->server_id().host());
+  dict.SetIntKey("port", key->server_id().port());
+  dict.SetStringKey("privacy_mode", PrivacyModeToDebugString(
+                                        key->session_key().privacy_mode()));
+  dict.SetStringKey("network_isolation_key",
+                    key->session_key().network_isolation_key().ToDebugString());
+  return dict;
 }
 
 std::string QuicPlatformNotificationToString(
@@ -501,9 +502,8 @@ QuicStreamFactory::Job::Job(
       connection_retried_(false),
       session_(nullptr),
       network_(NetworkChangeNotifier::kInvalidNetworkHandle) {
-  net_log_.BeginEvent(NetLogEventType::QUIC_STREAM_FACTORY_JOB, [&] {
-    return NetLogQuicStreamFactoryJobParams(&key_.server_id());
-  });
+  net_log_.BeginEvent(NetLogEventType::QUIC_STREAM_FACTORY_JOB,
+                      [&] { return NetLogQuicStreamFactoryJobParams(&key_); });
   // Associate |net_log_| with |net_log|.
   net_log_.AddEventReferencingSource(
       NetLogEventType::QUIC_STREAM_FACTORY_JOB_BOUND_TO_HTTP_STREAM_JOB,
@@ -1180,14 +1180,17 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
                       session_key.server_id().port())
              .Equals(HostPortPair::FromURL(url)));
   // Enforce session affinity for promised streams.
+  //
+  // TODO(https://crbug.com/1105544): This logic should also handle
+  // NetworkIsolationKey.
   quic::QuicClientPromisedInfo* promised =
       push_promise_index_.GetPromised(url.spec());
   if (promised) {
     QuicChromiumClientSession* session =
         static_cast<QuicChromiumClientSession*>(promised->session());
     DCHECK(session);
-    if (session->server_id().privacy_mode_enabled() ==
-        session_key.server_id().privacy_mode_enabled()) {
+    if (session->quic_session_key().privacy_mode() ==
+        session_key.privacy_mode()) {
       request->SetSession(session->CreateHandle(destination));
       ++num_push_streams_created_;
       return OK;
@@ -1229,10 +1232,7 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
       QuicChromiumClientSession* session = key_value.second;
       if (destination.Equals(all_sessions_[session].destination()) &&
           session->CanPool(session_key.server_id().host(),
-                           session_key.server_id().privacy_mode_enabled()
-                               ? PRIVACY_MODE_ENABLED
-                               : PRIVACY_MODE_DISABLED,
-                           session_key.socket_tag(),
+                           session_key.privacy_mode(), session_key.socket_tag(),
                            session_key.network_isolation_key(),
                            session_key.disable_secure_dns())) {
         request->SetSession(session->CreateHandle(destination));

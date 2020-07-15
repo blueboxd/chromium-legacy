@@ -321,9 +321,9 @@ FakeBluetoothDeviceClient::FakeBluetoothDeviceClient()
       max_transmit_power_(kUnkownPower),
       delay_start_discovery_(false),
       should_leave_connections_pending_(false) {
-  std::unique_ptr<Properties> properties(new Properties(base::BindRepeating(
+  auto properties = std::make_unique<Properties>(base::BindRepeating(
       &FakeBluetoothDeviceClient::OnPropertyChanged, base::Unretained(this),
-      dbus::ObjectPath(kPairedDevicePath))));
+      dbus::ObjectPath(kPairedDevicePath)));
   properties->address.ReplaceValue(kPairedDeviceAddress);
   properties->bluetooth_class.ReplaceValue(kPairedDeviceClass);
   properties->name.ReplaceValue(kPairedDeviceName);
@@ -345,9 +345,9 @@ FakeBluetoothDeviceClient::FakeBluetoothDeviceClient()
                                         std::move(properties)));
   device_list_.push_back(dbus::ObjectPath(kPairedDevicePath));
 
-  properties.reset(new Properties(base::Bind(
+  properties = std::make_unique<Properties>(base::BindRepeating(
       &FakeBluetoothDeviceClient::OnPropertyChanged, base::Unretained(this),
-      dbus::ObjectPath(kPairedUnconnectableDevicePath))));
+      dbus::ObjectPath(kPairedUnconnectableDevicePath)));
   properties->address.ReplaceValue(kPairedUnconnectableDeviceAddress);
   properties->bluetooth_class.ReplaceValue(kPairedUnconnectableDeviceClass);
   properties->name.ReplaceValue(kPairedUnconnectableDeviceName);

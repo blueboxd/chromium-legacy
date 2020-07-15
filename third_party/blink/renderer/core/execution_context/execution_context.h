@@ -276,11 +276,24 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   // If |supportLegacyKeywords| is true, then the legacy keywords
   // "never", "default", "always", and "origin-when-crossorigin" are
   // parsed as valid policies.
-  void ParseAndSetReferrerPolicy(const String& policies,
-                                 bool support_legacy_keywords = false);
-  void SetReferrerPolicy(network::mojom::ReferrerPolicy);
+  //
+  // If |from_meta_tag_with_list_of_policies| is *false*, also updates
+  // |referrer_policy_but_for_meta_tags_with_lists_of_policies_|, which
+  // maintains a counterfactual to determine what the policy would look like if
+  // we started ignoring <meta name=referrer content=policy1,policy2,...> tags
+  // in order to align with the HTML standard (crbug.com/1092930).
+  void ParseAndSetReferrerPolicy(
+      const String& policies,
+      bool support_legacy_keywords = false,
+      bool from_meta_tag_with_list_of_policies = false);
+  void SetReferrerPolicy(network::mojom::ReferrerPolicy,
+                         bool from_meta_tag_with_list_of_policies = false);
   virtual network::mojom::ReferrerPolicy GetReferrerPolicy() const {
     return referrer_policy_;
+  }
+  virtual network::mojom::blink::ReferrerPolicy
+  ReferrerPolicyButForMetaTagsWithListsOfPolicies() const {
+    return referrer_policy_but_for_meta_tags_with_lists_of_policies_;
   }
 
   virtual CoreProbeSink* GetProbeSink() { return nullptr; }
@@ -416,6 +429,14 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   int window_interaction_tokens_;
 
   network::mojom::ReferrerPolicy referrer_policy_;
+
+  // This is the same value as |referrer_policy_| except that it ignores
+  // referrer policies set as the result of parsing <meta name=referrer> tags
+  // whose values are comma-separated lists of policies. Its purpose is to allow
+  // evaluating the impact of switching to a behavior of no longer supporting
+  // these lists (crbug.com/1092930).
+  network::mojom::blink::ReferrerPolicy
+      referrer_policy_but_for_meta_tags_with_lists_of_policies_;
 
   network::mojom::blink::IPAddressSpace address_space_;
 

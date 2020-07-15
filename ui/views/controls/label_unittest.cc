@@ -90,8 +90,8 @@ void SetRTL(bool rtl) {
 
 base::string16 GetClipboardText(ui::ClipboardBuffer clipboard_buffer) {
   base::string16 clipboard_text;
-  ui::Clipboard::GetForCurrentThread()->ReadText(clipboard_buffer,
-                                                 &clipboard_text);
+  ui::Clipboard::GetForCurrentThread()->ReadText(
+      clipboard_buffer, /* data_dst = */ nullptr, &clipboard_text);
   return clipboard_text;
 }
 

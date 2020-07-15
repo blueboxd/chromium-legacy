@@ -84,6 +84,18 @@ network::mojom::RequestDestination GetDestination(
   }
 }
 
+bool ShouldPrefetchDestination(network::mojom::RequestDestination destination) {
+  switch (features::kLoadingPredictorPrefetchSubresourceType.Get()) {
+    case features::PrefetchSubresourceType::kAll:
+      return true;
+    case features::PrefetchSubresourceType::kJsAndCss:
+      return destination == network::mojom::RequestDestination::kScript ||
+             destination == network::mojom::RequestDestination::kStyle;
+  }
+  NOTREACHED();
+  return false;
+}
+
 // Util class for recording the status for when we received optimization hints
 // for navigations that we requested them for.
 class ScopedOptimizationHintsReceiveStatusRecorder {
@@ -358,10 +370,13 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
       continue;
     predicted_subresources.push_back(subresource_url);
     if (base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch)) {
-      // TODO(falken): Detect duplicates.
-      prediction.prefetch_requests.emplace_back(
-          subresource_url, network_isolation_key,
-          GetDestination(subresource.resource_type()));
+      network::mojom::RequestDestination destination =
+          GetDestination(subresource.resource_type());
+      if (ShouldPrefetchDestination(destination)) {
+        // TODO(falken): Detect duplicates.
+        prediction.prefetch_requests.emplace_back(
+            subresource_url, network_isolation_key, destination);
+      }
     } else {
       url::Origin subresource_origin = url::Origin::Create(subresource_url);
       if (subresource_origin == main_frame_origin) {

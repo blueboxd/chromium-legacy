@@ -7,7 +7,7 @@
 
 #include "base/component_export.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gtk/gtk_ui_delegate.h"
 
 using GdkDisplay = struct _GdkDisplay;
@@ -21,7 +21,7 @@ namespace ui {
 // Ozone is completed.
 class COMPONENT_EXPORT(UI_GTK_X) GtkUiDelegateX11 : public GtkUiDelegate {
  public:
-  explicit GtkUiDelegateX11(XDisplay* display);
+  explicit GtkUiDelegateX11(x11::Connection* connection);
   GtkUiDelegateX11(const GtkUiDelegateX11&) = delete;
   GtkUiDelegateX11& operator=(const GtkUiDelegateX11&) = delete;
   ~GtkUiDelegateX11() override;
@@ -38,7 +38,7 @@ class COMPONENT_EXPORT(UI_GTK_X) GtkUiDelegateX11 : public GtkUiDelegate {
  private:
   GdkDisplay* GetGdkDisplay();
 
-  XDisplay* const xdisplay_;
+  x11::Connection* const connection_;
   GdkDisplay* display_ = nullptr;
 };
 

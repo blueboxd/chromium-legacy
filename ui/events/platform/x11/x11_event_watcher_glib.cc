@@ -60,8 +60,8 @@ void X11EventWatcherGlib::StartWatching() {
   if (started_)
     return;
 
-  DCHECK(event_source_->display()) << "Unable to get connection to X server";
-  Display* display = event_source_->display();
+  XDisplay* display = event_source_->connection()->display();
+  DCHECK(display) << "Unable to get connection to X server";
 
   x_poll_ = std::make_unique<GPollFD>();
   x_poll_->fd = ConnectionNumber(display);

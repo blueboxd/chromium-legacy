@@ -4,7 +4,8 @@
     "es2020": true
   },
   "extends": [
-    "google"
+    "google",
+    "plugin:vue/recommended"
   ],
   "parserOptions": {
     "ecmaVersion": 11,
@@ -20,6 +21,18 @@
             "FunctionExpression": true
         }
     }],
-    "arrow-parens": ["warn", "as-needed"]
+    "arrow-parens": ["warn", "as-needed"],
+    "vue/require-default-prop": "off",
+    "vue/html-indent": ["error", 2, {
+      "attribute": 2
+    }],
+    "vue/html-closing-bracket-newline": ["error", {
+      "multiline": "never"
+    }],
+    "vue/html-closing-bracket-spacing": ["error", {
+      "startTag": "never",
+      "selfClosingTag": "never"
+    }],
+    "vue/html-comment-indent": ["error", 5]
   }
 }

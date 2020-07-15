@@ -148,10 +148,10 @@ public final class NavigationImpl extends INavigation.Stub {
     }
 
     @Override
-    public boolean isRendererInitiated() {
+    public boolean isPageInitiated() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        return NavigationImplJni.get().isRendererInitiated(mNativeNavigationImpl);
+        return NavigationImplJni.get().isPageInitiated(mNativeNavigationImpl);
     }
 
     private void throwIfNativeDestroyed() {
@@ -202,6 +202,6 @@ public final class NavigationImpl extends INavigation.Stub {
         boolean isValidRequestHeaderName(String name);
         boolean isValidRequestHeaderValue(String value);
         boolean setUserAgentString(long nativeNavigationImpl, String value);
-        boolean isRendererInitiated(long nativeNavigationImpl);
+        boolean isPageInitiated(long nativeNavigationImpl);
     }
 }

@@ -24,6 +24,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
 import org.chromium.base.annotations.NativeJavaTestFeatures;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
@@ -156,6 +157,7 @@ public class BasicSuggestionProcessorUnitTest {
     @CalledByNativeJavaTest
     @NativeJavaTestFeatures.Disable({ChromeFeatureList.OMNIBOX_COMPACT_SUGGESTIONS,
             ChromeFeatureList.OMNIBOX_SUGGESTIONS_WRAP_AROUND})
+    @FlakyTest(message = "https://crbug.com/1105304")
     public void
     getSuggestionIconTypeForSearch_Default() {
         int[][] testCases = {
@@ -308,6 +310,7 @@ public class BasicSuggestionProcessorUnitTest {
     @CalledByNativeJavaTest
     @NativeJavaTestFeatures.Disable({ChromeFeatureList.OMNIBOX_COMPACT_SUGGESTIONS,
             ChromeFeatureList.OMNIBOX_SUGGESTIONS_WRAP_AROUND})
+    @FlakyTest(message = "https://crbug.com/1105305")
     public void
     suggestionFavicons_showFaviconWhenAvailable() {
         final ArgumentCaptor<LargeIconCallback> callback =

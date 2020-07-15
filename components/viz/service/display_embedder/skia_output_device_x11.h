@@ -10,8 +10,10 @@
 #include "base/macros.h"
 #include "components/viz/service/display_embedder/skia_output_device_offscreen.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace viz {
 
@@ -36,13 +38,11 @@ class SkiaOutputDeviceX11 final : public SkiaOutputDeviceOffscreen {
                      std::vector<ui::LatencyInfo> latency_info) override;
 
  private:
-  XDisplay* const display_;
-  const gfx::AcceleratedWidget widget_;
-  GC gc_;
-  XWindowAttributes attributes_;
-  int bpp_;
-  bool support_rendr_;
-  std::vector<char> pixels_;
+  x11::Connection* connection_ = nullptr;
+  x11::Window window_ = x11::Window::None;
+  x11::GraphicsContext gc_{};
+  x11::VisualId visual_{};
+  scoped_refptr<base::RefCountedMemory> pixels_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceX11);
 };

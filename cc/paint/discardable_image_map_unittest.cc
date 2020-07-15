@@ -1204,8 +1204,7 @@ TEST_P(DiscardableImageMapColorSpaceTest, ColorSpace) {
   else
     EXPECT_FALSE(image_map2.contains_only_srgb_images());
 
-  if (image_color_space.IsHDR())
-    EXPECT_TRUE(image_map2.contains_hdr_images());
+  EXPECT_EQ(image_color_space.IsHDR(), image_map2.contains_hdr_images());
 }
 
 gfx::ColorSpace test_color_spaces[] = {

@@ -24,6 +24,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_macros.h"
@@ -46,7 +47,6 @@
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/x/x11_menu_list.h"
-#include "ui/base/x/x11_util_internal.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_utils.h"
@@ -487,16 +487,57 @@ x11::KeyCode KeysymToKeycode(x11::Connection* connection, x11::KeySym keysym) {
   return {};
 }
 
-bool IsXInput2Available() {
-  return DeviceDataManagerX11::GetInstance()->IsXInput2Available();
+void DrawPixmap(x11::Connection* connection,
+                x11::VisualId visual,
+                x11::Drawable drawable,
+                x11::GraphicsContext gc,
+                const SkPixmap& skia_pixmap,
+                int src_x,
+                int src_y,
+                int dst_x,
+                int dst_y,
+                int width,
+                int height) {
+  const auto* visual_info = connection->GetVisualInfoFromId(visual);
+  if (!visual_info)
+    return;
+
+  auto bpp = visual_info->format->bits_per_pixel;
+  auto align = visual_info->format->scanline_pad;
+  size_t row_bits = bpp * width;
+  row_bits += (align - (row_bits % align)) % align;
+  size_t row_bytes = (row_bits + 7) / 8;
+
+  auto color_type = ColorTypeForVisual(visual);
+  if (color_type == kUnknown_SkColorType) {
+    // TODO(https://crbug.com/1066670): Add a fallback path in case any users
+    // are running a server that uses visual types for which Skia doesn't have
+    // a corresponding color format.
+    return;
+  }
+  SkImageInfo image_info =
+      SkImageInfo::Make(width, height, color_type, kPremul_SkAlphaType);
+
+  std::vector<uint8_t> vec(row_bytes * height);
+  SkPixmap pixmap(image_info, vec.data(), row_bytes);
+  skia_pixmap.readPixels(pixmap, src_x, src_y);
+
+  connection->PutImage({
+      .format = x11::ImageFormat::ZPixmap,
+      .drawable = drawable,
+      .gc = gc,
+      .width = width,
+      .height = height,
+      .dst_x = dst_x,
+      .dst_y = dst_y,
+      .left_pad = 0,
+      .depth = visual_info->format->depth,
+      .data = base::RefCountedBytes::TakeVector(&vec),
+  });
 }
 
-bool QueryRenderSupport(Display* dpy) {
-  int dummy;
-  // We don't care about the version of Xrender since all the features which
-  // we use are included in every version.
-  static bool render_supported = XRenderQueryExtension(dpy, &dummy, &dummy);
-  return render_supported;
+bool IsXInput2Available() {
+  return DeviceDataManagerX11::GetInstance()->IsXInput2Available();
 }
 
 bool QueryShmSupport() {
@@ -1324,34 +1365,42 @@ bool IsSyncExtensionAvailable() {
 #endif
 }
 
-SkColorType ColorTypeForVisual(void* visual) {
+SkColorType ColorTypeForVisual(x11::VisualId visual) {
   struct {
     SkColorType color_type;
     unsigned long red_mask;
     unsigned long green_mask;
     unsigned long blue_mask;
+    int bpp;
   } color_infos[] = {
-      {kRGB_565_SkColorType, 0xf800, 0x7e0, 0x1f},
-      {kARGB_4444_SkColorType, 0xf000, 0xf00, 0xf0},
-      {kRGBA_8888_SkColorType, 0xff, 0xff00, 0xff0000},
-      {kBGRA_8888_SkColorType, 0xff0000, 0xff00, 0xff},
-      {kRGBA_1010102_SkColorType, 0x3ff, 0xffc00, 0x3ff00000},
-      {kBGRA_1010102_SkColorType, 0x3ff00000, 0xffc00, 0x3ff},
+      {kRGB_565_SkColorType, 0xf800, 0x7e0, 0x1f, 16},
+      {kARGB_4444_SkColorType, 0xf000, 0xf00, 0xf0, 16},
+      {kRGBA_8888_SkColorType, 0xff, 0xff00, 0xff0000, 32},
+      {kBGRA_8888_SkColorType, 0xff0000, 0xff00, 0xff, 32},
+      {kRGBA_1010102_SkColorType, 0x3ff, 0xffc00, 0x3ff00000, 32},
+      {kBGRA_1010102_SkColorType, 0x3ff00000, 0xffc00, 0x3ff, 32},
   };
-  Visual* vis = reinterpret_cast<Visual*>(visual);
-  // When running under Xvfb, a visual may not be set.
-  if (!vis || !vis->red_mask || !vis->green_mask || !vis->blue_mask)
+  auto* connection = x11::Connection::Get();
+  const auto* vis = connection->GetVisualInfoFromId(visual);
+  if (!vis)
     return kUnknown_SkColorType;
+  // We don't currently support anything other than TrueColor and DirectColor.
+  if (!vis->visual_type->red_mask || !vis->visual_type->green_mask ||
+      !vis->visual_type->blue_mask) {
+    return kUnknown_SkColorType;
+  }
   for (const auto& color_info : color_infos) {
-    if (vis->red_mask == color_info.red_mask &&
-        vis->green_mask == color_info.green_mask &&
-        vis->blue_mask == color_info.blue_mask) {
+    if (vis->visual_type->red_mask == color_info.red_mask &&
+        vis->visual_type->green_mask == color_info.green_mask &&
+        vis->visual_type->blue_mask == color_info.blue_mask &&
+        vis->format->bits_per_pixel == color_info.bpp) {
       return color_info.color_type;
     }
   }
   LOG(ERROR) << "Unsupported visual with rgb mask 0x" << std::hex
-             << vis->red_mask << ", 0x" << vis->green_mask << ", 0x"
-             << vis->blue_mask
+             << vis->visual_type->red_mask << ", 0x"
+             << vis->visual_type->green_mask << ", 0x"
+             << vis->visual_type->blue_mask
              << ".  Please report this to https://crbug.com/1025266";
   return kUnknown_SkColorType;
 }
@@ -1406,43 +1455,6 @@ const XcursorImage* GetCachedXcursorImage(::Cursor cursor) {
   return XCustomCursorCache::GetInstance()->GetXcursorImage(cursor);
 }
 }  // namespace test
-
-// ----------------------------------------------------------------------------
-// These functions are declared in x11_util_internal.h because they require
-// XLib.h to be included, and it conflicts with many other headers.
-XRenderPictFormat* GetRenderARGB32Format(XDisplay* dpy) {
-  static XRenderPictFormat* pictformat = nullptr;
-  if (pictformat)
-    return pictformat;
-
-  // First look for a 32-bit format which ignores the alpha value
-  XRenderPictFormat templ;
-  templ.depth = 32;
-  templ.type = PictTypeDirect;
-  templ.direct.red = 16;
-  templ.direct.green = 8;
-  templ.direct.blue = 0;
-  templ.direct.redMask = 0xff;
-  templ.direct.greenMask = 0xff;
-  templ.direct.blueMask = 0xff;
-  templ.direct.alphaMask = 0;
-
-  static const unsigned long kMask =
-      PictFormatType | PictFormatDepth | PictFormatRed | PictFormatRedMask |
-      PictFormatGreen | PictFormatGreenMask | PictFormatBlue |
-      PictFormatBlueMask | PictFormatAlphaMask;
-
-  pictformat = XRenderFindFormat(dpy, kMask, &templ, 0 /* first result */);
-
-  if (!pictformat) {
-    // Not all X servers support xRGB32 formats. However, the XRENDER spec says
-    // that they must support an ARGB32 format, so we can always return that.
-    pictformat = XRenderFindStandardFormat(dpy, PictStandardARGB32);
-    CHECK(pictformat) << "XRENDER ARGB32 not supported.";
-  }
-
-  return pictformat;
-}
 
 void SetX11ErrorHandlers(XErrorHandler error_handler,
                          XIOErrorHandler io_error_handler) {
@@ -1568,8 +1580,5 @@ XVisualManager::XVisualData::XVisualData(uint8_t depth,
     : depth(depth), info(info) {}
 
 XVisualManager::XVisualData::~XVisualData() = default;
-
-// ----------------------------------------------------------------------------
-// End of x11_util_internal.h
 
 }  // namespace ui

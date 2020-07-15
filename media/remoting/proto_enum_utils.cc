@@ -11,32 +11,6 @@ namespace remoting {
   case OriginType::x:        \
     return OtherType::x
 
-base::Optional<EncryptionScheme> ToMediaEncryptionScheme(
-    pb::EncryptionScheme::CipherMode value) {
-  switch (value) {
-    case pb::EncryptionScheme::CIPHER_MODE_UNENCRYPTED:
-      return EncryptionScheme::kUnencrypted;
-    case pb::EncryptionScheme::CIPHER_MODE_AES_CTR:
-      return EncryptionScheme::kCenc;
-    case pb::EncryptionScheme::CIPHER_MODE_AES_CBC:
-      return EncryptionScheme::kCbcs;
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<pb::EncryptionScheme::CipherMode>
-ToProtoEncryptionSchemeCipherMode(EncryptionScheme value) {
-  switch (value) {
-    case EncryptionScheme::kUnencrypted:
-      return pb::EncryptionScheme::CIPHER_MODE_UNENCRYPTED;
-    case EncryptionScheme::kCenc:
-      return pb::EncryptionScheme::CIPHER_MODE_AES_CTR;
-    case EncryptionScheme::kCbcs:
-      return pb::EncryptionScheme::CIPHER_MODE_AES_CBC;
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
 base::Optional<AudioCodec> ToMediaAudioCodec(
     pb::AudioDecoderConfig::Codec value) {
   using OriginType = pb::AudioDecoderConfig;
@@ -399,144 +373,6 @@ ToProtoMediaBufferingState(BufferingState value) {
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
 
-base::Optional<CdmKeyInformation::KeyStatus> ToMediaCdmKeyInformationKeyStatus(
-    pb::CdmKeyInformation::KeyStatus value) {
-  using OriginType = pb::CdmKeyInformation;
-  using OtherType = CdmKeyInformation;
-  switch (value) {
-    CASE_RETURN_OTHER(USABLE);
-    CASE_RETURN_OTHER(INTERNAL_ERROR);
-    CASE_RETURN_OTHER(EXPIRED);
-    CASE_RETURN_OTHER(OUTPUT_RESTRICTED);
-    CASE_RETURN_OTHER(OUTPUT_DOWNSCALED);
-    CASE_RETURN_OTHER(KEY_STATUS_PENDING);
-    CASE_RETURN_OTHER(RELEASED);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<pb::CdmKeyInformation::KeyStatus> ToProtoCdmKeyInformation(
-    CdmKeyInformation::KeyStatus value) {
-  using OriginType = CdmKeyInformation;
-  using OtherType = pb::CdmKeyInformation;
-  switch (value) {
-    CASE_RETURN_OTHER(USABLE);
-    CASE_RETURN_OTHER(INTERNAL_ERROR);
-    CASE_RETURN_OTHER(EXPIRED);
-    CASE_RETURN_OTHER(OUTPUT_RESTRICTED);
-    CASE_RETURN_OTHER(OUTPUT_DOWNSCALED);
-    CASE_RETURN_OTHER(KEY_STATUS_PENDING);
-    CASE_RETURN_OTHER(RELEASED);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<CdmPromise::Exception> ToCdmPromiseException(
-    pb::CdmException value) {
-  using OriginType = pb::CdmException;
-  using OtherType = CdmPromise::Exception;
-  switch (value) {
-    CASE_RETURN_OTHER(NOT_SUPPORTED_ERROR);
-    CASE_RETURN_OTHER(INVALID_STATE_ERROR);
-    CASE_RETURN_OTHER(QUOTA_EXCEEDED_ERROR);
-    CASE_RETURN_OTHER(TYPE_ERROR);
-
-    // The following were generated with previous versions of the CDM and are
-    // no longer used by CdmPromise.
-    case OriginType::INVALID_ACCESS_ERROR:
-    case OriginType::UNKNOWN_ERROR:
-    case OriginType::CLIENT_ERROR:
-    case OriginType::OUTPUT_ERROR:
-      return OtherType::NOT_SUPPORTED_ERROR;
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<pb::CdmException> ToProtoCdmException(
-    CdmPromise::Exception value) {
-  using OriginType = CdmPromise::Exception;
-  using OtherType = pb::CdmException;
-  switch (value) {
-    CASE_RETURN_OTHER(NOT_SUPPORTED_ERROR);
-    CASE_RETURN_OTHER(INVALID_STATE_ERROR);
-    CASE_RETURN_OTHER(QUOTA_EXCEEDED_ERROR);
-    CASE_RETURN_OTHER(TYPE_ERROR);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<CdmMessageType> ToMediaCdmMessageType(pb::CdmMessageType value) {
-  using OriginType = pb::CdmMessageType;
-  using OtherType = CdmMessageType;
-  switch (value) {
-    CASE_RETURN_OTHER(LICENSE_REQUEST);
-    CASE_RETURN_OTHER(LICENSE_RENEWAL);
-    CASE_RETURN_OTHER(LICENSE_RELEASE);
-    CASE_RETURN_OTHER(INDIVIDUALIZATION_REQUEST);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<pb::CdmMessageType> ToProtoCdmMessageType(CdmMessageType value) {
-  using OriginType = CdmMessageType;
-  using OtherType = pb::CdmMessageType;
-  switch (value) {
-    CASE_RETURN_OTHER(LICENSE_REQUEST);
-    CASE_RETURN_OTHER(LICENSE_RENEWAL);
-    CASE_RETURN_OTHER(LICENSE_RELEASE);
-    CASE_RETURN_OTHER(INDIVIDUALIZATION_REQUEST);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<CdmSessionType> ToCdmSessionType(pb::CdmSessionType value) {
-  using OriginType = pb::CdmSessionType;
-  using OtherType = CdmSessionType;
-  switch (value) {
-    CASE_RETURN_OTHER(kTemporary);
-    CASE_RETURN_OTHER(kPersistentLicense);
-    CASE_RETURN_OTHER(kPersistentUsageRecord);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<pb::CdmSessionType> ToProtoCdmSessionType(CdmSessionType value) {
-  using OriginType = CdmSessionType;
-  using OtherType = pb::CdmSessionType;
-  switch (value) {
-    CASE_RETURN_OTHER(kTemporary);
-    CASE_RETURN_OTHER(kPersistentLicense);
-    CASE_RETURN_OTHER(kPersistentUsageRecord);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<EmeInitDataType> ToMediaEmeInitDataType(
-    pb::CdmCreateSessionAndGenerateRequest::EmeInitDataType value) {
-  using OriginType = pb::CdmCreateSessionAndGenerateRequest;
-  using OtherType = EmeInitDataType;
-  switch (value) {
-    CASE_RETURN_OTHER(UNKNOWN);
-    CASE_RETURN_OTHER(WEBM);
-    CASE_RETURN_OTHER(CENC);
-    CASE_RETURN_OTHER(KEYIDS);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<pb::CdmCreateSessionAndGenerateRequest::EmeInitDataType>
-ToProtoMediaEmeInitDataType(EmeInitDataType value) {
-  using OriginType = EmeInitDataType;
-  using OtherType = pb::CdmCreateSessionAndGenerateRequest;
-  switch (value) {
-    CASE_RETURN_OTHER(UNKNOWN);
-    CASE_RETURN_OTHER(WEBM);
-    CASE_RETURN_OTHER(CENC);
-    CASE_RETURN_OTHER(KEYIDS);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
 base::Optional<DemuxerStream::Status> ToDemuxerStreamStatus(
     pb::DemuxerStreamReadUntilCallback::Status value) {
   using OriginType = pb::DemuxerStreamReadUntilCallback;
@@ -559,30 +395,6 @@ ToProtoDemuxerStreamStatus(DemuxerStream::Status value) {
     CASE_RETURN_OTHER(kAborted);
     CASE_RETURN_OTHER(kConfigChanged);
     CASE_RETURN_OTHER(kError);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<EncryptionScheme> ToMediaEncryptionScheme(
-    pb::EncryptionMode value) {
-  using OriginType = pb::EncryptionMode;
-  using OtherType = EncryptionScheme;
-  switch (value) {
-    CASE_RETURN_OTHER(kUnencrypted);
-    CASE_RETURN_OTHER(kCenc);
-    CASE_RETURN_OTHER(kCbcs);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<pb::EncryptionMode> ToProtoEncryptionMode(
-    EncryptionScheme value) {
-  using OriginType = EncryptionScheme;
-  using OtherType = pb::EncryptionMode;
-  switch (value) {
-    CASE_RETURN_OTHER(kUnencrypted);
-    CASE_RETURN_OTHER(kCenc);
-    CASE_RETURN_OTHER(kCbcs);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }

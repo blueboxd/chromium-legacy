@@ -28386,6 +28386,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3345" label="RTCConstraintEnableRtpDataChannelsFalse"/>
   <int value="3346" label="NativeFileSystemDragAndDrop"/>
   <int value="3347" label="RTCAdaptivePtime"/>
+  <int value="3348"
+      label="HTMLMetaElementReferrerPolicyMultipleTokensAffectingRequest"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -41413,6 +41415,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef:disabled"/>
   <int value="-127666141" label="TabGroups:disabled"/>
   <int value="-127231994" label="VrBrowsingNativeAndroidUi:disabled"/>
+  <int value="-124604792" label="LanguageSettingsUpdate:enabled"/>
   <int value="-122492389" label="enable-browser-task-scheduler"/>
   <int value="-120521482" label="DirectManipulationStylus:enabled"/>
   <int value="-120091289" label="CrostiniAppSearch:enabled"/>
@@ -41814,6 +41817,7 @@ from previous Chrome versions.
   <int value="328722396" label="NTPCondensedLayout:disabled"/>
   <int value="330138076" label="enable-clear-browsing-data-counters"/>
   <int value="330439654" label="SyncPseudoUSSExtensions:enabled"/>
+  <int value="330653520" label="ChromeShareHighlightsAndroid:enabled"/>
   <int value="331770879" label="CrostiniAppSearch:disabled"/>
   <int value="332391072" label="cs-contextual-cards-bar-integration"/>
   <int value="334802038" label="OfflinePreviews:disabled"/>
@@ -42799,6 +42803,7 @@ from previous Chrome versions.
   <int value="1393500952" label="EnableVirtualKeyboardUkm:disabled"/>
   <int value="1393722373" label="SaveEditedPDFForm:disabled"/>
   <int value="1397069250" label="NetworkService:disabled"/>
+  <int value="1398148960" label="LanguageSettingsUpdate:disabled"/>
   <int value="1399950951" label="AutofillTokenPrefixMatching:disabled"/>
   <int value="1403195370" label="ArcCupsApi:enabled"/>
   <int value="1405459667" label="enable-fast-text-autosizing"/>
@@ -43045,6 +43050,7 @@ from previous Chrome versions.
   <int value="1677258310" label="DragAppsInTabletMode:disabled"/>
   <int value="1679558835" label="ArcAvailableForChildAccount:enabled"/>
   <int value="1680248931" label="use-fake-device-for-media-stream:enabled"/>
+  <int value="1683560662" label="ChromeShareHighlightsAndroid:disabled"/>
   <int value="1684043382" label="AssistantKeyRemapping:enabled"/>
   <int value="1685280468" label="AppServiceShelf:enabled"/>
   <int value="1688075820" label="OmniboxExperimentalKeywordMode:disabled"/>
@@ -69167,7 +69173,7 @@ Full version information for the fingerprint enum values:
 -->
 
   <int value="29785307" label="CROS Cr50 0.1.2"/>
-  <int value="67287287" label="CROS Cr50 0.4.26"/>
+  <int value="67287287" label="CROS Cr50 0.4.26 aka 0.6.0"/>
   <int value="91611772" label="CROS Cr50 0.4.21"/>
   <int value="91664959" label="CROS Cr50 0.0.16"/>
   <int value="113099773" label="CROS Cr50 0.0.23 Eve Flags 0x7f00(prod)"/>
@@ -69180,6 +69186,7 @@ Full version information for the fingerprint enum values:
   <int value="276176597" label="CROS Cr50 0.1.0 Flags 0x10(pre-pvt)"/>
   <int value="305524852" label="IFX 9655 rev 41 fw 4.32 build 036f"/>
   <int value="313962517" label="CROS Cr50 0.3.16"/>
+  <int value="326080143" label="CROS Cr50 0.6.5"/>
   <int value="337883107" label="CROS Cr50 0.4.20"/>
   <int value="368058567" label="STM d08"/>
   <int value="379654202" label="CROS Cr50 0.0.13"/>
@@ -69206,11 +69213,16 @@ Full version information for the fingerprint enum values:
   <int value="1001367086" label="CROS Cr50 0.3.15"/>
   <int value="1009763914" label="CROS Cr50 0.4.10"/>
   <int value="1013730596" label="CROS Cr50 0.0.26 Flags 0x10(pre-pvt)"/>
+  <int value="1017773041" label="CROS Cr50 0.5.4"/>
+  <int value="1026125897" label="CROS Cr50 0.5.5"/>
   <int value="1039624416" label="CROS Cr50 0.3.10"/>
+  <int value="1048372479" label="CROS Cr50 0.6.4"/>
   <int value="1065916186" label="CROS Cr50 0.0.19"/>
+  <int value="1080347583" label="CROS Cr50 0.6.2"/>
   <int value="1123680979" label="CROS Cr50 0.3.4"/>
   <int value="1184698907" label="CROS Cr50 0.3.23"/>
   <int value="1190683265" label="CROS Cr50 0.0.14"/>
+  <int value="1204349964" label="CROS Cr50 0.6.3"/>
   <int value="1290177221" label="CROS Cr50 0.4.6 Flags 0x10(pre-pvt)"/>
   <int value="1311411160" label="WEC 345"/>
   <int value="1353576267" label="IFX 9635 fw 3.18 build 0009"/>
@@ -69226,7 +69238,7 @@ Full version information for the fingerprint enum values:
   <int value="1717226620" label="CROS Cr50 0.4.14 Flags 0x10(pre-pvt)"/>
   <int value="1733077393" label="IFX 9645 rev 49 fw 133.33 build 00e3"/>
   <int value="1774347833" label="CROS Cr50 0.0.15"/>
-  <int value="1787609211" label="CROS Cr50 0.3.26"/>
+  <int value="1787609211" label="CROS Cr50 0.3.26 aka 0.5.0"/>
   <int value="1799811131" label="CROS Cr50 0.3.9"/>
   <int value="1828625721" label="IFX 9655 rev 32 fw 4.31 build 02c2"/>
   <int value="1848357394" label="CROS Cr50 0.4.11 Flags 0x10(pre-pvt)"/>
@@ -69245,6 +69257,7 @@ Full version information for the fingerprint enum values:
       label="CROS Cr50 0.2.2 aka 0.4.4 Flags 0x10(pre-pvt)"/>
   <int value="2104725364" label="CROS Cr50 0.3.20"/>
   <int value="2109398286" label="CROS Cr50 0.4.7"/>
+  <int value="2127616984" label="CROS Cr50 0.6.1"/>
 </enum>
 
 <enum name="TracingFinalizationDisallowedReason">

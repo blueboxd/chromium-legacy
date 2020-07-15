@@ -28,8 +28,6 @@ crbug.com/1070851 [ impl_lte_83 ] org.chromium.weblayer.test.NavigationTest#test
 # Fixed in https://crrev.com/c/2180022.
 crbug.com/1077243 [ impl_lte_83 ] org.chromium.weblayer.test.FullscreenCallbackTest#testExitFullscreenWhenTabDestroyed [ Skip ]
 
-crbug.com/1079491 [ impl_lte_83 ] org.chromium.weblayer.test.NavigationTest#testSetUserAgentString [ Skip ]
-
 crbug.com/1096570 [ impl_lte_83 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentWithNoRedirectLaunched [ Skip ]
 
 # -------------------------------------

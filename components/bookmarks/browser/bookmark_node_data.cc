@@ -140,7 +140,7 @@ BookmarkNodeData::~BookmarkNodeData() {
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
       ui::ClipboardFormatType::GetType(kClipboardFormatString),
-      ui::ClipboardBuffer::kCopyPaste);
+      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr);
 }
 #endif
 
@@ -222,7 +222,7 @@ bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardBuffer buffer) {
   std::string data;
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   clipboard->ReadData(ui::ClipboardFormatType::GetType(kClipboardFormatString),
-                      &data);
+                      /* data_dst = */ nullptr, &data);
 
   if (!data.empty()) {
     base::Pickle pickle(data.data(), static_cast<int>(data.size()));
@@ -232,7 +232,7 @@ bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardBuffer buffer) {
 
   base::string16 title;
   std::string url;
-  clipboard->ReadBookmark(&title, &url);
+  clipboard->ReadBookmark(/* data_dst = */ nullptr, &title, &url);
   if (!url.empty()) {
     Element element;
     element.is_url = true;

@@ -2040,21 +2040,24 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   normal->SelectAll(false);
   normal->ExecuteCommand(Textfield::kCut, 0);
   base::string16 result;
-  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr,
+                      &result);
   EXPECT_EQ(kNormalText, result);
   normal->SetText(kNormalText);  // Let's revert to the original content.
 
   read_only->SelectAll(false);
   read_only->ExecuteCommand(Textfield::kCut, 0);
   result.clear();
-  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr,
+                      &result);
   // Cut should have failed, so the clipboard content should not have changed.
   EXPECT_EQ(kNormalText, result);
 
   password->SelectAll(false);
   password->ExecuteCommand(Textfield::kCut, 0);
   result.clear();
-  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr,
+                      &result);
   // Cut should have failed, so the clipboard content should not have changed.
   EXPECT_EQ(kNormalText, result);
 
@@ -2066,19 +2069,22 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   read_only->SelectAll(false);
   read_only->ExecuteCommand(Textfield::kCopy, 0);
   result.clear();
-  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr,
+                      &result);
   EXPECT_EQ(kReadOnlyText, result);
 
   normal->SelectAll(false);
   normal->ExecuteCommand(Textfield::kCopy, 0);
   result.clear();
-  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr,
+                      &result);
   EXPECT_EQ(kNormalText, result);
 
   password->SelectAll(false);
   password->ExecuteCommand(Textfield::kCopy, 0);
   result.clear();
-  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr,
+                      &result);
   // Text cannot be copied from an obscured field; the clipboard won't change.
   EXPECT_EQ(kNormalText, result);
 

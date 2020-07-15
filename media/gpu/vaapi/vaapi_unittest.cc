@@ -86,12 +86,6 @@ class VaapiTest : public testing::Test {
  public:
   VaapiTest() = default;
   ~VaapiTest() override = default;
-
-  void SetUp() override {
-    // PreSandboxInitialization() loads and opens the driver, queries its
-    // capabilities and fills in the VASupportedProfiles.
-    VaapiWrapper::PreSandboxInitialization();
-  }
 };
 
 std::map<VAProfile, std::vector<VAEntrypoint>> ParseVainfo(
@@ -233,6 +227,10 @@ TEST_F(VaapiTest, DefaultEntrypointIsSupported) {
 
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
+
+  // PreSandboxInitialization() loads and opens the driver, queries its
+  // capabilities and fills in the VASupportedProfiles.
+  media::VaapiWrapper::PreSandboxInitialization();
 
   return base::LaunchUnitTests(
       argc, argv,

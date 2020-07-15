@@ -337,8 +337,11 @@ uint64_t ClipboardOzone::GetSequenceNumber(ClipboardBuffer buffer) const {
   return async_clipboard_ozone_->GetSequenceNumber(buffer);
 }
 
-bool ClipboardOzone::IsFormatAvailable(const ClipboardFormatType& format,
-                                       ClipboardBuffer buffer) const {
+// TODO(crbug.com/1103194): |data_dst| should be supported.
+bool ClipboardOzone::IsFormatAvailable(
+    const ClipboardFormatType& format,
+    ClipboardBuffer buffer,
+    const ClipboardDataEndpoint* data_dst) const {
   DCHECK(CalledOnValidThread());
 
   auto available_types = async_clipboard_ozone_->RequestMimeTypes(buffer);
@@ -349,8 +352,10 @@ void ClipboardOzone::Clear(ClipboardBuffer buffer) {
   async_clipboard_ozone_->Clear(buffer);
 }
 
+// TODO(crbug.com/1103194): |data_dst| should be supported.
 void ClipboardOzone::ReadAvailableTypes(
     ClipboardBuffer buffer,
+    const ClipboardDataEndpoint* data_dst,
     std::vector<base::string16>* types) const {
   DCHECK(CalledOnValidThread());
   DCHECK(types);
@@ -372,9 +377,11 @@ void ClipboardOzone::ReadAvailableTypes(
   }
 }
 
+// TODO(crbug.com/1103194): |data_dst| should be supported.
 std::vector<base::string16>
 ClipboardOzone::ReadAvailablePlatformSpecificFormatNames(
-    ClipboardBuffer buffer) const {
+    ClipboardBuffer buffer,
+    const ClipboardDataEndpoint* data_dst) const {
   DCHECK(CalledOnValidThread());
 
   std::vector<std::string> mime_types =
@@ -386,7 +393,9 @@ ClipboardOzone::ReadAvailablePlatformSpecificFormatNames(
   return types;
 }
 
+// TODO(crbug.com/1103194): |data_dst| should be supported.
 void ClipboardOzone::ReadText(ClipboardBuffer buffer,
+                              const ClipboardDataEndpoint* data_dst,
                               base::string16* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kText);
@@ -397,7 +406,9 @@ void ClipboardOzone::ReadText(ClipboardBuffer buffer,
       reinterpret_cast<char*>(clipboard_data.data()), clipboard_data.size()));
 }
 
+// TODO(crbug.com/1103194): |data_dst| should be supported.
 void ClipboardOzone::ReadAsciiText(ClipboardBuffer buffer,
+                                   const ClipboardDataEndpoint* data_dst,
                                    std::string* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kText);
@@ -407,7 +418,9 @@ void ClipboardOzone::ReadAsciiText(ClipboardBuffer buffer,
   result->assign(clipboard_data.begin(), clipboard_data.end());
 }
 
+// TODO(crbug.com/1103194): |data_dst| should be supported.
 void ClipboardOzone::ReadHTML(ClipboardBuffer buffer,
+                              const ClipboardDataEndpoint* data_dst,
                               base::string16* markup,
                               std::string* src_url,
                               uint32_t* fragment_start,
@@ -429,7 +442,9 @@ void ClipboardOzone::ReadHTML(ClipboardBuffer buffer,
   *fragment_end = static_cast<uint32_t>(markup->length());
 }
 
+// TODO(crbug.com/1103194): |data_dst| should be supported.
 void ClipboardOzone::ReadRTF(ClipboardBuffer buffer,
+                             const ClipboardDataEndpoint* data_dst,
                              std::string* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kRtf);
@@ -439,14 +454,18 @@ void ClipboardOzone::ReadRTF(ClipboardBuffer buffer,
   result->assign(clipboard_data.begin(), clipboard_data.end());
 }
 
+// TODO(crbug.com/1103194): |data_dst| should be supported.
 void ClipboardOzone::ReadImage(ClipboardBuffer buffer,
+                               const ClipboardDataEndpoint* data_dst,
                                ReadImageCallback callback) const {
   RecordRead(ClipboardFormatMetric::kImage);
   std::move(callback).Run(ReadImageInternal(buffer));
 }
 
+// TODO(crbug.com/1103194): |data_dst| should be supported.
 void ClipboardOzone::ReadCustomData(ClipboardBuffer buffer,
                                     const base::string16& type,
+                                    const ClipboardDataEndpoint* data_dst,
                                     base::string16* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kCustomData);
@@ -456,14 +475,18 @@ void ClipboardOzone::ReadCustomData(ClipboardBuffer buffer,
   ReadCustomDataForType(custom_data.data(), custom_data.size(), type, result);
 }
 
-void ClipboardOzone::ReadBookmark(base::string16* title,
+// TODO(crbug.com/1103194): |data_dst| should be supported.
+void ClipboardOzone::ReadBookmark(const ClipboardDataEndpoint* data_dst,
+                                  base::string16* title,
                                   std::string* url) const {
   DCHECK(CalledOnValidThread());
   // TODO(msisov): This was left NOTIMPLEMENTED() in all the Linux platforms.
   NOTIMPLEMENTED();
 }
 
+// TODO(crbug.com/1103194): |data_dst| should be supported.
 void ClipboardOzone::ReadData(const ClipboardFormatType& format,
+                              const ClipboardDataEndpoint* data_dst,
                               std::string* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kData);

@@ -745,6 +745,14 @@ std::string StripWWW(const std::string& text) {
              : text;
 }
 
+void StripWWWFromHostComponent(const std::string& url, url::Component* host) {
+  std::string host_str = url.substr(host->begin, host->len);
+  if (StripWWW(host_str) == host_str)
+    return;
+  host->begin += kWwwLength;
+  host->len -= kWwwLength;
+}
+
 Skeletons GetSkeletons(const base::string16& host) {
   return g_idn_spoof_checker.Get().GetSkeletons(host);
 }

@@ -120,6 +120,11 @@ void ServiceWorkerStorageControlImpl::LazyInitializeForTest() {
   storage_->LazyInitializeForTest();
 }
 
+void ServiceWorkerStorageControlImpl::GetRegisteredOrigins(
+    GetRegisteredOriginsCallback callback) {
+  storage_->GetRegisteredOrigins(std::move(callback));
+}
+
 void ServiceWorkerStorageControlImpl::FindRegistrationForClientUrl(
     const GURL& client_url,
     FindRegistrationForClientUrlCallback callback) {

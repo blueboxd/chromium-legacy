@@ -176,14 +176,17 @@ class ContextualSearchRequest {
     }
 
     /**
-     * Adds translation parameters.
+     * Adds translation parameters, unless they match.
      * @param sourceLanguage The language of the original search term.
      * @param targetLanguage The language the that the user prefers.
      */
     void forceTranslation(String sourceLanguage, String targetLanguage) {
         mIsTranslationForced = true;
         // If the server is providing a full URL then we shouldn't alter it.
-        if (mIsFullSearchUrlProvided) return;
+        if (mIsFullSearchUrlProvided || TextUtils.isEmpty(targetLanguage)
+                || targetLanguage.equals(sourceLanguage)) {
+            return;
+        }
 
         if (mLowPriorityUri != null) {
             mLowPriorityUri = makeTranslateUri(mLowPriorityUri, sourceLanguage, targetLanguage);

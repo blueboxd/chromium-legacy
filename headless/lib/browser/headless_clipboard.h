@@ -26,30 +26,44 @@ class HeadlessClipboard : public ui::Clipboard {
   // Clipboard overrides.
   void OnPreShutdown() override;
   uint64_t GetSequenceNumber(ui::ClipboardBuffer buffer) const override;
-  bool IsFormatAvailable(const ui::ClipboardFormatType& format,
-                         ui::ClipboardBuffer buffer) const override;
+  bool IsFormatAvailable(
+      const ui::ClipboardFormatType& format,
+      ui::ClipboardBuffer buffer,
+      const ui::ClipboardDataEndpoint* data_dst) const override;
   void Clear(ui::ClipboardBuffer buffer) override;
   void ReadAvailableTypes(ui::ClipboardBuffer buffer,
+                          const ui::ClipboardDataEndpoint* data_dst,
                           std::vector<base::string16>* types) const override;
   std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(
-      ui::ClipboardBuffer buffer) const override;
+      ui::ClipboardBuffer buffer,
+      const ui::ClipboardDataEndpoint* data_dst) const override;
   void ReadText(ui::ClipboardBuffer buffer,
+                const ui::ClipboardDataEndpoint* data_dst,
                 base::string16* result) const override;
   void ReadAsciiText(ui::ClipboardBuffer buffer,
+                     const ui::ClipboardDataEndpoint* data_dst,
                      std::string* result) const override;
   void ReadHTML(ui::ClipboardBuffer buffer,
+                const ui::ClipboardDataEndpoint* data_dst,
                 base::string16* markup,
                 std::string* src_url,
                 uint32_t* fragment_start,
                 uint32_t* fragment_end) const override;
-  void ReadRTF(ui::ClipboardBuffer buffer, std::string* result) const override;
+  void ReadRTF(ui::ClipboardBuffer buffer,
+               const ui::ClipboardDataEndpoint* data_dst,
+               std::string* result) const override;
   void ReadImage(ui::ClipboardBuffer buffer,
+                 const ui::ClipboardDataEndpoint* data_dst,
                  ReadImageCallback callback) const override;
   void ReadCustomData(ui::ClipboardBuffer clipboard_buffer,
                       const base::string16& type,
+                      const ui::ClipboardDataEndpoint* data_dst,
                       base::string16* result) const override;
-  void ReadBookmark(base::string16* title, std::string* url) const override;
+  void ReadBookmark(const ui::ClipboardDataEndpoint* data_dst,
+                    base::string16* title,
+                    std::string* url) const override;
   void ReadData(const ui::ClipboardFormatType& format,
+                const ui::ClipboardDataEndpoint* data_dst,
                 std::string* result) const override;
   void WritePortableRepresentations(
       ui::ClipboardBuffer buffer,

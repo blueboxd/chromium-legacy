@@ -15,9 +15,11 @@ base::string16 GetClipboardText() {
   // Try text format.
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   if (clipboard->IsFormatAvailable(ui::ClipboardFormatType::GetPlainTextType(),
-                                   ui::ClipboardBuffer::kCopyPaste)) {
+                                   ui::ClipboardBuffer::kCopyPaste,
+                                   /* data_dst = */ nullptr)) {
     base::string16 text;
-    clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &text);
+    clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste,
+                        /* data_dst = */ nullptr, &text);
     text = text.substr(0, kMaxClipboardTextLength);
     return OmniboxView::SanitizeTextForPaste(text);
   }
@@ -30,9 +32,10 @@ base::string16 GetClipboardText() {
   // cannonicalized, which is not what the user expects.  By pasting in this
   // order, we are sure to paste what the user copied.
   if (clipboard->IsFormatAvailable(ui::ClipboardFormatType::GetUrlType(),
-                                   ui::ClipboardBuffer::kCopyPaste)) {
+                                   ui::ClipboardBuffer::kCopyPaste,
+                                   /* data_dst = */ nullptr)) {
     std::string url_str;
-    clipboard->ReadBookmark(nullptr, &url_str);
+    clipboard->ReadBookmark(nullptr, /* data_dst = */ nullptr, &url_str);
     // pass resulting url string through GURL to normalize
     GURL url(url_str);
     if (url.is_valid())

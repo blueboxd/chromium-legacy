@@ -70,8 +70,8 @@ class X11WindowOzoneTest : public testing::Test {
   ~X11WindowOzoneTest() override = default;
 
   void SetUp() override {
-    XDisplay* display = gfx::GetXDisplay();
-    event_source_ = std::make_unique<X11EventSource>(display);
+    auto* connection = x11::Connection::Get();
+    event_source_ = std::make_unique<X11EventSource>(connection);
 
     test_screen_ = new TestScreen();
     display::Screen::SetScreenInstance(test_screen_);

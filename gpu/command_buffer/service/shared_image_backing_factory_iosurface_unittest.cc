@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/shared_image_backing_factory_iosurface.h"
+#include "gpu/command_buffer/service/shared_image_backing_factory_gl_texture.h"
 
 #include <memory>
 #include <utility>
@@ -18,6 +18,7 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_test_config.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory_io_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
@@ -49,18 +50,24 @@ class SharedImageBackingFactoryIOSurfaceTest : public testing::Test {
     bool result = context_->MakeCurrent(surface_.get());
     ASSERT_TRUE(result);
 
+    GpuPreferences preferences;
+    preferences.texture_target_exception_list.push_back(
+        gfx::BufferUsageAndFormat(gfx::BufferUsage::SCANOUT,
+                                  gfx::BufferFormat::RGBA_8888));
+
     GpuDriverBugWorkarounds workarounds;
     scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
     context_state_ = base::MakeRefCounted<SharedContextState>(
         std::move(share_group), surface_, context_,
         false /* use_virtualized_gl_contexts */, base::DoNothing());
-    context_state_->InitializeGrContext(GpuPreferences(), workarounds, nullptr);
+    context_state_->InitializeGrContext(preferences, workarounds, nullptr);
     auto feature_info =
         base::MakeRefCounted<gles2::FeatureInfo>(workarounds, GpuFeatureInfo());
-    context_state_->InitializeGL(GpuPreferences(), std::move(feature_info));
+    context_state_->InitializeGL(preferences, std::move(feature_info));
 
-    backing_factory_ = std::make_unique<SharedImageBackingFactoryIOSurface>(
-        workarounds, GpuFeatureInfo(), /*use_gl*/ true);
+    backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
+        preferences, workarounds, GpuFeatureInfo(), &image_factory_,
+        shared_image_manager_.batch_access_manager());
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
     shared_image_representation_factory_ =
@@ -74,12 +81,13 @@ class SharedImageBackingFactoryIOSurfaceTest : public testing::Test {
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<SharedContextState> context_state_;
-  std::unique_ptr<SharedImageBackingFactoryIOSurface> backing_factory_;
+  std::unique_ptr<SharedImageBackingFactoryGLTexture> backing_factory_;
   gles2::MailboxManagerImpl mailbox_manager_;
   SharedImageManager shared_image_manager_;
   std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
   std::unique_ptr<SharedImageRepresentationFactory>
       shared_image_representation_factory_;
+  GpuMemoryBufferFactoryIOSurface image_factory_;
 
   void CheckSkiaPixels(const Mailbox& mailbox,
                        const gfx::Size& size,
@@ -143,7 +151,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Basic) {
   gfx::Size size(256, 256);
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
-  uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
+  uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_SCANOUT;
 
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space, usage,
@@ -245,7 +253,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_SkiaGL) {
   gfx::Size size(1, 1);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
-  uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
+  uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_SCANOUT;
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space, usage,
       false /* is_thread_safe */);
@@ -300,7 +308,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, LegacyClearing) {
   viz::ResourceFormat format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
-  uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
+  uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_SCANOUT;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
 
   // Create a backing.
@@ -378,7 +386,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
   gfx::Size size(1, 1);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
-  uint32_t usage = SHARED_IMAGE_USAGE_WEBGPU | SHARED_IMAGE_USAGE_DISPLAY;
+  uint32_t usage = SHARED_IMAGE_USAGE_WEBGPU | SHARED_IMAGE_USAGE_SCANOUT;
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space, usage,
       false /* is_thread_safe */);
@@ -451,7 +459,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_Dawn_Skia_UnclearTexture) {
   const gfx::Size size(1, 1);
   const auto color_space = gfx::ColorSpace::CreateSRGB();
   const gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
-  const uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY |
+  const uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_SCANOUT |
                          SHARED_IMAGE_USAGE_WEBGPU;
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space, usage,
@@ -565,7 +573,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, UnclearDawn_SkiaFails) {
   const auto format = viz::ResourceFormat::RGBA_8888;
   const gfx::Size size(1, 1);
   const auto color_space = gfx::ColorSpace::CreateSRGB();
-  const uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY |
+  const uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_SCANOUT |
                          SHARED_IMAGE_USAGE_WEBGPU;
   const gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   auto backing = backing_factory_->CreateSharedImage(
@@ -651,7 +659,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, SkiaAccessFirstFails) {
   const auto format = viz::ResourceFormat::RGBA_8888;
   const gfx::Size size(1, 1);
   const auto color_space = gfx::ColorSpace::CreateSRGB();
-  const uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
+  const uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_SCANOUT;
   const gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space, usage,

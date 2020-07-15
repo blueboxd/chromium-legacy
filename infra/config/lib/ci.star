@@ -454,10 +454,15 @@ def ci_builder(
       'chromium-tree-closer' config in notifiers.star for the full criteria.
     notifies - Any extra notifiers to attach to this builder.
   """
+
+  # Branch builders should never close the tree, only builders from the main
+  # "ci" bucket.
+  bucket = defaults.get_value_from_kwargs('bucket', kwargs)
+  if tree_closing and bucket == 'ci':
+    notifies = (notifies or []) + ['chromium-tree-closer', 'chromium-tree-closer-email']
+
   # Define the builder first so that any validation of luci.builder arguments
   # (e.g. bucket) occurs before we try to use it
-  if tree_closing:
-    notifies = (notifies or []) + ['chromium-tree-closer', 'chromium-tree-closer-email']
   ret = builders.builder(
       name = name,
       resultdb_bigquery_exports = [resultdb.export_test_results(
@@ -473,7 +478,6 @@ def ci_builder(
       console_view = defaults.get_value_from_kwargs('mastername', kwargs)
 
     if console_view:
-      bucket = defaults.get_value_from_kwargs('bucket', kwargs)
       add_to_console_view = defaults.get_value(
           'add_to_console_view', add_to_console_view)
 

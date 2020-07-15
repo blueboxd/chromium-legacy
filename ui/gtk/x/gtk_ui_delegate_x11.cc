@@ -8,17 +8,19 @@
 #include <gtk/gtk.h>
 
 #include "base/check.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/xproto.h"
 #include "ui/gtk/x/gtk_event_loop_x11.h"
 #include "ui/platform_window/x11/x11_window.h"
 #include "ui/platform_window/x11/x11_window_manager.h"
 
 namespace ui {
 
-GtkUiDelegateX11::GtkUiDelegateX11(XDisplay* display) : xdisplay_(display) {
-  DCHECK(xdisplay_);
+GtkUiDelegateX11::GtkUiDelegateX11(x11::Connection* connection)
+    : connection_(connection) {
+  DCHECK(connection_);
   gdk_set_allowed_backends("x11");
 }
 
@@ -47,8 +49,8 @@ GdkWindow* GtkUiDelegateX11::GetGdkWindow(gfx::AcceleratedWidget window_id) {
 
 bool GtkUiDelegateX11::SetGdkWindowTransientFor(GdkWindow* window,
                                                 gfx::AcceleratedWidget parent) {
-  XSetTransientForHint(xdisplay_, GDK_WINDOW_XID(window),
-                       static_cast<uint32_t>(parent));
+  SetProperty(static_cast<x11::Window>(GDK_WINDOW_XID(window)),
+              x11::Atom::WM_TRANSIENT_FOR, x11::Atom::WINDOW, parent);
 
   ui::X11Window* parent_window =
       ui::X11WindowManager::GetInstance()->GetWindow(parent);
@@ -65,10 +67,8 @@ void GtkUiDelegateX11::ClearTransientFor(gfx::AcceleratedWidget parent) {
 }
 
 GdkDisplay* GtkUiDelegateX11::GetGdkDisplay() {
-  if (!display_) {
-    GdkDisplay* display = gdk_x11_lookup_xdisplay(xdisplay_);
-    display_ = !display ? gdk_display_get_default() : display;
-  }
+  if (!display_)
+    display_ = gdk_display_get_default();
   return display_;
 }
 

@@ -85,7 +85,8 @@ void ClipboardAura::CheckClipboardForChanges() {
   protocol::ClipboardEvent event;
   std::string data;
 
-  clipboard->ReadAsciiText(ui::ClipboardBuffer::kCopyPaste, &data);
+  clipboard->ReadAsciiText(ui::ClipboardBuffer::kCopyPaste,
+                           /* data_dst = */ nullptr, &data);
   event.set_mime_type(kMimeTypeTextUtf8);
   event.set_data(data);
 

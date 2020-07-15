@@ -186,8 +186,8 @@ class X11WindowTest : public testing::Test {
   ~X11WindowTest() override = default;
 
   void SetUp() override {
-    XDisplay* display = gfx::GetXDisplay();
-    event_source_ = std::make_unique<X11EventSource>(display);
+    auto* connection = x11::Connection::Get();
+    event_source_ = std::make_unique<X11EventSource>(connection);
 
     std::vector<int> pointer_devices;
     pointer_devices.push_back(kPointerDeviceId);

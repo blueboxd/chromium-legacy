@@ -354,7 +354,8 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
 
   // TODO(bashi): Consider introducing a helper class that handles the below.
   // These are almost the same as DOMStorageContextWrapper.
-  void DidGetRegisteredOriginsOnStartup(std::vector<url::Origin> origins);
+  void DidGetRegisteredOriginsOnStartup(
+      const std::vector<url::Origin>& origins);
   void EnsureRegisteredOriginIsTracked(const url::Origin& origin);
   void OnStoragePolicyChanged();
   bool ShouldPurgeOnShutdown(const url::Origin& origin);

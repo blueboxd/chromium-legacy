@@ -237,6 +237,7 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_DUET_ADAPTIVE = "ChromeDuetAdaptive";
     public static final String DONT_AUTO_HIDE_BROWSER_CONTROLS = "DontAutoHideBrowserControls";
     public static final String CHROME_DUET_LABELED = "ChromeDuetLabeled";
+    public static final String CHROME_SHARE_HIGHLIGHTS_ANDROID = "ChromeShareHighlightsAndroid";
     public static final String CHROME_SHARE_QRCODE = "ChromeShareQRCode";
     public static final String CHROME_SHARE_SCREENSHOT = "ChromeShareScreenshot";
     public static final String CHROME_SHARING_HUB = "ChromeSharingHub";
@@ -363,6 +364,7 @@ public abstract class ChromeFeatureList {
     public static final String PRIORITIZE_BOOTSTRAP_TASKS = "PrioritizeBootstrapTasks";
     public static final String PRIVACY_ELEVATED_ANDROID = "PrivacyElevatedAndroid";
     public static final String PROBABILISTIC_CRYPTID_RENDERER = "ProbabilisticCryptidRenderer";
+    public static final String QUERY_TILES_GEO_FILTER = "QueryTilesGeoFilter";
     public static final String QUERY_TILES = "QueryTiles";
     public static final String QUERY_TILES_IN_OMNIBOX = "QueryTilesInOmnibox";
     public static final String QUERY_TILES_ENABLE_QUERY_EDITING = "QueryTilesEnableQueryEditing";
@@ -375,6 +377,8 @@ public abstract class ChromeFeatureList {
     public static final String REPORT_FEED_USER_ACTIONS = "ReportFeedUserActions";
     public static final String REVAMPED_CONTEXT_MENU = "RevampedContextMenu";
     public static final String SAFETY_CHECK_ANDROID = "SafetyCheckAndroid";
+    public static final String SAFE_BROWSING_ENHANCED_PROTECTION_ENABLED =
+            "SafeBrowsingEnhancedProtection";
     public static final String SAFE_BROWSING_SECURITY_SECTION_UI =
             "SafeBrowsingSecuritySectionUIAndroid";
     public static final String SAME_SITE_BY_DEFAULT_COOKIES = "SameSiteByDefaultCookies";

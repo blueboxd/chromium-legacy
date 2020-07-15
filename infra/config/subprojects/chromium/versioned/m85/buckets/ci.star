@@ -230,7 +230,6 @@ ci.chromium_builder(
     # TODO: Change this back down to something reasonable once these builders
     # have populated their cached by getting through the compile step
     execution_timeout = 6 * time.hour,
-    tree_closing = False,
 )
 
 ci.chromium_builder(
@@ -246,7 +245,6 @@ ci.chromium_builder(
     # TODO: Change this back down to something reasonable once these builders
     # have populated their cached by getting through the compile step
     execution_timeout = 10 * time.hour,
-    tree_closing = False,
 )
 
 ci.chromium_builder(
@@ -262,7 +260,6 @@ ci.chromium_builder(
     # TODO: Change this back down to something reasonable once these builders
     # have populated their cached by getting through the compile step
     execution_timeout = 10 * time.hour,
-    tree_closing = False,
 )
 
 ci.chromiumos_builder(

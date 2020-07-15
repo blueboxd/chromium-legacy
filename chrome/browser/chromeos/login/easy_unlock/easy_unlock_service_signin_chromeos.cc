@@ -385,10 +385,6 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   if (account_id_ == account_id)
     return;
 
-  // Setting or clearing the account_id may changed |IsAllowed| value, so in
-  // these cases update the app state. Otherwise, it's enough to notify the app
-  // the user data has been updated.
-  const bool should_update_app_state = (account_id_ != account_id);
   account_id_ = account_id;
   pref_manager_->SetActiveUser(account_id);
   user_pod_last_focused_timestamp_ = base::TimeTicks::Now();
@@ -410,10 +406,7 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
     return;
   }
 
-  if (should_update_app_state) {
-    UpdateAppState();
-  }
-
+  UpdateAppState();
   LoadCurrentUserDataIfNeeded();
 
   // Start loading TPM system token.

@@ -307,7 +307,7 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
       // current tab. See https://crbug.com/451659.
       request.SetNavigationPolicy(
           NavigationPolicy::kNavigationPolicyNewForegroundTab);
-      page_->MainFrame()->Navigate(request, WebFrameLoadType::kStandard);
+      local_root.Navigate(request, WebFrameLoadType::kStandard);
     }
 
     // TODO(bokan): This case happens when we end a URL drag inside a guest

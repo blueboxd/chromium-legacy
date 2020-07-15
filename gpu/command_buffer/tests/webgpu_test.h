@@ -9,9 +9,14 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/webgpu_cmd_ids.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_MACOSX)
+#include "gpu/ipc/service/gpu_memory_buffer_factory_io_surface.h"
+#endif
 
 namespace viz {
 class TestGpuServiceHolder;
@@ -72,6 +77,10 @@ class WebGPUTest : public testing::Test {
  private:
   std::unique_ptr<viz::TestGpuServiceHolder> gpu_service_holder_;
   std::unique_ptr<WebGPUInProcessContext> context_;
+#if defined(OS_MACOSX)
+  // SharedImages on macOS require a valid image factory.
+  GpuMemoryBufferFactoryIOSurface image_factory_;
+#endif
   bool is_initialized_ = false;
 
   webgpu::DawnDeviceClientID next_device_client_id_ = 1;

@@ -105,13 +105,11 @@ void OnApplicationLaunched(const std::string& app_id,
                            const crostini::CrostiniResult failure_result,
                            bool success,
                            const std::string& failure_reason) {
-  // Remove the spinner so it doesn't stay around forever.
-  // TODO(timloh): Consider also displaying a notification of some sort for
-  // failure.
-  ChromeLauncherController* chrome_controller =
-      ChromeLauncherController::instance();
-  DCHECK(chrome_controller);
-  chrome_controller->GetShelfSpinnerController()->CloseSpinner(app_id);
+  // Remove the spinner. Controller doesn't exist in tests.
+  // TODO(timloh): Consider also displaying a notification for failure.
+  if (auto* chrome_controller = ChromeLauncherController::instance()) {
+    chrome_controller->GetShelfSpinnerController()->CloseSpinner(app_id);
+  }
   RecordAppLaunchResultHistogram(success ? crostini::CrostiniResult::SUCCESS
                                          : failure_result);
   std::move(callback).Run(success, failure_reason);
@@ -126,29 +124,12 @@ void OnLaunchFailed(
                         failure_reason);
 }
 
-void OnCrostiniRestarted(Profile* profile,
-                         crostini::ContainerId container_id,
-                         const std::string& app_id,
-                         base::OnceClosure callback,
-                         crostini::CrostiniResult result) {
-  if (crostini::MaybeShowCrostiniDialogBeforeLaunch(profile, result)) {
-    VLOG(1) << "Crostini restart blocked by dialog";
-    return;
-  }
-
-  if (result != crostini::CrostiniResult::SUCCESS) {
-    OnLaunchFailed(app_id, base::DoNothing(), "", result);
-  }
-  std::move(callback).Run();
-}
-
 void OnSharePathForLaunchApplication(
     Profile* profile,
     const std::string& app_id,
     guest_os::GuestOsRegistryService::Registration registration,
     int64_t display_id,
     const std::vector<std::string>& files,
-    bool display_scaled,
     crostini::CrostiniSuccessCallback callback,
     bool success,
     const std::string& failure_reason) {
@@ -170,7 +151,8 @@ void OnSharePathForLaunchApplication(
                                  crostini::CrostiniResult::SUCCESS, true, "");
   }
   crostini::CrostiniManager::GetForProfile(profile)->LaunchContainerApplication(
-      container_id, registration.DesktopFileId(), files, display_scaled,
+      container_id, registration.DesktopFileId(), files,
+      registration.IsScaled(),
       base::BindOnce(OnApplicationLaunched, app_id, std::move(callback),
                      crostini::CrostiniResult::UNKNOWN_ERROR));
 }
@@ -181,7 +163,6 @@ void LaunchApplication(
     guest_os::GuestOsRegistryService::Registration registration,
     int64_t display_id,
     const std::vector<storage::FileSystemURL>& files,
-    bool display_scaled,
     crostini::CrostiniSuccessCallback callback) {
   ChromeLauncherController* chrome_launcher_controller =
       ChromeLauncherController::instance();
@@ -215,15 +196,13 @@ void LaunchApplication(
   if (paths_to_share.empty()) {
     OnSharePathForLaunchApplication(profile, app_id, std::move(registration),
                                     display_id, std::move(files_to_launch),
-                                    display_scaled, std::move(callback), true,
-                                    "");
+                                    std::move(callback), true, "");
   } else {
     guest_os::GuestOsSharePath::GetForProfile(profile)->SharePaths(
         registration.VmName(), std::move(paths_to_share), /*persist=*/false,
         base::BindOnce(OnSharePathForLaunchApplication, profile, app_id,
                        std::move(registration), display_id,
-                       std::move(files_to_launch), display_scaled,
-                       std::move(callback)));
+                       std::move(files_to_launch), std::move(callback)));
   }
 }
 
@@ -315,18 +294,17 @@ bool MaybeShowCrostiniDialogBeforeLaunch(Profile* profile,
 void LaunchCrostiniAppImpl(
     Profile* profile,
     const std::string& app_id,
+    guest_os::GuestOsRegistryService::Registration registration,
     int64_t display_id,
     const std::vector<storage::FileSystemURL>& files,
-    base::Optional<guest_os::GuestOsRegistryService::Registration> registration,
     CrostiniSuccessCallback callback) {
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
   auto* registry_service =
       guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
   // Store these as we move |registration| into LaunchContainerApplication().
-  const ContainerId container_id(registration->VmName(),
-                                 registration->ContainerName());
+  const ContainerId container_id(registration.VmName(),
+                                 registration.ContainerName());
 
-  base::OnceClosure launch_closure;
   if (app_id == kCrostiniTerminalSystemAppId) {
     // If terminal is launched with a 'cwd' file, we may need to launch the VM
     // and share the path before launching terminal.
@@ -354,17 +332,38 @@ void LaunchCrostiniAppImpl(
   }
 
   RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
-  launch_closure = base::BindOnce(
-      &LaunchApplication, profile, app_id, std::move(*registration), display_id,
-      std::move(files), registration->IsScaled(), std::move(callback));
 
   // Update the last launched time and Termina version.
   registry_service->AppLaunched(app_id);
   crostini_manager->UpdateLaunchMetricsForEnterpriseReporting();
 
   auto restart_id = crostini_manager->RestartCrostini(
-      container_id, base::BindOnce(OnCrostiniRestarted, profile, container_id,
-                                   app_id, std::move(launch_closure)));
+      container_id,
+      base::BindOnce(
+          [](Profile* profile, const std::string& app_id,
+             guest_os::GuestOsRegistryService::Registration registration,
+             int64_t display_id,
+             const std::vector<storage::FileSystemURL> files,
+             crostini::CrostiniSuccessCallback callback,
+             crostini::CrostiniResult result) {
+            if (result != crostini::CrostiniResult::SUCCESS) {
+              OnLaunchFailed(app_id, std::move(callback),
+                             base::StringPrintf(
+                                 "crostini restart to launch app %s failed: %d",
+                                 app_id.c_str(), result),
+                             result);
+              if (crostini::MaybeShowCrostiniDialogBeforeLaunch(profile,
+                                                                result)) {
+                VLOG(1) << "Crostini restart blocked by dialog";
+              }
+              return;
+            }
+
+            LaunchApplication(profile, app_id, std::move(registration),
+                              display_id, files, std::move(callback));
+          },
+          profile, app_id, std::move(registration), display_id, files,
+          std::move(callback)));
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::BindOnce(&AddSpinner, restart_id, app_id, profile),
@@ -411,14 +410,14 @@ void LaunchCrostiniApp(Profile* profile,
   if (crostini_manager->ShouldPromptContainerUpgrade(
           ContainerId(registration->VmName(), registration->ContainerName())) ||
       crostini_manager->GetCrostiniDialogStatus(DialogType::UPGRADER)) {
-    chromeos::CrostiniUpgraderDialog::Show(
-        base::BindOnce(&LaunchCrostiniAppImpl, profile, app_id, display_id,
-                       files, std::move(registration), std::move(callback)));
+    chromeos::CrostiniUpgraderDialog::Show(base::BindOnce(
+        &LaunchCrostiniAppImpl, profile, app_id, std::move(*registration),
+        display_id, files, std::move(callback)));
     VLOG(1) << "Upgrade dialog";
     return;
   }
-  LaunchCrostiniAppImpl(profile, app_id, display_id, files,
-                        std::move(registration), std::move(callback));
+  LaunchCrostiniAppImpl(profile, app_id, std::move(*registration), display_id,
+                        files, std::move(callback));
 }
 
 std::string CryptohomeIdForProfile(Profile* profile) {

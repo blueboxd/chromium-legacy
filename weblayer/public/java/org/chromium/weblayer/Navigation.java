@@ -218,7 +218,7 @@ public class Navigation extends IClientNavigation.Stub {
     }
 
     /**
-     * Returns whether the navigation was initiated by the renderer. Examples of renderer-initiated
+     * Returns whether the navigation was initiated by the page. Examples of page-initiated
      * navigations:
      * * Clicking <a> links.
      * * changing window.location.href
@@ -228,17 +228,17 @@ public class Navigation extends IClientNavigation.Stub {
      * This method returns false for navigations initiated by the WebLayer API, including using
      *  window.history.forward() or window.history.back().
      *
-     * @return Whether the navigation was initiated by the renderer.
+     * @return Whether the navigation was initiated by the page.
      *
      * @since 86
      */
-    public boolean isRendererInitiated() {
+    public boolean isPageInitiated() {
         ThreadCheck.ensureOnUiThread();
         if (WebLayer.getSupportedMajorVersionInternal() < 86) {
             throw new UnsupportedOperationException();
         }
         try {
-            return mNavigationImpl.isRendererInitiated();
+            return mNavigationImpl.isPageInitiated();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

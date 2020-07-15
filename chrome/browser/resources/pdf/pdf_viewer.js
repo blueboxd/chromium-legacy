@@ -138,6 +138,9 @@ class PDFViewerElement extends PDFViewerBaseElement {
       },
 
       docLength_: Number,
+      // <if expr="chromeos">
+      inkController_: Object,
+      // </if>
       loadProgress_: Number,
       pageNo_: Number,
       pdfFormSaveEnabled_: Boolean,
@@ -180,6 +183,11 @@ class PDFViewerElement extends PDFViewerBaseElement {
     /** @private {boolean} */
     this.isFormFieldFocused_ = false;
 
+    // <if expr="chromeos">
+    /** @private {?InkController} */
+    this.inkController_ = null;
+    // </if>
+
     /** @private {boolean} */
     this.pdfAnnotationsEnabled_ = false;
 
@@ -199,11 +207,6 @@ class PDFViewerElement extends PDFViewerBaseElement {
 
     /** @private {boolean} */
     this.toolbarEnabled_ = false;
-
-    // <if expr="chromeos">
-    /** @private {?InkController} */
-    this.inkController_ = null;
-    // </if>
 
     /** @private {?ToolbarManager} */
     this.toolbarManager_ = null;
@@ -299,9 +302,6 @@ class PDFViewerElement extends PDFViewerBaseElement {
     this.tracker.add(
         this.inkController_.getEventTarget(), 'has-unsaved-changes',
         () => chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(true));
-    this.tracker.add(
-        this.inkController_.getEventTarget(), 'set-annotation-undo-state',
-        e => this.setAnnotationUndoState_(e));
     // </if>
 
     this.title_ = getFilenameFromURL(this.originalUrl);
@@ -443,6 +443,7 @@ class PDFViewerElement extends PDFViewerBaseElement {
     this.handleToolbarKeyEvent_(e);
   }
 
+  // <if expr="chromeos">
   /**
    * Handles the annotation mode being toggled on or off.
    * @param {!CustomEvent<{value: boolean}>} e
@@ -478,8 +479,6 @@ class PDFViewerElement extends PDFViewerBaseElement {
       // TODO(dstockwell): feed real progress data from the Ink component
       this.updateProgress(50);
       await this.inkController_.load(result.fileName, result.dataToSave);
-      this.inkController_.setAnnotationTool(
-          assert(this.getToolbar_().annotationTool));
       this.currentController = this.inkController_;
       this.pluginController.unload();
       this.updateProgress(100);
@@ -518,6 +517,7 @@ class PDFViewerElement extends PDFViewerBaseElement {
     this.annotationMode_ = false;
     await this.loaded;
   }
+  // </if>
 
   /** @override */
   onFitToChanged(e) {
@@ -842,11 +842,13 @@ class PDFViewerElement extends PDFViewerBaseElement {
     if (requestType !== SaveRequestType.ORIGINAL || !this.annotationMode_) {
       result = await this.currentController.save(requestType);
     } else {
+      // <if expr="chromeos">
       // Request type original in annotation mode --> need to exit annotation
       // mode before saving. See https://crbug.com/919364.
       await this.exitAnnotationMode_();
       assert(!this.annotationMode_);
       result = await this.currentController.save(SaveRequestType.ORIGINAL);
+      // </if>
     }
     if (result == null) {
       // The content controller handled the save internally.
@@ -883,14 +885,18 @@ class PDFViewerElement extends PDFViewerBaseElement {
           });
         });
 
+    // <if expr="chromeos">
     // Saving in Annotation mode is destructive: crbug.com/919364
     this.exitAnnotationMode_();
+    // </if>
   }
 
   /** @private */
   async onPrint_() {
     PDFMetrics.record(PDFMetrics.UserAction.PRINT);
+    // <if expr="chromeos">
     await this.exitAnnotationMode_();
+    // </if>
     this.currentController.print();
   }
 
@@ -903,35 +909,6 @@ class PDFViewerElement extends PDFViewerBaseElement {
   computeAnnotationAvailable_() {
     return this.canSerializeDocument_ && !this.rotated_ && !this.hadPassword_;
   }
-
-  /** @private */
-  onUndo_() {
-    this.currentController.undo();
-  }
-
-  /** @private */
-  onRedo_() {
-    this.currentController.redo();
-  }
-
-  /**
-   * @param {!CustomEvent<{value: AnnotationTool}>} e
-   * @private
-   */
-  onAnnotationToolChanged_(e) {
-    this.inkController_.setAnnotationTool(e.detail.value);
-  }
-
-  // <if expr="chromeos">
-  /**
-   * @param {!CustomEvent<{canUndo: boolean, canRedo: boolean}>} e
-   * @private
-   */
-  setAnnotationUndoState_(e) {
-    this.getToolbar_().canUndoAnnotation = e.detail.canUndo;
-    this.getToolbar_().canRedoAnnotation = e.detail.canRedo;
-  }
-  // </if>
 
   /** @override */
   rotateClockwise() {

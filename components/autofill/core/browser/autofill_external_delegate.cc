@@ -45,7 +45,9 @@ using AutoselectFirstSuggestion =
 // Returns true if the suggestion entry is an Autofill warning message.
 // Warning messages should display on top of suggestion list.
 bool IsAutofillWarningEntry(int frontend_id) {
-  return frontend_id == POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
+  return frontend_id ==
+             POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE ||
+         frontend_id == POPUP_ITEM_ID_MIXED_FORM_MESSAGE;
 }
 
 }  // namespace
@@ -129,8 +131,10 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     // useful to the user and no need  hide them. In this case,
     // ApplyAutofillOptions() should have added a "Clear form" option instead.
     if (!query_field_.is_autofilled) {
-      if (!suggestions.empty() && (GetPopupType() == PopupType::kAddresses ||
-                                   GetPopupType() == PopupType::kUnspecified)) {
+      if (!suggestions.empty() &&
+          (GetPopupType() == PopupType::kAddresses ||
+           GetPopupType() == PopupType::kUnspecified) &&
+          suggestions[0].frontend_id != POPUP_ITEM_ID_MIXED_FORM_MESSAGE) {
         suggestions.push_back(Suggestion(
             l10n_util::GetStringUTF16(IDS_AUTOFILL_HIDE_SUGGESTIONS)));
         suggestions.back().frontend_id =

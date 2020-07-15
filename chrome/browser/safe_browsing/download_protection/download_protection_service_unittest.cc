@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
@@ -3657,7 +3658,7 @@ TEST_P(EnhancedProtectionDownloadTest, AccessTokenForEnhancedProtectionUsers) {
   WebUIInfoSingleton::GetInstance()->AddListenerForTesting();
 
   {
-    SetEnhancedProtectionPref(profile()->GetPrefs(), true);
+    SetEnhancedProtectionPrefForTests(profile()->GetPrefs(), true);
     NiceMockDownloadItem item;
     content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
     PrepareBasicDownloadItem(&item,
@@ -3690,7 +3691,7 @@ TEST_P(EnhancedProtectionDownloadTest, AccessTokenForEnhancedProtectionUsers) {
   }
 
   {
-    SetEnhancedProtectionPref(profile()->GetPrefs(), false);
+    SetEnhancedProtectionPrefForTests(profile()->GetPrefs(), false);
     NiceMockDownloadItem item;
     content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
     PrepareBasicDownloadItem(&item,
@@ -3730,7 +3731,7 @@ TEST_P(EnhancedProtectionDownloadTest, AccessTokenOnlyWhenSignedIn) {
 
   identity_test_env_adaptor_->identity_test_env()
       ->SetAutomaticIssueOfAccessTokens(/*grant=*/true);
-  SetEnhancedProtectionPref(profile()->GetPrefs(), true);
+  SetEnhancedProtectionPrefForTests(profile()->GetPrefs(), true);
 
   WebUIInfoSingleton::GetInstance()->AddListenerForTesting();
 
@@ -3810,7 +3811,7 @@ TEST_P(EnhancedProtectionDownloadTest, NoAccessTokenWhileIncognito) {
   WebUIInfoSingleton::GetInstance()->AddListenerForTesting();
 
   {
-    SetEnhancedProtectionPref(profile()->GetPrefs(), true);
+    SetEnhancedProtectionPrefForTests(profile()->GetPrefs(), true);
     NiceMockDownloadItem item;
     content::DownloadItemUtils::AttachInfo(
         &item, profile()->GetPrimaryOTRProfile(), nullptr);
@@ -4021,6 +4022,65 @@ TEST_P(DeepScanningDownloadTest, PolicyDisabled) {
     EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
     EXPECT_TRUE(HasClientDownloadRequest());
     EXPECT_FALSE(test_upload_service->was_called());
+  }
+}
+
+TEST_P(DeepScanningDownloadTest, SafeVerdictPrecedence) {
+  // These responses have precedence over safe deep scanning results.
+  std::vector<std::pair<ClientDownloadResponse::Verdict, DownloadCheckResult>>
+      responses = {
+          {ClientDownloadResponse::DANGEROUS, DownloadCheckResult::DANGEROUS},
+          {ClientDownloadResponse::DANGEROUS_HOST,
+           DownloadCheckResult::DANGEROUS_HOST},
+          {ClientDownloadResponse::POTENTIALLY_UNWANTED,
+           DownloadCheckResult::POTENTIALLY_UNWANTED},
+          {ClientDownloadResponse::UNCOMMON, DownloadCheckResult::UNCOMMON},
+      };
+  for (const auto& response : responses) {
+    NiceMockDownloadItem item;
+    PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
+                             "http://www.google.com/",              // referrer
+                             FILE_PATH_LITERAL("a.tmp"),            // tmp_path
+                             FILE_PATH_LITERAL("a.exe"));  // final_path
+    content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+    EXPECT_CALL(*sb_service_->mock_database_manager(),
+                MatchDownloadWhitelistUrl(_))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _));
+    EXPECT_CALL(*binary_feature_extractor_.get(),
+                ExtractImageFeatures(
+                    tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
+
+    SetSendFilesForMalwareCheckPref(
+        SendFilesForMalwareCheckValues::SEND_DOWNLOADS);
+    SetCheckContentCompliancePref(
+        CheckContentComplianceValues::CHECK_DOWNLOADS);
+    SetUrlToCheckContentCompliance("evil.com");
+
+    TestBinaryUploadService* test_upload_service =
+        static_cast<TestBinaryUploadService*>(
+            BinaryUploadServiceFactory::GetForProfile(profile()));
+
+    PrepareResponse(response.first, net::HTTP_OK, net::OK);
+    if (use_legacy_policies_) {
+      test_upload_service->SetResponse(BinaryUploadService::Result::SUCCESS,
+                                       DeepScanningClientResponse());
+    } else {
+      test_upload_service->SetResponse(
+          BinaryUploadService::Result::SUCCESS,
+          enterprise_connectors::ContentAnalysisResponse());
+    }
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item,
+        base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    EXPECT_TRUE(IsResult(response.second));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    EXPECT_EQ(test_upload_service->was_called(), flag_enabled());
   }
 }
 

@@ -4,6 +4,7 @@
 
 #import "ios/web/public/session/crw_session_storage.h"
 
+#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/web/common/features.h"
@@ -112,6 +113,11 @@ TEST_F(CRWNSessionStorageTest, EncodeDecode) {
 // Tests that unarchiving CRWSessionStorage data results in an equivalent
 // storage when the user agent is automatic.
 TEST_F(CRWNSessionStorageTest, EncodeDecodeAutomatic) {
+  // The kUseDefaultUserAgentInWebClient feature is only available on iOS 13+.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    return;
+  }
+
   base::test::ScopedFeatureList feature;
   feature.InitAndEnableFeature(web::features::kUseDefaultUserAgentInWebClient);
   session_storage_.userAgentType = web::UserAgentType::AUTOMATIC;

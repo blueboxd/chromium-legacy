@@ -122,7 +122,7 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
             url, file_name, download_digest_sha256, mime_type, trigger,
             access_point,
             MalwareVerdictToResult(response.malware_scan_verdict()),
-            content_size);
+            content_size, event_result);
   }
 
   if (response.dlp_scan_verdict().status() == DlpDeepScanningVerdict::SUCCESS) {
@@ -132,7 +132,7 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
               url, file_name, download_digest_sha256, mime_type, trigger,
               access_point,
               SensitiveDataVerdictToResult(response.dlp_scan_verdict()),
-              content_size);
+              content_size, event_result);
     }
   }
 }
@@ -179,7 +179,7 @@ void MaybeReportDeepScanningVerdict(
           ->OnAnalysisConnectorResult(url, file_name, download_digest_sha256,
                                       mime_type, trigger, access_point,
                                       ContentAnalysisResultToResult(result),
-                                      content_size);
+                                      content_size, event_result);
     }
   }
 }

@@ -4,10 +4,17 @@
      found in the LICENSE file. -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orderingFromXml="false">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory
         android:key="safe_browsing_section"
         android:title="@string/prefs_section_safe_browsing_title"/>
-<!-- TODO(crbug.com/1097310): Add Safe Browsing Radio Button Group -->
+
+<!--  TODO(crbug.com/1097310): Add managed text view for Safe Browsing preference.  -->
+
+    <org.chromium.chrome.browser.safe_browsing.settings.RadioButtonGroupSafeBrowsingPreference
+        android:key="safe_browsing_radio_button_group"
+        android:selectable="false"
+        app:allowDividerAbove="false"
+        app:allowDividerBelow="false" />
 </PreferenceScreen>

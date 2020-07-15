@@ -38,7 +38,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/base/x/x11_util_internal.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/event.h"

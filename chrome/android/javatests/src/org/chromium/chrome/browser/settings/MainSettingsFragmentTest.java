@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.settings;
 
 import android.accounts.Account;
 import android.text.TextUtils;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.preference.Preference;
+import androidx.test.filters.LargeTest;
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
@@ -23,6 +25,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.about_settings.AboutChromeSettings;
 import org.chromium.chrome.browser.accessibility.settings.AccessibilitySettings;
@@ -49,12 +52,15 @@ import org.chromium.chrome.browser.sync.settings.SignInPreference.State;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.chrome.browser.tracing.settings.DeveloperSettings;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.browser_ui.site_settings.SiteSettings;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+
+import java.io.IOException;
 
 /**
  * Test for {@link MainSettings}. Main purpose is to have a sanity check on the xml.
@@ -69,7 +75,7 @@ public class MainSettingsFragmentTest {
     private final SyncTestRule mSyncTestRule = new SyncTestRule();
 
     private final SettingsActivityTestRule<MainSettings> mSettingsActivityTestRule =
-            new SettingsActivityTestRule<>(MainSettings.class);
+            new SettingsActivityTestRule<>(MainSettings.class, true);
 
     // SettingsActivity needs to be initialized and destroyed with the mock
     // signin environment setup in SyncTestRule
@@ -77,6 +83,10 @@ public class MainSettingsFragmentTest {
     public final RuleChain mRuleChain = RuleChain.outerRule(mSyncTestRule)
                                                 .around(mHomepageTestRule)
                                                 .around(mSettingsActivityTestRule);
+
+    @Rule
+    public ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
     @Mock
     public TemplateUrlService mMockTemplateUrlService;
@@ -121,6 +131,22 @@ public class MainSettingsFragmentTest {
                 .getDefaultSearchEngineTemplateUrl();
 
         Mockito.doReturn(SEARCH_ENGINE_SHORT_NAME).when(mMockSearchEngine).getShortName();
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"RenderTest"})
+    public void testRenderDifferentSignedInStates() throws IOException {
+        launchSettingsActivity();
+        View view = mSettingsActivityTestRule.getActivity()
+                            .findViewById(android.R.id.content)
+                            .getRootView();
+        mRenderTestRule.render(view, "main_settings_signed_out");
+
+        // Sign in and render changes.
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+        SyncTestUtil.waitForSyncActive();
+        mRenderTestRule.render(view, "main_settings_signed_in");
     }
 
     /**

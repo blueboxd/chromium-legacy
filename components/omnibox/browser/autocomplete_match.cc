@@ -106,9 +106,6 @@ const base::char16 AutocompleteMatch::kInvalidChars[] = {
 // static
 const char AutocompleteMatch::kEllipsis[] = "... ";
 
-// static
-size_t AutocompleteMatch::next_family_id_;
-
 AutocompleteMatch::AutocompleteMatch()
     : transition(ui::PAGE_TRANSITION_GENERATED) {}
 
@@ -125,7 +122,6 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
 AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
     : provider(match.provider),
       relevance(match.relevance),
-      subrelevance(match.subrelevance),
       typed_count(match.typed_count),
       deletable(match.deletable),
       fill_into_edit(match.fill_into_edit),
@@ -151,7 +147,6 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       answer(match.answer),
       transition(match.transition),
       type(match.type),
-      parent_type(match.parent_type),
       has_tab_match(match.has_tab_match),
       subtypes(match.subtypes),
       associated_keyword(match.associated_keyword
@@ -185,7 +180,6 @@ AutocompleteMatch& AutocompleteMatch::operator=(
 
   provider = match.provider;
   relevance = match.relevance;
-  subrelevance = match.subrelevance;
   typed_count = match.typed_count;
   deletable = match.deletable;
   fill_into_edit = match.fill_into_edit;
@@ -211,7 +205,6 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   answer = match.answer;
   transition = match.transition;
   type = match.type;
-  parent_type = match.parent_type;
   has_tab_match = match.has_tab_match;
   subtypes = match.subtypes;
   associated_keyword.reset(
@@ -643,13 +636,6 @@ bool AutocompleteMatch::ShouldBeSkippedForGroupBySearchVsUrl(Type type) {
          type == AutocompleteMatchType::TILE_SUGGESTION;
 }
 
-AutocompleteMatch::Type AutocompleteMatch::GetDemotionType() const {
-  if (!IsSubMatch())
-    return type;
-  else
-    return parent_type;
-}
-
 // static
 TemplateURL* AutocompleteMatch::GetTemplateURLWithKeyword(
     TemplateURLService* template_url_service,
@@ -825,30 +811,6 @@ void AutocompleteMatch::LogSearchEngineUsed(
   }
 }
 
-// static
-size_t AutocompleteMatch::GetNextFamilyID() {
-  next_family_id_ += FAMILY_SIZE;
-  // Avoid the default value. 0 means "no submatch", so no family can use it.
-  if (next_family_id_ == 0)
-    next_family_id_ += FAMILY_SIZE;
-  return next_family_id_;
-}
-
-// static
-bool AutocompleteMatch::IsSameFamily(size_t lhs, size_t rhs) {
-  return (lhs & FAMILY_SIZE_MASK) == (rhs & FAMILY_SIZE_MASK);
-}
-
-void AutocompleteMatch::SetSubMatch(size_t subrelevance,
-                                    AutocompleteMatch::Type parent_type) {
-  this->subrelevance = subrelevance;
-  this->parent_type = parent_type;
-}
-
-bool AutocompleteMatch::IsSubMatch() const {
-  return subrelevance & ~FAMILY_SIZE_MASK;
-}
-
 void AutocompleteMatch::ComputeStrippedDestinationURL(
     const AutocompleteInput& input,
     TemplateURLService* template_url_service) {
@@ -897,37 +859,6 @@ TemplateURL* AutocompleteMatch::GetTemplateURL(
 
 GURL AutocompleteMatch::ImageUrl() const {
   return answer ? answer->image_url() : image_url;
-}
-
-AutocompleteMatch AutocompleteMatch::DerivePedalSuggestion(
-    OmniboxPedal* pedal) {
-  AutocompleteMatch copy(*this);
-  copy.pedal = pedal;
-  if (subrelevance == 0)
-    subrelevance = GetNextFamilyID();
-  copy.SetSubMatch(subrelevance + PEDAL_FAMILY_ID, copy.type);
-  DCHECK(IsSameFamily(subrelevance, copy.subrelevance));
-
-  copy.type = Type::PEDAL;
-  copy.destination_url = copy.pedal->GetNavigationUrl();
-
-  // Normally this is computed by the match using a TemplateURLService
-  // but Pedal URLs are not typical and unknown, and we don't want them to
-  // be deduped, e.g. after stripping a query parameter that may do something
-  // meaningful like indicate the viewable scope of a settings page.  So here
-  // we keep the URL exactly as the Pedal specifies it.
-  copy.stripped_destination_url = copy.destination_url;
-
-  // Note: Always use empty classifications for empty text and non-empty
-  // classifications for non-empty text.
-  const auto& labels = copy.pedal->GetLabelStrings();
-  copy.contents = labels.suggestion_contents;
-  copy.contents_class = {ACMatchClassification(0, ACMatchClassification::NONE)};
-  copy.description = labels.hint;
-  copy.description_class = {
-      ACMatchClassification(0, ACMatchClassification::NONE)};
-
-  return copy;
 }
 
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
@@ -1163,8 +1094,10 @@ bool AutocompleteMatch::ShouldShowTabMatchButtonInlineInResultView() const {
          !OmniboxFieldTrial::IsSuggestionButtonRowEnabled();
 }
 
+// TODO(orinj): Dedicated tab switch suggestions are eliminated. Delete this
+//  method and clean up any remaining related logic.
 bool AutocompleteMatch::IsTabSwitchSuggestion() const {
-  return (subrelevance & ~FAMILY_SIZE_MASK) == TAB_SWITCH_FAMILY_ID;
+  return false;
 }
 
 void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(

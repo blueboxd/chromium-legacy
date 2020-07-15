@@ -32,8 +32,7 @@ class AssistantCardElement::Processor : public AssistantWebView::Observer {
 
   void Process() {
     // TODO(dmblack): Find a better way of determining desired card size.
-    const int width_dip =
-        kPreferredWidthDip - 2 * kUiElementHorizontalMarginDip;
+    const int width_dip = kPreferredWidthDip - 2 * kHorizontalMarginDip;
 
     // Configure parameters for the card.
     AssistantWebView::InitParams contents_params;
@@ -93,6 +92,11 @@ AssistantCardElement::~AssistantCardElement() {
 void AssistantCardElement::Process(ProcessingCallback callback) {
   processor_ = std::make_unique<Processor>(this, std::move(callback));
   processor_->Process();
+}
+
+bool AssistantCardElement::Compare(const AssistantUiElement& other) const {
+  return other.type() == AssistantUiElementType::kCard &&
+         static_cast<const AssistantCardElement&>(other).html() == html_;
 }
 
 }  // namespace ash

@@ -71,26 +71,30 @@ void ClipboardHistory::OnClipboardDataChanged() {
   CHECK(clipboard);
 
   std::vector<base::string16> mime_types;
-  clipboard->ReadAvailableTypes(ui::ClipboardBuffer::kCopyPaste, &mime_types);
+  clipboard->ReadAvailableTypes(ui::ClipboardBuffer::kCopyPaste,
+                                /* data_dst = */ nullptr, &mime_types);
 
   ui::ClipboardData new_data;
   for (const auto& type16 : mime_types) {
     const std::string type(base::UTF16ToUTF8(type16));
     if (type == ui::ClipboardFormatType::GetPlainTextType().GetName()) {
       base::string16 text;
-      clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &text);
+      clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste,
+                          /* data_dst = */ nullptr, &text);
       new_data.set_text(base::UTF16ToUTF8(text));
     } else if (type == ui::ClipboardFormatType::GetHtmlType().GetName()) {
       uint32_t start, end;
       base::string16 html_markup;
       std::string src_url;
-      clipboard->ReadHTML(ui::ClipboardBuffer::kCopyPaste, &html_markup,
-                          &src_url, &start, &end);
+      clipboard->ReadHTML(ui::ClipboardBuffer::kCopyPaste,
+                          /* data_dst = */ nullptr, &html_markup, &src_url,
+                          &start, &end);
       new_data.set_markup_data(base::UTF16ToUTF8(html_markup));
       new_data.set_url(src_url);
     } else if (type == ui::ClipboardFormatType::GetRtfType().GetName()) {
       std::string rtf_data;
-      clipboard->ReadRTF(ui::ClipboardBuffer::kCopyPaste, &rtf_data);
+      clipboard->ReadRTF(ui::ClipboardBuffer::kCopyPaste,
+                         /* data_dst = */ nullptr, &rtf_data);
       new_data.SetRTFData(rtf_data);
     } else if (type == ui::ClipboardFormatType::GetBitmapType().GetName()) {
       // TODO(newcomer): Read the bitmap asynchronously.

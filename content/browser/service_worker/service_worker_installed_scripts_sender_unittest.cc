@@ -236,6 +236,8 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, SendScripts) {
     info.CheckIfIdentical(script_info);
   }
 
+  // Wait until the last send finishes.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FinishedReason::kSuccess, sender->last_finished_reason());
 }
 
@@ -423,6 +425,8 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, Histograms) {
     info.CheckIfIdentical(script_info);
   }
 
+  // Wait until the last send finishes.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FinishedReason::kSuccess, sender->last_finished_reason());
 
   // The histogram should be recorded when reading the script.
@@ -517,6 +521,9 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptBeforeStreaming) {
     EXPECT_EQ(info.script_url(), script_info->script_url);
     info.CheckIfIdentical(script_info);
   }
+
+  // Wait until the last send finishes.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FinishedReason::kSuccess, sender->last_finished_reason());
 }
 
@@ -591,6 +598,8 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptAfterStreaming) {
     EXPECT_EQ(info.script_url(), script_info->script_url);
     info.CheckIfIdentical(script_info);
   }
+  // Wait until the initial "streaming" ends.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FinishedReason::kSuccess, sender->last_finished_reason());
 
   // Request the main script again before receiving the other scripts.
@@ -603,6 +612,8 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptAfterStreaming) {
     EXPECT_EQ(info.script_url(), script_info->script_url);
     info.CheckIfIdentical(script_info);
   }
+  // Wait until the second send for the main script finishes.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FinishedReason::kSuccess, sender->last_finished_reason());
 }
 

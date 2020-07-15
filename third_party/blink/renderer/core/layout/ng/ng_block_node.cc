@@ -881,7 +881,9 @@ NGLayoutInputNode NGBlockNode::NextSibling() const {
 }
 
 NGLayoutInputNode NGBlockNode::FirstChild() const {
-  auto* block = To<LayoutBlock>(box_);
+  auto* block = DynamicTo<LayoutBlock>(box_);
+  if (UNLIKELY(!block))
+    return NGBlockNode(box_->FirstChildBox());
   auto* child = GetLayoutObjectForFirstChildNode(block);
   if (!child)
     return nullptr;

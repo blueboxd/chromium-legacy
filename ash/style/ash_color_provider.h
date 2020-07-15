@@ -8,6 +8,12 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/vector_icon_types.h"
+
+namespace views {
+class ImageButton;
+class LabelButton;
+}  // namespace views
 
 namespace ash {
 
@@ -113,6 +119,12 @@ class ASH_EXPORT AshColorProvider {
     kSliderThumbColorDisabled,
   };
 
+  // Types of ash styled buttons.
+  enum class ButtonType {
+    kPillButtonWithIcon,
+    kCloseButtonWithSmallBase,
+  };
+
   // Attributes of ripple, includes the base color, opacity of inkdrop and
   // highlight.
   struct RippleAttributes {
@@ -182,6 +194,19 @@ class ASH_EXPORT AshColorProvider {
   // color will be different based on |color_mode| and color theme (see
   // |is_themed_|).
   SkColor GetBackgroundColor(AshColorMode color_mode) const;
+
+  // Helpers to style buttons based on the desired |type| and theme. Depending
+  // on the type may style text, icon and background colors for both enabled and
+  // disabled states. May overwrite an prior styles on |button|.
+  void DecoratePillButton(views::LabelButton* button,
+                          ButtonType type,
+                          AshColorMode given_color_mode,
+                          const gfx::VectorIcon& icon);
+  void DecorateCloseButton(views::ImageButton* button,
+                           ButtonType type,
+                           AshColorMode given_color_mode,
+                           int button_size,
+                           const gfx::VectorIcon& icon);
 
   AshColorMode color_mode() const { return color_mode_; }
 

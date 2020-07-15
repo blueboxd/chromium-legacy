@@ -582,13 +582,18 @@ void HTMLMetaElement::ProcessContent() {
       UseCounter::Count(&GetDocument(),
                         WebFeature::kHTMLMetaElementReferrerPolicyOutsideHead);
     }
+    bool comma_in_content_value = false;
     if (content_value.Contains(',')) {
+      comma_in_content_value = true;
       UseCounter::Count(
           &GetDocument(),
           WebFeature::kHTMLMetaElementReferrerPolicyMultipleTokens);
     }
+
     GetExecutionContext()->ParseAndSetReferrerPolicy(
-        content_value, true /* support legacy keywords */);
+        content_value, true /* support legacy keywords */,
+        /*from_meta_tag_with_list_of_policies=*/
+        comma_in_content_value);
   } else if (EqualIgnoringASCIICase(name_value, "handheldfriendly") &&
              EqualIgnoringASCIICase(content_value, "true")) {
     ProcessViewportContentAttribute("width=device-width",

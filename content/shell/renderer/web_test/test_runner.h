@@ -45,11 +45,6 @@ class WebString;
 class WebView;
 }  // namespace blink
 
-namespace content {
-class RenderView;
-struct TestPreferences;
-}
-
 namespace gin {
 class ArrayBufferView;
 class Arguments;
@@ -59,10 +54,13 @@ namespace content {
 class BlinkTestRunner;
 class MockScreenOrientationClient;
 class RenderFrame;
+class RenderView;
 class SpellCheckClient;
+class TestRunnerBindings;
 class WebFrameTestProxy;
 class WebWidgetTestProxy;
 class WebViewTestProxy;
+struct TestPreferences;
 
 // TestRunner class currently has dual purpose:
 // 1. It implements TestRunner javascript bindings for "global" / "ambient".
@@ -251,7 +249,7 @@ class TestRunner {
     virtual ~WorkItem() {}
 
     // Returns true if this started a load.
-    virtual bool Run(TestRunner*, WebFrameTestProxy* in_process_main_frame) = 0;
+    virtual bool Run(TestRunner*) = 0;
   };
 
  private:
@@ -310,8 +308,10 @@ class TestRunner {
   void QueueBackNavigation(int how_far_back);
   void QueueForwardNavigation(int how_far_forward);
   void QueueReload();
-  void QueueLoadingScript(const std::string& script);
-  void QueueNonLoadingScript(const std::string& script);
+  void QueueLoadingScript(const std::string& script,
+                          base::WeakPtr<TestRunnerBindings> bindings);
+  void QueueNonLoadingScript(const std::string& script,
+                             base::WeakPtr<TestRunnerBindings> bindings);
   void QueueLoad(const GURL& current_url,
                  const std::string& relative_url,
                  const std::string& target);

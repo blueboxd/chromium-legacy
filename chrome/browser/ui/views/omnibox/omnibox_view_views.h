@@ -458,6 +458,10 @@ class OmniboxViewViews : public OmniboxView,
   void ElideToSimplifiedDomain();
   void UnelideFromSimplifiedDomain();
 
+  // Parses GetText() as a URL, trims trivial subdomains from it (if any and if
+  // applicable), and returns the result.
+  url::Component GetHostComponentAfterTrivialSubdomain();
+
   // Applies the given |color| to |range|. This is a wrapper method around
   // Textfield::ApplyColor that tests can override.
   virtual void ApplyColor(SkColor color, const gfx::Range& range);

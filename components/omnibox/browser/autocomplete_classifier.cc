@@ -68,7 +68,7 @@ int AutocompleteClassifier::DefaultOmniboxProviders() {
       AutocompleteProvider::TYPE_HISTORY_QUICK |
       AutocompleteProvider::TYPE_HISTORY_URL |
       AutocompleteProvider::TYPE_SEARCH | AutocompleteProvider::TYPE_SHORTCUTS |
-      (base::FeatureList::IsEnabled(query_tiles::features::kQueryTilesInOmnibox)
+      (query_tiles::features::IsEnabledQueryTilesInOmnibox()
            ? AutocompleteProvider::TYPE_QUERY_TILE
            : 0);
 }

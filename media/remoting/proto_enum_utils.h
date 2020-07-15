@@ -8,13 +8,8 @@
 #include "base/optional.h"
 #include "media/base/audio_codecs.h"
 #include "media/base/buffering_state.h"
-#include "media/base/cdm_key_information.h"
-#include "media/base/cdm_promise.h"
 #include "media/base/channel_layout.h"
-#include "media/base/content_decryption_module.h"
-#include "media/base/decrypt_config.h"
 #include "media/base/demuxer_stream.h"
-#include "media/base/encryption_scheme.h"
 #include "media/base/sample_format.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_types.h"
@@ -31,11 +26,6 @@ namespace remoting {
 //
 // Each returns a base::Optional value. If it is not set, that indicates the
 // conversion failed.
-
-base::Optional<EncryptionScheme> ToMediaEncryptionScheme(
-    pb::EncryptionScheme::CipherMode value);
-base::Optional<pb::EncryptionScheme::CipherMode>
-ToProtoEncryptionSchemeCipherMode(EncryptionScheme value);
 
 base::Optional<AudioCodec> ToMediaAudioCodec(
     pb::AudioDecoderConfig::Codec value);
@@ -70,36 +60,10 @@ base::Optional<BufferingState> ToMediaBufferingState(
 base::Optional<pb::RendererClientOnBufferingStateChange::State>
 ToProtoMediaBufferingState(BufferingState value);
 
-base::Optional<CdmKeyInformation::KeyStatus> ToMediaCdmKeyInformationKeyStatus(
-    pb::CdmKeyInformation::KeyStatus value);
-base::Optional<pb::CdmKeyInformation::KeyStatus> ToProtoCdmKeyInformation(
-    CdmKeyInformation::KeyStatus value);
-
-base::Optional<CdmPromise::Exception> ToCdmPromiseException(
-    pb::CdmException value);
-base::Optional<pb::CdmException> ToProtoCdmException(
-    CdmPromise::Exception value);
-
-base::Optional<CdmMessageType> ToMediaCdmMessageType(pb::CdmMessageType value);
-base::Optional<pb::CdmMessageType> ToProtoCdmMessageType(CdmMessageType value);
-
-base::Optional<CdmSessionType> ToCdmSessionType(pb::CdmSessionType value);
-base::Optional<pb::CdmSessionType> ToProtoCdmSessionType(CdmSessionType value);
-
-base::Optional<EmeInitDataType> ToMediaEmeInitDataType(
-    pb::CdmCreateSessionAndGenerateRequest::EmeInitDataType value);
-base::Optional<pb::CdmCreateSessionAndGenerateRequest::EmeInitDataType>
-ToProtoMediaEmeInitDataType(EmeInitDataType value);
-
 base::Optional<DemuxerStream::Status> ToDemuxerStreamStatus(
     pb::DemuxerStreamReadUntilCallback::Status value);
 base::Optional<pb::DemuxerStreamReadUntilCallback::Status>
 ToProtoDemuxerStreamStatus(DemuxerStream::Status value);
-
-base::Optional<EncryptionScheme> ToMediaEncryptionScheme(
-    pb::EncryptionMode value);
-base::Optional<pb::EncryptionMode> ToProtoEncryptionMode(
-    EncryptionScheme value);
 
 }  // namespace remoting
 }  // namespace media

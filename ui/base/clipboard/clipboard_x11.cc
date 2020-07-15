@@ -498,8 +498,12 @@ uint64_t ClipboardX11::GetSequenceNumber(ClipboardBuffer buffer) const {
     return SelectionChangeObserver::GetInstance()->primary_sequence_number();
 }
 
-bool ClipboardX11::IsFormatAvailable(const ClipboardFormatType& format,
-                                     ClipboardBuffer buffer) const {
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
+bool ClipboardX11::IsFormatAvailable(
+    const ClipboardFormatType& format,
+    ClipboardBuffer buffer,
+    const ClipboardDataEndpoint* data_dst) const {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardBuffer(buffer));
 
@@ -517,8 +521,11 @@ void ClipboardX11::Clear(ClipboardBuffer buffer) {
   x11_details_->Clear(buffer);
 }
 
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardX11::ReadAvailableTypes(
     ClipboardBuffer buffer,
+    const ClipboardDataEndpoint* data_dst,
     std::vector<base::string16>* types) const {
   DCHECK(CalledOnValidThread());
   DCHECK(types);
@@ -543,9 +550,12 @@ void ClipboardX11::ReadAvailableTypes(
     ReadCustomDataTypes(data.GetData(), data.GetSize(), types);
 }
 
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 std::vector<base::string16>
 ClipboardX11::ReadAvailablePlatformSpecificFormatNames(
-    ClipboardBuffer buffer) const {
+    ClipboardBuffer buffer,
+    const ClipboardDataEndpoint* data_dst) const {
   DCHECK(CalledOnValidThread());
 
   // Copy target_list(), so that XGetAtomNames can get a non-const Atom*.
@@ -569,7 +579,10 @@ ClipboardX11::ReadAvailablePlatformSpecificFormatNames(
   return types;
 }
 
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardX11::ReadText(ClipboardBuffer buffer,
+                            const ClipboardDataEndpoint* data_dst,
                             base::string16* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kText);
@@ -582,7 +595,10 @@ void ClipboardX11::ReadText(ClipboardBuffer buffer,
   }
 }
 
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardX11::ReadAsciiText(ClipboardBuffer buffer,
+                                 const ClipboardDataEndpoint* data_dst,
                                  std::string* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kText);
@@ -595,7 +611,10 @@ void ClipboardX11::ReadAsciiText(ClipboardBuffer buffer,
 
 // TODO(estade): handle different charsets.
 // TODO(port): set *src_url.
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardX11::ReadHTML(ClipboardBuffer buffer,
+                            const ClipboardDataEndpoint* data_dst,
                             base::string16* markup,
                             std::string* src_url,
                             uint32_t* fragment_start,
@@ -620,7 +639,11 @@ void ClipboardX11::ReadHTML(ClipboardBuffer buffer,
   }
 }
 
-void ClipboardX11::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
+void ClipboardX11::ReadRTF(ClipboardBuffer buffer,
+                           const ClipboardDataEndpoint* data_dst,
+                           std::string* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kRtf);
 
@@ -631,15 +654,21 @@ void ClipboardX11::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
     data.AssignTo(result);
 }
 
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardX11::ReadImage(ClipboardBuffer buffer,
+                             const ClipboardDataEndpoint* data_dst,
                              ReadImageCallback callback) const {
   DCHECK(IsSupportedClipboardBuffer(buffer));
   RecordRead(ClipboardFormatMetric::kImage);
   std::move(callback).Run(ReadImageInternal(buffer));
 }
 
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardX11::ReadCustomData(ClipboardBuffer buffer,
                                   const base::string16& type,
+                                  const ClipboardDataEndpoint* data_dst,
                                   base::string16* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kCustomData);
@@ -651,13 +680,20 @@ void ClipboardX11::ReadCustomData(ClipboardBuffer buffer,
     ReadCustomDataForType(data.GetData(), data.GetSize(), type, result);
 }
 
-void ClipboardX11::ReadBookmark(base::string16* title, std::string* url) const {
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
+void ClipboardX11::ReadBookmark(const ClipboardDataEndpoint* data_dst,
+                                base::string16* title,
+                                std::string* url) const {
   DCHECK(CalledOnValidThread());
   // TODO(erg): This was left NOTIMPLEMENTED() in the gtk port too.
   NOTIMPLEMENTED();
 }
 
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardX11::ReadData(const ClipboardFormatType& format,
+                            const ClipboardDataEndpoint* data_dst,
                             std::string* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kData);

@@ -457,6 +457,11 @@
     "expiry_milestone": 87
   },
   {
+    "name": "chrome-share-highlights-android",
+    "owners": [ "gayane" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "chrome-share-qr-code",
     "owners": [ "kmilka", "tgupta" ],
     "expiry_milestone": 86
@@ -1306,6 +1311,11 @@
   },
   {
     "name": "enable-cros-ime-sandbox",
+    "owners": [ "essential-inputs-team@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
+    "name": "enable-cros-language-settings-update",
     "owners": [ "essential-inputs-team@google.com" ],
     "expiry_milestone": 90
   },

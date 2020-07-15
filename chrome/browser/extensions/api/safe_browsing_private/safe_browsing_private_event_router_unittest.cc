@@ -190,7 +190,7 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
             "sha256_of_bypass_exe", "BYPASSED_WARNING", "exe", 890);
   }
 
-  void TriggerOnSensitiveDataEvent() {
+  void TriggerOnSensitiveDataEvent(safe_browsing::EventResult event_result) {
     safe_browsing::ContentAnalysisScanResult result;
     result.tag = "dlp";
     result.status = 1;
@@ -205,7 +205,8 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
             GURL("https://evil.com/sensitive_data.txt"), "sensitive_data.txt",
             "sha256_of_data", "text/plain",
             SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
-            safe_browsing::DeepScanAccessPoint::UPLOAD, result, 12345);
+            safe_browsing::DeepScanAccessPoint::UPLOAD, result, 12345,
+            event_result);
   }
 
   void TriggerOnUnscannedFileEvent(safe_browsing::EventResult result) {
@@ -690,14 +691,14 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
   EXPECT_EQ(base::Value::Type::NONE, report.type());
 }
 
-TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSensitiveDataEvent) {
+TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSensitiveDataEvent_Allowed) {
   SetUpRouters(/*realtime_reporting_enable=*/true, /*authorized=*/true);
 
   base::Value report;
   EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
       .WillOnce(CaptureArg(&report));
 
-  TriggerOnSensitiveDataEvent();
+  TriggerOnSensitiveDataEvent(safe_browsing::EventResult::ALLOWED);
   base::RunLoop().RunUntilIdle();
 
   Mock::VerifyAndClearExpectations(client_.get());
@@ -736,6 +737,63 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSensitiveDataEvent) {
                        SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleId));
   EXPECT_EQ(3, triggered_rule.FindIntKey(
                    SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleAction));
+  EXPECT_EQ(
+      safe_browsing::EventResultToString(safe_browsing::EventResult::ALLOWED),
+      *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyEventResult));
+  EXPECT_EQ("fake rule",
+            *triggered_rule.FindStringKey(
+                SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleName));
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSensitiveDataEvent_Blocked) {
+  SetUpRouters(/*realtime_reporting_enable=*/true, /*authorized=*/true);
+
+  base::Value report;
+  EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
+      .WillOnce(CaptureArg(&report));
+
+  TriggerOnSensitiveDataEvent(safe_browsing::EventResult::BLOCKED);
+  base::RunLoop().RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(client_.get());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
+  base::Value* event_list =
+      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventListKey);
+  ASSERT_NE(nullptr, event_list);
+  EXPECT_EQ(base::Value::Type::LIST, event_list->type());
+  base::Value::ListView mutable_list = event_list->GetList();
+  ASSERT_EQ(1, (int)mutable_list.size());
+  base::Value wrapper = std::move(mutable_list[0]);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
+  base::Value* event =
+      wrapper.FindKey(SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent);
+  ASSERT_NE(nullptr, event);
+
+  EXPECT_EQ(12345, *event->FindIntKey(
+                       SafeBrowsingPrivateEventRouter::kKeyContentSize));
+  EXPECT_EQ("text/plain", *event->FindStringKey(
+                              SafeBrowsingPrivateEventRouter::kKeyContentType));
+  EXPECT_EQ("sha256_of_data",
+            *event->FindStringKey(
+                SafeBrowsingPrivateEventRouter::kKeyDownloadDigestSha256));
+  EXPECT_EQ(
+      "sensitive_data.txt",
+      *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyFileName));
+  EXPECT_EQ(SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
+            *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyTrigger));
+
+  base::Value* triggered_rule_info =
+      event->FindKey(SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleInfo);
+  ASSERT_NE(nullptr, triggered_rule_info);
+  ASSERT_EQ(1u, triggered_rule_info->GetList().size());
+  base::Value triggered_rule = std::move(triggered_rule_info->GetList()[0]);
+  EXPECT_EQ(12345, triggered_rule.FindIntKey(
+                       SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleId));
+  EXPECT_EQ(3, triggered_rule.FindIntKey(
+                   SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleAction));
+  EXPECT_EQ(
+      safe_browsing::EventResultToString(safe_browsing::EventResult::BLOCKED),
+      *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyEventResult));
   EXPECT_EQ("fake rule",
             *triggered_rule.FindStringKey(
                 SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleName));

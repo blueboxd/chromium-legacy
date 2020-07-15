@@ -211,12 +211,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q043, false)
 // If true, disable QUIC version Q046.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q046, false)
 
-// If true, disable QUIC version Q048.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q048, true)
-
-// If true, disable QUIC version Q049.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q049, true)
-
 // If true, disable QUIC version Q050.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q050, false)
 
@@ -288,7 +282,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_on_pto, false)
 // transport parameters.
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_google_transport_param_omit_old,
-          false)
+          true)
 
 // If true, QUIC will free writer-allocated packet buffer if writer->WritePacket
 // is not called.
@@ -382,3 +376,11 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_packet_number_length, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_retransmit_handshake_data_early,
           false)
+
+// If true, improve Bbr2Sender::AdjustNetworkParameters by 1) do not inject a
+// bandwidth sample to the bandwidth filter, and 2) re-calculate pacing rate
+// after cwnd updated..
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_bbr2_improve_adjust_network_parameters,
+    false)

@@ -11,12 +11,11 @@ generate_token.py http://127.0.0.1:8000 NativeFileSystem2 --expire-timestamp=200
 <script>
 test(t => {
   OriginTrialsHelper.check_properties_exist(this, {
-    'FileSystemHandle': ['isFile', 'isDirectory', 'name', 'queryPermission', 'requestPermission'],
+    'FileSystemHandle': ['kind', 'name', 'queryPermission', 'requestPermission'],
     'FileSystemFileHandle': ['getFile', 'createWritable'],
-    'FileSystemDirectoryHandle': ['getFile', 'getDirectory', 'getEntries', 'removeEntry'],
+    'FileSystemDirectoryHandle': ['getFileHandle', 'getDirectoryHandle', 'getEntries', 'removeEntry'],
     'FileSystemWritableFileStream': ['write', 'truncate', 'close', 'seek'],
-    'global': ['chooseFileSystemEntries'],
+    'global': ['showOpenFilePicker', 'showSaveFilePicker', 'showDirectoryPicker', 'getOriginPrivateDirectory'],
   });
-  assert_true('getSystemDirectory' in self.FileSystemDirectoryHandle);
 }, 'Native File System API interfaces and properties in Origin-Trial enabled document.');
 </script>

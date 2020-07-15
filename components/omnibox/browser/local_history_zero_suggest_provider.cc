@@ -231,6 +231,7 @@ void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
     return;
   }
 
+  const base::TimeTicks db_query_time = base::TimeTicks::Now();
   auto results = url_db->GetMostRecentNormalizedKeywordSearchTerms(
       template_url_service->GetDefaultSearchProvider()->id(),
       OmniboxFieldTrial::GetLocalHistoryZeroSuggestAgeThreshold());
@@ -267,6 +268,9 @@ void LocalHistoryZeroSuggestProvider::QueryURLDatabase(
       break;
   }
 
+  UMA_HISTOGRAM_TIMES(
+      "Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractionTime",
+      base::TimeTicks::Now() - db_query_time);
   UMA_HISTOGRAM_COUNTS_10000(
       "Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractedCount",
       results.size());

@@ -404,7 +404,7 @@ IOBluetoothSDPServiceRecord* RegisterL2capService(
     BluetoothL2CAPPSM* registered_psm) {
   return RegisterService(
       BuildL2capServiceDefinition(uuid, options),
-      base::Bind(&VerifyL2capService, options.psm.get(), registered_psm));
+      base::BindOnce(&VerifyL2capService, options.psm.get(), registered_psm));
 }
 
 }  // namespace

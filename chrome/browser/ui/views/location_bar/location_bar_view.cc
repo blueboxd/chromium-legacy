@@ -1250,7 +1250,7 @@ void LocationBarView::OnLocationIconPressed(const ui::MouseEvent& event) {
           ui::ClipboardBuffer::kSelection)) {
     base::string16 text;
     ui::Clipboard::GetForCurrentThread()->ReadText(
-        ui::ClipboardBuffer::kSelection, &text);
+        ui::ClipboardBuffer::kSelection, /* data_dst = */ nullptr, &text);
     text = OmniboxView::SanitizeTextForPaste(text);
 
     if (!GetOmniboxView()->model()->CanPasteAndGo(text)) {

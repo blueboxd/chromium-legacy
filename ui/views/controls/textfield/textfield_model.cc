@@ -621,7 +621,7 @@ bool TextfieldModel::Copy() {
 bool TextfieldModel::Paste() {
   base::string16 text;
   ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, &text);
+      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &text);
   if (text.empty())
     return false;
 

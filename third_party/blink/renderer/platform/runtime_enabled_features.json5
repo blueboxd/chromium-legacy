@@ -1013,9 +1013,6 @@
       // Used for API surface that will be removed when the Native File System
       // API is no longer guarded by an origin trial.
       name: "LegacyNativeFileSystem",
-      status: {"Android": "test", "default": "experimental"},
-      origin_trial_feature_name: "NativeFileSystem2",
-      origin_trial_os: ["win", "macosx", "linux", "chromeos"],
     },
     {
       name: "LegacyWindowsDWriteFontFallback",

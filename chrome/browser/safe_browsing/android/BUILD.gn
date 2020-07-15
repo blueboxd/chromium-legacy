@@ -21,25 +21,49 @@ source_set("android") {
 android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/safe_browsing/SafeBrowsingBridge.java",
+    "java/src/org/chromium/chrome/browser/safe_browsing/settings/RadioButtonGroupSafeBrowsingPreference.java",
     "java/src/org/chromium/chrome/browser/safe_browsing/settings/SecuritySettingsFragment.java",
   ]
   deps = [
     ":java_resources",
     "//base:base_java",
     "//base:jni_java",
+    "//chrome/browser/flags:java",
     "//components/browser_ui/settings/android:java",
+    "//components/browser_ui/widget/android:java",
     "//third_party/android_deps:androidx_fragment_fragment_java",
     "//third_party/android_deps:androidx_preference_preference_java",
     "//ui/android:ui_full_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  srcjar_deps = [ ":safe_browsing_enums" ]
+}
+
+android_library("javatests") {
+  testonly = true
+  sources = [ "javatests/src/org/chromium/chrome/browser/safe_browsing/settings/SecuritySettingsFragmentTest.java" ]
+  deps = [
+    ":java",
+    "//chrome/browser/settings:test_support_java",
+    "//chrome/test/android:chrome_java_test_support",
+    "//components/browser_ui/widget/android:java",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/junit",
+  ]
 }
 
 android_resources("java_resources") {
-  sources = [ "java/res/xml/security_preferences.xml" ]
+  sources = [
+    "java/res/layout/radio_button_group_safe_browsing_preference.xml",
+    "java/res/xml/security_preferences.xml",
+  ]
   deps = [
     "//chrome/browser/ui/android/strings:ui_strings_grd",
     "//components/browser_ui/settings/android:java_resources",
   ]
   custom_package = "org.chromium.chrome.browser.safe_browsing.settings"
+}
+
+java_cpp_enum("safe_browsing_enums") {
+  sources = [ "//components/safe_browsing/core/common/safe_browsing_prefs.h" ]
 }

@@ -8,6 +8,8 @@
 #include "chrome/browser/ui/webui/tab_search/tab_search_page_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -29,6 +31,7 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
 #if BUILDFLAG(ENABLE_TAB_SEARCH)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUITabSearchHost);
+  source->AddLocalizedString("close", IDS_CLOSE);
   source->AddResourcePath("tab_search.mojom-lite.js",
                           IDR_TAB_SEARCH_MOJO_LITE_JS);
   webui::SetupWebUIDataSource(

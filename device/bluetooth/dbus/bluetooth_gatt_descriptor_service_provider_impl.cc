@@ -57,22 +57,22 @@ BluetoothGattDescriptorServiceProviderImpl::
 
   exported_object_->ExportMethod(
       dbus::kDBusPropertiesInterface, dbus::kDBusPropertiesGet,
-      base::Bind(&BluetoothGattDescriptorServiceProviderImpl::Get,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&BluetoothGattDescriptorServiceProviderImpl::Get,
+                          weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&BluetoothGattDescriptorServiceProviderImpl::OnExported,
                      weak_ptr_factory_.GetWeakPtr()));
 
   exported_object_->ExportMethod(
       dbus::kDBusPropertiesInterface, dbus::kDBusPropertiesSet,
-      base::Bind(&BluetoothGattDescriptorServiceProviderImpl::Set,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&BluetoothGattDescriptorServiceProviderImpl::Set,
+                          weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&BluetoothGattDescriptorServiceProviderImpl::OnExported,
                      weak_ptr_factory_.GetWeakPtr()));
 
   exported_object_->ExportMethod(
       dbus::kDBusPropertiesInterface, dbus::kDBusPropertiesGetAll,
-      base::Bind(&BluetoothGattDescriptorServiceProviderImpl::GetAll,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&BluetoothGattDescriptorServiceProviderImpl::GetAll,
+                          weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&BluetoothGattDescriptorServiceProviderImpl::OnExported,
                      weak_ptr_factory_.GetWeakPtr()));
 
@@ -80,15 +80,17 @@ BluetoothGattDescriptorServiceProviderImpl::
   exported_object_->ExportMethod(
       bluetooth_gatt_descriptor::kBluetoothGattDescriptorInterface,
       bluetooth_gatt_descriptor::kReadValue,
-      base::Bind(&BluetoothGattDescriptorServiceProviderImpl::ReadValue,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(
+          &BluetoothGattDescriptorServiceProviderImpl::ReadValue,
+          weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&BluetoothGattDescriptorServiceProviderImpl::OnExported,
                      weak_ptr_factory_.GetWeakPtr()));
   exported_object_->ExportMethod(
       bluetooth_gatt_descriptor::kBluetoothGattDescriptorInterface,
       bluetooth_gatt_descriptor::kWriteValue,
-      base::Bind(&BluetoothGattDescriptorServiceProviderImpl::WriteValue,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(
+          &BluetoothGattDescriptorServiceProviderImpl::WriteValue,
+          weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&BluetoothGattDescriptorServiceProviderImpl::OnExported,
                      weak_ptr_factory_.GetWeakPtr()));
 }

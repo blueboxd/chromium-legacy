@@ -4,6 +4,8 @@
 
 #include "media/remoting/receiver.h"
 
+#include <utility>
+
 #include "base/check.h"
 #include "base/optional.h"
 #include "base/test/gmock_callback_support.h"
@@ -138,9 +140,6 @@ class MockSender {
         OnStatisticsUpdate(statistics);
         break;
       }
-      case pb::RpcMessage::RPC_RC_ONWAITINGFORDECRYPTIONKEY:
-        OnWaiting();
-        break;
 
       default:
         VLOG(1) << "Unknown RPC: " << message->proc();
@@ -459,11 +458,6 @@ TEST_F(ReceiverTest, RendererClientInterface) {
   statistics.video_memory_usage = 600;
   EXPECT_CALL(*mock_sender_, OnStatisticsUpdate(statistics)).Times(1);
   receiver_->OnStatisticsUpdate(statistics);
-  task_environment_.RunUntilIdle();
-
-  // OnWaiting
-  EXPECT_CALL(*mock_sender_, OnWaiting()).Times(1);
-  receiver_->OnWaiting(WaitingReason::kNoDecryptionKey);
   task_environment_.RunUntilIdle();
 }
 

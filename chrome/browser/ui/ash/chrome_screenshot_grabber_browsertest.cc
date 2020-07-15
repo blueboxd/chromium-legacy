@@ -72,7 +72,7 @@ class ChromeScreenshotGrabberBrowserTest
   bool IsImageClipboardAvailable() {
     return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
         ui::ClipboardFormatType::GetBitmapType(),
-        ui::ClipboardBuffer::kCopyPaste);
+        ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr);
   }
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;

@@ -84,7 +84,7 @@ class ClipboardTest : public PlatformTest {
 
   std::vector<base::string16> GetAvailableTypes(ClipboardBuffer buffer) {
     std::vector<base::string16> types;
-    clipboard().ReadAvailableTypes(buffer, &types);
+    clipboard().ReadAvailableTypes(buffer, /* data_dst = */ nullptr, &types);
     return types;
   }
 
@@ -115,10 +115,12 @@ TYPED_TEST(ClipboardTest, ClearTest) {
 
   EXPECT_TRUE(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste).empty());
   EXPECT_FALSE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
 #if defined(OS_WIN)
   EXPECT_FALSE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
 #endif
 }
 
@@ -134,16 +136,20 @@ TYPED_TEST(ClipboardTest, TextTest) {
   EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeText)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
 #if defined(OS_WIN)
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
 #endif
 
-  this->clipboard().ReadText(ClipboardBuffer::kCopyPaste, &text_result);
+  this->clipboard().ReadText(ClipboardBuffer::kCopyPaste,
+                             /* data_dst = */ nullptr, &text_result);
 
   EXPECT_EQ(text, text_result);
-  this->clipboard().ReadAsciiText(ClipboardBuffer::kCopyPaste, &ascii_text);
+  this->clipboard().ReadAsciiText(ClipboardBuffer::kCopyPaste,
+                                  /* data_dst = */ nullptr, &ascii_text);
   EXPECT_EQ(UTF16ToUTF8(text), ascii_text);
 }
 
@@ -161,10 +167,12 @@ TYPED_TEST(ClipboardTest, HTMLTest) {
   EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeHTML)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
   uint32_t fragment_start;
   uint32_t fragment_end;
-  this->clipboard().ReadHTML(ClipboardBuffer::kCopyPaste, &markup_result,
+  this->clipboard().ReadHTML(ClipboardBuffer::kCopyPaste,
+                             /* data_dst = */ nullptr, &markup_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_LE(markup.size(), fragment_end - fragment_start);
   EXPECT_EQ(markup,
@@ -193,9 +201,11 @@ TYPED_TEST(ClipboardTest, RTFTest) {
   EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeRTF)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetRtfType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetRtfType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
   std::string result;
-  this->clipboard().ReadRTF(ClipboardBuffer::kCopyPaste, &result);
+  this->clipboard().ReadRTF(ClipboardBuffer::kCopyPaste,
+                            /* data_dst = */ nullptr, &result);
   EXPECT_EQ(rtf, result);
 }
 #endif  // !defined(OS_ANDROID)
@@ -224,22 +234,28 @@ TYPED_TEST(ClipboardTest, MultipleBufferTest) {
               Contains(ASCIIToUTF16(kMimeTypeHTML)));
 
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
   EXPECT_FALSE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kSelection));
+      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kSelection,
+      /* data_dst = */ nullptr));
 
   EXPECT_FALSE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kSelection));
+      ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kSelection,
+      /* data_dst = */ nullptr));
 
-  this->clipboard().ReadText(ClipboardBuffer::kCopyPaste, &text_result);
+  this->clipboard().ReadText(ClipboardBuffer::kCopyPaste,
+                             /* data_dst = */ nullptr, &text_result);
   EXPECT_EQ(text, text_result);
 
   base::string16 markup_result;
   uint32_t fragment_start;
   uint32_t fragment_end;
-  this->clipboard().ReadHTML(ClipboardBuffer::kSelection, &markup_result,
+  this->clipboard().ReadHTML(ClipboardBuffer::kSelection,
+                             /* data_dst = */ nullptr, &markup_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_LE(markup.size(), fragment_end - fragment_start);
   EXPECT_EQ(markup,
@@ -262,10 +278,12 @@ TYPED_TEST(ClipboardTest, TrickyHTMLTest) {
   EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeHTML)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
   uint32_t fragment_start;
   uint32_t fragment_end;
-  this->clipboard().ReadHTML(ClipboardBuffer::kCopyPaste, &markup_result,
+  this->clipboard().ReadHTML(ClipboardBuffer::kCopyPaste,
+                             /* data_dst = */ nullptr, &markup_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_LE(markup.size(), fragment_end - fragment_start);
   EXPECT_EQ(markup,
@@ -296,10 +314,12 @@ TYPED_TEST(ClipboardTest, UnicodeHTMLTest) {
   EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeHTML)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
   uint32_t fragment_start;
   uint32_t fragment_end;
-  this->clipboard().ReadHTML(ClipboardBuffer::kCopyPaste, &markup_result,
+  this->clipboard().ReadHTML(ClipboardBuffer::kCopyPaste,
+                             /* data_dst = */ nullptr, &markup_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_LE(markup.size(), fragment_end - fragment_start);
   EXPECT_EQ(markup,
@@ -321,8 +341,10 @@ TYPED_TEST(ClipboardTest, BookmarkTest) {
   }
 
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetUrlType(), ClipboardBuffer::kCopyPaste));
-  this->clipboard().ReadBookmark(&title_result, &url_result);
+      ClipboardFormatType::GetUrlType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
+  this->clipboard().ReadBookmark(/* data_dst = */ nullptr, &title_result,
+                                 &url_result);
   EXPECT_EQ(title, title_result);
   EXPECT_EQ(url, url_result);
 }
@@ -345,16 +367,20 @@ TYPED_TEST(ClipboardTest, MultiFormatTest) {
   EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeText)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
 #if defined(OS_WIN)
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
 #endif
   uint32_t fragment_start;
   uint32_t fragment_end;
-  this->clipboard().ReadHTML(ClipboardBuffer::kCopyPaste, &markup_result,
+  this->clipboard().ReadHTML(ClipboardBuffer::kCopyPaste,
+                             /* data_dst = */ nullptr, &markup_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_LE(markup.size(), fragment_end - fragment_start);
   EXPECT_EQ(markup,
@@ -364,9 +390,11 @@ TYPED_TEST(ClipboardTest, MultiFormatTest) {
   // this.
   EXPECT_EQ(url, url_result);
 #endif  // defined(OS_WIN)
-  this->clipboard().ReadText(ClipboardBuffer::kCopyPaste, &text_result);
+  this->clipboard().ReadText(ClipboardBuffer::kCopyPaste,
+                             /* data_dst = */ nullptr, &text_result);
   EXPECT_EQ(text, text_result);
-  this->clipboard().ReadAsciiText(ClipboardBuffer::kCopyPaste, &ascii_text);
+  this->clipboard().ReadAsciiText(ClipboardBuffer::kCopyPaste,
+                                  /* data_dst = */ nullptr, &ascii_text);
   EXPECT_EQ(UTF16ToUTF8(text), ascii_text);
 }
 
@@ -381,18 +409,22 @@ TYPED_TEST(ClipboardTest, URLTest) {
   EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeText)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
 #if defined(OS_WIN)
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
 #endif
   base::string16 text_result;
-  this->clipboard().ReadText(ClipboardBuffer::kCopyPaste, &text_result);
+  this->clipboard().ReadText(ClipboardBuffer::kCopyPaste,
+                             /* data_dst = */ nullptr, &text_result);
 
   EXPECT_EQ(text_result, url);
 
   std::string ascii_text;
-  this->clipboard().ReadAsciiText(ClipboardBuffer::kCopyPaste, &ascii_text);
+  this->clipboard().ReadAsciiText(ClipboardBuffer::kCopyPaste,
+                                  /* data_dst = */ nullptr, &ascii_text);
   EXPECT_EQ(UTF16ToUTF8(url), ascii_text);
 
 // TODO(tonikitoo, msisov): enable back for ClipboardOzone implements
@@ -400,7 +432,8 @@ TYPED_TEST(ClipboardTest, URLTest) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
     !defined(OS_CHROMEOS) && !defined(USE_OZONE)
   ascii_text.clear();
-  this->clipboard().ReadAsciiText(ClipboardBuffer::kSelection, &ascii_text);
+  this->clipboard().ReadAsciiText(ClipboardBuffer::kSelection,
+                                  /* data_dst = */ nullptr, &ascii_text);
   EXPECT_EQ(UTF16ToUTF8(url), ascii_text);
 #endif
 }
@@ -425,7 +458,8 @@ static void TestBitmapWrite(Clipboard* clipboard,
   }
 
   EXPECT_TRUE(clipboard->IsFormatAvailable(ClipboardFormatType::GetBitmapType(),
-                                           ClipboardBuffer::kCopyPaste));
+                                           ClipboardBuffer::kCopyPaste,
+                                           /* data_dst = */ nullptr));
   const SkBitmap& image = clipboard_test_util::ReadImage(clipboard);
   ASSERT_EQ(image.info().colorType(), kN32_SkColorType);
   ASSERT_NE(image.info().alphaType(), kUnpremul_SkAlphaType);
@@ -559,10 +593,10 @@ TYPED_TEST(ClipboardTest, PickleTest) {
     clipboard_writer.WritePickledData(write_pickle, kFormat);
   }
 
-  ASSERT_TRUE(this->clipboard().IsFormatAvailable(kFormat,
-                                                  ClipboardBuffer::kCopyPaste));
+  ASSERT_TRUE(this->clipboard().IsFormatAvailable(
+      kFormat, ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr));
   std::string output;
-  this->clipboard().ReadData(kFormat, &output);
+  this->clipboard().ReadData(kFormat, /* data_dst = */ nullptr, &output);
   ASSERT_FALSE(output.empty());
 
   base::Pickle read_pickle(output.data(), static_cast<int>(output.size()));
@@ -593,13 +627,13 @@ TYPED_TEST(ClipboardTest, MultiplePickleTest) {
   }
 
   ASSERT_FALSE(this->clipboard().IsFormatAvailable(
-      kFormat1, ClipboardBuffer::kCopyPaste));
-  ASSERT_TRUE(this->clipboard().IsFormatAvailable(kFormat2,
-                                                  ClipboardBuffer::kCopyPaste));
+      kFormat1, ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr));
+  ASSERT_TRUE(this->clipboard().IsFormatAvailable(
+      kFormat2, ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr));
 
   // Check string 2.
   std::string output2;
-  this->clipboard().ReadData(kFormat2, &output2);
+  this->clipboard().ReadData(kFormat2, /* data_dst = */ nullptr, &output2);
   ASSERT_FALSE(output2.empty());
 
   base::Pickle read_pickle2(output2.data(), static_cast<int>(output2.size()));
@@ -615,14 +649,14 @@ TYPED_TEST(ClipboardTest, MultiplePickleTest) {
     clipboard_writer.WritePickledData(write_pickle1, kFormat1);
   }
 
-  ASSERT_TRUE(this->clipboard().IsFormatAvailable(kFormat1,
-                                                  ClipboardBuffer::kCopyPaste));
+  ASSERT_TRUE(this->clipboard().IsFormatAvailable(
+      kFormat1, ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr));
   ASSERT_FALSE(this->clipboard().IsFormatAvailable(
-      kFormat2, ClipboardBuffer::kCopyPaste));
+      kFormat2, ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr));
 
   // Check string 1.
   std::string output1;
-  this->clipboard().ReadData(kFormat1, &output1);
+  this->clipboard().ReadData(kFormat1, /* data_dst = */ nullptr, &output1);
   ASSERT_FALSE(output1.empty());
 
   base::Pickle read_pickle1(output1.data(), static_cast<int>(output1.size()));
@@ -646,10 +680,10 @@ TYPED_TEST(ClipboardTest, DataTest) {
                                mojo_base::BigBuffer(payload_span));
   }
 
-  ASSERT_TRUE(this->clipboard().IsFormatAvailable(kFormat,
-                                                  ClipboardBuffer::kCopyPaste));
+  ASSERT_TRUE(this->clipboard().IsFormatAvailable(
+      kFormat, ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr));
   std::string output;
-  this->clipboard().ReadData(kFormat, &output);
+  this->clipboard().ReadData(kFormat, /* data_dst = */ nullptr, &output);
 
   EXPECT_EQ(payload, output);
 }
@@ -686,22 +720,22 @@ TYPED_TEST(ClipboardTest, MultipleDataTest) {
 
   // Check format 1.
   EXPECT_THAT(this->clipboard().ReadAvailablePlatformSpecificFormatNames(
-                  ClipboardBuffer::kCopyPaste),
+                  ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr),
               Contains(ASCIIToUTF16(kFormatString1)));
-  EXPECT_TRUE(this->clipboard().IsFormatAvailable(kFormat1,
-                                                  ClipboardBuffer::kCopyPaste));
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
+      kFormat1, ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr));
   std::string output1;
-  this->clipboard().ReadData(kFormat1, &output1);
+  this->clipboard().ReadData(kFormat1, /* data_dst = */ nullptr, &output1);
   EXPECT_EQ(payload1, output1);
 
   // Check format 2.
   EXPECT_THAT(this->clipboard().ReadAvailablePlatformSpecificFormatNames(
-                  ClipboardBuffer::kCopyPaste),
+                  ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr),
               Contains(ASCIIToUTF16(kFormatString2)));
-  EXPECT_TRUE(this->clipboard().IsFormatAvailable(kFormat2,
-                                                  ClipboardBuffer::kCopyPaste));
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
+      kFormat2, ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr));
   std::string output2;
-  this->clipboard().ReadData(kFormat2, &output2);
+  this->clipboard().ReadData(kFormat2, /* data_dst = */ nullptr, &output2);
   EXPECT_EQ(payload2, output2);
 }
 #endif
@@ -716,7 +750,7 @@ TYPED_TEST(ClipboardTest, ReadAvailablePlatformSpecificFormatNamesTest) {
 
   const std::vector<base::string16> raw_types =
       this->clipboard().ReadAvailablePlatformSpecificFormatNames(
-          ClipboardBuffer::kCopyPaste);
+          ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr);
 #if defined(OS_MACOSX)
   EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("public.utf8-plain-text")));
   EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("NSStringPboardType")));
@@ -778,31 +812,37 @@ TYPED_TEST(ClipboardTest, PlatformSpecificDataTest) {
 
   const std::vector<base::string16> raw_types =
       this->clipboard().ReadAvailablePlatformSpecificFormatNames(
-          ClipboardBuffer::kCopyPaste);
+          ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr);
 
   EXPECT_THAT(raw_types, Contains(ASCIIToUTF16(kFormatString)));
 
 #if defined(OS_WIN)
   // Only Windows ClipboardFormatType recognizes ANSI formats.
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
 #endif  // defined(OS_WIN)
 
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
 
   std::string text_result;
-  this->clipboard().ReadAsciiText(ClipboardBuffer::kCopyPaste, &text_result);
+  this->clipboard().ReadAsciiText(ClipboardBuffer::kCopyPaste,
+                                  /* data_dst = */ nullptr, &text_result);
   EXPECT_EQ(text_result, text);
   // Note: Windows will automatically convert CF_TEXT to its UNICODE version.
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
   base::string16 text_result16;
-  this->clipboard().ReadText(ClipboardBuffer::kCopyPaste, &text_result16);
+  this->clipboard().ReadText(ClipboardBuffer::kCopyPaste,
+                             /* data_dst = */ nullptr, &text_result16);
   EXPECT_EQ(text_result16, base::ASCIIToUTF16(text));
 
   std::string platform_specific_result;
   this->clipboard().ReadData(ClipboardFormatType::GetType(kFormatString),
+                             /* data_dst = */ nullptr,
                              &platform_specific_result);
   EXPECT_EQ(platform_specific_result, kPlatformSpecificText);
 }
@@ -824,10 +864,12 @@ TYPED_TEST(ClipboardTest, HyperlinkTest) {
   }
 
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
   uint32_t fragment_start;
   uint32_t fragment_end;
-  this->clipboard().ReadHTML(ClipboardBuffer::kCopyPaste, &html_result,
+  this->clipboard().ReadHTML(ClipboardBuffer::kCopyPaste,
+                             /* data_dst = */ nullptr, &html_result,
                              &url_result, &fragment_start, &fragment_end);
   EXPECT_EQ(kExpectedHtml,
             html_result.substr(fragment_end - kExpectedHtml.size(),
@@ -843,7 +885,7 @@ TYPED_TEST(ClipboardTest, WebSmartPasteTest) {
 
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       ClipboardFormatType::GetWebKitSmartPasteType(),
-      ClipboardBuffer::kCopyPaste));
+      ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr));
 }
 
 #if defined(OS_WIN)  // Windows only tests.

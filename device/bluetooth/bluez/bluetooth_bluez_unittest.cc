@@ -1332,8 +1332,10 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscovery) {
   discovery_filter->AddDeviceFilter(std::move(device_filter));
 
   adapter_->SetPowered(
-      true, base::Bind(&BluetoothBlueZTest::Callback, base::Unretained(this)),
-      base::Bind(&BluetoothBlueZTest::ErrorCallback, base::Unretained(this)));
+      true,
+      base::BindOnce(&BluetoothBlueZTest::Callback, base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::ErrorCallback,
+                     base::Unretained(this)));
 
   auto* comparison_filter_holder = discovery_filter.get();
   adapter_->StartDiscoverySessionWithFilter(
@@ -1390,8 +1392,10 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryFail) {
   discovery_filter->AddDeviceFilter(std::move(device_filter));
 
   adapter_->SetPowered(
-      true, base::Bind(&BluetoothBlueZTest::Callback, base::Unretained(this)),
-      base::Bind(&BluetoothBlueZTest::ErrorCallback, base::Unretained(this)));
+      true,
+      base::BindOnce(&BluetoothBlueZTest::Callback, base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::ErrorCallback,
+                     base::Unretained(this)));
   EXPECT_EQ(1, callback_count_);
   callback_count_ = 0;
 
@@ -1422,8 +1426,10 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryFail) {
 TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
   GetAdapter();
   adapter_->SetPowered(
-      true, base::Bind(&BluetoothBlueZTest::Callback, base::Unretained(this)),
-      base::Bind(&BluetoothBlueZTest::ErrorCallback, base::Unretained(this)));
+      true,
+      base::BindOnce(&BluetoothBlueZTest::Callback, base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::ErrorCallback,
+                     base::Unretained(this)));
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(adapter_->IsPowered());
@@ -1652,8 +1658,10 @@ TEST_F(BluetoothBlueZTest, SetDiscoveryFilterBeforeStartDiscoveryMultiple) {
 TEST_F(BluetoothBlueZTest, SetDiscoveryFilterMergingTest) {
   GetAdapter();
   adapter_->SetPowered(
-      true, base::Bind(&BluetoothBlueZTest::Callback, base::Unretained(this)),
-      base::Bind(&BluetoothBlueZTest::ErrorCallback, base::Unretained(this)));
+      true,
+      base::BindOnce(&BluetoothBlueZTest::Callback, base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::ErrorCallback,
+                     base::Unretained(this)));
 
   BluetoothDiscoveryFilter* df =
       new BluetoothDiscoveryFilter(device::BLUETOOTH_TRANSPORT_LE);
@@ -4010,7 +4018,7 @@ TEST_F(BluetoothBlueZTest, GetConnectionInfoForDisconnectedDevice) {
   // Calling GetConnectionInfo for an unconnected device should return a result
   // in which all fields are filled with BluetoothDevice::kUnknownPower.
   BluetoothDevice::ConnectionInfo conn_info(0, 0, 0);
-  device->GetConnectionInfo(base::Bind(&SaveConnectionInfo, &conn_info));
+  device->GetConnectionInfo(base::BindOnce(&SaveConnectionInfo, &conn_info));
   int unknown_power = BluetoothDevice::kUnknownPower;
   EXPECT_NE(0, unknown_power);
   EXPECT_EQ(unknown_power, conn_info.rssi);
@@ -4032,7 +4040,7 @@ TEST_F(BluetoothBlueZTest, GetConnectionInfoForConnectedDevice) {
   // results.
   fake_bluetooth_device_client_->UpdateConnectionInfo(-10, 3, 4);
   BluetoothDevice::ConnectionInfo conn_info;
-  device->GetConnectionInfo(base::Bind(&SaveConnectionInfo, &conn_info));
+  device->GetConnectionInfo(base::BindOnce(&SaveConnectionInfo, &conn_info));
   EXPECT_EQ(-10, conn_info.rssi);
   EXPECT_EQ(3, conn_info.transmit_power);
   EXPECT_EQ(4, conn_info.max_transmit_power);
@@ -4158,10 +4166,10 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   adapter_bluez->UseProfile(
       BluetoothUUID(), dbus::ObjectPath(""),
       bluez::BluetoothProfileManagerClient::Options(), &profile_delegate,
-      base::Bind(&BluetoothBlueZTest::ProfileRegisteredCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothBlueZTest::ErrorCompletionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&BluetoothBlueZTest::ProfileRegisteredCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::ErrorCompletionCallback,
+                     base::Unretained(this)));
 
   EXPECT_FALSE(adapter_profile_) << "UseProfile error";
   EXPECT_EQ(0, callback_count_) << "UseProfile error";
@@ -4221,10 +4229,10 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   adapter_bluez->UseProfile(
       BluetoothUUID(), dbus::ObjectPath(""),
       bluez::BluetoothProfileManagerClient::Options(), &profile_delegate,
-      base::Bind(&BluetoothBlueZTest::ProfileRegisteredCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothBlueZTest::ErrorCompletionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&BluetoothBlueZTest::ProfileRegisteredCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::ErrorCompletionCallback,
+                     base::Unretained(this)));
 
   EXPECT_FALSE(adapter_profile_) << "UseProfile error";
   EXPECT_EQ(0, callback_count_) << "UseProfile error";
@@ -4232,10 +4240,10 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
 
   adapter_bluez->SetProfileDelegate(
       BluetoothUUID(), dbus::ObjectPath(""), &profile_delegate,
-      base::Bind(&BluetoothBlueZTest::ProfileRegisteredCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothBlueZTest::ErrorCompletionCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&BluetoothBlueZTest::ProfileRegisteredCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothBlueZTest::ErrorCompletionCallback,
+                     base::Unretained(this)));
   EXPECT_EQ(0, callback_count_) << "SetProfileDelegate error";
   EXPECT_EQ(1, error_callback_count_--) << "SetProfileDelegate error";
 

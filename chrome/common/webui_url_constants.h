@@ -91,6 +91,8 @@ extern const char kChromeUIIdentityInternalsHost[];
 extern const char kChromeUIInspectHost[];
 extern const char kChromeUIInspectURL[];
 extern const char kChromeUIInternalsHost[];
+extern const char kChromeUIInternalsQueryTilesPath[];
+extern const char kChromeUIInternalsWebAppPath[];
 extern const char kChromeUIInterstitialHost[];
 extern const char kChromeUIInterstitialURL[];
 extern const char kChromeUIInterventionsInternalsHost[];
@@ -366,6 +368,10 @@ extern const char kExtensionConfigureCommandsSubPage[];
 // Gets the hosts/domains that are shown in chrome://chrome-urls.
 extern const char* const kChromeHostURLs[];
 extern const size_t kNumberOfChromeHostURLs;
+
+// Gets the chrome://internals pages that are shown in chrome://chrome-urls.
+extern const char* const kChromeInternalsPathURLs[];
+extern const size_t kNumberOfChromeInternalsPathURLs;
 
 // "Debug" pages which are dangerous and not for general consumption.
 extern const char* const kChromeDebugURLs[];

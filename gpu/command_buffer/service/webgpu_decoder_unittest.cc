@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
+#include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
@@ -19,6 +20,10 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
+
+#if defined(OS_MACOSX)
+#include "gpu/ipc/service/gpu_memory_buffer_factory_io_surface.h"
+#endif
 
 using ::testing::_;
 using ::testing::Return;
@@ -53,6 +58,11 @@ class WebGPUDecoderTest : public ::testing::Test {
     gpu_preferences_.use_passthrough_cmd_decoder = true;
 #endif  // OS_WIN
 
+    ImageFactory* image_factory = nullptr;
+#if defined(OS_MACOSX)
+    image_factory = &image_factory_;
+#endif
+
     decoder_client_.reset(new FakeDecoderClient());
     command_buffer_service_.reset(new FakeCommandBufferServiceBase());
     decoder_.reset(WebGPUDecoder::Create(
@@ -74,8 +84,8 @@ class WebGPUDecoderTest : public ::testing::Test {
 
     factory_ = std::make_unique<SharedImageFactory>(
         gpu_preferences_, GpuDriverBugWorkarounds(), GpuFeatureInfo(),
-        /*context_state=*/nullptr, /*mailbox_manager=*/nullptr,
-        &shared_image_manager_, /*image_factory=*/nullptr, /*tracker=*/nullptr,
+        /*context_state=*/nullptr, &mailbox_manager_, &shared_image_manager_,
+        image_factory, /*tracker=*/nullptr,
         /*enable_wrapped_sk_image=*/false);
   }
 
@@ -125,6 +135,11 @@ class WebGPUDecoderTest : public ::testing::Test {
   gles2::TraceOutputter outputter_;
   SharedImageManager shared_image_manager_;
   std::unique_ptr<SharedImageFactory> factory_;
+  gles2::MailboxManagerImpl mailbox_manager_;
+#if defined(OS_MACOSX)
+  // SharedImages on macOS require a valid image factory.
+  GpuMemoryBufferFactoryIOSurface image_factory_;
+#endif
   scoped_refptr<gl::GLSurface> gl_surface_;
   scoped_refptr<gl::GLContext> gl_context_;
 

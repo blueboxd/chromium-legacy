@@ -90,7 +90,11 @@ void WebGPUTest::Initialize(const Options& options) {
   attributes.context_type = CONTEXT_TYPE_WEBGPU;
 
   static constexpr GpuMemoryBufferManager* memory_buffer_manager = nullptr;
+#if defined(OS_MACOSX)
+  ImageFactory* image_factory = &image_factory_;
+#else
   static constexpr ImageFactory* image_factory = nullptr;
+#endif
   static constexpr GpuChannelManagerDelegate* channel_manager = nullptr;
   context_ = std::make_unique<WebGPUInProcessContext>();
   ContextResult result =

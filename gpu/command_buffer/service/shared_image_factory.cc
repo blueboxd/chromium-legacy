@@ -137,9 +137,6 @@ SharedImageFactory::SharedImageFactory(
   // OSX
   DCHECK(gr_context_type_ == GrContextType::kGL ||
          gr_context_type_ == GrContextType::kMetal);
-  interop_backing_factory_ =
-      std::make_unique<SharedImageBackingFactoryIOSurface>(
-          workarounds, gpu_feature_info, use_gl);
 #elif defined(OS_CHROMEOS)
   if (gr_context_type_ == GrContextType::kVulkan) {
     interop_backing_factory_ =
@@ -432,6 +429,10 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
   // Scanout on Android requires explicit fence synchronization which is only
   // supported by the interop factory.
   using_interop_factory |= usage & SHARED_IMAGE_USAGE_SCANOUT;
+#elif defined(OS_MACOSX)
+  // On macOS, there is no separate interop factory. Any GpuMemoryBuffer-backed
+  // image can be used with both OpenGL and Metal.
+  using_interop_factory = false;
 #endif
 
   bool using_wrapped_sk_image = !using_interop_factory &&

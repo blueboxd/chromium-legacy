@@ -247,8 +247,7 @@ void NetworkConfigurationHandler::RemoveObserver(
 
 void NetworkConfigurationHandler::GetShillProperties(
     const std::string& service_path,
-    network_handler::DictionaryResultCallback callback,
-    const network_handler::ErrorCallback& error_callback) {
+    network_handler::ResultCallback callback) {
   NET_LOG(DEBUG) << "GetShillProperties: " << NetworkPathId(service_path);
 
   const NetworkState* network_state =
@@ -258,16 +257,16 @@ void NetworkConfigurationHandler::GetShillProperties(
        network_state->IsDefaultCellular())) {
     // This is a Tether network or a Cellular network with no Service.
     // Provide properties from NetworkState.
-    base::DictionaryValue dictionary;
+    base::Value dictionary(base::Value::Type::DICTIONARY);
     network_state->GetStateProperties(&dictionary);
-    std::move(callback).Run(service_path, dictionary);
+    std::move(callback).Run(service_path, std::move(dictionary));
     return;
   }
   ShillServiceClient::Get()->GetProperties(
       dbus::ObjectPath(service_path),
       base::BindOnce(&NetworkConfigurationHandler::GetPropertiesCallback,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     error_callback, service_path));
+                     service_path));
 }
 
 void NetworkConfigurationHandler::SetShillProperties(
@@ -571,21 +570,16 @@ void NetworkConfigurationHandler::SetNetworkProfileCompleted(
 }
 
 void NetworkConfigurationHandler::GetPropertiesCallback(
-    network_handler::DictionaryResultCallback callback,
-    const network_handler::ErrorCallback& error_callback,
+    network_handler::ResultCallback callback,
     const std::string& service_path,
     DBusMethodCallStatus call_status,
     base::Value properties) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
     // Because network services are added and removed frequently, we will see
     // failures regularly, so don't log these.
-    network_handler::RunErrorCallback(error_callback, service_path,
-                                      network_handler::kDBusFailedError,
-                                      network_handler::kDBusFailedErrorMessage);
+    std::move(callback).Run(service_path, base::nullopt);
     return;
   }
-  if (callback.is_null())
-    return;
 
   // Get the correct name from WifiHex if necessary.
   base::Value properties_copy = properties.Clone();
@@ -606,8 +600,7 @@ void NetworkConfigurationHandler::GetPropertiesCallback(
     }
   }
 
-  std::move(callback).Run(service_path,
-                          base::Value::AsDictionaryValue(properties_copy));
+  std::move(callback).Run(service_path, std::move(properties_copy));
 }
 
 void NetworkConfigurationHandler::SetPropertiesSuccessCallback(

@@ -441,7 +441,7 @@ bool TouchSelectionControllerClientAura::IsCommandIdEnabled(
     case ui::TouchEditable::kPaste: {
       base::string16 result;
       ui::Clipboard::GetForCurrentThread()->ReadText(
-          ui::ClipboardBuffer::kCopyPaste, &result);
+          ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &result);
       return editable && !result.empty();
     }
     default:

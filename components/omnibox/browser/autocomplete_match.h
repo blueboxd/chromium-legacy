@@ -119,15 +119,6 @@ struct AutocompleteMatch {
   // and |description| strings.
   static const base::char16 kInvalidChars[];
 
-  // All IDs should be less than the family size, and family size must be
-  // a power of 2 so that the counter wraps.
-  enum {
-    PEDAL_FAMILY_ID = 1,
-    TAB_SWITCH_FAMILY_ID = 2,
-    FAMILY_SIZE = 1 << 2,
-  };
-  static constexpr size_t FAMILY_SIZE_MASK = ~(FAMILY_SIZE - 1);
-
   // Document subtype, for AutocompleteMatchType::DOCUMENT.
   // Update kDocumentTypeStrings when updating DocumentType.
   enum class DocumentType {
@@ -250,10 +241,6 @@ struct AutocompleteMatch {
   // clipboard or query tile.
   static bool ShouldBeSkippedForGroupBySearchVsUrl(Type type);
 
-  // If this match is a submatch, returns the parent's type, otherwise this
-  // match's type.
-  Type GetDemotionType() const;
-
   // A static version GetTemplateURL() that takes the match's keyword and
   // match's hostname as parameters.  In short, returns the TemplateURL
   // associated with |keyword| if it exists; otherwise returns the TemplateURL
@@ -315,17 +302,6 @@ struct AutocompleteMatch {
   static void LogSearchEngineUsed(const AutocompleteMatch& match,
                                   TemplateURLService* template_url_service);
 
-  // There are some suggestions that we would like to follow each other
-  // e.g. pedals, tab switches, possibly keyword provider suggestions.
-  // These functions provide and compare integer groups so that when we
-  // generate these suggestions, they can be given integers in the same
-  // family, which will cause them to be sorted together.
-  static size_t GetNextFamilyID();
-  static bool IsSameFamily(size_t lhs, size_t rhs);
-  // Preferred method to set both fields simultaneously.
-  void SetSubMatch(size_t subrelevance, AutocompleteMatch::Type parent_type);
-  bool IsSubMatch() const;
-
   // Computes the stripped destination URL (via GURLToStrippedGURL()) and
   // stores the result in |stripped_destination_url|.  |input| is used for the
   // same purpose as in GURLToStrippedGURL().
@@ -369,11 +345,6 @@ struct AutocompleteMatch {
   // Gets the URL for the match image (whether it be an answer or entity). If
   // there isn't an image URL, returns an empty GURL (test with is_empty()).
   GURL ImageUrl() const;
-
-  // Returns a new Pedal match suggestion instance derived from this match,
-  // which is considered to be the triggering suggestion.  The new match
-  // will be set to use the given |pedal|.
-  AutocompleteMatch DerivePedalSuggestion(OmniboxPedal* pedal);
 
   // Adds optional information to the |additional_info| dictionary.
   void RecordAdditionalInfo(const std::string& property,
@@ -500,11 +471,6 @@ struct AutocompleteMatch {
   // rather than being a fairly fixed value defined by the table above.
   int relevance = 0;
 
-  // This represents the numeric family that the match is part of. It is only
-  // set for certain paired suggestions. Suggestions within the same group will
-  // have similar subrelevances, and they will sort together.
-  size_t subrelevance = 0;
-
   // How many times this result was typed in / selected from the omnibox.
   // Only set for some providers and result_types.  If it is not set,
   // its value is -1.  At the time of writing this comment, it is only
@@ -609,9 +575,6 @@ struct AutocompleteMatch {
   // Type of this match.
   Type type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
 
-  // If a submatch, the type of the parent.
-  Type parent_type;
-
   // True if we saw a tab that matched this suggestion.
   bool has_tab_match = false;
 
@@ -689,11 +652,6 @@ struct AutocompleteMatch {
 
   // So users of AutocompleteMatch can use the same ellipsis that it uses.
   static const char kEllipsis[];
-
-  // A numeric quantity that only increases by the amount FAMILY_SIZE.
-  // It helps guarantee that a match family will have similar, but unique,
-  // numeric values.
-  static size_t next_family_id_;
 
 #if DCHECK_IS_ON()
   // Does a data integrity check on this match.

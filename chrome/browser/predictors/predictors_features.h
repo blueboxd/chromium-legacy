@@ -26,6 +26,11 @@ extern const base::Feature kLoadingPredictorUseOptimizationGuide;
 
 extern const base::Feature kLoadingPredictorPrefetch;
 
+enum class PrefetchSubresourceType { kAll, kJsAndCss };
+
+extern const base::FeatureParam<PrefetchSubresourceType>
+    kLoadingPredictorPrefetchSubresourceType;
+
 // Returns whether local predictions should be used to make preconnect
 // predictions.
 bool ShouldUseLocalPredictions();

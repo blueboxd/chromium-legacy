@@ -105,9 +105,10 @@ void FakeBluetoothGattServiceClient::ExposeHeartRateService(
   DVLOG(2) << "Exposing fake Heart Rate Service.";
   heart_rate_service_path_ =
       device_path.value() + "/" + kHeartRateServicePathComponent;
-  heart_rate_service_properties_.reset(new Properties(base::Bind(
-      &FakeBluetoothGattServiceClient::OnPropertyChanged,
-      base::Unretained(this), dbus::ObjectPath(heart_rate_service_path_))));
+  heart_rate_service_properties_ =
+      std::make_unique<Properties>(base::BindRepeating(
+          &FakeBluetoothGattServiceClient::OnPropertyChanged,
+          base::Unretained(this), dbus::ObjectPath(heart_rate_service_path_)));
   heart_rate_service_properties_->uuid.ReplaceValue(kHeartRateServiceUUID);
   heart_rate_service_properties_->device.ReplaceValue(device_path);
   heart_rate_service_properties_->primary.ReplaceValue(true);
@@ -153,9 +154,10 @@ void FakeBluetoothGattServiceClient::ExposeBatteryService(
   DVLOG(2) << "Exposing fake Battery Service.";
   battery_service_path_ =
       device_path.value() + "/" + kBatteryServicePathComponent;
-  battery_service_properties_.reset(new Properties(base::Bind(
-      &FakeBluetoothGattServiceClient::OnPropertyChanged,
-      base::Unretained(this), dbus::ObjectPath(battery_service_path_))));
+  battery_service_properties_ =
+      std::make_unique<Properties>(base::BindRepeating(
+          &FakeBluetoothGattServiceClient::OnPropertyChanged,
+          base::Unretained(this), dbus::ObjectPath(battery_service_path_)));
   battery_service_properties_->uuid.ReplaceValue(kBatteryServiceUUID);
   battery_service_properties_->device.ReplaceValue(device_path);
   battery_service_properties_->primary.ReplaceValue(true);

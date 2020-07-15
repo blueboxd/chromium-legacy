@@ -28,14 +28,17 @@
       pdf-annotations-enabled="[[pdfAnnotationsEnabled_]]"
       pdf-form-save-enabled="[[pdfFormSaveEnabled_]]"
       printing-enabled="[[printingEnabled_]]"
+<if expr="chromeos">
+      ink-controller="[[inkController_]]"
+</if>
       is-form-field-focused="[[isFormFieldFocused_]]"
       doc-length="[[docLength_]]" page-no="[[pageNo_]]"
       load-progress="[[loadProgress_]]"
       on-save="onToolbarSave_" on-print="onPrint_"
+<if expr="chromeos">
       on-annotation-mode-toggled="onAnnotationModeToggled_"
-      on-annotation-tool-changed="onAnnotationToolChanged_"
-      on-rotate-right="rotateClockwise" on-undo="onUndo_" on-redo="onRedo_"
-      hidden>
+</if>
+      on-rotate-right="rotateClockwise" hidden>
   </viewer-pdf-toolbar>
 </template>
 <template is="dom-if" if="[[pdfViewerUpdateEnabled_]]">

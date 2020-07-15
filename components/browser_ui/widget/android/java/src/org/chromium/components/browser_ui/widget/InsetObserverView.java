@@ -8,14 +8,11 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
+import android.view.DisplayCutout;
 import android.view.View;
 import android.view.WindowInsets;
 
-import androidx.annotation.VisibleForTesting;
-
 import org.chromium.base.ObserverList;
-
-import java.lang.reflect.Method;
 
 /**
  * The purpose of this view is to store the system window insets (OSK, status bar) for
@@ -52,10 +49,8 @@ public class InsetObserverView extends View {
     public static InsetObserverView create(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             return new InsetObserverViewApi28(context);
-        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return new InsetObserverView(context);
         }
-        return new InsetObserverViewApi21(context);
+        return new InsetObserverView(context);
     }
 
     /**
@@ -111,14 +106,11 @@ public class InsetObserverView extends View {
         mObservers.removeObserver(observer);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    protected boolean fitSystemWindows(Rect insets) {
-        // For Lollipop and above, onApplyWindowInsets will set the insets.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            onInsetChanged(insets.left, insets.top, insets.right, insets.bottom);
-        }
-        return false;
+    public WindowInsets onApplyWindowInsets(WindowInsets insets) {
+        onInsetChanged(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(),
+                insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
+        return insets;
     }
 
     /**
@@ -142,28 +134,8 @@ public class InsetObserverView extends View {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    protected static class InsetObserverViewApi21 extends InsetObserverView {
-        /**
-         * Creates an instance of {@link InsetObserverView} for Android versions L and above.
-         * @param context The Context to create this {@link InsetObserverView} in.
-         */
-        InsetObserverViewApi21(Context context) {
-            super(context);
-        }
-
-        @Override
-        public WindowInsets onApplyWindowInsets(WindowInsets insets) {
-            onInsetChanged(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(),
-                    insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
-            return insets;
-        }
-    }
-
-    // TODO(beccahughes): Remove reflection and update target API when P-SDK is landed.
-    @TargetApi(Build.VERSION_CODES.O)
-    @VisibleForTesting
-    protected static class InsetObserverViewApi28 extends InsetObserverViewApi21 {
+    @TargetApi(Build.VERSION_CODES.P)
+    private static class InsetObserverViewApi28 extends InsetObserverView {
         private Rect mCurrentSafeArea = new Rect();
 
         /**
@@ -185,13 +157,19 @@ public class InsetObserverView extends View {
          * @param insets The WindowInsets containing the safe area.
          */
         private void setCurrentSafeAreaFromInsets(WindowInsets insets) {
-            Object displayCutout = extractDisplayCutout(insets);
+            DisplayCutout displayCutout = insets.getDisplayCutout();
 
-            // Extract the safe area values.
-            int left = extractSafeInset(displayCutout, "Left");
-            int top = extractSafeInset(displayCutout, "Top");
-            int right = extractSafeInset(displayCutout, "Right");
-            int bottom = extractSafeInset(displayCutout, "Bottom");
+            int left = 0;
+            int top = 0;
+            int right = 0;
+            int bottom = 0;
+
+            if (displayCutout != null) {
+                left = displayCutout.getSafeInsetLeft();
+                top = displayCutout.getSafeInsetTop();
+                right = displayCutout.getSafeInsetRight();
+                bottom = displayCutout.getSafeInsetBottom();
+            }
 
             // If the safe area has not changed then we should stop now.
             if (mCurrentSafeArea.left == left && mCurrentSafeArea.top == top
@@ -203,38 +181,6 @@ public class InsetObserverView extends View {
 
             for (WindowInsetObserver mObserver : mObservers) {
                 mObserver.onSafeAreaChanged(mCurrentSafeArea);
-            }
-        }
-
-        /**
-         * Extracts a safe inset value from an Android P+ DisplayCutout.
-         * @param displayCutout The Android P+ DisplayCutout object.
-         * @param name The name of the inset to extract.
-         * @return The inset value as an integer or zero.
-         */
-        private int extractSafeInset(Object displayCutout, String name) {
-            try {
-                Method method = displayCutout.getClass().getMethod("getSafeInset" + name);
-                return (int) method.invoke(displayCutout);
-            } catch (Exception ex) {
-                // API is not available.
-                return 0;
-            }
-        }
-
-        /**
-         * Extracts an Android P+ DisplayCutout from {@link WindowInsets}.
-         * @param insets The WindowInsets to extract the cutout from.
-         * @return The DisplayCutout object or null.
-         */
-        @VisibleForTesting
-        protected Object extractDisplayCutout(WindowInsets insets) {
-            try {
-                Method method = insets.getClass().getMethod("getDisplayCutout");
-                return method.invoke(insets);
-            } catch (Exception ex) {
-                // API is not available.
-                return null;
             }
         }
     }

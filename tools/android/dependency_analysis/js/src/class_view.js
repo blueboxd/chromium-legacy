@@ -2,22 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ClassGraphPage} from './vue_components/class_graph_page.js';
-
-// For ease of development, we currently serve all our JSON and other assets
-// through a simple Python server at localhost:8888. This should be changed
-// as we find other ways to serve the assets (user upload or hosted externally).
+// For ease of development, we serve our testing data on localhost:8888. This
+// should be changed as we find other ways to serve the assets (eg. user upload
+// or hosted externally).
 const LOCALHOST = 'http://localhost:8888';
 
-// TODO(yjlong): Currently we take JSON served by a Python server running on
-// the side. Replace this with a user upload or pull from some other source.
+import Vue from 'vue';
+import ClassGraphPage from './vue_components/class_graph_page.vue';
+import * as d3 from 'd3';
+
 document.addEventListener('DOMContentLoaded', () => {
   d3.json(`${LOCALHOST}/json_graph.txt`).then(data => {
-    new ClassGraphPage({
+    new Vue({
       el: '#class-graph-page',
-      propsData: {
-        graphJson: data.class_graph,
-      },
+      render: createElement => createElement(
+          ClassGraphPage,
+          {
+            props: {
+              graphJson: data.class_graph,
+            },
+          },
+      ),
     });
   });
 });

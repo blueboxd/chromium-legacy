@@ -1148,21 +1148,28 @@ class MetaBuildWrapper(object):
     label = labels[0]
 
     build_dir = self.args.path
+
     command, extra_files = self.GetIsolateCommand(target, vals)
 
-    # Any warning for an unused arg will get interleaved into the cmd's stdout.
-    # When that happens, the isolate step below will fail with an obscure error
-    # when it tries processing the lines of the warning. Fail quickly in that
-    # case to avoid confusion.
-    cmd = self.GNCmd('desc', build_dir, label, 'runtime_deps',
-                     '--fail-on-unused-args')
-    ret, out, _ = self.Call(cmd)
-    if ret:
-      if out:
-        self.Print(out)
-      return ret
+    # TODO(crbug.com/816629): Convert everything to wrapped_isolated_scripts
+    # and remove the else-branch of this.
+    if isolate_map[target]['type'] == 'wrapped_console_launcher':
+      runtime_deps = self.ReadFile(
+          self.PathJoin(build_dir, target + '.runtime_deps')).splitlines()
+    else:
+      # Any warning for an unused arg will get interleaved into the cmd's
+      # stdout. When that happens, the isolate step below will fail with an
+      # obscure error when it tries processing the lines of the warning. Fail
+      # quickly in that case to avoid confusion
+      cmd = self.GNCmd('desc', build_dir, label, 'runtime_deps',
+                       '--fail-on-unused-args')
+      ret, out, _ = self.Call(cmd)
+      if ret:
+        if out:
+          self.Print(out)
+        return ret
 
-    runtime_deps = out.splitlines()
+      runtime_deps = out.splitlines()
 
     ret = self.WriteIsolateFiles(build_dir, command, target, runtime_deps, vals,
                                  extra_files)
@@ -1385,12 +1392,31 @@ class MetaBuildWrapper(object):
 
     is_android = 'target_os="android"' in vals['gn_args']
     is_fuchsia = 'target_os="fuchsia"' in vals['gn_args']
-    is_cros = 'target_os="chromeos"' in vals['gn_args']
-    is_ios = 'target_os="ios"' in vals['gn_args']
+    is_cros = ('target_os="chromeos"' in vals['gn_args']
+               or 'is_chromeos_device=true' in vals['gn_args']
+               or vals.get('cros_passthrough', False))
     is_cros_device = ('is_chromeos_device=true' in vals['gn_args']
                       or vals.get('cros_passthrough', False))
-    is_mac = self.platform == 'darwin'
+    is_ios = 'target_os="ios"' in vals['gn_args']
+    is_linux = ('target_os="linux"' in vals['gn_args']
+                or (self.platform in ('linux', 'linux2') and not is_android
+                    and not is_fuchsia and not is_cros))
+    is_mac = self.platform == 'darwin' and not is_ios
     is_win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
+
+    test_type = isolate_map[target]['type']
+    if test_type.startswith('wrapped_'):
+      if is_mac or is_linux:
+        cmdline = ['bin/run_{}'.format(target)]
+        return cmdline, []
+      elif is_win:
+        cmdline = ['bin/run_{}.bat'.format(target)]
+        return cmdline, []
+      else:
+        test_type = test_type[len('wrapped_'):]
+
+    # TODO(crbug.com/816629): Convert everything to wrapped_isolated_scripts
+    # and delete the rest of this function.
 
     # This should be true if tests with type='windowed_test_launcher' are
     # expected to run using xvfb. For example, Linux Desktop, X11 CrOS and
@@ -1410,7 +1436,6 @@ class MetaBuildWrapper(object):
     clang_coverage = 'use_clang_coverage=true' in vals['gn_args']
     java_coverage = 'use_jacoco_coverage=true' in vals['gn_args']
 
-    test_type = isolate_map[target]['type']
     use_python3 = isolate_map[target].get('use_python3', False)
 
     executable = isolate_map[target].get('executable', target)

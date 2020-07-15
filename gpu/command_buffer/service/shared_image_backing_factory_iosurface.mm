@@ -267,26 +267,6 @@ class SharedImageRepresentationSkiaIOSurface
   gles2::Texture* const gles2_texture_;
 };
 
-class SharedImageRepresentationOverlayIOSurface
-    : public SharedImageRepresentationOverlay {
- public:
-  SharedImageRepresentationOverlayIOSurface(SharedImageManager* manager,
-                                            SharedImageBacking* backing,
-                                            MemoryTypeTracker* tracker,
-                                            scoped_refptr<gl::GLImage> gl_image)
-      : SharedImageRepresentationOverlay(manager, backing, tracker),
-        gl_image_(gl_image) {}
-
-  ~SharedImageRepresentationOverlayIOSurface() override { EndReadAccess(); }
-
- private:
-  bool BeginReadAccess() override { return true; }
-  void EndReadAccess() override {}
-  gl::GLImage* GetGLImage() override { return gl_image_.get(); }
-
-  scoped_refptr<gl::GLImage> gl_image_;
-};
-
 // Representation of a SharedImageBackingIOSurface as a Dawn Texture.
 #if BUILDFLAG(USE_DAWN)
 class SharedImageRepresentationDawnIOSurface
@@ -523,15 +503,6 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
     return std::make_unique<SharedImageRepresentationSkiaIOSurface>(
         manager, this, std::move(context_state), promise_texture, tracker,
         gles2_texture);
-  }
-
-  std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override {
-    if (!EnsureGLImage())
-      return nullptr;
-    return SharedImageBackingFactoryIOSurface::ProduceOverlay(
-        manager, this, tracker, gl_image_);
   }
 
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
@@ -827,17 +798,6 @@ SharedImageBackingFactoryIOSurface::ProduceSkiaPromiseTextureMetal(
     return SkPromiseImageTexture::Make(gr_backend_texture);
   }
   return nullptr;
-}
-
-// static
-std::unique_ptr<SharedImageRepresentationOverlay>
-SharedImageBackingFactoryIOSurface::ProduceOverlay(
-    SharedImageManager* manager,
-    SharedImageBacking* backing,
-    MemoryTypeTracker* tracker,
-    scoped_refptr<gl::GLImage> image) {
-  return std::make_unique<SharedImageRepresentationOverlayIOSurface>(
-      manager, backing, tracker, image);
 }
 
 // static

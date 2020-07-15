@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "ash/public/cpp/assistant/assistant_web_view.h"
@@ -44,6 +45,9 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantCardElement
   std::unique_ptr<AssistantWebView> contents_view_;
 
   std::unique_ptr<Processor> processor_;
+
+  // AssistantUiElement:
+  bool Compare(const AssistantUiElement& other) const override;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantCardElement);
 };

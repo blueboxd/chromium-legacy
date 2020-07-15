@@ -86,10 +86,10 @@ TEST_F(ClipboardHostImplTest, SimpleImage) {
                                  ui::ClipboardBuffer::kCopyPaste));
   EXPECT_FALSE(system_clipboard()->IsFormatAvailable(
       ui::ClipboardFormatType::GetPlainTextType(),
-      ui::ClipboardBuffer::kCopyPaste));
+      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr));
   EXPECT_TRUE(system_clipboard()->IsFormatAvailable(
-      ui::ClipboardFormatType::GetBitmapType(),
-      ui::ClipboardBuffer::kCopyPaste));
+      ui::ClipboardFormatType::GetBitmapType(), ui::ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
 
   SkBitmap actual = ui::clipboard_test_util::ReadImage(system_clipboard());
   EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap, actual));

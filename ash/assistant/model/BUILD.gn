@@ -37,6 +37,8 @@ component("model") {
     "assistant_ui_model_observer.h",
     "ui/assistant_card_element.cc",
     "ui/assistant_card_element.h",
+    "ui/assistant_error_element.cc",
+    "ui/assistant_error_element.h",
     "ui/assistant_text_element.cc",
     "ui/assistant_text_element.h",
     "ui/assistant_ui_element.cc",

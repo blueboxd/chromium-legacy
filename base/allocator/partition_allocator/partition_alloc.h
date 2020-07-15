@@ -56,7 +56,6 @@
 
 #include <atomic>
 
-#include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
@@ -920,19 +919,10 @@ namespace internal {
 template <bool thread_safe>
 struct BASE_EXPORT PartitionAllocator {
   PartitionAllocator() = default;
-  ~PartitionAllocator() {
-    PartitionAllocMemoryReclaimer::Instance()->UnregisterPartition(
-        &partition_root_);
-  }
+  ~PartitionAllocator();
 
   void init(PartitionAllocatorAlignment alignment =
-                PartitionAllocatorAlignment::kRegular) {
-    partition_root_.Init(
-        alignment ==
-        PartitionAllocatorAlignment::kAlignedAlloc /* enforce_alignment */);
-    PartitionAllocMemoryReclaimer::Instance()->RegisterPartition(
-        &partition_root_);
-  }
+                PartitionAllocatorAlignment::kRegular);
   ALWAYS_INLINE PartitionRoot<thread_safe>* root() { return &partition_root_; }
 
  private:

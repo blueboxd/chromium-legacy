@@ -807,6 +807,10 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
 
 WebInputEventAttribution InputHandlerProxy::PerformEventAttribution(
     const WebInputEvent& event) {
+  if (!event_attribution_enabled_) {
+    return WebInputEventAttribution(WebInputEventAttribution::kUnknown);
+  }
+
   if (WebInputEvent::IsKeyboardEventType(event.GetType())) {
     // Keyboard events should be dispatched to the focused frame.
     return WebInputEventAttribution(WebInputEventAttribution::kFocusedFrame);
@@ -821,8 +825,29 @@ WebInputEventAttribution InputHandlerProxy::PerformEventAttribution(
     return WebInputEventAttribution(
         WebInputEventAttribution::kTargetedFrame,
         input_handler_->FindFrameElementIdAtPoint(point));
+  } else if (WebInputEvent::IsGestureEventType(event.GetType())) {
+    gfx::PointF point =
+        static_cast<const WebGestureEvent&>(event).PositionInWidget();
+    return WebInputEventAttribution(
+        WebInputEventAttribution::kTargetedFrame,
+        input_handler_->FindFrameElementIdAtPoint(point));
+  } else if (WebInputEvent::IsTouchEventType(event.GetType())) {
+    const auto& touch_event = static_cast<const WebTouchEvent&>(event);
+    if (touch_event.touches_length == 0) {
+      return WebInputEventAttribution(WebInputEventAttribution::kTargetedFrame,
+                                      cc::ElementId());
+    }
+
+    // Use the first touch location to perform frame attribution, similar to
+    // how the renderer host performs touch event dispatch.
+    // https://cs.chromium.org/chromium/src/content/browser/renderer_host/render_widget_host_input_event_router.cc?l=808&rcl=10fe9d0a725d4ed7b69266a5936c525f0a5b26d3
+    gfx::PointF point = touch_event.touches[0].PositionInWidget();
+    const cc::ElementId targeted_element =
+        input_handler_->FindFrameElementIdAtPoint(point);
+
+    return WebInputEventAttribution(WebInputEventAttribution::kTargetedFrame,
+                                    targeted_element);
   } else {
-    // TODO(acomminos): implement for more event types (pointer, touch)
     return WebInputEventAttribution(WebInputEventAttribution::kUnknown);
   }
 }

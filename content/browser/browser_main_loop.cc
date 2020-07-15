@@ -224,7 +224,7 @@
 #if defined(USE_X11)
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/base/x/x11_util_internal.h"  // nogncheck
+#include "ui/base/x/x11_util.h"           // nogncheck
 #include "ui/gfx/x/x11_types.h"           // nogncheck
 #endif
 

@@ -125,7 +125,7 @@ bool QuicSimpleServer::Listen(const IPEndPoint& address) {
 }
 
 void QuicSimpleServer::Shutdown() {
-  LOG(WARNING) << "QuicSimpleServer is shutting down";
+  DVLOG(1) << "QuicSimpleServer is shutting down";
   // Before we shut down the epoll server, give all active sessions a chance to
   // notify clients that they're closing.
   dispatcher_->Shutdown();

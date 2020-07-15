@@ -1959,14 +1959,16 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
     const std::string& last_data = last_clipboard_data_[clipboard_buffer];
     if (last_data.size() == expected.size()) {
       DCHECK_EQ(last_data, expected);
-      clipboard->ReadAsciiText(clipboard_buffer, &clipboard_data);
+      clipboard->ReadAsciiText(clipboard_buffer, /* data_dst = */ nullptr,
+                               &clipboard_data);
       EXPECT_EQ(expected, clipboard_data);
       return;
     }
 
     const bool expect_increase = last_data.size() < expected.size();
     while (true) {
-      clipboard->ReadAsciiText(clipboard_buffer, &clipboard_data);
+      clipboard->ReadAsciiText(clipboard_buffer, /* data_dst = */ nullptr,
+                               &clipboard_data);
       if (expect_increase) {
         if (clipboard_data.size() >= expected.size())
           break;

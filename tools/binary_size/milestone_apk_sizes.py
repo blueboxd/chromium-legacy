@@ -97,7 +97,6 @@ def _DownloadAndAnalyze(signed_prefix, unsigned_prefix):
     artifacts.append(_Artifact(prefix, name))
     return artifacts[-1]
 
-  chrome = make_artifact('arm/ChromeStable.apk')
   webview = make_artifact('arm/AndroidWebview.apk')
   webview64 = make_artifact('arm_64/AndroidWebview.apk')
   chrome_modern = make_artifact('arm/ChromeModernStable.apks')
@@ -133,7 +132,6 @@ def _DownloadAndAnalyze(signed_prefix, unsigned_prefix):
 
   # Add metrics in the order that we want them in the .csv output.
   metrics = collections.OrderedDict()
-  chrome.AddSize(metrics)
   chrome_modern.AddSize(metrics)
   chrome_modern64.AddSize(metrics)
   webview.AddSize(metrics)
@@ -160,13 +158,13 @@ def _DownloadAndAnalyze(signed_prefix, unsigned_prefix):
   go_install_size = (
       trichrome_chrome.GetApkSize() + trichrome_webview.GetAndroidGoSize() +
       trichrome_library.GetAndroidGoSize())
-  metrics['Android Go TriChrome Install Size'] = go_install_size
+  metrics['Android Go (TriChrome) Install Size'] = go_install_size
 
   system_apks_size = sum(x.GetCompressedSize() for x in trichrome_system_apks)
   stubs_sizes = sum(x.GetApkSize() for x in trichrome_system_stubs)
-  metrics['Trichrome Compressed System Image'] = system_apks_size + stubs_sizes
+  metrics['Android Go (Trichrome) Compressed System Image'] = (
+      system_apks_size + stubs_sizes)
 
-  chrome.AddMethodCount(metrics)
   monochrome.AddMethodCount(metrics)
 
   # Separate where spreadsheet has computed columns for easier copy/paste.

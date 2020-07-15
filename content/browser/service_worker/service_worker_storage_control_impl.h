@@ -49,6 +49,7 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
 
  private:
   // storage::mojom::ServiceWorkerStorageControl implementations:
+  void GetRegisteredOrigins(GetRegisteredOriginsCallback callback) override;
   void FindRegistrationForClientUrl(
       const GURL& client_url,
       FindRegistrationForClientUrlCallback callback) override;

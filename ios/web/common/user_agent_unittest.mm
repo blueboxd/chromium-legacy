@@ -50,19 +50,23 @@ TEST_F(UserAgentTest, UserAgentTypeDescription) {
             GetUserAgentTypeDescription(UserAgentType::MOBILE));
   EXPECT_EQ(kDesktopDescription,
             GetUserAgentTypeDescription(UserAgentType::DESKTOP));
-  EXPECT_EQ(kAutomaticDescription,
-            GetUserAgentTypeDescription(UserAgentType::AUTOMATIC));
   EXPECT_EQ(kNoneDescription, GetUserAgentTypeDescription(UserAgentType::NONE));
   EXPECT_EQ(UserAgentType::MOBILE,
             GetUserAgentTypeWithDescription(kMobileDescription));
   EXPECT_EQ(UserAgentType::DESKTOP,
             GetUserAgentTypeWithDescription(kDesktopDescription));
-  EXPECT_EQ(UserAgentType::AUTOMATIC,
-            GetUserAgentTypeWithDescription(kAutomaticDescription));
   EXPECT_EQ(UserAgentType::NONE,
             GetUserAgentTypeWithDescription(kNoneDescription));
   EXPECT_EQ(UserAgentType::NONE,
             GetUserAgentTypeWithDescription(kInvalidDescription));
+
+  // The kUseDefaultUserAgentInWebClient feature is only available on iOS 13+.
+  if (@available(iOS 13, *)) {
+    EXPECT_EQ(kAutomaticDescription,
+              GetUserAgentTypeDescription(UserAgentType::AUTOMATIC));
+    EXPECT_EQ(UserAgentType::AUTOMATIC,
+              GetUserAgentTypeWithDescription(kAutomaticDescription));
+  }
 }
 
 // Tests the mobile user agent returned for a specific product.

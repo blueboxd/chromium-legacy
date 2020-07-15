@@ -317,7 +317,7 @@ TEST_F(PrerenderingTest, AbandonPrerender) {
 
   EXPECT_EQ(1u, PrerenderProcessor()->AddCount());
   EXPECT_EQ(0u, prerender->CancelCount());
-  EXPECT_EQ(1u, prerender->AbandonCount());
+  EXPECT_EQ(0u, prerender->AbandonCount());
 
   // Check that the prerender does not emit an extra cancel when
   // garbage-collecting everything.
@@ -325,7 +325,7 @@ TEST_F(PrerenderingTest, AbandonPrerender) {
 
   EXPECT_EQ(1u, PrerenderProcessor()->AddCount());
   EXPECT_EQ(0u, prerender->CancelCount());
-  EXPECT_EQ(1u, prerender->AbandonCount());
+  EXPECT_EQ(0u, prerender->AbandonCount());
 }
 
 TEST_F(PrerenderingTest, TwoPrerenders) {
@@ -384,7 +384,7 @@ TEST_F(PrerenderingTest, TwoPrerendersRemovingFirstThenNavigating) {
   EXPECT_EQ(1u, first_prerender->CancelCount());
   EXPECT_EQ(0u, first_prerender->AbandonCount());
   EXPECT_EQ(0u, second_prerender->CancelCount());
-  EXPECT_EQ(1u, second_prerender->AbandonCount());
+  EXPECT_EQ(0u, second_prerender->AbandonCount());
 }
 
 TEST_F(PrerenderingTest, TwoPrerendersAddingThird) {

@@ -975,6 +975,8 @@ android_library("chrome_test_java") {
     "//chrome/browser/performance_hints/android:java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/profiles/android:java",
+    "//chrome/browser/safe_browsing/android:java",
+    "//chrome/browser/safe_browsing/android:javatests",
     "//chrome/browser/safety_check/android:java",
     "//chrome/browser/safety_check/android:javatests",
     "//chrome/browser/settings:java",

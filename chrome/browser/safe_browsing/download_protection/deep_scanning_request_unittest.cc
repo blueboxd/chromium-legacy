@@ -673,7 +673,8 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
         /*dlp_verdict*/ dlp_verdict,
         /*mimetypes*/ ExeMimeTypes(),
-        /*size*/ std::string("download contents").size());
+        /*size*/ std::string("download contents").size(),
+        EventResultToString(EventResult::WARNED));
 
     request.Start();
 
@@ -737,7 +738,8 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
         /*dlp_verdict*/ dlp_verdict,
         /*mimetypes*/ ExeMimeTypes(),
-        /*size*/ std::string("download contents").size());
+        /*size*/ std::string("download contents").size(),
+        EventResultToString(EventResult::WARNED));
 
     request.Start();
 
@@ -789,7 +791,8 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
         /*dlp_verdict*/ dlp_verdict,
         /*mimetypes*/ ExeMimeTypes(),
-        /*size*/ std::string("download contents").size());
+        /*size*/ std::string("download contents").size(),
+        EventResultToString(EventResult::BLOCKED));
 
     request.Start();
 
@@ -841,7 +844,8 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
         /*dlp_verdict*/ dlp_verdict,
         /*mimetypes*/ ExeMimeTypes(),
-        /*size*/ std::string("download contents").size());
+        /*size*/ std::string("download contents").size(),
+        EventResultToString(EventResult::WARNED));
 
     request.Start();
 
@@ -899,7 +903,8 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
         /*dlp_verdict*/ dlp_verdict,
         /*mimetypes*/ ExeMimeTypes(),
-        /*size*/ std::string("download contents").size());
+        /*size*/ std::string("download contents").size(),
+        EventResultToString(EventResult::BLOCKED));
 
     request.Start();
 

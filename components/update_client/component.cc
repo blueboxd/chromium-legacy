@@ -759,7 +759,7 @@ void Component::StateDownloadingDiff::DownloadComplete(
   for (const auto& download_metrics : crx_downloader_->download_metrics())
     component.AppendEvent(component.MakeEventDownloadMetrics(download_metrics));
 
-  crx_downloader_ = nullptr;
+  crx_downloader_.reset();
 
   if (download_result.error) {
     DCHECK(download_result.response.empty());
@@ -832,7 +832,7 @@ void Component::StateDownloading::DownloadComplete(
   for (const auto& download_metrics : crx_downloader_->download_metrics())
     component.AppendEvent(component.MakeEventDownloadMetrics(download_metrics));
 
-  crx_downloader_ = nullptr;
+  crx_downloader_.reset();
 
   if (download_result.error) {
     DCHECK(download_result.response.empty());

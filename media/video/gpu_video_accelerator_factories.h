@@ -55,7 +55,7 @@ class MediaLog;
 // * The GpuVideoAcceleratorFactories has an associated message loop, which may
 //   be retrieved as |GetMessageLoop()|.
 // * All calls to the Factories after construction must be made on its message
-//   loop.
+//   loop, unless otherwise documented below.
 class MEDIA_EXPORT GpuVideoAcceleratorFactories {
  public:
   enum class OutputFormat {
@@ -90,14 +90,60 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   // Supported::kFalse if |config| is not supported.
   //
   // May be called on any thread.
+  //
+  // TODO(sandersd): Switch to bool if/when all clients check
+  // IsDecoderSupportKnown().
   virtual Supported IsDecoderConfigSupported(
       VideoDecoderImplementation implementation,
       const VideoDecoderConfig& config) = 0;
+
+  // Returns true if IsDecoderConfigSupported() is ready to answer queries.
+  // Once decoder support is known, it remains known for the lifetime of |this|.
+  //
+  // May be called on any thread.
+  virtual bool IsDecoderSupportKnown() = 0;
+
+  // Registers a callback to be notified when IsDecoderConfigSupported() is
+  // ready to answer queries. The callback will be invoked on the caller's
+  // sequence.
+  //
+  // There is no way to unsubscribe a callback, it is recommended to use a
+  // WeakPtr if you need this feature.
+  //
+  // May be called on any thread.
+  virtual void NotifyDecoderSupportKnown(base::OnceClosure callback) = 0;
 
   virtual std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
       MediaLog* media_log,
       VideoDecoderImplementation implementation,
       RequestOverlayInfoCB request_overlay_info_cb) = 0;
+
+  // Returns the supported codec profiles of video encode accelerator.
+  // Returns nullopt if GpuVideoAcceleratorFactories don't know the VEA
+  // supported profiles.
+  //
+  // May be called on any thread.
+  //
+  // TODO(sandersd): Remove Optional if/when all clients check
+  // IsEncoderSupportKnown().
+  virtual base::Optional<VideoEncodeAccelerator::SupportedProfiles>
+  GetVideoEncodeAcceleratorSupportedProfiles() = 0;
+
+  // Returns true if GetVideoEncodeAcceleratorSupportedProfiles() is populated.
+  // Once encoder support is known, it remains known for the lifetime of |this|.
+  //
+  // May be called on any thread.
+  virtual bool IsEncoderSupportKnown() = 0;
+
+  // Registers a callback to be notified when
+  // GetVideoEncodeAcceleratorSupportedProfiles() has been populated. The
+  // callback will be invoked on the caller's sequence.
+  //
+  // There is no way to unsubscribe a callback, it is recommended to use a
+  // WeakPtr if you need this feature.
+  //
+  // May be called on any thread.
+  virtual void NotifyEncoderSupportKnown(base::OnceClosure callback) = 0;
 
   // Caller owns returned pointer, but should call Destroy() on it (instead of
   // directly deleting) for proper destruction, as per the
@@ -139,12 +185,6 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
 
   // Returns the task runner the video accelerator runs on.
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
-
-  // Returns the supported codec profiles of video encode accelerator.
-  // Returns nullopt if GpuVideoAcceleratorFactories don't know the VEA
-  // supported profiles.
-  virtual base::Optional<VideoEncodeAccelerator::SupportedProfiles>
-  GetVideoEncodeAcceleratorSupportedProfiles() = 0;
 
   virtual viz::RasterContextProvider* GetMediaContextProvider() = 0;
 

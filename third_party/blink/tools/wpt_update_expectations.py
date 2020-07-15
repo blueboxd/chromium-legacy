@@ -13,7 +13,9 @@ from blinkpy.w3c.android_wpt_expectations_updater import (
 
 def get_updater(host=None, args=None):
     host = host or Host()
-    if any(arg.startswith('--android-product') for arg in args or []):
+    args = args or []
+    if ('--update-android-expectations-only' in args or
+            any(arg.startswith('--android-product') for arg in args)):
         return AndroidWPTExpectationsUpdater(host, args)
     else:
         return WPTExpectationsUpdater(host, args)

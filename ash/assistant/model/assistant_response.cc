@@ -4,9 +4,11 @@
 
 #include "ash/assistant/model/assistant_response.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "ash/assistant/model/assistant_response_observer.h"
+#include "ash/assistant/model/ui/assistant_error_element.h"
 #include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
@@ -205,4 +207,26 @@ void AssistantResponse::NotifySuggestionsAdded(
     observer.OnSuggestionsAdded(suggestions);
 }
 
+bool AssistantResponse::ContainsUiElement(
+    const AssistantUiElement* element) const {
+  DCHECK(element);
+
+  bool contains_element =
+      std::any_of(ui_elements_.cbegin(), ui_elements_.cend(),
+                  [element](const std::unique_ptr<AssistantUiElement>& other) {
+                    return *other == *element;
+                  });
+
+  return contains_element || ContainsPendingUiElement(element);
+}
+
+bool AssistantResponse::ContainsPendingUiElement(
+    const AssistantUiElement* element) const {
+  DCHECK(element);
+
+  return std::any_of(pending_ui_elements_.cbegin(), pending_ui_elements_.cend(),
+                     [element](const std::unique_ptr<PendingUiElement>& other) {
+                       return *other->ui_element == *element;
+                     });
+}
 }  // namespace ash

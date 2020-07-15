@@ -25,6 +25,7 @@
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/ipc/common/media_messages.h"
 #include "media/mojo/buildflags.h"
@@ -51,6 +52,26 @@ void RecordContextProviderPhaseUmaEnum(const ContextProviderPhase phase) {
 }
 
 }  // namespace
+
+GpuVideoAcceleratorFactoriesImpl::Notifier::Notifier() = default;
+GpuVideoAcceleratorFactoriesImpl::Notifier::~Notifier() = default;
+
+void GpuVideoAcceleratorFactoriesImpl::Notifier::Register(
+    base::OnceClosure callback) {
+  if (is_notified_) {
+    std::move(callback).Run();
+    return;
+  }
+  callbacks_.push_back(std::move(callback));
+}
+
+void GpuVideoAcceleratorFactoriesImpl::Notifier::Notify() {
+  DCHECK(!is_notified_);
+  is_notified_ = true;
+  for (auto& callback : callbacks_)
+    std::move(callback).Run();
+  callbacks_.clear();
+}
 
 // static
 std::unique_ptr<GpuVideoAcceleratorFactoriesImpl>
@@ -123,6 +144,8 @@ void GpuVideoAcceleratorFactoriesImpl::BindOnTaskRunner(
 
   if (context_provider_->BindToCurrentThread() !=
       gpu::ContextResult::kSuccess) {
+    OnDecoderSupportFailed();
+    OnEncoderSupportFailed();
     OnContextLost();
     return;
   }
@@ -139,10 +162,15 @@ void GpuVideoAcceleratorFactoriesImpl::BindOnTaskRunner(
                   .video_encode_accelerator_supported_profiles);
     }
 
+    vea_provider_.set_disconnect_handler(base::BindOnce(
+        &GpuVideoAcceleratorFactoriesImpl::OnEncoderSupportFailed,
+        base::Unretained(this)));
     vea_provider_->GetVideoEncodeAcceleratorSupportedProfiles(
         base::BindOnce(&GpuVideoAcceleratorFactoriesImpl::
                            OnGetVideoEncodeAcceleratorSupportedProfiles,
                        base::Unretained(this)));
+  } else {
+    OnEncoderSupportFailed();
   }
 
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
@@ -153,17 +181,56 @@ void GpuVideoAcceleratorFactoriesImpl::BindOnTaskRunner(
   // kAlternate, for example.
   interface_factory_->CreateVideoDecoder(
       video_decoder_.BindNewPipeAndPassReceiver());
+  video_decoder_.set_disconnect_handler(
+      base::BindOnce(&GpuVideoAcceleratorFactoriesImpl::OnDecoderSupportFailed,
+                     base::Unretained(this)));
   video_decoder_->GetSupportedConfigs(base::BindOnce(
       &GpuVideoAcceleratorFactoriesImpl::OnSupportedDecoderConfigs,
       base::Unretained(this)));
+#else
+  OnDecoderSupportFailed();
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
+}
+
+bool GpuVideoAcceleratorFactoriesImpl::IsDecoderSupportKnown() {
+  base::AutoLock lock(supported_profiles_lock_);
+  return decoder_support_notifier_.is_notified();
+}
+
+void GpuVideoAcceleratorFactoriesImpl::NotifyDecoderSupportKnown(
+    base::OnceClosure callback) {
+  base::AutoLock lock(supported_profiles_lock_);
+  decoder_support_notifier_.Register(
+      media::BindToCurrentLoop(std::move(callback)));
 }
 
 void GpuVideoAcceleratorFactoriesImpl::OnSupportedDecoderConfigs(
     const media::SupportedVideoDecoderConfigMap& supported_configs) {
   base::AutoLock lock(supported_profiles_lock_);
-  supported_decoder_configs_ = supported_configs;
   video_decoder_.reset();
+  supported_decoder_configs_ = supported_configs;
+  decoder_support_notifier_.Notify();
+}
+
+void GpuVideoAcceleratorFactoriesImpl::OnDecoderSupportFailed() {
+  base::AutoLock lock(supported_profiles_lock_);
+  video_decoder_.reset();
+  if (decoder_support_notifier_.is_notified())
+    return;
+  supported_decoder_configs_ = media::SupportedVideoDecoderConfigMap();
+  decoder_support_notifier_.Notify();
+}
+
+bool GpuVideoAcceleratorFactoriesImpl::IsEncoderSupportKnown() {
+  base::AutoLock lock(supported_profiles_lock_);
+  return encoder_support_notifier_.is_notified();
+}
+
+void GpuVideoAcceleratorFactoriesImpl::NotifyEncoderSupportKnown(
+    base::OnceClosure callback) {
+  base::AutoLock lock(supported_profiles_lock_);
+  encoder_support_notifier_.Register(
+      media::BindToCurrentLoop(std::move(callback)));
 }
 
 void GpuVideoAcceleratorFactoriesImpl::
@@ -172,6 +239,15 @@ void GpuVideoAcceleratorFactoriesImpl::
             supported_profiles) {
   base::AutoLock lock(supported_profiles_lock_);
   supported_vea_profiles_ = supported_profiles;
+  encoder_support_notifier_.Notify();
+}
+
+void GpuVideoAcceleratorFactoriesImpl::OnEncoderSupportFailed() {
+  base::AutoLock lock(supported_profiles_lock_);
+  if (encoder_support_notifier_.is_notified())
+    return;
+  supported_vea_profiles_ = media::VideoEncodeAccelerator::SupportedProfiles();
+  encoder_support_notifier_.Notify();
 }
 
 bool GpuVideoAcceleratorFactoriesImpl::CheckContextLost() {

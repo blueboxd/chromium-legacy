@@ -145,6 +145,10 @@ class ChromeProvidedSharingOptionsProvider {
             mOrderedFirstPartyOptions.add(createCopyTextFirstPartyOption());
         }
         mOrderedFirstPartyOptions.add(createSendTabToSelfFirstPartyOption());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_HIGHLIGHTS_ANDROID)) {
+            mOrderedFirstPartyOptions.add(createHighlightsFirstPartyOption());
+        }
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_QRCODE)) {
             mOrderedFirstPartyOptions.add(createQrCodeFirstPartyOption());
         }
@@ -296,6 +300,24 @@ class ChromeProvidedSharingOptionsProvider {
                 /*isFirstParty=*/true);
         return new FirstPartyOption(
                 propertyModel, Collections.singleton(ContentType.LINK_PAGE_VISIBLE));
+    }
+
+    private FirstPartyOption createHighlightsFirstPartyOption() {
+        PropertyModel propertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
+                AppCompatResources.getDrawable(
+                        mActivity, org.chromium.chrome.browser.share.R.drawable.link),
+                mActivity.getResources().getString(R.string.sharing_highlights),
+                (currentActivity)
+                        -> {
+                    RecordUserAction.record("SharingHubAndroid.SharedHighlights");
+                    RecordHistogram.recordMediumTimesHistogram(
+                            "Sharing.SharingHubAndroid.TimeToShare",
+                            System.currentTimeMillis() - mShareStartTime);
+                    mBottomSheetController.hideContent(mBottomSheetContent, true);
+                    // TODO(1102382): Init and call link-to-text feature.
+                },
+                /*isFirstParty=*/true);
+        return new FirstPartyOption(propertyModel, Collections.singleton(ContentType.TEXT));
     }
 
     /**

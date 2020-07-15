@@ -113,7 +113,6 @@ js_library("ink_controller") {
 js_library("controller") {
   deps = [
     ":viewport",
-    "elements:viewer-pdf-toolbar",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js:promise_resolver.m",

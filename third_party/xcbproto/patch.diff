@@ -1,6 +1,6 @@
 diff -ru xcbproto/src/randr.xml src/src/randr.xml
---- xcbproto/src/randr.xml	2020-07-06 16:37:24.662098082 -0700
-+++ src/src/randr.xml	2020-07-06 16:31:26.724467001 -0700
+--- xcbproto/src/randr.xml	2020-07-08 10:06:09.757347365 -0700
++++ src/src/randr.xml	2020-07-07 12:47:03.842264535 -0700
 @@ -803,64 +803,6 @@
  		<item name="Lease">           <value>6</value></item>
  	</enum>
@@ -173,6 +173,27 @@ diff -ru xcbproto/src/randr.xml src/src/randr.xml
 +		</switch>
  	</event>
  </xcb>
+diff -ru xcbproto/src/xproto.xml src/src/xproto.xml
+--- xcbproto/src/xproto.xml	2020-07-08 10:06:09.761347383 -0700
++++ src/src/xproto.xml	2020-07-07 12:47:57.378510617 -0700
+@@ -4686,7 +4686,7 @@
+     <field type="CARD8" name="left_pad" />
+     <field type="CARD8" name="depth" />
+     <pad bytes="2" />
+-    <list type="BYTE" name="data" />
++    <list type="void" name="data" />
+   </request>
+ 
+   <!-- FIXME: data array in reply will include padding, but ought not to. -->
+@@ -4702,7 +4702,7 @@
+       <field type="CARD8" name="depth" />
+       <field type="VISUALID" name="visual" />
+       <pad bytes="20" />
+-      <list type="BYTE" name="data">
++      <list type="void" name="data">
+         <op op="*">
+           <fieldref>length</fieldref>
+           <value>4</value>
 Only in src/xcbgen: align.pyc
 Only in src/xcbgen: error.pyc
 Only in src/xcbgen: expr.pyc

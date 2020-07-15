@@ -2509,6 +2509,11 @@ const char kChromeDuetLabelsName[] = "Chrome Duet Labels";
 const char kChromeDuetLabelsDescription[] =
     "Enables Chrome Duet (split toolbar) labels.";
 
+const char kChromeShareHighlightsAndroidName[] =
+    "Chrome Share text highlights on Android";
+const char kChromeShareHighlightsAndroidDescription[] =
+    "Enables UI to generate and share link to text highlights on Android";
+
 const char kChromeShareQRCodeName[] = "Chrome Share QRCodes";
 const char kChromeShareQRCodeDescription[] =
     "Enables UI to generate and scan QR Codes on Android";
@@ -3429,6 +3434,10 @@ const char kContextualNudgesName[] =
 const char kContextualNudgesDescription[] =
     "Enables contextual nudges, periodically showing the user a label "
     "explaining how to interact with a particular UI element using gestures.";
+
+const char kCrosLanguageSettingsUpdateName[] = "Language Settings Update";
+const char kCrosLanguageSettingsUpdateDescription[] =
+    "Enable this flag to see the new language settings update.";
 
 const char kCrosRegionsModeName[] = "Cros-regions load mode";
 const char kCrosRegionsModeDescription[] =

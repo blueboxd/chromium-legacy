@@ -281,7 +281,7 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
 
 #if defined(ARCH_CPU_ARM64)
   // PAGE_SIZE is vm_page_size on arm, which isn't constexpr.
-  DCHECK_EQ(PAGE_SIZE % 1024, 0) << "Invalid page size";
+  DCHECK_EQ(PAGE_SIZE % 1024, 0u) << "Invalid page size";
 #else
   static_assert(PAGE_SIZE % 1024 == 0, "Invalid page size");
 #endif

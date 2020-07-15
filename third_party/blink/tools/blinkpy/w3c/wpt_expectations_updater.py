@@ -121,10 +121,13 @@ class WPTExpectationsUpdater(object):
             help='Only cleanup expectations deleted or renamed in current CL. '
                  'If flag is not used then a full cleanup of deleted or '
                  'renamed tests will be done in expectations.')
-        # TODO(rmhasan): Move this argument to the
+        # TODO(rmhasan): Move below arguments to the
         # AndroidWPTExpectationsUpdater add_arguments implementation.
         # Also look into using sub parsers to separate android and
         # desktop specific arguments.
+        parser.add_argument(
+            '--update-android-expectations-only', action='store_true',
+            help='Update and clean up only Android test expectations.')
         parser.add_argument(
             '--android-product', action='append', default=[],
             help='Android products whose baselines will be updated.',

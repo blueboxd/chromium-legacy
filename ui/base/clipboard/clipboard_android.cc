@@ -366,8 +366,12 @@ uint64_t ClipboardAndroid::GetSequenceNumber(
   return g_map.Get().GetSequenceNumber();
 }
 
-bool ClipboardAndroid::IsFormatAvailable(const ClipboardFormatType& format,
-                                         ClipboardBuffer buffer) const {
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
+bool ClipboardAndroid::IsFormatAvailable(
+    const ClipboardFormatType& format,
+    ClipboardBuffer buffer,
+    const ClipboardDataEndpoint* data_dst) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 
@@ -383,8 +387,11 @@ void ClipboardAndroid::Clear(ClipboardBuffer buffer) {
   g_map.Get().Clear();
 }
 
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardAndroid::ReadAvailableTypes(
     ClipboardBuffer buffer,
+    const ClipboardDataEndpoint* data_dst,
     std::vector<base::string16>* types) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
@@ -394,22 +401,26 @@ void ClipboardAndroid::ReadAvailableTypes(
 
   // would be nice to ask the ClipboardMap to enumerate the types it supports,
   // rather than hardcode the list here.
-  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer))
+  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer,
+                        data_dst))
     types->push_back(base::UTF8ToUTF16(kMimeTypeText));
-  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), buffer))
+  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), buffer, data_dst))
     types->push_back(base::UTF8ToUTF16(kMimeTypeHTML));
 
   // these formats aren't supported by the ClipboardMap currently, but might
   // be one day?
-  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer))
+  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer, data_dst))
     types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
-  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer))
+  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer, data_dst))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
 }
 
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 std::vector<base::string16>
 ClipboardAndroid::ReadAvailablePlatformSpecificFormatNames(
-    ClipboardBuffer buffer) const {
+    ClipboardBuffer buffer,
+    const ClipboardDataEndpoint* data_dst) const {
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   std::vector<std::string> formats = g_map.Get().GetFormats();
 
@@ -421,16 +432,22 @@ ClipboardAndroid::ReadAvailablePlatformSpecificFormatNames(
   return types;
 }
 
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardAndroid::ReadText(ClipboardBuffer buffer,
+                                const ClipboardDataEndpoint* data_dst,
                                 base::string16* result) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   std::string utf8;
-  ReadAsciiText(buffer, &utf8);
+  ReadAsciiText(buffer, data_dst, &utf8);
   *result = base::UTF8ToUTF16(utf8);
 }
 
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardAndroid::ReadAsciiText(ClipboardBuffer buffer,
+                                     const ClipboardDataEndpoint* data_dst,
                                      std::string* result) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
@@ -438,8 +455,11 @@ void ClipboardAndroid::ReadAsciiText(ClipboardBuffer buffer,
   *result = g_map.Get().Get(ClipboardFormatType::GetPlainTextType().GetName());
 }
 
-// Note: |src_url| isn't really used. It is only implemented in Windows
+// Note: |src_url| isn't really used. It is only implemented in Windows.
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardAndroid::ReadHTML(ClipboardBuffer buffer,
+                                const ClipboardDataEndpoint* data_dst,
                                 base::string16* markup,
                                 std::string* src_url,
                                 uint32_t* fragment_start,
@@ -458,13 +478,19 @@ void ClipboardAndroid::ReadHTML(ClipboardBuffer buffer,
   *fragment_end = static_cast<uint32_t>(markup->length());
 }
 
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardAndroid::ReadRTF(ClipboardBuffer buffer,
+                               const ClipboardDataEndpoint* data_dst,
                                std::string* result) const {
   DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
 }
 
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardAndroid::ReadImage(ClipboardBuffer buffer,
+                                 const ClipboardDataEndpoint* data_dst,
                                  ReadImageCallback callback) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
@@ -472,20 +498,29 @@ void ClipboardAndroid::ReadImage(ClipboardBuffer buffer,
   g_map.Get().GetImage(std::move(callback));
 }
 
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardAndroid::ReadCustomData(ClipboardBuffer buffer,
                                       const base::string16& type,
+                                      const ClipboardDataEndpoint* data_dst,
                                       base::string16* result) const {
   DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
 }
 
-void ClipboardAndroid::ReadBookmark(base::string16* title,
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
+void ClipboardAndroid::ReadBookmark(const ClipboardDataEndpoint* data_dst,
+                                    base::string16* title,
                                     std::string* url) const {
   DCHECK(CalledOnValidThread());
   NOTIMPLEMENTED();
 }
 
+// |data_dst| is not used. It's only passed to be consistent with other
+// platforms.
 void ClipboardAndroid::ReadData(const ClipboardFormatType& format,
+                                const ClipboardDataEndpoint* data_dst,
                                 std::string* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kData);

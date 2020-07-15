@@ -2602,7 +2602,7 @@ bool RenderViewContextMenu::IsPasteEnabled() const {
 
   std::vector<base::string16> types;
   ui::Clipboard::GetForCurrentThread()->ReadAvailableTypes(
-      ui::ClipboardBuffer::kCopyPaste, &types);
+      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &types);
   return !types.empty();
 }
 
@@ -2612,7 +2612,7 @@ bool RenderViewContextMenu::IsPasteAndMatchStyleEnabled() const {
 
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
       ui::ClipboardFormatType::GetPlainTextType(),
-      ui::ClipboardBuffer::kCopyPaste);
+      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr);
 }
 
 bool RenderViewContextMenu::IsPrintPreviewEnabled() const {

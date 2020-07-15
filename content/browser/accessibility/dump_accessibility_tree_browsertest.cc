@@ -2098,10 +2098,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("portal-name-from-text.html"));
 }
 
+// Flaky on all platforms: crbug.com/1103753.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityPortalWithWidgetInside) {
+                       DISABLED_AccessibilityPortalWithWidgetInside) {
   RunHtmlTest(FILE_PATH_LITERAL("portal-with-widget-inside.html"));
 }
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityPortalNameFromVisibleText) {
   RunHtmlTest(FILE_PATH_LITERAL("portal-name-from-visible-text.html"));

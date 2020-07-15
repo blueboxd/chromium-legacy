@@ -6,12 +6,12 @@
 
 #include <memory>
 #include <utility>
-
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/clamped_math.h"
 #include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -245,6 +246,31 @@ std::unique_ptr<CanvasResourceProvider> CreateProvider(
 
   return CanvasResourceProvider::CreateBitmapProvider(
       size, kLow_SkFilterQuality, color_params);
+}
+
+std::unique_ptr<CanvasResourceProvider> CreateProviderForVideoElement(
+    HTMLVideoElement* video,
+    const ImageBitmapOptions* options) {
+  // TODO(crbug.com/1098445): ImageBitmap resize test case failed when
+  // quality equals to "low" and "medium". Need further investigate to
+  // enable gpu backed imageBitmap with resize options.
+  if (!SharedGpuContext::ContextProviderWrapper() ||
+      options->hasResizeWidth() || options->hasResizeHeight()) {
+    return CanvasResourceProvider::CreateBitmapProvider(
+        IntSize(video->videoWidth(), video->videoHeight()),
+        kLow_SkFilterQuality, CanvasColorParams());
+  }
+
+  uint32_t shared_image_usage_flags = gpu::SHARED_IMAGE_USAGE_DISPLAY;
+
+  return CanvasResourceProvider::CreateSharedImageProvider(
+      IntSize(video->videoWidth(), video->videoHeight()),
+      SharedGpuContext::ContextProviderWrapper(), kLow_SkFilterQuality,
+      CanvasColorParams(CanvasColorSpace::kSRGB,
+                        CanvasColorParams::GetNativeCanvasPixelFormat(),
+                        kNonOpaque),  // Default canvas settings
+      false,  // Origin of GL texture is bottom left on screen
+      RasterMode::kGPU, shared_image_usage_flags);
 }
 
 scoped_refptr<StaticBitmapImage> FlipImageVertically(
@@ -645,12 +671,8 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
   if (DstBufferSizeHasOverflow(parsed_options))
     return;
 
-  // TODO(fserb): this shouldn't be software?
   std::unique_ptr<CanvasResourceProvider> resource_provider =
-      CanvasResourceProvider::CreateBitmapProvider(
-          IntSize(video->videoWidth(), video->videoHeight()),
-          kLow_SkFilterQuality,
-          CanvasColorParams());  // TODO: set color space here to avoid clamping
+      CreateProviderForVideoElement(video, options);
 
   if (!resource_provider)
     return;

@@ -194,14 +194,8 @@ class VpnService : public KeyedService,
       const std::string& error_name,
       std::unique_ptr<base::DictionaryValue> error_data);
 
-  // Callback used to indicate that GetProperties was successful.
-  void OnGetPropertiesSuccess(const std::string& service_path,
-                              const base::DictionaryValue& dictionary);
-
-  // Callback used to indicate that GetProperties failed.
-  void OnGetPropertiesFailure(
-      const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data);
+  void OnGetShillProperties(const std::string& service_path,
+                            base::Optional<base::Value> dictionary);
 
   // Creates and adds the configuration to the internal store.
   VpnConfiguration* CreateConfigurationInternal(

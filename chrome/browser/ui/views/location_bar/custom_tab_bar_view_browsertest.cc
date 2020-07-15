@@ -455,7 +455,8 @@ IN_PROC_BROWSER_TEST_P(CustomTabBarViewBrowserTest,
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   base::string16 result;
-  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr,
+                      &result);
   EXPECT_EQ(result, base::UTF8ToUTF16("http://example.test/"));
 }
 

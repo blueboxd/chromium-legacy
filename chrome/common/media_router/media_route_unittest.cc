@@ -54,4 +54,22 @@ TEST(MediaRouteTest, TestEquals) {
   EXPECT_FALSE(route1 == route6);
 }
 
+TEST(MediaRouteTest, TestParsingMediaRouteId) {
+  // Parse a valid RouteId.
+  EXPECT_EQ(MediaRoute::GetPresentationIdFromMediaRouteId(kRouteId1), "1");
+  EXPECT_EQ(MediaRoute::GetMediaSourceIdFromMediaRouteId(kRouteId1),
+            "http://foo.com");
+
+  // Parse a RouteId without a proper RouteId prefix or at least two slashes.
+  EXPECT_EQ(MediaRoute::GetPresentationIdFromMediaRouteId("InvalidRouteId"),
+            "");
+  EXPECT_EQ(MediaRoute::GetPresentationIdFromMediaRouteId(
+                "urn:x-org.chromium:media:route:1/cast-sink1"),
+            "");
+  EXPECT_EQ(MediaRoute::GetMediaSourceIdFromMediaRouteId("InvalidRouteId"), "");
+  EXPECT_EQ(MediaRoute::GetMediaSourceIdFromMediaRouteId(
+                "urn:x-org.chromium:media:route:1/cast-sink1"),
+            "");
+}
+
 }  // namespace media_router

@@ -13,17 +13,22 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "media/base/media_switches.h"
+#include "media/base/media_util.h"
 #include "media/base/mime_util.h"
 #include "media/base/supported_types.h"
+#include "media/base/video_decoder_config.h"
 #include "media/filters/stream_parser_factory.h"
 #include "media/learning/common/media_learning_tasks.h"
 #include "media/learning/common/target_histogram.h"
 #include "media/learning/mojo/public/mojom/learning_task_controller.mojom-blink.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom-blink.h"
 #include "media/mojo/mojom/media_types.mojom-blink.h"
+#include "media/video/gpu_video_accelerator_factories.h"
+#include "media/video/supported_video_decoder_config.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_encrypted_media_client.h"
 #include "third_party/blink/public/platform/web_encrypted_media_request.h"
@@ -56,6 +61,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/media_capabilities/web_media_capabilities_info.h"
 #include "third_party/blink/renderer/platform/media_capabilities/web_media_configuration.h"
@@ -63,6 +69,8 @@
 #include "third_party/blink/renderer/platform/peerconnection/transmission_encoding_info_handler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace blink {
 
@@ -103,6 +111,12 @@ double GetLearningNnrThreshold() {
       media::kMediaLearningSmoothnessExperiment,
       MediaCapabilities::kLearningNnrThresholdParamName,
       kLearningNnrThresholdDefault);
+}
+
+// static
+bool UseGpuFactoriesForPowerEfficient() {
+  return base::FeatureList::IsEnabled(
+      media::kMediaCapabilitiesQueryGpuFactories);
 }
 
 // Utility function that will create a MediaCapabilitiesDecodingInfo object with
@@ -513,25 +527,20 @@ bool IsAudioConfigurationSupported(
 
 // Returns whether the VideoConfiguration is supported.
 // IsVideoCodecValid() MUST be called before.
-bool IsVideoConfigurationSupported(
-    const blink::VideoConfiguration* video_config,
-    const String& mime_type,
-    const String& codec) {
+bool IsVideoConfigurationSupported(const String& mime_type,
+                                   const String& codec,
+                                   media::VideoColorSpace video_color_space,
+                                   media::HdrMetadataType hdr_metadata_type) {
   media::VideoCodec video_codec = media::kUnknownVideoCodec;
   media::VideoCodecProfile video_profile;
   uint8_t video_level = 0;
-  media::VideoColorSpace video_color_space;
   bool is_video_codec_ambiguous = true;
-  media::HdrMetadataType hdr_metadata_type;
 
   // Must succeed as IsVideoCodecValid() should have been called before.
   bool parsed = media::ParseVideoCodecString(
       mime_type.Ascii(), codec.Ascii(), &is_video_codec_ambiguous, &video_codec,
       &video_profile, &video_level, &video_color_space);
   DCHECK(parsed && !is_video_codec_ambiguous);
-
-  ParseDynamicRangeConfigurations(video_config, &video_color_space,
-                                  &hdr_metadata_type);
 
   return media::IsSupportedVideoType({video_codec, video_profile, video_level,
                                       video_color_space, hdr_metadata_type});
@@ -696,11 +705,19 @@ ScriptPromise MediaCapabilities::decodingInfo(
   // Validation errors should return above.
   DCHECK(message.IsEmpty());
 
+  media::VideoColorSpace video_color_space;
+  media::HdrMetadataType hdr_metadata_type = media::HdrMetadataType::kNone;
+  if (config->hasVideo()) {
+    ParseDynamicRangeConfigurations(config->video(), &video_color_space,
+                                    &hdr_metadata_type);
+  }
+
   if (config->hasKeySystemConfiguration()) {
     // GetEmeSupport() will call the VideoDecodePerfHistory service after
     // receiving info about support for the configuration for encrypted content.
-    return GetEmeSupport(script_state, video_codec, video_profile, config,
-                         request_time, exception_state);
+    return GetEmeSupport(script_state, video_codec, video_profile,
+                         video_color_space, config, request_time,
+                         exception_state);
   }
 
   bool audio_supported = true;
@@ -722,8 +739,8 @@ ScriptPromise MediaCapabilities::decodingInfo(
   DCHECK(config->hasVideo());
 
   // Return early for unsupported configurations.
-  if (!IsVideoConfigurationSupported(config->video(), video_mime_str,
-                                     video_codec_str)) {
+  if (!IsVideoConfigurationSupported(video_mime_str, video_codec_str,
+                                     video_color_space, hdr_metadata_type)) {
     return ScriptPromise::Cast(
         script_state, ToV8(CreateDecodingInfoWith(false), script_state));
   }
@@ -735,8 +752,8 @@ ScriptPromise MediaCapabilities::decodingInfo(
   // undefined. See comment above Promise() in script_promise_resolver.h
   ScriptPromise promise = resolver->Promise();
 
-  GetPerfInfo(video_codec, video_profile, config->video(), request_time,
-              resolver, nullptr /* access */);
+  GetPerfInfo(video_codec, video_profile, video_color_space, config,
+              request_time, resolver, nullptr /* access */);
 
   return promise;
 }
@@ -871,6 +888,7 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
     ScriptState* script_state,
     media::VideoCodec video_codec,
     media::VideoCodecProfile video_profile,
+    media::VideoColorSpace video_color_space,
     const MediaDecodingConfiguration* configuration,
     const base::TimeTicks& request_time,
     ExceptionState& exception_state) {
@@ -994,12 +1012,9 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
   MediaCapabilitiesKeySystemAccessInitializer* initializer =
       MakeGarbageCollected<MediaCapabilitiesKeySystemAccessInitializer>(
           script_state, key_system_config->keySystem(), config_vector,
-          WTF::Bind(
-              &MediaCapabilities::GetPerfInfo, WrapPersistent(this),
-              video_codec, video_profile,
-              WrapPersistent(configuration->hasVideo() ? configuration->video()
-                                                       : nullptr),
-              request_time));
+          WTF::Bind(&MediaCapabilities::GetPerfInfo, WrapPersistent(this),
+                    video_codec, video_profile, video_color_space,
+                    WrapPersistent(configuration), request_time));
 
   // IMPORTANT: Acquire the promise before potentially synchronously resolving
   // it in the code that follows. Otherwise the promise returned to JS will be
@@ -1014,16 +1029,19 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
   return promise;
 }
 
-void MediaCapabilities::GetPerfInfo(media::VideoCodec video_codec,
-                                    media::VideoCodecProfile video_profile,
-                                    const VideoConfiguration* video_config,
-                                    const base::TimeTicks& request_time,
-                                    ScriptPromiseResolver* resolver,
-                                    MediaKeySystemAccess* access) {
+void MediaCapabilities::GetPerfInfo(
+    media::VideoCodec video_codec,
+    media::VideoCodecProfile video_profile,
+    media::VideoColorSpace video_color_space,
+    const MediaDecodingConfiguration* decoding_config,
+    const base::TimeTicks& request_time,
+    ScriptPromiseResolver* resolver,
+    MediaKeySystemAccess* access) {
   ExecutionContext* execution_context = resolver->GetExecutionContext();
   if (!execution_context || execution_context->IsContextDestroyed())
     return;
 
+  const VideoConfiguration* video_config = decoding_config->video();
   if (!video_config) {
     // Audio-only is always smooth and power efficient.
     MediaCapabilitiesDecodingInfo* info = CreateDecodingInfoWith(true);
@@ -1065,6 +1083,11 @@ void MediaCapabilities::GetPerfInfo(media::VideoCodec video_codec,
   decode_history_service_->GetPerfInfo(
       std::move(features), WTF::Bind(&MediaCapabilities::OnPerfHistoryInfo,
                                      WrapPersistent(this), callback_id));
+
+  if (UseGpuFactoriesForPowerEfficient()) {
+    GetGpuFactoriesSupport(callback_id, video_codec, video_profile,
+                           video_color_space, decoding_config);
+  }
 }
 
 void MediaCapabilities::GetPerfInfo_ML(ExecutionContext* execution_context,
@@ -1102,6 +1125,82 @@ void MediaCapabilities::GetPerfInfo_ML(ExecutionContext* execution_context,
   }
 }
 
+void MediaCapabilities::GetGpuFactoriesSupport(
+    int callback_id,
+    media::VideoCodec video_codec,
+    media::VideoCodecProfile video_profile,
+    media::VideoColorSpace video_color_space,
+    const MediaDecodingConfiguration* decoding_config) {
+  DCHECK(UseGpuFactoriesForPowerEfficient());
+  DCHECK(decoding_config->hasVideo());
+  DCHECK(pending_cb_map_.Contains(callback_id));
+  ExecutionContext* execution_context =
+      pending_cb_map_.at(callback_id)->resolver->GetExecutionContext();
+
+  // Frame may become detached in the time it takes us to get callback for
+  // NotifyDecoderSupportKnown. In this case, report false as a means of clean
+  // shutdown.
+  if (!execution_context || execution_context->IsContextDestroyed()) {
+    OnGpuFactoriesSupport(callback_id, false);
+    return;
+  }
+
+  media::GpuVideoAcceleratorFactories* gpu_factories =
+      Platform::Current()->GetGpuFactories();
+  if (!gpu_factories) {
+    OnGpuFactoriesSupport(callback_id, false);
+    return;
+  }
+
+  if (!gpu_factories->IsDecoderSupportKnown()) {
+    gpu_factories->NotifyDecoderSupportKnown(
+        WTF::Bind(&MediaCapabilities::GetGpuFactoriesSupport,
+                  WrapPersistent(this), callback_id, video_codec, video_profile,
+                  video_color_space, WrapPersistent(decoding_config)));
+    return;
+  }
+
+  // TODO(chcunningham): Get the actual scheme and alpha mode from
+  // |decoding_config| once implemented (its already spec'ed).
+  media::EncryptionScheme encryption_scheme =
+      decoding_config->hasKeySystemConfiguration()
+          ? media::EncryptionScheme::kCenc
+          : media::EncryptionScheme::kUnencrypted;
+  media::VideoDecoderConfig::AlphaMode alpha_mode =
+      media::VideoDecoderConfig::AlphaMode::kIsOpaque;
+
+  // A few things aren't known until demuxing time. These include: coded size,
+  // visible rect, and extra data. Make reasonable guesses below. Ideally the
+  // differences won't be make/break GPU acceleration support.
+  VideoConfiguration* video_config = decoding_config->video();
+  gfx::Size natural_size(video_config->width(), video_config->height());
+  media::VideoDecoderConfig config(
+      video_codec, video_profile, alpha_mode, video_color_space,
+      media::VideoTransformation(), natural_size /* coded_size */,
+      gfx::Rect(natural_size) /* visible_rect */, natural_size,
+      media::EmptyExtraData(), encryption_scheme);
+
+  static_assert(media::VideoDecoderImplementation::kAlternate ==
+                    media::VideoDecoderImplementation::kMaxValue,
+                "Keep the array below in sync.");
+  media::VideoDecoderImplementation decoder_impls[] = {
+      media::VideoDecoderImplementation::kDefault,
+      media::VideoDecoderImplementation::kAlternate};
+  media::GpuVideoAcceleratorFactories::Supported supported =
+      media::GpuVideoAcceleratorFactories::Supported::kUnknown;
+  for (const auto& impl : decoder_impls) {
+    supported = gpu_factories->IsDecoderConfigSupported(impl, config);
+    DCHECK_NE(supported,
+              media::GpuVideoAcceleratorFactories::Supported::kUnknown);
+    if (supported == media::GpuVideoAcceleratorFactories::Supported::kTrue)
+      break;
+  }
+
+  OnGpuFactoriesSupport(
+      callback_id,
+      supported == media::GpuVideoAcceleratorFactories::Supported::kTrue);
+}
+
 void MediaCapabilities::ResolveCallbackIfReady(int callback_id) {
   DCHECK(pending_cb_map_.Contains(callback_id));
   PendingCallbackState* pending_cb = pending_cb_map_.at(callback_id);
@@ -1120,6 +1219,11 @@ void MediaCapabilities::ResolveCallbackIfReady(int callback_id) {
       !pending_cb->is_bad_window_prediction_smooth.has_value())
     return;
 
+  if (UseGpuFactoriesForPowerEfficient() &&
+      !pending_cb->is_gpu_factories_supported.has_value()) {
+    return;
+  }
+
   if (!pending_cb->resolver->GetExecutionContext() ||
       pending_cb->resolver->GetExecutionContext()->IsContextDestroyed()) {
     // We're too late! Now that all the callbacks have provided state, its safe
@@ -1132,7 +1236,12 @@ void MediaCapabilities::ResolveCallbackIfReady(int callback_id) {
       MediaCapabilitiesDecodingInfo::Create());
   info->setSupported(true);
   info->setKeySystemAccess(pending_cb->key_system_access);
-  info->setPowerEfficient(*pending_cb->db_is_power_efficient);
+
+  if (UseGpuFactoriesForPowerEfficient()) {
+    info->setPowerEfficient(*pending_cb->is_gpu_factories_supported);
+  } else {
+    info->setPowerEfficient(*pending_cb->db_is_power_efficient);
+  }
 
   // If ML experiment is running: AND available ML signals.
   if (pending_cb->is_bad_window_prediction_smooth.has_value() ||
@@ -1220,6 +1329,17 @@ void MediaCapabilities::OnPerfHistoryInfo(int callback_id,
 
   pending_cb->db_is_smooth = is_smooth;
   pending_cb->db_is_power_efficient = is_power_efficient;
+
+  ResolveCallbackIfReady(callback_id);
+}
+
+void MediaCapabilities::OnGpuFactoriesSupport(int callback_id,
+                                              bool is_supported) {
+  DVLOG(2) << __func__ << " is_supported:" << is_supported;
+  DCHECK(pending_cb_map_.Contains(callback_id));
+  PendingCallbackState* pending_cb = pending_cb_map_.at(callback_id);
+
+  pending_cb->is_gpu_factories_supported = is_supported;
 
   ResolveCallbackIfReady(callback_id);
 }

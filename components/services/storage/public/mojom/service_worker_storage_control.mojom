@@ -9,6 +9,7 @@ import "components/services/storage/public/mojom/service_worker_database.mojom";
 import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/url_response_head.mojom";
+import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
 // This struct represents a serialized service worker registration.
@@ -116,6 +117,9 @@ struct ServiceWorkerUserData {
 // TODO(crbug.com/1055677): Add more methods to cover all ServiceWorkerStorage
 // public methods.
 interface ServiceWorkerStorageControl {
+  // Returns all origins which have service worker registrations.
+  GetRegisteredOrigins() => (array<url.mojom.Origin> origins);
+
   // Reads a stored registration for |client_id|.
   FindRegistrationForClientUrl(url.mojom.Url client_url) =>
       (ServiceWorkerFindRegistrationResult result);

@@ -199,7 +199,7 @@ void EasyUnlockTpmKeyManager::ResetLocalStateForUser(
     return;
 
   DictionaryPrefUpdate update(local_state, prefs::kEasyUnlockLocalStateTpmKeys);
-  update->RemoveWithoutPathExpansion(account_id.GetUserEmail(), NULL);
+  update->RemoveKey(account_id.GetUserEmail());
 }
 
 EasyUnlockTpmKeyManager::EasyUnlockTpmKeyManager(

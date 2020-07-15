@@ -427,7 +427,7 @@ bool AutofillPopupControllerImpl::RemoveSelectedLine() {
 bool AutofillPopupControllerImpl::CanAccept(int id) {
   return id != POPUP_ITEM_ID_SEPARATOR &&
          id != POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE &&
-         id != POPUP_ITEM_ID_TITLE;
+         id != POPUP_ITEM_ID_MIXED_FORM_MESSAGE && id != POPUP_ITEM_ID_TITLE;
 }
 
 bool AutofillPopupControllerImpl::HasSuggestions() {

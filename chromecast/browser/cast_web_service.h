@@ -14,6 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "chromecast/browser/cast_web_view.h"
+#include "chromecast/browser/mojom/cast_web_service.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -35,12 +37,12 @@ class LRURendererCache;
 // they go out of scope, allowing us to keep the pages alive for extra time if
 // needed. CastWebService allows us to synchronously destroy all pages when the
 // system is shutting down, preventing use of freed browser resources.
-class CastWebService {
+class CastWebService : public mojom::CastWebService {
  public:
   CastWebService(content::BrowserContext* browser_context,
                  CastWebViewFactory* web_view_factory,
                  CastWindowManager* window_manager);
-  ~CastWebService();
+  ~CastWebService() override;
 
   CastWebView::Scoped CreateWebView(const CastWebView::CreateParams& params,
                                     const GURL& initial_url);
@@ -59,6 +61,10 @@ class CastWebService {
   // is scheduled.
   void ClearLocalStorage(base::OnceClosure callback);
   void StopGpuProcess(base::OnceClosure callback) const;
+
+  // mojom::CastWebService implementation:
+  void RegisterWebUiClient(mojo::PendingRemote<mojom::WebUiClient> client,
+                           const std::vector<std::string>& hosts) override;
 
  private:
   void OwnerDestroyed(CastWebView* web_view);

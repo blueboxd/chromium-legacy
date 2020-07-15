@@ -766,7 +766,7 @@ void ServiceWorkerRegistry::Start() {
         weak_factory_.GetWeakPtr(),
         base::WrapRefCounted(special_storage_policy_.get()));
 
-    storage()->GetRegisteredOrigins(
+    GetRemoteStorageControl()->GetRegisteredOrigins(
         base::BindOnce(&ServiceWorkerRegistry::DidGetRegisteredOriginsOnStartup,
                        weak_factory_.GetWeakPtr()));
   }
@@ -1358,7 +1358,7 @@ void ServiceWorkerRegistry::ScheduleDeleteAndStartOver() {
 }
 
 void ServiceWorkerRegistry::DidGetRegisteredOriginsOnStartup(
-    std::vector<url::Origin> origins) {
+    const std::vector<url::Origin>& origins) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   for (const auto& origin : origins)
     EnsureRegisteredOriginIsTracked(origin);

@@ -235,6 +235,8 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     [sectionsInfo addObject:self.learnMoreSectionInfo];
   }
 
+  // TODO(crbug.com/1105624): Observe the kArticlesForYouEnabled Pref in order
+  // to hide the DiscoverFeed section if the finch flag is enabled.
   if (IsDiscoverFeedEnabled() &&
       self.contentArticlesEnabled->GetValue()->GetBool()) {
     [sectionsInfo addObject:self.discoverSectionInfo];
@@ -412,6 +414,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
             (ntp_snippets::ContentSuggestionsService*)suggestionsService
                          category:(ntp_snippets::Category)category
                   statusChangedTo:(ntp_snippets::CategoryStatus)status {
+  // Ignore all ContentSuggestionsService if the DiscoverFeed is enabled, if not
+  // these might cause some unecessary section updates and crashes.
+  // TODO(crbug.com/1105624): Stop observing this Service once DiscoverFeed is
+  // launched.
+  if (IsDiscoverFeedEnabled())
+    return;
+
   ContentSuggestionsCategoryWrapper* wrapper =
       [[ContentSuggestionsCategoryWrapper alloc] initWithCategory:category];
   if (![self isCategoryInitOrAvailable:category]) {

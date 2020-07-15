@@ -86,6 +86,8 @@ const char kChromeUIIdentityInternalsHost[] = "identity-internals";
 const char kChromeUIInspectHost[] = "inspect";
 const char kChromeUIInspectURL[] = "chrome://inspect/";
 const char kChromeUIInternalsHost[] = "internals";
+const char kChromeUIInternalsQueryTilesPath[] = "query-tiles";
+const char kChromeUIInternalsWebAppPath[] = "web-app";
 const char kChromeUIInterstitialHost[] = "interstitials";
 const char kChromeUIInterstitialURL[] = "chrome://interstitials/";
 const char kChromeUIInterventionsInternalsHost[] = "interventions-internals";
@@ -540,6 +542,18 @@ const char* const kChromeHostURLs[] = {
     kChromeUIWebRtcLogsHost,
 };
 const size_t kNumberOfChromeHostURLs = base::size(kChromeHostURLs);
+
+// Add chrome://internals/* subpages here to be included in chrome://chrome-urls
+// (about:about).
+const char* const kChromeInternalsPathURLs[] = {
+#if defined(OS_ANDROID)
+    kChromeUIInternalsQueryTilesPath,
+#else
+    kChromeUIInternalsWebAppPath,
+#endif  // defined(OS_ANDROID)
+};
+const size_t kNumberOfChromeInternalsPathURLs =
+    base::size(kChromeInternalsPathURLs);
 
 const char* const kChromeDebugURLs[] = {
     content::kChromeUIBadCastCrashURL,

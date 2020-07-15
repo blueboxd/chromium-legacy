@@ -12,13 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/cdm_config.h"
-#include "media/base/cdm_key_information.h"
-#include "media/base/content_decryption_module.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
-#include "media/base/eme_constants.h"
-#include "media/base/encryption_pattern.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_decoder_config.h"
@@ -32,17 +27,6 @@ using testing::Return;
 
 namespace media {
 namespace remoting {
-namespace {
-
-void VerifyCdmPromiseResultsEqual(const CdmPromiseResult& cdm1,
-                                  const CdmPromiseResult& cdm2) {
-  ASSERT_EQ(cdm1.success(), cdm2.success());
-  ASSERT_EQ(cdm1.exception(), cdm2.exception());
-  ASSERT_EQ(cdm1.system_code(), cdm2.system_code());
-  ASSERT_EQ(cdm1.error_message(), cdm2.error_message());
-}
-
-}  // namespace
 
 class ProtoUtilsTest : public testing::Test {
  protected:
@@ -113,12 +97,11 @@ TEST_F(ProtoUtilsTest, PassValidDecoderBuffer) {
 }
 
 TEST_F(ProtoUtilsTest, AudioDecoderConfigConversionTest) {
-  const std::string extra_data = "ACEG";
-  const EncryptionScheme encryption_scheme = EncryptionScheme::kCenc;
+  const char extra_data[4] = {'A', 'C', 'E', 'G'};
   AudioDecoderConfig audio_config(
       kCodecAAC, kSampleFormatF32, CHANNEL_LAYOUT_MONO, 48000,
-      std::vector<uint8_t>(extra_data.begin(), extra_data.end()),
-      encryption_scheme);
+      std::vector<uint8_t>(std::begin(extra_data), std::end(extra_data)),
+      EncryptionScheme::kUnencrypted);
   ASSERT_TRUE(audio_config.IsValidConfig());
 
   pb::AudioDecoderConfig audio_message;
@@ -164,14 +147,10 @@ TEST_F(ProtoUtilsTest, PipelineStatisticsConversion) {
   pb_video_info->set_decoder_name(original.video_decoder_info.decoder_name);
   pb_video_info->set_is_platform_decoder(
       original.video_decoder_info.is_platform_decoder);
-  pb_video_info->set_has_decrypting_demuxer_stream(
-      original.video_decoder_info.has_decrypting_demuxer_stream);
 
   pb_audio_info->set_decoder_name(original.audio_decoder_info.decoder_name);
   pb_audio_info->set_is_platform_decoder(
       original.audio_decoder_info.is_platform_decoder);
-  pb_audio_info->set_has_decrypting_demuxer_stream(
-      original.audio_decoder_info.has_decrypting_demuxer_stream);
 
   PipelineStatistics converted;
 
@@ -199,72 +178,6 @@ TEST_F(ProtoUtilsTest, VideoDecoderConfigConversionTest) {
   VideoDecoderConfig converted;
   ASSERT_TRUE(ConvertProtoToVideoDecoderConfig(message, &converted));
   ASSERT_TRUE(converted.Matches(video_config));
-}
-
-TEST_F(ProtoUtilsTest, CdmPromiseResultConversion) {
-  CdmPromiseResult success_result = CdmPromiseResult::SuccessResult();
-
-  pb::CdmPromise promise_message;
-  ConvertCdmPromiseToProto(success_result, &promise_message);
-
-  CdmPromiseResult output_result;
-  ASSERT_TRUE(ConvertProtoToCdmPromise(promise_message, &output_result));
-
-  VerifyCdmPromiseResultsEqual(success_result, output_result);
-}
-
-TEST_F(ProtoUtilsTest, CdmPromiseResultWithCdmIdSessionIdConversion) {
-  const int kCdmId = 5;
-  const std::string kSessionId = "session3";
-  CdmPromiseResult success_result = CdmPromiseResult::SuccessResult();
-
-  pb::RpcMessage rpc;
-  rpc.set_handle(1);
-  pb::CdmPromise* promise_message = rpc.mutable_cdm_promise_rpc();
-
-  ConvertCdmPromiseWithSessionIdToProto(success_result, kSessionId,
-                                        promise_message);
-  CdmPromiseResult output_result;
-  std::string converted_session_id;
-  ASSERT_TRUE(ConvertProtoToCdmPromiseWithCdmIdSessionId(
-      rpc, &output_result, nullptr, &converted_session_id));
-  VerifyCdmPromiseResultsEqual(success_result, output_result);
-  ASSERT_EQ(converted_session_id, kSessionId);
-
-  ConvertCdmPromiseWithCdmIdToProto(success_result, kCdmId, promise_message);
-  int converted_cdm_id;
-  output_result = CdmPromiseResult();
-  ASSERT_TRUE(ConvertProtoToCdmPromiseWithCdmIdSessionId(
-      rpc, &output_result, &converted_cdm_id, nullptr));
-  VerifyCdmPromiseResultsEqual(success_result, output_result);
-  ASSERT_EQ(converted_cdm_id, kCdmId);
-}
-
-TEST_F(ProtoUtilsTest, CdmKeyInformationConversion) {
-  std::unique_ptr<CdmKeyInformation> cdm_key_info_1(new CdmKeyInformation(
-      "key_1", CdmKeyInformation::OUTPUT_RESTRICTED, 100));
-  std::unique_ptr<CdmKeyInformation> cdm_key_info_2(
-      new CdmKeyInformation("key_2", CdmKeyInformation::EXPIRED, 11));
-  std::unique_ptr<CdmKeyInformation> cdm_key_info_3(
-      new CdmKeyInformation("key_3", CdmKeyInformation::RELEASED, 22));
-  CdmKeysInfo keys_information;
-  keys_information.push_back(std::move(cdm_key_info_1));
-  keys_information.push_back(std::move(cdm_key_info_2));
-  keys_information.push_back(std::move(cdm_key_info_3));
-
-  pb::CdmClientOnSessionKeysChange key_message;
-  ConvertCdmKeyInfoToProto(keys_information, &key_message);
-
-  CdmKeysInfo key_output_information;
-  ConvertProtoToCdmKeyInfo(key_message, &key_output_information);
-
-  ASSERT_EQ(keys_information.size(), key_output_information.size());
-  for (uint32_t i = 0; i < 3; i++) {
-    ASSERT_EQ(keys_information[i]->key_id, key_output_information[i]->key_id);
-    ASSERT_EQ(keys_information[i]->status, key_output_information[i]->status);
-    ASSERT_EQ(keys_information[i]->system_code,
-              key_output_information[i]->system_code);
-  }
 }
 
 }  // namespace remoting

@@ -157,7 +157,8 @@ bool XShmImagePool::Resize(const gfx::Size& pixel_size) {
     return false;
   }
 
-  SkColorType color_type = ColorTypeForVisual(visual_);
+  SkColorType color_type =
+      ColorTypeForVisual(static_cast<x11::VisualId>(visual_->visualid));
   if (color_type == kUnknown_SkColorType)
     return false;
 

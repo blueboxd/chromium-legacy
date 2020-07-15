@@ -43,11 +43,30 @@ public final class SafeBrowsingBridge {
         return SafeBrowsingBridgeJni.get().getSafeBrowsingExtendedReportingManaged();
     }
 
+    /**
+     * @return The Safe Browsing state. It can be Enhanced Protection, Standard Protection, or No
+     *         Protection.
+     */
+    public static @SafeBrowsingState int getSafeBrowsingState() {
+        return SafeBrowsingBridgeJni.get().getSafeBrowsingState();
+    }
+
+    /**
+     * @param state Set the Safe Browsing state. It can be Enhanced Protection, Standard Protection,
+     *         or No Protection.
+     */
+    public static void setSafeBrowsingState(@SafeBrowsingState int state) {
+        SafeBrowsingBridgeJni.get().setSafeBrowsingState(state);
+    }
+
     @NativeMethods
     interface Natives {
         int umaValueForFile(String path);
         boolean getSafeBrowsingExtendedReportingEnabled();
         void setSafeBrowsingExtendedReportingEnabled(boolean enabled);
         boolean getSafeBrowsingExtendedReportingManaged();
+        @SafeBrowsingState
+        int getSafeBrowsingState();
+        void setSafeBrowsingState(@SafeBrowsingState int state);
     }
 }

@@ -93,6 +93,17 @@ base::string16 LocationBarModelImpl::GetFormattedURL(
                    ~url_formatter::kFormatUrlOmitHTTP;
   }
 
+  // Prevent scheme/trivial subdomain elision when simplified domain field
+  // trials are enabled. In these field trials, OmniboxViewViews handles elision
+  // of scheme and trivial subdomains because they are shown/hidden based on
+  // user interactions with the omnibox.
+  if (OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() ||
+      OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover()) {
+    format_types &= ~url_formatter::kFormatUrlOmitHTTP;
+    format_types &= ~url_formatter::kFormatUrlOmitHTTPS;
+    format_types &= ~url_formatter::kFormatUrlOmitTrivialSubdomains;
+  }
+
   GURL url(GetURL());
   // Special handling for dom-distiller:. Instead of showing internal reader
   // mode URLs, show the original article URL in the omnibox.

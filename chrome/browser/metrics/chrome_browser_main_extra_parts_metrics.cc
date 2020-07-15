@@ -549,6 +549,22 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
                                                             "Disabled"
 #endif
   );
+
+  // Records whether or not the Segment heap is in use.
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::Version::WIN10_20H1) {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("WinSegmentHeap",
+#if BUILDFLAG(ENABLE_SEGMENT_HEAP)
+                                                              "OptedIn"
+#else
+                                                              "OptedOut"
+#endif
+    );
+  } else {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("WinSegmentHeap",
+                                                              "NotSupported");
+  }
+#endif
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {

@@ -72,7 +72,7 @@
 
 #if defined(USE_X11)
 #include "ui/base/ui_base_features.h"
-#include "ui/base/x/x11_util_internal.h"  // nogncheck
+#include "ui/base/x/x11_util.h"  // nogncheck
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1756,7 +1756,7 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
       return readable && HasSelection();
     case ui::TextEditCommand::PASTE:
       ui::Clipboard::GetForCurrentThread()->ReadText(
-          ui::ClipboardBuffer::kCopyPaste, &result);
+          ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &result);
       return editable && !result.empty();
     case ui::TextEditCommand::SELECT_ALL:
       return !GetText().empty() &&
@@ -1872,7 +1872,8 @@ gfx::Point Textfield::GetLastClickRootLocation() const {
 base::string16 Textfield::GetSelectionClipboardText() const {
   base::string16 selection_clipboard_text;
   ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kSelection, &selection_clipboard_text);
+      ui::ClipboardBuffer::kSelection, /* data_dst = */ nullptr,
+      &selection_clipboard_text);
   return selection_clipboard_text;
 }
 

@@ -4,8 +4,11 @@
 
 #include "media/remoting/receiver.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
@@ -301,12 +304,9 @@ void Receiver::OnBufferingStateChange(BufferingState state,
   SendRpcMessageOnMainThread(std::move(rpc));
 }
 
-// TODO: Passes |reason| over.
 void Receiver::OnWaiting(WaitingReason reason) {
-  auto rpc = std::make_unique<pb::RpcMessage>();
-  rpc->set_handle(remote_handle_);
-  rpc->set_proc(pb::RpcMessage::RPC_RC_ONWAITINGFORDECRYPTIONKEY);
-  SendRpcMessageOnMainThread(std::move(rpc));
+  // Media Remoting has not implemented this concept.
+  NOTIMPLEMENTED();
 }
 
 void Receiver::OnAudioConfigChange(const AudioDecoderConfig& config) {

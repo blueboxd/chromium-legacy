@@ -81,19 +81,16 @@
   const allowedOptionalTags = new Set(['IMG']);
 
   /**
-   * This is used to create TrustedHTML.
-   * @type {TrustedTypePolicy|undefined}
+   * This policy maps a given string to a `TrustedHTML` object
+   * without performing any validation. Callsites must ensure
+   * that the resulting object will only be used in inert
+   * documents.
+   * @type {!TrustedTypePolicy}
    */
-  let untrustedHTMLPolicy;
+  let unsanitizedPolicy;
   if (window.trustedTypes) {
-    untrustedHTMLPolicy = trustedTypes.createPolicy('parse-html-subset', {
-      createHTML: untrustedHTML => {
-        // This is safe because the untrusted HTML will be sanitized
-        // later in this function. We are adding this so that
-        // the sanitization will not cause a Trusted Types violation.
-        return untrustedHTML;
-      },
-    });
+    unsanitizedPolicy = trustedTypes.createPolicy(
+        'parse-html-subset', {createHTML: untrustedHTML => untrustedHTML});
   }
 
   /**
@@ -157,7 +154,7 @@
     r.selectNode(doc.body);
 
     if (window.trustedTypes) {
-      s = untrustedHTMLPolicy.createHTML(s);
+      s = unsanitizedPolicy.createHTML(s);
     }
 
     // This does not execute any scripts because the document has no view.

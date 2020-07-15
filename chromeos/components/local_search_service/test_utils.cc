@@ -4,6 +4,7 @@
 
 #include "chromeos/components/local_search_service/test_utils.h"
 
+#include <cmath>
 #include <map>
 #include <string>
 #include <utility>

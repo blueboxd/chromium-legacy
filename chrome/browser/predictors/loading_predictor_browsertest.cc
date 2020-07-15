@@ -1502,7 +1502,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithProxy,
 }
 
 class LoadingPredictorBrowserTestWithOptimizationGuide
-    : public ::testing::WithParamInterface<std::tuple<bool, bool>>,
+    : public ::testing::WithParamInterface<std::tuple<bool, bool, std::string>>,
       public LoadingPredictorBrowserTest {
  public:
   LoadingPredictorBrowserTestWithOptimizationGuide() {
@@ -1528,16 +1528,33 @@ class LoadingPredictorBrowserTestWithOptimizationGuide
     return std::get<1>(GetParam());
   }
 
+  std::string GetSubresourceTypeParam() const {
+    return std::string(std::get<2>(GetParam()));
+  }
+
+  // A predicted subresource.
+  struct Subresource {
+    explicit Subresource(std::string url)
+        : url(url), type(optimization_guide::proto::RESOURCE_TYPE_UNKNOWN) {}
+    Subresource(std::string url, optimization_guide::proto::ResourceType type)
+        : url(url), type(type) {}
+
+    std::string url;
+    optimization_guide::proto::ResourceType type;
+  };
+
   void SetUpOptimizationHint(
       const GURL& url,
-      const std::vector<std::string>& predicted_subresource_urls) {
+      const std::vector<Subresource>& predicted_subresources) {
     auto* optimization_guide_keyed_service =
         OptimizationGuideKeyedServiceFactory::GetForProfile(
             browser()->profile());
     optimization_guide::proto::LoadingPredictorMetadata
         loading_predictor_metadata;
-    for (const auto& subresource_url : predicted_subresource_urls) {
-      loading_predictor_metadata.add_subresources()->set_url(subresource_url);
+    for (const auto& subresource : predicted_subresources) {
+      auto* added = loading_predictor_metadata.add_subresources();
+      added->set_url(subresource.url);
+      added->set_resource_type(subresource.type);
     }
 
     optimization_guide::OptimizationMetadata optimization_metadata;
@@ -1555,7 +1572,9 @@ class LoadingPredictorBrowserTestWithOptimizationGuide
 
 INSTANTIATE_TEST_SUITE_P(,
                          LoadingPredictorBrowserTestWithOptimizationGuide,
-                         testing::Combine(testing::Bool(), testing::Bool()));
+                         testing::Combine(testing::Bool(),
+                                          testing::Bool(),
+                                          testing::Values("")));
 
 IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
                        NavigationHasLocalPredictionNoOptimizationHint) {
@@ -1609,9 +1628,10 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
   ui_test_utils::NavigateToURL(browser(), url);
   ResetNetworkState();
 
-  SetUpOptimizationHint(
-      url, {"http://subresource.com/1", "http://subresource.com/2",
-            "http://otherresource.com/2", "skipsoverinvalidurl/////"});
+  SetUpOptimizationHint(url, {Subresource("http://subresource.com/1"),
+                              Subresource("http://subresource.com/2"),
+                              Subresource("http://otherresource.com/2"),
+                              Subresource("skipsoverinvalidurl/////")});
 
   auto observer = NavigateToURLAsync(url);
   EXPECT_TRUE(observer->WaitForRequestStart());
@@ -1657,9 +1677,10 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
   base::HistogramTester histogram_tester;
 
   GURL url = embedded_test_server()->GetURL("m.hints.com", "/simple.html");
-  SetUpOptimizationHint(
-      url, {"http://subresource.com/1", "http://subresource.com/2",
-            "http://otherresource.com/2", "skipsoverinvalidurl/////"});
+  SetUpOptimizationHint(url, {Subresource("http://subresource.com/1"),
+                              Subresource("http://subresource.com/2"),
+                              Subresource("http://otherresource.com/2"),
+                              Subresource("skipsoverinvalidurl/////")});
   url::Origin origin = url::Origin::Create(url);
   net::NetworkIsolationKey network_isolation_key(origin, origin);
 
@@ -1718,9 +1739,10 @@ IN_PROC_BROWSER_TEST_P(
   auto observer = NavigateToURLAsync(url);
   EXPECT_TRUE(observer->WaitForResponse());
   observer->ResumeNavigation();
-  SetUpOptimizationHint(
-      url, {"http://subresource.com/1", "http://subresource.com/2",
-            "http://otherresource.com/2", "skipsoverinvalidurl/////"});
+  SetUpOptimizationHint(url, {Subresource("http://subresource.com/1"),
+                              Subresource("http://subresource.com/2"),
+                              Subresource("http://otherresource.com/2"),
+                              Subresource("skipsoverinvalidurl/////")});
 
   EXPECT_FALSE(preconnect_manager_observer()->HasHostBeenLookedUp(
       "subresource.com", network_isolation_key));
@@ -1734,10 +1756,11 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
       embedded_test_server()->GetURL("otherhost.com", "/cachetime");
   GURL redirecting_url = embedded_test_server()->GetURL(
       "sometimesredirects.com", "/cached-redirect?" + destination_url.spec());
-  SetUpOptimizationHint(
-      destination_url,
-      {"http://subresource.com/1", "http://subresource.com/2",
-       "http://otherresource.com/2", "skipsoverinvalidurl/////"});
+  SetUpOptimizationHint(destination_url,
+                        {Subresource("http://subresource.com/1"),
+                         Subresource("http://subresource.com/2"),
+                         Subresource("http://otherresource.com/2"),
+                         Subresource("skipsoverinvalidurl/////")});
 
   // Navigate the first time to something on redirecting origin to fill the
   // predictor's database and the HTTP cache.
@@ -1755,10 +1778,11 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
   // applied.
   auto observer = NavigateToURLAsync(redirecting_url);
   EXPECT_TRUE(observer->WaitForResponse());
-  SetUpOptimizationHint(
-      redirecting_url,
-      {"http://subresourceredirect.com/1", "http://subresourceredirect.com/2",
-       "http://otherresourceredirect.com/2", "skipsoverinvalidurl/////"});
+  SetUpOptimizationHint(redirecting_url,
+                        {Subresource("http://subresourceredirect.com/1"),
+                         Subresource("http://subresourceredirect.com/2"),
+                         Subresource("http://otherresourceredirect.com/2"),
+                         Subresource("skipsoverinvalidurl/////")});
   observer->ResumeNavigation();
 
   std::vector<std::string> expected_opt_guide_subresource_hosts = {
@@ -1838,7 +1862,9 @@ class LoadingPredictorPrefetchBrowserTest
     : public LoadingPredictorBrowserTestWithOptimizationGuide {
  public:
   LoadingPredictorPrefetchBrowserTest() {
-    feature_list_.InitAndEnableFeature(features::kLoadingPredictorPrefetch);
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kLoadingPredictorPrefetch,
+        {{"subresource_type", GetSubresourceTypeParam()}});
   }
 
   void SetUp() override {
@@ -1905,18 +1931,27 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorPrefetchBrowserTest,
                                              embedded_test_server()->port()));
 
   // Set up optimization hints.
-  std::vector<std::string> hints(
+  std::vector<Subresource> hints = {
       {"skipsoverinvalidurl/////",
-       embedded_test_server()->GetURL("subresource.com", "/1").spec(),
-       embedded_test_server()->GetURL("subresource.com", "/2").spec(),
-       embedded_test_server()->GetURL("otherresource.com", "/2").spec()});
+       optimization_guide::proto::RESOURCE_TYPE_CSS},
+      {embedded_test_server()->GetURL("subresource.com", "/css").spec(),
+       optimization_guide::proto::RESOURCE_TYPE_CSS},
+      {embedded_test_server()->GetURL("subresource.com", "/image").spec(),
+       optimization_guide::proto::RESOURCE_TYPE_UNKNOWN},
+      {embedded_test_server()->GetURL("otherresource.com", "/js").spec(),
+       optimization_guide::proto::RESOURCE_TYPE_SCRIPT}};
   SetUpOptimizationHint(url, hints);
 
   // Expect these prefetches.
-  std::vector<GURL> requests(
-      {embedded_test_server()->GetURL("subresource.com", "/1"),
-       embedded_test_server()->GetURL("subresource.com", "/2"),
-       embedded_test_server()->GetURL("otherresource.com", "/2")});
+  std::vector<GURL> requests;
+  if (GetSubresourceTypeParam() == "all") {
+    requests = {embedded_test_server()->GetURL("subresource.com", "/css"),
+                embedded_test_server()->GetURL("subresource.com", "/image"),
+                embedded_test_server()->GetURL("otherresource.com", "/js")};
+  } else if (GetSubresourceTypeParam() == "js_css") {
+    requests = {embedded_test_server()->GetURL("subresource.com", "/css"),
+                embedded_test_server()->GetURL("otherresource.com", "/js")};
+  }
   SetExpectedRequests(std::move(requests));
 
   // Start a navigation and observe these prefetches.
@@ -1930,7 +1965,8 @@ INSTANTIATE_TEST_SUITE_P(
     LoadingPredictorPrefetchBrowserTest,
     testing::Combine(
         /*IsLocalPredictionEnabled()=*/testing::Values(false),
-        /*ShouldPreconnectUsingOptimizationGuidePredictions=*/
-        testing::Values(true)));
+        /*ShouldPreconnectUsingOptimizationGuidePredictions()=*/
+        testing::Values(true),
+        /*GetSubresourceType()=*/testing::Values("all", "js_css")));
 
 }  // namespace predictors

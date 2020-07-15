@@ -403,7 +403,8 @@ void SafeBrowsingPrivateEventRouter::OnAnalysisConnectorResult(
     const std::string& trigger,
     safe_browsing::DeepScanAccessPoint /* access_point */,
     const safe_browsing::ContentAnalysisScanResult& result,
-    const int64_t content_size) {
+    const int64_t content_size,
+    safe_browsing::EventResult event_result) {
   if (!IsRealtimeReportingEnabled())
     return;
 
@@ -415,7 +416,7 @@ void SafeBrowsingPrivateEventRouter::OnAnalysisConnectorResult(
         content_size);
   } else if (result.tag == "dlp") {
     OnSensitiveDataEvent(url, file_name, download_digest_sha256, mime_type,
-                         trigger, result, content_size);
+                         trigger, result, content_size, event_result);
   }
 }
 
@@ -466,7 +467,8 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
     const std::string& mime_type,
     const std::string& trigger,
     const safe_browsing::ContentAnalysisScanResult& result,
-    const int64_t content_size) {
+    const int64_t content_size,
+    safe_browsing::EventResult event_result) {
   if (!IsRealtimeReportingEnabled())
     return;
 
@@ -477,7 +479,8 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
              const std::string& url, const std::string& file_name,
              const std::string& download_digest_sha256,
              const std::string& profile_user_name, const std::string& mime_type,
-             const std::string& trigger, const int64_t content_size) {
+             const std::string& trigger, const int64_t content_size,
+             safe_browsing::EventResult event_result) {
             // Create a real-time event dictionary from the arguments and
             // report it.
             base::Value event(base::Value::Type::DICTIONARY);
@@ -492,14 +495,17 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
             if (content_size >= 0)
               event.SetIntKey(kKeyContentSize, content_size);
             event.SetStringKey(kKeyTrigger, trigger);
-            event.SetBoolKey(kKeyClickedThrough, false);
+            event.SetStringKey(
+                kKeyEventResult,
+                safe_browsing::EventResultToString(event_result));
 
             AddAnalysisConnectorVerdictToEvent(result, &event);
 
             return event;
           },
           result, url.spec(), file_name, download_digest_sha256,
-          GetProfileUserName(), mime_type, trigger, content_size));
+          GetProfileUserName(), mime_type, trigger, content_size,
+          event_result));
 }
 
 void SafeBrowsingPrivateEventRouter::OnAnalysisConnectorWarningBypassed(
@@ -540,7 +546,9 @@ void SafeBrowsingPrivateEventRouter::OnAnalysisConnectorWarningBypassed(
             if (content_size >= 0)
               event.SetIntKey(kKeyContentSize, content_size);
             event.SetStringKey(kKeyTrigger, trigger);
-            event.SetBoolKey(kKeyClickedThrough, true);
+            event.SetStringKey(kKeyEventResult,
+                               safe_browsing::EventResultToString(
+                                   safe_browsing::EventResult::BYPASSED));
 
             AddAnalysisConnectorVerdictToEvent(result, &event);
 

@@ -305,16 +305,15 @@ cr.define('cr.ui', function() {
       /**
        * This is used to create TrustedHTML.
        *
-       * @type {TrustedTypePolicy}
+       * @type {!TrustedTypePolicy}
        */
-      const staticHTMLPolicy =
-          trustedTypes.createPolicy('cr-ui-tree-js-static', {
-            createHTML: () => {
-              return htmlString;
-            },
-          });
+      const staticHtmlPolicy = trustedTypes.createPolicy(
+          'cr-ui-tree-js-static', {createHTML: () => htmlString});
 
-      treeItem.innerHTML = staticHTMLPolicy.createHTML('');
+      // TODO(Jun.Kokatsu@microsoft.com): remove an empty string argument
+      // once supported.
+      // https://github.com/w3c/webappsec-trusted-types/issues/278
+      treeItem.innerHTML = staticHtmlPolicy.createHTML('');
     } else {
       treeItem.innerHTML = htmlString;
     }

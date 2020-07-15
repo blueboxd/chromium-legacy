@@ -136,7 +136,8 @@ class SafeBrowsingPrivateEventRouter
       const std::string& trigger,
       safe_browsing::DeepScanAccessPoint access_point,
       const safe_browsing::ContentAnalysisScanResult& result,
-      const int64_t content_size);
+      const int64_t content_size,
+      safe_browsing::EventResult event_result);
 
   // Notifies listeners that an analysis connector violation was bypassed.
   void OnAnalysisConnectorWarningBypassed(
@@ -275,7 +276,8 @@ class SafeBrowsingPrivateEventRouter
       const std::string& mime_type,
       const std::string& trigger,
       const safe_browsing::ContentAnalysisScanResult& result,
-      const int64_t content_size);
+      const int64_t content_size,
+      safe_browsing::EventResult event_result);
 
   content::BrowserContext* context_;
   signin::IdentityManager* identity_manager_ = nullptr;

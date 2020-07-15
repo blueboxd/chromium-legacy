@@ -194,16 +194,7 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SecureWebSocketSplitRecords) {
   EXPECT_EQ("PASS", WaitAndGetTitle());
 }
 
-// Flaky failing on Win10 only.  http://crbug.com/616958
-#if defined(OS_WIN)
-#define MAYBE_SendCloseFrameWhenTabIsClosed \
-    DISABLED_SendCloseFrameWhenTabIsClosed
-#else
-#define MAYBE_SendCloseFrameWhenTabIsClosed SendCloseFrameWhenTabIsClosed
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest,
-                       MAYBE_SendCloseFrameWhenTabIsClosed) {
+IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SendCloseFrameWhenTabIsClosed) {
   // Launch a WebSocket server.
   ASSERT_TRUE(ws_server_.Start());
 

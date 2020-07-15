@@ -93,14 +93,6 @@ HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
       return HttpResponseInfo::CONNECTION_INFO_QUIC_43;
     case quic::QUIC_VERSION_46:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_46;
-    case quic::QUIC_VERSION_48:
-      return quic_version.UsesTls()
-                 ? HttpResponseInfo::CONNECTION_INFO_QUIC_T048
-                 : HttpResponseInfo::CONNECTION_INFO_QUIC_Q048;
-    case quic::QUIC_VERSION_49:
-      return quic_version.UsesTls()
-                 ? HttpResponseInfo::CONNECTION_INFO_QUIC_T049
-                 : HttpResponseInfo::CONNECTION_INFO_QUIC_Q049;
     case quic::QUIC_VERSION_50:
       return quic_version.UsesTls()
                  ? HttpResponseInfo::CONNECTION_INFO_QUIC_T050

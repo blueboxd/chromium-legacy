@@ -641,11 +641,7 @@ void AutocompleteController::UpdateResult(
     result_.ConvertOpenTabMatches(provider_client_.get(), &input_);
 
   if (OmniboxFieldTrial::IsPedalSuggestionsEnabled()) {
-    if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
-      result_.ConvertInSuggestionPedalMatches(provider_client_.get());
-    } else {
-      result_.AppendDedicatedPedalMatches(provider_client_.get(), input_);
-    }
+    result_.ConvertInSuggestionPedalMatches(provider_client_.get());
   }
 
   // Sort the matches and trim to a small number of "best" matches.

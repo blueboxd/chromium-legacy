@@ -96,6 +96,9 @@ extern const char kCastMemoryPressureModerateFraction[];
 
 extern const char kDisableMojoRenderer[];
 
+// OTA update related switches.
+extern const char kForceUpdateRemoteUrl[];
+
 extern const char kSysInfoFilePath[];
 
 }  // namespace switches

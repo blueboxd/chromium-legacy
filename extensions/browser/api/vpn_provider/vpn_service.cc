@@ -303,43 +303,38 @@ void VpnService::OnConfigurationRemoved(const std::string& service_path,
   DestroyConfigurationInternal(configuration);
 }
 
-void VpnService::OnGetPropertiesSuccess(
-    const std::string& service_path,
-    const base::DictionaryValue& dictionary) {
-  if (service_path_to_configuration_map_.find(service_path) !=
-      service_path_to_configuration_map_.end()) {
+void VpnService::OnGetShillProperties(const std::string& service_path,
+                                      base::Optional<base::Value> dictionary) {
+  if (!dictionary || service_path_to_configuration_map_.find(service_path) !=
+                         service_path_to_configuration_map_.end()) {
     return;
   }
-  std::string vpn_type;
-  std::string extension_id;
-  std::string type;
-  std::string configuration_name;
-  if (!dictionary.GetString(shill::kProviderTypeProperty, &vpn_type) ||
-      !dictionary.GetString(shill::kProviderHostProperty, &extension_id) ||
-      !dictionary.GetString(shill::kTypeProperty, &type) ||
-      !dictionary.GetString(shill::kNameProperty, &configuration_name) ||
-      vpn_type != shill::kProviderThirdPartyVpn || type != shill::kTypeVPN) {
+  const std::string* vpn_type =
+      dictionary->FindStringPath(shill::kProviderTypeProperty);
+  const std::string* extension_id =
+      dictionary->FindStringPath(shill::kProviderHostProperty);
+  const std::string* type = dictionary->FindStringPath(shill::kTypeProperty);
+  const std::string* configuration_name =
+      dictionary->FindStringPath(shill::kNameProperty);
+  if (!vpn_type || !extension_id || !type || !configuration_name ||
+      *vpn_type != shill::kProviderThirdPartyVpn || *type != shill::kTypeVPN) {
     return;
   }
 
   if (!extension_registry_->GetExtensionById(
-          extension_id, extensions::ExtensionRegistry::ENABLED)) {
+          *extension_id, extensions::ExtensionRegistry::ENABLED)) {
     // Does not belong to this instance of VpnService.
     return;
   }
 
-  const std::string key = GetKey(extension_id, configuration_name);
+  const std::string key = GetKey(*extension_id, *configuration_name);
   VpnConfiguration* configuration =
-      CreateConfigurationInternal(extension_id, configuration_name, key);
+      CreateConfigurationInternal(*extension_id, *configuration_name, key);
   configuration->set_service_path(service_path);
   service_path_to_configuration_map_[service_path] = configuration;
   shill_client_->AddShillThirdPartyVpnObserver(configuration->object_path(),
                                                configuration);
 }
-
-void VpnService::OnGetPropertiesFailure(
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {}
 
 void VpnService::NetworkListChanged() {
   NetworkStateHandler::NetworkStateList network_list;
@@ -352,11 +347,8 @@ void VpnService::NetworkListChanged() {
     }
 
     network_configuration_handler_->GetShillProperties(
-        iter->path(),
-        base::BindOnce(&VpnService::OnGetPropertiesSuccess,
-                       weak_factory_.GetWeakPtr()),
-        base::Bind(&VpnService::OnGetPropertiesFailure,
-                   weak_factory_.GetWeakPtr()));
+        iter->path(), base::BindOnce(&VpnService::OnGetShillProperties,
+                                     weak_factory_.GetWeakPtr()));
   }
 }
 

@@ -30,6 +30,17 @@ cr.define('ntp', function() {
   const APP_IMG_SIZE_FRACTION = 4 / 5;
 
   /**
+   * This policy maps a given string to a `TrustedHTML` object
+   * without performing any validation. Callsites must ensure
+   * that the resulting object will only be used in inert
+   * documents.
+   *
+   * @type {!TrustedTypePolicy}
+   */
+  const unsanitizedPolicy = trustedTypes.createPolicy(
+      'apps-page-js', {createHTML: untrustedHTML => untrustedHTML});
+
+  /**
    * App context menu. The class is designed to be used as a singleton with
    * the app that is currently showing a context menu stored in this.app_.
    * @constructor
@@ -752,7 +763,7 @@ cr.define('ntp', function() {
         // It's important that we don't attach this node to the document
         // because it might contain scripts.
         const doc = document.implementation.createHTMLDocument();
-        doc.body.innerHTML = html;
+        doc.body.innerHTML = unsanitizedPolicy.createHTML(html);
         title = doc.body.textContent;
       }
 

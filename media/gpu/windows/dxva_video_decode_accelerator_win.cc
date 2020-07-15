@@ -612,6 +612,8 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       use_keyed_mutex_(false),
       using_angle_device_(false),
       using_debug_device_(false),
+      enable_accelerated_av1_decode_(
+          !workarounds.disable_accelerated_av1_decode),
       enable_accelerated_vpx_decode_(
           !workarounds.disable_accelerated_vpx_decode),
       processing_config_changed_(false),
@@ -1423,7 +1425,8 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
       using_ms_vpx_mft_ = true;
   }
 
-  if (base::FeatureList::IsEnabled(kMediaFoundationAV1Decoding) &&
+  if (enable_accelerated_av1_decode_ &&
+      base::FeatureList::IsEnabled(kMediaFoundationAV1Decoding) &&
       (profile >= AV1PROFILE_MIN && profile <= AV1PROFILE_MAX)) {
     codec_ = kCodecAV1;
     clsid = CLSID_CAV1DecoderMFT;

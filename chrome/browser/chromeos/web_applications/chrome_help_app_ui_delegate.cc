@@ -27,6 +27,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "url/gurl.h"
 
@@ -66,6 +67,7 @@ void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
                                 &customization_id);
   provider->GetMachineStatistic(chromeos::system::kHardwareClassKey, &hwid);
   source->AddString("customizationId", customization_id);
+  source->AddString("deviceName", ui::GetChromeOSDeviceName());
   source->AddString("hwid", hwid);
 
   // Add any features that have been enabled.

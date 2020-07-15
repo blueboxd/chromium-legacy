@@ -243,7 +243,8 @@ SupportedResolutionRangeMap GetSupportedD3D11VideoDecoderResolutions(
       gfx::Size(8192, 4320), gfx::Size(8192, 8192)};
 
   const bool should_test_for_av1_support =
-      base::FeatureList::IsEnabled(kMediaFoundationAV1Decoding);
+      base::FeatureList::IsEnabled(kMediaFoundationAV1Decoding) &&
+      !workarounds.disable_accelerated_av1_decode;
 
   // Enumerate supported video profiles and look for the known profile for each
   // codec. We first look through the the decoder profiles so we don't run N

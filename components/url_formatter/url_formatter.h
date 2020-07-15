@@ -31,6 +31,7 @@
 class GURL;
 
 namespace url {
+struct Component;
 struct Parsed;
 }
 
@@ -191,6 +192,11 @@ IDNConversionResult UnsafeIDNToUnicodeWithDetails(base::StringPiece host);
 // |host| is only eligible for www-stripping if it is not a private or intranet
 // hostname, and if "www." is part of the subdomain (not the eTLD+1).
 std::string StripWWW(const std::string& host);
+
+// If the |host| component of |url| begins with a "www." prefix (and meets the
+// conditions described for StripWWW), then updates |host| to strip the "www."
+// prefix.
+void StripWWWFromHostComponent(const std::string& url, url::Component* host);
 
 // Returns skeleton strings computed from |host| for spoof checking.
 Skeletons GetSkeletons(const base::string16& host);

@@ -58,23 +58,23 @@ class BluetoothAdvertisementServiceProviderImpl
     exported_object_->ExportMethod(
         bluetooth_advertisement::kBluetoothAdvertisementInterface,
         bluetooth_advertisement::kRelease,
-        base::Bind(&BluetoothAdvertisementServiceProviderImpl::Release,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&BluetoothAdvertisementServiceProviderImpl::Release,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BluetoothAdvertisementServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
 
     // Export dbus property methods.
     exported_object_->ExportMethod(
         dbus::kDBusPropertiesInterface, dbus::kDBusPropertiesGet,
-        base::Bind(&BluetoothAdvertisementServiceProviderImpl::Get,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&BluetoothAdvertisementServiceProviderImpl::Get,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BluetoothAdvertisementServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         dbus::kDBusPropertiesInterface, dbus::kDBusPropertiesGetAll,
-        base::Bind(&BluetoothAdvertisementServiceProviderImpl::GetAll,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&BluetoothAdvertisementServiceProviderImpl::GetAll,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BluetoothAdvertisementServiceProviderImpl::OnExported,
                        weak_ptr_factory_.GetWeakPtr()));
   }

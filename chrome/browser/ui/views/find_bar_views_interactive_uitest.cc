@@ -567,7 +567,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_PasteWithoutTextChange) {
 
   base::string16 str;
   ui::Clipboard::GetForCurrentThread()->ReadText(
-      ui::ClipboardBuffer::kCopyPaste, &str);
+      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &str);
 
   // Make sure the text is copied successfully.
   EXPECT_EQ(ASCIIToUTF16("a"), str);

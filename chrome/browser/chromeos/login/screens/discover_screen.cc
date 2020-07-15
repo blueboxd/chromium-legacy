@@ -29,6 +29,24 @@ std::string DiscoverScreen::GetResultString(Result result) {
   }
 }
 
+bool DiscoverScreen::ShouldSkip() {
+  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
+      !chromeos::quick_unlock::IsPinEnabled(prefs) ||
+      chromeos::quick_unlock::IsPinDisabledByPolicy(prefs)) {
+    return true;
+  }
+
+  // Skip the screen if the device is not in tablet mode, unless tablet mode
+  // first user run is forced on the device.
+  if (!ash::TabletMode::Get()->InTabletMode() &&
+      !chromeos::switches::ShouldOobeUseTabletModeFirstRun()) {
+    return true;
+  }
+
+  return false;
+}
+
 DiscoverScreen::DiscoverScreen(DiscoverScreenView* view,
                                const ScreenExitCallback& exit_callback)
     : BaseScreen(DiscoverScreenView::kScreenId, OobeScreenPriority::DEFAULT),
@@ -43,22 +61,10 @@ DiscoverScreen::~DiscoverScreen() {
 }
 
 bool DiscoverScreen::MaybeSkip(WizardContext* context) {
-  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
-      !chromeos::quick_unlock::IsPinEnabled(prefs) ||
-      chromeos::quick_unlock::IsPinDisabledByPolicy(prefs)) {
+  if (ShouldSkip()) {
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;
   }
-
-  // Skip the screen if the device is not in tablet mode, unless tablet mode
-  // first user run is forced on the device.
-  if (!ash::TabletMode::Get()->InTabletMode() &&
-      !chromeos::switches::ShouldOobeUseTabletModeFirstRun()) {
-    exit_callback_.Run(Result::NOT_APPLICABLE);
-    return true;
-  }
-
   return false;
 }
 

@@ -100,7 +100,7 @@ TEST_F(ClipboardAuraTest, WriteToClipboard) {
   std::string clipboard_data;
   ui::Clipboard* aura_clipboard = ui::Clipboard::GetForCurrentThread();
   aura_clipboard->ReadAsciiText(ui::ClipboardBuffer::kCopyPaste,
-                                &clipboard_data);
+                                /* data_dst = */ nullptr, &clipboard_data);
 
   EXPECT_EQ(clipboard_data, "Test data.")
       << "InjectClipboardEvent should write to aura clipboard";

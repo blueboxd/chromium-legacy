@@ -2809,7 +2809,7 @@ void BrowserTestClipboardScope::SetText(const std::string& text) {
 
 void BrowserTestClipboardScope::GetText(std::string* result) {
   ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
-      ui::ClipboardBuffer::kCopyPaste, result);
+      ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, result);
 }
 
 class FrameFocusedObserver::FrameTreeNodeObserverImpl

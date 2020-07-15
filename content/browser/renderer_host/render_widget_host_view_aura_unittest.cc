@@ -6196,7 +6196,8 @@ TEST_F(InputMethodStateAuraTest, SelectedTextCopiedToClipboard) {
 
     // Retrieve the selected text from clipboard and verify it is as expected.
     base::string16 result_text;
-    clipboard->ReadText(ui::ClipboardBuffer::kSelection, &result_text);
+    clipboard->ReadText(ui::ClipboardBuffer::kSelection,
+                        /* data_dst = */ nullptr, &result_text);
     EXPECT_EQ(expected_text, result_text);
   }
 }

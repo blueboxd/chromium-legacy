@@ -14,8 +14,6 @@ import org.chromium.payments.mojom.PaymentRequest;
 import org.chromium.payments.mojom.PaymentRequestClient;
 import org.chromium.payments.mojom.PaymentValidationErrors;
 
-import java.lang.ref.WeakReference;
-
 /**
  * Android implementation of the PaymentRequest service defined in
  * third_party/blink/public/mojom/payments/payment_request.mojom. This component provides the parts
@@ -46,10 +44,10 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
 
         /**
          * Set a weak reference to the client of this delegate.
-         * @param componentPaymentRequestImpl A weak reference to the client of this delegate.
+         * @param componentPaymentRequestImpl The client of this delegate.
          */
         void setComponentPaymentRequestImpl(
-                WeakReference<ComponentPaymentRequestImpl> componentPaymentRequestImpl);
+                ComponentPaymentRequestImpl componentPaymentRequestImpl);
 
         /**
          * @return The JourneyLogger of PaymentRequestImpl.
@@ -68,7 +66,7 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
      */
     public ComponentPaymentRequestImpl(ComponentPaymentRequestDelegate delegate) {
         mDelegate = delegate;
-        mDelegate.setComponentPaymentRequestImpl(new WeakReference<>(this));
+        mDelegate.setComponentPaymentRequestImpl(this);
     }
 
     @Override
@@ -146,7 +144,8 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
     }
 
     /**
-     * Get the PaymentRequestClient.
+     * Get the PaymentRequestClient. To close the client, the caller should call {@link
+     * #closeClient()} instead of calling {@link PaymentRequest#close()} directly.
      * @return The client.
      */
     @Nullable

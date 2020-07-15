@@ -61,7 +61,7 @@ struct OptionalStorageBase {
   template <class... Args>
   void Init(Args&&... args) {
     DCHECK(!is_populated_);
-    ::new (&value_) T(std::forward<Args>(args)...);
+    ::new (std::addressof(value_)) T(std::forward<Args>(args)...);
     is_populated_ = true;
   }
 
@@ -111,7 +111,7 @@ struct OptionalStorageBase<T, true /* trivially destructible */> {
   template <class... Args>
   void Init(Args&&... args) {
     DCHECK(!is_populated_);
-    ::new (&value_) T(std::forward<Args>(args)...);
+    ::new (std::addressof(value_)) T(std::forward<Args>(args)...);
     is_populated_ = true;
   }
 
@@ -607,12 +607,12 @@ class OPTIONAL_DECLSPEC_EMPTY_BASES Optional
 
   constexpr const T* operator->() const {
     CHECK(storage_.is_populated_);
-    return &storage_.value_;
+    return std::addressof(storage_.value_);
   }
 
   constexpr T* operator->() {
     CHECK(storage_.is_populated_);
-    return &storage_.value_;
+    return std::addressof(storage_.value_);
   }
 
   constexpr const T& operator*() const & {

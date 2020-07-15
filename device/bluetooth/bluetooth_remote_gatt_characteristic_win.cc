@@ -253,9 +253,9 @@ void BluetoothRemoteGattCharacteristicWin::SubscribeToNotifications(
           &BluetoothRemoteGattCharacteristicWin::GattEventRegistrationCallback,
           weak_ptr_factory_.GetWeakPtr(), std::move(callback),
           std::move(error_callback)),
-      base::Bind(&BluetoothRemoteGattCharacteristicWin::
-                     OnGattCharacteristicValueChanged,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&BluetoothRemoteGattCharacteristicWin::
+                              OnGattCharacteristicValueChanged,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothRemoteGattCharacteristicWin::UnsubscribeFromNotifications(

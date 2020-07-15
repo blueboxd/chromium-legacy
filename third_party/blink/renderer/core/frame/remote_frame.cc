@@ -131,6 +131,11 @@ void RemoteFrame::Trace(Visitor* visitor) const {
 
 void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
                            WebFrameLoadType frame_load_type) {
+  // RemoteFrame::Navigate doesn't support policies like
+  // kNavigationPolicyNewForegroundTab - such policies need to be handled via
+  // local frames.
+  DCHECK_EQ(kNavigationPolicyCurrentTab, frame_request.GetNavigationPolicy());
+
   if (!navigation_rate_limiter().CanProceed())
     return;
 

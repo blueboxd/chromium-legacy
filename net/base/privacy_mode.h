@@ -18,6 +18,8 @@ enum PrivacyMode {
   PRIVACY_MODE_ENABLED_WITHOUT_CLIENT_CERTS = 2,
 };
 
+const char* PrivacyModeToDebugString(PrivacyMode privacy_mode);
+
 }  // namespace net
 
 #endif  // NET_BASE_PRIVACY_MODE_H_

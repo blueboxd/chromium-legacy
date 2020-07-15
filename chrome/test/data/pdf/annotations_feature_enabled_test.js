@@ -89,7 +89,9 @@ chrome.test.runTests([
       // Pen defaults.
       const viewerPdfToolbar =
           viewer.shadowRoot.querySelector('viewer-pdf-toolbar');
-      const pen = viewerPdfToolbar.$$('#pen');
+      const viewerAnnotationsBar =
+          viewerPdfToolbar.shadowRoot.querySelector('viewer-annotations-bar');
+      const pen = viewerAnnotationsBar.shadowRoot.querySelector('#pen');
       pen.click();
       chrome.test.assertEq('pen', tool.tool);
       chrome.test.assertEq(0.1429, tool.size);
@@ -97,7 +99,8 @@ chrome.test.runTests([
 
 
       // Selected size and color.
-      const penOptions = viewerPdfToolbar.$$('#pen viewer-pen-options');
+      const penOptions = viewerAnnotationsBar.shadowRoot.querySelector(
+          '#pen viewer-pen-options');
       penOptions.$$('#sizes [value="1"]').click();
       penOptions.$$('#colors [value="#00b0ff"]').click();
       await animationFrame();
@@ -107,7 +110,7 @@ chrome.test.runTests([
 
 
       // Eraser defaults.
-      viewerPdfToolbar.$$('#eraser').click();
+      viewerAnnotationsBar.shadowRoot.querySelector('#eraser').click();
       chrome.test.assertEq('eraser', tool.tool);
       chrome.test.assertEq(1, tool.size);
       chrome.test.assertEq(null, tool.color);
@@ -121,15 +124,15 @@ chrome.test.runTests([
 
 
       // Highlighter defaults.
-      viewerPdfToolbar.$$('#highlighter').click();
+      viewerAnnotationsBar.shadowRoot.querySelector('#highlighter').click();
       chrome.test.assertEq('highlighter', tool.tool);
       chrome.test.assertEq(0.7143, tool.size);
       chrome.test.assertEq('#ffbc00', tool.color);
 
 
       // Need to expand to use this color.
-      const highlighterOptions =
-          viewerPdfToolbar.$$('#highlighter viewer-pen-options');
+      const highlighterOptions = viewerAnnotationsBar.shadowRoot.querySelector(
+          '#highlighter viewer-pen-options');
       highlighterOptions.$$('#colors [value="#d1c4e9"]').click();
       chrome.test.assertEq('#ffbc00', tool.color);
 
@@ -147,8 +150,10 @@ chrome.test.runTests([
       const inkHost = contentElement();
       const viewerPdfToolbar =
           viewer.shadowRoot.querySelector('viewer-pdf-toolbar');
-      const undo = viewerPdfToolbar.$$('#undo');
-      const redo = viewerPdfToolbar.$$('#redo');
+      const viewerAnnotationsBar =
+          viewerPdfToolbar.shadowRoot.querySelector('viewer-annotations-bar');
+      const undo = viewerAnnotationsBar.shadowRoot.querySelector('#undo');
+      const redo = viewerAnnotationsBar.shadowRoot.querySelector('#redo');
 
       const pen = {
         pointerId: 2,

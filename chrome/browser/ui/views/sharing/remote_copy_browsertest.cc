@@ -124,14 +124,14 @@ class RemoteCopyBrowserTestBase : public InProcessBrowserTest {
   std::vector<base::string16> GetAvailableClipboardTypes() {
     std::vector<base::string16> types;
     ui::Clipboard::GetForCurrentThread()->ReadAvailableTypes(
-        ui::ClipboardBuffer::kCopyPaste, &types);
+        ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &types);
     return types;
   }
 
   std::string ReadClipboardText() {
     base::string16 text;
     ui::Clipboard::GetForCurrentThread()->ReadText(
-        ui::ClipboardBuffer::kCopyPaste, &text);
+        ui::ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr, &text);
     return base::UTF16ToUTF8(text);
   }
 

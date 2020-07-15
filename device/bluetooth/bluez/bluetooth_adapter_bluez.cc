@@ -1524,8 +1524,8 @@ void BluetoothAdapterBlueZ::UpdateFilter(
   // TODO(sonnysasaka): Put it back here when BlueZ bug is fixed.
   SetDiscoveryFilter(
       std::move(discovery_filter),
-      base::BindRepeating(copyable_callback, /*is_error*/ false,
-                          UMABluetoothDiscoverySessionOutcome::SUCCESS),
+      base::BindOnce(copyable_callback, /*is_error=*/false,
+                     UMABluetoothDiscoverySessionOutcome::SUCCESS),
       base::BindOnce(copyable_callback, true));
   return;
 }
@@ -1546,17 +1546,17 @@ void BluetoothAdapterBlueZ::StartScanWithFilter(
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   SetDiscoveryFilter(
       std::move(discovery_filter),
-      base::BindRepeating(
+      base::BindOnce(
           &BluetoothAdapterBlueZ::OnPreSetDiscoveryFilter,
           weak_ptr_factory_.GetWeakPtr(),
-          base::BindRepeating(copyable_callback, /*is_error=*/false,
-                              UMABluetoothDiscoverySessionOutcome::SUCCESS),
-          base::BindRepeating(copyable_callback, true)),
+          base::BindOnce(copyable_callback, /*is_error=*/false,
+                         UMABluetoothDiscoverySessionOutcome::SUCCESS),
+          base::BindOnce(copyable_callback, true)),
       base::BindOnce(
           &BluetoothAdapterBlueZ::OnPreSetDiscoveryFilterError,
           weak_ptr_factory_.GetWeakPtr(),
-          base::BindRepeating(copyable_callback, /*is_error=*/false,
-                              UMABluetoothDiscoverySessionOutcome::SUCCESS),
+          base::BindOnce(copyable_callback, /*is_error=*/false,
+                         UMABluetoothDiscoverySessionOutcome::SUCCESS),
           base::BindOnce(copyable_callback, true)));
 }
 
@@ -1585,8 +1585,8 @@ void BluetoothAdapterBlueZ::StopScan(DiscoverySessionResultCallback callback) {
       base::BindOnce(
           &BluetoothAdapterBlueZ::OnStopDiscovery,
           weak_ptr_factory_.GetWeakPtr(),
-          base::BindRepeating(copyable_callback, /*is_error=*/false,
-                              UMABluetoothDiscoverySessionOutcome::SUCCESS)),
+          base::BindOnce(copyable_callback, /*is_error=*/false,
+                         UMABluetoothDiscoverySessionOutcome::SUCCESS)),
       base::BindOnce(&BluetoothAdapterBlueZ::OnStopDiscoveryError,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::BindOnce(copyable_callback, /*is_error=*/true)));

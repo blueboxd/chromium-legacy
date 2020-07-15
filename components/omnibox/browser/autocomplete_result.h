@@ -70,12 +70,6 @@ class AutocompleteResult {
                    TemplateURLService* template_url_service,
                    const AutocompleteMatch* preserve_default_match = nullptr);
 
-  // Creates and adds any dedicated Pedal matches triggered by existing matches.
-  // This should be the only place where new Pedal suggestions are introduced
-  // because it doesn't dedupe; it just carefully avoids adding duplicates.
-  void AppendDedicatedPedalMatches(AutocompleteProviderClient* client,
-                                   const AutocompleteInput& input);
-
   // Sets |pedal| in matches that have Pedal-triggering text.
   void ConvertInSuggestionPedalMatches(AutocompleteProviderClient* client);
 

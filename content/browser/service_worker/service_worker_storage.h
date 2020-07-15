@@ -71,7 +71,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   using ResourceList =
       std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>;
   using GetRegisteredOriginsCallback =
-      base::OnceCallback<void(std::vector<url::Origin> origins)>;
+      base::OnceCallback<void(const std::vector<url::Origin>& origins)>;
   using FindRegistrationDataCallback = base::OnceCallback<void(
       storage::mojom::ServiceWorkerRegistrationDataPtr data,
       std::unique_ptr<ResourceList> resources,

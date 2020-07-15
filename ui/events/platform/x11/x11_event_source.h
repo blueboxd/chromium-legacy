@@ -122,7 +122,7 @@ class EVENTS_EXPORT ScopedXEventDispatcher {
 class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
                                      public x11::Connection::Delegate {
  public:
-  explicit X11EventSource(XDisplay* display);
+  explicit X11EventSource(x11::Connection* connection);
   ~X11EventSource() override;
 
   static bool HasInstance();
@@ -132,7 +132,7 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
   // available X events.
   void DispatchXEvents();
 
-  XDisplay* display() { return display_; }
+  x11::Connection* connection() { return connection_; }
 
   // Returns the timestamp of the event currently being dispatched.  Falls back
   // on GetCurrentServerTime() if there's no event being dispatched, or if the
@@ -208,7 +208,7 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
   std::unique_ptr<X11EventWatcher> watcher_;
 
   // The connection to the X11 server used to receive the events.
-  XDisplay* display_;
+  x11::Connection* connection_;
 
   // Event currently being dispatched.
   x11::Event* dispatching_event_;

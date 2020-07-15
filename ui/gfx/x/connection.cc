@@ -91,6 +91,17 @@ Connection::Connection() : XProto(this), display_(OpenNewXDisplay()) {
   ExtensionManager::Init(this);
   if (auto response = bigreq().Enable({}).Sync())
     extended_max_request_length_ = response->maximum_request_length;
+
+  const Format* formats[256];
+  memset(formats, 0, sizeof(formats));
+  for (const auto& format : setup_.pixmap_formats)
+    formats[format.depth] = &format;
+
+  for (const auto& depth : default_screen().allowed_depths) {
+    const Format* format = formats[depth.depth];
+    for (const auto& visual : depth.visuals)
+      default_screen_visuals_[visual.visual_id] = VisualInfo{format, &visual};
+  }
 }
 
 Connection::~Connection() {
@@ -147,6 +158,14 @@ void Connection::ReadResponses() {
 
 bool Connection::HasPendingResponses() const {
   return !events_.empty() || HasNextResponse();
+}
+
+const Connection::VisualInfo* Connection::GetVisualInfoFromId(
+    VisualId id) const {
+  auto it = default_screen_visuals_.find(id);
+  if (it != default_screen_visuals_.end())
+    return &it->second;
+  return nullptr;
 }
 
 void Connection::Dispatch(Delegate* delegate) {

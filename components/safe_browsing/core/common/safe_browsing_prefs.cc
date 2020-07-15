@@ -138,6 +138,19 @@ SafeBrowsingState GetSafeBrowsingState(const PrefService& prefs) {
   }
 }
 
+void SetSafeBrowsingState(PrefService* prefs, SafeBrowsingState state) {
+  if (state == ENHANCED_PROTECTION) {
+    SetEnhancedProtectionPref(prefs, true);
+    SetStandardProtectionPref(prefs, true);
+  } else if (state == STANDARD_PROTECTION) {
+    SetEnhancedProtectionPref(prefs, false);
+    SetStandardProtectionPref(prefs, true);
+  } else {
+    SetEnhancedProtectionPref(prefs, false);
+    SetStandardProtectionPref(prefs, false);
+  }
+}
+
 bool IsSafeBrowsingEnabled(const PrefService& prefs) {
   return prefs.GetBoolean(prefs::kSafeBrowsingEnabled);
 }
@@ -248,11 +261,19 @@ void SetExtendedReportingPrefForTests(PrefService* prefs, bool value) {
   prefs->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled, value);
 }
 
-void SetEnhancedProtectionPref(PrefService* prefs, bool value) {
+void SetEnhancedProtectionPrefForTests(PrefService* prefs, bool value) {
   // SafeBrowsingEnabled pref needs to be turned on in order for enhanced
   // protection pref to be turned on. This method is only used for tests.
   prefs->SetBoolean(prefs::kSafeBrowsingEnabled, value);
   prefs->SetBoolean(prefs::kSafeBrowsingEnhanced, value);
+}
+
+void SetEnhancedProtectionPref(PrefService* prefs, bool value) {
+  prefs->SetBoolean(prefs::kSafeBrowsingEnhanced, value);
+}
+
+void SetStandardProtectionPref(PrefService* prefs, bool value) {
+  prefs->SetBoolean(prefs::kSafeBrowsingEnabled, value);
 }
 
 void UpdatePrefsBeforeSecurityInterstitial(PrefService* prefs) {

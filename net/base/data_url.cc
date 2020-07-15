@@ -10,10 +10,10 @@
 
 #include "base/base64.h"
 #include "base/stl_util.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"

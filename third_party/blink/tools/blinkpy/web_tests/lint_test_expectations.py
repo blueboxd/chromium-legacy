@@ -114,11 +114,11 @@ def lint(host, options):
         # add a general --android command line argument which will be used to
         # put wpt_update_expectations.py into Android mode.
         _log.info('')
-        _log.info(('If there are expectations for deleted tests in '
-                   'Android WPT override files then clean them by running '
-                   '\'//third_party/blink/tools/wpt_update_expectations.py '
-                   '--android-product=%s --clean-up-test-expectations-only\'') %
-                  ANDROID_WEBLAYER)
+        _log.info('If there are expectations for deleted tests in '
+                  'Android WPT override files then clean them by running '
+                  '\'//third_party/blink/tools/wpt_update_expectations.py '
+                  '--update-android-expectations-only '
+                  '--clean-up-test-expectations-only\'')
         _log.info('')
     return failures, warnings
 

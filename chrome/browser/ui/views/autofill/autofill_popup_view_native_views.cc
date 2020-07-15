@@ -1130,6 +1130,7 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
         rows_.push_back(AutofillPopupSeparatorView::Create(this, line_number));
         break;
 
+      case autofill::PopupItemId::POPUP_ITEM_ID_MIXED_FORM_MESSAGE:
       case autofill::PopupItemId::
           POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
         rows_.push_back(AutofillPopupWarningView::Create(this, line_number));

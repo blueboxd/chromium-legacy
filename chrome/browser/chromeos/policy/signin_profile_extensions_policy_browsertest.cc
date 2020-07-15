@@ -37,7 +37,6 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/switches.h"
-#include "extensions/test/test_background_page_ready_observer.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -282,12 +281,11 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, ExtensionsEnabled) {
 IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, BackgroundPage) {
   EXPECT_FALSE(
       chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions());
-  extensions::ExtensionBackgroundPageReadyObserver page_observer(
-      GetInitialProfile(), kWhitelistedAppId);
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
       GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath),
-      ExtensionForceInstallMixin::WaitMode::kNone));
-  page_observer.Wait();
+      ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady));
+  EXPECT_TRUE(extension_force_install_mixin_.IsExtensionBackgroundPageReady(
+      kWhitelistedAppId));
   EXPECT_TRUE(chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions());
 }
 
@@ -313,20 +311,12 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
                        IsolatedStoragePartition) {
   Profile* profile = GetInitialProfile();
 
-  extensions::ExtensionBackgroundPageReadyObserver page_observer_for_app(
-      GetInitialProfile(), kWhitelistedAppId);
-  extensions::ExtensionBackgroundPageReadyObserver page_observer_for_extension(
-      GetInitialProfile(), kWhitelistedExtensionId);
-
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
       GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath),
-      ExtensionForceInstallMixin::WaitMode::kNone));
+      ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady));
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
       GetTestDataDir().AppendASCII(kWhitelistedExtensionCrxPath),
-      ExtensionForceInstallMixin::WaitMode::kNone));
-
-  page_observer_for_app.Wait();
-  page_observer_for_extension.Wait();
+      ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady));
 
   content::StoragePartition* storage_partition_for_app =
       extensions::util::GetStoragePartitionForExtensionId(

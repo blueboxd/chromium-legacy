@@ -23,14 +23,15 @@
 <link rel="stylesheet" href="new_tab.css">
 <link rel="stylesheet" href="tile_page.css">
 <link rel="stylesheet" href="trash.css">
-<script>
-// Until themes can clear the cache, force-reload the theme stylesheet.
-document.write('<link id="themecss" rel="stylesheet" ' +
-               'href="chrome://theme/css/new_tab_theme.css?' + Date.now() + '">');
-</script>
+<link id="themecss" rel="stylesheet">
 <script src="../../../../ui/webui/resources/js/action_link.js"></script>
 <script src="../../../../ui/webui/resources/js/event_tracker.js"></script>
+<script src="../../../../ui/webui/resources/js/parse_html_subset.js"></script>
 <script src="../../../../ui/webui/resources/js/util.js"></script>
+<script>
+// Until themes can clear the cache, force-reload the theme stylesheet.
+$('themecss').href = 'chrome://theme/css/new_tab_theme.css?' + Date.now();
+</script>
 
 <script src="../../../../ui/webui/resources/js/cr.js"></script>
 <script src="../../../../ui/webui/resources/js/cr/event_target.js"></script>

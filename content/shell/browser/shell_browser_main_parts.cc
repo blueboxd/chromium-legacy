@@ -167,7 +167,8 @@ void ShellBrowserMainParts::ToolkitInitialized() {
   if (features::IsUsingOzonePlatform())
     return;
 #endif
-  gtk_ui_delegate_ = std::make_unique<ui::GtkUiDelegateX11>(gfx::GetXDisplay());
+  gtk_ui_delegate_ =
+      std::make_unique<ui::GtkUiDelegateX11>(x11::Connection::Get());
   ui::GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
   views::LinuxUI* linux_ui = BuildGtkUi(gtk_ui_delegate_.get());
   linux_ui->UpdateDeviceScaleFactor();

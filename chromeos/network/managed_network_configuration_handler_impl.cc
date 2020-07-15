@@ -179,8 +179,6 @@ void ManagedNetworkConfigurationHandlerImpl::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-// GetManagedProperties
-
 void ManagedNetworkConfigurationHandlerImpl::GetManagedProperties(
     const std::string& userhash,
     const std::string& service_path,
@@ -195,83 +193,9 @@ void ManagedNetworkConfigurationHandlerImpl::GetManagedProperties(
       service_path,
       base::BindOnce(
           &ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback,
-          weak_ptr_factory_.GetWeakPtr(),
-          base::BindOnce(
-              &ManagedNetworkConfigurationHandlerImpl::SendManagedProperties,
-              weak_ptr_factory_.GetWeakPtr(), userhash, std::move(callback),
-              error_callback)),
-      error_callback);
+          weak_ptr_factory_.GetWeakPtr(), PropertiesType::kManaged, userhash,
+          std::move(callback), error_callback));
 }
-
-void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
-    const std::string& userhash,
-    network_handler::DictionaryResultCallback callback,
-    const network_handler::ErrorCallback& error_callback,
-    const std::string& service_path,
-    std::unique_ptr<base::DictionaryValue> shill_properties) {
-  std::string profile_path;
-  shill_properties->GetStringWithoutPathExpansion(shill::kProfileProperty,
-                                                  &profile_path);
-  const NetworkState* network_state =
-      network_state_handler_->GetNetworkState(service_path);
-  const NetworkProfile* profile =
-      network_profile_handler_
-          ? network_profile_handler_->GetProfileForPath(profile_path)
-          : nullptr;
-  if (!profile && !(network_state && network_state->IsNonProfileType())) {
-    // Visible but unsaved (not known) networks will not have a profile.
-    NET_LOG(DEBUG) << "No profile for: " << NetworkId(network_state)
-                   << " Profile path: " << profile_path;
-  }
-
-  std::unique_ptr<NetworkUIData> ui_data =
-      shill_property_util::GetUIDataFromProperties(*shill_properties);
-
-  const base::DictionaryValue* user_settings = nullptr;
-
-  if (ui_data && profile) {
-    user_settings = ui_data->GetUserSettingsDictionary();
-  } else if (profile) {
-    NET_LOG(DEBUG) << "Network contains empty or invalid UIData: "
-                   << NetworkId(network_state);
-    // TODO(pneubeck): add a conversion of user configured entries of old
-    // ChromeOS versions. We will have to use a heuristic to determine which
-    // properties _might_ be user configured.
-  }
-
-  std::string guid;
-  shill_properties->GetStringWithoutPathExpansion(shill::kGuidProperty, &guid);
-
-  ::onc::ONCSource onc_source;
-  FindPolicyByGUID(userhash, guid, &onc_source);
-  std::unique_ptr<base::DictionaryValue> active_settings(
-      onc::TranslateShillServiceToONCPart(*shill_properties, onc_source,
-                                          &onc::kNetworkWithStateSignature,
-                                          network_state));
-
-  const base::DictionaryValue* network_policy = nullptr;
-  const base::DictionaryValue* global_policy = nullptr;
-  if (profile) {
-    const Policies* policies = GetPoliciesForProfile(*profile);
-    if (!policies) {
-      InvokeErrorCallback(service_path, error_callback,
-                          kPoliciesNotInitialized);
-      return;
-    }
-    if (!guid.empty())
-      network_policy = GetByGUID(policies->per_network_config, guid);
-    global_policy = &policies->global_network_config;
-  }
-
-  std::unique_ptr<base::DictionaryValue> augmented_properties(
-      policy_util::CreateManagedONC(global_policy, network_policy,
-                                    user_settings, active_settings.get(),
-                                    profile));
-  SetManagedActiveProxyValues(guid, augmented_properties.get());
-  std::move(callback).Run(service_path, *augmented_properties);
-}
-
-// GetProperties
 
 void ManagedNetworkConfigurationHandlerImpl::GetProperties(
     const std::string& userhash,
@@ -283,37 +207,9 @@ void ManagedNetworkConfigurationHandlerImpl::GetProperties(
       service_path,
       base::BindOnce(
           &ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback,
-          weak_ptr_factory_.GetWeakPtr(),
-          base::BindOnce(
-              &ManagedNetworkConfigurationHandlerImpl::SendProperties,
-              weak_ptr_factory_.GetWeakPtr(), userhash, std::move(callback),
-              error_callback)),
-      error_callback);
+          weak_ptr_factory_.GetWeakPtr(), PropertiesType::kUnmanaged, userhash,
+          std::move(callback), error_callback));
 }
-
-void ManagedNetworkConfigurationHandlerImpl::SendProperties(
-    const std::string& userhash,
-    network_handler::DictionaryResultCallback callback,
-    const network_handler::ErrorCallback& error_callback,
-    const std::string& service_path,
-    std::unique_ptr<base::DictionaryValue> shill_properties) {
-  const NetworkState* network_state =
-      network_state_handler_->GetNetworkState(service_path);
-
-  std::string guid;
-  shill_properties->GetStringWithoutPathExpansion(shill::kGuidProperty, &guid);
-
-  ::onc::ONCSource onc_source;
-  FindPolicyByGUID(userhash, guid, &onc_source);
-
-  std::unique_ptr<base::DictionaryValue> onc_network(
-      onc::TranslateShillServiceToONCPart(*shill_properties, onc_source,
-                                          &onc::kNetworkWithStateSignature,
-                                          network_state));
-  std::move(callback).Run(service_path, *onc_network);
-}
-
-// SetProperties
 
 void ManagedNetworkConfigurationHandlerImpl::SetProperties(
     const std::string& service_path,
@@ -1009,7 +905,7 @@ void ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork(
 
 void ManagedNetworkConfigurationHandlerImpl::GetDeviceStateProperties(
     const std::string& service_path,
-    base::DictionaryValue* properties) {
+    base::Value* properties) {
   const NetworkState* network =
       network_state_handler_->GetNetworkState(service_path);
   if (!network) {
@@ -1035,7 +931,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetDeviceStateProperties(
   // (plural) in the properties dictionary. (Note: Shill only provides a single
   // "IPConfig" property for a network service, but a consumer of this API may
   // want information about all ipv4 and ipv6 IPConfig properties.
-  auto ip_configs = std::make_unique<base::ListValue>();
+  base::Value ip_configs(base::Value::Type::LIST);
 
   if (!device_state || device_state->ip_configs().empty()) {
     // Shill may not provide IPConfigs for external Cellular devices/dongles
@@ -1045,85 +941,176 @@ void ManagedNetworkConfigurationHandlerImpl::GetDeviceStateProperties(
         << "GetDeviceStateProperties: Setting IPv4 properties from network: "
         << NetworkId(network);
     if (network->ipv4_config())
-      ip_configs->Append(network->ipv4_config()->Clone());
+      ip_configs.Append(network->ipv4_config()->Clone());
   } else {
     // Convert the DeviceState IPConfigs dictionary to a ListValue.
     for (const auto iter : device_state->ip_configs().DictItems())
-      ip_configs->Append(iter.second.Clone());
+      ip_configs.Append(iter.second.Clone());
   }
-  if (!ip_configs->GetList().empty()) {
-    properties->SetWithoutPathExpansion(shill::kIPConfigsProperty,
-                                        std::move(ip_configs));
+  if (!ip_configs.GetList().empty()) {
+    properties->SetKey(shill::kIPConfigsProperty, std::move(ip_configs));
   }
 }
 
 void ManagedNetworkConfigurationHandlerImpl::GetPropertiesCallback(
-    GetDevicePropertiesCallback send_callback,
+    PropertiesType properties_type,
+    const std::string& userhash,
+    network_handler::DictionaryResultCallback callback,
+    const network_handler::ErrorCallback& error_callback,
     const std::string& service_path,
-    const base::DictionaryValue& shill_properties) {
-  std::unique_ptr<base::DictionaryValue> shill_properties_copy(
-      shill_properties.DeepCopy());
+    base::Optional<base::Value> shill_properties) {
+  if (!shill_properties) {
+    SendProperties(properties_type, userhash, service_path, std::move(callback),
+                   error_callback, base::nullopt);
+    return;
+  }
 
-  std::string guid;
-  shill_properties.GetStringWithoutPathExpansion(shill::kGuidProperty, &guid);
-  if (guid.empty()) {
+  const std::string* guid =
+      shill_properties->FindStringKey(shill::kGuidProperty);
+  if (!guid || guid->empty()) {
     // Unmanaged networks are assigned a GUID in NetworkState. Provide this
     // value in the ONC dictionary.
     const NetworkState* state =
         network_state_handler_->GetNetworkState(service_path);
     if (state && !state->guid().empty()) {
-      guid = state->guid();
-      shill_properties_copy->SetKey(shill::kGuidProperty, base::Value(guid));
+      shill_properties->SetKey(shill::kGuidProperty,
+                               base::Value(state->guid()));
     } else {
       NET_LOG(ERROR) << "Network has no GUID specified: "
                      << NetworkPathId(service_path);
     }
   }
 
-  std::string type;
-  shill_properties_copy->GetStringWithoutPathExpansion(shill::kTypeProperty,
-                                                       &type);
+  const std::string* type =
+      shill_properties->FindStringKey(shill::kTypeProperty);
   // Add any associated DeviceState properties.
-  GetDeviceStateProperties(service_path, shill_properties_copy.get());
+  GetDeviceStateProperties(service_path, &shill_properties.value());
 
   // Only request additional Device properties for Cellular networks with a
   // valid device.
-  std::string device_path;
-  if (!network_device_handler_ || type != shill::kTypeCellular ||
-      !shill_properties_copy->GetStringWithoutPathExpansion(
-          shill::kDeviceProperty, &device_path) ||
-      device_path.empty()) {
-    std::move(send_callback)
-        .Run(service_path, std::move(shill_properties_copy));
+  std::string* device_path =
+      shill_properties->FindStringKey(shill::kDeviceProperty);
+  if (!network_device_handler_ || *type != shill::kTypeCellular ||
+      !device_path || device_path->empty()) {
+    SendProperties(properties_type, userhash, service_path, std::move(callback),
+                   error_callback, std::move(shill_properties));
     return;
   }
 
   // Request the device properties. On success or failure pass (a possibly
   // modified) |shill_properties| to |send_callback|.
   network_device_handler_->GetDeviceProperties(
-      device_path,
+      *device_path,
       base::BindOnce(
           &ManagedNetworkConfigurationHandlerImpl::OnGetDeviceProperties,
-          weak_ptr_factory_.GetWeakPtr(), service_path,
-          std::move(shill_properties_copy), std::move(send_callback)));
+          weak_ptr_factory_.GetWeakPtr(), properties_type, userhash,
+          service_path, std::move(callback), error_callback,
+          std::move(shill_properties)));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::OnGetDeviceProperties(
+    PropertiesType properties_type,
+    const std::string& userhash,
     const std::string& service_path,
-    std::unique_ptr<base::DictionaryValue> network_properties,
-    GetDevicePropertiesCallback send_callback,
+    network_handler::DictionaryResultCallback callback,
+    const network_handler::ErrorCallback& error_callback,
+    base::Optional<base::Value> network_properties,
     const std::string& device_path,
     base::Optional<base::Value> device_properties) {
+  DCHECK(network_properties);
   if (!device_properties) {
     NET_LOG(ERROR) << "Error getting device properties: "
                    << NetworkPathId(service_path);
-    std::move(send_callback).Run(service_path, std::move(network_properties));
+  } else {
+    // Create a "Device" dictionary in |network_properties|.
+    network_properties->SetKey(shill::kDeviceProperty,
+                               std::move(*device_properties));
+  }
+  SendProperties(properties_type, userhash, service_path, std::move(callback),
+                 error_callback, std::move(network_properties));
+}
+
+void ManagedNetworkConfigurationHandlerImpl::SendProperties(
+    PropertiesType properties_type,
+    const std::string& userhash,
+    const std::string& service_path,
+    network_handler::DictionaryResultCallback callback,
+    const network_handler::ErrorCallback& error_callback,
+    base::Optional<base::Value> shill_properties) {
+  if (!shill_properties) {
+    if (!error_callback.is_null())
+      error_callback.Run("Get Properties failed", nullptr);
     return;
   }
-  // Create a "Device" dictionary in |network_properties|.
-  network_properties->SetKey(shill::kDeviceProperty,
-                             std::move(*device_properties));
-  std::move(send_callback).Run(service_path, std::move(network_properties));
+  const std::string* guid =
+      shill_properties->FindStringKey(shill::kGuidProperty);
+  if (!guid) {
+    if (!error_callback.is_null())
+      error_callback.Run("Properties missing guid", nullptr);
+    return;
+  }
+
+  const NetworkState* network_state =
+      network_state_handler_->GetNetworkState(service_path);
+  ::onc::ONCSource onc_source;
+  FindPolicyByGUID(userhash, *guid, &onc_source);
+  std::unique_ptr<base::DictionaryValue> onc_network(
+      onc::TranslateShillServiceToONCPart(
+          base::Value::AsDictionaryValue(*shill_properties), onc_source,
+          &onc::kNetworkWithStateSignature, network_state));
+
+  if (properties_type == PropertiesType::kUnmanaged) {
+    std::move(callback).Run(service_path, *onc_network);
+    return;
+  }
+
+  const std::string* profile_path =
+      shill_properties->FindStringKey(shill::kProfileProperty);
+  const NetworkProfile* profile =
+      profile_path && network_profile_handler_
+          ? network_profile_handler_->GetProfileForPath(*profile_path)
+          : nullptr;
+  if (!profile && !(network_state && network_state->IsNonProfileType())) {
+    // Visible but unsaved (not known) networks will not have a profile.
+    NET_LOG(DEBUG) << "No profile for: " << NetworkId(network_state)
+                   << " Profile path: " << profile_path;
+  }
+
+  std::unique_ptr<NetworkUIData> ui_data =
+      shill_property_util::GetUIDataFromProperties(
+          base::Value::AsDictionaryValue(*shill_properties));
+
+  const base::DictionaryValue* user_settings = nullptr;
+
+  if (ui_data && profile) {
+    user_settings = ui_data->GetUserSettingsDictionary();
+  } else if (profile) {
+    NET_LOG(DEBUG) << "Network contains empty or invalid UIData: "
+                   << NetworkId(network_state);
+    // TODO(pneubeck): add a conversion of user configured entries of old
+    // ChromeOS versions. We will have to use a heuristic to determine which
+    // properties _might_ be user configured.
+  }
+
+  const base::DictionaryValue* network_policy = nullptr;
+  const base::DictionaryValue* global_policy = nullptr;
+  if (profile) {
+    const Policies* policies = GetPoliciesForProfile(*profile);
+    if (!policies) {
+      InvokeErrorCallback(service_path, error_callback,
+                          kPoliciesNotInitialized);
+      return;
+    }
+    if (!guid->empty())
+      network_policy = GetByGUID(policies->per_network_config, *guid);
+    global_policy = &policies->global_network_config;
+  }
+
+  std::unique_ptr<base::DictionaryValue> augmented_properties(
+      policy_util::CreateManagedONC(global_policy, network_policy,
+                                    user_settings, onc_network.get(), profile));
+  SetManagedActiveProxyValues(*guid, augmented_properties.get());
+  std::move(callback).Run(service_path, *augmented_properties);
 }
 
 }  // namespace chromeos

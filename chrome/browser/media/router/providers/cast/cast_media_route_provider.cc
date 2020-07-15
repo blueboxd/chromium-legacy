@@ -121,7 +121,7 @@ void CastMediaRouteProvider::CreateRoute(const std::string& source_id,
   if (!sink) {
     logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent,
                       "Attempted to create a route with an invalid sink ID",
-                      sink_id, source_id, "");
+                      sink_id, source_id, presentation_id);
     std::move(callback).Run(base::nullopt, nullptr,
                             std::string("Sink not found"),
                             RouteRequestResult::ResultCode::SINK_NOT_FOUND);
@@ -133,7 +133,7 @@ void CastMediaRouteProvider::CreateRoute(const std::string& source_id,
   if (!cast_source) {
     logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent,
                       "Attempted to create a route with an invalid source",
-                      sink_id, source_id, "");
+                      sink_id, source_id, presentation_id);
     std::move(callback).Run(
         base::nullopt, nullptr, std::string("Invalid source"),
         RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
@@ -157,6 +157,9 @@ void CastMediaRouteProvider::JoinRoute(const std::string& media_source,
     std::move(callback).Run(
         base::nullopt, nullptr, std::string("Invalid source"),
         RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
+    logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent,
+                      "Attempted to join a route with an invalid source", "",
+                      media_source, presentation_id);
     return;
   }
 

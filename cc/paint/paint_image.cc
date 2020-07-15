@@ -281,13 +281,11 @@ bool PaintImage::isSRGB() const {
   if (paint_worklet_input_)
     return true;
 
-  auto* color_space = GetSkImageInfo().colorSpace();
-  if (!color_space) {
-    // Assume the image will be sRGB if we don't know yet.
-    return true;
-  }
+  if (const auto* color_space = GetSkImageInfo().colorSpace())
+    return color_space->isSRGB();
 
-  return color_space->isSRGB();
+  // Assume the image will be sRGB if we don't know yet.
+  return true;
 }
 
 bool PaintImage::isHDR() const {
@@ -295,13 +293,11 @@ bool PaintImage::isHDR() const {
   if (paint_worklet_input_)
     return false;
 
-  auto* color_space = GetSkImage()->colorSpace();
-  if (!color_space) {
-    // Assume the image will not be HDR if we don't know yet.
-    return false;
-  }
+  if (const auto* color_space = GetSkImageInfo().colorSpace())
+    return gfx::ColorSpace(*color_space).IsHDR();
 
-  return gfx::ColorSpace(*color_space).IsHDR();
+  // Assume the image will not be HDR if we don't know yet.
+  return false;
 }
 
 const ImageHeaderMetadata* PaintImage::GetImageHeaderMetadata() const {

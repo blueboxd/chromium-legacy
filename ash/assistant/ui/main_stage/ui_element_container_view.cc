@@ -90,8 +90,8 @@ void UiElementContainerView::InitLayout() {
   // Content.
   content_view()->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      gfx::Insets(0, kUiElementHorizontalMarginDip, kPaddingBottomDip,
-                  kUiElementHorizontalMarginDip),
+      gfx::Insets(0, kHorizontalMarginDip, kPaddingBottomDip,
+                  kHorizontalMarginDip),
       kSpacingDip));
 
   // Scroll indicator.

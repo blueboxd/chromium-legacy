@@ -78,20 +78,20 @@ class BluetoothLowEnergyAdvertisementManagerMacTest : public testing::Test {
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data) {
     advertisement_manager_.RegisterAdvertisement(
         std::move(advertisement_data),
-        base::Bind(&BluetoothLowEnergyAdvertisementManagerMacTest::
-                       OnAdvertisementRegistered,
-                   base::Unretained(this)),
-        base::Bind(&BluetoothLowEnergyAdvertisementManagerMacTest::
-                       OnAdvertisementRegisterError,
-                   base::Unretained(this)));
+        base::BindOnce(&BluetoothLowEnergyAdvertisementManagerMacTest::
+                           OnAdvertisementRegistered,
+                       base::Unretained(this)),
+        base::BindOnce(&BluetoothLowEnergyAdvertisementManagerMacTest::
+                           OnAdvertisementRegisterError,
+                       base::Unretained(this)));
   }
 
   void Unregister(scoped_refptr<BluetoothAdvertisement> advertisement) {
     advertisement->Unregister(
-        base::Bind(
+        base::BindOnce(
             &BluetoothLowEnergyAdvertisementManagerMacTest::OnUnregisterSuccess,
             base::Unretained(this)),
-        base::Bind(
+        base::BindOnce(
             &BluetoothLowEnergyAdvertisementManagerMacTest::OnUnregisterError,
             base::Unretained(this)));
   }

@@ -41,30 +41,28 @@ using assistant::util::ResourceLinkType;
 using chromeos::assistant::AssistantSuggestion;
 using chromeos::assistant::AssistantSuggestionType;
 
-constexpr int kHorizontalMarginDip = 56;
-
 // Greeting.
-constexpr int kGreetingLabelLineHeight = 24;
-constexpr int kGreetingLabelSizeDelta = 8;
+constexpr int kGreetingLabelLineHeight = 28;
+constexpr int kGreetingLabelSizeDelta = 10;
 
 // Intro.
-constexpr int kIntroLabelLineHeight = 22;
+constexpr int kIntroLabelLineHeight = 20;
 constexpr int kIntroLabelMarginTopDip = 12;
-constexpr int kIntroLabelSizeDelta = 3;
+constexpr int kIntroLabelSizeDelta = 2;
 
 // Suggestions.
 constexpr int kSuggestionsColumnCount = 3;
 constexpr int kSuggestionsColumnSetId = 1;
-constexpr int kSuggestionsCornerRadiusDip = 16;
+constexpr int kSuggestionsCornerRadiusDip = 12;
 constexpr int kSuggestionsIconSizeDip = 24;
 constexpr int kSuggestionsLabelLineHeight = 20;
 constexpr int kSuggestionsLabelSizeDelta = 2;
 constexpr int kSuggestionsMaxCount = 6;
 constexpr int kSuggestionsMarginDip = 16;
-constexpr int kSuggestionsMarginTopDip = 48;
+constexpr int kSuggestionsMarginTopDip = 32;
 constexpr int kSuggestionsPaddingDip = 16;
 constexpr int kSuggestionsPreferredHeightDip = 72;
-constexpr int kSuggestionsSpacingDip = 12;
+constexpr int kSuggestionsSpacingDip = 16;
 
 // Helpers ---------------------------------------------------------------------
 
@@ -105,8 +103,12 @@ SkColor GetSuggestionBackgroundColor(int index) {
   DCHECK_GE(index, 0);
   DCHECK_LT(index, kSuggestionsMaxCount);
   constexpr SkColor background_colors[kSuggestionsMaxCount] = {
-      gfx::kGoogleBlue050,   gfx::kGoogleYellow050, gfx::kGoogleGreen050,
-      gfx::kGoogleYellow050, gfx::kGoogleGreen050,  gfx::kGoogleRed050};
+      gfx::kGoogleBlue050,
+      gfx::kGoogleRed050,
+      gfx::kGoogleYellow050,
+      gfx::kGoogleGreen050,
+      SkColorSetRGB(0xF6, 0xE9, 0xF8),
+      gfx::kGoogleBlue050};
   return background_colors[index];
 }
 
@@ -114,8 +116,12 @@ SkColor GetSuggestionForegroundColor(int index) {
   DCHECK_GE(index, 0);
   DCHECK_LT(index, kSuggestionsMaxCount);
   constexpr SkColor foreground_colors[kSuggestionsMaxCount] = {
-      gfx::kGoogleBlue700,   gfx::kGoogleYellow900, gfx::kGoogleGreen800,
-      gfx::kGoogleYellow900, gfx::kGoogleGreen800,  gfx::kGoogleRed800};
+      gfx::kGoogleBlue800,
+      gfx::kGoogleRed800,
+      SkColorSetRGB(0xBF, 0x50, 0x00),
+      gfx::kGoogleGreen800,
+      SkColorSetRGB(0x8A, 0x0E, 0x9E),
+      gfx::kGoogleBlue800};
   return foreground_colors[index];
 }
 
@@ -191,8 +197,9 @@ class SuggestionView : public views::Button, public views::ButtonListener {
     label_ = AddChildView(std::make_unique<views::Label>());
     label_->SetAutoColorReadabilityEnabled(false);
     label_->SetEnabledColor(GetSuggestionForegroundColor(index_));
-    label_->SetFontList(assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(
-        kSuggestionsLabelSizeDelta));
+    label_->SetFontList(assistant::ui::GetDefaultFontList()
+                            .DeriveWithSizeDelta(kSuggestionsLabelSizeDelta)
+                            .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
     label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
     label_->SetLineHeight(kSuggestionsLabelLineHeight);
     label_->SetMaxLines(2);
@@ -285,7 +292,7 @@ void AssistantOnboardingView::InitLayout() {
   greeting_ = AddChildView(std::make_unique<views::Label>());
   greeting_->SetAutoColorReadabilityEnabled(false);
   greeting_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
-  greeting_->SetEnabledColor(SK_ColorBLACK);
+  greeting_->SetEnabledColor(kTextColorPrimary);
   greeting_->SetFontList(assistant::ui::GetDefaultFontList()
                              .DeriveWithSizeDelta(kGreetingLabelSizeDelta)
                              .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
@@ -298,7 +305,7 @@ void AssistantOnboardingView::InitLayout() {
   intro->SetAutoColorReadabilityEnabled(false);
   intro->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
   intro->SetBorder(views::CreateEmptyBorder(kIntroLabelMarginTopDip, 0, 0, 0));
-  intro->SetEnabledColor(gfx::kGoogleGrey900);
+  intro->SetEnabledColor(kTextColorPrimary);
   intro->SetFontList(assistant::ui::GetDefaultFontList()
                          .DeriveWithSizeDelta(kIntroLabelSizeDelta)
                          .DeriveWithWeight(gfx::Font ::Weight::MEDIUM));

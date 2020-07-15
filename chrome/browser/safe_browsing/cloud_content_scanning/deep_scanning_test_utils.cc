@@ -191,7 +191,8 @@ void EventReportValidator::ExpectSensitiveDataEvent(
     const std::string& expected_trigger,
     const ContentAnalysisScanResult& expected_dlp_verdict,
     const std::set<std::string>* expected_mimetypes,
-    int expected_content_size) {
+    int expected_content_size,
+    const std::string& expected_result) {
   event_key_ = SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent;
   url_ = expected_url;
   dlp_verdict_ = expected_dlp_verdict;
@@ -199,8 +200,8 @@ void EventReportValidator::ExpectSensitiveDataEvent(
   sha256_ = expected_sha256;
   mimetypes_ = expected_mimetypes;
   trigger_ = expected_trigger;
-  clicked_through_ = false;
   content_size_ = expected_content_size;
+  result_ = expected_result;
   EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
       .WillOnce([this](base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
@@ -219,7 +220,8 @@ void EventReportValidator::
         const std::string& expected_trigger,
         const ContentAnalysisScanResult& expected_dlp_verdict,
         const std::set<std::string>* expected_mimetypes,
-        int expected_content_size) {
+        int expected_content_size,
+        const std::string& expected_result) {
   event_key_ = SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent;
   url_ = expected_url;
   filename_ = expected_filename;
@@ -234,12 +236,12 @@ void EventReportValidator::
         ValidateReport(&report);
       })
       .WillOnce(
-          [this, expected_dlp_verdict](
+          [this, expected_dlp_verdict, expected_result](
               base::Value& report, base::OnceCallback<void(bool)>& callback) {
             event_key_ = SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent;
             threat_type_ = base::nullopt;
-            clicked_through_ = false;
             dlp_verdict_ = expected_dlp_verdict;
+            result_ = expected_result;
             ValidateReport(&report);
             if (!done_closure_.is_null())
               done_closure_.Run();
@@ -295,8 +297,6 @@ void EventReportValidator::ValidateDlpVerdict(base::Value* value) {
   if (!dlp_verdict_.has_value())
     return;
 
-  ValidateField(value, SafeBrowsingPrivateEventRouter::kKeyClickedThrough,
-                clicked_through_);
   base::Value* triggered_rules =
       value->FindListKey(SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleInfo);
   ASSERT_NE(nullptr, triggered_rules);

@@ -377,9 +377,6 @@ void CourierRenderer::OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message) {
     case pb::RpcMessage::RPC_R_FLUSHUNTIL_CALLBACK:
       FlushUntilCallback();
       break;
-    case pb::RpcMessage::RPC_R_SETCDM_CALLBACK:
-      SetCdmCallback(std::move(message));
-      break;
     case pb::RpcMessage::RPC_RC_ONTIMEUPDATE:
       OnTimeUpdate(std::move(message));
       break;
@@ -406,9 +403,6 @@ void CourierRenderer::OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message) {
       break;
     case pb::RpcMessage::RPC_RC_ONSTATISTICSUPDATE:
       OnStatisticsUpdate(std::move(message));
-      break;
-    case pb::RpcMessage::RPC_RC_ONWAITINGFORDECRYPTIONKEY:
-      client_->OnWaiting(WaitingReason::kNoDecryptionKey);
       break;
 
     default:
@@ -494,13 +488,6 @@ void CourierRenderer::FlushUntilCallback() {
     video_demuxer_stream_adapter_->SignalFlush(false);
   std::move(flush_cb_).Run();
   ResetMeasurements();
-}
-
-void CourierRenderer::SetCdmCallback(std::unique_ptr<pb::RpcMessage> message) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-  DCHECK(message);
-  // TODO(erickung): add implementation once Remote CDM implementation is done.
-  NOTIMPLEMENTED();
 }
 
 void CourierRenderer::OnTimeUpdate(std::unique_ptr<pb::RpcMessage> message) {

@@ -81,11 +81,12 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
   int64_t resource_id =
       version->script_cache_map()->LookupResourceId(resource_request.url);
   if (resource_id != blink::mojom::kInvalidServiceWorkerResourceId) {
-    std::unique_ptr<ServiceWorkerResponseReader> response_reader =
-        context_->storage()->CreateResponseReader(resource_id);
+    mojo::Remote<storage::mojom::ServiceWorkerResourceReader> resource_reader;
+    context_->registry()->GetRemoteStorageControl()->CreateResourceReader(
+        resource_id, resource_reader.BindNewPipeAndPassReceiver());
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<ServiceWorkerInstalledScriptLoader>(
-            options, std::move(client), std::move(response_reader), version,
+            options, std::move(client), std::move(resource_reader), version,
             resource_request.url),
         std::move(receiver));
     return;
@@ -246,10 +247,12 @@ void ServiceWorkerScriptLoaderFactory::OnCopyScriptFinished(
       resource_request.url, resource_size, net::OK, std::string());
 
   // Use ServiceWorkerInstalledScriptLoader to load the new copy.
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader> resource_reader;
+  context_->registry()->GetRemoteStorageControl()->CreateResourceReader(
+      new_resource_id, resource_reader.BindNewPipeAndPassReceiver());
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<ServiceWorkerInstalledScriptLoader>(
-          options, std::move(client),
-          context_->storage()->CreateResponseReader(new_resource_id), version,
+          options, std::move(client), std::move(resource_reader), version,
           resource_request.url),
       std::move(receiver));
 }

@@ -4,6 +4,7 @@
 
 #include "components/update_client/crx_downloader.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -68,7 +69,7 @@ class CrxDownloaderTest : public testing::Test {
                    int net_error);
 
  protected:
-  scoped_refptr<CrxDownloader> crx_downloader_;
+  std::unique_ptr<CrxDownloader> crx_downloader_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
 
@@ -119,7 +120,7 @@ void CrxDownloaderTest::SetUp() {
 }
 
 void CrxDownloaderTest::TearDown() {
-  crx_downloader_ = nullptr;
+  crx_downloader_.reset();
 }
 
 void CrxDownloaderTest::Quit() {
@@ -174,7 +175,6 @@ void CrxDownloaderTest::RunThreads() {
   RunThreadsUntilIdle();
 }
 
-// TODO(crbug.com/1104691): rewrite the tests to not use RunUntilIdle().
 void CrxDownloaderTest::RunThreadsUntilIdle() {
   task_environment_.RunUntilIdle();
   base::RunLoop().RunUntilIdle();

@@ -292,7 +292,7 @@ int FtpNetworkTransaction::Start(
 
     // This may unescape to non-ASCII characters, but we allow that. See the
     // comment for IsValidFTPCommandSubstring.
-    if (!UnescapeBinaryURLComponentSafe(
+    if (!base::UnescapeBinaryURLComponentSafe(
             gurl_path, true /* fail_on_path_separators*/, &unescaped_path_)) {
       return ERR_INVALID_URL;
     }

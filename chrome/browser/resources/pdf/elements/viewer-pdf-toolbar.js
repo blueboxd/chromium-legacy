@@ -12,10 +12,6 @@ import './viewer-bookmark.js';
 import './viewer-download-controls.js';
 import './viewer-page-selector.js';
 import './viewer-toolbar-dropdown.js';
-// <if expr="chromeos">
-import './viewer-pen-options.js';
-
-// </if>
 
 import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -23,6 +19,10 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Bookmark} from '../bookmark_type.js';
+// <if expr="chromeos">
+import {InkController} from '../ink_controller.js';
+import {ViewerAnnotationsBarElement} from './viewer-annotations-bar.js';
+// </if>
 
 Polymer({
   is: 'viewer-pdf-toolbar',
@@ -45,12 +45,6 @@ Polymer({
       reflectToAttribute: true,
     },
 
-    /** @type {?AnnotationTool} */
-    annotationTool: {
-      type: Object,
-      notify: true,
-    },
-
     /**
      * Tree of PDF bookmarks (empty if the document has no bookmarks).
      * @type {!Array<!Bookmark>}
@@ -58,16 +52,6 @@ Polymer({
     bookmarks: {
       type: Array,
       value: () => [],
-    },
-
-    canRedoAnnotation: {
-      type: Boolean,
-      value: false,
-    },
-
-    canUndoAnnotation: {
-      type: Boolean,
-      value: false,
     },
 
     docLength: Number,
@@ -78,6 +62,11 @@ Polymer({
     hasEdits: Boolean,
 
     hasEnteredAnnotationMode: Boolean,
+
+    // <if expr="chromeos">
+    /** @type {?InkController} */
+    inkController: Object,
+    // </if>
 
     isFormFieldFocused: Boolean,
 
@@ -121,7 +110,8 @@ Polymer({
       this.$.buttons.classList.toggle('invisible', !loaded);
       this.$.progress.style.opacity = loaded ? 0 : 1;
       // <if expr="chromeos">
-      this.$['annotations-bar'].hidden = !loaded || !this.annotationMode;
+      this.$$('viewer-annotations-bar').hidden =
+          !loaded || !this.annotationMode;
       // </if>
     }
   },
@@ -187,12 +177,10 @@ Polymer({
       result = true;
     }
     // <if expr="chromeos">
-    if (this.$.pen.dropdownOpen) {
-      this.$.pen.toggleDropdown();
-      result = true;
-    }
-    if (this.$.highlighter.dropdownOpen) {
-      this.$.highlighter.toggleDropdown();
+    const annotationBar = /** @type {!ViewerAnnotationsBarElement} */ (
+        this.$$('viewer-annotations-bar'));
+    if (annotationBar.hasOpenDropdown()) {
+      annotationBar.closeDropdowns();
       result = true;
     }
     // </if>
@@ -212,76 +200,14 @@ Polymer({
     this.fire('print');
   },
 
-  undo() {
-    this.fire('undo');
-  },
-
-  redo() {
-    this.fire('redo');
-  },
-
+  // <if expr="chromeos">
   toggleAnnotation() {
     this.annotationMode = !this.annotationMode;
-    if (this.annotationMode) {
-      // Select pen tool when entering annotation mode.
-      this.updateAnnotationTool_(/** @type {!HTMLElement} */ (this.$.pen));
-    }
     this.dispatchEvent(new CustomEvent('annotation-mode-toggled', {
       detail: {
         value: this.annotationMode,
       },
     }));
   },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  annotationToolClicked_(e) {
-    this.updateAnnotationTool_(/** @type {!HTMLElement} */ (e.currentTarget));
-  },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  annotationToolOptionChanged_(e) {
-    const element = e.currentTarget.parentElement;
-    if (!this.annotationTool || element.id !== this.annotationTool.tool) {
-      return;
-    }
-    this.updateAnnotationTool_(e.currentTarget.parentElement);
-  },
-
-  /**
-   * @param {!HTMLElement} element
-   * @private
-   */
-  updateAnnotationTool_(element) {
-    const tool = element.id;
-    const options = element.querySelector('viewer-pen-options') || {
-      selectedSize: 1,
-      selectedColor: undefined,
-    };
-    const attributeStyleMap = element.attributeStyleMap;
-    attributeStyleMap.set('--pen-tip-fill', options.selectedColor);
-    attributeStyleMap.set(
-        '--pen-tip-border',
-        options.selectedColor === '#000000' ? 'currentcolor' :
-                                              options.selectedColor);
-    this.annotationTool = {
-      tool: tool,
-      size: options.selectedSize,
-      color: options.selectedColor,
-    };
-  },
-
-  /**
-   * @param {string} toolName
-   * @return {boolean} Whether the annotation tool is using tool |toolName|.
-   * @private
-   */
-  isAnnotationTool_(toolName) {
-    return !!this.annotationTool && this.annotationTool.tool === toolName;
-  },
+  // </if>
 });

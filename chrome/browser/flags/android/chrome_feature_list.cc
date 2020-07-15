@@ -125,6 +125,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDarkenWebsitesCheckboxInThemesSetting,
     &kDontAutoHideBrowserControls,
     &kChromeDuetLabeled,
+    &kChromeShareHighlightsAndroid,
     &kChromeShareQRCode,
     &kChromeShareScreenshot,
     &kChromeSharingHub,
@@ -247,9 +248,11 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &password_manager::features::kRecoverFromNeverSaveAndroid,
     &performance_hints::features::kContextMenuPerformanceInfo,
     &performance_hints::features::kPageInfoPerformanceHints,
+    &query_tiles::features::kQueryTilesGeoFilter,
     &query_tiles::features::kQueryTiles,
     &query_tiles::features::kQueryTilesInOmnibox,
     &query_tiles::features::kQueryTilesEnableQueryEditing,
+    &safe_browsing::kEnhancedProtection,
     &safe_browsing::kSafeBrowsingSecuritySectionUIAndroid,
     &security_state::features::kMarkHttpAsFeature,
     &signin::kMobileIdentityConsistency,
@@ -353,6 +356,9 @@ const base::Feature kDontAutoHideBrowserControls{
 
 const base::Feature kChromeDuetLabeled{"ChromeDuetLabeled",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kChromeShareHighlightsAndroid{
+    "ChromeShareHighlightsAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeShareQRCode{"ChromeShareQRCode",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

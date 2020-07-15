@@ -18,12 +18,14 @@
 #include "chromecast/browser/cast_web_view_default.h"
 #include "chromecast/browser/cast_web_view_factory.h"
 #include "chromecast/browser/lru_renderer_cache.h"
+#include "chromecast/browser/webui/cast_webui_controller_factory.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_controller_factory.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace chromecast {
@@ -100,6 +102,13 @@ void CastWebService::ClearLocalStorage(base::OnceClosure callback) {
 
 void CastWebService::StopGpuProcess(base::OnceClosure callback) const {
   content::StopGpuProcess(std::move(callback));
+}
+
+void CastWebService::RegisterWebUiClient(
+    mojo::PendingRemote<mojom::WebUiClient> client,
+    const std::vector<std::string>& hosts) {
+  content::WebUIControllerFactory::RegisterFactory(
+      new CastWebUiControllerFactory(std::move(client), hosts));
 }
 
 void CastWebService::OwnerDestroyed(CastWebView* web_view) {

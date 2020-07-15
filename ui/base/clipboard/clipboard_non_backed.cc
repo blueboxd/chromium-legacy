@@ -319,8 +319,10 @@ uint64_t ClipboardNonBacked::GetSequenceNumber(ClipboardBuffer buffer) const {
   return clipboard_internal_->sequence_number();
 }
 
-bool ClipboardNonBacked::IsFormatAvailable(const ClipboardFormatType& format,
-                                           ClipboardBuffer buffer) const {
+bool ClipboardNonBacked::IsFormatAvailable(
+    const ClipboardFormatType& format,
+    ClipboardBuffer buffer,
+    const ClipboardDataEndpoint* data_dst) const {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardBuffer(buffer));
   if (ClipboardFormatType::GetPlainTextType().Equals(format) ||
@@ -351,21 +353,23 @@ void ClipboardNonBacked::Clear(ClipboardBuffer buffer) {
 
 void ClipboardNonBacked::ReadAvailableTypes(
     ClipboardBuffer buffer,
+    const ClipboardDataEndpoint* data_dst,
     std::vector<base::string16>* types) const {
   DCHECK(CalledOnValidThread());
   DCHECK(types);
 
   types->clear();
-  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer))
+  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer,
+                        data_dst))
     types->push_back(
         base::UTF8ToUTF16(ClipboardFormatType::GetPlainTextType().GetName()));
-  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), buffer))
+  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), buffer, data_dst))
     types->push_back(
         base::UTF8ToUTF16(ClipboardFormatType::GetHtmlType().GetName()));
-  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer))
+  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer, data_dst))
     types->push_back(
         base::UTF8ToUTF16(ClipboardFormatType::GetRtfType().GetName()));
-  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer))
+  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer, data_dst))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
 
   if (clipboard_internal_->IsFormatAvailable(
@@ -379,25 +383,28 @@ void ClipboardNonBacked::ReadAvailableTypes(
 
 std::vector<base::string16>
 ClipboardNonBacked::ReadAvailablePlatformSpecificFormatNames(
-    ClipboardBuffer buffer) const {
+    ClipboardBuffer buffer,
+    const ClipboardDataEndpoint* data_dst) const {
   DCHECK(CalledOnValidThread());
 
   std::vector<base::string16> types;
 
   // Includes all non-pickled AvailableTypes.
-  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer)) {
+  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer,
+                        data_dst)) {
     types.push_back(
         base::UTF8ToUTF16(ClipboardFormatType::GetPlainTextType().GetName()));
   }
-  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), buffer)) {
+  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), buffer, data_dst)) {
     types.push_back(
         base::UTF8ToUTF16(ClipboardFormatType::GetHtmlType().GetName()));
   }
-  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer)) {
+  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer, data_dst)) {
     types.push_back(
         base::UTF8ToUTF16(ClipboardFormatType::GetRtfType().GetName()));
   }
-  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer)) {
+  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer,
+                        data_dst)) {
     types.push_back(base::UTF8ToUTF16(kMimeTypePNG));
   }
 
@@ -405,6 +412,7 @@ ClipboardNonBacked::ReadAvailablePlatformSpecificFormatNames(
 }
 
 void ClipboardNonBacked::ReadText(ClipboardBuffer buffer,
+                                  const ClipboardDataEndpoint* data_dst,
                                   base::string16* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kText);
@@ -412,6 +420,7 @@ void ClipboardNonBacked::ReadText(ClipboardBuffer buffer,
 }
 
 void ClipboardNonBacked::ReadAsciiText(ClipboardBuffer buffer,
+                                       const ClipboardDataEndpoint* data_dst,
                                        std::string* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kText);
@@ -419,6 +428,7 @@ void ClipboardNonBacked::ReadAsciiText(ClipboardBuffer buffer,
 }
 
 void ClipboardNonBacked::ReadHTML(ClipboardBuffer buffer,
+                                  const ClipboardDataEndpoint* data_dst,
                                   base::string16* markup,
                                   std::string* src_url,
                                   uint32_t* fragment_start,
@@ -429,6 +439,7 @@ void ClipboardNonBacked::ReadHTML(ClipboardBuffer buffer,
 }
 
 void ClipboardNonBacked::ReadRTF(ClipboardBuffer buffer,
+                                 const ClipboardDataEndpoint* data_dst,
                                  std::string* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kRtf);
@@ -436,6 +447,7 @@ void ClipboardNonBacked::ReadRTF(ClipboardBuffer buffer,
 }
 
 void ClipboardNonBacked::ReadImage(ClipboardBuffer buffer,
+                                   const ClipboardDataEndpoint* data_dst,
                                    ReadImageCallback callback) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kImage);
@@ -444,13 +456,15 @@ void ClipboardNonBacked::ReadImage(ClipboardBuffer buffer,
 
 void ClipboardNonBacked::ReadCustomData(ClipboardBuffer buffer,
                                         const base::string16& type,
+                                        const ClipboardDataEndpoint* data_dst,
                                         base::string16* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kCustomData);
   clipboard_internal_->ReadCustomData(type, result);
 }
 
-void ClipboardNonBacked::ReadBookmark(base::string16* title,
+void ClipboardNonBacked::ReadBookmark(const ClipboardDataEndpoint* data_dst,
+                                      base::string16* title,
                                       std::string* url) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kBookmark);
@@ -458,6 +472,7 @@ void ClipboardNonBacked::ReadBookmark(base::string16* title,
 }
 
 void ClipboardNonBacked::ReadData(const ClipboardFormatType& format,
+                                  const ClipboardDataEndpoint* data_dst,
                                   std::string* result) const {
   DCHECK(CalledOnValidThread());
   RecordRead(ClipboardFormatMetric::kData);

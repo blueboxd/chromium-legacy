@@ -5,6 +5,7 @@
 #include "media/remoting/renderer_controller.h"
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/run_loop.h"
@@ -12,7 +13,6 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/cdm_config.h"
 #include "media/base/limits.h"
 #include "media/base/media_util.h"
 #include "media/base/test_helpers.h"
@@ -35,13 +35,12 @@ PipelineMetadata DefaultMetadata(VideoCodec codec) {
   return data;
 }
 
-const std::string kDefaultReceiver = "TestingChromeCast";
+const char kDefaultReceiver[] = "TestingChromeCast";
 
 mojom::RemotingSinkMetadata GetDefaultSinkMetadata(bool enable) {
   mojom::RemotingSinkMetadata metadata;
   if (enable) {
     metadata.features.push_back(mojom::RemotingSinkFeature::RENDERING);
-    metadata.features.push_back(mojom::RemotingSinkFeature::CONTENT_DECRYPTION);
   } else {
     metadata.features.clear();
   }
@@ -91,8 +90,6 @@ class RendererControllerTest : public ::testing::Test,
   void UpdateRemotePlaybackCompatibility(bool is_compatible) override {
     is_remote_playback_compatible_ = is_compatible;
   }
-
-  void CreateCdm(bool is_remoting) { is_remoting_cdm_ = is_remoting; }
 
   void InitializeControllerAndBecomeDominant(
       const PipelineMetadata& pipeline_metadata,
@@ -162,7 +159,6 @@ class RendererControllerTest : public ::testing::Test,
 
  protected:
   bool is_rendering_remotely_ = false;
-  bool is_remoting_cdm_ = false;
   bool disable_pipeline_suspend_ = false;
   bool is_remote_playback_compatible_ = false;
   size_t decoded_bytes_ = 0;

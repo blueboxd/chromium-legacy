@@ -418,8 +418,8 @@ BluetoothAdapter::CreateAdvertisementCallback
 BluetoothTestBase::GetCreateAdvertisementCallback(Call expected) {
   if (expected == Call::EXPECTED)
     ++expected_success_callback_calls_;
-  return base::Bind(&BluetoothTestBase::CreateAdvertisementCallback,
-                    weak_factory_.GetWeakPtr(), expected);
+  return base::BindOnce(&BluetoothTestBase::CreateAdvertisementCallback,
+                        weak_factory_.GetWeakPtr(), expected);
 }
 
 BluetoothAdapter::DiscoverySessionCallback
@@ -487,8 +487,8 @@ BluetoothAdapter::AdvertisementErrorCallback
 BluetoothTestBase::GetAdvertisementErrorCallback(Call expected) {
   if (expected == Call::EXPECTED)
     ++expected_error_callback_calls_;
-  return base::Bind(&BluetoothTestBase::AdvertisementErrorCallback,
-                    weak_factory_.GetWeakPtr(), expected);
+  return base::BindOnce(&BluetoothTestBase::AdvertisementErrorCallback,
+                        weak_factory_.GetWeakPtr(), expected);
 }
 
 BluetoothDevice::ConnectErrorCallback

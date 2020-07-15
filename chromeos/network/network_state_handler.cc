@@ -343,8 +343,7 @@ void NetworkStateHandler::SetTetherScanState(bool is_scanning) {
 }
 
 void NetworkStateHandler::SetProhibitedTechnologies(
-    const std::vector<std::string>& prohibited_technologies,
-    const network_handler::ErrorCallback& error_callback) {
+    const std::vector<std::string>& prohibited_technologies) {
   // Make a copy of |prohibited_technologies| since the list may be edited
   // within this function.
   std::vector<std::string> prohibited_technologies_copy =
@@ -365,7 +364,7 @@ void NetworkStateHandler::SetProhibitedTechnologies(
   }
 
   shill_property_handler_->SetProhibitedTechnologies(
-      prohibited_technologies_copy, error_callback);
+      prohibited_technologies_copy);
   // Signal Device/Technology state changed.
   NotifyDeviceListChanged();
 }

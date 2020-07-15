@@ -25,11 +25,11 @@ void MockBluetoothGattNotifySession::StartTestNotifications(
     const std::vector<uint8_t>& value) {
   test_notifications_timer_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(10),
-      base::Bind(&MockBluetoothGattNotifySession::DoNotify,
-                 // base::Timer guarantees it won't call back after its
-                 // destructor starts.
-                 base::Unretained(this), base::Unretained(adapter),
-                 characteristic, value));
+      base::BindRepeating(&MockBluetoothGattNotifySession::DoNotify,
+                          // base::Timer guarantees it won't call back after its
+                          // destructor starts.
+                          base::Unretained(this), base::Unretained(adapter),
+                          characteristic, value));
 }
 
 void MockBluetoothGattNotifySession::StopTestNotifications() {

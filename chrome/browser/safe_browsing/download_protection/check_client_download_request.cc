@@ -54,15 +54,23 @@ void MaybeOverrideDlpScanResult(DownloadCheckResultReason reason,
                                 CheckDownloadRepeatingCallback callback,
                                 DownloadCheckResult deep_scan_result) {
   if (reason == REASON_DOWNLOAD_DANGEROUS ||
-      reason == REASON_DOWNLOAD_DANGEROUS_HOST) {
+      reason == REASON_DOWNLOAD_DANGEROUS_HOST ||
+      reason == REASON_DOWNLOAD_POTENTIALLY_UNWANTED ||
+      reason == REASON_DOWNLOAD_UNCOMMON) {
+    // Don't let safe deep scanning results override these previous
+    // dangerous reasons.
     switch (deep_scan_result) {
       case DownloadCheckResult::UNKNOWN:
       case DownloadCheckResult::SENSITIVE_CONTENT_WARNING:
       case DownloadCheckResult::DEEP_SCANNED_SAFE:
         if (reason == REASON_DOWNLOAD_DANGEROUS)
           callback.Run(DownloadCheckResult::DANGEROUS);
-        else
+        else if (reason == REASON_DOWNLOAD_DANGEROUS_HOST)
           callback.Run(DownloadCheckResult::DANGEROUS_HOST);
+        else if (reason == REASON_DOWNLOAD_POTENTIALLY_UNWANTED)
+          callback.Run(DownloadCheckResult::POTENTIALLY_UNWANTED);
+        else
+          callback.Run(DownloadCheckResult::UNCOMMON);
         return;
 
       case DownloadCheckResult::ASYNC_SCANNING:
@@ -287,7 +295,8 @@ void CheckClientDownloadRequest::UploadBinary(
     enterprise_connectors::AnalysisSettings settings) {
   if (reason == REASON_DOWNLOAD_DANGEROUS ||
       reason == REASON_DOWNLOAD_DANGEROUS_HOST ||
-      reason == REASON_WHITELISTED_URL) {
+      reason == REASON_DOWNLOAD_POTENTIALLY_UNWANTED ||
+      reason == REASON_DOWNLOAD_UNCOMMON || reason == REASON_WHITELISTED_URL) {
     service()->UploadForDeepScanning(
         item_,
         base::BindRepeating(&MaybeOverrideDlpScanResult, reason, callback_),

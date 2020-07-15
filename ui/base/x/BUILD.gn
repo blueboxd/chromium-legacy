@@ -43,7 +43,6 @@ jumbo_component("x") {
     "x11_topmost_window_finder.h",
     "x11_util.cc",
     "x11_util.h",
-    "x11_util_internal.h",
     "x11_whole_screen_move_loop.cc",
     "x11_whole_screen_move_loop.h",
     "x11_window.cc",

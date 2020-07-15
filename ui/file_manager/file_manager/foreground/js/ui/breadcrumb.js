@@ -450,7 +450,7 @@ class BreadCrumb extends HTMLElement {
 
     // Show drop-down below the elider button.
     const menu = this.shadowRoot.querySelector('cr-action-menu');
-    const top = elider.offsetTop + elider.offsetHeight + 4;
+    const top = elider.offsetTop + elider.offsetHeight + 8;
     !window.UNIT_TEST && menu.showAt(elider, {top: top});
 
     // Style drop-down and horizontal position.

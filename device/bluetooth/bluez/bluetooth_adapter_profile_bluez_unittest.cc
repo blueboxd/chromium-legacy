@@ -173,10 +173,10 @@ TEST_F(BluetoothAdapterProfileBlueZTest, DelegateCount) {
 
   BluetoothAdapterProfileBlueZ::Register(
       uuid, options,
-      base::Bind(&BluetoothAdapterProfileBlueZTest::ProfileSuccessCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothAdapterProfileBlueZTest::DBusErrorCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&BluetoothAdapterProfileBlueZTest::ProfileSuccessCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothAdapterProfileBlueZTest::DBusErrorCallback,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -210,10 +210,10 @@ TEST_F(BluetoothAdapterProfileBlueZTest, BlackHole) {
 
   BluetoothAdapterProfileBlueZ::Register(
       uuid, options,
-      base::Bind(&BluetoothAdapterProfileBlueZTest::ProfileSuccessCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothAdapterProfileBlueZTest::DBusErrorCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&BluetoothAdapterProfileBlueZTest::ProfileSuccessCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothAdapterProfileBlueZTest::DBusErrorCallback,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -246,10 +246,10 @@ TEST_F(BluetoothAdapterProfileBlueZTest, Routing) {
 
   BluetoothAdapterProfileBlueZ::Register(
       uuid, options,
-      base::Bind(&BluetoothAdapterProfileBlueZTest::ProfileSuccessCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothAdapterProfileBlueZTest::DBusErrorCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&BluetoothAdapterProfileBlueZTest::ProfileSuccessCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothAdapterProfileBlueZTest::DBusErrorCallback,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -327,18 +327,19 @@ TEST_F(BluetoothAdapterProfileBlueZTest, SimultaneousRegister) {
 
   adapter->UseProfile(
       uuid, fake_delegate_paired_.device_path_, options, &fake_delegate_paired_,
-      base::Bind(&BluetoothAdapterProfileBlueZTest::ProfileUserSuccessCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothAdapterProfileBlueZTest::BasicErrorCallback,
-                 base::Unretained(this)));
+      base::BindOnce(
+          &BluetoothAdapterProfileBlueZTest::ProfileUserSuccessCallback,
+          base::Unretained(this)),
+      base::BindOnce(&BluetoothAdapterProfileBlueZTest::BasicErrorCallback,
+                     base::Unretained(this)));
 
   adapter->UseProfile(
       uuid, fake_delegate_autopair_.device_path_, options,
       &fake_delegate_autopair_,
-      base::Bind(&BluetoothAdapterProfileBlueZTest::MatchedProfileCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothAdapterProfileBlueZTest::BasicErrorCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&BluetoothAdapterProfileBlueZTest::MatchedProfileCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothAdapterProfileBlueZTest::BasicErrorCallback,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -368,18 +369,19 @@ TEST_F(BluetoothAdapterProfileBlueZTest, SimultaneousRegisterFail) {
 
   adapter->UseProfile(
       uuid, fake_delegate_paired_.device_path_, options, &fake_delegate_paired_,
-      base::Bind(&BluetoothAdapterProfileBlueZTest::ProfileUserSuccessCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothAdapterProfileBlueZTest::BasicErrorCallback,
-                 base::Unretained(this)));
+      base::BindOnce(
+          &BluetoothAdapterProfileBlueZTest::ProfileUserSuccessCallback,
+          base::Unretained(this)),
+      base::BindOnce(&BluetoothAdapterProfileBlueZTest::BasicErrorCallback,
+                     base::Unretained(this)));
 
   adapter->UseProfile(
       uuid, fake_delegate_autopair_.device_path_, options,
       &fake_delegate_autopair_,
-      base::Bind(&BluetoothAdapterProfileBlueZTest::MatchedProfileCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothAdapterProfileBlueZTest::BasicErrorCallback,
-                 base::Unretained(this)));
+      base::BindOnce(&BluetoothAdapterProfileBlueZTest::MatchedProfileCallback,
+                     base::Unretained(this)),
+      base::BindOnce(&BluetoothAdapterProfileBlueZTest::BasicErrorCallback,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 

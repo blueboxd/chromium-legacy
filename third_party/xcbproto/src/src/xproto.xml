@@ -4686,7 +4686,7 @@ TODO: reasons?
     <field type="CARD8" name="left_pad" />
     <field type="CARD8" name="depth" />
     <pad bytes="2" />
-    <list type="BYTE" name="data" />
+    <list type="void" name="data" />
   </request>
 
   <!-- FIXME: data array in reply will include padding, but ought not to. -->
@@ -4702,7 +4702,7 @@ TODO: reasons?
       <field type="CARD8" name="depth" />
       <field type="VISUALID" name="visual" />
       <pad bytes="20" />
-      <list type="BYTE" name="data">
+      <list type="void" name="data">
         <op op="*">
           <fieldref>length</fieldref>
           <value>4</value>

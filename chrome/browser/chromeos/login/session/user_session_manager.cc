@@ -60,6 +60,7 @@
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
+#include "chrome/browser/chromeos/login/screens/discover_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_initializer.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
@@ -1263,7 +1264,7 @@ void UserSessionManager::InitProfilePreferences(
                        user_context.GetPublicSessionInputMethod());
 
     if (user_manager->GetPrimaryUser() == user &&
-        user->GetType() == user_manager::USER_TYPE_REGULAR &&
+        !DiscoverScreen::ShouldSkip() &&
         !user_manager->IsUserNonCryptohomeDataEphemeral(user->GetAccountId())) {
       chromeos::DiscoverManager::Get()
           ->GetModule<chromeos::DiscoverModulePinSetup>()

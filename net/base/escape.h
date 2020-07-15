@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 
+#include "base/strings/escape.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_offset_string_conversions.h"
@@ -71,48 +72,9 @@ NET_EXPORT base::string16 EscapeForHTML(base::StringPiece16 text);
 
 // Unescaping ------------------------------------------------------------------
 
-class UnescapeRule {
- public:
-  // A combination of the following flags that is passed to the unescaping
-  // functions.
-  typedef uint32_t Type;
-
-  enum {
-    // Don't unescape anything at all.
-    NONE = 0,
-
-    // Don't unescape anything special, but all normal unescaping will happen.
-    // This is a placeholder and can't be combined with other flags (since it's
-    // just the absence of them). All other unescape rules imply "normal" in
-    // addition to their special meaning. Things like escaped letters, digits,
-    // and most symbols will get unescaped with this mode.
-    NORMAL = 1 << 0,
-
-    // Convert %20 to spaces. In some places where we're showing URLs, we may
-    // want this. In places where the URL may be copied and pasted out, then
-    // you wouldn't want this since it might not be interpreted in one piece
-    // by other applications.  Other UTF-8 spaces will not be unescaped.
-    SPACES = 1 << 1,
-
-    // Unescapes '/' and '\\'. If these characters were unescaped, the resulting
-    // URL won't be the same as the source one. Moreover, they are dangerous to
-    // unescape in strings that will be used as file paths or names. This value
-    // should only be used when slashes don't have special meaning, like data
-    // URLs.
-    PATH_SEPARATORS = 1 << 2,
-
-    // Unescapes various characters that will change the meaning of URLs,
-    // including '%', '+', '&', '#'. Does not unescape path separators.
-    // If these characters were unescaped, the resulting URL won't be the same
-    // as the source one. This flag is used when generating final output like
-    // filenames for URLs where we won't be interpreting as a URL and want to do
-    // as much unescaping as possible.
-    URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS = 1 << 3,
-
-    // URL queries use "+" for space. This flag controls that replacement.
-    REPLACE_PLUS_WITH_SPACE = 1 << 4,
-  };
-};
+// TODO(crbug/1100760): Migrate callers to call functions in
+// base/strings/escape.
+using UnescapeRule = base::UnescapeRule;
 
 // Unescapes |escaped_text| and returns the result.
 // Unescaping consists of looking for the exact pattern "%XX", where each X is
@@ -164,15 +126,6 @@ NET_EXPORT bool UnescapeBinaryURLComponentSafe(base::StringPiece escaped_text,
 // Unescapes the following ampersand character codes from |text|:
 // &lt; &gt; &amp; &quot; &#39;
 NET_EXPORT base::string16 UnescapeForHTML(base::StringPiece16 text);
-
-// Returns true if |escaped_text| contains any element of |bytes| in
-// percent-encoded form.
-//
-// For example, if |bytes| is {'%', '/'}, returns true if |escaped_text|
-// contains "%25" or "%2F", but not if it just contains bare '%' or '/'
-// characters.
-NET_EXPORT bool ContainsEncodedBytes(base::StringPiece escaped_text,
-                                     const std::set<unsigned char>& bytes);
 
 }  // namespace net
 

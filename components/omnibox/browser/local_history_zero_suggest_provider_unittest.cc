@@ -222,26 +222,32 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Input) {
   StartProviderAndWaitUntilDone(/*text=*/"blah");
   ExpectMatches({});
 
-  // Following histogram should not be logged if zero-prefix suggestions are
+  // Following histograms should not be logged if zero-prefix suggestions are
   // not allowed.
   histogram_tester.ExpectTotalCount(
       "Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractedCount", 0);
+  histogram_tester.ExpectTotalCount(
+      "Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractionTime", 0);
 
   StartProviderAndWaitUntilDone(/*text=*/"", /*from_omnibox_focus=*/false);
   ExpectMatches({});
 
-  // Following histogram should not be logged if zero-prefix suggestions are
+  // Following histograms should not be logged if zero-prefix suggestions are
   // not allowed.
   histogram_tester.ExpectTotalCount(
       "Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractedCount", 0);
+  histogram_tester.ExpectTotalCount(
+      "Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractionTime", 0);
 
   StartProviderAndWaitUntilDone();
   ExpectMatches({{"hello world", 500}});
 
-  // Following histogram should be logged when zero-prefix suggestions are
+  // Following histograms should be logged when zero-prefix suggestions are
   // allowed and the keyword search terms database is queried.
   histogram_tester.ExpectUniqueSample(
       "Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractedCount", 1, 1);
+  histogram_tester.ExpectTotalCount(
+      "Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractionTime", 1);
   // Deletion histograms should not be logged unless a suggestion is deleted.
   histogram_tester.ExpectTotalCount(
       "Omnibox.LocalHistoryZeroSuggest.SyncDeleteTime", 0);

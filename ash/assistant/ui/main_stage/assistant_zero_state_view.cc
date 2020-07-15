@@ -17,6 +17,7 @@
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -25,6 +26,10 @@ namespace ash {
 namespace {
 
 using chromeos::assistant::features::IsBetterOnboardingEnabled;
+
+// Appearance.
+constexpr int kGreetingLabelTopMarginDip = 28;
+constexpr int kOnboardingViewTopMarginDip = 48;
 
 }  // namespace
 
@@ -79,6 +84,8 @@ void AssistantZeroStateView::InitLayout() {
   if (IsBetterOnboardingEnabled()) {
     onboarding_view_ =
         AddChildView(std::make_unique<AssistantOnboardingView>(delegate_));
+    onboarding_view_->SetBorder(
+        views::CreateEmptyBorder(kOnboardingViewTopMarginDip, 0, 0, 0));
   }
 
   // Greeting.
@@ -86,6 +93,8 @@ void AssistantZeroStateView::InitLayout() {
   greeting_label_->SetID(AssistantViewID::kGreetingLabel);
   greeting_label_->SetAutoColorReadabilityEnabled(false);
   greeting_label_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+  greeting_label_->SetBorder(
+      views::CreateEmptyBorder(kGreetingLabelTopMarginDip, 0, 0, 0));
   greeting_label_->SetEnabledColor(kTextColorPrimary);
   greeting_label_->SetFontList(
       assistant::ui::GetDefaultFontList()

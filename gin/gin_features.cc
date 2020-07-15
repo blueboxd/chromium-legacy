@@ -32,10 +32,10 @@ const base::Feature kV8PerContextMarkingWorklist{
 
 // Enables flushing of the instruction cache for the embedded blob.
 const base::Feature kV8FlushEmbeddedBlobICache{
-    "kV8FlushEmbeddedBlobICache", base::FEATURE_DISABLED_BY_DEFAULT};
+    "V8FlushEmbeddedBlobICache", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables reduced number of concurrent marking tasks.
 const base::Feature kV8ReduceConcurrentMarkingTasks{
-    "kV8ReduceConcurrentMarkingTasks", base::FEATURE_DISABLED_BY_DEFAULT};
+    "V8ReduceConcurrentMarkingTasks", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features

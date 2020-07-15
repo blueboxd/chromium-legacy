@@ -34,9 +34,11 @@ jboolean JNI_ClipboardAndroidTestSupport_NativeWriteHtml(
   }
   auto* clipboard = Clipboard::GetForCurrentThread();
   return clipboard->IsFormatAvailable(ClipboardFormatType::GetHtmlType(),
-                                      ClipboardBuffer::kCopyPaste) &&
+                                      ClipboardBuffer::kCopyPaste,
+                                      /* data_dst = */ nullptr) &&
          clipboard->IsFormatAvailable(ClipboardFormatType::GetPlainTextType(),
-                                      ClipboardBuffer::kCopyPaste);
+                                      ClipboardBuffer::kCopyPaste,
+                                      /* data_dst = */ nullptr);
 }
 
 jboolean JNI_ClipboardAndroidTestSupport_NativeClipboardContains(
@@ -47,13 +49,15 @@ jboolean JNI_ClipboardAndroidTestSupport_NativeClipboardContains(
   // well as the Android side.
   auto* clipboard = Clipboard::GetForCurrentThread();
   if (clipboard->IsFormatAvailable(ClipboardFormatType::GetHtmlType(),
-                                   ClipboardBuffer::kCopyPaste)) {
+                                   ClipboardBuffer::kCopyPaste,
+                                   /* data_dst = */ nullptr)) {
     LOG(ERROR) << "HTML still in clipboard.";
     return false;
   }
 
   if (!clipboard->IsFormatAvailable(ClipboardFormatType::GetPlainTextType(),
-                                    ClipboardBuffer::kCopyPaste)) {
+                                    ClipboardBuffer::kCopyPaste,
+                                    /* data_dst = */ nullptr)) {
     LOG(ERROR) << "Plain text not in clipboard.";
     return false;
   }
@@ -62,7 +66,8 @@ jboolean JNI_ClipboardAndroidTestSupport_NativeClipboardContains(
   base::android::ConvertJavaStringToUTF8(env, j_text, &expected_text);
 
   std::string contents;
-  clipboard->ReadAsciiText(ClipboardBuffer::kCopyPaste, &contents);
+  clipboard->ReadAsciiText(ClipboardBuffer::kCopyPaste,
+                           /* data_dst = */ nullptr, &contents);
   if (expected_text != contents) {
     LOG(ERROR) << "Clipboard contents do not match. Expected: " << expected_text
                << " Actual: " << contents;

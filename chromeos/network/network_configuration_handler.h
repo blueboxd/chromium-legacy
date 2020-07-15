@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/network/network_configuration_observer.h"
@@ -40,14 +41,18 @@ namespace chromeos {
 // For accessing lists of remembered networks, and other state information, see
 // the class NetworkStateHandler.
 //
-// Note on callbacks: Because all the functions here are meant to be
-// asynchronous, they all take a |callback| of some type, and an
-// |error_callback|. When the operation succeeds, |callback| will be called, and
-// when it doesn't, |error_callback| will be called with information about the
-// error, including a symbolic name for the error and often some error message
-// that is suitable for logging. None of the error message text is meant for
-// user consumption.  Both |callback| and |error_callback| are permitted to be
-// null callbacks.
+// Note on callbacks: These methods are all asynchronous. There are two callback
+// styles for these methods:
+//
+// Original: Separate callbacks for success (|callback|) and failure
+// (|error_callback|). One or the other will be called. See ErrorCallback in
+// network_handler_callbacks.h for more details.
+//
+// Preferred: A single callback is provided. This makes using OnceCallback
+// simpler and ensures that the one callback will be called. An Optional<>
+// result is provided which will be nullopt on failure. An Optional<string>
+// error identifier may also be provided.
+
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
     : public NetworkStateHandlerObserver {
  public:
@@ -57,11 +62,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
   void AddObserver(NetworkConfigurationObserver* observer);
   void RemoveObserver(NetworkConfigurationObserver* observer);
 
-  // Gets the properties of the network with id |service_path|. See note on
-  // |callback| and |error_callback|, in class description above.
+  // Gets the properties of the network with id |service_path|.
   void GetShillProperties(const std::string& service_path,
-                          network_handler::DictionaryResultCallback callback,
-                          const network_handler::ErrorCallback& error_callback);
+                          network_handler::ResultCallback callback);
 
   // Sets the properties of the network with id |service_path|. This means the
   // given properties will be merged with the existing settings, and it won't
@@ -170,12 +173,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
                                   const base::Closure& callback);
 
   // Set the Name and GUID properties correctly and Invoke |callback|.
-  void GetPropertiesCallback(
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback,
-      const std::string& service_path,
-      DBusMethodCallStatus call_status,
-      base::Value properties);
+  void GetPropertiesCallback(network_handler::ResultCallback callback,
+                             const std::string& service_path,
+                             DBusMethodCallStatus call_status,
+                             base::Value properties);
 
   // Invoke |callback| and inform NetworkStateHandler to request an update
   // for the service after setting properties.
@@ -191,11 +192,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
 
   // Invoke |callback| and inform NetworkStateHandler to request an update
   // for the service after clearing properties.
-  void ClearPropertiesSuccessCallback(
-      const std::string& service_path,
-      const std::vector<std::string>& names,
-      const base::Closure& callback,
-      const base::ListValue& result);
+  void ClearPropertiesSuccessCallback(const std::string& service_path,
+                                      const std::vector<std::string>& names,
+                                      const base::Closure& callback,
+                                      const base::ListValue& result);
   void ClearPropertiesErrorCallback(
       const std::string& service_path,
       const network_handler::ErrorCallback& error_callback,

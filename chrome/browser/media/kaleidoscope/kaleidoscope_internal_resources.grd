@@ -15,21 +15,21 @@
         use_base_dir="false" type="BINDATA" />
 
       <!-- Private resources -->
-      <include name="IDR_KALEIDOSCOPE_CONTENT_CSS" file="internal/resources/content.css" type="chrome_html" flattenhtml="true" compress="gzip" />
-      <include name="IDR_KALEIDOSCOPE_CONTENT_HTML" file="internal/resources/content.html" type="BINDATA" compress="gzip" />
-      <include name="IDR_KALEIDOSCOPE_CONTENT_JS" file="${root_gen_dir}/chrome/browser/media/kaleidoscope/internal/resources/ks-content.js" use_base_dir="false" type="BINDATA" compress="gzip" />
-      <include name="IDR_KALEIDOSCOPE_HTML" file="internal/resources/kaleidoscope.html" type="BINDATA" compress="gzip" />
-      <include name="IDR_KALEIDOSCOPE_JS" file="internal/resources/kaleidoscope.js" type="BINDATA" compress="gzip" />
-      <include name="IDR_KALEIDOSCOPE_MESSAGES_JS" file="internal/resources/messages.js" type="BINDATA" compress="gzip" />
-      <include name="IDR_KALEIDOSCOPE_UTILS_JS" file="internal/resources/utils.js" type="BINDATA" compress="gzip" />
-      <include name="IDR_GEOMETRY_MOJOM_LITE_JS" file="${root_gen_dir}/ui/gfx/geometry/mojom/geometry.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />
-      <include name="IDR_KALEIDOSCOPE_MOJOM_LITE_JS" file="${root_gen_dir}/chrome/browser/media/kaleidoscope/mojom/kaleidoscope.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_KALEIDOSCOPE_CONTENT_CSS" file="internal/resources/content.css" type="chrome_html" flattenhtml="true" />
+      <include name="IDR_KALEIDOSCOPE_CONTENT_HTML" file="internal/resources/content.html" type="BINDATA" />
+      <include name="IDR_KALEIDOSCOPE_CONTENT_JS" file="${root_gen_dir}/chrome/browser/media/kaleidoscope/internal/resources/ks-content.js" use_base_dir="false" type="BINDATA" />
+      <include name="IDR_KALEIDOSCOPE_HTML" file="internal/resources/kaleidoscope.html" type="BINDATA" />
+      <include name="IDR_KALEIDOSCOPE_JS" file="internal/resources/kaleidoscope.js" type="BINDATA" />
+      <include name="IDR_KALEIDOSCOPE_MESSAGES_JS" file="internal/resources/messages.js" type="BINDATA" />
+      <include name="IDR_KALEIDOSCOPE_UTILS_JS" file="internal/resources/utils.js" type="BINDATA" />
+      <include name="IDR_GEOMETRY_MOJOM_LITE_JS" file="${root_gen_dir}/ui/gfx/geometry/mojom/geometry.mojom-lite.js" use_base_dir="false" type="BINDATA" />
+      <include name="IDR_KALEIDOSCOPE_MOJOM_LITE_JS" file="${root_gen_dir}/chrome/browser/media/kaleidoscope/mojom/kaleidoscope.mojom-lite.js" use_base_dir="false" type="BINDATA" />
 
       <!-- Strings -->
       <include name="IDR_KALEIDOSCOPE_LOCALE_EN" file="${root_gen_dir}/chrome/browser/media/kaleidoscope/internal/resources/_locales/en/messages.json" use_base_dir="false" type="BINDATA" compress="gzip" />
 
       <!-- Google Sans -->
-      <include name="IDR_GOOGLE_SANS_CSS" file="internal/resources/fonts/fonts.css" type="BINDATA" compress="gzip" />
+      <include name="IDR_GOOGLE_SANS_CSS" file="internal/resources/fonts/fonts.css" type="BINDATA" />
       <include name="IDR_GOOGLE_SANS_BOLD" file="internal/resources/fonts/GoogleSans-Bold.woff2" type="BINDATA" compress="gzip" />
       <include name="IDR_GOOGLE_SANS_MEDIUM" file="internal/resources/fonts/GoogleSans-Medium.woff2" type="BINDATA" compress="gzip" />
       <include name="IDR_GOOGLE_SANS_REGULAR" file="internal/resources/fonts/GoogleSans-Regular.woff2" type="BINDATA" compress="gzip" />

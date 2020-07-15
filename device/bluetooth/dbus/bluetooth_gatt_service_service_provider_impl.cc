@@ -43,22 +43,22 @@ BluetoothGattServiceServiceProviderImpl::
 
   exported_object_->ExportMethod(
       dbus::kDBusPropertiesInterface, dbus::kDBusPropertiesGet,
-      base::Bind(&BluetoothGattServiceServiceProviderImpl::Get,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&BluetoothGattServiceServiceProviderImpl::Get,
+                          weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&BluetoothGattServiceServiceProviderImpl::OnExported,
                      weak_ptr_factory_.GetWeakPtr()));
 
   exported_object_->ExportMethod(
       dbus::kDBusPropertiesInterface, dbus::kDBusPropertiesSet,
-      base::Bind(&BluetoothGattServiceServiceProviderImpl::Set,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&BluetoothGattServiceServiceProviderImpl::Set,
+                          weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&BluetoothGattServiceServiceProviderImpl::OnExported,
                      weak_ptr_factory_.GetWeakPtr()));
 
   exported_object_->ExportMethod(
       dbus::kDBusPropertiesInterface, dbus::kDBusPropertiesGetAll,
-      base::Bind(&BluetoothGattServiceServiceProviderImpl::GetAll,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&BluetoothGattServiceServiceProviderImpl::GetAll,
+                          weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&BluetoothGattServiceServiceProviderImpl::OnExported,
                      weak_ptr_factory_.GetWeakPtr()));
 }

@@ -246,9 +246,14 @@ cr.define('ntp', function() {
     $('card-slider-frame').classList.toggle('showing-login-area', !!showLogin);
 
     if (showLogin) {
-      // TODO(dbeam): we should use .textContent instead to mitigate XSS.
-      $('login-status-header').innerHTML = loginHeader;
-      $('login-status-sub-header').innerHTML = loginSubHeader;
+      $('login-status-header').innerHTML = trustedTypes.emptyHTML;
+      $('login-status-header')
+          .appendChild(
+              parseHtmlSubset(loginHeader, undefined, ['class', 'is']));
+      $('login-status-sub-header').innerHTML = trustedTypes.emptyHTML;
+      $('login-status-sub-header')
+          .appendChild(
+              parseHtmlSubset(loginSubHeader, undefined, ['class', 'is']));
 
       const headerContainer = $('login-status-header-container');
       headerContainer.classList.toggle('login-status-icon', !!iconURL);

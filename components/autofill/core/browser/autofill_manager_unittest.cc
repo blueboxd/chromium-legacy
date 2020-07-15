@@ -8301,6 +8301,41 @@ TEST_F(AutofillManagerTest, DontImportUpiIdWhenIncognito) {
   EXPECT_EQ(0, personal_data_.num_times_save_upi_id_called());
 }
 
+// AutofillManagerTest with kAutofillDisabledMixedForms feature enabled.
+class AutofillManagerTestWithMixedForms : public AutofillManagerTest {
+ protected:
+  AutofillManagerTestWithMixedForms() = default;
+  ~AutofillManagerTestWithMixedForms() override = default;
+
+  void SetUp() override {
+    AutofillManagerTest::SetUp();
+
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kAutofillPreventMixedFormsFilling);
+  }
+};
+
+// Test that if a form is mixed content we show a warning instead of any
+// suggestions.
+TEST_F(AutofillManagerTestWithMixedForms, GetSuggestions_MixedForm) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  FormFieldData field;
+  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+  form.fields.push_back(field);
+
+  GetAutofillSuggestions(form, form.fields[0]);
+
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(l10n_util::GetStringUTF8(IDS_AUTOFILL_WARNING_MIXED_FORM), "",
+                 "", POPUP_ITEM_ID_MIXED_FORM_MESSAGE));
+}
+
 // Desktop only tests.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 class AutofillManagerTestForVirtualCardOption : public AutofillManagerTest {

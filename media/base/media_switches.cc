@@ -242,6 +242,11 @@ const base::Feature kResumeBackgroundVideo {
 #endif
 };
 
+// When enabled, MediaCapabilities will check with GPU Video Accelerator
+// Factories to determine isPowerEfficient = true/false.
+const base::Feature kMediaCapabilitiesQueryGpuFactories{
+    "MediaCapabilitiesQueryGpuFactories", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable Media Capabilities with finch-parameters.
 const base::Feature kMediaCapabilitiesWithParameters{
     "MediaCapabilitiesWithParameters", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -405,7 +410,7 @@ const base::Feature kUseNewMediaCache{"use-new-media-cache",
 
 // Enables using the media history store to store media engagement metrics.
 const base::Feature kUseMediaHistoryStore{"UseMediaHistoryStore",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use R16 texture for 9-16 bit channel instead of half-float conversion by CPU.
 const base::Feature kUseR16Texture{"use-r16-texture",
@@ -616,7 +621,7 @@ const base::Feature kMediaFoundationAsyncH264Encoding{
 
 // Enables AV1 decode acceleration for Windows.
 const base::Feature MEDIA_EXPORT kMediaFoundationAV1Decoding{
-    "MediaFoundationAV1Decoding", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MediaFoundationAV1Decoding", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables MediaFoundation based video capture
 const base::Feature kMediaFoundationVideoCapture{

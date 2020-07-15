@@ -126,7 +126,7 @@ TEST_F(SafeBrowsingPrefsTest, EnhancedProtection) {
   // Confirm default state.
   EXPECT_FALSE(IsEnhancedProtectionEnabled(prefs_));
 
-  SetEnhancedProtectionPref(&prefs_, true);
+  SetEnhancedProtectionPrefForTests(&prefs_, true);
   {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndEnableFeature(kEnhancedProtection);

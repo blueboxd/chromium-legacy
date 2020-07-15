@@ -77,6 +77,18 @@ cr.define('cr.ui', function() {
    */
   BubbleBase.MIN_VIEWPORT_EDGE_MARGIN = 2;
 
+  /**
+   * This is used to create TrustedHTML.
+   * @type {!TrustedTypePolicy}
+   */
+  const staticHtmlPolicy = trustedTypes.createPolicy('cr-ui-bubble-js-static', {
+    createHTML: () => {
+      return '<div class="bubble-content"></div>' +
+          '<div class="bubble-shadow"></div>' +
+          '<div class="bubble-arrow"></div>';
+    },
+  });
+
   BubbleBase.prototype = {
     // Set up the prototype chain.
     __proto__: HTMLDivElement.prototype,
@@ -92,9 +104,10 @@ cr.define('cr.ui', function() {
      */
     decorate() {
       this.className = 'bubble';
-      this.innerHTML = '<div class="bubble-content"></div>' +
-          '<div class="bubble-shadow"></div>' +
-          '<div class="bubble-arrow"></div>';
+      // TODO(Jun.Kokatsu@microsoft.com): remove an empty string argument
+      // once supported.
+      // https://github.com/w3c/webappsec-trusted-types/issues/278
+      this.innerHTML = staticHtmlPolicy.createHTML('');
       this.hidden = true;
       this.bubbleAlignment = cr.ui.BubbleAlignment.ENTIRELY_VISIBLE;
     },
@@ -123,7 +136,7 @@ cr.define('cr.ui', function() {
       }
 
       const bubbleContent = this.querySelector('.bubble-content');
-      bubbleContent.innerHTML = '';
+      bubbleContent.innerHTML = trustedTypes.emptyHTML;
       bubbleContent.appendChild(node);
     },
 

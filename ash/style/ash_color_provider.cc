@@ -16,6 +16,10 @@
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/background.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/webui/resources/css/cros_colors.h"
 
 namespace ash {
@@ -49,6 +53,9 @@ constexpr int kLightBackgroundBlendAlpha = 191;  // 75%
 // The default background color that can be applied on any layer.
 constexpr SkColor kBackgroundColorDefaultLight = SK_ColorWHITE;
 constexpr SkColor kBackgroundColorDefaultDark = gfx::kGoogleGrey900;
+
+// The spacing between a pill button's icon and label, if it has both.
+constexpr int kPillButtonImageLabelSpacingDp = 8;
 
 // Gets the color mode value from feature flag "--ash-color-mode".
 AshColorProvider::AshColorMode GetColorModeFromCommandLine() {
@@ -171,10 +178,10 @@ SkColor AshColorProvider::GetContentLayerColor(
 
 AshColorProvider::RippleAttributes AshColorProvider::GetRippleAttributes(
     SkColor bg_color) const {
-  const SkColor base_color = color_utils::GetColorWithMaxContrast(bg_color);
-  const float opacity = color_utils::IsDark(base_color)
-                            ? kDarkInkRippleOpacity
-                            : kLightInkRippleOpacity;
+  const bool is_dark = color_utils::IsDark(bg_color);
+  const SkColor base_color = is_dark ? SK_ColorBLACK : SK_ColorWHITE;
+  const float opacity =
+      is_dark ? kLightInkRippleOpacity : kDarkInkRippleOpacity;
   return RippleAttributes(base_color, opacity, opacity);
 }
 
@@ -183,6 +190,57 @@ SkColor AshColorProvider::GetBackgroundColor(AshColorMode color_mode) const {
          color_mode == AshColorProvider::AshColorMode::kDark);
   return is_themed_ ? GetBackgroundThemedColor(color_mode)
                     : GetBackgroundDefaultColor(color_mode);
+}
+
+void AshColorProvider::DecoratePillButton(views::LabelButton* button,
+                                          ButtonType type,
+                                          AshColorMode given_color_mode,
+                                          const gfx::VectorIcon& icon) {
+  DCHECK_EQ(ButtonType::kPillButtonWithIcon, type);
+  DCHECK(!icon.is_empty());
+  SkColor enabled_icon_color = GetContentLayerColor(
+      ContentLayerType::kButtonIconColor, given_color_mode);
+  button->SetImage(views::Button::STATE_NORMAL,
+                   gfx::CreateVectorIcon(icon, enabled_icon_color));
+  button->SetImage(
+      views::Button::STATE_DISABLED,
+      gfx::CreateVectorIcon(icon, GetDisabledColor(enabled_icon_color)));
+
+  SkColor enabled_text_color = GetContentLayerColor(
+      ContentLayerType::kButtonLabelColor, given_color_mode);
+  button->SetEnabledTextColors(enabled_text_color);
+  button->SetTextColor(views::Button::STATE_DISABLED,
+                       GetDisabledColor(enabled_text_color));
+  button->SetImageLabelSpacing(kPillButtonImageLabelSpacingDp);
+
+  // TODO(sammiequon): Add a default rounded rect background. It should probably
+  // be optional as some buttons still require customization. At that point we
+  // should package the parameters of this function into a struct.
+}
+
+void AshColorProvider::DecorateCloseButton(views::ImageButton* button,
+                                           ButtonType type,
+                                           AshColorMode given_color_mode,
+                                           int button_size,
+                                           const gfx::VectorIcon& icon) {
+  DCHECK_EQ(ButtonType::kCloseButtonWithSmallBase, type);
+  DCHECK(!icon.is_empty());
+  SkColor enabled_icon_color = GetContentLayerColor(
+      ContentLayerType::kButtonIconColor, given_color_mode);
+  button->SetImage(views::Button::STATE_NORMAL,
+                   gfx::CreateVectorIcon(icon, enabled_icon_color));
+
+  // Add a rounded rect background. The rounding will be half the button size so
+  // it is a circle.
+  SkColor icon_background_color = AshColorProvider::Get()->GetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kTransparent80, given_color_mode);
+  button->SetBackground(
+      CreateBackgroundFromPainter(views::Painter::CreateSolidRoundRectPainter(
+          icon_background_color, button_size / 2)));
+
+  // TODO(sammiequon): Add background blur as per spec. Background blur is quite
+  // heavy, and we may have many close buttons showing at a time. They'll be
+  // added separately so its easier to monitor performance.
 }
 
 SkColor AshColorProvider::GetShieldLayerColorImpl(

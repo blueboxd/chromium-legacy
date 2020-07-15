@@ -39,13 +39,17 @@ uint64_t TestClipboard::GetSequenceNumber(ClipboardBuffer buffer) const {
   return GetStore(buffer).sequence_number;
 }
 
-bool TestClipboard::IsFormatAvailable(const ClipboardFormatType& format,
-                                      ClipboardBuffer buffer) const {
+// TODO(crbug.com/1103215): |data_dst| should be supported.
+bool TestClipboard::IsFormatAvailable(
+    const ClipboardFormatType& format,
+    ClipboardBuffer buffer,
+    const ui::ClipboardDataEndpoint* data_dst) const {
 #if defined(OS_LINUX)
   // The linux clipboard treats the presence of text on the clipboard
   // as the url format being available.
   if (format.Equals(ClipboardFormatType::GetUrlType()))
-    return IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer);
+    return IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer,
+                             data_dst);
 #endif  // OS_LINUX
   const DataStore& store = GetStore(buffer);
   return base::Contains(store.data, format);
@@ -55,26 +59,31 @@ void TestClipboard::Clear(ClipboardBuffer buffer) {
   GetStore(buffer).Clear();
 }
 
+// TODO(crbug.com/1103215): |data_dst| should be supported.
 void TestClipboard::ReadAvailableTypes(
     ClipboardBuffer buffer,
+    const ClipboardDataEndpoint* data_dst,
     std::vector<base::string16>* types) const {
   DCHECK(types);
   types->clear();
 
-  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer))
+  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer,
+                        data_dst))
     types->push_back(base::UTF8ToUTF16(kMimeTypeText));
-  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), buffer))
+  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), buffer, data_dst))
     types->push_back(base::UTF8ToUTF16(kMimeTypeHTML));
 
-  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer))
+  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer, data_dst))
     types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
-  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer))
+  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer, data_dst))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
 }
 
+// TODO(crbug.com/1103215): |data_dst| should be supported.
 std::vector<base::string16>
 TestClipboard::ReadAvailablePlatformSpecificFormatNames(
-    ClipboardBuffer buffer) const {
+    ClipboardBuffer buffer,
+    const ui::ClipboardDataEndpoint* data_dst) const {
   const auto& data = GetStore(buffer).data;
   std::vector<base::string16> types;
   types.reserve(data.size());
@@ -83,7 +92,8 @@ TestClipboard::ReadAvailablePlatformSpecificFormatNames(
 
   // Some platforms add additional raw types to represent text, or offer them
   // as available formats by automatically converting between them.
-  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer)) {
+  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer,
+                        data_dst)) {
 #if defined(USE_X11)
     types.push_back(base::ASCIIToUTF16("TEXT"));
     types.push_back(base::ASCIIToUTF16("STRING"));
@@ -99,14 +109,18 @@ TestClipboard::ReadAvailablePlatformSpecificFormatNames(
   return types;
 }
 
+// TODO(crbug.com/1103215): |data_dst| should be supported.
 void TestClipboard::ReadText(ClipboardBuffer buffer,
+                             const ClipboardDataEndpoint* data_dst,
                              base::string16* result) const {
   std::string result8;
-  ReadAsciiText(buffer, &result8);
+  ReadAsciiText(buffer, data_dst, &result8);
   *result = base::UTF8ToUTF16(result8);
 }
 
+// TODO(crbug.com/1103215): |data_dst| should be supported.
 void TestClipboard::ReadAsciiText(ClipboardBuffer buffer,
+                                  const ClipboardDataEndpoint* data_dst,
                                   std::string* result) const {
   result->clear();
   const DataStore& store = GetStore(buffer);
@@ -115,7 +129,9 @@ void TestClipboard::ReadAsciiText(ClipboardBuffer buffer,
     *result = it->second;
 }
 
+// TODO(crbug.com/1103215): |data_dst| should be supported.
 void TestClipboard::ReadHTML(ClipboardBuffer buffer,
+                             const ClipboardDataEndpoint* data_dst,
                              base::string16* markup,
                              std::string* src_url,
                              uint32_t* fragment_start,
@@ -131,7 +147,10 @@ void TestClipboard::ReadHTML(ClipboardBuffer buffer,
   *fragment_end = base::checked_cast<uint32_t>(markup->size());
 }
 
-void TestClipboard::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
+// TODO(crbug.com/1103215): |data_dst| should be supported.
+void TestClipboard::ReadRTF(ClipboardBuffer buffer,
+                            const ClipboardDataEndpoint* data_dst,
+                            std::string* result) const {
   result->clear();
   const DataStore& store = GetStore(buffer);
   auto it = store.data.find(ClipboardFormatType::GetRtfType());
@@ -139,16 +158,22 @@ void TestClipboard::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
     *result = it->second;
 }
 
+// TODO(crbug.com/1103215): |data_dst| should be supported.
 void TestClipboard::ReadImage(ClipboardBuffer buffer,
+                              const ClipboardDataEndpoint* data_dst,
                               ReadImageCallback callback) const {
   std::move(callback).Run(GetStore(buffer).image);
 }
 
+// TODO(crbug.com/1103215): |data_dst| should be supported.
 void TestClipboard::ReadCustomData(ClipboardBuffer buffer,
                                    const base::string16& type,
+                                   const ClipboardDataEndpoint* data_dst,
                                    base::string16* result) const {}
 
-void TestClipboard::ReadBookmark(base::string16* title,
+// TODO(crbug.com/1103215): |data_dst| should be supported.
+void TestClipboard::ReadBookmark(const ClipboardDataEndpoint* data_dst,
+                                 base::string16* title,
                                  std::string* url) const {
   const DataStore& store = GetDefaultStore();
   if (url) {
@@ -160,7 +185,9 @@ void TestClipboard::ReadBookmark(base::string16* title,
     *title = base::UTF8ToUTF16(store.url_title);
 }
 
+// TODO(crbug.com/1103215): |data_dst| should be supported.
 void TestClipboard::ReadData(const ClipboardFormatType& format,
+                             const ClipboardDataEndpoint* data_dst,
                              std::string* result) const {
   result->clear();
   const DataStore& store = GetDefaultStore();

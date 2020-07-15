@@ -246,9 +246,11 @@ class OmniboxViewViewsTestBase : public ChromeViewsTestBase {
 
 // The display URL used in simplified domain display tests.
 const base::string16 kSimplifiedDomainDisplayUrl =
-    base::ASCIIToUTF16("foo.example.test/bar");
-const base::string16 kSimplifiedDomainDisplayUrlHostname =
-    base::ASCIIToUTF16("foo.example.test");
+    base::ASCIIToUTF16("https://foo.example.test/bar");
+const base::string16 kSimplifiedDomainDisplayUrlHostnameAndScheme =
+    base::ASCIIToUTF16("https://foo.example.test");
+const base::string16 kSimplifiedDomainDisplayUrlSubdomainAndScheme =
+    base::ASCIIToUTF16("https://foo.");
 const base::string16 kSimplifiedDomainDisplayUrlSubdomain =
     base::ASCIIToUTF16("foo.");
 const base::string16 kSimplifiedDomainDisplayUrlPath =
@@ -832,21 +834,25 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutURL) {
   EXPECT_EQ(expected_text, omnibox_view()->GetText());
 
   // Make sure the plain text format is available, but the HTML one isn't.
-  EXPECT_TRUE(clipboard->IsFormatAvailable(
-      ui::ClipboardFormatType::GetPlainTextType(), clipboard_buffer));
-  EXPECT_FALSE(clipboard->IsFormatAvailable(
-      ui::ClipboardFormatType::GetHtmlType(), clipboard_buffer));
+  EXPECT_TRUE(
+      clipboard->IsFormatAvailable(ui::ClipboardFormatType::GetPlainTextType(),
+                                   clipboard_buffer, /* data_dst = */ nullptr));
+  EXPECT_FALSE(
+      clipboard->IsFormatAvailable(ui::ClipboardFormatType::GetHtmlType(),
+                                   clipboard_buffer, /* data_dst = */ nullptr));
 
   // Windows clipboard only supports text URLs.
   // Mac clipboard not reporting URL format available for some reason.
   // crbug.com/751031
 #if defined(OS_LINUX)
-  EXPECT_TRUE(clipboard->IsFormatAvailable(
-      ui::ClipboardFormatType::GetUrlType(), clipboard_buffer));
+  EXPECT_TRUE(
+      clipboard->IsFormatAvailable(ui::ClipboardFormatType::GetUrlType(),
+                                   clipboard_buffer, /* data_dst = */ nullptr));
 #endif
 
   std::string read_from_clipboard;
-  clipboard->ReadAsciiText(clipboard_buffer, &read_from_clipboard);
+  clipboard->ReadAsciiText(clipboard_buffer, /* data_dst = */ nullptr,
+                           &read_from_clipboard);
   EXPECT_EQ("https://test.com/", read_from_clipboard);
 }
 
@@ -867,13 +873,16 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutUserText) {
 
   // Make sure HTML format isn't written. See
   // BookmarkNodeData::WriteToClipboard() for details.
-  EXPECT_TRUE(clipboard->IsFormatAvailable(
-      ui::ClipboardFormatType::GetPlainTextType(), clipboard_buffer));
-  EXPECT_FALSE(clipboard->IsFormatAvailable(
-      ui::ClipboardFormatType::GetHtmlType(), clipboard_buffer));
+  EXPECT_TRUE(
+      clipboard->IsFormatAvailable(ui::ClipboardFormatType::GetPlainTextType(),
+                                   clipboard_buffer, /* data_dst = */ nullptr));
+  EXPECT_FALSE(
+      clipboard->IsFormatAvailable(ui::ClipboardFormatType::GetHtmlType(),
+                                   clipboard_buffer, /* data_dst = */ nullptr));
 
   std::string read_from_clipboard;
-  clipboard->ReadAsciiText(clipboard_buffer, &read_from_clipboard);
+  clipboard->ReadAsciiText(clipboard_buffer, /* data_dst = */ nullptr,
+                           &read_from_clipboard);
   EXPECT_EQ("user text", read_from_clipboard);
 }
 
@@ -1373,34 +1382,47 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideFromModel) {
 }
 
 // Checks that |render_text|'s current display rect and offset does not display
-// |path|, and also does not display |subdomain| if
+// |path|, and also does not display |subdomain_and_scheme| if
 // |should_elide_to_registrable_domain| is true.
 //
-// |subdomain| is assumed to be a prefix of |hostname|. |subdomain| should
-// include a trailing "." and |path| should include a leading "/".
+// |subdomain_and_scheme| is assumed to be a prefix of |hostname_and_scheme|.
+// |subdomain_and_scheme| and |subdomain| should include a trailing ".", and
+// |path| should include a leading "/".
 void ExpectElidedToSimplifiedDomain(gfx::RenderText* render_text,
+                                    const base::string16& subdomain_and_scheme,
                                     const base::string16& subdomain,
-                                    const base::string16& hostname,
+                                    const base::string16& hostname_and_scheme,
                                     const base::string16& path,
                                     bool should_elide_to_registrable_domain) {
-  gfx::Rect subdomain_rect;
-  for (const auto& rect :
-       render_text->GetSubstringBounds(gfx::Range(0, subdomain.size()))) {
-    subdomain_rect.Union(rect);
+  gfx::Rect subdomain_and_scheme_rect;
+  for (const auto& rect : render_text->GetSubstringBounds(
+           gfx::Range(0, subdomain_and_scheme.size()))) {
+    subdomain_and_scheme_rect.Union(rect);
   }
   gfx::Rect path_rect;
   for (const auto& rect : render_text->GetSubstringBounds(
-           gfx::Range(hostname.size(), hostname.size() + path.size()))) {
+           gfx::Range(hostname_and_scheme.size(),
+                      hostname_and_scheme.size() + path.size()))) {
     path_rect.Union(rect);
   }
   EXPECT_FALSE(render_text->display_rect().Contains(path_rect));
   if (should_elide_to_registrable_domain) {
-    EXPECT_FALSE(render_text->display_rect().Contains(subdomain_rect));
-    EXPECT_EQ(subdomain_rect.width(),
+    EXPECT_FALSE(
+        render_text->display_rect().Contains(subdomain_and_scheme_rect));
+    EXPECT_EQ(subdomain_and_scheme_rect.width(),
               -1 * render_text->GetUpdatedDisplayOffset().x());
   } else {
-    EXPECT_TRUE(render_text->display_rect().Contains(subdomain_rect));
-    EXPECT_EQ(0, render_text->GetUpdatedDisplayOffset().x());
+    // When elision to registrable domain is disabled, the scheme should be
+    // hidden but the subdomain should not be.
+    EXPECT_FALSE(
+        render_text->display_rect().Contains(subdomain_and_scheme_rect));
+    gfx::Rect subdomain_rect;
+    for (const auto& rect :
+         render_text->GetSubstringBounds(gfx::Range(0, subdomain.size()))) {
+      subdomain_rect.Union(rect);
+    }
+    EXPECT_EQ(subdomain_rect.x() - render_text->display_rect().x(),
+              render_text->GetUpdatedDisplayOffset().x());
   }
 }
 
@@ -1443,22 +1465,24 @@ bool IsPartlyThroughSimplifiedDomainElision(gfx::RenderText* render_text,
 }
 
 // Returns true if the last color applied to the path (assumed to begin after
-// |hostname| ends) in |omnibox_view| was transparent.
+// |hostname_and_scheme| ends) in |omnibox_view| was transparent.
 bool IsPathTransparent(TestingOmniboxView* omnibox_view,
                        const base::string16& display_url,
-                       const base::string16& hostname) {
+                       const base::string16& hostname_and_scheme) {
   base::Optional<SkColor> last_path_color =
       omnibox_view->GetLatestColorForRange(
-          gfx::Range(hostname.size(), display_url.size()));
+          gfx::Range(hostname_and_scheme.size(), display_url.size()));
   return last_path_color.has_value() && *last_path_color == SK_ColorTRANSPARENT;
 }
 
-// Returns true if the last color applied to the given subdomain (assumed to be
-// at the beginning of the URL) in |omnibox_view| was transparent.
+// Returns true if the last color applied to the given subdomain and scheme
+// (assumed to be at the beginning of the URL) in |omnibox_view| was
+// transparent.
 bool IsSubdomainTransparent(TestingOmniboxView* omnibox_view,
-                            const base::string16& subdomain) {
+                            const base::string16& subdomain_and_scheme) {
   base::Optional<SkColor> last_subdomain_color =
-      omnibox_view->GetLatestColorForRange(gfx::Range(0, subdomain.size()));
+      omnibox_view->GetLatestColorForRange(
+          gfx::Range(0, subdomain_and_scheme.size()));
   return last_subdomain_color.has_value() &&
          *last_subdomain_color == SK_ColorTRANSPARENT;
 }
@@ -1519,9 +1543,10 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
   SetUpSimplifiedDomainTest();
   gfx::RenderText* render_text = omnibox_view()->GetRenderText();
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomain,
-      kSimplifiedDomainDisplayUrlHostname, kSimplifiedDomainDisplayUrlPath,
-      ShouldElideToRegistrableDomain()));
+      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
 
   // As soon as the mouse hovers over the omnibox, the unelide animation should
   // start running.
@@ -1543,9 +1568,10 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
   // After the extended hover threshold has elapsed, the display text shouldn't
   // have changed yet.
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomain,
-      kSimplifiedDomainDisplayUrlHostname, kSimplifiedDomainDisplayUrlPath,
-      ShouldElideToRegistrableDomain()));
+      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
 
   // Now advance through the unelision and check the display text. We assume
   // that the animation takes less than 1 second.
@@ -1555,9 +1581,9 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
       render_text, kSimplifiedDomainDisplayUrl));
   EXPECT_FALSE(hover_animation->IsAnimating());
   EXPECT_FALSE(IsPathTransparent(omnibox_view(), kSimplifiedDomainDisplayUrl,
-                                 kSimplifiedDomainDisplayUrlHostname));
-  EXPECT_FALSE(IsSubdomainTransparent(omnibox_view(),
-                                      kSimplifiedDomainDisplayUrlSubdomain));
+                                 kSimplifiedDomainDisplayUrlHostnameAndScheme));
+  EXPECT_FALSE(IsSubdomainTransparent(
+      omnibox_view(), kSimplifiedDomainDisplayUrlSubdomainAndScheme));
 
   // Now exit the mouse. At this point the elision animation should run.
   omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_EXITED, {0, 0}));
@@ -1570,14 +1596,15 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
   hover_animation_as_element->Step(base::TimeTicks() +
                                    base::TimeDelta::FromSeconds(1));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomain,
-      kSimplifiedDomainDisplayUrlHostname, kSimplifiedDomainDisplayUrlPath,
-      ShouldElideToRegistrableDomain()));
+      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
   EXPECT_TRUE(IsPathTransparent(omnibox_view(), kSimplifiedDomainDisplayUrl,
-                                kSimplifiedDomainDisplayUrlHostname));
+                                kSimplifiedDomainDisplayUrlHostnameAndScheme));
   if (ShouldElideToRegistrableDomain()) {
-    EXPECT_TRUE(IsSubdomainTransparent(omnibox_view(),
-                                       kSimplifiedDomainDisplayUrlSubdomain));
+    EXPECT_TRUE(IsSubdomainTransparent(
+        omnibox_view(), kSimplifiedDomainDisplayUrlSubdomainAndScheme));
   }
 }
 
@@ -1640,14 +1667,15 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   elide_as_element->SetStartTime(base::TimeTicks());
   elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomain,
-      kSimplifiedDomainDisplayUrlHostname, kSimplifiedDomainDisplayUrlPath,
-      ShouldElideToRegistrableDomain()));
+      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
   EXPECT_TRUE(IsPathTransparent(omnibox_view(), kSimplifiedDomainDisplayUrl,
-                                kSimplifiedDomainDisplayUrlHostname));
+                                kSimplifiedDomainDisplayUrlHostnameAndScheme));
   if (ShouldElideToRegistrableDomain()) {
-    EXPECT_TRUE(IsSubdomainTransparent(omnibox_view(),
-                                       kSimplifiedDomainDisplayUrlSubdomain));
+    EXPECT_TRUE(IsSubdomainTransparent(
+        omnibox_view(), kSimplifiedDomainDisplayUrlSubdomainAndScheme));
   }
 
   // A second user interaction should not run the animation again.
@@ -1672,9 +1700,9 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
       omnibox_view()->GetRenderText(), kSimplifiedDomainDisplayUrl));
   EXPECT_FALSE(IsPathTransparent(omnibox_view(), kSimplifiedDomainDisplayUrl,
-                                 kSimplifiedDomainDisplayUrlHostname));
-  EXPECT_FALSE(IsSubdomainTransparent(omnibox_view(),
-                                      kSimplifiedDomainDisplayUrlSubdomain));
+                                 kSimplifiedDomainDisplayUrlHostnameAndScheme));
+  EXPECT_FALSE(IsSubdomainTransparent(
+      omnibox_view(), kSimplifiedDomainDisplayUrlSubdomainAndScheme));
 }
 
 class OmniboxViewViewsHideOnInteractionTest
@@ -1714,7 +1742,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, AlwaysShowFullURLs) {
   // the URL is displayed properly when trivial subdomain elision is disabled.
   const base::string16 kFullUrl =
       base::ASCIIToUTF16("https://www.example.test/foo");
-  location_bar_model()->set_url(GURL("https://example.test/foo"));
+  location_bar_model()->set_url(GURL(kFullUrl));
   location_bar_model()->set_url_for_display(kFullUrl);
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
@@ -1770,13 +1798,12 @@ class OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest
                 ? std::vector<base::Feature>(
                       {omnibox::kOmniboxContextMenuShowFullUrls,
                        omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
-                       omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
-                       omnibox::kElideToRegistrableDomain})
+                       omnibox::
+                           kHideSteadyStateUrlPathQueryAndRefOnInteraction})
                 : std::vector<base::Feature>(
                       {omnibox::kOmniboxContextMenuShowFullUrls,
-                       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
-                       omnibox::kElideToRegistrableDomain}),
-            {}) {}
+                       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover}),
+            {omnibox::kElideToRegistrableDomain}) {}
 
   OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest(
       const OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest&) =
@@ -1796,8 +1823,8 @@ INSTANTIATE_TEST_SUITE_P(
 
 // Tests that unsetting the "Always show full URLs" option begins showing/hiding
 // the full URL appropriately when simplified domain field trials are enabled.
-// For simplicity, this test always enables kElideToRegistrableDomain; the logic
-// being test isn't really affected by whether or not subdomains are hidden.
+// This test has kElideToRegistrableDomain disabled so that we can check that
+// www is elided when the option is unset but other subdomains are not.
 TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
        UnsetAlwaysShowFullURLs) {
   // This test does setup itself and doesn't call SetUpSimplifiedDomainTest()
@@ -1806,7 +1833,7 @@ TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
   // the URL is displayed properly when trivial subdomain elision is disabled.
   const base::string16 kFullUrl =
       base::ASCIIToUTF16("https://www.example.test/foo");
-  location_bar_model()->set_url(GURL("https://example.test/foo"));
+  location_bar_model()->set_url(GURL(kFullUrl));
   location_bar_model()->set_url_for_display(kFullUrl);
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
@@ -1825,13 +1852,14 @@ TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
   // Now toggle the preference and check that the animations run as expected.
   location_bar_model()->set_should_prevent_elision(false);
   location_bar_model()->set_url_for_display(
-      base::ASCIIToUTF16("example.test/foo"));
+      base::ASCIIToUTF16("https://www.example.test/foo"));
   omnibox_view()->OnShouldPreventElisionChanged();
-  // Note: this doesn't test that LocationBarModel correctly applies the
-  // preference; it simply tests that
-  // OmniboxViewViews::OnShouldPreventElisionChanged retrieves an updated
-  // display URL from LocationBarModel.
-  EXPECT_EQ(base::ASCIIToUTF16("example.test/foo"), omnibox_view()->GetText());
+  // When simplified domain field trials are enabled, LocationBarModelImpl
+  // doesn't do any elision, leaving it all up to OmniboxViewViews, so the text
+  // returned from LocationBarModelImpl is the same even though the preference
+  // has changed.
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.test/foo"),
+            omnibox_view()->GetText());
   if (IsHideOnInteractionEnabled()) {
     ExpectUnelidedFromSimplifiedDomain(render_text, omnibox_view()->GetText());
     // Simulate a user interaction and check the fade-out animation.
@@ -1842,8 +1870,13 @@ TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
     ASSERT_TRUE(elide_animation);
     EXPECT_TRUE(elide_animation->IsAnimating());
   } else {
+    // Even though kElideToRegistrableDomain is disabled, we expect to be elided
+    // to the registrable domain because the www subdomain is considered
+    // trivial.
     ExpectElidedToSimplifiedDomain(
-        render_text, base::ASCIIToUTF16(""), base::ASCIIToUTF16("example.test"),
+        render_text, base::ASCIIToUTF16("https://www."),
+        base::ASCIIToUTF16("www."),
+        base::ASCIIToUTF16("https://www.example.test"),
         base::ASCIIToUTF16("/foo"),
         true /* should elide to registrable domain */);
   }
@@ -1893,15 +1926,8 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
 // to/from simplified domain. Regression test for https://crbug.com/1101674.
 TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
        VerticalAndHorizontalPosition) {
-  const base::string16 kDisplayUrl = base::ASCIIToUTF16("foo.example.test/bar");
-  location_bar_model()->set_url(GURL("https://foo.example.test/bar"));
-  location_bar_model()->set_url_for_display(kDisplayUrl);
-  omnibox_view()->model()->ResetDisplayTexts();
-  omnibox_view()->RevertAll();
+  SetUpSimplifiedDomainTest();
   gfx::RenderText* render_text = omnibox_view()->GetRenderText();
-
-  // Call OnThemeChanged() to create the animations.
-  omnibox_view()->OnThemeChanged();
 
   const gfx::Rect& original_display_rect = render_text->display_rect();
 
@@ -1909,13 +1935,13 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   navigation.set_is_same_document(false);
   omnibox_view()->DidFinishNavigation(&navigation);
   ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      omnibox_view()->GetRenderText(), kDisplayUrl));
+      omnibox_view()->GetRenderText(), kSimplifiedDomainDisplayUrl));
 
   // After a navigation, the URL should not be elided to the simplified domain,
   // and the display rect (including vertical and horizontal position) should be
   // unchanged.
   ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      omnibox_view()->GetRenderText(), kDisplayUrl));
+      omnibox_view()->GetRenderText(), kSimplifiedDomainDisplayUrl));
   EXPECT_EQ(original_display_rect, render_text->display_rect());
 
   // Simulate a user interaction to elide to simplified domain and advance
@@ -2011,9 +2037,10 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
   elide_as_element->SetStartTime(base::TimeTicks());
   elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomain,
-      kSimplifiedDomainDisplayUrlHostname, kSimplifiedDomainDisplayUrlPath,
-      ShouldElideToRegistrableDomain()));
+      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
 
   // On a subsequent same-document main-frame navigation, the URL should remain
   // elided to the simplified domain.
@@ -2022,9 +2049,10 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
     navigation.set_is_same_document(true);
     omnibox_view()->DidFinishNavigation(&navigation);
     ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-        render_text, kSimplifiedDomainDisplayUrlSubdomain,
-        kSimplifiedDomainDisplayUrlHostname, kSimplifiedDomainDisplayUrlPath,
-        ShouldElideToRegistrableDomain()));
+        render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+        kSimplifiedDomainDisplayUrlSubdomain,
+        kSimplifiedDomainDisplayUrlHostnameAndScheme,
+        kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
     OmniboxViewViews::ElideAnimation* elide_animation =
         omnibox_view()->GetElideAfterInteractionAnimationForTesting();
     ASSERT_TRUE(elide_animation);
@@ -2180,9 +2208,10 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SubframeNavigations) {
   elide_as_element->SetStartTime(base::TimeTicks());
   elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomain,
-      kSimplifiedDomainDisplayUrlHostname, kSimplifiedDomainDisplayUrlPath,
-      ShouldElideToRegistrableDomain()));
+      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
 
   // On a subframe navigation, the URL should remain elided to a simplified
   // domain.
@@ -2199,9 +2228,10 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SubframeNavigations) {
     navigation.set_render_frame_host(subframe);
     omnibox_view()->DidFinishNavigation(&navigation);
     ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-        render_text, kSimplifiedDomainDisplayUrlSubdomain,
-        kSimplifiedDomainDisplayUrlHostname, kSimplifiedDomainDisplayUrlPath,
-        ShouldElideToRegistrableDomain()));
+        render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+        kSimplifiedDomainDisplayUrlSubdomain,
+        kSimplifiedDomainDisplayUrlHostnameAndScheme,
+        kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
   }
 }
 
@@ -2226,9 +2256,10 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   elide_as_element->SetStartTime(base::TimeTicks());
   elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomain,
-      kSimplifiedDomainDisplayUrlHostname, kSimplifiedDomainDisplayUrlPath,
-      ShouldElideToRegistrableDomain()));
+      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
 
   // Now focus and blur the omnibox. After blur, the path should fade out again
   // after another user interaction.
@@ -2251,9 +2282,11 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, AfterBlur) {
   omnibox_view()->OnFocus();
   omnibox_view()->OnBlur();
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      omnibox_view()->GetRenderText(), kSimplifiedDomainDisplayUrlSubdomain,
-      kSimplifiedDomainDisplayUrlHostname, kSimplifiedDomainDisplayUrlPath,
-      ShouldElideToRegistrableDomain()));
+      omnibox_view()->GetRenderText(),
+      kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
   OmniboxViewViews::ElideAnimation* elide_animation =
       omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();

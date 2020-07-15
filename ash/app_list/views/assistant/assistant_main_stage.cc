@@ -194,9 +194,6 @@ AppListAssistantMainStage::CreateContentLayoutContainer() {
   zero_state_view_->SetPaintToLayer();
   zero_state_view_->layer()->SetFillsBoundsOpaquely(false);
 
-  stack_layout->SetVerticalAlignmentForView(
-      zero_state_view_, StackLayout::VerticalAlignment::kCenter);
-
   return content_layout_container;
 }
 

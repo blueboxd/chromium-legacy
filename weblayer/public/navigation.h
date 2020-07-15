@@ -105,8 +105,8 @@ class Navigation {
   // SetRequestHeader().
   virtual void SetUserAgentString(const std::string& value) = 0;
 
-  // Whether the navigation was initiated by the renderer process. Examples of
-  // renderer-initiated navigations include:
+  // Whether the navigation was initiated by the page. Examples of
+  // page-initiated navigations include:
   //  * <a> link click
   //  * changing window.location.href
   //  * redirect via the <meta http-equiv="refresh"> tag
@@ -114,7 +114,7 @@ class Navigation {
   //
   // This method returns false for navigations initiated by the WebLayer
   // API, including using window.history.forward() or window.history.back().
-  virtual bool IsRendererInitiated() = 0;
+  virtual bool IsPageInitiated() = 0;
 };
 
 }  // namespace weblayer

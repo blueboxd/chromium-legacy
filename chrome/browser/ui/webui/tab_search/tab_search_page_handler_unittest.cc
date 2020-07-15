@@ -20,10 +20,6 @@ constexpr char kTabUrl2[] = "http://foo/2";
 constexpr char kTabUrl3[] = "http://foo/3";
 constexpr char kTabUrl4[] = "http://foo/4";
 
-constexpr char kTabUrlName1[] = "foo/1";
-constexpr char kTabUrlName2[] = "foo/2";
-constexpr char kTabUrlName3[] = "foo/3";
-
 constexpr char kTabName1[] = "Tab 1";
 constexpr char kTabName2[] = "Tab 2";
 constexpr char kTabName3[] = "Tab 3";
@@ -153,11 +149,11 @@ TEST_F(TabSearchPageHandlerTest, GetTabs) {
             ASSERT_EQ(2u, window1->tabs.size());
 
             auto* tab1 = window1->tabs[0].get();
-            ExpectNewTab(tab1, kTabUrlName1, kTabName1, 0);
+            ExpectNewTab(tab1, kTabUrl1, kTabName1, 0);
             ASSERT_TRUE(tab1->active);
 
             auto* tab2 = window1->tabs[1].get();
-            ExpectNewTab(tab2, kTabUrlName2, kTabName2, 1);
+            ExpectNewTab(tab2, kTabUrl2, kTabName2, 1);
             ASSERT_FALSE(tab2->active);
 
             auto* window2 = profile_tabs->windows[1].get();
@@ -165,7 +161,7 @@ TEST_F(TabSearchPageHandlerTest, GetTabs) {
             ASSERT_EQ(1u, window2->tabs.size());
 
             auto* tab3 = window2->tabs[0].get();
-            ExpectNewTab(tab3, kTabUrlName3, kTabName3, 0);
+            ExpectNewTab(tab3, kTabUrl3, kTabName3, 0);
             ASSERT_TRUE(tab3->active);
 
             tab_id2 = tab2->tab_id;

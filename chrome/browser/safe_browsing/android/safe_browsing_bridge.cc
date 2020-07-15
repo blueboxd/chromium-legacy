@@ -52,4 +52,14 @@ static jboolean JNI_SafeBrowsingBridge_GetSafeBrowsingExtendedReportingManaged(
       prefs::kSafeBrowsingScoutReportingEnabled);
 }
 
+static jint JNI_SafeBrowsingBridge_GetSafeBrowsingState(JNIEnv* env) {
+  return safe_browsing::GetSafeBrowsingState(*GetPrefService());
+}
+
+static void JNI_SafeBrowsingBridge_SetSafeBrowsingState(JNIEnv* env,
+                                                        jint state) {
+  return safe_browsing::SetSafeBrowsingState(
+      GetPrefService(), static_cast<SafeBrowsingState>(state));
+}
+
 }  // namespace safe_browsing

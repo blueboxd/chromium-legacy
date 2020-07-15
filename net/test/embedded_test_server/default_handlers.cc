@@ -251,7 +251,7 @@ std::unique_ptr<HttpResponse> HandleExpectAndSetCookie(
   if (got_all_expected) {
     for (const auto& cookie : query_list.at("set")) {
       http_response->AddCustomHeader(
-          "Set-Cookie", UnescapeBinaryURLComponent(
+          "Set-Cookie", base::UnescapeBinaryURLComponent(
                             cookie, UnescapeRule::REPLACE_PLUS_WITH_SPACE));
     }
   }
@@ -302,7 +302,7 @@ std::unique_ptr<HttpResponse> HandleIframe(const HttpRequest& request) {
 
   GURL iframe_url("about:blank");
   if (request_url.has_query()) {
-    iframe_url = GURL(UnescapeBinaryURLComponent(request_url.query()));
+    iframe_url = GURL(base::UnescapeBinaryURLComponent(request_url.query()));
   }
 
   http_response->set_content(
@@ -525,7 +525,8 @@ std::unique_ptr<HttpResponse> HandleAuthDigest(const HttpRequest& request) {
 std::unique_ptr<HttpResponse> HandleServerRedirect(HttpStatusCode redirect_code,
                                                    const HttpRequest& request) {
   GURL request_url = request.GetURL();
-  std::string dest = UnescapeBinaryURLComponent(request_url.query_piece());
+  std::string dest =
+      base::UnescapeBinaryURLComponent(request_url.query_piece());
   RequestQuery query = ParseQuery(request_url);
 
   if (request.method == METHOD_OPTIONS) {
@@ -553,7 +554,8 @@ std::unique_ptr<HttpResponse> HandleServerRedirectWithCookie(
     HttpStatusCode redirect_code,
     const HttpRequest& request) {
   GURL request_url = request.GetURL();
-  std::string dest = UnescapeBinaryURLComponent(request_url.query_piece());
+  std::string dest =
+      base::UnescapeBinaryURLComponent(request_url.query_piece());
   RequestQuery query = ParseQuery(request_url);
 
   auto http_response = std::make_unique<BasicHttpResponse>();
@@ -574,7 +576,8 @@ std::unique_ptr<HttpResponse> HandleServerRedirectWithSecureCookie(
     HttpStatusCode redirect_code,
     const HttpRequest& request) {
   GURL request_url = request.GetURL();
-  std::string dest = UnescapeBinaryURLComponent(request_url.query_piece());
+  std::string dest =
+      base::UnescapeBinaryURLComponent(request_url.query_piece());
   RequestQuery query = ParseQuery(request_url);
 
   auto http_response = std::make_unique<BasicHttpResponse>();
@@ -596,7 +599,7 @@ std::unique_ptr<HttpResponse> HandleCrossSiteRedirect(
   if (!ShouldHandle(request, "/cross-site"))
     return nullptr;
 
-  std::string dest_all = UnescapeBinaryURLComponent(
+  std::string dest_all = base::UnescapeBinaryURLComponent(
       request.relative_url.substr(std::string("/cross-site").size() + 1));
 
   std::string dest;
@@ -621,7 +624,8 @@ std::unique_ptr<HttpResponse> HandleCrossSiteRedirect(
 // Returns a meta redirect to URL.
 std::unique_ptr<HttpResponse> HandleClientRedirect(const HttpRequest& request) {
   GURL request_url = request.GetURL();
-  std::string dest = UnescapeBinaryURLComponent(request_url.query_piece());
+  std::string dest =
+      base::UnescapeBinaryURLComponent(request_url.query_piece());
 
   auto http_response = std::make_unique<BasicHttpResponse>();
   http_response->set_content_type("text/html");

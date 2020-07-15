@@ -514,7 +514,8 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest, Texts) {
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
       /*dlp_verdict*/ dlp_verdict,
       /*mimetype*/ TextMimeTypes(),
-      /*size*/ 400);
+      /*size*/ 400,
+      /*result*/ EventResultToString(EventResult::BLOCKED));
 
   bool called = false;
   base::RunLoop run_loop;
@@ -966,7 +967,8 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest,
       extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
       /*dlp_verdict*/ dlp_verdict,
       /*mimetypes*/ DocMimeTypes(),
-      /*size*/ std::string("foo content").size());
+      /*size*/ std::string("foo content").size(),
+      /*result*/ EventResultToString(EventResult::BLOCKED));
 
   bool called = false;
   base::RunLoop run_loop;

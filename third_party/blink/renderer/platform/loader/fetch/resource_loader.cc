@@ -728,6 +728,17 @@ bool ResourceLoader::WillFollowRedirect(
     return false;
   }
 
+  const ResourceRequestHead& initial_request = resource_->GetResourceRequest();
+  if (initial_request.GetRedirectMode() ==
+      network::mojom::RedirectMode::kError) {
+    // The network::cors::CorsURLLoader would reject the redirect in any case,
+    // but we reject the redirect here because otherwise we would see confusing
+    // errors such as MixedContent errors in the console during redirect
+    // handling.
+    HandleError(ResourceError::Failure(new_url));
+    return false;
+  }
+
   std::unique_ptr<ResourceRequest> new_request =
       resource_->LastResourceRequest().CreateRedirectRequest(
           new_url, new_method, new_site_for_cookies, new_referrer,
@@ -741,7 +752,6 @@ bool ResourceLoader::WillFollowRedirect(
 
   ResourceType resource_type = resource_->GetType();
 
-  const ResourceRequestHead& initial_request = resource_->GetResourceRequest();
   // The following parameters never change during the lifetime of a request.
   mojom::RequestContextType request_context =
       initial_request.GetRequestContext();

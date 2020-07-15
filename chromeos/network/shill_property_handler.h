@@ -122,11 +122,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
       const network_handler::ErrorCallback& error_callback);
 
   // Asynchronously sets the prohibited state for every network technology
-  // listed in |technologies|. Note: Modifies Manager state. Calls
-  // |error_callback| on failure.
-  void SetProhibitedTechnologies(
-      const std::vector<std::string>& technologies,
-      const network_handler::ErrorCallback& error_callback);
+  // listed in |technologies|. Note: Modifies Manager state.
+  void SetProhibitedTechnologies(const std::vector<std::string>& technologies);
 
   // Sets the list of devices on which portal check is enabled.
   void SetCheckPortalList(const std::string& check_portal_list);

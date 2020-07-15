@@ -5,6 +5,8 @@
 #include "media/remoting/courier_renderer.h"
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/check.h"
@@ -273,7 +275,6 @@ class CourierRendererTest : public testing::Test {
         flush_cb->set_proc(pb::RpcMessage::RPC_R_FLUSHUNTIL_CALLBACK);
         controller_->GetRpcBroker()->ProcessMessageFromRemote(
             std::move(flush_cb));
-
       } break;
       case pb::RpcMessage::RPC_R_SETVOLUME:
         // No response needed.
@@ -418,14 +419,10 @@ class CourierRendererTest : public testing::Test {
     message->set_video_memory_usage(stats.video_memory_usage);
     message->mutable_audio_decoder_info()->set_is_platform_decoder(
         stats.audio_decoder_info.is_platform_decoder);
-    message->mutable_audio_decoder_info()->set_has_decrypting_demuxer_stream(
-        stats.audio_decoder_info.has_decrypting_demuxer_stream);
     message->mutable_audio_decoder_info()->set_decoder_name(
         stats.audio_decoder_info.decoder_name);
     message->mutable_video_decoder_info()->set_is_platform_decoder(
         stats.video_decoder_info.is_platform_decoder);
-    message->mutable_video_decoder_info()->set_has_decrypting_demuxer_stream(
-        stats.video_decoder_info.has_decrypting_demuxer_stream);
     message->mutable_video_decoder_info()->set_decoder_name(
         stats.video_decoder_info.decoder_name);
     OnReceivedRpc(std::move(rpc));

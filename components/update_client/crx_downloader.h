@@ -13,9 +13,10 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "url/gurl.h"
 
 namespace update_client {
@@ -32,7 +33,7 @@ class NetworkFetcherFactory;
 // the order they are provided in the StartDownload function argument. After
 // that, the download request is routed to the next downloader in the chain.
 // The members of this class expect to be called from the main thread only.
-class CrxDownloader : public base::RefCountedThreadSafe<CrxDownloader> {
+class CrxDownloader {
  public:
   struct DownloadMetrics {
     enum Downloader { kNone = 0, kUrlFetcher, kBits };
@@ -77,20 +78,18 @@ class CrxDownloader : public base::RefCountedThreadSafe<CrxDownloader> {
                                    int64_t total_bytes)>;
 
   using Factory =
-      scoped_refptr<CrxDownloader> (*)(bool,
-                                       scoped_refptr<NetworkFetcherFactory>);
-
-  CrxDownloader(const CrxDownloader&) = delete;
-  CrxDownloader& operator=(const CrxDownloader&) = delete;
+      std::unique_ptr<CrxDownloader> (*)(bool,
+                                         scoped_refptr<NetworkFetcherFactory>);
 
   // Factory method to create an instance of this class and build the
   // chain of responsibility. |is_background_download| specifies that a
   // background downloader be used, if the platform supports it.
   // |task_runner| should be a task runner able to run blocking
   // code such as file IO operations.
-  static scoped_refptr<CrxDownloader> Create(
+  static std::unique_ptr<CrxDownloader> Create(
       bool is_background_download,
       scoped_refptr<NetworkFetcherFactory> network_fetcher_factory);
+  virtual ~CrxDownloader();
 
   void set_progress_callback(const ProgressCallback& progress_callback);
 
@@ -109,8 +108,7 @@ class CrxDownloader : public base::RefCountedThreadSafe<CrxDownloader> {
   const std::vector<DownloadMetrics> download_metrics() const;
 
  protected:
-  explicit CrxDownloader(scoped_refptr<CrxDownloader> successor);
-  virtual ~CrxDownloader();
+  explicit CrxDownloader(std::unique_ptr<CrxDownloader> successor);
 
   // Handles the fallback in the case of multiple urls and routing of the
   // download to the following successor in the chain. Derived classes must call
@@ -135,8 +133,6 @@ class CrxDownloader : public base::RefCountedThreadSafe<CrxDownloader> {
   }
 
  private:
-  friend class base::RefCountedThreadSafe<CrxDownloader>;
-
   virtual void DoStartDownload(const GURL& url) = 0;
 
   void VerifyResponse(bool is_handled,
@@ -147,7 +143,7 @@ class CrxDownloader : public base::RefCountedThreadSafe<CrxDownloader> {
                            const Result& result,
                            const DownloadMetrics& download_metrics);
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  base::ThreadChecker thread_checker_;
 
   // Used to post callbacks to the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -156,13 +152,15 @@ class CrxDownloader : public base::RefCountedThreadSafe<CrxDownloader> {
 
   // The SHA256 hash of the download payload in hexadecimal format.
   std::string expected_hash_;
-  scoped_refptr<CrxDownloader> successor_;
+  std::unique_ptr<CrxDownloader> successor_;
   DownloadCallback download_callback_;
   ProgressCallback progress_callback_;
 
   std::vector<GURL>::iterator current_url_;
 
   std::vector<DownloadMetrics> download_metrics_;
+
+  DISALLOW_COPY_AND_ASSIGN(CrxDownloader);
 };
 
 }  // namespace update_client

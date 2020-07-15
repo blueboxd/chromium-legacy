@@ -57,6 +57,14 @@ bool ConsumeComma(CSSParserTokenRange& range) {
   return false;
 }
 
+// TODO(crbug.com/1105782): It is currently unclear how to handle 'revert'
+// at computed-value-time. For now we treat it as 'unset'.
+const CSSValue* TreatRevertAsUnset(const CSSValue* value) {
+  if (value && value->IsRevertValue())
+    return cssvalue::CSSUnsetValue::Create();
+  return value;
+}
+
 const CSSValue* Parse(const CSSProperty& property,
                       CSSParserTokenRange range,
                       const CSSParserContext* context) {
@@ -615,7 +623,7 @@ const CSSValue* StyleCascade::ResolveVariableReference(
 
   if (ResolveTokensInto(data->Tokens(), resolver, sequence)) {
     if (const auto* parsed = Parse(property, sequence.TokenRange(), context))
-      return parsed;
+      return TreatRevertAsUnset(parsed);
   }
 
   return cssvalue::CSSUnsetValue::Create();
@@ -681,7 +689,7 @@ const CSSValue* StyleCascade::ResolvePendingSubstitution(
     // When using var() in a css-logical shorthand (e.g. margin-inline),
     // the longhands here will also be logical.
     if (unvisited_property == &ResolveSurrogate(longhand))
-      return parsed;
+      return TreatRevertAsUnset(parsed);
   }
 
   NOTREACHED();

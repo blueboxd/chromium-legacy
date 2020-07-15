@@ -1977,6 +1977,8 @@ source_set("chromeos") {
     "policy/display_rotation_default_handler.h",
     "policy/display_settings_handler.cc",
     "policy/display_settings_handler.h",
+    "policy/dlp/enterprise_clipboard_dlp_controller.cc",
+    "policy/dlp/enterprise_clipboard_dlp_controller.h",
     "policy/dm_token_storage.cc",
     "policy/dm_token_storage.h",
     "policy/enrollment_config.cc",

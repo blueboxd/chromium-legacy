@@ -50,7 +50,6 @@
 #include "ui/views/event_monitor.h"
 #include "ui/views/view_tracker.h"
 #include "ui/views/widget/root_view.h"
-#include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_features.h"
@@ -411,8 +410,7 @@ TabDragController::~TabDragController() {
   if (g_tab_drag_controller == this)
     g_tab_drag_controller = nullptr;
 
-  if (move_loop_widget_)
-    move_loop_widget_->RemoveObserver(this);
+  widget_observer_.RemoveAll();
 
   if (is_dragging_window())
     GetAttachedBrowserWidget()->EndMoveLoop();
@@ -687,6 +685,10 @@ void TabDragController::OnWidgetBoundsChanged(views::Widget* widget,
   Drag(GetCursorScreenPoint());
 }
 
+void TabDragController::OnWidgetDestroyed(views::Widget* widget) {
+  widget_observer_.Remove(widget);
+}
+
 void TabDragController::OnSourceTabStripEmpty() {
   // NULL out source_context_ so that we don't attempt to add back to it (in
   // the case of a revert).
@@ -876,7 +878,8 @@ TabDragController::DragBrowserToNewTabStrip(TabDragContext* target_context,
     // results in a move). That'll cause all sorts of problems.  Reset the
     // observer so we don't get notified and process the event.
 #if defined(OS_CHROMEOS)
-    move_loop_widget_->RemoveObserver(this);
+    if (widget_observer_.IsObserving(move_loop_widget_))
+      widget_observer_.Remove(move_loop_widget_);
     move_loop_widget_ = nullptr;
 #endif  // OS_CHROMEOS
     views::Widget* browser_widget = GetAttachedBrowserWidget();
@@ -1394,7 +1397,7 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
 
   move_loop_widget_ = GetAttachedBrowserWidget();
   DCHECK(move_loop_widget_);
-  move_loop_widget_->AddObserver(this);
+  widget_observer_.Add(move_loop_widget_);
   current_state_ = DragState::kDraggingWindow;
   base::WeakPtr<TabDragController> ref(weak_factory_.GetWeakPtr());
   if (can_release_capture_) {
@@ -1422,10 +1425,10 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
 
   if (!ref)
     return;
-  if (move_loop_widget_) {
-    move_loop_widget_->RemoveObserver(this);
-    move_loop_widget_ = nullptr;
-  }
+
+  if (widget_observer_.IsObserving(move_loop_widget_))
+    widget_observer_.Remove(move_loop_widget_);
+  move_loop_widget_ = nullptr;
 
   if (current_state_ == DragState::kDraggingWindow) {
     current_state_ = DragState::kWaitingToStop;

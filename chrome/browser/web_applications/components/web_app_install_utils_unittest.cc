@@ -112,6 +112,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   EXPECT_EQ(AppUrl(), web_app_info.app_url);
   EXPECT_EQ(AppUrl().GetWithoutFilename(), web_app_info.scope);
   EXPECT_EQ(DisplayMode::kBrowser, web_app_info.display_mode);
+  EXPECT_TRUE(web_app_info.display_override.empty());
 
   // The icon info from |web_app_info| should be left as is, since the manifest
   // doesn't have any icon information.
@@ -133,10 +134,15 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   // Add an icon without purpose ANY (expect to be ignored).
   icon.purpose = {blink::Manifest::ImageResource::Purpose::MONOCHROME};
   manifest.icons.push_back(icon);
+  manifest.display_override.push_back(DisplayMode::kMinimalUi);
+  manifest.display_override.push_back(DisplayMode::kStandalone);
 
   UpdateWebAppInfoFromManifest(manifest, &web_app_info);
   EXPECT_EQ(base::UTF8ToUTF16(kAppTitle), web_app_info.title);
   EXPECT_EQ(DisplayMode::kMinimalUi, web_app_info.display_mode);
+  ASSERT_EQ(2u, web_app_info.display_override.size());
+  EXPECT_EQ(DisplayMode::kMinimalUi, web_app_info.display_override[0]);
+  EXPECT_EQ(DisplayMode::kStandalone, web_app_info.display_override[1]);
 
   EXPECT_EQ(2u, web_app_info.icon_infos.size());
   EXPECT_EQ(AppIcon2(), web_app_info.icon_infos[0].url);

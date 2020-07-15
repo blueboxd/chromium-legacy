@@ -171,7 +171,7 @@ void SupervisedUserSettingsService::SetLocalSetting(
   if (value)
     local_settings_->SetWithoutPathExpansion(key, std::move(value));
   else
-    local_settings_->RemoveWithoutPathExpansion(key, nullptr);
+    local_settings_->RemoveKey(key);
 
   InformSubscribers();
 }
@@ -350,7 +350,7 @@ SupervisedUserSettingsService::ProcessSyncChanges(
       case SyncChange::ACTION_DELETE: {
         DLOG_IF(WARNING, !dict->HasKey(key)) << "Trying to delete nonexistent "
                                              << "key " << key;
-        dict->RemoveWithoutPathExpansion(key, nullptr);
+        dict->RemoveKey(key);
         break;
       }
       case SyncChange::ACTION_INVALID: {

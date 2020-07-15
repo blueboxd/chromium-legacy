@@ -23,6 +23,7 @@
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_data.h"
 #include "ui/base/clipboard/clipboard_data_endpoint.h"
+#include "ui/base/clipboard/clipboard_dlp_controller.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/clipboard_metrics.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
@@ -188,6 +189,17 @@ class ClipboardInternal {
     ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
   }
 
+  void SetDlpController(
+      std::unique_ptr<ClipboardDlpController> dlp_controller) {
+    dlp_controller_ = std::move(dlp_controller);
+  }
+
+  bool IsReadAllowed(const ClipboardDataEndpoint* data_dst) const {
+    if (!dlp_controller_)
+      return true;
+    return dlp_controller_->IsDataReadAllowed(GetData()->source(), data_dst);
+  }
+
  private:
   // True if the data on top of the clipboard stack has format |format|.
   bool HasFormat(ClipboardInternalFormat format) const {
@@ -212,6 +224,9 @@ class ClipboardInternal {
 
   // Sequence number uniquely identifying clipboard state.
   uint64_t sequence_number_ = 0;
+
+  // Data-leak prevention controller controlling clipboard read operations.
+  std::unique_ptr<ClipboardDlpController> dlp_controller_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardInternal);
 };
@@ -314,6 +329,11 @@ ClipboardNonBacked::~ClipboardNonBacked() {
 
 void ClipboardNonBacked::OnPreShutdown() {}
 
+void ClipboardNonBacked::SetClipboardDlpController(
+    std::unique_ptr<ClipboardDlpController> dlp_controller) {
+  clipboard_internal_->SetDlpController(std::move(dlp_controller));
+}
+
 uint64_t ClipboardNonBacked::GetSequenceNumber(ClipboardBuffer buffer) const {
   DCHECK(CalledOnValidThread());
   return clipboard_internal_->sequence_number();
@@ -325,6 +345,10 @@ bool ClipboardNonBacked::IsFormatAvailable(
     const ClipboardDataEndpoint* data_dst) const {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardBuffer(buffer));
+
+  if (!clipboard_internal_->IsReadAllowed(data_dst))
+    return false;
+
   if (ClipboardFormatType::GetPlainTextType().Equals(format) ||
       ClipboardFormatType::GetUrlType().Equals(format))
     return clipboard_internal_->IsFormatAvailable(
@@ -358,6 +382,9 @@ void ClipboardNonBacked::ReadAvailableTypes(
   DCHECK(CalledOnValidThread());
   DCHECK(types);
 
+  if (!clipboard_internal_->IsReadAllowed(data_dst))
+    return;
+
   types->clear();
   if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer,
                         data_dst))
@@ -389,6 +416,9 @@ ClipboardNonBacked::ReadAvailablePlatformSpecificFormatNames(
 
   std::vector<base::string16> types;
 
+  if (!clipboard_internal_->IsReadAllowed(data_dst))
+    return types;
+
   // Includes all non-pickled AvailableTypes.
   if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer,
                         data_dst)) {
@@ -415,6 +445,10 @@ void ClipboardNonBacked::ReadText(ClipboardBuffer buffer,
                                   const ClipboardDataEndpoint* data_dst,
                                   base::string16* result) const {
   DCHECK(CalledOnValidThread());
+
+  if (!clipboard_internal_->IsReadAllowed(data_dst))
+    return;
+
   RecordRead(ClipboardFormatMetric::kText);
   clipboard_internal_->ReadText(result);
 }
@@ -423,6 +457,10 @@ void ClipboardNonBacked::ReadAsciiText(ClipboardBuffer buffer,
                                        const ClipboardDataEndpoint* data_dst,
                                        std::string* result) const {
   DCHECK(CalledOnValidThread());
+
+  if (!clipboard_internal_->IsReadAllowed(data_dst))
+    return;
+
   RecordRead(ClipboardFormatMetric::kText);
   clipboard_internal_->ReadAsciiText(result);
 }
@@ -434,6 +472,10 @@ void ClipboardNonBacked::ReadHTML(ClipboardBuffer buffer,
                                   uint32_t* fragment_start,
                                   uint32_t* fragment_end) const {
   DCHECK(CalledOnValidThread());
+
+  if (!clipboard_internal_->IsReadAllowed(data_dst))
+    return;
+
   RecordRead(ClipboardFormatMetric::kHtml);
   clipboard_internal_->ReadHTML(markup, src_url, fragment_start, fragment_end);
 }
@@ -442,6 +484,10 @@ void ClipboardNonBacked::ReadRTF(ClipboardBuffer buffer,
                                  const ClipboardDataEndpoint* data_dst,
                                  std::string* result) const {
   DCHECK(CalledOnValidThread());
+
+  if (!clipboard_internal_->IsReadAllowed(data_dst))
+    return;
+
   RecordRead(ClipboardFormatMetric::kRtf);
   clipboard_internal_->ReadRTF(result);
 }
@@ -450,6 +496,10 @@ void ClipboardNonBacked::ReadImage(ClipboardBuffer buffer,
                                    const ClipboardDataEndpoint* data_dst,
                                    ReadImageCallback callback) const {
   DCHECK(CalledOnValidThread());
+
+  if (!clipboard_internal_->IsReadAllowed(data_dst))
+    return;
+
   RecordRead(ClipboardFormatMetric::kImage);
   std::move(callback).Run(clipboard_internal_->ReadImage());
 }
@@ -459,6 +509,10 @@ void ClipboardNonBacked::ReadCustomData(ClipboardBuffer buffer,
                                         const ClipboardDataEndpoint* data_dst,
                                         base::string16* result) const {
   DCHECK(CalledOnValidThread());
+
+  if (!clipboard_internal_->IsReadAllowed(data_dst))
+    return;
+
   RecordRead(ClipboardFormatMetric::kCustomData);
   clipboard_internal_->ReadCustomData(type, result);
 }
@@ -467,6 +521,10 @@ void ClipboardNonBacked::ReadBookmark(const ClipboardDataEndpoint* data_dst,
                                       base::string16* title,
                                       std::string* url) const {
   DCHECK(CalledOnValidThread());
+
+  if (!clipboard_internal_->IsReadAllowed(data_dst))
+    return;
+
   RecordRead(ClipboardFormatMetric::kBookmark);
   clipboard_internal_->ReadBookmark(title, url);
 }
@@ -475,6 +533,10 @@ void ClipboardNonBacked::ReadData(const ClipboardFormatType& format,
                                   const ClipboardDataEndpoint* data_dst,
                                   std::string* result) const {
   DCHECK(CalledOnValidThread());
+
+  if (!clipboard_internal_->IsReadAllowed(data_dst))
+    return;
+
   RecordRead(ClipboardFormatMetric::kData);
   clipboard_internal_->ReadData(format.GetName(), result);
 }

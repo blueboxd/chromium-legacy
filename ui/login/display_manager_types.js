@@ -9,7 +9,6 @@
 
 /**
  * @typedef {{
- *   enableDebuggingAllowed: (boolean|undefined),
  *   resetAllowed: (boolean|undefined),
  *   startEnrollmentAllowed: (boolean|undefined),
  *   toggleKioskAllowed: (boolean|undefined),
@@ -17,12 +16,6 @@
  * }}
  */
 var DisplayManagerScreenAttributes = {};
-
-/**
- * True if showing "enable debugging" is allowed for the screen.
- * @type {boolean|undefined}
- */
-DisplayManagerScreenAttributes.enableDebuggingAllowed;
 
 /**
  * True if device reset is allowed on the screen.

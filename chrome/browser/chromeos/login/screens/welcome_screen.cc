@@ -69,6 +69,7 @@ constexpr const char kUserActionDisableVirtualKeyboard[] =
     "accessibility-virtual-keyboard-disable";
 constexpr const char kUserActionSetupDemoMode[] = "setupDemoMode";
 constexpr const char kUserActionSetupDemoModeGesture[] = "setupDemoModeGesture";
+constexpr const char kUserActionEnableDebugging[] = "enableDebugging";
 
 struct WelcomeScreenA11yUserAction {
   const char* name_;
@@ -140,6 +141,8 @@ std::string WelcomeScreen::GetResultString(Result result) {
       return "StartDemo";
     case Result::SETUP_DEMO:
       return "SetupDemo";
+    case Result::ENABLE_DEBUGGING:
+      return "EnableDebugging";
   }
 }
 
@@ -294,6 +297,14 @@ void WelcomeScreen::ShowImpl() {
     OnUserAction(kUserActionContinueButtonClicked);
     return;
   }
+
+  // TODO(crbug.com/1105387): Part of initial screen logic.
+  PrefService* prefs = g_browser_process->local_state();
+  if (prefs->GetBoolean(prefs::kDebuggingFeaturesRequested)) {
+    OnEnableDebugging();
+    return;
+  }
+
   demo_mode_detector_ = std::make_unique<DemoModeDetector>(
       base::DefaultTickClock::GetInstance(), this);
   if (view_) {
@@ -314,6 +325,10 @@ void WelcomeScreen::OnUserAction(const std::string& action_id) {
   }
   if (action_id == kUserActionSetupDemoMode) {
     OnSetupDemoMode();
+    return;
+  }
+  if (action_id == kUserActionEnableDebugging) {
+    OnEnableDebugging();
     return;
   }
   if (action_id == kUserActionSetupDemoModeGesture) {
@@ -379,6 +394,9 @@ bool WelcomeScreen::HandleAccelerator(ash::LoginAcceleratorAction action) {
   } else if (action == ash::LoginAcceleratorAction::kStartEnrollment) {
     context()->enrollment_triggered_early = true;
     return true;
+  } else if (action == ash::LoginAcceleratorAction::kEnableDebugging) {
+    OnEnableDebugging();
+    return true;
   }
   return false;
 }
@@ -412,6 +430,11 @@ void WelcomeScreen::OnShouldStartDemoMode() {
 void WelcomeScreen::OnSetupDemoMode() {
   demo_mode_detector_.reset();
   exit_callback_.Run(Result::SETUP_DEMO);
+}
+
+void WelcomeScreen::OnEnableDebugging() {
+  demo_mode_detector_.reset();
+  exit_callback_.Run(Result::ENABLE_DEBUGGING);
 }
 
 void WelcomeScreen::OnLanguageChangedCallback(

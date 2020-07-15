@@ -104,6 +104,8 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
       for (NGInlineCursor cursor(*items); cursor; cursor.MoveToNext()) {
         DCHECK(cursor.Current().Item());
         const NGFragmentItem& item = *cursor.Current().Item();
+        if (UNLIKELY(item.IsLayoutObjectDestroyedOrMoved()))
+          continue;
         if (item.Type() == NGFragmentItem::kLine) {
           AddOutlineRectsForDescendant(
               {item.LineBoxFragment(), item.OffsetInContainerBlock()},
@@ -256,6 +258,7 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
     const PhysicalOffset& additional_offset,
     NGOutlineType outline_type,
     const LayoutBoxModelObject* containing_block) const {
+  DCHECK(!descendant->IsLayoutObjectDestroyedOrMoved());
   if (descendant->IsText() || descendant->IsListMarker())
     return;
 

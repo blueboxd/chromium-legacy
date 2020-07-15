@@ -13,7 +13,7 @@ Are you a Google employee? See
 ## System requirements
 
 * A 64-bit Mac running 10.12.6 or later.
-* [Xcode](https://developer.apple.com/xcode) 10.0+.
+* [Xcode](https://developer.apple.com/xcode) 11.4+.
 * The current version of the JDK (required for the Closure compiler).
 
 ## Install `depot_tools`

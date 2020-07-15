@@ -22,96 +22,150 @@ class PlatformKeysService;
 namespace chromeos {
 namespace cert_provisioning {
 
-// ========= CertProvisioningCertsWithIdsGetter ================================
+// ========= CertIterator ======================================================
 
-using GetCertsWithIdsCallback = base::OnceCallback<void(
-    base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
-        certs_with_ids,
-    const std::string& error_message)>;
+using CertIteratorForEachCallback =
+    base::RepeatingCallback<void(scoped_refptr<net::X509Certificate> cert,
+                                 const CertProfileId& cert_profile_id,
+                                 const std::string& error_message)>;
+using CertIteratorOnFinishedCallback =
+    base::OnceCallback<void(const std::string& error_message)>;
 
-// Helper class that retrieves list of all certificates in a given scope with
-// their certificate profile ids. Certificates without the id are ignored.
-class CertProvisioningCertsWithIdsGetter {
+// Iterates over all existing certificates of a given |cert_scope| and combines
+// them with their certificate provisioning ids when possible. Runs |callback|
+// on every (cert, cert_profile_id) pair that had a present and non-empty
+// |cert_profile_id|. If |error_message| is not empty, then the pair is not
+// valid.
+class CertIterator {
  public:
-  CertProvisioningCertsWithIdsGetter();
-  CertProvisioningCertsWithIdsGetter(
-      const CertProvisioningCertsWithIdsGetter&) = delete;
-  CertProvisioningCertsWithIdsGetter& operator=(
-      const CertProvisioningCertsWithIdsGetter&) = delete;
-  ~CertProvisioningCertsWithIdsGetter();
+  CertIterator(CertScope cert_scope,
+               platform_keys::PlatformKeysService* platform_keys_service);
+  CertIterator(const CertIterator&) = delete;
+  CertIterator& operator=(const CertIterator&) = delete;
+  ~CertIterator();
 
-  bool IsRunning() const;
-
-  void GetCertsWithIds(
-      CertScope cert_scope,
-      platform_keys::PlatformKeysService* platform_keys_service,
-      GetCertsWithIdsCallback callback);
+  // Can be called more than once. If previous iteration is not finished, it
+  // will be canceled.
+  void IterateAll(CertIteratorForEachCallback for_each_callback,
+                  CertIteratorOnFinishedCallback on_finished_callback);
+  void Cancel();
 
  private:
   void OnGetCertificatesDone(
       std::unique_ptr<net::CertificateList> existing_certs,
       const std::string& error_message);
+  void OnGetAttributeForKeyDone(scoped_refptr<net::X509Certificate> cert,
+                                const base::Optional<std::string>& attr_value,
+                                const std::string& error_message);
+  void StopIteration(const std::string& error_message);
 
-  void CollectOneResult(scoped_refptr<net::X509Certificate> cert,
-                        const base::Optional<CertProfileId>& cert_id,
-                        const std::string& error_message);
-
-  CertScope cert_scope_ = CertScope::kDevice;
-  platform_keys::PlatformKeysService* platform_keys_service_ = nullptr;
+  const CertScope cert_scope_ = CertScope::kDevice;
+  platform_keys::PlatformKeysService* const platform_keys_service_ = nullptr;
 
   size_t wait_counter_ = 0;
-  base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
-      certs_with_ids_;
-  GetCertsWithIdsCallback callback_;
+  CertIteratorForEachCallback for_each_callback_;
+  CertIteratorOnFinishedCallback on_finished_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<CertProvisioningCertsWithIdsGetter> weak_factory_{this};
+  base::WeakPtrFactory<CertIterator> weak_factory_{this};
 };
 
-// ========= CertProvisioningCertDeleter =======================================
+// ========= LatestCertsWithIdsGetter ==========================================
 
-using DeleteCertsCallback =
-    base::OnceCallback<void(const std::string& error_message)>;
+using LatestCertsWithIdsGetterCallback = base::OnceCallback<void(
+    base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
+        certs_with_ids,
+    const std::string& error_message)>;
 
-// Helper class that deletes all certificates in a given scope with certificate
-// profile ids that are not specified to be kept. Certificates without the id
-// are ignored.
-class CertProvisioningCertDeleter {
+// Collects map of certificates with their certificate provisioning ids and
+// returns it via |callback|. If there are several certificates for the same id,
+// only the newest one will be stored in the map. Only one call to
+// GetCertsWithIds() for one instance is allowed.
+class LatestCertsWithIdsGetter {
  public:
-  CertProvisioningCertDeleter();
-  CertProvisioningCertDeleter(const CertProvisioningCertDeleter&) = delete;
-  CertProvisioningCertDeleter& operator=(const CertProvisioningCertDeleter&) =
-      delete;
-  ~CertProvisioningCertDeleter();
+  LatestCertsWithIdsGetter(
+      CertScope cert_scope,
+      platform_keys::PlatformKeysService* platform_keys_service);
+  LatestCertsWithIdsGetter(const LatestCertsWithIdsGetter&) = delete;
+  LatestCertsWithIdsGetter& operator=(const LatestCertsWithIdsGetter&) = delete;
+  ~LatestCertsWithIdsGetter();
 
-  void DeleteCerts(CertScope cert_scope,
-                   platform_keys::PlatformKeysService* platform_keys_service,
-                   base::flat_set<CertProfileId> cert_profile_ids_to_keep,
-                   DeleteCertsCallback callback);
+  // Can be called more than once. If previous task is not finished, it will be
+  // canceled.
+  void GetCertsWithIds(LatestCertsWithIdsGetterCallback callback);
+  bool IsRunning() const;
+  void Cancel();
 
  private:
-  void OnGetCertsWithIdsDone(
-      base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
-          certs_with_ids,
-      const std::string& error_message);
+  void ProcessOneCert(scoped_refptr<net::X509Certificate> new_cert,
+                      const CertProfileId& cert_profile_id,
+                      const std::string& error_message);
+  void OnIterationFinished(const std::string& error_message);
 
-  void OnRemoveCertificateDone(const std::string& error_message);
+  CertIterator iterator_;
 
-  // Keeps track of how many certificates are already processed. Calls the
-  // |callback_| when all work is done.
-  void AccountOneResult();
-
-  CertScope cert_scope_ = CertScope::kDevice;
-  platform_keys::PlatformKeysService* platform_keys_service_ = nullptr;
-
-  size_t wait_counter_ = 0;
-  base::flat_set<CertProfileId> cert_profile_ids_to_keep_;
-  DeleteCertsCallback callback_;
-
-  std::unique_ptr<CertProvisioningCertsWithIdsGetter> cert_getter_;
+  // Accumulates results that will be returned at the end via |callback_|.
+  base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
+      certs_with_ids_;
+  LatestCertsWithIdsGetterCallback callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<CertProvisioningCertDeleter> weak_factory_{this};
+  base::WeakPtrFactory<LatestCertsWithIdsGetter> weak_factory_{this};
+};
+
+// ========= CertDeleter =======================================================
+
+using CertDeleterCallback =
+    base::OnceCallback<void(const std::string& error_message)>;
+
+// Finds and deletes certificates that 1) have ids that are not in
+// |cert_profile_ids_to_keep| set or 2) have another certificate for the same
+// id with later expiration date. Only one call to DeleteCerts() for one
+// instance is allowed.
+class CertDeleter {
+ public:
+  CertDeleter(CertScope cert_scope,
+              platform_keys::PlatformKeysService* platform_keys_service);
+  CertDeleter(const CertDeleter&) = delete;
+  CertDeleter& operator=(const CertDeleter&) = delete;
+  ~CertDeleter();
+  void Cancel();
+
+  // Can be called more than once. If previous task is not finished, it will be
+  // canceled.
+  void DeleteCerts(base::flat_set<CertProfileId> cert_profile_ids_to_keep,
+                   CertDeleterCallback callback);
+
+ private:
+  void ProcessOneCert(scoped_refptr<net::X509Certificate> cert,
+                      const CertProfileId& cert_profile_id,
+                      const std::string& error_message);
+  void RememberOrDelete(scoped_refptr<net::X509Certificate> new_cert,
+                        const CertProfileId& cert_profile_id);
+  void DeleteCert(scoped_refptr<net::X509Certificate> cert);
+  void OnDeleteCertDone(const std::string& error_message);
+  void OnIterationFinished(const std::string& error_message);
+  void CheckStateAndMaybeFinish();
+  void ReturnStatus(const std::string& error_message);
+
+  const CertScope cert_scope_ = CertScope::kDevice;
+  platform_keys::PlatformKeysService* const platform_keys_service_ = nullptr;
+
+  CertIterator iterator_;
+  bool iteration_finished_ = false;
+  size_t pending_delete_tasks_counter_ = 0;
+  CertDeleterCallback callback_;
+
+  // Contains list of currently existing certificate profile ids. Certificates
+  // with ids outside of this set can be deleted.
+  base::flat_set<CertProfileId> cert_profile_ids_to_keep_;
+
+  // Stores previously seen certificates that allows to find duplicates.
+  base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
+      certs_with_ids_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+  base::WeakPtrFactory<CertDeleter> weak_factory_{this};
 };
 
 }  // namespace cert_provisioning

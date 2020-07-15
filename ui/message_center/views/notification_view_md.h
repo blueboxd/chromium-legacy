@@ -46,9 +46,8 @@ class MESSAGE_CENTER_EXPORT NotificationMdTextButton
                            const base::Optional<base::string16>& placeholder);
   ~NotificationMdTextButton() override;
 
-  // Overridden from MdTextButton
-  void UpdateColors() override;
-  void SetText(const base::string16& text) override;
+  // views::MdTextButton:
+  void UpdateBackgroundColor() override;
 
   const base::Optional<base::string16>& placeholder() const {
     return placeholder_;

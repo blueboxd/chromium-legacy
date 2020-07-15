@@ -66,6 +66,12 @@ class [[clang::lto_visibility_public]] ScopedHandleVerifier {
  private:
   ~ScopedHandleVerifier();  // Not implemented.
 
+  void StartTrackingImpl(HANDLE handle, const void* owner, const void* pc1,
+                         const void* pc2);
+  void StopTrackingImpl(HANDLE handle, const void* owner, const void* pc1,
+                        const void* pc2);
+  void OnHandleBeingClosedImpl(HANDLE handle);
+
   static base::internal::LockImpl* GetLock();
   static void InstallVerifier();
 

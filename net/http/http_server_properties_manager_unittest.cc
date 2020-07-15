@@ -1200,8 +1200,7 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   std::string expiration_string;
   ASSERT_TRUE(broken_alt_svcs_list_entry->GetStringWithoutPathExpansion(
       "broken_until", &expiration_string));
-  broken_alt_svcs_list_entry->RemoveWithoutPathExpansion("broken_until",
-                                                         nullptr);
+  broken_alt_svcs_list_entry->RemoveKey("broken_until");
 
   // Expiration time of "www.google.com:1234" should be 5 minutes minus the
   // update-prefs-delay from when the prefs were written.

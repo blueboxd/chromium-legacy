@@ -82,6 +82,7 @@ void ManifestParser::Parse() {
   manifest_->start_url = ParseStartURL(root_object.get());
   manifest_->scope = ParseScope(root_object.get(), manifest_->start_url);
   manifest_->display = ParseDisplay(root_object.get());
+  manifest_->display_override = ParseDisplayOverride(root_object.get());
   manifest_->orientation = ParseOrientation(root_object.get());
   manifest_->icons = ParseIcons(root_object.get());
 
@@ -304,6 +305,39 @@ blink::mojom::DisplayMode ManifestParser::ParseDisplay(
   if (display_enum == blink::mojom::DisplayMode::kUndefined)
     AddErrorInfo("unknown 'display' value ignored.");
   return display_enum;
+}
+
+Vector<mojom::blink::DisplayMode> ManifestParser::ParseDisplayOverride(
+    const JSONObject* object) {
+  Vector<mojom::blink::DisplayMode> display_override;
+  if (!RuntimeEnabledFeatures::DisplayOverrideEnabled())
+    return display_override;
+
+  JSONValue* json_value = object->Get("display_override");
+  if (!json_value)
+    return display_override;
+
+  JSONArray* display_override_list = object->GetArray("display_override");
+  if (!display_override_list) {
+    AddErrorInfo("property 'display_override' ignored, type array expected.");
+    return display_override;
+  }
+
+  for (wtf_size_t i = 0; i < display_override_list->size(); ++i) {
+    String display_enum_string;
+    // AsString will return an empty string if a type error occurs,
+    // which will cause DisplayModeFromString to return kUndefined,
+    // resulting in this entry being ignored.
+    display_override_list->at(i)->AsString(&display_enum_string);
+    display_enum_string = display_enum_string.StripWhiteSpace();
+    mojom::blink::DisplayMode display_enum =
+        DisplayModeFromString(display_enum_string.Utf8());
+
+    if (display_enum != mojom::blink::DisplayMode::kUndefined)
+      display_override.push_back(display_enum);
+  }
+
+  return display_override;
 }
 
 device::mojom::blink::ScreenOrientationLockType

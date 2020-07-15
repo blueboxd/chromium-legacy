@@ -210,11 +210,6 @@ void LoginDisplayWebUI::ShowEnterpriseEnrollmentScreen() {
     delegate_->OnStartEnterpriseEnrollment();
 }
 
-void LoginDisplayWebUI::ShowEnableDebuggingScreen() {
-  if (delegate_)
-    delegate_->OnStartEnableDebuggingScreen();
-}
-
 void LoginDisplayWebUI::ShowKioskEnableScreen() {
   if (delegate_)
     delegate_->OnStartKioskEnableScreen();

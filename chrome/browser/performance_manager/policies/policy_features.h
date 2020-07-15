@@ -92,7 +92,8 @@ class UrgentDiscardingParams {
   // Integer values are specified to allow conversion from the integer value in
   // the DiscardStrategy feature param.
   enum class DiscardStrategy : int {
-    // Discards the least recently used tab among the eligible ones.
+    // Discards the least recently used tab among the eligible ones. This is the
+    // default strategy.
     LRU = 0,
     // Discard the tab with the biggest resident set among the eligible ones.
     BIGGEST_RSS = 1,
@@ -102,7 +103,7 @@ class UrgentDiscardingParams {
 
   static constexpr base::FeatureParam<int> kDiscardStrategy{
       &features::kUrgentDiscardingFromPerformanceManager, "DiscardStrategy",
-      static_cast<int>(DiscardStrategy::BIGGEST_RSS)};
+      static_cast<int>(DiscardStrategy::LRU)};
 
  private:
   UrgentDiscardingParams();

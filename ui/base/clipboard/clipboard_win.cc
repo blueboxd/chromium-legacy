@@ -246,6 +246,11 @@ uint64_t ClipboardWin::GetSequenceNumber(ClipboardBuffer buffer) const {
   return ::GetClipboardSequenceNumber();
 }
 
+void ClipboardWin::SetClipboardDlpController(
+    std::unique_ptr<ClipboardDlpController> dlp_controller) {
+  NOTIMPLEMENTED();
+}
+
 // |data_dst| is not used. It's only passed to be consistent with other
 // platforms.
 bool ClipboardWin::IsFormatAvailable(

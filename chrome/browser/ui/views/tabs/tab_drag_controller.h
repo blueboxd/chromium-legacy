@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_context.h"
@@ -20,6 +21,7 @@
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace ui {
@@ -268,6 +270,7 @@ class TabDragController : public views::WidgetObserver {
   // Overriden from views::WidgetObserver:
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& new_bounds) override;
+  void OnWidgetDestroyed(views::Widget* widget) override;
 
   // Forget the source tabstrip. It doesn't exist any more, so it doesn't
   // make sense to insert dragged tabs back into it if the drag is reverted.
@@ -689,6 +692,8 @@ class TabDragController : public views::WidgetObserver {
       attached_context_tabs_closed_tracker_;
 
   std::unique_ptr<WindowFinder> window_finder_;
+
+  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
 
   base::WeakPtrFactory<TabDragController> weak_factory_{this};
 

@@ -54,7 +54,6 @@ class LoginDisplayWebUI : public LoginDisplay,
   void OnSigninScreenReady() override;
   void CancelUserAdding() override;
   void ShowEnterpriseEnrollmentScreen() override;
-  void ShowEnableDebuggingScreen() override;
   void ShowKioskEnableScreen() override;
   void ShowKioskAutolaunchScreen() override;
   void ShowWrongHWIDScreen() override;

@@ -63,7 +63,7 @@ class WelcomeScreen : public BaseScreen,
     virtual void OnLanguageListReloaded() = 0;
   };
 
-  enum class Result { NEXT, START_DEMO, SETUP_DEMO };
+  enum class Result { NEXT, START_DEMO, SETUP_DEMO, ENABLE_DEBUGGING };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
 
@@ -128,6 +128,8 @@ class WelcomeScreen : public BaseScreen,
   void OnContinueButtonPressed();
   // Proceed with Demo mode setup.
   void OnSetupDemoMode();
+  // Proceed with Enable debugging features flow.
+  void OnEnableDebugging();
 
   // Async callback after ReloadResourceBundle(locale) completed.
   void OnLanguageChangedCallback(

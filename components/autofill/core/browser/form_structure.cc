@@ -2346,16 +2346,23 @@ std::ostream& operator<<(std::ostream& buffer, const FormStructure& form) {
                   {base::NumberToString(field->GetFieldSignature().value()),
                    " - ",
                    base::NumberToString(
-                       HashFieldSignature(field->GetFieldSignature()))});
+                       HashFieldSignature(field->GetFieldSignature())),
+                   ", unique renderer id: ",
+                   base::NumberToString(field->unique_renderer_id.value())});
     buffer << "\n  Name: " << field->parseable_name();
 
     auto type = field->Type().ToString();
     auto heuristic_type = AutofillType(field->heuristic_type()).ToString();
     auto server_type = AutofillType(field->server_type()).ToString();
+    auto html_type_description =
+        field->html_type() != HTML_TYPE_UNSPECIFIED
+            ? base::StrCat(
+                  {", html: ", FieldTypeToStringPiece(field->html_type())})
+            : "";
 
     buffer << "\n  Type: "
-           << base::StrCat({type, " (heuristic: ", heuristic_type,
-                            ", server: ", server_type, ")"});
+           << base::StrCat({type, " (heuristic: ", heuristic_type, ", server: ",
+                            server_type, html_type_description, ")"});
     buffer << "\n  Section: " << field->section;
 
     constexpr size_t kMaxLabelSize = 100;
@@ -2398,10 +2405,15 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
     auto type = field->Type().ToString();
     auto heuristic_type = AutofillType(field->heuristic_type()).ToString();
     auto server_type = AutofillType(field->server_type()).ToString();
+    auto html_type_description =
+        field->html_type() != HTML_TYPE_UNSPECIFIED
+            ? base::StrCat(
+                  {", html: ", FieldTypeToStringPiece(field->html_type())})
+            : "";
 
     buffer << Tr{} << "Type:"
-           << base::StrCat({type, " (heuristic: ", heuristic_type,
-                            ", server: ", server_type, ")"});
+           << base::StrCat({type, " (heuristic: ", heuristic_type, ", server: ",
+                            server_type, html_type_description, ")"});
     buffer << Tr{} << "Section:" << field->section;
 
     constexpr size_t kMaxLabelSize = 100;

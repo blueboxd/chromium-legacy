@@ -9,7 +9,9 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/autofill/core/browser/logging/log_receiver.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace autofill {
@@ -22,8 +24,34 @@ class WebUIDataSource;
 }  // namespace content
 
 namespace autofill {
+
+constexpr char kCacheResetDone[] =
+    "Done. Please close and reopen all tabs that should be affected by the "
+    "cache reset.";
+constexpr char kCacheResetAlreadyInProgress[] = "Reset already in progress";
+
 content::WebUIDataSource* CreateInternalsHTMLSource(
     const std::string& source_name);
+
+// Class that wipes responses from the Autofill server from the HTTP cache.
+class AutofillCacheResetter : public content::BrowsingDataRemover::Observer {
+ public:
+  using Callback = base::OnceCallback<void(const std::string&)>;
+
+  explicit AutofillCacheResetter(content::BrowserContext* browser_context);
+  ~AutofillCacheResetter() override;
+  AutofillCacheResetter(const AutofillCacheResetter&) = delete;
+  AutofillCacheResetter operator=(const AutofillCacheResetter) = delete;
+
+  void ResetCache(Callback callback);
+
+ private:
+  // Implements content::BrowsingDataRemover::Observer.
+  void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override;
+
+  content::BrowsingDataRemover* remover_;
+  Callback callback_;
+};
 
 // UI handler for chrome://password-manager-internals and
 // chrome://autofill-internals that takes care of subscribing to the autofill
@@ -54,6 +82,9 @@ class InternalsUIHandler : public content::WebUIMessageHandler,
 
   // JavaScript call handler.
   void OnLoaded(const base::ListValue* args);
+  void OnResetCache(const base::ListValue* args);
+
+  void OnResetCacheDone(const std::string& message);
 
   // JavaScript function to be called on load.
   std::string call_on_load_;
@@ -61,6 +92,8 @@ class InternalsUIHandler : public content::WebUIMessageHandler,
 
   // Whether |this| is registered as a log receiver with the LogRouter.
   bool registered_with_log_router_ = false;
+
+  base::Optional<AutofillCacheResetter> autofill_cache_resetter_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalsUIHandler);
 };

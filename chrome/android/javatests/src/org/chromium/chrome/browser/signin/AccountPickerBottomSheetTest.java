@@ -116,6 +116,7 @@ public class AccountPickerBottomSheetTest {
         onView(withText(R.string.signin_account_picker_dialog_title)).check(matches(isDisplayed()));
         onView(withText(ACCOUNT_NAME1)).check(matches(isDisplayed()));
         onView(withText(FULL_NAME1)).check(matches(isDisplayed()));
+        onView(withId(R.id.account_selection_mark)).check(matches(isDisplayed()));
         String continueAsText = mActivityTestRule.getActivity().getString(
                 R.string.signin_promo_continue_as, GIVEN_NAME1);
         onView(withText(continueAsText)).check(matches(isDisplayed()));

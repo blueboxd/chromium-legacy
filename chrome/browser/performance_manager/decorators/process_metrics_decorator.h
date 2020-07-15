@@ -26,6 +26,10 @@ class ProcessMetricsDecorator : public GraphOwned {
   void SetGraphForTesting(Graph* graph) { graph_ = graph; }
   bool IsTimerRunningForTesting() const { return refresh_timer_.IsRunning(); }
 
+  base::TimeDelta GetTimerDelayForTesting() const {
+    return refresh_timer_.GetCurrentDelay();
+  }
+
  protected:
   // Starts/Stop the timer responsible for refreshing the process nodes metrics.
   void StartTimer();

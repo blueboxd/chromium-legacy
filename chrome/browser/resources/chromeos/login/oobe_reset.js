@@ -171,7 +171,6 @@ Polymer({
   ready() {
     this.initializeLoginScreen('ResetScreen', {
       resetAllowed: false,
-      enableDebuggingAllowed: false,
     });
   },
 

@@ -67,7 +67,6 @@ class CoreOobeView {
   virtual void SetDialogPaddingMode(DialogPaddingMode mode) = 0;
   virtual void ShowDeviceResetScreen() = 0;
   virtual void ShowEnableAdbSideloadingScreen() = 0;
-  virtual void ShowEnableDebuggingScreen() = 0;
   virtual void UpdateKeyboardState() = 0;
 };
 
@@ -141,7 +140,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void SetDialogPaddingMode(CoreOobeView::DialogPaddingMode mode) override;
   void ShowDeviceResetScreen() override;
   void ShowEnableAdbSideloadingScreen() override;
-  void ShowEnableDebuggingScreen() override;
 
   void UpdateKeyboardState() override;
 
@@ -161,7 +159,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void HandleSkipToUpdateForTesting();
   void HandleLaunchHelpApp(double help_topic_id);
   void HandleToggleResetScreen();
-  void HandleEnableDebuggingScreen();
   void HandleGetPrimaryDisplayNameForTesting(const base::ListValue* args);
   void GetPrimaryDisplayNameCallback(
       const base::Value& callback_id,

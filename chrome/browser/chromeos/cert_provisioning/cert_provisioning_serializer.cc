@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -16,15 +17,16 @@ namespace cert_provisioning {
 
 namespace {
 
-const char kKeyNameCertScope[] = "cert_scope";
-const char kKeyNameCertProfile[] = "cert_profile";
-const char kKeyNameState[] = "state";
-const char kKeyNamePublicKey[] = "public_key";
-const char kKeyNameInvalidationTopic[] = "invalidation_topic";
+constexpr char kKeyNameCertScope[] = "cert_scope";
+constexpr char kKeyNameCertProfile[] = "cert_profile";
+constexpr char kKeyNameState[] = "state";
+constexpr char kKeyNamePublicKey[] = "public_key";
+constexpr char kKeyNameInvalidationTopic[] = "invalidation_topic";
 
-const char kKeyNameCertProfileId[] = "profile_id";
-const char kKeyNameCertProfileVersion[] = "policy_version";
-const char kKeyNameCertProfileVaEnabled[] = "va_enabled";
+constexpr char kKeyNameCertProfileId[] = "profile_id";
+constexpr char kKeyNameCertProfileVersion[] = "policy_version";
+constexpr char kKeyNameCertProfileVaEnabled[] = "va_enabled";
+constexpr char kKeyNameCertProfileRenewalPeriod[] = "renewal_period";
 
 template <typename T>
 bool ConvertToEnum(int value, T* dst) {
@@ -71,13 +73,26 @@ bool DeserializeBoolValue(const base::Value& parent_value,
   return true;
 }
 
+bool DeserializeRenewalPeriod(const base::Value& parent_value,
+                              const char* value_name,
+                              base::TimeDelta* dst) {
+  base::Optional<int> serialized_time = parent_value.FindIntKey(value_name);
+  *dst = base::TimeDelta::FromSeconds(serialized_time.value_or(0));
+  return true;
+}
+
 base::Value SerializeCertProfile(const CertProfile& profile) {
-  static_assert(CertProfile::kVersion == 3, "This function should be updated");
+  static_assert(CertProfile::kVersion == 4, "This function should be updated");
 
   base::Value result(base::Value::Type::DICTIONARY);
   result.SetStringKey(kKeyNameCertProfileId, profile.profile_id);
   result.SetStringKey(kKeyNameCertProfileVersion, profile.policy_version);
   result.SetBoolKey(kKeyNameCertProfileVaEnabled, profile.is_va_enabled);
+
+  if (!profile.renewal_period.is_zero()) {
+    result.SetIntKey(kKeyNameCertProfileRenewalPeriod,
+                     profile.renewal_period.InSeconds());
+  }
 
   return result;
 }
@@ -85,7 +100,7 @@ base::Value SerializeCertProfile(const CertProfile& profile) {
 bool DeserializeCertProfile(const base::Value& parent_value,
                             const char* value_name,
                             CertProfile* dst) {
-  static_assert(CertProfile::kVersion == 3, "This function should be updated");
+  static_assert(CertProfile::kVersion == 4, "This function should be updated");
 
   const base::Value* serialized_profile =
       parent_value.FindKeyOfType(value_name, base::Value::Type::DICTIONARY);
@@ -104,6 +119,9 @@ bool DeserializeCertProfile(const base::Value& parent_value,
   is_ok = is_ok && DeserializeBoolValue(*serialized_profile,
                                         kKeyNameCertProfileVaEnabled,
                                         &(dst->is_va_enabled));
+  is_ok = is_ok && DeserializeRenewalPeriod(*serialized_profile,
+                                            kKeyNameCertProfileRenewalPeriod,
+                                            &(dst->renewal_period));
   return is_ok;
 }
 

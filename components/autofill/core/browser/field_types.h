@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/strings/string16.h"
+#include "base/strings/string_piece_forward.h"
 
 namespace autofill {
 
@@ -323,6 +324,9 @@ typedef std::set<ServerFieldType> ServerFieldTypeSet;
 // Returns whether the field can be filled with data.
 bool IsFillableFieldType(ServerFieldType field_type);
 
+// Returns a StringPiece describing |type|. As the StringPiece points to a
+// static string, you don't need to worry about memory deallocation.
+base::StringPiece FieldTypeToStringPiece(HtmlFieldType type);
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_FIELD_TYPES_H_

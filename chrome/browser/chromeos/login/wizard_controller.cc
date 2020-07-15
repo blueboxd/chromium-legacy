@@ -848,16 +848,20 @@ void WizardController::OnHidDetectionScreenExit(
 void WizardController::OnWelcomeScreenExit(WelcomeScreen::Result result) {
   OnScreenExit(WelcomeView::kScreenId, WelcomeScreen::GetResultString(result));
 
-  if (result == WelcomeScreen::Result::START_DEMO) {
-    LoginDisplayHost::default_host()->StartDemoAppLaunch();
-    return;
+  switch (result) {
+    case WelcomeScreen::Result::START_DEMO:
+      LoginDisplayHost::default_host()->StartDemoAppLaunch();
+      return;
+    case WelcomeScreen::Result::SETUP_DEMO:
+      StartDemoModeSetup();
+      return;
+    case WelcomeScreen::Result::ENABLE_DEBUGGING:
+      ShowEnableDebuggingScreen();
+      return;
+    case WelcomeScreen::Result::NEXT:
+      ShowNetworkScreen();
+      return;
   }
-  if (result == WelcomeScreen::Result::SETUP_DEMO) {
-    StartDemoModeSetup();
-    return;
-  }
-
-  ShowNetworkScreen();
 }
 
 void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {

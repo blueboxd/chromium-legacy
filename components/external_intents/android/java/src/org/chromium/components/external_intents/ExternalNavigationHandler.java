@@ -18,7 +18,6 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.provider.Browser;
@@ -1494,8 +1493,6 @@ public class ExternalNavigationHandler {
      * capable activities. If the intent is pdf type, return the platform pdf viewer if
      * it is available so user don't need to choose it from Intent picker.
      *
-     * Note this function is slow on Android versions less than Lollipop.
-     *
      * @param intent Intent to open.
      * @param allowSelfOpen Whether chrome itself is allowed to open the intent.
      * @return true if the intent can be resolved, or false otherwise.
@@ -1712,7 +1709,6 @@ public class ExternalNavigationHandler {
 
     @VisibleForTesting
     protected String getDefaultSmsPackageNameFromSystem() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return null;
         return Telephony.Sms.getDefaultSmsPackage(ContextUtils.getApplicationContext());
     }
 

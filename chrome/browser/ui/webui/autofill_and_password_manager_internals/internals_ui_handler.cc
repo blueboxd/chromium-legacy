@@ -16,6 +16,8 @@
 #include "components/version_info/version_info.h"
 #include "components/version_ui/version_handler_helper.h"
 #include "components/version_ui/version_ui_constants.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 
@@ -44,6 +46,42 @@ content::WebUIDataSource* CreateInternalsHTMLSource(
   return source;
 }
 
+AutofillCacheResetter::AutofillCacheResetter(
+    content::BrowserContext* browser_context)
+    : remover_(
+          content::BrowserContext::GetBrowsingDataRemover(browser_context)) {
+  remover_->AddObserver(this);
+}
+
+AutofillCacheResetter::~AutofillCacheResetter() {
+  remover_->RemoveObserver(this);
+}
+
+void AutofillCacheResetter::ResetCache(Callback callback) {
+  if (callback_) {
+    std::move(callback).Run(kCacheResetAlreadyInProgress);
+    return;
+  }
+
+  callback_ = std::move(callback);
+
+  std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder =
+      content::BrowsingDataFilterBuilder::Create(
+          content::BrowsingDataFilterBuilder::Mode::kDelete);
+  filter_builder->AddOrigin(
+      url::Origin::Create(GURL("https://content-autofill.googleapis.com")));
+  remover_->RemoveWithFilterAndReply(
+      base::Time::Min(), base::Time::Max(),
+      content::BrowsingDataRemover::DATA_TYPE_CACHE,
+      content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB,
+      std::move(filter_builder), this);
+}
+
+void AutofillCacheResetter::OnBrowsingDataRemoverDone(
+    uint64_t failed_data_types) {
+  std::move(callback_).Run(kCacheResetDone);
+}
+
 InternalsUIHandler::InternalsUIHandler(
     std::string call_on_load,
     GetLogRouterFunction get_log_router_function)
@@ -58,6 +96,9 @@ void InternalsUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "loaded", base::BindRepeating(&InternalsUIHandler::OnLoaded,
                                     base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "resetCache", base::BindRepeating(&InternalsUIHandler::OnResetCache,
+                                        base::Unretained(this)));
 }
 
 void InternalsUIHandler::OnJavascriptAllowed() {
@@ -71,11 +112,28 @@ void InternalsUIHandler::OnJavascriptDisallowed() {
 void InternalsUIHandler::OnLoaded(const base::ListValue* args) {
   AllowJavascript();
   CallJavascriptFunction(call_on_load_);
+  // This is only available in contents, because the iOS BrowsingDataRemover
+  // does not allow selectively deleting data per origin and we don't want to
+  // wipe the entire cache.
+  CallJavascriptFunction("enableResetCacheButton");
   CallJavascriptFunction(
       "notifyAboutIncognito",
       base::Value(Profile::FromWebUI(web_ui())->IsIncognitoProfile()));
   CallJavascriptFunction("notifyAboutVariations",
                          *version_ui::GetVariationsList());
+}
+
+void InternalsUIHandler::OnResetCache(const base::ListValue* args) {
+  if (!autofill_cache_resetter_) {
+    content::BrowserContext* browser_context = Profile::FromWebUI(web_ui());
+    autofill_cache_resetter_.emplace(browser_context);
+  }
+  autofill_cache_resetter_->ResetCache(base::Bind(
+      &InternalsUIHandler::OnResetCacheDone, base::Unretained(this)));
+}
+
+void InternalsUIHandler::OnResetCacheDone(const std::string& message) {
+  CallJavascriptFunction("notifyResetDone", base::Value(message));
 }
 
 void InternalsUIHandler::StartSubscription() {

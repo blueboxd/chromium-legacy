@@ -1464,12 +1464,11 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
   }
   UpdateState(NetworkError::ERROR_REASON_UPDATE);
 
+  // TODO(crbug.com/1105387): Part of initial screen logic.
   if (core_oobe_view_) {
     PrefService* prefs = g_browser_process->local_state();
     if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
       core_oobe_view_->ShowDeviceResetScreen();
-    } else if (prefs->GetBoolean(prefs::kDebuggingFeaturesRequested)) {
-      core_oobe_view_->ShowEnableDebuggingScreen();
     }
   }
 }

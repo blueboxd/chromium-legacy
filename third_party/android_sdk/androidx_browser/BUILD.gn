@@ -23,6 +23,7 @@ android_library("androidx_browser_java") {
     "./src/browser/browser/src/main/java/androidx/browser/trusted/NotificationApiHelperForM.java",
     "./src/browser/browser/src/main/java/androidx/browser/trusted/NotificationApiHelperForO.java",
     "./src/browser/browser/src/main/java/androidx/browser/trusted/PackageIdentityUtils.java",
+    "./src/browser/browser/src/main/java/androidx/browser/trusted/ScreenOrientation.java",
     "./src/browser/browser/src/main/java/androidx/browser/trusted/Token.java",
     "./src/browser/browser/src/main/java/androidx/browser/trusted/TokenContents.java",
     "./src/browser/browser/src/main/java/androidx/browser/trusted/TokenStore.java",

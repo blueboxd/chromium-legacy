@@ -507,7 +507,7 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
     EXPECT_EQ(0u, GetErrorCount());
   }
 
-  // Accept 'fullscreen'.
+  // Accept 'standalone'.
   {
     auto& manifest = ParseManifest("{ \"display\": \"standalone\" }");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kStandalone);
@@ -532,6 +532,133 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
   {
     auto& manifest = ParseManifest("{ \"display\": \"BROWSER\" }");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kBrowser);
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+}
+
+TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
+  // Smoke test: if no display_override, no value.
+  {
+    auto& manifest = ParseManifest("{ \"display_override\": [] }");
+    EXPECT_TRUE(manifest->display_override.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Smoke test: if not array, value will be ignored
+  {
+    auto& manifest = ParseManifest("{ \"display_override\": 23 }");
+    EXPECT_TRUE(manifest->display_override.IsEmpty());
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'display_override' ignored, type array expected.",
+              errors()[0]);
+  }
+
+  // Smoke test: if array value is not a string, it will be ignored
+  {
+    auto& manifest = ParseManifest("{ \"display_override\": [ 23 ] }");
+    EXPECT_TRUE(manifest->display_override.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Smoke test: if array value is not not recognized, it will be ignored
+  {
+    auto& manifest = ParseManifest("{ \"display_override\": [ \"test\" ] }");
+    EXPECT_TRUE(manifest->display_override.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Case insensitive
+  {
+    auto& manifest = ParseManifest("{ \"display_override\": [ \"BROWSER\" ] }");
+    EXPECT_FALSE(manifest->display_override.IsEmpty());
+    EXPECT_EQ(manifest->display_override[0],
+              blink::mojom::DisplayMode::kBrowser);
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Trim whitespace
+  {
+    auto& manifest =
+        ParseManifest("{ \"display_override\": [ \" browser \" ] }");
+    EXPECT_FALSE(manifest->display_override.IsEmpty());
+    EXPECT_EQ(manifest->display_override[0],
+              blink::mojom::DisplayMode::kBrowser);
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Accept 'browser'
+  {
+    auto& manifest = ParseManifest("{ \"display_override\": [ \"browser\" ] }");
+    EXPECT_FALSE(manifest->display_override.IsEmpty());
+    EXPECT_EQ(manifest->display_override[0],
+              blink::mojom::DisplayMode::kBrowser);
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Accept 'browser', 'minimal-ui'
+  {
+    auto& manifest = ParseManifest(
+        "{ \"display_override\": [ \"browser\", \"minimal-ui\" ] }");
+    EXPECT_FALSE(manifest->display_override.IsEmpty());
+    EXPECT_EQ(manifest->display_override[0],
+              blink::mojom::DisplayMode::kBrowser);
+    EXPECT_EQ(manifest->display_override[1],
+              blink::mojom::DisplayMode::kMinimalUi);
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // if array value is not not recognized, it will be ignored
+  // Accept 'browser', 'minimal-ui'
+  {
+    auto& manifest = ParseManifest(
+        "{ \"display_override\": [ 3, \"browser\", \"invalid-display\", "
+        "\"minimal-ui\" ] }");
+    EXPECT_FALSE(manifest->display_override.IsEmpty());
+    EXPECT_EQ(manifest->display_override[0],
+              blink::mojom::DisplayMode::kBrowser);
+    EXPECT_EQ(manifest->display_override[1],
+              blink::mojom::DisplayMode::kMinimalUi);
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // validate both display and display-override fields are parsed
+  // if array value is not not recognized, it will be ignored
+  // Accept 'browser', 'minimal-ui', 'standalone'
+  {
+    auto& manifest = ParseManifest(
+        "{ \"display\": \"standalone\", \"display_override\": [ \"browser\", "
+        "\"minimal-ui\", \"standalone\" ] }");
+    EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kStandalone);
+    EXPECT_EQ(0u, GetErrorCount());
+    EXPECT_FALSE(manifest->display_override.IsEmpty());
+    EXPECT_EQ(manifest->display_override[0],
+              blink::mojom::DisplayMode::kBrowser);
+    EXPECT_EQ(manifest->display_override[1],
+              blink::mojom::DisplayMode::kMinimalUi);
+    EXPECT_EQ(manifest->display_override[2],
+              blink::mojom::DisplayMode::kStandalone);
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+  }
+
+  // validate duplicate entries.
+  // Accept 'browser', 'minimal-ui', 'browser'
+  {
+    auto& manifest = ParseManifest(
+        "{ \"display_override\": [ \"browser\", \"minimal-ui\", "
+        "\"browser\" ] }");
+    EXPECT_FALSE(manifest->display_override.IsEmpty());
+    EXPECT_EQ(manifest->display_override[0],
+              blink::mojom::DisplayMode::kBrowser);
+    EXPECT_EQ(manifest->display_override[1],
+              blink::mojom::DisplayMode::kMinimalUi);
+    EXPECT_EQ(manifest->display_override[2],
+              blink::mojom::DisplayMode::kBrowser);
+    EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_EQ(0u, GetErrorCount());
   }
 }

@@ -293,7 +293,7 @@ void SupervisedUserWhitelistService::RemoveWhitelist(
     const std::string& id) {
   base::RecordAction(base::UserMetricsAction("ManagedUsers_Whitelist_Removed"));
 
-  pref_dict->RemoveWithoutPathExpansion(id, NULL);
+  pref_dict->RemoveKey(id);
   installer_->UnregisterWhitelist(client_id_, id);
   UnloadWhitelist(id);
 }

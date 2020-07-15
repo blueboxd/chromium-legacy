@@ -7,7 +7,6 @@ package org.chromium.components.signin;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AuthenticatorDescription;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -335,7 +334,6 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
         new UpdateAccountRestrictionPatternsTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void subscribeToAppRestrictionChanges() {
         IntentFilter filter = new IntentFilter(Intent.ACTION_APPLICATION_RESTRICTIONS_CHANGED);
         BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -386,7 +384,6 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private static String[] getAccountRestrictionPatternPostJellyBeanMr2() {
         // This method uses AppRestrictions directly, rather than using the Policy interface,
         // because it must be callable in contexts in which the native library hasn't been loaded.

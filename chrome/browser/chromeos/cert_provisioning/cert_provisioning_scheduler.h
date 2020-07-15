@@ -75,8 +75,8 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
       CertScope cert_scope,
       Profile* profile,
       PrefService* pref_service,
-      const char* pref_name,
       policy::CloudPolicyClient* cloud_policy_client,
+      platform_keys::PlatformKeysService* platform_keys_service,
       NetworkStateHandler* network_state_handler,
       std::unique_ptr<CertProvisioningInvalidatorFactory> invalidator_factory);
   ~CertProvisioningScheduler() override;
@@ -99,8 +99,9 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
  private:
   void ScheduleInitialUpdate();
   void ScheduleDailyUpdate();
-  // Posts delayed task to call ProcessProfile.
-  void ScheduleRetry(const CertProfile& profile);
+  // Posts delayed task to call UpdateOneCertImpl.
+  void ScheduleRetry(const CertProfileId& profile_id);
+  void ScheduleRenewal(const CertProfileId& profile_id, base::TimeDelta delay);
 
   void InitialUpdateCerts();
   void DeleteCertsWithoutPolicy();
@@ -110,6 +111,7 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   void OnCleanVaKeysIfIdleDone(base::Optional<bool> delete_result);
   void RegisterForPrefsChanges();
 
+  void InitiateRenewal(const CertProfileId& cert_profile_id);
   void UpdateOneCertImpl(const CertProfileId& cert_profile_id);
   void UpdateCertList(std::vector<CertProfile> profiles);
   void UpdateCertListWithExistingCerts(
@@ -150,10 +152,14 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   PrefService* pref_service_ = nullptr;
   const char* pref_name_ = nullptr;
   policy::CloudPolicyClient* cloud_policy_client_ = nullptr;
-  NetworkStateHandler* network_state_handler_ = nullptr;
   platform_keys::PlatformKeysService* platform_keys_service_ = nullptr;
+  NetworkStateHandler* network_state_handler_ = nullptr;
   PrefChangeRegistrar pref_change_registrar_;
   WorkerMap workers_;
+  // Contains cert profile ids that will be renewed before next daily update.
+  // Helps to prevent creation of more than one delayed task for renewal. When
+  // the renewal starts for a profile id, it is removed from the set.
+  base::flat_set<CertProfileId> scheduled_renewals_;
   // Collection of cert profile ids that failed recently. They will not be
   // retried until next |DailyUpdateCerts|. FailedWorkerInfo contains some extra
   // information about the failure. Profiles that failed with
@@ -167,8 +173,8 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   // run, because an update for them was triggered during the current run.
   CertProfileSet queued_profiles_to_update_;
 
-  std::unique_ptr<CertProvisioningCertsWithIdsGetter> certs_with_ids_getter_;
-  std::unique_ptr<CertProvisioningCertDeleter> cert_deleter_;
+  LatestCertsWithIdsGetter certs_with_ids_getter_;
+  CertDeleter cert_deleter_;
   std::unique_ptr<CertProvisioningInvalidatorFactory> invalidator_factory_;
 
   base::WeakPtrFactory<CertProvisioningScheduler> weak_factory_{this};

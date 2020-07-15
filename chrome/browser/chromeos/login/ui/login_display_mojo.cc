@@ -111,6 +111,7 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
     if (filtered_users.empty())
       return;
 
+    // TODO(crbug.com/1105387): Part of initial screen logic.
     // Check whether factory reset or debugging feature have been requested in
     // prior session, and start reset or enable debugging wizard as needed.
     // This has to happen after login-prompt-visible, as some reset dialog
@@ -225,10 +226,6 @@ void LoginDisplayMojo::OnSigninScreenReady() {
 }
 
 void LoginDisplayMojo::ShowEnterpriseEnrollmentScreen() {
-  NOTIMPLEMENTED();
-}
-
-void LoginDisplayMojo::ShowEnableDebuggingScreen() {
   NOTIMPLEMENTED();
 }
 

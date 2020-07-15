@@ -407,14 +407,13 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("authenticateUser", &SigninScreenHandler::HandleAuthenticateUser);
   AddCallback("completeOfflineAuthentication",
               &SigninScreenHandler::HandleCompleteOfflineAuthentication);
-  AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
+  AddCallback("launchIncognitoForTesting",
+              &SigninScreenHandler::HandleLaunchIncognitoForTesting);
   AddCallback("launchSAMLPublicSession",
               &SigninScreenHandler::HandleLaunchSAMLPublicSession);
   AddRawCallback("offlineLogin", &SigninScreenHandler::HandleOfflineLogin);
   AddCallback("toggleEnrollmentScreen",
               &SigninScreenHandler::HandleToggleEnrollmentScreen);
-  AddCallback("toggleEnableDebuggingScreen",
-              &SigninScreenHandler::HandleToggleEnableDebuggingScreen);
   AddCallback("toggleKioskEnableScreen",
               &SigninScreenHandler::HandleToggleKioskEnableScreen);
   AddCallback("accountPickerReady",
@@ -1032,7 +1031,7 @@ void SigninScreenHandler::HandleCompleteOfflineAuthentication(
                            false /* authenticated_by_pin */);
 }
 
-void SigninScreenHandler::HandleLaunchIncognito() {
+void SigninScreenHandler::HandleLaunchIncognitoForTesting() {
   UserContext context(user_manager::USER_TYPE_GUEST, EmptyAccountId());
   if (delegate_)
     delegate_->Login(context, SigninSpecifics());
@@ -1066,11 +1065,6 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
 void SigninScreenHandler::HandleToggleEnrollmentScreen() {
   if (delegate_)
     delegate_->ShowEnterpriseEnrollmentScreen();
-}
-
-void SigninScreenHandler::HandleToggleEnableDebuggingScreen() {
-  if (delegate_)
-    delegate_->ShowEnableDebuggingScreen();
 }
 
 void SigninScreenHandler::HandleToggleKioskEnableScreen() {

@@ -97,8 +97,7 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
             ExistingAccountRowViewBinder.bindAccountView(accountProfileData, mSelectedAccountView);
 
             ImageView rowEndImage = mSelectedAccountView.findViewById(R.id.account_selection_mark);
-            rowEndImage.setImageResource(R.drawable.ic_expand_more_black_24dp);
-            rowEndImage.setColorFilter(R.color.default_icon_color);
+            rowEndImage.setImageResource(R.drawable.ic_expand_more_in_circle_24dp);
 
             String continueAsButtonText = mContext.getString(R.string.signin_promo_continue_as,
                     accountProfileData.getGivenNameOrFullNameOrEmail());

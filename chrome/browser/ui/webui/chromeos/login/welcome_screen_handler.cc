@@ -70,15 +70,11 @@ void WelcomeScreenHandler::Show() {
     return;
   }
 
+  // TODO(crbug.com/1105387): Part of initial screen logic.
   PrefService* prefs = g_browser_process->local_state();
   if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
     if (core_oobe_view_)
       core_oobe_view_->ShowDeviceResetScreen();
-
-    return;
-  } else if (prefs->GetBoolean(prefs::kDebuggingFeaturesRequested)) {
-    if (core_oobe_view_)
-      core_oobe_view_->ShowEnableDebuggingScreen();
 
     return;
   }

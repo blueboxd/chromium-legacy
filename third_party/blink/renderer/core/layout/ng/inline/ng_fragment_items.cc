@@ -334,4 +334,11 @@ void NGFragmentItems::LayoutObjectWillBeDestroyed(
   }
 }
 
+#if DCHECK_IS_ON()
+void NGFragmentItems::CheckAllItemsAreValid() const {
+  for (const NGFragmentItem& item : Items())
+    DCHECK(!item.IsLayoutObjectDestroyedOrMoved());
+}
+#endif
+
 }  // namespace blink

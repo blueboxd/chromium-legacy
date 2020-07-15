@@ -19,19 +19,41 @@ namespace cert_provisioning {
 
 //================ CertificateHelperForTesting =================================
 
-// Redirects PlatformKeysService::GetCertificate calls to itself. Allows to add
-// certificate to a fake storage with assigned CertProfileId-s.
+// Allows to add certificate to a fake storage with assigned CertProfileId-s.
+// Redirects PlatformKeysService::GetCertificate calls to itself and return all
+// stored certificates as a result.
 struct CertificateHelperForTesting {
  public:
   explicit CertificateHelperForTesting(
       platform_keys::MockPlatformKeysService* platform_keys_service);
   ~CertificateHelperForTesting();
 
-  void AddCert(CertScope cert_scope,
-               const base::Optional<CertProfileId>& cert_profile_id);
-  void AddCert(CertScope cert_scope,
-               const base::Optional<CertProfileId>& cert_profile_id,
-               const std::string& error_message);
+  // Generates and adds a certificate to internal fake certificate storage.
+  // Returns refpointer to the generated certificate. If |error_message| is not
+  // empty, an attempt to retrieve |cert_profile_id| via
+  // PlatformKeysService::GetAttributeForKey() will fail with |error_message|.
+  // |not_valid_before|, |not_valid_after| configure validity period of the
+  // certificate.
+  scoped_refptr<net::X509Certificate> AddCert(
+      CertScope cert_scope,
+      const base::Optional<CertProfileId>& cert_profile_id,
+      const std::string& error_message,
+      base::Time not_valid_before,
+      base::Time not_valid_after);
+
+  // Simplified version of AddCert(). The certificate is not expired and has
+  // |cert_profile_id|.
+  scoped_refptr<net::X509Certificate> AddCert(
+      CertScope cert_scope,
+      const base::Optional<CertProfileId>& cert_profile_id);
+
+  // Simplified version of AddCert(). The certificate is not expired, but fails
+  // to retrieve |cert_profile_id|.
+  scoped_refptr<net::X509Certificate> AddCert(
+      CertScope cert_scope,
+      const base::Optional<CertProfileId>& cert_profile_id,
+      const std::string& error_message);
+
   void ClearCerts();
   const net::CertificateList& GetCerts() const;
 

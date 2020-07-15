@@ -310,8 +310,11 @@ GpuFeatureStatus GetFlashStage3DBaselineFeatureStatus(
 GpuFeatureStatus GetAcceleratedVideoDecodeFeatureStatus(
     const std::set<int>& blocklisted_features,
     bool use_swift_shader) {
-  if (use_swift_shader)
-    return kGpuFeatureStatusDisabled;
+  if (use_swift_shader) {
+    // This is for testing only. Chrome should exercise the GPU accelerated
+    // path on top of SwiftShader driver.
+    return kGpuFeatureStatusEnabled;
+  }
   if (blocklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE))
     return kGpuFeatureStatusBlocklisted;
   return kGpuFeatureStatusEnabled;

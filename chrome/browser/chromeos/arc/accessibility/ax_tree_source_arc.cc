@@ -380,8 +380,8 @@ bool AXTreeSourceArc::UpdateAndroidFocusedId(const AXEventData& event_data) {
       // Sometimes Android sets focus on unfocusable node, e.g. ListView.
       AccessibilityInfoDataWrapper* adjusted_node =
           FindFirstFocusableNode(source_node);
-      android_focused_id_ = IsValid(adjusted_node) ? adjusted_node->GetId()
-                                                   : event_data.source_id;
+      if (IsValid(adjusted_node))
+        android_focused_id_ = adjusted_node->GetId();
     }
   } else if (event_data.event_type == AXEventType::VIEW_SELECTED) {
     // In Android, VIEW_SELECTED event is dispatched in the two cases below:

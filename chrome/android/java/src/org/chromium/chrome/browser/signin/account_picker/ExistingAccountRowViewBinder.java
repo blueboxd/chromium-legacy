@@ -12,6 +12,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
+import androidx.core.content.ContextCompat;
+import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -45,9 +47,15 @@ class ExistingAccountRowViewBinder {
             bindAccountView(profileData, view);
         } else if (propertyKey == ExistingAccountRowProperties.IS_SELECTED_ACCOUNT) {
             ImageView selectionMark = view.findViewById(R.id.account_selection_mark);
-            selectionMark.setVisibility(model.get(ExistingAccountRowProperties.IS_SELECTED_ACCOUNT)
-                            ? View.VISIBLE
-                            : View.GONE);
+            if (model.get(ExistingAccountRowProperties.IS_SELECTED_ACCOUNT)) {
+                selectionMark.setImageResource(R.drawable.ic_check_googblue_24dp);
+                ImageViewCompat.setImageTintList(selectionMark,
+                        ContextCompat.getColorStateList(
+                                view.getContext(), R.color.default_icon_color_blue));
+                selectionMark.setVisibility(View.VISIBLE);
+            } else {
+                selectionMark.setVisibility(View.GONE);
+            }
         } else {
             throw new IllegalArgumentException(
                     "Cannot update the view for propertyKey: " + propertyKey);

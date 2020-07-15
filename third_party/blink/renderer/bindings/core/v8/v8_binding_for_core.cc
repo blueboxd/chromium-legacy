@@ -551,7 +551,7 @@ static bool HasUnmatchedSurrogates(const String& string) {
 }
 
 // Replace unmatched surrogates with REPLACEMENT CHARACTER U+FFFD.
-String ReplaceUnmatchedSurrogates(const String& string) {
+String ReplaceUnmatchedSurrogates(String string) {
   // This roughly implements http://heycam.github.io/webidl/#dfn-obtain-unicode
   // but since Blink strings are 16-bits internally, the output is simply
   // re-encoded to UTF-16.
@@ -574,8 +574,8 @@ String ReplaceUnmatchedSurrogates(const String& string) {
   unsigned i = 0;
 
   // 4. Initialize U to be an empty sequence of Unicode characters.
-  StringBuilder u;
-  u.ReserveCapacity(n);
+  StringBuffer<UChar> result(n);
+  UChar* u = result.Characters();
 
   // 5. While i < n:
   while (i < n) {
@@ -585,17 +585,17 @@ String ReplaceUnmatchedSurrogates(const String& string) {
     if (U16_IS_SINGLE(c)) {
       // c < 0xD800 or c > 0xDFFF
       // Append to U the Unicode character with code point c.
-      u.Append(c);
+      u[i] = c;
     } else if (U16_IS_TRAIL(c)) {
       // 0xDC00 <= c <= 0xDFFF
       // Append to U a U+FFFD REPLACEMENT CHARACTER.
-      u.Append(kReplacementCharacter);
+      u[i] = kReplacementCharacter;
     } else {
       // 0xD800 <= c <= 0xDBFF
       DCHECK(U16_IS_LEAD(c));
       if (i == n - 1) {
         // 1. If i = n-1, then append to U a U+FFFD REPLACEMENT CHARACTER.
-        u.Append(kReplacementCharacter);
+        u[i] = kReplacementCharacter;
       } else {
         // 2. Otherwise, i < n-1:
         DCHECK_LT(i, n - 1);
@@ -607,13 +607,12 @@ String ReplaceUnmatchedSurrogates(const String& string) {
           // ..2. Let b be d & 0x3FF.
           // ..3. Append to U the Unicode character with code point
           //      2^16+2^10*a+b.
-          u.Append(U16_GET_SUPPLEMENTARY(c, d));
-          // Blink: This is equivalent to u.append(c); u.append(d);
-          ++i;
+          u[i++] = c;
+          u[i] = d;
         } else {
           // 3. Otherwise, d < 0xDC00 or d > 0xDFFF. Append to U a U+FFFD
           //    REPLACEMENT CHARACTER.
-          u.Append(kReplacementCharacter);
+          u[i] = kReplacementCharacter;
         }
       }
     }
@@ -622,8 +621,8 @@ String ReplaceUnmatchedSurrogates(const String& string) {
   }
 
   // 6. Return U.
-  DCHECK_EQ(u.length(), string.length());
-  return u.ToString();
+  DCHECK_EQ(i, string.length());
+  return String::Adopt(result);
 }
 
 XPathNSResolver* ToXPathNSResolver(ScriptState* script_state,

@@ -10,7 +10,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -401,8 +400,6 @@ void FirefoxImporter::ImportPasswords() {
   }
 
   if (!cancelled()) {
-    UMA_HISTOGRAM_COUNTS_10000("Import.NumberOfImportedPasswords.Firefox",
-                               forms.size());
     for (size_t i = 0; i < forms.size(); ++i) {
       if (!forms[i].username_value.empty() ||
           !forms[i].password_value.empty() || forms[i].blocked_by_user) {

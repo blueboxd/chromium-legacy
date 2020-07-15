@@ -815,8 +815,6 @@ Polymer({
     }
 
     params.doSamlRedirect = (this.screenMode_ == AuthMode.SAML_INTERSTITIAL);
-    params.menuGuestMode = data.guestSignin;
-    params.menuKeyboardOptions = false;
     params.menuEnterpriseEnrollment =
         !(data.enterpriseManagedDevice || data.hasDeviceOwner);
     params.isFirstUser = !(data.enterpriseManagedDevice || data.hasDeviceOwner);
@@ -980,10 +978,7 @@ Polymer({
    * @private
    */
   onMenuItemClicked_(e) {
-    if (e.detail == 'gm') {
-      Oobe.disableSigninUI();
-      chrome.send('launchIncognito');
-    } else if (e.detail == 'ee') {
+    if (e.detail == 'ee') {
       cr.ui.Oobe.handleAccelerator(ACCELERATOR_ENROLLMENT);
     }
   },

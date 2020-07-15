@@ -173,6 +173,10 @@ struct BLINK_COMMON_EXPORT Manifest {
   // present.
   blink::mojom::DisplayMode display = blink::mojom::DisplayMode::kUndefined;
 
+  // Empty if the parsing failed, the field was not present, or all the
+  // values inside the JSON array were invalid.
+  std::vector<blink::mojom::DisplayMode> display_override;
+
   // Set to device::mojom::ScreenOrientationLockType::DEFAULT if the parsing
   // failed or the field was not present.
   device::mojom::ScreenOrientationLockType orientation =

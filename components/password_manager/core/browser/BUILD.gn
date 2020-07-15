@@ -539,6 +539,7 @@ source_set("unit_tests") {
     "credential_manager_impl_unittest.cc",
     "credential_manager_logger_unittest.cc",
     "credential_manager_password_form_manager_unittest.cc",
+    "credential_manager_pending_request_task_unittest.cc",
     "credentials_cleaner_runner_unittest.cc",
     "credentials_cleaner_unittest.cc",
     "export/csv_writer_unittest.cc",

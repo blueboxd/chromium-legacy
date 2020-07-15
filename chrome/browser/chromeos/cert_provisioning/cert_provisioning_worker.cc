@@ -109,19 +109,6 @@ int GetStateOrderedIndex(CertProvisioningWorkerState state) {
   return res;
 }
 
-bool CheckPublicKeyInCertificate(
-    const scoped_refptr<net::X509Certificate>& cert,
-    const std::string& public_key) {
-  base::StringPiece spki_from_cert;
-  if (!net::asn1::ExtractSPKIFromDERCert(
-          net::x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()),
-          &spki_from_cert)) {
-    return false;
-  }
-
-  return (public_key == spki_from_cert);
-}
-
 }  // namespace
 
 // ============= CertProvisioningWorkerFactory =================================
@@ -633,7 +620,9 @@ void CertProvisioningWorkerImpl::ImportCert(
     return;
   }
 
-  if (!CheckPublicKeyInCertificate(cert, public_key_)) {
+  std::string public_key_from_cert =
+      platform_keys::GetSubjectPublicKeyInfo(cert);
+  if (public_key_from_cert != public_key_) {
     LOG(ERROR) << "Downloaded certificate does not match the expected key pair";
     UpdateState(CertProvisioningWorkerState::kFailed);
     return;

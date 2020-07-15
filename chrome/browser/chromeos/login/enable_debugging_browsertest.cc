@@ -174,7 +174,9 @@ class EnableDebuggingTestBase : public OobeBaseTest {
   }
 
   void InvokeEnableDebuggingScreen() {
-    test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('debugging');");
+    LoginDisplayHost::default_host()->HandleAccelerator(
+        ash::LoginAcceleratorAction::kEnableDebugging);
+
     OobeScreenWaiter(EnableDebuggingScreenView::kScreenId).Wait();
   }
 

@@ -337,6 +337,12 @@ uint64_t ClipboardOzone::GetSequenceNumber(ClipboardBuffer buffer) const {
   return async_clipboard_ozone_->GetSequenceNumber(buffer);
 }
 
+// TODO(crbug.com/1103194): Setting |dlp_controller| should be supported.
+void ClipboardOzone::SetClipboardDlpController(
+    std::unique_ptr<ClipboardDlpController> dlp_controller) {
+  NOTIMPLEMENTED();
+}
+
 // TODO(crbug.com/1103194): |data_dst| should be supported.
 bool ClipboardOzone::IsFormatAvailable(
     const ClipboardFormatType& format,

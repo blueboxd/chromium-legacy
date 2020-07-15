@@ -133,7 +133,6 @@ Polymer({
   ready() {
     this.initializeLoginScreen('HIDDetectionScreen', {
       resetAllowed: false,
-      enableDebuggingAllowed: true,
     });
   },
 

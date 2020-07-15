@@ -246,6 +246,7 @@ void ShowLoginWizardFinish(
         prefs::kSigninScreenTimezone);
   }
 
+  // TODO(crbug.com/1105387): Part of initial screen logic.
   if (ShouldShowSigninScreen(first_screen)) {
     display_host->StartSignInScreen();
   } else {
@@ -269,6 +270,7 @@ void ShowLoginWizardFinish(
   DCHECK(session_manager::SessionManager::Get());
   DCHECK(chromeos::LoginDisplayHost::default_host());
   WallpaperControllerClient::Get()->SetInitialWallpaper();
+  // TODO(crbug.com/1105387): Part of initial screen logic.
   MaybeShowDeviceDisabledScreen();
 }
 

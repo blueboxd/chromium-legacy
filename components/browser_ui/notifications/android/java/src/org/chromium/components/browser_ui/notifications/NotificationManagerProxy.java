@@ -21,7 +21,6 @@ import java.util.List;
  */
 public interface NotificationManagerProxy {
     // Implemented by NotificationManagerCompat and thus available on all API levels.
-    // Note that on < Kitkat, this always returns true.
     boolean areNotificationsEnabled();
 
     void cancel(int id);

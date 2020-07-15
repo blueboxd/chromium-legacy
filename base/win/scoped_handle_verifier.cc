@@ -10,6 +10,7 @@
 
 #include <unordered_map>
 
+#include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
 #include "base/synchronization/lock_impl.h"
@@ -25,17 +26,19 @@ void* GetHandleVerifier() {
 }
 }  // extern C
 
+namespace base {
+namespace win {
+namespace internal {
+
 namespace {
 
-base::win::internal::ScopedHandleVerifier* g_active_verifier = nullptr;
+ScopedHandleVerifier* g_active_verifier = nullptr;
 using GetHandleVerifierFn = void* (*)();
 using HandleMap =
-    std::unordered_map<HANDLE,
-                       base::win::internal::ScopedHandleVerifierInfo,
-                       base::win::internal::HandleHash>;
+    std::unordered_map<HANDLE, ScopedHandleVerifierInfo, HandleHash>;
 using NativeLock = base::internal::LockImpl;
 
-NativeLock* GetLock() {
+NativeLock* GetScopedHandleVerifierLock() {
   static auto* native_lock = new NativeLock();
   return native_lock;
 }
@@ -53,11 +56,26 @@ class AutoNativeLock {
   DISALLOW_COPY_AND_ASSIGN(AutoNativeLock);
 };
 
-}  // namespace
+NOINLINE void ReportErrorOnScopedHandleOperation(
+    const base::debug::StackTrace& creation_stack) {
+  auto creation_stack_copy = creation_stack;
+  base::debug::Alias(&creation_stack_copy);
+  CHECK(false);
+  __builtin_unreachable();
+}
 
-namespace base {
-namespace win {
-namespace internal {
+NOINLINE void ReportErrorOnScopedHandleOperation(
+    const base::debug::StackTrace& creation_stack,
+    const ScopedHandleVerifierInfo& other) {
+  auto other_copy = other;
+  base::debug::Alias(&other_copy);
+  auto creation_stack_copy = creation_stack;
+  base::debug::Alias(&creation_stack_copy);
+  CHECK(false);
+  __builtin_unreachable();
+}
+
+}  // namespace
 
 ScopedHandleVerifier::ScopedHandleVerifier(bool enabled)
     : enabled_(enabled), lock_(GetLock()) {}
@@ -76,12 +94,12 @@ bool CloseHandleWrapper(HANDLE handle) {
   return true;
 }
 
-// Assigns the g_active_verifier global within the GetLock() lock.
+// Assigns the g_active_verifier global within the ScopedHandleVerifier lock.
 // If |existing_verifier| is non-null then |enabled| is ignored.
 void ThreadSafeAssignOrCreateScopedHandleVerifier(
     ScopedHandleVerifier* existing_verifier,
     bool enabled) {
-  AutoNativeLock lock(*GetLock());
+  AutoNativeLock lock(*GetScopedHandleVerifierLock());
   // Another thread in this module might be trying to assign the global
   // verifier, so check that within the lock here.
   if (g_active_verifier)
@@ -142,61 +160,23 @@ bool ScopedHandleVerifier::CloseHandle(HANDLE handle) {
 
 // static
 NativeLock* ScopedHandleVerifier::GetLock() {
-  return ::GetLock();
+  return GetScopedHandleVerifierLock();
 }
 
 void ScopedHandleVerifier::StartTracking(HANDLE handle,
                                          const void* owner,
                                          const void* pc1,
                                          const void* pc2) {
-  if (!enabled_)
-    return;
-  TRACE_EVENT0("base", "ScopedHandleVerifier::StartTracking");
-
-  // Grab the thread id before the lock.
-  DWORD thread_id = GetCurrentThreadId();
-
-  // Grab the thread stacktrace before the lock.
-  ScopedHandleVerifierInfo handle_info = {owner, pc1, pc2,
-                                          base::debug::StackTrace(), thread_id};
-  std::pair<HANDLE, ScopedHandleVerifierInfo> item(handle, handle_info);
-
-  AutoNativeLock lock(*lock_);
-  std::pair<HandleMap::iterator, bool> result = map_.insert(item);
-  if (!result.second) {
-    ScopedHandleVerifierInfo other = result.first->second;
-    base::debug::Alias(&other);
-    auto creation_stack = creation_stack_;
-    base::debug::Alias(&creation_stack);
-    CHECK(false);  // Attempt to start tracking already tracked handle.
-  }
+  if (enabled_)
+    StartTrackingImpl(handle, owner, pc1, pc2);
 }
 
 void ScopedHandleVerifier::StopTracking(HANDLE handle,
                                         const void* owner,
                                         const void* pc1,
                                         const void* pc2) {
-  if (!enabled_)
-    return;
-  TRACE_EVENT0("base", "ScopedHandleVerifier::StopTracking");
-
-  AutoNativeLock lock(*lock_);
-  HandleMap::iterator i = map_.find(handle);
-  if (i == map_.end()) {
-    auto creation_stack = creation_stack_;
-    base::debug::Alias(&creation_stack);
-    CHECK(false);  // Attempting to close an untracked handle.
-  }
-
-  ScopedHandleVerifierInfo other = i->second;
-  if (other.owner != owner) {
-    base::debug::Alias(&other);
-    auto creation_stack = creation_stack_;
-    base::debug::Alias(&creation_stack);
-    CHECK(false);  // Attempting to close a handle not owned by opener.
-  }
-
-  map_.erase(i);
+  if (enabled_)
+    StopTrackingImpl(handle, owner, pc1, pc2);
 }
 
 void ScopedHandleVerifier::Disable() {
@@ -204,28 +184,68 @@ void ScopedHandleVerifier::Disable() {
 }
 
 void ScopedHandleVerifier::OnHandleBeingClosed(HANDLE handle) {
-  if (!enabled_)
-    return;
-
-  if (closing_.Get())
-    return;
-
-  TRACE_EVENT0("base", "ScopedHandleVerifier::OnHandleBeingClosed");
-
-  AutoNativeLock lock(*lock_);
-  HandleMap::iterator i = map_.find(handle);
-  if (i == map_.end())
-    return;
-
-  ScopedHandleVerifierInfo other = i->second;
-  base::debug::Alias(&other);
-  auto creation_stack = creation_stack_;
-  base::debug::Alias(&creation_stack);
-  CHECK(false);  // CloseHandle called on tracked handle.
+  if (enabled_)
+    OnHandleBeingClosedImpl(handle);
 }
 
 HMODULE ScopedHandleVerifier::GetModule() const {
   return CURRENT_MODULE();
+}
+
+NOINLINE void ScopedHandleVerifier::StartTrackingImpl(HANDLE handle,
+                                                      const void* owner,
+                                                      const void* pc1,
+                                                      const void* pc2) {
+  TRACE_EVENT0("base", "ScopedHandleVerifier::StartTrackingImpl");
+
+  // Grab the thread id before the lock.
+  DWORD thread_id = GetCurrentThreadId();
+
+  // Grab the thread stacktrace before the lock.
+  auto item = std::make_pair(
+      handle, ScopedHandleVerifierInfo{owner, pc1, pc2,
+                                       base::debug::StackTrace(), thread_id});
+
+  AutoNativeLock lock(*lock_);
+  std::pair<HandleMap::iterator, bool> result = map_.insert(item);
+  if (!result.second) {
+    // Attempt to start tracking already tracked handle.
+    ReportErrorOnScopedHandleOperation(creation_stack_, result.first->second);
+  }
+}
+
+NOINLINE void ScopedHandleVerifier::StopTrackingImpl(HANDLE handle,
+                                                     const void* owner,
+                                                     const void* pc1,
+                                                     const void* pc2) {
+  TRACE_EVENT0("base", "ScopedHandleVerifier::StopTrackingImpl");
+
+  AutoNativeLock lock(*lock_);
+  HandleMap::iterator i = map_.find(handle);
+  if (i == map_.end()) {
+    // Attempting to close an untracked handle.
+    ReportErrorOnScopedHandleOperation(creation_stack_);
+  }
+
+  if (i->second.owner != owner) {
+    // Attempting to close a handle not owned by opener.
+    ReportErrorOnScopedHandleOperation(creation_stack_, i->second);
+  }
+
+  map_.erase(i);
+}
+
+NOINLINE void ScopedHandleVerifier::OnHandleBeingClosedImpl(HANDLE handle) {
+  TRACE_EVENT0("base", "ScopedHandleVerifier::OnHandleBeingClosedImpl");
+  if (closing_.Get())
+    return;
+
+  AutoNativeLock lock(*lock_);
+  HandleMap::iterator i = map_.find(handle);
+  if (i != map_.end()) {
+    // CloseHandle called on tracked handle.
+    ReportErrorOnScopedHandleOperation(creation_stack_, i->second);
+  }
 }
 
 HMODULE GetHandleVerifierModuleForTesting() {

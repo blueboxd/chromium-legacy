@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/field_types.h"
 
 #include "base/notreached.h"
+#include "base/strings/string_piece.h"
 #include "components/autofill/core/common/autofill_features.h"
 
 namespace autofill {
@@ -130,6 +131,103 @@ bool IsFillableFieldType(ServerFieldType field_type) {
       return false;
   }
   return false;
+}
+
+base::StringPiece FieldTypeToStringPiece(HtmlFieldType type) {
+  switch (type) {
+    case HTML_TYPE_UNSPECIFIED:
+      return "HTML_TYPE_UNSPECIFIED";
+    case HTML_TYPE_NAME:
+      return "HTML_TYPE_NAME";
+    case HTML_TYPE_HONORIFIC_PREFIX:
+      return "HTML_TYPE_HONORIFIC_PREFIX";
+    case HTML_TYPE_GIVEN_NAME:
+      return "HTML_TYPE_GIVEN_NAME";
+    case HTML_TYPE_ADDITIONAL_NAME:
+      return "HTML_TYPE_ADDITIONAL_NAME";
+    case HTML_TYPE_FAMILY_NAME:
+      return "HTML_TYPE_FAMILY_NAME";
+    case HTML_TYPE_ORGANIZATION:
+      return "HTML_TYPE_ORGANIZATION";
+    case HTML_TYPE_STREET_ADDRESS:
+      return "HTML_TYPE_STREET_ADDRESS";
+    case HTML_TYPE_ADDRESS_LINE1:
+      return "HTML_TYPE_ADDRESS_LINE1";
+    case HTML_TYPE_ADDRESS_LINE2:
+      return "HTML_TYPE_ADDRESS_LINE2";
+    case HTML_TYPE_ADDRESS_LINE3:
+      return "HTML_TYPE_ADDRESS_LINE3";
+    case HTML_TYPE_ADDRESS_LEVEL1:
+      return "HTML_TYPE_ADDRESS_LEVEL1";
+    case HTML_TYPE_ADDRESS_LEVEL2:
+      return "HTML_TYPE_ADDRESS_LEVEL2";
+    case HTML_TYPE_ADDRESS_LEVEL3:
+      return "HTML_TYPE_ADDRESS_LEVEL3";
+    case HTML_TYPE_COUNTRY_CODE:
+      return "HTML_TYPE_COUNTRY_CODE";
+    case HTML_TYPE_COUNTRY_NAME:
+      return "HTML_TYPE_COUNTRY_NAME";
+    case HTML_TYPE_POSTAL_CODE:
+      return "HTML_TYPE_POSTAL_CODE";
+    case HTML_TYPE_FULL_ADDRESS:
+      return "HTML_TYPE_FULL_ADDRESS";
+    case HTML_TYPE_CREDIT_CARD_NAME_FULL:
+      return "HTML_TYPE_CREDIT_CARD_NAME_FULL";
+    case HTML_TYPE_CREDIT_CARD_NAME_FIRST:
+      return "HTML_TYPE_CREDIT_CARD_NAME_FIRST";
+    case HTML_TYPE_CREDIT_CARD_NAME_LAST:
+      return "HTML_TYPE_CREDIT_CARD_NAME_LAST";
+    case HTML_TYPE_CREDIT_CARD_NUMBER:
+      return "HTML_TYPE_CREDIT_CARD_NUMBER";
+    case HTML_TYPE_CREDIT_CARD_EXP:
+      return "HTML_TYPE_CREDIT_CARD_EXP";
+    case HTML_TYPE_CREDIT_CARD_EXP_MONTH:
+      return "HTML_TYPE_CREDIT_CARD_EXP_MONTH";
+    case HTML_TYPE_CREDIT_CARD_EXP_YEAR:
+      return "HTML_TYPE_CREDIT_CARD_EXP_YEAR";
+    case HTML_TYPE_CREDIT_CARD_VERIFICATION_CODE:
+      return "HTML_TYPE_CREDIT_CARD_VERIFICATION_CODE";
+    case HTML_TYPE_CREDIT_CARD_TYPE:
+      return "HTML_TYPE_CREDIT_CARD_TYPE";
+    case HTML_TYPE_TEL:
+      return "HTML_TYPE_TEL";
+    case HTML_TYPE_TEL_COUNTRY_CODE:
+      return "HTML_TYPE_TEL_COUNTRY_CODE";
+    case HTML_TYPE_TEL_NATIONAL:
+      return "HTML_TYPE_TEL_NATIONAL";
+    case HTML_TYPE_TEL_AREA_CODE:
+      return "HTML_TYPE_TEL_AREA_CODE";
+    case HTML_TYPE_TEL_LOCAL:
+      return "HTML_TYPE_TEL_LOCAL";
+    case HTML_TYPE_TEL_LOCAL_PREFIX:
+      return "HTML_TYPE_TEL_LOCAL_PREFIX";
+    case HTML_TYPE_TEL_LOCAL_SUFFIX:
+      return "HTML_TYPE_TEL_LOCAL_SUFFIX";
+    case HTML_TYPE_TEL_EXTENSION:
+      return "HTML_TYPE_TEL_EXTENSION";
+    case HTML_TYPE_EMAIL:
+      return "HTML_TYPE_EMAIL";
+    case HTML_TYPE_TRANSACTION_AMOUNT:
+      return "HTML_TYPE_TRANSACTION_AMOUNT";
+    case HTML_TYPE_TRANSACTION_CURRENCY:
+      return "HTML_TYPE_TRANSACTION_CURRENCY";
+    case HTML_TYPE_ADDITIONAL_NAME_INITIAL:
+      return "HTML_TYPE_ADDITIONAL_NAME_INITIAL";
+    case HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR:
+      return "HTML_TYPE_CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR";
+    case HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR:
+      return "HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR";
+    case HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR:
+      return "HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR";
+    case HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR:
+      return "HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR";
+    case HTML_TYPE_UPI_VPA:
+      return "HTML_TYPE_UPI_VPA";
+    case HTML_TYPE_UNRECOGNIZED:
+      return "HTML_TYPE_UNRECOGNIZED";
+  }
+  NOTREACHED();
+  return "";
 }
 
 }  // namespace autofill

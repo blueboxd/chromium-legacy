@@ -41,9 +41,10 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   void SetExpandButtonEnabled(bool enabled);
   void SetExpanded(bool expanded);
 
-  // Calls UpdateColors() to set the unified theme color used among the
-  // app icon, app name, and expand button.
-  void SetAccentColor(SkColor color);
+  // Calls UpdateColors() to set the unified theme color used among the app
+  // icon, app name, and expand button. If set to base::nullopt it will use the
+  // NotificationDefaultAccentColor from the native theme.
+  void SetAccentColor(base::Optional<SkColor> color);
 
   // Sets the background color of the notification. This is used to ensure that
   // the accent color has enough contrast against the background.

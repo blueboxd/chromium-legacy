@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
@@ -66,20 +67,32 @@ using CertProfileId = std::string;
 // with definitions of RequiredClientCertificateForDevice and
 // RequiredClientCertificateForUser policies in policy_templates.json file.
 const char kCertProfileIdKey[] = "cert_profile_id";
+const char kCertProfileRenewalPeroidSec[] = "renewal_period_seconds";
 const char kCertProfilePolicyVersionKey[] = "policy_version";
 const char kCertProfileIsVaEnabledKey[] = "enable_remote_attestation_check";
 
 struct CertProfile {
+  static base::Optional<CertProfile> MakeFromValue(const base::Value& value);
+
+  CertProfile() = default;
+  // For tests.
+  CertProfile(CertProfileId profile_id,
+              std::string policy_version,
+              bool is_va_enabled,
+              base::TimeDelta renewal_period);
+
   CertProfileId profile_id;
   std::string policy_version;
   bool is_va_enabled = true;
+  // Default renewal period 0 means that a certificate will be renewed only
+  // after the previous one has expired (0 seconds before it is expires).
+  base::TimeDelta renewal_period = base::TimeDelta::FromSeconds(0);
 
   // IMPORTANT:
   // Increment this when you add/change any member in CertProfile (and update
   // all functions that fail to compile because of it).
-  static constexpr int kVersion = 3;
+  static constexpr int kVersion = 4;
 
-  static base::Optional<CertProfile> MakeFromValue(const base::Value& value);
   bool operator==(const CertProfile& other) const;
   bool operator!=(const CertProfile& other) const;
 };
@@ -90,6 +103,7 @@ struct CertProfileComparator {
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+const char* GetPrefNameForCertProfiles(CertScope scope);
 const char* GetPrefNameForSerialization(CertScope scope);
 
 // Returns the nickname (CKA_LABEL) for keys created for the |profile_id|.

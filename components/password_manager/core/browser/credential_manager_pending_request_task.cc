@@ -87,13 +87,23 @@ CredentialManagerPendingRequestTask::CredentialManagerPendingRequestTask(
     SendCredentialCallback callback,
     CredentialMediationRequirement mediation,
     bool include_passwords,
-    const std::vector<GURL>& request_federations)
+    const std::vector<GURL>& request_federations,
+    StoresToQuery stores_to_query)
     : delegate_(delegate),
       send_callback_(std::move(callback)),
       mediation_(mediation),
       origin_(delegate_->GetOrigin()),
       include_passwords_(include_passwords) {
   CHECK(!net::IsCertStatusError(delegate_->client()->GetMainFrameCertStatus()));
+  switch (stores_to_query) {
+    case StoresToQuery::kProfileStore:
+      expected_stores_to_respond_ = 1;
+      break;
+    case StoresToQuery::kProfileAndAccountStores:
+      expected_stores_to_respond_ = 2;
+      break;
+  }
+
   for (const GURL& federation : request_federations)
     federations_.insert(
         url::Origin::Create(federation.GetOrigin()).Serialize());
@@ -111,12 +121,24 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
         origin_, delegate_->client(), this);
     return;
   }
-  ProcessForms(std::move(results));
+  AggregatePasswordStoreResults(std::move(results));
 }
 
 void CredentialManagerPendingRequestTask::ProcessMigratedForms(
     std::vector<std::unique_ptr<autofill::PasswordForm>> forms) {
-  ProcessForms(std::move(forms));
+  AggregatePasswordStoreResults(std::move(forms));
+}
+
+void CredentialManagerPendingRequestTask::AggregatePasswordStoreResults(
+    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+  // Store the results.
+  for (auto& form : results)
+    partial_results_.push_back(std::move(form));
+
+  // If we're still awaiting more results, nothing else to do.
+  if (--expected_stores_to_respond_ > 0)
+    return;
+  ProcessForms(std::move(partial_results_));
 }
 
 void CredentialManagerPendingRequestTask::ProcessForms(

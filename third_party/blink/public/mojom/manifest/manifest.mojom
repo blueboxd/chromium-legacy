@@ -24,6 +24,8 @@ struct Manifest {
 
   DisplayMode display;
 
+  array<DisplayMode> display_override;
+
   device.mojom.ScreenOrientationLockType orientation;
 
   array<ManifestImageResource> icons;

@@ -1776,6 +1776,37 @@ TEST_F(StyleCascadeTest, RevertCausesTransition) {
   EXPECT_EQ("150px", cascade2.ComputedValue("width"));
 }
 
+TEST_F(StyleCascadeTest, CSSWideKeywordsInFallbacks) {
+  {
+    TestCascade cascade(GetDocument());
+    cascade.Add("display:var(--u,initial)");
+    cascade.Add("margin:var(--u,initial)");
+    cascade.Apply();
+  }
+  {
+    TestCascade cascade(GetDocument());
+    cascade.Add("display:var(--u,inherit)");
+    cascade.Add("margin:var(--u,inherit)");
+    cascade.Apply();
+  }
+  {
+    TestCascade cascade(GetDocument());
+    cascade.Add("display:var(--u,unset)");
+    cascade.Add("margin:var(--u,unset)");
+    cascade.Apply();
+  }
+  {
+    TestCascade cascade(GetDocument());
+    cascade.Add("display:var(--u,revert)");
+    cascade.Add("margin:var(--u,revert)");
+    cascade.Apply();
+  }
+
+  // TODO(crbug.com/1105782): Specs and WPT are currently in conflict
+  // regarding the correct behavior here. For now this test just verifies
+  // that we don't crash.
+}
+
 TEST_F(StyleCascadeTest, RegisteredInitial) {
   RegisterProperty(GetDocument(), "--x", "<length>", "0px", false);
 

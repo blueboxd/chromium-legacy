@@ -152,6 +152,9 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   if (manifest.display != DisplayMode::kUndefined)
     web_app_info->display_mode = manifest.display;
 
+  if (!manifest.display_override.empty())
+    web_app_info->display_override = manifest.display_override;
+
   // Create the WebApplicationInfo icons list *outside* of |web_app_info|, so
   // that we can decide later whether or not to replace the existing icons array
   // (conditionally on whether there were any that didn't have purpose ANY).

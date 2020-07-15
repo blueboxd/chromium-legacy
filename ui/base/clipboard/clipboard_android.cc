@@ -366,6 +366,11 @@ uint64_t ClipboardAndroid::GetSequenceNumber(
   return g_map.Get().GetSequenceNumber();
 }
 
+void ClipboardAndroid::SetClipboardDlpController(
+    std::unique_ptr<ClipboardDlpController> dlp_controller) {
+  NOTIMPLEMENTED();
+}
+
 // |data_dst| is not used. It's only passed to be consistent with other
 // platforms.
 bool ClipboardAndroid::IsFormatAvailable(

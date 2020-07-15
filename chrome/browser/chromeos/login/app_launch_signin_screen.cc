@@ -89,10 +89,6 @@ void AppLaunchSigninScreen::ShowEnterpriseEnrollmentScreen() {
   NOTREACHED();
 }
 
-void AppLaunchSigninScreen::ShowEnableDebuggingScreen() {
-  NOTREACHED();
-}
-
 void AppLaunchSigninScreen::ShowKioskEnableScreen() {
   NOTREACHED();
 }

@@ -20,11 +20,14 @@ FORWARD_DECLARE_TEST(ProfilingJsonExporterTest, MemoryMaps);
 namespace memory_instrumentation {
 
 // This class provides synchronous access to memory metrics for a process with a
-// given |pid|. These interfaces have platform-specific restrictrions:
+// given |pid|. These interfaces have platform-specific restrictions:
 //  * On Android, due to sandboxing restrictions, processes can only access
 //    memory metrics for themselves. Thus |pid| must be equal to getpid().
 //  * On Linux, due to sandboxing restrictions, only the privileged browser
 //    process has access to memory metrics for sandboxed child processes.
+//  * On Fuchsia, due to the API expecting a ProcessId rather than a
+//    ProcessHandle, processes can only access memory metrics for themselves or
+//    for children of base::GetDefaultJob().
 //
 // These restrictions mean that any code that wishes to be cross-platform
 // compatible cannot synchronously obtain memory metrics for a |pid|. Instead,

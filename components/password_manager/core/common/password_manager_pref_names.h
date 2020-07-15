@@ -104,6 +104,10 @@ extern const char kWasOnboardingFeatureCheckedBefore[];
 extern const char kProfileStoreDateLastUsedForFilling[];
 extern const char kAccountStoreDateLastUsedForFilling[];
 
+// Number of times the check for leaked password has been performed from the
+// password settings.
+extern const char kSettingsLaunchedPasswordChecks[];
+
 }  // namespace prefs
 }  // namespace password_manager
 

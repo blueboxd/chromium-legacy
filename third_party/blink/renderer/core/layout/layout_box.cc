@@ -2590,6 +2590,12 @@ void LayoutBox::AddLayoutResult(scoped_refptr<const NGLayoutResult> result,
   }
   const auto& fragment = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
   layout_results_.push_back(std::move(result));
+#if DCHECK_IS_ON()
+  for (const NGPhysicalBoxFragment& fragment : PhysicalFragments()) {
+    if (const NGFragmentItems* fragment_items = fragment.Items())
+      fragment_items->CheckAllItemsAreValid();
+  }
+#endif
   // If this is the last fragment for the node, and its node establishes an
   // inline formatting context, we have some finalization to do.
   if (!fragment.BreakToken() && fragment.Items())
@@ -2622,6 +2628,12 @@ void LayoutBox::ReplaceLayoutResult(scoped_refptr<const NGLayoutResult> result,
     }
   }
   layout_results_[index] = std::move(result);
+#if DCHECK_IS_ON()
+  for (const NGPhysicalBoxFragment& fragment : PhysicalFragments()) {
+    if (const NGFragmentItems* fragment_items = fragment.Items())
+      fragment_items->CheckAllItemsAreValid();
+  }
+#endif
   // If this is the last fragment for the node, and its node establishes an
   // inline formatting context, we have some finalization to do.
   if (!fragment.BreakToken() && fragment.Items() && (index || got_new_fragment))

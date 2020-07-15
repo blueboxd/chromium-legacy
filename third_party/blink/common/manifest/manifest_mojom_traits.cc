@@ -91,6 +91,9 @@ bool StructTraits<blink::mojom::ManifestDataView, ::blink::Manifest>::Read(
   if (!data.ReadDisplay(&out->display))
     return false;
 
+  if (!data.ReadDisplayOverride(&out->display_override))
+    return false;
+
   if (!data.ReadOrientation(&out->orientation))
     return false;
 

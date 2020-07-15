@@ -90,13 +90,12 @@ bool AccessibilityNodeInfoDataWrapper::IsImportantInAndroid() const {
 }
 
 bool AccessibilityNodeInfoDataWrapper::CanBeAccessibilityFocused() const {
-  // Using HasText() here is incomplete because it doesn't match the
-  // populated ax name. However, this method is used only from AXTreeSourceArc
-  // and not used for actual focusability computation of ChromeVox, and it's
-  // enough to check only hasText().
-  return (IsAccessibilityFocusableContainer() ||
-          HasAccessibilityFocusableText()) &&
-         HasText();
+  if (!IsAccessibilityFocusableContainer() && !HasAccessibilityFocusableText())
+    return false;
+  ui::AXNodeData data;
+  Serialize(&data);
+  // TODO (sarakato): Move name computation to a separate function.
+  return data.HasStringAttribute(ax::mojom::StringAttribute::kName);
 }
 
 bool AccessibilityNodeInfoDataWrapper::IsAccessibilityFocusableContainer()

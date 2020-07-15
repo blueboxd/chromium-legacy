@@ -131,6 +131,13 @@ class MODULES_EXPORT ManifestParser {
   // parsing failed.
   blink::mojom::DisplayMode ParseDisplay(const JSONObject* object);
 
+  // Parses the 'display_override' field of the manifest.
+  // https://github.com/WICG/display-override/blob/master/explainer.md
+  // Returns a vector of the parsed DisplayMode if any, an empty vector if
+  // the field was not present or empty.
+  Vector<mojom::blink::DisplayMode> ParseDisplayOverride(
+      const JSONObject* object);
+
   // Parses the 'orientation' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-orientation-member
   // Returns the parsed device::mojom::blink::ScreenOrientationLockType if any,

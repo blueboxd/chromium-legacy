@@ -1050,6 +1050,7 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
   SetProperty(node1, AXBooleanProperty::FOCUSABLE, true);
   SetProperty(node1, AXBooleanProperty::IMPORTANCE, true);
   SetProperty(node1, AXBooleanProperty::VISIBLE_TO_USER, true);
+  SetProperty(node1, AXStringProperty::CONTENT_DESCRIPTION, "node1");
   node1->bounds_in_screen = gfx::Rect(0, 0, 50, 50);
 
   event->node_data.emplace_back(AXNodeInfoData::New());
@@ -1065,7 +1066,7 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
   AXNodeInfoData* node3 = event->node_data.back().get();
   node3->id = 3;
 
-  // Initially |node1| has a focus.
+  // Initially |node1| has focus.
   CallNotifyAccessibilityEvent(event.get());
   ui::AXTreeData data;
   EXPECT_TRUE(CallGetTreeData(&data));

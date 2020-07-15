@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.password_check.PasswordCheck;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
+import org.chromium.chrome.browser.password_check.PasswordCheckPreference;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -102,7 +103,7 @@ public class PasswordSettings
     private Preference mSecurityKey;
     private ChromeSwitchPreference mSavePasswordsSwitch;
     private ChromeBaseCheckBoxPreference mAutoSignInSwitch;
-    private ChromeBasePreference mCheckPasswords;
+    private PasswordCheckPreference mCheckPasswords;
     private TextMessagePreference mEmptyView;
     private boolean mSearchRecorded;
     private Menu mMenu;
@@ -474,13 +475,17 @@ public class PasswordSettings
     }
 
     private void createCheckPasswords() {
-        mCheckPasswords = new ChromeBasePreference(getStyledContext(), null);
+        final int numCheckLaunched =
+                getPrefService().getInteger(Pref.SETTINGS_LAUNCHED_PASSWORD_CHECKS);
+        mCheckPasswords = new PasswordCheckPreference(getStyledContext(), numCheckLaunched < 3);
         mCheckPasswords.setKey(PREF_CHECK_PASSWORDS);
         mCheckPasswords.setTitle(R.string.passwords_check_title);
         mCheckPasswords.setOrder(ORDER_CHECK_PASSWORDS);
         mCheckPasswords.setSummary(R.string.passwords_check_description);
         // Add a listener which launches a settings page for the leak password check
         mCheckPasswords.setOnPreferenceClickListener(preference -> {
+            getPrefService().setInteger(
+                    Pref.SETTINGS_LAUNCHED_PASSWORD_CHECKS, numCheckLaunched + 1);
             PasswordCheck passwordCheck = PasswordCheckFactory.create();
             passwordCheck.showUi(getStyledContext());
             // Return true to notify the click was handled

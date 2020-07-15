@@ -43,9 +43,6 @@ class LoginDisplay {
     // Called when the user requests enterprise enrollment.
     virtual void OnStartEnterpriseEnrollment() = 0;
 
-    // Called when the user requests enable developer features screen.
-    virtual void OnStartEnableDebuggingScreen() = 0;
-
     // Called when the user requests kiosk enable screen.
     virtual void OnStartKioskEnableScreen() = 0;
 

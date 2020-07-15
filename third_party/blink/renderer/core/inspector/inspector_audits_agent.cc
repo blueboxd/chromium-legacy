@@ -423,7 +423,8 @@ protocol::String BuildViolationType(
 void InspectorAuditsAgent::InspectorIssueAdded(InspectorIssue* issue) {
   auto issueDetails = protocol::Audits::InspectorIssueDetails::create();
 
-  if (const auto* d = issue->Details()->samesite_cookie_issue_details.get()) {
+  if (issue->Details()->samesite_cookie_issue_details) {
+    const auto* d = issue->Details()->samesite_cookie_issue_details.get();
     auto sameSiteCookieDetails =
         std::move(protocol::Audits::SameSiteCookieIssueDetails::create()
                       .setCookie(BuildAffectedCookie(d->cookie))
@@ -445,7 +446,8 @@ void InspectorAuditsAgent::InspectorIssueAdded(InspectorIssue* issue) {
     issueDetails.setSameSiteCookieIssueDetails(sameSiteCookieDetails.build());
   }
 
-  if (const auto* d = issue->Details()->mixed_content_issue_details.get()) {
+  if (issue->Details()->mixed_content_issue_details) {
+    const auto* d = issue->Details()->mixed_content_issue_details.get();
     auto mixedContentDetails =
         protocol::Audits::MixedContentIssueDetails::create()
             .setResourceType(BuildMixedContentResourceType(d->request_context))
@@ -463,8 +465,8 @@ void InspectorAuditsAgent::InspectorIssueAdded(InspectorIssue* issue) {
     issueDetails.setMixedContentIssueDetails(std::move(mixedContentDetails));
   }
 
-  if (const auto* d =
-          issue->Details()->blocked_by_response_issue_details.get()) {
+  if (issue->Details()->blocked_by_response_issue_details) {
+    const auto* d = issue->Details()->blocked_by_response_issue_details.get();
     auto blockedByResponseDetails =
         protocol::Audits::BlockedByResponseIssueDetails::create()
             .setRequest(BuildAffectedRequest(d->request))
@@ -477,7 +479,8 @@ void InspectorAuditsAgent::InspectorIssueAdded(InspectorIssue* issue) {
         std::move(blockedByResponseDetails));
   }
 
-  if (const auto* d = issue->Details()->csp_issue_details.get()) {
+  if (issue->Details()->csp_issue_details) {
+    const auto* d = issue->Details()->csp_issue_details.get();
     auto cspDetails =
         std::move(protocol::Audits::ContentSecurityPolicyIssueDetails::create()
                       .setViolatedDirective(d->violated_directive)

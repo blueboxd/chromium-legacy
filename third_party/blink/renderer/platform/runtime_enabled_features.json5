@@ -648,6 +648,10 @@
       settable_from_internals: true,
     },
     {
+      name: "DisplayOverride",
+      status: "test",
+    },
+    {
       name: "DocumentCookie",
     },
     {

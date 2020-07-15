@@ -133,8 +133,6 @@ cr.define('cr.login', function() {
     'platformVersion',           // Version of the OS build.
     'releaseChannel',            // Installation channel.
     'endpointGen',               // Current endpoint generation.
-    'menuGuestMode',             // Enables "Guest mode" menu item
-    'menuKeyboardOptions',       // Enables "Keyboard options" menu item
     'menuEnterpriseEnrollment',  // Enables "Enterprise enrollment" menu item.
     'lsbReleaseBoard',           // Chrome OS Release board name
     'isFirstUser',               // True if this is non-enterprise device,
@@ -639,18 +637,8 @@ cr.define('cr.login', function() {
       if (data.endpointGen) {
         url = appendParam(url, 'endpoint_gen', data.endpointGen);
       }
-      let mi = '';
-      if (data.menuGuestMode) {
-        mi += 'gm,';
-      }
-      if (data.menuKeyboardOptions) {
-        mi += 'ko,';
-      }
       if (data.menuEnterpriseEnrollment) {
-        mi += 'ee,';
-      }
-      if (mi.length) {
-        url = appendParam(url, 'mi', mi);
+        url = appendParam(url, 'mi', 'ee');
       }
 
       if (data.isFirstUser) {

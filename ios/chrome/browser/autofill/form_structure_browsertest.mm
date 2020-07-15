@@ -206,16 +206,11 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
 
 std::string FormStructureBrowserTest::FormStructuresToString(
     const std::map<FormRendererId, std::unique_ptr<FormStructure>>& forms) {
-  std::map<uint32_t, const FormStructure*> sorted_forms;
+  std::string forms_string;
+  // The forms are sorted by renderer ID, which should make the order
+  // deterministic.
   for (const auto& form_kv : forms) {
     const auto* form = form_kv.second.get();
-    uint32_t renderer_id = form->unique_renderer_id().value();
-    EXPECT_TRUE(sorted_forms.emplace(renderer_id, form).second);
-  }
-
-  std::string forms_string;
-  for (const auto& form_kv : sorted_forms) {
-    const auto* form = form_kv.second;
     for (const auto& field : *form) {
       std::string name = base::UTF16ToUTF8(field->name);
       if (base::StartsWith(name, "gChrome~field~",

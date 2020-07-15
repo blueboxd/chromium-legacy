@@ -79,6 +79,8 @@ constexpr char kPublicKeyBase64[] =
 
 constexpr char kCertProfileId[] = "cert_profile_1";
 constexpr char kCertProfileVersion[] = "cert_profile_version_1";
+constexpr base::TimeDelta kCertProfileRenewalPeriod =
+    base::TimeDelta::FromSeconds(0);
 // Prefix + certificate profile name.
 constexpr char kCertScopeStrUser[] = "google/chromeos/user";
 constexpr char kCertScopeStrDevice[] = "google/chromeos/device";
@@ -404,7 +406,8 @@ class CertProvisioningWorkerTest : public ::testing::Test {
 TEST_F(CertProvisioningWorkerTest, Success) {
   base::HistogramTester histogram_tester;
 
-  CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
+  CertProfile cert_profile(kCertProfileId, kCertProfileVersion,
+                           /*is_va_enabled=*/true, kCertProfileRenewalPeriod);
 
   MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
   MockCertProvisioningInvalidator* mock_invalidator = nullptr;
@@ -480,8 +483,8 @@ TEST_F(CertProvisioningWorkerTest, Success) {
 // Checks that the worker makes all necessary requests to other modules during
 // success scenario when VA challenge is not received.
 TEST_F(CertProvisioningWorkerTest, NoVaSuccess) {
-  CertProfile cert_profile{kCertProfileId, kCertProfileVersion,
-                           /*is_va_enabled=*/false};
+  CertProfile cert_profile(kCertProfileId, kCertProfileVersion,
+                           /*is_va_enabled=*/false, kCertProfileRenewalPeriod);
 
   CertProvisioningWorkerImpl worker(
       CertScope::kUser, GetProfile(), &testing_pref_service_, cert_profile,
@@ -531,7 +534,8 @@ TEST_F(CertProvisioningWorkerTest, NoVaSuccess) {
 // Checks that when the server returns try_again_later field, the worker will
 // retry a request when it asked to continue the provisioning.
 TEST_F(CertProvisioningWorkerTest, TryLaterManualRetry) {
-  CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
+  CertProfile cert_profile(kCertProfileId, kCertProfileVersion,
+                           /*is_va_enabled=*/true, kCertProfileRenewalPeriod);
 
   MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
   CertProvisioningWorkerImpl worker(
@@ -633,7 +637,8 @@ TEST_F(CertProvisioningWorkerTest, TryLaterManualRetry) {
 // Checks that when the server returns try_again_later field, the worker will
 // automatically retry a request after some time.
 TEST_F(CertProvisioningWorkerTest, TryLaterWait) {
-  CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
+  CertProfile cert_profile(kCertProfileId, kCertProfileVersion,
+                           /*is_va_enabled=*/true, kCertProfileRenewalPeriod);
 
   MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
   CertProvisioningWorkerImpl worker(
@@ -743,7 +748,8 @@ TEST_F(CertProvisioningWorkerTest, TryLaterWait) {
 // Checks that when the server returns error status, the worker will enter an
 // error state and stop the provisioning.
 TEST_F(CertProvisioningWorkerTest, StatusErrorHandling) {
-  CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
+  CertProfile cert_profile(kCertProfileId, kCertProfileVersion,
+                           /*is_va_enabled=*/true, kCertProfileRenewalPeriod);
 
   MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
   CertProvisioningWorkerImpl worker(
@@ -785,7 +791,8 @@ TEST_F(CertProvisioningWorkerTest, StatusErrorHandling) {
 TEST_F(CertProvisioningWorkerTest, ResponseErrorHandling) {
   base::HistogramTester histogram_tester;
 
-  CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
+  CertProfile cert_profile(kCertProfileId, kCertProfileVersion,
+                           /*is_va_enabled=*/true, kCertProfileRenewalPeriod);
 
   MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
   auto worker = CertProvisioningWorkerFactory::Get()->Create(
@@ -828,7 +835,8 @@ TEST_F(CertProvisioningWorkerTest, ResponseErrorHandling) {
 }
 
 TEST_F(CertProvisioningWorkerTest, InconsistentDataErrorHandling) {
-  CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
+  CertProfile cert_profile(kCertProfileId, kCertProfileVersion,
+                           /*is_va_enabled=*/true, kCertProfileRenewalPeriod);
 
   MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
   auto worker = CertProvisioningWorkerFactory::Get()->Create(
@@ -867,7 +875,8 @@ TEST_F(CertProvisioningWorkerTest, InconsistentDataErrorHandling) {
 // Checks that when the server returns TEMPORARY_UNAVAILABLE status code, the
 // worker will automatically retry a request using exponential backoff strategy.
 TEST_F(CertProvisioningWorkerTest, BackoffStrategy) {
-  CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
+  CertProfile cert_profile(kCertProfileId, kCertProfileVersion,
+                           /*is_va_enabled=*/true, kCertProfileRenewalPeriod);
 
   MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
   CertProvisioningWorkerImpl worker(
@@ -930,7 +939,8 @@ TEST_F(CertProvisioningWorkerTest, BackoffStrategy) {
 TEST_F(CertProvisioningWorkerTest, RemoveRegisteredKey) {
   base::HistogramTester histogram_tester;
 
-  CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
+  CertProfile cert_profile(kCertProfileId, kCertProfileVersion,
+                           /*is_va_enabled=*/true, kCertProfileRenewalPeriod);
   MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
   MockCertProvisioningInvalidator* mock_invalidator = nullptr;
   CertProvisioningWorkerImpl worker(
@@ -1017,8 +1027,10 @@ class PrefServiceObserver {
 };
 
 TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
-  CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
-  CertScope cert_scope = CertScope::kUser;
+  const base::TimeDelta kRenewalPeriod = base::TimeDelta::FromSeconds(1200300);
+  CertProfile cert_profile(kCertProfileId, kCertProfileVersion,
+                           /*is_va_enabled=*/true, kRenewalPeriod);
+  const CertScope kCertScope = CertScope::kUser;
 
   std::unique_ptr<MockCertProvisioningInvalidator> mock_invalidator_obj;
   MockCertProvisioningInvalidator* mock_invalidator = nullptr;
@@ -1026,7 +1038,7 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
   MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
   std::unique_ptr<CertProvisioningWorker> worker =
       CertProvisioningWorkerFactory::Get()->Create(
-          cert_scope, GetProfile(), &testing_pref_service_, cert_profile,
+          kCertScope, GetProfile(), &testing_pref_service_, cert_profile,
           &cloud_policy_client_, MakeInvalidator(), GetCallback());
 
   StrictMock<PrefServiceObserver> pref_observer(
@@ -1051,7 +1063,8 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
             "cert_profile": {
               "policy_version": "cert_profile_version_1",
               "profile_id": "cert_profile_1",
-              "va_enabled": true
+              "va_enabled": true,
+              "renewal_period": 1200300
             },
             "cert_scope": 0,
             "invalidation_topic": "",
@@ -1083,7 +1096,7 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
         .Times(1);
 
     worker = CertProvisioningWorkerFactory::Get()->Deserialize(
-        cert_scope, GetProfile(), &testing_pref_service_,
+        kCertScope, GetProfile(), &testing_pref_service_,
         *pref_val.FindKeyOfType(kCertProfileId, base::Value::Type::DICTIONARY),
         &cloud_policy_client_, MakeInvalidator(&mock_invalidator),
         GetCallback());
@@ -1127,7 +1140,8 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
             "cert_profile": {
               "policy_version": "cert_profile_version_1",
               "profile_id": "cert_profile_1",
-              "va_enabled": true
+              "va_enabled": true,
+              "renewal_period": 1200300
             },
             "cert_scope": 0,
             "invalidation_topic": "fake_invalidation_topic_1",
@@ -1161,7 +1175,7 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
         .Times(1);
 
     worker = CertProvisioningWorkerFactory::Get()->Deserialize(
-        cert_scope, GetProfile(), &testing_pref_service_,
+        kCertScope, GetProfile(), &testing_pref_service_,
         *pref_val.FindKeyOfType(kCertProfileId, base::Value::Type::DICTIONARY),
         &cloud_policy_client_, std::move(mock_invalidator_obj), GetCallback());
   }
@@ -1190,7 +1204,8 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
 }
 
 TEST_F(CertProvisioningWorkerTest, SerializationOnFailure) {
-  CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
+  CertProfile cert_profile(kCertProfileId, kCertProfileVersion,
+                           /*is_va_enabled=*/true, kCertProfileRenewalPeriod);
 
   MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
   auto worker = CertProvisioningWorkerFactory::Get()->Create(
@@ -1250,7 +1265,8 @@ TEST_F(CertProvisioningWorkerTest, SerializationOnFailure) {
 }
 
 TEST_F(CertProvisioningWorkerTest, InformationalGetters) {
-  CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
+  CertProfile cert_profile(kCertProfileId, kCertProfileVersion,
+                           /*is_va_enabled=*/true, kCertProfileRenewalPeriod);
 
   MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
   CertProvisioningWorkerImpl worker(
@@ -1303,12 +1319,13 @@ TEST_F(CertProvisioningWorkerTest, InformationalGetters) {
 TEST_F(CertProvisioningWorkerTest, CancelDeviceWorker) {
   base::HistogramTester histogram_tester;
 
-  CertScope cert_scope = CertScope::kDevice;
-  CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
+  const CertScope kCertScope = CertScope::kDevice;
+  CertProfile cert_profile(kCertProfileId, kCertProfileVersion,
+                           /*is_va_enabled=*/true, kCertProfileRenewalPeriod);
 
   MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
   auto worker = CertProvisioningWorkerFactory::Get()->Create(
-      cert_scope, GetProfile(), &testing_pref_service_, cert_profile,
+      kCertScope, GetProfile(), &testing_pref_service_, cert_profile,
       &cloud_policy_client_, MakeInvalidator(), GetCallback());
 
   EXPECT_CALL(callback_observer_, Callback).Times(0);

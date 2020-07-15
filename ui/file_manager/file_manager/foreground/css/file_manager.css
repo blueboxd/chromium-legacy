@@ -893,6 +893,11 @@ body.check-select #gear-button {
 
 .dialog-header.files-ng #selection-menu-button > .icon {
   -webkit-mask-image: url(../images/files/ui/menu_ng.svg);
+  height: 48px;
+  margin-inline-start: -7px;
+  margin-top: -7px;
+  position: absolute;
+  width: 48px;
 }
 
 body:not(.check-select) #selection-menu-button {

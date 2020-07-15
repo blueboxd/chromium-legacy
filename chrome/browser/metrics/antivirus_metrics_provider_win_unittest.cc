@@ -115,7 +115,8 @@ class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(AntiVirusMetricsProviderTest);
 };
 
-TEST_P(AntiVirusMetricsProviderTest, GetMetricsFullName) {
+// TODO(crbug.com/682286): Flaky on Windows 10.
+TEST_P(AntiVirusMetricsProviderTest, DISABLED_GetMetricsFullName) {
   base::ScopedAllowBlockingForTesting scoped_allow_blocking_;
 
   ASSERT_TRUE(thread_checker_.CalledOnValidThread());

@@ -1,7 +1,7 @@
 Name: AndroidX Browser
 Short Name: AndroidX Browser
 URL: https://chromium.googlesource.com/external/gob/android/platform/frameworks/support/browser
-Version: ac2f9c348999e8943567c6e4d50a82a5010ca263
+Version: 37242f782de8096e24dff528b1bcac55a364b756
 License: Apache 2.0
 Security Critical: yes
 License Android Compatible: yes

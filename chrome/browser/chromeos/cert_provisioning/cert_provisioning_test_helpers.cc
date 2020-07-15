@@ -6,7 +6,7 @@
 
 #include "base/optional.h"
 #include "base/test/gmock_callback_support.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "net/test/cert_builder.h"
@@ -63,18 +63,15 @@ void CertificateHelperForTesting::GetCertificates(
   std::move(callback).Run(std::move(result), "");
 }
 
-void CertificateHelperForTesting::AddCert(
-    CertScope cert_scope,
-    const base::Optional<CertProfileId>& cert_profile_id) {
-  AddCert(cert_scope, cert_profile_id, /*error_message=*/"");
-}
-
-void CertificateHelperForTesting::AddCert(
+scoped_refptr<net::X509Certificate> CertificateHelperForTesting::AddCert(
     CertScope cert_scope,
     const base::Optional<CertProfileId>& cert_profile_id,
-    const std::string& error_message) {
+    const std::string& error_message,
+    base::Time not_valid_before,
+    base::Time not_valid_after) {
   net::CertBuilder cert_builder(template_cert_->cert_buffer(),
                                 /*issuer=*/nullptr);
+  cert_builder.SetValidity(not_valid_before, not_valid_after);
   auto cert = cert_builder.GetX509Certificate();
 
   EXPECT_CALL(
@@ -86,6 +83,30 @@ void CertificateHelperForTesting::AddCert(
       .WillRepeatedly(RunOnceCallback<3>(cert_profile_id, error_message));
 
   cert_list_.push_back(cert);
+  return cert;
+}
+
+scoped_refptr<net::X509Certificate> CertificateHelperForTesting::AddCert(
+    CertScope cert_scope,
+    const base::Optional<CertProfileId>& cert_profile_id) {
+  base::Time not_valid_before =
+      base::Time::Now() - base::TimeDelta::FromDays(1);
+  base::Time not_valid_after =
+      base::Time::Now() + base::TimeDelta::FromDays(365);
+  return AddCert(cert_scope, cert_profile_id, /*error_message=*/"",
+                 not_valid_before, not_valid_after);
+}
+
+scoped_refptr<net::X509Certificate> CertificateHelperForTesting::AddCert(
+    CertScope cert_scope,
+    const base::Optional<CertProfileId>& cert_profile_id,
+    const std::string& error_message) {
+  base::Time not_valid_before =
+      base::Time::Now() - base::TimeDelta::FromDays(1);
+  base::Time not_valid_after =
+      base::Time::Now() + base::TimeDelta::FromDays(365);
+  return AddCert(cert_scope, cert_profile_id, error_message, not_valid_before,
+                 not_valid_after);
 }
 
 void CertificateHelperForTesting::ClearCerts() {

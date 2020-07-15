@@ -150,7 +150,7 @@ TEST_F(ProcessMetricsDecoratorTest, RefreshTimer) {
   EXPECT_CALL(sys_node_observer, OnProcessMemoryMetricsAvailable(testing::_));
 
   // Advance the timer, this should trigger a refresh of the metrics.
-  task_env().FastForwardBy(base::TimeDelta::FromMinutes(2));
+  task_env().FastForwardBy(decorator()->GetTimerDelayForTesting());
 
   EXPECT_EQ(kFakeResidentSetKb, mock_graph()->process->resident_set_kb());
   EXPECT_EQ(kFakePrivateFootprintKb,
@@ -173,7 +173,7 @@ TEST_F(ProcessMetricsDecoratorTest, PartialRefresh) {
       .WillOnce(
           testing::Return(testing::ByMove(std::move(partial_memory_dump))));
 
-  task_env().FastForwardBy(base::TimeDelta::FromMinutes(2));
+  task_env().FastForwardBy(decorator()->GetTimerDelayForTesting());
 
   EXPECT_EQ(kFakeResidentSetKb, mock_graph()->process->resident_set_kb());
   EXPECT_EQ(kFakePrivateFootprintKb,
@@ -188,7 +188,7 @@ TEST_F(ProcessMetricsDecoratorTest, PartialRefresh) {
       .WillOnce(
           testing::Return(testing::ByMove(std::move(partial_memory_dump2))));
 
-  task_env().FastForwardBy(base::TimeDelta::FromMinutes(2));
+  task_env().FastForwardBy(decorator()->GetTimerDelayForTesting());
 
   EXPECT_EQ(kFakeResidentSetKb, mock_graph()->process->resident_set_kb());
   EXPECT_EQ(kFakePrivateFootprintKb,
@@ -204,7 +204,7 @@ TEST_F(ProcessMetricsDecoratorTest, RefreshFailure) {
   EXPECT_CALL(*decorator(), GetMemoryDump())
       .WillOnce(testing::Return(testing::ByMove(base::nullopt)));
 
-  task_env().FastForwardBy(base::TimeDelta::FromMinutes(2));
+  task_env().FastForwardBy(decorator()->GetTimerDelayForTesting());
 
   EXPECT_EQ(0U, mock_graph()->process->resident_set_kb());
   EXPECT_EQ(0U, mock_graph()->process->private_footprint_kb());

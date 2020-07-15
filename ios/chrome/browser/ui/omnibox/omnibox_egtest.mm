@@ -479,13 +479,6 @@ id<GREYMatcher> SearchCopiedTextButton() {
     EARL_GREY_TEST_DISABLED(@"Fails on iOS 12.");
   }
 
-// TODO(crbug.com/1046787): Test is failing for EG1.
-#if defined(CHROME_EARL_GREY_1)
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"Test skipped on Earl Grey 1.");
-  }
-#endif
-
   // Focus omnibox.
   [self focusFakebox];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]

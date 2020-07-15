@@ -105,10 +105,6 @@ void ImageInputType::HandleDOMActivateEvent(Event& event) {
   event.SetDefaultHandled();
 }
 
-bool ImageInputType::TypeShouldForceLegacyLayout() const {
-  return true;
-}
-
 LayoutObject* ImageInputType::CreateLayoutObject(const ComputedStyle& style,
                                                  LegacyLayout legacy) const {
   if (use_fallback_content_) {

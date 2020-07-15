@@ -47,7 +47,6 @@
  * Must be kept in sync with webui_accelerator_mapping.cc.
  */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
-/** @const */ var ACCELERATOR_ENABLE_DEBBUGING = 'debugging';
 /** @const */ var ACCELERATOR_ENROLLMENT = 'enrollment';
 /** @const */ var ACCELERATOR_KIOSK_ENABLE = 'kiosk_enable';
 /** @const */ var ACCELERATOR_VERSION = 'version';
@@ -110,19 +109,6 @@ cr.define('cr.ui.login', function() {
     SCREEN_APP_DOWNLOADING,
     SCREEN_DISCOVER,
     SCREEN_MARKETING_OPT_IN,
-  ];
-
-  /**
-   * Group of screens (screen IDs) where enable debuggingscreen invocation is
-   * available. Newer screens using Polymer use the attribute
-   * `enableDebuggingAllowed` in their `ready()` method.
-   * @type Array<string>
-   * @const
-   */
-  var ENABLE_DEBUGGING_AVAILABLE_SCREEN_GROUP = [
-    SCREEN_OOBE_NETWORK,
-    SCREEN_OOBE_EULA,
-    SCREEN_OOBE_UPDATE
   ];
 
   /**
@@ -393,12 +379,6 @@ cr.define('cr.ui.login', function() {
       if (name == ACCELERATOR_CANCEL) {
         if (this.currentScreen && this.currentScreen.cancel) {
           this.currentScreen.cancel();
-        }
-      } else if (name == ACCELERATOR_ENABLE_DEBBUGING) {
-        if (attributes.enableDebuggingAllowed ||
-            ENABLE_DEBUGGING_AVAILABLE_SCREEN_GROUP.indexOf(currentStepId) !=
-            -1) {
-          chrome.send('toggleEnableDebuggingScreen');
         }
       } else if (name == ACCELERATOR_ENROLLMENT) {
         if (attributes.startEnrollmentAllowed ||

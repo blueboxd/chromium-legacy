@@ -2,6 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Renders a simple dialog with |text| as a message and a close button.
+function showModalDialog(text) {
+  const dialog = document.createElement('div');
+  dialog.className = 'modal-dialog';
+
+  const content = document.createElement('div');
+  content.className = 'modal-dialog-content';
+
+  const closeButton = document.createElement('span');
+  closeButton.className = 'modal-dialog-close-button fake-button';
+  closeButton.innerText = 'Close';
+
+  const textContent = document.createElement('p');
+  textContent.className = 'modal-dialog-text';
+  textContent.innerText = text;
+
+  content.appendChild(closeButton);
+  content.appendChild(textContent);
+  dialog.appendChild(content);
+  window.document.body.append(dialog);
+
+  closeButton.addEventListener('click', () => {
+    window.document.body.removeChild(dialog);
+  });
+}
+
 // Autoscrolling keeps the page scrolled down. Intended usage is as follows:
 // before modifying the DOM, check needsScrollDown(), and afterwards invoke
 // scrollDown() if needsScrollDown() was true.
@@ -127,25 +153,30 @@ function addRawLog(node) {
 }
 
 function setUpAutofillInternals() {
-    document.title = "Autofill Internals";
-    document.getElementById("h1-title").textContent = "Autofill Internals";
-    document.getElementById("logging-note").innerText =
-      "Captured autofill logs are listed below. Logs are cleared and no longer \
-      captured when all autofill-internals pages are closed.";
-    document.getElementById("logging-note-incognito").innerText =
-      "Captured autofill logs are not available in Incognito.";
-    setUpLogDisplayConfig();
+  document.title = 'Autofill Internals';
+  document.getElementById('h1-title').textContent = 'Autofill Internals';
+  document.getElementById('logging-note').innerText =
+      'Captured autofill logs are listed below. Logs are cleared and no longer \
+      captured when all autofill-internals pages are closed.';
+  document.getElementById('logging-note-incognito').innerText =
+      'Captured autofill logs are not available in Incognito.';
+  setUpLogDisplayConfig();
 }
 
 function setUpPasswordManagerInternals() {
-    document.title = "Password Manager Internals";
-    document.getElementById("h1-title").textContent =
-      "Password Manager Internals";
-    document.getElementById("logging-note").innerText =
-      "Captured password manager logs are listed below. Logs are cleared and \
-      no longer captured when all password-manager-internals pages are closed.";
-    document.getElementById("logging-note-incognito").innerText =
-      "Captured password manager logs are not available in Incognito.";
+  document.title = 'Password Manager Internals';
+  document.getElementById('h1-title').textContent =
+      'Password Manager Internals';
+  document.getElementById('logging-note').innerText =
+      'Captured password manager logs are listed below. Logs are cleared and \
+      no longer captured when all password-manager-internals pages are closed.';
+  document.getElementById('logging-note-incognito').innerText =
+      'Captured password manager logs are not available in Incognito.';
+}
+
+function enableResetCacheButton() {
+  document.getElementById('reset-cache-fake-button').style.display =
+      'inline-block';
 }
 
 function notifyAboutIncognito(isIncognito) {
@@ -179,6 +210,7 @@ function setUpLogDisplayConfig() {
   const displayConfigDiv = document.getElementById('log-display-config');
   const logDiv = document.getElementById('log-entries');
   const autoScrollInput = document.getElementById('enable-autoscroll');
+  const checkboxPlaceholder = document.getElementById('checkbox-placeholder');
 
   displayConfigDiv.style.display = 'block';
   displayConfigDiv.parentElement.classList.add('sticky-bar');
@@ -214,8 +246,8 @@ function setUpLogDisplayConfig() {
     const label = document.createElement('label');
     label.setAttribute('for', `checkbox-${scope}`);
     label.innerText = scope;
-    displayConfigDiv.appendChild(input);
-    displayConfigDiv.appendChild(label);
+    checkboxPlaceholder.appendChild(input);
+    checkboxPlaceholder.appendChild(label);
   }
 
   // Initialize marker field: when pressed, add fake log event.
@@ -241,6 +273,16 @@ function setUpLogDisplayConfig() {
   });
 }
 
+function notifyResetDone(message) {
+  showModalDialog(message);
+}
+
 document.addEventListener("DOMContentLoaded", function(event) {
   chrome.send('loaded');
+
+  const resetCacheFakeButton =
+      document.getElementById('reset-cache-fake-button');
+  resetCacheFakeButton.addEventListener('click', () => {
+    chrome.send('resetCache');
+  });
 });

@@ -2255,7 +2255,7 @@ crbug.com/1050754 external/wpt/html/cross-origin-opener-policy/reporting/navigat
 crbug.com/1050754 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-popup-same-origin-coep-report-to.https.html [ Failure Timeout ]
 crbug.com/1050754 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-popup-same-origin-report-to.https.html [ Failure Timeout ]
 crbug.com/1050754 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-popup-same-origin.https.html [ Failure Timeout ]
-crbug.com/1050754 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-popup-unafe-none-report-to.https.html [ Failure Timeout ]
+crbug.com/1050754 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-popup-unsafe-none-report-to.https.html [ Failure Timeout ]
 crbug.com/1050754 external/wpt/html/dom/documents/dom-tree-accessors/document.getElementsByName/document.getElementsByName-namespace-xhtml.xhtml [ Failure ]
 crbug.com/1050754 external/wpt/html/dom/documents/dom-tree-accessors/document.getElementsByName/document.getElementsByName-namespace.html [ Failure ]
 crbug.com/1050754 external/wpt/html/dom/documents/dom-tree-accessors/nameditem-names.html [ Failure ]

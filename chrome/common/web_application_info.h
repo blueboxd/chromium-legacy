@@ -124,6 +124,9 @@ struct WebApplicationInfo {
   // https://w3c.github.io/manifest/#display-modes
   blink::mojom::DisplayMode display_mode = blink::mojom::DisplayMode::kBrowser;
 
+  // App preference to control display fallback ordering
+  std::vector<blink::mojom::DisplayMode> display_override;
+
   // User preference as to whether the app should be opened in a window.
   // If false, the app will be opened in a tab.
   // If true, the app will be opened in a window, with minimal-ui buttons

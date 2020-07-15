@@ -36,6 +36,8 @@ bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
 
   dump->resident_set_kb = rss_bytes / 1024;
   dump->platform_private_footprint->rss_anon_bytes = rss_anon_bytes;
+  // Fuchsia has no swap.
+  dump->platform_private_footprint->vm_swap_bytes = 0;
   return true;
 }
 

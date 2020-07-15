@@ -42,6 +42,7 @@ Manifest::~Manifest() = default;
 bool Manifest::IsEmpty() const {
   return name.is_null() && short_name.is_null() && start_url.is_empty() &&
          display == blink::mojom::DisplayMode::kUndefined &&
+         display_override.empty() &&
          orientation == device::mojom::ScreenOrientationLockType::DEFAULT &&
          icons.empty() && shortcuts.empty() && !share_target.has_value() &&
          related_applications.empty() && file_handlers.empty() &&

@@ -39,6 +39,10 @@ uint64_t TestClipboard::GetSequenceNumber(ClipboardBuffer buffer) const {
   return GetStore(buffer).sequence_number;
 }
 
+// TODO(crbug.com/1103215): Setting |dlp_controller| should be supported.
+void TestClipboard::SetClipboardDlpController(
+    std::unique_ptr<ClipboardDlpController> dlp_controller) {}
+
 // TODO(crbug.com/1103215): |data_dst| should be supported.
 bool TestClipboard::IsFormatAvailable(
     const ClipboardFormatType& format,

@@ -1001,24 +1001,19 @@ bool UserManagerBase::LoadForceOnlineSignin(const AccountId& account_id) const {
 void UserManagerBase::RemoveNonCryptohomeData(const AccountId& account_id) {
   PrefService* prefs = GetLocalState();
   DictionaryPrefUpdate prefs_display_name_update(prefs, kUserDisplayName);
-  prefs_display_name_update->RemoveWithoutPathExpansion(
-      account_id.GetUserEmail(), nullptr);
+  prefs_display_name_update->RemoveKey(account_id.GetUserEmail());
 
   DictionaryPrefUpdate prefs_given_name_update(prefs, kUserGivenName);
-  prefs_given_name_update->RemoveWithoutPathExpansion(account_id.GetUserEmail(),
-                                                      nullptr);
+  prefs_given_name_update->RemoveKey(account_id.GetUserEmail());
 
   DictionaryPrefUpdate prefs_display_email_update(prefs, kUserDisplayEmail);
-  prefs_display_email_update->RemoveWithoutPathExpansion(
-      account_id.GetUserEmail(), nullptr);
+  prefs_display_email_update->RemoveKey(account_id.GetUserEmail());
 
   DictionaryPrefUpdate prefs_oauth_update(prefs, kUserOAuthTokenStatus);
-  prefs_oauth_update->RemoveWithoutPathExpansion(account_id.GetUserEmail(),
-                                                 nullptr);
+  prefs_oauth_update->RemoveKey(account_id.GetUserEmail());
 
   DictionaryPrefUpdate prefs_force_online_update(prefs, kUserForceOnlineSignin);
-  prefs_force_online_update->RemoveWithoutPathExpansion(
-      account_id.GetUserEmail(), nullptr);
+  prefs_force_online_update->RemoveKey(account_id.GetUserEmail());
 
   known_user::RemovePrefs(account_id);
 

@@ -152,8 +152,6 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleSkipToUpdateForTesting);
   AddCallback("launchHelpApp", &CoreOobeHandler::HandleLaunchHelpApp);
   AddCallback("toggleResetScreen", &CoreOobeHandler::HandleToggleResetScreen);
-  AddCallback("toggleEnableDebuggingScreen",
-              &CoreOobeHandler::HandleEnableDebuggingScreen);
   AddCallback("raiseTabKeyEvent", &CoreOobeHandler::HandleRaiseTabKeyEvent);
   // Note: Used by enterprise_RemoraRequisitionDisplayUsage.py:
   // TODO(felixe): Use chrome.system.display or cros_display_config.mojom,
@@ -179,12 +177,6 @@ void CoreOobeHandler::ShowSignInError(
 
 void CoreOobeHandler::ShowDeviceResetScreen() {
   LaunchResetScreen();
-}
-
-void CoreOobeHandler::ShowEnableDebuggingScreen() {
-  DCHECK(LoginDisplayHost::default_host());
-  LoginDisplayHost::default_host()->StartWizard(
-      EnableDebuggingScreenView::kScreenId);
 }
 
 void CoreOobeHandler::ShowEnableAdbSideloadingScreen() {
@@ -308,10 +300,6 @@ void CoreOobeHandler::HandleToggleResetScreenCallback(
         static_cast<int>(tpm_firmware_update_mode.value()));
   }
   LaunchResetScreen();
-}
-
-void CoreOobeHandler::HandleEnableDebuggingScreen() {
-  ShowEnableDebuggingScreen();
 }
 
 void CoreOobeHandler::ShowOobeUI(bool show) {

@@ -53,7 +53,6 @@ class LoginDisplayMojo : public LoginDisplay,
   bool IsSigninInProgress() const override;
   void OnSigninScreenReady() override;
   void ShowEnterpriseEnrollmentScreen() override;
-  void ShowEnableDebuggingScreen() override;
   void ShowKioskEnableScreen() override;
   void ShowKioskAutolaunchScreen() override;
   void ShowWrongHWIDScreen() override;

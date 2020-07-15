@@ -26,6 +26,8 @@ class HeadlessClipboard : public ui::Clipboard {
   // Clipboard overrides.
   void OnPreShutdown() override;
   uint64_t GetSequenceNumber(ui::ClipboardBuffer buffer) const override;
+  void SetClipboardDlpController(
+      std::unique_ptr<ui::ClipboardDlpController> dlp_controller) override;
   bool IsFormatAvailable(
       const ui::ClipboardFormatType& format,
       ui::ClipboardBuffer buffer,

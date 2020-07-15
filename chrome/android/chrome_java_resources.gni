@@ -701,6 +701,7 @@ chrome_java_resources = [
   "java/res/drawable/ic_error.xml",
   "java/res/drawable/ic_error_googred_36dp.xml",
   "java/res/drawable/ic_event_round.xml",
+  "java/res/drawable/ic_expand_more_in_circle_24dp.xml",
   "java/res/drawable/ic_file_download_24dp.xml",
   "java/res/drawable/ic_file_download_36dp.xml",
   "java/res/drawable/ic_file_download_scheduled_24dp.xml",

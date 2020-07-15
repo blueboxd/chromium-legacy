@@ -23,7 +23,7 @@ class MockWelcomeScreen : public WelcomeScreen {
   MOCK_METHOD(void, ShowImpl, ());
   MOCK_METHOD(void, HideImpl, ());
 
-  void ExitScreen();
+  void ExitScreen(Result result);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWelcomeScreen);

@@ -7,8 +7,6 @@
  * closure_compiler coverage.
  */
 
-/** @typedef {string} */
-var ACCELERATOR_ENABLE_DEBBUGING = '1';
 
 /** @typedef {string} */
 var ACCELERATOR_DEVICE_REQUISITION_REMORA = '2';
@@ -34,7 +32,6 @@ class Oobe {
 
   /**
    * @param {
-   *     ACCELERATOR_ENABLE_DEBBUGING |
    *     ACCELERATOR_DEVICE_REQUISITION_REMORA |
    *     ACCELERATOR_DEVICE_REQUISITION
    * } accelerator

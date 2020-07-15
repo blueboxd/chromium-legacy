@@ -71,6 +71,11 @@ struct BLINK_COMMON_EXPORT
     return manifest.display;
   }
 
+  static const std::vector<blink::mojom::DisplayMode> display_override(
+      const ::blink::Manifest& manifest) {
+    return manifest.display_override;
+  }
+
   static device::mojom::ScreenOrientationLockType orientation(
       const ::blink::Manifest& manifest) {
     return manifest.orientation;

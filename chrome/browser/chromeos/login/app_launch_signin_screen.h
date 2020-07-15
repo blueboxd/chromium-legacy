@@ -59,7 +59,6 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
              const SigninSpecifics& specifics) override;
   void OnSigninScreenReady() override;
   void ShowEnterpriseEnrollmentScreen() override;
-  void ShowEnableDebuggingScreen() override;
   void ShowKioskEnableScreen() override;
   void ShowKioskAutolaunchScreen() override;
   void ShowWrongHWIDScreen() override;

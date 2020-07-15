@@ -95,6 +95,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.history.HistoryActivity;
 import org.chromium.chrome.browser.history.HistoryManager;
 import org.chromium.chrome.browser.history.StubbedHistoryProvider;
+import org.chromium.chrome.browser.password_check.PasswordCheckPreference;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsActivity;
@@ -733,6 +734,77 @@ public class PasswordSettingsTest {
             Assert.assertNotNull(
                     passwordPrefs.findPreference(PasswordSettings.PREF_CHECK_PASSWORDS));
         });
+    }
+
+    /**
+     * Check that Pref.SETTINGS_LAUNCHED_PASSWORD_CHECKS is being correctly incremented when
+     * the Check passwords preference is clicked.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PASSWORD_CHECK)
+    public void testCheckPasswordsPrefIncremented() {
+        mBrowserTestRule.addAndSignInTestAccount();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { getPrefService().setInteger(Pref.SETTINGS_LAUNCHED_PASSWORD_CHECKS, 0); });
+
+        final SettingsActivity settingsActivity = mSettingsActivityTestRule.startSettingsActivity();
+        PasswordSettings passwordPrefs = mSettingsActivityTestRule.getFragment();
+        PasswordCheckPreference passwordCheck =
+                passwordPrefs.findPreference(PasswordSettings.PREF_CHECK_PASSWORDS);
+        Assert.assertNotNull(passwordCheck);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            passwordCheck.performClick();
+            Assert.assertEquals(
+                    getPrefService().getInteger(Pref.SETTINGS_LAUNCHED_PASSWORD_CHECKS), 1);
+        });
+    }
+
+    /**
+     * Check that the image above the Check passwords preference is shown if the value of
+     * Pref.SETTINGS_LAUNCHED_PASSWORD_CHECKS is less than 3.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PASSWORD_CHECK)
+    public void testCheckPasswordsImageShown() {
+        mBrowserTestRule.addAndSignInTestAccount();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { getPrefService().setInteger(Pref.SETTINGS_LAUNCHED_PASSWORD_CHECKS, 2); });
+
+        final SettingsActivity settingsActivity = mSettingsActivityTestRule.startSettingsActivity();
+        PasswordSettings passwordPrefs = mSettingsActivityTestRule.getFragment();
+        PasswordCheckPreference passwordCheck =
+                passwordPrefs.findPreference(PasswordSettings.PREF_CHECK_PASSWORDS);
+        Assert.assertNotNull(passwordCheck);
+        int promoImageVisibility =
+                passwordCheck.getPromoImageView(passwordPrefs.getActivity()).getVisibility();
+        Assert.assertEquals(promoImageVisibility, View.VISIBLE);
+    }
+
+    /**
+     * Check that the image above the Check passwords preference is not shown if the value of
+     * Pref.SETTINGS_LAUNCHED_PASSWORD_CHECKS is greater than or equal to 3.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PASSWORD_CHECK)
+    public void testCheckPasswordsImageNotShown() {
+        mBrowserTestRule.addAndSignInTestAccount();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { getPrefService().setInteger(Pref.SETTINGS_LAUNCHED_PASSWORD_CHECKS, 3); });
+
+        final SettingsActivity settingsActivity = mSettingsActivityTestRule.startSettingsActivity();
+        PasswordSettings passwordPrefs = mSettingsActivityTestRule.getFragment();
+        PasswordCheckPreference passwordCheck =
+                passwordPrefs.findPreference(PasswordSettings.PREF_CHECK_PASSWORDS);
+        Assert.assertNotNull(passwordCheck);
+        int promoImageVisibility =
+                passwordCheck.getPromoImageView(passwordPrefs.getActivity()).getVisibility();
+        Assert.assertEquals(promoImageVisibility, View.GONE);
     }
 
     /**

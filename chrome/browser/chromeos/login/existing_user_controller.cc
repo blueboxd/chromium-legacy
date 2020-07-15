@@ -229,15 +229,6 @@ void RecordPasswordLoginEvent(const UserContext& user_context) {
   }
 }
 
-bool CanShowDebuggingFeatures() {
-  // We need to be on the login screen and in dev mode to show this menu item.
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             chromeos::switches::kSystemDevMode) &&
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             chromeos::switches::kLoginManager) &&
-         !session_manager::SessionManager::Get()->IsSessionStarted();
-}
-
 bool IsUpdateRequiredDeadlineReached() {
   policy::MinimumVersionPolicyHandler* policy_handler =
       g_browser_process->platform_part()
@@ -837,11 +828,6 @@ void ExistingUserController::OnStartEnterpriseEnrollment() {
                  weak_factory_.GetWeakPtr()));
 }
 
-void ExistingUserController::OnStartEnableDebuggingScreen() {
-  if (CanShowDebuggingFeatures())
-    ShowEnableDebuggingScreen();
-}
-
 void ExistingUserController::OnStartKioskEnableScreen() {
   KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(base::BindOnce(
       &ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted,
@@ -908,10 +894,6 @@ void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
 
 void ExistingUserController::ShowEnrollmentScreen() {
   GetLoginDisplayHost()->StartWizard(EnrollmentScreenView::kScreenId);
-}
-
-void ExistingUserController::ShowEnableDebuggingScreen() {
-  GetLoginDisplayHost()->StartWizard(EnableDebuggingScreenView::kScreenId);
 }
 
 void ExistingUserController::ShowKioskEnableScreen() {
@@ -1588,6 +1570,7 @@ void ExistingUserController::ConfigureAutoLogin() {
     auto_login_delay_ = 0;
   }
 
+  // TODO(crbug.com/1105387): Part of initial screen logic.
   if (show_update_required_screen) {
     // Update required screen overrides public session auto login.
     StopAutoLoginTimer();

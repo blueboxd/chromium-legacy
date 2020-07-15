@@ -11,8 +11,8 @@ MockWelcomeScreen::MockWelcomeScreen(
     const WelcomeScreen::ScreenExitCallback& exit_callback)
     : WelcomeScreen(view, exit_callback) {}
 
-void MockWelcomeScreen::ExitScreen() {
-  exit_callback()->Run(WelcomeScreen::Result::NEXT);
+void MockWelcomeScreen::ExitScreen(Result result) {
+  exit_callback()->Run(result);
 }
 
 MockWelcomeScreen::~MockWelcomeScreen() = default;

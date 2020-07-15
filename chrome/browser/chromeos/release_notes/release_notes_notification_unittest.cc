@@ -16,6 +16,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/testing_pref_service.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace chromeos {
 
@@ -57,6 +58,10 @@ class ReleaseNotesNotificationTest : public BrowserWithTestWindowTest {
         .has_value();
   }
 
+  message_center::Notification GetReleaseNotesNotification() {
+    return tester_->GetNotification("show_release_notes_notification").value();
+  }
+
   int notification_count_ = 0;
   std::unique_ptr<ReleaseNotesNotification> release_notes_notification_;
 
@@ -79,6 +84,9 @@ TEST_F(ReleaseNotesNotificationTest, ShowReleaseNotesNotification) {
   profile()->GetPrefs()->SetInteger(prefs::kReleaseNotesLastShownMilestone, -1);
   release_notes_notification_->MaybeShowReleaseNotes();
   EXPECT_EQ(true, HasReleaseNotesNotification());
+  EXPECT_EQ(ui::SubstituteChromeOSDeviceType(
+                IDS_RELEASE_NOTES_DEVICE_SPECIFIC_NOTIFICATION_TITLE),
+            GetReleaseNotesNotification().title());
   EXPECT_EQ(1, notification_count_);
 }
 

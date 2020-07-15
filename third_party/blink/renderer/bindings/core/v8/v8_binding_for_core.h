@@ -325,7 +325,7 @@ inline base::Optional<base::Time> ToCoreNullableDate(
 }
 
 // USVString conversion helper.
-CORE_EXPORT String ReplaceUnmatchedSurrogates(const String&);
+CORE_EXPORT String ReplaceUnmatchedSurrogates(String);
 
 // FIXME: Remove the special casing for XPathNSResolver.
 XPathNSResolver* ToXPathNSResolver(ScriptState*, v8::Local<v8::Value>);

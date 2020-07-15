@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/notreached.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/pref_names.h"
@@ -53,35 +54,47 @@ bool IsFinalState(CertProvisioningWorkerState state) {
 
 //===================== CertProfile ============================================
 
+CertProfile::CertProfile(CertProfileId profile_id,
+                         std::string policy_version,
+                         bool is_va_enabled,
+                         base::TimeDelta renewal_period)
+    : profile_id(profile_id),
+      policy_version(policy_version),
+      is_va_enabled(is_va_enabled),
+      renewal_period(renewal_period) {}
+
 base::Optional<CertProfile> CertProfile::MakeFromValue(
     const base::Value& value) {
-  static_assert(kVersion == 3, "This function should be updated");
+  static_assert(kVersion == 4, "This function should be updated");
 
   const std::string* id = value.FindStringKey(kCertProfileIdKey);
   const std::string* policy_version =
       value.FindStringKey(kCertProfilePolicyVersionKey);
   base::Optional<bool> is_va_enabled =
       value.FindBoolKey(kCertProfileIsVaEnabledKey);
+  base::Optional<int> renewal_period_sec =
+      value.FindIntKey(kCertProfileRenewalPeroidSec);
+
   if (!id || !policy_version) {
     return base::nullopt;
-  }
-  if (!is_va_enabled) {
-    is_va_enabled = true;
   }
 
   CertProfile result;
   result.profile_id = *id;
   result.policy_version = *policy_version;
-  result.is_va_enabled = *is_va_enabled;
+  result.is_va_enabled = is_va_enabled.value_or(true);
+  result.renewal_period =
+      base::TimeDelta::FromSeconds(renewal_period_sec.value_or(0));
 
   return result;
 }
 
 bool CertProfile::operator==(const CertProfile& other) const {
-  static_assert(kVersion == 3, "This function should be updated");
+  static_assert(kVersion == 4, "This function should be updated");
   return ((profile_id == other.profile_id) &&
           (policy_version == other.policy_version) &&
-          (is_va_enabled == other.is_va_enabled));
+          (is_va_enabled == other.is_va_enabled) &&
+          (renewal_period == other.renewal_period));
 }
 
 bool CertProfile::operator!=(const CertProfile& other) const {
@@ -90,10 +103,11 @@ bool CertProfile::operator!=(const CertProfile& other) const {
 
 bool CertProfileComparator::operator()(const CertProfile& a,
                                        const CertProfile& b) const {
-  static_assert(CertProfile::kVersion == 3, "This function should be updated");
+  static_assert(CertProfile::kVersion == 4, "This function should be updated");
   return ((a.profile_id < b.profile_id) ||
           (a.policy_version < b.policy_version) ||
-          (a.is_va_enabled < b.is_va_enabled));
+          (a.is_va_enabled < b.is_va_enabled) ||
+          (a.renewal_period < b.renewal_period));
 }
 
 //==============================================================================
@@ -107,6 +121,15 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kRequiredClientCertificateForDevice);
   registry->RegisterDictionaryPref(
       prefs::kCertificateProvisioningStateForDevice);
+}
+
+const char* GetPrefNameForCertProfiles(CertScope scope) {
+  switch (scope) {
+    case CertScope::kUser:
+      return prefs::kRequiredClientCertificateForUser;
+    case CertScope::kDevice:
+      return prefs::kRequiredClientCertificateForDevice;
+  }
 }
 
 const char* GetPrefNameForSerialization(CertScope scope) {

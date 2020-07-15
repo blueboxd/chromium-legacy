@@ -227,27 +227,31 @@ gfx::Insets MdTextButton::CalculateDefaultPadding() const {
                      horizontal_padding);
 }
 
-void MdTextButton::UpdateColors() {
-  bool is_disabled = GetState() == STATE_DISABLED;
+void MdTextButton::UpdateTextColor() {
+  if (explicitly_set_normal_color())
+    return;
+
   SkColor enabled_text_color =
       style::GetColor(*this, label()->GetTextContext(),
                       is_prominent_ ? style::STYLE_DIALOG_BUTTON_DEFAULT
                                     : style::STYLE_PRIMARY);
-  if (!explicitly_set_normal_color()) {
-    const auto colors = explicitly_set_colors();
-    LabelButton::SetEnabledTextColors(enabled_text_color);
-    // Disabled buttons need the disabled color explicitly set.
-    // This ensures that label()->GetEnabledColor() returns the correct color as
-    // the basis for calculating the stroke color. enabled_text_color isn't used
-    // since a descendant could have overridden the label enabled color.
-    if (is_disabled) {
-      LabelButton::SetTextColor(
-          STATE_DISABLED, style::GetColor(*this, label()->GetTextContext(),
-                                          style::STYLE_DISABLED));
-    }
-    set_explicitly_set_colors(colors);
-  }
 
+  const auto colors = explicitly_set_colors();
+  LabelButton::SetEnabledTextColors(enabled_text_color);
+  // Disabled buttons need the disabled color explicitly set.
+  // This ensures that label()->GetEnabledColor() returns the correct color as
+  // the basis for calculating the stroke color. enabled_text_color isn't used
+  // since a descendant could have overridden the label enabled color.
+  if (GetState() == STATE_DISABLED) {
+    LabelButton::SetTextColor(STATE_DISABLED,
+                              style::GetColor(*this, label()->GetTextContext(),
+                                              style::STYLE_DISABLED));
+  }
+  set_explicitly_set_colors(colors);
+}
+
+void MdTextButton::UpdateBackgroundColor() {
+  bool is_disabled = GetState() == STATE_DISABLED;
   ui::NativeTheme* theme = GetNativeTheme();
   SkColor bg_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonColor);
@@ -280,6 +284,11 @@ void MdTextButton::UpdateColors() {
   SetBackground(
       CreateBackgroundFromPainter(Painter::CreateRoundRectWith1PxBorderPainter(
           bg_color, stroke_color, corner_radius_)));
+}
+
+void MdTextButton::UpdateColors() {
+  UpdateTextColor();
+  UpdateBackgroundColor();
   SchedulePaint();
 }
 

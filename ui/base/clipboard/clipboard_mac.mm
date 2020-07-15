@@ -70,6 +70,11 @@ uint64_t ClipboardMac::GetSequenceNumber(ClipboardBuffer buffer) const {
   return [pb changeCount];
 }
 
+void ClipboardMac::SetClipboardDlpController(
+    std::unique_ptr<ClipboardDlpController> dlp_controller) {
+  NOTIMPLEMENTED();
+}
+
 // |data_dst| is not used. It's only passed to be consistent with other
 // platforms.
 bool ClipboardMac::IsFormatAvailable(

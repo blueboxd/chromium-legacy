@@ -107,7 +107,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
              const SigninSpecifics& specifics) override;
   void OnSigninScreenReady() override;
   void OnStartEnterpriseEnrollment() override;
-  void OnStartEnableDebuggingScreen() override;
   void OnStartKioskEnableScreen() override;
   void OnStartKioskAutolaunchScreen() override;
   void ResetAutoLoginTimer() override;
@@ -203,9 +202,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Enters the enterprise enrollment screen.
   void ShowEnrollmentScreen();
-
-  // Shows "enable developer features" screen.
-  void ShowEnableDebuggingScreen();
 
   // Shows privacy notification in case of auto lunch managed guest session.
   void ShowAutoLaunchManagedGuestSessionNotification();

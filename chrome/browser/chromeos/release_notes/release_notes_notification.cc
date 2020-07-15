@@ -19,6 +19,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
 using message_center::Notification;
@@ -51,8 +52,8 @@ void ReleaseNotesNotification::HandleClickShowNotification() {
 }
 
 void ReleaseNotesNotification::ShowReleaseNotesNotification() {
-  base::string16 title =
-      l10n_util::GetStringUTF16(IDS_RELEASE_NOTES_NOTIFICATION_TITLE);
+  base::string16 title = ui::SubstituteChromeOSDeviceType(
+      IDS_RELEASE_NOTES_DEVICE_SPECIFIC_NOTIFICATION_TITLE);
   base::string16 message =
       l10n_util::GetStringUTF16(IDS_RELEASE_NOTES_NOTIFICATION_MESSAGE);
 

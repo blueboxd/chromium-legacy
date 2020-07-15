@@ -94,7 +94,6 @@ Polymer({
   ready() {
     this.initializeLoginScreen('WelcomeScreen', {
       resetAllowed: true,
-      enableDebuggingAllowed: true,
     });
     this.updateLocalizedContent();
   },
@@ -281,7 +280,7 @@ Polymer({
    * @private
    */
   onEnableDebuggingClicked_() {
-    cr.ui.Oobe.handleAccelerator(ACCELERATOR_ENABLE_DEBBUGING);
+    this.userActed('enableDebugging');
   },
 
   /**

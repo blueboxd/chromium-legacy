@@ -68,7 +68,6 @@ namespace {
 constexpr gfx::Insets kContentRowPadding(0, 12, 16, 12);
 constexpr gfx::Insets kActionsRowPadding(8, 8, 8, 8);
 constexpr int kActionsRowHorizontalSpacing = 8;
-constexpr gfx::Insets kActionButtonPadding(0, 12, 0, 12);
 constexpr gfx::Insets kStatusTextPadding(4, 0, 0, 0);
 constexpr gfx::Size kActionButtonMinSize(0, 32);
 // TODO(tetsui): Move |kIconViewSize| to public/cpp/message_center_constants.h
@@ -317,7 +316,6 @@ NotificationMdTextButton::NotificationMdTextButton(
     : views::MdTextButton(listener, views::style::CONTEXT_BUTTON_MD),
       placeholder_(placeholder) {
   SetText(label);
-  SetBorder(views::CreateEmptyBorder(kActionButtonPadding));
   SetMinSize(kActionButtonMinSize);
   views::InstallRectHighlightPathGenerator(this);
   SetTextSubpixelRenderingEnabled(false);
@@ -325,11 +323,9 @@ NotificationMdTextButton::NotificationMdTextButton(
 
 NotificationMdTextButton::~NotificationMdTextButton() = default;
 
-void NotificationMdTextButton::SetText(const base::string16& text) {
-  views::LabelButton::SetText(base::i18n::ToUpper(text));
+void NotificationMdTextButton::UpdateBackgroundColor() {
+  // Overridden as no-op so we don't draw any background or border.
 }
-
-void NotificationMdTextButton::UpdateColors() {}
 
 BEGIN_METADATA(NotificationMdTextButton)
 METADATA_PARENT_CLASS(views::MdTextButton)
@@ -414,7 +410,7 @@ void NotificationInputContainerMD::OnThemeChanged() {
   textfield_->SetTextColor(SK_ColorWHITE);
   textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
   textfield_->set_placeholder_text_color(theme->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldPlaceholderColor));
+      ui::NativeTheme::kColorId_NotificationEmptyPlaceholderTextColor));
   SetButtonImage();
 }
 
@@ -839,8 +835,7 @@ void NotificationViewMD::OnNotificationInputSubmit(size_t index,
 
 void NotificationViewMD::CreateOrUpdateContextTitleView(
     const Notification& notification) {
-  header_row_->SetAccentColor(notification.accent_color().value_or(
-      ui::NativeTheme::kColorId_NotificationDefaultAccentColor));
+  header_row_->SetAccentColor(notification.accent_color());
   header_row_->SetTimestamp(notification.timestamp());
   header_row_->SetAppNameElideBehavior(gfx::ELIDE_TAIL);
   header_row_->SetSummaryText(base::string16());
@@ -1064,8 +1059,8 @@ void NotificationViewMD::CreateOrUpdateSmallIconView(
   // cache images if so. (crbug.com/768748)
   gfx::Image masked_small_icon = notification.GenerateMaskedSmallIcon(
       kSmallImageSizeMD,
-      notification.accent_color().value_or(
-          ui::NativeTheme::kColorId_NotificationDefaultAccentColor));
+      notification.accent_color().value_or(GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_NotificationDefaultAccentColor)));
 
   if (masked_small_icon.IsEmpty()) {
     header_row_->ClearAppIcon();
@@ -1125,25 +1120,23 @@ void NotificationViewMD::CreateOrUpdateActionButtonViews(
     }
   }
 
-  SkColor accent_color =
-      notification.accent_color().value_or(views::style::GetColor(
-          *this, views::style::CONTEXT_BUTTON_MD, views::style::STYLE_PRIMARY));
   for (size_t i = 0; i < buttons.size(); ++i) {
     ButtonInfo button_info = buttons[i];
+    base::string16 label = base::i18n::ToUpper(button_info.title);
     if (new_buttons) {
       action_buttons_.push_back(action_buttons_row_->AddChildView(
-          std::make_unique<NotificationMdTextButton>(this, button_info.title,
+          std::make_unique<NotificationMdTextButton>(this, label,
                                                      button_info.placeholder)));
       // TODO(pkasting): BoxLayout should invalidate automatically when a child
       // is added, at which point we can remove this call.
       action_buttons_row_->InvalidateLayout();
     } else {
-      action_buttons_[i]->SetText(button_info.title);
+      action_buttons_[i]->SetText(label);
       action_buttons_[i]->set_placeholder(button_info.placeholder);
     }
 
     // Change action button color to the accent color.
-    action_buttons_[i]->SetEnabledTextColors(accent_color);
+    action_buttons_[i]->SetEnabledTextColors(notification.accent_color());
   }
 
   // Inherit mouse hover state when action button views reset.

@@ -77,6 +77,10 @@ class CORE_EXPORT NGFragmentItems {
   }
   wtf_size_t ByteSize() const { return ByteSizeFor(Size()); }
 
+#if DCHECK_IS_ON()
+  void CheckAllItemsAreValid() const;
+#endif
+
  private:
   const NGFragmentItem* ItemsData() const { return items_; }
 

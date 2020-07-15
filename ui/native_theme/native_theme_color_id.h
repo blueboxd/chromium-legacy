@@ -92,6 +92,7 @@
   OP(kColorId_NotificationLargeImageBackground),                               \
   OP(kColorId_NotificationPlaceholderIconColor),                               \
   OP(kColorId_NotificationEmptyPlaceholderIconColor),                          \
+  OP(kColorId_NotificationEmptyPlaceholderTextColor),                          \
   OP(kColorId_NotificationDefaultAccentColor),                                 \
   OP(kColorId_NotificationInkDropBase),                                        \
   /* Slider */                                                                 \

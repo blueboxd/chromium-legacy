@@ -93,16 +93,11 @@ std::vector<base::FilePath> GetTestFiles() {
 
 std::string FormStructuresToString(
     const std::map<FormRendererId, std::unique_ptr<FormStructure>>& forms) {
-  std::map<uint32_t, const FormStructure*> sorted_forms;
-  for (const auto& form_kv : forms) {
-    const auto* form = form_kv.second.get();
-    uint32_t renderer_id = form->unique_renderer_id().value();
-    EXPECT_TRUE(sorted_forms.emplace(renderer_id, form).second);
-  }
-
   std::string forms_string;
-  for (const auto& kv : sorted_forms) {
-    const auto* form = kv.second;
+  // The forms are sorted by renderer ID, which should make the order
+  // deterministic.
+  for (const auto& kv : forms) {
+    const auto* form = kv.second.get();
     for (const auto& field : *form) {
       forms_string += field->Type().ToString();
       forms_string += " | " + base::UTF16ToUTF8(field->name);

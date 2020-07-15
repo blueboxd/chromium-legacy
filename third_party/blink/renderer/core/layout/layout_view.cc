@@ -25,9 +25,9 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"

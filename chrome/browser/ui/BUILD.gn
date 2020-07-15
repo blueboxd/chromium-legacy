@@ -1317,6 +1317,8 @@ static_library("ui") {
       "webui/media_router/media_router_internals_webui_message_handler.cc",
       "webui/media_router/media_router_internals_webui_message_handler.h",
       "webui/media_router/web_contents_display_observer.h",
+      "webui/nearby_internals/nearby_internals_http_handler.cc",
+      "webui/nearby_internals/nearby_internals_http_handler.h",
       "webui/nearby_internals/nearby_internals_logs_handler.cc",
       "webui/nearby_internals/nearby_internals_logs_handler.h",
       "webui/nearby_internals/nearby_internals_ui.cc",

@@ -19,7 +19,6 @@
 #include "components/google/core/common/google_util.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"

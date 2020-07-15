@@ -12,7 +12,7 @@ namespace content {
 
 RenderWidgetScreenMetricsEmulator::RenderWidgetScreenMetricsEmulator(
     RenderWidgetScreenMetricsEmulatorDelegate* delegate,
-    const ScreenInfo& screen_info,
+    const blink::ScreenInfo& screen_info,
     const gfx::Size& widget_size,
     const gfx::Size& visible_viewport_size,
     const gfx::Rect& view_screen_rect,
@@ -130,7 +130,7 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
   delegate_->SetScreenRects(gfx::Rect(widget_pos, widget_size),
                             gfx::Rect(window_pos, window_size));
 
-  ScreenInfo screen_info = original_screen_info();
+  blink::ScreenInfo screen_info = original_screen_info();
   screen_info.device_scale_factor = device_scale_factor;
   screen_info.rect = screen_rect;
   screen_info.available_rect = screen_rect;
@@ -141,7 +141,7 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
 }
 
 void RenderWidgetScreenMetricsEmulator::OnSynchronizeVisualProperties(
-    const ScreenInfo& screen_info,
+    const blink::ScreenInfo& screen_info,
     const gfx::Size& widget_size,
     const gfx::Size& visible_viewport_size) {
   original_screen_info_ = screen_info;

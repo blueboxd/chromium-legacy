@@ -50,8 +50,6 @@ class DocumentPolicy;
 class ExecutionContext;
 class FeaturePolicy;
 class PolicyValue;
-class OriginTrialContext;
-class SecurityContextInit;
 class SecurityOrigin;
 struct ParsedFeaturePolicyDeclaration;
 
@@ -77,8 +75,6 @@ class CORE_EXPORT SecurityContext {
  public:
   explicit SecurityContext(ExecutionContext*);
   virtual ~SecurityContext();
-
-  void Initialize(const SecurityContextInit&);
 
   void Trace(Visitor*) const;
 
@@ -168,10 +164,6 @@ class CORE_EXPORT SecurityContext {
   FeatureStatus IsFeatureEnabled(mojom::blink::DocumentPolicyFeature,
                                  PolicyValue threshold_value) const;
 
-  OriginTrialContext* GetOriginTrialContext() const {
-    return origin_trial_context_;
-  }
-
   SecureContextMode GetSecureContextMode() const {
     return secure_context_mode_;
   }
@@ -192,7 +184,6 @@ class CORE_EXPORT SecurityContext {
   InsecureNavigationsSet insecure_navigations_to_upgrade_;
   bool require_safe_types_ = false;
   SecureContextMode secure_context_mode_ = SecureContextMode::kInsecureContext;
-  Member<OriginTrialContext> origin_trial_context_;
   DISALLOW_COPY_AND_ASSIGN(SecurityContext);
 };
 

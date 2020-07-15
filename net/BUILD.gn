@@ -1080,6 +1080,7 @@ component("net") {
       "url_request/redirect_info.h",
       "url_request/redirect_util.cc",
       "url_request/redirect_util.h",
+      "url_request/referrer_policy.h",
       "url_request/report_sender.cc",
       "url_request/report_sender.h",
       "url_request/static_http_user_agent_settings.cc",

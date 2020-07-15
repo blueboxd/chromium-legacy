@@ -98,6 +98,66 @@ class ImportNotifierTest(unittest.TestCase):
         self.assertFalse(
             self.notifier.more_failures_in_baseline('foo-expected.txt'))
 
+    def test_more_failures_in_baseline_new_error(self):
+        executive = mock_git_commands({
+            'diff': ('diff --git a/foo-expected.txt b/foo-expected.txt\n'
+                     '--- a/foo-expected.txt\n'
+                     '+++ b/foo-expected.txt\n'
+                     '-PASS an existing pass\n'
+                     '+Harness Error. harness_status.status = 1 , harness_status.message = bad\n')
+        })
+        self.notifier.git = MockGit(executive=executive)
+        self.assertTrue(
+            self.notifier.more_failures_in_baseline('foo-expected.txt'))
+
+    def test_more_failures_in_baseline_remove_error(self):
+        executive = mock_git_commands({
+            'diff': ('diff --git a/foo-expected.txt b/foo-expected.txt\n'
+                     '--- a/foo-expected.txt\n'
+                     '+++ b/foo-expected.txt\n'
+                     '-Harness Error. harness_status.status = 1 , harness_status.message = bad\n'
+                     '+PASS a new pass\n')
+        })
+        self.notifier.git = MockGit(executive=executive)
+        self.assertFalse(
+            self.notifier.more_failures_in_baseline('foo-expected.txt'))
+
+    def test_more_failures_in_baseline_changing_error(self):
+        executive = mock_git_commands({
+            'diff': ('diff --git a/foo-expected.txt b/foo-expected.txt\n'
+                     '--- a/foo-expected.txt\n'
+                     '+++ b/foo-expected.txt\n'
+                     '-Harness Error. harness_status.status = 1 , harness_status.message = bad\n'
+                     '+Harness Error. new text, still an error\n')
+        })
+        self.notifier.git = MockGit(executive=executive)
+        self.assertFalse(
+            self.notifier.more_failures_in_baseline('foo-expected.txt'))
+
+    def test_more_failures_in_baseline_fail_to_error(self):
+        executive = mock_git_commands({
+            'diff': ('diff --git a/foo-expected.txt b/foo-expected.txt\n'
+                     '--- a/foo-expected.txt\n'
+                     '+++ b/foo-expected.txt\n'
+                     '-FAIL a previous failure\n'
+                     '+Harness Error. harness_status.status = 1 , harness_status.message = bad\n')
+        })
+        self.notifier.git = MockGit(executive=executive)
+        self.assertTrue(
+            self.notifier.more_failures_in_baseline('foo-expected.txt'))
+
+    def test_more_failures_in_baseline_error_to_fail(self):
+        executive = mock_git_commands({
+            'diff': ('diff --git a/foo-expected.txt b/foo-expected.txt\n'
+                     '--- a/foo-expected.txt\n'
+                     '+++ b/foo-expected.txt\n'
+                     '-Harness Error. harness_status.status = 1 , harness_status.message = bad\n'
+                     '+FAIL a new failure\n')
+        })
+        self.notifier.git = MockGit(executive=executive)
+        self.assertTrue(
+            self.notifier.more_failures_in_baseline('foo-expected.txt'))
+
     def test_examine_baseline_changes(self):
         self.host.filesystem.write_text_file(
             MOCK_WEB_TESTS + 'external/wpt/foo/OWNERS', 'test@chromium.org')

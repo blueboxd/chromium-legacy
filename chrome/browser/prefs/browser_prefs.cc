@@ -58,7 +58,6 @@
 #include "chrome/browser/prefs/origin_trial_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
-#include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/printing/print_preview_sticky_settings.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -561,6 +560,9 @@ const char kSupervisedUsersNextId[] = "LocallyManagedUsersNextId";
 const char kStricterMixedContentTreatmentEnabled[] =
     "security_state.stricter_mixed_content_treatment_enabled";
 
+// Deprecated 7/2020
+const char kHashedAvailablePages[] = "previews.offline_helper.available_pages";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -665,6 +667,8 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterDictionaryPref(kPreviewsLPROriginProbeCache);
 
   registry->RegisterBooleanPref(kStricterMixedContentTreatmentEnabled, true);
+
+  registry->RegisterDictionaryPref(kHashedAvailablePages);
 }
 
 }  // namespace
@@ -911,7 +915,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   PrefsTabHelper::RegisterProfilePrefs(registry, locale);
   PreviewsHTTPSNotificationInfoBarDecider::RegisterProfilePrefs(registry);
-  PreviewsOfflineHelper::RegisterProfilePrefs(registry);
   Profile::RegisterProfilePrefs(registry);
   ProfileImpl::RegisterProfilePrefs(registry);
   ProfileNetworkContextService::RegisterProfilePrefs(registry);
@@ -1317,4 +1320,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 6/2020
   profile_prefs->ClearPref(kStricterMixedContentTreatmentEnabled);
+
+  // Added 7/2020.
+  profile_prefs->ClearPref(kHashedAvailablePages);
 }

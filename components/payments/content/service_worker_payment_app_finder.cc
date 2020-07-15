@@ -31,7 +31,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/browser/web_contents.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ui/gfx/image/image.h"
 #include "url/url_canon.h"
 

@@ -36,7 +36,6 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/trial_comparison_cert_verifier.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"

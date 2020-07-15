@@ -83,9 +83,6 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // Returns nullptr if the dialog is currently not shown.
   static views::Widget* GetCurrentDialogWidget();
 
-  // views::WidgetDelegateView:
-  bool ShouldShowCloseButton() const override;
-
   // views::WidgetDelegate:
   base::string16 GetWindowTitle() const override;
 

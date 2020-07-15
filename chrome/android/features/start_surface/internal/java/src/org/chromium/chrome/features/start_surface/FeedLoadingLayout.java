@@ -12,14 +12,10 @@ import android.graphics.drawable.LayerDrawable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import androidx.annotation.Nullable;
-
-import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.components.browser_ui.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
@@ -42,7 +38,6 @@ public class FeedLoadingLayout extends LinearLayout {
     private static final int TEXT_PLACEHOLDER_RADIUS_DP = 11;
 
     private Context mContext;
-    private @Nullable PersonalizedSigninPromoView mSigninPromoView;
     private Resources mResources;
     private long mLayoutInflationCompleteMs;
 
@@ -64,22 +59,6 @@ public class FeedLoadingLayout extends LinearLayout {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         setPlaceholders();
-    }
-
-    /** @return The {@link PersonalizedSigninPromoView} for this class. */
-    PersonalizedSigninPromoView getSigninPromoView() {
-        if (mSigninPromoView == null) {
-            mSigninPromoView = (PersonalizedSigninPromoView) LayoutInflater.from(mContext).inflate(
-                    R.layout.personalized_signin_promo_view_modern_content_suggestions, null,
-                    false);
-            LinearLayout signView = findViewById(R.id.sign_in_box);
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            signView.setLayoutParams(lp);
-            lp.setMargins(0, 0, 0, dpToPx(12));
-            signView.addView(mSigninPromoView);
-        }
-        return mSigninPromoView;
     }
 
     private void setPlaceholders() {

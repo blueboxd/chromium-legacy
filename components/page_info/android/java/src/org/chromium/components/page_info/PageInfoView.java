@@ -9,7 +9,6 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.text.Layout;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -172,7 +171,6 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
 
         public CharSequence url;
         public CharSequence previewLoadOriginalMessage;
-        public CharSequence previewStaleTimestamp;
         public int urlOriginLength;
     }
 
@@ -208,7 +206,6 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
     // completely.
     protected ElidedUrlTextView mUrlTitle;
     protected TextView mPreviewMessage;
-    protected TextView mPreviewStaleTimestamp;
     protected TextView mPreviewLoadOriginal;
     protected View mPreviewSeparator;
     protected Button mInstantAppButton;
@@ -265,20 +262,13 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
 
     protected void initPreview(PageInfoViewParams params) {
         mPreviewMessage = findViewById(R.id.page_info_preview_message);
-        mPreviewStaleTimestamp = findViewById(R.id.page_info_stale_preview_timestamp);
         mPreviewLoadOriginal = findViewById(R.id.page_info_preview_load_original);
         mPreviewSeparator = findViewById(R.id.page_info_preview_separator);
         initializePageInfoViewChild(mPreviewMessage, params.previewUIShown, 0f, null);
         initializePageInfoViewChild(mPreviewLoadOriginal, params.previewUIShown, 0f,
                 params.previewShowOriginalClickCallback);
-        initializePageInfoViewChild(mPreviewStaleTimestamp,
-                params.previewUIShown && !TextUtils.isEmpty(params.previewStaleTimestamp), 0f,
-                null);
         initializePageInfoViewChild(mPreviewSeparator, params.previewSeparatorShown, 0f, null);
         mPreviewLoadOriginal.setText(params.previewLoadOriginalMessage);
-        if (!TextUtils.isEmpty(params.previewStaleTimestamp)) {
-            mPreviewStaleTimestamp.setText(params.previewStaleTimestamp);
-        }
     }
 
     protected void initConnection(PageInfoViewParams params) {
@@ -480,7 +470,6 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         animatableViews.add(mPerformanceMessage);
         animatableViews.add(mPreviewSeparator);
         animatableViews.add(mPreviewMessage);
-        animatableViews.add(mPreviewStaleTimestamp);
         animatableViews.add(mPreviewLoadOriginal);
         animatableViews.add(mHttpsImageCompressionMessage);
         animatableViews.add(mInstantAppButton);

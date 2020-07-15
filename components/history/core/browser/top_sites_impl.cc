@@ -166,7 +166,7 @@ void TopSitesImpl::RemoveBlacklistedURL(const GURL& url) {
   {
     DictionaryPrefUpdate update(pref_service_, kMostVisitedURLsBlacklist);
     base::DictionaryValue* blacklist = update.Get();
-    blacklist->RemoveWithoutPathExpansion(GetURLHash(url), nullptr);
+    blacklist->RemoveKey(GetURLHash(url));
   }
   ResetThreadSafeCache();
   NotifyTopSitesChanged(TopSitesObserver::ChangeReason::BLACKLIST);

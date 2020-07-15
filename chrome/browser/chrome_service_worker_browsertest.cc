@@ -115,10 +115,10 @@ class ChromeServiceWorkerTest : public InProcessBrowserTest {
 
 template <typename T>
 static void ExpectResultAndRun(T expected,
-                               const base::Closure& continuation,
+                               base::OnceClosure continuation,
                                T actual) {
   EXPECT_EQ(expected, actual);
-  continuation.Run();
+  std::move(continuation).Run();
 }
 
 // http://crbug.com/368570
@@ -450,9 +450,11 @@ class ChromeServiceWorkerLinkFetchTest : public ChromeServiceWorkerFetchTest {
         ->GetMainFrame()
         ->ExecuteJavaScriptForTests(
             base::ASCIIToUTF16(js),
-            base::BindOnce([](const base::Closure& quit_callback,
-                              base::Value result) { quit_callback.Run(); },
-                           run_loop.QuitClosure()));
+            base::BindOnce(
+                [](base::OnceClosure quit_callback, base::Value result) {
+                  std::move(quit_callback).Run();
+                },
+                run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -466,10 +468,10 @@ class ChromeServiceWorkerLinkFetchTest : public ChromeServiceWorkerFetchTest {
         "else reportOnFetch = true;");
   }
 
-  static void ManifestCallbackAndRun(const base::Closure& continuation,
+  static void ManifestCallbackAndRun(base::OnceClosure continuation,
                                      const GURL&,
                                      const blink::Manifest&) {
-    continuation.Run();
+    std::move(continuation).Run();
   }
 
   DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerLinkFetchTest);

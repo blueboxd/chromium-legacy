@@ -798,8 +798,9 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     _localPrefRegistrar.Init(localState);
     _localPrefRegistrar.Add(
         prefs::kAllowFileSelectionDialogs,
-        base::Bind(&chrome::BrowserCommandController::UpdateOpenFileState,
-                   _menuState.get()));
+        base::BindRepeating(
+            &chrome::BrowserCommandController::UpdateOpenFileState,
+            _menuState.get()));
   }
 
   _handoff_active_url_observer_bridge.reset(
@@ -1630,10 +1631,9 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   _profilePrefRegistrar->Init(_lastProfile->GetPrefs());
   _profilePrefRegistrar->Add(
       prefs::kIncognitoModeAvailability,
-      base::Bind(&chrome::BrowserCommandController::
-                     UpdateSharedCommandsForIncognitoAvailability,
-                 _menuState.get(),
-                 _lastProfile));
+      base::BindRepeating(&chrome::BrowserCommandController::
+                              UpdateSharedCommandsForIncognitoAvailability,
+                          _menuState.get(), _lastProfile));
 }
 
 - (void)updateMenuItemKeyEquivalents {

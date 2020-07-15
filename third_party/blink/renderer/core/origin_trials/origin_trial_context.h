@@ -36,10 +36,9 @@ class ScriptState;
 class CORE_EXPORT OriginTrialContext final
     : public GarbageCollected<OriginTrialContext> {
  public:
-  OriginTrialContext();
-  explicit OriginTrialContext(std::unique_ptr<TrialTokenValidator> validator);
+  explicit OriginTrialContext(ExecutionContext*);
 
-  void BindExecutionContext(ExecutionContext*);
+  void SetTrialTokenValidatorForTesting(std::unique_ptr<TrialTokenValidator>);
 
   // Parses an Origin-Trial header as specified in
   // https://jpchase.github.io/OriginTrials/#header into individual tokens.
@@ -79,9 +78,6 @@ class CORE_EXPORT OriginTrialContext final
   void AddTokenFromExternalScript(const String& token,
                                   const SecurityOrigin* origin);
   void AddTokens(const Vector<String>& tokens);
-  void AddTokens(const Vector<String>& tokens,
-                 const SecurityOrigin* origin,
-                 bool is_secure);
 
   void ActivateNavigationFeaturesFromInitiator(
       const Vector<OriginTrialFeature>& features);

@@ -23,12 +23,18 @@ COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kErrorDetail[];
 COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kDbusErrorName[];
 COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kDbusErrorMessage[];
 
-// Modern callback for updated methods using a single OnceCallback with an
-// optional result. This can be used when error logging is handled at the point
-// of failure and there is no need to pass additional details to the caller,
-// other than a nullopt to indicate failure.
-using ResultCallback = base::OnceCallback<void(const std::string& service_path,
-                                               base::Optional<base::Value>)>;
+// On success, |result| contains the result. On failure, |result| is nullopt.
+using ResultCallback =
+    base::OnceCallback<void(const std::string& service_path,
+                            base::Optional<base::Value> result)>;
+
+// On success, |properties| contains the resulting properties and |error| is
+// nullopt. On failure, |result| is nullopt and |error| may contain an error
+// identifier.
+using PropertiesCallback =
+    base::OnceCallback<void(const std::string& service_path,
+                            base::Optional<base::Value> properties,
+                            base::Optional<std::string> error)>;
 
 // An error callback used by both the configuration handler and the state
 // handler to receive error results from the API.
@@ -36,10 +42,6 @@ typedef base::RepeatingCallback<void(
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data)>
     ErrorCallback;
-
-typedef base::OnceCallback<void(const std::string& service_path,
-                                const base::DictionaryValue& dictionary)>
-    DictionaryResultCallback;
 
 typedef base::Callback<void(const std::string& string_result)>
     StringResultCallback;
@@ -81,17 +83,6 @@ void ShillErrorCallbackFunction(const std::string& error_name,
                                 const ErrorCallback& error_callback,
                                 const std::string& dbus_error_name,
                                 const std::string& dbus_error_message);
-
-// Callback for property getters used by NetworkConfigurationHandler
-// (for Network Services) and by NetworkDeviceHandler. Used to translate
-// the DBus Dictionary callback into one that calls the error callback
-// if |call_status| != DBUS_METHOD_CALL_SUCCESS.
-COMPONENT_EXPORT(CHROMEOS_NETWORK)
-void GetPropertiesCallback(DictionaryResultCallback callback,
-                           const ErrorCallback& error_callback,
-                           const std::string& path,
-                           DBusMethodCallStatus call_status,
-                           base::Value value);
 
 }  // namespace network_handler
 }  // namespace chromeos

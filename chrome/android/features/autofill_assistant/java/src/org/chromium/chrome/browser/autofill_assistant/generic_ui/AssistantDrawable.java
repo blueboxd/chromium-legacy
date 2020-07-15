@@ -158,27 +158,42 @@ public abstract class AssistantDrawable {
             mIcon = icon;
         }
 
-        @Override
-        public void getDrawable(Context context, Callback<Drawable> callback) {
-            int resourceId;
+        private int getResourceId() {
             switch (mIcon) {
                 case AssistantDrawableIcon.PROGRESSBAR_DEFAULT_INITIAL_STEP:
-                    resourceId = R.drawable.ic_autofill_assistant_default_progress_start_black_24dp;
-                    break;
+                    return R.drawable.ic_autofill_assistant_default_progress_start_black_24dp;
                 case AssistantDrawableIcon.PROGRESSBAR_DEFAULT_DATA_COLLECTION:
-                    resourceId = R.drawable.ic_shopping_basket_black_24dp;
-                    break;
+                    return R.drawable.ic_shopping_basket_black_24dp;
                 case AssistantDrawableIcon.PROGRESSBAR_DEFAULT_PAYMENT:
-                    resourceId = R.drawable.ic_payment_black_24dp;
-                    break;
+                    return R.drawable.ic_payment_black_24dp;
                 case AssistantDrawableIcon.PROGRESSBAR_DEFAULT_FINAL_STEP:
-                    resourceId = R.drawable.ic_check_circle_black_24dp;
-                    break;
-                default:
-                    resourceId = INVALID_ICON_ID;
-                    break;
+                    return R.drawable.ic_check_circle_black_24dp;
+                case AssistantDrawableIcon.SITTING_PERSON:
+                    return R.drawable.ic_airline_seat_recline_normal_black_24dp;
+                case AssistantDrawableIcon.TICKET_STUB:
+                    return R.drawable.ic_confirmation_number_black_24dp;
+                case AssistantDrawableIcon.SHOPPING_BASKET:
+                    return R.drawable.ic_shopping_basket_black_24dp;
+                case AssistantDrawableIcon.FAST_FOOD:
+                    return R.drawable.ic_fastfood_black_24dp;
+                case AssistantDrawableIcon.LOCAL_DINING:
+                    return R.drawable.ic_local_dining_black_24dp;
+                case AssistantDrawableIcon.COGWHEEL:
+                    return R.drawable.ic_settings_black_24dp;
+                case AssistantDrawableIcon.KEY:
+                    return R.drawable.ic_vpn_key_black_24dp;
+                case AssistantDrawableIcon.CAR:
+                    return R.drawable.ic_directions_car_black_24dp;
+                case AssistantDrawableIcon.GROCERY:
+                    return R.drawable.ic_grocery_black_24dp;
             }
 
+            return INVALID_ICON_ID;
+        }
+
+        @Override
+        public void getDrawable(Context context, Callback<Drawable> callback) {
+            int resourceId = getResourceId();
             callback.onResult(resourceId == INVALID_ICON_ID
                             ? null
                             : AppCompatResources.getDrawable(context, resourceId));

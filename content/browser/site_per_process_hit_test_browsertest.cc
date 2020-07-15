@@ -35,7 +35,6 @@
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/screen_info.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test.h"
@@ -671,7 +670,7 @@ enum class HitTestType {
 };
 
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-bool IsScreenTooSmallForPopup(const ScreenInfo& screen_info) {
+bool IsScreenTooSmallForPopup(const blink::ScreenInfo& screen_info) {
   // Small display size will cause popup positions to be adjusted,
   // causing test failures.
   //
@@ -5750,7 +5749,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, PopupMenuTest) {
   SetWebEventPositions(&click_event, gfx::Point(1, 1), rwhv_root);
   rwhv_child->ProcessMouseEvent(click_event, ui::LatencyInfo());
 
-  ScreenInfo screen_info;
+  blink::ScreenInfo screen_info;
   shell()->web_contents()->GetRenderWidgetHostView()->GetScreenInfo(
       &screen_info);
 
@@ -5897,7 +5896,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   EXPECT_EQ(popup_rect.x(), 9);
   EXPECT_EQ(popup_rect.y(), 9);
 #else
-  ScreenInfo screen_info;
+  blink::ScreenInfo screen_info;
   shell()->web_contents()->GetRenderWidgetHostView()->GetScreenInfo(
       &screen_info);
   if (!IsScreenTooSmallForPopup(screen_info)) {

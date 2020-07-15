@@ -24,7 +24,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
-#include "net/url_request/url_request.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"

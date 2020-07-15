@@ -25,7 +25,6 @@
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace {
 // Maximum number of distilled pages in an article.

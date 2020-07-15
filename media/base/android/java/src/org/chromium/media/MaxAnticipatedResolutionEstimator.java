@@ -4,7 +4,6 @@
 
 package org.chromium.media;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.hardware.display.DisplayManager;
 import android.media.MediaFormat;
@@ -22,7 +21,6 @@ import org.chromium.media.MediaCodecUtil.MimeTypes;
  * A utility class to make an estimate for the hints provided to MediaFormat as
  * to the expected maximum resolution to prepare for.
  */
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class MaxAnticipatedResolutionEstimator {
     private Context mContext;
     private DisplayManager mDisplayManager;

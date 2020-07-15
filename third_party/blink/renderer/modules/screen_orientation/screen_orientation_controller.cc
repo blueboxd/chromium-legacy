@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -101,7 +101,7 @@ void ScreenOrientationController::UpdateOrientation() {
   DCHECK(orientation_);
   DCHECK(GetPage());
   ChromeClient& chrome_client = GetPage()->GetChromeClient();
-  WebScreenInfo screen_info = chrome_client.GetScreenInfo(*GetFrame());
+  ScreenInfo screen_info = chrome_client.GetScreenInfo(*GetFrame());
   mojom::blink::ScreenOrientation orientation_type =
       screen_info.orientation_type;
   if (orientation_type == mojom::blink::ScreenOrientation::kUndefined) {

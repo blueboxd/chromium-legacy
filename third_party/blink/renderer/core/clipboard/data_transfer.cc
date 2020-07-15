@@ -29,7 +29,7 @@
 
 #include "base/optional.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_utilities.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"

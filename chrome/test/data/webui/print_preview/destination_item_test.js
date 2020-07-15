@@ -4,9 +4,14 @@
 
 import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {createDestinationWithCertificateStatus} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+
+import {createDestinationWithCertificateStatus} from './print_preview_test_utils.js';
 
 window.destination_item_test = {};
+const destination_item_test = window.destination_item_test;
 destination_item_test.suiteName = 'DestinationItemTest';
 /** @enum {string} */
 destination_item_test.TestNames = {
@@ -18,8 +23,8 @@ destination_item_test.TestNames = {
 };
 
 suite(destination_item_test.suiteName, function() {
-  /** @type {?PrintPreviewDestinationListItemElement} */
-  let item = null;
+  /** @type {!PrintPreviewDestinationListItemElement} */
+  let item;
 
   /** @type {string} */
   const printerId = 'FooDevice';
@@ -29,8 +34,9 @@ suite(destination_item_test.suiteName, function() {
 
   /** @override */
   setup(function() {
-    PolymerTest.clearBody();
-    item = document.createElement('print-preview-destination-list-item');
+    document.body.innerHTML = '';
+    item = /** @type {!PrintPreviewDestinationListItemElement} */ (
+        document.createElement('print-preview-destination-list-item'));
 
     // Create destination
     item.destination = new Destination(

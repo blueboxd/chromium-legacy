@@ -23,6 +23,7 @@ class CredentialLeakControllerAndroid {
  public:
   CredentialLeakControllerAndroid(
       password_manager::CredentialLeakType leak_type,
+      password_manager::CompromisedSitesCount saved_sites,
       const GURL& origin,
       const base::string16& username,
       ui::WindowAndroid* window_android);
@@ -70,6 +71,7 @@ class CredentialLeakControllerAndroid {
  private:
   // Used to customize the UI.
   const password_manager::CredentialLeakType leak_type_;
+  const password_manager::CompromisedSitesCount saved_sites_;
 
   const GURL origin_;
 

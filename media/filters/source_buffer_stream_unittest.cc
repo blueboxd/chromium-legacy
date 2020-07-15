@@ -222,12 +222,11 @@ class SourceBufferStreamTest : public testing::Test {
     std::stringstream ss;
     ss << "{ ";
     for (size_t i = 0; i < r.size(); ++i) {
-      int64_t start = r.start(i).InMicroseconds();
-      int64_t end = r.end(i).InMicroseconds();
-      if (granularity == TimeGranularity::kMillisecond) {
-        start /= base::Time::kMicrosecondsPerMillisecond;
-        end /= base::Time::kMicrosecondsPerMillisecond;
-      }
+      auto conversion = (granularity == TimeGranularity::kMillisecond)
+                            ? &base::TimeDelta::InMilliseconds
+                            : &base::TimeDelta::InMicroseconds;
+      int64_t start = (r.start(i).*conversion)();
+      int64_t end = (r.end(i).*conversion)();
       ss << "[" << start << "," << end << ") ";
     }
     ss << "}";

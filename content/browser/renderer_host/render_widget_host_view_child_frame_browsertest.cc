@@ -167,7 +167,7 @@ class OutgoingVisualPropertiesIPCWatcher {
   OutgoingVisualPropertiesIPCWatcher(
       RenderProcessHostImpl* rph,
       FrameTreeNode* root,
-      base::RepeatingCallback<void(const VisualProperties&)> callback)
+      base::RepeatingCallback<void(const blink::VisualProperties&)> callback)
       : rph_(rph), root_(root), callback_(std::move(callback)) {
     rph_->SetIpcSendWatcherForTesting(
         base::BindRepeating(&OutgoingVisualPropertiesIPCWatcher::OnMessage,
@@ -197,11 +197,13 @@ class OutgoingVisualPropertiesIPCWatcher {
     IPC_END_MESSAGE_MAP()
   }
 
-  void ProcessMessage(const VisualProperties& props) { callback_.Run(props); }
+  void ProcessMessage(const blink::VisualProperties& props) {
+    callback_.Run(props);
+  }
 
   RenderProcessHostImpl* const rph_;
   FrameTreeNode* const root_;
-  base::RepeatingCallback<void(const VisualProperties&)> callback_;
+  base::RepeatingCallback<void(const blink::VisualProperties&)> callback_;
 };
 
 // Auto-resize is only implemented for Ash and GuestViews. So we need to inject
@@ -275,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
     gfx::Size child_visible_viewport_size;
     OutgoingVisualPropertiesIPCWatcher child_watcher(
         child_rph, root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
+        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
           child_visible_viewport_size = props.visible_viewport_size;
 
           if (child_visible_viewport_size == initial_size)
@@ -300,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
     gfx::Size child_visible_viewport_size;
     OutgoingVisualPropertiesIPCWatcher child_watcher(
         nested_child_rph, nested_root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
+        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
           child_visible_viewport_size = props.visible_viewport_size;
 
           if (child_visible_viewport_size == nested_initial_size)
@@ -340,12 +342,12 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
     gfx::Size child_visible_viewport_size;
     OutgoingVisualPropertiesIPCWatcher root_watcher(
         root_rph, root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
+        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
           root_visible_viewport_size = props.visible_viewport_size;
         }));
     OutgoingVisualPropertiesIPCWatcher child_watcher(
         child_rph, root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
+        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
           child_visible_viewport_size = props.visible_viewport_size;
 
           if (child_visible_viewport_size == resize_to)
@@ -377,12 +379,12 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
     gfx::Size child_visible_viewport_size;
     OutgoingVisualPropertiesIPCWatcher root_watcher(
         nested_root_rph, nested_root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
+        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
           root_visible_viewport_size = props.visible_viewport_size;
         }));
     OutgoingVisualPropertiesIPCWatcher child_watcher(
         nested_child_rph, nested_root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
+        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
           child_visible_viewport_size = props.visible_viewport_size;
 
           if (child_visible_viewport_size == resize_to)
@@ -419,17 +421,16 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
     base::RunLoop loop;
 
     const gfx::Size auto_resize_to(105, 100);
-
     gfx::Size root_visible_viewport_size;
     gfx::Size child_visible_viewport_size;
     OutgoingVisualPropertiesIPCWatcher root_watcher(
         root_rph, root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
+        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
           root_visible_viewport_size = props.visible_viewport_size;
         }));
     OutgoingVisualPropertiesIPCWatcher child_watcher(
         child_rph, root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
+        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
           child_visible_viewport_size = props.visible_viewport_size;
 
           if (child_visible_viewport_size == auto_resize_to)
@@ -641,14 +642,14 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
     std::vector<gfx::Rect> oopchild_root_window_segments;
     OutgoingVisualPropertiesIPCWatcher oopchild_watcher(
         oopchild_rph, root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
+        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
           oopchild_root_window_segments = props.root_widget_window_segments;
         }));
 
     std::vector<gfx::Rect> oopdescendant_root_window_segments;
     OutgoingVisualPropertiesIPCWatcher oopdescendant_watcher(
         oopdescendant_rph, root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
+        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
           oopdescendant_root_window_segments =
               props.root_widget_window_segments;
           if (oopdescendant_root_window_segments == expected_segments)
@@ -672,7 +673,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
     std::vector<gfx::Rect> new_frame_root_window_segments;
     OutgoingVisualPropertiesIPCWatcher oopdescendant_watcher(
         oopdescendant_rph, root,
-        base::BindLambdaForTesting([&](const VisualProperties& props) {
+        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
           new_frame_root_window_segments = props.root_widget_window_segments;
           // This check is needed, since we'll get an IPC originating from
           // RenderWidgetHostImpl immediately after the frame is added with the

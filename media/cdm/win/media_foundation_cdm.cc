@@ -166,7 +166,8 @@ void MediaFoundationCdm::CreateSessionAndGenerateRequest(
 
   // TODO(xhwang): Implement session expiration update.
   auto session = std::make_unique<MediaFoundationCdmSession>(
-      session_message_cb_, session_keys_change_cb_);
+      session_message_cb_, session_keys_change_cb_,
+      session_expiration_update_cb_);
 
   if (FAILED(session->Initialize(mf_cdm_.Get(), session_type))) {
     promise->reject(Exception::INVALID_STATE_ERROR, 0,

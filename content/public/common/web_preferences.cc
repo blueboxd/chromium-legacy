@@ -8,8 +8,20 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/web/web_settings.h"
+#include "ui/base/ui_base_switches_util.h"
 
 using blink::WebSettings;
+
+namespace {
+
+bool IsTouchDragDropEnabled() {
+  // Cache the enabled state so it isn't queried on every WebPreferences
+  // creation. Note that this means unit tests can't override the state.
+  static const bool enabled = switches::IsTouchDragDropEnabled();
+  return enabled;
+}
+
+}  // namespace
 
 namespace content {
 
@@ -228,7 +240,8 @@ WebPreferences::WebPreferences()
       network_quality_estimator_web_holdback(
           net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       allow_mixed_content_upgrades(true),
-      always_show_focus(false) {
+      always_show_focus(false),
+      touch_drag_drop_enabled(IsTouchDragDropEnabled()) {
   standard_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] = base::ASCIIToUTF16("Courier New");

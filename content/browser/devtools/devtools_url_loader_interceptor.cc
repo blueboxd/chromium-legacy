@@ -27,7 +27,7 @@
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
-#include "net/url_request/url_request.h"
+#include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -971,7 +971,7 @@ void InterceptionJob::ApplyModificationsToRequest(
       if (base::EqualsCaseInsensitiveASCII(entry.first,
                                            net::HttpRequestHeaders::kReferer)) {
         request->referrer = GURL(entry.second);
-        request->referrer_policy = net::URLRequest::NEVER_CLEAR_REFERRER;
+        request->referrer_policy = net::ReferrerPolicy::NEVER_CLEAR;
       } else {
         request->headers.SetHeader(entry.first, entry.second);
       }

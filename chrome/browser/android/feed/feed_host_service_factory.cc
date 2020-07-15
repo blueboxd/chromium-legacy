@@ -33,7 +33,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/google_api_keys.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace history {
 class HistoryService;

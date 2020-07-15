@@ -135,8 +135,8 @@ void WebWidgetTestProxy::StartDragging(network::mojom::ReferrerPolicy policy,
   event_sender_.DoDragDrop(data, mask);
 }
 
-blink::WebScreenInfo WebWidgetTestProxy::GetScreenInfo() {
-  blink::WebScreenInfo info = RenderWidget::GetScreenInfo();
+blink::ScreenInfo WebWidgetTestProxy::GetScreenInfo() {
+  blink::ScreenInfo info = RenderWidget::GetScreenInfo();
 
   MockScreenOrientationClient* mock_client =
       GetTestRunner()->GetMockScreenOrientationClient();

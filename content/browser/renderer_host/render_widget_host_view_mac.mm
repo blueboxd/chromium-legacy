@@ -422,7 +422,7 @@ void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
   }
 }
 
-void RenderWidgetHostViewMac::GetScreenInfo(ScreenInfo* screen_info) {
+void RenderWidgetHostViewMac::GetScreenInfo(blink::ScreenInfo* screen_info) {
   browser_compositor_->GetRendererScreenInfo(screen_info);
 }
 

@@ -17,7 +17,6 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/safe_browsing/buildflags.h"
 #include "net/base/mime_util.h"
-#include "net/url_request/url_request_status.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"

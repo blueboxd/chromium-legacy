@@ -104,7 +104,7 @@ bool EncodeTimestamp(uint16_t timestamp,
   std::vector<double> frequencies;
   for (size_t i = 0; i < kNumBits; i++) {
     if ((timestamp >> i) & 1) {
-      frequencies.push_back(kBaseFrequency * (i+1));
+      frequencies.push_back(kBaseFrequency * (i + 1));
     }
   }
   // Carrier sense frequency

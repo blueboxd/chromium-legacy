@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/leak_detection_delegate_helper.h"
 
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -32,11 +33,13 @@ void LeakDetectionDelegateHelper::ProcessLeakedPassword(
 
 void LeakDetectionDelegateHelper::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+  base::flat_set<std::string> distinct_origins;
   if (base::FeatureList::IsEnabled(features::kPasswordCheck)) {
     base::string16 canonicalized_username = CanonicalizeUsername(username_);
     for (const auto& form : results) {
       if (CanonicalizeUsername(form->username_value) ==
           canonicalized_username) {
+        distinct_origins.insert(form->signon_realm);
         store_->AddCompromisedCredentials(
             {form->signon_realm, form->username_value, base::Time::Now(),
              CompromiseType::kLeaked});
@@ -49,9 +52,12 @@ void LeakDetectionDelegateHelper::OnGetPasswordStoreResults(
         return form->url == url_ && form->username_value == username_;
       }));
 
+  // Number of compromised origins that the user saved.
+  CompromisedSitesCount saved_sites(distinct_origins.size());
+
   IsReused is_reused(results.size() > (is_saved ? 1 : 0));
   std::move(callback_).Run(is_saved, is_reused, std::move(url_),
-                           std::move(username_));
+                           std::move(username_), saved_sites);
 }
 
 }  // namespace password_manager

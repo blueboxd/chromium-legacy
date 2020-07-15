@@ -18,8 +18,6 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_service.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom.h"
 #include "url/gurl.h"

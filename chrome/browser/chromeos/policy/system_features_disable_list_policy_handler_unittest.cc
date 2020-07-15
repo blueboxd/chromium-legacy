@@ -30,11 +30,10 @@ TEST_F(SystemFeaturesDisableListPolicyHandlerTest, ApplyListTest) {
   PrefValueMap prefs;
   base::Value* value = nullptr;
   SystemFeaturesDisableListPolicyHandler policy_handler;
-  std::unique_ptr<base::Value> features_list =
-      std::make_unique<base::Value>(base::Value::Type::LIST);
+  base::Value features_list(base::Value::Type::LIST);
 
-  features_list->Append("camera");
-  features_list->Append("browser_settings");
+  features_list.Append("camera");
+  features_list.Append("browser_settings");
 
   policy_map.Set(policy::key::kSystemFeaturesDisableList,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
@@ -66,10 +65,10 @@ TEST_F(SystemFeaturesDisableListPolicyHandlerTest, ApplyListTest) {
                                       SystemFeature::UNKNOWN_SYSTEM_FEATURE,
                                       /*amount*/ 0);
 
-  features_list = std::make_unique<base::Value>(base::Value::Type::LIST);
-  features_list->Append("camera");
-  features_list->Append("os_settings");
-  features_list->Append("gallery");
+  features_list.ClearList();
+  features_list.Append("camera");
+  features_list.Append("os_settings");
+  features_list.Append("gallery");
 
   policy_map.Set(policy::key::kSystemFeaturesDisableList,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,

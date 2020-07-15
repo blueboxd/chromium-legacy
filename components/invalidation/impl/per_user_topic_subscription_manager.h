@@ -20,7 +20,6 @@
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "net/base/backoff_entry.h"
-#include "net/url_request/url_request_context_getter.h"
 
 class PrefRegistrySimple;
 class PrefService;

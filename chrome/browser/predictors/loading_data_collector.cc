@@ -18,7 +18,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_request.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"

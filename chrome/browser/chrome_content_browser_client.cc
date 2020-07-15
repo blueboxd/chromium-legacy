@@ -943,9 +943,9 @@ bool URLHasExtensionBackgroundPermission(
 #endif
 
 mojo::PendingRemote<prerender::mojom::PrerenderCanceler> GetPrerenderCanceler(
-    const base::Callback<content::WebContents*()>& wc_getter) {
+    base::OnceCallback<content::WebContents*()> wc_getter) {
   mojo::PendingRemote<prerender::mojom::PrerenderCanceler> canceler;
-  prerender::PrerenderContents::FromWebContents(wc_getter.Run())
+  prerender::PrerenderContents::FromWebContents(std::move(wc_getter).Run())
       ->AddPrerenderCancelerReceiver(canceler.InitWithNewPipeAndPassReceiver());
   return canceler;
 }
@@ -2397,9 +2397,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    base::size(kSwitchNames));
   } else if (process_type == switches::kGpuProcess) {
-    // If --ignore-gpu-blacklist is passed in, don't send in crash reports
+    // If --ignore-gpu-blocklist is passed in, don't send in crash reports
     // because GPU is expected to be unreliable.
-    if (browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist) &&
+    if ((browser_command_line.HasSwitch(switches::kIgnoreGpuBlocklist) ||
+         browser_command_line.HasSwitch(switches::kIgnoreGpuBlacklist)) &&
         !command_line->HasSwitch(switches::kDisableBreakpad))
       command_line->AppendSwitch(switches::kDisableBreakpad);
   }
@@ -5211,10 +5212,8 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
     content::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle,
     const GURL& current_navigation_url) {
-  content::PreviewsState state = DetermineAllowedPreviewsWithoutHoldback(
+  return DetermineAllowedPreviewsWithoutHoldback(
       initial_state, navigation_handle, current_navigation_url);
-
-  return previews::MaybeCoinFlipHoldbackBeforeCommit(state, navigation_handle);
 }
 
 content::PreviewsState
@@ -5303,29 +5302,6 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
     return content::ALL_SUPPORTED_PREVIEWS;
   }
 
-  bool is_reload =
-      navigation_handle->GetReloadType() != content::ReloadType::NONE;
-
-  content::PreviewsState server_previews_enabled_state =
-      content::SERVER_LITE_PAGE_ON;
-
-  // For now, treat server previews types as a single decision, and do not
-  // re-evaluate upon redirect. Plumbing does not exist to modify the CPAT
-  // header, nor does the plumbing exist to modify the PreviewsState within the
-  // URLLoader.
-  if (previews_triggering_logic_already_ran) {
-    // Copy the server state that was used before the redirect for the initial
-    // URL.
-    previews_state |=
-        (previews_data->AllowedPreviewsState() & server_previews_enabled_state);
-  } else {
-    if (previews_decider_impl->ShouldAllowPreviewAtNavigationStart(
-            previews_data, navigation_handle, is_reload,
-            previews::PreviewsType::LITE_PAGE)) {
-      previews_state |= server_previews_enabled_state;
-    }
-  }
-
   // Evaluate client-side previews.
   previews_state |= previews::DetermineAllowedClientPreviewsState(
       previews_data, previews_triggering_logic_already_ran,
@@ -5378,13 +5354,9 @@ ChromeContentBrowserClient::DetermineCommittedPreviewsForURL(
   if (!previews::HasEnabledPreviews(initial_state))
     return content::PREVIEWS_OFF;
 
-  // Check if the server sent a preview directive.
-  content::PreviewsState previews_state =
-      previews::DetermineCommittedServerPreviewsState(drp_data, initial_state);
-
   // Check the various other client previews types.
   return previews::DetermineCommittedClientPreviewsState(
-      previews_user_data, url, previews_state, previews_decider,
+      previews_user_data, url, initial_state, previews_decider,
       navigation_handle);
 }
 
@@ -5436,23 +5408,6 @@ ChromeContentBrowserClient::DetermineCommittedPreviewsWithoutHoldback(
 
   if (!previews_service || !previews_service->previews_ui_service())
     return content::PREVIEWS_OFF;
-
-// Check if offline previews are being used and set it in the user data.
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  offline_pages::OfflinePageTabHelper* tab_helper =
-      offline_pages::OfflinePageTabHelper::FromWebContents(
-          navigation_handle->GetWebContents());
-
-  bool is_offline_page = tab_helper && tab_helper->IsLoadingOfflinePage();
-  bool is_offline_preview = tab_helper && tab_helper->GetOfflinePreviewItem();
-
-  // If this is an offline page, but not a preview, then we should not attempt
-  // any previews or surface the previews UI.
-  if (is_offline_page && !is_offline_preview)
-    return content::PREVIEWS_OFF;
-
-  previews_user_data->set_offline_preview_used(is_offline_preview);
-#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
   // Annotate request if no-transform directive found in response headers.
   if (response_headers &&

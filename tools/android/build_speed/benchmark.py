@@ -60,6 +60,12 @@ _BENCHMARKS = {
             'base_java_sig',
         ],
     },
+    'extra_incremental': {
+        'suite': [
+            'turbine_headers',
+            'compile_java',
+        ],
+    },
     'chrome_java_nosig': {
         'kind': 'incremental',
         'target': 'chrome_public_apk',
@@ -94,6 +100,20 @@ _BENCHMARKS = {
         'from_string': 'SysUtils";',
         'to_string': 'SysUtils";public void NewInterfaceMethod(){}',
         'change_file': 'base/android/java/src/org/chromium/base/SysUtils.java',
+    },
+    'turbine_headers': {
+        'kind': 'incremental',
+        'target': 'chrome_public_apk',
+        'from_string': '# found in the LICENSE file.',
+        'to_string': '#temporary_edit_for_benchmark.py',
+        'change_file': 'build/android/gyp/turbine.py',
+    },
+    'compile_java': {
+        'kind': 'incremental',
+        'target': 'chrome_public_apk',
+        'from_string': '# found in the LICENSE file.',
+        'to_string': '#temporary_edit_for_benchmark.py',
+        'change_file': 'build/android/gyp/compile_java.py',
     },
 }
 

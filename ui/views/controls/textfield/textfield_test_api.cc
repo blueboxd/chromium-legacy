@@ -37,4 +37,12 @@ bool TextfieldTestApi::ShouldShowCursor() const {
   return textfield_->ShouldShowCursor();
 }
 
+int TextfieldTestApi::GetDisplayOffsetX() const {
+  return GetRenderText()->GetUpdatedDisplayOffset().x();
+}
+
+void TextfieldTestApi::SetDisplayOffsetX(int x) const {
+  return GetRenderText()->SetDisplayOffset(x);
+}
+
 }  // namespace views

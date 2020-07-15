@@ -19,6 +19,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_sample_collector.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_sample.h"
 
 namespace blink {
@@ -29,6 +30,12 @@ AggregatingSampleCollector* GetCollectorInstance() {
   return impl.get();
 }
 }  // namespace internal
+
+namespace {
+bool IsStudyActive() {
+  return IdentifiabilityStudySettings::Get()->IsActive();
+}
+}  // namespace
 
 const unsigned AggregatingSampleCollector::kMaxTrackedSurfaces;
 const unsigned AggregatingSampleCollector::kMaxTrackedSamplesPerSurface;
@@ -43,11 +50,20 @@ void AggregatingSampleCollector::Record(
     ukm::UkmRecorder* recorder,
     ukm::SourceId source,
     std::vector<IdentifiableSample> samples) {
+  // recorder == nullptr or source == kInvalidSourceId can happen, for example,
+  // if metrics are being reported against an unsupported ExecutionContext type
+  // or for some reason the UkmRecorder or a valid source is unavailable.
+  if (!IsStudyActive() || !recorder || source == ukm::kInvalidSourceId)
+    return;
+
   if (TryAcceptSamples(source, std::move(samples)))
     Flush(recorder);
 }
 
 void AggregatingSampleCollector::Flush(ukm::UkmRecorder* recorder) {
+  if (!recorder)
+    return;
+
   std::unordered_multimap<ukm::SourceId, UkmMetricsContainerType> unsent;
   // Gratuitous block for releasing `lock_` after doing the minimal possible
   // work.
@@ -70,6 +86,9 @@ void AggregatingSampleCollector::Flush(ukm::UkmRecorder* recorder) {
 
 void AggregatingSampleCollector::FlushSource(ukm::UkmRecorder* recorder,
                                              ukm::SourceId source) {
+  if (!IsStudyActive() || !recorder)
+    return;
+
   std::vector<UkmMetricsContainerType> metric_sets;
 
   {

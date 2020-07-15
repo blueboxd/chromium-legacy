@@ -68,10 +68,7 @@ no_check_targets = [
   "//chrome/browser/safe_browsing/android:*",  # 3 errors
   "//chrome/browser/safe_browsing:*",  # 85 errors
   "//chrome/browser/safety_check/android:*",  # 3 errors
-  "//chrome/browser/share:*",  # 7 errors
   "//chrome/browser/storage_access_api:*",  # 2 errors
-  "//chrome/browser/thumbnail/cc:*",  # 4 errors
-  "//chrome/browser/thumbnail/generator:*",  # 2 errors
   "//chrome/browser/touch_to_fill/android:*",  # 8 errors
   "//chrome/browser/touch_to_fill:*",  # 5 errors
   "//chrome/browser/updates/announcement_notification:*",  # 15 errors
@@ -122,7 +119,8 @@ no_check_targets = [
   "//extensions/browser/api/crash_report_private:*",  # 1 error
   "//extensions/browser/api/declarative:*",  # 20 errors
   "//extensions/browser/api/declarative_content:*",  # 2 errors
-  "//extensions/browser/api/declarative_net_request/filter_list_converter:*",  # 1 error
+  "//extensions/browser/api/declarative_net_request/filter_list_converter:*",  # 1
+                                                                               # error
   "//extensions/browser/api/declarative_net_request:*",  # 18 errors
   "//extensions/browser/api/declarative_webrequest:*",  # 29 errors
   "//extensions/browser/api/diagnostics:*",  # 2 errors

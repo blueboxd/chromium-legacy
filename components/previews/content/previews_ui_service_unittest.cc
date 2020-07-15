@@ -219,7 +219,7 @@ TEST_F(PreviewsUIServiceTest, TestInitialization) {
 
 TEST_F(PreviewsUIServiceTest, TestLogPreviewNavigationPassInCorrectParams) {
   const GURL url_a = GURL("http://www.url_a.com/url_a");
-  const PreviewsType type_a = PreviewsType::LITE_PAGE;
+  const PreviewsType type_a = PreviewsType::DEFER_ALL_SCRIPT;
   const bool opt_out_a = true;
   const base::Time time_a = base::Time::Now();
   const uint64_t page_id_a = 1234;
@@ -234,7 +234,7 @@ TEST_F(PreviewsUIServiceTest, TestLogPreviewNavigationPassInCorrectParams) {
   EXPECT_EQ(page_id_a, logger_ptr_->navigation_page_id());
 
   const GURL url_b = GURL("http://www.url_b.com/url_b");
-  const PreviewsType type_b = PreviewsType::OFFLINE;
+  const PreviewsType type_b = PreviewsType::DEFER_ALL_SCRIPT;
   const bool opt_out_b = false;
   const base::Time time_b = base::Time::Now();
   const uint64_t page_id_b = 4321;
@@ -254,7 +254,7 @@ TEST_F(PreviewsUIServiceTest, TestLogPreviewDecisionMadePassesCorrectParams) {
       PreviewsEligibilityReason::BLOCKLIST_UNAVAILABLE;
   const GURL url_a("http://www.url_a.com/url_a");
   const base::Time time_a = base::Time::Now();
-  PreviewsType type_a = PreviewsType::OFFLINE;
+  PreviewsType type_a = PreviewsType::DEFER_ALL_SCRIPT;
   std::vector<PreviewsEligibilityReason> passed_reasons_a = {
       PreviewsEligibilityReason::NETWORK_NOT_SLOW,
       PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
@@ -284,7 +284,7 @@ TEST_F(PreviewsUIServiceTest, TestLogPreviewDecisionMadePassesCorrectParams) {
       PreviewsEligibilityReason::NETWORK_NOT_SLOW;
   const GURL url_b("http://www.url_b.com/url_b");
   const base::Time time_b = base::Time::Now();
-  PreviewsType type_b = PreviewsType::OFFLINE;
+  PreviewsType type_b = PreviewsType::DEFER_ALL_SCRIPT;
   std::vector<PreviewsEligibilityReason> passed_reasons_b = {
       PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE,
       PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE,

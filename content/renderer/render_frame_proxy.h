@@ -13,7 +13,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/frame_proxy.mojom.h"
 #include "content/common/frame_visual_properties.h"
-#include "content/public/common/screen_info.h"
 #include "content/renderer/child_frame_compositor.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -23,6 +22,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
@@ -137,7 +137,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // would only get one update per UpdateVisualProperties IPC received in the
   // RenderWidget, and we would only need to send one update to the browser as
   // a result.
-  void OnScreenInfoChanged(const ScreenInfo& screen_info);
+  void OnScreenInfoChanged(const blink::ScreenInfo& screen_info);
   void OnZoomLevelChanged(double zoom_level);
   void OnRootWindowSegmentsChanged(
       std::vector<gfx::Rect> root_widget_window_segments);
@@ -171,7 +171,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
     return pending_visual_properties_.local_frame_size;
   }
 
-  const ScreenInfo& screen_info() const {
+  const blink::ScreenInfo& screen_info() const {
     return pending_visual_properties_.screen_info;
   }
 

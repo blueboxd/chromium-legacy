@@ -85,7 +85,7 @@
 #include "net/test/gtest_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request.h"
+#include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -1487,7 +1487,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
       std::make_unique<network::ResourceRequest>();
   request->url = embedded_test_server()->GetURL("/echoheader?Referer");
   request->referrer = GURL("http://referrer/");
-  request->referrer_policy = net::URLRequest::NO_REFERRER;
+  request->referrer_policy = net::ReferrerPolicy::NO_REFERRER;
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
       network::SimpleURLLoader::Create(std::move(request),

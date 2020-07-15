@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -39,7 +40,6 @@ namespace content {
 
 class RenderWidgetHost;
 class TouchSelectionControllerClientManager;
-struct ScreenInfo;
 
 // RenderWidgetHostView is an interface implemented by an object that acts as
 // the "View" portion of a RenderWidgetHost. The RenderWidgetHost and its
@@ -238,7 +238,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // This method returns the ScreenInfo used by the view to render. If the
   // information is not knowable (e.g, because the view is not attached to a
   // screen yet), then a default best-guess will be used.
-  virtual void GetScreenInfo(ScreenInfo* screen_info) = 0;
+  virtual void GetScreenInfo(blink::ScreenInfo* screen_info) = 0;
 
   // This must always return the same device scale factor as GetScreenInfo.
   virtual float GetDeviceScaleFactor() = 0;

@@ -35,8 +35,6 @@
 #include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "url/gurl.h"
 

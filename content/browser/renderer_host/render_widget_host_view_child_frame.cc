@@ -48,7 +48,7 @@ namespace content {
 // static
 RenderWidgetHostViewChildFrame* RenderWidgetHostViewChildFrame::Create(
     RenderWidgetHost* widget,
-    const ScreenInfo& screen_info) {
+    const blink::ScreenInfo& screen_info) {
   RenderWidgetHostViewChildFrame* view =
       new RenderWidgetHostViewChildFrame(widget, screen_info);
   view->Init();
@@ -57,7 +57,7 @@ RenderWidgetHostViewChildFrame* RenderWidgetHostViewChildFrame::Create(
 
 RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
     RenderWidgetHost* widget_host,
-    const ScreenInfo& screen_info)
+    const blink::ScreenInfo& screen_info)
     : RenderWidgetHostViewBase(widget_host),
       frame_sink_id_(
           base::checked_cast<uint32_t>(widget_host->GetProcess()->GetID()),
@@ -768,7 +768,7 @@ void RenderWidgetHostViewChildFrame::CopyFromSurface(
   if (src_subrect.IsEmpty()) {
     request->set_area(gfx::Rect(GetCompositorViewportPixelSize()));
   } else {
-    ScreenInfo screen_info;
+    blink::ScreenInfo screen_info;
     GetScreenInfo(&screen_info);
     // |src_subrect| is in DIP coordinates; convert to Surface coordinates.
     request->set_area(
@@ -892,7 +892,8 @@ RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
       BrowserAccessibilityManager::GetEmptyDocument(), delegate);
 }
 
-void RenderWidgetHostViewChildFrame::GetScreenInfo(ScreenInfo* screen_info) {
+void RenderWidgetHostViewChildFrame::GetScreenInfo(
+    blink::ScreenInfo* screen_info) {
   if (frame_connector_)
     screen_info_ = frame_connector_->screen_info();
   *screen_info = screen_info_;

@@ -71,7 +71,7 @@
 #include "third_party/skia/include/core/SkTypes.h"
 #include "third_party/skia/include/effects/SkShaderMaskFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/color_space.h"
@@ -319,7 +319,9 @@ class GLRenderer::ScopedUseGrContext {
     // is lost.
     // TODO(vmiura,bsalomon): crbug.com/487850 Ensure that
     // ContextProvider::GrContext() does not return NULL.
-    if (renderer->output_surface_->context_provider()->GrContext())
+    GrDirectContext* direct = GrAsDirectContext(
+        renderer->output_surface_->context_provider()->GrContext());
+    if (direct)
       return base::WrapUnique(new ScopedUseGrContext(renderer));
     return nullptr;
   }
@@ -330,8 +332,9 @@ class GLRenderer::ScopedUseGrContext {
     renderer_->RestoreGLStateAfterSkia();
   }
 
-  GrContext* context() const {
-    return renderer_->output_surface_->context_provider()->GrContext();
+  GrDirectContext* context() const {
+    return GrAsDirectContext(
+        renderer_->output_surface_->context_provider()->GrContext());
   }
 
  private:
@@ -1068,7 +1071,8 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     if (filter_clip != src_rect) {
       filter_clip = gfx::ScaleToEnclosingRect(filter_clip,
                                               params->backdrop_filter_quality);
-      src_image = src_image->makeSubset(RectToSkIRect(filter_clip));
+      src_image = src_image->makeSubset(RectToSkIRect(filter_clip),
+                                        use_gr_context->context());
       src_image_rect = gfx::RectF(filter_clip.width(), filter_clip.height());
       dest_rect = RectToSkRect(filter_clip);
     }

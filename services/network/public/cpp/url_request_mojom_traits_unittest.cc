@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/base/isolation_info.h"
+#include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/http_request_headers_mojom_traits.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
 #include "services/network/public/cpp/optional_trust_token_params.h"
@@ -21,27 +22,22 @@ namespace {
 
 TEST(URLRequestMojomTraitsTest, Roundtrips_URLRequestReferrerPolicy) {
   for (auto referrer_policy :
-       {net::URLRequest::ReferrerPolicy::
-            CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-        net::URLRequest::ReferrerPolicy::
-            REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
-        net::URLRequest::ReferrerPolicy::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
-        net::URLRequest::ReferrerPolicy::NEVER_CLEAR_REFERRER,
-        net::URLRequest::ReferrerPolicy::ORIGIN,
-        net::URLRequest::ReferrerPolicy::
-            CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN,
-        net::URLRequest::ReferrerPolicy::
-            ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-        net::URLRequest::ReferrerPolicy::NO_REFERRER}) {
+       {net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+        net::ReferrerPolicy::REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
+        net::ReferrerPolicy::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
+        net::ReferrerPolicy::NEVER_CLEAR, net::ReferrerPolicy::ORIGIN,
+        net::ReferrerPolicy::CLEAR_ON_TRANSITION_CROSS_ORIGIN,
+        net::ReferrerPolicy::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+        net::ReferrerPolicy::NO_REFERRER}) {
     int32_t serialized = -1;
     using URLRequestReferrerPolicySerializer =
         mojo::internal::Serializer<mojom::URLRequestReferrerPolicy,
-                                   net::URLRequest::ReferrerPolicy>;
+                                   net::ReferrerPolicy>;
     URLRequestReferrerPolicySerializer::Serialize(referrer_policy, &serialized);
-    EXPECT_EQ(referrer_policy, serialized);
-    net::URLRequest::ReferrerPolicy deserialized;
+    EXPECT_EQ(static_cast<int32_t>(referrer_policy), serialized);
+    net::ReferrerPolicy deserialized;
     URLRequestReferrerPolicySerializer::Deserialize(serialized, &deserialized);
-    EXPECT_EQ(serialized, deserialized);
+    EXPECT_EQ(referrer_policy, deserialized);
   }
 }
 
@@ -58,7 +54,7 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
       url::Origin::Create(GURL("chrome-extension://blah"));
   original.referrer = GURL("https://referrer.com/");
   original.referrer_policy =
-      net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
+      net::ReferrerPolicy::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
   original.headers.SetHeader("Accept", "text/xml");
   original.cors_exempt_headers.SetHeader("X-Requested-With", "ForTesting");
   original.load_flags = 3;

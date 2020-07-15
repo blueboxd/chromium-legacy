@@ -71,6 +71,7 @@
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
@@ -380,7 +381,7 @@ String referrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
   return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
 }
 
-String referrerPolicy(net::URLRequest::ReferrerPolicy referrer_policy) {
+String referrerPolicy(net::ReferrerPolicy referrer_policy) {
   return referrerPolicy(
       Referrer::NetReferrerPolicyToBlinkReferrerPolicy(referrer_policy));
 }

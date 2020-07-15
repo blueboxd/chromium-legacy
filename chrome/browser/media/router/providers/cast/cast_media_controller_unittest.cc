@@ -85,6 +85,26 @@ Value CreateImagesValue(const std::vector<mojom::MediaImagePtr>& images) {
   return image_list;
 }
 
+Value CreateMediaStatus(const mojom::MediaStatus& status) {
+  Value status_value(Value::Type::DICTIONARY);
+  status_value.SetKey("mediaSessionId", Value(kMediaSessionId));
+  status_value.SetKey("media", Value(Value::Type::DICTIONARY));
+  status_value.SetPath("media.metadata", Value(Value::Type::DICTIONARY));
+  status_value.SetPath("media.metadata.title", Value(status.title));
+  status_value.SetPath("media.metadata.images",
+                       CreateImagesValue(status.images));
+  status_value.SetPath("media.duration", Value(status.duration.InSecondsF()));
+  status_value.SetPath("currentTime", Value(status.current_time.InSecondsF()));
+  status_value.SetPath("playerState", GetPlayerStateValue(status));
+  status_value.SetPath("supportedMediaCommands",
+                       GetSupportedMediaCommandsValue(status));
+  status_value.SetPath("volume", Value(Value::Type::DICTIONARY));
+  status_value.SetPath("volume.level", Value(status.volume));
+  status_value.SetPath("volume.muted", Value(status.is_muted));
+
+  return status_value;
+}
+
 mojom::MediaStatusPtr CreateSampleMediaStatus() {
   mojom::MediaStatusPtr status = mojom::MediaStatus::New();
   status->title = "media title";
@@ -158,27 +178,15 @@ class CastMediaControllerTest : public testing::Test {
   }
 
   void SetMediaStatus(const mojom::MediaStatus& status) {
-    Value status_value(Value::Type::DICTIONARY);
-    status_value.SetKey("mediaSessionId", Value(kMediaSessionId));
-    status_value.SetKey("media", Value(Value::Type::DICTIONARY));
-    status_value.SetPath("media.metadata", Value(Value::Type::DICTIONARY));
-    status_value.SetPath("media.metadata.title", Value(status.title));
-    status_value.SetPath("media.metadata.images",
-                         CreateImagesValue(status.images));
-    status_value.SetPath("media.duration", Value(status.duration.InSecondsF()));
-    status_value.SetPath("currentTime",
-                         Value(status.current_time.InSecondsF()));
-    status_value.SetPath("playerState", GetPlayerStateValue(status));
-    status_value.SetPath("supportedMediaCommands",
-                         GetSupportedMediaCommandsValue(status));
-    status_value.SetPath("volume", Value(Value::Type::DICTIONARY));
-    status_value.SetPath("volume.level", Value(status.volume));
-    status_value.SetPath("volume.muted", Value(status.is_muted));
+    SetMediaStatus(CreateMediaStatus(status));
+  }
 
+  void SetMediaStatus(Value status_value) {
     Value status_list(Value::Type::DICTIONARY);
     status_list.SetKey("status", Value(Value::Type::LIST));
     status_list.FindKey("status")->Append(std::move(status_value));
-    controller_->SetMediaStatus(std::move(status_list));
+
+    controller_->SetMediaStatus(status_list);
   }
 
  protected:
@@ -342,6 +350,24 @@ TEST_F(CastMediaControllerTest, UpdateMediaImages) {
         EXPECT_EQ(base::nullopt, status->images.at(1)->size);
       });
   SetMediaStatus(*expected_status);
+  VerifyAndClearExpectations();
+}
+
+TEST_F(CastMediaControllerTest, IgnoreInvalidImage) {
+  // Set one valid image and one invalid image.
+  mojom::MediaStatusPtr expected_status = CreateSampleMediaStatus();
+  expected_status->images.emplace_back(
+      base::in_place, GURL("https://example.com/1.png"), gfx::Size(123, 456));
+  const mojom::MediaImage& valid_image = *expected_status->images.at(0);
+  Value status_value = CreateMediaStatus(*expected_status);
+  status_value.FindListPath("media.metadata.images")->Append("invalid image");
+
+  EXPECT_CALL(*status_observer_, OnMediaStatusUpdated(_))
+      .WillOnce([&](const mojom::MediaStatusPtr& status) {
+        ASSERT_EQ(1u, status->images.size());
+        EXPECT_EQ(valid_image.url.spec(), status->images.at(0)->url.spec());
+      });
+  SetMediaStatus(std::move(status_value));
   VerifyAndClearExpectations();
 }
 

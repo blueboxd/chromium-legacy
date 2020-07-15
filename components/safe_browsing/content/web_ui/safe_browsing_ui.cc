@@ -1372,9 +1372,10 @@ std::string SerializeContentAnalysisRequest(
     request_data.SetStringKey("url", request.request_data().url());
     request_data.SetStringKey("filename", request.request_data().filename());
     request_data.SetStringKey("digest", request.request_data().digest());
-    // TODO(domfc): Improve this once csd is populated for this proto.
-    request_data.SetStringKey("csd",
-                              request.request_data().csd().SerializeAsString());
+    if (request.request_data().has_csd()) {
+      request_data.SetStringKey(
+          "csd", request.request_data().csd().SerializeAsString());
+    }
     request_dict.SetKey("request_data", std::move(request_data));
   }
 

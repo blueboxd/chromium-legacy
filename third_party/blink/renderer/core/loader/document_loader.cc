@@ -1698,15 +1698,18 @@ void DocumentLoader::CommitNavigation() {
   frame_->DomWindow()->GetSecurityContext().SetContentSecurityPolicy(
       content_security_policy_.Get());
   frame_->DomWindow()->GetSecurityContext().ApplySandboxFlags(sandbox_flags);
+  // Conceptually, SecurityOrigin doesn't have to be initialized after sandbox
+  // flags are applied, but there's a UseCounter in SetSecurityOrigin() that
+  // wants to inspect sandbox flags.
   frame_->DomWindow()->GetSecurityContext().SetSecurityOrigin(
       std::move(security_origin));
+  // Requires SecurityOrigin to be initialized.
+  OriginTrialContext::AddTokensFromHeader(
+      frame_->DomWindow(), response_.HttpHeaderField(http_names::kOriginTrial));
 
   SecurityContextInit security_init(frame_->DomWindow());
-  security_init.InitializeOriginTrials(
-      response_.HttpHeaderField(http_names::kOriginTrial));
-
-  frame_->DomWindow()->Initialize(security_init);
-
+  // FeaturePolicy and DocumentPolicy require SecurityOrigin and origin trials
+  // to be initialized.
   // TODO(iclelland): Add Feature-Policy-Report-Only to Origin Policy.
   security_init.ApplyFeaturePolicy(frame_.Get(), response_, origin_policy_,
                                    frame_policy_);

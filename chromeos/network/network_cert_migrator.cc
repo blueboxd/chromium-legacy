@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/client_cert_util.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -64,21 +65,28 @@ class NetworkCertMigrator::MigrationTask
 
       ShillServiceClient::Get()->GetProperties(
           dbus::ObjectPath(service_path),
-          base::BindOnce(&network_handler::GetPropertiesCallback,
-                         base::BindOnce(&MigrationTask::MigrateNetwork, this),
-                         network_handler::ErrorCallback(), service_path));
+          base::BindOnce(&MigrationTask::MigrateNetwork, this, service_path));
     }
   }
 
   void MigrateNetwork(const std::string& service_path,
-                      const base::DictionaryValue& properties) {
+                      DBusMethodCallStatus call_status,
+                      base::Value properties) {
     if (!cert_migrator_) {
       VLOG(2) << "NetworkCertMigrator already destroyed. Aborting migration.";
       return;
     }
 
+    if (call_status != DBUS_METHOD_CALL_SUCCESS) {
+      NET_LOG(ERROR) << "GetProperties failed: " << NetworkPathId(service_path)
+                     << " Status: " << call_status;
+      return;
+    }
+
     base::DictionaryValue new_properties;
-    MigrateClientCertProperties(service_path, properties, &new_properties);
+    MigrateClientCertProperties(service_path,
+                                base::Value::AsDictionaryValue(properties),
+                                &new_properties);
 
     if (new_properties.empty())
       return;

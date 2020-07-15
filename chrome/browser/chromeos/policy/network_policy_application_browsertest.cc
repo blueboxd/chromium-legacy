@@ -174,20 +174,20 @@ class NetworkPolicyApplicationTest : public LoginManagerTest {
 
   void SetDeviceOpenNetworkConfiguration(
       const std::string& device_onc_policy_blob) {
-    current_policy_.Set(
-        policy::key::kDeviceOpenNetworkConfiguration,
-        policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-        policy::POLICY_SOURCE_CLOUD,
-        std::make_unique<base::Value>(device_onc_policy_blob), nullptr);
+    current_policy_.Set(policy::key::kDeviceOpenNetworkConfiguration,
+                        policy::POLICY_LEVEL_MANDATORY,
+                        policy::POLICY_SCOPE_MACHINE,
+                        policy::POLICY_SOURCE_CLOUD,
+                        base::Value(device_onc_policy_blob), nullptr);
     policy_provider_.UpdateChromePolicy(current_policy_);
   }
 
   void SetUserOpenNetworkConfiguration(
       const std::string& user_onc_policy_blob) {
-    current_policy_.Set(
-        policy::key::kOpenNetworkConfiguration, policy::POLICY_LEVEL_MANDATORY,
-        policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-        std::make_unique<base::Value>(user_onc_policy_blob), nullptr);
+    current_policy_.Set(policy::key::kOpenNetworkConfiguration,
+                        policy::POLICY_LEVEL_MANDATORY,
+                        policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                        base::Value(user_onc_policy_blob), nullptr);
     policy_provider_.UpdateChromePolicy(current_policy_);
   }
 

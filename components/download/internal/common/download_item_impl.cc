@@ -60,6 +60,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/referrer_policy.h"
 
 #if defined(OS_ANDROID)
 #include "components/download/internal/common/android/download_collection_bridge.h"
@@ -2598,7 +2599,7 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   // (which is the contents of the Referer header for the last download request)
   // will only be sent to the URL returned by GetURL().
   download_params->set_referrer(GetReferrerUrl());
-  download_params->set_referrer_policy(net::URLRequest::NEVER_CLEAR_REFERRER);
+  download_params->set_referrer_policy(net::ReferrerPolicy::NEVER_CLEAR);
   download_params->set_cross_origin_redirects(
       network::mojom::RedirectMode::kError);
 

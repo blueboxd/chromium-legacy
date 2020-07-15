@@ -27,11 +27,10 @@ class CookieSettingsPolicyHandlerTest
  protected:
   void SetThirdPartyCookiePolicy(bool third_party_cookie_blocking_enabled) {
     policy::PolicyMap policy;
-    policy.Set(
-        policy::key::kBlockThirdPartyCookies, policy::POLICY_LEVEL_MANDATORY,
-        policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-        std::make_unique<base::Value>(third_party_cookie_blocking_enabled),
-        nullptr);
+    policy.Set(policy::key::kBlockThirdPartyCookies,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD,
+               base::Value(third_party_cookie_blocking_enabled), nullptr);
     UpdateProviderPolicy(policy);
   }
 };

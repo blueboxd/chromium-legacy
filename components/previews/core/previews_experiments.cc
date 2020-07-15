@@ -177,24 +177,13 @@ base::TimeDelta SingleOptOutDuration() {
                          "single_opt_out_duration_in_seconds", 60 * 5));
 }
 
-base::TimeDelta OfflinePreviewFreshnessDuration() {
-  return base::TimeDelta::FromDays(
-      GetParamValueAsInt(kClientSidePreviewsFieldTrial,
-                         "offline_preview_freshness_duration_in_days", 7));
-}
-
 net::EffectiveConnectionType GetECTThresholdForPreview(
     previews::PreviewsType type) {
   switch (type) {
-    case PreviewsType::OFFLINE:
-      return GetParamValueAsECTByFeature(features::kOfflinePreviews,
-                                         kEffectiveConnectionTypeThreshold,
-                                         net::EFFECTIVE_CONNECTION_TYPE_2G);
     case PreviewsType::NOSCRIPT:
       return GetParamValueAsECTByFeature(features::kNoScriptPreviews,
                                          kEffectiveConnectionTypeThreshold,
                                          net::EFFECTIVE_CONNECTION_TYPE_2G);
-    case PreviewsType::LITE_PAGE:
       NOTREACHED();
       break;
     case PreviewsType::NONE:
@@ -209,7 +198,9 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
                                          net::EFFECTIVE_CONNECTION_TYPE_2G);
     case PreviewsType::DEPRECATED_AMP_REDIRECTION:
     case PreviewsType::DEPRECATED_LOFI:
+    case PreviewsType::DEPRECATED_LITE_PAGE:
     case PreviewsType::DEPRECATED_LITE_PAGE_REDIRECT:
+    case PreviewsType::DEPRECATED_OFFLINE:
     case PreviewsType::LAST:
       break;
   }
@@ -225,10 +216,6 @@ net::EffectiveConnectionType GetSessionMaxECTThreshold() {
 
 bool ArePreviewsAllowed() {
   return base::FeatureList::IsEnabled(features::kPreviews);
-}
-
-bool IsOfflinePreviewsEnabled() {
-  return base::FeatureList::IsEnabled(features::kOfflinePreviews);
 }
 
 bool IsNoScriptPreviewsEnabled() {
@@ -262,10 +249,6 @@ bool IsDeferAllScriptPreviewsEnabled() {
         kUserConsistentPreviewEnabled, false);
   }
   return base::FeatureList::IsEnabled(features::kDeferAllScriptPreviews);
-}
-
-int OfflinePreviewsVersion() {
-  return GetParamValueAsInt(kClientSidePreviewsFieldTrial, kVersion, 0);
 }
 
 int NoScriptPreviewsVersion() {
@@ -369,10 +352,6 @@ std::string GetStringNameForType(PreviewsType type) {
   switch (type) {
     case PreviewsType::NONE:
       return "None";
-    case PreviewsType::OFFLINE:
-      return "Offline";
-    case PreviewsType::LITE_PAGE:
-      return "LitePage";
     case PreviewsType::NOSCRIPT:
       return "NoScript";
     case PreviewsType::UNSPECIFIED:
@@ -381,9 +360,11 @@ std::string GetStringNameForType(PreviewsType type) {
       return "ResourceLoadingHints";
     case PreviewsType::DEFER_ALL_SCRIPT:
       return "DeferAllScript";
-    case PreviewsType::DEPRECATED_LITE_PAGE_REDIRECT:
     case PreviewsType::DEPRECATED_AMP_REDIRECTION:
+    case PreviewsType::DEPRECATED_LITE_PAGE:
+    case PreviewsType::DEPRECATED_LITE_PAGE_REDIRECT:
     case PreviewsType::DEPRECATED_LOFI:
+    case PreviewsType::DEPRECATED_OFFLINE:
     case PreviewsType::LAST:
       break;
   }

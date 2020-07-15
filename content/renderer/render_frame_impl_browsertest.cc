@@ -211,7 +211,7 @@ TEST_F(RenderFrameImplTest, SubframeWidget) {
 TEST_F(RenderFrameImplTest, FrameResize) {
   // Make an update where the widget's size and the visible_viewport_size
   // are not the same.
-  VisualProperties visual_properties;
+  blink::VisualProperties visual_properties;
   gfx::Size widget_size(400, 200);
   gfx::Size visible_size(350, 170);
   visual_properties.new_size = widget_size;

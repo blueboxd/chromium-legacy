@@ -75,9 +75,6 @@ class DataReductionProxyChromeSettings
   // Public for testing.
   void MigrateDataReductionProxyOffProxyPrefs(PrefService* prefs);
 
-  void SetIgnoreLongTermBlockListRules(
-      bool ignore_long_term_block_list_rules) override;
-
   // Builds an instance of DataReductionProxyData from the given |handle| and
   // |headers|.
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData>

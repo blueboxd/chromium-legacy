@@ -19,10 +19,6 @@ extern char __executable_start;
 namespace base {
 namespace debug {
 
-// The linker flag --build-id is passed only on official builds and Fuchsia
-// builds.
-#if defined(OFFICIAL_BUILD) || defined(OS_FUCHSIA)
-
 #if defined(OFFICIAL_BUILD)
 constexpr size_t kExpectedBuildIdStringLength = 40;  // SHA1 hash in hex.
 #else
@@ -54,7 +50,6 @@ TEST(ElfReaderTest, ReadElfBuildIdLowercase) {
     EXPECT_TRUE(!IsAsciiAlpha(c) || IsAsciiLower(c));
   }
 }
-#endif  // defined(OFFICIAL_BUILD) || defined(OS_FUCHSIA)
 
 TEST(ElfReaderTest, ReadElfLibraryName) {
 #if defined(OS_ANDROID)

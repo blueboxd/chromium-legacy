@@ -25,3 +25,36 @@ export const Severity = {
  *            severity: Severity}}
  */
 export let LogMessage;
+
+/**
+ * RPC enum based on the HTTP request/response object. Needs to stay in sync
+ * with the NearbyInternalsHttpHandler C++ code, defined in
+ * chrome/browser/ui/webui/nearby_internals/nearby_internals_http_handler.cc.
+ * @enum {number}
+ */
+export const Rpc = {
+  CERTIFICATE: 0,
+  CONTACT: 1,
+  DEVICE: 2
+};
+
+/**
+ * Direction enum based on the HTTP request/response object. Needs to stay in
+ * sync with the NearbyInternalsHttpHandler C++ code, defined in
+ * chrome/browser/ui/webui/nearby_internals/nearby_internals_http_handler.cc.
+ * @enum {number}
+ */
+export const Direction = {
+  REQUEST: 0,
+  RESPONSE: 1
+};
+
+/**
+ * The HTTP request/response object, sent by NearbyInternalsHttpHandler
+ * chrome/browser/ui/webui/nearby_internals/nearby_internals_http_handler.cc.
+ * @typedef {{body: string,
+ *            time: string,
+ *            rpc: !Rpc,
+ *            direction: !Direction}}
+ */
+export let HttpMessage;

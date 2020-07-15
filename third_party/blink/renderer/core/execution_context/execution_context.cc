@@ -67,17 +67,12 @@ ExecutionContext::ExecutionContext(v8::Isolate* isolate, Agent* agent)
       csp_delegate_(MakeGarbageCollected<ExecutionContextCSPDelegate>(*this)),
       window_interaction_tokens_(0),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
-      address_space_(network::mojom::blink::IPAddressSpace::kUnknown) {
+      address_space_(network::mojom::blink::IPAddressSpace::kUnknown),
+      origin_trial_context_(MakeGarbageCollected<OriginTrialContext>(this)) {
   DCHECK(agent_);
 }
 
 ExecutionContext::~ExecutionContext() = default;
-
-void ExecutionContext::Initialize(const SecurityContextInit& init) {
-  security_context_.Initialize(init);
-  if (GetOriginTrialContext())
-    GetOriginTrialContext()->BindExecutionContext(this);
-}
 
 // static
 ExecutionContext* ExecutionContext::From(const ScriptState* script_state) {
@@ -379,6 +374,7 @@ void ExecutionContext::Trace(Visitor* visitor) const {
   visitor->Trace(csp_delegate_);
   visitor->Trace(timers_);
   visitor->Trace(context_lifecycle_observer_list_);
+  visitor->Trace(origin_trial_context_);
   ContextLifecycleNotifier::Trace(visitor);
   ConsoleLogger::Trace(visitor);
   Supplementable<ExecutionContext>::Trace(visitor);
@@ -401,25 +397,7 @@ v8::MicrotaskQueue* ExecutionContext::GetMicrotaskQueue() const {
 }
 
 bool ExecutionContext::FeatureEnabled(OriginTrialFeature feature) const {
-  return GetOriginTrialContext() &&
-         GetOriginTrialContext()->IsFeatureEnabled(feature);
-}
-
-void ExecutionContext::CountFeaturePolicyUsage(mojom::WebFeature feature) {
-  UseCounter::Count(*this, feature);
-}
-
-bool ExecutionContext::FeaturePolicyFeatureObserved(
-    mojom::blink::FeaturePolicyFeature feature) {
-  size_t feature_index = static_cast<size_t>(feature);
-  if (parsed_feature_policies_.size() == 0) {
-    parsed_feature_policies_.resize(
-        static_cast<size_t>(mojom::blink::FeaturePolicyFeature::kMaxValue) + 1);
-  } else if (parsed_feature_policies_[feature_index]) {
-    return true;
-  }
-  parsed_feature_policies_[feature_index] = true;
-  return false;
+  return origin_trial_context_->IsFeatureEnabled(feature);
 }
 
 void ExecutionContext::FeaturePolicyPotentialBehaviourChangeObserved(

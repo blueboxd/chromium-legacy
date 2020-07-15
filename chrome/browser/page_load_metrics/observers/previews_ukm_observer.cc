@@ -16,7 +16,6 @@
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/offline_pages/buildflags/buildflags.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
@@ -27,15 +26,9 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-#include "chrome/browser/offline_pages/offline_page_tab_helper.h"
-#endif
-
 namespace previews {
 
 namespace {
-
-const char kOfflinePreviewsMimeType[] = "multipart/related";
 
 bool ShouldOptionalEligibilityReasonBeRecorded(
     base::Optional<previews::PreviewsEligibilityReason> reason) {
@@ -75,30 +68,14 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
 
   // Only check for preview types that are decided before commit in the
   // |allowed_previews_state|.
-  previews_likely_ =
-      HasEnabledPreviews(previews_user_data->PreHoldbackAllowedPreviewsState() &
-                         kPreCommitPreviews);
   content::PreviewsState previews_state =
       previews_user_data->PreHoldbackCommittedPreviewsState();
 
   // Check all preview types in the |committed_previews_state|. In practice
   // though, this will only set |previews_likely_| if it wasn't before for an
   // Optimization Hints preview.
-  previews_likely_ |= HasEnabledPreviews(previews_state);
+  previews_likely_ = HasEnabledPreviews(previews_state);
 
-  if (navigation_handle->GetWebContents()->GetContentsMimeType() ==
-      kOfflinePreviewsMimeType) {
-    if (!IsOfflinePreview(navigation_handle->GetWebContents()))
-      return STOP_OBSERVING;
-    offline_preview_seen_ = true;
-    DCHECK_EQ(previews::GetMainFramePreviewsType(previews_state),
-              previews::PreviewsType::OFFLINE);
-  }
-
-  if (previews_state && previews::GetMainFramePreviewsType(previews_state) ==
-                            previews::PreviewsType::LITE_PAGE) {
-    lite_page_seen_ = true;
-  }
   if (previews_state && previews::GetMainFramePreviewsType(previews_state) ==
                             previews::PreviewsType::NOSCRIPT) {
     noscript_seen_ = true;
@@ -115,9 +92,6 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
     origin_opt_out_occurred_ = true;
   }
 
-  lite_page_eligibility_reason_ =
-      previews_user_data->EligibilityReasonForPreview(
-          previews::PreviewsType::LITE_PAGE);
   noscript_eligibility_reason_ =
       previews_user_data->EligibilityReasonForPreview(
           previews::PreviewsType::NOSCRIPT);
@@ -127,20 +101,8 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
   defer_all_script_eligibility_reason_ =
       previews_user_data->EligibilityReasonForPreview(
           previews::PreviewsType::DEFER_ALL_SCRIPT);
-  offline_eligibility_reason_ = previews_user_data->EligibilityReasonForPreview(
-      previews::PreviewsType::OFFLINE);
 
   return CONTINUE_OBSERVING;
-}
-
-page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-PreviewsUKMObserver::ShouldObserveMimeType(const std::string& mime_type) const {
-  if (PageLoadMetricsObserver::ShouldObserveMimeType(mime_type) ==
-          CONTINUE_OBSERVING ||
-      mime_type == kOfflinePreviewsMimeType) {
-    return CONTINUE_OBSERVING;
-  }
-  return STOP_OBSERVING;
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
@@ -190,23 +152,19 @@ void PreviewsUKMObserver::RecordPreviewsTypes() {
       page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
 
   // Only record previews types when they are active.
-  if (!lite_page_seen_ && !noscript_seen_ && !resource_loading_hints_seen_ &&
-      !defer_all_script_seen_ && !offline_preview_seen_ &&
-      !origin_opt_out_occurred_ && !save_data_enabled_) {
+  if (!noscript_seen_ && !resource_loading_hints_seen_ &&
+      !defer_all_script_seen_ && !origin_opt_out_occurred_ &&
+      !save_data_enabled_) {
     return;
   }
 
   ukm::builders::Previews builder(GetDelegate().GetSourceId());
-  if (lite_page_seen_)
-    builder.Setlite_page(1);
   if (noscript_seen_)
     builder.Setnoscript(1);
   if (resource_loading_hints_seen_)
     builder.Setresource_loading_hints(1);
   if (defer_all_script_seen_)
     builder.Setdefer_all_script(1);
-  if (offline_preview_seen_)
-    builder.Setoffline_preview(1);
   // 2 is set here for legacy reasons as it denotes an optout through the
   // omnibox ui as opposed to the now deprecated infobar.
   if (opt_out_occurred_)
@@ -218,11 +176,6 @@ void PreviewsUKMObserver::RecordPreviewsTypes() {
   if (previews_likely_)
     builder.Setpreviews_likely(1);
 
-  if (ShouldOptionalEligibilityReasonBeRecorded(
-          lite_page_eligibility_reason_)) {
-    builder.Setproxy_lite_page_eligibility_reason(
-        static_cast<int>(lite_page_eligibility_reason_.value()));
-  }
   if (ShouldOptionalEligibilityReasonBeRecorded(noscript_eligibility_reason_)) {
     builder.Setnoscript_eligibility_reason(
         static_cast<int>(noscript_eligibility_reason_.value()));
@@ -236,10 +189,6 @@ void PreviewsUKMObserver::RecordPreviewsTypes() {
           defer_all_script_eligibility_reason_)) {
     builder.Setdefer_all_script_eligibility_reason(
         static_cast<int>(defer_all_script_eligibility_reason_.value()));
-  }
-  if (ShouldOptionalEligibilityReasonBeRecorded(offline_eligibility_reason_)) {
-    builder.Setoffline_eligibility_reason(
-        static_cast<int>(offline_eligibility_reason_.value()));
   }
   builder.Record(ukm::UkmRecorder::Get());
 }
@@ -265,17 +214,6 @@ bool PreviewsUKMObserver::IsDataSaverEnabled(
   }
 
   return data_reduction_proxy_settings->IsDataReductionProxyEnabled();
-}
-
-bool PreviewsUKMObserver::IsOfflinePreview(
-    content::WebContents* web_contents) const {
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  offline_pages::OfflinePageTabHelper* tab_helper =
-      offline_pages::OfflinePageTabHelper::FromWebContents(web_contents);
-  return tab_helper && tab_helper->GetOfflinePreviewItem();
-#else
-  return false;
-#endif
 }
 
 }  // namespace previews

@@ -101,10 +101,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
-#include "net/http/http_transaction_factory.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_job.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

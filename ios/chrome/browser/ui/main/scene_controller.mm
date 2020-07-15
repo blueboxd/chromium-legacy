@@ -297,78 +297,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
       [ContentSuggestionsSchedulerNotifications
           notifyForeground:self.mainInterface.browserState];
     }
-    if (IsSceneStartupSupported()) {
-      if (@available(iOS 13, *)) {
-        // Handle URL opening from
-        // |UIWindowSceneDelegate scene:willConnectToSession:options:|.
-        for (UIOpenURLContext* context in self.sceneState.connectionOptions
-                 .URLContexts) {
-          URLOpenerParams* params =
-              [[URLOpenerParams alloc] initWithUIOpenURLContext:context];
-          [self openTabFromLaunchWithParams:params
-                         startupInformation:self.mainController
-                                   appState:self.sceneState.appState];
-        }
-        if (self.sceneState.connectionOptions.shortcutItem) {
-          [UserActivityHandler
-              performActionForShortcutItem:self.sceneState.connectionOptions
-                                               .shortcutItem
-                         completionHandler:nil
-                                 tabOpener:self
-                     connectionInformation:self
-                        startupInformation:self.mainController
-                         interfaceProvider:self.interfaceProvider];
-        }
 
-        // See if this scene launched as part of a multiwindow URL opening.
-        // If so, load that URL (this also creates a new tab to load the URL
-        // in). No other UI will show in this case.
-        NSUserActivity* activityWithCompletion;
-        for (NSUserActivity* activity in self.sceneState.connectionOptions
-                 .userActivities) {
-          if (ActivityIsURLLoad(activity)) {
-            UrlLoadParams params = LoadParamsFromActivity(activity);
-            UrlLoadingBrowserAgent::FromBrowser(self.mainInterface.browser)
-                ->Load(params);
-          } else if (!activityWithCompletion) {
-            // Completion involves user interaction.
-            // Only one can be triggered.
-            activityWithCompletion = activity;
-          }
-        }
-        if (activityWithCompletion) {
-          [UserActivityHandler continueUserActivity:activityWithCompletion
-                                applicationIsActive:YES
-                                          tabOpener:self
-                              connectionInformation:self
-                                 startupInformation:self.mainController];
-        }
-        self.sceneState.connectionOptions = nil;
-      }
-
-      if (self.startupParameters) {
-        ApplicationModeForTabOpening mode =
-            self.startupParameters.applicationMode;
-        UrlLoadParams params =
-            UrlLoadParams::InNewTab(self.startupParameters.externalURL);
-        BOOL dismissOmnibox =
-            [self.startupParameters postOpeningAction] != FOCUS_OMNIBOX;
-        [self dismissModalsAndOpenSelectedTabInMode:mode
-                                  withUrlLoadParams:params
-                                     dismissOmnibox:dismissOmnibox
-                                         completion:^{
-                                           self.startupParameters = nil;
-                                         }];
-      }
-
-    } else {
-      NSDictionary* launchOptions = self.mainController.launchOptions;
-      URLOpenerParams* params =
-          [[URLOpenerParams alloc] initWithLaunchOptions:launchOptions];
-      [self openTabFromLaunchWithParams:params
-                     startupInformation:self.mainController
-                               appState:self.sceneState.appState];
-    }
+    [self handleExternalIntents];
 
     if (!initializingUIInColdStart && self.tabSwitcherIsActive &&
         [self shouldOpenNTPTabOnActivationOfBrowser:self.currentInterface
@@ -402,6 +332,85 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   }
 }
 
+- (void)handleExternalIntents {
+  if (self.mainController.isPresentingFirstRunUI ||
+      self.blockingOverlayViewController) {
+    return;
+  }
+  if (IsSceneStartupSupported()) {
+    if (@available(iOS 13, *)) {
+      // Handle URL opening from
+      // |UIWindowSceneDelegate scene:willConnectToSession:options:|.
+      for (UIOpenURLContext* context in self.sceneState.connectionOptions
+               .URLContexts) {
+        URLOpenerParams* params =
+            [[URLOpenerParams alloc] initWithUIOpenURLContext:context];
+        [self openTabFromLaunchWithParams:params
+                       startupInformation:self.mainController
+                                 appState:self.sceneState.appState];
+      }
+      if (self.sceneState.connectionOptions.shortcutItem) {
+        [UserActivityHandler
+            performActionForShortcutItem:self.sceneState.connectionOptions
+                                             .shortcutItem
+                       completionHandler:nil
+                               tabOpener:self
+                   connectionInformation:self
+                      startupInformation:self.mainController
+                       interfaceProvider:self.interfaceProvider];
+      }
+
+      // See if this scene launched as part of a multiwindow URL opening.
+      // If so, load that URL (this also creates a new tab to load the URL
+      // in). No other UI will show in this case.
+      NSUserActivity* activityWithCompletion;
+      for (NSUserActivity* activity in self.sceneState.connectionOptions
+               .userActivities) {
+        if (ActivityIsURLLoad(activity)) {
+          UrlLoadParams params = LoadParamsFromActivity(activity);
+          UrlLoadingBrowserAgent::FromBrowser(self.mainInterface.browser)
+              ->Load(params);
+        } else if (!activityWithCompletion) {
+          // Completion involves user interaction.
+          // Only one can be triggered.
+          activityWithCompletion = activity;
+        }
+      }
+      if (activityWithCompletion) {
+        [UserActivityHandler continueUserActivity:activityWithCompletion
+                              applicationIsActive:YES
+                                        tabOpener:self
+                            connectionInformation:self
+                               startupInformation:self.mainController];
+      }
+      self.sceneState.connectionOptions = nil;
+    }
+
+    if (self.startupParameters) {
+      ApplicationModeForTabOpening mode =
+          self.startupParameters.applicationMode;
+      UrlLoadParams params =
+          UrlLoadParams::InNewTab(self.startupParameters.externalURL);
+      BOOL dismissOmnibox =
+          [self.startupParameters postOpeningAction] != FOCUS_OMNIBOX;
+      [self dismissModalsAndOpenSelectedTabInMode:mode
+                                withUrlLoadParams:params
+                                   dismissOmnibox:dismissOmnibox
+                                       completion:^{
+                                         self.startupParameters = nil;
+                                       }];
+    }
+
+  } else {
+    NSDictionary* launchOptions = self.mainController.launchOptions;
+    URLOpenerParams* params =
+        [[URLOpenerParams alloc] initWithLaunchOptions:launchOptions];
+    [self openTabFromLaunchWithParams:params
+                   startupInformation:self.mainController
+                             appState:self.sceneState.appState];
+  }
+}
+
 - (void)sceneStateWillShowModalOverlay:(SceneState*)sceneState {
   [self displayBlockingOverlay];
 }
@@ -425,6 +434,10 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
             requestSceneSessionRefresh:sceneState.scene.session];
       }
     }
+  }
+
+  if (sceneState.activationLevel >= SceneActivationLevelForegroundActive) {
+    [self handleExternalIntents];
   }
 }
 
@@ -491,6 +504,10 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   }
   BOOL sceneIsActive =
       self.sceneState.activationLevel >= SceneActivationLevelForegroundActive;
+  if (self.mainController.isPresentingFirstRunUI ||
+      self.blockingOverlayViewController) {
+    sceneIsActive = NO;
+  }
   [UserActivityHandler continueUserActivity:userActivity
                         applicationIsActive:sceneIsActive
                                   tabOpener:self
@@ -736,16 +753,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
       removeObserver:self
                 name:kChromeFirstRunUIWillFinishNotification
               object:nil];
-  if (self.startupParameters) {
-    UrlLoadParams params =
-        UrlLoadParams::InNewTab(self.startupParameters.externalURL);
-    [self dismissModalsAndOpenSelectedTabInMode:ApplicationModeForTabOpening::
-                                                    NORMAL
-                              withUrlLoadParams:params
-                                 dismissOmnibox:YES
-                                     completion:^{
-                                       [self setStartupParameters:nil];
-                                     }];
+  if (self.sceneState.activationLevel >= SceneActivationLevelForegroundActive) {
+    [self handleExternalIntents];
   }
 }
 
@@ -1977,6 +1986,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   DCHECK(URLsToOpen.count == URLContexts.count || URLContexts.count == 1);
   BOOL active =
       _sceneState.activationLevel >= SceneActivationLevelForegroundActive;
+  if (self.mainController.isPresentingFirstRunUI ||
+      self.blockingOverlayViewController) {
+    active = NO;
+  }
+
   for (URLOpenerParams* options : URLsToOpen) {
     [URLOpener openURL:options
             applicationActive:active

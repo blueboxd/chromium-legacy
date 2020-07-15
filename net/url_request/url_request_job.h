@@ -27,6 +27,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/socket/connection_attempts.h"
 #include "net/url_request/redirect_info.h"
+#include "net/url_request/referrer_policy.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
@@ -249,7 +250,7 @@ class NET_EXPORT URLRequestJob {
   // (This allows reporting in a UMA whether the request is same-origin, without
   // recomputing that information.)
   static GURL ComputeReferrerForPolicy(
-      URLRequest::ReferrerPolicy policy,
+      ReferrerPolicy policy,
       const GURL& original_referrer,
       const GURL& destination,
       bool* same_origin_out_for_metrics = nullptr);

@@ -122,6 +122,23 @@ class VIEWS_EXPORT Textfield : public View,
   void SetText(const base::string16& new_text);
   void SetText(const base::string16& new_text, size_t cursor_position);
 
+  // Similar to calling SetText followed by SetSelectedRange calls, but will
+  // dedupe some calls. Notably, this prevents OnCaretBoundsChanged from being
+  // called multiple times for a single change which can cause issues for
+  // accessibility tools.
+  // - |text| and |cursor_position| see SetText() comment above.
+  // - |scroll_positions| a vector of positions to scroll into view. This can
+  // contain multiple positions which can be useful to e.g. ensure multiple
+  // positions are in view (if possible). Scrolls are applied in the order of
+  // |scroll_positions|; i.e., later positions will have priority over earlier
+  // positions.
+  // - |range| is used to invoke SetSelectedRange and will also be scrolled to.
+  void SetTextAndScrollAndSelectRange(
+      const base::string16& text,
+      const size_t cursor_position,
+      const std::vector<size_t>& scroll_positions,
+      const gfx::Range range);
+
   // Appends the given string to the previously-existing text in the field.
   void AppendText(const base::string16& new_text);
 

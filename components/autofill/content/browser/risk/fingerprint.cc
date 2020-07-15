@@ -37,7 +37,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/screen_info.h"
 #include "content/public/common/webplugininfo.h"
 #include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -136,7 +135,7 @@ void AddAcceptLanguagesToFingerprint(
 //   (d) the size of the screen unavailable to web page content,
 //       i.e. the Taskbar size on Windows
 // into the |machine|.
-void AddScreenInfoToFingerprint(const content::ScreenInfo& screen_info,
+void AddScreenInfoToFingerprint(const blink::ScreenInfo& screen_info,
                                 Fingerprint::MachineCharacteristics* machine) {
   machine->set_screen_count(display::Screen::GetScreen()->GetNumDisplays());
 
@@ -188,7 +187,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
       uint64_t obfuscated_gaia_id,
       const gfx::Rect& window_bounds,
       const gfx::Rect& content_bounds,
-      const content::ScreenInfo& screen_info,
+      const blink::ScreenInfo& screen_info,
       const std::string& version,
       const std::string& charset,
       const std::string& accept_languages,
@@ -230,7 +229,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   const uint64_t obfuscated_gaia_id_;
   const gfx::Rect window_bounds_;
   const gfx::Rect content_bounds_;
-  const content::ScreenInfo screen_info_;
+  const blink::ScreenInfo screen_info_;
   const std::string version_;
   const std::string charset_;
   const std::string accept_languages_;
@@ -264,7 +263,7 @@ FingerprintDataLoader::FingerprintDataLoader(
     uint64_t obfuscated_gaia_id,
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
-    const content::ScreenInfo& screen_info,
+    const blink::ScreenInfo& screen_info,
     const std::string& version,
     const std::string& charset,
     const std::string& accept_languages,
@@ -447,7 +446,7 @@ void GetFingerprintInternal(
     uint64_t obfuscated_gaia_id,
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
-    const content::ScreenInfo& screen_info,
+    const blink::ScreenInfo& screen_info,
     const std::string& version,
     const std::string& charset,
     const std::string& accept_languages,
@@ -479,7 +478,7 @@ void GetFingerprint(
     base::OnceCallback<void(std::unique_ptr<Fingerprint>)> callback) {
   gfx::Rect content_bounds = web_contents->GetContainerBounds();
 
-  content::ScreenInfo screen_info;
+  blink::ScreenInfo screen_info;
   content::RenderWidgetHostView* host_view =
       web_contents->GetRenderWidgetHostView();
   if (host_view)

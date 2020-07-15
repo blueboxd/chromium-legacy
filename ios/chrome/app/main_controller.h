@@ -11,16 +11,11 @@
 #import "ios/chrome/app/application_delegate/browser_launcher.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/main_controller_guts.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 
 @class AppState;
 @class MetricsMediator;
 @protocol BrowsingDataCommands;
-@protocol ConnectionInformation;
-@protocol SceneControllerGuts;
-@protocol TabOpening;
-@protocol TabSwitcherDelegate;
 
 // The main controller of the application, owned by the MainWindow nib. Also
 // serves as the delegate for the app. Owns all the various top-level
@@ -44,14 +39,6 @@
 // This metrics mediator is used to check and update the metrics accordingly to
 // to the user preferences.
 @property(nonatomic, weak) MetricsMediator* metricsMediator;
-
-// For temporary plumbing only.
-@property(nonatomic, weak) id<ApplicationCommands,
-                              TabSwitcherDelegate,
-                              ConnectionInformation,
-                              SceneControllerGuts,
-                              TabOpening>
-    sceneController;
 
 @end
 

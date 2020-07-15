@@ -82,7 +82,7 @@ public class DefaultBrowserPromoManager implements PauseResumeWithNativeObserver
             } else {
                 promoByDisambiguationSheet();
             }
-        } else if (sdkInt >= Build.VERSION_CODES.M) {
+        } else if (sdkInt >= Build.VERSION_CODES.N) {
             promoBySystemSettings();
         } else {
             destroy();

@@ -462,11 +462,19 @@ void TraceEventDataSource::RegisterStartupHooks() {
       &TraceEventDataSource::OnAddTypedTraceEvent);
 }
 
-void TraceEventDataSource::RegisterWithTraceLog() {
+void TraceEventDataSource::RegisterWithTraceLog(
+    const base::trace_event::TraceConfig& trace_config) {
   TraceLog::GetInstance()->SetAddTraceEventOverrides(
       &TraceEventDataSource::OnAddLegacyTraceEvent,
       &TraceEventDataSource::FlushCurrentThread,
       &TraceEventDataSource::OnUpdateDuration);
+
+  if (trace_config.IsCategoryGroupEnabled(
+          TRACE_DISABLED_BY_DEFAULT("histogram_samples"))) {
+    base::StatisticsRecorder::SetGlobalSampleCallback(
+        &TraceEventDataSource::OnMetricsSampleCallback);
+  }
+
   base::AutoLock l(lock_);
   is_enabled_ = true;
 }
@@ -576,7 +584,6 @@ void TraceEventDataSource::SetupStartupTracing(
     trace_writer_ = CreateTraceWriterLocked();
   }
   EmitTrackDescriptor();
-  RegisterWithTraceLog();
 
   base::trace_event::TraceConfig config_for_trace_log(trace_config);
   // Perfetto backend configures buffer sizes when tracing is started in the
@@ -589,6 +596,9 @@ void TraceEventDataSource::SetupStartupTracing(
   if (!trace_config.event_filters().empty()) {
     modes |= base::trace_event::TraceLog::FILTERING_MODE;
   }
+
+  RegisterWithTraceLog(config_for_trace_log);
+
   base::trace_event::TraceLog::GetInstance()->SetEnabled(trace_config, modes);
 }
 
@@ -740,6 +750,9 @@ void TraceEventDataSource::StartTracingInternal(
     }
   }
 
+  auto trace_config =
+      TraceConfig(data_source_config.chrome_config().trace_config());
+
   // SetupStartupTracing() will not setup a new startup session after we set
   // |producer_| above, so accessing |startup_tracing_active| outside the lock
   // is safe.
@@ -751,23 +764,16 @@ void TraceEventDataSource::StartTracingInternal(
     producer->BindStartupTargetBuffer(session_id,
                                       data_source_config.target_buffer());
   } else {
-    RegisterWithTraceLog();
+    RegisterWithTraceLog(trace_config);
   }
 
   // We emit the track/process descriptor another time even if we were
   // previously startup tracing, because the process name may have changed.
   EmitTrackDescriptor();
 
-  auto trace_config =
-      TraceConfig(data_source_config.chrome_config().trace_config());
   TraceLog::GetInstance()->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
   ResetHistograms(trace_config);
 
-  if (trace_config.IsCategoryGroupEnabled(
-          TRACE_DISABLED_BY_DEFAULT("histogram_samples"))) {
-    base::StatisticsRecorder::SetGlobalSampleCallback(
-        &TraceEventDataSource::OnMetricsSampleCallback);
-  }
   if (trace_config.IsCategoryGroupEnabled(
           TRACE_DISABLED_BY_DEFAULT("user_action_samples"))) {
     auto task_runner = base::GetRecordActionTaskRunner();
@@ -1016,8 +1022,8 @@ void TraceEventDataSource::OnMetricsSampleCallback(
     const char* histogram_name,
     uint64_t name_hash,
     base::HistogramBase::Sample sample) {
-  // TODO(oysteine): Write an interned histogram name during local dev tracing
-  // when we're less space constrained.
+  bool privacy_filtering_enabled =
+      TraceEventDataSource::GetInstance()->IsPrivacyFilteringEnabled();
   TRACE_EVENT_INSTANT(
       TRACE_DISABLED_BY_DEFAULT("histogram_samples"), "HistogramSample",
       TRACE_EVENT_SCOPE_THREAD, [&](perfetto::EventContext ctx) {
@@ -1025,6 +1031,9 @@ void TraceEventDataSource::OnMetricsSampleCallback(
             ctx.event()->set_chrome_histogram_sample();
         new_sample->set_name_hash(name_hash);
         new_sample->set_sample(sample);
+        if (!privacy_filtering_enabled) {
+          new_sample->set_name(histogram_name);
+        }
       });
 }
 

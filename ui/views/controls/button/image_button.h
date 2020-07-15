@@ -133,6 +133,9 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   // Set the tooltip text displayed when the button is toggled.
   void SetToggledTooltipText(const base::string16& tooltip);
 
+  // Set the accessible text used when the button is toggled.
+  void SetToggledAccessibleName(const base::string16& name);
+
   // Overridden from ImageButton:
   const gfx::ImageSkia& GetImage(ButtonState state) const override;
   void SetImage(ButtonState state, const gfx::ImageSkia& image) override;
@@ -155,6 +158,10 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   // The parent class's tooltip_text_ is displayed when not toggled, and
   // this one is shown when toggled.
   base::string16 toggled_tooltip_text_;
+
+  // The parent class's accessibility data is used when not toggled, and this
+  // one is used when toggled.
+  base::string16 toggled_accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(ToggleImageButton);
 };

@@ -19,8 +19,6 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
 

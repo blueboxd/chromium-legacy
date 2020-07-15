@@ -73,80 +73,70 @@ bool EnumTraits<network::mojom::RequestPriority, net::RequestPriority>::
   return true;
 }
 
-network::mojom::URLRequestReferrerPolicy EnumTraits<
-    network::mojom::URLRequestReferrerPolicy,
-    net::URLRequest::ReferrerPolicy>::ToMojom(net::URLRequest::ReferrerPolicy
-                                                  policy) {
+network::mojom::URLRequestReferrerPolicy
+EnumTraits<network::mojom::URLRequestReferrerPolicy,
+           net::ReferrerPolicy>::ToMojom(net::ReferrerPolicy policy) {
   switch (policy) {
-    case net::URLRequest::ReferrerPolicy::
-        CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
+    case net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
       return network::mojom::URLRequestReferrerPolicy::
           kClearReferrerOnTransitionFromSecureToInsecure;
-    case net::URLRequest::ReferrerPolicy::
-        REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN:
+    case net::ReferrerPolicy::REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN:
       return network::mojom::URLRequestReferrerPolicy::
           kReduceReferrerGranularityOnTransitionCrossOrigin;
-    case net::URLRequest::ReferrerPolicy::
-        ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN:
+    case net::ReferrerPolicy::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN:
       return network::mojom::URLRequestReferrerPolicy::
           kOriginOnlyOnTransitionCrossOrigin;
-    case net::URLRequest::ReferrerPolicy::NEVER_CLEAR_REFERRER:
+    case net::ReferrerPolicy::NEVER_CLEAR:
       return network::mojom::URLRequestReferrerPolicy::kNeverClearReferrer;
-    case net::URLRequest::ReferrerPolicy::ORIGIN:
+    case net::ReferrerPolicy::ORIGIN:
       return network::mojom::URLRequestReferrerPolicy::kOrigin;
-    case net::URLRequest::ReferrerPolicy::
-        CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN:
+    case net::ReferrerPolicy::CLEAR_ON_TRANSITION_CROSS_ORIGIN:
       return network::mojom::URLRequestReferrerPolicy::
           kClearReferrerOnTransitionCrossOrigin;
-    case net::URLRequest::ReferrerPolicy::
+    case net::ReferrerPolicy::
         ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
       return network::mojom::URLRequestReferrerPolicy::
           kOriginClearOnTransitionFromSecureToInsecure;
-    case net::URLRequest::ReferrerPolicy::NO_REFERRER:
+    case net::ReferrerPolicy::NO_REFERRER:
       return network::mojom::URLRequestReferrerPolicy::kNoReferrer;
   }
   NOTREACHED();
   return static_cast<network::mojom::URLRequestReferrerPolicy>(policy);
 }
 
-bool EnumTraits<network::mojom::URLRequestReferrerPolicy,
-                net::URLRequest::ReferrerPolicy>::
+bool EnumTraits<network::mojom::URLRequestReferrerPolicy, net::ReferrerPolicy>::
     FromMojom(network::mojom::URLRequestReferrerPolicy in,
-              net::URLRequest::ReferrerPolicy* out) {
+              net::ReferrerPolicy* out) {
   switch (in) {
     case network::mojom::URLRequestReferrerPolicy::
         kClearReferrerOnTransitionFromSecureToInsecure:
-      *out = net::URLRequest::ReferrerPolicy::
-          CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
+      *out = net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
       return true;
     case network::mojom::URLRequestReferrerPolicy::
         kReduceReferrerGranularityOnTransitionCrossOrigin:
-      *out = net::URLRequest::ReferrerPolicy::
-          REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
+      *out = net::ReferrerPolicy::REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
       return true;
     case network::mojom::URLRequestReferrerPolicy::
         kOriginOnlyOnTransitionCrossOrigin:
-      *out = net::URLRequest::ReferrerPolicy::
-          ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
+      *out = net::ReferrerPolicy::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
       return true;
     case network::mojom::URLRequestReferrerPolicy::kNeverClearReferrer:
-      *out = net::URLRequest::ReferrerPolicy::NEVER_CLEAR_REFERRER;
+      *out = net::ReferrerPolicy::NEVER_CLEAR;
       return true;
     case network::mojom::URLRequestReferrerPolicy::kOrigin:
-      *out = net::URLRequest::ReferrerPolicy::ORIGIN;
+      *out = net::ReferrerPolicy::ORIGIN;
       return true;
     case network::mojom::URLRequestReferrerPolicy::
         kClearReferrerOnTransitionCrossOrigin:
-      *out = net::URLRequest::ReferrerPolicy::
-          CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN;
+      *out = net::ReferrerPolicy::CLEAR_ON_TRANSITION_CROSS_ORIGIN;
       return true;
     case network::mojom::URLRequestReferrerPolicy::
         kOriginClearOnTransitionFromSecureToInsecure:
-      *out = net::URLRequest::ReferrerPolicy::
+      *out = net::ReferrerPolicy::
           ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
       return true;
     case network::mojom::URLRequestReferrerPolicy::kNoReferrer:
-      *out = net::URLRequest::ReferrerPolicy::NO_REFERRER;
+      *out = net::ReferrerPolicy::NO_REFERRER;
       return true;
   }
 

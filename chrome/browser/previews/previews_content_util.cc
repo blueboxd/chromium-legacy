@@ -18,7 +18,6 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
@@ -87,31 +86,10 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   if (!is_data_saver_user)
     return previews_state;
 
-  auto* previews_service =
-      navigation_handle && navigation_handle->GetWebContents()
-          ? PreviewsServiceFactory::GetForProfile(Profile::FromBrowserContext(
-                navigation_handle->GetWebContents()->GetBrowserContext()))
-          : nullptr;
-
   if (previews_triggering_logic_already_ran) {
     // Record that the navigation was redirected.
     previews_data->set_is_redirect(true);
   }
-
-  bool allow_offline = true;
-  // If |previews_service| is null, skip the previews offline helper check.
-  // This only happens in testing.
-  if (previews_service) {
-    allow_offline = previews_service->previews_offline_helper()
-                        ->ShouldAttemptOfflinePreview(url);
-  }
-  allow_offline =
-      allow_offline && previews_decider->ShouldAllowPreviewAtNavigationStart(
-                           previews_data, navigation_handle, is_reload,
-                           previews::PreviewsType::OFFLINE);
-
-  if (allow_offline)
-    previews_state |= content::OFFLINE_PAGE_ON;
 
   // Check commit-time preview types first.
   bool allow_commit_time_previews = false;
@@ -133,27 +111,8 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     previews_state |= content::NOSCRIPT_ON;
     allow_commit_time_previews = true;
   }
-  bool commit_time_previews_are_available = false;
-  if (allow_commit_time_previews) {
-    commit_time_previews_are_available =
-        previews_decider->AreCommitTimePreviewsAvailable(navigation_handle);
-  }
 
   return previews_state;
-}
-
-content::PreviewsState DetermineCommittedServerPreviewsState(
-    data_reduction_proxy::DataReductionProxyData* data,
-    content::PreviewsState initial_state) {
-  if (!data) {
-    return initial_state &= ~(content::SERVER_LITE_PAGE_ON);
-  }
-  content::PreviewsState updated_state = initial_state;
-  if (!data->lite_page_received()) {
-    // Turn off LitePage bit.
-    updated_state &= ~(content::SERVER_LITE_PAGE_ON);
-  }
-  return updated_state;
 }
 
 void LogCommittedPreview(previews::PreviewsUserData* previews_data,
@@ -221,23 +180,6 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     content::PreviewsState previews_state,
     const previews::PreviewsDecider* previews_decider,
     content::NavigationHandle* navigation_handle) {
-  // Check if an offline preview was actually served.
-  if (previews_data && previews_data->offline_preview_used()) {
-    DCHECK(previews_state & content::OFFLINE_PAGE_ON);
-    LogCommittedPreview(previews_data, PreviewsType::OFFLINE);
-    return content::OFFLINE_PAGE_ON;
-  }
-  previews_state &= ~content::OFFLINE_PAGE_ON;
-
-  // If a server preview is set, retain only the bits determined for the server.
-  // |previews_state| must already have been updated for server previews from
-  // the main frame response headers (so if they are set here, then they are
-  // the specify the committed preview).
-  if (previews_state & content::SERVER_LITE_PAGE_ON) {
-    LogCommittedPreview(previews_data, PreviewsType::LITE_PAGE);
-    return previews_state & content::SERVER_LITE_PAGE_ON;
-  }
-
   if (previews_data && previews_data->cache_control_no_transform_directive()) {
     if (HasEnabledPreviews(previews_state)) {
       UMA_HISTOGRAM_ENUMERATION(
@@ -362,42 +304,6 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   return content::PREVIEWS_OFF;
 }
 
-content::PreviewsState MaybeCoinFlipHoldbackBeforeCommit(
-    content::PreviewsState initial_state,
-    content::NavigationHandle* navigation_handle) {
-  if (!base::FeatureList::IsEnabled(features::kCoinFlipHoldback))
-    return initial_state;
-
-  // Get PreviewsUserData to store the result of the coin flip. If it can't be
-  // gotten, return early.
-  PreviewsUITabHelper* ui_tab_helper =
-      PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
-  PreviewsUserData* previews_data =
-      ui_tab_helper ? ui_tab_helper->GetPreviewsUserData(navigation_handle)
-                    : nullptr;
-  if (!previews_data)
-    return initial_state;
-
-  // It is possible that any number of at-commit-decided previews are enabled,
-  // but do not hold them back until the commit time logic runs.
-  if (!HasEnabledPreviews(initial_state & kPreCommitPreviews))
-    return initial_state;
-
-  if (previews_data->CoinFlipForNavigation()) {
-    // Holdback all previews. It is possible that some number of client previews
-    // will also be held back here. However, since a before-commit preview was
-    // likely, we turn off all of them to make analysis simpler and this code
-    // more robust.
-    UpdatePreviewsUserDataAndRecordCoinFlipResult(
-        navigation_handle, previews_data, CoinFlipHoldbackResult::kHoldback);
-    return content::PREVIEWS_OFF;
-  }
-
-  UpdatePreviewsUserDataAndRecordCoinFlipResult(
-      navigation_handle, previews_data, CoinFlipHoldbackResult::kAllowed);
-  return initial_state;
-}
-
 content::PreviewsState MaybeCoinFlipHoldbackAfterCommit(
     content::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle) {
@@ -418,16 +324,6 @@ content::PreviewsState MaybeCoinFlipHoldbackAfterCommit(
     return initial_state;
 
   if (previews_data->CoinFlipForNavigation()) {
-    // No pre-commit previews should be set, since such a preview would have
-    // already committed and we don't want to incorrectly clear that state. If
-    // it did, at least make everything functionally correct.
-    if (HasEnabledPreviews(initial_state & kPreCommitPreviews)) {
-      NOTREACHED();
-      previews_data->set_coin_flip_holdback_result(
-          CoinFlipHoldbackResult::kNotSet);
-      return initial_state;
-    }
-
     UpdatePreviewsUserDataAndRecordCoinFlipResult(
         navigation_handle, previews_data, CoinFlipHoldbackResult::kHoldback);
     return content::PREVIEWS_OFF;
@@ -441,10 +337,6 @@ content::PreviewsState MaybeCoinFlipHoldbackAfterCommit(
 previews::PreviewsType GetMainFramePreviewsType(
     content::PreviewsState previews_state) {
   // The order is important here.
-  if (previews_state & content::OFFLINE_PAGE_ON)
-    return previews::PreviewsType::OFFLINE;
-  if (previews_state & content::SERVER_LITE_PAGE_ON)
-    return previews::PreviewsType::LITE_PAGE;
   if (previews_state & content::DEFER_ALL_SCRIPT_ON)
     return previews::PreviewsType::DEFER_ALL_SCRIPT;
   if (previews_state & content::RESOURCE_LOADING_HINTS_ON)

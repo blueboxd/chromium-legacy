@@ -70,14 +70,15 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
 
   // Used for testing.
-  void set_safe_browsing_managers(
-      SafeBrowsingUIManager* ui_manager,
-      SafeBrowsingDatabaseManager* database_manager);
+  void set_ui_manager(SafeBrowsingUIManager* ui_manager);
+  void set_database_manager(SafeBrowsingDatabaseManager* database_manager);
 
  private:
   friend class ClientSideDetectionHostTestBase;
   class ShouldClassifyUrlRequest;
   friend class ShouldClassifyUrlRequest;
+  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionHostBrowserTest,
+                           VerifyVisualFeatureCollection);
 
   // Called when pre-classification checks are done for the phishing
   // classifiers.

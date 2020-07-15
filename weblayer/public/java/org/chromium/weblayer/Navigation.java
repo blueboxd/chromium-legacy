@@ -243,4 +243,24 @@ public class Navigation extends IClientNavigation.Stub {
             throw new APICallException(e);
         }
     }
+
+    /**
+     * Whether the navigation is a reload. Examples of reloads include:
+     * * embedder-specified through NavigationController::Reload
+     * * page-initiated reloads, e.g. location.reload()
+     * * reloads when the network interface is reconnected
+     *
+     * @since 86
+     */
+    public boolean isReload() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 86) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            return mNavigationImpl.isReload();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
 }

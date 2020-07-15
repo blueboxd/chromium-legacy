@@ -124,11 +124,6 @@ class DataReductionProxyService
     settings_ = settings;
   }
 
-  // When triggering previews, prevent long term block list rules. Virtual for
-  // testing.
-  virtual void SetIgnoreLongTermBlockListRules(
-      bool ignore_long_term_black_list_rules);
-
   // Returns the current network quality estimates.
   net::EffectiveConnectionType GetEffectiveConnectionType() const;
   base::Optional<base::TimeDelta> GetHttpRttEstimate() const;

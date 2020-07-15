@@ -3207,6 +3207,52 @@ TEST_F(InputHandlerProxyEventQueueTest, DeliverInputWithHighLatencyMode) {
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 
+TEST_F(InputHandlerProxyEventQueueTest, KeyEventAttribution) {
+  WebKeyboardEvent key(WebInputEvent::Type::kKeyDown,
+                       WebInputEvent::kNoModifiers,
+                       WebInputEvent::GetStaticTimeStampForTests());
+
+  EXPECT_CALL(mock_input_handler_, FindFrameElementIdAtPoint(_)).Times(0);
+
+  WebInputEventAttribution attribution =
+      input_handler_proxy_.PerformEventAttribution(key);
+  EXPECT_EQ(attribution.type(), WebInputEventAttribution::kFocusedFrame);
+  EXPECT_EQ(attribution.target_frame_id(), cc::ElementId());
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+}
+
+TEST_F(InputHandlerProxyEventQueueTest, MouseEventAttribution) {
+  WebMouseEvent mouse_down(WebInputEvent::Type::kMouseDown,
+                           WebInputEvent::kNoModifiers,
+                           WebInputEvent::GetStaticTimeStampForTests());
+
+  EXPECT_CALL(mock_input_handler_, FindFrameElementIdAtPoint(gfx::PointF(0, 0)))
+      .Times(1)
+      .WillOnce(testing::Return(cc::ElementId(0xDEADBEEF)));
+
+  WebInputEventAttribution attribution =
+      input_handler_proxy_.PerformEventAttribution(mouse_down);
+  EXPECT_EQ(attribution.type(), WebInputEventAttribution::kTargetedFrame);
+  EXPECT_EQ(attribution.target_frame_id(), cc::ElementId(0xDEADBEEF));
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+}
+
+TEST_F(InputHandlerProxyEventQueueTest, MouseWheelEventAttribution) {
+  WebMouseWheelEvent wheel(WebInputEvent::Type::kMouseWheel,
+                           WebInputEvent::kNoModifiers,
+                           WebInputEvent::GetStaticTimeStampForTests());
+
+  EXPECT_CALL(mock_input_handler_, FindFrameElementIdAtPoint(gfx::PointF(0, 0)))
+      .Times(1)
+      .WillOnce(testing::Return(cc::ElementId(0xDEADBEEF)));
+
+  WebInputEventAttribution attribution =
+      input_handler_proxy_.PerformEventAttribution(wheel);
+  EXPECT_EQ(attribution.type(), WebInputEventAttribution::kTargetedFrame);
+  EXPECT_EQ(attribution.target_frame_id(), cc::ElementId(0xDEADBEEF));
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+}
+
 // Verify that the first point in a touch event is used for performing event
 // attribution.
 TEST_F(InputHandlerProxyEventQueueTest, TouchEventAttribution) {

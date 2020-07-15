@@ -2317,7 +2317,8 @@ RenderWidgetHostViewAndroid::DidUpdateVisualProperties(
   return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
 }
 
-void RenderWidgetHostViewAndroid::GetScreenInfo(ScreenInfo* screen_info) {
+void RenderWidgetHostViewAndroid::GetScreenInfo(
+    blink::ScreenInfo* screen_info) {
   bool use_window_wide_color_gamut =
       GetContentClient()->browser()->GetWideColorGamutHeuristic() ==
       ContentBrowserClient::WideColorGamutHeuristic::kUseWindow;

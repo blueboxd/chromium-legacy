@@ -587,8 +587,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     }
   }
 
-  [self.sceneController startUpChromeUIPostCrash:postCrashLaunch
-                                 needRestoration:needRestore];
+  SceneState* sceneState = self.appState.connectedScenes.firstObject;
+  [sceneState.controller startUpChromeUIPostCrash:postCrashLaunch
+                                  needRestoration:needRestore];
   [self startUpAfterFirstWindowCreated];
 }
 
@@ -649,7 +650,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
         base::mac::ObjCCastStrict<UIWindowScene>(notification.object);
     SceneDelegate* sceneDelegate =
         base::mac::ObjCCastStrict<SceneDelegate>(scene.delegate);
-    self.sceneController = sceneDelegate.sceneController;
     sceneDelegate.sceneController.mainController = self;
   }
 }
@@ -1292,7 +1292,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)setStartupParametersWithURL:(const GURL&)launchURL {
   DCHECK(!IsSceneStartupSupported());
   NSString* sourceApplication = @"Fake App";
-  self.sceneController.startupParameters = [ChromeAppStartupParameters
+  SceneState* sceneState = self.appState.foregroundActiveScene;
+  sceneState.controller.startupParameters = [ChromeAppStartupParameters
       newChromeAppStartupParametersWithURL:net::NSURLWithGURL(launchURL)
                      fromSourceApplication:sourceApplication];
 }

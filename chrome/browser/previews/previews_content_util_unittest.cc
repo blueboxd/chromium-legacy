@@ -82,17 +82,11 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
     return IsEnabled(type);
   }
 
-  bool AreCommitTimePreviewsAvailable(
-      content::NavigationHandle* navigation_handle) override {
-    return navigation_handle->GetURL().host_piece().ends_with(
-        "hintcachedhost.com");
-  }
-
  private:
   bool IsEnabled(PreviewsType type) const {
     switch (type) {
-      case previews::PreviewsType::OFFLINE:
-        return params::IsOfflinePreviewsEnabled();
+      case previews::PreviewsType::DEPRECATED_OFFLINE:
+        return false;
       case previews::PreviewsType::DEPRECATED_LOFI:
         return false;
       case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
@@ -105,7 +99,7 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
         return false;
       case previews::PreviewsType::DEFER_ALL_SCRIPT:
         return params::IsDeferAllScriptPreviewsEnabled();
-      case PreviewsType::LITE_PAGE:
+      case PreviewsType::DEPRECATED_LITE_PAGE:
       case PreviewsType::NONE:
       case PreviewsType::UNSPECIFIED:
       case PreviewsType::LAST:
@@ -172,48 +166,6 @@ TEST_F(PreviewsContentUtilTest,
                 enabled_previews_decider(), nullptr));
   is_data_saver_user = false;
   EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
-            previews::CallDetermineAllowedClientPreviewsState(
-                &user_data, GURL("http://www.google.com"), is_reload,
-                previews_triggering_logic_already_ran, is_data_saver_user,
-                enabled_previews_decider(), nullptr));
-}
-
-TEST_F(PreviewsContentUtilTest,
-       DetermineAllowedClientPreviewsStateOfflineAndRedirects) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "Previews,OfflinePreviews",
-      "DeferAllScript,ResourceLoadingHints,NoScriptPreviews");
-  PreviewsUserData user_data(1);
-  bool is_reload = false;
-  bool previews_triggering_logic_already_ran = false;
-  bool is_data_saver_user = true;
-
-  EXPECT_EQ(content::OFFLINE_PAGE_ON,
-            previews::CallDetermineAllowedClientPreviewsState(
-                &user_data, GURL("http://www.google.com"), is_reload,
-                previews_triggering_logic_already_ran, is_data_saver_user,
-                enabled_previews_decider(), nullptr));
-  EXPECT_FALSE(user_data.is_redirect());
-  user_data.set_allowed_previews_state(content::OFFLINE_PAGE_ON);
-
-  previews_triggering_logic_already_ran = true;
-  EXPECT_EQ(content::OFFLINE_PAGE_ON,
-            previews::CallDetermineAllowedClientPreviewsState(
-                &user_data, GURL("http://www.google.com"), is_reload,
-                previews_triggering_logic_already_ran, is_data_saver_user,
-                enabled_previews_decider(), nullptr));
-  EXPECT_TRUE(user_data.is_redirect());
-
-  user_data.set_allowed_previews_state(content::PREVIEWS_OFF);
-  EXPECT_EQ(content::OFFLINE_PAGE_ON,
-            previews::CallDetermineAllowedClientPreviewsState(
-                &user_data, GURL("http://www.google.com"), is_reload,
-                previews_triggering_logic_already_ran, is_data_saver_user,
-                enabled_previews_decider(), nullptr));
-
-  previews_triggering_logic_already_ran = false;
-  EXPECT_EQ(content::OFFLINE_PAGE_ON,
             previews::CallDetermineAllowedClientPreviewsState(
                 &user_data, GURL("http://www.google.com"), is_reload,
                 previews_triggering_logic_already_ran, is_data_saver_user,
@@ -303,23 +255,8 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
       "Previews,NoScriptPreviews,ResourceLoadingHints,DeferAllScript",
       std::string());
   PreviewsUserData user_data(1);
-  user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_2G);
-  base::HistogramTester histogram_tester;
-
-  // Server bits take precedence over NoScript:
-  EXPECT_EQ(content::SERVER_LITE_PAGE_ON,
-            previews::DetermineCommittedClientPreviewsState(
-                &user_data, GURL("https://www.google.com"),
-                content::SERVER_LITE_PAGE_ON | content::NOSCRIPT_ON,
-                enabled_previews_decider(), nullptr));
-  histogram_tester.ExpectUniqueSample(
-      "Previews.Triggered.EffectiveConnectionType2.LitePage",
-      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
-  histogram_tester.ExpectTotalCount(
-      "Previews.Triggered.EffectiveConnectionType2", 1);
-
-  // Try different navigation ECT value.
   user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  base::HistogramTester histogram_tester;
 
   // DeferAllScript has precedence over NoScript and ResourceLoadingHints.
   EXPECT_EQ(content::DEFER_ALL_SCRIPT_ON,
@@ -332,7 +269,7 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
       "Previews.Triggered.EffectiveConnectionType2.DeferAllScript",
       static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 1);
   histogram_tester.ExpectTotalCount(
-      "Previews.Triggered.EffectiveConnectionType2", 2);
+      "Previews.Triggered.EffectiveConnectionType2", 1);
 
   // RESOURCE_LOADING_HINTS has precedence over NoScript.
   EXPECT_EQ(content::RESOURCE_LOADING_HINTS_ON,
@@ -344,7 +281,7 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
       "Previews.Triggered.EffectiveConnectionType2.ResourceLoadingHints",
       static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 1);
   histogram_tester.ExpectTotalCount(
-      "Previews.Triggered.EffectiveConnectionType2", 3);
+      "Previews.Triggered.EffectiveConnectionType2", 2);
 
   // Only NoScript:
   EXPECT_EQ(content::NOSCRIPT_ON,
@@ -396,34 +333,8 @@ TEST_F(PreviewsContentUtilTest,
                 content::NOSCRIPT_ON, enabled_previews_decider(), nullptr));
 }
 
-TEST_F(PreviewsContentUtilTest, DetermineCommittedServerPreviewsStateLitePage) {
-  content::PreviewsState enabled_previews =
-      content::SERVER_LITE_PAGE_ON | content::NOSCRIPT_ON;
-
-  // Add DataReductionProxyData for LitePage to URLRequest.
-  data_reduction_proxy::DataReductionProxyData data_reduction_proxy_data;
-  data_reduction_proxy_data.set_used_data_reduction_proxy(true);
-  data_reduction_proxy_data.set_lite_page_received(true);
-
-  // Verify selects LitePage bit but doesn't touch client-only NoScript bit.
-  EXPECT_EQ(content::SERVER_LITE_PAGE_ON | content::NOSCRIPT_ON,
-            DetermineCommittedServerPreviewsState(&data_reduction_proxy_data,
-                                                  enabled_previews));
-}
-
-TEST_F(PreviewsContentUtilTest, DetermineCommittedServerPreviewsStateNoProxy) {
-  content::PreviewsState enabled_previews =
-      content::SERVER_LITE_PAGE_ON | content::NOSCRIPT_ON;
-
-  // Verify doesn't touch client-only NoScript bit.
-  EXPECT_EQ(content::NOSCRIPT_ON,
-            DetermineCommittedServerPreviewsState(nullptr, enabled_previews));
-}
-
 TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
   // Simple cases:
-  EXPECT_EQ(previews::PreviewsType::LITE_PAGE,
-            previews::GetMainFramePreviewsType(content::SERVER_LITE_PAGE_ON));
   EXPECT_EQ(previews::PreviewsType::NOSCRIPT,
             previews::GetMainFramePreviewsType(content::NOSCRIPT_ON));
   EXPECT_EQ(
@@ -437,12 +348,6 @@ TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
             previews::GetMainFramePreviewsType(content::PREVIEWS_UNSPECIFIED));
   EXPECT_EQ(previews::PreviewsType::NONE,
             previews::GetMainFramePreviewsType(content::PREVIEWS_NO_TRANSFORM));
-
-  // Precedence cases when server preview is available:
-  EXPECT_EQ(previews::PreviewsType::LITE_PAGE,
-            previews::GetMainFramePreviewsType(
-                content::SERVER_LITE_PAGE_ON | content::NOSCRIPT_ON |
-                content::RESOURCE_LOADING_HINTS_ON));
 
   // Precedence cases when server preview is not available:
   EXPECT_EQ(previews::PreviewsType::NOSCRIPT,
@@ -514,138 +419,6 @@ class PreviewsContentSimulatedNavigationTest
   std::unique_ptr<content::NavigationSimulator> navigation_simulator_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
 };
-
-TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipBeforeCommit) {
-  struct TestCase {
-    std::string msg;
-    bool enable_feature;
-    // True maps to previews::CoinFlipHoldbackResult::kHoldback.
-    bool set_random_coin_flip_for_navigation;
-    bool want_ukm;
-    previews::CoinFlipHoldbackResult want_coin_flip_result;
-    content::PreviewsState initial_state;
-    content::PreviewsState want_returned;
-  };
-  const TestCase kTestCases[]{
-      {
-          .msg = "Feature disabled, no affect, heads",
-          .enable_feature = false,
-          .set_random_coin_flip_for_navigation = true,
-          .want_ukm = false,
-          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
-          .initial_state = content::NOSCRIPT_ON,
-          .want_returned = content::NOSCRIPT_ON,
-      },
-      {
-          .msg = "Feature disabled, no affect, tails",
-          .enable_feature = false,
-          .set_random_coin_flip_for_navigation = false,
-          .want_ukm = false,
-          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
-          .initial_state = content::NOSCRIPT_ON,
-          .want_returned = content::NOSCRIPT_ON,
-      },
-      {
-          .msg = "After-commit decided previews are not affected before commit "
-                 "on true coin flip",
-          .enable_feature = true,
-          .set_random_coin_flip_for_navigation = true,
-          .want_ukm = false,
-          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
-          .initial_state = content::NOSCRIPT_ON,
-          .want_returned = content::NOSCRIPT_ON,
-      },
-      {
-          .msg = "After-commit decided previews are not affected before commit "
-                 "on false coin flip",
-          .enable_feature = true,
-          .set_random_coin_flip_for_navigation = false,
-          .want_ukm = false,
-          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kNotSet,
-          .initial_state = content::NOSCRIPT_ON,
-          .want_returned = content::NOSCRIPT_ON,
-      },
-      {
-          .msg =
-              "Before-commit decided previews are affected on true coin flip",
-          .enable_feature = true,
-          .set_random_coin_flip_for_navigation = true,
-          .want_ukm = true,
-          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
-          .initial_state = content::OFFLINE_PAGE_ON,
-          .want_returned = content::PREVIEWS_OFF,
-      },
-      {
-          .msg = "Before-commit decided previews are logged on false coin flip",
-          .enable_feature = true,
-          .set_random_coin_flip_for_navigation = false,
-          .want_ukm = true,
-          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kAllowed,
-          .initial_state = content::OFFLINE_PAGE_ON,
-          .want_returned = content::OFFLINE_PAGE_ON,
-      },
-      {
-          .msg =
-              "True coin flip impacts both pre and post commit previews when "
-              "both exist",
-          .enable_feature = true,
-          .set_random_coin_flip_for_navigation = true,
-          .want_ukm = true,
-          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kHoldback,
-          .initial_state = content::OFFLINE_PAGE_ON | content::NOSCRIPT_ON,
-          .want_returned = content::PREVIEWS_OFF,
-      },
-      {
-          .msg = "False coin flip logs both pre and post commit previews when "
-                 "both exist",
-          .enable_feature = true,
-          .set_random_coin_flip_for_navigation = false,
-          .want_ukm = true,
-          .want_coin_flip_result = previews::CoinFlipHoldbackResult::kAllowed,
-          .initial_state = content::OFFLINE_PAGE_ON | content::NOSCRIPT_ON,
-          .want_returned = content::OFFLINE_PAGE_ON | content::NOSCRIPT_ON,
-      },
-  };
-
-  for (const TestCase& test_case : kTestCases) {
-    SCOPED_TRACE(test_case.msg);
-
-    // Starting the navigation will cause content to call into
-    // |MaybeCoinFlipHoldbackBeforeCommit| as part of the navigation simulation.
-    // So don't enable the feature until afterwards.
-    content::NavigationHandle* handle = StartNavigation();
-
-    base::test::ScopedFeatureList scoped_feature_list;
-    if (test_case.enable_feature) {
-      scoped_feature_list.InitAndEnableFeatureWithParameters(
-          previews::features::kCoinFlipHoldback,
-          {{"force_coin_flip_always_holdback",
-            test_case.set_random_coin_flip_for_navigation ? "true" : "false"},
-           {"force_coin_flip_always_allow",
-            !test_case.set_random_coin_flip_for_navigation ? "true"
-                                                           : "false"}});
-    } else {
-      scoped_feature_list.InitAndDisableFeature(
-          previews::features::kCoinFlipHoldback);
-    }
-
-    content::PreviewsState returned =
-        MaybeCoinFlipHoldbackBeforeCommit(test_case.initial_state, handle);
-
-    EXPECT_EQ(test_case.want_returned, returned);
-    EXPECT_EQ(test_case.want_coin_flip_result,
-              GetPreviewsUserData(handle)->coin_flip_holdback_result());
-
-    using UkmEntry = ukm::builders::PreviewsCoinFlip;
-    auto entries = ukm_recorder()->GetEntriesByName(UkmEntry::kEntryName);
-    EXPECT_EQ(test_case.want_ukm ? 1u : 0u, entries.size());
-    for (auto* entry : entries) {
-      ukm_recorder()->ExpectEntryMetric(
-          entry, UkmEntry::kcoin_flip_resultName,
-          static_cast<int>(test_case.want_coin_flip_result));
-    }
-  }
-}
 
 TEST_F(PreviewsContentSimulatedNavigationTest, TestCoinFlipAfterCommit) {
   struct TestCase {

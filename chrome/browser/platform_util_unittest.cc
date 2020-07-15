@@ -201,11 +201,11 @@ class PlatformUtilTest : public PlatformUtilTestBase {
  private:
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  static void OnOpenOperationDone(const base::Closure& closure,
+  static void OnOpenOperationDone(base::OnceClosure closure,
                                   OpenOperationResult* store_result,
                                   OpenOperationResult result) {
     *store_result = result;
-    closure.Run();
+    std::move(closure).Run();
   }
 };
 

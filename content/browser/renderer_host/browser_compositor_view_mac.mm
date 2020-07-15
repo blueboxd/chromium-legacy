@@ -387,7 +387,7 @@ bool BrowserCompositorMac::ForceNewSurfaceForTesting() {
 }
 
 void BrowserCompositorMac::GetRendererScreenInfo(
-    ScreenInfo* screen_info) const {
+    blink::ScreenInfo* screen_info) const {
   DisplayUtil::DisplayToScreenInfo(screen_info, dfh_display_);
 }
 

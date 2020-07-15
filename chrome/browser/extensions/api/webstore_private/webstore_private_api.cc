@@ -54,7 +54,6 @@
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "net/base/load_flags.h"
-#include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 

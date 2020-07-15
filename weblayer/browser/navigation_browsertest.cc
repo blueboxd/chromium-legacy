@@ -95,6 +95,7 @@ class OneShotNavigationObserver : public NavigationObserver {
   bool completed() { return completed_; }
   bool is_error_page() { return is_error_page_; }
   bool is_download() { return is_download_; }
+  bool is_reload() { return is_reload_; }
   bool was_stop_called() { return was_stop_called_; }
   Navigation::LoadError load_error() { return load_error_; }
   int http_status_code() { return http_status_code_; }
@@ -112,6 +113,7 @@ class OneShotNavigationObserver : public NavigationObserver {
   void Finish(Navigation* navigation) {
     is_error_page_ = navigation->IsErrorPage();
     is_download_ = navigation->IsDownload();
+    is_reload_ = navigation->IsReload();
     was_stop_called_ = navigation->WasStopCalled();
     load_error_ = navigation->GetLoadError();
     http_status_code_ = navigation->GetHttpStatusCode();
@@ -124,6 +126,7 @@ class OneShotNavigationObserver : public NavigationObserver {
   bool completed_ = false;
   bool is_error_page_ = false;
   bool is_download_ = false;
+  bool is_reload_ = false;
   bool was_stop_called_ = false;
   Navigation::LoadError load_error_ = Navigation::kNoError;
   int http_status_code_ = 0;
@@ -150,6 +153,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, NoError) {
   EXPECT_TRUE(observer.completed());
   EXPECT_FALSE(observer.is_error_page());
   EXPECT_FALSE(observer.is_download());
+  EXPECT_FALSE(observer.is_reload());
   EXPECT_FALSE(observer.was_stop_called());
   EXPECT_EQ(observer.load_error(), Navigation::kNoError);
   EXPECT_EQ(observer.http_status_code(), 200);
@@ -414,6 +418,22 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, PageSeesUserAgentString) {
         run_loop.Quit();
       }));
   run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, Reload) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  OneShotNavigationObserver observer(shell());
+  GetNavigationController()->Navigate(
+      embedded_test_server()->GetURL("/simple_page.html"));
+  observer.WaitForNavigation();
+
+  OneShotNavigationObserver observer2(shell());
+  shell()->tab()->ExecuteScript(base::ASCIIToUTF16("location.reload();"), false,
+                                base::DoNothing());
+  observer2.WaitForNavigation();
+  EXPECT_TRUE(observer2.completed());
+  EXPECT_TRUE(observer2.is_reload());
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetUserAgentString) {

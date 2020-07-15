@@ -321,32 +321,24 @@ class DownloadItemView : public views::View,
   // Progress animation
   base::RepeatingTimer progress_timer_;
 
-  // Dangerous mode and mixed content mode buttons.
-  views::MdTextButton* save_button_;
-  views::MdTextButton* discard_button_;
-
-  // The file name label.
-  views::Label* file_name_label_;
-
-  // The status text label.
-  views::Label* status_label_;
-
   // The "open download" button. This button is visually transparent and fills
   // the entire bounds of the DownloadItemView, to make the DownloadItemView
   // itself seem to be clickable while not requiring DownloadItemView itself to
   // be a button. This is necessary because buttons are not allowed to have
   // children in macOS Accessibility, and to avoid reimplementing much of the
   // button logic in DownloadItemView.
-  views::Button* open_button_ = nullptr;
+  views::Button* open_button_;
 
-  // The drop down button.
-  views::ImageButton* dropdown_button_ = nullptr;
-
-  // Dangerous mode label. Also used by mixed content warning.
+  views::Label* file_name_label_;
+  views::Label* status_label_;
   views::StyledLabel* dangerous_download_label_;
+  views::StyledLabel* deep_scanning_label_;
 
-  // Whether the dangerous mode label has been sized yet.
-  bool dangerous_download_label_sized_;
+  views::MdTextButton* open_now_button_;
+  views::MdTextButton* save_button_;
+  views::MdTextButton* discard_button_;
+  views::MdTextButton* scan_button_;
+  views::ImageButton* dropdown_button_;
 
   // The time at which this view was created.
   base::Time creation_time_;
@@ -376,20 +368,11 @@ class DownloadItemView : public views::View,
   // and reload the icon.
   base::FilePath last_download_item_path_;
 
-  // Deep scanning mode label.
-  views::StyledLabel* deep_scanning_label_ = nullptr;
-
-  // Deep scanning open now button.
-  views::MdTextButton* open_now_button_ = nullptr;
-
   // Deep scanning modal dialog confirming choice to "open now".
   TabModalConfirmDialog* open_now_modal_dialog_;
 
   // Icon for the download.
   gfx::ImageSkia icon_;
-
-  // Button used to consent to deep scanning.
-  views::MdTextButton* scan_button_ = nullptr;
 
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.

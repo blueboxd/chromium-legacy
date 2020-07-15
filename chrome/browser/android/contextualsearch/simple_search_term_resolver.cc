@@ -25,7 +25,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "net/url_request/url_fetcher_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"

@@ -13,9 +13,9 @@
 #include "content/common/common_param_traits_macros.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/content_to_visible_time_reporter.h"
-#include "content/common/visual_properties.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/blink/public/common/widget/visual_properties.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "ui/base/ime/text_input_action.h"
@@ -97,7 +97,7 @@ IPC_MESSAGE_ROUTED0(WidgetMsg_SetBounds_ACK)
 // Updates a RenderWidget's visual properties. This should include all
 // geometries and compositing inputs so that they are updated atomically.
 IPC_MESSAGE_ROUTED1(WidgetMsg_UpdateVisualProperties,
-                    content::VisualProperties /* visual_properties */)
+                    blink::VisualProperties /* visual_properties */)
 
 // Informs the RenderWidget of its position on the user's screen, as well as
 // the position of the native window holding the RenderWidget.

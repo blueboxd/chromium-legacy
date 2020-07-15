@@ -85,9 +85,7 @@ js_type_check("closure_compile") {
     ":cr_toast_manager_test.m",
     ":cr_toast_test.m",
     ":cr_toggle_test.m",
-
-    #":cr_toolbar_search_field_tests",
-
+    ":cr_toolbar_search_field_tests.m",
     ":cr_toolbar_tests.m",
     ":cr_view_manager_test.m",
     ":iron_list_focus_test.m",
@@ -452,6 +450,18 @@ js_library("cr_toggle_test.m") {
     "..:test_util.m",
     "//third_party/polymer/v3_0/components-chromium/iron-test-helpers:mock-interactions",
     "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("cr_toolbar_search_field_tests.m") {
+  sources = [ "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toolbar_search_field_tests.m.js" ]
+  deps = [
+    "..:chai_assert",
+    "//third_party/polymer/v3_0/components-chromium/iron-test-helpers:mock-interactions",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_search_field.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
   extra_deps = [ ":modulize" ]

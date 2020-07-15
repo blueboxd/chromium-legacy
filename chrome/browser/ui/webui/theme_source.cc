@@ -26,7 +26,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/common/url_constants.h"
-#include "net/url_request/url_request.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"

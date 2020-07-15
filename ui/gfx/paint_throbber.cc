@@ -98,8 +98,8 @@ void PaintThrobberSpinningWithStartAngle(
   // This tween is equivalent to cubic-bezier(0.4, 0.0, 0.2, 1).
   double sweep = kMaxArcSize *
                  Tween::CalculateValue(Tween::FAST_OUT_SLOW_IN, arc_progress);
-  const int64_t sweep_keyframe = (elapsed_time / kArcTime) % 2;
-  if (sweep_keyframe == 0)
+  const int64_t sweep_frame = elapsed_time / kArcTime;
+  if (sweep_frame % 2 == 0)
     sweep -= kMaxArcSize;
 
   // This part makes sure the sweep is at least 5 degrees long. Roughly
@@ -115,7 +115,7 @@ void PaintThrobberSpinningWithStartAngle(
 
   // To keep the sweep smooth, we have an additional rotation after each
   // arc period has elapsed. See SVG's 'rot' animation.
-  const int64_t rot_keyframe = (elapsed_time / (kArcTime * 2)) % 4;
+  const int64_t rot_keyframe = (sweep_frame / 2) % 4;
   PaintArc(canvas, bounds, color, start_angle + rot_keyframe * kMaxArcSize,
            sweep, stroke_width);
 }
@@ -171,12 +171,10 @@ void PaintThrobberSpinningAfterWaiting(Canvas* canvas,
 
   // Blend the color between "waiting" and "spinning" states.
   constexpr auto kColorFadeTime = base::TimeDelta::FromMilliseconds(900);
-  float color_progress = 1.0f;
-  if (elapsed_time < kColorFadeTime) {
-    color_progress = float{Tween::CalculateValue(
-        Tween::LINEAR_OUT_SLOW_IN,
-        elapsed_time.InMicrosecondsF() / kColorFadeTime.InMicrosecondsF())};
-  }
+  const float color_progress = float{Tween::CalculateValue(
+      Tween::LINEAR_OUT_SLOW_IN, std::min(elapsed_time.InMicrosecondsF() /
+                                              kColorFadeTime.InMicrosecondsF(),
+                                          1.0))};
   const SkColor blend_color =
       color_utils::AlphaBlend(color, waiting_state->color, color_progress);
 

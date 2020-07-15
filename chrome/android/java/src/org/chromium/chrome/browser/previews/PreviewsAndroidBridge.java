@@ -49,17 +49,6 @@ public final class PreviewsAndroidBridge {
     }
 
     /**
-     * If the current preview is a stale preview, this returns the timestamp text to display to the
-     * user. An empty string is returned if the current preview is not a stale preview.
-     */
-    public String getStalePreviewTimestamp(WebContents webContents) {
-        assert shouldShowPreviewUI(webContents)
-            : "getStalePreviewTimestamp called on a non-preview page";
-        return PreviewsAndroidBridgeJni.get().getStalePreviewTimestamp(
-                mNativePreviewsAndroidBridge, PreviewsAndroidBridge.this, webContents);
-    }
-
-    /**
      * Requests that the original page be loaded.
      */
     public void loadOriginal(WebContents webContents) {
@@ -94,8 +83,6 @@ public final class PreviewsAndroidBridge {
         long init(PreviewsAndroidBridge caller);
         boolean shouldShowPreviewUI(long nativePreviewsAndroidBridge, PreviewsAndroidBridge caller,
                 WebContents webContents);
-        String getStalePreviewTimestamp(long nativePreviewsAndroidBridge,
-                PreviewsAndroidBridge caller, WebContents webContents);
         void loadOriginal(long nativePreviewsAndroidBridge, PreviewsAndroidBridge caller,
                 WebContents webContents);
         String getPreviewsType(long nativePreviewsAndroidBridge, PreviewsAndroidBridge caller,

@@ -168,36 +168,6 @@ bool PreviewsOptimizationGuide::CanApplyPreview(
   return true;
 }
 
-bool PreviewsOptimizationGuide::AreCommitTimePreviewsAvailable(
-    content::NavigationHandle* navigation_handle) {
-  // We use this method as a way of enforcing some sort of preview ordering.
-  // Thus, we check if we can potentially apply any of the client-side previews,
-  // and if any of them potentially can be applied, then we return true.
-  const std::vector<optimization_guide::proto::OptimizationType>
-      optimization_types_to_check = {
-          optimization_guide::proto::DEFER_ALL_SCRIPT,
-          optimization_guide::proto::RESOURCE_LOADING,
-          optimization_guide::proto::NOSCRIPT};
-
-  bool might_have_hint = false;
-  for (const auto optimization_type : optimization_types_to_check) {
-    // Don't check for the hint if the optimization type is not enabled.
-    if (registered_optimization_types_.find(optimization_type) ==
-        registered_optimization_types_.end()) {
-      continue;
-    }
-
-    if (optimization_guide_decider_->CanApplyOptimization(
-            navigation_handle->GetURL(), optimization_type,
-            /*optimization_metadata=*/nullptr) !=
-        optimization_guide::OptimizationGuideDecision::kFalse) {
-      might_have_hint = true;
-      break;
-    }
-  }
-  return might_have_hint;
-}
-
 bool PreviewsOptimizationGuide::GetResourceLoadingHints(
     const GURL& url,
     std::vector<std::string>* out_resource_patterns_to_block) {

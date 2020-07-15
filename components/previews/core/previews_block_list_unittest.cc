@@ -104,7 +104,7 @@ class PreviewsBlockListTest : public testing::Test {
     }
 
     blocklist::BlocklistData::AllowedTypesAndVersions allowed_types;
-    allowed_types[static_cast<int>(PreviewsType::OFFLINE)] = 0;
+    allowed_types[static_cast<int>(PreviewsType::DEFER_ALL_SCRIPT)] = 0;
     block_list_ = std::make_unique<TestPreviewsBlockList>(
         nullptr, &test_clock_, &blocklist_delegate_, std::move(allowed_types));
 
@@ -177,13 +177,13 @@ TEST_F(PreviewsBlockListTest, AddPreviewUMA) {
 
   StartTest();
 
-  block_list_->AddPreviewNavigation(url, false, PreviewsType::OFFLINE);
-  histogram_tester.ExpectUniqueSample("Previews.OptOut.UserOptedOut.Offline", 0,
-                                      1);
+  block_list_->AddPreviewNavigation(url, false, PreviewsType::DEFER_ALL_SCRIPT);
+  histogram_tester.ExpectUniqueSample(
+      "Previews.OptOut.UserOptedOut.DeferAllScript", 0, 1);
   histogram_tester.ExpectUniqueSample("Previews.OptOut.UserOptedOut", 0, 1);
-  block_list_->AddPreviewNavigation(url, true, PreviewsType::OFFLINE);
-  histogram_tester.ExpectBucketCount("Previews.OptOut.UserOptedOut.Offline", 1,
-                                     1);
+  block_list_->AddPreviewNavigation(url, true, PreviewsType::DEFER_ALL_SCRIPT);
+  histogram_tester.ExpectBucketCount(
+      "Previews.OptOut.UserOptedOut.DeferAllScript", 1, 1);
   histogram_tester.ExpectBucketCount("Previews.OptOut.UserOptedOut", 1, 1);
 }
 

@@ -515,10 +515,10 @@ TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
                   "}],"
                   "\"defaultPermissionPolicy\":\"GRANT\"}"),
       nullptr);
-  policy_map().Set(
-      policy::key::kHomepageLocation, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      std::make_unique<base::Value>("http://chromium.org"), nullptr);
+  policy_map().Set(policy::key::kHomepageLocation,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD,
+                   base::Value("http://chromium.org"), nullptr);
   policy_map().Set(policy::key::kVideoCaptureAllowed,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD, base::Value(false), nullptr);

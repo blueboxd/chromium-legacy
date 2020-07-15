@@ -42,11 +42,9 @@ base::LazyThreadPoolSequencedTaskRunner g_sequenced_task_runner =
 
 }  // namespace
 
-NetworkingPrivateServiceClient::ServiceCallbacks::ServiceCallbacks() {
-}
+NetworkingPrivateServiceClient::ServiceCallbacks::ServiceCallbacks() {}
 
-NetworkingPrivateServiceClient::ServiceCallbacks::~ServiceCallbacks() {
-}
+NetworkingPrivateServiceClient::ServiceCallbacks::~ServiceCallbacks() {}
 
 NetworkingPrivateServiceClient::NetworkingPrivateServiceClient(
     std::unique_ptr<WiFiService> wifi_service)
@@ -123,12 +121,7 @@ void NetworkingPrivateServiceClient::RemoveServiceCallbacks(
 
 void NetworkingPrivateServiceClient::GetProperties(
     const std::string& guid,
-    const DictionaryCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->failure_callback = failure_callback;
-  service_callbacks->get_properties_callback = success_callback;
-
+    PropertiesCallback callback) {
   std::unique_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
   std::string* error = new std::string;
 
@@ -139,18 +132,13 @@ void NetworkingPrivateServiceClient::GetProperties(
                      base::Unretained(wifi_service_.get()), guid,
                      properties_ptr, error),
       base::BindOnce(&NetworkingPrivateServiceClient::AfterGetProperties,
-                     weak_factory_.GetWeakPtr(), service_callbacks->id, guid,
+                     weak_factory_.GetWeakPtr(), std::move(callback), guid,
                      base::Passed(&properties), base::Owned(error)));
 }
 
 void NetworkingPrivateServiceClient::GetManagedProperties(
     const std::string& guid,
-    const DictionaryCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->failure_callback = failure_callback;
-  service_callbacks->get_properties_callback = success_callback;
-
+    PropertiesCallback callback) {
   std::unique_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
   std::string* error = new std::string;
 
@@ -161,7 +149,7 @@ void NetworkingPrivateServiceClient::GetManagedProperties(
                      base::Unretained(wifi_service_.get()), guid,
                      properties_ptr, error),
       base::BindOnce(&NetworkingPrivateServiceClient::AfterGetProperties,
-                     weak_factory_.GetWeakPtr(), service_callbacks->id, guid,
+                     weak_factory_.GetWeakPtr(), std::move(callback), guid,
                      base::Passed(&properties), base::Owned(error)));
 }
 
@@ -182,7 +170,7 @@ void NetworkingPrivateServiceClient::GetState(
       base::BindOnce(&WiFiService::GetState,
                      base::Unretained(wifi_service_.get()), guid,
                      properties_ptr, error),
-      base::BindOnce(&NetworkingPrivateServiceClient::AfterGetProperties,
+      base::BindOnce(&NetworkingPrivateServiceClient::AfterGetState,
                      weak_factory_.GetWeakPtr(), service_callbacks->id, guid,
                      base::Passed(&properties), base::Owned(error)));
 }
@@ -389,6 +377,18 @@ bool NetworkingPrivateServiceClient::RequestScan(
 ////////////////////////////////////////////////////////////////////////////////
 
 void NetworkingPrivateServiceClient::AfterGetProperties(
+    PropertiesCallback callback,
+    const std::string& network_guid,
+    std::unique_ptr<base::DictionaryValue> properties,
+    const std::string* error) {
+  if (!error->empty()) {
+    std::move(callback).Run(base::nullopt, *error);
+    return;
+  }
+  std::move(callback).Run(std::move(*properties), base::nullopt);
+}
+
+void NetworkingPrivateServiceClient::AfterGetState(
     ServiceCallbacksID callback_id,
     const std::string& network_guid,
     std::unique_ptr<base::DictionaryValue> properties,

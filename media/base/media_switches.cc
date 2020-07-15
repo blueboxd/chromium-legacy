@@ -410,7 +410,7 @@ const base::Feature kUseNewMediaCache{"use-new-media-cache",
 
 // Enables using the media history store to store media engagement metrics.
 const base::Feature kUseMediaHistoryStore{"UseMediaHistoryStore",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use R16 texture for 9-16 bit channel instead of half-float conversion by CPU.
 const base::Feature kUseR16Texture{"use-r16-texture",

@@ -822,7 +822,7 @@ void AppMenuModel::Build() {
                 ->GetActiveWebContents()
                 ->GetLastCommittedURL())) {
       // Show the menu option if we are on a distilled page.
-      AddItemWithStringId(IDC_DISTILL_PAGE, IDS_DISTILL_PAGE);
+      AddItemWithStringId(IDC_DISTILL_PAGE, IDS_EXIT_DISTILLED_PAGE);
     } else if (dom_distiller::ShowReaderModeOption(
                    browser_->profile()->GetPrefs())) {
       // Show the menu option if the page is distillable.

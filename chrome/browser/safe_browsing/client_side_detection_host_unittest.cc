@@ -295,8 +295,8 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
 
     csd_host_ = ClientSideDetectionHost::Create(web_contents());
     csd_host_->set_client_side_detection_service(csd_service_.get());
-    csd_host_->set_safe_browsing_managers(ui_manager_.get(),
-                                          database_manager_.get());
+    csd_host_->set_ui_manager(ui_manager_.get());
+    csd_host_->set_database_manager(database_manager_.get());
     csd_host_->set_tick_clock_for_testing(&clock_);
 
     // We need to create this here since we don't call DidStopLanding in

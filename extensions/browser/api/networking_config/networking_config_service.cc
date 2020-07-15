@@ -162,42 +162,35 @@ void NetworkingConfigService::SetAuthenticationResult(
   }
 }
 
-void NetworkingConfigService::OnGotProperties(
+void NetworkingConfigService::OnGetProperties(
     const std::string& extension_id,
     const std::string& guid,
     const base::Closure& authentication_callback,
     const std::string& service_path,
-    const base::DictionaryValue& onc_network_config) {
+    base::Optional<base::Value> onc_network_config,
+    base::Optional<std::string> error) {
+  if (!onc_network_config) {
+    LOG(WARNING) << "Failed to determine BSSID for network with guid " << guid
+                 << ": " << error.value_or("Failed");
+    std::unique_ptr<Event> event =
+        CreatePortalDetectedEventAndDispatch(extension_id, guid, nullptr);
+    EventRouter::Get(browser_context_)
+        ->DispatchEventToExtension(extension_id, std::move(event));
+    return;
+  }
   authentication_result_ = NetworkingConfigService::AuthenticationResult(
       std::string(), guid, NetworkingConfigService::NOTRY);
   authentication_callback_ = authentication_callback;
 
   // Try to extract |bssid| field.
-  const base::DictionaryValue* wifi_with_state = nullptr;
-  std::string bssid;
-  std::unique_ptr<Event> event;
-  if (onc_network_config.GetDictionaryWithoutPathExpansion(
-          ::onc::network_config::kWiFi, &wifi_with_state) &&
-      wifi_with_state->GetStringWithoutPathExpansion(::onc::wifi::kBSSID,
-                                                     &bssid)) {
-    event = CreatePortalDetectedEventAndDispatch(extension_id, guid, &bssid);
-  } else {
-    event = CreatePortalDetectedEventAndDispatch(extension_id, guid, nullptr);
-  }
-
-  EventRouter::Get(browser_context_)
-      ->DispatchEventToExtension(extension_id, std::move(event));
-}
-
-void NetworkingConfigService::OnGetPropertiesFailed(
-    const std::string& extension_id,
-    const std::string& guid,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
-  LOG(WARNING) << "Failed to determine BSSID for network with guid " << guid
-               << ": " << error_name;
+  const base::Value* wifi_with_state =
+      onc_network_config->FindDictKey(::onc::network_config::kWiFi);
+  const std::string* bssid =
+      wifi_with_state ? wifi_with_state->FindStringKey(::onc::wifi::kBSSID)
+                      : nullptr;
   std::unique_ptr<Event> event =
-      CreatePortalDetectedEventAndDispatch(extension_id, guid, nullptr);
+      CreatePortalDetectedEventAndDispatch(extension_id, guid, bssid);
+
   EventRouter::Get(browser_context_)
       ->DispatchEventToExtension(extension_id, std::move(event));
 }
@@ -252,11 +245,9 @@ void NetworkingConfigService::DispatchPortalDetectedEvent(
   // that are not affected by policy, i.e BSSID.
   network_handler->managed_network_configuration_handler()->GetProperties(
       "" /* empty userhash */, service_path,
-      base::BindOnce(&NetworkingConfigService::OnGotProperties,
+      base::BindOnce(&NetworkingConfigService::OnGetProperties,
                      weak_factory_.GetWeakPtr(), extension_id, guid,
-                     authentication_callback),
-      base::Bind(&NetworkingConfigService::OnGetPropertiesFailed,
-                 weak_factory_.GetWeakPtr(), extension_id, guid));
+                     authentication_callback));
 }
 
 }  // namespace extensions

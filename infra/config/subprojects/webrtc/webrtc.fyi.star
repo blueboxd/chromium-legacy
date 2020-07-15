@@ -153,16 +153,22 @@ builder(
 
 builder(
     name = 'WebRTC Chromium FYI ios-device',
-    caches = [xcode_cache.x11c29],
+    caches = [xcode_cache.x11e146],
     executable = 'recipe:webrtc/chromium_ios',
     goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
+    properties = {
+        'xcode_build_version': '11e146',
+    },
 )
 
 builder(
     name = 'WebRTC Chromium FYI ios-simulator',
-    caches = [xcode_cache.x11c29],
+    caches = [xcode_cache.x11e146],
     executable = 'recipe:webrtc/chromium_ios',
     goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
+    properties = {
+        'xcode_build_version': '11e146',
+    },
 )

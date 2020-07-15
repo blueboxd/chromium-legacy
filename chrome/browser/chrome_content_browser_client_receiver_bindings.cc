@@ -115,8 +115,8 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
   // message after a time delay, in order to rate limit. The association
   // protects against the render process host ID being recycled in that time
   // gap between the preparation and the execution of that IPC.
-  associated_registry->AddInterface(
-      base::Bind(&CacheStatsRecorder::Create, render_process_host->GetID()));
+  associated_registry->AddInterface(base::BindRepeating(
+      &CacheStatsRecorder::Create, render_process_host->GetID()));
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
       content::GetUIThreadTaskRunner({});

@@ -36,18 +36,60 @@ struct FeaturePolicyDeclarationNode {
 using FeaturePolicyNode = Vector<FeaturePolicyDeclarationNode>;
 }  // namespace internal
 
+class ParsedFeaturePolicies final
+    : public GarbageCollected<ParsedFeaturePolicies>,
+      public Supplement<ExecutionContext> {
+  USING_GARBAGE_COLLECTED_MIXIN(ParsedFeaturePolicies);
+
+ public:
+  static const char kSupplementName[];
+
+  static ParsedFeaturePolicies& From(ExecutionContext& context) {
+    ParsedFeaturePolicies* policies =
+        Supplement<ExecutionContext>::From<ParsedFeaturePolicies>(context);
+    if (!policies) {
+      policies = MakeGarbageCollected<ParsedFeaturePolicies>(context);
+      Supplement<ExecutionContext>::ProvideTo(context, policies);
+    }
+    return *policies;
+  }
+
+  explicit ParsedFeaturePolicies(ExecutionContext& context)
+      : Supplement<ExecutionContext>(context),
+        policies_(
+            static_cast<size_t>(mojom::blink::FeaturePolicyFeature::kMaxValue) +
+            1) {}
+
+  bool Observed(mojom::blink::FeaturePolicyFeature feature) {
+    size_t feature_index = static_cast<size_t>(feature);
+    if (policies_[feature_index])
+      return true;
+    policies_[feature_index] = true;
+    return false;
+  }
+
+ private:
+  // Tracks which feature policies have already been parsed, so as not to count
+  // them multiple times.
+  Vector<bool> policies_;
+};
+
+const char ParsedFeaturePolicies::kSupplementName[] = "ParsedFeaturePolicies";
+
 class ParsingContext {
+  STACK_ALLOCATED();
+
  public:
   ParsingContext(PolicyParserMessageBuffer& logger,
                  scoped_refptr<const SecurityOrigin> self_origin,
                  scoped_refptr<const SecurityOrigin> src_origin,
                  const FeatureNameMap& feature_names,
-                 FeaturePolicyParserDelegate* delegate)
+                 ExecutionContext* execution_context)
       : logger_(logger),
         self_origin_(self_origin),
         src_origin_(src_origin),
         feature_names_(feature_names),
-        delegate_(delegate) {}
+        execution_context_(execution_context) {}
 
   ~ParsingContext() = default;
 
@@ -79,8 +121,6 @@ class ParsingContext {
 
   bool FeatureObserved(mojom::blink::FeaturePolicyFeature feature);
 
-  void ReportFeaturePolicyWebFeatureUsage(mojom::blink::WebFeature feature);
-
   void ReportFeatureUsage(mojom::blink::FeaturePolicyFeature feature);
 
   // This function should be called after Allowlist Histograms related flags
@@ -98,7 +138,7 @@ class ParsingContext {
   scoped_refptr<const SecurityOrigin> self_origin_;
   scoped_refptr<const SecurityOrigin> src_origin_;
   const FeatureNameMap& feature_names_;
-  FeaturePolicyParserDelegate* delegate_;
+  ExecutionContext* execution_context_;
 
   // Flags for the types of items which can be used in allowlists.
   bool allowlist_includes_star_ = false;
@@ -123,16 +163,11 @@ bool ParsingContext::FeatureObserved(
   }
 }
 
-void ParsingContext::ReportFeaturePolicyWebFeatureUsage(
-    mojom::blink::WebFeature feature) {
-  if (delegate_)
-    delegate_->CountFeaturePolicyUsage(feature);
-}
-
 void ParsingContext::ReportFeatureUsage(
     mojom::blink::FeaturePolicyFeature feature) {
   if (src_origin_) {
-    if (!delegate_ || !delegate_->FeaturePolicyFeatureObserved(feature)) {
+    if (!execution_context_ ||
+        !ParsedFeaturePolicies::From(*execution_context_).Observed(feature)) {
       UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.Allow",
                                 feature);
     }
@@ -196,7 +231,7 @@ ParsingContext::ParseFeatureName(const String& feature_name) {
     logger_.Warn("Unrecognized feature: '" + feature_name + "'.");
     return base::nullopt;
   }
-  if (DisabledByOriginTrial(feature_name, delegate_)) {
+  if (DisabledByOriginTrial(feature_name, execution_context_)) {
     logger_.Warn("Origin trial controlled feature not enabled: '" +
                  feature_name + "'.");
     return base::nullopt;
@@ -362,7 +397,8 @@ internal::FeaturePolicyNode ParsingContext::ParseFeaturePolicyToIR(
   policy.Split(',', policy_items);
 
   if (policy_items.size() > 1) {
-    ReportFeaturePolicyWebFeatureUsage(
+    UseCounter::Count(
+        execution_context_,
         mojom::blink::WebFeature::kFeaturePolicyCommaSeparatedDeclarations);
   }
 
@@ -372,9 +408,9 @@ internal::FeaturePolicyNode ParsingContext::ParseFeaturePolicyToIR(
     item.Split(';', feature_entries);
 
     if (feature_entries.size() > 1) {
-      ReportFeaturePolicyWebFeatureUsage(
-          mojom::blink::WebFeature::
-              kFeaturePolicySemicolonSeparatedDeclarations);
+      UseCounter::Count(execution_context_,
+                        mojom::blink::WebFeature::
+                            kFeaturePolicySemicolonSeparatedDeclarations);
     }
 
     for (const String& feature_entry : feature_entries) {
@@ -475,9 +511,9 @@ ParsedFeaturePolicy FeaturePolicyParser::ParseHeader(
     const String& permissions_policy_header,
     scoped_refptr<const SecurityOrigin> origin,
     PolicyParserMessageBuffer& logger,
-    FeaturePolicyParserDelegate* delegate) {
+    ExecutionContext* execution_context) {
   ParsingContext context(logger, origin, nullptr, GetDefaultFeatureNameMap(),
-                         delegate);
+                         execution_context);
   auto policy_ir =
       context.ParsePermissionsPolicyToIR(permissions_policy_header);
   policy_ir.AppendVector(context.ParseFeaturePolicyToIR(feature_policy_header));
@@ -489,9 +525,9 @@ ParsedFeaturePolicy FeaturePolicyParser::ParseAttribute(
     scoped_refptr<const SecurityOrigin> self_origin,
     scoped_refptr<const SecurityOrigin> src_origin,
     PolicyParserMessageBuffer& logger,
-    FeaturePolicyParserDelegate* delegate) {
+    ExecutionContext* execution_context) {
   ParsingContext context(logger, self_origin, src_origin,
-                         GetDefaultFeatureNameMap(), delegate);
+                         GetDefaultFeatureNameMap(), execution_context);
   return context.ParseIR(context.ParseFeaturePolicyToIR(policy));
 }
 
@@ -501,9 +537,9 @@ ParsedFeaturePolicy FeaturePolicyParser::ParseFeaturePolicyForTest(
     scoped_refptr<const SecurityOrigin> src_origin,
     PolicyParserMessageBuffer& logger,
     const FeatureNameMap& feature_names,
-    FeaturePolicyParserDelegate* delegate) {
+    ExecutionContext* execution_context) {
   ParsingContext context(logger, self_origin, src_origin, feature_names,
-                         delegate);
+                         execution_context);
   return context.ParseIR(context.ParseFeaturePolicyToIR(policy));
 }
 
@@ -513,9 +549,9 @@ ParsedFeaturePolicy FeaturePolicyParser::ParsePermissionsPolicyForTest(
     scoped_refptr<const SecurityOrigin> src_origin,
     PolicyParserMessageBuffer& logger,
     const FeatureNameMap& feature_names,
-    FeaturePolicyParserDelegate* delegate) {
+    ExecutionContext* execution_context) {
   ParsingContext context(logger, self_origin, src_origin, feature_names,
-                         delegate);
+                         execution_context);
   return context.ParseIR(context.ParsePermissionsPolicyToIR(policy));
 }
 

@@ -130,6 +130,10 @@ void AMPPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   if (!navigation_handle->HasCommitted())
     return;
 
+  // Ignore same document navigations; see crbug.com/1104365
+  if (navigation_handle->IsSameDocument())
+    return;
+
   // A new navigation is committing, so ensure any old information associated
   // with this frame is discarded.
   amp_subframe_info_.erase(navigation_handle->GetRenderFrameHost());

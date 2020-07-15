@@ -8,7 +8,6 @@
 #include "net/base/isolation_info.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/redirect_util.h"
-#include "net/url_request/url_request.h"
 #include "url/origin.h"
 
 namespace content {

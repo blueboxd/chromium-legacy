@@ -25,7 +25,8 @@ FontFamilyCache::FontFamilyCache(Profile* profile)
     : prefs_(profile->GetPrefs()) {
   font_change_registrar_.Register(
       FontPrefChangeNotifierFactory::GetForProfile(profile),
-      base::Bind(&FontFamilyCache::OnPrefsChanged, base::Unretained(this)));
+      base::BindRepeating(&FontFamilyCache::OnPrefsChanged,
+                          base::Unretained(this)));
 }
 
 FontFamilyCache::~FontFamilyCache() = default;

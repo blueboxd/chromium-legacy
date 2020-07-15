@@ -106,8 +106,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/python_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"

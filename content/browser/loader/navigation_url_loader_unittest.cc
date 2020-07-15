@@ -30,8 +30,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"

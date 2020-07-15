@@ -19,7 +19,6 @@
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"

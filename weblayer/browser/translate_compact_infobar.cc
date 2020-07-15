@@ -227,25 +227,4 @@ void TranslateCompactInfoBar::OnTranslateInfoBarDelegateDestroyed(
   GetDelegate()->RemoveObserver(this);
 }
 
-void TranslateCompactInfoBar::SelectButtonForTesting(ActionType action_type) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_TranslateCompactInfoBar_selectTabForTesting(env, GetJavaInfoBar(),
-                                                   action_type);
-}
-
-void TranslateCompactInfoBar::ClickOverflowMenuItemForTesting(
-    OverflowMenuItemId item_id) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  switch (item_id) {
-    case OverflowMenuItemId::NEVER_TRANSLATE_LANGUAGE:
-      Java_TranslateCompactInfoBar_clickNeverTranslateLanguageMenuItemForTesting(
-          env, GetJavaInfoBar());
-      return;
-    case OverflowMenuItemId::NEVER_TRANSLATE_SITE:
-      Java_TranslateCompactInfoBar_clickNeverTranslateSiteMenuItemForTesting(
-          env, GetJavaInfoBar());
-      return;
-  }
-}
-
 }  // namespace weblayer

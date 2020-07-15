@@ -13,7 +13,6 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "net/url_request/url_request_status.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/network/network_configuration_handler.h"

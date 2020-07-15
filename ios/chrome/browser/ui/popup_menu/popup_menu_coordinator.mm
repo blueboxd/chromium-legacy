@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
@@ -230,7 +231,9 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
                                     ->IsOffTheRecord()
                readingListModel:ReadingListModelFactory::GetForBrowserState(
                                     self.browser->GetBrowserState())
-      triggerNewIncognitoTabTip:triggerNewIncognitoTabTip];
+      triggerNewIncognitoTabTip:triggerNewIncognitoTabTip
+         browserPolicyConnector:GetApplicationContext()
+                                    ->GetBrowserPolicyConnector()];
   self.mediator.engagementTracker =
       feature_engagement::TrackerFactory::GetForBrowserState(
           self.browser->GetBrowserState());

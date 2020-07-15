@@ -115,7 +115,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override;
   void SpeakSelection() override;
-  void GetScreenInfo(ScreenInfo* screen_info) override;
+  void GetScreenInfo(blink::ScreenInfo* screen_info) override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
 
   // Implementation of RenderWidgetHostViewBase.

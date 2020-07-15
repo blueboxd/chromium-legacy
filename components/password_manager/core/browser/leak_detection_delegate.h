@@ -59,7 +59,8 @@ class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
   void OnShowLeakDetectionNotification(IsSaved is_saved,
                                        IsReused is_reused,
                                        GURL url,
-                                       base::string16 username);
+                                       base::string16 username,
+                                       CompromisedSitesCount saved_sites);
 
   void OnError(LeakDetectionError error) override;
 

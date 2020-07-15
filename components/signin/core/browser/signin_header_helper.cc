@@ -15,7 +15,6 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/base/escape.h"
 #include "net/http/http_request_headers.h"
-#include "net/url_request/url_request.h"
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "components/signin/core/browser/dice_header_helper.h"

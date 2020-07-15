@@ -16,6 +16,7 @@
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/referrer_policy.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -439,8 +440,8 @@ TEST_F(URLRequestJobTest, RedirectTransactionWithReferrerPolicyHeader) {
     const char* original_url;
     const char* original_referrer;
     const char* response_headers;
-    URLRequest::ReferrerPolicy original_referrer_policy;
-    URLRequest::ReferrerPolicy expected_final_referrer_policy;
+    ReferrerPolicy original_referrer_policy;
+    ReferrerPolicy expected_final_referrer_policy;
     const char* expected_final_referrer;
   };
 
@@ -453,8 +454,8 @@ TEST_F(URLRequestJobTest, RedirectTransactionWithReferrerPolicyHeader) {
        "Location: http://foo.test/test\n"
        "Referrer-Policy: no-referrer\n",
        // original policy
-       URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-       URLRequest::NO_REFERRER /* expected final policy */,
+       ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+       ReferrerPolicy::NO_REFERRER /* expected final policy */,
        "" /* expected final referrer */},
 
       // A redirect response without Referrer-Policy header should not affect
@@ -463,9 +464,9 @@ TEST_F(URLRequestJobTest, RedirectTransactionWithReferrerPolicyHeader) {
        "http://foo.test/one" /* original referrer */,
        "Location: http://foo.test/test\n",
        // original policy
-       URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+       ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
        // expected final policy
-       URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+       ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
        "http://foo.test/one" /* expected final referrer */},
   };
 
@@ -640,7 +641,7 @@ TEST_F(URLRequestJobTest, SlowBrotliRead) {
 TEST(URLRequestJobComputeReferrer, SetsSameOriginForMetricsOnSameOrigin) {
   bool same_origin = false;
   URLRequestJob::ComputeReferrerForPolicy(
-      URLRequest::ReferrerPolicy(),
+      ReferrerPolicy(),
       /*original_referrer=*/GURL("http://google.com"),
       /*destination=*/GURL("http://google.com"), &same_origin);
   EXPECT_TRUE(same_origin);
@@ -649,7 +650,7 @@ TEST(URLRequestJobComputeReferrer, SetsSameOriginForMetricsOnSameOrigin) {
 TEST(URLRequestJobComputeReferrer, SetsSameOriginForMetricsOnCrossOrigin) {
   bool same_origin = true;
   URLRequestJob::ComputeReferrerForPolicy(
-      URLRequest::ReferrerPolicy(),
+      ReferrerPolicy(),
       /*original_referrer=*/GURL("http://google.com"),
       /*destination=*/GURL("http://boggle.com"), &same_origin);
   EXPECT_FALSE(same_origin);
@@ -657,16 +658,15 @@ TEST(URLRequestJobComputeReferrer, SetsSameOriginForMetricsOnCrossOrigin) {
 
 TEST(URLRequestJobComputeReferrer, AcceptsNullptrInput) {
   // Shouldn't segfault.
-  URLRequestJob::ComputeReferrerForPolicy(URLRequest::ReferrerPolicy(), GURL(),
-                                          GURL(), nullptr);
+  URLRequestJob::ComputeReferrerForPolicy(ReferrerPolicy(), GURL(), GURL(),
+                                          nullptr);
 }
 
 TEST(URLRequestJobComputeReferrer, FilesystemDestination) {
-  EXPECT_EQ(
-      URLRequestJob::ComputeReferrerForPolicy(
-          URLRequest::NEVER_CLEAR_REFERRER, GURL("https://referrer.example"),
-          GURL("filesystem:https://destination.example"), nullptr),
-      GURL("https://referrer.example"));
+  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(
+                ReferrerPolicy::NEVER_CLEAR, GURL("https://referrer.example"),
+                GURL("filesystem:https://destination.example"), nullptr),
+            GURL("https://referrer.example"));
 }
 
 TEST(URLRequestJobComputeReferrer, TruncatesLongReferrer) {
@@ -674,9 +674,9 @@ TEST(URLRequestJobComputeReferrer, TruncatesLongReferrer) {
   original_spec.resize(4097, 'a');
   const GURL kOriginalReferrer(original_spec);
 
-  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(
-                URLRequest::NEVER_CLEAR_REFERRER, kOriginalReferrer,
-                GURL("https://google.com")),
+  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(ReferrerPolicy::NEVER_CLEAR,
+                                                    kOriginalReferrer,
+                                                    GURL("https://google.com")),
             GURL("https://referrer.example/"));
 }
 
@@ -685,9 +685,9 @@ TEST(URLRequestJobComputeReferrer, DoesntTruncateShortReferrer) {
   original_spec.resize(4096, 'a');
   const GURL kOriginalReferrer(original_spec);
 
-  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(
-                URLRequest::NEVER_CLEAR_REFERRER, kOriginalReferrer,
-                GURL("https://google.com")),
+  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(ReferrerPolicy::NEVER_CLEAR,
+                                                    kOriginalReferrer,
+                                                    GURL("https://google.com")),
             kOriginalReferrer);
 }
 
@@ -696,9 +696,9 @@ TEST(URLRequestJobComputeReferrer, DoesntTruncateEvenShorterReferrer) {
   original_spec.resize(4095, 'a');
   const GURL kOriginalReferrer(original_spec);
 
-  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(
-                URLRequest::NEVER_CLEAR_REFERRER, kOriginalReferrer,
-                GURL("https://google.com")),
+  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(ReferrerPolicy::NEVER_CLEAR,
+                                                    kOriginalReferrer,
+                                                    GURL("https://google.com")),
             kOriginalReferrer);
 }
 
@@ -708,7 +708,7 @@ TEST(URLRequestJobComputeReferrer, DoesntTruncateReferrerWithLongRef) {
   // for having a very long ref should not be stripped to an origin by the "if
   // the length is too long, strip to the origin" check.
   EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(
-                URLRequest::NEVER_CLEAR_REFERRER,
+                ReferrerPolicy::NEVER_CLEAR,
                 GURL(std::string("https://referrer.example/path#") +
                      std::string(5000, 'a')),
                 GURL("https://google.com")),
@@ -721,15 +721,15 @@ TEST(URLRequestJobComputeReferrer, InvalidSchemeReferrer) {
       kOriginalReferrer.spec().data(),
       kOriginalReferrer.parsed_for_possibly_invalid_spec().scheme));
 
-  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(
-                URLRequest::NEVER_CLEAR_REFERRER, kOriginalReferrer,
-                GURL("https://google.com")),
+  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(ReferrerPolicy::NEVER_CLEAR,
+                                                    kOriginalReferrer,
+                                                    GURL("https://google.com")),
             GURL());
 
-  EXPECT_EQ(
-      URLRequestJob::ComputeReferrerForPolicy(
-          URLRequest::ORIGIN, kOriginalReferrer, GURL("https://google.com")),
-      GURL());
+  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(ReferrerPolicy::ORIGIN,
+                                                    kOriginalReferrer,
+                                                    GURL("https://google.com")),
+            GURL());
 }
 
 TEST(URLRequestJobComputeReferrer, CapReferrerOnCrossOrigin) {
@@ -739,9 +739,9 @@ TEST(URLRequestJobComputeReferrer, CapReferrerOnCrossOrigin) {
 
   const GURL kOriginalReferrer("https://boggle.com/path");
 
-  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(
-                URLRequest::NEVER_CLEAR_REFERRER, kOriginalReferrer,
-                GURL("https://google.com")),
+  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(ReferrerPolicy::NEVER_CLEAR,
+                                                    kOriginalReferrer,
+                                                    GURL("https://google.com")),
             GURL("https://boggle.com/"));
 }
 
@@ -753,7 +753,7 @@ TEST(URLRequestJobComputeReferrer,
 
   const GURL kOriginalReferrer("https://boggle.com/path");
 
-  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(URLRequest::NO_REFERRER,
+  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(ReferrerPolicy::NO_REFERRER,
                                                     kOriginalReferrer,
                                                     GURL("https://google.com")),
             GURL());
@@ -767,9 +767,9 @@ TEST(URLRequestJobComputeReferrer,
 
   const GURL kOriginalReferrer("https://boggle.com/path");
 
-  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(
-                URLRequest::NEVER_CLEAR_REFERRER, kOriginalReferrer,
-                GURL("https://boggle.com")),
+  EXPECT_EQ(URLRequestJob::ComputeReferrerForPolicy(ReferrerPolicy::NEVER_CLEAR,
+                                                    kOriginalReferrer,
+                                                    GURL("https://boggle.com")),
             kOriginalReferrer);
 }
 

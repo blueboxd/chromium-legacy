@@ -21,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/platform_apps/shortcut_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
@@ -1036,6 +1037,15 @@ class DiceManageAccountBrowserTest : public DiceBrowserTest {
             &policy::internal::g_force_prohibit_signout_for_tests,
             true) {}
 
+  void SetUp() override {
+#if defined(OS_WIN)
+    // Shortcut deletion delays tests shutdown on Win-7 and results in time out.
+    // See crbug.com/1073451.
+    AppShortcutManager::SuppressDeleteAllShortcutsForTesting();
+#endif
+    DiceBrowserTest::SetUp();
+  }
+
  protected:
   base::AutoReset<bool> skip_message_box_auto_reset_;
   base::AutoReset<bool> prohibit_sigout_auto_reset_;
@@ -1062,9 +1072,8 @@ IN_PROC_BROWSER_TEST_F(DiceManageAccountBrowserTest,
       prefs::kSigninAllowedOnNextStartup, false);
 }
 
-// TODO(https://crbug.com/1075896) disabling test due to flakiness
 IN_PROC_BROWSER_TEST_F(DiceManageAccountBrowserTest,
-                       DISABLED_ClearManagedProfileOnStartup) {
+                       ClearManagedProfileOnStartup) {
   // Initial profile should have been deleted as sign-in and sign out were no
   // longer allowed.
   PrefService* local_state = g_browser_process->local_state();

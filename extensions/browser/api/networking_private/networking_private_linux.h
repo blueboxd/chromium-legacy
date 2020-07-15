@@ -37,11 +37,9 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
 
   // NetworkingPrivateDelegate
   void GetProperties(const std::string& guid,
-                     const DictionaryCallback& success_callback,
-                     const FailureCallback& failure_callback) override;
+                     PropertiesCallback callback) override;
   void GetManagedProperties(const std::string& guid,
-                            const DictionaryCallback& success_callback,
-                            const FailureCallback& failure_callback) override;
+                            PropertiesCallback callback) override;
   void GetState(const std::string& guid,
                 const DictionaryCallback& success_callback,
                 const FailureCallback& failure_callback) override;

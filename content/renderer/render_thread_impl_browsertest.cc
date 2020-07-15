@@ -175,9 +175,9 @@ class RenderThreadImplBrowserTest : public testing::Test,
     cmd->AppendSwitchASCII(switches::kNumRasterThreads, "1");
 
     // To avoid creating a GPU channel to query if
-    // accelerated_video_decode is blacklisted on older Android system
+    // accelerated_video_decode is blocklisted on older Android system
     // in RenderThreadImpl::Init().
-    cmd->AppendSwitch(switches::kIgnoreGpuBlacklist);
+    cmd->AppendSwitch(switches::kIgnoreGpuBlocklist);
 
     blink::Platform::InitializeBlink();
     auto main_thread_scheduler =

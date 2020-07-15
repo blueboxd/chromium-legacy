@@ -21,14 +21,16 @@ enum class PreviewsType {
   // Used to indicate that there is no preview type.
   NONE = 0,
 
-  // The user is shown an offline page as a preview.
-  OFFLINE = 1,
+  // The user is shown an offline page as a preview. Deprecated, and should not
+  // be used.
+  DEPRECATED_OFFLINE = 1,
 
   // Replace images with placeholders. Deprecated, and should not be used.
   DEPRECATED_LOFI = 2,
 
-  // The user is shown a server lite page.
-  LITE_PAGE = 3,
+  // The user is shown a server lite page. Deprecated, and should not
+  // be used.
+  DEPRECATED_LITE_PAGE = 3,
 
   // AMP version of the page is shown as a preview. Deprecated, and should not
   // be used.
@@ -104,10 +106,6 @@ base::TimeDelta HostIndifferentBlockListPerHostDuration();
 // The amount of time after any opt out that no previews should be shown.
 base::TimeDelta SingleOptOutDuration();
 
-// The amount of time that an offline page is considered fresh enough to be
-// shown as a preview.
-base::TimeDelta OfflinePreviewFreshnessDuration();
-
 // The default EffectiveConnectionType threshold where preview |type| will be
 // triggered.
 net::EffectiveConnectionType GetECTThresholdForPreview(
@@ -123,13 +121,11 @@ net::EffectiveConnectionType GetSessionMaxECTThreshold();
 bool ArePreviewsAllowed();
 
 // Whether the preview type is enabled.
-bool IsOfflinePreviewsEnabled();
 bool IsNoScriptPreviewsEnabled();
 bool IsResourceLoadingHintsEnabled();
 bool IsDeferAllScriptPreviewsEnabled();
 
 // The blocklist version for each preview type.
-int OfflinePreviewsVersion();
 int NoScriptPreviewsVersion();
 int ResourceLoadingHintsVersion();
 int DeferAllScriptPreviewsVersion();

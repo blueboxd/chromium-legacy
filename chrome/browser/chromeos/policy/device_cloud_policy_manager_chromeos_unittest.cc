@@ -64,7 +64,6 @@
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"

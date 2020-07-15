@@ -143,8 +143,8 @@ class CertificateProviderApiTest : public extensions::ExtensionApiTest {
     // certificate selection dialog.
     const std::string autoselect_pattern = R"({"pattern": "*", "filter": {}})";
 
-    std::unique_ptr<base::ListValue> autoselect_policy(new base::ListValue);
-    autoselect_policy->AppendString(autoselect_pattern);
+    base::Value autoselect_policy(base::Value::Type::LIST);
+    autoselect_policy.Append(autoselect_pattern);
 
     policy::PolicyMap policy;
     policy.Set(policy::key::kAutoSelectCertificateForUrls,

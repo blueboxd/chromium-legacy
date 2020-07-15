@@ -11,7 +11,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/payments/core/error_logger.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"

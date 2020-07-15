@@ -10,21 +10,10 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "components/arc/arc_prefs.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-
-namespace {
-
-void SetPackageErrorCallback(
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
-  DVLOG(1) << "Error while setting Always-On VPN package in shill: "
-           << error_name << ", " << *error_data;
-}
-
-}  // namespace
 
 namespace arc {
 
@@ -46,10 +35,9 @@ AlwaysOnVpnManager::~AlwaysOnVpnManager() {
   bool lockdown = registrar_.prefs()->GetBoolean(prefs::kAlwaysOnVpnLockdown);
   if (lockdown && !package.empty()) {
     chromeos::NetworkHandler::Get()
-        ->managed_network_configuration_handler()
+        ->network_configuration_handler()
         ->SetManagerProperty(shill::kAlwaysOnVpnPackageProperty,
-                             base::Value(std::string()), base::DoNothing(),
-                             base::Bind(&SetPackageErrorCallback));
+                             base::Value(std::string()));
   }
   registrar_.RemoveAll();
 }
@@ -63,11 +51,9 @@ void AlwaysOnVpnManager::OnPrefChanged() {
         registrar_.prefs()->GetString(prefs::kAlwaysOnVpnPackage);
   }
   chromeos::NetworkHandler::Get()
-      ->managed_network_configuration_handler()
+      ->network_configuration_handler()
       ->SetManagerProperty(shill::kAlwaysOnVpnPackageProperty,
-                           base::Value(always_on_vpn_package),
-                           base::DoNothing(),
-                           base::Bind(&SetPackageErrorCallback));
+                           base::Value(always_on_vpn_package));
 }
 
 }  // namespace arc

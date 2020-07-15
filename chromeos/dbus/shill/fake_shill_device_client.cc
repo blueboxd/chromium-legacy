@@ -130,7 +130,7 @@ void FakeShillDeviceClient::ClearProperty(const dbus::ObjectPath& device_path,
     PostVoidCallback(std::move(callback), false);
     return;
   }
-  device_properties->RemoveWithoutPathExpansion(name, nullptr);
+  device_properties->RemoveKey(name);
   PostVoidCallback(std::move(callback), true);
 }
 
@@ -408,7 +408,7 @@ void FakeShillDeviceClient::AddDevice(const std::string& device_path,
 
 void FakeShillDeviceClient::RemoveDevice(const std::string& device_path) {
   ShillManagerClient::Get()->GetTestInterface()->RemoveDevice(device_path);
-  stub_devices_.RemoveWithoutPathExpansion(device_path, nullptr);
+  stub_devices_.RemoveKey(device_path);
 }
 
 void FakeShillDeviceClient::ClearDevices() {

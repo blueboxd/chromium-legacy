@@ -119,13 +119,6 @@ class PreviewsDeciderImpl : public PreviewsDecider,
                            content::NavigationHandle* navigation_handle,
                            PreviewsType type) const override;
 
-  // Set whether to ignore the long term blocklist rules for server previews.
-  void SetIgnoreLongTermBlockListForServerPreviews(
-      bool ignore_long_term_blocklist_for_server_previews);
-
-  bool AreCommitTimePreviewsAvailable(
-      content::NavigationHandle* navigation_handle) override;
-
   // Generates a page ID that is guaranteed to be unique from any other page ID
   // generated in this browser session. Also, guaranteed to be non-zero.
   uint64_t GeneratePageId();
@@ -160,14 +153,12 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       content::NavigationHandle* navigation_handle,
       bool is_reload,
       PreviewsType type,
-      bool is_drp_server_preview,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
   // Returns previews eligibility with respect to the local blocklist.
   PreviewsEligibilityReason CheckLocalBlocklist(
       const GURL& url,
       PreviewsType type,
-      bool is_drp_server_preview,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
   // Whether the preview |type| should be allowed to be considered for |url|
@@ -203,9 +194,6 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   // This is related to a test flag and should only be true when the user has
   // set it in flags. See previews::IsPreviewsBlocklistIgnoredViaFlag.
   bool blocklist_ignored_;
-
-  // Whether to ignore the blocklist for server previews.
-  bool ignore_long_term_blocklist_for_server_previews_ = false;
 
   // The estimate of how slow a user's connection is. Used for triggering
   // Previews.

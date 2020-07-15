@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "content/common/content_export.h"
-#include "content/public/common/screen_info.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -24,14 +24,14 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
  public:
   RenderWidgetScreenMetricsEmulator(
       RenderWidgetScreenMetricsEmulatorDelegate* delegate,
-      const ScreenInfo& screen_info,
+      const blink::ScreenInfo& screen_info,
       const gfx::Size& widget_size,
       const gfx::Size& visible_viewport_size,
       const gfx::Rect& view_screen_rect,
       const gfx::Rect& window_screen_rect);
   ~RenderWidgetScreenMetricsEmulator();
 
-  const ScreenInfo& original_screen_info() const {
+  const blink::ScreenInfo& original_screen_info() const {
     return original_screen_info_;
   }
   // This rect is the WidgetScreenRect or ViewRect, which is the main frame
@@ -59,7 +59,7 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
   // Sets new parameters and applies them to the RenderWidget.
   void ChangeEmulationParams(const blink::WebDeviceEmulationParams& params);
 
-  void OnSynchronizeVisualProperties(const ScreenInfo& screen_info,
+  void OnSynchronizeVisualProperties(const blink::ScreenInfo& screen_info,
                                      const gfx::Size& widget_size,
                                      const gfx::Size& visible_viewport_size);
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
@@ -80,7 +80,7 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
   blink::WebDeviceEmulationParams emulation_params_;
 
   // Original values to restore back after emulation ends.
-  ScreenInfo original_screen_info_;
+  blink::ScreenInfo original_screen_info_;
   gfx::Size original_widget_size_;
   gfx::Size original_visible_viewport_size_;
   gfx::Rect original_view_screen_rect_;

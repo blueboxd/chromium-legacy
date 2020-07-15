@@ -16,7 +16,6 @@
 #include "content/public/common/content_client.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_private_key.h"
-#include "net/url_request/url_request.h"
 
 namespace content {
 

@@ -23,8 +23,7 @@ DownloadUrlParameters::DownloadUrlParameters(
       post_id_(-1),
       prefer_cache_(false),
       referrer_policy_(
-          net::URLRequest::
-              CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
+          net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
       render_process_host_id_(render_process_host_id),
       render_view_host_routing_id_(render_view_host_routing_id),
       render_frame_host_routing_id_(render_frame_host_routing_id),

@@ -89,14 +89,12 @@ class PlatformKeysTest : public PlatformKeysTestBase {
 
     // Set up the test policy that gives |extension_| the permission to access
     // corporate keys.
-    std::unique_ptr<base::DictionaryValue> key_permissions_policy =
-        std::make_unique<base::DictionaryValue>();
+    base::Value key_permissions_policy(base::Value::Type::DICTIONARY);
     {
-      std::unique_ptr<base::DictionaryValue> cert1_key_permission(
-          new base::DictionaryValue);
-      cert1_key_permission->SetKey("allowCorporateKeyUsage", base::Value(true));
-      key_permissions_policy->SetWithoutPathExpansion(
-          extension_->id(), std::move(cert1_key_permission));
+      base::Value cert1_key_permission(base::Value::Type::DICTIONARY);
+      cert1_key_permission.SetKey("allowCorporateKeyUsage", base::Value(true));
+      key_permissions_policy.SetKey(extension_->id(),
+                                    std::move(cert1_key_permission));
     }
 
     policy.Set(policy::key::kKeyPermissions, policy::POLICY_LEVEL_MANDATORY,

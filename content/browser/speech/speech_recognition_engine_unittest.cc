@@ -22,7 +22,6 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"

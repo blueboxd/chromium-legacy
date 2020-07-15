@@ -2546,7 +2546,7 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
     ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
     WidgetMsg_UpdateVisualProperties::Param params;
     WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-    VisualProperties visual_properties = std::get<0>(params);
+    blink::VisualProperties visual_properties = std::get<0>(params);
     // DIP size.
     EXPECT_EQ(gfx::Size(100, 100), visual_properties.new_size);
     // Physical pixel size.
@@ -2576,7 +2576,7 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
     ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
     WidgetMsg_UpdateVisualProperties::Param params;
     WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-    VisualProperties visual_properties = std::get<0>(params);
+    blink::VisualProperties visual_properties = std::get<0>(params);
     // DIP size.
     EXPECT_EQ(gfx::Size(100, 100), visual_properties.new_size);
     // Physical pixel size.
@@ -2604,7 +2604,7 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
     ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
     WidgetMsg_UpdateVisualProperties::Param params;
     WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-    VisualProperties visual_properties = std::get<0>(params);
+    blink::VisualProperties visual_properties = std::get<0>(params);
     // DIP size.
     EXPECT_EQ(gfx::Size(100, 100), visual_properties.new_size);
     // Physical pixel size.
@@ -2637,7 +2637,7 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
     ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
     WidgetMsg_UpdateVisualProperties::Param params;
     WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-    VisualProperties visual_properties = std::get<0>(params);
+    blink::VisualProperties visual_properties = std::get<0>(params);
     // Auto resize parameters that we set above.
     EXPECT_EQ(gfx::Size(50, 50), visual_properties.min_size_for_auto_resize);
     EXPECT_EQ(gfx::Size(100, 100), visual_properties.max_size_for_auto_resize);
@@ -2681,7 +2681,7 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
     ASSERT_TRUE(msg);
     WidgetMsg_UpdateVisualProperties::Param params;
     WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-    VisualProperties visual_properties = std::get<0>(params);
+    blink::VisualProperties visual_properties = std::get<0>(params);
     // Auto resize parameters did not change as they DIP values.
     EXPECT_EQ(gfx::Size(50, 50), visual_properties.min_size_for_auto_resize);
     EXPECT_EQ(gfx::Size(100, 100), visual_properties.max_size_for_auto_resize);
@@ -2717,7 +2717,7 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
     ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
     WidgetMsg_UpdateVisualProperties::Param params;
     WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-    VisualProperties visual_properties = std::get<0>(params);
+    blink::VisualProperties visual_properties = std::get<0>(params);
     // Auto-resizve limits sent to the renderer.
     EXPECT_EQ(gfx::Size(50, 50), visual_properties.min_size_for_auto_resize);
     EXPECT_EQ(gfx::Size(100, 100), visual_properties.max_size_for_auto_resize);
@@ -2757,7 +2757,7 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
     ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
     WidgetMsg_UpdateVisualProperties::Param params;
     WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-    VisualProperties visual_properties = std::get<0>(params);
+    blink::VisualProperties visual_properties = std::get<0>(params);
     // Auto-resizve limits sent to the renderer.
     EXPECT_EQ(gfx::Size(50, 50), visual_properties.min_size_for_auto_resize);
     EXPECT_EQ(gfx::Size(100, 100), visual_properties.max_size_for_auto_resize);
@@ -3042,7 +3042,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ZeroSizeStillGetsLocalSurfaceId) {
     ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
     WidgetMsg_UpdateVisualProperties::Param params;
     WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-    VisualProperties visual_properties = std::get<0>(params);
+    blink::VisualProperties visual_properties = std::get<0>(params);
     // Empty size is sent.
     EXPECT_EQ(gfx::Size(), visual_properties.new_size);
     // A LocalSurfaceIdAllocation is sent too.
@@ -3414,7 +3414,7 @@ TEST_F(RenderWidgetHostViewAuraTest, VisibleViewportTest) {
     ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
     WidgetMsg_UpdateVisualProperties::Param params;
     WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-    VisualProperties visual_properties = std::get<0>(params);
+    blink::VisualProperties visual_properties = std::get<0>(params);
     EXPECT_EQ(gfx::Size(100, 100), visual_properties.new_size);
     EXPECT_EQ(gfx::Size(100, 100), visual_properties.visible_viewport_size);
   }
@@ -3438,7 +3438,7 @@ TEST_F(RenderWidgetHostViewAuraTest, VisibleViewportTest) {
     ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
     WidgetMsg_UpdateVisualProperties::Param params;
     WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-    VisualProperties visual_properties = std::get<0>(params);
+    blink::VisualProperties visual_properties = std::get<0>(params);
     EXPECT_EQ(gfx::Size(100, 100), visual_properties.new_size);
     EXPECT_EQ(gfx::Size(100, 60), visual_properties.visible_viewport_size);
   }

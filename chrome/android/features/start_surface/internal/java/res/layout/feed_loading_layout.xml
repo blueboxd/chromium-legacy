@@ -33,12 +33,6 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/sign_in_box"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"/>
-
-    <LinearLayout
         android:id="@+id/placeholders_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

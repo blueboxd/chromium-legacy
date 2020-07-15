@@ -98,6 +98,7 @@ public class TestTrustedWebActivityService extends TrustedWebActivityService {
                 Bundle locationResult = new Bundle();
                 locationResult.putDouble("latitude", 1.0);
                 locationResult.putDouble("longitude", -2.0);
+                locationResult.putDouble("accuracy", 0.5);
                 locationResult.putLong("timeStamp", System.currentTimeMillis());
                 runCallback(callback, EXTRA_NEW_LOCATION_AVAILABLE_CALLBACK, locationResult);
                 break;

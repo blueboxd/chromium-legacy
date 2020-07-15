@@ -122,10 +122,6 @@ views::Widget* CastDialogView::GetCurrentDialogWidget() {
   return instance_ ? instance_->GetWidget() : nullptr;
 }
 
-bool CastDialogView::ShouldShowCloseButton() const {
-  return true;
-}
-
 base::string16 CastDialogView::GetWindowTitle() const {
   switch (selected_source_) {
     case SourceType::kTab:
@@ -264,6 +260,7 @@ CastDialogView::CastDialogView(views::View* anchor_view,
       controller_(controller),
       profile_(profile),
       metrics_(start_time, activation_location, profile) {
+  SetShowCloseButton(true);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   sources_button_ = SetExtraView(CreateSourcesButton(this));
   ShowNoSinksView();

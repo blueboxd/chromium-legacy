@@ -10,7 +10,6 @@
 #import <MaterialComponents/MaterialSnackbar.h>
 
 #include "base/base64.h"
-#include "base/ios/ios_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -3401,19 +3400,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // If there is no first responder, try to make the webview or the NTP first
   // responder to have it answer keyboard commands (e.g. space bar to scroll).
-  // TODO(crbug.com/1103822): Investigate why this is causing EG2 tests to spin
-  // on iOS14.
-  if (!base::ios::IsRunningOnIOS14OrLater()) {
-    if (!GetFirstResponder() && self.currentWebState) {
-      NewTabPageTabHelper* NTPHelper =
-          NewTabPageTabHelper::FromWebState(webState);
-      if (NTPHelper && NTPHelper->IsActive()) {
-        UIViewController* viewController =
-            _ntpCoordinatorsForWebStates[webState].viewController;
-        [viewController becomeFirstResponder];
-      } else {
-        [self.currentWebState->GetWebViewProxy() becomeFirstResponder];
-      }
+  if (!GetFirstResponder() && self.currentWebState) {
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(webState);
+    if (NTPHelper && NTPHelper->IsActive()) {
+      UIViewController* viewController =
+          _ntpCoordinatorsForWebStates[webState].viewController;
+      [viewController becomeFirstResponder];
+    } else {
+      [self.currentWebState->GetWebViewProxy() becomeFirstResponder];
     }
   }
 }

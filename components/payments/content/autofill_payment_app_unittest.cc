@@ -21,7 +21,6 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/test_payment_request_delegate.h"
 #include "components/strings/grit/components_strings.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"

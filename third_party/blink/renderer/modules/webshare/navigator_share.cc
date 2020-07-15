@@ -203,16 +203,16 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
   }
 
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
-  KURL url;
-  if (!CanShareInternal(*window, *data, url, &exception_state)) {
-    DCHECK(exception_state.HadException());
-    return ScriptPromise();
-  }
-
-  if (!LocalFrame::HasTransientUserActivation(window->GetFrame())) {
+  if (!LocalFrame::ConsumeTransientUserActivation(window->GetFrame())) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotAllowedError,
         "Must be handling a user gesture to perform a share request.");
+    return ScriptPromise();
+  }
+
+  KURL url;
+  if (!CanShareInternal(*window, *data, url, &exception_state)) {
+    DCHECK(exception_state.HadException());
     return ScriptPromise();
   }
 

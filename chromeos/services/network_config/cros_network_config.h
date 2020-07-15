@@ -87,22 +87,16 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   void GetNetworkCertificates(GetNetworkCertificatesCallback callback) override;
 
  private:
-  void GetManagedPropertiesSuccess(int callback_id,
-                                   const std::string& service_path,
-                                   const base::DictionaryValue& properties);
-  void GetManagedPropertiesSuccessEap(
-      int callback_id,
-      const std::string& service_path,
-      const base::DictionaryValue& eap_properties);
-  void GetManagedPropertiesSuccessNoEap(
-      int callback_id,
-      const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data);
-  void GetManagedPropertiesFailure(
-      std::string guid,
-      int callback_id,
-      const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data);
+  void OnGetManagedProperties(GetManagedPropertiesCallback callback,
+                              std::string guid,
+                              const std::string& service_path,
+                              base::Optional<base::Value> properties,
+                              base::Optional<std::string> error);
+  void OnGetManagedPropertiesEap(GetManagedPropertiesCallback callback,
+                                 mojom::ManagedPropertiesPtr managed_properties,
+                                 const std::string& service_path,
+                                 base::Optional<base::Value> properties,
+                                 base::Optional<std::string> error);
   void SetPropertiesSuccess(int callback_id);
   void SetPropertiesConfigureSuccess(int callback_id,
                                      const std::string& service_path,
@@ -169,8 +163,6 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   mojo::ReceiverSet<mojom::CrosNetworkConfig> receivers_;
 
   int callback_id_ = 1;
-  base::flat_map<int, GetManagedPropertiesCallback>
-      get_managed_properties_callbacks_;
   base::flat_map<int, SetPropertiesCallback> set_properties_callbacks_;
   base::flat_map<int, ConfigureNetworkCallback> configure_network_callbacks_;
   base::flat_map<int, ForgetNetworkCallback> forget_network_callbacks_;
@@ -182,10 +174,6 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   base::flat_map<int, StartDisconnectCallback> start_disconnect_callbacks_;
 
   std::vector<mojom::VpnProviderPtr> vpn_providers_;
-
-  // GetManagedProperties may require multiple async calls so we need to store
-  // an owned copy of the mojo properties by callback id.
-  base::flat_map<int, mojom::ManagedPropertiesPtr> managed_properties_;
 
   base::WeakPtrFactory<CrosNetworkConfig> weak_factory_{this};
 

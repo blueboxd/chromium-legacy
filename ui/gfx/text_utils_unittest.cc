@@ -6,12 +6,17 @@
 
 #include <stddef.h>
 
+#include <vector>
+
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
 namespace {
@@ -35,6 +40,81 @@ TEST(TextUtilsTest, GetStringWidth) {
             GetStringWidth(base::ASCIIToUTF16("a"), font_list));
   EXPECT_GT(GetStringWidth(base::ASCIIToUTF16("abc"), font_list),
             GetStringWidth(base::ASCIIToUTF16("ab"), font_list));
+}
+
+TEST(TextUtilsTest, GetStringSize) {
+  std::vector<base::string16> strings{
+      base::string16(),
+      base::ASCIIToUTF16("a"),
+      base::ASCIIToUTF16("abc"),
+  };
+
+  FontList font_list;
+  for (base::string16 string : strings) {
+    gfx::Size size = GetStringSize(string, font_list);
+    EXPECT_EQ(GetStringWidth(string, font_list), size.width())
+        << " input string is \"" << string << "\"";
+    EXPECT_EQ(font_list.GetHeight(), size.height())
+        << " input string is \"" << string << "\"";
+  }
+}
+
+TEST(TextUtilsTest, AdjustVisualBorderForFont_BorderLargerThanFont) {
+  FontList font_list;
+
+  // We will make some assumptions about the default font - specifically that it
+  // has leading space and space for the descender.
+  DCHECK_GT(font_list.GetBaseline(), font_list.GetCapHeight());
+  DCHECK_LT(font_list.GetBaseline(), font_list.GetHeight());
+
+  // Adjust a large border for the default font. Using a large number means that
+  // the border will extend outside the leading and descender area of the font.
+  constexpr gfx::Insets kOriginalBorder(20);
+  const gfx::Insets result =
+      AdjustVisualBorderForFont(font_list, kOriginalBorder);
+  EXPECT_EQ(result.left(), kOriginalBorder.left());
+  EXPECT_EQ(result.right(), kOriginalBorder.right());
+  EXPECT_LT(result.top(), kOriginalBorder.top());
+  EXPECT_LT(result.bottom(), kOriginalBorder.bottom());
+}
+
+TEST(TextUtilsTest, AdjustVisualBorderForFont_BorderSmallerThanFont) {
+  FontList font_list;
+
+  // We will make some assumptions about the default font - specifically that it
+  // has leading space and space for the descender.
+  DCHECK_GT(font_list.GetBaseline(), font_list.GetCapHeight());
+  DCHECK_LT(font_list.GetBaseline(), font_list.GetHeight());
+
+  // Adjust a border with a small vertical component. The vertical component
+  // should go to zero because it overlaps the leading and descender areas of
+  // the font.
+  constexpr gfx::Insets kSmallVerticalInsets(1, 20);
+  const gfx::Insets result =
+      AdjustVisualBorderForFont(font_list, kSmallVerticalInsets);
+  EXPECT_EQ(result.left(), kSmallVerticalInsets.left());
+  EXPECT_EQ(result.right(), kSmallVerticalInsets.right());
+  EXPECT_EQ(result.top(), 0);
+  EXPECT_EQ(result.bottom(), 0);
+}
+
+TEST(TextUtilsTest, GetFontCapHeightCenterOffset_SecondFontIsSmaller) {
+  FontList original_font;
+  FontList smaller_font = original_font.DeriveWithSizeDelta(-3);
+  DCHECK_LT(smaller_font.GetCapHeight(), original_font.GetCapHeight());
+  EXPECT_GT(GetFontCapHeightCenterOffset(original_font, smaller_font), 0);
+}
+
+TEST(TextUtilsTest, GetFontCapHeightCenterOffset_SecondFontIsLarger) {
+  FontList original_font;
+  FontList larger_font = original_font.DeriveWithSizeDelta(3);
+  DCHECK_GT(larger_font.GetCapHeight(), original_font.GetCapHeight());
+  EXPECT_LT(GetFontCapHeightCenterOffset(original_font, larger_font), 0);
+}
+
+TEST(TextUtilsTest, GetFontCapHeightCenterOffset_SameSize) {
+  FontList original_font;
+  EXPECT_EQ(0, GetFontCapHeightCenterOffset(original_font, original_font));
 }
 
 class RemoveAcceleratorCharTest

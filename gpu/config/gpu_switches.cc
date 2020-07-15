@@ -26,7 +26,10 @@ const char kGpuDriverBugListTestGroup[] = "gpu-driver-bug-list-test-group";
 const char kGpuPreferences[] = "gpu-preferences";
 
 // Ignores GPU blocklist.
-// TODO(crbug.com/1101491): migrate to a more intentional name.
+const char kIgnoreGpuBlocklist[] = "ignore-gpu-blocklist";
+
+// Ignores GPU blocklist.
+// TODO(crbug.com/1101491): remove in 2020Q4 in favor of --ignore-gpu-blocklist.
 const char kIgnoreGpuBlacklist[] = "ignore-gpu-blacklist";
 
 // Allows explicitly specifying the shader disk cache size for embedded devices.

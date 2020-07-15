@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/common/visual_properties.h"
+#include "third_party/blink/public/common/widget/visual_properties.h"
 
 namespace blink {
 class WebMouseEvent;

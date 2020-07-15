@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
-#include "third_party/blink/renderer/core/feature_policy/feature_policy_parser_delegate.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
 #include "third_party/blink/renderer/platform/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -121,8 +120,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
                                      public ContextLifecycleNotifier,
                                      public ConsoleLogger,
                                      public UseCounter,
-                                     public FeaturePolicyParserDelegate {
-
+                                     public FeatureContext {
  public:
   void Trace(Visitor*) const override;
 
@@ -135,8 +133,6 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   // Returns the ExecutionContext of the relevant realm for the receiver object.
   static ExecutionContext* ForRelevantRealm(
       const v8::FunctionCallbackInfo<v8::Value>&);
-
-  void Initialize(const SecurityContextInit&);
 
   virtual bool IsWindow() const { return false; }
   virtual bool IsWorkerOrWorkletGlobalScope() const { return false; }
@@ -312,17 +308,14 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   v8::MicrotaskQueue* GetMicrotaskQueue() const;
 
   OriginTrialContext* GetOriginTrialContext() const {
-    return security_context_.GetOriginTrialContext();
+    return origin_trial_context_;
   }
 
   virtual TrustedTypePolicyFactory* GetTrustedTypes() const { return nullptr; }
   virtual bool RequireTrustedTypes() const;
 
-  // FeaturePolicyParserDelegate override
+  // FeatureContext override
   bool FeatureEnabled(OriginTrialFeature) const override;
-  void CountFeaturePolicyUsage(mojom::WebFeature feature) override;
-  bool FeaturePolicyFeatureObserved(
-      mojom::blink::FeaturePolicyFeature feature) override;
 
   // Tests whether the policy-controlled feature is enabled in this frame.
   // Optionally sends a report to any registered reporting observers or
@@ -440,10 +433,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
 
   network::mojom::blink::IPAddressSpace address_space_;
 
-  // Tracks which feature policies have already been parsed, so as not to count
-  // them multiple times.
-  // The size of this vector is 0 until FeaturePolicyFeatureObserved is called.
-  Vector<bool> parsed_feature_policies_;
+  Member<OriginTrialContext> origin_trial_context_;
 
   // Tracks which feature policy features have been logged in this execution
   // context as to the FeaturePolicyProposalWouldChangeBehaviour

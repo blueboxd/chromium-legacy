@@ -26,7 +26,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/storage_partition.h"
@@ -35,6 +34,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/referrer_policy.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -837,7 +837,7 @@ void ManagementUIHandler::AsyncUpdateLogo() {
   if (!url.empty() && GURL(url) != logo_url_) {
     icon_fetcher_ = std::make_unique<BitmapFetcher>(
         GURL(url), this, GetManagementUICustomerLogoAnnotation());
-    icon_fetcher_->Init(std::string(), net::URLRequest::NEVER_CLEAR_REFERRER,
+    icon_fetcher_->Init(std::string(), net::ReferrerPolicy::NEVER_CLEAR,
                         network::mojom::CredentialsMode::kOmit);
     auto* profile = Profile::FromWebUI(web_ui());
     icon_fetcher_->Start(

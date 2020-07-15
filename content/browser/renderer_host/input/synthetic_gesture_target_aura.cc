@@ -45,9 +45,7 @@ int WebEventButtonToUIEventButtonFlags(blink::WebMouseEvent::Button button) {
 SyntheticGestureTargetAura::SyntheticGestureTargetAura(
     RenderWidgetHostImpl* host)
     : SyntheticGestureTargetBase(host) {
-  ScreenInfo screen_info;
-  host->GetScreenInfo(&screen_info);
-  device_scale_factor_ = screen_info.device_scale_factor;
+  device_scale_factor_ = host->GetDeviceScaleFactor();
 }
 
 void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(

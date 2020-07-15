@@ -103,6 +103,7 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/referrer_policy.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -1364,9 +1365,8 @@ TEST_F(NetworkContextTest, Referrers) {
   ASSERT_TRUE(test_server.Start());
 
   for (bool validate_referrer_policy_on_initial_request : {false, true}) {
-    for (net::URLRequest::ReferrerPolicy referrer_policy :
-         {net::URLRequest::NEVER_CLEAR_REFERRER,
-          net::URLRequest::NO_REFERRER}) {
+    for (net::ReferrerPolicy referrer_policy :
+         {net::ReferrerPolicy::NEVER_CLEAR, net::ReferrerPolicy::NO_REFERRER}) {
       mojom::NetworkContextParamsPtr context_params = CreateContextParams();
       context_params->validate_referrer_policy_on_initial_request =
           validate_referrer_policy_on_initial_request;
@@ -1399,7 +1399,7 @@ TEST_F(NetworkContextTest, Referrers) {
       // If validating referrers, and the referrer policy is not to send
       // referrers, the request should fail.
       if (validate_referrer_policy_on_initial_request &&
-          referrer_policy == net::URLRequest::NO_REFERRER) {
+          referrer_policy == net::ReferrerPolicy::NO_REFERRER) {
         EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT,
                   client.completion_status().error_code);
         EXPECT_FALSE(client.response_body().is_valid());
@@ -1412,7 +1412,7 @@ TEST_F(NetworkContextTest, Referrers) {
       ASSERT_TRUE(client.response_body().is_valid());
       EXPECT_TRUE(mojo::BlockingCopyToString(client.response_body_release(),
                                              &response_body));
-      if (referrer_policy == net::URLRequest::NO_REFERRER) {
+      if (referrer_policy == net::ReferrerPolicy::NO_REFERRER) {
         // If not validating referrers, and the referrer policy is not to send
         // referrers, the referrer should be cleared.
         EXPECT_EQ("None", response_body);

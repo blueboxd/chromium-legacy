@@ -625,7 +625,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
 }
 #endif
 
-// Tests that the renderer receives the blink::WebScreenInfo size overrides
+// Tests that the renderer receives the blink::ScreenInfo size overrides
 // while the page is in fullscreen mode. This is a regression test for
 // https://crbug.com/1060795.
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostBrowserTest,
@@ -656,7 +656,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostBrowserTest,
   ASSERT_FALSE(web_contents()->IsFullscreen());
 
   // While not fullscreened, expect the screen size to not be overridden.
-  ScreenInfo screen_info;
+  blink::ScreenInfo screen_info;
   host()->GetScreenInfo(&screen_info);
   WaitForVisualPropertiesAck();
   EXPECT_EQ(screen_info.rect.size().ToString(),

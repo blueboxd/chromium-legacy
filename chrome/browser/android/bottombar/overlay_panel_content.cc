@@ -23,7 +23,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
-#include "net/url_request/url_fetcher_impl.h"
 #include "ui/android/view_android.h"
 
 using base::android::JavaParamRef;

@@ -86,6 +86,7 @@ public class ShareSheetCoordinator
     protected void destroy() {
         if (mWindowAndroid != null) {
             mWindowAndroid.removeActivityStateObserver(this);
+            mWindowAndroid = null;
         }
     }
 

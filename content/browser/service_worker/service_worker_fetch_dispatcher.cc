@@ -43,7 +43,6 @@
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 

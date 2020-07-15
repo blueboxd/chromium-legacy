@@ -10,9 +10,9 @@
 
 #include "cc/trees/browser_controls_params.h"
 #include "content/common/frame_messages.h"
-#include "content/common/visual_properties.h"
 #include "ipc/ipc_message_macros.h"
 #include "services/device/public/mojom/screen_orientation_lock_types.mojom-shared.h"
+#include "third_party/blink/public/common/widget/visual_properties.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -40,7 +40,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::BrowserControlsParams)
   IPC_STRUCT_TRAITS_MEMBER(browser_controls_shrink_blink_size)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::VisualProperties)
+IPC_STRUCT_TRAITS_BEGIN(blink::VisualProperties)
   IPC_STRUCT_TRAITS_MEMBER(screen_info)
   IPC_STRUCT_TRAITS_MEMBER(auto_resize_enabled)
   IPC_STRUCT_TRAITS_MEMBER(min_size_for_auto_resize)

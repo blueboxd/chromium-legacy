@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
-#include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/blocklist/opt_out_blocklist/opt_out_store.h"
@@ -57,13 +56,13 @@ std::unique_ptr<previews::RegexpList> GetDenylistRegexpsForDeferAllScript() {
 // Returns true if previews can be shown for |type|.
 bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
   switch (type) {
-    case previews::PreviewsType::OFFLINE:
-      return previews::params::IsOfflinePreviewsEnabled();
+    case previews::PreviewsType::DEPRECATED_OFFLINE:
+      return false;
     case previews::PreviewsType::DEPRECATED_LOFI:
       return false;
     case previews::PreviewsType::DEPRECATED_LITE_PAGE_REDIRECT:
       return false;
-    case previews::PreviewsType::LITE_PAGE:
+    case previews::PreviewsType::DEPRECATED_LITE_PAGE:
       return false;
     case previews::PreviewsType::NOSCRIPT:
       return previews::params::IsNoScriptPreviewsEnabled();
@@ -88,10 +87,6 @@ bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
 // specified in field trial config.
 int GetPreviewsTypeVersion(previews::PreviewsType type) {
   switch (type) {
-    case previews::PreviewsType::OFFLINE:
-      return previews::params::OfflinePreviewsVersion();
-    case previews::PreviewsType::LITE_PAGE:
-      return 0;
     case previews::PreviewsType::NOSCRIPT:
       return previews::params::NoScriptPreviewsVersion();
     case previews::PreviewsType::RESOURCE_LOADING_HINTS:
@@ -102,8 +97,10 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
     case previews::PreviewsType::UNSPECIFIED:
     case previews::PreviewsType::LAST:
     case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
-    case previews::PreviewsType::DEPRECATED_LOFI:
+    case previews::PreviewsType::DEPRECATED_LITE_PAGE:
     case previews::PreviewsType::DEPRECATED_LITE_PAGE_REDIRECT:
+    case previews::PreviewsType::DEPRECATED_LOFI:
+    case previews::PreviewsType::DEPRECATED_OFFLINE:
       break;
   }
   NOTREACHED();
@@ -158,8 +155,6 @@ PreviewsService::PreviewsService(content::BrowserContext* browser_context)
     : previews_https_notification_infobar_decider_(
           std::make_unique<PreviewsHTTPSNotificationInfoBarDecider>(
               browser_context)),
-      previews_offline_helper_(
-          std::make_unique<PreviewsOfflineHelper>(browser_context)),
       browser_context_(browser_context),
       // Set cache size to 25 entries.  This should be sufficient since the
       // redirect loop cache is needed for only one navigation.
@@ -214,9 +209,6 @@ void PreviewsService::Initialize(
 void PreviewsService::Shutdown() {
   if (previews_https_notification_infobar_decider_)
     previews_https_notification_infobar_decider_->Shutdown();
-
-  if (previews_offline_helper_)
-    previews_offline_helper_->Shutdown();
 }
 
 void PreviewsService::ClearBlockList(base::Time begin_time,

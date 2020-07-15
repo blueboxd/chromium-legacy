@@ -218,6 +218,7 @@
 /swiftshader/
 /syzygy
 /syzygy/binaries
+/tint/src
 /tsan/
 /turbine/src
 /turbine/*.jar

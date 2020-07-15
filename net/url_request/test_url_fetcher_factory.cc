@@ -105,9 +105,7 @@ int TestURLFetcher::GetLoadFlags() const {
 void TestURLFetcher::SetReferrer(const std::string& referrer) {
 }
 
-void TestURLFetcher::SetReferrerPolicy(
-    URLRequest::ReferrerPolicy referrer_policy) {
-}
+void TestURLFetcher::SetReferrerPolicy(ReferrerPolicy referrer_policy) {}
 
 void TestURLFetcher::SetExtraRequestHeaders(
     const std::string& extra_request_headers) {

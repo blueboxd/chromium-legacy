@@ -83,7 +83,6 @@
 #include "content/public/common/url_utils.h"
 #include "media/base/media_switches.h"
 #include "net/base/url_util.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/skia/include/core/SkBitmap.h"

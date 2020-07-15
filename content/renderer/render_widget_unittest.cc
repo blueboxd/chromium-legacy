@@ -24,7 +24,6 @@
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
-#include "content/common/visual_properties.h"
 #include "content/common/widget_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/fake_render_widget_host.h"
@@ -40,6 +39,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
+#include "third_party/blink/public/common/widget/visual_properties.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-test-utils.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -156,7 +156,7 @@ class InteractiveRenderWidget : public RenderWidget {
                      /*is_hidden=*/false,
                      /*never_composited=*/false) {}
 
-  void Init(blink::WebWidget* widget, const ScreenInfo& screen_info) {
+  void Init(blink::WebWidget* widget, const blink::ScreenInfo& screen_info) {
     Initialize(base::NullCallback(), widget, screen_info);
   }
 
@@ -243,7 +243,7 @@ class RenderWidgetUnittest : public testing::Test {
         widget_.get(), web_local_frame_, frame_widget_host.Unbind(),
         std::move(frame_widget_receiver), widget_host.Unbind(),
         std::move(widget_receiver));
-    widget_->Init(web_frame_widget_, ScreenInfo());
+    widget_->Init(web_frame_widget_, blink::ScreenInfo());
     web_view_->DidAttachLocalMainFrame();
   }
 
@@ -297,7 +297,7 @@ class RenderWidgetExternalWidgetUnittest : public testing::Test {
         std::move(widget_host_remote), std::move(widget_receiver));
 
     widget_ = std::make_unique<InteractiveRenderWidget>(&compositor_deps_);
-    widget_->Init(external_web_widget_.get(), ScreenInfo());
+    widget_->Init(external_web_widget_.get(), blink::ScreenInfo());
   }
 
   void TearDown() override {
@@ -539,7 +539,7 @@ TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
   viz::ParentLocalSurfaceIdAllocator allocator;
 
   // Enable auto-resize.
-  content::VisualProperties visual_properties;
+  blink::VisualProperties visual_properties;
   visual_properties.auto_resize_enabled = true;
   visual_properties.min_size_for_auto_resize = gfx::Size(100, 100);
   visual_properties.max_size_for_auto_resize = gfx::Size(200, 200);
@@ -591,7 +591,7 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
 TEST_F(RenderWidgetUnittest, ActivePinchGestureUpdatesLayerTreeHostSubFrame) {
   cc::LayerTreeHost* layer_tree_host = widget()->layer_tree_host();
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
-  content::VisualProperties visual_properties;
+  blink::VisualProperties visual_properties;
 
   // Sync visual properties on a child RenderWidget.
   visual_properties.is_pinch_gesture_active = true;

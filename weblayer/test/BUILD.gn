@@ -27,6 +27,7 @@ if (is_android) {
       "../shell/android/browsertests_apk/src/org/chromium/weblayer_browsertests_apk/WebLayerBrowserTestsActivity.java",
       "../shell/android/browsertests_apk/src/org/chromium/weblayer_browsertests_apk/WebLayerBrowserTestsApplication.java",
       "../shell/android/browsertests_apk/src/org/chromium/weblayer_private/MetricsTestHelper.java",
+      "../shell/android/browsertests_apk/src/org/chromium/weblayer_private/TranslateTestBridge.java",
     ]
     deps = [
       ":weblayer_browsertests_jni",
@@ -36,6 +37,7 @@ if (is_android) {
       "//base:jni_java",
       "//components/embedder_support/android:application_java",
       "//components/safe_browsing/android:safe_browsing_java",
+      "//components/translate/content/android:java",
       "//content/public/android:content_java",
       "//content/public/test/android:content_java_test_support",
       "//testing/android/native_test:native_test_java",
@@ -51,7 +53,10 @@ if (is_android) {
   }
 
   generate_jni("weblayer_browsertests_jni") {
-    sources = [ "../shell/android/browsertests_apk/src/org/chromium/weblayer_private/MetricsTestHelper.java" ]
+    sources = [
+      "../shell/android/browsertests_apk/src/org/chromium/weblayer_private/MetricsTestHelper.java",
+      "../shell/android/browsertests_apk/src/org/chromium/weblayer_private/TranslateTestBridge.java",
+    ]
   }
 
   android_assets("weblayer_test_assets") {
@@ -159,6 +164,8 @@ test("weblayer_browsertests") {
       "../shell/android/browsertests_apk/metrics_browsertest.cc",
       "../shell/android/browsertests_apk/metrics_test_helper.cc",
       "../shell/android/browsertests_apk/metrics_test_helper.h",
+      "../shell/android/browsertests_apk/translate_test_bridge.cc",
+      "../shell/android/browsertests_apk/translate_test_bridge.h",
       "../shell/android/browsertests_apk/weblayer_browser_tests_jni_onload.cc",
     ]
     deps += [

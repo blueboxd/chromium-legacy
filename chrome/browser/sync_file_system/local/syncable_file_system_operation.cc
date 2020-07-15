@@ -15,7 +15,6 @@
 #include "chrome/browser/sync_file_system/local/syncable_file_operation_runner.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/url_request/url_request.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation.h"

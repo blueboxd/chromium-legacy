@@ -29,8 +29,8 @@ const char kPreviewsFieldTrial[] = "Previews";
 const char kEnabled[] = "Enabled";
 
 // Verifies that the default params are correct, and that custom params can be
-// set, for both the previews blocklist and offline previews.
-TEST(PreviewsExperimentsTest, TestParamsForBlockListAndOffline) {
+// set,
+TEST(PreviewsExperimentsTest, TestParams) {
   // Verify that the default params are correct.
   EXPECT_EQ(4u, params::MaxStoredHistoryLengthForPerHostBlockList());
   EXPECT_EQ(10u, params::MaxStoredHistoryLengthForHostIndifferentBlockList());
@@ -42,13 +42,8 @@ TEST(PreviewsExperimentsTest, TestParamsForBlockListAndOffline) {
             params::HostIndifferentBlockListPerHostDuration());
   EXPECT_EQ(base::TimeDelta::FromSeconds(60 * 5),
             params::SingleOptOutDuration());
-  EXPECT_EQ(base::TimeDelta::FromDays(7),
-            params::OfflinePreviewFreshnessDuration());
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params::GetECTThresholdForPreview(PreviewsType::OFFLINE));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             params::GetECTThresholdForPreview(PreviewsType::NOSCRIPT));
-  EXPECT_EQ(0, params::OfflinePreviewsVersion());
 
   // Set some custom params. Somewhat random yet valid values.
   // TODO(crbug.com/1092102) : Migrate blacklist names to blocklist.
@@ -61,7 +56,6 @@ TEST(PreviewsExperimentsTest, TestParamsForBlockListAndOffline) {
       {"per_host_black_list_duration_in_days", "99"},
       {"host_indifferent_black_list_duration_in_days", "64"},
       {"single_opt_out_duration_in_seconds", "28"},
-      {"offline_preview_freshness_duration_in_days", "12"},
       {"max_allowed_effective_connection_type", "4G"},
       {"version", "10"},
   };
@@ -79,13 +73,8 @@ TEST(PreviewsExperimentsTest, TestParamsForBlockListAndOffline) {
   EXPECT_EQ(base::TimeDelta::FromDays(64),
             params::HostIndifferentBlockListPerHostDuration());
   EXPECT_EQ(base::TimeDelta::FromSeconds(28), params::SingleOptOutDuration());
-  EXPECT_EQ(base::TimeDelta::FromDays(12),
-            params::OfflinePreviewFreshnessDuration());
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params::GetECTThresholdForPreview(PreviewsType::OFFLINE));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             params::GetECTThresholdForPreview(PreviewsType::NOSCRIPT));
-  EXPECT_EQ(10, params::OfflinePreviewsVersion());
 
   variations::testing::ClearAllVariationParams();
 }

@@ -1225,8 +1225,8 @@ const char kHostedAppShimCreationName[] =
 const char kHostedAppShimCreationDescription[] =
     "Create app shims on Mac when creating a hosted app.";
 
-const char kIgnoreGpuBlacklistName[] = "Override software rendering list";
-const char kIgnoreGpuBlacklistDescription[] =
+const char kIgnoreGpuBlocklistName[] = "Override software rendering list";
+const char kIgnoreGpuBlocklistDescription[] =
     "Overrides the built-in software rendering list and enables "
     "GPU-acceleration on unsupported system configurations.";
 

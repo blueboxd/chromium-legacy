@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_DISPLAY_UTIL_H_
 
 #include "content/common/content_export.h"
-#include "content/public/common/screen_info.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "ui/display/display.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -14,13 +14,13 @@ namespace content {
 
 class CONTENT_EXPORT DisplayUtil {
  public:
-  static void DisplayToScreenInfo(ScreenInfo* screen_info,
+  static void DisplayToScreenInfo(blink::ScreenInfo* screen_info,
                                   const display::Display& display);
 
-  static void GetNativeViewScreenInfo(ScreenInfo* screen_info,
+  static void GetNativeViewScreenInfo(blink::ScreenInfo* screen_info,
                                       gfx::NativeView native_view);
 
-  static void GetDefaultScreenInfo(ScreenInfo* screen_info);
+  static void GetDefaultScreenInfo(blink::ScreenInfo* screen_info);
 
   // Compute the orientation type of the display assuming it is a mobile device.
   static blink::mojom::ScreenOrientation GetOrientationTypeForMobile(

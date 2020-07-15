@@ -20,7 +20,6 @@
 #include "components/password_manager/core/browser/android_affiliation/affiliation_fetch_throttler.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_fetcher.h"
 #include "components/password_manager/core/browser/android_affiliation/facet_manager.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace password_manager {

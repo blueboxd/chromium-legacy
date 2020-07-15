@@ -282,7 +282,7 @@ class DetachedResourceRequestTest : public ::testing::Test {
 
   void SetAndCheckReferrer(const std::string& initial_referrer,
                            const std::string& expected_referrer,
-                           net::URLRequest::ReferrerPolicy policy) {
+                           net::ReferrerPolicy policy) {
     base::RunLoop request_completion_waiter;
     base::RunLoop server_request_waiter;
     HttpRequest::HeaderMap headers;
@@ -563,14 +563,13 @@ TEST_F(DetachedResourceRequestTest, DefaultReferrerPolicy) {
 TEST_F(DetachedResourceRequestTest, OriginReferrerPolicy) {
   // Only the origin, even for downgrades.
   SetAndCheckReferrer("https://cats.google.com/cute-cats",
-                      "https://cats.google.com/",
-                      net::URLRequest::ReferrerPolicy::ORIGIN);
+                      "https://cats.google.com/", net::ReferrerPolicy::ORIGIN);
 }
 
 TEST_F(DetachedResourceRequestTest, NeverClearReferrerPolicy) {
   SetAndCheckReferrer("https://cats.google.com/cute-cats",
                       "https://cats.google.com/cute-cats",
-                      net::URLRequest::ReferrerPolicy::NEVER_CLEAR_REFERRER);
+                      net::ReferrerPolicy::NEVER_CLEAR);
 }
 
 TEST_F(DetachedResourceRequestTest, MultipleOrigins) {

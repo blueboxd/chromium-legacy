@@ -35,9 +35,8 @@
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/core/execution_context/security_context_init.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -64,14 +63,9 @@ SecurityContext::SecurityContext(ExecutionContext* execution_context)
 
 SecurityContext::~SecurityContext() = default;
 
-void SecurityContext::Initialize(const SecurityContextInit& init) {
-  origin_trial_context_ = init.GetOriginTrialContext();
-}
-
 void SecurityContext::Trace(Visitor* visitor) const {
   visitor->Trace(execution_context_);
   visitor->Trace(content_security_policy_);
-  visitor->Trace(origin_trial_context_);
 }
 
 void SecurityContext::SetSecurityOrigin(

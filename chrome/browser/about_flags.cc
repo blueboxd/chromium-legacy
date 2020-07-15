@@ -2024,9 +2024,9 @@ const FeatureEntry kFeatureEntries[] = {
 // Include generated flags for flag unexpiry; see //docs/flag_expiry.md and
 // //tools/flags/generate_unexpire_flags.py.
 #include "chrome/browser/unexpire_flags_gen.inc"
-    {"ignore-gpu-blacklist", flag_descriptions::kIgnoreGpuBlacklistName,
-     flag_descriptions::kIgnoreGpuBlacklistDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kIgnoreGpuBlacklist)},
+    {"ignore-gpu-blocklist", flag_descriptions::kIgnoreGpuBlocklistName,
+     flag_descriptions::kIgnoreGpuBlocklistDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kIgnoreGpuBlocklist)},
     {"disable-accelerated-2d-canvas",
      flag_descriptions::kAccelerated2dCanvasName,
      flag_descriptions::kAccelerated2dCanvasDescription, kOsAll,

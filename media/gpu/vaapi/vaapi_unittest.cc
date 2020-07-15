@@ -36,7 +36,9 @@ base::Optional<VAProfile> ConvertToVAProfile(VideoCodecProfile profile) {
       {H264PROFILE_HIGH, VAProfileH264High},
       {VP8PROFILE_ANY, VAProfileVP8Version0_3},
       {VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
+      {VP9PROFILE_PROFILE1, VAProfileVP9Profile1},
       {VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
+      {VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
   };
   auto it = kProfileMap.find(profile);
   return it != kProfileMap.end() ? base::make_optional<VAProfile>(it->second)
@@ -56,7 +58,9 @@ base::Optional<VAProfile> StringToVAProfile(const std::string& va_profile) {
       {"VAProfileJPEGBaseline", VAProfileJPEGBaseline},
       {"VAProfileVP8Version0_3", VAProfileVP8Version0_3},
       {"VAProfileVP9Profile0", VAProfileVP9Profile0},
+      {"VAProfileVP9Profile1", VAProfileVP9Profile1},
       {"VAProfileVP9Profile2", VAProfileVP9Profile2},
+      {"VAProfileVP9Profile3", VAProfileVP9Profile3},
   };
 
   auto it = kStringToVAProfile.find(va_profile);
@@ -180,7 +184,7 @@ TEST_F(VaapiTest, GetSupportedEncodeProfiles) {
   const auto va_info = RetrieveVAInfoOutput();
 
   for (const auto& profile : VaapiWrapper::GetSupportedEncodeProfiles()) {
-    const auto va_profile = ConvertToVAProfile(profile.profile);
+    auto va_profile = ConvertToVAProfile(profile.profile);
     ASSERT_TRUE(va_profile.has_value());
 
     EXPECT_TRUE(base::Contains(va_info.at(*va_profile), VAEntrypointEncSlice) ||

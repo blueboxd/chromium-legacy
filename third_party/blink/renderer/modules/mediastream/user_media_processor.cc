@@ -20,10 +20,10 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
-#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
@@ -1046,8 +1046,7 @@ gfx::Size UserMediaProcessor::GetScreenSize() {
   gfx::Size screen_size(blink::kDefaultScreenCastWidth,
                         blink::kDefaultScreenCastHeight);
   if (frame_) {  // Can be null in tests.
-    blink::WebScreenInfo info =
-        frame_->GetChromeClient().GetScreenInfo(*frame_);
+    blink::ScreenInfo info = frame_->GetChromeClient().GetScreenInfo(*frame_);
     screen_size = info.rect.size();
   }
   return screen_size;

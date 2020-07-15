@@ -1,0 +1,20 @@
+Verifies that CSP issue contains source location.
+
+Inspector issue: {
+    issue : {
+        code : ContentSecurityPolicyIssue
+        details : {
+            contentSecurityPolicyIssueDetails : {
+                blockedURL : https://devtools.test:8443/inspector-protocol/resources/style.css
+                contentSecurityPolicyViolationType : kURLViolation
+                sourceCodeLocation : {
+                    columnNumber : 0
+                    lineNumber : 3
+                    url : https://devtools.test:8443/inspector-protocol/resources/content-security-policy-issue-with-src-location.html
+                }
+                violatedDirective : style-src-elem
+            }
+        }
+    }
+}
+

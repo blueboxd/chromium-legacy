@@ -131,7 +131,7 @@ def json5_config_checks_factory(mojom_source_path, json5_config_path,
         mojom_messages = "{} are missing in mojom file.\n".format(
             list(mojom_missing_enums)) if mojom_missing_enums else ""
 
-        return [] if json5_enums == mojom_source_path else [
+        return [] if json5_enums == mojom_enums else [
             output_api.PresubmitPromptWarning(
                 "{} and {} are out of sync: {}{}".format(
                     json5_config_path, mojom_source_path, json5_messages,

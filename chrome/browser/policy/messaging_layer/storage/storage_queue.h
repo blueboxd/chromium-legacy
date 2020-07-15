@@ -89,6 +89,8 @@ class StorageQueue : public base::RefCountedThreadSafe<StorageQueue> {
     // Time period the data is uploaded with.
     // If 0, uploaded immediately after a new record is stored
     // (this setting is intended for the immediate priority).
+    // Can be set to infinity - in that case Flush() is expected to be
+    // called from time to time.
     base::TimeDelta upload_period_;
   };
 
@@ -144,6 +146,27 @@ class StorageQueue : public base::RefCountedThreadSafe<StorageQueue> {
   // Helper methods: RemoveUnusedFiles.
   void Confirm(uint64_t seq_number,
                base::OnceCallback<void(Status)> completion_cb);
+
+  // Initiates upload of collected records. Called periodically by timer, based
+  // on upload_period of the queue, and can also be called explicitly - for
+  // a queue with an infinite or very large upload period. Multiple |Flush|
+  // calls can safely run in parallel.
+  // Starts by calling |start_upload_cb_| that instantiates |UploaderInterface
+  // uploader|. Then repeatedly reads data blob(s) one by one from the
+  // StorageQueue starting from |first_seq_number_|, handing each one over to
+  // |uploader|->ProcessBlob (keeping ownership of the buffer) and resuming
+  // after result callback returns 'true'. Only files that have been closed are
+  // included in reading; |Upload| makes sure to close the last writeable file
+  // and create a new one before starting to send records to the |uploader|. If
+  // the monotonic order of sequencing is broken, INTERNAL error Status is
+  // reported. |Upload| can be stopped after any record by returning 'false' to
+  // |processed_cb| callback - in that case |Upload| will behave as if the end
+  // of data has been reached. While one or more |Upload|s are active, files can
+  // be added to the StorageQueue but cannot be deleted. If processing of the
+  // blob takes significant time, |uploader| implementation should be offset to
+  // another thread to avoid locking StorageQueue.
+  // Helper methods: SwitchLastFileIfNotEmpty, CollectFilesForUpload.
+  void Flush();
 
   StorageQueue(const StorageQueue& other) = delete;
   StorageQueue& operator=(const StorageQueue& other) = delete;
@@ -222,25 +245,6 @@ class StorageQueue : public base::RefCountedThreadSafe<StorageQueue> {
   // Called once, during initialization. Helper methods: EnumerateDataFiles,
   // ScanLastFile.
   Status Init();
-
-  // Periodically uploads previously stored but not confirmed records.
-  // Starts by calling |start_upload_cb_| that instantiates |UploaderInterface
-  // uploader|. Then repeatedly reads data blob(s) one by one from the
-  // StorageQueue starting from |first_seq_number_|, handing each one over to
-  // |uploader|->ProcessBlob (keeping ownership of the buffer) and resuming
-  // after result callback returns 'true'. Only files that have been closed are
-  // included in reading; |Upload| makes sure to close the last writeable file
-  // and create a new one before starting to send records to the |uploader|. If
-  // the monotonic order of sequencing is broken, INTERNAL error Status is
-  // reported. |Upload| can be stopped after any record by returning 'false' to
-  // |processed_cb| callback - in that case |Upload| will behave as if the end
-  // of data has been reached. While one or more |Upload|s are active, files can
-  // be added to the StorageQueue but cannot be deleted. If processing of the
-  // blob takes significant time, |uploader| implementation should be offset to
-  // another thread to avoid locking StorageQueue.
-  // Called by timer. Helper methods: SwitchLastFileIfNotEmpty,
-  // CollectFilesForUpload.
-  void PeriodicUpload();
 
   // Helper method for Init(): enumerates all data files in the directory.
   // Valid file names are <prefix>.<seq_number>, any other names are ignored.

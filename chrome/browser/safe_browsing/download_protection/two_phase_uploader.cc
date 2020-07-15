@@ -15,9 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 

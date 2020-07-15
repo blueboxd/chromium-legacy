@@ -248,18 +248,6 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
                                                             this);
 }
 
-void DataReductionProxyChromeSettings::SetIgnoreLongTermBlockListRules(
-    bool ignore_long_term_block_list_rules) {
-  // |previews_service| is null if |profile_| is off the record.
-  PreviewsService* previews_service =
-      PreviewsServiceFactory::GetForProfile(profile_);
-  if (previews_service && previews_service->previews_ui_service()) {
-    previews_service->previews_ui_service()
-        ->SetIgnoreLongTermBlockListForServerPreviews(
-            ignore_long_term_block_list_rules);
-  }
-}
-
 std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
 DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
     content::NavigationHandle* handle,

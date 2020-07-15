@@ -36,10 +36,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "net/ssl/ssl_info.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;

@@ -66,7 +66,7 @@ TEST(JsonSchemaCompilerCrossrefTest, TestTypeOptionalParamFail) {
   auto params_value = std::make_unique<base::ListValue>();
   std::unique_ptr<base::DictionaryValue> test_type_value =
       CreateTestTypeValue();
-  test_type_value->RemoveWithoutPathExpansion("number", NULL);
+  test_type_value->RemoveKey("number");
   params_value->Append(std::move(test_type_value));
   std::unique_ptr<crossref::TestTypeOptionalParam::Params> params(
       crossref::TestTypeOptionalParam::Params::Create(*params_value));

@@ -310,8 +310,8 @@ TEST_F(ScopedBlockingCallIOJankMonitoringTest, InstantUnblockReportsZero) {
               ElementsAre(std::make_pair(0, 0), std::make_pair(0, 0)));
 }
 
-// Start the jank mid-interval; that interval shouldn't be counted but the last
-// incomplete interval will count.
+// Start the jank mid-interval; that interval should be counted but the last
+// incomplete interval won't count.
 TEST_F(ScopedBlockingCallIOJankMonitoringTest, Jank7sMidInterval) {
   task_environment_.FastForwardBy(
       internal::IOJankMonitoringWindow::kIOJankInterval / 3);
@@ -332,8 +332,8 @@ TEST_F(ScopedBlockingCallIOJankMonitoringTest, Jank7sMidInterval) {
   EXPECT_THAT(reports_, ElementsAre(std::make_pair(7, 7)));
 }
 
-// Start the jank mid-interval; that interval shouldn't be counted but the
-// second one should be despite being incomplete.
+// Start the jank mid-interval; that interval should be counted but the second
+// one won't count.
 TEST_F(ScopedBlockingCallIOJankMonitoringTest, Jank1sMidInterval) {
   task_environment_.FastForwardBy(
       internal::IOJankMonitoringWindow::kIOJankInterval / 3);
@@ -497,7 +497,7 @@ TEST_F(ScopedBlockingCallIOJankMonitoringTest, MultiThreadedOverlapped) {
 #endif
 TEST_F(ScopedBlockingCallIOJankMonitoringTest,
        MAYBE_MultiThreadedOverlappedWindows) {
-  static const int kNumJankyTasks = 3;
+  constexpr int kNumJankyTasks = 3;
   static_assert(
       kNumJankyTasks <= test::TaskEnvironment::kNumForegroundThreadPoolThreads,
       "");

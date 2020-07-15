@@ -29,7 +29,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"

@@ -39,15 +39,15 @@ class OmniboxRowView::HeaderView : public views::View,
         SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kHorizontal));
 
-    header_text_ = AddChildView(std::make_unique<views::Label>());
-    header_text_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-    layout->SetFlexForView(header_text_, 1);
+    header_label_ = AddChildView(std::make_unique<views::Label>());
+    header_label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+    layout->SetFlexForView(header_label_, 1);
 
     const gfx::FontList& font =
         views::style::GetFont(CONTEXT_OMNIBOX_PRIMARY,
                               views::style::STYLE_PRIMARY)
             .DeriveWithWeight(gfx::Font::Weight::MEDIUM);
-    header_text_->SetFontList(font);
+    header_label_->SetFontList(font);
 
     header_toggle_button_ =
         AddChildView(views::CreateVectorToggleImageButton(this));
@@ -74,11 +74,12 @@ class OmniboxRowView::HeaderView : public views::View,
 
   void SetHeader(int suggestion_group_id, const base::string16& header_text) {
     suggestion_group_id_ = suggestion_group_id;
+    header_text_ = header_text;
 
     // TODO(tommycli): Our current design calls for uppercase text here, but
     // it seems like an open question what should happen for non-Latin locales.
     // Moreover, it seems unusual to do case conversion in Views in general.
-    header_text_->SetText(base::i18n::ToUpper(header_text));
+    header_label_->SetText(base::i18n::ToUpper(header_text_));
 
     if (row_view_->pref_service_) {
       suggestion_group_hidden_ = omnibox::IsSuggestionGroupIdHidden(
@@ -146,7 +147,7 @@ class OmniboxRowView::HeaderView : public views::View,
 
     SkColor text_color = GetOmniboxColor(
         GetThemeProvider(), OmniboxPart::RESULTS_TEXT_DIMMED, part_state);
-    header_text_->SetEnabledColor(text_color);
+    header_label_->SetEnabledColor(text_color);
 
     SkColor icon_color = GetOmniboxColor(GetThemeProvider(),
                                          OmniboxPart::RESULTS_ICON, part_state);
@@ -164,6 +165,8 @@ class OmniboxRowView::HeaderView : public views::View,
     header_toggle_button_->SetImage(views::Button::STATE_NORMAL, arrow_up);
     header_toggle_button_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_TOOLTIP_HEADER_HIDE_SUGGESTIONS_BUTTON));
+    header_toggle_button_->SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ACC_HEADER_HIDE_SUGGESTIONS_BUTTON, header_text_));
 
     // The "toggled" button state corresponds with the group being hidden.
     // The button's action is therefore to Show the group, when clicked.
@@ -171,6 +174,9 @@ class OmniboxRowView::HeaderView : public views::View,
                                            &arrow_down);
     header_toggle_button_->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_TOOLTIP_HEADER_SHOW_SUGGESTIONS_BUTTON));
+    header_toggle_button_->SetToggledAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ACC_HEADER_SHOW_SUGGESTIONS_BUTTON, header_text_));
+
     header_toggle_button_focus_ring_->SchedulePaint();
 
     // It's a little hokey that we're stealing the logic for the background
@@ -200,7 +206,7 @@ class OmniboxRowView::HeaderView : public views::View,
   OmniboxRowView* const row_view_;
 
   // The Label containing the header text. This is never nullptr.
-  views::Label* header_text_;
+  views::Label* header_label_;
 
   // The button used to toggle hiding suggestions with this header.
   views::ToggleImageButton* header_toggle_button_;
@@ -208,6 +214,9 @@ class OmniboxRowView::HeaderView : public views::View,
 
   // The group ID associated with this header.
   int suggestion_group_id_ = 0;
+
+  // The unmodified header text for this header.
+  base::string16 header_text_;
 
   // Stores whether or not the group was hidden. This is used to fire correct
   // accessibility change events.

@@ -167,6 +167,7 @@ ci.android_builder(
     # Higher build timeout since dbg ASAN builds can take a while on a clobber
     # build.
     execution_timeout = 4 * time.hour,
+    tree_closing = True,
 )
 
 ci.android_builder(
@@ -187,6 +188,7 @@ ci.android_builder(
     executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
     notifies = ['Deterministic Android'],
+    tree_closing = True,
 )
 
 ci.android_builder(
@@ -198,6 +200,7 @@ ci.android_builder(
     executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
     notifies = ['Deterministic Android'],
+    tree_closing = True,
 )
 
 ci.android_builder(
@@ -2896,15 +2899,25 @@ ci.linux_builder(
     os = os.LINUX_TRUSTY,
 )
 
+# TODO(crbug.com/1102997): remove this in favor of new "metadata_exporter"
+# builder.
 ci.linux_builder(
     name = 'linux_chromium_component_updater',
     executable = 'recipe:findit/chromium/update_components',
     schedule = '0 0,6,12,18 * * *',
     service_account = 'component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com',
     triggered_by = [],
-    extra_notifies = ['component-mapping'],
+    extra_notifies = ['metadata-mapping'],
 )
 
+ci.linux_builder(
+    name = 'metadata_exporter',
+    executable = 'recipe:chromium_export_metadata',
+    schedule = '0 0,6,12,18 * * *',
+    service_account = 'component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com',
+    triggered_by = [],
+    extra_notifies = ['metadata-mapping'],
+)
 
 ci.mac_ios_builder(
     name = 'ios-device',

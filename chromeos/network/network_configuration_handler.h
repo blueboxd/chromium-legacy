@@ -121,9 +121,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
 
   // Changes the value of a shill manager property.
   void SetManagerProperty(const std::string& property_name,
-                          const base::Value& value,
-                          const base::Closure& callback,
-                          const network_handler::ErrorCallback& error_callback);
+                          const base::Value& value);
 
   // NetworkStateHandlerObserver
   void NetworkListChanged() override;

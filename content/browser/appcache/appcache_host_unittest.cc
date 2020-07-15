@@ -27,7 +27,6 @@
 #include "content/test/test_web_contents.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
-#include "net/url_request/url_request.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"

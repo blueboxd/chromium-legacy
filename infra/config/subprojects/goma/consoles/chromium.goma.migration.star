@@ -375,11 +375,6 @@ luci.console_view(
             short_name = 'anno',
         ),
         luci.console_view_entry(
-            builder = 'ci/linux_chromium_component_updater',
-            category = 'week3a|linux',
-            short_name = 'cc_upd',
-        ),
-        luci.console_view_entry(
             builder = 'ci/linux-code-coverage',
             category = 'week3a|linux',
             short_name = 'code',

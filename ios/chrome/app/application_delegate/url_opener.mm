@@ -51,10 +51,7 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
   if (startupInformation.isPresentingFirstRunUI) {
     UMA_HISTOGRAM_ENUMERATION("FirstRun.LaunchSource", [params launchSource],
                               first_run::LAUNCH_SIZE);
-    return NO;
-  }
-
-  if (applicationActive) {
+  } else if (applicationActive) {
     // The app is already active so the applicationDidBecomeActive: method will
     // never be called. Open the requested URL immediately and return YES if
     // the parsed URL was valid.
@@ -105,10 +102,10 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
       return YES;
     }
     return NO;
+  } else {
+    // Don't record the first user action if application is not active.
+    [startupInformation resetFirstUserActionRecorder];
   }
-
-  // Don't record the first user action.
-  [startupInformation resetFirstUserActionRecorder];
 
   connectionInformation.startupParameters = params;
   return connectionInformation.startupParameters != nil;

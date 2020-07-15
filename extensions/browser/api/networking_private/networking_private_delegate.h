@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/common/api/networking_private.h"
@@ -34,6 +35,11 @@ class NetworkingPrivateDelegate : public KeyedService {
   using FailureCallback = base::Callback<void(const std::string&)>;
   using DeviceStateList = std::vector<
       std::unique_ptr<api::networking_private::DeviceStateProperties>>;
+
+  // Returns |result| on success, or |result|=nullopt and |error| on failure.
+  using PropertiesCallback =
+      base::OnceCallback<void(base::Optional<base::Value> result,
+                              base::Optional<std::string> error)>;
 
   // Delegate for forwarding UI requests, e.g. for showing the account UI.
   class UIDelegate {
@@ -60,12 +66,9 @@ class NetworkingPrivateDelegate : public KeyedService {
 
   // Asynchronous methods
   virtual void GetProperties(const std::string& guid,
-                             const DictionaryCallback& success_callback,
-                             const FailureCallback& failure_callback) = 0;
-  virtual void GetManagedProperties(
-      const std::string& guid,
-      const DictionaryCallback& success_callback,
-      const FailureCallback& failure_callback) = 0;
+                             PropertiesCallback callback) = 0;
+  virtual void GetManagedProperties(const std::string& guid,
+                                    PropertiesCallback callback) = 0;
   virtual void GetState(const std::string& guid,
                         const DictionaryCallback& success_callback,
                         const FailureCallback& failure_callback) = 0;

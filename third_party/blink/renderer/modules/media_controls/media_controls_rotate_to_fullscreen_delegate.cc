@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/modules/media_controls/media_controls_rotate_to_fullscreen_delegate.h"
 
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/widget/screen_orientation.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"

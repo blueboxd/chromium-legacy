@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/test_address_normalizer.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/payments/core/payment_request_delegate.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"

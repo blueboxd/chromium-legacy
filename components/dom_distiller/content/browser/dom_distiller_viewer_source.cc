@@ -40,7 +40,6 @@
 #include "content/public/common/web_preferences.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/url_util.h"
-#include "net/url_request/url_request.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"

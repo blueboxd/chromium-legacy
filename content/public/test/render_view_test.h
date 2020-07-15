@@ -29,6 +29,7 @@ namespace blink {
 namespace scheduler {
 class WebThreadScheduler;
 }
+struct VisualProperties;
 class WebGestureEvent;
 class WebInputElement;
 class WebMouseEvent;
@@ -51,7 +52,6 @@ class RendererBlinkPlatformImpl;
 class RendererBlinkPlatformImplTestOverrideImpl;
 class RenderProcess;
 class RenderView;
-struct VisualProperties;
 
 class RenderViewTest : public testing::Test {
  public:
@@ -195,7 +195,7 @@ class RenderViewTest : public testing::Test {
   virtual std::unique_ptr<FakeRenderWidgetHost> CreateRenderWidgetHost();
 
   // Allows a subclass to customize the initial size of the RenderView.
-  virtual VisualProperties InitialVisualProperties();
+  virtual blink::VisualProperties InitialVisualProperties();
 
   // Override this to change the CompositorDependencies for the test.
   virtual std::unique_ptr<CompositorDependencies>

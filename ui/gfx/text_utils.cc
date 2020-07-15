@@ -11,6 +11,10 @@
 #include "base/numerics/safe_conversions.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
+#include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 
@@ -124,6 +128,38 @@ HorizontalAlignment MaybeFlipForRTL(HorizontalAlignment alignment) {
         (alignment == gfx::ALIGN_LEFT) ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT;
   }
   return alignment;
+}
+
+Size GetStringSize(const base::string16& text, const FontList& font_list) {
+  return Size(GetStringWidth(text, font_list), font_list.GetHeight());
+}
+
+Insets AdjustVisualBorderForFont(const FontList& font_list,
+                                 const Insets& desired_visual_padding) {
+  Insets result = desired_visual_padding;
+  const int baseline = font_list.GetBaseline();
+  const int leading_space = baseline - font_list.GetCapHeight();
+  const int descender = font_list.GetHeight() - baseline;
+  result.set_top(std::max(0, result.top() - leading_space));
+  result.set_bottom(std::max(0, result.bottom() - descender));
+  return result;
+}
+
+int GetFontCapHeightCenterOffset(const gfx::FontList& original_font,
+                                 const gfx::FontList& to_center) {
+  const int original_cap_height = original_font.GetCapHeight();
+  const int original_cap_leading =
+      original_font.GetBaseline() - original_cap_height;
+  const int to_center_cap_height = to_center.GetCapHeight();
+  const int to_center_leading = to_center.GetBaseline() - to_center_cap_height;
+
+  const int cap_height_diff = original_cap_height - to_center_cap_height;
+  const int new_cap_top =
+      original_cap_leading + std::lround(cap_height_diff / 2.0f);
+  const int new_top = new_cap_top - to_center_leading;
+
+  // Since we assume the old font starts at zero, the new top is the adjustment.
+  return new_top;
 }
 
 }  // namespace gfx

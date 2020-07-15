@@ -4,6 +4,7 @@
 
 #include "third_party/blink/common/privacy_budget/aggregating_sample_collector.h"
 
+#include <memory>
 #include <type_traits>
 #include <vector>
 
@@ -16,6 +17,8 @@
 #include "third_party/blink/common/privacy_budget/identifiability_sample_collector_test_utils.h"
 #include "third_party/blink/common/privacy_budget/test_ukm_recorder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_sample_collector.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings_provider.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_sample.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 
@@ -29,11 +32,29 @@ constexpr IdentifiableSurface kTestSurface1 =
 constexpr IdentifiableSurface kTestSurface2 =
     IdentifiableSurface::FromMetricHash(2 << 8);
 constexpr IdentifiableToken kTestValue1 = 1;
+
+// A settings provider that activates the study and allows all surfaces and
+// types.
+class TestSettingsProvider : public IdentifiabilityStudySettingsProvider {
+ public:
+  bool IsActive() const override { return true; }
+  bool IsAnyTypeOrSurfaceBlocked() const override { return false; }
+  bool IsSurfaceAllowed(IdentifiableSurface) const override { return true; }
+  bool IsTypeAllowed(IdentifiableSurface::Type) const override { return true; }
+};
+
 }  // namespace
 
 class AggregatingSampleCollectorTest : public ::testing::Test {
  public:
-  AggregatingSampleCollectorTest() = default;
+  AggregatingSampleCollectorTest() {
+    IdentifiabilityStudySettings::SetGlobalProvider(
+        std::make_unique<TestSettingsProvider>());
+  }
+
+  ~AggregatingSampleCollectorTest() override {
+    IdentifiabilityStudySettings::ResetStateForTesting();
+  }
 
   test::TestUkmRecorder* recorder() { return &recorder_; }
   AggregatingSampleCollector* collector() { return &collector_; }
@@ -196,13 +217,13 @@ TEST_F(AggregatingSampleCollectorTest, TooManyUnsentSources) {
   // Stop one short of the limit.
   unsigned i = 0;
   for (; i < AggregatingSampleCollector::kMaxUnsentSources; ++i) {
-    collector()->Record(recorder(), i,
+    collector()->Record(recorder(), ukm::AssignNewSourceId(),
                         {{IdentifiableSurface::FromMetricHash(i << 8), 1}});
   }
   EXPECT_EQ(0u, recorder()->entries_count());
 
   // Adding one should automatically flush.
-  collector()->Record(recorder(), i,
+  collector()->Record(recorder(), ukm::AssignNewSourceId(),
                       {{IdentifiableSurface::FromMetricHash(i << 8), 1}});
   EXPECT_NE(0u, recorder()->entries_count());
 }
@@ -245,4 +266,23 @@ TEST_F(AggregatingSampleCollectorTest, GlobalInstance) {
   EXPECT_NE(0u, recorder()->entries_count());
 }
 
+TEST_F(AggregatingSampleCollectorTest, NullRecorder) {
+  collector()->Record(recorder(), kTestSource2, {{kTestSurface2, 1}});
+
+  // Shouldn't crash nor affect state.
+  collector()->Record(nullptr, kTestSource1, {{kTestSurface1, 1}});
+  collector()->FlushSource(nullptr, kTestSource1);
+  collector()->FlushSource(nullptr, kTestSource2);
+  collector()->Flush(nullptr);
+
+  collector()->Flush(recorder());
+  EXPECT_EQ(1u, recorder()->entries_count());
+  EXPECT_EQ(kTestSource2, recorder()->entries().front()->source_id);
+}
+
+TEST_F(AggregatingSampleCollectorTest, InvalidSourceId) {
+  collector()->Record(recorder(), ukm::kInvalidSourceId, {{kTestSurface2, 2}});
+  collector()->Flush(recorder());
+  EXPECT_EQ(0u, recorder()->entries_count());
+}
 }  // namespace blink

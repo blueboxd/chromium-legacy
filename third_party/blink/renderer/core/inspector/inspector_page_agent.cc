@@ -34,7 +34,7 @@
 
 #include "base/containers/span.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"

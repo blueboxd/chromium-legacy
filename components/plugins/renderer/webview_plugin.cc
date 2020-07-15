@@ -305,10 +305,10 @@ bool WebViewPlugin::WebViewHelper::CanUpdateLayout() {
   return true;
 }
 
-blink::WebScreenInfo WebViewPlugin::WebViewHelper::GetScreenInfo() {
+blink::ScreenInfo WebViewPlugin::WebViewHelper::GetScreenInfo() {
   // TODO(danakj): This should probably return the screen info for the
   // RenderView.
-  return blink::WebScreenInfo();
+  return blink::ScreenInfo();
 }
 
 void WebViewPlugin::WebViewHelper::SetToolTipText(

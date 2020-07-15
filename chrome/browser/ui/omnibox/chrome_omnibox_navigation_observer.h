@@ -17,7 +17,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 class Profile;

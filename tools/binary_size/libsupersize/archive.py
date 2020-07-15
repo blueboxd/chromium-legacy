@@ -42,7 +42,7 @@ import zip_util
 sys.path.insert(1, os.path.join(path_util.TOOLS_SRC_ROOT, 'tools', 'grit'))
 from grit.format import data_pack
 
-_METADATA_FILENAME = 'METADATA.chromium'
+_METADATA_FILENAME = 'DIR_METADATA'
 _METADATA_COMPONENT_REGEX = re.compile(r'^\s*component:\s*"(.*?)"',
                                        re.MULTILINE)
 _OWNERS_FILENAME = 'OWNERS'
@@ -542,7 +542,7 @@ def _CreateMergeStringsReplacements(merge_string_syms,
 
 
 def _ParseComponentFromMetadata(path):
-  """Extracts Component from METADATA.chromium."""
+  """Extracts Component from DIR_METADATA."""
   try:
     with open(path) as f:
       data = f.read()

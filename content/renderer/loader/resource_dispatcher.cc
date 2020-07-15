@@ -38,6 +38,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -64,8 +65,7 @@ void RemoteToLocalTimeTicks(
 void CheckSchemeForReferrerPolicy(const network::ResourceRequest& request) {
   if ((request.referrer_policy == Referrer::GetDefaultReferrerPolicy() ||
        request.referrer_policy ==
-           net::URLRequest::
-               CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE) &&
+           net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE) &&
       request.referrer.SchemeIsCryptographic() &&
       !url::Origin::Create(request.url).opaque() &&
       !IsOriginSecure(request.url)) {

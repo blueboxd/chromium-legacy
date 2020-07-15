@@ -4,14 +4,14 @@
 
 #include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
 
-#include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/skia/include/third_party/skcms/skcms.h"
 
 namespace blink {
 
 namespace color_space_utilities {
 
-ColorSpaceGamut GetColorSpaceGamut(const WebScreenInfo& screen_info) {
+ColorSpaceGamut GetColorSpaceGamut(const ScreenInfo& screen_info) {
   const gfx::ColorSpace& color_space = screen_info.color_space;
   if (!color_space.IsValid())
     return ColorSpaceGamut::kUnknown;

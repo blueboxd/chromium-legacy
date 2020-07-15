@@ -541,7 +541,8 @@ URLRequest::URLRequest(const GURL& url,
       url_chain_(1, url),
       force_ignore_site_for_cookies_(false),
       method_("GET"),
-      referrer_policy_(CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
+      referrer_policy_(
+          ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
       first_party_url_policy_(NEVER_CHANGE_FIRST_PARTY_URL),
       load_flags_(LOAD_NORMAL),
       privacy_mode_(PRIVACY_MODE_ENABLED),
@@ -1129,14 +1130,14 @@ void URLRequest::RecordReferrerGranularityMetrics(
   if (request_is_same_origin) {
     UMA_HISTOGRAM_ENUMERATION(
         "Net.URLRequest.ReferrerPolicyForRequest.SameOrigin", referrer_policy_,
-        MAX_REFERRER_POLICY + 1);
+        static_cast<int>(ReferrerPolicy::MAX) + 1);
     UMA_HISTOGRAM_BOOLEAN(
         "Net.URLRequest.ReferrerHasInformativePath.SameOrigin",
         referrer_more_descriptive_than_its_origin);
   } else {
     UMA_HISTOGRAM_ENUMERATION(
         "Net.URLRequest.ReferrerPolicyForRequest.CrossOrigin", referrer_policy_,
-        MAX_REFERRER_POLICY + 1);
+        static_cast<int>(ReferrerPolicy::MAX) + 1);
     UMA_HISTOGRAM_BOOLEAN(
         "Net.URLRequest.ReferrerHasInformativePath.CrossOrigin",
         referrer_more_descriptive_than_its_origin);

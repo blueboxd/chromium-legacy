@@ -91,6 +91,10 @@ bool NavigationImpl::IsPageInitiated() {
   return navigation_handle_->IsRendererInitiated();
 }
 
+bool NavigationImpl::IsReload() {
+  return navigation_handle_->GetReloadType() != content::ReloadType::NONE;
+}
+
 GURL NavigationImpl::GetURL() {
   return navigation_handle_->GetURL();
 }

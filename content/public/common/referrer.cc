@@ -82,7 +82,7 @@ url::Origin Referrer::SanitizeOriginForRequest(
 }
 
 // static
-net::URLRequest::ReferrerPolicy Referrer::ReferrerPolicyForUrlRequest(
+net::ReferrerPolicy Referrer::ReferrerPolicyForUrlRequest(
     network::mojom::ReferrerPolicy referrer_policy) {
   if (referrer_policy == network::mojom::ReferrerPolicy::kDefault) {
     return GetDefaultReferrerPolicy();
@@ -92,24 +92,24 @@ net::URLRequest::ReferrerPolicy Referrer::ReferrerPolicyForUrlRequest(
 
 // static
 network::mojom::ReferrerPolicy Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-    net::URLRequest::ReferrerPolicy net_policy) {
+    net::ReferrerPolicy net_policy) {
   switch (net_policy) {
-    case net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
+    case net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
       return network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade;
-    case net::URLRequest::
-        REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN:
+    case net::ReferrerPolicy::REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN:
       return network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin;
-    case net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN:
+    case net::ReferrerPolicy::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN:
       return network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin;
-    case net::URLRequest::NEVER_CLEAR_REFERRER:
+    case net::ReferrerPolicy::NEVER_CLEAR:
       return network::mojom::ReferrerPolicy::kAlways;
-    case net::URLRequest::ORIGIN:
+    case net::ReferrerPolicy::ORIGIN:
       return network::mojom::ReferrerPolicy::kOrigin;
-    case net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN:
+    case net::ReferrerPolicy::CLEAR_ON_TRANSITION_CROSS_ORIGIN:
       return network::mojom::ReferrerPolicy::kSameOrigin;
-    case net::URLRequest::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
+    case net::ReferrerPolicy::
+        ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
       return network::mojom::ReferrerPolicy::kStrictOrigin;
-    case net::URLRequest::NO_REFERRER:
+    case net::ReferrerPolicy::NO_REFERRER:
       return network::mojom::ReferrerPolicy::kNever;
   }
   NOTREACHED();
@@ -117,7 +117,7 @@ network::mojom::ReferrerPolicy Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
 }
 
 // static
-net::URLRequest::ReferrerPolicy Referrer::GetDefaultReferrerPolicy() {
+net::ReferrerPolicy Referrer::GetDefaultReferrerPolicy() {
   // The ReducedReferrerGranularity feature sets the default referrer
   // policy to strict-origin-when-cross-origin unless forbidden
   // by the "force legacy policy" global.
@@ -126,14 +126,12 @@ net::URLRequest::ReferrerPolicy Referrer::GetDefaultReferrerPolicy() {
 
   // Short-circuit to avoid acquiring the lock unless necessary.
   if (!base::FeatureList::IsEnabled(features::kReducedReferrerGranularity))
-    return net::URLRequest::
-        CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
+    return net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
 
   return ShouldForceLegacyDefaultReferrerPolicy()
-             ? net::URLRequest::
-                   CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE
-             : net::URLRequest::
-                   REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
+             ? net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE
+             : net::ReferrerPolicy::
+                   REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
 }
 
 // static

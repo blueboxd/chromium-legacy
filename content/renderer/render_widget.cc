@@ -341,7 +341,7 @@ RenderWidget::~RenderWidget() {
 void RenderWidget::InitForPopup(ShowCallback show_callback,
                                 RenderWidget* opener_widget,
                                 blink::WebPagePopup* web_page_popup,
-                                const ScreenInfo& screen_info) {
+                                const blink::ScreenInfo& screen_info) {
   popup_ = true;
   Initialize(std::move(show_callback), web_page_popup, screen_info);
 
@@ -354,22 +354,23 @@ void RenderWidget::InitForPopup(ShowCallback show_callback,
   }
 }
 
-void RenderWidget::InitForPepperFullscreen(ShowCallback show_callback,
-                                           blink::WebWidget* web_widget,
-                                           const ScreenInfo& screen_info) {
+void RenderWidget::InitForPepperFullscreen(
+    ShowCallback show_callback,
+    blink::WebWidget* web_widget,
+    const blink::ScreenInfo& screen_info) {
   pepper_fullscreen_ = true;
   Initialize(std::move(show_callback), web_widget, screen_info);
 }
 
 void RenderWidget::InitForMainFrame(ShowCallback show_callback,
                                     blink::WebFrameWidget* web_frame_widget,
-                                    const ScreenInfo& screen_info) {
+                                    const blink::ScreenInfo& screen_info) {
   Initialize(std::move(show_callback), web_frame_widget, screen_info);
 }
 
 void RenderWidget::InitForChildLocalRoot(
     blink::WebFrameWidget* web_frame_widget,
-    const ScreenInfo& screen_info) {
+    const blink::ScreenInfo& screen_info) {
   for_child_local_root_frame_ = true;
   Initialize(base::NullCallback(), web_frame_widget, screen_info);
 }
@@ -383,7 +384,7 @@ void RenderWidget::CloseForFrame(std::unique_ptr<RenderWidget> widget) {
 
 void RenderWidget::Initialize(ShowCallback show_callback,
                               WebWidget* web_widget,
-                              const ScreenInfo& screen_info) {
+                              const blink::ScreenInfo& screen_info) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   DCHECK(web_widget);
 
@@ -475,7 +476,7 @@ void RenderWidget::OnClose() {
 }
 
 void RenderWidget::OnUpdateVisualProperties(
-    const VisualProperties& visual_properties_from_browser) {
+    const blink::VisualProperties& visual_properties_from_browser) {
   TRACE_EVENT0("renderer", "RenderWidget::OnUpdateVisualProperties");
 
   // UpdateVisualProperties is used to receive properties from the browser
@@ -533,7 +534,7 @@ void RenderWidget::OnUpdateVisualProperties(
   //   See also:
   //   https://docs.google.com/document/d/1G_fR1D_0c1yke8CqDMddoKrDGr3gy5t_ImEH4hKNIII/edit#
 
-  VisualProperties visual_properties = visual_properties_from_browser;
+  blink::VisualProperties visual_properties = visual_properties_from_browser;
   // Web tests can override the device scale factor in the renderer.
   if (device_scale_factor_for_testing_) {
     visual_properties.screen_info.device_scale_factor =
@@ -1132,7 +1133,7 @@ gfx::Rect RenderWidget::CompositorViewportRect() const {
 }
 
 void RenderWidget::SetScreenInfoAndSize(
-    const ScreenInfo& screen_info,
+    const blink::ScreenInfo& screen_info,
     const gfx::Size& widget_size,
     const gfx::Size& visible_viewport_size) {
   // Emulation only happens on the main frame.
@@ -1262,7 +1263,7 @@ void RenderWidget::Show(WebNavigationPolicy policy) {
   SetPendingWindowRect(initial_rect_);
 }
 
-void RenderWidget::InitCompositing(const ScreenInfo& screen_info) {
+void RenderWidget::InitCompositing(const blink::ScreenInfo& screen_info) {
   TRACE_EVENT0("blink", "RenderWidget::InitializeLayerTreeView");
 
   layer_tree_host_ = webwidget_->InitializeCompositing(
@@ -1369,21 +1370,8 @@ void RenderWidget::EmulatedToScreenRect(gfx::Rect* screen_rect) const {
                          opener_emulator_scale_);
 }
 
-blink::WebScreenInfo RenderWidget::GetScreenInfo() {
-  const ScreenInfo& info = screen_info_;
-
-  blink::WebScreenInfo web_screen_info;
-  web_screen_info.device_scale_factor = info.device_scale_factor;
-  web_screen_info.color_space = info.color_space;
-  web_screen_info.depth = info.depth;
-  web_screen_info.depth_per_component = info.depth_per_component;
-  web_screen_info.is_monochrome = info.is_monochrome;
-  web_screen_info.rect = info.rect;
-  web_screen_info.available_rect = info.available_rect;
-  web_screen_info.orientation_type = info.orientation_type;
-  web_screen_info.orientation_angle = info.orientation_angle;
-
-  return web_screen_info;
+blink::ScreenInfo RenderWidget::GetScreenInfo() {
+  return screen_info_;
 }
 
 WebRect RenderWidget::WindowRect() {
@@ -1507,13 +1495,13 @@ void RenderWidget::ImeFinishComposingTextForPepper(bool keep_selection) {
 void RenderWidget::UpdateSurfaceAndScreenInfo(
     const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
     const gfx::Rect& compositor_viewport_pixel_rect,
-    const ScreenInfo& new_screen_info) {
+    const blink::ScreenInfo& new_screen_info) {
   // Same logic is used in RenderWidgetHostImpl::SynchronizeVisualProperties to
   // detect if there is a screen orientation change.
   bool orientation_changed =
       screen_info_.orientation_angle != new_screen_info.orientation_angle ||
       screen_info_.orientation_type != new_screen_info.orientation_type;
-  ScreenInfo previous_original_screen_info = GetOriginalScreenInfo();
+  blink::ScreenInfo previous_original_screen_info = GetOriginalScreenInfo();
 
   local_surface_id_allocation_from_parent_ = new_local_surface_id_allocation;
   screen_info_ = new_screen_info;
@@ -1805,7 +1793,7 @@ void RenderWidget::OnWaitNextFrameForTests(
       main_frame_thread_observer_routing_id));
 }
 
-const ScreenInfo& RenderWidget::GetOriginalScreenInfo() const {
+const blink::ScreenInfo& RenderWidget::GetOriginalScreenInfo() const {
   if (device_emulator_)
     return device_emulator_->original_screen_info();
   return screen_info_;
@@ -1907,7 +1895,7 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   layer_tree_host_->RequestNewLocalSurfaceId();
 
-  ScreenInfo info = screen_info_;
+  blink::ScreenInfo info = screen_info_;
   info.device_scale_factor = factor;
   gfx::Size viewport_pixel_size = gfx::ScaleToCeiledSize(size_, factor);
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
@@ -1944,7 +1932,7 @@ void RenderWidget::SetDeviceColorSpaceForTesting(
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   layer_tree_host_->RequestNewLocalSurfaceId();
 
-  ScreenInfo info = screen_info_;
+  blink::ScreenInfo info = screen_info_;
   info.color_space = color_space;
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportRect(), info);

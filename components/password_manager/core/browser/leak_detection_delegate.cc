@@ -98,7 +98,8 @@ void LeakDetectionDelegate::OnShowLeakDetectionNotification(
     IsSaved is_saved,
     IsReused is_reused,
     GURL url,
-    base::string16 username) {
+    base::string16 username,
+    CompromisedSitesCount saved_sites) {
   bool force_dialog_for_testing = base::GetFieldTrialParamByFeatureAsBool(
       password_manager::features::kPasswordChange,
       password_manager::features::
@@ -111,7 +112,8 @@ void LeakDetectionDelegate::OnShowLeakDetectionNotification(
         CreateLeakType(is_saved, IsReused(false),
                        IsSyncing(client_->GetPasswordSyncState() ==
                                  SYNCING_NORMAL_ENCRYPTION));
-    client_->NotifyUserCredentialsWereLeaked(leak_type, url, username);
+    client_->NotifyUserCredentialsWereLeaked(leak_type, saved_sites, url,
+                                             username);
     return;
   }
 
@@ -128,7 +130,8 @@ void LeakDetectionDelegate::OnShowLeakDetectionNotification(
                             IsPasswordUsedOnOtherSites(leak_type));
   base::UmaHistogramBoolean("PasswordManager.LeakDetection.IsSyncing",
                             IsSyncingPasswordsNormally(leak_type));
-  client_->NotifyUserCredentialsWereLeaked(leak_type, url, username);
+  client_->NotifyUserCredentialsWereLeaked(leak_type, saved_sites, url,
+                                           username);
 }
 
 void LeakDetectionDelegate::OnError(LeakDetectionError error) {

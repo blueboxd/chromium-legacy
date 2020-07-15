@@ -1633,10 +1633,6 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
                                       0, 1);
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   histogram_tester.ExpectUniqueSample(
-      "PasswordManager.BubbleSuppression.DomainsWithSuppressedBubble", 2, 1);
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.BubbleSuppression.AccountsWithSuppressedBubble", 3, 1);
-  histogram_tester.ExpectUniqueSample(
       "PasswordManager.BubbleSuppression.AccountsInStatisticsTable", 4, 1);
 #endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
 }

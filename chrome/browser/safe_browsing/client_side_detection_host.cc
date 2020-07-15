@@ -575,16 +575,18 @@ void ClientSideDetectionHost::set_client_side_detection_service(
   csd_service_ = service;
 }
 
-void ClientSideDetectionHost::set_safe_browsing_managers(
-    SafeBrowsingUIManager* ui_manager,
-    SafeBrowsingDatabaseManager* database_manager) {
+void ClientSideDetectionHost::set_ui_manager(
+    SafeBrowsingUIManager* ui_manager) {
   if (ui_manager_.get())
     ui_manager_->RemoveObserver(this);
 
   ui_manager_ = ui_manager;
   if (ui_manager)
     ui_manager_->AddObserver(this);
+}
 
+void ClientSideDetectionHost::set_database_manager(
+    SafeBrowsingDatabaseManager* database_manager) {
   database_manager_ = database_manager;
 }
 

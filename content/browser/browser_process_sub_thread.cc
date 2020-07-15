@@ -20,7 +20,6 @@
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/common/process_type.h"
 #include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"

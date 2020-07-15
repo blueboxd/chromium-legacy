@@ -351,9 +351,6 @@ void ApplyCommandLineToSettings(WebSettings* settings) {
   settings->SetThreadedScrollingEnabled(
       !command_line.HasSwitch(switches::kDisableThreadedScrolling));
 
-  if (switches::IsTouchDragDropEnabled())
-    settings->SetTouchDragDropEnabled(true);
-
   WebSettings::SelectionStrategyType selection_strategy;
   if (command_line.GetSwitchValueASCII(switches::kTouchTextSelectionStrategy) ==
       "direction")
@@ -953,6 +950,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
     }
     NOTREACHED();
   }
+
+  settings->SetTouchDragDropEnabled(prefs.touch_drag_drop_enabled);
 
 #if defined(OS_MACOSX)
   web_view->SetMaximumLegibleScale(prefs.default_maximum_page_scale_factor);

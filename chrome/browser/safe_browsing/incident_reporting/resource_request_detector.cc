@@ -17,7 +17,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "crypto/sha2.h"
-#include "net/url_request/url_request.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 

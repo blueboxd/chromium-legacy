@@ -23,7 +23,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/web_contents.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 

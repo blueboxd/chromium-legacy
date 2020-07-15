@@ -316,6 +316,7 @@ ci.android_builder(
         short_name = '32',
     ),
     execution_timeout = 4 * time.hour,
+    tree_closing = True,
 )
 
 ci.android_builder(
@@ -326,6 +327,7 @@ ci.android_builder(
     ),
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
     execution_timeout = 5 * time.hour,
+    tree_closing = True,
 )
 
 ci.android_builder(
@@ -352,6 +354,7 @@ ci.android_builder(
         category = 'on_cq',
         short_name = 'cst',
     ),
+    tree_closing = True,
 )
 
 ci.android_builder(
@@ -425,6 +428,7 @@ ci.android_builder(
         category = 'on_cq',
         short_name = 'L',
     ),
+    tree_closing = True,
 )
 
 ci.android_builder(
@@ -433,6 +437,7 @@ ci.android_builder(
         category = 'on_cq',
         short_name = 'M',
     ),
+    tree_closing = True,
 )
 
 ci.android_builder(
@@ -466,6 +471,7 @@ ci.android_builder(
         category = 'on_cq',
         short_name = 'P',
     ),
+    tree_closing = True,
 )
 
 ci.chromium_builder(
@@ -518,7 +524,7 @@ ci.chromium_builder(
     ),
     cores = 32,
     os = os.WINDOWS_DEFAULT,
-    execution_timeout = 4 * time.hour,
+    execution_timeout = 6 * time.hour,
     tree_closing = False,
 )
 
@@ -531,7 +537,7 @@ ci.chromium_builder(
     ),
     cores = 32,
     os = os.WINDOWS_DEFAULT,
-    execution_timeout = 5 * time.hour,
+    execution_timeout = 6 * time.hour,
     tree_closing = False,
 )
 

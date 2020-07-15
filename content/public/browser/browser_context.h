@@ -21,8 +21,6 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "net/url_request/url_request_interceptor.h"
-#include "net/url_request/url_request_job_factory.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom-forward.h"
 #include "services/network/public/mojom/cors_origin_pattern.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
@@ -94,16 +92,6 @@ class StorageNotificationService;
 class StoragePartition;
 class StoragePartitionConfig;
 class SSLHostStateDelegate;
-
-// A mapping from the scheme name to the protocol handler that services its
-// content.
-using ProtocolHandlerMap =
-    std::map<std::string,
-             std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>>;
-
-// A owning vector of protocol interceptors.
-using URLRequestInterceptorScopedVector =
-    std::vector<std::unique_ptr<net::URLRequestInterceptor>>;
 
 // This class holds the context needed for a browsing session.
 // It lives on the UI thread. All these methods must only be called on the UI

@@ -127,7 +127,8 @@ const gfx::VectorIcon& ReaderModeIconView::GetVectorIcon() const {
 }
 
 base::string16 ReaderModeIconView::GetTextForTooltipAndAccessibleName() const {
-  return l10n_util::GetStringUTF16(IDS_DISTILL_PAGE);
+  return l10n_util::GetStringUTF16(active() ? IDS_EXIT_DISTILLED_PAGE
+                                            : IDS_DISTILL_PAGE);
 }
 
 const char* ReaderModeIconView::GetClassName() const {

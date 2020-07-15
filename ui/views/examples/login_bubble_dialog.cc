@@ -4,6 +4,9 @@
 
 #include "ui/views/examples/login_bubble_dialog.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/strings/strcat.h"
@@ -128,7 +131,7 @@ void LoginBubbleDialogExample::CreateExampleView(View* container) {
                         GridLayout::kFixedSize,
                         GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(0, label_padding);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1.0,
                         GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRowWithPadding(0, 0, 0, related_control_padding);
@@ -136,14 +139,16 @@ void LoginBubbleDialogExample::CreateExampleView(View* container) {
       MdTextButton::Create(this, GetStringUTF16(IDS_LOGIN_SHOW_BUTTON_LABEL)));
 
   layout->StartRowWithPadding(0, 0, 0, related_control_padding);
-  layout->AddView(std::make_unique<Label>(
+  username_label_ = layout->AddView(std::make_unique<Label>(
       l10n_util::GetStringUTF16(IDS_LOGIN_USERNAME_LABEL)));
-  username_label_ = layout->AddView(std::make_unique<Label>());
+  username_label_->SetVisible(false);
+  username_input_ = layout->AddView(std::make_unique<Label>());
 
   layout->StartRowWithPadding(0, 0, 0, related_control_padding);
-  layout->AddView(std::make_unique<Label>(
+  password_label_ = layout->AddView(std::make_unique<Label>(
       l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_LABEL)));
-  password_label_ = layout->AddView(std::make_unique<Label>());
+  password_label_->SetVisible(false);
+  password_input_ = layout->AddView(std::make_unique<Label>());
 }
 
 void LoginBubbleDialogExample::ButtonPressed(Button* sender,
@@ -156,8 +161,10 @@ void LoginBubbleDialogExample::ButtonPressed(Button* sender,
 
 void LoginBubbleDialogExample::OnSubmit(base::string16 username,
                                         base::string16 password) {
-  username_label_->SetText(username);
-  password_label_->SetText(password);
+  username_label_->SetVisible(true);
+  username_input_->SetText(username);
+  password_label_->SetVisible(true);
+  password_input_->SetText(password);
 }
 
 }  // namespace examples

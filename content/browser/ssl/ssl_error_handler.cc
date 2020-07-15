@@ -11,7 +11,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
-#include "net/url_request/url_request.h"
 
 using net::SSLInfo;
 

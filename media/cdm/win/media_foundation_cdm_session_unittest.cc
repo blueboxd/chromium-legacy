@@ -30,6 +30,9 @@ namespace media {
 
 namespace {
 
+const double kExpirationMs = 123456789.0;
+const auto kExpirationTime = base::Time::FromJsTime(kExpirationMs);
+
 std::vector<uint8_t> StringToVector(const std::string& str) {
   return std::vector<uint8_t>(str.begin(), str.end());
 }
@@ -43,10 +46,13 @@ class MediaFoundationCdmSessionTest : public testing::Test {
   MediaFoundationCdmSessionTest()
       : mf_cdm_(MakeComPtr<MockMFCdm>()),
         mf_cdm_session_(MakeComPtr<MockMFCdmSession>()),
-        cdm_session_(base::BindRepeating(&MockCdmClient::OnSessionMessage,
-                                         base::Unretained(&cdm_client_)),
-                     base::BindRepeating(&MockCdmClient::OnSessionKeysChange,
-                                         base::Unretained(&cdm_client_))) {}
+        cdm_session_(
+            base::BindRepeating(&MockCdmClient::OnSessionMessage,
+                                base::Unretained(&cdm_client_)),
+            base::BindRepeating(&MockCdmClient::OnSessionKeysChange,
+                                base::Unretained(&cdm_client_)),
+            base::BindRepeating(&MockCdmClient::OnSessionExpirationUpdate,
+                                base::Unretained(&cdm_client_))) {}
 
   ~MediaFoundationCdmSessionTest() override = default;
 
@@ -190,7 +196,10 @@ TEST_F(MediaFoundationCdmSessionTest, Update) {
       .WillOnce(DoAll([&] { mf_cdm_session_callbacks_->KeyStatusChanged(); },
                       Return(S_OK)));
   COM_EXPECT_CALL(mf_cdm_session_, GetKeyStatuses(_, _)).WillOnce(Return(S_OK));
+  COM_EXPECT_CALL(mf_cdm_session_, GetExpiration(_))
+      .WillOnce(DoAll(SetArgPointee<0>(kExpirationMs), Return(S_OK)));
   EXPECT_CALL(cdm_client_, OnSessionKeysChangeCalled(_, true));
+  EXPECT_CALL(cdm_client_, OnSessionExpirationUpdate(_, kExpirationTime));
 
   EXPECT_SUCCESS(cdm_session_.Update(response));
   task_environment_.RunUntilIdle();
@@ -227,6 +236,10 @@ TEST_F(MediaFoundationCdmSessionTest, Remove) {
   GenerateRequest();
 
   COM_EXPECT_CALL(mf_cdm_session_, Remove()).WillOnce(Return(S_OK));
+  COM_EXPECT_CALL(mf_cdm_session_, GetExpiration(_))
+      .WillOnce(DoAll(SetArgPointee<0>(kExpirationMs), Return(S_OK)));
+  EXPECT_CALL(cdm_client_, OnSessionExpirationUpdate(_, kExpirationTime));
+
   EXPECT_SUCCESS(cdm_session_.Remove());
 }
 

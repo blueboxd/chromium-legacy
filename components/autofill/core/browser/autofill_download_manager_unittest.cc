@@ -45,8 +45,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/url_request/url_request_status.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_shared_url_loader_factory.h"

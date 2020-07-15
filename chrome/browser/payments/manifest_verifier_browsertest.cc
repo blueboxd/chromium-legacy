@@ -21,7 +21,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/origin.h"

@@ -544,8 +544,10 @@ def main():
   if sys.platform == 'darwin':
     # For libc++, we only want the headers.
     base_cmake_args.extend([
-        '-DLIBCXX_ENABLE_SHARED=OFF', '-DLIBCXX_ENABLE_STATIC=OFF',
-        '-DLIBCXX_INCLUDE_TESTS=OFF'
+        '-DLIBCXX_ENABLE_SHARED=OFF',
+        '-DLIBCXX_ENABLE_STATIC=OFF',
+        '-DLIBCXX_INCLUDE_TESTS=OFF',
+        '-DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF',
     ])
     # Prefer Python 2. TODO(crbug.com/1076834): Remove this.
     base_cmake_args.append('-DPython3_EXECUTABLE=/nonexistent')

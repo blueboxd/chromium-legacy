@@ -765,8 +765,7 @@ bool WallpaperControllerImpl::SetUserWallpaperInfo(const AccountId& account_id,
     // Remove the color cache of the previous wallpaper if it exists.
     DictionaryPrefUpdate wallpaper_colors_update(local_state_,
                                                  prefs::kWallpaperColors);
-    wallpaper_colors_update->RemoveWithoutPathExpansion(old_info.location,
-                                                        nullptr);
+    wallpaper_colors_update->RemoveKey(old_info.location);
   }
 
   DictionaryPrefUpdate wallpaper_update(local_state_,
@@ -1521,12 +1520,11 @@ void WallpaperControllerImpl::RemoveUserWallpaperInfo(
   GetUserWallpaperInfo(account_id, &info);
   DictionaryPrefUpdate prefs_wallpapers_info_update(local_state_,
                                                     prefs::kUserWallpaperInfo);
-  prefs_wallpapers_info_update->RemoveWithoutPathExpansion(
-      account_id.GetUserEmail(), nullptr);
+  prefs_wallpapers_info_update->RemoveKey(account_id.GetUserEmail());
   // Remove the color cache of the previous wallpaper if it exists.
   DictionaryPrefUpdate wallpaper_colors_update(local_state_,
                                                prefs::kWallpaperColors);
-  wallpaper_colors_update->RemoveWithoutPathExpansion(info.location, nullptr);
+  wallpaper_colors_update->RemoveKey(info.location);
 }
 
 void WallpaperControllerImpl::RemoveUserWallpaperImpl(

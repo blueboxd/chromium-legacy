@@ -20,7 +20,6 @@
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
 #include "components/prefs/pref_service.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace policy {

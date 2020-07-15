@@ -40,8 +40,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace {

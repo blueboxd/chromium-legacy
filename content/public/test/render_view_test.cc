@@ -19,7 +19,6 @@
 #include "content/common/input_messages.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
-#include "content/common/visual_properties.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -48,6 +47,7 @@
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/common/widget/visual_properties.h"
 #include "third_party/blink/public/mojom/leak_detector/leak_detector.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -731,8 +731,8 @@ void RenderViewTest::Resize(gfx::Size new_size,
   RenderWidget* render_widget =
       view->GetMainRenderFrame()->GetLocalRootRenderWidget();
 
-  VisualProperties visual_properties;
-  visual_properties.screen_info = ScreenInfo();
+  blink::VisualProperties visual_properties;
+  visual_properties.screen_info = blink::ScreenInfo();
   visual_properties.new_size = new_size;
   visual_properties.compositor_viewport_pixel_rect = gfx::Rect(new_size);
   visual_properties.is_fullscreen_granted = is_fullscreen_granted;
@@ -837,8 +837,8 @@ std::unique_ptr<FakeRenderWidgetHost> RenderViewTest::CreateRenderWidgetHost() {
   return std::make_unique<FakeRenderWidgetHost>();
 }
 
-VisualProperties RenderViewTest::InitialVisualProperties() {
-  VisualProperties initial_visual_properties;
+blink::VisualProperties RenderViewTest::InitialVisualProperties() {
+  blink::VisualProperties initial_visual_properties;
   // Ensure the view has some size so tests involving scrolling bounds work.
   initial_visual_properties.new_size = gfx::Size(400, 300);
   initial_visual_properties.visible_viewport_size = gfx::Size(400, 300);

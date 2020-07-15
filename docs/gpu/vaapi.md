@@ -205,11 +205,11 @@ correctly; try running `vainfo` from the command line and verify no errors show
 up.
 
 To run Chromium using VaAPI two arguments are necessary:
-* `--ignore-gpu-blacklist`
+* `--ignore-gpu-blocklist`
 * `--use-gl=desktop` or `--use-gl=egl`
 
 ```shell
-./out/gn/chrome --ignore-gpu-blacklist --use-gl=egl
+./out/gn/chrome --ignore-gpu-blocklist --use-gl=egl
 ```
 
 Note that you can set the environment variable `MESA_GLSL_CACHE_DISABLE=false`

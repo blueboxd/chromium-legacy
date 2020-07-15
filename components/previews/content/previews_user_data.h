@@ -121,12 +121,6 @@ class PreviewsUserData {
   // Sets the committed previews type for testing. Can be called multiple times.
   void SetCommittedPreviewsTypeForTesting(previews::PreviewsType previews_type);
 
-  bool offline_preview_used() const { return offline_preview_used_; }
-  // Whether an offline preview is being served.
-  void set_offline_preview_used(bool offline_preview_used) {
-    offline_preview_used_ = offline_preview_used;
-  }
-
   // The PreviewsState that was allowed for the navigation. This should be used
   // for metrics only since it does not respect the coin flip holdback.
   content::PreviewsState PreHoldbackAllowedPreviewsState() const;
@@ -210,9 +204,6 @@ class PreviewsUserData {
 
   // Whether the origin provided a no-transform directive.
   bool cache_control_no_transform_directive_ = false;
-
-  // Whether an offline preview is being served.
-  bool offline_preview_used_ = false;
 
   // Whether a lite page preview was prevented from being shown due to the
   // blocklist.

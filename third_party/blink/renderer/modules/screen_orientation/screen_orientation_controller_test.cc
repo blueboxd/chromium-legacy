@@ -209,12 +209,12 @@ class ScreenInfoWebWidgetClient
   ~ScreenInfoWebWidgetClient() override = default;
 
   // frame_test_helpers::TestWebWidgetClient:
-  WebScreenInfo GetScreenInfo() override { return screen_info_; }
+  ScreenInfo GetScreenInfo() override { return screen_info_; }
 
   void SetAngle(uint16_t angle) { screen_info_.orientation_angle = angle; }
 
  private:
-  WebScreenInfo screen_info_;
+  ScreenInfo screen_info_;
 };
 
 TEST_F(ScreenOrientationControllerTest, PageVisibilityCrash) {

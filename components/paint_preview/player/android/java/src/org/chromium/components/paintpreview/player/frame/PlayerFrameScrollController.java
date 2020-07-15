@@ -145,6 +145,7 @@ public class PlayerFrameScrollController {
             return false;
         }
 
+        mMediatorDelegate.offsetBitmapScaleMatrix(validDistanceX, validDistanceY);
         mViewport.offset(validDistanceX, validDistanceY);
         mMediatorDelegate.updateVisuals(false);
         if (mUserInteractionCallback != null) mUserInteractionCallback.run();

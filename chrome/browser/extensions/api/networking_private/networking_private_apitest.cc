@@ -50,15 +50,13 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
 
   // Asynchronous methods
   void GetProperties(const std::string& guid,
-                     const DictionaryCallback& success_callback,
-                     const FailureCallback& failure_callback) override {
-    DictionaryResult(guid, success_callback, failure_callback);
+                     PropertiesCallback callback) override {
+    ValueResult(guid, std::move(callback));
   }
 
   void GetManagedProperties(const std::string& guid,
-                            const DictionaryCallback& success_callback,
-                            const FailureCallback& failure_callback) override {
-    DictionaryResult(guid, success_callback, failure_callback);
+                            PropertiesCallback callback) override {
+    ValueResult(guid, std::move(callback));
   }
 
   void GetState(const std::string& guid,
@@ -250,6 +248,18 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
     } else {
       success_callback.Run();
     }
+  }
+
+  void ValueResult(const std::string& guid, PropertiesCallback callback) {
+    if (fail_) {
+      std::move(callback).Run(base::nullopt, kFailure);
+      return;
+    }
+    base::Value result(base::Value::Type::DICTIONARY);
+    result.SetStringKey(::onc::network_config::kGUID, guid);
+    result.SetStringKey(::onc::network_config::kType,
+                        ::onc::network_config::kWiFi);
+    std::move(callback).Run(std::move(result), base::nullopt);
   }
 
  private:

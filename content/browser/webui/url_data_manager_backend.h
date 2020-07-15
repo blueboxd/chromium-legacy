@@ -18,7 +18,6 @@
 #include "content/browser/webui/url_data_manager.h"
 #include "content/public/browser/url_data_source.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_request_job_factory.h"
 
 class GURL;
 

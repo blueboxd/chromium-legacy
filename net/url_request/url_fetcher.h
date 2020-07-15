@@ -18,6 +18,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/referrer_policy.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 
@@ -203,8 +204,7 @@ class NET_EXPORT URLFetcher {
 
   // The referrer policy to apply when updating the referrer during redirects.
   // The referrer policy may only be changed before Start() is called.
-  virtual void SetReferrerPolicy(
-      URLRequest::ReferrerPolicy referrer_policy) = 0;
+  virtual void SetReferrerPolicy(ReferrerPolicy referrer_policy) = 0;
 
   // Set extra headers on the request.  Must be called before the request
   // is started.

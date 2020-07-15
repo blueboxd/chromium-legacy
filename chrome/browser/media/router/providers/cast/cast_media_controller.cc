@@ -56,7 +56,7 @@ void SetIfValid(base::TimeDelta* out, const base::Value* value) {
 // If |value| has "width" and "height" fields with positive values, it gets
 // converted into gfx::Size. Otherwise base::nullopt is returned.
 base::Optional<gfx::Size> GetValidSize(const base::Value* value) {
-  if (!value)
+  if (!value || !value->is_dict())
     return base::nullopt;
   int width = 0;
   int height = 0;
@@ -216,6 +216,8 @@ void CastMediaController::UpdateMediaStatus(const base::Value& message_value) {
   if (images && images->is_list()) {
     media_status_.images.clear();
     for (const base::Value& image_value : images->GetList()) {
+      if (!image_value.is_dict())
+        continue;
       const std::string* url_string = image_value.FindStringKey("url");
       if (!url_string)
         continue;

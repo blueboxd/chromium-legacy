@@ -30,7 +30,6 @@
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
-#include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -496,13 +495,6 @@ OfflinePageRequestHandler::GetNetworkState() const {
         FORCE_OFFLINE_ON_CONNECTED_NETWORK;
   }
 
-  // Checks if previews are allowed, the network is slow, and the request is
-  // allowed to be shown for previews. When reloading from an offline page or
-  // through other force checks, previews should not be considered; previews
-  // eligiblity is only checked when |offline_header.reason| is Reason::NONE.
-  if (delegate_->ShouldAllowPreview())
-    return OfflinePageRequestHandler::NetworkState::PROHIBITIVELY_SLOW_NETWORK;
-
   // Otherwise, the network state is a good network.
   return OfflinePageRequestHandler::NetworkState::CONNECTED_NETWORK;
 }
@@ -589,16 +581,6 @@ void OfflinePageRequestHandler::OnTrustedOfflinePageFound() {
       url_ != GetCurrentOfflinePage().url) {
     ReportRequestResult(RequestResult::REDIRECTED, network_state_);
     Redirect(GetCurrentOfflinePage().url);
-    return;
-  }
-
-  // If the page is being loaded on a slow network, only use the offline page
-  // if it was created within the past day.
-  if (network_state_ == NetworkState::PROHIBITIVELY_SLOW_NETWORK &&
-      OfflineTimeNow() - GetCurrentOfflinePage().creation_time >
-          previews::params::OfflinePreviewFreshnessDuration()) {
-    ReportRequestResult(RequestResult::PAGE_NOT_FRESH, network_state_);
-    delegate_->FallbackToDefault();
     return;
   }
 

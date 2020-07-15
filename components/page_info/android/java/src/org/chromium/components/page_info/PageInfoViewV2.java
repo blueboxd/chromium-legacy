@@ -83,8 +83,7 @@ public class PageInfoViewV2 extends PageInfoView {
      */
     @Override
     protected List<View> collectAnimatableViews() {
-        return Arrays.asList(mUrlTitle, mPreviewMessage, mPreviewStaleTimestamp,
-                mPreviewLoadOriginal, mPreviewSeparator, mInstantAppButton, mRowWrapper,
-                mSiteSettingsButton);
+        return Arrays.asList(mUrlTitle, mPreviewMessage, mPreviewLoadOriginal, mPreviewSeparator,
+                mInstantAppButton, mRowWrapper, mSiteSettingsButton);
     }
 }

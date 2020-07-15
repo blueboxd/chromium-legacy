@@ -153,7 +153,7 @@ ScreenOrientationProvider::GetNaturalLockType() const {
   if (!rwh)
     return device::mojom::ScreenOrientationLockType::DEFAULT;
 
-  ScreenInfo screen_info;
+  blink::ScreenInfo screen_info;
   rwh->GetScreenInfo(&screen_info);
 
   switch (screen_info.orientation_type) {
@@ -185,7 +185,7 @@ bool ScreenOrientationProvider::LockMatchesCurrentOrientation(
   if (!rwh)
     return false;
 
-  ScreenInfo screen_info;
+  blink::ScreenInfo screen_info;
   rwh->GetScreenInfo(&screen_info);
 
   switch (lock) {

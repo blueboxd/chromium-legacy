@@ -298,12 +298,6 @@ void DataReductionProxyService::OnProxyConfigUpdated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void DataReductionProxyService::SetIgnoreLongTermBlockListRules(
-    bool ignore_long_term_block_list_rules) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  settings_->SetIgnoreLongTermBlockListRules(ignore_long_term_block_list_rules);
-}
-
 void DataReductionProxyService::AddCustomProxyConfigClient(
     mojo::Remote<network::mojom::CustomProxyConfigClient> config_client) {
   proxy_config_clients_.Add(std::move(config_client));

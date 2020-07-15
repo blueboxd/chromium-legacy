@@ -46,7 +46,7 @@ ExtensionManagementPrefUpdaterBase::~ExtensionManagementPrefUpdaterBase() {
 void ExtensionManagementPrefUpdaterBase::UnsetPerExtensionSettings(
     const ExtensionId& id) {
   DCHECK(crx_file::id_util::IdIsValid(id));
-  pref_->RemoveWithoutPathExpansion(id, nullptr);
+  pref_->RemoveKey(id);
 }
 
 void ExtensionManagementPrefUpdaterBase::ClearPerExtensionSettings(

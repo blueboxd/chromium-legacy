@@ -286,7 +286,7 @@ QUIC_FLAG(bool,
 
 // If true, QUIC will free writer-allocated packet buffer if writer->WritePacket
 // is not called.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_avoid_leak_writer_buffer, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_avoid_leak_writer_buffer, true)
 
 // If true, the B2HI connection option limits reduction of inflight_hi to
 // (1-Beta)*CWND.

@@ -2247,7 +2247,6 @@
           'symupload'
         ],
         'mixins': [
-          'chrome-swarming-pool',
           'linux-xenial',
         ],
         'swarming': {
@@ -2259,7 +2258,6 @@
         },
         'test_suites': {
           'gtest_tests': 'linux_lacros_chromeos_gtests',
-          'isolated_scripts': 'chrome_sizes',
         },
       },
       'linux-perfetto-rel': {

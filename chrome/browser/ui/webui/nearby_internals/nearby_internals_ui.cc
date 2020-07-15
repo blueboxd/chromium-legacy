@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/nearby_internals/nearby_internals_http_handler.h"
 #include "chrome/browser/ui/webui/nearby_internals/nearby_internals_logs_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
@@ -42,6 +43,7 @@ NearbyInternalsUI::NearbyInternalsUI(content::WebUI* web_ui)
   content::WebUIDataSource::Add(profile, html_source);
 
   web_ui->AddMessageHandler(std::make_unique<NearbyInternalsLogsHandler>());
+  web_ui->AddMessageHandler(std::make_unique<NearbyInternalsHttpHandler>());
 }
 
 NearbyInternalsUI::~NearbyInternalsUI() = default;

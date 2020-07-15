@@ -107,16 +107,12 @@ class NetworkingConfigService : public ExtensionRegistryObserver,
       const base::Closure& authentication_callback);
 
  private:
-  void OnGotProperties(const std::string& extension_id,
+  void OnGetProperties(const std::string& extension_id,
                        const std::string& guid,
                        const base::Closure& authentication_callback,
                        const std::string& service_path,
-                       const base::DictionaryValue& onc_network_config);
-
-  void OnGetPropertiesFailed(const std::string& extension_id,
-                             const std::string& guid,
-                             const std::string& error_name,
-                             std::unique_ptr<base::DictionaryValue> error_data);
+                       base::Optional<base::Value> onc_network_config,
+                       base::Optional<std::string> error);
 
   // Creates the captive portal event about the network with guid |guid| that is
   // to be dispatched to the extension identified by |extension_id|. |bssid|

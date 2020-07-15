@@ -109,10 +109,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_interceptor.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -665,8 +662,7 @@ class ExtensionWebRequestApiPolicyTest
         feature_list_.InitWithFeatures(
             {network::features::kOutOfBlinkCors},
             {features::kHideCorsLegacyModeEnabledPolicySupport});
-        UpdatePolicy(policy::key::kCorsLegacyModeEnabled,
-                     std::make_unique<base::Value>(true));
+        UpdatePolicy(policy::key::kCorsLegacyModeEnabled, base::Value(true));
         test_name_ += "?cors_mode=blink";
         break;
       case ExtraHeadersRequirementMode::kEnabledWithCorsMitigationListPolicy:
@@ -674,7 +670,7 @@ class ExtensionWebRequestApiPolicyTest
             {network::features::kOutOfBlinkCors},
             {features::kHideCorsMitigationListPolicySupport});
         UpdatePolicy(policy::key::kCorsMitigationList,
-                     std::make_unique<base::ListValue>());
+                     base::Value(base::Value::Type::LIST));
         test_name_ += "?cors_mode=network_service&with_force_extra_headers";
         break;
       case ExtraHeadersRequirementMode::
@@ -683,8 +679,7 @@ class ExtensionWebRequestApiPolicyTest
             {features::kHideCorsLegacyModeEnabledPolicySupport,
              network::features::kOutOfBlinkCors},
             {});
-        UpdatePolicy(policy::key::kCorsLegacyModeEnabled,
-                     std::make_unique<base::Value>(true));
+        UpdatePolicy(policy::key::kCorsLegacyModeEnabled, base::Value(true));
         test_name_ += "?cors_mode=network_service";
         break;
       case ExtraHeadersRequirementMode::
@@ -694,7 +689,7 @@ class ExtensionWebRequestApiPolicyTest
              network::features::kOutOfBlinkCors},
             {});
         UpdatePolicy(policy::key::kCorsMitigationList,
-                     std::make_unique<base::ListValue>());
+                     base::Value(base::Value::Type::LIST));
         test_name_ += "?cors_mode=network_service";
         break;
     }
@@ -702,8 +697,7 @@ class ExtensionWebRequestApiPolicyTest
     ExtensionWebRequestApiTest::SetUpInProcessBrowserTestFixture();
   }
 
-  void UpdatePolicy(const std::string& policy,
-                    std::unique_ptr<base::Value> value) {
+  void UpdatePolicy(const std::string& policy, base::Value value) {
     policy::PolicyMap policy_map;
     policy_map.Set(policy, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,

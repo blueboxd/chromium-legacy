@@ -21,7 +21,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_utils.h"
@@ -292,8 +292,9 @@ void FakeSkiaOutputSurface::CopyOutput(
     return;
   }
 
+  GrDirectContext* direct = GrAsDirectContext(gr_context());
   auto copy_image = surface->makeImageSnapshot()->makeSubset(
-      RectToSkIRect(geometry.sampling_bounds));
+      RectToSkIRect(geometry.sampling_bounds), direct);
   // Send copy request by copying into a bitmap.
   SkBitmap bitmap;
   copy_image->asLegacyBitmap(&bitmap);

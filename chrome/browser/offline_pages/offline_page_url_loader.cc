@@ -18,7 +18,7 @@
 #include "content/public/common/previews_state.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/io_buffer.h"
-#include "net/url_request/url_request.h"
+#include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
@@ -41,7 +41,7 @@ net::RedirectInfo CreateRedirectInfo(const GURL& redirected_url,
                                      int response_code) {
   net::RedirectInfo redirect_info;
   redirect_info.new_url = redirected_url;
-  redirect_info.new_referrer_policy = net::URLRequest::NO_REFERRER;
+  redirect_info.new_referrer_policy = net::ReferrerPolicy::NO_REFERRER;
   redirect_info.new_method = "GET";
   redirect_info.status_code = response_code;
   redirect_info.new_site_for_cookies =

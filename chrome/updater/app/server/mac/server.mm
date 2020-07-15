@@ -26,8 +26,7 @@
 
 namespace updater {
 
-AppServerMac::AppServerMac()
-    : main_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+AppServerMac::AppServerMac() = default;
 AppServerMac::~AppServerMac() = default;
 
 void AppServerMac::Uninitialize() {
@@ -42,6 +41,11 @@ void AppServerMac::Uninitialize() {
 
 void AppServerMac::ActiveDuty() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO: crbug 1105506
+  // Move the initialization of the task runner into the ctor when work to set
+  // up the main thread of the updater as a sequnece is done.
+  main_task_runner_ = base::SequencedTaskRunnerHandle::Get();
+
   @autoreleasepool {
     // Sets up a listener and delegate for the CRUUpdateChecking XPC
     // connection

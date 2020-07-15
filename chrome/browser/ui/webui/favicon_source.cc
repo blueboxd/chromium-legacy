@@ -26,7 +26,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest.h"
-#include "net/url_request/url_request.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"

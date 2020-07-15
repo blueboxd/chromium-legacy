@@ -59,8 +59,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
-#include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_interceptor.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"

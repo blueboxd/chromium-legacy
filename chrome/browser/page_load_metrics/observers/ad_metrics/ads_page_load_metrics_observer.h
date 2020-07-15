@@ -14,6 +14,7 @@
 #include "base/scoped_observer.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
+#include "chrome/browser/page_load_metrics/observers/ad_metrics/page_ad_density_tracker.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom-forward.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
@@ -120,6 +121,10 @@ class AdsPageLoadMetricsObserver
   void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       content::RenderFrameHost* render_frame_host) override;
+  void OnFrameIntersectionUpdate(
+      content::RenderFrameHost* render_frame_host,
+      const page_load_metrics::mojom::FrameIntersectionUpdate&
+          intersection_update) override;
   void OnFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
   void SetHeavyAdThresholdNoiseProviderForTesting(
@@ -269,6 +274,9 @@ class AdsPageLoadMetricsObserver
 
   std::unique_ptr<HeavyAdThresholdNoiseProvider>
       heavy_ad_threshold_noise_provider_;
+
+  // The maximum ad density measurements for the page during it's lifecycle.
+  PageAdDensityTracker page_ad_density_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserver);
 };

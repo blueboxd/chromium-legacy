@@ -595,6 +595,26 @@ size_t Textfield::GetCursorPosition() const {
   return model_->GetCursorPosition();
 }
 
+void Textfield::SetTextAndScrollAndSelectRange(
+    const base::string16& text,
+    const size_t cursor_position,
+    const std::vector<size_t>& positions,
+    const gfx::Range range) {
+  // Pass cursor_position to SetText to ensure edit history works as expected.
+  model_->SetText(text, cursor_position);
+  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
+  for (auto position : positions) {
+    model_->MoveCursorTo(position);
+    GetRenderText()->GetUpdatedCursorBounds();
+  }
+  model_->SelectRange(range);
+  OnPropertyChanged(&model_ + kTextfieldSelectedRange, kPropertyEffectsPaint);
+  // We don't set the |text_changed| param to true because that would notify
+  // the TextfieldController::ContentsChanged(), which should only occur when
+  // the user changes the text.
+  UpdateAfterChange(false, true);
+}
+
 void Textfield::SetColor(SkColor value) {
   GetRenderText()->SetColor(value);
   cursor_view_->layer()->SetColor(value);

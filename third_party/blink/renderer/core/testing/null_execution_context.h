@@ -21,7 +21,7 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
   USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
 
  public:
-  NullExecutionContext(OriginTrialContext* origin_trial_context = nullptr);
+  NullExecutionContext();
   ~NullExecutionContext() override;
 
   void SetURL(const KURL& url) { url_ = url; }

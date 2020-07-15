@@ -79,8 +79,6 @@
 #include "net/ssl/ssl_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_util.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"

@@ -28,21 +28,21 @@ ProcessResourceUsage::~ProcessResourceUsage() {
 void ProcessResourceUsage::RunPendingRefreshCallbacks() {
   DCHECK(thread_checker_.CalledOnValidThread());
   auto task_runner = base::ThreadTaskRunnerHandle::Get();
-  for (const auto& callback : refresh_callbacks_)
-    task_runner->PostTask(FROM_HERE, callback);
-  refresh_callbacks_.clear();
+  for (auto& callback : refresh_callbacks_)
+    task_runner->PostTask(FROM_HERE, std::move(callback));
 }
 
-void ProcessResourceUsage::Refresh(const base::Closure& callback) {
+void ProcessResourceUsage::Refresh(base::OnceClosure callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!service_ || !service_.is_connected()) {
     if (!callback.is_null())
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                    std::move(callback));
     return;
   }
 
   if (!callback.is_null())
-    refresh_callbacks_.push_back(callback);
+    refresh_callbacks_.push_back(std::move(callback));
 
   if (!update_in_progress_) {
     update_in_progress_ = true;

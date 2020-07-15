@@ -6,38 +6,34 @@
 // #import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.m.js';
 //
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {blur, pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// #import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// #import {assertEquals, assertDeepEquals, assertFalse, assertNotEquals, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for cr-toolbar-search-field. */
 suite('cr-toolbar-search-field', function() {
-  /** @type {?CrToolbarSearchFieldElement} */
-  let field = null;
+  /** @type {!CrToolbarSearchFieldElement} */
+  let field;
 
   /** @type {?Array<string>} */
   let searches = null;
 
   /** @param {string} term */
   function simulateSearch(term) {
-    field.$.searchInput.value = term;
+    field.$$('#searchInput').value = term;
     field.onSearchTermInput();
     field.onSearchTermSearch();
   }
 
   setup(function() {
-    PolymerTest.clearBody();
-    field = document.createElement('cr-toolbar-search-field');
+    document.body.innerHTML = '';
+    field = /** @type {!CrToolbarSearchFieldElement} */ (
+        document.createElement('cr-toolbar-search-field'));
     searches = [];
     field.addEventListener('search-changed', function(event) {
       searches.push(event.detail);
     });
     document.body.appendChild(field);
-  });
-
-  teardown(function() {
-    field.remove();
-    field = null;
-    searches = null;
   });
 
   // Test that no initial 'search-changed' event is fired during
@@ -63,18 +59,18 @@ suite('cr-toolbar-search-field', function() {
     assertFalse(field.showingSearch);
     field.click();
     assertTrue(field.showingSearch);
-    assertEquals(field.$.searchInput, field.root.activeElement);
+    const searchInput = /** @type {!HTMLElement} */ (field.$$('#searchInput'));
+    assertEquals(searchInput, field.root.activeElement);
 
-    MockInteractions.blur(field.$.searchInput);
+    field.$$('#searchInput').blur();
     assertFalse(field.showingSearch);
 
     field.click();
-    assertEquals(field.$.searchInput, field.root.activeElement);
+    assertEquals(searchInput, field.root.activeElement);
 
-    MockInteractions.pressAndReleaseKeyOn(
-        field.$.searchInput, 27, '', 'Escape');
+    MockInteractions.pressAndReleaseKeyOn(searchInput, 27, '', 'Escape');
     assertFalse(field.showingSearch, 'Pressing escape closes field.');
-    assertNotEquals(field.$.searchInput, field.root.activeElement);
+    assertNotEquals(searchInput, field.root.activeElement);
   });
 
   test('clear search button clears and refocuses input', function() {
@@ -88,7 +84,7 @@ suite('cr-toolbar-search-field', function() {
     clearSearch.click();
     assertTrue(field.showingSearch);
     assertEquals('', field.getValue());
-    assertEquals(field.$.searchInput, field.root.activeElement);
+    assertEquals(field.$$('#searchInput'), field.root.activeElement);
     assertFalse(field.hasSearchText);
     assertFalse(field.spinnerActive);
   });
@@ -197,7 +193,7 @@ suite('cr-toolbar-search-field', function() {
   test('blur does not close field when a search is active', function() {
     field.click();
     simulateSearch('test');
-    MockInteractions.blur(field.$.searchInput);
+    field.$$('#searchInput').blur();
 
     assertTrue(field.showingSearch);
   });
@@ -217,7 +213,7 @@ suite('cr-toolbar-search-field', function() {
   });
 
   test('closes when value is cleared while unfocused', function() {
-    MockInteractions.focus(field.$.searchInput);
+    field.$$('#searchInput').focus();
     simulateSearch('test');
     Polymer.dom.flush();
 
@@ -228,7 +224,7 @@ suite('cr-toolbar-search-field', function() {
 
     // Does close the field if it is blurred before being cleared.
     simulateSearch('test');
-    MockInteractions.blur(field.$.searchInput);
+    field.$$('#searchInput').blur();
     field.setValue('');
     assertFalse(field.showingSearch);
   });
@@ -238,7 +234,8 @@ suite('cr-toolbar-search-field', function() {
     assertFalse(field.getSearchInput().hasAttribute('autofocus'));
 
     field.remove();
-    field = document.createElement('cr-toolbar-search-field');
+    field = /** @type {!CrToolbarSearchFieldElement} */ (
+        document.createElement('cr-toolbar-search-field'));
     field.autofocus = true;
 
     document.body.appendChild(field);

@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/core/css/media_values.h"
 
 #include "third_party/blink/public/common/css/screen_spanning.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/css/media_feature_overrides.h"
@@ -61,7 +61,7 @@ double MediaValues::CalculateViewportHeight(LocalFrame* frame) {
 
 int MediaValues::CalculateDeviceWidth(LocalFrame* frame) {
   DCHECK(frame && frame->View() && frame->GetSettings() && frame->GetPage());
-  blink::WebScreenInfo screen_info =
+  blink::ScreenInfo screen_info =
       frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
   int device_width = screen_info.rect.width();
   if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
@@ -73,7 +73,7 @@ int MediaValues::CalculateDeviceWidth(LocalFrame* frame) {
 
 int MediaValues::CalculateDeviceHeight(LocalFrame* frame) {
   DCHECK(frame && frame->View() && frame->GetSettings() && frame->GetPage());
-  blink::WebScreenInfo screen_info =
+  blink::ScreenInfo screen_info =
       frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
   int device_height = screen_info.rect.height();
   if (frame->GetSettings()->GetReportScreenSizeInPhysicalPixelsQuirk()) {
@@ -96,7 +96,7 @@ float MediaValues::CalculateDevicePixelRatio(LocalFrame* frame) {
 int MediaValues::CalculateColorBitsPerComponent(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetPage());
-  WebScreenInfo screen_info =
+  ScreenInfo screen_info =
       frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
   if (screen_info.is_monochrome)
     return 0;
@@ -106,7 +106,7 @@ int MediaValues::CalculateColorBitsPerComponent(LocalFrame* frame) {
 int MediaValues::CalculateMonochromeBitsPerComponent(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetPage());
-  WebScreenInfo screen_info =
+  ScreenInfo screen_info =
       frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
   if (!screen_info.is_monochrome)
     return 0;

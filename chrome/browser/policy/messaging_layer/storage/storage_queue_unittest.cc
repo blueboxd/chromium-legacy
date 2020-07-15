@@ -159,6 +159,10 @@ class StorageQueueTest : public ::testing::TestWithParam<size_t> {
     return BuildStorageQueueOptionsImmediate().set_upload_period(upload_period);
   }
 
+  StorageQueue::Options BuildStorageQueueOptionsOnlyManual() const {
+    return BuildStorageQueueOptionsPeriodic(base::TimeDelta::Max());
+  }
+
   StatusOr<std::unique_ptr<StorageQueue::UploaderInterface>>
   BuildMockUploader() {
     auto uploader = std::make_unique<MockUploadClient>();
@@ -227,6 +231,25 @@ TEST_P(StorageQueueTest, WriteIntoNewStorageQueueAndUpload) {
 
   // Trigger upload.
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+}
+
+TEST_P(StorageQueueTest, WriteIntoNewStorageQueueAndFlush) {
+  CreateStorageQueueOrDie(BuildStorageQueueOptionsOnlyManual());
+  WriteStringOrDie(blobs[0]);
+  WriteStringOrDie(blobs[1]);
+  WriteStringOrDie(blobs[2]);
+
+  // Set uploader expectations.
+  EXPECT_CALL(set_mock_uploader_expectations_, Call(NotNull()))
+      .WillOnce(Invoke([](MockUploadClient* mock_upload_client) {
+        MockUploadClient::SetUp(mock_upload_client)
+            .Required(blobs[0])
+            .Required(blobs[1])
+            .Required(blobs[2]);
+      }));
+
+  // Flush manually.
+  storage_queue_->Flush();
 }
 
 TEST_P(StorageQueueTest, WriteAndRepeatedlyUploadWithConfirmations) {

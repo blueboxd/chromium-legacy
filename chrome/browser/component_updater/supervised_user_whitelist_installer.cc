@@ -459,7 +459,7 @@ bool SupervisedUserWhitelistInstallerImpl::UnregisterWhitelistInternal(
   if (!clients->empty())
     return removed;
 
-  pref_dict->RemoveWithoutPathExpansion(crx_id, nullptr);
+  pref_dict->RemoveKey(crx_id);
   const bool result = cus_->UnregisterComponent(crx_id);
   DCHECK(result);
 
@@ -531,7 +531,7 @@ void SupervisedUserWhitelistInstallerImpl::RegisterComponents() {
 
   // Clean up stale whitelists as determined above.
   for (const std::string& id : stale_whitelists)
-    whitelists->RemoveWithoutPathExpansion(id, nullptr);
+    whitelists->RemoveKey(id);
 
   sequenced_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&RemoveUnregisteredWhitelistsOnTaskRunner,

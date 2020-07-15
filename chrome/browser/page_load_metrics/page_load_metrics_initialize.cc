@@ -25,7 +25,6 @@
 #include "chrome/browser/page_load_metrics/observers/media_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/offline_page_previews_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/optimization_guide_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/portal_page_load_metrics_observer.h"
@@ -109,9 +108,6 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
     tracker->AddObserver(std::make_unique<MediaPageLoadMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<MultiTabLoadingPageLoadMetricsObserver>());
-    tracker->AddObserver(
-        std::make_unique<
-            previews::OfflinePagePreviewsPageLoadMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<OptimizationGuidePageLoadMetricsObserver>());
     tracker->AddObserver(

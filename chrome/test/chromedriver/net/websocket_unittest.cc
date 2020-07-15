@@ -20,7 +20,6 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chrome/test/chromedriver/net/test_http_server.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

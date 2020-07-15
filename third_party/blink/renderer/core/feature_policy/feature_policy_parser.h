@@ -19,7 +19,6 @@
 namespace blink {
 
 class ExecutionContext;
-class FeaturePolicyParserDelegate;
 
 // These values match the "FeaturePolicyAllowlistType" enum in
 // tools/metrics/histograms/enums.xml. Entries should not be renumbered and
@@ -57,12 +56,11 @@ class CORE_EXPORT FeaturePolicyParser {
   // ExecutionContext is used to determine if any origin trials affect the
   // parsing. Example of a feature policy string:
   //     "vibrate a.com b.com; fullscreen 'none'; payment 'self', payment *".
-  static ParsedFeaturePolicy ParseHeader(
-      const String& feature_policy_header,
-      const String& permission_policy_header,
-      scoped_refptr<const SecurityOrigin>,
-      PolicyParserMessageBuffer& logger,
-      FeaturePolicyParserDelegate* delegate = nullptr);
+  static ParsedFeaturePolicy ParseHeader(const String& feature_policy_header,
+                                         const String& permission_policy_header,
+                                         scoped_refptr<const SecurityOrigin>,
+                                         PolicyParserMessageBuffer& logger,
+                                         ExecutionContext* = nullptr);
 
   // Converts a container policy string into a vector of allowlists, given self
   // and src origins provided, one for each feature specified. Unrecognized
@@ -74,7 +72,7 @@ class CORE_EXPORT FeaturePolicyParser {
       scoped_refptr<const SecurityOrigin> self_origin,
       scoped_refptr<const SecurityOrigin> src_origin,
       PolicyParserMessageBuffer& logger,
-      FeaturePolicyParserDelegate* delegate = nullptr);
+      ExecutionContext* = nullptr);
 
   static ParsedFeaturePolicy ParseFeaturePolicyForTest(
       const String& policy,
@@ -82,7 +80,7 @@ class CORE_EXPORT FeaturePolicyParser {
       scoped_refptr<const SecurityOrigin> src_origin,
       PolicyParserMessageBuffer& logger,
       const FeatureNameMap& feature_names,
-      FeaturePolicyParserDelegate* delegate = nullptr);
+      ExecutionContext* = nullptr);
 
   static ParsedFeaturePolicy ParsePermissionsPolicyForTest(
       const String& policy,
@@ -90,7 +88,7 @@ class CORE_EXPORT FeaturePolicyParser {
       scoped_refptr<const SecurityOrigin> src_origin,
       PolicyParserMessageBuffer& logger,
       const FeatureNameMap& feature_names,
-      FeaturePolicyParserDelegate* delegate = nullptr);
+      ExecutionContext* = nullptr);
 };
 
 // Returns true iff any declaration in the policy is for the given feature.

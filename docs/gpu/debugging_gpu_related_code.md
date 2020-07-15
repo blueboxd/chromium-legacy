@@ -56,7 +56,7 @@ debug output stream.
 **Note:** If `about:gpu` is telling you that your GPU is disabled and
 hardware acceleration is unavailable, it might be a problem with your GPU being
 unsupported. To override this and turn on hardware acceleration anyway, you can
-use the `--ignore-gpu-blacklist` command line option when starting Chromium.
+use the `--ignore-gpu-blocklist` command line option when starting Chromium.
 
 ### Breaking on GL Error
 

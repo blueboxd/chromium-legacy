@@ -174,34 +174,31 @@ void NetworkHandlerFailureCallback(
 // Returns the string corresponding to |key|. If the property is a managed
 // dictionary, returns the active value. If the property does not exist or
 // has no active value, returns an empty string.
-std::string GetStringFromDictionary(const base::DictionaryValue& dictionary,
+std::string GetStringFromDictionary(const base::Value& dictionary,
                                     const std::string& key) {
-  std::string result;
-  if (!dictionary.GetStringWithoutPathExpansion(key, &result)) {
-    const base::DictionaryValue* managed = nullptr;
-    if (dictionary.GetDictionaryWithoutPathExpansion(key, &managed)) {
-      managed->GetStringWithoutPathExpansion(::onc::kAugmentationActiveSetting,
-                                             &result);
-    }
-  }
-  return result;
+  const std::string* result = dictionary.FindStringKey(key);
+  if (result)
+    return *result;
+  const base::Value* managed = dictionary.FindDictKey(key);
+  if (managed)
+    result = managed->FindStringKey(::onc::kAugmentationActiveSetting);
+  return result ? *result : std::string();
 }
 
-base::DictionaryValue* GetThirdPartyVPNDictionary(
-    base::DictionaryValue* dictionary) {
+base::Value* GetThirdPartyVPNDictionary(base::Value* dictionary) {
   const std::string type =
       GetStringFromDictionary(*dictionary, ::onc::network_config::kType);
   if (type != ::onc::network_config::kVPN)
     return nullptr;
-  base::DictionaryValue* vpn_dict = nullptr;
-  if (!dictionary->GetDictionary(::onc::network_config::kVPN, &vpn_dict))
+  base::Value* vpn_dict = dictionary->FindDictKey(::onc::network_config::kVPN);
+  if (!vpn_dict)
     return nullptr;
   if (GetStringFromDictionary(*vpn_dict, ::onc::vpn::kType) !=
       ::onc::vpn::kThirdPartyVpn) {
     return nullptr;
   }
-  base::DictionaryValue* third_party_vpn = nullptr;
-  vpn_dict->GetDictionary(::onc::vpn::kThirdPartyVpn, &third_party_vpn);
+  base::Value* third_party_vpn =
+      dictionary->FindDictKey(::onc::vpn::kThirdPartyVpn);
   return third_party_vpn;
 }
 
@@ -248,52 +245,51 @@ NetworkingPrivateChromeOS::NetworkingPrivateChromeOS(
 
 NetworkingPrivateChromeOS::~NetworkingPrivateChromeOS() {}
 
-void NetworkingPrivateChromeOS::GetProperties(
-    const std::string& guid,
-    const DictionaryCallback& success_callback,
-    const FailureCallback& failure_callback) {
+void NetworkingPrivateChromeOS::GetProperties(const std::string& guid,
+                                              PropertiesCallback callback) {
   std::string service_path, error;
   if (!GetServicePathFromGuid(guid, &service_path, &error)) {
-    failure_callback.Run(error);
+    NET_LOG(ERROR) << "GetProperties failed: " << error;
+    std::move(callback).Run(base::nullopt, error);
     return;
   }
 
   std::string user_id_hash;
   if (!GetPrimaryUserIdHash(browser_context_, &user_id_hash, &error)) {
-    failure_callback.Run(error);
+    NET_LOG(ERROR) << "GetProperties failed: " << error;
+    std::move(callback).Run(base::nullopt, error);
     return;
   }
 
   GetManagedConfigurationHandler()->GetProperties(
       user_id_hash, service_path,
       base::BindOnce(&NetworkingPrivateChromeOS::GetPropertiesCallback,
-                     weak_ptr_factory_.GetWeakPtr(), guid, false /* managed */,
-                     success_callback),
-      base::Bind(&NetworkHandlerFailureCallback, failure_callback));
+                     weak_ptr_factory_.GetWeakPtr(), guid,
+                     std::move(callback)));
 }
 
 void NetworkingPrivateChromeOS::GetManagedProperties(
     const std::string& guid,
-    const DictionaryCallback& success_callback,
-    const FailureCallback& failure_callback) {
+    PropertiesCallback callback) {
   std::string service_path, error;
   if (!GetServicePathFromGuid(guid, &service_path, &error)) {
-    failure_callback.Run(error);
+    NET_LOG(ERROR) << "GetManagedProperties failed: " << error;
+    std::move(callback).Run(base::nullopt, error);
     return;
   }
 
   std::string user_id_hash;
   if (!GetPrimaryUserIdHash(browser_context_, &user_id_hash, &error)) {
-    failure_callback.Run(error);
+    NET_LOG(ERROR) << "GetManagedProperties failed: " << error;
+    std::move(callback).Run(base::nullopt, error);
     return;
   }
 
   GetManagedConfigurationHandler()->GetManagedProperties(
       user_id_hash, service_path,
       base::BindOnce(&NetworkingPrivateChromeOS::GetPropertiesCallback,
-                     weak_ptr_factory_.GetWeakPtr(), guid, true /* managed */,
-                     success_callback),
-      base::Bind(&NetworkHandlerFailureCallback, failure_callback));
+                     weak_ptr_factory_.GetWeakPtr(), guid,
+                     std::move(callback)));
 }
 
 void NetworkingPrivateChromeOS::GetState(
@@ -735,20 +731,18 @@ bool NetworkingPrivateChromeOS::RequestScan(const std::string& type) {
 
 void NetworkingPrivateChromeOS::GetPropertiesCallback(
     const std::string& guid,
-    bool managed,
-    const DictionaryCallback& callback,
+    PropertiesCallback callback,
     const std::string& service_path,
-    const base::DictionaryValue& dictionary) {
-  std::unique_ptr<base::DictionaryValue> dictionary_copy =
-      dictionary.CreateDeepCopy();
-  AppendThirdPartyProviderName(dictionary_copy.get());
-  callback.Run(std::move(dictionary_copy));
+    base::Optional<base::Value> dictionary,
+    base::Optional<std::string> error) {
+  if (dictionary)
+    AppendThirdPartyProviderName(&dictionary.value());
+  std::move(callback).Run(std::move(dictionary), std::move(error));
 }
 
 void NetworkingPrivateChromeOS::AppendThirdPartyProviderName(
-    base::DictionaryValue* dictionary) {
-  base::DictionaryValue* third_party_vpn =
-      GetThirdPartyVPNDictionary(dictionary);
+    base::Value* dictionary) {
+  base::Value* third_party_vpn = GetThirdPartyVPNDictionary(dictionary);
   if (!third_party_vpn)
     return;
 

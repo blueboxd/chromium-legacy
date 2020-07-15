@@ -7,7 +7,6 @@
 
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/page_visibility_state.h"
-#include "content/public/common/screen_info.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "ui/gfx/geometry/rect.h"

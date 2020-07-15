@@ -2032,7 +2032,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(
   if (owned_render_widget_host_) {
     DCHECK(parent_);
     DCHECK_NE(parent_routing_id, MSG_ROUTING_NONE);
-    ScreenInfo screen_info;
+    blink::ScreenInfo screen_info;
     parent_->GetRenderWidgetHost()->GetScreenInfo(&screen_info);
     RenderWidgetHostView* rwhv = RenderWidgetHostViewChildFrame::Create(
         owned_render_widget_host_.get(), screen_info);
@@ -4837,7 +4837,7 @@ void RenderFrameHostImpl::CreateNewWindow(
   // nonsense with a semi-valid but incorrect ScreenInfo (it needs a
   // RenderWidgetHostView to be correct). An updates VisualProperties will get
   // to the RenderWidget eventually.
-  VisualProperties visual_properties;
+  blink::VisualProperties visual_properties;
   main_frame->GetLocalRenderWidgetHost()->GetScreenInfo(
       &visual_properties.screen_info);
   main_frame->GetLocalRenderWidgetHost()->BindFrameWidgetInterfaces(

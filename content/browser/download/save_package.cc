@@ -63,9 +63,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/filename_util.h"
-#include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
-#include "net/url_request/url_request_context.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/url_constants.h"
 

@@ -87,10 +87,12 @@ class OriginTrialContextTest : public testing::Test {
  protected:
   OriginTrialContextTest()
       : token_validator_(new MockTokenValidator),
-        execution_context_(MakeGarbageCollected<NullExecutionContext>(
-            MakeGarbageCollected<OriginTrialContext>(
-                std::unique_ptr<MockTokenValidator>(token_validator_)))),
-        histogram_tester_(new HistogramTester()) {}
+        execution_context_(MakeGarbageCollected<NullExecutionContext>()),
+        histogram_tester_(new HistogramTester()) {
+    execution_context_->GetOriginTrialContext()
+        ->SetTrialTokenValidatorForTesting(
+            std::unique_ptr<MockTokenValidator>(token_validator_));
+  }
 
   MockTokenValidator* TokenValidator() { return token_validator_; }
 

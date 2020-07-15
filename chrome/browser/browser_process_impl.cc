@@ -318,14 +318,14 @@ void BrowserProcessImpl::Init() {
   // Initialize the notification for the default browser setting policy.
   pref_change_registrar_.Add(
       prefs::kDefaultBrowserSettingEnabled,
-      base::Bind(&BrowserProcessImpl::ApplyDefaultBrowserPolicy,
-                 base::Unretained(this)));
+      base::BindRepeating(&BrowserProcessImpl::ApplyDefaultBrowserPolicy,
+                          base::Unretained(this)));
 
 #if !defined(OS_ANDROID)
   // This preference must be kept in sync with external values; update them
   // whenever the preference or its controlling policy changes.
   pref_change_registrar_.Add(metrics::prefs::kMetricsReportingEnabled,
-                             base::Bind(&ApplyMetricsReportingPolicy));
+                             base::BindRepeating(&ApplyMetricsReportingPolicy));
 #endif
 
   DCHECK(!webrtc_event_log_manager_);

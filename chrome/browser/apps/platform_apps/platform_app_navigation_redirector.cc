@@ -19,7 +19,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
-#include "net/url_request/url_request.h"
 
 using content::BrowserThread;
 using content::WebContents;

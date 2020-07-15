@@ -233,7 +233,7 @@ bool ExtensionAssetsManagerChromeOS::CleanUpSharedExtensions(
       return false;
     }
     if (extension_info->empty())
-      shared_extensions->RemoveWithoutPathExpansion(*it, NULL);
+      shared_extensions->RemoveKey(*it);
   }
 
   return true;
@@ -467,11 +467,11 @@ void ExtensionAssetsManagerChromeOS::MarkSharedExtensionUnused(
           FROM_HERE,
           base::BindOnce(&ExtensionAssetsManagerChromeOS::DeleteSharedVersion,
                          base::FilePath(shared_path)));
-      extension_info->RemoveWithoutPathExpansion(*it, NULL);
+      extension_info->RemoveKey(*it);
     }
   }
   if (extension_info->empty()) {
-    shared_extensions->RemoveWithoutPathExpansion(id, NULL);
+    shared_extensions->RemoveKey(id);
     // Don't remove extension dir in shared location. It will be removed by GC
     // when it is safe to do so, and this avoids a race condition between
     // concurrent uninstall by one user and install by another.
@@ -559,7 +559,7 @@ bool ExtensionAssetsManagerChromeOS::CleanUpExtension(
       live_extension_paths->insert(
           std::make_pair(id, base::FilePath(shared_path)));
     } else {
-      extension_info->RemoveWithoutPathExpansion(*it, NULL);
+      extension_info->RemoveKey(*it);
     }
   }
 

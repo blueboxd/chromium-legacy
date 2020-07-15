@@ -16,6 +16,11 @@
 
 namespace blink {
 
+bool FeatureAvailable(const String& feature, ExecutionContext* ec) {
+  return GetDefaultFeatureNameMap().Contains(feature) &&
+         (!DisabledByOriginTrial(feature, ec));
+}
+
 DOMFeaturePolicy::DOMFeaturePolicy(ExecutionContext* context)
     : context_(context) {}
 
@@ -23,7 +28,7 @@ bool DOMFeaturePolicy::allowsFeature(ScriptState* script_state,
                                      const String& feature) const {
   ExecutionContext* execution_context =
       script_state ? ExecutionContext::From(script_state) : nullptr;
-  if (GetAvailableFeatures(execution_context).Contains(feature)) {
+  if (FeatureAvailable(feature, execution_context)) {
     auto feature_name = GetDefaultFeatureNameMap().at(feature);
     return GetPolicy()->IsFeatureEnabled(feature_name);
   }
@@ -47,7 +52,7 @@ bool DOMFeaturePolicy::allowsFeature(ScriptState* script_state,
     return false;
   }
 
-  if (!GetAvailableFeatures(execution_context).Contains(feature)) {
+  if (!FeatureAvailable(feature, execution_context)) {
     AddWarningForUnrecognizedFeature(feature);
     return false;
   }
@@ -81,7 +86,7 @@ Vector<String> DOMFeaturePolicy::getAllowlistForFeature(
     const String& feature) const {
   ExecutionContext* execution_context =
       script_state ? ExecutionContext::From(script_state) : nullptr;
-  if (GetAvailableFeatures(execution_context).Contains(feature)) {
+  if (FeatureAvailable(feature, execution_context)) {
     auto feature_name = GetDefaultFeatureNameMap().at(feature);
 
     const FeaturePolicy::Allowlist allowlist =

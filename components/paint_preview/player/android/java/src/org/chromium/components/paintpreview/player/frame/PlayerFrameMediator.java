@@ -72,8 +72,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
     /** Handles scaling. */
     private final PlayerFrameScaleController mScaleController;
 
-    @VisibleForTesting
-    PlayerFrameBitmapState mBitmapState;
+    private final PlayerFrameBitmapStateController mBitmapStateController;
 
     PlayerFrameMediator(PropertyModel model, PlayerCompositorDelegate compositorDelegate,
             PlayerFrameViewport viewport, OverScroller scroller,
@@ -86,12 +85,19 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
         mViewport = viewport;
         mGuid = frameGuid;
         mContentSize = new Size(contentWidth, contentHeight);
+        mBitmapStateController = new PlayerFrameBitmapStateController(
+                mGuid, mViewport, mContentSize, mCompositorDelegate, this);
         mScrollController = new PlayerFrameScrollController(
                 scroller, mViewport, mContentSize, this, userInteractionCallback);
         mScaleController = new PlayerFrameScaleController(
                 mViewport, mContentSize, mBitmapScaleMatrix, this, userInteractionCallback);
         mViewport.offset(initialScrollX, initialScrollY);
         mViewport.setScale(0f);
+    }
+
+    @VisibleForTesting
+    PlayerFrameBitmapStateController getBitmapStateControllerForTest() {
+        return mBitmapStateController;
     }
 
     void updateViewportSize(int width, int height, float scaleFactor) {
@@ -197,6 +203,36 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
 
     // PlayerFrameMediatorDelegate
 
+    @Override
+    public void onStartScaling() {
+        mBitmapStateController.invalidateLoadingBitmaps();
+    }
+
+    @Override
+    public void onSwapState() {
+        PlayerFrameBitmapState bitmapState = mBitmapStateController.getBitmapState(false);
+        mBitmapScaleMatrix.reset();
+        setBitmapScaleMatrix(mBitmapScaleMatrix, 1f);
+        mModel.set(PlayerFrameProperties.TILE_DIMENSIONS, bitmapState.getTileDimensions());
+        mModel.set(PlayerFrameProperties.VIEWPORT, mViewport.asRect());
+        mModel.set(PlayerFrameProperties.BITMAP_MATRIX, bitmapState.getMatrix());
+    }
+
+    @Override
+    public void offsetBitmapScaleMatrix(float dx, float dy) {
+        // If we are still waiting on new bitmaps after a scale operation, the scroll should scroll
+        // the bitmaps we currently have. In order to do so we apply an opposite transform to the
+        // bitmaps that are shown on the screen.
+        if (!mBitmapScaleMatrix.isIdentity()) {
+            float[] bitmapScaleMatrixValues = new float[9];
+            mBitmapScaleMatrix.getValues(bitmapScaleMatrixValues);
+            bitmapScaleMatrixValues[Matrix.MTRANS_X] -= dx;
+            bitmapScaleMatrixValues[Matrix.MTRANS_Y] -= dy;
+            mBitmapScaleMatrix.setValues(bitmapScaleMatrixValues);
+            setBitmapScaleMatrix(mBitmapScaleMatrix, mViewport.getScale());
+        }
+    }
+
     /**
      * Called when the viewport is moved or the scale factor is changed. Updates the viewport
      * and requests bitmap tiles for portion of the view port that don't have bitmap tiles.
@@ -205,34 +241,23 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
     @Override
     public void updateVisuals(boolean scaleUpdated) {
         final float scaleFactor = mViewport.getScale();
-        if (scaleUpdated || mBitmapState == null) {
-            if (mBitmapState != null) {
-                mBitmapState.clear();
-            }
-            mBitmapState =
-                    new PlayerFrameBitmapState(mGuid, mViewport.getWidth(), mViewport.getHeight(),
-                            mViewport.getScale(), mContentSize, mCompositorDelegate, this);
-        }
-
+        PlayerFrameBitmapState activeLoadingState =
+                mBitmapStateController.getBitmapState(scaleUpdated);
         Rect viewportRect = mViewport.asRect();
-        updateSubframes(viewportRect, mViewport.getScale());
+        updateSubframes(viewportRect, scaleFactor);
         // Let the view know |mViewport| changed. PropertyModelChangeProcessor is smart about
         // this and will only update the view if |mViewport|'s rect is actually changed.
-        mModel.set(PlayerFrameProperties.TILE_DIMENSIONS, mBitmapState.getTileDimensions());
-        mModel.set(PlayerFrameProperties.VIEWPORT, mViewport.asRect());
+        if (mBitmapStateController.isVisible(activeLoadingState)) {
+            mModel.set(
+                    PlayerFrameProperties.TILE_DIMENSIONS, activeLoadingState.getTileDimensions());
+            mModel.set(PlayerFrameProperties.VIEWPORT, viewportRect);
+        }
 
         // Clear the required bitmaps matrix. It will be updated in #requestBitmapForTile.
-        mBitmapState.clearRequiredBitmaps();
+        activeLoadingState.clearRequiredBitmaps();
 
         // Request bitmaps for tiles inside the view port that don't already have a bitmap.
-        mBitmapState.requestBitmapForRect(mViewport.asRect());
-
-        // If the scale factor is changed, the view should get the correct bitmap matrix.
-        // TODO(crbug/1090804): "Double buffer" this such that there is no period where there is a
-        // blank screen between scale finishing and new bitmaps being fetched.
-        if (scaleUpdated) {
-            mModel.set(PlayerFrameProperties.BITMAP_MATRIX, mBitmapState.getMatrix());
-        }
+        activeLoadingState.requestBitmapForRect(viewportRect);
     }
 
     @Override
@@ -263,6 +288,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
             scaleRect(mSubFrameRects.get(i), subFrameScaledRect, scaleFactor);
             if (!Rect.intersects(subFrameScaledRect, viewport)) {
                 mSubFrameViews.get(i).setVisibility(View.GONE);
+                subFrameScaledRect.set(0, 0, 0, 0);
                 continue;
             }
 
@@ -325,5 +351,4 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
                 (int) (((float) inRect.right) * scaleFactor),
                 (int) (((float) inRect.bottom) * scaleFactor));
     }
-
 }

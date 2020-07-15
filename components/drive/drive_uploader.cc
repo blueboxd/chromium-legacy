@@ -20,10 +20,11 @@
 #include "services/device/public/mojom/wake_lock.mojom.h"
 
 using google_apis::CancelCallback;
-using google_apis::FileResource;
+using google_apis::CancelCallbackOnce;
 using google_apis::DRIVE_CANCELLED;
-using google_apis::DriveApiErrorCode;
 using google_apis::DRIVE_NO_SPACE;
+using google_apis::DriveApiErrorCode;
+using google_apis::FileResource;
 using google_apis::HTTP_CONFLICT;
 using google_apis::HTTP_CREATED;
 using google_apis::HTTP_FORBIDDEN;
@@ -120,8 +121,9 @@ struct DriveUploader::UploadFileInfo {
   }
 
   // Returns the callback to cancel the upload represented by this struct.
-  CancelCallback GetCancelCallback() {
-    return base::Bind(&UploadFileInfo::Cancel, weak_ptr_factory_.GetWeakPtr());
+  CancelCallbackOnce GetCancelCallback() {
+    return base::BindOnce(&UploadFileInfo::Cancel,
+                          weak_ptr_factory_.GetWeakPtr());
   }
 
   // The local file path of the file to be uploaded.
@@ -179,7 +181,7 @@ DriveUploader::DriveUploader(
 
 DriveUploader::~DriveUploader() = default;
 
-CancelCallback DriveUploader::UploadNewFile(
+CancelCallbackOnce DriveUploader::UploadNewFile(
     const std::string& parent_resource_id,
     const base::FilePath& local_file_path,
     const std::string& title,
@@ -213,7 +215,7 @@ void DriveUploader::StopBatchProcessing() {
   current_batch_request_ = nullptr;
 }
 
-CancelCallback DriveUploader::UploadExistingFile(
+CancelCallbackOnce DriveUploader::UploadExistingFile(
     const std::string& resource_id,
     const base::FilePath& local_file_path,
     const std::string& content_type,
@@ -235,7 +237,7 @@ CancelCallback DriveUploader::UploadExistingFile(
                      current_batch_request_));
 }
 
-CancelCallback DriveUploader::ResumeUploadFile(
+CancelCallbackOnce DriveUploader::ResumeUploadFile(
     const GURL& upload_location,
     const base::FilePath& local_file_path,
     const std::string& content_type,
@@ -256,7 +258,7 @@ CancelCallback DriveUploader::ResumeUploadFile(
                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
-CancelCallback DriveUploader::StartUploadFile(
+CancelCallbackOnce DriveUploader::StartUploadFile(
     std::unique_ptr<UploadFileInfo> upload_file_info,
     StartInitiateUploadCallback start_initiate_upload_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());

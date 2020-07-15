@@ -1,0 +1,13 @@
+Name: Tint
+Short Name: tint
+URL: https://dawn.googlesource.com/tint
+Version: 0
+Revision: 919011af0a2ae1b663aae0aaa4083a3f9f13e66d
+License: Apache 2.0
+License File: LICENSE
+Security Critical: yes
+
+Description:
+Tint is an implementation of WGSL, the WebGPU shading language. It is used by
+Dawn, an implementation for WebGPU, in Chromium. Specifically it provides
+facilities for conversion to/from WGSL from other shading languages like SPIR-V.

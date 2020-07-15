@@ -130,8 +130,11 @@ def UpdatePostMove(from_path, to_path, in_blink):
   if extension in ['.h', '.hh', '.mojom']:
     UpdateIncludes(from_path, to_path, in_blink)
     if extension == '.mojom':
-      # For mojom files, update includes of the generated header.
+      # For mojom files, update includes of generated headers.
       UpdateIncludes(from_path + '.h', to_path + '.h', in_blink)
+      UpdateIncludes(from_path + '-blink.h', to_path + '-blink.h', in_blink)
+      UpdateIncludes(from_path + '-shared.h', to_path + '-shared.h', in_blink)
+      UpdateIncludes(from_path + '-forward.h', to_path + '-forward.h', in_blink)
     else:
       UpdateIncludeGuard(from_path, to_path)
 

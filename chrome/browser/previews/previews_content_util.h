@@ -12,16 +12,7 @@ namespace content {
 class NavigationHandle;
 }
 
-namespace data_reduction_proxy {
-class DataReductionProxyData;
-}
-
 namespace previews {
-
-// This bit mask is all the preview types that are fully decided
-// before commit.
-static const content::PreviewsState kPreCommitPreviews =
-    content::SERVER_LITE_PAGE_ON | content::OFFLINE_PAGE_ON;
 
 // Returns whether |previews_state| has any enabled previews.
 bool HasEnabledPreviews(content::PreviewsState previews_state);
@@ -40,14 +31,6 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     previews::PreviewsDecider* previews_decider,
     content::NavigationHandle* navigation_handle);
 
-// If this Chrome session is in a coin flip holdback, possibly modify the
-// previews state of the navigation according to a random coin flip. This method
-// should only be called before commit (at navigation start or redirect) and
-// will only impact previews that are decided before commit.
-content::PreviewsState MaybeCoinFlipHoldbackBeforeCommit(
-    content::PreviewsState initial_state,
-    content::NavigationHandle* navigation_handle);
-
 // Returns an updated PreviewsState given |previews_state| that has already
 // been updated wrt server previews. This should be called at Navigation Commit
 // time. It will defer to any server preview set, otherwise it chooses which
@@ -58,14 +41,6 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     content::PreviewsState previews_state,
     const previews::PreviewsDecider* previews_decider,
     content::NavigationHandle* navigation_handle);
-
-// Returns an updated PreviewsState with respect to server previews
-// given the main frame's committed |request| and the |initial_state|
-// of enabled previews. |data| must have already been updated with
-// respect to the main frame response headers.
-content::PreviewsState DetermineCommittedServerPreviewsState(
-    data_reduction_proxy::DataReductionProxyData* data,
-    content::PreviewsState initial_state);
 
 // If this Chrome session is in a coin flip holdback, possibly modify the
 // previews state of the navigation according to a random coin flip. This method

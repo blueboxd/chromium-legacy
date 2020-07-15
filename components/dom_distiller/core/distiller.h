@@ -21,7 +21,6 @@
 #include "components/dom_distiller/core/distiller_page.h"
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {

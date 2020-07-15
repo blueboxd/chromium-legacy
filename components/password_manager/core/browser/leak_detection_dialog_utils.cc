@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 
 #include "base/feature_list.h"
+#include "base/i18n/message_formatter.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -86,6 +87,21 @@ base::string16 GetDescription(CredentialLeakType leak_type,
     return l10n_util::GetStringFUTF16(
         IDS_CREDENTIAL_LEAK_CHANGE_AND_CHECK_PASSWORDS_MESSAGE, formatted);
   }
+}
+
+base::string16 GetDescriptionWithCount(CredentialLeakType leak_type,
+                                       const GURL& origin,
+                                       CompromisedSitesCount saved_sites) {
+  IsSaved is_saved(IsPasswordSaved(leak_type));
+  if (ShouldCheckPasswords(leak_type) || is_saved) {
+    DCHECK_GE(saved_sites.value(), 1);
+    // saved_sites must be reduced by 1 if the saved sites include the origin as
+    // the origin is mentioned explicitly in the message.
+    return base::i18n::MessageFormatter::FormatWithNumberedArgs(
+        l10n_util::GetStringUTF16(IDS_CREDENTIAL_LEAK_SAVED_PASSWORDS_MESSAGE),
+        GetFormattedUrl(origin), saved_sites.value() - (is_saved ? 1 : 0));
+  }
+  return GetDescription(leak_type, origin);
 }
 
 base::string16 GetTitle(CredentialLeakType leak_type) {

@@ -200,10 +200,6 @@ class TestDataReductionProxyService : public DataReductionProxyService {
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner);
   ~TestDataReductionProxyService() override;
 
-  // Records |ignore_long_term_block_list_rules| as |ignore_blocklist_|.
-  void SetIgnoreLongTermBlockListRules(
-      bool ignore_long_term_block_list_rules) override;
-
   bool ignore_blocklist() const { return ignore_blocklist_; }
 
  private:

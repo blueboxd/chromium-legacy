@@ -128,34 +128,32 @@ bool ResourceRequest::SavesCookies() const {
          !(load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
 }
 
-net::URLRequest::ReferrerPolicy ReferrerPolicyForUrlRequest(
+net::ReferrerPolicy ReferrerPolicyForUrlRequest(
     mojom::ReferrerPolicy referrer_policy) {
   switch (referrer_policy) {
     case mojom::ReferrerPolicy::kAlways:
-      return net::URLRequest::NEVER_CLEAR_REFERRER;
+      return net::ReferrerPolicy::NEVER_CLEAR;
     case mojom::ReferrerPolicy::kNever:
-      return net::URLRequest::NO_REFERRER;
+      return net::ReferrerPolicy::NO_REFERRER;
     case mojom::ReferrerPolicy::kOrigin:
-      return net::URLRequest::ORIGIN;
+      return net::ReferrerPolicy::ORIGIN;
     case mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
-      return net::URLRequest::
-          CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
+      return net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
     case mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
-      return net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
+      return net::ReferrerPolicy::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
     case mojom::ReferrerPolicy::kSameOrigin:
-      return net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN;
+      return net::ReferrerPolicy::CLEAR_ON_TRANSITION_CROSS_ORIGIN;
     case mojom::ReferrerPolicy::kStrictOrigin:
-      return net::URLRequest::
+      return net::ReferrerPolicy::
           ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
     case mojom::ReferrerPolicy::kDefault:
       CHECK(false);
-      return net::URLRequest::NO_REFERRER;
+      return net::ReferrerPolicy::NO_REFERRER;
     case mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
-      return net::URLRequest::
-          REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
+      return net::ReferrerPolicy::REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
   }
   NOTREACHED();
-  return net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
+  return net::ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
 }
 
 }  // namespace network

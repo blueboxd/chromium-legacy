@@ -102,15 +102,6 @@ PreviewsDeciderImpl* PreviewsUIService::previews_decider_impl() const {
   return previews_decider_impl_.get();
 }
 
-// When triggering previews, prevent long term block list rules.
-void PreviewsUIService::SetIgnoreLongTermBlockListForServerPreviews(
-    bool ignore_long_term_block_list_rules_allowed) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  previews_decider_impl_->SetIgnoreLongTermBlockListForServerPreviews(
-      ignore_long_term_block_list_rules_allowed);
-}
-
 void PreviewsUIService::ClearBlockList(base::Time begin_time,
                                        base::Time end_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

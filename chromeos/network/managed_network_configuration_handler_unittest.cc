@@ -742,21 +742,27 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, AutoConnectDisallowed) {
       base::ListValue(),         // no device network policy
       base::DictionaryValue());  // no device global config
 
+  base::RunLoop get_properties_run_loop;
   std::unique_ptr<base::DictionaryValue> dictionary;
   managed_handler()->GetManagedProperties(
       kUser1, wifi2_service_path,
       base::BindOnce(
           [](std::unique_ptr<base::DictionaryValue>* dictionary_out,
+             base::RepeatingClosure quit_closure,
              const std::string& service_path,
-             const base::DictionaryValue& dictionary) {
-            *dictionary_out = base::DictionaryValue::From(
-                base::Value::ToUniquePtrValue(dictionary.Clone()));
+             base::Optional<base::Value> dictionary,
+             base::Optional<std::string> error) {
+            if (dictionary) {
+              *dictionary_out = base::DictionaryValue::From(
+                  base::Value::ToUniquePtrValue(std::move(*dictionary)));
+            } else {
+              FAIL();
+            }
+            quit_closure.Run();
           },
-          &dictionary),
-      base::Bind(
-          [](const std::string& error_name,
-             std::unique_ptr<base::DictionaryValue> error_data) { FAIL(); }));
-  base::RunLoop().RunUntilIdle();
+          &dictionary, get_properties_run_loop.QuitClosure()));
+
+  get_properties_run_loop.Run();
 
   ASSERT_TRUE(dictionary.get());
   std::unique_ptr<base::DictionaryValue> expected_managed_onc =
@@ -958,19 +964,17 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, ActiveProxySettingsPreference) {
           [](std::unique_ptr<base::DictionaryValue>* dictionary_out,
              base::RepeatingClosure quit_closure,
              const std::string& service_path,
-             const base::DictionaryValue& dictionary) {
-            *dictionary_out = base::DictionaryValue::From(
-                base::Value::ToUniquePtrValue(dictionary.Clone()));
+             base::Optional<base::Value> dictionary,
+             base::Optional<std::string> error) {
+            if (dictionary) {
+              *dictionary_out = base::DictionaryValue::From(
+                  base::Value::ToUniquePtrValue(std::move(*dictionary)));
+            } else {
+              ADD_FAILURE() << error.value_or("Failed");
+            }
             quit_closure.Run();
           },
           &dictionary_before_pref,
-          get_initial_properties_run_loop.QuitClosure()),
-      base::Bind(
-          [](base::RepeatingClosure quit_closure, const std::string& error_name,
-             std::unique_ptr<base::DictionaryValue> error_data) {
-            ADD_FAILURE() << error_name;
-            quit_closure.Run();
-          },
           get_initial_properties_run_loop.QuitClosure()));
 
   get_initial_properties_run_loop.Run();
@@ -995,18 +999,17 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, ActiveProxySettingsPreference) {
           [](std::unique_ptr<base::DictionaryValue>* dictionary_out,
              base::RepeatingClosure quit_closure,
              const std::string& service_path,
-             const base::DictionaryValue& dictionary) {
-            *dictionary_out = base::DictionaryValue::From(
-                base::Value::ToUniquePtrValue(dictionary.Clone()));
+             base::Optional<base::Value> dictionary,
+             base::Optional<std::string> error) {
+            if (dictionary) {
+              *dictionary_out = base::DictionaryValue::From(
+                  base::Value::ToUniquePtrValue(std::move(*dictionary)));
+            } else {
+              ADD_FAILURE() << error.value_or("Failed");
+            }
             quit_closure.Run();
           },
-          &dictionary_after_pref, get_merged_properties_run_loop.QuitClosure()),
-      base::Bind(
-          [](base::RepeatingClosure quit_closure, const std::string& error_name,
-             std::unique_ptr<base::DictionaryValue> error_data) {
-            ADD_FAILURE() << error_name;
-            quit_closure.Run();
-          },
+          &dictionary_after_pref,
           get_merged_properties_run_loop.QuitClosure()));
 
   get_merged_properties_run_loop.Run();

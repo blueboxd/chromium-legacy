@@ -43,6 +43,8 @@ gclient_gn_args = [
   'checkout_nacl',
   'checkout_oculus_sdk',
   'checkout_openxr',
+  'cros_boards',
+  'cros_boards_with_qemu_images',
   'mac_xcode_version',
 ]
 
@@ -154,11 +156,14 @@ vars = {
 
   # Default to the empty board. Desktop Chrome OS builds don't need cros SDK
   # dependencies. Other Chrome OS builds should always define this explicitly.
-  'cros_boards': '',
+  'cros_boards': Str(''),
+  'cros_boards_with_qemu_images': Str(''),
   # Building for CrOS is only supported on linux currently.
   'checkout_simplechrome': '(checkout_chromeos and host_os == "linux") and ("{cros_boards}" != "")',
   # Surround the board var in quotes so gclient doesn't try parsing the string
   # as an expression.
+  # TODO(crbug.com/937821): Replace uses of this var with
+  # 'cros_boards_with_qemu_images' above.
   'cros_download_vm': '(("{cros_boards}" == "amd64-generic") or ("{cros_boards}" == "betty")) or ("{cros_boards}" == "betty-pi-arc")',
   # Should we build and test for public (ie: full) CrOS images, or private
   # (ie: release) images.
@@ -194,11 +199,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '14fdcdc891cc2f2f795354890b09ac528f3387c9',
+  'skia_revision': '06980dba90a4354e9d3063668a61b2eceb5dd7de',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '669d140153a55bb3388eda2fc215c835abf88265',
+  'v8_revision': 'e7945d6e6530f99c0f55a446039e310905426b8b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -206,11 +211,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'c44b2b2567aeb73cca60343fcdb13a9db0f3e598',
+  'angle_revision': '9277ee741395bb20b8f23791387ed98a4efa5982',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '1de497cc50ab0199e47d5ba8371654c0f6fde85a',
+  'swiftshader_revision': '0a8f44c514ce034e0f13e966081176118d5f8bbf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -265,7 +270,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'bb7978bb9ed4e348c8707e205337059e7a6dac3d',
+  'devtools_frontend_revision': 'd8d96d5f0af2533c602afe1da141442f04cf4096',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -317,7 +322,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '3b17f0bde80c3806f94ab11b4f7d059f1dbb32a5',
+  'dawn_revision': '212c5bd9b2f06dd8f9f47a527d352717d83e8ed1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -354,6 +359,9 @@ vars = {
   # the commit queue can handle CLs rolling ukey2
   # and whatever else without interference from each other.
   'ukey2_revision': '0275885d8e6038c39b8a8ca55e75d1d4d1727f47',
+  # the commit queue can handle CLs rolling feed
+  # and whatever else without interference from each other.
+  'tint_revision': '919011af0a2ae1b663aae0aaa4083a3f9f13e66d',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -784,6 +792,9 @@ deps = {
 
   'src/third_party/dawn':
     Var('dawn_git') + '/dawn.git' + '@' +  Var('dawn_revision'),
+
+  'src/third_party/tint/src':
+    Var('dawn_git') + '/tint.git' + '@' +  Var('tint_revision'),
 
   'src/third_party/glfw/src':
     Var('chromium_git') + '/external/github.com/glfw/glfw.git@' +  '2de2589f910b1a85905f425be4d32f33cec092df',
@@ -1241,7 +1252,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '73b607f9e3b436b7fc32f45263375b3de5a62dba',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '1a82e68482aacc6cdeeeab15c4d95185b49a05ac',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1541,7 +1552,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@25a5e06a7d176721b02336031e210183d2d4808e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ed9549e829b50f49a5112a16b257406174110d2c',
     'condition': 'checkout_src_internal',
   },
 

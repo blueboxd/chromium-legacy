@@ -14,7 +14,6 @@
 #include "chrome/browser/local_discovery/test_service_discovery_client.h"
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory_impl.h"
 #include "content/public/test/browser_task_environment.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"

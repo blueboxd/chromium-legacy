@@ -96,6 +96,12 @@ class Storage : public base::RefCountedThreadSafe<Storage> {
                uint64_t seq_number,
                base::OnceCallback<void(Status)> completion_cb);
 
+  // Initiates upload of collected records according to the priority.
+  // Called usually for a queue with an infinite or very large upload period.
+  // Multiple |Flush| calls can safely run in parallel.
+  // Returns error if cannot start upload.
+  Status Flush(Priority priority);
+
   Storage(const Storage& other) = delete;
   Storage& operator=(const Storage& other) = delete;
 
@@ -116,6 +122,12 @@ class Storage : public base::RefCountedThreadSafe<Storage> {
   // Must be called once and only once after construction.
   // Returns OK or error status, if anything failed to initialize.
   Status Init();
+
+  // Helper function that selects queue by priority. Returns error
+  // if priority does not match any queue.
+  // Note: queues_ never change after initialization is finished, so there is no
+  // need to protect or serialize access to it.
+  StatusOr<scoped_refptr<StorageQueue>> GetQueue(Priority priority);
 
   const Options options_;
 

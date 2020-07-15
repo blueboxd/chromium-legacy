@@ -6,9 +6,12 @@ import {Destination, DestinationConnectionStatus, DestinationOrigin, Destination
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {eventToPromise} from '../test_util.m.js';
 
 window.destination_list_test = {};
+const destination_list_test = window.destination_list_test;
 destination_list_test.suiteName = 'DestinationListTest';
 /** @enum {string} */
 destination_list_test.TestNames = {
@@ -17,8 +20,8 @@ destination_list_test.TestNames = {
 };
 
 suite(destination_list_test.suiteName, function() {
-  /** @type {?PrintPreviewDestinationListElement} */
-  let list = null;
+  /** @type {!PrintPreviewDestinationListElement} */
+  let list;
 
   /** @override */
   setup(function() {
@@ -49,7 +52,8 @@ suite(destination_list_test.suiteName, function() {
           <print-preview-destination-list id="testList" has-action-link=true
               loading-destinations=false list-name="test">
           </print-preview-destination-list>`;
-    list = document.body.querySelector('#testList');
+    list = /** @type {!PrintPreviewDestinationListElement} */ (
+        document.body.querySelector('#testList'));
     list.searchQuery = null;
     list.destinations = destinations;
     list.loadingDestinations = false;

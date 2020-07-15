@@ -47,11 +47,9 @@ class NetworkingPrivateServiceClient
 
   // NetworkingPrivateDelegate
   void GetProperties(const std::string& guid,
-                     const DictionaryCallback& success_callback,
-                     const FailureCallback& failure_callback) override;
+                     PropertiesCallback callback) override;
   void GetManagedProperties(const std::string& guid,
-                            const DictionaryCallback& success_callback,
-                            const FailureCallback& failure_callback) override;
+                            PropertiesCallback callback) override;
   void GetState(const std::string& guid,
                 const DictionaryCallback& success_callback,
                 const FailureCallback& failure_callback) override;
@@ -136,10 +134,14 @@ class NetworkingPrivateServiceClient
   ~NetworkingPrivateServiceClient() override;
 
   // Callback wrappers.
-  void AfterGetProperties(ServiceCallbacksID callback_id,
+  void AfterGetProperties(PropertiesCallback callback,
                           const std::string& network_guid,
                           std::unique_ptr<base::DictionaryValue> properties,
                           const std::string* error);
+  void AfterGetState(ServiceCallbacksID callback_id,
+                     const std::string& network_guid,
+                     std::unique_ptr<base::DictionaryValue> properties,
+                     const std::string* error);
   void AfterSetProperties(ServiceCallbacksID callback_id,
                           const std::string* error);
   void AfterCreateNetwork(ServiceCallbacksID callback_id,

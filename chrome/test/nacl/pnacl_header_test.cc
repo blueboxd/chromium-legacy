@@ -19,7 +19,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/url_request/url_request.h"
 
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;

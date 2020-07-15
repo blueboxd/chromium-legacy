@@ -177,12 +177,6 @@ using chrome_test_util::SettingsDoneButton;
 // Tests that when the app is opened on a web page and a key is pressed, the
 // web view is the first responder.
 - (void)testWebViewIsFirstResponderUponKeyPress {
-  // TODO(crbug.com/1103822) GetFirstResponder/becomeFirstResponder disabled
-  // on iOS14.
-  if (@available(iOS 14, *)) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS14.");
-  }
-
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/pony.html")];
 

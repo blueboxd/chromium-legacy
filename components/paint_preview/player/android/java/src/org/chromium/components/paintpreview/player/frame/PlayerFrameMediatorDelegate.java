@@ -52,4 +52,21 @@ public interface PlayerFrameMediatorDelegate {
      * Updates the bitmap matrix in the model.
      */
     void updateBitmapMatrix(Bitmap[][] bitmapMatrix);
+
+    /**
+     * Update the model when the bitmap state is swapped.
+     */
+    void onSwapState();
+
+    /**
+     * To be called when scaling is started to prevent double-buffering from swapping mid-scale.
+     */
+    void onStartScaling();
+
+    /**
+     * Offsets the bitmap scale matrix when scrolling if applicable.
+     * @param dx Offset on the x-axis.
+     * @param dy Offset on the y-axis.
+     */
+    void offsetBitmapScaleMatrix(float dx, float dy);
 }

@@ -50,7 +50,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/google_api_keys.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 

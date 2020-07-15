@@ -61,8 +61,6 @@
 #include "media/learning/common/media_learning_tasks.h"
 #include "media/learning/impl/learning_session_impl.h"
 #include "media/mojo/services/video_decode_perf_history.h"
-#include "net/cookies/cookie_store.h"
-#include "net/url_request/url_request_context.h"
 #include "services/content/service.h"
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/blob/blob_storage_context.h"

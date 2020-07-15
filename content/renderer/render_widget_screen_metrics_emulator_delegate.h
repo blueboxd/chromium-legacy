@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_RENDER_WIDGET_SCREEN_METRICS_EMULATOR_DELEGATE_H_
 
 #include "content/common/content_export.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 
 namespace blink {
 struct WebDeviceEmulationParams;
@@ -23,7 +24,7 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulatorDelegate {
       const blink::WebDeviceEmulationParams& params) = 0;
 
   // Passes an updated ScreenInfo and sizes to the delegate.
-  virtual void SetScreenInfoAndSize(const ScreenInfo& screen_info,
+  virtual void SetScreenInfoAndSize(const blink::ScreenInfo& screen_info,
                                     const gfx::Size& widget_size,
                                     const gfx::Size& visible_viewport_size) = 0;
 

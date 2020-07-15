@@ -65,15 +65,6 @@ CloudServicesDialogView* CloudServicesDialogView::GetDialogForTest() {
   return instance_;
 }
 
-bool CloudServicesDialogView::ShouldShowCloseButton() const {
-  return true;
-}
-
-base::string16 CloudServicesDialogView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(
-      IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_TITLE);
-}
-
 void CloudServicesDialogView::OnDialogAccepted() {
   PrefService* pref_service = browser_->profile()->GetPrefs();
   pref_service->SetBoolean(::prefs::kMediaRouterEnableCloudServices, true);
@@ -91,6 +82,8 @@ CloudServicesDialogView::CloudServicesDialogView(views::View* anchor_view,
                                                  Browser* browser)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       browser_(browser) {
+  SetShowCloseButton(true);
+  SetTitle(IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_TITLE);
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_ENABLE));

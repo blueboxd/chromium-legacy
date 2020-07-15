@@ -32,19 +32,19 @@ namespace {
 // ParsedDocumentPolicy.
 DocumentPolicy::ParsedDocumentPolicy FilterByOriginTrial(
     const DocumentPolicy::ParsedDocumentPolicy& parsed_policy,
-    SecurityContextInit* init) {
+    ExecutionContext* context) {
   DocumentPolicy::ParsedDocumentPolicy filtered_policy;
   for (auto i = parsed_policy.feature_state.begin(),
             last = parsed_policy.feature_state.end();
        i != last;) {
-    if (!DisabledByOriginTrial(i->first, init))
+    if (!DisabledByOriginTrial(i->first, context))
       filtered_policy.feature_state.insert(*i);
     ++i;
   }
   for (auto i = parsed_policy.endpoint_map.begin(),
             last = parsed_policy.endpoint_map.end();
        i != last;) {
-    if (!DisabledByOriginTrial(i->first, init))
+    if (!DisabledByOriginTrial(i->first, context))
       filtered_policy.endpoint_map.insert(*i);
     ++i;
   }
@@ -71,42 +71,22 @@ void MergeFeaturesFromOriginPolicy(WTF::StringBuilder& feature_policy,
 
 }  // namespace
 
-SecurityContextInit::SecurityContextInit(OriginTrialContext* origin_trials)
-    : origin_trials_(origin_trials) {}
-
 // A helper class that allows the security context be initialized in the
 // process of constructing the document.
 SecurityContextInit::SecurityContextInit(ExecutionContext* context)
     : execution_context_(context) {}
 
-void SecurityContextInit::CountFeaturePolicyUsage(
-    mojom::blink::WebFeature feature) {
-  if (execution_context_)
-    execution_context_->CountFeaturePolicyUsage(feature);
-}
-
-bool SecurityContextInit::FeaturePolicyFeatureObserved(
-    mojom::blink::FeaturePolicyFeature feature) {
-  return execution_context_ &&
-         execution_context_->FeaturePolicyFeatureObserved(feature);
-}
-
-bool SecurityContextInit::FeatureEnabled(OriginTrialFeature feature) const {
-  return origin_trials_->IsFeatureEnabled(feature);
-}
-
 void SecurityContextInit::ApplyDocumentPolicy(
     DocumentPolicy::ParsedDocumentPolicy& document_policy,
     const String& report_only_document_policy_header) {
-  DCHECK(origin_trials_);
-  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(this))
+  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(execution_context_))
     return;
 
   // Because Document-Policy http header is parsed in DocumentLoader,
   // when origin trial context is not initialized yet.
   // Needs to filter out features that are not in origin trial after
   // we have origin trial information available.
-  document_policy = FilterByOriginTrial(document_policy, this);
+  document_policy = FilterByOriginTrial(document_policy, execution_context_);
   if (!document_policy.feature_state.empty()) {
     UseCounter::Count(execution_context_, WebFeature::kDocumentPolicyHeader);
     for (const auto& policy_entry : document_policy.feature_state) {
@@ -131,7 +111,7 @@ void SecurityContextInit::ApplyDocumentPolicy(
           report_only_document_policy_header, logger);
   if (report_only_parsed_policy) {
     report_only_document_policy =
-        FilterByOriginTrial(*report_only_parsed_policy, this);
+        FilterByOriginTrial(*report_only_parsed_policy, execution_context_);
     if (!report_only_document_policy.feature_state.empty()) {
       UseCounter::Count(execution_context_,
                         WebFeature::kDocumentPolicyReportOnlyHeader);
@@ -146,8 +126,6 @@ void SecurityContextInit::ApplyFeaturePolicy(
     const ResourceResponse& response,
     const base::Optional<WebOriginPolicy>& origin_policy,
     const FramePolicy& frame_policy) {
-  DCHECK(origin_trials_);
-
   // If we are a HTMLViewSourceDocument we use container, header or
   // inherited policies. https://crbug.com/898688.
   if (frame->InViewSourceMode()) {
@@ -182,14 +160,15 @@ void SecurityContextInit::ApplyFeaturePolicy(
 
   feature_policy_header_ = FeaturePolicyParser::ParseHeader(
       feature_policy_header, permissions_policy_header,
-      execution_context_->GetSecurityOrigin(), feature_policy_logger, this);
+      execution_context_->GetSecurityOrigin(), feature_policy_logger,
+      execution_context_);
 
   ParsedFeaturePolicy report_only_feature_policy_header =
       FeaturePolicyParser::ParseHeader(
           response.HttpHeaderField(http_names::kFeaturePolicyReportOnly),
           report_only_permissions_policy_header,
           execution_context_->GetSecurityOrigin(),
-          report_only_feature_policy_logger, this);
+          report_only_feature_policy_logger, execution_context_);
 
   if (!report_only_feature_policy_header.empty()) {
     UseCounter::Count(execution_context_,
@@ -278,20 +257,6 @@ void SecurityContextInit::ApplyFeaturePolicy(
     execution_context_->GetSecurityContext().SetReportOnlyFeaturePolicy(
         std::move(report_only_policy));
   }
-}
-
-void SecurityContextInit::InitializeOriginTrials(
-    const String& origin_trials_header) {
-  origin_trials_ = MakeGarbageCollected<OriginTrialContext>();
-  if (origin_trials_header.IsEmpty())
-    return;
-  std::unique_ptr<Vector<String>> tokens(
-      OriginTrialContext::ParseHeaderValue(origin_trials_header));
-  if (!tokens)
-    return;
-  origin_trials_->AddTokens(*tokens, execution_context_->GetSecurityOrigin(),
-                            execution_context_->GetSecureContextMode() ==
-                                SecureContextMode::kSecureContext);
 }
 
 }  // namespace blink

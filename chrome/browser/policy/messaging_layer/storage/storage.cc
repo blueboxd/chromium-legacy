@@ -56,6 +56,13 @@ const uint64_t background_queue_total = 64 * 1024LL * 1024LL;
 constexpr base::TimeDelta background_upload_period =
     base::TimeDelta::FromMinutes(1);
 
+constexpr base::FilePath::CharType manual_queue_subdir[] =
+    FILE_PATH_LITERAL("Manual");
+constexpr base::FilePath::CharType manual_queue_prefix[] =
+    FILE_PATH_LITERAL("P_Manual");
+const uint64_t manual_queue_total = 64 * 1024LL * 1024LL;
+constexpr base::TimeDelta manual_upload_period = base::TimeDelta::Max();
+
 // Returns vector of <priority, queue_options> for all expected queues in
 // Storage. Queues are all located under the given root directory.
 std::vector<std::pair<Priority, StorageQueue::Options>> ExpectedQueues(
@@ -87,6 +94,13 @@ std::vector<std::pair<Priority, StorageQueue::Options>> ExpectedQueues(
               .set_file_prefix(background_queue_prefix)
               .set_total_size(background_queue_total)
               .set_upload_period(background_upload_period)),
+      std::make_pair(
+          MANUAL_BATCH,
+          StorageQueue::Options()
+              .set_directory(root_directory.Append(manual_queue_subdir))
+              .set_file_prefix(manual_queue_prefix)
+              .set_total_size(manual_queue_total)
+              .set_upload_period(manual_upload_period)),
   };
 }
 
@@ -220,15 +234,9 @@ void Storage::Write(Priority priority,
                     base::OnceCallback<void(Status)> completion_cb) {
   // Note: queues_ never change after initialization is finished, so there is no
   // need to protect or serialize access to it.
-  auto it = queues_.find(priority);
-  if (it == queues_.end()) {
-    std::move(completion_cb)
-        .Run(Status(error::NOT_FOUND,
-                    base::StrCat({"Undefined priority=",
-                                  base::NumberToString(priority)})));
-    return;
-  }
-  it->second->Write(data, std::move(completion_cb));
+  ASSIGN_OR_ONCE_CALLBACK_AND_RETURN(scoped_refptr<StorageQueue> queue,
+                                     completion_cb, GetQueue(priority));
+  queue->Write(data, std::move(completion_cb));
 }
 
 void Storage::Confirm(Priority priority,
@@ -236,15 +244,27 @@ void Storage::Confirm(Priority priority,
                       base::OnceCallback<void(Status)> completion_cb) {
   // Note: queues_ never change after initialization is finished, so there is no
   // need to protect or serialize access to it.
+  ASSIGN_OR_ONCE_CALLBACK_AND_RETURN(scoped_refptr<StorageQueue> queue,
+                                     completion_cb, GetQueue(priority));
+  queue->Confirm(seq_number, std::move(completion_cb));
+}
+
+Status Storage::Flush(Priority priority) {
+  // Note: queues_ never change after initialization is finished, so there is no
+  // need to protect or serialize access to it.
+  ASSIGN_OR_RETURN(scoped_refptr<StorageQueue> queue, GetQueue(priority));
+  queue->Flush();
+  return Status::StatusOK();
+}
+
+StatusOr<scoped_refptr<StorageQueue>> Storage::GetQueue(Priority priority) {
   auto it = queues_.find(priority);
   if (it == queues_.end()) {
-    std::move(completion_cb)
-        .Run(Status(error::NOT_FOUND,
-                    base::StrCat({"Undefined priority=",
-                                  base::NumberToString(priority)})));
-    return;
+    return Status(
+        error::NOT_FOUND,
+        base::StrCat({"Undefined priority=", base::NumberToString(priority)}));
   }
-  it->second->Confirm(seq_number, std::move(completion_cb));
+  return it->second;
 }
 
 }  // namespace reporting

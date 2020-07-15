@@ -150,7 +150,7 @@ Status StorageQueue::Init() {
   // Initiate periodic uploading, if needed.
   if (!options_.upload_period().is_zero()) {
     upload_timer_.Start(FROM_HERE, options_.upload_period(), this,
-                        &StorageQueue::PeriodicUpload);
+                        &StorageQueue::Flush);
   }
   return Status::StatusOK();
 }
@@ -250,13 +250,23 @@ Status StorageQueue::ScanLastFile() {
       LOG(ERROR) << "Incomplete record in file " << last_file->name();
       break;
     }
-    // Everything looks all right. Advance the sequencing number.
+    // Verify sequencing number.
     if (header.record_seq_number != next_seq_number_) {
       LOG(ERROR) << "Sequencing number mismatch, expected=" << next_seq_number_
                  << ", actual=" << header.record_seq_number << ", file "
                  << last_file->name();
       break;
     }
+    // Verify record hash.
+    uint32_t actual_record_hash = base::PersistentHash(
+        read_result.ValueOrDie().data(), header.record_size);
+    if (header.record_hash != actual_record_hash) {
+      LOG(ERROR) << "Hash mismatch, seq=" << header.record_seq_number
+                 << " expected_hash=" << std::hex << actual_record_hash
+                 << " actual_hash=" << std::hex << header.record_hash;
+      break;
+    }
+    // Everything looks all right. Advance the sequencing number.
     ++next_seq_number_;
   }
   return Status::StatusOK();
@@ -313,7 +323,7 @@ Status StorageQueue::WriteHeaderAndBlock(
   RecordHeader header;
   // Assign sequence number.
   header.record_seq_number = next_seq_number_++;
-  header.record_hash = 0;  // TODO(b/157940996): Add hash calculation
+  header.record_hash = base::PersistentHash(data);
   header.record_size = data.size();
   // Write to the last file, update sequencing number.
   auto open_status = file->Open(/*read_only=*/false);
@@ -497,8 +507,9 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
       return Status(error::INTERNAL,
                     base::StrCat({"File corrupt: ", (*current_file_)->name()}));
     }
-    // Check the header match.
-    const RecordHeader& header =
+    // Copy the header out (its memory can be overwritten when reading rest of
+    // the data).
+    const RecordHeader header =
         *reinterpret_cast<const RecordHeader*>(header_data.data());
     if (header.record_seq_number != seq_number) {
       return Status(
@@ -507,9 +518,10 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
                         " seq=", base::NumberToString(header.record_seq_number),
                         " expected=", base::NumberToString(seq_number)}));
     }
-    // TODO(b/157940996): Add hash verification.
     // Read the record blob (align size to FRAME_SIZE).
     const size_t data_size = RoundUpToFrameSize(header.record_size);
+    // From this point on, header in memory is no longer used and can be
+    // overwritten when reading rest of the data.
     read_result = (*current_file_)->Read(current_pos_, data_size);
     RETURN_IF_ERROR(read_result.status());
     current_pos_ += read_result.ValueOrDie().size();
@@ -520,6 +532,23 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
           base::StrCat({"File corrupt: ", (*current_file_)->name(), " size=",
                         base::NumberToString(read_result.ValueOrDie().size()),
                         " expected=", base::NumberToString(data_size)}));
+    }
+    // Verify record hash.
+    uint32_t actual_record_hash = base::PersistentHash(
+        read_result.ValueOrDie().data(), header.record_size);
+    if (header.record_hash != actual_record_hash) {
+      return Status(
+          error::INTERNAL,
+          base::StrCat(
+              {"File corrupt: ", (*current_file_)->name(), " seq=",
+               base::NumberToString(header.record_seq_number), " hash=",
+               base::HexEncode(
+                   reinterpret_cast<const uint8_t*>(&header.record_hash),
+                   sizeof(header.record_hash)),
+               " expected=",
+               base::HexEncode(
+                   reinterpret_cast<const uint8_t*>(&actual_record_hash),
+                   sizeof(actual_record_hash))}));
     }
     return read_result.ValueOrDie().first(header.record_size);
   }
@@ -534,18 +563,6 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
 
   SEQUENCE_CHECKER(read_sequence_checker_);
 };
-
-void StorageQueue::PeriodicUpload() {
-  // Note: new uploader created every time PeriodicUpload is called.
-  StatusOr<std::unique_ptr<UploaderInterface>> uploader =
-      start_upload_cb_.Run();
-  if (!uploader.ok()) {
-    LOG(ERROR) << "Failed to provide the Uploader, status="
-               << uploader.status();
-    return;
-  }
-  Start<ReadContext>(std::move(uploader.ValueOrDie()), this);
-}
 
 class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
  public:
@@ -749,6 +766,18 @@ Status StorageQueue::RemoveUnusedFiles(uint64_t seq_number) {
   }
   // Even if there were errors, ignore them.
   return Status::StatusOK();
+}
+
+void StorageQueue::Flush() {
+  // Note: new uploader created every time Flush is called.
+  StatusOr<std::unique_ptr<UploaderInterface>> uploader =
+      start_upload_cb_.Run();
+  if (!uploader.ok()) {
+    LOG(ERROR) << "Failed to provide the Uploader, status="
+               << uploader.status();
+    return;
+  }
+  Start<ReadContext>(std::move(uploader.ValueOrDie()), this);
 }
 
 //

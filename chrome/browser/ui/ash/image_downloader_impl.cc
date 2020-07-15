@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/referrer_policy.h"
 
 namespace {
 
@@ -60,7 +61,7 @@ class DownloadTask : public BitmapFetcherDelegate {
         std::make_unique<BitmapFetcher>(url, this, annotation_tag);
 
     bitmap_fetcher_->Init(
-        /*referrer=*/std::string(), net::URLRequest::NEVER_CLEAR_REFERRER,
+        /*referrer=*/std::string(), net::ReferrerPolicy::NEVER_CLEAR,
         network::mojom::CredentialsMode::kOmit);
 
     bitmap_fetcher_->Start(profile->GetURLLoaderFactory().get());

@@ -1227,9 +1227,9 @@ class FixedLayoutTestWebWidgetClient
   ~FixedLayoutTestWebWidgetClient() override = default;
 
   // frame_test_helpers::TestWebWidgetClient:
-  WebScreenInfo GetScreenInfo() override { return screen_info_; }
+  ScreenInfo GetScreenInfo() override { return screen_info_; }
 
-  WebScreenInfo screen_info_;
+  ScreenInfo screen_info_;
 };
 
 // Helper function to set autosizing multipliers on a document.

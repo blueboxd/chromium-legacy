@@ -30,9 +30,12 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_request.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "url/gurl.h"
+
+namespace net {
+class IOBuffer;
+}
 
 namespace content {
 FORWARD_DECLARE_TEST(AppCacheGroupTest, QueueUpdate);

@@ -33,6 +33,8 @@ namespace media {
 namespace {
 
 const char kSessionId[] = "session_id";
+const double kExpirationMs = 123456789.0;
+const auto kExpirationTime = base::Time::FromJsTime(kExpirationMs);
 
 std::vector<uint8_t> StringToVector(const std::string& str) {
   return std::vector<uint8_t>(str.begin(), str.end());
@@ -283,7 +285,10 @@ TEST_F(MediaFoundationCdmTest, UpdateSession) {
       .WillOnce(DoAll([&] { mf_cdm_session_callbacks_->KeyStatusChanged(); },
                       Return(S_OK)));
   COM_EXPECT_CALL(mf_cdm_session_, GetKeyStatuses(_, _)).WillOnce(Return(S_OK));
+  COM_EXPECT_CALL(mf_cdm_session_, GetExpiration(_))
+      .WillOnce(DoAll(SetArgPointee<0>(kExpirationMs), Return(S_OK)));
   EXPECT_CALL(cdm_client_, OnSessionKeysChangeCalled(_, true));
+  EXPECT_CALL(cdm_client_, OnSessionExpirationUpdate(_, kExpirationTime));
 
   cdm_->UpdateSession(
       session_id_, response,
@@ -339,6 +344,9 @@ TEST_F(MediaFoundationCdmTest, RemoveSession) {
   CreateSessionAndGenerateRequest();
 
   COM_EXPECT_CALL(mf_cdm_session_, Remove()).WillOnce(Return(S_OK));
+  COM_EXPECT_CALL(mf_cdm_session_, GetExpiration(_))
+      .WillOnce(DoAll(SetArgPointee<0>(kExpirationMs), Return(S_OK)));
+  EXPECT_CALL(cdm_client_, OnSessionExpirationUpdate(_, kExpirationTime));
 
   cdm_->RemoveSession(
       session_id_, std::make_unique<MockCdmPromise>(/*expect_success=*/true));

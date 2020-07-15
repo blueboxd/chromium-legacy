@@ -24,7 +24,6 @@ PreviewsUserData::PreviewsUserData(const PreviewsUserData& other)
       data_savings_inflation_percent_(other.data_savings_inflation_percent_),
       cache_control_no_transform_directive_(
           other.cache_control_no_transform_directive_),
-      offline_preview_used_(other.offline_preview_used_),
       block_listed_for_lite_page_(other.block_listed_for_lite_page_),
       committed_previews_type_without_holdback_(
           other.committed_previews_type_without_holdback_),

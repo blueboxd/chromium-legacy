@@ -247,10 +247,6 @@ FrameSchedulerImpl::~FrameSchedulerImpl() {
       parent_page_scheduler_->OnThrottlingStatusUpdated();
     }
   }
-
-  // Can be null in tests.
-  if (main_thread_scheduler_)
-    main_thread_scheduler_->OnFrameSchedulerDestroyed(this);
 }
 
 void FrameSchedulerImpl::DetachFromPageScheduler() {

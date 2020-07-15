@@ -19,8 +19,6 @@
 #include "content/public/browser/storage_usage_info.h"
 #include "media/media_buildflags.h"
 #include "net/cookies/cookie_util.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "storage/browser/file_system/file_system_context.h"

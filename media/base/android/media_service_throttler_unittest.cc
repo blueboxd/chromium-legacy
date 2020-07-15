@@ -138,7 +138,7 @@ TEST_F(MediaServiceThrottlerTest,
 // Makes sure that after a certain amount of inactivity, the scheduling clock is
 // reset.
 TEST_F(MediaServiceThrottlerTest, NoCrash_LongInactivity_ShouldReset) {
-  // Schedule two minute's worth of clients
+  // Schedule two minutes' worth of clients.
   SimulateClientCreations(base::TimeDelta::FromMinutes(2) / base_delay_);
 
   // Advance the time so the scheduler perceived a full minute of inactivity.

@@ -704,8 +704,7 @@ class WebrtcLoggingPrivateApiStartEventLoggingTestBase
     values.Set(policy::key::kWebRtcEventLogCollectionAllowed,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
-               std::make_unique<base::Value>(WebRtcEventLogCollectionPolicy()),
-               nullptr);
+               base::Value(WebRtcEventLogCollectionPolicy()), nullptr);
 
     provider_.UpdateChromePolicy(values);
   }

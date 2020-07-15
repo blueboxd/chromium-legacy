@@ -56,6 +56,9 @@ class TextfieldTestApi {
 
   bool ShouldShowCursor() const;
 
+  int GetDisplayOffsetX() const;
+  void SetDisplayOffsetX(int x) const;
+
  private:
   Textfield* textfield_;
 };

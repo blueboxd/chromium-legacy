@@ -223,7 +223,7 @@ void FakeShillServiceClient::ClearProperty(const dbus::ObjectPath& service_path,
     std::move(error_callback).Run("Error.InvalidService", "Invalid Service");
     return;
   }
-  dict->RemoveWithoutPathExpansion(name, nullptr);
+  dict->RemoveKey(name);
   // Note: Shill does not send notifications when properties are cleared.
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
@@ -446,7 +446,7 @@ base::DictionaryValue* FakeShillServiceClient::SetServiceProperties(
 }
 
 void FakeShillServiceClient::RemoveService(const std::string& service_path) {
-  stub_services_.RemoveWithoutPathExpansion(service_path, nullptr);
+  stub_services_.RemoveKey(service_path);
   connect_behavior_.erase(service_path);
   ShillManagerClient::Get()->GetTestInterface()->RemoveManagerService(
       service_path);

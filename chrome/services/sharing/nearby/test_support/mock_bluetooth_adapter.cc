@@ -6,25 +6,25 @@
 
 namespace bluetooth {
 
-MockBluetoothAdapater::MockBluetoothAdapater() = default;
+MockBluetoothAdapter::MockBluetoothAdapter() = default;
 
-MockBluetoothAdapater::~MockBluetoothAdapater() = default;
+MockBluetoothAdapter::~MockBluetoothAdapter() = default;
 
-void MockBluetoothAdapater::ConnectToDevice(const std::string& address,
-                                            ConnectToDeviceCallback callback) {}
+void MockBluetoothAdapter::ConnectToDevice(const std::string& address,
+                                           ConnectToDeviceCallback callback) {}
 
-void MockBluetoothAdapater::GetDevices(GetDevicesCallback callback) {}
+void MockBluetoothAdapter::GetDevices(GetDevicesCallback callback) {}
 
-void MockBluetoothAdapater::GetInfo(GetInfoCallback callback) {
+void MockBluetoothAdapter::GetInfo(GetInfoCallback callback) {
   mojom::AdapterInfoPtr adapter_info = mojom::AdapterInfo::New();
   adapter_info->present = present;
   std::move(callback).Run(std::move(adapter_info));
 }
 
-void MockBluetoothAdapater::SetClient(
+void MockBluetoothAdapter::SetClient(
     ::mojo::PendingRemote<mojom::AdapterClient> client) {}
 
-void MockBluetoothAdapater::StartDiscoverySession(
+void MockBluetoothAdapter::StartDiscoverySession(
     StartDiscoverySessionCallback callback) {}
 
 }  // namespace bluetooth

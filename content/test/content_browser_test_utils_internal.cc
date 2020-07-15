@@ -42,7 +42,6 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
-#include "net/url_request/url_request.h"
 
 namespace content {
 

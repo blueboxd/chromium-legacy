@@ -115,6 +115,12 @@ class Navigation {
   // This method returns false for navigations initiated by the WebLayer
   // API, including using window.history.forward() or window.history.back().
   virtual bool IsPageInitiated() = 0;
+
+  // Whether the navigation is a reload. Examples of reloads include:
+  // * embedder-specified through NavigationController::Reload
+  // * page-initiated reloads, e.g. location.reload()
+  // * reloads when the network interface is reconnected
+  virtual bool IsReload() = 0;
 };
 
 }  // namespace weblayer

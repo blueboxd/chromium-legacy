@@ -290,6 +290,10 @@ bool SurfacesInstance::BackdropFiltersPreventMerge(
   //  in the cases listed above. crbug.com/996434
   const viz::Surface* surface =
       frame_sink_manager_->surface_manager()->GetSurfaceForId(surface_id);
+
+  if (!surface || !surface->HasActiveFrame())
+    return false;
+
   const auto& frame = surface->GetActiveFrame();
   base::flat_set<viz::RenderPassId> backdrop_filter_passes;
   for (const auto& render_pass : frame.render_pass_list) {

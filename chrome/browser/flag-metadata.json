@@ -2439,7 +2439,7 @@
   {
     "name": "force-color-profile",
     "owners": [ "ccameron" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 89
   },
   {
     "name": "force-effective-connection-type",
@@ -2653,7 +2653,12 @@
     "expiry_milestone": 86
   },
   {
-    "name": "ignore-gpu-blacklist",
+    "name": "http-auth-committed-interstitials",
+    "owners": [ "jdeblasio", "estark" ],
+    "expiry_milestone": 77
+  },
+  {
+    "name": "ignore-gpu-blocklist",
     "owners": [ "kbr", "zmo" ],
     // A debugging flag intended for end-users where there may not be any other
     // way to turn off graphics features.

@@ -832,38 +832,33 @@ TEST_F(MotionEventBufferTest, ExtrapolationHorizonLimited) {
 }
 
 TEST_F(MotionEventBufferTest, Resampling30to60) {
-  base::TimeDelta flush_time_delta = base::TimeDelta::FromSeconds(1) / 60;
-  base::TimeDelta event_time_delta = base::TimeDelta::FromSeconds(1) / 30;
-
-  RunResample(flush_time_delta, event_time_delta);
+  constexpr auto kFlushTimeDelta = base::TimeDelta::FromSeconds(1) / 60;
+  constexpr auto kEventTimeDelta = base::TimeDelta::FromSeconds(1) / 30;
+  RunResample(kFlushTimeDelta, kEventTimeDelta);
 }
 
 TEST_F(MotionEventBufferTest, Resampling60to60) {
-  base::TimeDelta flush_time_delta = base::TimeDelta::FromSeconds(1) / 60;
-  base::TimeDelta event_time_delta = base::TimeDelta::FromSeconds(1) / 60;
-
-  RunResample(flush_time_delta, event_time_delta);
+  constexpr auto kFlushTimeDelta = base::TimeDelta::FromSeconds(1) / 60;
+  constexpr auto kEventTimeDelta = base::TimeDelta::FromSeconds(1) / 60;
+  RunResample(kFlushTimeDelta, kEventTimeDelta);
 }
 
 TEST_F(MotionEventBufferTest, Resampling100to60) {
-  base::TimeDelta flush_time_delta = base::TimeDelta::FromSeconds(1) / 60;
-  base::TimeDelta event_time_delta = base::TimeDelta::FromSeconds(1) / 100;
-
-  RunResample(flush_time_delta, event_time_delta);
+  constexpr auto kFlushTimeDelta = base::TimeDelta::FromSeconds(1) / 60;
+  constexpr auto kEventTimeDelta = base::TimeDelta::FromSeconds(1) / 100;
+  RunResample(kFlushTimeDelta, kEventTimeDelta);
 }
 
 TEST_F(MotionEventBufferTest, Resampling120to60) {
-  base::TimeDelta flush_time_delta = base::TimeDelta::FromSeconds(1) / 60;
-  base::TimeDelta event_time_delta = base::TimeDelta::FromSeconds(1) / 120;
-
-  RunResample(flush_time_delta, event_time_delta);
+  constexpr auto kFlushTimeDelta = base::TimeDelta::FromSeconds(1) / 60;
+  constexpr auto kEventTimeDelta = base::TimeDelta::FromSeconds(1) / 120;
+  RunResample(kFlushTimeDelta, kEventTimeDelta);
 }
 
 TEST_F(MotionEventBufferTest, Resampling150to60) {
-  base::TimeDelta flush_time_delta = base::TimeDelta::FromSeconds(1) / 60;
-  base::TimeDelta event_time_delta = base::TimeDelta::FromSeconds(1) / 150;
-
-  RunResample(flush_time_delta, event_time_delta);
+  constexpr auto kFlushTimeDelta = base::TimeDelta::FromSeconds(1) / 60;
+  constexpr auto kEventTimeDelta = base::TimeDelta::FromSeconds(1) / 150;
+  RunResample(kFlushTimeDelta, kEventTimeDelta);
 }
 
 }  // namespace ui

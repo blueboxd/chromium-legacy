@@ -253,17 +253,10 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
       mode_(Mode::kNormal),
       dragging_(false),
       model_(std::move(download)),
-      save_button_(nullptr),
-      discard_button_(nullptr),
-      dangerous_download_label_(nullptr),
-      dangerous_download_label_sized_(false),
       creation_time_(base::Time::Now()),
       time_download_warning_shown_(base::Time()),
       accessible_alert_(accessible_alert),
-      announce_accessible_alert_soon_(false),
-      deep_scanning_label_(nullptr),
-      open_now_button_(nullptr),
-      scan_button_(nullptr) {
+      announce_accessible_alert_soon_(false) {
   views::InstallRectHighlightPathGenerator(this);
   model_->AddObserver(this);
 
@@ -293,10 +286,46 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   status_label->GetViewAccessibility().OverrideIsIgnored(true);
   status_label_ = AddChildView(std::move(status_label));
 
+  auto dangerous_download_label = std::make_unique<views::StyledLabel>(
+      base::string16(), /*listener=*/nullptr);
+  dangerous_download_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
+  dangerous_download_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  dangerous_download_label->SetAutoColorReadabilityEnabled(false);
+  dangerous_download_label->set_can_process_events_within_subtree(false);
+  dangerous_download_label_ = AddChildView(std::move(dangerous_download_label));
+  dangerous_download_label_->SetVisible(false);
+
+  auto deep_scanning_label = std::make_unique<views::StyledLabel>(
+      base::string16(), /*listener=*/nullptr);
+  deep_scanning_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
+  deep_scanning_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  deep_scanning_label->SetAutoColorReadabilityEnabled(false);
+  deep_scanning_label->set_can_process_events_within_subtree(false);
+  deep_scanning_label_ = AddChildView(std::move(deep_scanning_label));
+  deep_scanning_label_->SetVisible(false);
+
+  auto open_now_button = views::MdTextButton::Create(
+      this, l10n_util::GetStringUTF16(IDS_OPEN_DOWNLOAD_NOW));
+  open_now_button_ = AddChildView(std::move(open_now_button));
+  open_now_button_->SetVisible(false);
+
+  auto save_button = views::MdTextButton::Create(this, base::string16());
+  save_button_ = AddChildView(std::move(save_button));
+  save_button_->SetVisible(false);
+
+  auto discard_button = views::MdTextButton::Create(
+      this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
+  discard_button_ = AddChildView(std::move(discard_button));
+  discard_button_->SetVisible(false);
+
+  auto scan_button = views::MdTextButton::Create(
+      this, l10n_util::GetStringUTF16(IDS_SCAN_DOWNLOAD));
+  scan_button_ = AddChildView(std::move(scan_button));
+  scan_button_->SetVisible(false);
+
   auto dropdown_button = views::CreateVectorImageButton(this);
   dropdown_button->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_DOWNLOAD_ITEM_DROPDOWN_BUTTON_ACCESSIBLE_TEXT));
-
   dropdown_button->SetBorder(views::CreateEmptyBorder(gfx::Insets(10)));
   dropdown_button->set_has_ink_drop_action_on_click(false);
   dropdown_button->SetFocusForPlatform();
@@ -332,13 +361,13 @@ void DownloadItemView::Layout() {
     child_origin.Offset(dangerous_download_label_->width() + kLabelPadding, 0);
     gfx::Size button_size = GetButtonSize();
     child_origin.set_y((height() - button_size.height()) / 2);
-    if (save_button_) {
+    if (save_button_->GetVisible()) {
       save_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
       child_origin.Offset(button_size.width() + kSaveDiscardButtonPadding, 0);
     }
-    if (discard_button_)
+    if (discard_button_->GetVisible())
       discard_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
-    if (scan_button_)
+    if (scan_button_->GetVisible())
       scan_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
   } else if (is_mixed_content(mode_)) {
     gfx::Point child_origin(
@@ -349,9 +378,9 @@ void DownloadItemView::Layout() {
     child_origin.Offset(dangerous_download_label_->width() + kLabelPadding, 0);
     gfx::Size button_size = GetButtonSize();
     child_origin.set_y((height() - button_size.height()) / 2);
-    if (save_button_)
+    if (save_button_->GetVisible())
       save_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
-    if (discard_button_)
+    if (discard_button_->GetVisible())
       discard_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
   } else if (mode_ == Mode::kDeepScanning) {
     gfx::Point child_origin(
@@ -359,7 +388,7 @@ void DownloadItemView::Layout() {
         (height() - deep_scanning_label_->height()) / 2);
     deep_scanning_label_->SetPosition(child_origin);
 
-    if (open_now_button_) {
+    if (open_now_button_->GetVisible()) {
       child_origin.set_y(
           (height() - open_now_button_->GetPreferredSize().height()) / 2);
       child_origin.Offset(deep_scanning_label_->width() + kLabelPadding, 0);
@@ -626,7 +655,7 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
     width = kStartPadding + GetWarningIconSize() + kStartPadding +
             dangerous_download_label_->width() + kLabelPadding;
     gfx::Size button_size = GetButtonSize();
-    if (save_button_ && discard_button_)
+    if (save_button_->GetVisible() && discard_button_->GetVisible())
       width += button_size.width() + kSaveDiscardButtonPadding;
     width += button_size.width() + kEndPadding;
 
@@ -636,7 +665,7 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
   } else if (mode_ == Mode::kDeepScanning) {
     width = kStartPadding + GetWarningIconSize() + kStartPadding +
             deep_scanning_label_->width() + kLabelPadding;
-    if (open_now_button_) {
+    if (open_now_button_->GetVisible()) {
       width += open_now_button_->GetPreferredSize().width();
       // Height: make sure the button fits and the warning icon fits.
       child_height =
@@ -851,14 +880,10 @@ void DownloadItemView::UpdateColorsFromTheme() {
   file_name_label_->SetBackgroundColor(background_color);
   status_label_->SetBackgroundColor(background_color);
 
-  if (save_button_)
-    shelf_->ConfigureButtonForTheme(save_button_);
-  if (discard_button_)
-    shelf_->ConfigureButtonForTheme(discard_button_);
-  if (open_now_button_)
-    shelf_->ConfigureButtonForTheme(open_now_button_);
-  if (scan_button_)
-    shelf_->ConfigureButtonForTheme(scan_button_);
+  shelf_->ConfigureButtonForTheme(open_now_button_);
+  shelf_->ConfigureButtonForTheme(save_button_);
+  shelf_->ConfigureButtonForTheme(discard_button_);
+  shelf_->ConfigureButtonForTheme(scan_button_);
 }
 
 void DownloadItemView::UpdateDropdownButton() {
@@ -999,16 +1024,11 @@ void DownloadItemView::ClearMixedContentDialog() {
   SetMode(Mode::kNormal);
   dropdown_state_ = NORMAL;
 
-  // Remove the views used by the mixed content dialog.
-  delete save_button_;
-  save_button_ = nullptr;
-  delete discard_button_;
-  discard_button_ = nullptr;
-  delete scan_button_;
-  scan_button_ = nullptr;
-  delete dangerous_download_label_;
-  dangerous_download_label_ = nullptr;
-  dangerous_download_label_sized_ = false;
+  // Hide the views used by the mixed content dialog.
+  save_button_->SetVisible(false);
+  discard_button_->SetVisible(false);
+  scan_button_->SetVisible(false);
+  dangerous_download_label_->SetVisible(false);
 
   // We need to load the icon now that the download has the real path.
   LoadIcon();
@@ -1030,24 +1050,17 @@ void DownloadItemView::ShowMixedContentDialog() {
   dropdown_state_ = NORMAL;
 
   if (mode_ == Mode::kMixedContentWarn) {
-    auto save_button = views::MdTextButton::Create(
-        this, model_->GetWarningConfirmButtonText());
-    save_button_ = AddChildView(std::move(save_button));
+    save_button_->SetVisible(true);
+    save_button_->SetText(model_->GetWarningConfirmButtonText());
   } else {
-    auto discard_button = views::MdTextButton::Create(
-        this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
-    discard_button_ = AddChildView(std::move(discard_button));
+    discard_button_->SetVisible(true);
   }
 
+  dangerous_download_label_->SetVisible(true);
   const base::string16 filename = ElidedFilename();
   size_t filename_offset;
-  auto dangerous_download_label = std::make_unique<views::StyledLabel>(
-      model_->GetWarningText(filename, &filename_offset), /*listener=*/nullptr);
-  dangerous_download_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
-  dangerous_download_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  dangerous_download_label->SetAutoColorReadabilityEnabled(false);
-  dangerous_download_label->set_can_process_events_within_subtree(false);
-  dangerous_download_label_ = AddChildView(std::move(dangerous_download_label));
+  dangerous_download_label_->SetText(
+      model_->GetWarningText(filename, &filename_offset));
   StyleFilename(*dangerous_download_label_, filename_offset, filename.length());
   dangerous_download_label_->SizeToFit(
       GetLabelWidth(*dangerous_download_label_));
@@ -1080,16 +1093,11 @@ void DownloadItemView::ClearWarningDialog() {
   SetMode(Mode::kNormal);
   dropdown_state_ = NORMAL;
 
-  // Remove the views used by the warning dialog.
-  delete save_button_;
-  save_button_ = nullptr;
-  delete discard_button_;
-  discard_button_ = nullptr;
-  delete scan_button_;
-  scan_button_ = nullptr;
-  delete dangerous_download_label_;
-  dangerous_download_label_ = nullptr;
-  dangerous_download_label_sized_ = false;
+  // Hide the views used by the warning dialog.
+  save_button_->SetVisible(false);
+  discard_button_->SetVisible(false);
+  scan_button_->SetVisible(false);
+  dangerous_download_label_->SetVisible(false);
 
   // We need to load the icon now that the download has the real path.
   LoadIcon();
@@ -1109,42 +1117,32 @@ void DownloadItemView::ShowWarningDialog() {
 
   dropdown_state_ = NORMAL;
   if (mode_ == Mode::kDangerous) {
-    auto save_button = views::MdTextButton::Create(
-        this, model_->GetWarningConfirmButtonText());
-    save_button_ = AddChildView(std::move(save_button));
+    save_button_->SetVisible(true);
+    save_button_->SetText(model_->GetWarningConfirmButtonText());
   }
 
   const base::string16 unelided_filename =
       model_->GetFileNameToReportUser().LossyDisplayName();
   if (danger_type == download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
-    auto scan_button = views::MdTextButton::Create(
-        this, l10n_util::GetStringUTF16(IDS_SCAN_DOWNLOAD));
-    scan_button_ = AddChildView(std::move(scan_button));
+    scan_button_->SetVisible(true);
     announce_accessible_alert_soon_ = true;
     UpdateAccessibleAlert(
         l10n_util::GetStringFUTF16(
             IDS_PROMPT_APP_DEEP_SCANNING_ACCESSIBLE_ALERT, unelided_filename),
         false);
   } else {
-    if (!ChromeDownloadManagerDelegate::IsDangerTypeBlocked(danger_type)) {
-      auto discard_button = views::MdTextButton::Create(
-          this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
-      discard_button_ = AddChildView(std::move(discard_button));
-    }
+    if (!ChromeDownloadManagerDelegate::IsDangerTypeBlocked(danger_type))
+      discard_button_->SetVisible(true);
     size_t ignore;
     UpdateAccessibleAlert(model_->GetWarningText(unelided_filename, &ignore),
                           true);
   }
 
+  dangerous_download_label_->SetVisible(true);
   const base::string16 filename = ElidedFilename();
   size_t filename_offset;
-  auto dangerous_download_label = std::make_unique<views::StyledLabel>(
-      model_->GetWarningText(filename, &filename_offset), /*listener=*/nullptr);
-  dangerous_download_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
-  dangerous_download_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  dangerous_download_label->SetAutoColorReadabilityEnabled(false);
-  dangerous_download_label->set_can_process_events_within_subtree(false);
-  dangerous_download_label_ = AddChildView(std::move(dangerous_download_label));
+  dangerous_download_label_->SetText(
+      model_->GetWarningText(filename, &filename_offset));
   StyleFilename(*dangerous_download_label_, filename_offset, filename.length());
   dangerous_download_label_->SizeToFit(
       GetLabelWidth(*dangerous_download_label_));
@@ -1186,11 +1184,9 @@ void DownloadItemView::ClearDeepScanningDialog() {
   SetMode(Mode::kNormal);
   dropdown_state_ = NORMAL;
 
-  delete deep_scanning_label_;
-  deep_scanning_label_ = nullptr;
+  deep_scanning_label_->SetVisible(false);
 
-  delete open_now_button_;
-  open_now_button_ = nullptr;
+  open_now_button_->SetVisible(false);
 
   LoadIcon();
 
@@ -1208,16 +1204,11 @@ void DownloadItemView::ShowDeepScanningDialog() {
                       model_->download()))
                      ? IDS_PROMPT_DEEP_SCANNING_DOWNLOAD
                      : IDS_PROMPT_DEEP_SCANNING_APP_DOWNLOAD;
+  deep_scanning_label_->SetVisible(true);
   const base::string16 filename = ElidedFilename();
   size_t filename_offset;
-  auto deep_scanning_label = std::make_unique<views::StyledLabel>(
-      l10n_util::GetStringFUTF16(id, filename, &filename_offset),
-      /*listener=*/nullptr);
-  deep_scanning_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
-  deep_scanning_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  deep_scanning_label->SetAutoColorReadabilityEnabled(false);
-  deep_scanning_label->set_can_process_events_within_subtree(false);
-  deep_scanning_label_ = AddChildView(std::move(deep_scanning_label));
+  deep_scanning_label_->SetText(
+      l10n_util::GetStringFUTF16(id, filename, &filename_offset));
   StyleFilename(*deep_scanning_label_, filename_offset, filename.length());
   deep_scanning_label_->SizeToFit(GetLabelWidth(*deep_scanning_label_));
 
@@ -1226,9 +1217,7 @@ void DownloadItemView::ShowDeepScanningDialog() {
               enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED)) {
     open_button_->SetEnabled(false);
   } else {
-    auto open_now_button = views::MdTextButton::Create(
-        this, l10n_util::GetStringUTF16(IDS_OPEN_DOWNLOAD_NOW));
-    open_now_button_ = AddChildView(std::move(open_now_button));
+    open_now_button_->SetVisible(true);
     open_button_->SetEnabled(true);
   }
 
@@ -1310,11 +1299,11 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
 
 gfx::Size DownloadItemView::GetButtonSize() const {
   gfx::Size size;
-  if (discard_button_)
+  if (discard_button_->GetVisible())
     size.SetToMax(discard_button_->GetPreferredSize());
-  if (save_button_)
+  if (save_button_->GetVisible())
     size.SetToMax(save_button_->GetPreferredSize());
-  if (scan_button_)
+  if (scan_button_->GetVisible())
     size.SetToMax(scan_button_->GetPreferredSize());
   return size;
 }

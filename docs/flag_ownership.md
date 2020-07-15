@@ -44,7 +44,7 @@ controlled via
 ## I Don't Want My Flag To Expire!
 
 Some flags do not control UI features, but rather are commonly-used debugging
-controls, such as `ignore-gpu-blacklist`. For these flags, see the instructions
+controls, such as `ignore-gpu-blocklist`. For these flags, see the instructions
 at the head of `flag-metadata.json`. Please be very judicious about
 never-expiring flags, since they represent ongoing engineering, test and support
 burden. The flags team will probably only approve your non-expiring flag if:

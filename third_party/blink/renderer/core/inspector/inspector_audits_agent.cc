@@ -491,6 +491,15 @@ void InspectorAuditsAgent::InspectorIssueAdded(InspectorIssue* issue) {
     }
     if (d->frame_ancestor)
       cspDetails.setFrameAncestor(BuildAffectedFrame(d->frame_ancestor));
+    if (d->source_code_location) {
+      auto source_location =
+          protocol::Audits::SourceCodeLocation::create()
+              .setUrl(d->source_code_location->url)
+              .setColumnNumber(d->source_code_location->column_number)
+              .setLineNumber(d->source_code_location->line_number)
+              .build();
+      cspDetails.setSourceCodeLocation(std::move(source_location));
+    }
     issueDetails.setContentSecurityPolicyIssueDetails(cspDetails.build());
   }
 

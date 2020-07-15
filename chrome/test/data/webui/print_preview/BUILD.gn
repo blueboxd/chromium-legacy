@@ -24,9 +24,9 @@ js_type_check("closure_compile") {
     ":custom_margins_test",
     ":destination_dialog_interactive_test",
     ":destination_dialog_test",
+    ":destination_item_test",
+    ":destination_list_test",
 
-    #":destination_item_test",
-    #":destination_list_test",
     #":destination_search_test_chromeos",
     #":destination_search_test",
     #":destination_select_test",
@@ -219,6 +219,27 @@ js_library("destination_dialog_interactive_test") {
     "..:test_util.m",
     "//chrome/browser/resources/print_preview:print_preview",
     "//ui/webui/resources/js:assert.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("destination_list_test") {
+  deps = [
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/print_preview:print_preview",
+    "//ui/webui/resources/js:assert.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("destination_item_test") {
+  deps = [
+    ":print_preview_test_utils",
+    "..:chai_assert",
+    "//chrome/browser/resources/print_preview:print_preview",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }

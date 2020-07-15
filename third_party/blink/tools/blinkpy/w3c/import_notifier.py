@@ -129,14 +129,30 @@ class ImportNotifier(object):
                             gerrit_url_with_ps=gerrit_url_with_ps))
 
     def more_failures_in_baseline(self, baseline):
+        """Determines if a testharness.js baseline file has new failures.
+
+        The file is assumed to have been modified in the current git checkout,
+        and so has a diff we can parse.
+
+        We recognize two types of failures: FAIL lines, which are output for a
+        specific subtest failing, and harness errors, which indicate an uncaught
+        error in the test. Increasing numbers of either are considered new
+        failures - this includes going from FAIL to error or vice-versa.
+        """
+
         diff = self.git.run(['diff', '-U0', 'origin/master', '--', baseline])
         delta_failures = 0
+        delta_harness_errors = 0
         for line in diff.splitlines():
             if line.startswith('+FAIL'):
                 delta_failures += 1
             if line.startswith('-FAIL'):
                 delta_failures -= 1
-        return delta_failures > 0
+            if line.startswith('+Harness Error.'):
+                delta_harness_errors += 1
+            if line.startswith('-Harness Error.'):
+                delta_harness_errors -= 1
+        return delta_failures > 0 or delta_harness_errors > 0
 
     def examine_new_test_expectations(self, test_expectations):
         """Examines new test expectations to find new failures.

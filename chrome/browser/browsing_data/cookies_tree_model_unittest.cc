@@ -38,8 +38,6 @@
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/buildflags/buildflags.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

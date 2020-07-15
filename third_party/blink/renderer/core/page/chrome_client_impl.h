@@ -136,7 +136,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   float WindowToViewportScalar(LocalFrame*, const float) const override;
   void WindowToViewportRect(LocalFrame& frame,
                             WebFloatRect* viewport_rect) const override;
-  WebScreenInfo GetScreenInfo(LocalFrame&) const override;
+  ScreenInfo GetScreenInfo(LocalFrame&) const override;
   void OverrideVisibleRectForMainFrame(LocalFrame& frame,
                                        IntRect* paint_rect) const override;
   float InputEventsScaleForEmulation() const override;

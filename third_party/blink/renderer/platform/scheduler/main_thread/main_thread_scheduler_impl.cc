@@ -2499,21 +2499,11 @@ void MainThreadSchedulerImpl::BroadcastIntervention(const String& message) {
     page_scheduler->ReportIntervention(message);
 }
 
-void MainThreadSchedulerImpl::OnTaskReady(
-    const void* frame_scheduler,
-    const base::sequence_manager::Task& task,
-    base::sequence_manager::LazyNow* lazy_now) {
-  agent_interference_recorder_.OnTaskReady(frame_scheduler,
-                                           task.enqueue_order(), lazy_now);
-}
-
 void MainThreadSchedulerImpl::OnTaskStarted(
     MainThreadTaskQueue* queue,
     const base::sequence_manager::Task& task,
     const TaskQueue::TaskTiming& task_timing) {
   main_thread_only().running_queues.push(queue);
-  agent_interference_recorder_.OnTaskStarted(queue, task.enqueue_order(),
-                                             task_timing.start_time());
   if (main_thread_only().nested_runloop)
     return;
 
@@ -2547,8 +2537,6 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
   if (task_timing->has_wall_time() && queue && queue->GetFrameScheduler())
     queue->GetFrameScheduler()->AddTaskTime(task_timing->wall_duration());
   main_thread_only().running_queues.pop();
-  agent_interference_recorder_.OnTaskCompleted(queue.get(),
-                                               task_timing->end_time());
   if (main_thread_only().nested_runloop)
     return;
 
@@ -2695,23 +2683,12 @@ TaskQueue::QueuePriority MainThreadSchedulerImpl::ComputePriority(
 
 void MainThreadSchedulerImpl::OnBeginNestedRunLoop() {
   DCHECK(!main_thread_only().running_queues.empty());
-  const base::TimeTicks now = real_time_domain()->Now();
-  // When a nested loop is entered, simulate completing the current task. It
-  // will be resumed when the run loop is exited.
-  agent_interference_recorder_.OnTaskCompleted(
-      main_thread_only().running_queues.top().get(), now);
   main_thread_only().nested_runloop = true;
   ApplyVirtualTimePolicy();
 }
 
 void MainThreadSchedulerImpl::OnExitNestedRunLoop() {
   DCHECK(!main_thread_only().running_queues.empty());
-  base::TimeTicks now = real_time_domain()->Now();
-  // When a nested loop is exited, resume the task that was running when the
-  // nested loop was entered.
-  agent_interference_recorder_.OnTaskStarted(
-      main_thread_only().running_queues.top().get(),
-      base::sequence_manager::EnqueueOrder::none(), now);
   main_thread_only().nested_runloop = false;
   ApplyVirtualTimePolicy();
 }
@@ -2850,11 +2827,6 @@ void MainThreadSchedulerImpl::ExecuteAfterCurrentTask(
     base::OnceClosure on_completion_task) {
   main_thread_only().on_task_completion_callbacks.push_back(
       std::move(on_completion_task));
-}
-
-void MainThreadSchedulerImpl::OnFrameSchedulerDestroyed(
-    FrameSchedulerImpl* frame_scheduler) {
-  agent_interference_recorder_.OnFrameSchedulerDestroyed(frame_scheduler);
 }
 
 void MainThreadSchedulerImpl::DispatchOnTaskCompletionCallbacks() {

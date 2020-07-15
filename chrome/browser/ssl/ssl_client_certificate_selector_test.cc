@@ -17,7 +17,6 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request.h"
 
 using ::testing::Mock;
 using ::testing::StrictMock;

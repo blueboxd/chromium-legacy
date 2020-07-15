@@ -819,7 +819,7 @@ void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg,
 void InlineLoginHandlerImpl::SendLSTFetchResultsMessage(
     const base::Value& arg) {
   if (IsJavascriptAllowed())
-    CallJavascriptFunction("inline.login.sendLSTFetchResults", arg);
+    FireWebUIListener("send-lst-fetch-results", arg);
 }
 
 Browser* InlineLoginHandlerImpl::GetDesktopBrowser() {

@@ -345,7 +345,7 @@ void SVGSMILElement::RemovedFrom(ContainerNode& root_parent) {
 SMILTime SVGSMILElement::ParseOffsetValue(const String& data) {
   bool ok;
   double result = 0;
-  String parse = data.StripWhiteSpace();
+  const String parse = data.StripWhiteSpace();
   if (parse.EndsWith('h')) {
     result = parse.Left(parse.length() - 1).ToDouble(&ok) *
              base::Time::kSecondsPerHour;
@@ -360,9 +360,7 @@ SMILTime SVGSMILElement::ParseOffsetValue(const String& data) {
   } else {
     result = parse.ToDouble(&ok);
   }
-  if (!ok)
-    return SMILTime::Unresolved();
-  return SMILTime::FromSecondsD(result);
+  return ok ? SMILTime::FromSecondsD(result) : SMILTime::Unresolved();
 }
 
 SMILTime SVGSMILElement::ParseClockValue(const String& data) {
@@ -1042,7 +1040,7 @@ SVGSMILElement::ProgressState SVGSMILElement::CalculateProgressState(
       simple_time = simple_time - SMILTime::Epsilon();
     } else {
       simple_time = simple_duration;
-      repeat--;
+      --repeat;
     }
   } else {
     repeat = active_time / simple_duration;

@@ -33,6 +33,24 @@ DrawableIcon MapDrawableIcon(DrawableProto::Icon icon) {
       return DrawableIcon::PROGRESSBAR_DEFAULT_PAYMENT;
     case DrawableProto::PROGRESSBAR_DEFAULT_FINAL_STEP:
       return DrawableIcon::PROGRESSBAR_DEFAULT_FINAL_STEP;
+    case DrawableProto::SITTING_PERSON:
+      return DrawableIcon::SITTING_PERSON;
+    case DrawableProto::TICKET_STUB:
+      return DrawableIcon::TICKET_STUB;
+    case DrawableProto::SHOPPING_BASKET:
+      return DrawableIcon::SHOPPING_BASKET;
+    case DrawableProto::FAST_FOOD:
+      return DrawableIcon::FAST_FOOD;
+    case DrawableProto::LOCAL_DINING:
+      return DrawableIcon::LOCAL_DINING;
+    case DrawableProto::COGWHEEL:
+      return DrawableIcon::COGWHEEL;
+    case DrawableProto::KEY:
+      return DrawableIcon::KEY;
+    case DrawableProto::CAR:
+      return DrawableIcon::CAR;
+    case DrawableProto::GROCERY:
+      return DrawableIcon::GROCERY;
   }
 }
 

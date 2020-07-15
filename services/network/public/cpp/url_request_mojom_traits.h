@@ -17,7 +17,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/request_priority.h"
-#include "net/url_request/url_request_job.h"
+#include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/network_isolation_key_mojom_traits.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -42,12 +42,11 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
 
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
-    EnumTraits<network::mojom::URLRequestReferrerPolicy,
-               net::URLRequest::ReferrerPolicy> {
+    EnumTraits<network::mojom::URLRequestReferrerPolicy, net::ReferrerPolicy> {
   static network::mojom::URLRequestReferrerPolicy ToMojom(
-      net::URLRequest::ReferrerPolicy policy);
+      net::ReferrerPolicy policy);
   static bool FromMojom(network::mojom::URLRequestReferrerPolicy in,
-                        net::URLRequest::ReferrerPolicy* out);
+                        net::ReferrerPolicy* out);
 };
 
 template <>
@@ -112,7 +111,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const GURL& referrer(const network::ResourceRequest& request) {
     return request.referrer;
   }
-  static net::URLRequest::ReferrerPolicy referrer_policy(
+  static net::ReferrerPolicy referrer_policy(
       const network::ResourceRequest& request) {
     return request.referrer_policy;
   }

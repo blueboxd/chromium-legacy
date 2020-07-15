@@ -56795,7 +56795,6 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
               "ssd": "0"
             }
           ],
@@ -56814,7 +56813,6 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
               "ssd": "0"
             }
           ],
@@ -56833,7 +56831,6 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
               "ssd": "0"
             }
           ],
@@ -56841,27 +56838,6 @@
         },
         "test": "nacl_helper_nonsfi_unittests",
         "test_id_prefix": "ninja://components/nacl/loader:nacl_helper_nonsfi_unittests/"
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "chrome_sizes",
-        "merge": {
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "chrome_sizes",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04",
-              "pool": "chrome.tests",
-              "ssd": "0"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
       }
     ]
   },

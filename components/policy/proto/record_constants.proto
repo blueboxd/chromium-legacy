@@ -46,9 +46,19 @@ enum Priority {
   SLOW_BATCH = 3;
 
   // |BACKGROUND_BATCH| queues transfer large amounts of non-immediate data.
-  // These records are the first to be rate limited.
-  // |BACKGROUND_BATCH| records are the first to be shed.
+  // These records will be rate limited before |SLOW_BATCH| records.
+  // |BACKGROUND_BATCH| records are shed before |SLOW_BATCH| records.
   // Log files are a perfect examples of records that need to be
   // |BACKGROUND_BATCH|.
   BACKGROUND_BATCH = 4;
+
+  // |MANUAL_BATCH| queues transfer data only on explicit request.
+  // Note that since a queue can hold records submitted by multiple clients,
+  // one client requesting to transfer data will do so for all collected
+  // records of the same priority, including those enqueued by other clients.
+  // |MANUAL_BATCH| records are the first to be rate limited, and since there
+  // is no automatic transfer, it is important to explicitly flush them often
+  // enough to avoid loss of data.
+  // |MANUAL_BATCH| records are the first to be shed.
+  MANUAL_BATCH = 5;
 }

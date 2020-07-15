@@ -95,9 +95,11 @@ void SendAppleEventToOpenUrlToAppController(const GURL& url) {
   [controller getUrl:AppleEventToOpenUrl(url) withReply:nullptr];
 }
 
-void RunClosureWhenProfileInitialized(const base::Closure& closure,
+void RunClosureWhenProfileInitialized(const base::RepeatingClosure& closure,
                                       Profile* profile,
                                       Profile::CreateStatus status) {
+  // This will be called multiple times. Wait until the profile is initialized
+  // fully to quit the loop.
   if (status == Profile::CREATE_STATUS_INITIALIZED)
     closure.Run();
 }
@@ -275,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerWebAppBrowserTest,
 }
 
 // Called when the ProfileManager has created a profile.
-void CreateProfileCallback(const base::Closure& quit_closure,
+void CreateProfileCallback(const base::RepeatingClosure& quit_closure,
                            Profile* profile,
                            Profile::CreateStatus status) {
   EXPECT_TRUE(profile);
@@ -288,9 +290,9 @@ void CreateProfileCallback(const base::Closure& quit_closure,
 }
 
 void CreateAndWaitForSystemProfile() {
-  ProfileManager::CreateCallback create_callback =
-      base::Bind(&CreateProfileCallback,
-                 base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+  ProfileManager::CreateCallback create_callback = base::BindRepeating(
+      &CreateProfileCallback,
+      base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   g_browser_process->profile_manager()->CreateProfileAsync(
       ProfileManager::GetSystemProfilePath(),
       create_callback,
@@ -614,10 +616,9 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
       profile2_path,
-      base::Bind(&RunClosureWhenProfileInitialized,
-                 run_loop.QuitClosure()),
-      base::string16(),
-      std::string());
+      base::BindRepeating(&RunClosureWhenProfileInitialized,
+                          run_loop.QuitClosure()),
+      base::string16(), std::string());
   run_loop.Run();
   Profile* profile2 = profile_manager->GetProfileByPath(profile2_path);
   ASSERT_TRUE(profile2);

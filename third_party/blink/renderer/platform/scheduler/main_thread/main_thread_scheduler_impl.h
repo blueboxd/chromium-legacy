@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/platform/scheduler/common/pollable_thread_safe_flag.h"
 #include "third_party/blink/renderer/platform/scheduler/common/thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
-#include "third_party/blink/renderer/platform/scheduler/main_thread/agent_interference_recorder.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/agent_scheduling_strategy.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/compositor_priority_experiments.h"
@@ -370,10 +369,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   void OnShutdownTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue);
 
-  void OnTaskReady(const void* frame_scheduler,
-                   const base::sequence_manager::Task& task,
-                   base::sequence_manager::LazyNow* lazy_now);
-
   void OnTaskStarted(
       MainThreadTaskQueue* queue,
       const base::sequence_manager::Task& task,
@@ -404,8 +399,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // The primary use case here is batching – to allow updates to be processed
   // only once per task.
   void ExecuteAfterCurrentTask(base::OnceClosure on_completion_task);
-
-  void OnFrameSchedulerDestroyed(FrameSchedulerImpl* frame_scheduler);
 
   base::WeakPtr<MainThreadSchedulerImpl> GetWeakPtr();
 
@@ -866,8 +859,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   base::RepeatingClosure notify_agent_strategy_on_input_event_closure_;
   base::RepeatingCallback<void(base::WeakPtr<const FrameSchedulerImpl>)>
       agent_strategy_delay_callback_;
-
-  AgentInterferenceRecorder agent_interference_recorder_;
 
   std::unique_ptr<AgentSchedulingStrategy> agent_scheduling_strategy_ =
       AgentSchedulingStrategy::Create(*this);

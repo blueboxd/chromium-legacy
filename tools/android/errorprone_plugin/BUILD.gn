@@ -12,11 +12,15 @@ java_binary("errorprone_plugin") {
   sources = [
     # Turned off because of existing code which fails the check
     # "src/org/chromium/tools/errorprone/plugin/NoContextGetApplicationContext.java",
-    "src/org/chromium/tools/errorprone/plugin/AndroidNullableCheck.java",
+    # TODO(crbug.com/1104558): Fix.
+    #"src/org/chromium/tools/errorprone/plugin/AndroidNullableCheck.java",
     "src/org/chromium/tools/errorprone/plugin/NoAndroidAsyncTaskCheck.java",
     "src/org/chromium/tools/errorprone/plugin/NoDynamicStringsInTraceEventCheck.java",
-    "src/org/chromium/tools/errorprone/plugin/NoRedundantFieldInitCheck.java",
-    "src/org/chromium/tools/errorprone/plugin/NoSynchronizedMethodCheck.java",
+
+    # TODO(crbug.com/1104558): Fix.
+    #"src/org/chromium/tools/errorprone/plugin/NoRedundantFieldInitCheck.java",
+    # TODO(crbug.com/1104558): Fix.
+    #"src/org/chromium/tools/errorprone/plugin/NoSynchronizedMethodCheck.java",
     "src/org/chromium/tools/errorprone/plugin/NoSynchronizedThisCheck.java",
     "src/org/chromium/tools/errorprone/plugin/TestClassNameCheck.java",
   ]
@@ -34,4 +38,21 @@ java_binary("errorprone_plugin") {
     "//third_party/android_deps:com_google_errorprone_error_prone_core_java",
     "//third_party/android_deps:com_google_errorprone_javac_java",
   ]
+}
+
+android_library("test_class_name_check_test_java") {
+  testonly = true
+  enable_errorprone = true
+  errorprone_expected_warning_regex = "TestClassNameCheck"
+  sources = [ "test/src/org/chromium/tools/errorprone/plugin/TestClassNameCheckTesting.java" ]
+  deps = [
+    "//base:base_java_test_support",
+    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit:junit",
+  ]
+}
+
+group("tests") {
+  testonly = true
+  deps = [ ":test_class_name_check_test_java" ]
 }

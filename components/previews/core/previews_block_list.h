@@ -131,7 +131,6 @@ class PreviewsBlockList : public blocklist::OptOutBlocklist {
   virtual PreviewsEligibilityReason IsLoadedAndAllowed(
       const GURL& url,
       PreviewsType type,
-      bool ignore_long_term_block_list_rules,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
  protected:

@@ -78,12 +78,6 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/url_request/url_request_failed_job.h"
-#include "net/test/url_request/url_request_mock_http_job.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)

@@ -26,11 +26,6 @@ class TranslateCompactInfoBar
       std::unique_ptr<translate::TranslateInfoBarDelegate> delegate);
   ~TranslateCompactInfoBar() override;
 
-  enum class OverflowMenuItemId {
-    NEVER_TRANSLATE_LANGUAGE = 0,
-    NEVER_TRANSLATE_SITE = 1,
-  };
-
   // JNI method specific to string settings in translate.
   void ApplyStringTranslateOption(
       JNIEnv* env,
@@ -64,13 +59,6 @@ class TranslateCompactInfoBar
   bool IsDeclinedByUser() override;
   void OnTranslateInfoBarDelegateDestroyed(
       translate::TranslateInfoBarDelegate* delegate) override;
-
-  // Instructs the Java infobar to select the button corresponding to
-  // |action_type|.
-  void SelectButtonForTesting(ActionType action_type);
-
-  // Instructs the Java infobar to click the specified overflow menu item.
-  void ClickOverflowMenuItemForTesting(OverflowMenuItemId item_id);
 
  private:
   // infobars::InfoBarAndroid:

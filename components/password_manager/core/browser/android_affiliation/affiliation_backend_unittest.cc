@@ -24,7 +24,6 @@
 #include "components/password_manager/core/browser/android_affiliation/facet_manager.h"
 #include "components/password_manager/core/browser/android_affiliation/fake_affiliation_api.h"
 #include "components/password_manager/core/browser/android_affiliation/mock_affiliation_consumer.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"

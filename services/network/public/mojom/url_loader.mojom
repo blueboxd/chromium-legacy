@@ -42,7 +42,7 @@ enum RequestPriority {
   kHighest
 };
 
-// This enum corresponds to net::URLRequest::ReferrerPolicy. See its comments.
+// This enum corresponds to net::ReferrerPolicy. See its comments.
 enum URLRequestReferrerPolicy {
   kClearReferrerOnTransitionFromSecureToInsecure,
   kReduceReferrerGranularityOnTransitionCrossOrigin,

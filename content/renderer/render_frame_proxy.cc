@@ -22,7 +22,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/impression.h"
-#include "content/public/common/screen_info.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/child_frame_compositing_helper.h"
@@ -278,7 +277,8 @@ void RenderFrameProxy::ResendVisualProperties() {
   SynchronizeVisualProperties();
 }
 
-void RenderFrameProxy::OnScreenInfoChanged(const ScreenInfo& screen_info) {
+void RenderFrameProxy::OnScreenInfoChanged(
+    const blink::ScreenInfo& screen_info) {
   DCHECK(ancestor_render_widget_);
 
   pending_visual_properties_.screen_info = screen_info;

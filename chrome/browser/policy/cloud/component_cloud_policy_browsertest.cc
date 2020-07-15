@@ -36,7 +36,6 @@
 #include "content/public/test/browser_test.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #if defined(OS_CHROMEOS)

@@ -999,16 +999,6 @@ void LoginDatabase::ReportLoginsWithSchemesMetrics() {
 
 void LoginDatabase::ReportBubbleSuppressionMetrics() {
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
-  // Number of times the user needs to dismiss a save/update bubble for it to
-  // not be shown again. This happens only on desktop platforms.
-  int threshold =
-      password_bubble_experiment::GetSmartBubbleDismissalThreshold();
-  LogAccountStatHiRes(
-      "PasswordManager.BubbleSuppression.DomainsWithSuppressedBubble",
-      stats_table_.GetNumDomainsWithAtLeastNDismissals(threshold));
-  LogAccountStatHiRes(
-      "PasswordManager.BubbleSuppression.AccountsWithSuppressedBubble",
-      stats_table_.GetNumAccountsWithAtLeastNDismissals(threshold));
   LogAccountStatHiRes(
       "PasswordManager.BubbleSuppression.AccountsInStatisticsTable",
       stats_table_.GetNumAccounts());

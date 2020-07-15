@@ -145,9 +145,11 @@ class SessionCallbacks
 
 MediaFoundationCdmSession::MediaFoundationCdmSession(
     const SessionMessageCB& session_message_cb,
-    const SessionKeysChangeCB& session_keys_change_cb)
+    const SessionKeysChangeCB& session_keys_change_cb,
+    const SessionExpirationUpdateCB& session_expiration_update_cb)
     : session_message_cb_(session_message_cb),
-      session_keys_change_cb_(session_keys_change_cb) {
+      session_keys_change_cb_(session_keys_change_cb),
+      session_expiration_update_cb_(session_expiration_update_cb) {
   DVLOG_FUNC(1);
 }
 
@@ -205,6 +207,7 @@ MediaFoundationCdmSession::Update(const std::vector<uint8_t>& response) {
   RETURN_IF_FAILED(
       mf_cdm_session_->Update(reinterpret_cast<const BYTE*>(response.data()),
                               base::checked_cast<DWORD>(response.size())));
+  RETURN_IF_FAILED(UpdateExpirationIfNeeded());
   return S_OK;
 }
 
@@ -217,6 +220,7 @@ HRESULT MediaFoundationCdmSession::Close() {
 HRESULT MediaFoundationCdmSession::Remove() {
   DVLOG_FUNC(1);
   RETURN_IF_FAILED(mf_cdm_session_->Remove());
+  RETURN_IF_FAILED(UpdateExpirationIfNeeded());
   return S_OK;
 }
 
@@ -294,6 +298,24 @@ bool MediaFoundationCdmSession::SetSessionId() {
   DVLOG_FUNC(1) << "session_id_=" << session_id_str;
   session_id_ = session_id_str;
   return true;
+}
+
+HRESULT MediaFoundationCdmSession::UpdateExpirationIfNeeded() {
+  DCHECK(!session_id_.empty());
+
+  // Media Foundation CDM follows the EME spec where Time generally represents
+  // an instant in time with millisecond accuracy.
+  double new_expiration_ms = 0.0;
+  RETURN_IF_FAILED(mf_cdm_session_->GetExpiration(&new_expiration_ms));
+  auto new_expiration = base::Time::FromJsTime(new_expiration_ms);
+
+  if (new_expiration == expiration_)
+    return S_OK;
+
+  DVLOG(2) << "New session expiration: " << new_expiration;
+  expiration_ = new_expiration;
+  session_expiration_update_cb_.Run(session_id_, expiration_);
+  return S_OK;
 }
 
 }  // namespace media

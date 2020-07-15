@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-TEST(WebScreenInfoTest, Equality) {
-  WebScreenInfo screen_info1;
-  WebScreenInfo screen_info2;
+TEST(ScreenInfoTest, Equality) {
+  ScreenInfo screen_info1;
+  ScreenInfo screen_info2;
 
   EXPECT_EQ(screen_info1, screen_info2);
 

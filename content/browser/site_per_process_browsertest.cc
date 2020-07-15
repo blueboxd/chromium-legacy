@@ -12216,7 +12216,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // +4 for a 2px border on each iframe.
   gfx::PointF expected(iframe_b_offset_left + iframe_c_offset_left + 4,
                        iframe_b_offset_top + iframe_c_offset_top + 4);
-  ScreenInfo screen_info;
+  blink::ScreenInfo screen_info;
   root->render_manager()->GetRenderWidgetHostView()->GetScreenInfo(
       &screen_info);
   // Convert from CSS to physical pixels
@@ -15646,7 +15646,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, MainFrameScrollOffset) {
   ASSERT_TRUE(b2_to_c2_message_filter->MessageReceived());
 
   // Window scroll offset will be scaled by device scale factor
-  ScreenInfo screen_info;
+  blink::ScreenInfo screen_info;
   a_node->render_manager()->GetRenderWidgetHostView()->GetScreenInfo(
       &screen_info);
   int expected_y = roundf(screen_info.device_scale_factor * 5.0);

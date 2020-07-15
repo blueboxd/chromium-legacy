@@ -11,14 +11,16 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/drive/drive_api_parser.h"
+#include "google_apis/drive/drive_common_callbacks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using drive::FakeDriveService;
 using drive::UploadCompletionCallback;
 using google_apis::CancelCallback;
+using google_apis::CancelCallbackOnce;
+using google_apis::DriveApiErrorCode;
 using google_apis::FileResource;
 using google_apis::FileResourceCallback;
-using google_apis::DriveApiErrorCode;
 using google_apis::ProgressCallback;
 
 namespace sync_file_system {
@@ -85,7 +87,7 @@ void FakeDriveUploader::StartBatchProcessing() {
 void FakeDriveUploader::StopBatchProcessing() {
 }
 
-CancelCallback FakeDriveUploader::UploadNewFile(
+CancelCallbackOnce FakeDriveUploader::UploadNewFile(
     const std::string& parent_resource_id,
     const base::FilePath& local_file_path,
     const std::string& title,
@@ -109,10 +111,10 @@ CancelCallback FakeDriveUploader::UploadNewFile(
       base::BindOnce(&DidAddFileForUploadNew, std::move(callback)));
   base::RunLoop().RunUntilIdle();
 
-  return CancelCallback();
+  return CancelCallbackOnce();
 }
 
-CancelCallback FakeDriveUploader::UploadExistingFile(
+CancelCallbackOnce FakeDriveUploader::UploadExistingFile(
     const std::string& resource_id,
     const base::FilePath& local_file_path,
     const std::string& content_type,
@@ -120,12 +122,13 @@ CancelCallback FakeDriveUploader::UploadExistingFile(
     UploadCompletionCallback callback,
     ProgressCallback progress_callback) {
   DCHECK(!callback.is_null());
-  return fake_drive_service_->GetFileResource(
+  fake_drive_service_->GetFileResource(
       resource_id, base::BindOnce(&DidGetFileResourceForUploadExisting,
                                   std::move(callback)));
+  return CancelCallbackOnce();
 }
 
-CancelCallback FakeDriveUploader::ResumeUploadFile(
+CancelCallbackOnce FakeDriveUploader::ResumeUploadFile(
     const GURL& upload_location,
     const base::FilePath& local_file_path,
     const std::string& content_type,
@@ -134,7 +137,7 @@ CancelCallback FakeDriveUploader::ResumeUploadFile(
   // At the moment, sync file system doesn't support resuming of the uploading.
   // So this method shouldn't be reached.
   NOTREACHED();
-  return CancelCallback();
+  return CancelCallbackOnce();
 }
 
 }  // namespace drive_backend

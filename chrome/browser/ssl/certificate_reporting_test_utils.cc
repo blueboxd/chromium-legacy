@@ -20,7 +20,6 @@
 #include "components/security_interstitials/content/certificate_error_report.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/url_request/report_sender.h"
-#include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(OS_ANDROID)

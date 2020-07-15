@@ -123,7 +123,8 @@ class PopupMenuMediatorTest : public ChromeWebTest {
         [[PopupMenuMediator alloc] initWithType:type
                                     isIncognito:is_incognito
                                readingListModel:reading_list_model_.get()
-                      triggerNewIncognitoTabTip:trigger_incognito_hint];
+                      triggerNewIncognitoTabTip:trigger_incognito_hint
+                         browserPolicyConnector:nil];
     return mediator_;
   }
 

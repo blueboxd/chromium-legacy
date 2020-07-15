@@ -60,6 +60,8 @@ class LeakDetectionDelegateHelperTest : public testing::Test {
  protected:
   void SetUp() override {
     store_ = new testing::StrictMock<MockPasswordStore>;
+    feature_list_.InitAndEnableFeature(
+        password_manager::features::kPasswordCheck);
     CHECK(store_->Init(nullptr));
 
     delegate_helper_ =
@@ -91,10 +93,12 @@ class LeakDetectionDelegateHelperTest : public testing::Test {
   }
 
   // Set the expectation for the |CredentialLeakType| in the callback_.
-  void SetOnShowLeakDetectionNotificationExpectation(IsSaved is_saved,
-                                                     IsReused is_reused) {
+  void SetOnShowLeakDetectionNotificationExpectation(
+      IsSaved is_saved,
+      IsReused is_reused,
+      CompromisedSitesCount other_sites) {
     EXPECT_CALL(callback_, Run(is_saved, is_reused, GURL(kLeakedOrigin),
-                               ASCIIToUTF16(kLeakedUsername)))
+                               ASCIIToUTF16(kLeakedUsername), other_sites))
         .Times(1);
   }
 
@@ -103,6 +107,7 @@ class LeakDetectionDelegateHelperTest : public testing::Test {
   MockCallback<LeakDetectionDelegateHelper::LeakTypeReply> callback_;
   scoped_refptr<MockPasswordStore> store_;
   std::unique_ptr<LeakDetectionDelegateHelper> delegate_helper_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Credentials are neither saved nor is the password reused.
@@ -110,8 +115,8 @@ TEST_F(LeakDetectionDelegateHelperTest, NeitherSaveNotReused) {
   std::vector<PasswordForm> password_forms;
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false),
-                                                IsReused(false));
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(false),
+                                                CompromisedSitesCount(0));
   InitiateGetCredentialLeakType();
 }
 
@@ -121,7 +126,8 @@ TEST_F(LeakDetectionDelegateHelperTest, SavedLeakedCredentials) {
       CreateForm(kLeakedOrigin, kLeakedUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(false));
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(false),
+                                                CompromisedSitesCount(1));
   EXPECT_CALL(*store_, AddCompromisedCredentialsImpl)
       .Times(base::FeatureList::IsEnabled(features::kPasswordCheck));
   InitiateGetCredentialLeakType();
@@ -135,7 +141,8 @@ TEST_F(LeakDetectionDelegateHelperTest,
       CreateForm(kOtherOrigin, kLeakedUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(true));
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(true),
+                                                CompromisedSitesCount(2));
   EXPECT_CALL(*store_, AddCompromisedCredentialsImpl)
       .Times(2 * base::FeatureList::IsEnabled(features::kPasswordCheck));
   InitiateGetCredentialLeakType();
@@ -150,7 +157,8 @@ TEST_F(LeakDetectionDelegateHelperTest,
       CreateForm(kLeakedOrigin, kOtherUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(true));
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(true),
+                                                CompromisedSitesCount(1));
   EXPECT_CALL(*store_, AddCompromisedCredentialsImpl)
       .Times(base::FeatureList::IsEnabled(features::kPasswordCheck));
   InitiateGetCredentialLeakType();
@@ -162,7 +170,8 @@ TEST_F(LeakDetectionDelegateHelperTest, ReusedPasswordWithOtherUsername) {
       CreateForm(kLeakedOrigin, kOtherUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(true));
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(true),
+                                                CompromisedSitesCount(0));
   InitiateGetCredentialLeakType();
 }
 
@@ -172,7 +181,8 @@ TEST_F(LeakDetectionDelegateHelperTest, ReusedPasswordOnOtherOrigin) {
       CreateForm(kOtherOrigin, kLeakedUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(true));
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(true),
+                                                CompromisedSitesCount(1));
   EXPECT_CALL(*store_, AddCompromisedCredentialsImpl)
       .Times(base::FeatureList::IsEnabled(features::kPasswordCheck));
   InitiateGetCredentialLeakType();
@@ -185,7 +195,8 @@ TEST_F(LeakDetectionDelegateHelperTest, ReusedPassword) {
       CreateForm(kOtherOrigin, kOtherUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(true));
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(true),
+                                                CompromisedSitesCount(0));
   InitiateGetCredentialLeakType();
 }
 
@@ -198,7 +209,8 @@ TEST_F(LeakDetectionDelegateHelperTest, SaveLeakedCredentials) {
       {CreateForm(kLeakedOrigin, kLeakedUsername, kLeakedPassword),
        CreateForm(kOtherOrigin, kLeakedUsername, kLeakedPassword),
        CreateForm(kLeakedOrigin, kOtherUsername, kLeakedPassword)});
-  SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(true));
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(true),
+                                                CompromisedSitesCount(2));
   EXPECT_CALL(*store_, AddCompromisedCredentialsImpl(CompromisedCredentials{
                            GetSignonRealm(GURL(kLeakedOrigin)),
                            ASCIIToUTF16(kLeakedUsername), base::Time::Now(),
@@ -217,7 +229,8 @@ TEST_F(LeakDetectionDelegateHelperTest, SaveLeakedCredentialsCanonicalized) {
 
   SetGetLoginByPasswordConsumerInvocation({CreateForm(
       kOtherOrigin, kLeakedUsernameNonCanonicalized, kLeakedPassword)});
-  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(true));
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(true),
+                                                CompromisedSitesCount(1));
 
   EXPECT_CALL(*store_, AddCompromisedCredentialsImpl(CompromisedCredentials{
                            GetSignonRealm(GURL(kOtherOrigin)),

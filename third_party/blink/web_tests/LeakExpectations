@@ -167,6 +167,18 @@ crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-
 crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/same-origin/worker-module.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
 
+# Sheriff 2020-07-15
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/origin-when-cross-origin/worker-module.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/no-referrer/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/no-referrer-when-downgrade/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/unsafe-url/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/unset/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/cors/external/wpt/referrer-policy/gen/worker-classic.http-rp/no-referrer-when-downgrade/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/cors/external/wpt/referrer-policy/gen/worker-classic.http-rp/same-origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/cors/external/wpt/referrer-policy/gen/worker-classic.http-rp/strict-origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/cors/external/wpt/referrer-policy/gen/worker-classic.http-rp/unsafe-url/worker-classic.http.html [ Pass Timeout ]
+crbug.com/1068175 [ Linux ] virtual/cors/external/wpt/referrer-policy/gen/worker-classic.http-rp/unset/worker-classic.http.html [ Pass Timeout ]
+
 # This test triggers existing leaky behavior, but this test also catches
 # a prior crash.
 crbug.com/1103082 [ Linux ] fast/forms/select/select-change-layout-object-crash.html [ Failure ]

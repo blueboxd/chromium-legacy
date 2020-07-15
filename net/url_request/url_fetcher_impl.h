@@ -23,6 +23,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/referrer_policy.h"
 #include "net/url_request/url_fetcher.h"
 
 namespace net {
@@ -53,7 +54,7 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
   void SetAllowCredentials(bool allow_credentials) override;
   int GetLoadFlags() const override;
   void SetReferrer(const std::string& referrer) override;
-  void SetReferrerPolicy(URLRequest::ReferrerPolicy referrer_policy) override;
+  void SetReferrerPolicy(ReferrerPolicy referrer_policy) override;
   void SetExtraRequestHeaders(
       const std::string& extra_request_headers) override;
   void AddExtraRequestHeader(const std::string& header_line) override;

@@ -29,7 +29,6 @@
 #include "content/common/content_to_visible_time_reporter.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/common/screen_info.h"
 #include "content/public/common/widget_type.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
@@ -111,7 +110,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       base::OnceCallback<void(const SkBitmap&)> callback) override;
   std::unique_ptr<viz::ClientFrameSinkVideoCapturer> CreateVideoCapturer()
       override;
-  void GetScreenInfo(ScreenInfo* screen_info) override;
+  void GetScreenInfo(blink::ScreenInfo* screen_info) override;
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;
   void DisableAutoResize(const gfx::Size& new_size) override;

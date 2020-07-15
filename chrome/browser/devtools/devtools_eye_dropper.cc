@@ -16,7 +16,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/screen_info.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
@@ -178,9 +177,7 @@ void DevToolsEyeDropper::UpdateCursor() {
   const float kPixelSize = 10;
 #endif
 
-  content::ScreenInfo screen_info;
-  host_->GetScreenInfo(&screen_info);
-  double device_scale_factor = screen_info.device_scale_factor;
+  float device_scale_factor = host_->GetDeviceScaleFactor();
 
   SkBitmap result;
   result.allocN32Pixels(kCursorSize * device_scale_factor,

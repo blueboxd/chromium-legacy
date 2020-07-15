@@ -207,12 +207,6 @@ TEST_F(StatisticsTableTest, GetDomainsAndAccountsDomainsWithNDismissals) {
   }
 
   EXPECT_EQ(5, db()->GetNumAccounts());  // A,B,C,D,E
-
-  EXPECT_EQ(3, db()->GetNumDomainsWithAtLeastNDismissals(1));   // (A,B,C), D, E
-  EXPECT_EQ(2, db()->GetNumDomainsWithAtLeastNDismissals(10));  // (A,B), E
-
-  EXPECT_EQ(5, db()->GetNumAccountsWithAtLeastNDismissals(1));   // A,B,C,D,E
-  EXPECT_EQ(3, db()->GetNumAccountsWithAtLeastNDismissals(10));  // A,B,E
 }
 
 }  // namespace

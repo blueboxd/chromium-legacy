@@ -643,11 +643,7 @@ UIView* GetFirstResponderSubview(UIView* view) {
 
 UIResponder* GetFirstResponder() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  // TODO(crbug.com/1103822): Finding the first responder with
-  // GetFirstResponderSubview() fails on iOS 14 on simulator when running EG2
-  // tests.
-  if (base::ios::IsRunningOnIOS14OrLater() ||
-      base::FeatureList::IsEnabled(kFirstResponderSendAction)) {
+  if (base::FeatureList::IsEnabled(kFirstResponderSendAction)) {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
     DCHECK(!g_first_responder);
     [[UIApplication sharedApplication]

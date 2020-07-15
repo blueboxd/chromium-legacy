@@ -80,6 +80,15 @@ message DrawableProto {
     PROGRESSBAR_DEFAULT_DATA_COLLECTION = 2;
     PROGRESSBAR_DEFAULT_PAYMENT = 3;
     PROGRESSBAR_DEFAULT_FINAL_STEP = 4;
+    SITTING_PERSON = 5;
+    TICKET_STUB = 6;
+    SHOPPING_BASKET = 7;
+    FAST_FOOD = 8;
+    LOCAL_DINING = 9;
+    COGWHEEL = 10;
+    KEY = 11;
+    CAR = 12;
+    GROCERY = 13;
   }
 
   oneof drawable {

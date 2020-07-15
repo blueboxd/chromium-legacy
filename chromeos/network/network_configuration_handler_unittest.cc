@@ -758,8 +758,7 @@ TEST_F(NetworkConfigurationHandlerTest, AlwaysOnVpn) {
   const std::string vpn_package = "com.android.vpn";
 
   network_configuration_handler_->SetManagerProperty(
-      shill::kAlwaysOnVpnPackageProperty, base::Value(vpn_package),
-      base::DoNothing(), base::Bind(&ErrorCallback));
+      shill::kAlwaysOnVpnPackageProperty, base::Value(vpn_package));
 
   ShillManagerClient::Get()->GetProperties(
       BindOnce(&NetworkConfigurationHandlerTest::ManagerGetPropertiesCallback,

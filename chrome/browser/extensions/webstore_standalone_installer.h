@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/extensions/webstore_install_result.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace base {

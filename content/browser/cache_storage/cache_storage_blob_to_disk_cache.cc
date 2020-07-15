@@ -10,8 +10,6 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "net/base/io_buffer.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "url/origin.h"

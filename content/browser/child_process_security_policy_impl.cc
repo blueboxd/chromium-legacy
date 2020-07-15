@@ -483,7 +483,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   void SetProcessLock(const ProcessLock& lock,
                       BrowsingInstanceId browsing_instance_id) {
     DCHECK(process_lock_.is_empty());
-    DCHECK_NE(SiteInstanceImpl::GetDefaultSiteURL(), process_lock_.lock_url());
+    DCHECK_NE(SiteInstanceImpl::GetDefaultSiteURL(), lock.lock_url());
     process_lock_ = lock;
     DCHECK(lowest_browsing_instance_id_.is_null());
     lowest_browsing_instance_id_ = browsing_instance_id;

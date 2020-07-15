@@ -4,7 +4,6 @@
 
 package org.chromium.media;
 
-import android.annotation.TargetApi;
 import android.media.MediaCodec;
 import android.media.MediaCodec.CryptoInfo;
 import android.media.MediaCodecInfo;
@@ -65,15 +64,12 @@ class MediaCodecUtil {
      * the MediaCodecList.
      */
     private static class MediaCodecListHelper implements Iterable<MediaCodecInfo> {
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         public MediaCodecListHelper() {
-            if (supportsNewMediaCodecList()) {
-                try {
-                    mCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS).getCodecInfos();
-                } catch (Throwable e) {
-                    // Swallow the exception due to bad Android implementation and pretend
-                    // MediaCodecList is not supported.
-                }
+            try {
+                mCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS).getCodecInfos();
+            } catch (Throwable e) {
+                // Swallow the exception due to bad Android implementation and pretend
+                // MediaCodecList is not supported.
             }
         }
 
@@ -100,12 +96,8 @@ class MediaCodecUtil {
             return MediaCodecList.getCodecInfoAt(index);
         }
 
-        private static boolean supportsNewMediaCodecList() {
-            return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
-        }
-
         private boolean hasNewMediaCodecList() {
-            return supportsNewMediaCodecList() && mCodecList != null;
+            return mCodecList != null;
         }
 
         private MediaCodecInfo[] mCodecList;
@@ -211,8 +203,6 @@ class MediaCodecUtil {
             return false;
         }
 
-        // MediaCodecInfo.CodecCapabilities.FEATURE_SecurePlayback is available as of
-        // API 21 (LOLLIPOP), which is the same as NewMediaCodecList.
         MediaCodecListHelper codecListHelper = new MediaCodecListHelper();
         if (codecListHelper.hasNewMediaCodecList()) {
             for (MediaCodecInfo info : codecListHelper) {
@@ -270,7 +260,6 @@ class MediaCodecUtil {
       * @param profileLevels The CodecProfileLevelList to add supported profile levels to.
       * @param videoCapabilities The MediaCodecInfo.VideoCapabilities used to infer support.
       */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static void addVp9CodecProfileLevels(CodecProfileLevelList profileLevels,
             MediaCodecInfo.CodecCapabilities codecCapabilities) {
         // https://www.webmproject.org/vp9/levels
@@ -310,9 +299,7 @@ class MediaCodecUtil {
                 // https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel.html
                 try {
                     CodecCapabilities codecCapabilities = info.getCapabilitiesForType(mime);
-                    if (mime.endsWith("vp9")
-                            && Build.VERSION_CODES.LOLLIPOP <= Build.VERSION.SDK_INT
-                            && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+                    if (mime.endsWith("vp9") && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
                         addVp9CodecProfileLevels(profileLevels, codecCapabilities);
                         continue;
                     }
@@ -372,20 +359,18 @@ class MediaCodecUtil {
                 // API support.
                 String decoderName = getDefaultCodecName(mime, MediaCodecDirection.DECODER, false);
                 if (decoderName.equals("")) return result;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    // To work around an issue that we cannot get the codec info
-                    // from the secure decoder, create an insecure decoder first
-                    // so that we can query its codec info. http://b/15587335.
-                    // Futhermore, it is impossible to create an insecure
-                    // decoder if the secure one is already created.
-                    MediaCodec insecureCodec = MediaCodec.createByCodecName(decoderName);
-                    result.supportsAdaptivePlayback =
-                            codecSupportsAdaptivePlayback(insecureCodec, mime);
-                    insecureCodec.release();
-                }
+
+                // To work around an issue that we cannot get the codec info
+                // from the secure decoder, create an insecure decoder first
+                // so that we can query its codec info. http://b/15587335.
+                // Futhermore, it is impossible to create an insecure
+                // decoder if the secure one is already created.
+                MediaCodec insecureCodec = MediaCodec.createByCodecName(decoderName);
+                result.supportsAdaptivePlayback =
+                        codecSupportsAdaptivePlayback(insecureCodec, mime);
+                insecureCodec.release();
 
                 result.mediaCodec = MediaCodec.createByCodecName(decoderName + ".secure");
-
             } else {
                 if (codecType == CodecType.SOFTWARE) {
                     String decoderName =
@@ -425,73 +410,24 @@ class MediaCodecUtil {
             if (Build.MANUFACTURER.toLowerCase(Locale.getDefault()).equals("samsung")) {
                 // Some Samsung devices cannot render VP8 video directly to the surface.
 
-                // Samsung Galaxy S4.
-                // Only GT-I9505G with Android 4.3 and SPH-L720 (Sprint) with Android 5.0.1
-                // were tested. Only the first device has the problem.
-                // We blacklist popular Samsung Galaxy S4 models before Android L.
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
-                        && (Build.MODEL.startsWith("GT-I9505")
-                                   || Build.MODEL.startsWith("GT-I9500"))) {
-                    return false;
-                }
-
                 // Samsung Galaxy S4 Mini.
                 // Only GT-I9190 was tested with Android 4.4.2
                 // We blacklist it and the popular GT-I9195 for all Android versions.
                 if (Build.MODEL.startsWith("GT-I9190") || Build.MODEL.startsWith("GT-I9195")) {
                     return false;
                 }
-
-                // Some Samsung devices have problems with WebRTC.
-                // We copy blacklisting patterns from software_renderin_list_json.cc
-                // although they are broader than the bugs they refer to.
-
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-                    // Samsung Galaxy Note 2, http://crbug.com/308721.
-                    if (Build.MODEL.startsWith("GT-")) return false;
-
-                    // Samsung Galaxy S4, http://crbug.com/329072.
-                    if (Build.MODEL.startsWith("SCH-")) return false;
-
-                    // Samsung Galaxy Tab, http://crbug.com/408353.
-                    if (Build.MODEL.startsWith("SM-T")) return false;
-
-                    // http://crbug.com/600454
-                    if (Build.MODEL.startsWith("SM-G")) return false;
-                }
             }
 
             // MediaTek decoders do not work properly on vp8. See http://crbug.com/446974 and
             // http://crbug.com/597836.
             if (Build.HARDWARE.startsWith("mt")) return false;
-
-            // http://crbug.com/600454
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT
-                    && Build.MODEL.startsWith("Lenovo A6000")) {
-                return false;
-            }
         } else if (mime.equals(MimeTypes.VIDEO_VP9)) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return false;
-
-            // MediaTek decoders do not work properly on vp9 before Lollipop. See
-            // http://crbug.com/597836.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
-                    && Build.HARDWARE.startsWith("mt")) {
-                return false;
-            }
-
             // Nexus Player VP9 decoder performs poorly at >= 1080p resolution.
             if (Build.MODEL.equals("Nexus Player")) {
                 return false;
             }
         } else if (mime.equals(MimeTypes.VIDEO_AV1)) {
             if (!BuildInfo.isAtLeastQ()) return false;
-        } else if (mime.equals(MimeTypes.AUDIO_OPUS)
-                && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return false;
-        } else if (mime.equals(MimeTypes.VIDEO_HEVC)
-                && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return false;
         }
         // *************************************************************
         // *** DO NOT ADD ANY NEW CODECS WITHOUT UPDATING MIME_UTIL. ***
@@ -528,9 +464,8 @@ class MediaCodecUtil {
      * @param mime MIME type that corresponds to the codec creation.
      * @return true if this codec and mime type combination supports adaptive playback.
      */
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     private static boolean codecSupportsAdaptivePlayback(MediaCodec mediaCodec, String mime) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT || mediaCodec == null) {
+        if (mediaCodec == null) {
             return false;
         }
         try {
@@ -597,11 +532,10 @@ class MediaCodecUtil {
         switch (decoder) {
             case HWEncoder.QcomVp8:
             case HWEncoder.QcomH264:
-                return Build.VERSION_CODES.KITKAT;
-            case HWEncoder.ExynosVp8:
-                return Build.VERSION_CODES.M;
             case HWEncoder.ExynosH264:
                 return Build.VERSION_CODES.LOLLIPOP;
+            case HWEncoder.ExynosVp8:
+                return Build.VERSION_CODES.M;
             case HWEncoder.MediatekH264:
                 return Build.VERSION_CODES.O_MR1;
         }

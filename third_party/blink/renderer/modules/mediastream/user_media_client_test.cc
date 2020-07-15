@@ -19,12 +19,12 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
@@ -476,8 +476,8 @@ class UserMediaClientUnderTest : public UserMediaClient {
 
 class UserMediaChromeClient : public EmptyChromeClient {
  public:
-  WebScreenInfo GetScreenInfo(LocalFrame&) const override {
-    WebScreenInfo info;
+  ScreenInfo GetScreenInfo(LocalFrame&) const override {
+    ScreenInfo info;
     info.rect = gfx::Rect(blink::kDefaultScreenCastWidth,
                           blink::kDefaultScreenCastHeight);
     return info;

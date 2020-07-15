@@ -10,9 +10,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/data_url.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 #include "url/url_constants.h"
 
 BitmapFetcher::BitmapFetcher(
@@ -25,7 +22,7 @@ BitmapFetcher::~BitmapFetcher() {
 }
 
 void BitmapFetcher::Init(const std::string& referrer,
-                         net::URLRequest::ReferrerPolicy referrer_policy,
+                         net::ReferrerPolicy referrer_policy,
                          network::mojom::CredentialsMode credentials_mode) {
   if (simple_loader_ != NULL)
     return;

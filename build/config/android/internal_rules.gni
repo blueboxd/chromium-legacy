@@ -2938,9 +2938,6 @@ if (enable_java_templates) {
   #  use_turbine: If True, compile headers using turbine.py.
   #  apk_name: Optional APK name. If provided, will tell compile_java.py to also
   #    generate an .apk.jar.info file under size-info/${apk_name}.apk.jar.info
-  #  provider_configurations: Optional list of paths to Java service
-  #    provider configuration files [1]. These will be copied under
-  #    META-INF/services/ in the final .jar file.
   #  processor_args_javac: List of annotation processor arguments, each one
   #    will be passed to javac as -A<entry>.
   #  deps: Dependencies for the corresponding target.
@@ -2953,11 +2950,6 @@ if (enable_java_templates) {
 
     _build_config = invoker.build_config
     _chromium_code = invoker.chromium_code
-
-    _provider_configurations = []
-    if (defined(invoker.provider_configurations)) {
-      _provider_configurations = invoker.provider_configurations
-    }
 
     _processor_args = []
     if (defined(invoker.processor_args_javac)) {
@@ -3110,7 +3102,8 @@ if (enable_java_templates) {
       }
       if (_chromium_code) {
         args += [ "--chromium-code=1" ]
-        if (java_warnings_as_errors) {
+        if (java_warnings_as_errors &&
+            !defined(invoker.errorprone_expected_warning_regex)) {
           args += [ "--warnings-as-errors" ]
         }
       }
@@ -3130,9 +3123,9 @@ if (enable_java_templates) {
           "--processorpath=@FileArg($_rebased_errorprone_buildconfig:deps_info:host_classpath)",
           "--enable-errorprone",
         ]
-      }
-      foreach(e, _provider_configurations) {
-        args += [ "--provider-configuration=" + rebase_path(e, root_build_dir) ]
+        if (defined(invoker.errorprone_expected_warning_regex)) {
+          args += [ "--errorprone-expected-warning-regex=${invoker.errorprone_expected_warning_regex}" ]
+        }
       }
       foreach(e, _processor_args) {
         args += [ "--processor-arg=" + e ]
@@ -3240,7 +3233,9 @@ if (enable_java_templates) {
   #  requires_android: Optional. True if target can only run on Android.
   #  java_files: Optional list of Java source file paths for this target.
   #  javac_args: Optional list of extra arguments to pass to javac.
-  #  errorprone_args: Optional list of extra arguments to pass to .
+  #  errorprone_args: Optional list of extra arguments to pass to.
+  #  errorprone_expected_warning_regex: When set, throws an exception if the
+  #    errorprone compile does not log a warning which matches the regex.
   #  srcjar_deps: Optional list of .srcjar targets (not file paths). The Java
   #    source files they contain will also be compiled for this target.
   #  java_sources_file: Optional path to a file which will be written with
@@ -3736,7 +3731,6 @@ if (enable_java_templates) {
         "additional_jar_files",
         "apk_name",
         "processor_args_javac",
-        "provider_configurations",
         "javac_args",
         "jar_excluded_patterns",
       ]
@@ -3772,6 +3766,10 @@ if (enable_java_templates) {
               javac_args = []
             }
             javac_args += invoker.errorprone_args
+          }
+          if (defined(invoker.errorprone_expected_warning_regex)) {
+            errorprone_expected_warning_regex =
+                invoker.errorprone_expected_warning_regex
           }
           deps = [ ":$_header_target_name" ]
           header_jar_path = _final_ijar_path

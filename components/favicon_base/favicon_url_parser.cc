@@ -4,10 +4,10 @@
 
 #include "components/favicon_base/favicon_url_parser.h"
 
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/favicon_base/favicon_types.h"
 #include "net/base/url_util.h"
-#include "net/url_request/url_request.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/favicon_size.h"
 

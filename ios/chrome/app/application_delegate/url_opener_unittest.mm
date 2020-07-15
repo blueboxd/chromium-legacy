@@ -396,6 +396,16 @@ TEST_F(URLOpenerTest, PresentingFirstRunUI) {
       isPresentingFirstRunUI];
   id connectionInformationMock =
       [OCMockObject mockForProtocol:@protocol(ConnectionInformation)];
+  __block ChromeAppStartupParameters* params = nil;
+  [[connectionInformationMock expect]
+      setStartupParameters:[OCMArg checkWithBlock:^(
+                                       ChromeAppStartupParameters* p) {
+        params = p;
+        EXPECT_NSEQ(net::NSURLWithGURL(p.completeURL), url);
+        EXPECT_EQ(p.callerApp, CALLER_APP_APPLE_MOBILESAFARI);
+        return YES;
+      }]];
+  [[[connectionInformationMock expect] andReturn:params] startupParameters];
 
   id appStateMock = [OCMockObject mockForClass:[AppState class]];
   [[appStateMock expect] launchFromURLHandled:NO];

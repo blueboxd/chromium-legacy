@@ -453,6 +453,13 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Get the horizontal position at which to draw the menu item's label.
   int GetLabelStartForThisItem() const;
 
+  // Draws the "new" badge on |canvas|. |unmirrored_badge_start| is the
+  // upper-left corner of the badge, not mirrored for RTL.
+  void DrawNewBadge(gfx::Canvas* canvas,
+                    const gfx::Point& unmirrored_badge_start,
+                    const gfx::FontList& primary_font,
+                    int text_render_flags);
+
   // Used by MenuController to cache the menu position in use by the
   // active menu.
   MenuPosition actual_menu_position() const { return actual_menu_position_; }
@@ -487,16 +494,6 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns whether or not a "new" badge should be shown on this menu item.
   // Takes into account whether the badging feature is enabled.
   bool ShouldShowNewBadge() const;
-
-  // Renders a "New" badge on |canvas| in the given |badge_bounds|, which should
-  // be roughly adjacent to the menu item label.
-  void DrawNewBadge(gfx::Canvas* canvas,
-                    gfx::Rect badge_bounds,
-                    int render_flags,
-                    const gfx::FontList& font_list);
-
-  // Returns the additional width required for a "New" badge.
-  int GetNewBadgeRequiredWidth(const gfx::FontList& font_list) const;
 
   void invalidate_dimensions() { dimensions_.height = 0; }
   bool is_dimensions_valid() const { return dimensions_.height > 0; }

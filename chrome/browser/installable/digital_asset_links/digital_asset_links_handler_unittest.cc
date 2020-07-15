@@ -14,7 +14,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_status.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"

@@ -39,4 +39,18 @@ share_test(mock => {
       'AbortError'));
 }, 'share with invalid url template');
 
+share_test(mock => {
+  return callWithKeyDown(async () => {
+    await assertRejectsWithError(
+      navigator.share({
+      }),
+      'TypeError');
+
+    return assertRejectsWithError(
+      navigator.share({
+      }),
+      'NotAllowedError');
+  });
+}, 'share consumes user activation');
+
 </script>

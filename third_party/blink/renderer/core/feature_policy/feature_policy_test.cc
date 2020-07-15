@@ -104,9 +104,9 @@ class FeaturePolicyParserTest : public ::testing::Test {
       const String& feature_policy_header,
       scoped_refptr<const SecurityOrigin> origin,
       PolicyParserMessageBuffer& logger,
-      FeaturePolicyParserDelegate* delegate = nullptr) {
+      ExecutionContext* context = nullptr) {
     return FeaturePolicyParser::ParseHeader(
-        feature_policy_header, g_empty_string, origin, logger, delegate);
+        feature_policy_header, g_empty_string, origin, logger, context);
   }
 };
 
@@ -148,16 +148,15 @@ class FeaturePolicyParserParsingTest
   }
 
  protected:
-  ParsedFeaturePolicy ParseFeaturePolicy(
-      const char* policy_string,
-      const char* self_origin_string,
-      const char* src_origin_string,
-      PolicyParserMessageBuffer& logger,
-      const FeatureNameMap& feature_names,
-      FeaturePolicyParserDelegate* delegate = nullptr) {
+  ParsedFeaturePolicy ParseFeaturePolicy(const char* policy_string,
+                                         const char* self_origin_string,
+                                         const char* src_origin_string,
+                                         PolicyParserMessageBuffer& logger,
+                                         const FeatureNameMap& feature_names,
+                                         ExecutionContext* context = nullptr) {
     return FeaturePolicyParser::ParseFeaturePolicyForTest(
         policy_string, SecurityOrigin::CreateFromString(self_origin_string),
-        GetSrcOrigin(src_origin_string), logger, feature_names, delegate);
+        GetSrcOrigin(src_origin_string), logger, feature_names, context);
   }
 
   ParsedFeaturePolicy ParsePermissionsPolicy(
@@ -166,10 +165,10 @@ class FeaturePolicyParserParsingTest
       const char* src_origin_string,
       PolicyParserMessageBuffer& logger,
       const FeatureNameMap& feature_names,
-      FeaturePolicyParserDelegate* delegate = nullptr) {
+      ExecutionContext* context = nullptr) {
     return FeaturePolicyParser::ParsePermissionsPolicyForTest(
         policy_string, SecurityOrigin::CreateFromString(self_origin_string),
-        GetSrcOrigin(src_origin_string), logger, feature_names, delegate);
+        GetSrcOrigin(src_origin_string), logger, feature_names, context);
   }
 
   void CheckParsedPolicy(const ParsedFeaturePolicy& actual,
@@ -558,7 +557,7 @@ TEST_F(FeaturePolicyParserParsingTest,
   CheckParsedPolicy(FeaturePolicyParser::ParseHeader(
                         "geolocation 'none', fullscreen 'self'",
                         "geolocation=self, payment=*", origin_a_.get(), logger,
-                        nullptr /* delegate */),
+                        nullptr /* context */),
                     {
                         {
                             mojom::blink::FeaturePolicyFeature::kGeolocation,

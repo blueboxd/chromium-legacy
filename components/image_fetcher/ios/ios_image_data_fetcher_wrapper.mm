@@ -41,7 +41,7 @@ void IOSImageDataFetcherWrapper::FetchImageDataWebpDecoded(
     const GURL& image_url,
     ImageDataFetcherBlock callback,
     const std::string& referrer,
-    net::URLRequest::ReferrerPolicy referrer_policy,
+    net::ReferrerPolicy referrer_policy,
     bool send_cookies) {
   DCHECK(callback);
 

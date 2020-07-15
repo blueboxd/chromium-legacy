@@ -172,7 +172,7 @@ void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
   primary_profile_shutdown_subscription_ =
       PrimaryProfileServicesShutdownNotifierFactory::GetInstance()
           ->Get(primary_profile)
-          ->Subscribe(base::Bind(
+          ->Subscribe(base::BindRepeating(
               &BrowserProcessPlatformPart::ShutdownPrimaryProfileServices,
               base::Unretained(this)));
   browser_policy_connector_chromeos()
@@ -226,10 +226,10 @@ chromeos::TimeZoneResolver* BrowserProcessPlatformPart::GetTimezoneResolver() {
         GetTimezoneResolverManager(),
         g_browser_process->shared_url_loader_factory(),
         chromeos::SimpleGeolocationProvider::DefaultGeolocationProviderURL(),
-        base::Bind(&chromeos::system::ApplyTimeZone),
-        base::Bind(&chromeos::DelayNetworkCall,
-                   base::TimeDelta::FromMilliseconds(
-                       chromeos::kDefaultNetworkRetryDelayMS)),
+        base::BindRepeating(&chromeos::system::ApplyTimeZone),
+        base::BindRepeating(&chromeos::DelayNetworkCall,
+                            base::TimeDelta::FromMilliseconds(
+                                chromeos::kDefaultNetworkRetryDelayMS)),
         g_browser_process->local_state()));
   }
   return timezone_resolver_.get();

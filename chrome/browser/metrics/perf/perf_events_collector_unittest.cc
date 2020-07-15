@@ -40,7 +40,8 @@ const char kPerfITLBMissCyclesCmdSkylake[] =
     "perf record -a -e itlb_misses.walk_pending -c 20001";
 const char kPerfITLBMissCyclesCmdAtom[] =
     "perf record -a -e page_walks.i_side_cycles -c 20001";
-const char kPerfCacheMissesCmd[] = "perf record -a -e cache-misses -c 12007";
+const char kPerfLLCMissesCmd[] = "perf record -a -e r412e -c 12007";
+const char kPerfLLCMissesPreciseCmd[] = "perf record -a -e r412e:pp -c 12007";
 
 // Converts a protobuf to serialized format as a byte vector.
 std::vector<uint8_t> SerializeMessageToVector(
@@ -359,7 +360,7 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_IvyBridge) {
   EXPECT_NE(cmds.end(), found);
   found = std::find_if(cmds.begin(), cmds.end(),
                        [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfCacheMissesCmd;
+                         return cmd.value == kPerfLLCMissesCmd;
                        });
   EXPECT_NE(cmds.end(), found);
   found = std::find_if(cmds.begin(), cmds.end(),
@@ -390,7 +391,7 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_SandyBridge) {
   EXPECT_NE(cmds.end(), found);
   found = std::find_if(cmds.begin(), cmds.end(),
                        [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfCacheMissesCmd;
+                         return cmd.value == kPerfLLCMissesCmd;
                        });
   EXPECT_NE(cmds.end(), found);
   found = std::find_if(cmds.begin(), cmds.end(),
@@ -427,7 +428,7 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Haswell) {
   EXPECT_NE(cmds.end(), found);
   found = std::find_if(cmds.begin(), cmds.end(),
                        [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfCacheMissesCmd;
+                         return cmd.value == kPerfLLCMissesCmd;
                        });
   EXPECT_NE(cmds.end(), found);
   found = std::find_if(cmds.begin(), cmds.end(),
@@ -460,7 +461,7 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Skylake) {
   EXPECT_NE(cmds.end(), found);
   found = std::find_if(cmds.begin(), cmds.end(),
                        [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfCacheMissesCmd;
+                         return cmd.value == kPerfLLCMissesPreciseCmd;
                        });
   EXPECT_NE(cmds.end(), found);
   found = std::find_if(cmds.begin(), cmds.end(),
@@ -497,7 +498,7 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Goldmont) {
   EXPECT_NE(cmds.end(), found);
   found = std::find_if(cmds.begin(), cmds.end(),
                        [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfCacheMissesCmd;
+                         return cmd.value == kPerfLLCMissesPreciseCmd;
                        });
   EXPECT_NE(cmds.end(), found);
   found = std::find_if(cmds.begin(), cmds.end(),
@@ -505,6 +506,26 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Goldmont) {
                          return cmd.value == kPerfITLBMissCyclesCmdAtom;
                        });
   EXPECT_NE(cmds.end(), found);
+}
+
+TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Excavator) {
+  CPUIdentity cpuid;
+  cpuid.arch = "x86_64";
+  cpuid.vendor = "AuthenticAMD";
+  cpuid.family = 0x15;
+  cpuid.model = 0x70;  // Excavator
+  cpuid.model_name = "";
+  std::vector<RandomSelector::WeightAndValue> cmds =
+      internal::GetDefaultCommandsForCpu(cpuid);
+  ASSERT_GE(cmds.size(), 2UL);
+  EXPECT_EQ(cmds[0].value, kPerfCyclesCmd);
+  EXPECT_EQ(cmds[1].value, kPerfFPCallgraphCmd);
+  auto found =
+      std::find_if(cmds.begin(), cmds.end(),
+                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                     return cmd.value == kPerfLLCMissesCmd;
+                   });
+  EXPECT_EQ(cmds.end(), found) << "Excavator does not support this command";
 }
 
 TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Arm32) {
@@ -527,7 +548,7 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Arm32) {
   EXPECT_EQ(cmds.end(), found) << "ARM32 does not support this command";
   found = std::find_if(cmds.begin(), cmds.end(),
                        [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfCacheMissesCmd;
+                         return cmd.value == kPerfLLCMissesCmd;
                        });
   EXPECT_EQ(cmds.end(), found) << "ARM32 does not support this command";
 }
@@ -552,7 +573,7 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Arm64) {
   EXPECT_EQ(cmds.end(), found) << "ARM64 does not support this command";
   found = std::find_if(cmds.begin(), cmds.end(),
                        [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfCacheMissesCmd;
+                         return cmd.value == kPerfLLCMissesCmd;
                        });
   EXPECT_EQ(cmds.end(), found) << "ARM64 does not support this command";
 }
@@ -577,7 +598,7 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_x86_32) {
   EXPECT_EQ(cmds.end(), found) << "x86_32 does not support this command";
   found = std::find_if(cmds.begin(), cmds.end(),
                        [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfCacheMissesCmd;
+                         return cmd.value == kPerfLLCMissesCmd;
                        });
   EXPECT_EQ(cmds.end(), found) << "x86_32 does not support this command";
 }

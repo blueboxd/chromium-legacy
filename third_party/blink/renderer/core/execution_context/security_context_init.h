@@ -20,19 +20,14 @@
 
 namespace blink {
 class LocalFrame;
-class OriginTrialContext;
 class ResourceResponse;
 
-class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
+class CORE_EXPORT SecurityContextInit {
   STACK_ALLOCATED();
 
  public:
-  // The first constructor is for workers and tests. The second is for windows.
-  // TODO(japhet): Merge these.
-  explicit SecurityContextInit(OriginTrialContext*);
   explicit SecurityContextInit(ExecutionContext*);
 
-  void InitializeOriginTrials(const String& origin_trials_header);
   void ApplyFeaturePolicy(LocalFrame* frame,
                           const ResourceResponse& response,
                           const base::Optional<WebOriginPolicy>& origin_policy,
@@ -45,17 +40,9 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
     return feature_policy_header_;
   }
 
-  OriginTrialContext* GetOriginTrialContext() const { return origin_trials_; }
-
-  void CountFeaturePolicyUsage(mojom::blink::WebFeature feature) override;
-  bool FeaturePolicyFeatureObserved(
-      mojom::blink::FeaturePolicyFeature) override;
-  bool FeatureEnabled(OriginTrialFeature feature) const override;
-
  private:
   ExecutionContext* execution_context_ = nullptr;
   ParsedFeaturePolicy feature_policy_header_;
-  OriginTrialContext* origin_trials_ = nullptr;
 };
 
 }  // namespace blink

@@ -13,7 +13,6 @@
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/io_buffer.h"
-#include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 

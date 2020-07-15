@@ -157,10 +157,6 @@ class DataReductionProxySettings {
   // some of them should have.
   bool IsDataReductionProxyUnreachable();
 
-  // When triggering previews, prevent long term block list rules.
-  virtual void SetIgnoreLongTermBlockListRules(
-      bool ignore_long_term_block_list_rules) {}
-
   ContentLengthList GetDailyContentLengths(const char* pref_name);
 
   // Configures data reduction proxy. |at_startup| is true when this method is

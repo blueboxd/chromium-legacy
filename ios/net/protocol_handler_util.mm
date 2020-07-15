@@ -17,6 +17,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_version.h"
+#include "net/url_request/referrer_policy.h"
 #include "net/url_request/url_request.h"
 #include "url/buildflags.h"
 #include "url/gurl.h"
@@ -176,7 +177,7 @@ void CopyHttpHeaders(NSURLRequest* in_request, URLRequest* out_request) {
           base::SysNSStringToUTF8([headers objectForKey:key]));
       // If the referrer is explicitly set, we don't want the network stack to
       // strip it.
-      out_request->set_referrer_policy(URLRequest::NEVER_CLEAR_REFERRER);
+      out_request->set_referrer_policy(net::ReferrerPolicy::NEVER_CLEAR);
       continue;
     }
     // Copy over all headers that were set on NSURLRequest

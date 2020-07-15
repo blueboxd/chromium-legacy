@@ -59,11 +59,6 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
     }
     ASSERT_NE(blink::mojom::ScreenOrientation::kUndefined, type);
 
-    ScreenInfo screen_info;
-    main_frame_rwh->GetScreenInfo(&screen_info);
-    screen_info.orientation_angle = angle;
-    screen_info.orientation_type = type;
-
     std::set<RenderWidgetHost*> rwhs;
     for (RenderFrameHost* rfh : web_contents()->GetAllFrames()) {
       if (rfh == web_contents()->GetMainFrame())
@@ -360,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationOOPIFBrowserTest,
   // Set up a fake Resize message with a screen orientation change.
   RenderWidgetHost* main_frame_rwh =
       web_contents()->GetMainFrame()->GetRenderWidgetHost();
-  ScreenInfo screen_info;
+  blink::ScreenInfo screen_info;
   main_frame_rwh->GetScreenInfo(&screen_info);
   int expected_angle = (screen_info.orientation_angle + 90) % 360;
 

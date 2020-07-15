@@ -77,13 +77,13 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
   if (font_sub_type ==
           FontFormatCheck::VariableFontSubType::kVariableTrueType ||
       font_sub_type == FontFormatCheck::VariableFontSubType::kVariableCFF2) {
-    Vector<SkFontArguments::Axis, 0> axes;
+    Vector<SkFontArguments::VariationPosition::Coordinate, 0> variation;
 
-    SkFontArguments::Axis weight_axis = {
+    SkFontArguments::VariationPosition::Coordinate weight_coordinate = {
         SkSetFourByteTag('w', 'g', 'h', 't'),
         SkFloatToScalar(selection_capabilities.weight.clampToRange(
             selection_request.weight))};
-    SkFontArguments::Axis width_axis = {
+    SkFontArguments::VariationPosition::Coordinate width_coordinate = {
         SkSetFourByteTag('w', 'd', 't', 'h'),
         SkFloatToScalar(selection_capabilities.width.clampToRange(
             selection_request.width))};
@@ -92,35 +92,36 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
     // values clockwise - in CSS positive values are clockwise rotations /
     // skew. See note in https://drafts.csswg.org/css-fonts/#font-style-prop -
     // map value from CSS to OpenType here.
-    SkFontArguments::Axis slant_axis = {
+    SkFontArguments::VariationPosition::Coordinate slant_coordinate = {
         SkSetFourByteTag('s', 'l', 'n', 't'),
         SkFloatToScalar(-selection_capabilities.slope.clampToRange(
             selection_request.slope))};
 
-    axes.push_back(weight_axis);
-    axes.push_back(width_axis);
-    axes.push_back(slant_axis);
+    variation.push_back(weight_coordinate);
+    variation.push_back(width_coordinate);
+    variation.push_back(slant_coordinate);
 
     bool explicit_opsz_configured = false;
     if (variation_settings && variation_settings->size() < UINT16_MAX) {
-      axes.ReserveCapacity(variation_settings->size() + axes.size());
+      variation.ReserveCapacity(variation_settings->size() + variation.size());
       for (const auto& setting : *variation_settings) {
         if (setting.Tag() == SkSetFourByteTag('o', 'p', 's', 'z'))
           explicit_opsz_configured = true;
-        SkFontArguments::Axis axis = {setting.Tag(),
-                                      SkFloatToScalar(setting.Value())};
-        axes.push_back(axis);
+        SkFontArguments::VariationPosition::Coordinate setting_coordinate =
+            {setting.Tag(), SkFloatToScalar(setting.Value())};
+        variation.push_back(setting_coordinate);
       }
     }
 
     if (optical_sizing == kAutoOpticalSizing && !explicit_opsz_configured) {
-      SkFontArguments::Axis opsz_axis = {SkSetFourByteTag('o', 'p', 's', 'z'),
-                                         SkFloatToScalar(size)};
-      axes.push_back(opsz_axis);
+      SkFontArguments::VariationPosition::Coordinate opsz_coordinate =
+          {SkSetFourByteTag('o', 'p', 's', 'z'), SkFloatToScalar(size)};
+      variation.push_back(opsz_coordinate);
     }
 
-    sk_sp<SkTypeface> sk_variation_font(base_typeface_->makeClone(
-        SkFontArguments().setAxes(axes.data(), axes.size())));
+    SkFontArguments font_args;
+    font_args.setVariationDesignPosition({variation.data(), variation.size()});
+    sk_sp<SkTypeface> sk_variation_font(base_typeface_->makeClone(font_args));
 
     if (sk_variation_font) {
       return_typeface = sk_variation_font;

@@ -88,13 +88,30 @@ public class PlayerFrameScaleController {
         // This is filtered to only apply to the top level view upstream.
         if (mUncommittedScaleFactor == 0f) {
             mUncommittedScaleFactor = mViewport.getScale();
+            mMediatorDelegate.onStartScaling();
         }
-        mUncommittedScaleFactor *= scaleFactor;
-
         // Don't scale outside of the acceptable range. The value is still accumulated such that the
         // continuous gesture feels smooth.
-        if (mUncommittedScaleFactor < mInitialScaleFactor) return true;
-        if (mUncommittedScaleFactor > MAX_SCALE_FACTOR) return true;
+        final float lastUncommittedScaleFactor = mUncommittedScaleFactor;
+        mUncommittedScaleFactor *= scaleFactor;
+        // Compute a corrected and bounded scale factor when close to the max/min scale.
+        if (mUncommittedScaleFactor < mInitialScaleFactor
+                && lastUncommittedScaleFactor > mInitialScaleFactor) {
+            scaleFactor = mInitialScaleFactor / lastUncommittedScaleFactor;
+        } else if (mUncommittedScaleFactor > MAX_SCALE_FACTOR
+                && lastUncommittedScaleFactor < MAX_SCALE_FACTOR) {
+            scaleFactor = MAX_SCALE_FACTOR / lastUncommittedScaleFactor;
+        } else if (mUncommittedScaleFactor > mInitialScaleFactor
+                && lastUncommittedScaleFactor < mInitialScaleFactor) {
+            scaleFactor = mUncommittedScaleFactor / mInitialScaleFactor;
+        } else if (mUncommittedScaleFactor < MAX_SCALE_FACTOR
+                && lastUncommittedScaleFactor > MAX_SCALE_FACTOR) {
+            scaleFactor = mUncommittedScaleFactor / MAX_SCALE_FACTOR;
+        } else if (mUncommittedScaleFactor < mInitialScaleFactor
+                || lastUncommittedScaleFactor > MAX_SCALE_FACTOR) {
+            return true;
+        }
+        final float correctedAggregateScaleFactor = lastUncommittedScaleFactor * scaleFactor;
 
         // TODO(crbug/1090804): trigger a fetch of new bitmaps periodically when zooming out.
 
@@ -106,13 +123,15 @@ public class PlayerFrameScaleController {
 
         // It is possible the scale pushed the viewport outside the content bounds. These new values
         // are forced to be within bounds.
-        Rect uncorrectedViewportRect = mViewport.asRect();
+        final float uncorrectedX = mViewport.getTransX();
+        final float uncorrectedY = mViewport.getTransY();
         final float correctedX = Math.max(0f,
-                Math.min(uncorrectedViewportRect.left,
-                        mContentSize.getWidth() * mUncommittedScaleFactor - mViewport.getWidth()));
+                Math.min(uncorrectedX,
+                        mContentSize.getWidth() * correctedAggregateScaleFactor
+                                - mViewport.getWidth()));
         final float correctedY = Math.max(0f,
-                Math.min(uncorrectedViewportRect.top,
-                        mContentSize.getHeight() * mUncommittedScaleFactor
+                Math.min(uncorrectedY,
+                        mContentSize.getHeight() * correctedAggregateScaleFactor
                                 - mViewport.getHeight()));
         final int correctedXRounded = Math.abs(Math.round(correctedX));
         final int correctedYRounded = Math.abs(Math.round(correctedY));
@@ -121,12 +140,11 @@ public class PlayerFrameScaleController {
                                                   correctedYRounded + mViewport.getHeight()),
                 mUncommittedScaleFactor);
 
-        if (correctedX != uncorrectedViewportRect.left
-                || correctedY != uncorrectedViewportRect.top) {
+        if (uncorrectedX != correctedX || uncorrectedY != correctedY) {
             // This is the delta required to force the viewport to be inside the bounds of the
             // content.
-            final float deltaX = uncorrectedViewportRect.left - correctedX;
-            final float deltaY = uncorrectedViewportRect.top - correctedY;
+            final float deltaX = uncorrectedX - correctedX;
+            final float deltaY = uncorrectedY - correctedY;
 
             // Directly used the forced bounds of the viewport reference frame for the viewport
             // scale matrix.
@@ -138,7 +156,8 @@ public class PlayerFrameScaleController {
             bitmapScaleMatrixValues[Matrix.MTRANS_Y] += deltaY;
             mBitmapScaleMatrix.setValues(bitmapScaleMatrixValues);
         }
-        mMediatorDelegate.setBitmapScaleMatrix(mBitmapScaleMatrix, mUncommittedScaleFactor);
+
+        mMediatorDelegate.setBitmapScaleMatrix(mBitmapScaleMatrix, correctedAggregateScaleFactor);
         if (mUserInteractionCallback != null) mUserInteractionCallback.run();
         return true;
     }
@@ -151,28 +170,12 @@ public class PlayerFrameScaleController {
      * @return Whether the scale event was consumed.
      */
     boolean scaleFinished(float scaleFactor, float focalPointX, float focalPointY) {
-        // Remove the bitmap scaling to avoid issues when new bitmaps are requested.
-        // TODO(crbug/1090804): Defer clearing this so that double buffering can occur.
-        mBitmapScaleMatrix.reset();
-        mMediatorDelegate.setBitmapScaleMatrix(mBitmapScaleMatrix, 1f);
-
-        final float finalScaleFactor =
-                Math.max(mInitialScaleFactor, Math.min(mUncommittedScaleFactor, MAX_SCALE_FACTOR));
-        mUncommittedScaleFactor = 0f;
-
-        final float correctedX = Math.max(0f,
-                Math.min(mViewport.getTransX(),
-                        mContentSize.getWidth() * finalScaleFactor - mViewport.getWidth()));
-        final float correctedY = Math.max(0f,
-                Math.min(mViewport.getTransY(),
-                        mContentSize.getHeight() * finalScaleFactor - mViewport.getHeight()));
-        mViewport.setTrans(correctedX, correctedY);
-        mViewport.setScale(finalScaleFactor);
-
+        // All correction/scaling happens in scaleBy() here we just update the mediator.
         mMediatorDelegate.resetScaleFactorOfAllSubframes();
         mMediatorDelegate.updateVisuals(true);
         mMediatorDelegate.forceRedrawVisibleSubframes();
         PlayerUserActionRecorder.recordZoom();
+        mUncommittedScaleFactor = 0f;
         return true;
     }
 }

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <time.h>
+
 #include <limits>
 #include <string>
 
@@ -1768,10 +1769,14 @@ TEST(TimeDelta, TimeDeltaOperators) {
   constexpr TimeDelta kElevenSeconds = TimeDelta::FromSeconds(11);
   constexpr TimeDelta kThreeSeconds = TimeDelta::FromSeconds(3);
 
-  EXPECT_EQ(TimeDelta::FromSeconds(14), kElevenSeconds + kThreeSeconds);
-  EXPECT_EQ(TimeDelta::FromSeconds(14), kThreeSeconds + kElevenSeconds);
-  EXPECT_EQ(TimeDelta::FromSeconds(8), kElevenSeconds - kThreeSeconds);
-  EXPECT_EQ(TimeDelta::FromSeconds(-8), kThreeSeconds - kElevenSeconds);
+  static_assert(TimeDelta::FromSeconds(14) == kElevenSeconds + kThreeSeconds,
+                "");
+  static_assert(TimeDelta::FromSeconds(14) == kThreeSeconds + kElevenSeconds,
+                "");
+  static_assert(TimeDelta::FromSeconds(8) == kElevenSeconds - kThreeSeconds,
+                "");
+  static_assert(TimeDelta::FromSeconds(-8) == kThreeSeconds - kElevenSeconds,
+                "");
   static_assert(3 == kElevenSeconds / kThreeSeconds, "");
   static_assert(0 == kThreeSeconds / kElevenSeconds, "");
   static_assert(TimeDelta::FromSeconds(2) == kElevenSeconds % kThreeSeconds,
@@ -1791,22 +1796,23 @@ TEST(TimeDelta, Overflows) {
   static_assert(-TimeDelta::Min() == TimeDelta::Max(), "");
   static_assert(TimeDelta() < -TimeDelta::Min(), "");
 
-  TimeDelta large_delta = TimeDelta::Max() - TimeDelta::FromMilliseconds(1);
-  TimeDelta large_negative = -large_delta;
-  EXPECT_GT(TimeDelta(), large_negative);
-  EXPECT_FALSE(large_delta.is_max());
-  EXPECT_FALSE((-large_negative).is_min());
-  constexpr TimeDelta kOneSecond = TimeDelta::FromSeconds(1);
+  constexpr TimeDelta kLargeDelta =
+      TimeDelta::Max() - TimeDelta::FromMilliseconds(1);
+  constexpr TimeDelta kLargeNegative = -kLargeDelta;
+  static_assert(TimeDelta() > kLargeNegative, "");
+  static_assert(!kLargeDelta.is_max(), "");
+  static_assert(!(-kLargeNegative).is_min(), "");
 
   // Test +, -, * and / operators.
-  EXPECT_TRUE((large_delta + kOneSecond).is_max());
-  EXPECT_TRUE((large_negative + (-kOneSecond)).is_min());
-  EXPECT_TRUE((large_negative - kOneSecond).is_min());
-  EXPECT_TRUE((large_delta - (-kOneSecond)).is_max());
-  EXPECT_TRUE((large_delta * 2).is_max());
-  EXPECT_TRUE((large_delta * -2).is_min());
-  EXPECT_TRUE((large_delta / 0.5).is_max());
-  EXPECT_TRUE((large_delta / -0.5).is_min());
+  constexpr TimeDelta kOneSecond = TimeDelta::FromSeconds(1);
+  static_assert((kLargeDelta + kOneSecond).is_max(), "");
+  static_assert((kLargeNegative + (-kOneSecond)).is_min(), "");
+  static_assert((kLargeNegative - kOneSecond).is_min(), "");
+  static_assert((kLargeDelta - (-kOneSecond)).is_max(), "");
+  static_assert((kLargeDelta * 2).is_max(), "");
+  static_assert((kLargeDelta * -2).is_min(), "");
+  EXPECT_TRUE((kLargeDelta / 0.5).is_max());
+  EXPECT_TRUE((kLargeDelta / -0.5).is_min());
 
   EXPECT_EQ(TimeDelta::FromSeconds(1) / TimeDelta::FromSeconds(0),
             std::numeric_limits<int64_t>::max());
@@ -1829,47 +1835,47 @@ TEST(TimeDelta, Overflows) {
             TimeDelta::FromSeconds(10));
 
   // Test that double conversions overflow to infinity.
-  EXPECT_EQ((large_delta + kOneSecond).InSecondsF(),
+  EXPECT_EQ((kLargeDelta + kOneSecond).InSecondsF(),
             std::numeric_limits<double>::infinity());
-  EXPECT_EQ((large_delta + kOneSecond).InMillisecondsF(),
+  EXPECT_EQ((kLargeDelta + kOneSecond).InMillisecondsF(),
             std::numeric_limits<double>::infinity());
-  EXPECT_EQ((large_delta + kOneSecond).InMicrosecondsF(),
+  EXPECT_EQ((kLargeDelta + kOneSecond).InMicrosecondsF(),
             std::numeric_limits<double>::infinity());
 
   // Test +=, -=, *= and /= operators.
-  TimeDelta delta = large_delta;
+  TimeDelta delta = kLargeDelta;
   delta += kOneSecond;
   EXPECT_TRUE(delta.is_max());
-  delta = large_negative;
+  delta = kLargeNegative;
   delta += -kOneSecond;
-  EXPECT_TRUE((delta).is_min());
+  EXPECT_TRUE(delta.is_min());
 
-  delta = large_negative;
+  delta = kLargeNegative;
   delta -= kOneSecond;
-  EXPECT_TRUE((delta).is_min());
-  delta = large_delta;
+  EXPECT_TRUE(delta.is_min());
+  delta = kLargeDelta;
   delta -= -kOneSecond;
   EXPECT_TRUE(delta.is_max());
 
-  delta = large_delta;
+  delta = kLargeDelta;
   delta *= 2;
   EXPECT_TRUE(delta.is_max());
-  delta = large_negative;
+  delta = kLargeNegative;
   delta *= 1.5;
-  EXPECT_TRUE((delta).is_min());
+  EXPECT_TRUE(delta.is_min());
 
-  delta = large_delta;
+  delta = kLargeDelta;
   delta /= 0.5;
   EXPECT_TRUE(delta.is_max());
-  delta = large_negative;
+  delta = kLargeNegative;
   delta /= 0.5;
-  EXPECT_TRUE((delta).is_min());
+  EXPECT_TRUE(delta.is_min());
 
   // Test operations with Time and TimeTicks.
-  EXPECT_TRUE((large_delta + Time::Now()).is_max());
-  EXPECT_TRUE((large_delta + TimeTicks::Now()).is_max());
-  EXPECT_TRUE((Time::Now() + large_delta).is_max());
-  EXPECT_TRUE((TimeTicks::Now() + large_delta).is_max());
+  EXPECT_TRUE((kLargeDelta + Time::Now()).is_max());
+  EXPECT_TRUE((kLargeDelta + TimeTicks::Now()).is_max());
+  EXPECT_TRUE((Time::Now() + kLargeDelta).is_max());
+  EXPECT_TRUE((TimeTicks::Now() + kLargeDelta).is_max());
 
   Time time_now = Time::Now();
   EXPECT_EQ(kOneSecond, (time_now + kOneSecond) - time_now);

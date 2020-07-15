@@ -230,70 +230,69 @@ TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableDrift) {
 }
 
 TEST(VideoCadenceEstimatorTest, CadenceVariesWithAcceptableGlitchTime) {
-  std::unique_ptr<VideoCadenceEstimator> estimator(
-      new VideoCadenceEstimator(kMinimumAcceptableTimeBetweenGlitches));
-  estimator->set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
+  VideoCadenceEstimator estimator(kMinimumAcceptableTimeBetweenGlitches);
+  estimator.set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
 
   const base::TimeDelta render_interval = Interval(NTSC(60));
   const base::TimeDelta frame_interval = Interval(120);
   const base::TimeDelta acceptable_drift = frame_interval / 2;
 
-  EXPECT_FALSE(estimator->UpdateCadenceEstimate(
+  EXPECT_FALSE(estimator.UpdateCadenceEstimate(
       render_interval, frame_interval, base::TimeDelta(), acceptable_drift));
-  EXPECT_FALSE(estimator->has_cadence());
+  EXPECT_FALSE(estimator.has_cadence());
 
   // Decreasing the acceptable glitch time should be result in more permissive
   // detection of cadence.
-  estimator.reset(
-      new VideoCadenceEstimator(kMinimumAcceptableTimeBetweenGlitches / 2));
-  estimator->set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
-  EXPECT_TRUE(estimator->UpdateCadenceEstimate(
+  VideoCadenceEstimator permissive_estimator(
+      kMinimumAcceptableTimeBetweenGlitches / 2);
+  permissive_estimator.set_cadence_hysteresis_threshold_for_testing(
+      base::TimeDelta());
+  EXPECT_TRUE(permissive_estimator.UpdateCadenceEstimate(
       render_interval, frame_interval, base::TimeDelta(), acceptable_drift));
-  EXPECT_TRUE(estimator->has_cadence());
-  EXPECT_EQ("[1:0]", estimator->GetCadenceForTesting());
+  EXPECT_TRUE(permissive_estimator.has_cadence());
+  EXPECT_EQ("[1:0]", permissive_estimator.GetCadenceForTesting());
 }
 
 TEST(VideoCadenceEstimatorTest, CadenceHystersisPreventsOscillation) {
-  std::unique_ptr<VideoCadenceEstimator> estimator(
-      new VideoCadenceEstimator(kMinimumAcceptableTimeBetweenGlitches));
+  VideoCadenceEstimator estimator(kMinimumAcceptableTimeBetweenGlitches);
 
   const base::TimeDelta render_interval = Interval(30);
   const base::TimeDelta frame_interval = Interval(60);
   const base::TimeDelta acceptable_drift = frame_interval / 2;
-  estimator->set_cadence_hysteresis_threshold_for_testing(render_interval * 2);
+  estimator.set_cadence_hysteresis_threshold_for_testing(render_interval * 2);
 
   // Cadence hysteresis should prevent the cadence from taking effect yet.
-  EXPECT_FALSE(estimator->UpdateCadenceEstimate(
+  EXPECT_FALSE(estimator.UpdateCadenceEstimate(
       render_interval, frame_interval, base::TimeDelta(), acceptable_drift));
-  EXPECT_FALSE(estimator->has_cadence());
+  EXPECT_FALSE(estimator.has_cadence());
 
   // A second call should exceed cadence hysteresis and take into effect.
-  EXPECT_TRUE(estimator->UpdateCadenceEstimate(
+  EXPECT_TRUE(estimator.UpdateCadenceEstimate(
       render_interval, frame_interval, base::TimeDelta(), acceptable_drift));
-  EXPECT_TRUE(estimator->has_cadence());
+  EXPECT_TRUE(estimator.has_cadence());
 
   // One bad interval shouldn't cause cadence to drop
   EXPECT_FALSE(
-      estimator->UpdateCadenceEstimate(render_interval, frame_interval * 0.75,
-                                       base::TimeDelta(), acceptable_drift));
-  EXPECT_TRUE(estimator->has_cadence());
+      estimator.UpdateCadenceEstimate(render_interval, frame_interval * 0.75,
+                                      base::TimeDelta(), acceptable_drift));
+  EXPECT_TRUE(estimator.has_cadence());
 
   // Resumption of cadence should clear bad interval count.
-  EXPECT_FALSE(estimator->UpdateCadenceEstimate(
+  EXPECT_FALSE(estimator.UpdateCadenceEstimate(
       render_interval, frame_interval, base::TimeDelta(), acceptable_drift));
-  EXPECT_TRUE(estimator->has_cadence());
+  EXPECT_TRUE(estimator.has_cadence());
 
   // So one more bad interval shouldn't cause cadence to drop
   EXPECT_FALSE(
-      estimator->UpdateCadenceEstimate(render_interval, frame_interval * 0.75,
-                                       base::TimeDelta(), acceptable_drift));
-  EXPECT_TRUE(estimator->has_cadence());
+      estimator.UpdateCadenceEstimate(render_interval, frame_interval * 0.75,
+                                      base::TimeDelta(), acceptable_drift));
+  EXPECT_TRUE(estimator.has_cadence());
 
   // Two bad intervals should.
   EXPECT_TRUE(
-      estimator->UpdateCadenceEstimate(render_interval, frame_interval * 0.75,
-                                       base::TimeDelta(), acceptable_drift));
-  EXPECT_FALSE(estimator->has_cadence());
+      estimator.UpdateCadenceEstimate(render_interval, frame_interval * 0.75,
+                                      base::TimeDelta(), acceptable_drift));
+  EXPECT_FALSE(estimator.has_cadence());
 }
 
 void VerifyCadenceSequence(VideoCadenceEstimator* estimator,

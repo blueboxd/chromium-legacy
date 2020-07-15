@@ -70,6 +70,7 @@ class NavigationImpl : public Navigation {
       JNIEnv* env,
       const base::android::JavaParamRef<jstring>& value);
   jboolean IsPageInitiated(JNIEnv* env) { return IsPageInitiated(); }
+  jboolean IsReload(JNIEnv* env) { return IsReload(); }
 
   base::android::ScopedJavaGlobalRef<jobject> java_navigation() {
     return java_navigation_;
@@ -91,6 +92,7 @@ class NavigationImpl : public Navigation {
                         const std::string& value) override;
   void SetUserAgentString(const std::string& value) override;
   bool IsPageInitiated() override;
+  bool IsReload() override;
 
   content::NavigationHandle* navigation_handle_;
 

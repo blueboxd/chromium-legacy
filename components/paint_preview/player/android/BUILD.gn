@@ -57,6 +57,7 @@ android_library("java") {
     "java/src/org/chromium/components/paintpreview/player/PlayerUserActionRecorder.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameBitmapPainter.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameBitmapState.java",
+    "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameBitmapStateController.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameCoordinator.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameGestureDetector.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameMediator.java",
@@ -157,6 +158,9 @@ junit_binary("paint_preview_junit_tests") {
     "junit/src/org/chromium/components/paintpreview/player/frame/PaintPreviewCustomFlingingShadowScroller.java",
     "junit/src/org/chromium/components/paintpreview/player/frame/PlayerFrameBitmapPainterTest.java",
     "junit/src/org/chromium/components/paintpreview/player/frame/PlayerFrameMediatorTest.java",
+    "junit/src/org/chromium/components/paintpreview/player/frame/PlayerFrameScaleControllerTest.java",
+    "junit/src/org/chromium/components/paintpreview/player/frame/PlayerFrameScrollControllerTest.java",
+    "junit/src/org/chromium/components/paintpreview/player/frame/PlayerFrameViewportTest.java",
   ]
   deps = [
     ":java",

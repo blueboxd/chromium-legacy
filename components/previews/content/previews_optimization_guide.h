@@ -47,11 +47,6 @@ class PreviewsOptimizationGuide {
                                content::NavigationHandle* navigation_handle,
                                PreviewsType type);
 
-  // Returns whether there may be commit-time preview guidance available for the
-  // URL associated with |navigation_handle|.
-  virtual bool AreCommitTimePreviewsAvailable(
-      content::NavigationHandle* navigation_handle);
-
   // Whether |url| has loaded resource loading hints and, if it does, populates
   // |out_resource_patterns_to_block| with the resource patterns to block.
   virtual bool GetResourceLoadingHints(

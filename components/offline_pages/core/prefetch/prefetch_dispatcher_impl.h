@@ -21,7 +21,6 @@
 #include "components/offline_pages/core/prefetch/tasks/get_visuals_info_task.h"
 #include "components/offline_pages/task/task_queue.h"
 #include "components/version_info/channel.h"
-#include "net/url_request/url_request_context_getter.h"
 
 class PrefService;
 

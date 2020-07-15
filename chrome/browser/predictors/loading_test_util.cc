@@ -8,9 +8,8 @@
 #include <memory>
 #include <utility>
 
-#include "net/http/http_response_headers.h"
+#include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_test_util.h"
 
 namespace {
 

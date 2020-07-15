@@ -14,7 +14,7 @@
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_stats.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "net/http/http_response_info.h"
 
 namespace download {
 

@@ -29,7 +29,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_CHROMEOS)

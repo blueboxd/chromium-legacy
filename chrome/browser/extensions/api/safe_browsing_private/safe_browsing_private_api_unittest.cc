@@ -27,8 +27,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/web_contents_tester.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_test_util.h"
 
 namespace extensions {
 

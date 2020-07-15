@@ -59,8 +59,7 @@ void URLFetcherImpl::SetReferrer(const std::string& referrer) {
   core_->SetReferrer(referrer);
 }
 
-void URLFetcherImpl::SetReferrerPolicy(
-    URLRequest::ReferrerPolicy referrer_policy) {
+void URLFetcherImpl::SetReferrerPolicy(ReferrerPolicy referrer_policy) {
   core_->SetReferrerPolicy(referrer_policy);
 }
 

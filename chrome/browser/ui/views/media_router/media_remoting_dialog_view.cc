@@ -74,14 +74,6 @@ bool MediaRemotingDialogView::IsShowing() {
   return instance_ != nullptr;
 }
 
-bool MediaRemotingDialogView::ShouldShowCloseButton() const {
-  return true;
-}
-
-base::string16 MediaRemotingDialogView::GetWindowTitle() const {
-  return dialog_title_;
-}
-
 gfx::Size MediaRemotingDialogView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                         DISTANCE_BUBBLE_PREFERRED_WIDTH) -
@@ -97,10 +89,10 @@ MediaRemotingDialogView::MediaRemotingDialogView(
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       permission_callback_(std::move(callback)),
       pref_service_(pref_service),
-      action_controller_(action_controller),
-      dialog_title_(
-          l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_REMOTING_DIALOG_TITLE)) {
+      action_controller_(action_controller) {
   DCHECK(pref_service_);
+  SetShowCloseButton(true);
+  SetTitle(IDS_MEDIA_ROUTER_REMOTING_DIALOG_TITLE);
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(
                      IDS_MEDIA_ROUTER_REMOTING_DIALOG_OPTIMIZE_BUTTON));

@@ -14,6 +14,7 @@
 #include "components/download/public/common/download_stats.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/referrer_policy.h"
 
 namespace download {
 namespace {
@@ -278,7 +279,7 @@ void ParallelDownloadJob::CreateRequest(int64_t offset) {
   // Subsequent range requests have the same referrer URL as the original
   // download request.
   download_params->set_referrer(download_item_->GetReferrerUrl());
-  download_params->set_referrer_policy(net::URLRequest::NEVER_CLEAR_REFERRER);
+  download_params->set_referrer_policy(net::ReferrerPolicy::NEVER_CLEAR);
 
   // TODO(xingliu): We should not support redirect at all for parallel requests.
   // Currently the network service code path still can redirect as long as it's

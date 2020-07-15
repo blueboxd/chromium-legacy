@@ -49,6 +49,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_request_utils.h"
+#include "net/url_request/referrer_policy.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "url/origin.h"
 
@@ -574,8 +575,7 @@ void DownloadManagerService::RetryDownloadInternal(
   // TODO(xingliu): See if we need to persist the referrer policy. Never clear
   // referrer potentially may result in delivering unexpected referrer to web
   // servers.
-  download_url_params->set_referrer_policy(
-      net::URLRequest::NEVER_CLEAR_REFERRER);
+  download_url_params->set_referrer_policy(net::ReferrerPolicy::NEVER_CLEAR);
   download_url_params->set_referrer(item->GetReferrerUrl());
   download_url_params->set_download_source(download::DownloadSource::RETRY);
 

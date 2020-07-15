@@ -19,7 +19,6 @@
 #include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -45,6 +44,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/keyboard_layout.h"
 #include "ui/gfx/render_text.h"
+#include "ui/gfx/render_text_test_api.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/controls/textfield/textfield_model.h"
@@ -830,7 +830,6 @@ TEST_F(TextfieldTest, ModelChangesTest) {
   // text programmatically.
   last_contents_.clear();
   textfield_->SetText(ASCIIToUTF16("this is"));
-
   EXPECT_STR_EQ("this is", model_->text());
   EXPECT_STR_EQ("this is", textfield_->GetText());
   EXPECT_TRUE(last_contents_.empty());
@@ -844,6 +843,123 @@ TEST_F(TextfieldTest, ModelChangesTest) {
   textfield_->SelectAll(false);
   EXPECT_STR_EQ("this is a test", textfield_->GetSelectedText());
   EXPECT_TRUE(last_contents_.empty());
+
+  textfield_->SetTextAndScrollAndSelectRange(ASCIIToUTF16("another test"), 3,
+                                             {}, {4, 5});
+  EXPECT_STR_EQ("another test", model_->text());
+  EXPECT_STR_EQ("another test", textfield_->GetText());
+  EXPECT_STR_EQ("h", textfield_->GetSelectedText());
+  EXPECT_TRUE(last_contents_.empty());
+}
+
+TEST_F(TextfieldTest, SetTextAndScrollAndSelectRange_Scrolling) {
+  InitTextfield();
+
+  // Size the textfield wide enough to hold 10 characters.
+  gfx::test::RenderTextTestApi render_text_test_api(test_api_->GetRenderText());
+  render_text_test_api.SetGlyphWidth(10);
+  // 10px/char * 10chars + 1px for cursor width
+  test_api_->GetRenderText()->SetDisplayRect(gfx::Rect(0, 0, 101, 20));
+
+  // Should scroll cursor into view.
+  test_api_->SetDisplayOffsetX(0);
+  textfield_->SetTextAndScrollAndSelectRange(
+      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {}, {0, 20});
+  EXPECT_EQ(test_api_->GetDisplayOffsetX(), -100);
+  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(0, 20));
+
+  // Cursor position should not affect scroll.
+  test_api_->SetDisplayOffsetX(0);
+  textfield_->SetTextAndScrollAndSelectRange(
+      ASCIIToUTF16("0123456789_123456789_123456789"), 30, {}, {20, 20});
+  EXPECT_EQ(test_api_->GetDisplayOffsetX(), -100);
+  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(20));
+
+  // Scroll positions should affect scroll.
+  test_api_->SetDisplayOffsetX(0);
+  textfield_->SetTextAndScrollAndSelectRange(
+      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {30}, {20, 20});
+  EXPECT_EQ(test_api_->GetDisplayOffsetX(), -200);
+  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(20));
+
+  // Should scroll no more than necessary; e.g., scrolling right should put the
+  // cursor at the right edge.
+  test_api_->SetDisplayOffsetX(0);
+  textfield_->SetTextAndScrollAndSelectRange(
+      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {}, {15, 15});
+  EXPECT_EQ(test_api_->GetDisplayOffsetX(), -50);
+  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(15));
+
+  // Should scroll no more than necessary; e.g., scrolling left should put the
+  // cursor at the left edge.
+  test_api_->SetDisplayOffsetX(-200);  // Scroll all the way right.
+  textfield_->SetTextAndScrollAndSelectRange(
+      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {}, {15, 15});
+  EXPECT_EQ(test_api_->GetDisplayOffsetX(), -150);
+  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(15));
+
+  // Should scroll no more than necessary; e.g., scrolling to a position already
+  // in view should not change the offset.
+  test_api_->SetDisplayOffsetX(-100);  // Scroll the middle 10 chars into view.
+  textfield_->SetTextAndScrollAndSelectRange(
+      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {}, {15, 15});
+  EXPECT_EQ(test_api_->GetDisplayOffsetX(), -100);
+  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(15));
+
+  // With multiple scroll positions, the Last scroll position should be scrolled
+  // to after previous scroll positions.
+  test_api_->SetDisplayOffsetX(0);
+  textfield_->SetTextAndScrollAndSelectRange(
+      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {30, 0}, {20, 20});
+  EXPECT_EQ(test_api_->GetDisplayOffsetX(), -100);
+  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(20));
+
+  // With multiple scroll positions, the previous scroll positions should be
+  // scrolled to anyways.
+  test_api_->SetDisplayOffsetX(0);
+  textfield_->SetTextAndScrollAndSelectRange(
+      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {30, 20}, {20, 20});
+  EXPECT_EQ(test_api_->GetDisplayOffsetX(), -200);
+  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(20));
+
+  // With a non empty selection, only the selection end should affect scrolling.
+  test_api_->SetDisplayOffsetX(0);
+  textfield_->SetTextAndScrollAndSelectRange(
+      ASCIIToUTF16("0123456789_123456789_123456789"), 0, {0}, {30, 0});
+  EXPECT_EQ(test_api_->GetDisplayOffsetX(), 0);
+  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(30, 0));
+}
+
+TEST_F(TextfieldTest, SetTextAndScrollAndSelectRange_ModelEditHistory) {
+  InitTextfield();
+
+  // The cursor and selected range should reflect the |range| parameter.
+  textfield_->SetTextAndScrollAndSelectRange(
+      ASCIIToUTF16("0123456789_123456789_123456789"), 20, {}, {10, 15});
+  EXPECT_EQ(textfield_->GetCursorPosition(), 15u);
+  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(10, 15));
+
+  // After undo, the cursor and selected range should reflect the state prior to
+  // the edit.
+  textfield_->InsertOrReplaceText(ASCIIToUTF16("xyz"));  // 2nd edit
+  SendKeyEvent(ui::VKEY_Z, false, true);                 // Undo 2nd edit
+  EXPECT_EQ(textfield_->GetCursorPosition(), 15u);
+  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(10, 15));
+
+  // After redo, the cursor and selected range should reflect the
+  // |cursor_position| parameter.
+  SendKeyEvent(ui::VKEY_Z, false, true);  // Undo 2nd edit
+  SendKeyEvent(ui::VKEY_Z, false, true);  // Undo 1st edit
+  SendKeyEvent(ui::VKEY_Z, true, true);   // Redo 1st edit
+  EXPECT_EQ(textfield_->GetCursorPosition(), 20u);
+  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(20, 20));
+
+  // After undo, the cursor and selected range should reflect the state prior to
+  // the edit, even if that differs than the state after the current (1st) edit.
+  textfield_->InsertOrReplaceText(ASCIIToUTF16("xyz"));  // (2')nd edit
+  SendKeyEvent(ui::VKEY_Z, false, true);                 // Undo (2')nd edit
+  EXPECT_EQ(textfield_->GetCursorPosition(), 20u);
+  EXPECT_EQ(textfield_->GetSelectedRange(), gfx::Range(20, 20));
 }
 
 TEST_F(TextfieldTest, KeyTest) {

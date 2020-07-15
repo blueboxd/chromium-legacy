@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/media_export.h"
 
@@ -21,8 +22,10 @@ namespace media {
 // A class wrapping IMFContentDecryptionModuleSession.
 class MEDIA_EXPORT MediaFoundationCdmSession {
  public:
-  MediaFoundationCdmSession(const SessionMessageCB& session_message_cb,
-                            const SessionKeysChangeCB& session_keys_change_cb);
+  MediaFoundationCdmSession(
+      const SessionMessageCB& session_message_cb,
+      const SessionKeysChangeCB& session_keys_change_cb,
+      const SessionExpirationUpdateCB& session_expiration_update_cb);
   MediaFoundationCdmSession(const MediaFoundationCdmSession&) = delete;
   MediaFoundationCdmSession& operator=(const MediaFoundationCdmSession&) =
       delete;
@@ -68,9 +71,12 @@ class MEDIA_EXPORT MediaFoundationCdmSession {
   // Note: |this| could already been destructed if false is returned.
   bool SetSessionId();
 
+  HRESULT UpdateExpirationIfNeeded();
+
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;
   SessionKeysChangeCB session_keys_change_cb_;
+  SessionExpirationUpdateCB session_expiration_update_cb_;
 
   Microsoft::WRL::ComPtr<IMFContentDecryptionModuleSession> mf_cdm_session_;
 
@@ -78,6 +84,8 @@ class MEDIA_EXPORT MediaFoundationCdmSession {
   SessionIdCB session_id_cb_;
 
   std::string session_id_;
+
+  base::Time expiration_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaFoundationCdmSession> weak_factory_{this};

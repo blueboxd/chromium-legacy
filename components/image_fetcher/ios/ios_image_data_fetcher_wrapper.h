@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/image_fetcher/core/image_data_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_types.h"
+#include "net/url_request/referrer_policy.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -38,12 +39,11 @@ class IOSImageDataFetcherWrapper {
   // The |referrer| and |referrer_policy| will be passed on to the underlying
   // URLLoader.
   // |callback| cannot be nil.
-  void FetchImageDataWebpDecoded(
-      const GURL& image_url,
-      ImageDataFetcherBlock callback,
-      const std::string& referrer,
-      net::URLRequest::ReferrerPolicy referrer_policy,
-      bool send_cookies = false);
+  void FetchImageDataWebpDecoded(const GURL& image_url,
+                                 ImageDataFetcherBlock callback,
+                                 const std::string& referrer,
+                                 net::ReferrerPolicy referrer_policy,
+                                 bool send_cookies = false);
 
   // Test-only accessor for underlying ImageDataFetcher.
   ImageDataFetcher* AccessImageDataFetcherForTesting() {

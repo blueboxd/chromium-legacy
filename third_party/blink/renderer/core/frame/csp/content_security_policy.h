@@ -576,8 +576,7 @@ class CORE_EXPORT ContentSecurityPolicy final
       ContentSecurityPolicy::ContentSecurityPolicyViolationType violation_type);
 
   void ReportContentSecurityPolicyIssue(
-      const KURL&,
-      String violated_directive,
+      const blink::SecurityPolicyViolationEventInit& violation_data,
       ContentSecurityPolicyViolationType violation_type,
       LocalFrame* = nullptr);
 

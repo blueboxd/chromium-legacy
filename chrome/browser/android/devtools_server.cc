@@ -40,7 +40,6 @@
 #include "content/public/common/user_agent.h"
 #include "net/base/net_errors.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
-#include "net/url_request/url_request_context_getter.h"
 
 using base::android::JavaParamRef;
 using content::DevToolsAgentHost;

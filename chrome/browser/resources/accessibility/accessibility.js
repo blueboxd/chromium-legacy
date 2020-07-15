@@ -80,7 +80,7 @@ cr.define('accessibility', function() {
     // function with the result.
     const requestType = element.id.split(':')[1];
     if (data.type == 'browser') {
-      const delay = $('native_ui_delay').value;
+      const delay = $('native-ui-delay').value;
       setTimeout(() => {
         chrome.send(
             'requestNativeUITree', [{

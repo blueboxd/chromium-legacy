@@ -725,8 +725,7 @@ void PageHandler::CaptureScreenshot(
   gfx::Size emulated_view_size = modified_params.view_size;
 
   double dpfactor = 1;
-  ScreenInfo screen_info;
-  widget_host->GetScreenInfo(&screen_info);
+  float widget_host_device_scale_factor = widget_host->GetDeviceScaleFactor();
   if (emulation_enabled) {
     // When emulating, emulate again and scale to make resulting image match
     // physical DP resolution. If view_size is not overriden, use actual view
@@ -744,7 +743,7 @@ void PageHandler::CaptureScreenshot(
 
     dpfactor = modified_params.device_scale_factor
                    ? modified_params.device_scale_factor /
-                         screen_info.device_scale_factor
+                         widget_host_device_scale_factor
                    : 1;
     // When clip is specified, we scale viewport via clip, otherwise we use
     // scale.
@@ -767,7 +766,7 @@ void PageHandler::CaptureScreenshot(
                                              clip.fromJust()->GetY());
     modified_params.viewport_scale = clip.fromJust()->GetScale() * dpfactor;
     if (IsUseZoomForDSFEnabled()) {
-      modified_params.viewport_offset.Scale(screen_info.device_scale_factor);
+      modified_params.viewport_offset.Scale(widget_host_device_scale_factor);
     }
   }
 
@@ -793,7 +792,7 @@ void PageHandler::CaptureScreenshot(
       requested_image_size = emulated_view_size;
     }
     double scale = emulation_enabled ? original_params.device_scale_factor
-                                     : screen_info.device_scale_factor;
+                                     : widget_host_device_scale_factor;
     if (clip.isJust())
       scale *= clip.fromJust()->GetScale();
     requested_image_size = gfx::ScaleToRoundedSize(requested_image_size, scale);

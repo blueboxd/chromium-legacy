@@ -120,10 +120,6 @@ class PreviewsUIService
   // non-null.
   PreviewsDeciderImpl* previews_decider_impl() const;
 
-  // When triggering previews, prevent long term block list rules.
-  void SetIgnoreLongTermBlockListForServerPreviews(
-      bool ignore_long_term_block_list_rules_allowed);
-
  private:
   // The decision making object for Previews triggering. Guaranteed to be
   // non-null.

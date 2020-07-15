@@ -549,9 +549,8 @@ public class TranslateCompactInfoBar extends InfoBar
         return mParent != null ? mParent.getWidth() : 0;
     }
 
-    @CalledByNative
     // Selects the tab corresponding to |actionType| to simulate the user pressing on this tab.
-    private void selectTabForTesting(int actionType) {
+    void selectTabForTesting(int actionType) {
         if (actionType == ActionType.TRANSLATE) {
             mTabLayout.getTabAt(TARGET_TAB_INDEX).select();
         } else if (actionType == ActionType.TRANSLATE_SHOW_ORIGINAL) {
@@ -559,18 +558,6 @@ public class TranslateCompactInfoBar extends InfoBar
         } else {
             assert false;
         }
-    }
-
-    @CalledByNative
-    // Simulates a click of the overflow menu item for "never translate this language."
-    private void clickNeverTranslateLanguageMenuItemForTesting() {
-        onOverflowMenuItemClicked(TranslateMenu.ID_OVERFLOW_NEVER_LANGUAGE);
-    }
-
-    @CalledByNative
-    // Simulates a click of the overflow menu item for "never translate this site."
-    private void clickNeverTranslateSiteMenuItemForTesting() {
-        onOverflowMenuItemClicked(TranslateMenu.ID_OVERFLOW_NEVER_SITE);
     }
 
     @NativeMethods

@@ -37,23 +37,7 @@ class PreviewsUITabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<PreviewsUITabHelper> {
  public:
-  // Values of the UMA Previews.InfoBarTimestamp histogram. This enum must
-  // remain synchronized with the enum of the same name in
-  // metrics/histograms/histograms.xml.
-  enum class PreviewsStalePreviewTimestamp {
-    kTimestampShown = 0,
-    kTimestampNotShownPreviewNotStale = 1,
-    kTimestampNotShownStalenessNegative = 2,
-    kTimestampNotShownStalenessGreaterThanMax = 3,
-    kTimestampUpdatedNowShown = 4,
-    kMaxValue = kTimestampUpdatedNowShown,
-  };
-
   ~PreviewsUITabHelper() override;
-
-  // Returns the text to use for displaying the timestamp of a stale preview to
-  // the user.
-  base::string16 GetStalePreviewTimestampText();
 
   // Trigger the Previews UI to be shown to the user.
   void ShowUIElement(previews::PreviewsType previews_type,
@@ -65,10 +49,6 @@ class PreviewsUITabHelper
   // Reloads the content of the page without previews for the given preview
   // type.
   void ReloadWithoutPreviews(previews::PreviewsType previews_type);
-
-  // Sets |previews_freshness_| and |is_stale_reload_| for testing.
-  void SetStalePreviewsStateForTesting(base::Time previews_freshness,
-                                       bool is_reload);
 
   // Indicates whether the UI for a preview has been shown for the page.
   bool displayed_preview_ui() const { return displayed_preview_ui_; }
@@ -87,13 +67,6 @@ class PreviewsUITabHelper
     return should_display_android_omnibox_badge_;
   }
 #endif
-
-  // Sets whether the timestamp on the UI for a preview has been shown for
-  // the page. |displayed_preview_timestamp_| is reset to false on
-  // DidStartProvisionalLoadForFrame for the main frame.
-  void set_displayed_preview_timestamp(bool displayed_preview_timestamp) {
-    displayed_preview_timestamp_ = displayed_preview_timestamp;
-  }
 
   // The Previews information related to the navigation that was most recently
   // finished.
@@ -139,15 +112,6 @@ class PreviewsUITabHelper
 
   // True if the UI for a preview has been shown for the page.
   bool displayed_preview_ui_ = false;
-
-  // True if the UI with a timestamp was shown for the page.
-  bool displayed_preview_timestamp_ = false;
-
-  // The time at which the stale preview was created, if any.
-  base::Time previews_freshness_;
-
-  // Whether or not the displayed preview is stale and was caused by a reload.
-  bool is_stale_reload_;
 
 #if defined(OS_ANDROID)
   // True if the Android Omnibox badge should be shown as the Previews UI.

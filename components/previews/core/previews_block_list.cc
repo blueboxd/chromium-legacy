@@ -112,15 +112,13 @@ base::Time PreviewsBlockList::AddPreviewNavigation(const GURL& url,
 PreviewsEligibilityReason PreviewsBlockList::IsLoadedAndAllowed(
     const GURL& url,
     PreviewsType type,
-    bool ignore_long_term_block_list_rules,
     std::vector<PreviewsEligibilityReason>* passed_reasons) const {
   DCHECK(url.has_host());
 
   std::vector<blocklist::BlocklistReason> passed_blocklist_reasons;
   blocklist::BlocklistReason reason =
       blocklist::OptOutBlocklist::IsLoadedAndAllowed(
-          url.host(), static_cast<int>(type), ignore_long_term_block_list_rules,
-          &passed_blocklist_reasons);
+          url.host(), static_cast<int>(type), false, &passed_blocklist_reasons);
   for (auto passed_reason : passed_blocklist_reasons) {
     passed_reasons->push_back(BlocklistReasonToPreviewsReason(passed_reason));
   }

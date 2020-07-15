@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangePolicyBrowserTest, BlackList) {
   policy::PolicyMap policies;
   policies.Set(policy::key::kURLBlacklist, policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               blacklist.CreateDeepCopy(), nullptr);
+               blacklist.Clone(), nullptr);
 
 #if defined(OS_CHROMEOS)
   policy::SetEnterpriseUsersDefaults(&policies);

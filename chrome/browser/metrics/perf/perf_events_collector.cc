@@ -116,7 +116,7 @@ const char kPerfLBRCmd[] = "perf record -a -e r20c4 -b -c 200011";
 // we sample on the branches retired event.
 const char kPerfLBRCmdAtom[] = "perf record -a -e rc4 -b -c 300001";
 
-// The following events count misses in the level 1 caches and level 2 TLBs.
+// The following events count misses in the last level caches and level 2 TLBs.
 
 // TLB miss cycles for IvyBridge, Haswell, Broadwell and SandyBridge.
 const char kPerfITLBMissCyclesCmdIvyBridge[] =
@@ -139,7 +139,9 @@ const char kPerfITLBMissCyclesCmdAtom[] =
 const char kPerfDTLBMissCyclesCmdAtom[] =
     "perf record -a -e page_walks.d_side_cycles -c 20001";
 
-const char kPerfCacheMissesCmd[] = "perf record -a -e cache-misses -c 12007";
+const char kPerfLLCMissesCmd[] = "perf record -a -e r412e -c 12007";
+// Precise events (request zero skid) for last level cache misses.
+const char kPerfLLCMissesPreciseCmd[] = "perf record -a -e r412e:pp -c 12007";
 
 const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
     const CPUIdentity& cpuid) {
@@ -188,13 +190,26 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
     cmds.push_back(WeightAndValue(15.0, lbr_cmd));
     cmds.push_back(WeightAndValue(5.0, itlb_miss_cycles_cmd));
     cmds.push_back(WeightAndValue(5.0, dtlb_miss_cycles_cmd));
-    cmds.push_back(WeightAndValue(5.0, kPerfCacheMissesCmd));
+    // Only atom family and big Intel cores newer than haswell support precise
+    // events on last level cache misses.
+    if (cpu_uarch != "IvyBridge" && cpu_uarch != "Haswell" &&
+        cpu_uarch != "SandyBridge") {
+      cmds.push_back(WeightAndValue(5.0, kPerfLLCMissesPreciseCmd));
+    } else {
+      cmds.push_back(WeightAndValue(5.0, kPerfLLCMissesCmd));
+    }
     return cmds;
   }
-  // Other 64-bit x86
-  cmds.push_back(WeightAndValue(75.0, kPerfCyclesCmd));
+  // Other 64-bit x86. We collect LLC misses for other Intel CPUs, but not for
+  // non-Intel CPUs such as AMD, since the event code provided for LLC is
+  // Intel specific.
+  if (cpuid.vendor=="GenuineIntel"){
+    cmds.push_back(WeightAndValue(75.0, kPerfCyclesCmd));
+    cmds.push_back(WeightAndValue(5.0, kPerfLLCMissesCmd));
+  } else {
+    cmds.push_back(WeightAndValue(80.0, kPerfCyclesCmd));
+  }
   cmds.push_back(WeightAndValue(20.0, kPerfFPCallgraphCmd));
-  cmds.push_back(WeightAndValue(5.0, kPerfCacheMissesCmd));
   return cmds;
 }
 

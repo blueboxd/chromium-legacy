@@ -33,7 +33,7 @@ void DriveUploaderOnWorker::StartBatchProcessing() {
 void DriveUploaderOnWorker::StopBatchProcessing() {
 }
 
-google_apis::CancelCallback DriveUploaderOnWorker::UploadNewFile(
+google_apis::CancelCallbackOnce DriveUploaderOnWorker::UploadNewFile(
     const std::string& parent_resource_id,
     const base::FilePath& local_file_path,
     const std::string& title,
@@ -51,10 +51,10 @@ google_apis::CancelCallback DriveUploaderOnWorker::UploadNewFile(
           RelayCallbackToTaskRunner(worker_task_runner_.get(), FROM_HERE,
                                     std::move(callback))));
 
-  return google_apis::CancelCallback();
+  return google_apis::CancelCallbackOnce();
 }
 
-google_apis::CancelCallback DriveUploaderOnWorker::UploadExistingFile(
+google_apis::CancelCallbackOnce DriveUploaderOnWorker::UploadExistingFile(
     const std::string& resource_id,
     const base::FilePath& local_file_path,
     const std::string& content_type,
@@ -71,17 +71,17 @@ google_apis::CancelCallback DriveUploaderOnWorker::UploadExistingFile(
           RelayCallbackToTaskRunner(worker_task_runner_.get(), FROM_HERE,
                                     std::move(callback))));
 
-  return google_apis::CancelCallback();
+  return google_apis::CancelCallbackOnce();
 }
 
-google_apis::CancelCallback DriveUploaderOnWorker::ResumeUploadFile(
+google_apis::CancelCallbackOnce DriveUploaderOnWorker::ResumeUploadFile(
     const GURL& upload_location,
     const base::FilePath& local_file_path,
     const std::string& content_type,
     drive::UploadCompletionCallback callback,
     google_apis::ProgressCallback progress_callback) {
   NOTREACHED();
-  return google_apis::CancelCallback();
+  return google_apis::CancelCallbackOnce();
 }
 
 }  // namespace drive_backend

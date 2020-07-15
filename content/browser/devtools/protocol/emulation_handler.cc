@@ -305,11 +305,11 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     params.viewport_offset.SetPoint(viewport.fromJust()->GetX(),
                                     viewport.fromJust()->GetY());
 
-    ScreenInfo screen_info;
-    host_->GetRenderWidgetHost()->GetScreenInfo(&screen_info);
-    double dpfactor = device_scale_factor ? device_scale_factor /
-                                                screen_info.device_scale_factor
-                                          : 1;
+    double dpfactor =
+        device_scale_factor
+            ? device_scale_factor /
+                  host_->GetRenderWidgetHost()->GetDeviceScaleFactor()
+            : 1;
     params.viewport_scale = viewport.fromJust()->GetScale() * dpfactor;
 
     // Resize the RenderWidgetHostView to the size of the overridden viewport.

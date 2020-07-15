@@ -715,8 +715,8 @@ extern const char kHostedAppQuitNotificationDescription[];
 extern const char kHostedAppShimCreationName[];
 extern const char kHostedAppShimCreationDescription[];
 
-extern const char kIgnoreGpuBlacklistName[];
-extern const char kIgnoreGpuBlacklistDescription[];
+extern const char kIgnoreGpuBlocklistName[];
+extern const char kIgnoreGpuBlocklistDescription[];
 
 extern const char kIgnorePreviewsBlocklistName[];
 extern const char kIgnorePreviewsBlocklistDescription[];

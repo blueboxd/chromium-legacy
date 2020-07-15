@@ -25,7 +25,6 @@
 #include "components/grit/components_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "net/base/escape.h"
-#include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"

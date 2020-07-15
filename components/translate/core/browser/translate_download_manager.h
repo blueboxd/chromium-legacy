@@ -12,7 +12,6 @@
 #include "base/sequence_checker.h"
 #include "components/translate/core/browser/translate_language_list.h"
 #include "components/translate/core/browser/translate_script.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace base {

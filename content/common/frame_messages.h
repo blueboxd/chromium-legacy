@@ -36,7 +36,6 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/screen_info.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/three_d_api_types.h"
 #include "content/public/common/untrustworthy_context_menu_params.h"
@@ -245,7 +244,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameNavigateParams)
   IPC_STRUCT_TRAITS_MEMBER(contents_mime_type)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::ScreenInfo)
+IPC_STRUCT_TRAITS_BEGIN(blink::ScreenInfo)
   IPC_STRUCT_TRAITS_MEMBER(device_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(color_space)
   IPC_STRUCT_TRAITS_MEMBER(depth)

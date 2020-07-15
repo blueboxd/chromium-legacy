@@ -42,6 +42,7 @@
 #include "net/socket/connection_attempts.h"
 #include "net/socket/socket_tag.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/referrer_policy.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -83,47 +84,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   typedef URLRequestJob*(ProtocolFactory)(URLRequest* request,
                                           NetworkDelegate* network_delegate,
                                           const std::string& scheme);
-
-  // A ReferrerPolicy for the request can be set with
-  // set_referrer_policy() and controls the contents of the Referer
-  // header when URLRequest follows server redirects. Note that setting
-  // a ReferrerPolicy on the request has no effect on the Referer header
-  // of the initial leg of the request; the caller is responsible for
-  // setting the initial Referer, and the ReferrerPolicy only controls
-  // what happens to the Referer while following redirects.
-  //
-  // NOTE: This enum is persisted to histograms. Do not change or reorder
-  // values.
-  // TODO(~M82): Once the Net.URLRequest.ReferrerPolicyForRequest
-  // metric is retired, remove this notice.
-  enum ReferrerPolicy {
-    // Clear the referrer header if the header value is HTTPS but the request
-    // destination is HTTP. This is the default behavior of URLRequest.
-    CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE = 0,
-    // A slight variant on CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
-    // If the request destination is HTTP, an HTTPS referrer will be cleared. If
-    // the request's destination is cross-origin with the referrer (but does not
-    // downgrade), the referrer's granularity will be stripped down to an origin
-    // rather than a full URL. Same-origin requests will send the full referrer.
-    REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN = 1,
-    // Strip the referrer down to an origin when the origin of the referrer is
-    // different from the destination's origin.
-    ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN = 2,
-    // Never change the referrer.
-    NEVER_CLEAR_REFERRER = 3,
-    // Strip the referrer down to the origin regardless of the redirect
-    // location.
-    ORIGIN = 4,
-    // Clear the referrer when the request's referrer is cross-origin with
-    // the request's destination.
-    CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN = 5,
-    // Strip the referrer down to the origin, but clear it entirely if the
-    // referrer value is HTTPS and the destination is HTTP.
-    ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE = 6,
-    // Always clear the referrer regardless of the request destination.
-    NO_REFERRER = 7,
-    MAX_REFERRER_POLICY = NO_REFERRER
-  };
 
   // First-party URL redirect policy: During server redirects, the first-party
   // URL for cookies normally doesn't change. However, if the request is a

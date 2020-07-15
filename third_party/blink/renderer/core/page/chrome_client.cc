@@ -23,9 +23,9 @@
 
 #include <algorithm>
 
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
-#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"

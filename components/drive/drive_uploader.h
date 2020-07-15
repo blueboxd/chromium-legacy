@@ -79,7 +79,7 @@ class DriveUploaderInterface {
   // progress_callback:
   //   Periodically called back with the total number of bytes sent so far.
   //   May be null if the information is not needed.
-  virtual google_apis::CancelCallback UploadNewFile(
+  virtual google_apis::CancelCallbackOnce UploadNewFile(
       const std::string& parent_resource_id,
       const base::FilePath& local_file_path,
       const std::string& title,
@@ -99,7 +99,7 @@ class DriveUploaderInterface {
   //   Expected ETag for the destination file. If it does not match, the upload
   //   fails with UPLOAD_ERROR_CONFLICT.
   //   If |etag| is empty, the test is skipped.
-  virtual google_apis::CancelCallback UploadExistingFile(
+  virtual google_apis::CancelCallbackOnce UploadExistingFile(
       const std::string& resource_id,
       const base::FilePath& local_file_path,
       const std::string& content_type,
@@ -113,7 +113,7 @@ class DriveUploaderInterface {
   // |content_type| must be set to the same ones for previous invocation.
   //
   // See comments at UploadNewFile about common parameters and the return value.
-  virtual google_apis::CancelCallback ResumeUploadFile(
+  virtual google_apis::CancelCallbackOnce ResumeUploadFile(
       const GURL& upload_location,
       const base::FilePath& local_file_path,
       const std::string& content_type,
@@ -134,7 +134,7 @@ class DriveUploader : public DriveUploaderInterface {
   // DriveUploaderInterface overrides.
   void StartBatchProcessing() override;
   void StopBatchProcessing() override;
-  google_apis::CancelCallback UploadNewFile(
+  google_apis::CancelCallbackOnce UploadNewFile(
       const std::string& parent_resource_id,
       const base::FilePath& local_file_path,
       const std::string& title,
@@ -142,14 +142,14 @@ class DriveUploader : public DriveUploaderInterface {
       const UploadNewFileOptions& options,
       UploadCompletionCallback callback,
       google_apis::ProgressCallback progress_callback) override;
-  google_apis::CancelCallback UploadExistingFile(
+  google_apis::CancelCallbackOnce UploadExistingFile(
       const std::string& resource_id,
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const UploadExistingFileOptions& options,
       UploadCompletionCallback callback,
       google_apis::ProgressCallback progress_callback) override;
-  google_apis::CancelCallback ResumeUploadFile(
+  google_apis::CancelCallbackOnce ResumeUploadFile(
       const GURL& upload_location,
       const base::FilePath& local_file_path,
       const std::string& content_type,
@@ -164,7 +164,7 @@ class DriveUploader : public DriveUploaderInterface {
       StartInitiateUploadCallback;
 
   // Starts uploading a file with |upload_file_info|.
-  google_apis::CancelCallback StartUploadFile(
+  google_apis::CancelCallbackOnce StartUploadFile(
       std::unique_ptr<UploadFileInfo> upload_file_info,
       StartInitiateUploadCallback start_initiate_upload_callback);
   void StartUploadFileAfterGetFileSize(

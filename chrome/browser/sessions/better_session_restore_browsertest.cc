@@ -53,7 +53,6 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
-#include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/test/test_utils.h"
 

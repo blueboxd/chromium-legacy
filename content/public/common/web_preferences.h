@@ -360,6 +360,10 @@ struct CONTENT_EXPORT WebPreferences {
   // forcing :focus-visible to match regardless of focus method).
   bool always_show_focus;
 
+  // Whether touch input can trigger HTML drag-and-drop operations. The
+  // default value depends on the platform.
+  bool touch_drag_drop_enabled;
+
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.

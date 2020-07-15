@@ -208,8 +208,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     if (previous_value) {
       previous_policy.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY,
                           POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                          std::make_unique<base::Value>(previous_value),
-                          nullptr);
+                          base::Value(previous_value), nullptr);
     }
     EXPECT_TRUE(previous_policy.Equals(store_->policy_map()));
     EXPECT_EQ(initial_status, store_->status());

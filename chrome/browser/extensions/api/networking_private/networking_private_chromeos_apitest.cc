@@ -670,8 +670,8 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
   policy::PolicyMap policy;
   policy.Set(policy::key::kOpenNetworkConfiguration,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(kUserPolicyBlob), nullptr);
+             policy::POLICY_SOURCE_CLOUD, base::Value(kUserPolicyBlob),
+             nullptr);
   provider_.UpdateChromePolicy(policy);
 
   content::RunAllPendingInMessageLoop();
@@ -705,8 +705,8 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
   policy::PolicyMap policy;
   policy.Set(policy::key::kOpenNetworkConfiguration,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(kUserPolicyBlob), nullptr);
+             policy::POLICY_SOURCE_CLOUD, base::Value(kUserPolicyBlob),
+             nullptr);
   provider_.UpdateChromePolicy(policy);
 
   content::RunAllPendingInMessageLoop();
@@ -754,8 +754,8 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetManagedProperties) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kOpenNetworkConfiguration,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(kUserPolicyBlob), nullptr);
+             policy::POLICY_SOURCE_CLOUD, base::Value(kUserPolicyBlob),
+             nullptr);
   provider_.UpdateChromePolicy(policy);
 
   content::RunAllPendingInMessageLoop();

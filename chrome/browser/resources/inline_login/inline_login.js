@@ -69,6 +69,7 @@ cr.define('inline.login', function() {
     cr.addWebUIListener('show-back-button', showBackButton);
     cr.addWebUIListener('load-auth-extension', loadAuthExtension);
     cr.addWebUIListener('close-dialog', closeDialog);
+    cr.addWebUIListener('send-lst-fetch-results', sendLSTFetchResults);
 
     authExtHost = new cr.login.Authenticator('signin-frame');
     authExtHost.addEventListener('dropLink', onDropLink);
@@ -155,7 +156,6 @@ cr.define('inline.login', function() {
 
   return {
     closeDialog: closeDialog,
-    sendLSTFetchResults: sendLSTFetchResults,
     getAuthExtHost: getAuthExtHost,
     handleOAuth2TokenFailure: handleOAuth2TokenFailure,
     initialize: initialize,

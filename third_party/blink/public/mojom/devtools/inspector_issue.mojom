@@ -79,6 +79,13 @@ struct ContentSecurityPolicyIssueDetails {
   string violated_directive;
   ContentSecurityPolicyViolationType content_security_policy_violation_type;
   AffectedFrame? frame_ancestor;
+  SourceCodeLocation? source_code_location;
+};
+
+struct SourceCodeLocation {
+  string url;
+  uint32 line_number;
+  uint32 column_number;
 };
 
 enum SameSiteCookieOperation {

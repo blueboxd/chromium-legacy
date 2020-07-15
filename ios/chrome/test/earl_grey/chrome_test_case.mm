@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case_app_interface.h"
@@ -410,6 +411,14 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 + (void)setUpHelper {
   GREYAssertTrue([ChromeEarlGrey isCustomWebKitLoadedIfRequested],
                  @"Unable to load custom WebKit");
+
+  // TODO(crbug.com/1103822): Investigate why this is causing EG2 tests to spin
+  // on iOS14.
+  if (base::ios::IsRunningOnIOS14OrLater()) {
+    [[GREYConfiguration sharedConfiguration]
+            setValue:@0
+        forConfigKey:kGREYConfigKeyDispatchAfterMaxTrackableDelay];
+  }
 
   [[self class] startHTTPServer];
   [[self class] enableMockAuthentication];

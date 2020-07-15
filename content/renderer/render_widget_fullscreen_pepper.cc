@@ -172,7 +172,7 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
     int32_t routing_id,
     RenderWidget::ShowCallback show_callback,
     CompositorDependencies* compositor_deps,
-    const ScreenInfo& screen_info,
+    const blink::ScreenInfo& screen_info,
     PepperPluginInstanceImpl* plugin,
     const blink::WebURL& local_main_frame_url,
     mojo::PendingAssociatedRemote<blink::mojom::WidgetHost> blink_widget_host,

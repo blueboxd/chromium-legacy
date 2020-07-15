@@ -4,7 +4,6 @@
 
 package org.chromium.media;
 
-import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
@@ -669,11 +668,9 @@ class AudioManagerAndroid {
      * peripheral and automatically routes audio playback and capture appropriately on Android5.0
      * and higher in the order of wired headset first, then USB audio device and earpiece at last.
      */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private boolean hasUsbAudio() {
         // Android 5.0 (API level 21) and above supports USB audio class 1 (UAC1) features for
         // audio functions, capture and playback, in host mode.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return false;
 
         boolean hasUsbAudio = false;
         // UsbManager fails internally with NullPointerException on the emulator created without

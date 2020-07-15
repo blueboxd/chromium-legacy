@@ -21,7 +21,6 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
-class Value;
 }  // namespace base
 
 namespace chromeos {
@@ -69,11 +68,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   // Provides the properties of the network with |service_path| to |callback|.
   // |userhash| is used to set the "Source" property. If not provided then
   // user policies will be ignored.
-  virtual void GetProperties(
-      const std::string& userhash,
-      const std::string& service_path,
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+  virtual void GetProperties(const std::string& userhash,
+                             const std::string& service_path,
+                             network_handler::PropertiesCallback callback) = 0;
 
   // Provides the managed properties of the network with |service_path| to
   // |callback|. |userhash| is used to ensure that the user's policy is
@@ -82,8 +79,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   virtual void GetManagedProperties(
       const std::string& userhash,
       const std::string& service_path,
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+      network_handler::PropertiesCallback callback) = 0;
 
   // Sets the user's settings of an already configured network with
   // |service_path|. A network can be initially configured by calling
@@ -93,12 +89,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   virtual void SetProperties(
       const std::string& service_path,
       const base::DictionaryValue& user_settings,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
-
-  virtual void SetManagerProperty(
-      const std::string& property_name,
-      const base::Value& value,
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) = 0;
 

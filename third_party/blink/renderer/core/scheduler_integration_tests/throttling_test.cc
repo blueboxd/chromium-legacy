@@ -125,7 +125,7 @@ class IntensiveWakeUpThrottlingTest : public SimTest {
     constexpr auto kTimeUntilNextCheck = base::TimeDelta::FromSeconds(30);
     platform_->RunForPeriod(kTimeUntilNextCheck);
 
-    // Tasks are not throttled beyond the default backgroynd throttling behavior
+    // Tasks are not throttled beyond the default background throttling behavior
     // nor do they get to run more often.
     Vector<String> expected_ouput(
         kTimeUntilNextCheck / kDefaultThrottledWakeUpInterval,

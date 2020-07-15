@@ -29,6 +29,7 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
+#include "net/url_request/referrer_policy.h"
 #include "url/ipc/url_param_traits.h"
 #include "url/origin.h"
 
@@ -272,8 +273,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(net::SSLClientCertType,
 IPC_ENUM_TRAITS_MAX_VALUE(net::SSLInfo::HandshakeType,
                           net::SSLInfo::HANDSHAKE_FULL)
 
-IPC_ENUM_TRAITS_MAX_VALUE(net::URLRequest::ReferrerPolicy,
-                          net::URLRequest::MAX_REFERRER_POLICY)
+IPC_ENUM_TRAITS_MAX_VALUE(net::ReferrerPolicy, net::ReferrerPolicy::MAX)
 
 IPC_STRUCT_TRAITS_BEGIN(net::HttpRequestHeaders::HeaderKeyValuePair)
   IPC_STRUCT_TRAITS_MEMBER(key)

@@ -140,11 +140,11 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
         frame_widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting(),
         frame_widget.Unbind());
 
-    ScreenInfo screen_info;
+    blink::ScreenInfo screen_info;
     screen_info.rect = gfx::Rect(1, 2, 3, 4);
     view_ = RenderWidgetHostViewChildFrame::Create(widget_host_, screen_info);
     // Test we get the expected ScreenInfo before the FrameDelegate is set.
-    ScreenInfo actual_screen_info;
+    blink::ScreenInfo actual_screen_info;
     view_->GetScreenInfo(&actual_screen_info);
     EXPECT_EQ(screen_info, actual_screen_info);
 
@@ -257,7 +257,7 @@ class RenderWidgetHostViewChildFrameZoomForDSFTest
 // Tests that moving the child around does not affect the physical backing size.
 TEST_F(RenderWidgetHostViewChildFrameZoomForDSFTest,
        CompositorViewportPixelSize) {
-  ScreenInfo screen_info;
+  blink::ScreenInfo screen_info;
   screen_info.device_scale_factor = 2.0f;
   test_frame_connector_->SetScreenInfoForTesting(screen_info);
 
@@ -311,7 +311,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest,
     ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
     WidgetMsg_UpdateVisualProperties::Param params;
     WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-    VisualProperties sent_visual_properties = std::get<0>(params);
+    blink::VisualProperties sent_visual_properties = std::get<0>(params);
 
     EXPECT_EQ(compositor_viewport_pixel_rect,
               sent_visual_properties.compositor_viewport_pixel_rect);

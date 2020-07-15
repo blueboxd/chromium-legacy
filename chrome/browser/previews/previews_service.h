@@ -32,8 +32,6 @@ class PreviewsUIService;
 typedef std::vector<std::unique_ptr<re2::RE2>> RegexpList;
 }  // namespace previews
 
-class PreviewsOfflineHelper;
-
 // Keyed service that owns a previews::PreviewsUIService. PreviewsService lives
 // on the UI thread.
 class PreviewsService : public KeyedService {
@@ -65,10 +63,6 @@ class PreviewsService : public KeyedService {
     return previews_https_notification_infobar_decider_.get();
   }
 
-  PreviewsOfflineHelper* previews_offline_helper() {
-    return previews_offline_helper_.get();
-  }
-
   // Returns the enabled PreviewsTypes with their version.
   static blocklist::BlocklistData::AllowedTypesAndVersions GetAllowedPreviews();
 
@@ -97,9 +91,6 @@ class PreviewsService : public KeyedService {
   // The decider for showing the HTTPS Notification InfoBar.
   std::unique_ptr<PreviewsHTTPSNotificationInfoBarDecider>
       previews_https_notification_infobar_decider_;
-
-  // The offline previews helper.
-  std::unique_ptr<PreviewsOfflineHelper> previews_offline_helper_;
 
   // Guaranteed to outlive |this|.
   content::BrowserContext* browser_context_;

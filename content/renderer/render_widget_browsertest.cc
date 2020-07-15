@@ -5,7 +5,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
-#include "content/common/visual_properties.h"
 #include "content/common/widget_messages.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/test/fake_render_widget_host.h"
@@ -14,6 +13,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
+#include "third_party/blink/public/common/widget/visual_properties.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
@@ -32,7 +32,7 @@ class RenderWidgetTest : public RenderViewTest {
   }
 
   void OnSynchronizeVisualProperties(
-      const VisualProperties& visual_properties) {
+      const blink::VisualProperties& visual_properties) {
     WidgetMsg_UpdateVisualProperties msg(widget()->routing_id(),
                                          visual_properties);
     widget()->OnMessageReceived(msg);
@@ -80,8 +80,8 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
   widget()->DidNavigate(ukm::SourceId(42), GURL(""));
   // The initial bounds is empty, so setting it to the same thing should do
   // nothing.
-  VisualProperties visual_properties;
-  visual_properties.screen_info = ScreenInfo();
+  blink::VisualProperties visual_properties;
+  visual_properties.screen_info = blink::ScreenInfo();
   visual_properties.new_size = gfx::Size();
   visual_properties.compositor_viewport_pixel_rect = gfx::Rect();
   visual_properties.is_fullscreen_granted = false;
@@ -126,8 +126,8 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
 
 class RenderWidgetInitialSizeTest : public RenderWidgetTest {
  protected:
-  VisualProperties InitialVisualProperties() override {
-    VisualProperties initial_visual_properties;
+  blink::VisualProperties InitialVisualProperties() override {
+    blink::VisualProperties initial_visual_properties;
     initial_visual_properties.new_size = initial_size_;
     initial_visual_properties.compositor_viewport_pixel_rect =
         gfx::Rect(initial_size_);
@@ -376,7 +376,7 @@ TEST_F(RenderWidgetTest, PageFocusIme) {
 TEST_F(RenderWidgetTest, ActivePinchGestureUpdatesLayerTreeHost) {
   auto* layer_tree_host = widget()->layer_tree_host();
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
-  content::VisualProperties visual_properties;
+  blink::VisualProperties visual_properties;
 
   // Sync visual properties on a mainframe RenderWidget.
   visual_properties.is_pinch_gesture_active = true;

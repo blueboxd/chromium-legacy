@@ -724,28 +724,27 @@ bool OmniboxViewViews::IsDropCursorForInsertion() const {
 void OmniboxViewViews::SetTextAndSelectedRanges(
     const base::string16& text,
     const std::vector<gfx::Range>& ranges) {
-  // Will try to fit as much of unselected text as possible. If possible,
-  // guarantees at least |pad_left| chars of the unselected text are visible. If
-  // possible given the prior guarantee, also guarantees |pad_right| chars of
-  // the selected text are visible.
-  static const uint32_t kPadRight = 30;
-  static const uint32_t kPadLeft = 10;
+  DCHECK(!ranges.empty());
 
-  SetText(text, ranges[0].end());
-  // Select all the text to prioritize showing unselected text.
-  SetSelectedRange(gfx::Range(ranges[0].start(), 0));
-  // Scroll range right, to ensure |kPadRight| chars of selected text are
-  // shown.
-  SetSelectedRange(
-      gfx::Range(ranges[0].start(),
-                 std::min(ranges[0].end() + kPadRight, ranges[0].start())));
-  // Scroll range left, to ensure |kPadLeft| chars of unselected text are
-  // shown.
-  SetSelectedRange(
-      gfx::Range(ranges[0].start(),
-                 ranges[0].end() - std::min(kPadLeft, ranges[0].end())));
-  // Select the specified ranges.
-  SetSelectedRanges(ranges);
+  // Will try to fit as much of the text preceding the cursor as possible. If
+  // possible, guarantees at least |kPadLeading| chars of the text preceding the
+  // the cursor are visible. If possible given the prior guarantee, also
+  // guarantees |kPadTrailing| chars of the text following the cursor are
+  // visible.
+  static const uint32_t kPadTrailing = 30;
+  static const uint32_t kPadLeading = 10;
+
+  // We use SetTextAndScrollAndSelectRange instead of SetText and
+  // SetSelectedRange in order to avoid triggering accessibility events multiple
+  // times.
+  SetTextAndScrollAndSelectRange(
+      text, ranges[0].end(),
+      {0, std::min<size_t>(ranges[0].end() + kPadTrailing, text.size()),
+       ranges[0].end() - std::min(kPadLeading, ranges[0].end())},
+      ranges[0]);
+  for (size_t i = 1; i < ranges.size(); i++)
+    SetSelectedRange(ranges[i], false);
+
   // Clear the additional text.
   SetAdditionalText(base::string16());
 }

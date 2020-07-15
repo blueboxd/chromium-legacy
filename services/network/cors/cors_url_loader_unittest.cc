@@ -27,7 +27,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request.h"
+#include "net/url_request/referrer_policy.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/cors/cors_url_loader_factory.h"
@@ -146,7 +146,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
 
 class CorsURLLoaderTest : public testing::Test {
  public:
-  using ReferrerPolicy = net::URLRequest::ReferrerPolicy;
+  using ReferrerPolicy = net::ReferrerPolicy;
 
   CorsURLLoaderTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
@@ -333,7 +333,7 @@ class CorsURLLoaderTest : public testing::Test {
       base::StringPiece method,
       const GURL& url,
       base::StringPiece referrer = base::StringPiece(),
-      ReferrerPolicy referrer_policy = net::URLRequest::NO_REFERRER,
+      ReferrerPolicy referrer_policy = net::ReferrerPolicy::NO_REFERRER,
       net::SiteForCookies site_for_cookies = net::SiteForCookies()) {
     net::RedirectInfo redirect_info;
     redirect_info.status_code = status_code;
@@ -1158,7 +1158,7 @@ TEST_F(CorsURLLoaderTest, RedirectInfoShouldBeUsed) {
   request.request_initiator = url::Origin::Create(origin);
   request.referrer = url;
   request.referrer_policy =
-      net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
+      net::ReferrerPolicy::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
   CreateLoaderAndStart(request);
   RunUntilCreateLoaderAndStartCalled();
 
@@ -1166,12 +1166,12 @@ TEST_F(CorsURLLoaderTest, RedirectInfoShouldBeUsed) {
   EXPECT_EQ(url, GetRequest().url);
   EXPECT_EQ("POST", GetRequest().method);
   EXPECT_EQ(url, GetRequest().referrer);
-  EXPECT_EQ(net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
+  EXPECT_EQ(net::ReferrerPolicy::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
             GetRequest().referrer_policy);
 
   NotifyLoaderClientOnReceiveRedirect(CreateRedirectInfo(
       303, "GET", new_url, "https://other.example.com",
-      net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN));
+      net::ReferrerPolicy::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN));
   RunUntilRedirectReceived();
 
   EXPECT_TRUE(IsNetworkLoaderStarted());
@@ -1187,7 +1187,7 @@ TEST_F(CorsURLLoaderTest, RedirectInfoShouldBeUsed) {
   EXPECT_EQ(new_url, GetRequest().url);
   EXPECT_EQ("GET", GetRequest().method);
   EXPECT_EQ(GURL("https://other.example.com"), GetRequest().referrer);
-  EXPECT_EQ(net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
+  EXPECT_EQ(net::ReferrerPolicy::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
             GetRequest().referrer_policy);
 
   NotifyLoaderClientOnReceiveResponse(
@@ -1241,7 +1241,7 @@ TEST_F(CorsURLLoaderTest,
   EXPECT_EQ(url, GetRequest().url);
 
   NotifyLoaderClientOnReceiveRedirect(CreateRedirectInfo(
-      303, "GET", new_url, "" /* referrer */, net::URLRequest::NO_REFERRER,
+      303, "GET", new_url, "" /* referrer */, net::ReferrerPolicy::NO_REFERRER,
       new_url_site_for_cookies));
   RunUntilRedirectReceived();
 

@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
-#include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/loader_factory_for_worker.h"
@@ -200,7 +199,6 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
       v8_cache_options_(v8_cache_options),
       reporting_proxy_(reporting_proxy) {
   GetSecurityContext().SetSecurityOrigin(std::move(origin));
-  Initialize(SecurityContextInit(MakeGarbageCollected<OriginTrialContext>()));
   if (worker_clients_)
     worker_clients_->ReattachThread();
 }

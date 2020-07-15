@@ -6,6 +6,7 @@
       xmlns:tools="http://schemas.android.com/tools"
       package="org.chromium.chrome.tests.support">
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <application>
         <service android:name="org.chromium.chrome.browser.media.TestMediaRouteProviderService"
                 android:label="testMediaRouteProviderService"

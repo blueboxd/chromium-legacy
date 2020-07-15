@@ -11,7 +11,6 @@
 #include "components/offline_pages/core/prefetch/proto/offline_pages.pb.h"
 #include "components/offline_pages/core/prefetch/proto/operation.pb.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 

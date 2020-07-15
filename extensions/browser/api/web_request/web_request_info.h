@@ -22,6 +22,7 @@
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "ipc/ipc_message.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"

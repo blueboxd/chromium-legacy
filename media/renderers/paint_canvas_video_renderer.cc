@@ -38,7 +38,7 @@
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/skia_util.h"
@@ -1642,8 +1642,10 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
       cache_->raster_context_provider = raster_context_provider;
       cache_->coded_size = video_frame->coded_size();
       cache_->visible_rect = video_frame->visible_rect();
-      sk_sp<SkImage> source_subset =
-          source_image->makeSubset(gfx::RectToSkIRect(cache_->visible_rect));
+      GrDirectContext* direct =
+          GrAsDirectContext(raster_context_provider->GrContext());
+      sk_sp<SkImage> source_subset = source_image->makeSubset(
+          gfx::RectToSkIRect(cache_->visible_rect), direct);
       if (source_subset) {
         // We use the flushPendingGrContextIO = true so we can flush any pending
         // GPU work on the GrContext to ensure that skia exectues the work for

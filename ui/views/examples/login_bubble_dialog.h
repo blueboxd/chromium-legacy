@@ -62,7 +62,9 @@ class LoginBubbleDialogExample : public ExampleBase, public ButtonListener {
  private:
   LabelButton* button_ = nullptr;
   Label* username_label_ = nullptr;
+  Label* username_input_ = nullptr;
   Label* password_label_ = nullptr;
+  Label* password_input_ = nullptr;
 };
 
 }  // namespace examples

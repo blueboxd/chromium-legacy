@@ -10,12 +10,12 @@
 
 namespace bluetooth {
 
-class MockBluetoothAdapater : public mojom::Adapter {
+class MockBluetoothAdapter : public mojom::Adapter {
  public:
-  MockBluetoothAdapater();
-  MockBluetoothAdapater(const MockBluetoothAdapater&) = delete;
-  MockBluetoothAdapater& operator=(const MockBluetoothAdapater&) = delete;
-  ~MockBluetoothAdapater() override;
+  MockBluetoothAdapter();
+  MockBluetoothAdapter(const MockBluetoothAdapter&) = delete;
+  MockBluetoothAdapter& operator=(const MockBluetoothAdapter&) = delete;
+  ~MockBluetoothAdapter() override;
 
   // mojom::Adapter
   void ConnectToDevice(const std::string& address,

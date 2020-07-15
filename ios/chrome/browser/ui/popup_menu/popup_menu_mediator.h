@@ -23,6 +23,7 @@ class PrefService;
 class ReadingListModel;
 class TemplateURLService;
 class WebStateList;
+class BrowserPolicyConnectorIOS;
 
 // Mediator for the popup menu. This object is in charge of creating and
 // updating the items of the popup menu.
@@ -30,11 +31,13 @@ class WebStateList;
 
 // Initializes the mediator with a |type| of popup menu, whether it
 // |isIncognito|, a |readingListModel| used to display the badge for the reading
-// list entry, and whether the mediator should |triggerNewIncognitoTabTip|.
+// list entry, whether the mediator should |triggerNewIncognitoTabTip|, and a
+// |browserPolicyConnector| used to check if the browser is managed by policy.
 - (instancetype)initWithType:(PopupMenuType)type
                   isIncognito:(BOOL)isIncognito
              readingListModel:(ReadingListModel*)readingListModel
     triggerNewIncognitoTabTip:(BOOL)triggerNewIncognitoTabTip
+       browserPolicyConnector:(BrowserPolicyConnectorIOS*)browserPolicyConnector
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

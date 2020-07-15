@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/referrer_policy.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/view_android.h"
@@ -214,7 +215,7 @@ void ContextualSearchSceneLayer::FetchThumbnail(
       std::make_unique<BitmapFetcher>(gurl, this, NO_TRAFFIC_ANNOTATION_YET);
   fetcher_->Init(
       std::string(),
-      net::URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
+      net::ReferrerPolicy::REDUCE_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
       network::mojom::CredentialsMode::kInclude);
   fetcher_->Start(loader_factory);
 }

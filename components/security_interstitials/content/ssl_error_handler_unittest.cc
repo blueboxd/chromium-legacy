@@ -45,7 +45,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

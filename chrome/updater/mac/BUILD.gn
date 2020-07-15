@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/apple/tweak_info_plist.gni")
 import("//build/config/mac/rules.gni")
 import("//build/util/version.gni")
 import("//chrome/updater/branding.gni")
@@ -46,8 +47,12 @@ source_set("updater_tests") {
   ]
 }
 
-mac_app_bundle("updater_bundle") {
+tweak_info_plist("updater_plist") {
   info_plist = "Info.plist"
+}
+
+mac_app_bundle("updater_bundle") {
+  info_plist_target = ":updater_plist"
   output_name = updater_product_full_name
   extra_substitutions =
       [ "MAC_BUNDLE_IDENTIFIER=$mac_updater_bundle_identifier" ]

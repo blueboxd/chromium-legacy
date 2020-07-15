@@ -29,12 +29,12 @@ const int kDefaultNetworkListLimit = 1000;
 
 const char kPrivateOnlyError[] = "Requires networkingPrivate API access.";
 
-const char* const kPrivatePropertiesForSet[] = {
+const char* const kPrivatePropertyPathsForSet[] = {
     "Cellular.APN", "ProxySettings", "StaticIPConfig", "VPN.Host",
     "VPN.IPsec",    "VPN.L2TP",      "VPN.OpenVPN",    "VPN.ThirdPartyVPN",
 };
 
-const char* const kPrivatePropertiesForGet[] = {
+const char* const kPrivatePropertyPathsForGet[] = {
     "Cellular.APN",  "Cellular.APNList", "Cellular.LastGoodAPN",
     "Cellular.ESN",  "Cellular.ICCID",   "Cellular.IMEI",
     "Cellular.IMSI", "Cellular.MDN",     "Cellular.MEID",
@@ -66,7 +66,7 @@ enum class PropertiesType { GET, SET };
 // Filters out all properties that are not allowed for the extension in the
 // provided context.
 // Returns list of removed keys.
-std::vector<std::string> FilterProperties(base::DictionaryValue* properties,
+std::vector<std::string> FilterProperties(base::Value* properties,
                                           PropertiesType type,
                                           const Extension* extension,
                                           Feature::Context context,
@@ -77,17 +77,18 @@ std::vector<std::string> FilterProperties(base::DictionaryValue* properties,
   const char* const* filter = nullptr;
   size_t filter_size = 0;
   if (type == PropertiesType::GET) {
-    filter = kPrivatePropertiesForGet;
-    filter_size = base::size(kPrivatePropertiesForGet);
+    filter = kPrivatePropertyPathsForGet;
+    filter_size = base::size(kPrivatePropertyPathsForGet);
   } else {
-    filter = kPrivatePropertiesForSet;
-    filter_size = base::size(kPrivatePropertiesForSet);
+    filter = kPrivatePropertyPathsForSet;
+    filter_size = base::size(kPrivatePropertyPathsForSet);
   }
 
   std::vector<std::string> removed_properties;
   for (size_t i = 0; i < filter_size; ++i) {
-    base::Value property;
-    if (properties->Remove(filter[i], nullptr)) {
+    // networkingPrivate uses sub dictionaries for Shill properties with a
+    // '.' separator, so we use RemovePath here, not RemoveKey.
+    if (properties->RemovePath(filter[i])) {
       removed_properties.push_back(filter[i]);
     }
   }
@@ -156,23 +157,23 @@ NetworkingPrivateGetPropertiesFunction::Run() {
   GetDelegate(browser_context())
       ->GetProperties(
           params->network_guid,
-          base::Bind(&NetworkingPrivateGetPropertiesFunction::Success, this),
-          base::Bind(&NetworkingPrivateGetPropertiesFunction::Failure, this));
+          base::Bind(&NetworkingPrivateGetPropertiesFunction::Result, this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
-void NetworkingPrivateGetPropertiesFunction::Success(
-    std::unique_ptr<base::DictionaryValue> result) {
-  FilterProperties(result.get(), PropertiesType::GET, extension(),
+void NetworkingPrivateGetPropertiesFunction::Result(
+    base::Optional<base::Value> result,
+    base::Optional<std::string> error) {
+  if (!result) {
+    Respond(Error(error.value_or("Failed")));
+    return;
+  }
+  FilterProperties(&result.value(), PropertiesType::GET, extension(),
                    source_context_type(), source_url());
-  Respond(OneArgument(std::move(result)));
-}
-
-void NetworkingPrivateGetPropertiesFunction::Failure(const std::string& error) {
-  Respond(Error(error));
+  Respond(OneArgument(base::Value::ToUniquePtrValue(std::move(*result))));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -191,9 +192,7 @@ NetworkingPrivateGetManagedPropertiesFunction::Run() {
   GetDelegate(browser_context())
       ->GetManagedProperties(
           params->network_guid,
-          base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Success,
-                     this),
-          base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Failure,
+          base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Result,
                      this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
@@ -201,16 +200,16 @@ NetworkingPrivateGetManagedPropertiesFunction::Run() {
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
-void NetworkingPrivateGetManagedPropertiesFunction::Success(
-    std::unique_ptr<base::DictionaryValue> result) {
-  FilterProperties(result.get(), PropertiesType::GET, extension(),
+void NetworkingPrivateGetManagedPropertiesFunction::Result(
+    base::Optional<base::Value> result,
+    base::Optional<std::string> error) {
+  if (!result) {
+    Respond(Error(error.value_or("Failed")));
+    return;
+  }
+  FilterProperties(&result.value(), PropertiesType::GET, extension(),
                    source_context_type(), source_url());
-  Respond(OneArgument(std::move(result)));
-}
-
-void NetworkingPrivateGetManagedPropertiesFunction::Failure(
-    const std::string& error) {
-  Respond(Error(error));
+  Respond(OneArgument(base::Value::ToUniquePtrValue(std::move(*result))));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

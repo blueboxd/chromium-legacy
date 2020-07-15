@@ -113,7 +113,7 @@ void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,
     return;
   }
 
-  if (!profile->entries.RemoveWithoutPathExpansion(entry_path, nullptr)) {
+  if (!profile->entries.RemoveKey(entry_path)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(error_callback),
                                   "Error.InvalidProfileEntry", entry_path));

@@ -30,6 +30,13 @@ source_set("cc") {
     "thumbnail_cache.cc",
     "thumbnail_cache.h",
   ]
+
+  if (is_android) {
+    deps += [
+      "//third_party/android_opengl/etc1",
+      "//ui/android",
+    ]
+  }
 }
 
 source_set("unit_tests") {

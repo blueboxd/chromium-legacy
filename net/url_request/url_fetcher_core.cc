@@ -90,7 +90,7 @@ URLFetcherCore::URLFetcherCore(
       upload_range_offset_(0),
       upload_range_length_(0),
       referrer_policy_(
-          URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
+          ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
       is_chunked_upload_(false),
       was_cancelled_(false),
       stop_on_redirect_(false),
@@ -227,8 +227,7 @@ void URLFetcherCore::SetReferrer(const std::string& referrer) {
   referrer_ = referrer;
 }
 
-void URLFetcherCore::SetReferrerPolicy(
-    URLRequest::ReferrerPolicy referrer_policy) {
+void URLFetcherCore::SetReferrerPolicy(ReferrerPolicy referrer_policy) {
   referrer_policy_ = referrer_policy;
 }
 

@@ -53,7 +53,6 @@ namespace {
 
 // The HTML DOM ID used in Javascript.
 constexpr char kPreviewsAllowedHtmlId[] = "previews-allowed-status";
-constexpr char kOfflinePreviewsHtmlId[] = "offline-preview-status";
 constexpr char kResourceLoadingHintsHtmlId[] = "resource-loading-hints-status";
 constexpr char kDeferAllScriptPreviewsHtmlId[] =
     "defer-all-script-preview-status";
@@ -61,14 +60,12 @@ constexpr char kNoScriptPreviewsHtmlId[] = "noscript-preview-status";
 
 // Descriptions for previews.
 constexpr char kPreviewsAllowedDescription[] = "Previews Allowed";
-constexpr char kOfflineDesciption[] = "Offline Previews";
 constexpr char kResourceLoadingHintsDescription[] =
     "ResourceLoadingHints Previews";
 constexpr char kDeferAllScriptPreviewsDescription[] = "DeferAllScript Previews";
 constexpr char kNoScriptDescription[] = "NoScript Previews";
 
 // The HTML DOM ID used in Javascript.
-constexpr char kOfflinePageFlagHtmlId[] = "offline-page-flag";
 constexpr char kResourceLoadingHintsFlagHtmlId[] =
     "resource-loading-hints-flag";
 constexpr char kDeferAllScriptFlagHtmlId[] = "defer-all-script-flag";
@@ -80,8 +77,6 @@ constexpr char kDataSaverAltConfigHtmlId[] =
     "data-reduction-proxy-server-experiment";
 
 // Links to flags in chrome://flags.
-constexpr char kOfflinePageFlagLink[] =
-    "chrome://flags/#enable-offline-previews";
 constexpr char kResourceLoadingHintsFlagLink[] =
     "chrome://flags/#enable-resource-loading-hints";
 constexpr char kDeferAllScriptFlagLink[] =
@@ -95,7 +90,6 @@ constexpr char kDataSaverAltConfigLink[] =
     "chrome://flags/#enable-data-reduction-proxy-server-experiment";
 
 // Flag features names.
-constexpr char kOfflinePageFeatureName[] = "OfflinePreviews";
 constexpr char kResourceLoadingHintsFeatureName[] = "ResourceLoadingHints";
 constexpr char kDeferAllScriptFeatureName[] = "DeferAllScriptPreviews";
 constexpr char kNoScriptFeatureName[] = "NoScriptPreviews";
@@ -327,7 +321,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetPreviewsEnabledCount) {
   page_handler_->GetPreviewsEnabled(
       base::BindOnce(&MockGetPreviewsEnabledCallback));
 
-  constexpr size_t expected = 5;
+  constexpr size_t expected = 4;
   EXPECT_EQ(expected, passed_in_modes.size());
 }
 
@@ -411,33 +405,6 @@ TEST_F(InterventionsInternalsPageHandlerTest, ResourceLoadingHintsEnabled) {
   EXPECT_TRUE(resource_loading_hints->second->enabled);
 }
 
-TEST_F(InterventionsInternalsPageHandlerTest, OfflinePreviewsDisabled) {
-  // Init with kOfflinePreviews disabled.
-  scoped_feature_list_->InitWithFeatures(
-      {}, {previews::features::kOfflinePreviews});
-
-  page_handler_->GetPreviewsEnabled(
-      base::BindOnce(&MockGetPreviewsEnabledCallback));
-  auto offline_previews = passed_in_modes.find(kOfflinePreviewsHtmlId);
-  ASSERT_NE(passed_in_modes.end(), offline_previews);
-  EXPECT_EQ(kOfflineDesciption, offline_previews->second->description);
-  EXPECT_FALSE(offline_previews->second->enabled);
-}
-
-TEST_F(InterventionsInternalsPageHandlerTest, OfflinePreviewsEnabled) {
-  // Init with kOfflinePreviews enabled.
-  scoped_feature_list_->InitWithFeatures({previews::features::kOfflinePreviews},
-                                         {});
-
-  page_handler_->GetPreviewsEnabled(
-      base::BindOnce(&MockGetPreviewsEnabledCallback));
-  auto offline_previews = passed_in_modes.find(kOfflinePreviewsHtmlId);
-  ASSERT_NE(passed_in_modes.end(), offline_previews);
-  EXPECT_TRUE(offline_previews->second);
-  EXPECT_EQ(kOfflineDesciption, offline_previews->second->description);
-  EXPECT_TRUE(offline_previews->second->enabled);
-}
-
 TEST_F(InterventionsInternalsPageHandlerTest, DeferAllScriptPreviewsDisabled) {
   // Init with kDeferAllScriptPreviews disabled.
   scoped_feature_list_->InitWithFeatures(
@@ -470,7 +437,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsCount) {
   page_handler_->GetPreviewsFlagsDetails(
       base::BindOnce(&MockGetPreviewsFlagsCallback));
 
-  constexpr size_t expected = 8;
+  constexpr size_t expected = 7;
   EXPECT_EQ(expected, passed_in_flags.size());
 }
 
@@ -742,66 +709,6 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsAltConfigCustomDefault) {
       alt_config_flag->second->description);
   EXPECT_EQ(kDefaultFlagValue, alt_config_flag->second->value);
   EXPECT_EQ(kDataSaverAltConfigLink, alt_config_flag->second->link);
-}
-
-#if defined(OS_ANDROID)
-#define TestAndroid(x) x
-#else
-#define TestAndroid(x) DISABLED_##x
-#endif  // OS_ANDROID
-TEST_F(InterventionsInternalsPageHandlerTest,
-       TestAndroid(GetFlagsOfflinePageDefaultValue)) {
-  page_handler_->GetPreviewsFlagsDetails(
-      base::BindOnce(&MockGetPreviewsFlagsCallback));
-  auto offline_page_flag = passed_in_flags.find(kOfflinePageFlagHtmlId);
-
-  ASSERT_NE(passed_in_flags.end(), offline_page_flag);
-#if defined(OS_ANDROID)
-  EXPECT_EQ(flag_descriptions::kEnableOfflinePreviewsName,
-            offline_page_flag->second->description);
-#endif  // OS_ANDROID
-  EXPECT_EQ(kDefaultFlagValue, offline_page_flag->second->value);
-  EXPECT_EQ(kOfflinePageFlagLink, offline_page_flag->second->link);
-}
-
-TEST_F(InterventionsInternalsPageHandlerTest,
-       TestAndroid(GetFlagsOfflinePageEnabled)) {
-  base::test::ScopedCommandLine scoped_command_line;
-  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
-  command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                  kOfflinePageFeatureName);
-
-  page_handler_->GetPreviewsFlagsDetails(
-      base::BindOnce(&MockGetPreviewsFlagsCallback));
-  auto offline_page_flag = passed_in_flags.find(kOfflinePageFlagHtmlId);
-
-  ASSERT_NE(passed_in_flags.end(), offline_page_flag);
-#if defined(OS_ANDROID)
-  EXPECT_EQ(flag_descriptions::kEnableOfflinePreviewsName,
-            offline_page_flag->second->description);
-#endif  // OS_ANDROID
-  EXPECT_EQ(kEnabledFlagValue, offline_page_flag->second->value);
-  EXPECT_EQ(kOfflinePageFlagLink, offline_page_flag->second->link);
-}
-
-TEST_F(InterventionsInternalsPageHandlerTest,
-       TestAndroid(GetFlagsOfflinePageDisabled)) {
-  base::test::ScopedCommandLine scoped_command_line;
-  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
-  command_line->AppendSwitchASCII(switches::kDisableFeatures,
-                                  kOfflinePageFeatureName);
-
-  page_handler_->GetPreviewsFlagsDetails(
-      base::BindOnce(&MockGetPreviewsFlagsCallback));
-  auto offline_page_flag = passed_in_flags.find(kOfflinePageFlagHtmlId);
-
-  ASSERT_NE(passed_in_flags.end(), offline_page_flag);
-#if defined(OS_ANDROID)
-  EXPECT_EQ(flag_descriptions::kEnableOfflinePreviewsName,
-            offline_page_flag->second->description);
-#endif  // OS_ANDROID
-  EXPECT_EQ(kDisabledFlagValue, offline_page_flag->second->value);
-  EXPECT_EQ(kOfflinePageFlagLink, offline_page_flag->second->link);
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest, OnNewMessageLogAddedPostToPage) {

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "extensions/browser/extension_function.h"
 
@@ -43,8 +44,8 @@ class NetworkingPrivateGetPropertiesFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void Success(std::unique_ptr<base::DictionaryValue> result);
-  void Failure(const std::string& error_name);
+  void Result(base::Optional<base::Value> result,
+              base::Optional<std::string> error);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetPropertiesFunction);
 };
@@ -63,8 +64,8 @@ class NetworkingPrivateGetManagedPropertiesFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void Success(std::unique_ptr<base::DictionaryValue> result);
-  void Failure(const std::string& error);
+  void Result(base::Optional<base::Value> result,
+              base::Optional<std::string> error);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetManagedPropertiesFunction);
 };

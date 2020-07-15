@@ -65,7 +65,7 @@
   "force-update-menu-type",
   "fullscreen-viewport-adjustment-experiment",
   "gesture-properties-dbus-service",
-  "ignore-gpu-blacklist",
+  "ignore-gpu-blocklist",
   "ignore-previews-blocklist",
   "in-product-help-demo-mode-choice",
   "instant-tethering",

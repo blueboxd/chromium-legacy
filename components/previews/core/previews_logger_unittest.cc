@@ -118,7 +118,7 @@ class PreviewsLoggerTest : public testing::Test {
       PreviewsEligibilityReason reason,
       bool final_reason) {
     const base::Time time = base::Time::Now();
-    PreviewsType type = PreviewsType::OFFLINE;
+    PreviewsType type = PreviewsType::DEFER_ALL_SCRIPT;
     const GURL url("http://www.url_a.com/url");
     const uint64_t page_id = 1234;
     TestPreviewsLoggerObserver observer;
@@ -152,8 +152,7 @@ class PreviewsLoggerTest : public testing::Test {
 TEST_F(PreviewsLoggerTest, LogPreviewDecisionMadeLogMessage) {
   const base::Time time = base::Time::Now();
 
-  PreviewsType type_a = PreviewsType::OFFLINE;
-  PreviewsType type_b = PreviewsType::LITE_PAGE;
+  PreviewsType type_a = PreviewsType::DEFER_ALL_SCRIPT;
   PreviewsEligibilityReason reason_a =
       PreviewsEligibilityReason::BLOCKLIST_UNAVAILABLE;
   std::vector<PreviewsEligibilityReason> passed_reasons_a = {};
@@ -173,7 +172,7 @@ TEST_F(PreviewsLoggerTest, LogPreviewDecisionMadeLogMessage) {
 
   logger_->LogPreviewDecisionMade(reason_a, url_a, time, type_a,
                                   std::move(passed_reasons_a), page_id_a);
-  logger_->LogPreviewDecisionMade(reason_b, url_b, time, type_b,
+  logger_->LogPreviewDecisionMade(reason_b, url_b, time, type_a,
                                   std::move(passed_reasons_b), page_id_b);
 
   auto actual = observer.messages();
@@ -181,7 +180,7 @@ TEST_F(PreviewsLoggerTest, LogPreviewDecisionMadeLogMessage) {
   EXPECT_EQ(expected_size, actual.size());
 
   std::string expected_description_a =
-      "Offline preview - Blocklist failed to be created";
+      "DeferAllScript preview - Blocklist failed to be created";
   EXPECT_EQ(kPreviewsDecisionMadeEventType, actual[0].event_type);
   EXPECT_EQ(expected_description_a, actual[0].event_description);
   EXPECT_EQ(url_a, actual[0].url);
@@ -189,21 +188,23 @@ TEST_F(PreviewsLoggerTest, LogPreviewDecisionMadeLogMessage) {
   EXPECT_EQ(page_id_a, actual[0].page_id);
 
   std::string expected_passed_0 =
-      "LitePage preview - Network quality available";
+      "DeferAllScript preview - Network quality available";
   EXPECT_EQ(kPreviewsDecisionMadeEventType, actual[1].event_type);
   EXPECT_EQ(expected_passed_0, actual[1].event_description);
   EXPECT_EQ(url_b, actual[1].url);
   EXPECT_EQ(time, actual[1].time);
   EXPECT_EQ(page_id_b, actual[1].page_id);
 
-  std::string expected_passed_1 = "LitePage preview - Page reloads allowed";
+  std::string expected_passed_1 =
+      "DeferAllScript preview - Page reloads allowed";
   EXPECT_EQ(kPreviewsDecisionMadeEventType, actual[2].event_type);
   EXPECT_EQ(expected_passed_1, actual[2].event_description);
   EXPECT_EQ(url_b, actual[2].url);
   EXPECT_EQ(time, actual[2].time);
   EXPECT_EQ(page_id_b, actual[2].page_id);
 
-  std::string expected_description_b = "LitePage preview - Network not slow";
+  std::string expected_description_b =
+      "DeferAllScript preview - Network not slow";
   EXPECT_EQ(kPreviewsDecisionMadeEventType, actual[3].event_type);
   EXPECT_EQ(expected_description_b, actual[3].event_description);
   EXPECT_EQ(url_b, actual[3].url);
@@ -214,8 +215,7 @@ TEST_F(PreviewsLoggerTest, LogPreviewDecisionMadeLogMessage) {
 TEST_F(PreviewsLoggerTest, LogPreviewNavigationLogMessage) {
   const base::Time time = base::Time::Now();
 
-  PreviewsType type_a = PreviewsType::OFFLINE;
-  PreviewsType type_b = PreviewsType::LITE_PAGE;
+  PreviewsType type_a = PreviewsType::DEFER_ALL_SCRIPT;
   const GURL url_a("http://www.url_a.com/url_a");
   const GURL url_b("http://www.url_b.com/url_b");
   const uint64_t page_id_a = 1234;
@@ -226,7 +226,7 @@ TEST_F(PreviewsLoggerTest, LogPreviewNavigationLogMessage) {
 
   logger_->LogPreviewNavigation(url_a, type_a, true /* opt_out */, time,
                                 page_id_a);
-  logger_->LogPreviewNavigation(url_b, type_b, false /* opt_out */, time,
+  logger_->LogPreviewNavigation(url_b, type_a, false /* opt_out */, time,
                                 page_id_b);
 
   auto actual = observer.messages();
@@ -234,14 +234,16 @@ TEST_F(PreviewsLoggerTest, LogPreviewNavigationLogMessage) {
   const size_t expected_size = 2;
   EXPECT_EQ(expected_size, actual.size());
 
-  std::string expected_description_a = "Offline preview - user opt-out: True";
+  std::string expected_description_a =
+      "DeferAllScript preview - user opt-out: True";
   EXPECT_EQ(kPreviewsNavigationEventType, actual[0].event_type);
   EXPECT_EQ(expected_description_a, actual[0].event_description);
   EXPECT_EQ(url_a, actual[0].url);
   EXPECT_EQ(time, actual[0].time);
   EXPECT_EQ(page_id_a, actual[0].page_id);
 
-  std::string expected_description_b = "LitePage preview - user opt-out: False";
+  std::string expected_description_b =
+      "DeferAllScript preview - user opt-out: False";
   EXPECT_EQ(kPreviewsNavigationEventType, actual[1].event_type);
   EXPECT_EQ(expected_description_b, actual[1].event_description);
   EXPECT_EQ(url_b, actual[1].url);
@@ -250,7 +252,7 @@ TEST_F(PreviewsLoggerTest, LogPreviewNavigationLogMessage) {
 }
 
 TEST_F(PreviewsLoggerTest, PreviewsLoggerOnlyKeepsCertainNumberOfDecisionLogs) {
-  PreviewsType type = PreviewsType::OFFLINE;
+  PreviewsType type = PreviewsType::DEFER_ALL_SCRIPT;
   PreviewsEligibilityReason reason =
       PreviewsEligibilityReason::BLOCKLIST_UNAVAILABLE;
   const base::Time time = base::Time::Now();
@@ -270,7 +272,7 @@ TEST_F(PreviewsLoggerTest, PreviewsLoggerOnlyKeepsCertainNumberOfDecisionLogs) {
 
 TEST_F(PreviewsLoggerTest,
        PreviewsLoggerOnlyKeepsCertainNumberOfNavigationLogs) {
-  PreviewsType type = PreviewsType::OFFLINE;
+  PreviewsType type = PreviewsType::DEFER_ALL_SCRIPT;
   const GURL url("http://www.url_.com/url_");
   const base::Time time = base::Time::Now();
   const uint64_t page_id = 1234;
@@ -291,7 +293,7 @@ TEST_F(PreviewsLoggerTest,
                       GURL("http://www.url_.com/url_"), base::Time::Now(),
                       1234 /* page_id */);
 
-  PreviewsType type = PreviewsType::OFFLINE;
+  PreviewsType type = PreviewsType::DEFER_ALL_SCRIPT;
   PreviewsEligibilityReason final_reason =
       PreviewsEligibilityReason::BLOCKLIST_UNAVAILABLE;
   std::vector<PreviewsEligibilityReason> passed_reasons = {

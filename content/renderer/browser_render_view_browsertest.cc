@@ -35,8 +35,6 @@
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_url_error.h"

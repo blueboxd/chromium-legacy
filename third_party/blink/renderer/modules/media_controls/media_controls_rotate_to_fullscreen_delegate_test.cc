@@ -72,7 +72,7 @@ class MockChromeClient : public EmptyChromeClient {
     Fullscreen::DidExitFullscreen(*frame.GetDocument());
   }
 
-  MOCK_CONST_METHOD1(GetScreenInfo, WebScreenInfo(LocalFrame&));
+  MOCK_CONST_METHOD1(GetScreenInfo, ScreenInfo(LocalFrame&));
 };
 
 class StubLocalFrameClient : public EmptyLocalFrameClient {
@@ -190,7 +190,7 @@ void MediaControlsRotateToFullscreenDelegateTest::InitScreenAndVideo(
     gfx::Size video_size,
     bool with_device_orientation /* = true */) {
   // Set initial screen orientation (called by `Attach` during `AppendChild`).
-  WebScreenInfo screen_info;
+  ScreenInfo screen_info;
   screen_info.orientation_type = initial_screen_orientation;
   EXPECT_CALL(GetChromeClient(), GetScreenInfo(_))
       .Times(AtLeast(1))
@@ -227,7 +227,7 @@ void MediaControlsRotateToFullscreenDelegateTest::PlayVideo() {
 
 void MediaControlsRotateToFullscreenDelegateTest::RotateTo(
     mojom::blink::ScreenOrientation new_screen_orientation) {
-  WebScreenInfo screen_info;
+  ScreenInfo screen_info;
   screen_info.orientation_type = new_screen_orientation;
   testing::Mock::VerifyAndClearExpectations(&GetChromeClient());
   EXPECT_CALL(GetChromeClient(), GetScreenInfo(_))

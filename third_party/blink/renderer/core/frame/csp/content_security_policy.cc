@@ -1147,7 +1147,7 @@ void ContentSecurityPolicy::ReportViolation(
   if (delegate_)
     delegate_->DispatchViolationEvent(*violation_data, element);
 
-  ReportContentSecurityPolicyIssue(blocked_url, directive_text, violation_type,
+  ReportContentSecurityPolicyIssue(*violation_data, violation_type,
                                    context_frame);
 }
 
@@ -1423,13 +1423,15 @@ ContentSecurityPolicy::BuildCSPViolationType(
 }
 
 void ContentSecurityPolicy::ReportContentSecurityPolicyIssue(
-    const KURL& blocked_url,
-    String violated_directive,
+    const blink::SecurityPolicyViolationEventInit& violation_data,
     ContentSecurityPolicyViolationType violation_type,
     LocalFrame* frame_ancestor) {
   auto cspDetails = mojom::blink::ContentSecurityPolicyIssueDetails::New();
-  cspDetails->blocked_url = blocked_url;
-  cspDetails->violated_directive = violated_directive;
+  if (violation_type == ContentSecurityPolicyViolationType::kURLViolation ||
+      violation_data.violatedDirective() == "frame-ancestors") {
+    cspDetails->blocked_url = KURL(violation_data.blockedURI());
+  }
+  cspDetails->violated_directive = violation_data.violatedDirective();
   cspDetails->content_security_policy_violation_type =
       BuildCSPViolationType(violation_type);
   if (frame_ancestor) {
@@ -1437,6 +1439,14 @@ void ContentSecurityPolicy::ReportContentSecurityPolicyIssue(
     affected_frame->frame_id =
         frame_ancestor->GetDevToolsFrameToken().ToString().c_str();
     cspDetails->frame_ancestor = std::move(affected_frame);
+  }
+  if (violation_data.sourceFile() && violation_data.lineNumber()) {
+    auto source_code_location = mojom::blink::SourceCodeLocation::New();
+    source_code_location->url = violation_data.sourceFile();
+    // The frontend expects 0-based line numbers.
+    source_code_location->line_number = violation_data.lineNumber() - 1;
+    source_code_location->column_number = violation_data.columnNumber();
+    cspDetails->source_code_location = std::move(source_code_location);
   }
 
   auto details = mojom::blink::InspectorIssueDetails::New();

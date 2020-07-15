@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/modules/sensor/sensor_proxy.h"
 
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"

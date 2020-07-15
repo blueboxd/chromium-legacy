@@ -44,7 +44,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_request.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 #if defined(OS_ANDROID)

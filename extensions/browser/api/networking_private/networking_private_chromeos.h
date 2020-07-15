@@ -10,11 +10,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "base/values.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace content {
 class BrowserContext;
@@ -32,11 +30,9 @@ class NetworkingPrivateChromeOS : public NetworkingPrivateDelegate {
 
   // NetworkingPrivateApi
   void GetProperties(const std::string& guid,
-                     const DictionaryCallback& success_callback,
-                     const FailureCallback& failure_callback) override;
+                     PropertiesCallback callback) override;
   void GetManagedProperties(const std::string& guid,
-                            const DictionaryCallback& success_callback,
-                            const FailureCallback& failure_callback) override;
+                            PropertiesCallback callback) override;
   void GetState(const std::string& guid,
                 const DictionaryCallback& success_callback,
                 const FailureCallback& failure_callback) override;
@@ -101,15 +97,15 @@ class NetworkingPrivateChromeOS : public NetworkingPrivateDelegate {
   // |dictionary| and appends any networkingPrivate API specific properties,
   // then calls |callback| with the result.
   void GetPropertiesCallback(const std::string& guid,
-                             bool managed,
-                             const DictionaryCallback& callback,
+                             PropertiesCallback callback,
                              const std::string& service_path,
-                             const base::DictionaryValue& dictionary);
+                             base::Optional<base::Value> dictionary,
+                             base::Optional<std::string> error);
 
   // Populate ThirdPartyVPN.ProviderName with the provider name for third-party
   // VPNs. The provider name needs to be looked up from the list of extensions
   // which is not available to the chromeos/network module.
-  void AppendThirdPartyProviderName(base::DictionaryValue* dictionary);
+  void AppendThirdPartyProviderName(base::Value* dictionary);
 
   content::BrowserContext* browser_context_;
   base::WeakPtrFactory<NetworkingPrivateChromeOS> weak_ptr_factory_{this};

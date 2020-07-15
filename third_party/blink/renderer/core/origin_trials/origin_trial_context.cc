@@ -131,17 +131,13 @@ std::ostream& operator<<(std::ostream& stream, OriginTrialTokenStatus status) {
 
 }  // namespace
 
-OriginTrialContext::OriginTrialContext()
-    : OriginTrialContext(TrialTokenValidator::Policy()
-                             ? std::make_unique<TrialTokenValidator>()
-                             : nullptr) {}
+OriginTrialContext::OriginTrialContext(ExecutionContext* context)
+    : trial_token_validator_(std::make_unique<TrialTokenValidator>()),
+      context_(context) {}
 
-OriginTrialContext::OriginTrialContext(
-    std::unique_ptr<TrialTokenValidator> validator)
-    : trial_token_validator_(std::move(validator)) {}
-
-void OriginTrialContext::BindExecutionContext(ExecutionContext* context) {
-  context_ = context;
+void OriginTrialContext::SetTrialTokenValidatorForTesting(
+    std::unique_ptr<TrialTokenValidator> validator) {
+  trial_token_validator_ = std::move(validator);
 }
 
 // static
@@ -267,19 +263,13 @@ void OriginTrialContext::AddTokenInternal(const String& token,
 }
 
 void OriginTrialContext::AddTokens(const Vector<String>& tokens) {
-  AddTokens(tokens, GetSecurityOrigin(), IsSecureContext());
-}
-
-void OriginTrialContext::AddTokens(const Vector<String>& tokens,
-                                   const SecurityOrigin* origin,
-                                   bool is_secure) {
   if (tokens.IsEmpty())
     return;
   bool found_valid = false;
   for (const String& token : tokens) {
     if (!token.IsEmpty()) {
       tokens_.push_back(token);
-      if (EnableTrialFromToken(origin, is_secure, token))
+      if (EnableTrialFromToken(GetSecurityOrigin(), IsSecureContext(), token))
         found_valid = true;
     }
   }
@@ -304,7 +294,11 @@ void OriginTrialContext::InitializePendingFeatures() {
   if (!enabled_features_.size() && !navigation_activated_features_.size())
     return;
   auto* window = DynamicTo<LocalDOMWindow>(context_.Get());
-  if (!window)
+  // Normally, LocalDOMWindow::document() doesn't need to be null-checked.
+  // However, this is a rare function that can get called between when the
+  // LocalDOMWindow is constructed and the Document is installed. We are not
+  // ready for script in that case, so bail out.
+  if (!window || !window->document())
     return;
   LocalFrame* frame = window->GetFrame();
   if (!frame)

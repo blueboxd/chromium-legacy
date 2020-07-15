@@ -25,6 +25,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/referrer_policy.h"
 #include "net/url_request/url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
@@ -114,7 +115,7 @@ class TestURLFetcher : public URLFetcher {
   int GetLoadFlags() const override;
   void SetAllowCredentials(bool allow_credentials) override {}
   void SetReferrer(const std::string& referrer) override;
-  void SetReferrerPolicy(URLRequest::ReferrerPolicy referrer_policy) override;
+  void SetReferrerPolicy(ReferrerPolicy referrer_policy) override;
   void SetExtraRequestHeaders(
       const std::string& extra_request_headers) override;
   void AddExtraRequestHeader(const std::string& header_line) override;

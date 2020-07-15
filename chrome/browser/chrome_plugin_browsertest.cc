@@ -44,45 +44,6 @@
 #include "ui/aura/window_tree_host.h"
 #endif
 
-namespace {
-
-class CallbackBarrier : public base::RefCountedThreadSafe<CallbackBarrier> {
- public:
-  explicit CallbackBarrier(const base::Closure& target_callback)
-      : target_callback_(target_callback),
-        outstanding_callbacks_(0),
-        did_enable_(true) {
-  }
-
-  base::Callback<void(bool)> CreateCallback() {
-    outstanding_callbacks_++;
-    return base::Bind(&CallbackBarrier::MayRunTargetCallback, this);
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<CallbackBarrier>;
-
-  ~CallbackBarrier() {
-    EXPECT_TRUE(target_callback_.is_null());
-  }
-
-  void MayRunTargetCallback(bool did_enable) {
-    EXPECT_GT(outstanding_callbacks_, 0);
-    did_enable_ = did_enable_ && did_enable;
-    if (--outstanding_callbacks_ == 0) {
-      EXPECT_TRUE(did_enable_);
-      target_callback_.Run();
-      target_callback_.Reset();
-    }
-  }
-
-  base::Closure target_callback_;
-  int outstanding_callbacks_;
-  bool did_enable_;
-};
-
-}  // namespace
-
 class ChromePluginTest : public InProcessBrowserTest {
  protected:
   ChromePluginTest() {}

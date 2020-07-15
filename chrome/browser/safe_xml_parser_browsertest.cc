@@ -53,7 +53,7 @@ class SafeXmlParserTest : public InProcessBrowserTest {
   }
 
  private:
-  void XmlParsingDone(base::Closure quit_loop_closure,
+  void XmlParsingDone(base::OnceClosure quit_loop_closure,
                       std::unique_ptr<base::Value> expected_value,
                       data_decoder::DataDecoder::ValueOrError result) {
     base::ScopedClosureRunner runner(std::move(quit_loop_closure));
@@ -78,4 +78,3 @@ IN_PROC_BROWSER_TEST_F(SafeXmlParserTest, Parse) {
   TestParse("[\"this is JSON not XML\"]", "");
   TestParse(kTestXml, kTestJson);
 }
-

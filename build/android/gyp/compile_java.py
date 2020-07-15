@@ -5,6 +5,7 @@
 # found in the LICENSE file.
 
 import distutils.spawn
+import functools
 import logging
 import multiprocessing
 import optparse
@@ -235,28 +236,14 @@ def ProcessJavacOutput(output):
   return '\n'.join(map(ApplyColors, filter(ApplyFilters, output.split('\n'))))
 
 
-def _ExtractClassFiles(jar_path, dest_dir, java_files):
-  """Extracts all .class files not corresponding to |java_files|."""
-  # Two challenges exist here:
-  # 1. |java_files| have prefixes that are not represented in the the jar paths.
-  # 2. A single .java file results in multiple .class files when it contains
-  #    nested classes.
-  # Here's an example:
-  #   source path: ../../base/android/java/src/org/chromium/Foo.java
-  #   jar paths: org/chromium/Foo.class, org/chromium/Foo$Inner.class
-  # To extract only .class files not related to the given .java files, we strip
-  # off ".class" and "$*.class" and use a substring match against java_files.
-  def extract_predicate(path):
-    if not path.endswith('.class'):
-      return False
-    path_without_suffix = re.sub(r'(?:\$|\.)[^/]*class$', '', path)
-    partial_java_path = path_without_suffix + '.java'
-    return not any(p.endswith(partial_java_path) for p in java_files)
+def CheckErrorproneStderrWarning(jar_path, expected_warning_regex,
+                                 javac_output):
+  if not re.search(expected_warning_regex, javac_output):
+    raise Exception('Expected `{}` warning when compiling `{}`'.format(
+        expected_warning_regex, os.path.basename(jar_path)))
 
-  logging.info('Extracting class files from %s', jar_path)
-  build_utils.ExtractAll(jar_path, path=dest_dir, predicate=extract_predicate)
-  for path in build_utils.FindInDirectory(dest_dir, '*.class'):
-    shutil.copystat(jar_path, path)
+  # Do not print warning
+  return ''
 
 
 def _ParsePackageAndClassNames(java_file):
@@ -378,16 +365,19 @@ class _InfoFileContext(object):
     logging.info('Completed info file: %s', output_path)
 
 
-def _CreateJarFile(jar_path, provider_configurations, additional_jar_files,
-                   classes_dir):
+def _CreateJarFile(jar_path, service_provider_configuration_dir,
+                   additional_jar_files, classes_dir):
   logging.info('Start creating jar file: %s', jar_path)
   with build_utils.AtomicOutput(jar_path) as f:
     with zipfile.ZipFile(f.name, 'w') as z:
       build_utils.ZipDir(z, classes_dir)
-      if provider_configurations:
-        for config in provider_configurations:
-          zip_path = 'META-INF/services/' + os.path.basename(config)
-          build_utils.AddToZipHermetic(z, zip_path, src_path=config)
+      if service_provider_configuration_dir:
+        config_files = build_utils.FindInDirectory(
+            service_provider_configuration_dir)
+        for config_file in config_files:
+          zip_path = os.path.relpath(config_file,
+                                     service_provider_configuration_dir)
+          build_utils.AddToZipHermetic(z, zip_path, src_path=config_file)
 
       if additional_jar_files:
         for src_path, zip_path in additional_jar_files:
@@ -442,6 +432,8 @@ def _RunCompiler(options, javac_cmd, java_files, classpath, jar_path,
   try:
     classes_dir = os.path.join(temp_dir, 'classes')
     transitive_classes = os.path.join(temp_dir, 'transitive_classes')
+    service_provider_configuration = os.path.join(
+        temp_dir, 'service_provider_configuration')
 
     if save_outputs:
       input_srcjars_dir = os.path.join(options.generated_dir, 'input_srcjars')
@@ -486,6 +478,14 @@ def _RunCompiler(options, javac_cmd, java_files, classpath, jar_path,
                                  pattern='META-INF*.class')
       # Specifying the root directory is required, see:
       # https://docs.oracle.com/javase/8/docs/technotes/tools/findingclasses.html#userclass
+
+      # Extract META-INF/services/* so that it can be copied into the output
+      # .jar
+      build_utils.ExtractAll(options.header_jar,
+                             no_clobber=True,
+                             path=service_provider_configuration,
+                             pattern='META-INF/services/*')
+
       classpath.append(
           os.path.join(transitive_classes, 'META-INF', 'TRANSITIVE'))
       logging.info('Done extracting transitive classes')
@@ -514,13 +514,22 @@ def _RunCompiler(options, javac_cmd, java_files, classpath, jar_path,
         f.write(' '.join(java_files))
       cmd += ['@' + java_files_rsp_path]
 
+
+      # |errorprone_expected_warning_regex| is used in tests for errorprone
+      # warnings. Fail compile if expected warning is not present.
+      stderr_filter = ProcessJavacOutput
+      if (options.enable_errorprone
+          and options.errorprone_expected_warning_regex):
+        stderr_filter = functools.partial(
+            CheckErrorproneStderrWarning, options.jar_path,
+            options.errorprone_expected_warning_regex)
+
       logging.debug('Build command %s', cmd)
       start = time.time()
-      build_utils.CheckOutput(
-          cmd,
-          print_stdout=options.chromium_code,
-          stdout_filter=ProcessJavacOutput,
-          stderr_filter=ProcessJavacOutput)
+      build_utils.CheckOutput(cmd,
+                              print_stdout=options.chromium_code,
+                              stdout_filter=ProcessJavacOutput,
+                              stderr_filter=stderr_filter)
       end = time.time() - start
       logging.info('Java compilation took %ss', end)
 
@@ -531,7 +540,7 @@ def _RunCompiler(options, javac_cmd, java_files, classpath, jar_path,
         if annotation_processor_java_files:
           info_file_context.SubmitFiles(annotation_processor_java_files)
 
-      _CreateJarFile(jar_path, options.provider_configurations,
+      _CreateJarFile(jar_path, service_provider_configuration,
                      options.additional_jar_files, classes_dir)
 
       info_file_context.Commit(jar_path + '.info')
@@ -581,12 +590,6 @@ def _ParseOptions(argv):
       action='append',
       help='key=value arguments for the annotation processors.')
   parser.add_option(
-      '--provider-configuration',
-      dest='provider_configurations',
-      action='append',
-      help='File to specify a service provider. Will be included '
-      'in the jar under META-INF/services.')
-  parser.add_option(
       '--additional-jar-file',
       dest='additional_jar_files',
       action='append',
@@ -609,6 +612,10 @@ def _ParseOptions(argv):
       '--enable-errorprone',
       action='store_true',
       help='Enable errorprone checks')
+  parser.add_option(
+      '--errorprone-expected-warning-regex',
+      help='When set, throws an exception if the errorprone compile does not '
+      'log a warning which matches the regex.')
   parser.add_option(
       '--warnings-as-errors',
       action='store_true',

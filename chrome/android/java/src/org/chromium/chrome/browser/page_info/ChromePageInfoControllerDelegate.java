@@ -158,8 +158,6 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
                             // because the entire TextView will be clickable.
                             new NoUnderlineClickableSpan(mContext.getResources(), (view) -> {})));
             viewParams.previewLoadOriginalMessage = loadOriginalSpan;
-
-            viewParams.previewStaleTimestamp = bridge.getStalePreviewTimestamp(mWebContents);
         }
     }
 

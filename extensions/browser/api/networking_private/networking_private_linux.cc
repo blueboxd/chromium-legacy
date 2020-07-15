@@ -132,6 +132,20 @@ void GetCachedNetworkPropertiesCallback(
   success_callback.Run(std::move(properties));
 }
 
+// Fires the appropriate callback when the network properties are returned
+// from the |dbus_thread_|.
+void GetCachedNetworkPropertiesResultCallback(
+    std::unique_ptr<std::string> error,
+    std::unique_ptr<base::DictionaryValue> properties,
+    NetworkingPrivateDelegate::PropertiesCallback callback) {
+  if (!error->empty()) {
+    LOG(ERROR) << "GetCachedNetworkProperties failed: " << *error;
+    std::move(callback).Run(base::nullopt, *error);
+    return;
+  }
+  std::move(callback).Run(std::move(*properties), base::nullopt);
+}
+
 }  // namespace
 
 NetworkingPrivateLinux::NetworkingPrivateLinux()
@@ -189,18 +203,38 @@ bool NetworkingPrivateLinux::CheckNetworkManagerSupported(
   return true;
 }
 
-void NetworkingPrivateLinux::GetProperties(
-    const std::string& guid,
-    const DictionaryCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  GetState(guid, success_callback, failure_callback);
+void NetworkingPrivateLinux::GetProperties(const std::string& guid,
+                                           PropertiesCallback callback) {
+  if (!network_manager_proxy_) {
+    LOG(WARNING) << "NetworkManager over DBus is not supported";
+    std::move(callback).Run(base::nullopt,
+                            extensions::networking_private::kErrorNotSupported);
+    return;
+  }
+
+  std::unique_ptr<std::string> error(new std::string);
+  std::unique_ptr<base::DictionaryValue> network_properties(
+      new base::DictionaryValue);
+
+  // Runs GetCachedNetworkProperties on |dbus_thread|.
+  std::string* error_ptr = error.get();
+  base::DictionaryValue* network_prop_ptr = network_properties.get();
+  dbus_thread_.task_runner()->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&NetworkingPrivateLinux::GetCachedNetworkProperties,
+                     base::Unretained(this), guid,
+                     base::Unretained(network_prop_ptr),
+                     base::Unretained(error_ptr)),
+      base::BindOnce(&GetCachedNetworkPropertiesResultCallback,
+                     base::Passed(&error), base::Passed(&network_properties),
+                     std::move(callback)));
 }
 
-void NetworkingPrivateLinux::GetManagedProperties(
-    const std::string& guid,
-    const DictionaryCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ReportNotSupported("GetManagedProperties", failure_callback);
+void NetworkingPrivateLinux::GetManagedProperties(const std::string& guid,
+                                                  PropertiesCallback callback) {
+  LOG(WARNING) << "GetManagedProperties is not supported";
+  std::move(callback).Run(base::nullopt,
+                          extensions::networking_private::kErrorNotSupported);
 }
 
 void NetworkingPrivateLinux::GetState(

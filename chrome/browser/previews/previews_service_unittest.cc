@@ -33,34 +33,6 @@ class PreviewsServiceTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(PreviewsServiceTest, TestOfflineFieldTrialNotSet) {
-  blocklist::BlocklistData::AllowedTypesAndVersions allowed_types_and_versions =
-      PreviewsService::GetAllowedPreviews();
-  EXPECT_EQ(allowed_types_and_versions.find(
-                static_cast<int>(previews::PreviewsType::OFFLINE)),
-            allowed_types_and_versions.end());
-}
-
-TEST_F(PreviewsServiceTest, TestOfflineFeatureDisabled) {
-  blocklist::BlocklistData::AllowedTypesAndVersions allowed_types_and_versions =
-      PreviewsService::GetAllowedPreviews();
-  EXPECT_EQ(allowed_types_and_versions.find(
-                static_cast<int>(previews::PreviewsType::OFFLINE)),
-            allowed_types_and_versions.end());
-}
-
-TEST_F(PreviewsServiceTest, TestLitePageNotEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {previews::features::kPreviews} /* enabled features */,
-      {} /* disabled features */);
-  blocklist::BlocklistData::AllowedTypesAndVersions allowed_types_and_versions =
-      PreviewsService::GetAllowedPreviews();
-  EXPECT_EQ(allowed_types_and_versions.find(
-                static_cast<int>(previews::PreviewsType::LITE_PAGE)),
-            allowed_types_and_versions.end());
-}
-
 TEST_F(PreviewsServiceTest, TestNoScriptPreviewsEnabledByFeature) {
 #if !defined(OS_ANDROID)
   // For non-android, default is disabled.

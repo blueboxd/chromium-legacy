@@ -17,7 +17,7 @@
 #include "net/base/request_priority.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/http/http_request_headers.h"
-#include "net/url_request/url_request.h"
+#include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/optional_trust_token_params.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
@@ -73,8 +73,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   base::Optional<url::Origin> request_initiator;
   base::Optional<url::Origin> isolated_world_origin;
   GURL referrer;
-  net::URLRequest::ReferrerPolicy referrer_policy =
-      net::URLRequest::NEVER_CLEAR_REFERRER;
+  net::ReferrerPolicy referrer_policy = net::ReferrerPolicy::NEVER_CLEAR;
   net::HttpRequestHeaders headers;
   net::HttpRequestHeaders cors_exempt_headers;
   int load_flags = 0;
@@ -123,7 +122,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
 
 // This does not accept |kDefault| referrer policy.
 COMPONENT_EXPORT(NETWORK_CPP_BASE)
-net::URLRequest::ReferrerPolicy ReferrerPolicyForUrlRequest(
+net::ReferrerPolicy ReferrerPolicyForUrlRequest(
     mojom::ReferrerPolicy referrer_policy);
 
 }  // namespace network

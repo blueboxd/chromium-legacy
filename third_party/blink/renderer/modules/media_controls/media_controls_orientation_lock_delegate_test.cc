@@ -133,7 +133,7 @@ class MockChromeClientForOrientationLockDelegate final
         WTF::Bind(DidExitFullscreen, WrapPersistent(frame.GetDocument())));
   }
 
-  MOCK_CONST_METHOD1(GetScreenInfo, WebScreenInfo(LocalFrame&));
+  MOCK_CONST_METHOD1(GetScreenInfo, ScreenInfo(LocalFrame&));
 
   MockScreenOrientation& ScreenOrientationClient() {
     return mock_screen_orientation_;
@@ -365,7 +365,7 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
   // Calls must be wrapped in ASSERT_NO_FATAL_FAILURE.
   void RotateScreenTo(mojom::blink::ScreenOrientation screen_orientation_type,
                       uint16_t screen_orientation_angle) {
-    WebScreenInfo screen_info;
+    ScreenInfo screen_info;
     screen_info.orientation_type = screen_orientation_type;
     screen_info.orientation_angle = screen_orientation_angle;
     screen_info.rect = ScreenRectFromAngle(screen_orientation_angle);
@@ -587,7 +587,7 @@ TEST_F(MediaControlsOrientationLockDelegateTest, ComputeOrientationLock) {
             ComputeOrientationLock());
 
   // 100x100 has more subtilities, it depends on the current screen orientation.
-  WebScreenInfo screen_info;
+  ScreenInfo screen_info;
   screen_info.orientation_type = mojom::blink::ScreenOrientation::kUndefined;
   EXPECT_CALL(ChromeClient(), GetScreenInfo(_))
       .Times(1)

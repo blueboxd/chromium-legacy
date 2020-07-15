@@ -252,6 +252,27 @@ TEST_F(StorageTest, WriteIntoNewStorageAndUpload) {
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
 
+TEST_F(StorageTest, WriteIntoNewStorageAndFlush) {
+  CreateStorageTestOrDie(BuildStorageOptions());
+  WriteStringOrDie(MANUAL_BATCH, blobs[0]);
+  WriteStringOrDie(MANUAL_BATCH, blobs[1]);
+  WriteStringOrDie(MANUAL_BATCH, blobs[2]);
+
+  // Set uploader expectations.
+  EXPECT_CALL(set_mock_uploader_expectations_,
+              Call(Eq(MANUAL_BATCH), NotNull()))
+      .WillOnce(
+          Invoke([](Priority priority, MockUploadClient* mock_upload_client) {
+            MockUploadClient::SetUp(priority, mock_upload_client)
+                .Required(blobs[0])
+                .Required(blobs[1])
+                .Required(blobs[2]);
+          }));
+
+  // Trigger upload.
+  EXPECT_OK(storage_->Flush(MANUAL_BATCH));
+}
+
 TEST_F(StorageTest, WriteAndRepeatedlyUploadWithConfirmations) {
   CreateStorageTestOrDie(BuildStorageOptions());
 

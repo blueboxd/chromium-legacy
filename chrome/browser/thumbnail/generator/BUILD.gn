@@ -49,6 +49,8 @@ source_set("generator") {
         "android/thumbnail_media_parser_impl.cc",
         "android/thumbnail_media_parser_impl.h",
       ]
+
+      deps += [ "//services/viz/public/cpp/gpu" ]
     } else {
       sources += [
         "android/noop_thumbnail_media_parser.cc",
@@ -58,6 +60,7 @@ source_set("generator") {
 
     deps += [
       ":jni_headers",
+      "//media/mojo/clients",
       "//third_party/android_opengl/etc1",
     ]
   }

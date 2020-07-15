@@ -17,7 +17,7 @@ sys.path.insert(1, TOOLS_PERF_PATH)
 
 from core.external_modules import pandas
 
-RUNS_USED_FOR_LIMIT_UPDATE = 30
+RUNS_USED_FOR_LIMIT_UPDATE = 50
 CHANGE_PERCENTAGE_LIMIT = 0.01
 
 SWARMING_PATH = os.path.join(CHROMIUM_PATH, 'tools', 'luci-go', 'swarming')
@@ -72,8 +72,14 @@ def FetchItemData(task_id, benchmark, index, temp_dir):
 
   try:
     df = pandas.read_csv(result_file_path)
-    df = df.loc[df['name'] == 'frame_times']
-    df = df[['stories', 'avg', 'ci_095']]
+    df_frame_times = df.loc[df['name'] == 'frame_times']
+    df_frame_times = df_frame_times[['stories', 'avg', 'ci_095']]
+
+    df_cpu_wall = df.loc[df['name'] == 'cpu_wall_time_ratio']
+    df_cpu_wall = df_cpu_wall[['stories', 'avg']]
+    df_cpu_wall = df_cpu_wall.rename(columns={'avg': 'cpu_wall_time_ratio'})
+
+    df = pandas.merge(df_frame_times, df_cpu_wall, on='stories')
     df['index'] = index
     return df
   except:
@@ -115,21 +121,22 @@ def GetPercentileValues(benchmark, tags, limit, percentile):
     upper_limit = avg_df.quantile(percentile, axis = 1)
     ci_df = data_frame.pivot(index='stories', columns='index', values='ci_095')
     upper_limit_ci = ci_df.quantile(percentile, axis = 1)
+    cpu_wall_df = data_frame.pivot(index='stories',
+                                   columns='index',
+                                   values='cpu_wall_time_ratio')
+    upper_limit_cpu_wall = cpu_wall_df.quantile(1 - percentile, axis=1)
+
     results = {}
     for index in avg_df.index:
       results[index] = {
-        'avg': round(upper_limit[index], 3),
-        'ci_095': round(upper_limit_ci[index], 3)
+          'avg': round(upper_limit[index], 3),
+          'ci_095': round(upper_limit_ci[index], 3),
+          'cpu_wall_time_ratio': round(upper_limit_cpu_wall[index], 3)
       }
     return results
 
 
 def MeasureNewUpperLimit(old_value, new_value, att_name, max_change):
-  # There has been an improvement.
-  if new_value < old_value:
-    # Decrease the limit gradually in case of improvements.
-    new_value = (old_value + new_value) / 2.0
-
   change_pct = 0.0
   if old_value > 0:
     change_pct = (new_value - old_value) / old_value
@@ -188,8 +195,19 @@ def RecalculateUpperLimits(data_point_count):
           results[platform][story]['ci_095'], 'CI', max_change)
         results[platform][story]['ci_095'] = new_ci
 
+        new_cpu_ratio, max_change = MeasureNewUpperLimit(
+            current_upper_limits[platform][story]['cpu_wall_time_ratio'],
+            results[platform][story]['cpu_wall_time_ratio'],
+            'CPU_wall_time_ratio', max_change)
+        results[platform][story]['cpu_wall_time_ratio'] = new_cpu_ratio
+
         if current_upper_limits[platform][story].get('control', False):
           results[platform][story]['control'] = True
+        if current_upper_limits[platform][story].get('experimental', False):
+          results[platform][story]['experimental'] = True
+        comment = current_upper_limits[platform][story].get('_comment', False)
+        if not comment == False:
+          results[platform][story]['_comment'] = comment
 
   if max_change > CHANGE_PERCENTAGE_LIMIT:
     with open(

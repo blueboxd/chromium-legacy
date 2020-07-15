@@ -41702,6 +41702,7 @@ from previous Chrome versions.
   <int value="189777537" label="DisableInitialMostVisitedFadeIn:enabled"/>
   <int value="191737931" label="enable-mark-http-as"/>
   <int value="192167036" label="LogJsConsoleMessages:disabled"/>
+  <int value="192320180" label="ignore-gpu-blocklist"/>
   <int value="194573877" label="MacViewsNativeDialogs:disabled"/>
   <int value="194895489" label="passive-listeners-default"/>
   <int value="195335115" label="AudioWorkletRealtimeThread:disabled"/>

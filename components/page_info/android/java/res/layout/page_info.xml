@@ -86,13 +86,6 @@
             android:visibility="gone" />
 
         <TextView
-            android:id="@+id/page_info_stale_preview_timestamp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.TextSmall.Secondary"
-            android:visibility="gone" />
-
-        <TextView
             android:id="@+id/page_info_preview_load_original"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

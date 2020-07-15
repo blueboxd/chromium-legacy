@@ -35,7 +35,6 @@
 #include "content/common/content_to_visible_time_reporter.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/public/common/drop_data.h"
-#include "content/public/common/screen_info.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_widget_delegate.h"
 #include "content/renderer/render_widget_mouse_lock_dispatcher.h"
@@ -48,6 +47,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
@@ -70,6 +70,7 @@ class SyncMessageFilter;
 }
 
 namespace blink {
+struct VisualProperties;
 struct WebDeviceEmulationParams;
 class WebDragData;
 class WebFrameWidget;
@@ -98,7 +99,6 @@ class RenderFrameProxy;
 class RenderViewImpl;
 class RenderWidgetDelegate;
 class RenderWidgetScreenMetricsEmulator;
-struct VisualProperties;
 
 // RenderWidget provides a communication bridge between a WebWidget and
 // a RenderWidgetHost, the latter of which lives in a different process.
@@ -178,25 +178,25 @@ class CONTENT_EXPORT RenderWidget
   void InitForPopup(ShowCallback show_callback,
                     RenderWidget* opener_widget,
                     blink::WebPagePopup* web_page_popup,
-                    const ScreenInfo& screen_info);
+                    const blink::ScreenInfo& screen_info);
 
   // Initialize a new RenderWidget for pepper fullscreen. The |show_callback| is
   // called when RenderWidget::Show() happens.
   void InitForPepperFullscreen(ShowCallback show_callback,
                                blink::WebWidget* web_widget,
-                               const ScreenInfo& screen_info);
+                               const blink::ScreenInfo& screen_info);
 
   // Initialize a new RenderWidget that will be attached to a RenderFrame (via
   // the WebFrameWidget), for a frame that is a main frame.
   void InitForMainFrame(ShowCallback show_callback,
                         blink::WebFrameWidget* web_frame_widget,
-                        const ScreenInfo& screen_info);
+                        const blink::ScreenInfo& screen_info);
 
   // Initialize a new RenderWidget that will be attached to a RenderFrame (via
   // the WebFrameWidget), for a frame that is a local root, but not the main
   // frame.
   void InitForChildLocalRoot(blink::WebFrameWidget* web_frame_widget,
-                             const ScreenInfo& screen_info);
+                             const blink::ScreenInfo& screen_info);
 
   // Sets a delegate to handle certain RenderWidget operations that need an
   // escape to the RenderView.
@@ -258,7 +258,7 @@ class CONTENT_EXPORT RenderWidget
   void SetScreenMetricsEmulationParameters(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override;
-  void SetScreenInfoAndSize(const ScreenInfo& screen_info,
+  void SetScreenInfoAndSize(const blink::ScreenInfo& screen_info,
                             const gfx::Size& widget_size,
                             const gfx::Size& visible_viewport_size) override;
   void SetScreenRects(const gfx::Rect& widget_screen_rect,
@@ -269,7 +269,7 @@ class CONTENT_EXPORT RenderWidget
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
   void ClosePopupWidgetSoon() override;
   void Show(blink::WebNavigationPolicy) override;
-  blink::WebScreenInfo GetScreenInfo() override;
+  blink::ScreenInfo GetScreenInfo() override;
   blink::WebRect WindowRect() override;
   blink::WebRect ViewRect() override;
   void SetWindowRect(const blink::WebRect&) override;
@@ -362,7 +362,7 @@ class CONTENT_EXPORT RenderWidget
   }
 
   // When emulated, this returns the original (non-emulated) ScreenInfo.
-  const ScreenInfo& GetOriginalScreenInfo() const;
+  const blink::ScreenInfo& GetOriginalScreenInfo() const;
 
   void DidNavigate(ukm::SourceId source_id, const GURL& url);
 
@@ -429,10 +429,10 @@ class CONTENT_EXPORT RenderWidget
 
   void Initialize(ShowCallback show_callback,
                   blink::WebWidget* web_widget,
-                  const ScreenInfo& screen_info);
+                  const blink::ScreenInfo& screen_info);
   // Initializes the compositor and dependent systems, as part of the
   // Initialize() process.
-  void InitCompositing(const ScreenInfo& screen_info);
+  void InitCompositing(const blink::ScreenInfo& screen_info);
 
   // Request the window to close from the renderer by sending the request to the
   // browser.
@@ -459,7 +459,7 @@ class CONTENT_EXPORT RenderWidget
 
   // RenderWidget IPC message handlers.
   void OnClose();
-  void OnUpdateVisualProperties(const VisualProperties& properties);
+  void OnUpdateVisualProperties(const blink::VisualProperties& properties);
   void OnCreatingNewAck();
   void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);
   void OnDisableDeviceEmulation();
@@ -531,7 +531,7 @@ class CONTENT_EXPORT RenderWidget
   void UpdateSurfaceAndScreenInfo(
       const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
       const gfx::Rect& compositor_viewport_pixel_rect,
-      const ScreenInfo& new_screen_info);
+      const blink::ScreenInfo& new_screen_info);
 
   // Used to force the size of a window when running web tests.
   void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
@@ -661,7 +661,7 @@ class CONTENT_EXPORT RenderWidget
   // Properties of the screen hosting the RenderWidget. Rects in this structure
   // do not include any scaling by device scale factor, so are logical pixels
   // not physical device pixels.
-  ScreenInfo screen_info_;
+  blink::ScreenInfo screen_info_;
   // The screen rects of the view and the window that contains it. These do not
   // include any scaling by device scale factor, so are logical pixels not
   // physical device pixels.

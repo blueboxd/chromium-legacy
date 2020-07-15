@@ -44,12 +44,12 @@
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/page/web_drag_operation.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-forward.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/platform/web_touch_action.h"
 #include "third_party/blink/public/web/web_meaningful_layout.h"
@@ -108,7 +108,7 @@ class WebWidgetClient {
 
   // Returns information about the screen where this view's widgets are being
   // displayed.
-  virtual WebScreenInfo GetScreenInfo() { return {}; }
+  virtual ScreenInfo GetScreenInfo() { return {}; }
 
   // Called to get/set the position of the widget's window in screen
   // coordinates. Note, the window includes any decorations such as borders,

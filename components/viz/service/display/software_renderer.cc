@@ -4,6 +4,10 @@
 
 #include "components/viz/service/display/software_renderer.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/process/memory.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
@@ -834,7 +838,8 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
       return nullptr;
     // Crop the source image to the backdrop_filter_bounds.
     sk_sp<SkImage> cropped_image = SkImage::MakeFromBitmap(backdrop_bitmap);
-    cropped_image = cropped_image->makeSubset(RectToSkIRect(filter_clip));
+    cropped_image =
+        cropped_image->makeSubset(RectToSkIRect(filter_clip), nullptr);
     cropped_image->asLegacyBitmap(&backdrop_bitmap);
     image_offset = filter_clip.origin();
   }

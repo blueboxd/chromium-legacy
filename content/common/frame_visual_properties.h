@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "content/common/content_export.h"
-#include "content/public/common/screen_info.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -28,7 +28,7 @@ struct CONTENT_EXPORT FrameVisualProperties {
   // renderer process up to the RenderWidgetHost for a child RenderWidget in
   // another renderer process. That RenderWidgetHost would then be responsible
   // for passing it along to the child RenderWidget.
-  ScreenInfo screen_info;
+  blink::ScreenInfo screen_info;
   bool auto_resize_enabled = false;
   bool is_pinch_gesture_active = false;
   uint32_t capture_sequence_number = 0u;

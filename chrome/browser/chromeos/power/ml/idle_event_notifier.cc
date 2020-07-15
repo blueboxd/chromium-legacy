@@ -19,6 +19,7 @@ namespace ml {
 
 using TimeSinceBoot = base::TimeDelta;
 
+// static
 constexpr base::TimeDelta IdleEventNotifier::kIdleDelay;
 constexpr base::TimeDelta IdleEventNotifier::kUserInputEventsDuration;
 constexpr int IdleEventNotifier::kNumUserInputEventsBuckets;

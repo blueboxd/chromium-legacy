@@ -46,7 +46,6 @@
 #include "components/offline_pages/core/stub_offline_page_model.h"
 #include "components/version_info/channel.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

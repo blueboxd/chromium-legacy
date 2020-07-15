@@ -37,11 +37,6 @@ class PreviewsDecider {
                                    content::NavigationHandle* navigation_handle,
                                    PreviewsType type) const = 0;
 
-  // Whether there may be commit-time preview guidance available for the URL
-  // associated with |navigation_handle|.
-  virtual bool AreCommitTimePreviewsAvailable(
-      content::NavigationHandle* navigation_handle) = 0;
-
  protected:
   PreviewsDecider() {}
   virtual ~PreviewsDecider() {}

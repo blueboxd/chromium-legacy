@@ -42,27 +42,18 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   void AddObserver(NetworkPolicyObserver* observer) override;
   void RemoveObserver(NetworkPolicyObserver* observer) override;
 
-  void GetProperties(
-      const std::string& userhash,
-      const std::string& service_path,
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback) override;
+  void GetProperties(const std::string& userhash,
+                     const std::string& service_path,
+                     network_handler::PropertiesCallback callback) override;
 
   void GetManagedProperties(
       const std::string& userhash,
       const std::string& service_path,
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback) override;
+      network_handler::PropertiesCallback callback) override;
 
   void SetProperties(
       const std::string& service_path,
       const base::DictionaryValue& user_settings,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
-
-  void SetManagerProperty(
-      const std::string& property_name,
-      const base::Value& value,
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) override;
 
@@ -182,29 +173,24 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   // Note: Requesting Device properties requires an additional fetch and
   // additional copying of data, so we only do it for Cellular networks which
   // contain a lot of necessary state in the associated Device object.
-  void GetPropertiesCallback(
-      PropertiesType properties_type,
-      const std::string& userhash,
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback,
-      const std::string& service_path,
-      base::Optional<base::Value> shill_properties);
+  void GetPropertiesCallback(PropertiesType properties_type,
+                             const std::string& userhash,
+                             network_handler::PropertiesCallback callback,
+                             const std::string& service_path,
+                             base::Optional<base::Value> shill_properties);
 
-  void OnGetDeviceProperties(
-      PropertiesType properties_type,
-      const std::string& userhash,
-      const std::string& service_path,
-      network_handler::DictionaryResultCallback callback,
-      const network_handler::ErrorCallback& error_callback,
-      base::Optional<base::Value> network_properties,
-      const std::string& device_path,
-      base::Optional<base::Value> device_properties);
+  void OnGetDeviceProperties(PropertiesType properties_type,
+                             const std::string& userhash,
+                             const std::string& service_path,
+                             network_handler::PropertiesCallback callback,
+                             base::Optional<base::Value> network_properties,
+                             const std::string& device_path,
+                             base::Optional<base::Value> device_properties);
 
   void SendProperties(PropertiesType properties_type,
                       const std::string& userhash,
                       const std::string& service_path,
-                      network_handler::DictionaryResultCallback callback,
-                      const network_handler::ErrorCallback& error_callback,
+                      network_handler::PropertiesCallback callback,
                       base::Optional<base::Value> shill_properties);
 
   // Called from SetProperties, calls NCH::SetShillProperties.

@@ -120,9 +120,9 @@ bool IsDownloadAllowedBySafeBrowsing(
   return false;
 }
 
-void InterpretSafeBrowsingVerdict(const base::Callback<void(bool)>& recipient,
+void InterpretSafeBrowsingVerdict(base::OnceCallback<void(bool)> recipient,
                                   safe_browsing::DownloadCheckResult result) {
-  recipient.Run(IsDownloadAllowedBySafeBrowsing(result));
+  std::move(recipient).Run(IsDownloadAllowedBySafeBrowsing(result));
 }
 
 #endif
@@ -634,8 +634,8 @@ void FileSelectHelper::CheckDownloadRequestWithSafeBrowsing(
       alternate_extensions, profile_,
       base::BindOnce(
           &InterpretSafeBrowsingVerdict,
-          base::Bind(&FileSelectHelper::ProceedWithSafeBrowsingVerdict, this,
-                     default_file_path, base::Passed(&params))));
+          base::BindOnce(&FileSelectHelper::ProceedWithSafeBrowsingVerdict,
+                         this, default_file_path, base::Passed(&params))));
 #endif
 }
 

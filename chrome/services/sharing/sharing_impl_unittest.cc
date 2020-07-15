@@ -121,7 +121,7 @@ TEST_F(SharingImplTest, ClosesPeerConnection) {
 }
 
 TEST_F(SharingImplTest, NearbyConnections_Create) {
-  bluetooth::MockBluetoothAdapater bluetooth_adapter;
+  bluetooth::MockBluetoothAdapter bluetooth_adapter;
   sharing::MockWebRtcSignalingMessenger webrtc_signaling_messenger;
   mojo::Remote<NearbyConnectionsMojom> connections = CreateNearbyConnections(
       bluetooth_adapter.adapter.BindNewPipeAndPassRemote(),
@@ -131,7 +131,7 @@ TEST_F(SharingImplTest, NearbyConnections_Create) {
 }
 
 TEST_F(SharingImplTest, NearbyConnections_CreateMultiple) {
-  bluetooth::MockBluetoothAdapater bluetooth_adapter_1;
+  bluetooth::MockBluetoothAdapter bluetooth_adapter_1;
   sharing::MockWebRtcSignalingMessenger webrtc_signaling_messenger_1;
   mojo::Remote<NearbyConnectionsMojom> connections_1 = CreateNearbyConnections(
       bluetooth_adapter_1.adapter.BindNewPipeAndPassRemote(),
@@ -139,7 +139,7 @@ TEST_F(SharingImplTest, NearbyConnections_CreateMultiple) {
   EXPECT_TRUE(connections_1.is_connected());
 
   // Calling CreateNearbyConnections() again should disconnect the old instance.
-  bluetooth::MockBluetoothAdapater bluetooth_adapter_2;
+  bluetooth::MockBluetoothAdapter bluetooth_adapter_2;
   sharing::MockWebRtcSignalingMessenger webrtc_signaling_messenger_2;
   mojo::Remote<NearbyConnectionsMojom> connections_2 = CreateNearbyConnections(
       bluetooth_adapter_2.adapter.BindNewPipeAndPassRemote(),
@@ -153,7 +153,7 @@ TEST_F(SharingImplTest, NearbyConnections_CreateMultiple) {
 }
 
 TEST_F(SharingImplTest, NearbyConnections_BluetoothDisconnects) {
-  bluetooth::MockBluetoothAdapater bluetooth_adapter;
+  bluetooth::MockBluetoothAdapter bluetooth_adapter;
   sharing::MockWebRtcSignalingMessenger webrtc_signaling_messenger;
   mojo::Remote<NearbyConnectionsMojom> connections = CreateNearbyConnections(
       bluetooth_adapter.adapter.BindNewPipeAndPassRemote(),
@@ -171,7 +171,7 @@ TEST_F(SharingImplTest, NearbyConnections_BluetoothDisconnects) {
 }
 
 TEST_F(SharingImplTest, NearbyConnections_WebRtcSignalingMessengerDisconnects) {
-  bluetooth::MockBluetoothAdapater bluetooth_adapter;
+  bluetooth::MockBluetoothAdapter bluetooth_adapter;
   sharing::MockWebRtcSignalingMessenger webrtc_signaling_messenger;
   mojo::Remote<NearbyConnectionsMojom> connections = CreateNearbyConnections(
       bluetooth_adapter.adapter.BindNewPipeAndPassRemote(),

@@ -299,11 +299,13 @@ main() {
   # The app directory, product name, etc. can all be gotten from the
   # installed_app_path.
   readonly APP_DIR="$(basename "${installed_app_path}")"
-  readonly PRODUCT_NAME="${APP_DIR%.*}"
-  readonly FRAMEWORK_NAME="${PRODUCT_NAME} Framework"
-  readonly FRAMEWORK_DIR="${FRAMEWORK_NAME}.framework"
   readonly CONTENTS_DIR="Contents"
   readonly APP_PLIST="${CONTENTS_DIR}/Info"
+  readonly BUNDLE_NAME_KEY="CFBundleDisplayName"
+  readonly PRODUCT_NAME=\
+"$(infoplist_read ${APP_DIR}/${APP_PLIST} ${BUNDLE_NAME_KEY})"
+  readonly FRAMEWORK_NAME="${PRODUCT_NAME} Framework"
+  readonly FRAMEWORK_DIR="${FRAMEWORK_NAME}.framework"
   readonly VERSIONS_DIR_NEW=\
 "${CONTENTS_DIR}/Frameworks/${FRAMEWORK_DIR}/Versions"
   readonly APP_VERSION_KEY="CFBundleShortVersionString"

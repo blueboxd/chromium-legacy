@@ -72,7 +72,7 @@ message BackgroundFetchOptions {
     // https://w3c.github.io/manifest/#purpose-member
     enum Purpose {
       ANY = 1;
-      BADGE = 2;
+      MONOCHROME = 2;
       MASKABLE = 3;
     }
 

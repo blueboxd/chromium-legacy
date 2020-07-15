@@ -133,8 +133,8 @@ class ShapeOutsideInfo final {
   const Shape& ComputedShape() const;
 
  protected:
-  ShapeOutsideInfo(const LayoutBox& layout_box)
-      : layout_box_(layout_box), is_computing_shape_(false) {}
+  explicit ShapeOutsideInfo(const LayoutBox& layout_box)
+      : layout_box_(&layout_box), is_computing_shape_(false) {}
 
  private:
   static bool IsEnabledFor(const LayoutBox&);
@@ -153,7 +153,7 @@ class ShapeOutsideInfo final {
     return static_info_map;
   }
 
-  const LayoutBox& layout_box_;
+  const LayoutBox* const layout_box_;
   mutable std::unique_ptr<Shape> shape_;
   LayoutSize reference_box_logical_size_;
   LayoutUnit percentage_resolution_inline_size_;

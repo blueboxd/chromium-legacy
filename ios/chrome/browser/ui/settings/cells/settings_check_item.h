@@ -29,17 +29,21 @@
 // The image to display on the trailing side of |text| (required). If this image
 // should be tinted to match the text color (e.g. in dark mode), the provided
 // image should have rendering mode UIImageRenderingModeAlwaysTemplate. Don't
-// set image with |isIndicatorHidden| as only either image or
-// |activityIndicator| will be shown.
+// set image with |isIndicatorHidden| equal to false as image won't be shown
+// in that case.
 @property(nonatomic, strong) UIImage* trailingImage;
 
 // Tint color for |trailingImage|.
 @property(nonatomic, copy) UIColor* trailingImageTintColor;
 
-// Controls visibility of |activityIndicator|, if set true |imageView| will be
-// hidden and activity indicator will be shown. In case both image is provided
-// and this property set to false, only |activityIndicator| will be shown.
+// Controls visibility of |activityIndicator|, if set false |trailingImage| or
+// |infoButton| will be hidden and |activityIndicator| will be shown. This
+// property has the highest priority.
 @property(nonatomic, assign, getter=isIndicatorHidden) BOOL indicatorHidden;
+
+// Controls visibility of |infoButton|. This property has no effect in case
+// |trailingImage| is provided or |indicatorHidden| is false.
+@property(nonatomic, assign, getter=isInfoButtonHidden) BOOL infoButtonHidden;
 
 // Disabled cell are automatically drawn with dimmed text and without
 // |trailingImage| or |activityIndicator|.

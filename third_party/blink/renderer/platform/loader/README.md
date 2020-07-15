@@ -15,6 +15,10 @@ Contains files for low-level loading APIs.  The `PLATFORM_EXPORT` macro is
 needed to use them from `core/`.  Otherwise they can be used only in
 `platform/`.
 
+The directory conceptually implements https://fetch.spec.whatwg.org/#fetching
+(with lower-level components such as the network service). See also: [slides
+describing the relationship with the fetch spec](https://docs.google.com/presentation/d/1r9KHuYbNlgqQ6UABAMiWz0ONTpSTnMaDJ8UeYZGWjls/)
+
 ## testing
 
 Contains helper files for testing that are available in both

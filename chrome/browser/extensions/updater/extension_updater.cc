@@ -476,8 +476,7 @@ void ExtensionUpdater::OnExtensionDownloadFailed(
       break;
     case Error::MANIFEST_INVALID:
       DCHECK(data.manifest_invalid_error);
-      install_stage_tracker->ReportManifestInvalidFailure(
-          id, data.manifest_invalid_error.value());
+      install_stage_tracker->ReportManifestInvalidFailure(id, data);
       break;
     case Error::NO_UPDATE_AVAILABLE:
       install_stage_tracker->ReportFailure(

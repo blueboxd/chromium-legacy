@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_visitor.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 
 namespace blink {
 
@@ -190,15 +191,16 @@ class HTMLTreeBuilder::CharacterTokenBuffer {
     if (length == start - end_)  // It's all whitespace.
       return String(characters_->Substring(start, start - end_));
 
-    StringBuilder result;
-    result.ReserveCapacity(length);
+    // All HTML spaces are ASCII.
+    StringBuffer<LChar> result(length);
+    unsigned j = 0;
     for (unsigned i = start; i < end_; ++i) {
       UChar c = (*characters_)[i];
-      if (IsHTMLSpace<UChar>(c))
-        result.Append(c);
+      if (IsHTMLSpace(c))
+        result[j++] = static_cast<LChar>(c);
     }
-
-    return result.ToString();
+    DCHECK_EQ(j, length);
+    return String::Adopt(result);
   }
 
  private:

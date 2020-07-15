@@ -189,13 +189,17 @@ using chrome_test_util::SettingsDoneButton;
 //
 // Corresponds to IncognitoPlusRegularCheck in //chrome/browser/metrics/
 // ukm_browsertest.cc.
-// TODO(crbug.com/1033726): This test is flaky on iOS 12 and 13.
-- (void)DISABLED_testIncognitoPlusRegular {
+- (void)testIncognitoPlusRegular {
   const uint64_t originalClientID = [MetricsAppInterface UKMClientID];
-  [ChromeEarlGrey closeAllTabs];
-  [ChromeEarlGrey waitForMainTabCount:0];
 
+  // TODO(crbug.com/640977): Due to continuous animations, it is not feasible
+  // to close the regular tab that is already open. The functions closeAllTabs,
+  // closeCurrentTab, and closeAllTabsInCurrentMode close the tab and then hang.
+  //
+  // As a workaround, we open an incognito tab and then close the regular tab to
+  // get to a state in which a single incognito tab is open.
   [self openNewIncognitoTab];
+  [ChromeEarlGrey closeAllNormalTabs];
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
              @"Failed to assert that UKM was not enabled.");
 
@@ -205,7 +209,6 @@ using chrome_test_util::SettingsDoneButton;
              @"Failed to assert that UKM was not enabled.");
 
   [ChromeEarlGrey closeAllIncognitoTabs];
-  [ChromeEarlGrey waitForIncognitoTabCount:0];
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:YES],
              @"Failed to assert that UKM was enabled.");
 

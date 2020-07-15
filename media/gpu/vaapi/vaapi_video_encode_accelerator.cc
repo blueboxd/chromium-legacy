@@ -277,8 +277,8 @@ bool VaapiVideoEncodeAccelerator::Initialize(const Config& config,
 
   VLOGF(2) << "Initializing VAVEA, " << config.AsHumanReadableString();
 
-  // VaapiVEA doesn't support temporal layers but we let it pass here to support
-  // simulcast.
+  // VaapiVEA supports temporal layers for VP9 only, but we also allow VP8 to
+  // support VP8 simulcast.
   if (config.HasSpatialLayer()) {
     VLOGF(1) << "Spatial layer encoding is supported";
     return false;
@@ -618,8 +618,9 @@ void VaapiVideoEncodeAccelerator::ReturnBitstreamBuffer(
   scoped_buffer.RunAndReset();
 
   child_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&Client::BitstreamBufferReady, client_,
-                                buffer->id, encode_job->Metadata(data_size)));
+      FROM_HERE,
+      base::BindOnce(&Client::BitstreamBufferReady, client_, buffer->id,
+                     encoder_->GetMetadata(encode_job.get(), data_size)));
 }
 
 void VaapiVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,

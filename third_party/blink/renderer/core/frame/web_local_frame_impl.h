@@ -404,6 +404,10 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   void CreateFrameView();
 
+  // Sometimes Blink makes Page/Frame for internal purposes like for SVGImage
+  // (see comments in third_party/blink/renderer/core/page/page.h). In that
+  // case, such frames are not associated with a WebLocalFrame(Impl).
+  // So note that FromFrame may return nullptr even for non-null frames.
   static WebLocalFrameImpl* FromFrame(LocalFrame*);
   static WebLocalFrameImpl* FromFrame(LocalFrame&);
 

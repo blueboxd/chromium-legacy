@@ -92,13 +92,23 @@ ASSERT_SIZE(LayoutBlock, SameSizeAsLayoutBlock);
 // keeping track of containing blocks at that time is complicated (we are in
 // the middle of recomputing the style so we can't rely on any of its
 // information), which is why it's easier to just update it for every layout.
-static TrackedDescendantsMap* g_positioned_descendants_map = nullptr;
-static TrackedContainerMap* g_positioned_container_map = nullptr;
+TrackedDescendantsMap& GetPositionedDescendantsMap() {
+  DEFINE_STATIC_LOCAL(TrackedDescendantsMap, map, ());
+  return map;
+}
+
+TrackedContainerMap& GetPositionedContainerMap() {
+  DEFINE_STATIC_LOCAL(TrackedContainerMap, map, ());
+  return map;
+}
 
 // This map keeps track of the descendants whose 'height' is percentage
 // associated with a containing block. Like |gPositionedDescendantsMap|, it is
 // also recomputed for every layout (see the comment above about why).
-static TrackedDescendantsMap* g_percent_height_descendants_map = nullptr;
+static TrackedDescendantsMap& GetPercentHeightDescendantsMap() {
+  DEFINE_STATIC_LOCAL(TrackedDescendantsMap, map, ());
+  return map;
+}
 
 LayoutBlock::LayoutBlock(ContainerNode* node)
     : LayoutBox(node),
@@ -123,16 +133,16 @@ LayoutBlock::LayoutBlock(ContainerNode* node)
 void LayoutBlock::RemoveFromGlobalMaps() {
   if (HasPositionedObjects()) {
     std::unique_ptr<TrackedLayoutBoxListHashSet> descendants =
-        g_positioned_descendants_map->Take(this);
+        GetPositionedDescendantsMap().Take(this);
     DCHECK(!descendants->IsEmpty());
     for (LayoutBox* descendant : *descendants) {
-      DCHECK_EQ(g_positioned_container_map->at(descendant), this);
-      g_positioned_container_map->erase(descendant);
+      DCHECK_EQ(GetPositionedContainerMap().at(descendant), this);
+      GetPositionedContainerMap().erase(descendant);
     }
   }
   if (HasPercentHeightDescendants()) {
     std::unique_ptr<TrackedLayoutBoxListHashSet> descendants =
-        g_percent_height_descendants_map->Take(this);
+        GetPercentHeightDescendantsMap().Take(this);
     DCHECK(!descendants->IsEmpty());
     for (LayoutBox* descendant : *descendants) {
       DCHECK_EQ(descendant->PercentHeightContainer(), this);
@@ -947,8 +957,7 @@ void LayoutBlock::PaintObject(const PaintInfo& paint_info,
 }
 
 TrackedLayoutBoxListHashSet* LayoutBlock::PositionedObjectsInternal() const {
-  return g_positioned_descendants_map ? g_positioned_descendants_map->at(this)
-                                      : nullptr;
+  return GetPositionedDescendantsMap().at(this);
 }
 
 void LayoutBlock::InsertPositionedObject(LayoutBox* o) {
@@ -957,29 +966,23 @@ void LayoutBlock::InsertPositionedObject(LayoutBox* o) {
 
   o->ClearOverrideContainingBlockContentSize();
 
-  if (g_positioned_container_map) {
-    auto container_map_it = g_positioned_container_map->find(o);
-    if (container_map_it != g_positioned_container_map->end()) {
-      if (container_map_it->value == this) {
-        DCHECK(HasPositionedObjects());
-        DCHECK(PositionedObjects()->Contains(o));
-        PositionedObjects()->AppendOrMoveToLast(o);
-        return;
-      }
-      RemovePositionedObject(o);
+  auto container_map_it = GetPositionedContainerMap().find(o);
+  if (container_map_it != GetPositionedContainerMap().end()) {
+    if (container_map_it->value == this) {
+      DCHECK(HasPositionedObjects());
+      DCHECK(PositionedObjects()->Contains(o));
+      PositionedObjects()->AppendOrMoveToLast(o);
+      return;
     }
-  } else {
-    g_positioned_container_map = new TrackedContainerMap;
+    RemovePositionedObject(o);
   }
-  g_positioned_container_map->Set(o, this);
+  GetPositionedContainerMap().Set(o, this);
 
-  if (!g_positioned_descendants_map)
-    g_positioned_descendants_map = new TrackedDescendantsMap;
   TrackedLayoutBoxListHashSet* descendant_set =
-      g_positioned_descendants_map->at(this);
+      GetPositionedDescendantsMap().at(this);
   if (!descendant_set) {
     descendant_set = new TrackedLayoutBoxListHashSet;
-    g_positioned_descendants_map->Set(this, base::WrapUnique(descendant_set));
+    GetPositionedDescendantsMap().Set(this, base::WrapUnique(descendant_set));
   }
   descendant_set->insert(o);
 
@@ -987,20 +990,17 @@ void LayoutBlock::InsertPositionedObject(LayoutBox* o) {
 }
 
 void LayoutBlock::RemovePositionedObject(LayoutBox* o) {
-  if (!g_positioned_container_map)
-    return;
-
-  LayoutBlock* container = g_positioned_container_map->Take(o);
+  LayoutBlock* container = GetPositionedContainerMap().Take(o);
   if (!container)
     return;
 
   TrackedLayoutBoxListHashSet* positioned_descendants =
-      g_positioned_descendants_map->at(container);
+      GetPositionedDescendantsMap().at(container);
   DCHECK(positioned_descendants);
   DCHECK(positioned_descendants->Contains(o));
   positioned_descendants->erase(o);
   if (positioned_descendants->IsEmpty()) {
-    g_positioned_descendants_map->erase(container);
+    GetPositionedDescendantsMap().erase(container);
     container->has_positioned_objects_ = false;
   }
 }
@@ -1083,12 +1083,12 @@ void LayoutBlock::RemovePositionedObjects(
   }
 
   for (auto* object : dead_objects) {
-    DCHECK_EQ(g_positioned_container_map->at(object), this);
+    DCHECK_EQ(GetPositionedContainerMap().at(object), this);
     positioned_descendants->erase(object);
-    g_positioned_container_map->erase(object);
+    GetPositionedContainerMap().erase(object);
   }
   if (positioned_descendants->IsEmpty()) {
-    g_positioned_descendants_map->erase(this);
+    GetPositionedDescendantsMap().erase(this);
     has_positioned_objects_ = false;
   }
 }
@@ -1122,14 +1122,12 @@ void LayoutBlock::AddPercentHeightDescendant(LayoutBox* descendant) {
     cb = cb->ContainingBlock();
   }
 
-  if (!g_percent_height_descendants_map)
-    g_percent_height_descendants_map = new TrackedDescendantsMap;
   TrackedLayoutBoxListHashSet* descendant_set =
-      g_percent_height_descendants_map->at(this);
+      GetPercentHeightDescendantsMap().at(this);
   if (!descendant_set) {
     descendant_set = new TrackedLayoutBoxListHashSet;
-    g_percent_height_descendants_map->Set(this,
-                                          base::WrapUnique(descendant_set));
+    GetPercentHeightDescendantsMap().Set(this,
+                                         base::WrapUnique(descendant_set));
   }
   descendant_set->insert(descendant);
 
@@ -1141,7 +1139,7 @@ void LayoutBlock::RemovePercentHeightDescendant(LayoutBox* descendant) {
     descendants->erase(descendant);
     descendant->SetPercentHeightContainer(nullptr);
     if (descendants->IsEmpty()) {
-      g_percent_height_descendants_map->erase(this);
+      GetPercentHeightDescendantsMap().erase(this);
       has_percent_height_descendants_ = false;
     }
   }
@@ -1149,9 +1147,7 @@ void LayoutBlock::RemovePercentHeightDescendant(LayoutBox* descendant) {
 
 TrackedLayoutBoxListHashSet* LayoutBlock::PercentHeightDescendantsInternal()
     const {
-  return g_percent_height_descendants_map
-             ? g_percent_height_descendants_map->at(this)
-             : nullptr;
+  return GetPercentHeightDescendantsMap().at(this);
 }
 
 void LayoutBlock::DirtyForLayoutFromPercentageHeightDescendants(
@@ -2256,9 +2252,6 @@ bool LayoutBlock::TryLayoutDoingPositionedMovementOnly() {
 
 #if DCHECK_IS_ON()
 void LayoutBlock::CheckPositionedObjectsNeedLayout() {
-  if (!g_positioned_descendants_map)
-    return;
-
   if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
 

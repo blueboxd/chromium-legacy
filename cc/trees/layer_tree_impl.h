@@ -730,6 +730,10 @@ class CC_EXPORT LayerTreeImpl {
     return std::move(delegated_ink_metadata_);
   }
 
+  size_t events_metrics_from_main_thread_count_for_testing() const {
+    return events_metrics_from_main_thread_.size();
+  }
+
  protected:
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,

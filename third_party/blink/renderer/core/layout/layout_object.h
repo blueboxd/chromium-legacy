@@ -423,6 +423,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Helper class forbidding calls to setNeedsLayout() during its lifetime.
   class SetLayoutNeededForbiddenScope {
+    STACK_ALLOCATED();
+
    public:
     explicit SetLayoutNeededForbiddenScope(LayoutObject&);
     ~SetLayoutNeededForbiddenScope();

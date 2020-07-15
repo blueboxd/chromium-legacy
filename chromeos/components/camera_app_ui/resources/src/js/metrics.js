@@ -59,7 +59,7 @@ function sendEvent(event, dimen = null) {
 export function setMetricsEnabled(enabled) {
   assert(ready !== null);
 
-  ready.then(async() => {
+  ready.then(async () => {
     // This value reflects the logging constent option in OS settings.
     const canSendMetrics = await browserProxy.isCrashReportingEnabled();
     window[`ga-disable-${GA_ID}`] = !enabled || !canSendMetrics;
@@ -119,7 +119,7 @@ export function initMetrics() {
     window.ga('set', 'checkProtocolTask', null);
   })();
 
-  ready.then(async() => {
+  ready.then(async () => {
     // The metrics is default enabled.
     await setMetricsEnabled(true);
   });
@@ -164,6 +164,9 @@ export const ShutterType = {
  * @record
  */
 export class CaptureEventParam {
+  /**
+   * @public
+   */
   constructor() {
     /**
      * @type {!Facing} Camera facing of the capture.

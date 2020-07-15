@@ -45,7 +45,7 @@ int g_ideal_homescreen_icon_size = -1;
 int g_minimum_homescreen_icon_size = -1;
 int g_ideal_splash_image_size = -1;
 int g_minimum_splash_image_size = -1;
-int g_ideal_badge_icon_size = -1;
+int g_ideal_monochrome_icon_size = -1;
 int g_ideal_adaptive_launcher_icon_size = -1;
 int g_ideal_shortcut_icon_size = -1;
 
@@ -68,7 +68,7 @@ void GetIconSizes() {
   g_minimum_homescreen_icon_size = sizes[1];
   g_ideal_splash_image_size = sizes[2];
   g_minimum_splash_image_size = sizes[3];
-  g_ideal_badge_icon_size = sizes[4];
+  g_ideal_monochrome_icon_size = sizes[4];
   g_ideal_adaptive_launcher_icon_size = sizes[5];
   g_ideal_shortcut_icon_size = sizes[6];
 

@@ -58,7 +58,7 @@ class CounterNode : public RefCounted<CounterNode> {
   bool HasSetType() const { return type_mask_ & kSetType; }
   int Value() const { return value_; }
   int CountInParent() const { return count_in_parent_; }
-  LayoutObject& Owner() const { return owner_; }
+  LayoutObject& Owner() const { return *owner_; }
   void AddLayoutObject(LayoutCounter*);
   void RemoveLayoutObject(LayoutCounter*);
 
@@ -116,7 +116,7 @@ class CounterNode : public RefCounted<CounterNode> {
   unsigned type_mask_;
   int value_;
   int count_in_parent_;
-  LayoutObject& owner_;
+  LayoutObject* const owner_;
   LayoutCounter* root_layout_object_;
 
   CounterNode* parent_;

@@ -1517,6 +1517,35 @@ def make_v8_set_return_value(cg_context):
             return T("bindings::V8SetReturnValue(${info}, ${return_value}, "
                      "${isolate}, ${blink_receiver});")
 
+    # [CheckSecurity=ReturnValue]
+    #
+    # The returned object must be wrapped in its own realm instead of the
+    # receiver object's relevant realm or the current realm.
+    #
+    # [CheckSecurity=ReturnValue] is used only for 'contentDocument' attribute
+    # and 'getSVGDocument' operation of HTML{IFrame,Frame,Object,Embed}Element
+    # interfaces, and Window.frameElement attribute, so far.
+    #
+    # All the interfaces above except for Window support 'contentWindow'
+    # attribute and that's the global object of the creation context of the
+    # returned V8 wrapper.  Window.frameElement is implemented with [Custom]
+    # for now and there is no need to support it.
+    #
+    # Note that the global object has its own context and there is no need to
+    # pass the creation context to ToV8.
+    if (cg_context.member_like.extended_attributes.value_of("CheckSecurity") ==
+            "ReturnValue"):
+        return T("""\
+// [CheckSecurity=ReturnValue]
+bindings::V8SetReturnValue(
+    ${info},
+    ToV8(${return_value},
+         ToV8(${blink_receiver}->contentWindow(),
+              v8::Local<v8::Object>(),
+              ${isolate}).As<v8::Object>(),
+         ${isolate}));\
+""")
+
     return_type = return_type.unwrap(typedef=True)
     return_type_body = return_type.unwrap()
 

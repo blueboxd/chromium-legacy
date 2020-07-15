@@ -252,9 +252,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   DOMNodeId OwnerNodeId() const final;
   IntRect VisualRect() const final;
 
-  LayoutBoxModelObject& GetLayoutObject() const { return layout_object_; }
+  LayoutBoxModelObject& GetLayoutObject() const { return *layout_object_; }
   LayoutBox* GetLayoutBox() const {
-    return layout_object_.IsBox() ? &ToLayoutBox(layout_object_) : nullptr;
+    return layout_object_->IsBox() ? ToLayoutBox(layout_object_) : nullptr;
   }
   PaintLayer* Parent() const { return parent_; }
   PaintLayer* PreviousSibling() const { return previous_; }
@@ -320,8 +320,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Location() is not the correct paint offset. It's also incorrect in flipped
   // blocks writing mode.
   IntSize PixelSnappedSize() const {
-    LayoutPoint location = layout_object_.IsBox()
-                               ? ToLayoutBox(layout_object_).Location()
+    LayoutPoint location = layout_object_->IsBox()
+                               ? ToLayoutBox(layout_object_)->Location()
                                : LayoutPoint();
     return PixelSnappedIntSize(Size(), location);
   }
@@ -1384,7 +1384,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   mutable unsigned layer_list_mutation_allowed_ : 1;
 #endif
 
-  LayoutBoxModelObject& layout_object_;
+  LayoutBoxModelObject* const layout_object_;
 
   PaintLayer* parent_;
   PaintLayer* previous_;

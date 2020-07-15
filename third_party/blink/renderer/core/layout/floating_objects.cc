@@ -210,7 +210,7 @@ class FindNextFloatLogicalBottomAdapter {
 
   FindNextFloatLogicalBottomAdapter(const LayoutBlockFlow& renderer,
                                     LayoutUnit below_logical_height)
-      : layout_object_(renderer),
+      : layout_object_(&renderer),
         below_logical_height_(below_logical_height),
         above_logical_height_(LayoutUnit::Max()),
         next_logical_bottom_(),
@@ -224,7 +224,7 @@ class FindNextFloatLogicalBottomAdapter {
   LayoutUnit NextShapeLogicalBottom() { return next_shape_logical_bottom_; }
 
  private:
-  const LayoutBlockFlow& layout_object_;
+  const LayoutBlockFlow* const layout_object_;
   LayoutUnit below_logical_height_;
   LayoutUnit above_logical_height_;
   LayoutUnit next_logical_bottom_;
@@ -263,18 +263,18 @@ inline void FindNextFloatLogicalBottomAdapter::CollectIfNeeded(
 
   // All the objects returned from the tree should be already placed.
   DCHECK(floating_object.IsPlaced());
-  DCHECK(RangesIntersect(layout_object_.LogicalTopForFloat(floating_object),
-                         layout_object_.LogicalBottomForFloat(floating_object),
+  DCHECK(RangesIntersect(layout_object_->LogicalTopForFloat(floating_object),
+                         layout_object_->LogicalBottomForFloat(floating_object),
                          below_logical_height_, above_logical_height_));
 
   LayoutUnit float_bottom =
-      layout_object_.LogicalBottomForFloat(floating_object);
+      layout_object_->LogicalBottomForFloat(floating_object);
 
   if (ShapeOutsideInfo* shape_outside =
           floating_object.GetLayoutObject()->GetShapeOutsideInfo()) {
     LayoutUnit shape_bottom =
-        layout_object_.LogicalTopForFloat(floating_object) +
-        layout_object_.MarginBeforeForChild(
+        layout_object_->LogicalTopForFloat(floating_object) +
+        layout_object_->MarginBeforeForChild(
             *floating_object.GetLayoutObject()) +
         shape_outside->ShapeLogicalBottom();
     // Use the shapeBottom unless it extends outside of the margin box, in which

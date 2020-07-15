@@ -2006,6 +2006,24 @@ void NGLineBreaker::Rewind(unsigned new_end, NGLineInfo* line_info) {
     // and may not be equal to |results[new_end].start_offset|.
     MoveToNextOf(item_results[new_end - 1]);
     trailing_whitespace_ = WhitespaceState::kUnknown;
+    // When space item is followed by empty text, we will break line at empty
+    // text. See http://crbug.com/1104534
+    // Example:
+    //   [0] kOpeNTag 0-0 <i>
+    //   [1] kText 0-10 "012345679"
+    //   [2] kOpenTag 10-10 <b> <= |item_results[new_end - 1]|
+    //   [3] kText 10-10 ""     <= |item_index_|
+    //   [4] kText 10-11 " "
+    //   [5] kCloseTag 11-11 <b>
+    //   [6] kText 11-13 "ab"
+    //   [7] kCloseTag 13-13 <i>
+    // Note: We can have multiple empty |LayoutText| by ::first-letter, nested
+    // <q>, Text.splitText(), etc.
+    const Vector<NGInlineItem>& items = Items();
+    while (item_index_ < items.size() &&
+           items[item_index_].Type() == NGInlineItem::kText &&
+           !items[item_index_].Length())
+      HandleEmptyText(items[item_index_], line_info);
   } else {
     // When rewinding all items, use |results[0].start_offset|.
     const NGInlineItemResult& first_remove = item_results[new_end];

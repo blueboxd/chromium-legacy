@@ -44,4 +44,43 @@ TEST_F(SettingsCheckItemTest, ConfigureCell) {
   EXPECT_NSEQ(detailText, CheckCell.detailTextLabel.text);
 }
 
+// Tests that cell is configured properly based on infoButtonHidden property of
+// the item.
+TEST_F(SettingsCheckItemTest, InfoButtonVisibility) {
+  SettingsCheckItem* item = [[SettingsCheckItem alloc] initWithType:0];
+  item.text = @"Test Text";
+  item.detailText = @"Test Text";
+  item.enabled = YES;
+  item.indicatorHidden = YES;
+  item.infoButtonHidden = NO;
+
+  id cell = [[[item cellClass] alloc] init];
+  SettingsCheckCell* CheckCell =
+      base::mac::ObjCCastStrict<SettingsCheckCell>(cell);
+
+  [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
+  EXPECT_FALSE(CheckCell.infoButton.hidden);
+
+  item.infoButtonHidden = YES;
+  [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
+  EXPECT_TRUE(CheckCell.infoButton.hidden);
+}
+
+// Tests that infoButton won't be shown in case of a conflict.
+TEST_F(SettingsCheckItemTest, InfoButtonVisibilityDuringConflict) {
+  SettingsCheckItem* item = [[SettingsCheckItem alloc] initWithType:0];
+  item.text = @"Test Text";
+  item.detailText = @"Test Text";
+  item.enabled = YES;
+  item.indicatorHidden = NO;
+  item.infoButtonHidden = NO;
+
+  id cell = [[[item cellClass] alloc] init];
+  SettingsCheckCell* CheckCell =
+      base::mac::ObjCCastStrict<SettingsCheckCell>(cell);
+
+  [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
+  EXPECT_TRUE(CheckCell.infoButton.hidden);
+}
+
 }  // namespace

@@ -1948,6 +1948,8 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorPrefetchBrowserTest,
     requests = {embedded_test_server()->GetURL("subresource.com", "/css"),
                 embedded_test_server()->GetURL("subresource.com", "/image"),
                 embedded_test_server()->GetURL("otherresource.com", "/js")};
+  } else if (GetSubresourceTypeParam() == "css") {
+    requests = {embedded_test_server()->GetURL("subresource.com", "/css")};
   } else if (GetSubresourceTypeParam() == "js_css") {
     requests = {embedded_test_server()->GetURL("subresource.com", "/css"),
                 embedded_test_server()->GetURL("otherresource.com", "/js")};
@@ -1967,6 +1969,6 @@ INSTANTIATE_TEST_SUITE_P(
         /*IsLocalPredictionEnabled()=*/testing::Values(false),
         /*ShouldPreconnectUsingOptimizationGuidePredictions()=*/
         testing::Values(true),
-        /*GetSubresourceType()=*/testing::Values("all", "js_css")));
+        /*GetSubresourceType()=*/testing::Values("all", "css", "js_css")));
 
 }  // namespace predictors

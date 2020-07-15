@@ -53,6 +53,10 @@ class CC_EXPORT EventsMetricsManager {
   // caller.
   std::vector<EventMetrics> TakeSavedEventsMetrics();
 
+  size_t saved_events_metrics_count_for_testing() const {
+    return saved_events_.size();
+  }
+
  private:
   void OnScopedMonitorEnded();
 

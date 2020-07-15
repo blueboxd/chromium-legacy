@@ -92,7 +92,10 @@ ASSERT_SIZE(LayoutText, SameSizeAsLayoutText);
 
 class SecureTextTimer;
 typedef HashMap<LayoutText*, SecureTextTimer*> SecureTextTimerMap;
-static SecureTextTimerMap* g_secure_text_timers = nullptr;
+static SecureTextTimerMap& GetSecureTextTimers() {
+  DEFINE_STATIC_LOCAL(SecureTextTimerMap, map, ());
+  return map;
+}
 
 class SecureTextTimer final : public TimerBase {
  public:
@@ -115,7 +118,7 @@ class SecureTextTimer final : public TimerBase {
 
  private:
   void Fired() override {
-    DCHECK(g_secure_text_timers->Contains(layout_text_));
+    DCHECK(GetSecureTextTimers().Contains(layout_text_));
     // Forcing setting text as it may be masked later
     layout_text_->ForceSetText(layout_text_->GetText().Impl());
   }
@@ -254,8 +257,7 @@ void LayoutText::RemoveAndDestroyTextBoxes() {
 }
 
 void LayoutText::WillBeDestroyed() {
-  if (SecureTextTimer* secure_text_timer =
-          g_secure_text_timers ? g_secure_text_timers->Take(this) : nullptr)
+  if (SecureTextTimer* secure_text_timer = GetSecureTextTimers().Take(this))
     delete secure_text_timer;
 
   if (node_id_ != kInvalidDOMNodeId) {
@@ -1920,8 +1922,7 @@ void LayoutText::SecureText(UChar mask) {
 
   int last_typed_character_offset_to_reveal = -1;
   UChar revealed_text;
-  SecureTextTimer* secure_text_timer =
-      g_secure_text_timers ? g_secure_text_timers->at(this) : nullptr;
+  SecureTextTimer* secure_text_timer = GetSecureTextTimers().at(this);
   if (secure_text_timer && secure_text_timer->IsActive()) {
     last_typed_character_offset_to_reveal =
         secure_text_timer->LastTypedCharacterOffset();
@@ -2484,13 +2485,10 @@ bool LayoutText::IsAfterNonCollapsedCharacter(unsigned text_offset) const {
 
 void LayoutText::MomentarilyRevealLastTypedCharacter(
     unsigned last_typed_character_offset) {
-  if (!g_secure_text_timers)
-    g_secure_text_timers = new SecureTextTimerMap;
-
-  SecureTextTimer* secure_text_timer = g_secure_text_timers->at(this);
+  SecureTextTimer* secure_text_timer = GetSecureTextTimers().at(this);
   if (!secure_text_timer) {
     secure_text_timer = new SecureTextTimer(this);
-    g_secure_text_timers->insert(this, secure_text_timer);
+    GetSecureTextTimers().insert(this, secure_text_timer);
   }
   secure_text_timer->RestartWithNewText(last_typed_character_offset);
 }

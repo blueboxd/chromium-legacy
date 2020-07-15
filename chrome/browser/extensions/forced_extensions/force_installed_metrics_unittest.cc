@@ -101,9 +101,11 @@ constexpr char kDisableReason[] =
     "Extensions.ForceInstalledNotLoadedDisableReason";
 constexpr char kBlocklisted[] = "Extensions.ForceInstalledAndBlackListed";
 constexpr char kExtensionManifestInvalid[] =
-    "Extensions.ForceInstalledFailureManifestInvalidErrorDetail";
+    "Extensions.ForceInstalledFailureManifestInvalidErrorDetail2";
 constexpr char kManifestNoUpdatesInfo[] =
     "Extensions.ForceInstalledFailureNoUpdatesInfo";
+constexpr char kExtensionManifestInvalidAppStatusError[] =
+    "Extensions.ForceInstalledFailureManifestInvalidAppStatusError";
 }  // namespace
 
 namespace extensions {
@@ -728,13 +730,36 @@ TEST_F(ForceInstalledMetricsTest, ExtensionManifestInvalid) {
       ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
   tracker_->OnExtensionLoaded(profile_, extension.get());
   install_stage_tracker_->ReportManifestInvalidFailure(
-      kExtensionId2, ManifestInvalidError::INVALID_PROTOCOL_ON_GUPDATE_TAG);
+      kExtensionId2,
+      ExtensionDownloaderDelegate::FailureData(
+          ManifestInvalidError::INVALID_PROTOCOL_ON_GUPDATE_TAG));
   // ForceInstalledMetrics shuts down timer because all extension are either
   // loaded or failed.
   EXPECT_FALSE(fake_timer_->IsRunning());
   histogram_tester_.ExpectUniqueSample(
       kExtensionManifestInvalid,
       ManifestInvalidError::INVALID_PROTOCOL_ON_GUPDATE_TAG, 1);
+}
+
+// Errors occurred because the fetched update manifest was invalid because app
+// status was not OK.
+TEST_F(ForceInstalledMetricsTest, ExtensionManifestInvalidAppStatusError) {
+  SetupForceList();
+  auto extension =
+      ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(profile_, extension.get());
+  install_stage_tracker_->ReportManifestInvalidFailure(
+      kExtensionId2,
+      ExtensionDownloaderDelegate::FailureData(
+          ManifestInvalidError::BAD_APP_STATUS, "error-unknownApplication"));
+  // ForceInstalledMetrics shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectUniqueSample(kExtensionManifestInvalid,
+                                       ManifestInvalidError::BAD_APP_STATUS, 1);
+  histogram_tester_.ExpectUniqueSample(
+      kExtensionManifestInvalidAppStatusError,
+      InstallStageTracker::AppStatusError::kErrorUnknownApplication, 1);
 }
 
 // Session in which either all the extensions installed successfully, or all

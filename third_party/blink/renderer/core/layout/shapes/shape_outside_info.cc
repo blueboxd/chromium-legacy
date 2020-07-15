@@ -54,41 +54,43 @@ CSSBoxType ReferenceBox(const ShapeValue& shape_value) {
 
 void ShapeOutsideInfo::SetReferenceBoxLogicalSize(
     LayoutSize new_reference_box_logical_size) {
-  Document& document = layout_box_.GetDocument();
+  Document& document = layout_box_->GetDocument();
   bool is_horizontal_writing_mode =
-      layout_box_.ContainingBlock()->StyleRef().IsHorizontalWritingMode();
+      layout_box_->ContainingBlock()->StyleRef().IsHorizontalWritingMode();
 
   LayoutSize margin_box_for_use_counter = new_reference_box_logical_size;
   if (is_horizontal_writing_mode) {
-    margin_box_for_use_counter.Expand(layout_box_.MarginWidth(),
-                                      layout_box_.MarginHeight());
+    margin_box_for_use_counter.Expand(layout_box_->MarginWidth(),
+                                      layout_box_->MarginHeight());
   } else {
-    margin_box_for_use_counter.Expand(layout_box_.MarginHeight(),
-                                      layout_box_.MarginWidth());
+    margin_box_for_use_counter.Expand(layout_box_->MarginHeight(),
+                                      layout_box_->MarginWidth());
   }
 
-  const ShapeValue& shape_value = *layout_box_.StyleRef().ShapeOutside();
+  const ShapeValue& shape_value = *layout_box_->StyleRef().ShapeOutside();
   switch (ReferenceBox(shape_value)) {
     case CSSBoxType::kMargin:
       UseCounter::Count(document, WebFeature::kShapeOutsideMarginBox);
-      if (is_horizontal_writing_mode)
-        new_reference_box_logical_size.Expand(layout_box_.MarginWidth(),
-                                              layout_box_.MarginHeight());
-      else
-        new_reference_box_logical_size.Expand(layout_box_.MarginHeight(),
-                                              layout_box_.MarginWidth());
+      if (is_horizontal_writing_mode) {
+        new_reference_box_logical_size.Expand(layout_box_->MarginWidth(),
+                                              layout_box_->MarginHeight());
+      } else {
+        new_reference_box_logical_size.Expand(layout_box_->MarginHeight(),
+                                              layout_box_->MarginWidth());
+      }
       break;
     case CSSBoxType::kBorder:
       UseCounter::Count(document, WebFeature::kShapeOutsideBorderBox);
       break;
     case CSSBoxType::kPadding:
       UseCounter::Count(document, WebFeature::kShapeOutsidePaddingBox);
-      if (is_horizontal_writing_mode)
-        new_reference_box_logical_size.Shrink(layout_box_.BorderWidth(),
-                                              layout_box_.BorderHeight());
-      else
-        new_reference_box_logical_size.Shrink(layout_box_.BorderHeight(),
-                                              layout_box_.BorderWidth());
+      if (is_horizontal_writing_mode) {
+        new_reference_box_logical_size.Shrink(layout_box_->BorderWidth(),
+                                              layout_box_->BorderHeight());
+      } else {
+        new_reference_box_logical_size.Shrink(layout_box_->BorderHeight(),
+                                              layout_box_->BorderWidth());
+      }
 
       if (new_reference_box_logical_size != margin_box_for_use_counter) {
         UseCounter::Count(
@@ -102,14 +104,15 @@ void ShapeOutsideInfo::SetReferenceBoxLogicalSize(
       if (!is_shape_image)
         UseCounter::Count(document, WebFeature::kShapeOutsideContentBox);
 
-      if (is_horizontal_writing_mode)
+      if (is_horizontal_writing_mode) {
         new_reference_box_logical_size.Shrink(
-            layout_box_.BorderAndPaddingWidth(),
-            layout_box_.BorderAndPaddingHeight());
-      else
+            layout_box_->BorderAndPaddingWidth(),
+            layout_box_->BorderAndPaddingHeight());
+      } else {
         new_reference_box_logical_size.Shrink(
-            layout_box_.BorderAndPaddingHeight(),
-            layout_box_.BorderAndPaddingWidth());
+            layout_box_->BorderAndPaddingHeight(),
+            layout_box_->BorderAndPaddingWidth());
+      }
 
       if (!is_shape_image &&
           new_reference_box_logical_size != margin_box_for_use_counter) {
@@ -188,24 +191,24 @@ std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
     float margin) const {
   DCHECK(!style_image->IsPendingImage());
   const LayoutSize& image_size = RoundedLayoutSize(style_image->ImageSize(
-      layout_box_.GetDocument(), layout_box_.StyleRef().EffectiveZoom(),
+      layout_box_->GetDocument(), layout_box_->StyleRef().EffectiveZoom(),
       FloatSize(reference_box_logical_size_),
-      LayoutObject::ShouldRespectImageOrientation(&layout_box_)));
+      LayoutObject::ShouldRespectImageOrientation(layout_box_)));
 
   const LayoutRect& margin_rect =
-      GetShapeImageMarginRect(layout_box_, reference_box_logical_size_);
+      GetShapeImageMarginRect(*layout_box_, reference_box_logical_size_);
   const LayoutRect& image_rect =
-      (layout_box_.IsLayoutImage())
-          ? ToLayoutImage(layout_box_).ReplacedContentRect().ToLayoutRect()
+      (layout_box_->IsLayoutImage())
+          ? ToLayoutImage(layout_box_)->ReplacedContentRect().ToLayoutRect()
           : LayoutRect(LayoutPoint(), image_size);
 
   scoped_refptr<Image> image =
-      style_image->GetImage(layout_box_, layout_box_.GetDocument(),
-                            layout_box_.StyleRef(), FloatSize(image_size));
+      style_image->GetImage(*layout_box_, layout_box_->GetDocument(),
+                            layout_box_->StyleRef(), FloatSize(image_size));
 
   return Shape::CreateRasterShape(
       image.get(), shape_image_threshold, image_rect, margin_rect, writing_mode,
-      margin, LayoutObject::ShouldRespectImageOrientation(&layout_box_));
+      margin, LayoutObject::ShouldRespectImageOrientation(layout_box_));
 }
 
 const Shape& ShapeOutsideInfo::ComputedShape() const {
@@ -214,9 +217,9 @@ const Shape& ShapeOutsideInfo::ComputedShape() const {
 
   base::AutoReset<bool> is_in_computing_shape(&is_computing_shape_, true);
 
-  const ComputedStyle& style = *layout_box_.Style();
-  DCHECK(layout_box_.ContainingBlock());
-  const LayoutBlock& containing_block = *layout_box_.ContainingBlock();
+  const ComputedStyle& style = *layout_box_->Style();
+  DCHECK(layout_box_->ContainingBlock());
+  const LayoutBlock& containing_block = *layout_box_->ContainingBlock();
   const ComputedStyle& containing_block_style = containing_block.StyleRef();
 
   WritingMode writing_mode = containing_block_style.GetWritingMode();
@@ -229,7 +232,7 @@ const Shape& ShapeOutsideInfo::ComputedShape() const {
           : std::max(LayoutUnit(), containing_block.ContentWidth());
 
   float margin =
-      FloatValueForLength(layout_box_.StyleRef().ShapeMargin(),
+      FloatValueForLength(layout_box_->StyleRef().ShapeMargin(),
                           percentage_resolution_inline_size.ToFloat());
 
   float shape_image_threshold = style.ShapeImageThreshold();
@@ -301,19 +304,20 @@ inline LayoutUnit BorderAndPaddingBeforeInWritingMode(
 }
 
 LayoutUnit ShapeOutsideInfo::LogicalTopOffset() const {
-  switch (ReferenceBox(*layout_box_.StyleRef().ShapeOutside())) {
+  switch (ReferenceBox(*layout_box_->StyleRef().ShapeOutside())) {
     case CSSBoxType::kMargin:
-      return -layout_box_.MarginBefore(layout_box_.ContainingBlock()->Style());
+      return -layout_box_->MarginBefore(
+          layout_box_->ContainingBlock()->Style());
     case CSSBoxType::kBorder:
       return LayoutUnit();
     case CSSBoxType::kPadding:
       return BorderBeforeInWritingMode(
-          layout_box_,
-          layout_box_.ContainingBlock()->StyleRef().GetWritingMode());
+          *layout_box_,
+          layout_box_->ContainingBlock()->StyleRef().GetWritingMode());
     case CSSBoxType::kContent:
       return BorderAndPaddingBeforeInWritingMode(
-          layout_box_,
-          layout_box_.ContainingBlock()->StyleRef().GetWritingMode());
+          *layout_box_,
+          layout_box_->ContainingBlock()->StyleRef().GetWritingMode());
     case CSSBoxType::kMissing:
       break;
   }
@@ -353,17 +357,17 @@ inline LayoutUnit BorderAndPaddingStartWithStyleForWritingMode(
 }
 
 LayoutUnit ShapeOutsideInfo::LogicalLeftOffset() const {
-  switch (ReferenceBox(*layout_box_.StyleRef().ShapeOutside())) {
+  switch (ReferenceBox(*layout_box_->StyleRef().ShapeOutside())) {
     case CSSBoxType::kMargin:
-      return -layout_box_.MarginStart(layout_box_.ContainingBlock()->Style());
+      return -layout_box_->MarginStart(layout_box_->ContainingBlock()->Style());
     case CSSBoxType::kBorder:
       return LayoutUnit();
     case CSSBoxType::kPadding:
       return BorderStartWithStyleForWritingMode(
-          layout_box_, layout_box_.ContainingBlock()->Style());
+          *layout_box_, layout_box_->ContainingBlock()->Style());
     case CSSBoxType::kContent:
       return BorderAndPaddingStartWithStyleForWritingMode(
-          layout_box_, layout_box_.ContainingBlock()->Style());
+          *layout_box_, layout_box_->ContainingBlock()->Style());
     case CSSBoxType::kMissing:
       break;
   }
@@ -402,7 +406,7 @@ ShapeOutsideDeltas ShapeOutsideInfo::ComputeDeltasForContainingBlockLine(
 
   LayoutUnit border_box_top =
       containing_block.LogicalTopForFloat(floating_object) +
-      containing_block.MarginBeforeForChild(layout_box_);
+      containing_block.MarginBeforeForChild(*layout_box_);
   LayoutUnit border_box_line_top = line_top - border_box_top;
 
   if (IsShapeDirty() ||
@@ -420,8 +424,8 @@ ShapeOutsideDeltas ShapeOutsideInfo::ComputeDeltasForContainingBlockLine(
       if (segment.is_valid) {
         LayoutUnit logical_left_margin =
             containing_block.StyleRef().IsLeftToRightDirection()
-                ? containing_block.MarginStartForChild(layout_box_)
-                : containing_block.MarginEndForChild(layout_box_);
+                ? containing_block.MarginStartForChild(*layout_box_)
+                : containing_block.MarginEndForChild(*layout_box_);
         LayoutUnit raw_left_margin_box_delta =
             segment.logical_left + LogicalLeftOffset() + logical_left_margin;
         LayoutUnit left_margin_box_delta = clampTo<LayoutUnit>(
@@ -429,11 +433,11 @@ ShapeOutsideDeltas ShapeOutsideInfo::ComputeDeltasForContainingBlockLine(
 
         LayoutUnit logical_right_margin =
             containing_block.StyleRef().IsLeftToRightDirection()
-                ? containing_block.MarginEndForChild(layout_box_)
-                : containing_block.MarginStartForChild(layout_box_);
+                ? containing_block.MarginEndForChild(*layout_box_)
+                : containing_block.MarginStartForChild(*layout_box_);
         LayoutUnit raw_right_margin_box_delta =
             segment.logical_right + LogicalLeftOffset() -
-            containing_block.LogicalWidthForChild(layout_box_) -
+            containing_block.LogicalWidthForChild(*layout_box_) -
             logical_right_margin;
         LayoutUnit right_margin_box_delta = clampTo<LayoutUnit>(
             raw_right_margin_box_delta, -float_margin_box_width, LayoutUnit());
@@ -461,13 +465,13 @@ PhysicalRect ShapeOutsideInfo::ComputedShapePhysicalBoundingBox() const {
       ComputedShape().ShapeMarginLogicalBoundingBox();
   physical_bounding_box.SetX(physical_bounding_box.X() + LogicalLeftOffset());
 
-  if (layout_box_.StyleRef().IsFlippedBlocksWritingMode())
-    physical_bounding_box.SetY(layout_box_.LogicalHeight() -
+  if (layout_box_->StyleRef().IsFlippedBlocksWritingMode())
+    physical_bounding_box.SetY(layout_box_->LogicalHeight() -
                                physical_bounding_box.MaxY());
   else
     physical_bounding_box.SetY(physical_bounding_box.Y() + LogicalTopOffset());
 
-  if (!layout_box_.StyleRef().IsHorizontalWritingMode())
+  if (!layout_box_->StyleRef().IsHorizontalWritingMode())
     physical_bounding_box = physical_bounding_box.TransposedRect();
   else
     physical_bounding_box.SetY(physical_bounding_box.Y() + LogicalTopOffset());
@@ -478,9 +482,9 @@ PhysicalRect ShapeOutsideInfo::ComputedShapePhysicalBoundingBox() const {
 FloatPoint ShapeOutsideInfo::ShapeToLayoutObjectPoint(FloatPoint point) const {
   FloatPoint result = FloatPoint(point.X() + LogicalLeftOffset(),
                                  point.Y() + LogicalTopOffset());
-  if (layout_box_.StyleRef().IsFlippedBlocksWritingMode())
-    result.SetY(layout_box_.LogicalHeight() - result.Y());
-  if (!layout_box_.StyleRef().IsHorizontalWritingMode())
+  if (layout_box_->StyleRef().IsFlippedBlocksWritingMode())
+    result.SetY(layout_box_->LogicalHeight() - result.Y());
+  if (!layout_box_->StyleRef().IsHorizontalWritingMode())
     result = result.TransposedPoint();
   return result;
 }

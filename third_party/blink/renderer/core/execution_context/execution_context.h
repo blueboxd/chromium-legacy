@@ -263,6 +263,8 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   }
   bool IsSecureContext(String& error_message) const;
 
+  virtual bool HasInsecureContextInAncestors() { return false; }
+
   // Returns a referrer to be used in the "Determine request's Referrer"
   // algorithm defined in the Referrer Policy spec.
   // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
@@ -379,9 +381,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   virtual ukm::SourceId UkmSourceID() const { return ukm::kInvalidSourceId; }
 
  protected:
-  explicit ExecutionContext(v8::Isolate* isolate,
-                            Agent*,
-                            SecurityContext::SecurityContextType);
+  explicit ExecutionContext(v8::Isolate* isolate, Agent*);
   ~ExecutionContext() override;
 
  private:

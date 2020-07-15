@@ -90,8 +90,8 @@ void ApkWebAppInstaller::Start(arc::mojom::WebAppInfoPtr web_app_info,
   DCHECK(web_app_info_->scope.is_valid());
 
   if (web_app_info->theme_color != kInvalidColor) {
-    web_app_info_->theme_color =
-        static_cast<SkColor>(web_app_info->theme_color);
+    web_app_info_->theme_color = SkColorSetA(
+        static_cast<SkColor>(web_app_info->theme_color), SK_AlphaOPAQUE);
   }
   web_app_info_->display_mode = blink::mojom::DisplayMode::kStandalone;
   web_app_info_->open_as_window = true;

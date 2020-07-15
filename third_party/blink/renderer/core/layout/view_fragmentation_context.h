@@ -13,13 +13,13 @@ class LayoutView;
 
 class ViewFragmentationContext final : public FragmentationContext {
  public:
-  ViewFragmentationContext(LayoutView& view) : view_(view) {}
+  explicit ViewFragmentationContext(LayoutView& view) : view_(&view) {}
   bool IsFragmentainerLogicalHeightKnown() final;
   LayoutUnit FragmentainerLogicalHeightAt(LayoutUnit block_offset) final;
   LayoutUnit RemainingLogicalHeightAt(LayoutUnit block_offset) final;
 
  private:
-  LayoutView& view_;
+  LayoutView* const view_;
 };
 
 }  // namespace blink

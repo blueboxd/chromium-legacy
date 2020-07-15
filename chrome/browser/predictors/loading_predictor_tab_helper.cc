@@ -88,6 +88,8 @@ bool ShouldPrefetchDestination(network::mojom::RequestDestination destination) {
   switch (features::kLoadingPredictorPrefetchSubresourceType.Get()) {
     case features::PrefetchSubresourceType::kAll:
       return true;
+    case features::PrefetchSubresourceType::kCss:
+      return destination == network::mojom::RequestDestination::kStyle;
     case features::PrefetchSubresourceType::kJsAndCss:
       return destination == network::mojom::RequestDestination::kScript ||
              destination == network::mojom::RequestDestination::kStyle;

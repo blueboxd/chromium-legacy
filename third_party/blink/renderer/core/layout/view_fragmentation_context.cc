@@ -9,18 +9,18 @@
 namespace blink {
 
 bool ViewFragmentationContext::IsFragmentainerLogicalHeightKnown() {
-  DCHECK(view_.PageLogicalHeight());
+  DCHECK(view_->PageLogicalHeight());
   return true;
 }
 
 LayoutUnit ViewFragmentationContext::FragmentainerLogicalHeightAt(LayoutUnit) {
-  DCHECK(view_.PageLogicalHeight());
-  return view_.PageLogicalHeight();
+  DCHECK(view_->PageLogicalHeight());
+  return view_->PageLogicalHeight();
 }
 
 LayoutUnit ViewFragmentationContext::RemainingLogicalHeightAt(
     LayoutUnit block_offset) {
-  LayoutUnit page_logical_height = view_.PageLogicalHeight();
+  LayoutUnit page_logical_height = view_->PageLogicalHeight();
   return page_logical_height - IntMod(block_offset, page_logical_height);
 }
 

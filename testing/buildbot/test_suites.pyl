@@ -5386,6 +5386,12 @@
       'storage_service_gtests',
     ],
 
+    # TODO(crbug.com/1104291) Make this suite the same as
+    # 'linux_chromeos_gtests' and delete this suite.
+    'linux_lacros_chromeos_gtests': [
+      'chromium_gtests_for_linux_and_chromeos_only',
+    ],
+
     'linux_viz_gtests': [
       'gpu_fyi_vulkan_swiftshader_gtests',
       'skia_renderer_fyi_gtests',

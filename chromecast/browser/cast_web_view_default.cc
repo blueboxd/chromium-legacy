@@ -110,9 +110,9 @@ CastWebViewDefault::CastWebViewDefault(
   web_contents_->GetNativeView()->SetName(params.activity_id);
 #endif
 
-#if BUILDFLAG(IS_ANDROID_THINGS)
-  // Configure the ducking multiplier for AThings speakers. We don't want the
-  // Chromium MediaSession to duck since we are doing our own ducking.
+#if BUILDFLAG(IS_ANDROID_APPLIANCE)
+  // Configure the ducking multiplier for AThings-like speakers. We don't want
+  // the Chromium MediaSession to duck since we are doing our own ducking.
   constexpr double kDuckingMultiplier = 1.0;
   content::MediaSession::Get(web_contents_.get())
       ->SetDuckingVolumeMultiplier(kDuckingMultiplier);

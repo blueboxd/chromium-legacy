@@ -25,6 +25,11 @@ class NET_EXPORT_PRIVATE QuicConnectivityMonitor
 
   ~QuicConnectivityMonitor() override;
 
+  // Records connectivity related stats to histograms.
+  void RecordConnectivityStatsToHistograms(
+      const std::string& platform_notification,
+      NetworkChangeNotifier::NetworkHandle affected_network) const;
+
   // Returns the number of sessions that are currently degrading on the default
   // network interface.
   size_t GetNumDegradingSessions() const;
@@ -65,20 +70,40 @@ class NET_EXPORT_PRIVATE QuicConnectivityMonitor
       NetworkChangeNotifier::NetworkHandle network,
       int error_code) override;
 
+  void OnSessionClosedAfterHandshake(
+      QuicChromiumClientSession* session,
+      NetworkChangeNotifier::NetworkHandle network,
+      quic::ConnectionCloseSource source,
+      quic::QuicErrorCode error_code) override;
+
+  void OnSessionRegistered(
+      QuicChromiumClientSession* session,
+      NetworkChangeNotifier::NetworkHandle network) override;
+
   void OnSessionRemoved(QuicChromiumClientSession* session) override;
 
  private:
   // Size chosen per net.QuicSession.WriteError histogram.
   using WriteErrorMap = quic::QuicSmallMap<int, size_t, 20>;
+  // The most common QuicErrorCode cared by this monitor is:
+  // QUIC_PUBLIC_RESET by the peer, or
+  // QUIC_PACKET_WRITE_ERROR/QUIC_TOO_MANY_RTOS by self.
+  using QuicErrorCodeMap = quic::QuicSmallMap<quic::QuicErrorCode, size_t, 5>;
 
   // If NetworkHandle is not supported, always set to
   // NetworkChangeNotifier::kInvalidNetworkHandle.
   NetworkChangeNotifier::NetworkHandle default_network_;
   // Sessions that are currently degrading on the |default_network_|.
   quic::QuicHashSet<QuicChromiumClientSession*> degrading_sessions_;
+  // Sessions that are currently active on the |default_network_|.
+  quic::QuicHashSet<QuicChromiumClientSession*> active_sessions_;
+  // Total number of sessions that has been tracked on the current network.
+  // Sessions may have been closed.
+  size_t total_num_sessions_tracked_{0u};
 
   // Map from the write error code to the corresponding number of reports.
   WriteErrorMap write_error_map_;
+  QuicErrorCodeMap quic_error_map_;
 
   base::WeakPtrFactory<QuicConnectivityMonitor> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(QuicConnectivityMonitor);

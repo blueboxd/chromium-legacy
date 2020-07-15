@@ -36,8 +36,7 @@ NativeFileSystemWritableFileStream* NativeFileSystemWritableFileStream::Create(
   auto* init = QueuingStrategyInit::Create();
   // HighWaterMark set to 1 here. This allows the stream to appear available
   // without adding additional buffering.
-  init->setHighWaterMark(
-      ScriptValue::From(script_state, static_cast<double>(1)));
+  init->setHighWaterMark(1);
   auto* strategy = CountQueuingStrategy::Create(script_state, init);
   ScriptValue strategy_value = ScriptValue::From(script_state, strategy);
 

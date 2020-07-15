@@ -158,6 +158,8 @@ class ExtensionDownloaderDelegate {
                 const base::Optional<int> response,
                 const int fetch_attempts);
     explicit FailureData(ManifestInvalidError manifest_invalid_error);
+    FailureData(ManifestInvalidError manifest_invalid_error,
+                const std::string& app_status_error);
     explicit FailureData(const std::string& additional_info);
     ~FailureData();
 
@@ -176,6 +178,9 @@ class ExtensionDownloaderDelegate {
     // only set when no update is available and install fails with the error
     // CRX_FETCH_URL_EMPTY.
     const base::Optional<std::string> additional_info;
+    // Type of app status error returned by update server on fetching the update
+    // manifest.
+    const base::Optional<std::string> app_status_error;
   };
 
   // A callback that is called to indicate if ExtensionDownloader should ignore

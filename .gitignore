@@ -58,6 +58,7 @@ tags
 Thumbs.db
 v8.log
 vs-chromium-project.txt
+/.cache/
 /.clangd/
 /.clangd-index/
 # Settings directories for eclipse
@@ -323,6 +324,9 @@ vs-chromium-project.txt
 
 # Ignore IntelliJ files.
 .idea/
+
+# Ignore cache folder created by clangd
+.cache
 
 # Ignore the default results output directory for tools/run-swarmed.py
 /results

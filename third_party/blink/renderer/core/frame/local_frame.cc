@@ -2402,9 +2402,12 @@ void LocalFrame::DidChangeVisibleToHitTesting() {
 
 WebPrescientNetworking* LocalFrame::PrescientNetworking() {
   if (!prescient_networking_) {
-    prescient_networking_ = WebLocalFrameImpl::FromFrame(this)
-                                ->Client()
-                                ->CreatePrescientNetworking();
+    WebLocalFrameImpl* web_local_frame = WebLocalFrameImpl::FromFrame(this);
+    // There is no valid WebLocalFrame, return a nullptr to ignore pre* hints.
+    if (!web_local_frame)
+      return nullptr;
+    prescient_networking_ =
+        web_local_frame->Client()->CreatePrescientNetworking();
   }
   return prescient_networking_.get();
 }

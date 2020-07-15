@@ -30,6 +30,7 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/video_layer.h"
+#include "cc/metrics/events_metrics_manager.h"
 #include "cc/paint/image_animation_count.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/test/fake_content_layer_client.h"
@@ -80,6 +81,12 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
+
+#define EXPECT_SCOPED(statements) \
+  {                               \
+    SCOPED_TRACE("");             \
+    statements;                   \
+  }
 
 using testing::_;
 using testing::AnyNumber;
@@ -1539,11 +1546,11 @@ class LayerTreeHostTestEarlyDamageCheckStops : public LayerTreeHostTest {
     // Change the child layer each frame. Since the child layer is translated
     // past the viewport, it should not cause damage, but webview will still
     // invalidate if the frame doesn't check for damage early.
-    child_->SetOpacity(1.0 / (float)(frame + 1));
+    child_->SetOpacity(1.0f / (frame + 1));
 
     // For |damaged_frame_limit| consecutive frames, cause actual damage.
     if (frame >= 3 && frame < (damaged_frame_limit_ + 3)) {
-      root_->SetOpacity(1.0 / (float)frame);
+      root_->SetOpacity(1.0f / frame);
     }
   }
 
@@ -9024,6 +9031,352 @@ class LayerTreeHostTestDelegatedInkMetadataOnAndOff
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDelegatedInkMetadataOnAndOff);
+
+// Base class for EventMetrics-related tests.
+class LayerTreeHostTestEventsMetrics : public LayerTreeHostTest {
+ protected:
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  // Simulate an event being handled on the main thread.
+  void PostSimulateEvent() {
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&LayerTreeHostTestEventsMetrics::SimulateEventOnMain,
+                       base::Unretained(this)));
+  }
+
+  // Verifies the number of saved events metrics on the main thread.
+  void PostVerifyMainSavedEventsMetricsCount(size_t count) const {
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&LayerTreeHostTestEventsMetrics::
+                                      VerifyMainSavedEventsMetricsCountOnMain,
+                                  base::Unretained(this), count));
+  }
+
+  // Verifies the number of events metrics copied from the main thread to the
+  // impl thread.
+  void VerifyImplEventsMetricsFromMainCount(LayerTreeHostImpl* impl,
+                                            size_t count) const {
+    EXPECT_EQ(count, impl->active_tree()
+                         ->events_metrics_from_main_thread_count_for_testing());
+  }
+
+ private:
+  void SimulateEventOnMain() {
+    auto scoped_event_monitor =
+        layer_tree_host()->GetScopedEventMetricsMonitor(EventMetrics::Create(
+            ui::ET_GESTURE_SCROLL_UPDATE, base::TimeTicks::Now(),
+            ui::ScrollInputType::kWheel));
+    layer_tree_host()->SetNeedsAnimate();
+    EXPECT_SCOPED(VerifyMainSavedEventsMetricsCountOnMain(1));
+  }
+
+  void VerifyMainSavedEventsMetricsCountOnMain(size_t count) const {
+    EXPECT_EQ(count,
+              layer_tree_host()->saved_events_metrics_count_for_testing());
+  }
+};
+
+// Verifies that if the commit is aborted (deferred) due to LayerTreeHost being
+// hidden, events metrics are not thrown away to be used when it becomes
+// visible.
+class LayerTreeHostTestKeepEventsMetricsForVisibility
+    : public LayerTreeHostTestEventsMetrics {
+ protected:
+  void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
+                                  const viz::BeginFrameArgs& args) override {
+    // Skip if we have already received a begin-impl-frame and acted on it.
+    if (received_will_begin_impl_frame_)
+      return;
+    received_will_begin_impl_frame_ = true;
+
+    EXPECT_SCOPED(VerifyImplEventsMetricsFromMainCount(impl, 0));
+
+    // Simulate an event being handled on the main thread. Since the main frame
+    // is not yet scheduled, we will have events metrics when the main frame is
+    // processed.
+    PostSimulateEvent();
+
+    // Hide layer tree host. Since the main frame is not yet scheduled, layer
+    // tree host will be hidden when the main frame is processed, causing it to
+    // abort.
+    PostSetLayerTreeHostVisible(false);
+  }
+
+  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* impl,
+                                     CommitEarlyOutReason reason) override {
+    EXPECT_EQ(reason, CommitEarlyOutReason::ABORTED_NOT_VISIBLE);
+
+    // Since the main frame is aborted due to invisibility, events metrics
+    // should not have been thrown away.
+    PostVerifyMainSavedEventsMetricsCount(1);
+
+    // Make layer tree host visible so that the deferred commit is completed,
+    // causing events metrics being passed to the impl thread.
+    PostSetLayerTreeHostVisible(true);
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+    // Now that a commit is completed and activated, events metrics from main
+    // thread should have been moved to the impl thread.
+    PostVerifyMainSavedEventsMetricsCount(0);
+    EXPECT_SCOPED(VerifyImplEventsMetricsFromMainCount(impl, 1));
+
+    EndTest();
+  }
+
+ private:
+  void SetLayerTreeHostVisibleOnMain(bool visible) {
+    layer_tree_host()->SetVisible(visible);
+  }
+
+  void PostSetLayerTreeHostVisible(bool visible) {
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&LayerTreeHostTestKeepEventsMetricsForVisibility::
+                           SetLayerTreeHostVisibleOnMain,
+                       base::Unretained(this), visible));
+  }
+
+  bool received_will_begin_impl_frame_ = false;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestKeepEventsMetricsForVisibility);
+
+// Verifies that if the commit is aborted due to main frame update being
+// deferred, events metrics are not thrown away to be used when the actual
+// commit happens.
+class LayerTreeHostTestKeepEventsMetricsForDeferredMainFrameUpdate
+    : public LayerTreeHostTestEventsMetrics {
+ protected:
+  void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
+                                  const viz::BeginFrameArgs& args) override {
+    // Skip if we have already received a begin-impl-frame and acted on it.
+    if (received_will_begin_impl_frame_)
+      return;
+    received_will_begin_impl_frame_ = true;
+
+    EXPECT_SCOPED(VerifyImplEventsMetricsFromMainCount(impl, 0));
+
+    // Simulate an event being handled on the main thread. Since the main frame
+    // is not yet scheduled, we will have events metrics when the main frame is
+    // processed.
+    PostSimulateEvent();
+
+    // Defer main frame updates. Since the main frame is not yet scheduled, main
+    // frame updates will be deferred when the main frame is processed, causing
+    // it to abort.
+    PostDeferMainFrameUpdate();
+  }
+
+  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* impl,
+                                     CommitEarlyOutReason reason) override {
+    EXPECT_EQ(reason, CommitEarlyOutReason::ABORTED_DEFERRED_MAIN_FRAME_UPDATE);
+
+    // Since the main frame is aborted due to deferred main frame updates,
+    // events metrics should not have been thrown away.
+    PostVerifyMainSavedEventsMetricsCount(1);
+
+    // Stop deferring main frame updates so that the deferred commit is
+    // completed, causing events metrics being passed to the impl thread.
+    PostStopDeferringMainFrameUpdate();
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+    // Now that a commit is completed and activated, events metrics from main
+    // thread should have been moved to the impl thread.
+    PostVerifyMainSavedEventsMetricsCount(0);
+    EXPECT_SCOPED(VerifyImplEventsMetricsFromMainCount(impl, 1));
+
+    EndTest();
+  }
+
+ private:
+  void DeferMainFrameUpdateOnMain() {
+    scoped_defer_main_frame_update_ = layer_tree_host()->DeferMainFrameUpdate();
+  }
+
+  void PostDeferMainFrameUpdate() {
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &LayerTreeHostTestKeepEventsMetricsForDeferredMainFrameUpdate::
+                DeferMainFrameUpdateOnMain,
+            base::Unretained(this)));
+  }
+
+  void StopDeferringMainFrameUpdateOnMain() {
+    scoped_defer_main_frame_update_.reset();
+  }
+
+  void PostStopDeferringMainFrameUpdate() {
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &LayerTreeHostTestKeepEventsMetricsForDeferredMainFrameUpdate::
+                StopDeferringMainFrameUpdateOnMain,
+            base::Unretained(this)));
+  }
+
+  bool received_will_begin_impl_frame_ = false;
+  std::unique_ptr<ScopedDeferMainFrameUpdate> scoped_defer_main_frame_update_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTestKeepEventsMetricsForDeferredMainFrameUpdate);
+
+// Verifies that if the commit is aborted (deferred), events metrics are not
+// thrown away to be used when the actual commit happens.
+class LayerTreeHostTestKeepEventsMetricsForDeferredCommit
+    : public LayerTreeHostTestEventsMetrics {
+ protected:
+  void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
+                                  const viz::BeginFrameArgs& args) override {
+    // Skip if we have already received a begin-impl-frame and acted on it.
+    if (received_will_begin_impl_frame_)
+      return;
+    received_will_begin_impl_frame_ = true;
+
+    EXPECT_SCOPED(VerifyImplEventsMetricsFromMainCount(impl, 0));
+
+    // Simulate an event being handled on the main thread. Since the main frame
+    // is not yet scheduled, we will have events metrics when the main frame is
+    // processed.
+    PostSimulateEvent();
+
+    // Defer commits. Since the main frame is not yet scheduled, commits will be
+    // deferred when the main frame is processed, causing it to abort.
+    PostDeferCommit();
+  }
+
+  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* impl,
+                                     CommitEarlyOutReason reason) override {
+    EXPECT_EQ(reason, CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT);
+
+    // Since the main frame is aborted due to deferred commits, events metrics
+    // should not have been thrown away.
+    PostVerifyMainSavedEventsMetricsCount(1);
+
+    // Stop deferring commits so that the deferred commit is completed, causing
+    // events metrics being passed to the impl thread.
+    PostStopDeferringCommit();
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+    // Now that a commit is completed and activated, events metrics from main
+    // thread should have been moved to the impl thread.
+    PostVerifyMainSavedEventsMetricsCount(0);
+    EXPECT_SCOPED(VerifyImplEventsMetricsFromMainCount(impl, 1));
+
+    EndTest();
+  }
+
+ private:
+  void DeferCommitOnMain() {
+    layer_tree_host()->StartDeferringCommits(base::TimeDelta::FromDays(1));
+  }
+
+  void PostDeferCommit() {
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&LayerTreeHostTestKeepEventsMetricsForDeferredCommit::
+                           DeferCommitOnMain,
+                       base::Unretained(this)));
+  }
+
+  void StopDeferringCommitOnMain() {
+    layer_tree_host()->StopDeferringCommits(
+        PaintHoldingCommitTrigger::kFirstContentfulPaint);
+  }
+
+  void PostStopDeferringCommit() {
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&LayerTreeHostTestKeepEventsMetricsForDeferredCommit::
+                           StopDeferringCommitOnMain,
+                       base::Unretained(this)));
+  }
+
+  bool received_will_begin_impl_frame_ = false;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTestKeepEventsMetricsForDeferredCommit);
+
+// Verifies that if the commit is aborted due to no damage, events metrics are
+// thrown away, so there is nothing to report in the next commit.
+class LayerTreeHostTestIgnoreEventsMetricsForNoUpdate
+    : public LayerTreeHostTestEventsMetrics {
+ protected:
+  void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
+                                  const viz::BeginFrameArgs& args) override {
+    // Continue only if we are waiting for the second frame's being-impl-frame.
+    // The first frame will end up in a commit which is not what we want.
+    if (state_ != State::kWaitingForSecondFrameBeginImpl)
+      return;
+    state_ = State::kReceivedSecondFrameBeginImpl;
+
+    EXPECT_SCOPED(VerifyImplEventsMetricsFromMainCount(impl, 0));
+
+    // Simulate an event being handled on the main thread. Since the main frame
+    // is not yet scheduled, we will have events metrics when the main frame is
+    // processed.
+    PostSimulateEvent();
+  }
+
+  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* impl,
+                                     CommitEarlyOutReason reason) override {
+    EXPECT_EQ(reason, CommitEarlyOutReason::FINISHED_NO_UPDATES);
+
+    // We should reach here only for the second frame.
+    EXPECT_EQ(state_, State::kReceivedSecondFrameBeginImpl);
+    state_ = State::kWaitingForThirdFrameActivation;
+
+    // Since the main frame is aborted due to no updates, events metrics should
+    // have been thrown away.
+    PostVerifyMainSavedEventsMetricsCount(0);
+
+    // Request another commit to make sure no events metrics is passed to the
+    // impl thread when it is complete.
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+    switch (state_) {
+      case State::kWaitingForFirstFrameActivation:
+        // Now that the first frame's commit is completed and activated, request
+        // another begin-main-frame without requesting a full commit so that it
+        // aborts with no updates.
+        state_ = State::kWaitingForSecondFrameBeginImpl;
+        EXPECT_SCOPED(VerifyImplEventsMetricsFromMainCount(impl, 0));
+        PostSetNeedsUpdateLayersToMainThread();
+        break;
+      case State::kWaitingForThirdFrameActivation:
+        // Now that the third frame's commit is completed and activated there
+        // should be no events metrics on the main or impl thread as the events
+        // metrics were thrown away after second frame was aborted with no
+        // updates.
+        EXPECT_SCOPED(VerifyImplEventsMetricsFromMainCount(impl, 0));
+        PostVerifyMainSavedEventsMetricsCount(0);
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+ private:
+  enum class State {
+    kWaitingForFirstFrameActivation,
+    kWaitingForSecondFrameBeginImpl,
+    kReceivedSecondFrameBeginImpl,
+    kWaitingForThirdFrameActivation,
+  };
+
+  State state_ = State::kWaitingForFirstFrameActivation;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestIgnoreEventsMetricsForNoUpdate);
 
 }  // namespace
 }  // namespace cc

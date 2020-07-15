@@ -203,8 +203,7 @@ WritableStream* WritableStream::CreateWithCountQueueingStrategy(
   // introduces unnecessary trips through V8. Implement algorithms based on an
   // UnderlyingSinkBase.
   auto* init = QueuingStrategyInit::Create();
-  init->setHighWaterMark(
-      ScriptValue::From(script_state, static_cast<double>(high_water_mark)));
+  init->setHighWaterMark(static_cast<double>(high_water_mark));
   auto* strategy = CountQueuingStrategy::Create(script_state, init);
   ScriptValue strategy_value = ScriptValue::From(script_state, strategy);
   if (strategy_value.IsEmpty())

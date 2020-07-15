@@ -18,13 +18,59 @@
 
 namespace blink {
 
-void Element::SynchronizeAttribute(const AtomicString& local_name) const {
+WTF::AtomicStringTable::WeakResult Element::WeakLowercaseIfNecessary(
+    const StringView& name) const {
+  if (LIKELY(IsHTMLElement() && IsA<HTMLDocument>(GetDocument()))) {
+#if defined(ARCH_CPU_ARMEL)
+    // The compiler on x64 and ARM32 produces code with very different
+    // performance characteristics for WeakFindLowercased(). On ARM, explicitly
+    // lowercasing the string into a new buffer before doing the lookup in the
+    // AtomicStringTable is ~15% faster than doing the WeakFindLowercased().
+    // This appears to be due to different inlining choices. Thus far, a
+    // single block of code that works well on both platforms hasn't been found
+    // so settling of an ifdef.
+    //
+    // TODO(ajwong): Figure out why this architecture divergence exists and
+    // remove.
+    StringView::StackBackingStore buf;
+    StringView lowered = name.LowerASCIIMaybeUsingBuffer(buf);
+    // TODO(ajwong): Why is this nearly 2x faster than calling the inlined
+    // WeakFind() which also does the same check?
+    if (LIKELY(lowered.IsAtomic())) {
+      return AtomicStringTable::WeakResult(lowered.SharedImpl());
+    } else {
+      return WTF::AtomicStringTable::Instance().WeakFind(lowered);
+    }
+#else
+    return WTF::AtomicStringTable::Instance().WeakFindLowercased(name);
+#endif
+  }
+
+  return WTF::AtomicStringTable::Instance().WeakFind(name);
+}
+
+// Note, SynchronizeAttributeHinted is safe to call between a WeakFind() and
+// a check on the AttributeCollection for the element even though it may
+// modify the AttributeCollection to insert a "style" attribute. The reason
+// is because html_names::kStyleAttr.LocalName() is an AtomicString
+// representing "style". This means the AtomicStringTable will always have
+// an entry for "style" and a `hint` that corresponds to
+// html_names::kStyleAttr.LocalName() will never refer to a deleted object
+// thus it is safe to insert html_names::kStyleAttr.LocalName() into the
+// AttributeCollection collection after the WeakFind() when `hint` is
+// referring to "style". A subsequent lookup will match itself correctly
+// without worry for UaF or false positives.
+void Element::SynchronizeAttributeHinted(
+    const StringView& local_name,
+    WTF::AtomicStringTable::WeakResult hint) const {
   // This version of SynchronizeAttribute() is streamlined for the case where
   // you don't have a full QualifiedName, e.g when called from DOM API.
   if (!GetElementData())
     return;
+  // TODO(ajwong): Does this unnecessarily synchronize style attributes on
+  // SVGElements?
   if (GetElementData()->style_attribute_is_dirty() &&
-      LowercaseIfNecessary(local_name) == html_names::kStyleAttr.LocalName()) {
+      hint == html_names::kStyleAttr.LocalName()) {
     DCHECK(IsStyledElement());
     SynchronizeStyleAttributeInternal();
     return;
@@ -40,62 +86,40 @@ void Element::SynchronizeAttribute(const AtomicString& local_name) const {
     // svg_attributes_are_dirty_ remains true. This information is available in
     // the attribute->property map in SVGElement.
     To<SVGElement>(this)->SynchronizeSVGAttribute(
-        QualifiedName(g_null_atom, local_name, g_null_atom));
+        QualifiedName(g_null_atom, local_name.ToAtomicString(), g_null_atom));
   }
 }
 
-const AtomicString& Element::getAttribute(
-    const AtomicString& local_name) const {
+const AtomicString& Element::GetAttributeHinted(
+    const StringView& name,
+    WTF::AtomicStringTable::WeakResult hint) const {
   if (!GetElementData())
     return g_null_atom;
-  SynchronizeAttribute(local_name);
+  SynchronizeAttributeHinted(name, hint);
   if (const Attribute* attribute =
-          GetElementData()->Attributes().Find(LowercaseIfNecessary(local_name)))
+          GetElementData()->Attributes().FindHinted(name, hint))
     return attribute->Value();
   return g_null_atom;
 }
 
-std::pair<wtf_size_t, const QualifiedName>
-Element::LookupAttributeQNameInternal(const AtomicString& local_name) const {
-  AtomicString case_adjusted_local_name = LowercaseIfNecessary(local_name);
+std::pair<wtf_size_t, const QualifiedName> Element::LookupAttributeQNameHinted(
+    const StringView& name,
+    WTF::AtomicStringTable::WeakResult hint) const {
   if (!GetElementData()) {
     return std::make_pair(
         kNotFound,
-        QualifiedName(g_null_atom, case_adjusted_local_name, g_null_atom));
+        QualifiedName(g_null_atom, LowercaseIfNecessary(name.ToAtomicString()),
+                      g_null_atom));
   }
 
   AttributeCollection attributes = GetElementData()->Attributes();
-  wtf_size_t index = attributes.FindIndex(case_adjusted_local_name);
+  wtf_size_t index = attributes.FindIndexHinted(name, hint);
   return std::make_pair(
-      index,
-      index != kNotFound
-          ? attributes[index].GetName()
-          : QualifiedName(g_null_atom, case_adjusted_local_name, g_null_atom));
-}
-
-void Element::setAttribute(const AtomicString& local_name,
-                           const AtomicString& value,
-                           ExceptionState& exception_state) {
-  if (!Document::IsValidName(local_name)) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidCharacterError,
-        "'" + local_name + "' is not a valid attribute name.");
-    return;
-  }
-
-  SynchronizeAttribute(local_name);
-  wtf_size_t index;
-  QualifiedName q_name = QualifiedName::Null();
-  std::tie(index, q_name) = LookupAttributeQNameInternal(local_name);
-
-  String trusted_value =
-      TrustedTypesCheckFor(ExpectedTrustedTypeForAttribute(q_name), value,
-                           GetExecutionContext(), exception_state);
-  if (exception_state.HadException())
-    return;
-
-  SetAttributeInternal(index, q_name, AtomicString(trusted_value),
-                       kNotInSynchronizationOfLazyAttribute);
+      index, index != kNotFound
+                 ? attributes[index].GetName()
+                 : QualifiedName(g_null_atom,
+                                 LowercaseIfNecessary(name.ToAtomicString()),
+                                 g_null_atom));
 }
 
 void Element::setAttribute(const QualifiedName& name,
@@ -134,8 +158,35 @@ void Element::SetSynchronizedLazyAttribute(const QualifiedName& name,
   SetAttributeInternal(index, name, value, kInSynchronizationOfLazyAttribute);
 }
 
-void Element::setAttribute(
-    const AtomicString& local_name,
+void Element::SetAttributeHinted(const StringView& local_name,
+                                 WTF::AtomicStringTable::WeakResult hint,
+                                 const AtomicString& value,
+                                 ExceptionState& exception_state) {
+  if (!Document::IsValidName(local_name)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidCharacterError,
+        "'" + local_name + "' is not a valid attribute name.");
+    return;
+  }
+
+  SynchronizeAttributeHinted(local_name, hint);
+  wtf_size_t index;
+  QualifiedName q_name = QualifiedName::Null();
+  std::tie(index, q_name) = LookupAttributeQNameHinted(local_name, hint);
+
+  String trusted_value =
+      TrustedTypesCheckFor(ExpectedTrustedTypeForAttribute(q_name), value,
+                           GetExecutionContext(), exception_state);
+  if (exception_state.HadException())
+    return;
+
+  SetAttributeInternal(index, q_name, AtomicString(trusted_value),
+                       kNotInSynchronizationOfLazyAttribute);
+}
+
+void Element::SetAttributeHinted(
+    const StringView& local_name,
+    WTF::AtomicStringTable::WeakResult hint,
     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
         string_or_trusted,
     ExceptionState& exception_state) {
@@ -146,10 +197,10 @@ void Element::setAttribute(
     return;
   }
 
-  SynchronizeAttribute(local_name);
+  SynchronizeAttributeHinted(local_name, hint);
   wtf_size_t index;
   QualifiedName q_name = QualifiedName::Null();
-  std::tie(index, q_name) = LookupAttributeQNameInternal(local_name);
+  std::tie(index, q_name) = LookupAttributeQNameHinted(local_name, hint);
   String value = TrustedTypesCheckFor(ExpectedTrustedTypeForAttribute(q_name),
                                       string_or_trusted, GetExecutionContext(),
                                       exception_state);
@@ -263,14 +314,14 @@ Attr* Element::setAttributeNode(Attr* attr_node,
   return old_attr_node;
 }
 
-void Element::removeAttribute(const AtomicString& name) {
+void Element::RemoveAttributeHinted(const StringView& name,
+                                    WTF::AtomicStringTable::WeakResult hint) {
   if (!GetElementData())
     return;
 
-  AtomicString local_name = LowercaseIfNecessary(name);
-  wtf_size_t index = GetElementData()->Attributes().FindIndex(local_name);
+  wtf_size_t index = GetElementData()->Attributes().FindIndexHinted(name, hint);
   if (index == kNotFound) {
-    if (UNLIKELY(local_name == html_names::kStyleAttr) &&
+    if (UNLIKELY(hint == html_names::kStyleAttr.LocalName()) &&
         GetElementData()->style_attribute_is_dirty() && IsStyledElement())
       RemoveAllInlineStyleProperties();
     return;

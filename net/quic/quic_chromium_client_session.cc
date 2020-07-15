@@ -1109,6 +1109,7 @@ void QuicChromiumClientSession::RemoveHandle(Handle* handle) {
 void QuicChromiumClientSession::AddConnectivityObserver(
     ConnectivityObserver* observer) {
   connectivity_observer_list_.AddObserver(observer);
+  observer->OnSessionRegistered(this, GetCurrentNetwork());
 }
 
 void QuicChromiumClientSession::RemoveConnectivityObserver(
@@ -1674,6 +1675,12 @@ void QuicChromiumClientSession::OnConnectionClosed(
 
   RecordConnectionCloseErrorCode(frame, source, session_key_.host(),
                                  OneRttKeysAvailable());
+  if (OneRttKeysAvailable()) {
+    NetworkChangeNotifier::NetworkHandle current_network = GetCurrentNetwork();
+    for (auto& observer : connectivity_observer_list_)
+      observer.OnSessionClosedAfterHandshake(this, current_network, source,
+                                             frame.quic_error_code);
+  }
 
   const quic::QuicErrorCode error = frame.quic_error_code;
   const std::string& error_details = frame.error_details;

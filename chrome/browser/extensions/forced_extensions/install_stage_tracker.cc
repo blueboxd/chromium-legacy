@@ -72,6 +72,10 @@ std::string InstallStageTracker::GetFormattedInstallationData(
     str << "; no_update_info: "
         << static_cast<int>(data.no_updates_info.value());
   }
+  if (data.app_status_error) {
+    str << "; app_status_error: "
+        << static_cast<int>(data.app_status_error.value());
+  }
 
   return str.str();
 }
@@ -113,10 +117,15 @@ void InstallStageTracker::ReportInfoOnNoUpdatesFailure(
 
 void InstallStageTracker::ReportManifestInvalidFailure(
     const ExtensionId& id,
-    ManifestInvalidError error) {
+    const ExtensionDownloaderDelegate::FailureData& failure_data) {
+  DCHECK(failure_data.manifest_invalid_error);
   InstallationData& data = installation_data_map_[id];
   data.failure_reason = FailureReason::MANIFEST_INVALID;
-  data.manifest_invalid_error = error;
+  data.manifest_invalid_error = failure_data.manifest_invalid_error.value();
+  if (failure_data.app_status_error) {
+    data.app_status_error =
+        GetManifestInvalidAppStatusError(failure_data.app_status_error.value());
+  }
   NotifyObserversOfFailure(id, data.failure_reason.value(), data);
 }
 
@@ -177,6 +186,18 @@ void InstallStageTracker::ReportManifestUpdateCheckStatus(
   for (auto& observer : observers_) {
     observer.OnExtensionDataChangedForTesting(id, browser_context_, data);
   }
+}
+
+InstallStageTracker::AppStatusError
+InstallStageTracker::GetManifestInvalidAppStatusError(
+    const std::string& status) {
+  if (status == "error-unknownApplication")
+    return AppStatusError::kErrorUnknownApplication;
+  else if (status == "error-invalidAppId")
+    return AppStatusError::kErrorInvalidAppId;
+  else if (status == "error-restricted" || status == "restricted")
+    return AppStatusError::kErrorRestricted;
+  return AppStatusError::kUnknown;
 }
 
 void InstallStageTracker::ReportFetchError(

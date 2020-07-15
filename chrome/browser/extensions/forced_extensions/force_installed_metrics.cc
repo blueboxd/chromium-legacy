@@ -314,9 +314,14 @@ void ForceInstalledMetrics::ReportMetrics() {
     if (installation.manifest_invalid_error) {
       DCHECK_EQ(failure_reason,
                 InstallStageTracker::FailureReason::MANIFEST_INVALID);
-      UMA_HISTOGRAM_ENUMERATION(
-          "Extensions.ForceInstalledFailureManifestInvalidErrorDetail",
+      base::UmaHistogramEnumeration(
+          "Extensions.ForceInstalledFailureManifestInvalidErrorDetail2",
           installation.manifest_invalid_error.value());
+      if (installation.app_status_error) {
+        base::UmaHistogramEnumeration(
+            "Extensions.ForceInstalledFailureManifestInvalidAppStatusError",
+            installation.app_status_error.value());
+      }
     }
   }
   bool non_misconfigured_failure_occurred =

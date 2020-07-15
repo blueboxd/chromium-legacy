@@ -203,7 +203,7 @@
          83dp -->
     <dimen name="webapk_adaptive_icon_size">83dp</dimen>
 
-    <dimen name="webapk_badge_icon_size">24dp</dimen>
+    <dimen name="webapk_monochrome_icon_size">24dp</dimen>
 
     <!-- Toolbar dimensions -->
     <dimen name="toolbar_tab_count_text_size_1_digit">12dp</dimen>

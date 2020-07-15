@@ -37,14 +37,16 @@ component("chromeos") {
   if (is_chromeos_device) {
     configs += [ "//build/config/compiler:use_orderfile_for_hugepage" ]
   }
-  public_deps = [ "//chromeos/constants" ]
+  public_deps = [
+    "//chromeos/constants",
+    "//components/policy/proto",
+  ]
   deps = [
     ":chromeos_export",
     "//base",
     "//base:i18n",
     "//chromeos/dbus",
     "//chromeos/dbus/constants",
-    "//components/policy/proto",
     "//google_apis",
     "//services/network/public/cpp:cpp",
     "//third_party/protobuf:protobuf_lite",
@@ -155,6 +157,7 @@ test("chromeos_unittests") {
     "//build/config/linux/dbus",
     "//build/config/linux/nss:system_nss_no_ssl_config",
   ]
+
   deps = [
     ":chromeos_buildflags",
     ":test_support",

@@ -192,13 +192,6 @@ class ServiceWorkerContainerTest : public PageTestBase {
 
   void SetPageURL(const String& url) {
     NavigateTo(KURL(NullURL(), url));
-
-    if (url.StartsWith("https://") || url.StartsWith("http://localhost/")) {
-      GetFrame()
-          .DomWindow()
-          ->GetSecurityContext()
-          .SetSecureContextModeForTesting(SecureContextMode::kSecureContext);
-    }
   }
 
   void TestRegisterRejected(const String& script_url,

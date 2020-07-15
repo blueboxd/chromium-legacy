@@ -118,10 +118,13 @@ using WebAppTabRestoreBrowserTest = WebAppBrowserTest;
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ThemeColor) {
   {
     const SkColor theme_color = SkColorSetA(SK_ColorBLUE, 0xF0);
+    blink::Manifest manifest;
+    manifest.start_url = GURL(kExampleURL);
+    manifest.scope = GURL(kExampleURL);
+    manifest.theme_color = theme_color;
     auto web_app_info = std::make_unique<WebApplicationInfo>();
-    web_app_info->app_url = GURL(kExampleURL);
-    web_app_info->scope = GURL(kExampleURL);
-    web_app_info->theme_color = theme_color;
+    web_app::UpdateWebAppInfoFromManifest(manifest, web_app_info.get());
+
     AppId app_id = InstallWebApp(std::move(web_app_info));
     Browser* app_browser = LaunchWebAppBrowser(app_id);
 

@@ -119,22 +119,22 @@ TEST(ImageResourceConverter, ValidPurposeTest) {
   ASSERT_EQ(1u, converted->purpose.size());
   ASSERT_EQ(Purpose::ANY, converted->purpose.front());
 
-  resource->setPurpose(" Badge");
+  resource->setPurpose(" Monochrome");
   converted = ManifestImageResource::From(resource);
   ASSERT_EQ(1u, converted->purpose.size());
-  ASSERT_EQ(Purpose::BADGE, converted->purpose.front());
+  ASSERT_EQ(Purpose::MONOCHROME, converted->purpose.front());
 
-  resource->setPurpose(" Badge  AnY");
+  resource->setPurpose(" Monochrome  AnY");
   converted = ManifestImageResource::From(resource);
   ASSERT_EQ(2u, converted->purpose.size());
-  ASSERT_EQ(Purpose::BADGE, converted->purpose.front());
+  ASSERT_EQ(Purpose::MONOCHROME, converted->purpose.front());
   ASSERT_EQ(Purpose::ANY, converted->purpose.back());
 
-  resource->setPurpose("any badge  AnY");
+  resource->setPurpose("any monochrome  AnY");
   converted = ManifestImageResource::From(resource);
   ASSERT_EQ(2u, converted->purpose.size());
   ASSERT_EQ(Purpose::ANY, converted->purpose.front());
-  ASSERT_EQ(Purpose::BADGE, converted->purpose.back());
+  ASSERT_EQ(Purpose::MONOCHROME, converted->purpose.back());
 }
 
 TEST(ImageResourceConverter, InvalidPurposeTest) {
@@ -181,13 +181,13 @@ TEST(ImageResourceConverter, ExampleValueTest) {
   blink::ManifestImageResource* resource =
       blink::ManifestImageResource::Create();
   resource->setSrc("http://example.com/lolcat.jpg");
-  resource->setPurpose("BADGE");
+  resource->setPurpose("MONOCHROME");
   resource->setSizes("32x32 64x64 128x128");
   resource->setType("image/jpeg");
 
   auto expected_resource = ManifestImageResource::New();
   expected_resource->src = blink::KURL("http://example.com/lolcat.jpg");
-  expected_resource->purpose = {Purpose::BADGE};
+  expected_resource->purpose = {Purpose::MONOCHROME};
   expected_resource->sizes = {{32, 32}, {64, 64}, {128, 128}};
   expected_resource->type = "image/jpeg";
 
@@ -197,7 +197,7 @@ TEST(ImageResourceConverter, ExampleValueTest) {
 TEST(ImageResourceConverter, BlinkToMojoTypeTest) {
   blink::ManifestImageResource* icon = blink::ManifestImageResource::Create();
   icon->setSrc("http://example.com/lolcat.jpg");
-  icon->setPurpose("BADGE");
+  icon->setPurpose("MONOCHROME");
   icon->setSizes("32x32 64x64 128x128");
   icon->setType("image/jpeg");
 
@@ -207,7 +207,7 @@ TEST(ImageResourceConverter, BlinkToMojoTypeTest) {
   EXPECT_EQ(mojo_icon.type, blink::WebString("image/jpeg").Utf16());
   EXPECT_EQ(mojo_icon.sizes[1], gfx::Size(64, 64));
   EXPECT_EQ(mojo_icon.purpose[0],
-            blink::Manifest::ImageResource::Purpose::BADGE);
+            blink::Manifest::ImageResource::Purpose::MONOCHROME);
 }
 
 }  // namespace

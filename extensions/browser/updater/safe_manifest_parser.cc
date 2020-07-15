@@ -51,6 +51,14 @@ bool ParseSingleAppTag(const base::Value& app_element,
     return false;
   }
 
+  // Get the app status.
+  result->app_status = GetXmlElementAttribute(app_element, "status");
+  if (!result->app_status.empty() && result->app_status != "ok") {
+    result->parse_error = ManifestParseFailure(
+        "App status is not OK", ManifestInvalidError::BAD_APP_STATUS);
+    return false;
+  }
+
   // Get the updatecheck node.
   std::string updatecheck_name =
       GetXmlQualifiedName(xml_namespace, "updatecheck");

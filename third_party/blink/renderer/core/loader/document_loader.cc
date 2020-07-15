@@ -1698,9 +1698,10 @@ void DocumentLoader::CommitNavigation() {
   frame_->DomWindow()->GetSecurityContext().SetContentSecurityPolicy(
       content_security_policy_.Get());
   frame_->DomWindow()->GetSecurityContext().ApplySandboxFlags(sandbox_flags);
+  frame_->DomWindow()->GetSecurityContext().SetSecurityOrigin(
+      std::move(security_origin));
 
-  SecurityContextInit security_init(frame_->DomWindow(), security_origin);
-  security_init.CalculateSecureContextMode(frame_.Get());
+  SecurityContextInit security_init(frame_->DomWindow());
   security_init.InitializeOriginTrials(
       response_.HttpHeaderField(http_names::kOriginTrial));
 

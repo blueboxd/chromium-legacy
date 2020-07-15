@@ -26,7 +26,7 @@ extern const base::Feature kLoadingPredictorUseOptimizationGuide;
 
 extern const base::Feature kLoadingPredictorPrefetch;
 
-enum class PrefetchSubresourceType { kAll, kJsAndCss };
+enum class PrefetchSubresourceType { kAll, kCss, kJsAndCss };
 
 extern const base::FeatureParam<PrefetchSubresourceType>
     kLoadingPredictorPrefetchSubresourceType;

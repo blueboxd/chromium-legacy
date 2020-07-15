@@ -971,13 +971,17 @@ bool Element::hasAttribute(const QualifiedName& name) const {
 }
 
 bool Element::HasAttributeIgnoringNamespace(
-    const AtomicString& local_name) const {
+    const StringView& local_name) const {
   if (!GetElementData())
     return false;
-  SynchronizeAttribute(local_name);
-  AtomicString name = LowercaseIfNecessary(local_name);
+  WTF::AtomicStringTable::WeakResult hint =
+      WeakLowercaseIfNecessary(local_name);
+  SynchronizeAttributeHinted(local_name, hint);
+  if (hint.IsNull()) {
+    return false;
+  }
   for (const Attribute& attribute : GetElementData()->Attributes()) {
-    if (attribute.LocalName() == name)
+    if (hint == attribute.LocalName())
       return true;
   }
   return false;
@@ -2055,21 +2059,22 @@ bool Element::toggleAttribute(const AtomicString& qualified_name,
   // 2. If the context object is in the HTML namespace and its node document is
   // an HTML document, then set qualifiedName to qualifiedName in ASCII
   // lowercase.
-  AtomicString lower_case_name = LowercaseIfNecessary(qualified_name);
+  AtomicString lowercase_name = LowercaseIfNecessary(qualified_name);
+  WTF::AtomicStringTable::WeakResult hint(lowercase_name.Impl());
   // 3. Let attribute be the first attribute in the context object’s attribute
   // list whose qualified name is qualifiedName, and null otherwise.
   // 4. If attribute is null, then
-  if (!getAttribute(lower_case_name)) {
+  if (!GetAttributeHinted(lowercase_name, hint)) {
     // 4. 1. If force is not given or is true, create an attribute whose local
-    // name is qualifiedName, value is the empty string, and node document is
+    // name is qualified_name, value is the empty string, and node document is
     // the context object’s node document, then append this attribute to the
     // context object, and then return true.
-    setAttribute(lower_case_name, g_empty_atom);
+    SetAttributeHinted(lowercase_name, hint, g_empty_atom);
     return true;
   }
   // 5. Otherwise, if force is not given or is false, remove an attribute given
   // qualifiedName and the context object, and then return false.
-  removeAttribute(lower_case_name);
+  RemoveAttributeHinted(lowercase_name, hint);
   return false;
 }
 
@@ -2088,17 +2093,18 @@ bool Element::toggleAttribute(const AtomicString& qualified_name,
   // 2. If the context object is in the HTML namespace and its node document is
   // an HTML document, then set qualifiedName to qualifiedName in ASCII
   // lowercase.
-  AtomicString lower_case_name = LowercaseIfNecessary(qualified_name);
+  AtomicString lowercase_name = LowercaseIfNecessary(qualified_name);
+  WTF::AtomicStringTable::WeakResult hint(lowercase_name.Impl());
   // 3. Let attribute be the first attribute in the context object’s attribute
   // list whose qualified name is qualifiedName, and null otherwise.
   // 4. If attribute is null, then
-  if (!getAttribute(lower_case_name)) {
+  if (!GetAttributeHinted(lowercase_name, hint)) {
     // 4. 1. If force is not given or is true, create an attribute whose local
-    // name is qualifiedName, value is the empty string, and node document is
+    // name is qualified_name, value is the empty string, and node document is
     // the context object’s node document, then append this attribute to the
     // context object, and then return true.
     if (force) {
-      setAttribute(lower_case_name, g_empty_atom);
+      SetAttributeHinted(lowercase_name, hint, g_empty_atom);
       return true;
     }
     // 4. 2. Return false.
@@ -2107,7 +2113,7 @@ bool Element::toggleAttribute(const AtomicString& qualified_name,
   // 5. Otherwise, if force is not given or is false, remove an attribute given
   // qualifiedName and the context object, and then return false.
   if (!force) {
-    removeAttribute(lower_case_name);
+    RemoveAttributeHinted(lowercase_name, hint);
     return false;
   }
   // 6. Return true.
@@ -3803,12 +3809,14 @@ void Element::removeAttributeNS(const AtomicString& namespace_uri,
   removeAttribute(QualifiedName(g_null_atom, local_name, namespace_uri));
 }
 
-Attr* Element::getAttributeNode(const AtomicString& local_name) {
+Attr* Element::getAttributeNode(const StringView& local_name) {
   if (!GetElementData())
     return nullptr;
-  SynchronizeAttribute(local_name);
+  WTF::AtomicStringTable::WeakResult hint =
+      WeakLowercaseIfNecessary(local_name);
+  SynchronizeAttributeHinted(local_name, hint);
   const Attribute* attribute =
-      GetElementData()->Attributes().Find(LowercaseIfNecessary(local_name));
+      GetElementData()->Attributes().FindHinted(local_name, hint);
   if (!attribute)
     return nullptr;
   return EnsureAttr(attribute->GetName());
@@ -3826,12 +3834,14 @@ Attr* Element::getAttributeNodeNS(const AtomicString& namespace_uri,
   return EnsureAttr(attribute->GetName());
 }
 
-bool Element::hasAttribute(const AtomicString& local_name) const {
+bool Element::hasAttribute(const StringView& local_name) const {
   if (!GetElementData())
     return false;
-  SynchronizeAttribute(local_name);
-  return GetElementData()->Attributes().FindIndex(
-             LowercaseIfNecessary(local_name)) != kNotFound;
+  WTF::AtomicStringTable::WeakResult hint =
+      WeakLowercaseIfNecessary(local_name);
+  SynchronizeAttributeHinted(local_name, hint);
+  return GetElementData()->Attributes().FindIndexHinted(local_name, hint) !=
+         kNotFound;
 }
 
 bool Element::hasAttributeNS(const AtomicString& namespace_uri,

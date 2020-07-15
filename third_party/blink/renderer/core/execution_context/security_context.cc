@@ -57,34 +57,19 @@ WTF::Vector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
   return serialized;
 }
 
-SecurityContext::SecurityContext(SecurityContextType context_type)
-    : insecure_request_policy_(
-          mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone),
-      context_type_for_asserts_(context_type) {}
+SecurityContext::SecurityContext(ExecutionContext* execution_context)
+    : execution_context_(execution_context),
+      insecure_request_policy_(
+          mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone) {}
 
 SecurityContext::~SecurityContext() = default;
 
 void SecurityContext::Initialize(const SecurityContextInit& init) {
-  if (security_origin_) {
-    // If |security_origin_| is non-null, this is a re-initialization. This
-    // should only happen for kWindow, when the window of an initial empty
-    // document is reused.
-    SECURITY_CHECK(context_type_for_asserts_ == kWindow);
-    // Re-initialization should only happen when origins can access each other.
-    SECURITY_CHECK(security_origin_->CanAccess(init.GetSecurityOrigin().get()));
-    // Under normal circumstances, because the origins can access each other,
-    // the SecureContextMode can't change. However, when an an origin is granted
-    // universal access, it can access any other origin, including ones that
-    // result in a different SecureContextMode.
-    SECURITY_CHECK(secure_context_mode_ == init.GetSecureContextMode() ||
-                   security_origin_->IsGrantedUniversalAccess());
-  }
-  security_origin_ = init.GetSecurityOrigin();
-  secure_context_mode_ = init.GetSecureContextMode();
   origin_trial_context_ = init.GetOriginTrialContext();
 }
 
 void SecurityContext::Trace(Visitor* visitor) const {
+  visitor->Trace(execution_context_);
   visitor->Trace(content_security_policy_);
   visitor->Trace(origin_trial_context_);
 }
@@ -104,14 +89,38 @@ void SecurityContext::SetSecurityOrigin(
   // that transition. See https://crbug.com/1068008. It would be great if we
   // could get rid of this exemption.
   bool is_worker_transition_to_opaque =
-      context_type_for_asserts_ == kWorker &&
+      execution_context_ &&
+      execution_context_->IsWorkerOrWorkletGlobalScope() &&
       IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin) &&
       security_origin->IsOpaque() &&
       security_origin->GetOriginOrPrecursorOriginIfOpaque() == security_origin_;
-  CHECK(context_type_for_asserts_ == kRemoteFrame || !security_origin_ ||
+  CHECK(!execution_context_ || !security_origin_ ||
         security_origin_->CanAccess(security_origin.get()) ||
         is_worker_transition_to_opaque);
   security_origin_ = std::move(security_origin);
+
+  if (!security_origin_->IsPotentiallyTrustworthy()) {
+    secure_context_mode_ = SecureContextMode::kInsecureContext;
+  } else if (SchemeRegistry::SchemeShouldBypassSecureContextCheck(
+                 security_origin_->Protocol())) {
+    secure_context_mode_ = SecureContextMode::kSecureContext;
+  } else if (execution_context_) {
+    secure_context_mode_ = execution_context_->HasInsecureContextInAncestors()
+                               ? SecureContextMode::kInsecureContext
+                               : SecureContextMode::kSecureContext;
+  }
+
+  bool is_secure = secure_context_mode_ == SecureContextMode::kSecureContext;
+  if (sandbox_flags_ != network::mojom::blink::WebSandboxFlags::kNone) {
+    UseCounter::Count(
+        execution_context_,
+        is_secure ? WebFeature::kSecureContextCheckForSandboxedOriginPassed
+                  : WebFeature::kSecureContextCheckForSandboxedOriginFailed);
+  }
+
+  UseCounter::Count(execution_context_,
+                    is_secure ? WebFeature::kSecureContextCheckPassed
+                              : WebFeature::kSecureContextCheckFailed);
 }
 
 void SecurityContext::SetSecurityOriginForTesting(

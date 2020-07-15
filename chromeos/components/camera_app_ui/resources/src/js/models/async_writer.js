@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AsyncJobQueue} from '../async_job_queue.js'
+import {AsyncJobQueue} from '../async_job_queue.js';
 import {assert} from '../chrome_util.js';
 
 /**

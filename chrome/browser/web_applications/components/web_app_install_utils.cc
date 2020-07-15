@@ -144,8 +144,10 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   if (manifest.scope.is_valid())
     web_app_info->scope = manifest.scope;
 
-  if (manifest.theme_color)
-    web_app_info->theme_color = *manifest.theme_color;
+  if (manifest.theme_color) {
+    web_app_info->theme_color =
+        SkColorSetA(*manifest.theme_color, SK_AlphaOPAQUE);
+  }
 
   if (manifest.display != DisplayMode::kUndefined)
     web_app_info->display_mode = manifest.display;

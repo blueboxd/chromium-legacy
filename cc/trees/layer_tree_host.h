@@ -184,6 +184,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   GetScopedEventMetricsMonitor(std::unique_ptr<EventMetrics> event_metrics);
   void ClearEventsMetrics();
 
+  size_t saved_events_metrics_count_for_testing() const {
+    return events_metrics_manager_.saved_events_metrics_count_for_testing();
+  }
+
   // Visibility and LayerTreeFrameSink -------------------------------
 
   // Sets or gets if the LayerTreeHost is visible. When not visible it will:

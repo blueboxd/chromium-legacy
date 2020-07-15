@@ -117,6 +117,10 @@ gpu::ContextCreationAttribs GetCompositorContextAttributes(
   } else if (display_color_space == gfx::ColorSpace::CreateDisplayP3D65()) {
     attributes.color_space = gpu::COLOR_SPACE_DISPLAY_P3;
   } else {
+    // We don't support HDR on Android yet, but when we do, this function should
+    // be updated to support it.
+    DCHECK(!display_color_space.IsHDR());
+
     attributes.color_space = gpu::COLOR_SPACE_UNSPECIFIED;
     DLOG(ERROR) << "Android color space is neither sRGB nor P3, output color "
                    "will be incorrect.";

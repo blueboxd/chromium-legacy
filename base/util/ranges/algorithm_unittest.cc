@@ -42,6 +42,14 @@ struct MoveOnlyInt {
   int value = 0;
 };
 
+bool is_even(int i) {
+  return i % 2 == 0;
+}
+
+bool is_odd(int i) {
+  return i % 2 == 1;
+}
+
 }  // namespace
 
 TEST(RangesTest, AllOf) {
@@ -58,7 +66,6 @@ TEST(RangesTest, AllOf) {
 }
 
 TEST(RangesTest, AnyOf) {
-  auto is_even = [](int i) { return i % 2 == 0; };
   int array[] = {0, 1, 2, 3, 4, 5};
 
   EXPECT_FALSE(ranges::any_of(array + 5, array + 6, is_even));
@@ -121,7 +128,6 @@ TEST(RangesTest, FindIf) {
   EXPECT_EQ(array + 5, ranges::find_if(array, array + 5, is_at_least_5));
   EXPECT_EQ(array + 5, ranges::find_if(array, is_at_least_5));
 
-  auto is_odd = [](int i) { return i % 2 == 1; };
   Int values[] = {{0}, {2}, {4}, {5}};
   EXPECT_EQ(values + 3,
             ranges::find_if(values, values + 3, is_odd, &Int::value));
@@ -135,7 +141,6 @@ TEST(RangesTest, FindIfNot) {
   EXPECT_EQ(array + 5, ranges::find_if_not(array, array + 5, is_less_than_5));
   EXPECT_EQ(array + 5, ranges::find_if_not(array, is_less_than_5));
 
-  auto is_even = [](int i) { return i % 2 == 0; };
   Int values[] = {{0}, {2}, {4}, {5}};
   EXPECT_EQ(values + 3,
             ranges::find_if_not(values, values + 3, is_even, &Int::value));
@@ -211,14 +216,12 @@ TEST(RangesTest, Count) {
 }
 
 TEST(RangesTest, CountIf) {
-  auto is_even = [](int i) { return i % 2 == 0; };
   int array[] = {1, 2, 3, 3};
   EXPECT_EQ(0, ranges::count_if(array, array + 1, is_even));
   EXPECT_EQ(1, ranges::count_if(array, array + 2, is_even));
   EXPECT_EQ(1, ranges::count_if(array, array + 3, is_even));
   EXPECT_EQ(1, ranges::count_if(array, array + 4, is_even));
 
-  auto is_odd = [](int i) { return i % 2 == 1; };
   Int ints[] = {{1}, {2}, {3}, {3}};
   EXPECT_EQ(1, ranges::count_if(ints, is_even, &Int::value));
   EXPECT_EQ(3, ranges::count_if(ints, is_odd, &Int::value));
@@ -491,6 +494,96 @@ TEST(RangesTest, BinaryTransform) {
             ranges::transform(values, values, values, std::minus<>{},
                               &Int::value, &Int::value));
   EXPECT_THAT(values, ElementsAre(Int{0}, Int{0}, Int{0}, Int{0}));
+}
+
+TEST(RangesTest, Replace) {
+  int input[] = {0, 0, 0, 0, 0};
+
+  EXPECT_EQ(input + 2, ranges::replace(input, input + 2, 0, 2));
+  EXPECT_THAT(input, ElementsAre(2, 2, 0, 0, 0));
+
+  EXPECT_EQ(input + 5, ranges::replace(input, 0, 3));
+  EXPECT_THAT(input, ElementsAre(2, 2, 3, 3, 3));
+}
+
+TEST(RangesTest, ReplaceIf) {
+  int input[] = {0, 1, 2, 3, 4};
+
+  EXPECT_EQ(input + 3, ranges::replace_if(input, input + 3, is_even, 9));
+  EXPECT_THAT(input, ElementsAre(9, 1, 9, 3, 4));
+
+  EXPECT_EQ(input + 5, ranges::replace_if(input, is_odd, 0));
+  EXPECT_THAT(input, ElementsAre(0, 0, 0, 0, 4));
+
+  Int ints[] = {0, 0, 1, 1, 0};
+  EXPECT_EQ(ints + 5, ranges::replace_if(ints, is_odd, 3, &Int::value));
+  EXPECT_THAT(ints, ElementsAre(0, 0, 3, 3, 0));
+}
+
+TEST(RangesTest, ReplaceCopy) {
+  int input[] = {0, 0, 0, 0, 0};
+  int output[] = {1, 1, 1, 1, 1};
+
+  EXPECT_EQ(input + 2, ranges::replace_copy(input, input + 2, output, 0, 2));
+  EXPECT_THAT(input, ElementsAre(0, 0, 0, 0, 0));
+  EXPECT_THAT(output, ElementsAre(2, 2, 1, 1, 1));
+
+  EXPECT_EQ(input + 5, ranges::replace_copy(input, output, 0, 3));
+  EXPECT_THAT(input, ElementsAre(0, 0, 0, 0, 0));
+  EXPECT_THAT(output, ElementsAre(3, 3, 3, 3, 3));
+}
+
+TEST(RangesTest, ReplaceCopyIf) {
+  Int input[] = {0, 1, 2, 3, 4};
+  Int output[] = {0, 0, 0, 0, 0};
+
+  EXPECT_EQ(output + 3, ranges::replace_copy_if(input, input + 3, output,
+                                                is_even, 9, &Int::value));
+  EXPECT_THAT(input, ElementsAre(0, 1, 2, 3, 4));
+  EXPECT_THAT(output, ElementsAre(9, 1, 9, 0, 0));
+
+  EXPECT_EQ(output + 5,
+            ranges::replace_copy_if(input, output, is_odd, 0, &Int::value));
+  EXPECT_THAT(output, ElementsAre(0, 0, 2, 0, 4));
+}
+
+TEST(RangesTest, Fill) {
+  int input[] = {1, 2, 3, 4, 5};
+
+  EXPECT_EQ(input + 3, ranges::fill(input, input + 3, 0));
+  EXPECT_THAT(input, ElementsAre(0, 0, 0, 4, 5));
+
+  EXPECT_EQ(input + 5, ranges::fill(input, 1));
+  EXPECT_THAT(input, ElementsAre(1, 1, 1, 1, 1));
+}
+
+TEST(RangesTest, FillN) {
+  int input[] = {0, 0, 0, 0, 0};
+
+  EXPECT_EQ(input + 5, ranges::fill_n(input, 5, 5));
+  EXPECT_THAT(input, ElementsAre(5, 5, 5, 5, 5));
+
+  EXPECT_EQ(input + 3, ranges::fill_n(input, 3, 3));
+  EXPECT_THAT(input, ElementsAre(3, 3, 3, 5, 5));
+}
+
+TEST(RangesTest, Generate) {
+  int input[] = {0, 0, 0, 0, 0};
+
+  auto gen = [count = 0]() mutable { return ++count; };
+  EXPECT_EQ(input + 3, ranges::generate(input, input + 3, gen));
+  EXPECT_THAT(input, ElementsAre(1, 2, 3, 0, 0));
+
+  EXPECT_EQ(input + 5, ranges::generate(input, gen));
+  EXPECT_THAT(input, ElementsAre(1, 2, 3, 4, 5));
+}
+
+TEST(RangesTest, GenerateN) {
+  int input[] = {0, 0, 0, 0, 0};
+
+  auto gen = [count = 0]() mutable { return ++count; };
+  EXPECT_EQ(input + 4, ranges::generate_n(input, 4, gen));
+  EXPECT_THAT(input, ElementsAre(1, 2, 3, 4, 0));
 }
 
 TEST(RangesTest, LowerBound) {

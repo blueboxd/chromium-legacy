@@ -124,12 +124,7 @@ base::Optional<SkColor> BookmarkAppRegistrar::GetAppThemeColor(
   if (!extension)
     return base::nullopt;
 
-  base::Optional<SkColor> extension_theme_color =
-      AppThemeColorInfo::GetThemeColor(extension);
-  if (extension_theme_color)
-    return SkColorSetA(*extension_theme_color, SK_AlphaOPAQUE);
-
-  return base::nullopt;
+  return AppThemeColorInfo::GetThemeColor(extension);
 }
 
 const GURL& BookmarkAppRegistrar::GetAppLaunchURL(

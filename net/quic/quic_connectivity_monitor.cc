@@ -14,6 +14,39 @@ QuicConnectivityMonitor::QuicConnectivityMonitor(
 
 QuicConnectivityMonitor::~QuicConnectivityMonitor() = default;
 
+void QuicConnectivityMonitor::RecordConnectivityStatsToHistograms(
+    const std::string& notification,
+    NetworkChangeNotifier::NetworkHandle affected_network) const {
+  if (notification == "OnNetworkSoonToDisconnect" ||
+      notification == "OnNetworkDisconnected") {
+    // If the disconnected network is not the default network, ignore
+    // stats collections.
+    if (affected_network != default_network_)
+      return;
+  }
+
+  // TODO(crbug.com/1090532): rename histograms prefix to
+  // Net.QuicConnectivityMonitor.
+  UMA_HISTOGRAM_COUNTS_100(
+      "Net.QuicStreamFactory.NumQuicSessionsAtNetworkChange",
+      active_sessions_.size());
+
+  // Skip degrading session collection if there are less than two sessions.
+  if (active_sessions_.size() < 2)
+    return;
+
+  size_t num_degrading_sessions = GetNumDegradingSessions();
+  const std::string raw_histogram_name =
+      "Net.QuicStreamFactory.NumDegradingSessions." + notification;
+  base::UmaHistogramExactLinear(raw_histogram_name, num_degrading_sessions,
+                                101);
+
+  int percentage = num_degrading_sessions * 100 / active_sessions_.size();
+  const std::string percentage_histogram_name =
+      "Net.QuicStreamFactory.PercentageDegradingSessions." + notification;
+  base::UmaHistogramExactLinear(percentage_histogram_name, percentage, 101);
+}
+
 size_t QuicConnectivityMonitor::GetNumDegradingSessions() const {
   return degrading_sessions_.size();
 }
@@ -51,16 +84,53 @@ void QuicConnectivityMonitor::OnSessionEncounteringWriteError(
     ++write_error_map_[error_code];
 }
 
+void QuicConnectivityMonitor::OnSessionClosedAfterHandshake(
+    QuicChromiumClientSession* session,
+    NetworkChangeNotifier::NetworkHandle network,
+    quic::ConnectionCloseSource source,
+    quic::QuicErrorCode error_code) {
+  if (network != default_network_)
+    return;
+
+  if (source == quic::ConnectionCloseSource::FROM_PEER) {
+    // Connection closed by the peer post handshake with PUBLIC RESET
+    // is most likely a NAT rebinding issue.
+    if (error_code == quic::QUIC_PUBLIC_RESET)
+      quic_error_map_[error_code]++;
+    return;
+  }
+
+  // Connection close by self with PACKET_WRITE_ERROR or TOO_MANY_RTOS
+  // is likely a connectivity issue.
+  if (error_code == quic::QUIC_PACKET_WRITE_ERROR ||
+      error_code == quic::QUIC_TOO_MANY_RTOS) {
+    quic_error_map_[error_code]++;
+  }
+}
+
+void QuicConnectivityMonitor::OnSessionRegistered(
+    QuicChromiumClientSession* session,
+    NetworkChangeNotifier::NetworkHandle network) {
+  if (network == default_network_) {
+    active_sessions_.insert(session);
+    total_num_sessions_tracked_++;
+  }
+}
+
 void QuicConnectivityMonitor::OnSessionRemoved(
     QuicChromiumClientSession* session) {
   degrading_sessions_.erase(session);
+  active_sessions_.erase(session);
 }
 
 void QuicConnectivityMonitor::OnDefaultNetworkUpdated(
     NetworkChangeNotifier::NetworkHandle default_network) {
   default_network_ = default_network;
+  active_sessions_.clear();
+  total_num_sessions_tracked_ = 0u;
   degrading_sessions_.clear();
   write_error_map_.clear();
+  quic_error_map_.clear();
 }
 
 void QuicConnectivityMonitor::OnIPAddressChanged() {

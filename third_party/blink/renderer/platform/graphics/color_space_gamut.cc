@@ -16,10 +16,12 @@ ColorSpaceGamut GetColorSpaceGamut(const WebScreenInfo& screen_info) {
   if (!color_space.IsValid())
     return ColorSpaceGamut::kUnknown;
 
-  // Return the gamut of the color space used for raster (this will return a
-  // wide gamut for HDR profiles).
-  sk_sp<SkColorSpace> sk_color_space =
-      color_space.GetRasterColorSpace().ToSkColorSpace();
+  // TODO(crbug.com/1049334): Change this function to operate on a
+  // gfx::DisplayColorSpaces structure.
+  if (color_space.IsHDR())
+    return ColorSpaceGamut::BT2020;
+
+  sk_sp<SkColorSpace> sk_color_space = color_space.ToSkColorSpace();
   if (!sk_color_space)
     return ColorSpaceGamut::kUnknown;
 

@@ -35,6 +35,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.NoMatchingRootException;
 import androidx.test.espresso.NoMatchingViewException;
 import androidx.test.espresso.Root;
+import androidx.test.espresso.UiController;
+import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.matcher.BoundedMatcher;
 
 import org.hamcrest.Description;
@@ -163,6 +165,35 @@ public class TabSelectionEditorTestingRobot {
                            withParent(withId(org.chromium.chrome.tab_ui.R.id.action_bar))))
                     .inRoot(isTabSelectionEditorPopup())
                     .perform(click());
+            return this;
+        }
+
+        public TabSelectionEditorTestingRobot.Action clickEndButtonAtAdapterPosition(int position) {
+            onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+                    .inRoot(isTabSelectionEditorPopup())
+                    .perform(new ViewAction() {
+                        @Override
+                        public Matcher<View> getConstraints() {
+                            return isDisplayed();
+                        }
+
+                        @Override
+                        public String getDescription() {
+                            return "click on end button of item with index "
+                                    + String.valueOf(position);
+                        }
+
+                        @Override
+                        public void perform(UiController uiController, View view) {
+                            RecyclerView recyclerView = (RecyclerView) view;
+                            RecyclerView.ViewHolder viewHolder =
+                                    recyclerView.findViewHolderForAdapterPosition(position);
+                            if (viewHolder.itemView == null) return;
+                            viewHolder.itemView
+                                    .findViewById(org.chromium.chrome.tab_ui.R.id.end_button)
+                                    .performClick();
+                        }
+                    });
             return this;
         }
     }

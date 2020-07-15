@@ -260,10 +260,6 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // everything will be half as bright in linear lumens.
   ColorSpace GetScaledColorSpace(float factor) const;
 
-  // If |this| is the final output color space, return the color space that
-  // would be appropriate for rasterization.
-  ColorSpace GetRasterColorSpace() const;
-
   // Return true if blending in |this| is close enough to blending in sRGB to
   // be considered acceptable (only PQ and nearly-linear transfer functions
   // return false).

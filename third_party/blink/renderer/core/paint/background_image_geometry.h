@@ -158,13 +158,13 @@ class BackgroundImageGeometry {
   // |box_| is the source for the Document. In most cases it also provides the
   // background properties (see |positioning_box_| for exceptions.) It's also
   // the image client unless painting the view background.
-  const LayoutBoxModelObject& box_;
+  const LayoutBoxModelObject* const box_;
 
   // The positioning box is the source of geometric information for positioning
   // and sizing the background. It also provides the background properties if
   // painting the view background or a table-cell using its container's
   // (row's/column's) background.
-  const LayoutBoxModelObject& positioning_box_;
+  const LayoutBoxModelObject* positioning_box_;
 
   // When painting table cells or the view, the positioning area
   // differs from the requested paint rect.

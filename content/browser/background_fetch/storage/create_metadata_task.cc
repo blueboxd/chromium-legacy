@@ -264,9 +264,9 @@ void CreateMetadataTask::InitializeMetadataProto() {
           image_resource_proto->add_purpose(
               proto::BackgroundFetchOptions_ImageResource_Purpose_ANY);
           break;
-        case blink::Manifest::ImageResource::Purpose::BADGE:
+        case blink::Manifest::ImageResource::Purpose::MONOCHROME:
           image_resource_proto->add_purpose(
-              proto::BackgroundFetchOptions_ImageResource_Purpose_BADGE);
+              proto::BackgroundFetchOptions_ImageResource_Purpose_MONOCHROME);
           break;
         case blink::Manifest::ImageResource::Purpose::MASKABLE:
           image_resource_proto->add_purpose(

@@ -37,7 +37,7 @@ LayoutState::LayoutState(LayoutView& view)
       pagination_state_changed_(false),
       flow_thread_(nullptr),
       next_(nullptr),
-      layout_object_(view) {
+      layout_object_(&view) {
   DCHECK(!view.GetLayoutState());
   view.PushLayoutState(*this);
 }
@@ -47,7 +47,7 @@ LayoutState::LayoutState(LayoutBox& layout_object,
     : containing_block_logical_width_changed_(
           containing_block_logical_width_changed),
       next_(layout_object.View()->GetLayoutState()),
-      layout_object_(layout_object) {
+      layout_object_(&layout_object) {
   if (layout_object.IsLayoutFlowThread())
     flow_thread_ = ToLayoutFlowThread(&layout_object);
   else
@@ -73,7 +73,7 @@ LayoutState::LayoutState(LayoutBox& layout_object,
   // overflow:scroll/auto, inline blocks and writing mode roots. Additionally,
   // pagination inside SVG is not allowed.
   if (layout_object.GetPaginationBreakability() == LayoutBox::kForbidBreaks ||
-      layout_object_.IsSVGChild()) {
+      layout_object_->IsSVGChild()) {
     flow_thread_ = nullptr;
     is_paginated_ = false;
     return;
@@ -108,16 +108,16 @@ LayoutState::LayoutState(LayoutObject& root)
       pagination_state_changed_(false),
       flow_thread_(nullptr),
       next_(root.View()->GetLayoutState()),
-      layout_object_(root) {
+      layout_object_(&root) {
   DCHECK(!next_);
   DCHECK(!IsA<LayoutView>(root));
   root.View()->PushLayoutState(*this);
 }
 
 LayoutState::~LayoutState() {
-  if (layout_object_.View()->GetLayoutState()) {
-    DCHECK_EQ(layout_object_.View()->GetLayoutState(), this);
-    layout_object_.View()->PopLayoutState();
+  if (layout_object_->View()->GetLayoutState()) {
+    DCHECK_EQ(layout_object_->View()->GetLayoutState(), this);
+    layout_object_->View()->PopLayoutState();
   }
 }
 

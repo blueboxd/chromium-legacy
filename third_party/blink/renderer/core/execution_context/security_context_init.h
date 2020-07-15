@@ -22,7 +22,6 @@ namespace blink {
 class LocalFrame;
 class OriginTrialContext;
 class ResourceResponse;
-class SecurityOrigin;
 
 class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   STACK_ALLOCATED();
@@ -30,11 +29,9 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
  public:
   // The first constructor is for workers and tests. The second is for windows.
   // TODO(japhet): Merge these.
-  SecurityContextInit(scoped_refptr<SecurityOrigin>, OriginTrialContext*);
-  explicit SecurityContextInit(ExecutionContext*,
-                               scoped_refptr<SecurityOrigin>);
+  explicit SecurityContextInit(OriginTrialContext*);
+  explicit SecurityContextInit(ExecutionContext*);
 
-  void CalculateSecureContextMode(LocalFrame* frame);
   void InitializeOriginTrials(const String& origin_trials_header);
   void ApplyFeaturePolicy(LocalFrame* frame,
                           const ResourceResponse& response,
@@ -44,20 +41,11 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
       DocumentPolicy::ParsedDocumentPolicy& document_policy,
       const String& report_only_document_policy_header);
 
-  const scoped_refptr<SecurityOrigin>& GetSecurityOrigin() const {
-    return security_origin_;
-  }
-
   const ParsedFeaturePolicy& FeaturePolicyHeader() const {
     return feature_policy_header_;
   }
 
   OriginTrialContext* GetOriginTrialContext() const { return origin_trials_; }
-
-  SecureContextMode GetSecureContextMode() const {
-    DCHECK(secure_context_mode_.has_value());
-    return secure_context_mode_.value();
-  }
 
   void CountFeaturePolicyUsage(mojom::blink::WebFeature feature) override;
   bool FeaturePolicyFeatureObserved(
@@ -66,10 +54,8 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
 
  private:
   ExecutionContext* execution_context_ = nullptr;
-  scoped_refptr<SecurityOrigin> security_origin_;
   ParsedFeaturePolicy feature_policy_header_;
   OriginTrialContext* origin_trials_ = nullptr;
-  base::Optional<SecureContextMode> secure_context_mode_;
 };
 
 }  // namespace blink

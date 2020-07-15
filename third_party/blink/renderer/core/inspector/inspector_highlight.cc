@@ -107,7 +107,7 @@ class ShapePathBuilder : public PathBuilder {
                    LayoutObject& layout_object,
                    const ShapeOutsideInfo& shape_outside_info)
       : view_(&view),
-        layout_object_(layout_object),
+        layout_object_(&layout_object),
         shape_outside_info_(shape_outside_info) {}
 
   static std::unique_ptr<protocol::ListValue> BuildPath(
@@ -127,13 +127,13 @@ class ShapePathBuilder : public PathBuilder {
         shape_outside_info_.ShapeToLayoutObjectPoint(point));
     // TODO(pfeldman): Is this kIgnoreTransforms correct?
     return FloatPoint(view_->FrameToViewport(
-        RoundedIntPoint(layout_object_.LocalToAbsolutePoint(
+        RoundedIntPoint(layout_object_->LocalToAbsolutePoint(
             layout_object_point, kIgnoreTransforms))));
   }
 
  private:
   LocalFrameView* view_;
-  LayoutObject& layout_object_;
+  LayoutObject* const layout_object_;
   const ShapeOutsideInfo& shape_outside_info_;
 };
 

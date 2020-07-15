@@ -1563,6 +1563,21 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
+    name = 'linux-lacros-builder-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'linux',
+    ),
+)
+
+ci.fyi_builder(
+    name = 'linux-lacros-tester-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'linux',
+    ),
+    triggered_by = ['linux-lacros-builder-rel'],
+)
+
+ci.fyi_builder(
     name = 'linux-perfetto-rel',
     console_view_entry = ci.console_view_entry(
         category = 'linux',

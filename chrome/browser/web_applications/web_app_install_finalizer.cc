@@ -431,8 +431,8 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
   web_app->SetDescription(base::UTF16ToUTF8(web_app_info.description));
   web_app->SetScope(web_app_info.scope);
   if (web_app_info.theme_color) {
-    web_app->SetThemeColor(
-        SkColorSetA(*web_app_info.theme_color, SK_AlphaOPAQUE));
+    DCHECK_EQ(SkColorGetA(*web_app_info.theme_color), SK_AlphaOPAQUE);
+    web_app->SetThemeColor(web_app_info.theme_color);
   }
 
   WebApp::SyncFallbackData sync_fallback_data;

@@ -309,6 +309,7 @@ class CCAWindow {
  */
 class Background {
   /**
+   * @public
    */
   constructor() {
     /**

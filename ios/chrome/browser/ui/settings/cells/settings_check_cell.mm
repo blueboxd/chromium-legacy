@@ -8,6 +8,7 @@
 #include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -37,12 +38,12 @@ const CGFloat kIconImageSize = 28;
 @property(nonatomic, strong) UIImageView* leadingImageView;
 
 // Constraint that is used to define trailing text constraint without
-// |trailingImageView| or |activityIndicator|.
+// |trailingImageView| |activityIndicator| and |infoButton|.
 @property(nonatomic, strong)
     NSLayoutConstraint* textNoTrailingContentsConstraint;
 
 // Constraint that is used to define trailing text constraint with either
-// |trailingImageView| or |activityIndicator| showing.
+// |trailingImageView| or |activityIndicator| or |infoButton| showing.
 @property(nonatomic, strong)
     NSLayoutConstraint* textWithTrailingContentsConstraint;
 
@@ -92,8 +93,8 @@ const CGFloat kIconImageSize = 28;
     _detailTextLabel.textColor = UIColor.cr_secondaryLabelColor;
     [contentView addSubview:_detailTextLabel];
 
-    // Only |_trailingImageView| or |_activityIndicator| is shown, not both at
-    // once. |trailingImage| attributes.
+    // Only |_trailingImageView| or |_activityIndicator| or |_infoButton| is
+    // shown, not all at once. |trailingImage| attributes.
     _trailingImageView = [[UIImageView alloc] init];
     _trailingImageView.translatesAutoresizingMaskIntoConstraints = NO;
     _trailingImageView.tintColor = UIColor.cr_labelColor;
@@ -104,6 +105,15 @@ const CGFloat kIconImageSize = 28;
     _activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
     _activityIndicator.hidden = YES;
     [contentView addSubview:_activityIndicator];
+    // |_infoButton| attribues.
+    _infoButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    _infoButton.translatesAutoresizingMaskIntoConstraints = NO;
+    _infoButton.hidden = YES;
+    UIImage* image = [[UIImage imageNamed:@"settings_info"]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [_infoButton setImage:image forState:UIControlStateNormal];
+    [_infoButton setTintColor:[UIColor colorNamed:kBlueColor]];
+    [contentView addSubview:_infoButton];
 
     // Constraints.
     UILayoutGuide* textLayoutGuide = [[UILayoutGuide alloc] init];
@@ -145,6 +155,18 @@ const CGFloat kIconImageSize = 28;
       [_trailingImageView.centerYAnchor
           constraintEqualToAnchor:textLayoutGuide.centerYAnchor],
       [_trailingImageView.leadingAnchor
+          constraintEqualToAnchor:_activityIndicator.leadingAnchor],
+
+      // Constraints for |_infoButton| (same position as
+      // |_trailingImageView|).
+      [_infoButton.trailingAnchor
+          constraintEqualToAnchor:self.contentView.trailingAnchor
+                         constant:-kTableViewHorizontalSpacing],
+      [_infoButton.widthAnchor constraintEqualToConstant:kIconImageSize],
+      [_infoButton.heightAnchor constraintEqualToConstant:kIconImageSize],
+      [_infoButton.centerYAnchor
+          constraintEqualToAnchor:textLayoutGuide.centerYAnchor],
+      [_infoButton.leadingAnchor
           constraintEqualToAnchor:_activityIndicator.leadingAnchor],
 
       // Constraints for |_activityIndictor| (same position as
@@ -194,8 +216,8 @@ const CGFloat kIconImageSize = 28;
 - (void)showActivityIndicator {
   if (!self.activityIndicator.hidden)
     return;
-
   self.trailingImageView.hidden = YES;
+  self.infoButton.hidden = YES;
   self.activityIndicator.hidden = NO;
   [self.activityIndicator startAnimating];
   [self updateTrailingImageTextConstraints];
@@ -219,7 +241,8 @@ const CGFloat kIconImageSize = 28;
     return;
   self.trailingImageView.hidden = hidden;
   if (!hidden) {
-    [self hideActivityIndicator];
+    self.activityIndicator.hidden = YES;
+    self.infoButton.hidden = YES;
   }
   [self updateTrailingImageTextConstraints];
 }
@@ -240,14 +263,27 @@ const CGFloat kIconImageSize = 28;
   }
 }
 
+- (void)setInfoButtonHidden:(BOOL)hidden {
+  if (hidden == self.infoButton.hidden)
+    return;
+
+  self.infoButton.hidden = hidden;
+  if (!hidden) {
+    self.trailingImageView.hidden = YES;
+    self.activityIndicator.hidden = YES;
+  }
+  [self updateTrailingImageTextConstraints];
+}
+
 #pragma mark - Private Methods
 
 // Updates the constraints around the trailing image for when |trailingImage| or
-// |activityIndicator| is shown or hidden.
+// |activityIndicator| or |infoButton| is shown or hidden.
 - (void)updateTrailingImageTextConstraints {
   // Active proper |textLayoutGuide| trailing constraint to show
-  // |trailingImageView| or |activityIndicator|.
-  if (self.activityIndicator.hidden && self.trailingImageView.hidden) {
+  // |trailingImageView| or |activityIndicator| or |infoButton|.
+  if (self.activityIndicator.hidden && self.trailingImageView.hidden &&
+      self.infoButton.hidden) {
     _textWithTrailingContentsConstraint.active = NO;
     _textNoTrailingContentsConstraint.active = YES;
   } else {
@@ -262,6 +298,9 @@ const CGFloat kIconImageSize = 28;
   [super prepareForReuse];
 
   self.textLabel.text = nil;
+  [self.infoButton removeTarget:nil
+                         action:nil
+               forControlEvents:UIControlEventAllEvents];
   self.detailTextLabel.text = nil;
   self.accessibilityTraits = UIAccessibilityTraitNone;
   [self setTrailingImage:nil withTintColor:nil];

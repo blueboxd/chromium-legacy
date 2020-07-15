@@ -1051,7 +1051,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // The following implements the rule from HTML 4 for what valid names are.
   // To get this right for all the XML cases, we probably have to improve this
   // or move it and make it sensitive to the type of document.
-  static bool IsValidName(const String&);
+  static bool IsValidName(const StringView&);
 
   // The following breaks a qualified name into a prefix and a local name.
   // It also does a validity check, and returns false if the qualified name

@@ -391,8 +391,7 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
   const std::string manifest_name = "Manifest Name";
   const std::string description = "Description";
   const GURL scope = GURL("https://example.com/scope");
-  const base::Optional<SkColor> theme_color = 0xAABBCCDD;
-  const base::Optional<SkColor> expected_theme_color = 0xFFBBCCDD;  // Opaque.
+  const base::Optional<SkColor> theme_color = 0xFFAABBCC;
 
   const AppId app_id = GenerateAppIdFromURL(url);
 
@@ -435,7 +434,7 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
   EXPECT_EQ(description, web_app->description());
   EXPECT_EQ(url, web_app->launch_url());
   EXPECT_EQ(scope, web_app->scope());
-  EXPECT_EQ(expected_theme_color, web_app->theme_color());
+  EXPECT_EQ(theme_color, web_app->theme_color());
 }
 
 TEST_F(WebAppInstallTaskTest, ForceReinstall) {
@@ -1199,8 +1198,7 @@ TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
   const std::string name = "Name";
   const std::string description = "Description";
   const GURL scope = GURL("https://example.com/scope");
-  const base::Optional<SkColor> theme_color = 0xAABBCCDD;
-  const base::Optional<SkColor> expected_theme_color = 0xFFBBCCDD;  // Opaque.
+  const base::Optional<SkColor> theme_color = 0xFFAABBCC;
 
   const AppId app_id = GenerateAppIdFromURL(url);
 
@@ -1233,7 +1231,7 @@ TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
   EXPECT_EQ(description, web_app->description());
   EXPECT_EQ(url, web_app->launch_url());
   EXPECT_EQ(scope, web_app->scope());
-  EXPECT_EQ(expected_theme_color, web_app->theme_color());
+  EXPECT_EQ(theme_color, web_app->theme_color());
   EXPECT_EQ(1u, test_shortcut_manager().num_register_run_on_os_login_calls());
 }
 
@@ -1245,8 +1243,7 @@ TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
   const std::string name = "Name";
   const std::string description = "Description";
   const GURL scope = GURL("https://example.com/scope");
-  const base::Optional<SkColor> theme_color = 0xAABBCCDD;
-  const base::Optional<SkColor> expected_theme_color = 0xFFBBCCDD;  // Opaque.
+  const base::Optional<SkColor> theme_color = 0xFFAABBCC;
 
   const AppId app_id = GenerateAppIdFromURL(url);
 
@@ -1279,7 +1276,7 @@ TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
   EXPECT_EQ(description, web_app->description());
   EXPECT_EQ(url, web_app->launch_url());
   EXPECT_EQ(scope, web_app->scope());
-  EXPECT_EQ(expected_theme_color, web_app->theme_color());
+  EXPECT_EQ(theme_color, web_app->theme_color());
   EXPECT_EQ(0u, test_shortcut_manager().num_register_run_on_os_login_calls());
 }
 
@@ -1432,8 +1429,8 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
 
   static constexpr char kShortcutItemName[] = "shortcut item";
   static constexpr SquareSizePx kIconSize = 128;
-  static constexpr SkColor kInitialThemeColor = 0x000000;
-  static constexpr SkColor kFinalThemeColor = 0xFFFFFF;
+  static constexpr SkColor kInitialThemeColor = 0xFF000000;
+  static constexpr SkColor kFinalThemeColor = 0xFFFFFFFF;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;

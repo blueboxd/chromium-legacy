@@ -126,12 +126,12 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   blink::Manifest::ImageResource icon;
   icon.src = AppIcon2();
   icon.purpose = {blink::Manifest::ImageResource::Purpose::ANY,
-                  blink::Manifest::ImageResource::Purpose::BADGE};
+                  blink::Manifest::ImageResource::Purpose::MONOCHROME};
   manifest.icons.push_back(icon);
   icon.src = AppIcon3();
   manifest.icons.push_back(icon);
   // Add an icon without purpose ANY (expect to be ignored).
-  icon.purpose = {blink::Manifest::ImageResource::Purpose::BADGE};
+  icon.purpose = {blink::Manifest::ImageResource::Purpose::MONOCHROME};
   manifest.icons.push_back(icon);
 
   UpdateWebAppInfoFromManifest(manifest, &web_app_info);
@@ -241,12 +241,12 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   blink::Manifest::ImageResource icon;
   icon.src = AppIcon2();
   icon.purpose = {blink::Manifest::ImageResource::Purpose::ANY,
-                  blink::Manifest::ImageResource::Purpose::BADGE};
+                  blink::Manifest::ImageResource::Purpose::MONOCHROME};
   manifest.icons.push_back(icon);
   icon.src = AppIcon3();
   manifest.icons.push_back(icon);
   // Add an icon without purpose ANY (expect to be ignored).
-  icon.purpose = {blink::Manifest::ImageResource::Purpose::BADGE};
+  icon.purpose = {blink::Manifest::ImageResource::Purpose::MONOCHROME};
   manifest.icons.push_back(icon);
 
   // Test that shortcuts in the manifest replace those in |web_app_info|.

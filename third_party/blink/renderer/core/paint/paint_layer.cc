@@ -188,7 +188,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
 #if DCHECK_IS_ON()
       layer_list_mutation_allowed_(true),
 #endif
-      layout_object_(layout_object),
+      layout_object_(&layout_object),
       parent_(nullptr),
       previous_(nullptr),
       next_(nullptr),
@@ -254,7 +254,7 @@ DOMNodeId PaintLayer::OwnerNodeId() const {
 }
 
 IntRect PaintLayer::VisualRect() const {
-  return layout_object_.FragmentsVisualRectBoundingBox();
+  return layout_object_->FragmentsVisualRectBoundingBox();
 }
 
 PaintLayerCompositor* PaintLayer::Compositor() const {
@@ -594,7 +594,7 @@ void PaintLayer::MarkAncestorChainForFlagsUpdate(
     DescendantDependentFlagsUpdateFlag flag) {
 #if DCHECK_IS_ON()
   DCHECK(flag == DoesNotNeedDescendantDependentUpdate ||
-         !layout_object_.GetDocument()
+         !layout_object_->GetDocument()
               .View()
               ->IsUpdatingDescendantDependentFlags());
 #endif
@@ -738,7 +738,7 @@ void PaintLayer::UpdateDescendantDependentFlags() {
     // pretend that invisible LayoutObjects have 0x0 rects. Changing
     // visibility therefore changes our rect and we need to visit
     // this LayoutObject during the PrePaintTreeWalk.
-    layout_object_.SetShouldCheckForPaintInvalidation();
+    layout_object_->SetShouldCheckForPaintInvalidation();
   }
 
   Update3DTransformedDescendantStatus();
@@ -1331,7 +1331,7 @@ void PaintLayer::RemoveOnlyThisLayerAfterStyleChange(
     // layers to be destructed and detach from layer tree immediately. Layers
     // could have dangling scroll/clip parent if compositing update were
     // omitted.
-    if (LocalFrameView* frame_view = layout_object_.GetDocument().View())
+    if (LocalFrameView* frame_view = layout_object_->GetDocument().View())
       frame_view->SetNeedsForcedCompositingUpdate();
 
     // We need the current compositing status.
@@ -1371,7 +1371,7 @@ void PaintLayer::RemoveOnlyThisLayerAfterStyleChange(
 
   // Remove us from the parent.
   parent_->RemoveChild(this);
-  layout_object_.DestroyLayer();
+  layout_object_->DestroyLayer();
 }
 
 void PaintLayer::InsertOnlyThisLayerAfterStyleChange() {
@@ -3126,14 +3126,14 @@ bool PaintLayer::AttemptDirectCompositingUpdate(
   // Layers even when the non-transparent Layers are already a
   // stacking context.
   if (diff.OpacityChanged() &&
-      layout_object_.StyleRef().HasOpacity() != old_style->HasOpacity())
+      layout_object_->StyleRef().HasOpacity() != old_style->HasOpacity())
     return false;
 
   // Changes in pointer-events affect hit test visibility of the scrollable
   // area and its |m_scrollsOverflow| value which determines if the layer
   // requires composited scrolling or not.
   if (scrollable_area_ &&
-      layout_object_.StyleRef().PointerEvents() != old_style->PointerEvents())
+      layout_object_->StyleRef().PointerEvents() != old_style->PointerEvents())
     return false;
 
   UpdateTransform(old_style, GetLayoutObject().StyleRef());

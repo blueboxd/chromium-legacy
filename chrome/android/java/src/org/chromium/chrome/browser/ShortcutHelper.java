@@ -678,12 +678,12 @@ public class ShortcutHelper {
     }
 
     /**
-     * Returns the ideal size for a badge icon of a WebAPK.
+     * Returns the ideal size for a monochrome icon of a WebAPK.
      * @param context Context to pull resources from.
-     * @return the dimensions in pixels which the badge icon should have.
+     * @return the dimensions in pixels which the monochrome icon should have.
      */
-    public static int getIdealBadgeIconSizeInPx(Context context) {
-        return getSizeFromResourceInPx(context, R.dimen.webapk_badge_icon_size);
+    public static int getIdealMonochromeIconSizeInPx(Context context) {
+        return getSizeFromResourceInPx(context, R.dimen.webapk_monochrome_icon_size);
     }
 
     /**
@@ -747,7 +747,7 @@ public class ShortcutHelper {
         // This ordering must be kept up to date with the C++ ShortcutHelper.
         return new int[] {getIdealHomescreenIconSizeInPx(context),
                 getMinimumHomescreenIconSizeInPx(context), getIdealSplashImageSizeInPx(context),
-                getMinimumSplashImageSizeInPx(context), getIdealBadgeIconSizeInPx(context),
+                getMinimumSplashImageSizeInPx(context), getIdealMonochromeIconSizeInPx(context),
                 getIdealAdaptiveLauncherIconSizeInPx(context),
                 ViewUtils.dpToPx(context, SHORTCUT_ICON_IDEAL_SIZE_DP)};
     }

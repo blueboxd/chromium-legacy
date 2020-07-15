@@ -164,6 +164,20 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
         NetworkChangeNotifier::NetworkHandle network,
         int error_code) = 0;
 
+    // Called when |session| is closed by |source| with |error_code|
+    // and handshake has been confirmed.
+    virtual void OnSessionClosedAfterHandshake(
+        QuicChromiumClientSession* session,
+        NetworkChangeNotifier::NetworkHandle network,
+        quic::ConnectionCloseSource source,
+        quic::QuicErrorCode error_code) = 0;
+
+    // Called when |this| is registered to monitor the connectivity of the
+    // |session|.
+    virtual void OnSessionRegistered(
+        QuicChromiumClientSession* session,
+        NetworkChangeNotifier::NetworkHandle network) = 0;
+
     // Called when |session| is removed.
     virtual void OnSessionRemoved(QuicChromiumClientSession* session) = 0;
   };

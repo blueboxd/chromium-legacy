@@ -77,10 +77,6 @@ TEST(PasswordInputTypeTest, DidEditFieldEventNotSentFromSecureContext) {
       nullptr /* extra_data */);
   blink::test::RunPendingTasks();
   MockInsecureInputService mock_service(page_holder->GetFrame());
-  page_holder->GetFrame()
-      .DomWindow()
-      ->GetSecurityContext()
-      .SetSecureContextModeForTesting(SecureContextMode::kSecureContext);
   page_holder->GetDocument().body()->setInnerHTML("<input type='password'>");
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);

@@ -2239,6 +2239,29 @@
           'gtest_tests': 'fieldtrial_browser_tests',
         },
       },
+      'linux-lacros-tester-rel': {
+        'additional_compile_targets': [
+          'chrome',
+          'chrome_sandbox',
+          'linux_symbols',
+          'symupload'
+        ],
+        'mixins': [
+          'chrome-swarming-pool',
+          'linux-xenial',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'ssd': '0',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'linux_lacros_chromeos_gtests',
+          'isolated_scripts': 'chrome_sizes',
+        },
+      },
       'linux-perfetto-rel': {
         'additional_compile_targets': [ 'chrome' ],
         'mixins': [

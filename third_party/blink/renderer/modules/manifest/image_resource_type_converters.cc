@@ -63,8 +63,8 @@ WTF::Vector<Purpose> ParsePurpose(const WTF::String& purpose) {
     Purpose purpose_enum;
     if (lowercase_purpose == "any") {
       purpose_enum = Purpose::ANY;
-    } else if (lowercase_purpose == "badge") {
-      purpose_enum = Purpose::BADGE;
+    } else if (lowercase_purpose == "monochrome") {
+      purpose_enum = Purpose::MONOCHROME;
     } else if (lowercase_purpose == "maskable") {
       purpose_enum = Purpose::MASKABLE;
     } else {
@@ -122,16 +122,17 @@ Manifest::ImageResource ConvertManifestImageResource(
 
   // Parse 'purpose'
   const auto purposes = mojo::ParsePurpose(icon->purpose());
-  // ParsePurpose() would've weeded out any purposes that're not ANY or BADGE.
+  // ParsePurpose() would've weeded out any purposes that're not ANY or
+  // MONOCHROME.
   for (auto purpose : purposes) {
     switch (purpose) {
       case mojo::Purpose::ANY:
         manifest_icon.purpose.emplace_back(
             Manifest::ImageResource::Purpose::ANY);
         break;
-      case mojo::Purpose::BADGE:
+      case mojo::Purpose::MONOCHROME:
         manifest_icon.purpose.emplace_back(
-            Manifest::ImageResource::Purpose::BADGE);
+            Manifest::ImageResource::Purpose::MONOCHROME);
         break;
       case mojo::Purpose::MASKABLE:
         manifest_icon.purpose.emplace_back(

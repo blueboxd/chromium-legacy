@@ -227,7 +227,7 @@ TEST_F(InstallableManagerUnitTest,
   EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
 
   // The icon MUST have IconPurpose::ANY or IconPurpose::Maskable.
-  manifest.icons[0].purpose[0] = IconPurpose::BADGE;
+  manifest.icons[0].purpose[0] = IconPurpose::MONOCHROME;
   EXPECT_FALSE(IsManifestValid(manifest, true, true));
   EXPECT_EQ(MANIFEST_MISSING_SUITABLE_ICON, GetErrorCode());
 

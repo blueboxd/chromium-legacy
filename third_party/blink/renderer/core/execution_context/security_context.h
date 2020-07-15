@@ -47,6 +47,7 @@ namespace blink {
 
 class ContentSecurityPolicy;
 class DocumentPolicy;
+class ExecutionContext;
 class FeaturePolicy;
 class PolicyValue;
 class OriginTrialContext;
@@ -74,10 +75,7 @@ class CORE_EXPORT SecurityContext {
   DISALLOW_NEW();
 
  public:
-  // Used only for safety CHECKs.
-  enum SecurityContextType { kWindow, kWorker, kRemoteFrame };
-
-  explicit SecurityContext(SecurityContextType context_type);
+  explicit SecurityContext(ExecutionContext*);
   virtual ~SecurityContext();
 
   void Initialize(const SecurityContextInit&);
@@ -175,13 +173,7 @@ class CORE_EXPORT SecurityContext {
   }
 
   SecureContextMode GetSecureContextMode() const {
-    // secure_context_mode_ is not initialized for RemoteSecurityContexts.
-    DCHECK_NE(context_type_for_asserts_, kRemoteFrame);
     return secure_context_mode_;
-  }
-
-  void SetSecureContextModeForTesting(SecureContextMode mode) {
-    secure_context_mode_ = mode;
   }
 
  protected:
@@ -193,12 +185,13 @@ class CORE_EXPORT SecurityContext {
   std::unique_ptr<DocumentPolicy> report_only_document_policy_;
 
  private:
+  // execution_context_ will be nullptr if this is a RemoteSecurityContext.
+  Member<ExecutionContext> execution_context_;
   Member<ContentSecurityPolicy> content_security_policy_;
   mojom::blink::InsecureRequestPolicy insecure_request_policy_;
   InsecureNavigationsSet insecure_navigations_to_upgrade_;
   bool require_safe_types_ = false;
-  const SecurityContextType context_type_for_asserts_;
-  SecureContextMode secure_context_mode_;
+  SecureContextMode secure_context_mode_ = SecureContextMode::kInsecureContext;
   Member<OriginTrialContext> origin_trial_context_;
   DISALLOW_COPY_AND_ASSIGN(SecurityContext);
 };

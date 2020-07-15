@@ -154,9 +154,12 @@ public class TabSuggestionMessageCardTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({BASE_PARAMS + "/baseline_group_tab_suggestions/true/min_time_between_prefetches/0"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS +
+        "/baseline_group_tab_suggestions/true/min_time_between_prefetches/0"})
+    @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1102423")
     public void groupTabSuggestionReviewedAndDismissed() {
+        // clang-format on
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
 
         enteringTabSwitcherAndVerifySuggestionIsShown(mGroupingSuggestionMessage);

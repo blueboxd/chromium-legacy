@@ -95,8 +95,7 @@ BufferFormat DisplayColorSpaces::GetOutputBufferFormat(
 }
 
 gfx::ColorSpace DisplayColorSpaces::GetRasterColorSpace() const {
-  return GetOutputColorSpace(ContentColorUsage::kHDR, false /* needs_alpha */)
-      .GetRasterColorSpace();
+  return GetOutputColorSpace(ContentColorUsage::kHDR, false /* needs_alpha */);
 }
 
 gfx::ColorSpace DisplayColorSpaces::GetCompositingColorSpace(

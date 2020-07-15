@@ -1198,7 +1198,6 @@ virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/min-heigh
 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/min-width-applies-to-012.xht [ Pass ]
 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/width-applies-to-012.xht [ Pass ]
 
-crbug.com/982194 [ Win ] virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/linebox/empty-inline-002.xht [ Failure ]
 crbug.com/982194 [ Mac ] virtual/layout_ng_fragment_traversal/fast/table/027-vertical.html [ Failure ]
 crbug.com/982194 [ Mac ] virtual/layout_ng_fragment_traversal/fast/table/border-collapsing/003-vertical.html [ Failure ]
 
@@ -2694,15 +2693,9 @@ crbug.com/1018465 external/wpt/css/css-pseudo/active-selection-056.html [ Failur
 crbug.com/626703 [ Linux ] virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-gutters-014.html [ Failure ]
 crbug.com/626703 [ Mac ] virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-gutters-014.html [ Failure ]
 crbug.com/626703 [ Win ] virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-gutters-014.html [ Failure ]
-crbug.com/626703 [ Linux ] virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-baseline-justify-001.html [ Failure ]
-crbug.com/626703 [ Mac ] virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-baseline-justify-001.html [ Failure ]
-crbug.com/626703 [ Win ] virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-baseline-justify-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-grid/alignment/grid-baseline-justify-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-grid/alignment/grid-baseline-justify-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-grid/alignment/grid-baseline-justify-001.html [ Failure ]
-crbug.com/626703 [ Linux ] virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-baseline-align-001.html [ Failure ]
-crbug.com/626703 [ Mac ] virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-baseline-align-001.html [ Failure ]
-crbug.com/626703 [ Win ] virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-baseline-align-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-grid/alignment/grid-baseline-align-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-grid/alignment/grid-baseline-align-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-grid/alignment/grid-baseline-align-001.html [ Failure ]
@@ -6362,7 +6355,7 @@ crbug.com/1046784 http/tests/devtools/coverage/reveal-autoformat.js [ Pass Timeo
 crbug.com/1046784 http/tests/devtools/file-system-project.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/devtools/bindings/navigator-frame-attach-detach.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/devtools/forced-layout-in-microtask.js [ Pass Timeout ]
-crbug.com/1046784 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Pass Timeout ]
+crbug.com/1046784 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Pass Failure Timeout ]
 crbug.com/1046784 http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/inspector-protocol/service-worker/target-reloaded-after-crash.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/inspector-protocol/network/navigate-iframe-out2in.js [ Pass Timeout ]
@@ -6854,23 +6847,17 @@ crbug.com/1104125 [ Mac ] external/wpt/clipboard-apis/feature-policy/clipboard-r
 crbug.com/1104134 [ Mac10.14 ] virtual/controls-refresh-hc/fast/forms/color-scheme/range/range-pressed-state.html [ Pass Failure ]
 
 crbug.com/1102167 external/wpt/fetch/redirect-navigate/preserve-fragment.html [ Timeout Pass ]
-crbug.com/1102167 virtual/cors/external/wpt/fetch/redirect-navigate/preserve-fragment.html [ Timeout Pass ]
-crbug.com/1102167 virtual/omt-worker-fetch/external/wpt/fetch/redirect-navigate/preserve-fragment.html [ Timeout Pass ]
 
 crbug.com/1104186 [ Win ] fast/forms/color-scheme/suggestion-picker/time-suggestion-picker-appearance.html [ Pass Failure ]
 
 crbug.com/1104195 inspector-protocol/css/css-set-effective-property-value.js [ Pass Failure Crash ]
-crbug.com/1104333 http/tests/devtools/bindings/inline-styles-binding.js [ Pass Failure Crash ]
 
 # Sheriff 2020-07-13
 
 crbug.com/1104910 [ Mac ] external/wpt/webaudio/the-audio-api/the-oscillatornode-interface/osc-basic-waveform.html [ Pass Failure ]
 crbug.com/1104910 fast/dom/cssTarget-crash.html [ Pass Timeout Failure ]
 crbug.com/1104910 fast/peerconnection/RTCPeerConnection-reload-interesting-usage.html [ Pass Failure ]
-crbug.com/1104910 inspector-protocol/stylesheet-tracking-restart.js [ Pass Failure ]
-crbug.com/1104910 virtual/web-components-v0-disabled/fast/dom/cssTarget-crash.html [ Pass Timeout Failure ]
 crbug.com/1104910 [ Win ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Pass Failure ]
-crbug.com/1104910 [ Win ] http/tests/devtools/elements/styles-1/dynamic-style-tag.js [ Pass Failure ]
 crbug.com/1104910 [ Mac10.15 ] editing/selection/selection-background.html [ Pass Failure ]
 crbug.com/1104910 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/unsafe-url/worker-classic.http.html [ Pass Failure ]
 crbug.com/1104910 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/unset/worker-module.http.html [ Pass Failure ]
@@ -6885,3 +6872,9 @@ crbug.com/1105275 [ Mac ] fast/dom/Window/window-onFocus.html [ Pass Failure ]
 crbug.com/1105276 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Pass Failure ]
 crbug.com/1105278 [ Mac ] external/wpt/clipboard-apis/feature-policy/clipboard-write/clipboard-write-enabled-on-self-origin-by-feature-policy.tentative.https.sub.html [ Pass Failure ]
 crbug.com/1105279 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-for-different-key-granularity.html [ Pass Timeout Failure ]
+
+# Temporarily disable to land DevTools changes
+crbug.com/1101262 http/tests/devtools/application-panel/resources-panel-on-navigation.js [ Pass Failure ]
+crbug.com/1101262 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Pass Failure ]
+crbug.com/1101262 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
+crbug.com/1101262 http/tests/devtools/application-panel/resources-panel-websql.js [ Pass Failure ]

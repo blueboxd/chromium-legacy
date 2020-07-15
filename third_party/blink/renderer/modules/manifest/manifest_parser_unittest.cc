@@ -1004,7 +1004,7 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
   {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": \"Any Badge Maskable\" } ] }");
+        "\"purpose\": \"Any Monochrome Maskable\" } ] }");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
@@ -1012,7 +1012,7 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
     EXPECT_EQ(icons[0]->purpose[0],
               mojom::blink::ManifestImageResource::Purpose::ANY);
     EXPECT_EQ(icons[0]->purpose[1],
-              mojom::blink::ManifestImageResource::Purpose::BADGE);
+              mojom::blink::ManifestImageResource::Purpose::MONOCHROME);
     EXPECT_EQ(icons[0]->purpose[2],
               mojom::blink::ManifestImageResource::Purpose::MASKABLE);
     EXPECT_EQ(0u, GetErrorCount());
@@ -1022,7 +1022,7 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
   {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": \"  Any   Badge  \" } ] }");
+        "\"purpose\": \"  Any   Monochrome  \" } ] }");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
@@ -1030,7 +1030,7 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
     EXPECT_EQ(icons[0]->purpose[0],
               mojom::blink::ManifestImageResource::Purpose::ANY);
     EXPECT_EQ(icons[0]->purpose[1],
-              mojom::blink::ManifestImageResource::Purpose::BADGE);
+              mojom::blink::ManifestImageResource::Purpose::MONOCHROME);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -1038,15 +1038,15 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
   {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": \"badge badge\" } ] }");
+        "\"purpose\": \"monochrome monochrome\" } ] }");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
     ASSERT_EQ(icons[0]->purpose.size(), 2u);
     EXPECT_EQ(icons[0]->purpose[0],
-              mojom::blink::ManifestImageResource::Purpose::BADGE);
+              mojom::blink::ManifestImageResource::Purpose::MONOCHROME);
     EXPECT_EQ(icons[0]->purpose[1],
-              mojom::blink::ManifestImageResource::Purpose::BADGE);
+              mojom::blink::ManifestImageResource::Purpose::MONOCHROME);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -1054,13 +1054,13 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
   {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": \"badge fizzbuzz\" } ] }");
+        "\"purpose\": \"monochrome fizzbuzz\" } ] }");
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
     ASSERT_EQ(icons[0]->purpose.size(), 1u);
     EXPECT_EQ(icons[0]->purpose[0],
-              mojom::blink::ManifestImageResource::Purpose::BADGE);
+              mojom::blink::ManifestImageResource::Purpose::MONOCHROME);
     ASSERT_EQ(1u, GetErrorCount());
     EXPECT_EQ(kSomeInvalidPurposeError, errors()[0]);
   }

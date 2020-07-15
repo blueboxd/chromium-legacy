@@ -863,6 +863,7 @@ template("test_runner_script") {
         executable_args += [
           "--coverage-dir",
           "@WrappedPath(${_rebased_coverage_dir})",
+          "--coverage-on-the-fly",
         ]
       }
     } else if (_test_type == "linker") {

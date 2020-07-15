@@ -71,24 +71,13 @@ void MergeFeaturesFromOriginPolicy(WTF::StringBuilder& feature_policy,
 
 }  // namespace
 
-// This constructor is used for non-Document contexts (i.e., workers and tests).
-// This does a simpler check than Documents to set secure_context_mode_. This
-// is only sufficient until there are APIs that are available in workers or
-// worklets that require a privileged context test that checks ancestors.
-SecurityContextInit::SecurityContextInit(scoped_refptr<SecurityOrigin> origin,
-                                         OriginTrialContext* origin_trials)
-    : security_origin_(std::move(origin)),
-      origin_trials_(origin_trials),
-      secure_context_mode_(security_origin_ &&
-                                   security_origin_->IsPotentiallyTrustworthy()
-                               ? SecureContextMode::kSecureContext
-                               : SecureContextMode::kInsecureContext) {}
+SecurityContextInit::SecurityContextInit(OriginTrialContext* origin_trials)
+    : origin_trials_(origin_trials) {}
 
 // A helper class that allows the security context be initialized in the
 // process of constructing the document.
-SecurityContextInit::SecurityContextInit(ExecutionContext* context,
-                                         scoped_refptr<SecurityOrigin> origin)
-    : execution_context_(context), security_origin_(std::move(origin)) {}
+SecurityContextInit::SecurityContextInit(ExecutionContext* context)
+    : execution_context_(context) {}
 
 void SecurityContextInit::CountFeaturePolicyUsage(
     mojom::blink::WebFeature feature) {
@@ -163,8 +152,9 @@ void SecurityContextInit::ApplyFeaturePolicy(
   // inherited policies. https://crbug.com/898688.
   if (frame->InViewSourceMode()) {
     execution_context_->GetSecurityContext().SetFeaturePolicy(
-        FeaturePolicy::CreateFromParentPolicy(nullptr, {},
-                                              security_origin_->ToUrlOrigin()));
+        FeaturePolicy::CreateFromParentPolicy(
+            nullptr, {},
+            execution_context_->GetSecurityOrigin()->ToUrlOrigin()));
     return;
   }
 
@@ -191,13 +181,14 @@ void SecurityContextInit::ApplyFeaturePolicy(
     UseCounter::Count(execution_context_, WebFeature::kFeaturePolicyHeader);
 
   feature_policy_header_ = FeaturePolicyParser::ParseHeader(
-      feature_policy_header, permissions_policy_header, security_origin_,
-      feature_policy_logger, this);
+      feature_policy_header, permissions_policy_header,
+      execution_context_->GetSecurityOrigin(), feature_policy_logger, this);
 
   ParsedFeaturePolicy report_only_feature_policy_header =
       FeaturePolicyParser::ParseHeader(
           response.HttpHeaderField(http_names::kFeaturePolicyReportOnly),
-          report_only_permissions_policy_header, security_origin_,
+          report_only_permissions_policy_header,
+          execution_context_->GetSecurityOrigin(),
           report_only_feature_policy_logger, this);
 
   if (!report_only_feature_policy_header.empty()) {
@@ -260,10 +251,11 @@ void SecurityContextInit::ApplyFeaturePolicy(
             : nullptr;
     feature_policy = FeaturePolicy::CreateFromParentPolicy(
         parent_feature_policy, container_policy,
-        security_origin_->ToUrlOrigin());
+        execution_context_->GetSecurityOrigin()->ToUrlOrigin());
   } else {
     feature_policy = FeaturePolicy::CreateWithOpenerPolicy(
-        frame->OpenerFeatureState(), security_origin_->ToUrlOrigin());
+        frame->OpenerFeatureState(),
+        execution_context_->GetSecurityOrigin()->ToUrlOrigin());
   }
   feature_policy->SetHeaderPolicy(feature_policy_header_);
   execution_context_->GetSecurityContext().SetFeaturePolicy(
@@ -279,54 +271,17 @@ void SecurityContextInit::ApplyFeaturePolicy(
   // enforced feature policy.
   if (!report_only_feature_policy_header.empty()) {
     std::unique_ptr<FeaturePolicy> report_only_policy =
-        FeaturePolicy::CreateFromParentPolicy(nullptr /* parent_policy */,
-                                              {} /* container_policy */,
-                                              security_origin_->ToUrlOrigin());
+        FeaturePolicy::CreateFromParentPolicy(
+            nullptr /* parent_policy */, {} /* container_policy */,
+            execution_context_->GetSecurityOrigin()->ToUrlOrigin());
     report_only_policy->SetHeaderPolicy(report_only_feature_policy_header);
     execution_context_->GetSecurityContext().SetReportOnlyFeaturePolicy(
         std::move(report_only_policy));
   }
 }
 
-void SecurityContextInit::CalculateSecureContextMode(LocalFrame* frame) {
-  if (!security_origin_->IsPotentiallyTrustworthy()) {
-    secure_context_mode_ = SecureContextMode::kInsecureContext;
-  } else if (SchemeRegistry::SchemeShouldBypassSecureContextCheck(
-                 security_origin_->Protocol())) {
-    secure_context_mode_ = SecureContextMode::kSecureContext;
-  } else if (frame) {
-    Frame* parent = frame->Tree().Parent();
-    while (parent) {
-      if (!parent->GetSecurityContext()
-               ->GetSecurityOrigin()
-               ->IsPotentiallyTrustworthy()) {
-        secure_context_mode_ = SecureContextMode::kInsecureContext;
-        break;
-      }
-      parent = parent->Tree().Parent();
-    }
-    if (!secure_context_mode_.has_value())
-      secure_context_mode_ = SecureContextMode::kSecureContext;
-  } else {
-    secure_context_mode_ = SecureContextMode::kInsecureContext;
-  }
-  bool is_secure = secure_context_mode_ == SecureContextMode::kSecureContext;
-  if (execution_context_->GetSandboxFlags() !=
-      network::mojom::blink::WebSandboxFlags::kNone) {
-    UseCounter::Count(
-        execution_context_,
-        is_secure ? WebFeature::kSecureContextCheckForSandboxedOriginPassed
-                  : WebFeature::kSecureContextCheckForSandboxedOriginFailed);
-  }
-
-  UseCounter::Count(execution_context_,
-                    is_secure ? WebFeature::kSecureContextCheckPassed
-                              : WebFeature::kSecureContextCheckFailed);
-}
-
 void SecurityContextInit::InitializeOriginTrials(
     const String& origin_trials_header) {
-  DCHECK(secure_context_mode_.has_value());
   origin_trials_ = MakeGarbageCollected<OriginTrialContext>();
   if (origin_trials_header.IsEmpty())
     return;
@@ -334,9 +289,9 @@ void SecurityContextInit::InitializeOriginTrials(
       OriginTrialContext::ParseHeaderValue(origin_trials_header));
   if (!tokens)
     return;
-  origin_trials_->AddTokens(
-      *tokens, security_origin_.get(),
-      secure_context_mode_ == SecureContextMode::kSecureContext);
+  origin_trials_->AddTokens(*tokens, execution_context_->GetSecurityOrigin(),
+                            execution_context_->GetSecureContextMode() ==
+                                SecureContextMode::kSecureContext);
 }
 
 }  // namespace blink

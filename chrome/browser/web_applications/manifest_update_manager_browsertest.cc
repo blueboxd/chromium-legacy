@@ -631,13 +631,17 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
   install_observer.SetWebAppUninstalledDelegate(
       base::BindLambdaForTesting([](const AppId& app_id) { NOTREACHED(); }));
 
-  OverrideManifest(kManifestTemplate, {kInstallableIconList, "red"});
+  // CSS #RRGGBBAA syntax.
+  OverrideManifest(kManifestTemplate, {kInstallableIconList, "#00FF00F0"});
   EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
             ManifestUpdateResult::kAppUpdated);
   histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
                                       ManifestUpdateResult::kAppUpdated, 1);
   AwaitShortcutsUpdated(kInstallableIconTopLeftColor);
-  EXPECT_EQ(GetProvider().registrar().GetAppThemeColor(app_id), SK_ColorRED);
+
+  // Updated theme_color loses any transparency.
+  EXPECT_EQ(GetProvider().registrar().GetAppThemeColor(app_id),
+            SkColorSetARGB(0xFF, 0x00, 0xFF, 0x00));
 }
 
 IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest, CheckKeepsSameName) {

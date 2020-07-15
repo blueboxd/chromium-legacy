@@ -15,7 +15,6 @@ namespace blink {
 class QueuingStrategyInit;
 class ScriptState;
 class ScriptValue;
-class Visitor;
 
 // https://streams.spec.whatwg.org/#blqs-class
 class CORE_EXPORT CountQueuingStrategy final : public ScriptWrappable {
@@ -27,13 +26,11 @@ class CORE_EXPORT CountQueuingStrategy final : public ScriptWrappable {
   CountQueuingStrategy(ScriptState*, const QueuingStrategyInit*);
   ~CountQueuingStrategy() override;
 
-  ScriptValue highWaterMark(ScriptState*) const;
+  double highWaterMark() const { return high_water_mark_; }
   ScriptValue size(ScriptState*) const;
 
-  void Trace(Visitor*) const override;
-
  private:
-  const TraceWrapperV8Reference<v8::Value> high_water_mark_;
+  const double high_water_mark_;
 };
 
 }  // namespace blink

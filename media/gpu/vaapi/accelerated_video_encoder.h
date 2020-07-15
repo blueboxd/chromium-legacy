@@ -113,8 +113,6 @@ class AcceleratedVideoEncoder {
     // Returns the timestamp associated with this job.
     base::TimeDelta timestamp() const { return timestamp_; }
 
-    virtual BitstreamBufferMetadata Metadata(size_t payload_size) const;
-
     virtual VaapiEncodeJob* AsVaapiEncodeJob();
 
    private:
@@ -180,6 +178,9 @@ class AcceleratedVideoEncoder {
   // AcceleratedVideoEncoder is configured with
   // BitrateControl::kConstantQuantizationParameter.
   virtual void BitrateControlUpdate(uint64_t encoded_chunk_size_bytes);
+
+  virtual BitstreamBufferMetadata GetMetadata(EncodeJob* encode_job,
+                                              size_t payload_size);
 };
 
 }  // namespace media

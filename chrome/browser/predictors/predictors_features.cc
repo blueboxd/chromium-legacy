@@ -45,6 +45,7 @@ const base::Feature kLoadingPredictorPrefetch{
 const base::FeatureParam<PrefetchSubresourceType>::Option
     kPrefetchSubresourceTypeParamOptions[] = {
         {PrefetchSubresourceType::kAll, "all"},
+        {PrefetchSubresourceType::kCss, "css"},
         {PrefetchSubresourceType::kJsAndCss, "js_css"}};
 
 const base::FeatureParam<PrefetchSubresourceType>

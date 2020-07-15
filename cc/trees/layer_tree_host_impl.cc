@@ -1859,28 +1859,38 @@ gfx::ColorSpace LayerTreeHostImpl::GetRasterColorSpace(
     gfx::ContentColorUsage content_color_usage) const {
   constexpr gfx::ColorSpace srgb = gfx::ColorSpace::CreateSRGB();
 
-  if (settings_.prefer_raster_in_srgb &&
-      content_color_usage == gfx::ContentColorUsage::kSRGB)
+  // If we are likely to software composite the resource, we use sRGB because
+  // software compositing is unable to perform color conversion.
+  if (!layer_tree_frame_sink_ || !layer_tree_frame_sink_->context_provider())
     return srgb;
 
-  gfx::ColorSpace result;
-  // The pending tree will have the most recently updated color space, so
-  // prefer that.
-  if (pending_tree_) {
-    result = pending_tree_->raster_color_space();
-  } else if (active_tree_) {
-    result = active_tree_->raster_color_space();
+  if (settings_.prefer_raster_in_srgb &&
+      content_color_usage == gfx::ContentColorUsage::kSRGB) {
+    return srgb;
   }
 
-  // If we are likely to software composite the resource, we use sRGB because
-  // software compositing is unable to perform color conversion. Also always
-  // specify a color space if color correct rasterization is requested
+  // The pending tree will has the most recently updated color space, so use it.
+  gfx::ColorSpace result;
+  if (pending_tree_)
+    result = pending_tree_->raster_color_space();
+  else if (active_tree_)
+    result = active_tree_->raster_color_space();
+
+  // Always specify a color space if color correct rasterization is requested
   // (not specifying a color space indicates that no color conversion is
   // required).
-  if (!layer_tree_frame_sink_ || !layer_tree_frame_sink_->context_provider() ||
-      !result.IsValid()) {
-    result = srgb;
-  }
+  if (!result.IsValid())
+    return srgb;
+
+  // Rasterization doesn't support more than 8 bit unorm values. If the output
+  // space has an extended range, use Display P3 for the rasterization space,
+  // to get a somewhat wider color gamut.
+  //
+  // TODO(crbug.com/1076568): Actually use the HDR color space when we have HDR
+  // content to display.
+  if (result.IsHDR())
+    return gfx::ColorSpace::CreateDisplayP3D65();
+
   return result;
 }
 

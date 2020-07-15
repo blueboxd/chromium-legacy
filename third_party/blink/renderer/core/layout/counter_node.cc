@@ -34,7 +34,7 @@ CounterNode::CounterNode(LayoutObject& o, unsigned type_mask, int value)
     : type_mask_(type_mask),
       value_(value),
       count_in_parent_(0),
-      owner_(o),
+      owner_(&o),
       root_layout_object_(nullptr),
       parent_(nullptr),
       previous_sibling_(nullptr),

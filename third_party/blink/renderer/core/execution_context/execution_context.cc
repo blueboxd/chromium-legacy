@@ -56,11 +56,9 @@
 
 namespace blink {
 
-ExecutionContext::ExecutionContext(v8::Isolate* isolate,
-                                   Agent* agent,
-                                   SecurityContext::SecurityContextType type)
+ExecutionContext::ExecutionContext(v8::Isolate* isolate, Agent* agent)
     : isolate_(isolate),
-      security_context_(type),
+      security_context_(this),
       agent_(agent),
       circular_sequential_id_(0),
       in_dispatch_error_event_(false),

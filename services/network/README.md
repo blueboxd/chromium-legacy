@@ -27,6 +27,7 @@ https://docs.google.com/document/d/1wAHLw9h7gGuqJNCgG1mP1BmLtCGfZ2pys-PdZQ1vg7M/
 # Related docs
 
 * [URLLoader](url_loader.md)
+* [Slides describing the relationship with the fetch spec](https://docs.google.com/presentation/d/1r9KHuYbNlgqQ6UABAMiWz0ONTpSTnMaDJ8UeYZGWjls/)
 
 # Where does the network service run?
 

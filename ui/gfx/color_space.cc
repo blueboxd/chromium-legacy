@@ -559,16 +559,6 @@ ColorSpace ColorSpace::GetScaledColorSpace(float factor) const {
   return result;
 }
 
-ColorSpace ColorSpace::GetRasterColorSpace() const {
-  // Rasterization doesn't support more than 8 bit unorm values. If the output
-  // space has an extended range, use Display P3 for the rasterization space,
-  // to get a somewhat wider color gamut.
-  if (IsHDR())
-    return CreateDisplayP3D65();
-
-  return *this;
-}
-
 bool ColorSpace::IsSuitableForBlending() const {
   switch (transfer_) {
     case TransferID::SMPTEST2084:

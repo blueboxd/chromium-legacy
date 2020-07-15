@@ -256,7 +256,7 @@ LayerTreeHost::GetScopedEventMetricsMonitor(
 }
 
 void LayerTreeHost::ClearEventsMetrics() {
-  // Take evens metrics and drop them.
+  // Take events metrics and drop them.
   events_metrics_manager_.TakeSavedEventsMetrics();
 }
 

@@ -361,9 +361,9 @@ class FillFromMetadataTask : public InitializationSubTask {
           case proto::BackgroundFetchOptions_ImageResource_Purpose_ANY:
             ir.purpose.push_back(blink::Manifest::ImageResource::Purpose::ANY);
             break;
-          case proto::BackgroundFetchOptions_ImageResource_Purpose_BADGE:
+          case proto::BackgroundFetchOptions_ImageResource_Purpose_MONOCHROME:
             ir.purpose.push_back(
-                blink::Manifest::ImageResource::Purpose::BADGE);
+                blink::Manifest::ImageResource::Purpose::MONOCHROME);
             break;
         }
       }

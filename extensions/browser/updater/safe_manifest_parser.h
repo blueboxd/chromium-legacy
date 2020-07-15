@@ -38,8 +38,9 @@ enum class ManifestInvalidError {
   MISSING_VERSION_FOR_UPDATE_CHECK = 10,
   INVALID_VERSION = 11,
   BAD_UPDATE_SPECIFICATION = 12,
+  BAD_APP_STATUS = 13,
   // Maximum histogram value.
-  kMaxValue = BAD_UPDATE_SPECIFICATION
+  kMaxValue = BAD_APP_STATUS
 };
 
 struct ManifestParseFailure {
@@ -60,6 +61,7 @@ struct UpdateManifestResult {
   std::string extension_id;
   std::string version;
   std::string browser_min_version;
+  std::string app_status;
 
   // Error occurred while parsing manifest.
   base::Optional<ManifestParseFailure> parse_error;

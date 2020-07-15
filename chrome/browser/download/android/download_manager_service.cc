@@ -14,6 +14,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -203,10 +204,7 @@ DownloadManagerService::DownloadActionParams::DownloadActionParams(
     : action(other.action), has_user_gesture(other.has_user_gesture) {}
 
 DownloadManagerService::DownloadManagerService()
-    : is_manager_initialized_(false),
-      is_pending_downloads_loaded_(false),
-      original_coordinator_(nullptr),
-      off_the_record_coordinator_(nullptr) {}
+    : is_manager_initialized_(false), is_pending_downloads_loaded_(false) {}
 
 DownloadManagerService::~DownloadManagerService() {}
 
@@ -454,10 +452,12 @@ void DownloadManagerService::OnDownloadsInitialized(
 
 void DownloadManagerService::OnManagerGoingDown(
     download::SimpleDownloadManagerCoordinator* coordinator) {
-  if (original_coordinator_ == coordinator)
-    original_coordinator_ = nullptr;
-  else if (off_the_record_coordinator_ == coordinator)
-    off_the_record_coordinator_ = nullptr;
+  for (auto it = coordinators_.begin(); it != coordinators_.end(); it++) {
+    if (it->second == coordinator) {
+      coordinators_.erase(it->first);
+      break;
+    }
+  }
 }
 
 void DownloadManagerService::OnDownloadCreated(
@@ -673,21 +673,20 @@ download::DownloadItem* DownloadManagerService::GetDownload(
 void DownloadManagerService::OnPendingDownloadsLoaded() {
   is_pending_downloads_loaded_ = true;
 
+  ProfileKey* profile_key = use_existing_profile_key_for_testing_
+                                ? coordinators_.begin()->first
+                                : ProfileManager::GetActiveUserProfile()
+                                      ->GetOriginalProfile()
+                                      ->GetProfileKey();
+
   // Kick-off the auto-resumption handler.
   content::DownloadManager::DownloadVector all_items;
-  original_coordinator_->GetAllDownloads(&all_items);
+  GetCoordinator(profile_key)->GetAllDownloads(&all_items);
 
   if (!download::AutoResumptionHandler::Get())
     CreateAutoResumptionHandler();
 
   download::AutoResumptionHandler::Get()->SetResumableDownloads(all_items);
-
-  ProfileKey* profile_key =
-      use_startup_accessor_profile_key_for_testing_
-          ? ProfileKeyStartupAccessor::GetInstance()->profile_key()
-          : ProfileManager::GetActiveUserProfile()
-                ->GetOriginalProfile()
-                ->GetProfileKey();
 
   for (auto iter = pending_actions_.begin(); iter != pending_actions_.end();
        ++iter) {
@@ -727,31 +726,25 @@ content::DownloadManager* DownloadManagerService::GetDownloadManager(
 void DownloadManagerService::ResetCoordinatorIfNeeded(ProfileKey* profile_key) {
   download::SimpleDownloadManagerCoordinator* coordinator =
       SimpleDownloadManagerCoordinatorFactory::GetForKey(profile_key);
-  UpdateCoordinator(coordinator, profile_key->IsOffTheRecord());
+  UpdateCoordinator(coordinator, profile_key);
 }
 
 void DownloadManagerService::UpdateCoordinator(
     download::SimpleDownloadManagerCoordinator* new_coordinator,
-    bool is_off_the_record) {
-  // TODO(https://crbug.com/1099577): Update to have separate coordinators per
-  // OTR profile.
-  auto*& coordinator =
-      is_off_the_record ? off_the_record_coordinator_ : original_coordinator_;
-  if (!coordinator || coordinator != new_coordinator) {
-    if (coordinator)
-      coordinator->GetNotifier()->RemoveObserver(this);
-    coordinator = new_coordinator;
-    coordinator->GetNotifier()->AddObserver(this);
+    ProfileKey* profile_key) {
+  bool coordinator_exists = base::Contains(coordinators_, profile_key);
+  if (!coordinator_exists || coordinators_[profile_key] != new_coordinator) {
+    if (coordinator_exists)
+      coordinators_[profile_key]->GetNotifier()->RemoveObserver(this);
+    coordinators_[profile_key] = new_coordinator;
+    new_coordinator->GetNotifier()->AddObserver(this);
   }
 }
 
 download::SimpleDownloadManagerCoordinator*
 DownloadManagerService::GetCoordinator(ProfileKey* profile_key) {
-  // TODO(https://crbug.com/1099577): Update to have separate coordinators per
-  // OTR profile.
-  bool use_original = use_startup_accessor_profile_key_for_testing_ ||
-                      !profile_key->IsOffTheRecord();
-  return use_original ? original_coordinator_ : off_the_record_coordinator_;
+  DCHECK(base::Contains(coordinators_, profile_key));
+  return coordinators_[profile_key];
 }
 
 void DownloadManagerService::RenameDownload(
@@ -817,7 +810,7 @@ void DownloadManagerService::CreateInterruptedDownloadForTest(
   download::InProgressDownloadManager* in_progress_manager =
       DownloadManagerUtils::GetInProgressDownloadManager(
           ProfileKeyStartupAccessor::GetInstance()->profile_key());
-  UseStartupProfileKeyForTesting();
+  UseExistingProfileKeyForTesting();
   std::vector<GURL> url_chain;
   url_chain.emplace_back(ConvertJavaStringToUTF8(env, jurl));
   base::FilePath target_path(ConvertJavaStringToUTF8(env, jtarget_path));

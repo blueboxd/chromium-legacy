@@ -36,8 +36,8 @@ class DownloadManagerServiceTest : public testing::Test {
         .WillByDefault(::testing::Invoke(
             this, &DownloadManagerServiceTest::GetDownloadByGuid));
     coordinator_.SetSimpleDownloadManager(&manager_, false);
-    service_->UpdateCoordinator(&coordinator_, false);
-    service_->UseStartupProfileKeyForTesting();
+    service_->UpdateCoordinator(&coordinator_, profile_.GetProfileKey());
+    service_->UseExistingProfileKeyForTesting();
   }
 
   void OnResumptionDone(bool success) {

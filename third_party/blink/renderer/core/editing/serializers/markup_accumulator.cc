@@ -300,7 +300,7 @@ MarkupAccumulator::AppendStartTagOpen(const Element& element) {
     // 12.5.1. If the local prefixes map contains a key matching prefix, then
     // let prefix be the result of generating a prefix providing as input map,
     // ns, and prefix index
-    if (element.hasAttribute(WTF::g_xmlns_with_colon + prefix)) {
+    if (element.hasAttribute(String(WTF::g_xmlns_with_colon + prefix))) {
       prefix = GeneratePrefix(ns);
     } else {
       // 12.5.2. Add prefix to map given namespace ns.

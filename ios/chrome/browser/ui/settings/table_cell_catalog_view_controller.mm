@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
@@ -84,6 +85,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeCheck3,
   ItemTypeCheck4,
   ItemTypeCheck5,
+  ItemTypeCheck6,
 };
 }
 
@@ -412,8 +414,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       @"description.";
   checkFinished.enabled = YES;
   checkFinished.indicatorHidden = YES;
-  checkFinished.trailingImage = [[ChromeIcon infoIcon]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  checkFinished.trailingImage =
+      [UIImage imageNamed:@"table_view_cell_check_mark"];
   [model addItem:checkFinished
       toSectionWithIdentifier:SectionIdentifierSettings];
 
@@ -426,9 +428,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   checkFinishedWithLeadingImage.leadingImage = [[ChromeIcon infoIcon]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   checkFinishedWithLeadingImage.enabled = YES;
-  checkFinishedWithLeadingImage.indicatorHidden = NO;
-  checkFinishedWithLeadingImage.trailingImage = [[ChromeIcon infoIcon]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  checkFinishedWithLeadingImage.indicatorHidden = YES;
+  checkFinishedWithLeadingImage.trailingImage =
+      [UIImage imageNamed:@"table_view_cell_check_mark"];
   [model addItem:checkFinishedWithLeadingImage
       toSectionWithIdentifier:SectionIdentifierSettings];
 
@@ -452,6 +454,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   checkDisabledWithLeadingImage.enabled = NO;
   [model addItem:checkDisabledWithLeadingImage
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  SettingsCheckItem* checkWithInfoButton =
+      [[SettingsCheckItem alloc] initWithType:ItemTypeCheck6];
+  checkWithInfoButton.text = @"Check item with info ";
+  checkWithInfoButton.detailText =
+      @"This is very long description of check item. Another line of "
+      @"description.";
+  checkWithInfoButton.enabled = YES;
+  checkWithInfoButton.indicatorHidden = YES;
+  checkWithInfoButton.infoButtonHidden = NO;
+  [model addItem:checkWithInfoButton
       toSectionWithIdentifier:SectionIdentifierSettings];
 
   TableViewLinkHeaderFooterItem* linkFooter =
@@ -570,6 +584,26 @@ typedef NS_ENUM(NSInteger, ItemType) {
       UIPopoverArrowDirectionAny;
 }
 
+// Called when the user clicks on the information button of the check item
+// setting's UI. Shows a textual bubble with the detailed information.
+- (void)didTapCheckInfoButton:(UIButton*)buttonView {
+  PopoverLabelViewController* popoverViewController =
+      [[PopoverLabelViewController alloc]
+          initWithMessage:@"You clicked settings check item. Here you can see "
+                          @"detailed information."];
+
+  // Set the anchor and arrow direction of the bubble.
+  popoverViewController.popoverPresentationController.sourceView = buttonView;
+  popoverViewController.popoverPresentationController.sourceRect =
+      buttonView.bounds;
+  popoverViewController.popoverPresentationController.permittedArrowDirections =
+      UIPopoverArrowDirectionAny;
+
+  [self presentViewController:popoverViewController
+                     animated:YES
+                   completion:nil];
+}
+
 #pragma mark - UITableViewDataSource
 
 - (UITableViewCell*)tableView:(UITableView*)tableView
@@ -586,6 +620,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [managedCell.trailingButton addTarget:self
                                    action:@selector(didTapManagedUIInfoButton:)
                          forControlEvents:UIControlEventTouchUpInside];
+  } else if (itemType == ItemTypeCheck6) {
+    SettingsCheckCell* checkCell =
+        base::mac::ObjCCastStrict<SettingsCheckCell>(cell);
+    [checkCell.infoButton addTarget:self
+                             action:@selector(didTapCheckInfoButton:)
+                   forControlEvents:UIControlEventTouchUpInside];
   }
   return cell;
 }

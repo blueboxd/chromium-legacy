@@ -208,6 +208,30 @@ class InstallStageTracker : public KeyedService {
     kMaxValue = kErrorUnsupportedProtocol,
   };
 
+  // Status for the app returned by server while fetching manifest when status
+  // was not OK. Enum used for UMA. Do NOT reorder or remove entries. Don't
+  // forget to update enums.xml (name: ManifestInvalidAppStatusError) when
+  // adding new entries.
+  enum class AppStatusError {
+    // Technically it may happen that update server return some unknown value or
+    // no value.
+    kUnknown = 0,
+
+    // The appid was not recognized and no action elements are included.
+    kErrorUnknownApplication = 1,
+
+    // The appid is not properly formed; no action elements are included.
+    kErrorInvalidAppId = 2,
+
+    // The application is not available to this user (usually based on country
+    // export restrictions).
+    kErrorRestricted = 3,
+
+    // Magic constant used by the histogram macros.
+    // Always update it to the max value.
+    kMaxValue = kErrorRestricted,
+  };
+
   // Info field in the update manifest returned by the server when no update is
   // available. Enum used for UMA. Do NOT reorder or remove entries. Don't
   // forget to update enums.xml (name: ExtensionNoUpdatesInfo) when adding new
@@ -263,6 +287,9 @@ class InstallStageTracker : public KeyedService {
     // Info field in the update manifest returned by the server when no update
     // is available.
     base::Optional<NoUpdatesInfo> no_updates_info;
+    // Type of app status error received from update server when manifest was
+    // fetched.
+    base::Optional<AppStatusError> app_status_error;
   };
 
   class Observer : public base::CheckedObserver {
@@ -302,8 +329,9 @@ class InstallStageTracker : public KeyedService {
   // Reports detailed error type when extension fails to install with failure
   // reason MANIFEST_INVALID. See InstallationData::manifest_invalid_error
   // for more details.
-  void ReportManifestInvalidFailure(const ExtensionId& id,
-                                    ManifestInvalidError error);
+  void ReportManifestInvalidFailure(
+      const ExtensionId& id,
+      const ExtensionDownloaderDelegate::FailureData& failure_data);
 
   // Remembers failure reason and in-progress stages in memory.
   void ReportInstallationStage(const ExtensionId& id, Stage stage);
@@ -343,6 +371,9 @@ class InstallStageTracker : public KeyedService {
   void RemoveObserver(Observer* observer);
 
  private:
+  // Helper function that maps the current app status to AppStatusError enum.
+  AppStatusError GetManifestInvalidAppStatusError(const std::string& status);
+
   // Helper function to report installation failures to the observers.
   void NotifyObserversOfFailure(const ExtensionId& id,
                                 FailureReason reason,

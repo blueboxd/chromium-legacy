@@ -79,7 +79,10 @@ PaintLayer* FindFirstStickyBetween(LayoutObject* from, LayoutObject* to) {
 // is the next pointer associated with the key.
 typedef HashMap<const LayoutBoxModelObject*, LayoutBoxModelObject*>
     ContinuationMap;
-static ContinuationMap* g_continuation_map = nullptr;
+static ContinuationMap& GetContinuationMap() {
+  DEFINE_STATIC_LOCAL(ContinuationMap, map, ());
+  return map;
+}
 
 void LayoutBoxModelObject::ContentChanged(ContentChangeType change_type) {
   if (!HasLayer())
@@ -1243,18 +1246,15 @@ LayoutUnit LayoutBoxModelObject::ContainingBlockLogicalWidthForContent() const {
 }
 
 LayoutBoxModelObject* LayoutBoxModelObject::Continuation() const {
-  return (!g_continuation_map) ? nullptr : g_continuation_map->at(this);
+  return GetContinuationMap().at(this);
 }
 
 void LayoutBoxModelObject::SetContinuation(LayoutBoxModelObject* continuation) {
   if (continuation) {
     DCHECK(continuation->IsLayoutInline() || continuation->IsLayoutBlockFlow());
-    if (!g_continuation_map)
-      g_continuation_map = new ContinuationMap;
-    g_continuation_map->Set(this, continuation);
+    GetContinuationMap().Set(this, continuation);
   } else {
-    if (g_continuation_map)
-      g_continuation_map->erase(this);
+    GetContinuationMap().erase(this);
   }
 }
 

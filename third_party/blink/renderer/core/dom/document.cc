@@ -6297,7 +6297,7 @@ static inline bool IsValidNameASCII(const CharType* characters,
   return true;
 }
 
-bool Document::IsValidName(const String& name) {
+bool Document::IsValidName(const StringView& name) {
   unsigned length = name.length();
   if (!length)
     return false;

@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
 
 namespace blink {
 
@@ -213,25 +214,35 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 #endif
   bool hasAttributes() const;
 
-  bool hasAttribute(const AtomicString& name) const;
+  bool hasAttribute(const StringView& name) const;
   bool hasAttributeNS(const AtomicString& namespace_uri,
                       const AtomicString& local_name) const;
 
   // Ignores namespace.
-  bool HasAttributeIgnoringNamespace(const AtomicString& local_name) const;
+  bool HasAttributeIgnoringNamespace(const StringView& local_name) const;
 
-  const AtomicString& getAttribute(const AtomicString& name) const;
+  const AtomicString& getAttribute(const StringView& local_name) const {
+    return GetAttributeHinted(local_name, WeakLowercaseIfNecessary(local_name));
+  }
+
   const AtomicString& getAttributeNS(const AtomicString& namespace_uri,
                                      const AtomicString& local_name) const;
 
-  void setAttribute(const AtomicString& name,
+  void setAttribute(const StringView& name,
                     const AtomicString& value,
-                    ExceptionState& = ASSERT_NO_EXCEPTION);
+                    ExceptionState& exception_state = ASSERT_NO_EXCEPTION) {
+    SetAttributeHinted(name, WeakLowercaseIfNecessary(name), value,
+                       exception_state);
+  }
 
   // Trusted Types variant for explicit setAttribute() use.
-  void setAttribute(const AtomicString&,
-                    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
-                    ExceptionState&);
+  void setAttribute(const StringView& name,
+                    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
+                        string_or_trusted,
+                    ExceptionState& exception_state) {
+    SetAttributeHinted(name, WeakLowercaseIfNecessary(name), string_or_trusted,
+                       exception_state);
+  }
 
   // Returns attributes that should be checked against Trusted Types
   virtual const AttrNameToTrustedType& GetCheckedAttributeTypes() const;
@@ -262,6 +273,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   //   document, then set qualifiedName to qualifiedName in ASCII lowercase.
   //   https://dom.spec.whatwg.org/#concept-element-attributes-get-by-name
   AtomicString LowercaseIfNecessary(const AtomicString&) const;
+  WTF::AtomicStringTable::WeakResult WeakLowercaseIfNecessary(
+      const StringView&) const;
 
   // NoncedElement implementation: this is only used by HTMLElement and
   // SVGElement, but putting the implementation here allows us to use
@@ -332,13 +345,15 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void DidMoveToNewDocument(Document&) override;
 
-  void removeAttribute(const AtomicString& name);
+  void removeAttribute(const StringView& name) {
+    RemoveAttributeHinted(name, WeakLowercaseIfNecessary(name));
+  }
   void removeAttributeNS(const AtomicString& namespace_uri,
                          const AtomicString& local_name);
 
   Attr* DetachAttribute(wtf_size_t index);
 
-  Attr* getAttributeNode(const AtomicString& name);
+  Attr* getAttributeNode(const StringView& name);
   Attr* getAttributeNodeNS(const AtomicString& namespace_uri,
                            const AtomicString& local_name);
   Attr* setAttributeNode(Attr*, ExceptionState&);
@@ -854,7 +869,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   ElementAnimations& EnsureElementAnimations();
   bool HasAnimations() const;
 
-  void SynchronizeAttribute(const AtomicString& local_name) const;
+  void SynchronizeAttribute(const StringView& local_name) const {
+    SynchronizeAttributeHinted(local_name,
+                               WeakLowercaseIfNecessary(local_name));
+  }
 
   MutableCSSPropertyValueSet& EnsureMutableInlineStyle();
   void ClearMutableInlineStyleIfEmpty();
@@ -1087,10 +1105,36 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                                SynchronizationOfLazyAttribute);
   void RemoveAttributeInternal(wtf_size_t index,
                                SynchronizationOfLazyAttribute);
-  std::pair<wtf_size_t, const QualifiedName> LookupAttributeQNameInternal(
-      const AtomicString& local_name) const;
   SpecificTrustedType ExpectedTrustedTypeForAttribute(
       const QualifiedName&) const;
+
+  // These Hinted versions of the functions are subtle hot path
+  // optimizations designed to reduce the number of unnecessary AtomicString
+  // creations, AtomicStringTable lookups, and LowerCaseIfNecessary calls.
+  //
+  // The `hint` is the result of a WeakLowercaseIfNecessary() call unless it is
+  // known that the the incoming string already has the right case. Then
+  // the `hint` can be constructed from calling AtomicString::Impl().
+  const AtomicString& GetAttributeHinted(
+      const StringView& name,
+      WTF::AtomicStringTable::WeakResult hint) const;
+  void RemoveAttributeHinted(const StringView& name,
+                             WTF::AtomicStringTable::WeakResult hint);
+  void SynchronizeAttributeHinted(
+      const StringView& name,
+      WTF::AtomicStringTable::WeakResult hint) const;
+  void SetAttributeHinted(const StringView& name,
+                          WTF::AtomicStringTable::WeakResult hint,
+                          const AtomicString& value,
+                          ExceptionState& = ASSERT_NO_EXCEPTION);
+  void SetAttributeHinted(
+      const StringView& name,
+      WTF::AtomicStringTable::WeakResult hint,
+      const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
+      ExceptionState&);
+  std::pair<wtf_size_t, const QualifiedName> LookupAttributeQNameHinted(
+      const StringView& name,
+      WTF::AtomicStringTable::WeakResult hint) const;
 
   void CancelFocusAppearanceUpdate();
   virtual int DefaultTabIndex() const;

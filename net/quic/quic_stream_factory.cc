@@ -2193,35 +2193,8 @@ void QuicStreamFactory::CollectDataOnPlatformNotification(
     NetworkChangeNotifier::NetworkHandle affected_network) const {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.PlatformNotification",
                             notification, NETWORK_NOTIFICATION_MAX);
-  if (notification == NETWORK_SOON_TO_DISCONNECT ||
-      notification == NETWORK_DISCONNECTED) {
-    // If the disconnected network is not the default network, ignore
-    // stats collections.
-    if (affected_network != default_network_)
-      return;
-  }
-
-  UMA_HISTOGRAM_COUNTS_100(
-      "Net.QuicStreamFactory.NumQuicSessionsAtNetworkChange",
-      all_sessions_.size());
-
-  // Skip degrading session collection if there are less than two sessions.
-  if (all_sessions_.size() < 2)
-    return;
-
-  size_t num_degrading_sessions =
-      connectivity_monitor_.GetNumDegradingSessions();
-  const std::string raw_histogram_name =
-      "Net.QuicStreamFactory.NumDegradingSessions." +
-      QuicPlatformNotificationToString(notification);
-  base::UmaHistogramExactLinear(raw_histogram_name, num_degrading_sessions,
-                                101);
-
-  int percentage = num_degrading_sessions * 100 / all_sessions_.size();
-  const std::string percentage_histogram_name =
-      "Net.QuicStreamFactory.PercentageDegradingSessions." +
-      QuicPlatformNotificationToString(notification);
-  base::UmaHistogramExactLinear(percentage_histogram_name, percentage, 101);
+  connectivity_monitor_.RecordConnectivityStatsToHistograms(
+      QuicPlatformNotificationToString(notification), affected_network);
 }
 
 std::unique_ptr<QuicCryptoClientConfigHandle>

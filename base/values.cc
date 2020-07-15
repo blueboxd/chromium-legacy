@@ -1571,7 +1571,7 @@ bool DictionaryValue::RemovePath(StringPiece path,
   result = subdict->RemovePath(path.substr(delimiter_position + 1),
                                out_value);
   if (result && subdict->empty())
-    RemoveWithoutPathExpansion(subdict_path, nullptr);
+    RemoveKey(subdict_path);
 
   return result;
 }

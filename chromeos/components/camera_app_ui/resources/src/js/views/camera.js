@@ -231,13 +231,13 @@ export class Camera extends View {
       element: videoShutter,
       state: state.State.TAKING,
       onLabel: 'record_video_stop_button',
-      offLabel: 'record_video_start_button'
+      offLabel: 'record_video_start_button',
     });
     util.bindElementAriaLabelWithState({
       element: pauseShutter,
       state: state.State.RECORDING_PAUSED,
       onLabel: 'record_video_resume_button',
-      offLabel: 'record_video_pause_button'
+      offLabel: 'record_video_pause_button',
     });
 
     // Monitor the states to stop camera when locked/minimized.

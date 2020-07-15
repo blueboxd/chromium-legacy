@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_tag.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -620,125 +619,120 @@ TEST_F(CheckedPtrTest, AssignmentFromNullptr) {
 
 }  // namespace
 
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && \
-    ENABLE_TAG_FOR_CHECKED_PTR2
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 namespace base {
 namespace internal {
 
-struct CheckedPtr2ImplPartitionAllocSupportEnabled
-    : CheckedPtr2ImplPartitionAllocSupport {
+static constexpr size_t kTagOffsetForTest = 2;
+
+struct CheckedPtr2OrMTEImplPartitionAllocSupportForTest {
   static bool EnabledForPtr(void* ptr) { return true; }
+
+  static ALWAYS_INLINE void* TagPointer(void* ptr) {
+    return static_cast<char*>(ptr) - kTagOffsetForTest;
+  }
+
+#if CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
+  static constexpr size_t TagOffset() { return kTagOffsetForTest; }
+#endif
 };
 
-using CheckedPtr2ImplEnabled =
-    CheckedPtr2Impl<CheckedPtr2ImplPartitionAllocSupportEnabled>;
+using CheckedPtr2OrMTEImplForTest =
+    CheckedPtr2OrMTEImpl<CheckedPtr2OrMTEImplPartitionAllocSupportForTest>;
 
-TEST(CheckedPtr2Impl, WrapNull) {
-  ASSERT_EQ(CheckedPtr2Impl<>::GetWrappedNullPtr(), 0u);
-  ASSERT_EQ(CheckedPtr2Impl<>::WrapRawPtr(nullptr), 0u);
+TEST(CheckedPtr2OrMTEImpl, WrapNull) {
+  ASSERT_EQ(CheckedPtr2OrMTEImpl<>::GetWrappedNullPtr(), 0u);
+  ASSERT_EQ(CheckedPtr2OrMTEImpl<>::WrapRawPtr(nullptr), 0u);
 }
 
-TEST(CheckedPtr2Impl, SafelyUnwrapNull) {
-  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrForExtraction(0), nullptr);
+TEST(CheckedPtr2OrMTEImpl, SafelyUnwrapNull) {
+  ASSERT_EQ(CheckedPtr2OrMTEImplForTest::SafelyUnwrapPtrForExtraction(0),
+            nullptr);
 }
 
 TEST(CheckedPtr2Impl, WrapAndSafelyUnwrap) {
-  // Create a fake allocation, with first 32B for generation and optionally
-  // cookie for Debug builds (ignored), 16B each. Put generation both 16B and
-  // 32B before the "object", so that it works on both Debug and Release builds.
-  // We can use a fake allocation, instead of PartitionAlloc, because
-  // CheckedPtr2ImplEnabled fakes the functionality is enabled for this pointer.
-  char bytes[] = {0xBA, 0x42, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
-                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xBA, 0x42,
-                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
-                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0x78, 0x89};
-  void* ptr = bytes + 32;
+  // Create a fake allocation, with first 2B for generation.
+  // It is ok to use a fake allocation, instead of PartitionAlloc, because
+  // CheckedPtr2OrMTEImplForTest fakes the functionality is enabled for this
+  // pointer and points to the tag appropriately.
+  char bytes[] = {0xBA, 0x42, 0x78, 0x89};
+  void* ptr = bytes + kTagOffsetForTest;
   ASSERT_EQ(0x78, *static_cast<char*>(ptr));
   uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
 
   uintptr_t set_top_bit = 0x0000000000000000;
-  uintptr_t mask = 0xFFFFFFFFFFFFFFFF;
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
   set_top_bit = 0x8000000000000000;
 #endif
+  uintptr_t mask = 0xFFFFFFFFFFFFFFFF;
+  if (sizeof(PartitionTag) < 2)
+    mask = 0x00FFFFFFFFFFFFFF;
 
-  uintptr_t wrapped = CheckedPtr2ImplEnabled::WrapRawPtr(ptr);
-  // First 2 bytes in the preceding 16B block will be used as generation (in
-  // reverse order due to little-endianness).
+  uintptr_t wrapped = CheckedPtr2OrMTEImplForTest::WrapRawPtr(ptr);
+  // The bytes before the allocation will be used as generation (in reverse
+  // order due to little-endianness).
 #if CHECKED_PTR2_USE_NO_OP_WRAPPER
   ASSERT_EQ(wrapped, addr);
   std::ignore = set_top_bit;
   std::ignore = mask;
 #else
-  ASSERT_EQ(wrapped, (addr | 0x42BA000000000000 | set_top_bit) & mask);
+  ASSERT_EQ(wrapped, (addr | 0x42BA000000000000) & mask | set_top_bit);
 #endif
-  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrForDereference(wrapped),
+  ASSERT_EQ(CheckedPtr2OrMTEImplForTest::SafelyUnwrapPtrForDereference(wrapped),
             ptr);
 
-  // Modify the generation associated with the fake allocation.
-  bytes[1] |= 0x80;                // for Debug builds
-  bytes[kCookieSize + 1] |= 0x80;  // for Release builds
-  wrapped = CheckedPtr2ImplEnabled::WrapRawPtr(ptr);
+  // Modify the generation in the fake allocation.
+  bytes[0] |= 0x40;
+  wrapped = CheckedPtr2OrMTEImplForTest::WrapRawPtr(ptr);
 #if CHECKED_PTR2_USE_NO_OP_WRAPPER
   ASSERT_EQ(wrapped, addr);
 #else
-  ASSERT_EQ(wrapped, (addr | 0xC2BA000000000000 | set_top_bit) & mask);
+  ASSERT_EQ(wrapped, (addr | 0x42FA000000000000) & mask | set_top_bit);
 #endif
-  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrForDereference(wrapped),
+  ASSERT_EQ(CheckedPtr2OrMTEImplForTest::SafelyUnwrapPtrForDereference(wrapped),
             ptr);
 
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING
   // Clear the generation associated with the fake allocation.
-  bytes[0] = 0;  // for Debug builds
+  bytes[0] = 0;
   bytes[1] = 0;
-  bytes[kCookieSize] = 0;  // for Release builds
-  bytes[kCookieSize + 1] = 0;
-  mask = 0xFFFFFFFFFFFFFFFF;
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
-  mask = 0x7FFFFFFFFFFFFFFF;
+  mask &= 0x7FFFFFFFFFFFFFFF;
 #endif
 
   // Mask out the top bit, because in some cases (not all), it may differ.
   ASSERT_EQ(
       reinterpret_cast<uintptr_t>(
-          CheckedPtr2ImplEnabled::SafelyUnwrapPtrForDereference(wrapped)) &
+          CheckedPtr2OrMTEImplForTest::SafelyUnwrapPtrForDereference(wrapped)) &
           mask,
       wrapped & mask);
 #endif  // CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING
 }
 
-TEST(CheckedPtr2Impl, SafelyUnwrapDisabled) {
-  // Create a fake allocation, with first 32B for generation and optionally
-  // cookie for Debug builds (ignored), 16B each. Put generation both 16B and
-  // 32B before the "object", so that it works on both Debug and Release builds.
-  // We can use a fake allocation, instead of PartitionAlloc, because
-  // CheckedPtr2ImplEnabled fakes the functionality is enabled for this pointer.
-  char bytes[] = {0xBA, 0x42, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
-                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xBA, 0x42,
-                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
-                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0x78, 0x89};
-  void* ptr = bytes + 32;
+TEST(CheckedPtr2OrMTEImpl, SafelyUnwrapDisabled) {
+  // Create a fake allocation, with first 2B for generation.
+  // It is ok to use a fake allocation, instead of PartitionAlloc, because
+  // CheckedPtr2OrMTEImplForTest fakes the functionality is enabled for this
+  // pointer and points to the tag appropriately.
+  char bytes[] = {0xBA, 0x42, 0x78, 0x89};
+  void* ptr = bytes + kTagOffsetForTest;
   ASSERT_EQ(0x78, *static_cast<char*>(ptr));
   uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrForDereference(addr), ptr);
+  ASSERT_EQ(CheckedPtr2OrMTEImplForTest::SafelyUnwrapPtrForDereference(addr),
+            ptr);
 }
 
 TEST(CheckedPtr2Impl, CrashOnGenerationMismatch) {
-  // Create a fake allocation, with first 32B for generation and optionally
-  // cookie for Debug builds (ignored), 16B each. Put generation both 16B and
-  // 32B before the "object", so that it works on both Debug and Release builds.
-  // We can use a fake allocation, instead of PartitionAlloc, because
-  // CheckedPtr2ImplEnabled fakes the functionality is enabled for this pointer.
-  char bytes[] = {0xBA, 0x42, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
-                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xBA, 0x42,
-                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
-                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0x78, 0x89};
-  CheckedPtr<char, CheckedPtr2ImplEnabled> ptr = bytes + 32;
+  // Create a fake allocation, with first 2B for generation.
+  // It is ok to use a fake allocation, instead of PartitionAlloc, because
+  // CheckedPtr2OrMTEImplForTest fakes the functionality is enabled for this
+  // pointer and points to the tag appropriately.
+  char bytes[] = {0xBA, 0x42, 0x78, 0x89};
+  CheckedPtr<char, CheckedPtr2OrMTEImplForTest> ptr = bytes + kTagOffsetForTest;
   EXPECT_TRUE(*ptr == 0x78);
   // Clobber the generation associated with the fake allocation.
-  bytes[0] = 0;            // for Debug builds
-  bytes[kCookieSize] = 0;  // for Release builds
+  bytes[0] = 0;
   EXPECT_DEATH_IF_SUPPORTED(if (*ptr == 0x78) return, "");
 }
 
@@ -749,5 +743,4 @@ void HandleOOM(size_t unused_size) {
 }  // namespace internal
 }  // namespace base
 
-#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) &&
-        // ENABLE_TAG_FOR_CHECKED_PTR2
+#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)

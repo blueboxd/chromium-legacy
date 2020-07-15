@@ -24,6 +24,7 @@
       # they monitor binary size growth, which may be affected by the tables.
       'linux-chrome': 'official_goma',
       'linux-chromeos-chrome': 'official_goma_chromeos',
+      'linux-lacros': 'lacros_on_linux_release_bot',
       'mac-chrome': 'official_goma',
       'mac-chrome-beta': 'official_goma',
       'mac-chrome-stable': 'official_goma',
@@ -246,6 +247,8 @@
       'Linux remote_run Builder': 'release_bot',
       'Linux remote_run Tester': 'release_bot',
       'Linux Viz': 'release_trybot',
+      'linux-lacros-builder-rel': 'lacros_on_linux_release_bot',
+      'linux-lacros-tester-rel': 'lacros_on_linux_release_bot',
       'Mac Builder Next': 'gpu_tests_release_bot_minimal_symbols_no_nacl',
       'Mac deterministic': 'release_bot_mac_strip_minimal_symbols_deterministic',
       'Mac deterministic (dbg)': 'debug_bot_deterministic',
@@ -1537,6 +1540,10 @@
       'chromeos_kevin', 'include_unwind_tables', 'official',
     ],
 
+    'lacros_on_linux_release_bot': [
+      'lacros_on_linux', 'release_bot',
+    ],
+
     'chromeos_msan_release_bot': [
       'chromeos', 'msan', 'release_bot',
     ],
@@ -2740,6 +2747,10 @@
 
     'kevin': {
       'args_file': '//build/args/chromeos/kevin.gni',
+    },
+
+    'lacros_on_linux': {
+      'gn_args': 'use_ozone=true ozone_platform_wayland=true ozone_platform="wayland" use_gtk=false chromeos_is_browser_only=true'
     },
 
     'libfuzzer': { 'gn_args': 'use_libfuzzer=true' },

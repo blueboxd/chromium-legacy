@@ -908,7 +908,7 @@ class ExtensionUpdaterTest : public testing::Test {
     UpdateManifestResults updates;
     std::vector<UpdateManifestResult*> updateable;
     std::set<std::string> not_updateable;
-    ManifestInvalidErrorList errors;
+    ManifestInvalidFailureDataList errors;
     helper.downloader().DetermineUpdates(*fetch_data, updates, &updateable,
                                          &not_updateable, &errors);
     EXPECT_TRUE(updateable.empty());
@@ -1023,7 +1023,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     std::vector<UpdateManifestResult*> updateable;
     std::set<std::string> not_updateable;
-    ManifestInvalidErrorList errors;
+    ManifestInvalidFailureDataList errors;
     helper.downloader().DetermineUpdates(*fetch_data, updates, &updateable,
                                          &not_updateable, &errors);
     EXPECT_THAT(not_updateable, testing::UnorderedElementsAre(id2, id3));
@@ -1031,7 +1031,8 @@ class ExtensionUpdaterTest : public testing::Test {
     for (const auto& id : ids_with_error) {
       auto it = std::find_if(
           errors.begin(), errors.end(),
-          [&](const std::pair<ExtensionId, ManifestInvalidError>& error) {
+          [&](const std::pair<
+              ExtensionId, ExtensionDownloaderDelegate::FailureData>& error) {
             return error.first == id;
           });
       EXPECT_TRUE(it != errors.end());
@@ -1073,7 +1074,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     std::vector<UpdateManifestResult*> updateable;
     std::set<std::string> not_updateable;
-    ManifestInvalidErrorList errors;
+    ManifestInvalidFailureDataList errors;
     helper.downloader().DetermineUpdates(*fetch_data, updates, &updateable,
                                          &not_updateable, &errors);
     // All the apps should be updateable.
@@ -1155,7 +1156,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     std::vector<UpdateManifestResult*> updateable;
     std::set<std::string> not_updateable;
-    ManifestInvalidErrorList errors;
+    ManifestInvalidFailureDataList errors;
     helper.downloader().DetermineUpdates(*fetch_data, updates, &updateable,
                                          &not_updateable, &errors);
     EXPECT_THAT(not_updateable, testing::UnorderedElementsAre(id1, id4));
@@ -1163,7 +1164,8 @@ class ExtensionUpdaterTest : public testing::Test {
     for (const auto& id : ids_with_error) {
       auto it = std::find_if(
           errors.begin(), errors.end(),
-          [&](const std::pair<ExtensionId, ManifestInvalidError>& error) {
+          [&](const std::pair<
+              ExtensionId, ExtensionDownloaderDelegate::FailureData>& error) {
             return error.first == id;
           });
       EXPECT_TRUE(it != errors.end());

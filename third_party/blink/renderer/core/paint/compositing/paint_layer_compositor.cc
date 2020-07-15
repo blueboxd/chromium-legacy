@@ -64,7 +64,7 @@
 namespace blink {
 
 PaintLayerCompositor::PaintLayerCompositor(LayoutView& layout_view)
-    : layout_view_(layout_view) {
+    : layout_view_(&layout_view) {
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 }
 
@@ -78,7 +78,7 @@ void PaintLayerCompositor::CleanUp() {
 bool PaintLayerCompositor::InCompositingMode() const {
   // FIXME: This should assert that lifecycle is >= CompositingClean since
   // the last step of updateIfNeeded can set this bit to false.
-  DCHECK(layout_view_.Layer()->IsAllowedToQueryCompositingState());
+  DCHECK(layout_view_->Layer()->IsAllowedToQueryCompositingState());
   return compositing_;
 }
 
@@ -108,11 +108,11 @@ void PaintLayerCompositor::UpdateCompositingInputsIfNeededRecursive(
 
 void PaintLayerCompositor::UpdateCompositingInputsIfNeededRecursiveInternal(
     DocumentLifecycle::LifecycleState target_state) {
-  if (layout_view_.GetFrameView()->ShouldThrottleRendering())
+  if (layout_view_->GetFrameView()->ShouldThrottleRendering())
     return;
 
   for (Frame* child =
-           layout_view_.GetFrameView()->GetFrame().Tree().FirstChild();
+           layout_view_->GetFrameView()->GetFrame().Tree().FirstChild();
        child; child = child->Tree().NextSibling()) {
     auto* local_frame = DynamicTo<LocalFrame>(child);
     if (!local_frame)
@@ -132,7 +132,7 @@ void PaintLayerCompositor::UpdateCompositingInputsIfNeededRecursiveInternal(
   ScriptForbiddenScope forbid_script;
 
 #if DCHECK_IS_ON()
-  LocalFrameView* view = layout_view_.GetFrameView();
+  LocalFrameView* view = layout_view_->GetFrameView();
   view->SetIsUpdatingDescendantDependentFlags(true);
 #endif
   {
@@ -143,7 +143,7 @@ void PaintLayerCompositor::UpdateCompositingInputsIfNeededRecursiveInternal(
   view->SetIsUpdatingDescendantDependentFlags(false);
 #endif
 
-  layout_view_.CommitPendingSelection();
+  layout_view_->CommitPendingSelection();
 
   Lifecycle().AdvanceTo(DocumentLifecycle::kInCompositingInputsUpdate);
 
@@ -161,10 +161,10 @@ void PaintLayerCompositor::UpdateCompositingInputsIfNeededRecursiveInternal(
   Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingInputsClean);
 
 #if DCHECK_IS_ON()
-  if (!layout_view_.GetDocument()
+  if (!layout_view_->GetDocument()
            .GetSettings()
            ->GetAcceleratedCompositingEnabled()) {
-    DCHECK(!layout_view_.GetDocument()
+    DCHECK(!layout_view_->GetDocument()
                 .GetSettings()
                 ->GetAcceleratedCompositingEnabled());
   }
@@ -200,17 +200,17 @@ void PaintLayerCompositor::UpdateIfNeededRecursive(
 void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
     DocumentLifecycle::LifecycleState target_state,
     CompositingReasonsStats& compositing_reasons_stats) {
-  if (layout_view_.GetFrameView()->ShouldThrottleRendering())
+  if (layout_view_->GetFrameView()->ShouldThrottleRendering())
     return;
 
   if (target_state == DocumentLifecycle::kCompositingInputsClean)
     return;
 
-  LocalFrameView* view = layout_view_.GetFrameView();
+  LocalFrameView* view = layout_view_->GetFrameView();
   view->ResetNeedsForcedCompositingUpdate();
 
   for (Frame* child =
-           layout_view_.GetFrameView()->GetFrame().Tree().FirstChild();
+           layout_view_->GetFrameView()->GetFrame().Tree().FirstChild();
        child; child = child->Tree().NextSibling()) {
     auto* local_frame = DynamicTo<LocalFrame>(child);
     if (!local_frame)
@@ -231,7 +231,7 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   TRACE_EVENT0("blink,benchmark",
                "PaintLayerCompositor::updateIfNeededRecursive");
 
-  DCHECK(!layout_view_.NeedsLayout());
+  DCHECK(!layout_view_->NeedsLayout());
 
   ScriptForbiddenScope forbid_script;
 
@@ -241,7 +241,7 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   DCHECK_EQ(Lifecycle().GetState(), DocumentLifecycle::kCompositingClean);
   AssertNoUnresolvedDirtyBits();
   for (Frame* child =
-           layout_view_.GetFrameView()->GetFrame().Tree().FirstChild();
+           layout_view_->GetFrameView()->GetFrame().Tree().FirstChild();
        child; child = child->Tree().NextSibling()) {
     auto* local_frame = DynamicTo<LocalFrame>(child);
     if (!local_frame)
@@ -267,9 +267,9 @@ void PaintLayerCompositor::SetNeedsCompositingUpdate(
   DCHECK_NE(update_type, kCompositingUpdateNone);
   pending_update_type_ = std::max(pending_update_type_, update_type);
   if (Page* page = GetPage())
-    page->Animator().ScheduleVisualUpdate(layout_view_.GetFrame());
+    page->Animator().ScheduleVisualUpdate(layout_view_->GetFrame());
 
-  if (layout_view_.DocumentBeingDestroyed())
+  if (layout_view_->DocumentBeingDestroyed())
     return;
 
   Lifecycle().EnsureStateAtMost(DocumentLifecycle::kLayoutClean);
@@ -295,7 +295,7 @@ void PaintLayerCompositor::UpdateIfNeeded(
   CompositingUpdateType update_type = pending_update_type_;
   pending_update_type_ = kCompositingUpdateNone;
 
-  if (!layout_view_.GetDocument()
+  if (!layout_view_->GetDocument()
            .GetSettings()
            ->GetAcceleratedCompositingEnabled() ||
       update_type == kCompositingUpdateNone) {
@@ -308,7 +308,7 @@ void PaintLayerCompositor::UpdateIfNeeded(
   Vector<PaintLayer*> layers_needing_paint_invalidation;
 
   if (update_type >= kCompositingUpdateAfterCompositingInputChange) {
-    CompositingRequirementsUpdater(layout_view_)
+    CompositingRequirementsUpdater(*layout_view_)
         .Update(update_root, compositing_reasons_stats);
 
     CompositingLayerAssigner layer_assigner(this);
@@ -318,7 +318,7 @@ void PaintLayerCompositor::UpdateIfNeeded(
       update_type = std::max(update_type, kCompositingUpdateRebuildTree);
       if (ScrollingCoordinator* scrolling_coordinator =
               GetScrollingCoordinator()) {
-        LocalFrameView* frame_view = layout_view_.GetFrameView();
+        LocalFrameView* frame_view = layout_view_->GetFrameView();
         scrolling_coordinator->NotifyGeometryChanged(frame_view);
       }
     }
@@ -433,11 +433,11 @@ bool PaintLayerCompositor::AllocateOrClearCompositedLayerMapping(
 
       // At this time, the ScrollingCoordinator only supports the top-level
       // frame.
-      if (layer->IsRootLayer() && layout_view_.GetFrame()->IsLocalRoot()) {
+      if (layer->IsRootLayer() && layout_view_->GetFrame()->IsLocalRoot()) {
         if (ScrollingCoordinator* scrolling_coordinator =
                 GetScrollingCoordinator()) {
           scrolling_coordinator->FrameViewRootLayerDidChange(
-              layout_view_.GetFrameView());
+              layout_view_->GetFrameView());
         }
       }
       break;
@@ -469,7 +469,7 @@ void PaintLayerCompositor::PaintInvalidationOnCompositingChange(
     PaintLayer* layer) {
   // If the layoutObject is not attached yet, no need to issue paint
   // invalidations.
-  if (&layer->GetLayoutObject() != &layout_view_ &&
+  if (&layer->GetLayoutObject() != layout_view_ &&
       !layer->GetLayoutObject().Parent())
     return;
 
@@ -515,7 +515,7 @@ void PaintLayerCompositor::FullyInvalidatePaint() {
 }
 
 PaintLayer* PaintLayerCompositor::RootLayer() const {
-  return layout_view_.Layer();
+  return layout_view_->Layer();
 }
 
 GraphicsLayer* PaintLayerCompositor::RootGraphicsLayer() const {
@@ -525,14 +525,14 @@ GraphicsLayer* PaintLayerCompositor::RootGraphicsLayer() const {
 }
 
 GraphicsLayer* PaintLayerCompositor::PaintRootGraphicsLayer() const {
-  if (layout_view_.GetDocument().GetPage()->GetChromeClient().IsPopup() ||
+  if (layout_view_->GetDocument().GetPage()->GetChromeClient().IsPopup() ||
       !IsMainFrame())
     return RootGraphicsLayer();
 
   // Start from the full screen overlay layer if exists. Other layers will be
   // skipped during painting.
   if (PaintLayer* layer =
-          layout_view_.GetFrameView()->GetFullScreenOverlayLayer()) {
+          layout_view_->GetFrameView()->GetFullScreenOverlayLayer()) {
     if (layer->HasCompositedLayerMapping())
       return layer->GetCompositedLayerMapping()->MainGraphicsLayer();
   }
@@ -562,7 +562,7 @@ bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {
   bool frame_is_visible =
       !frame_view->ShouldThrottleRendering() && !layer->SubtreeIsInvisible();
 
-  return layout_view_.GetDocument()
+  return layout_view_->GetDocument()
              .GetSettings()
              ->GetAcceleratedCompositingEnabled() &&
          (has_compositor_animation || frame_is_visible) &&
@@ -597,7 +597,7 @@ static void UpdateTrackingRasterInvalidationsRecursive(
 void PaintLayerCompositor::UpdateTrackingRasterInvalidations() {
 #if DCHECK_IS_ON()
   DCHECK(Lifecycle().GetState() == DocumentLifecycle::kPaintClean ||
-         layout_view_.GetFrameView()->ShouldThrottleRendering());
+         layout_view_->GetFrameView()->ShouldThrottleRendering());
 #endif
 
   if (GraphicsLayer* root_layer = PaintRootGraphicsLayer())
@@ -606,7 +606,7 @@ void PaintLayerCompositor::UpdateTrackingRasterInvalidations() {
 
 void PaintLayerCompositor::SetOwnerNeedsCompositingInputsUpdate() {
   if (HTMLFrameOwnerElement* owner_element =
-          layout_view_.GetDocument().LocalOwner()) {
+          layout_view_->GetDocument().LocalOwner()) {
     LayoutBoxModelObject* layout_object =
         owner_element->GetLayoutBoxModelObject();
     if (!layout_object || !layout_object->HasLayer())
@@ -623,15 +623,15 @@ ScrollingCoordinator* PaintLayerCompositor::GetScrollingCoordinator() const {
 }
 
 Page* PaintLayerCompositor::GetPage() const {
-  return layout_view_.GetFrameView()->GetFrame().GetPage();
+  return layout_view_->GetFrameView()->GetFrame().GetPage();
 }
 
 DocumentLifecycle& PaintLayerCompositor::Lifecycle() const {
-  return layout_view_.GetDocument().Lifecycle();
+  return layout_view_->GetDocument().Lifecycle();
 }
 
 bool PaintLayerCompositor::IsMainFrame() const {
-  return layout_view_.GetFrame()->IsMainFrame();
+  return layout_view_->GetFrame()->IsMainFrame();
 }
 
 }  // namespace blink

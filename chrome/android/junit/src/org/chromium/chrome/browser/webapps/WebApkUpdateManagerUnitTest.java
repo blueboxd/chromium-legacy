@@ -977,10 +977,11 @@ public class WebApkUpdateManagerUnitTest {
      * AND
      * - "best" icon URL for the primary icon did not change.
      * AND
-     * - "best" icon URL for the badge icon did not change.
+     * - "best" icon URL for the monochrome icon did not change.
      */
     @Test
-    public void testIconUrlsChangeShouldNotUpgradeIfPrimaryIconUrlAndBadgeIconUrlDoNotChange() {
+    public void
+    testIconUrlsChangeShouldNotUpgradeIfPrimaryIconUrlAndMonochromeIconUrlDoNotChange() {
         ManifestData fetchedData = defaultManifestData();
         fetchedData.iconUrlToMurmur2HashMap.put("/icon2.png", null);
         assertFalse(checkUpdateNeededForFetchedManifest(defaultManifestData(), fetchedData));
@@ -998,8 +999,8 @@ public class WebApkUpdateManagerUnitTest {
     public void testWebManifestSameButBestIconUrlChangedShouldNotUpgrade() {
         String iconUrl1 = "/icon1.png";
         String iconUrl2 = "/icon2.png";
-        String badgeUrl1 = "/badge1.png";
-        String badgeUrl2 = "/badge2.pgn";
+        String monochromeUrl1 = "/monochrome1.png";
+        String monochromeUrl2 = "/monochrome2.png";
         String hash1 = "11";
         String hash2 = "22";
         String hash3 = "33";
@@ -1010,16 +1011,16 @@ public class WebApkUpdateManagerUnitTest {
         androidManifestData.iconUrlToMurmur2HashMap.clear();
         androidManifestData.iconUrlToMurmur2HashMap.put(iconUrl1, hash1);
         androidManifestData.iconUrlToMurmur2HashMap.put(iconUrl2, hash2);
-        androidManifestData.iconUrlToMurmur2HashMap.put(badgeUrl1, hash3);
-        androidManifestData.iconUrlToMurmur2HashMap.put(badgeUrl2, hash4);
+        androidManifestData.iconUrlToMurmur2HashMap.put(monochromeUrl1, hash3);
+        androidManifestData.iconUrlToMurmur2HashMap.put(monochromeUrl2, hash4);
 
         ManifestData fetchedManifestData = defaultManifestData();
         fetchedManifestData.primaryIconUrl = iconUrl2;
         fetchedManifestData.iconUrlToMurmur2HashMap.clear();
         fetchedManifestData.iconUrlToMurmur2HashMap.put(iconUrl1, null);
         fetchedManifestData.iconUrlToMurmur2HashMap.put(iconUrl2, hash2);
-        fetchedManifestData.iconUrlToMurmur2HashMap.put(badgeUrl1, null);
-        fetchedManifestData.iconUrlToMurmur2HashMap.put(badgeUrl2, hash4);
+        fetchedManifestData.iconUrlToMurmur2HashMap.put(monochromeUrl1, null);
+        fetchedManifestData.iconUrlToMurmur2HashMap.put(monochromeUrl2, hash4);
 
         assertFalse(checkUpdateNeededForFetchedManifest(androidManifestData, fetchedManifestData));
     }

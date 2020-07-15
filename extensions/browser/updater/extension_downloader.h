@@ -48,8 +48,8 @@ struct ResourceRequest;
 
 namespace extensions {
 
-using ManifestInvalidErrorList =
-    std::vector<std::pair<ExtensionId, ManifestInvalidError>>;
+using ManifestInvalidFailureDataList = std::vector<
+    std::pair<ExtensionId, ExtensionDownloaderDelegate::FailureData>>;
 struct UpdateDetails {
   UpdateDetails(const std::string& id, const base::Version& version);
   ~UpdateDetails();
@@ -303,7 +303,8 @@ class ExtensionDownloader {
       ExtensionDownloaderDelegate::Error error,
       const int net_error,
       const int response_code,
-      const base::Optional<ManifestInvalidErrorList>& manifest_invalid_errors);
+      const base::Optional<ManifestInvalidFailureDataList>&
+          manifest_invalid_errors);
 
   // Makes a retry attempt, reports failure by calling
   // AddFailureDataOnManifestFetchFailed when fetching of update manifest
@@ -334,7 +335,7 @@ class ExtensionDownloader {
                         const UpdateManifestResults& possible_updates,
                         std::vector<UpdateManifestResult*>* to_update,
                         std::set<std::string>* no_updates,
-                        ManifestInvalidErrorList* errors);
+                        ManifestInvalidFailureDataList* errors);
 
   // Checks whether extension is presented in cache. If yes, return path to its
   // cached CRX, base::nullopt otherwise. |manifest_fetch_failed| flag indicates
@@ -361,7 +362,7 @@ class ExtensionDownloader {
       std::vector<UpdateManifestResult> results);
 
   void NotifyExtensionsManifestInvalidFailure(
-      const ManifestInvalidErrorList& errors,
+      const ManifestInvalidFailureDataList& errors,
       const std::set<int>& request_ids);
 
   // Invokes OnExtensionDownloadStageChanged() on the |delegate_| for each

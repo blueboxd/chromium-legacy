@@ -44212,6 +44212,13 @@ from previous Chrome versions.
   <int value="3" label="Fetch failed because the document origin is opaque"/>
 </enum>
 
+<enum name="ManifestInvalidAppStatusError">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Error unknown application"/>
+  <int value="2" label="Error invalid app id"/>
+  <int value="3" label="Error restricted"/>
+</enum>
+
 <enum name="ManifestInvalidError">
   <int value="0" label="XML Parsing failed"/>
   <int value="1" label="Invalid xlmns on gupdate tag"/>
@@ -44226,6 +44233,7 @@ from previous Chrome versions.
   <int value="10" label="Missing version for update check"/>
   <int value="11" label="Invalid version"/>
   <int value="12" label="Bad Update specification"/>
+  <int value="13" label="Bad App Status"/>
 </enum>
 
 <enum name="MappedAndResidentPagesDumpState">

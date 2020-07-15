@@ -73,6 +73,7 @@
 #include "base/compiler_specific.h"
 #include "base/notreached.h"
 #include "base/partition_alloc_buildflags.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
@@ -414,6 +415,9 @@ struct BASE_EXPORT PartitionRoot {
   Page* global_empty_page_ring[kMaxFreeableSpans] = {};
   int16_t global_empty_page_ring_index = 0;
   uintptr_t inverted_self = 0;
+#if ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_MTE_CHECKED_PTR
+  internal::PartitionTag current_partition_tag = 0;
+#endif
 
   // Some pre-computed constants.
   size_t order_index_shifts[kBitsPerSizeT + 1] = {};
@@ -445,6 +449,9 @@ struct BASE_EXPORT PartitionRoot {
       return;
 
     InitSlowPath(enforce_alignment);
+#if ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_MTE_CHECKED_PTR
+    current_partition_tag = base::RandUint64();
+#endif
   }
 
   ALWAYS_INLINE static bool IsValidPage(Page* page);
@@ -507,6 +514,17 @@ struct BASE_EXPORT PartitionRoot {
                                   size_t raw_size)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
   void DecommitEmptyPages() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+  ALWAYS_INLINE internal::PartitionTag GetNewPartitionTag()
+      EXCLUSIVE_LOCKS_REQUIRED(lock_) {
+#if ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_MTE_CHECKED_PTR
+    ++current_partition_tag;
+    current_partition_tag += !current_partition_tag;  // Avoid 0.
+    return current_partition_tag;
+#else
+    return 0;
+#endif
+  }
 };
 
 template <bool thread_safe>
@@ -587,9 +605,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
   }
 
   if (allow_extras && !bucket->is_direct_mapped()) {
-    // TODO(tasak): initialize tag randomly. Temporarily use
-    // kTagTemporaryInitialValue to initialize the tag.
-    internal::PartitionTagSetValue(ret, internal::kTagTemporaryInitialValue);
+    internal::PartitionTagSetValue(ret, GetNewPartitionTag());
   }
 
   return ret;

@@ -104,7 +104,7 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   bool IsMultiSelectFocused() const;
 
   void SetWasOptionInsertedCalled(bool flag) {
-    was_option_inserted_called_ = true;
+    was_option_inserted_called_ = flag;
   }
   bool WasOptionInsertedCalled() const { return was_option_inserted_called_; }
 

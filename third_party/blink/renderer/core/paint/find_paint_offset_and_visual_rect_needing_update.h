@@ -72,6 +72,8 @@ class FindPaintOffsetNeedingUpdateScope {
 };
 
 class FindVisualRectNeedingUpdateScopeBase {
+  STACK_ALLOCATED();
+
  protected:
   FindVisualRectNeedingUpdateScopeBase(const LayoutObject& object,
                                        const PaintInvalidatorContext& context,
@@ -129,6 +131,8 @@ class FindVisualRectNeedingUpdateScopeBase {
 // For updates of visual rects (e.g. of scroll controls, caret, selection,etc.)
 // contained by an object.
 class FindVisualRectNeedingUpdateScope : FindVisualRectNeedingUpdateScopeBase {
+  STACK_ALLOCATED();
+
  public:
   FindVisualRectNeedingUpdateScope(const LayoutObject& object,
                                    const PaintInvalidatorContext& context,
@@ -148,6 +152,8 @@ class FindVisualRectNeedingUpdateScope : FindVisualRectNeedingUpdateScopeBase {
 // For updates of object visual rect and location.
 class FindObjectVisualRectNeedingUpdateScope
     : FindVisualRectNeedingUpdateScopeBase {
+  STACK_ALLOCATED();
+
  public:
   FindObjectVisualRectNeedingUpdateScope(const LayoutObject& object,
                                          const FragmentData& fragment_data,

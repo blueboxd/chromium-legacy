@@ -180,7 +180,7 @@ class CORE_EXPORT PaintLayerCompositor {
 
   bool IsMainFrame() const;
 
-  LayoutView& layout_view_;
+  LayoutView* const layout_view_;
 
   bool compositing_ = false;
   bool root_layer_attachment_dirty_ = false;

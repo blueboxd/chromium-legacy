@@ -20,6 +20,8 @@ if (is_chromeos) {
 
     defines = [ "OWNERSHIP_IMPLEMENTATION" ]
 
+    public_deps = [ "//components/policy/proto" ]
+
     deps = [
       "//base",
       "//components/keyed_service/core",
@@ -30,7 +32,7 @@ if (is_chromeos) {
     ]
 
     if (use_nss_certs) {
-      public_deps = [ "//crypto:platform" ]
+      public_deps += [ "//crypto:platform" ]
     }
   }
 

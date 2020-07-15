@@ -11,13 +11,18 @@
 
 // Cell representation for SettingsCheckItem.
 //  +---------------------------------------------------------+
-//  |                                           +--------+    |
-//  | +--------+                                |trailing|    |
-//  | | leading|  One line title                |image or|    |
-//  | | image  |  Multiline detail text         |spinner |    |
-//  | +--------+                                +--------+    |
+//  | +--------+                                +---------+   |
+//  | |        |  One line title                |trailing |   |
+//  | | leading|                                |image    |   |
+//  | | image  |  Multiline detail text         |spinner  |   |
+//  | |        |  Multiline detail text         |or button|   |
+//  | +--------+                                +---------+   |
 //  +---------------------------------------------------------+
 @interface SettingsCheckCell : TableViewCell
+
+// Button which is used as an anchor to show popover with additional
+// information.
+@property(nonatomic, readonly, strong) UIButton* infoButton;
 
 // Shows |activityIndicator| and starts animation. It will hide |imageView| if
 // it was shown.
@@ -38,6 +43,9 @@
 // hidden.
 - (void)setLeadingImage:(UIImage*)leadingImage
           withTintColor:(UIColor*)tintColor;
+
+// Shows/Hides |infoButton|.
+- (void)setInfoButtonHidden:(BOOL)hidden;
 
 @end
 

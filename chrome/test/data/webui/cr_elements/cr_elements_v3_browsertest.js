@@ -263,18 +263,6 @@ TEST_F('CrElementsToastV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
-var CrElementsToolbarSearchFieldV3Test = class extends CrElementsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://test?module=cr_elements/cr_toolbar_search_field_tests.m.js';
-  }
-};
-
-TEST_F('CrElementsToolbarSearchFieldV3Test', 'All', function() {
-  mocha.run();
-});
-
-// eslint-disable-next-line no-var
 var CrElementsToolbarV3Test = class extends CrElementsV3BrowserTest {
   /** @override */
   get browsePreload() {

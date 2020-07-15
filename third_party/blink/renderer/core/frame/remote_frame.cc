@@ -139,6 +139,9 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
   if (!navigation_rate_limiter().CanProceed())
     return;
 
+  if (HTMLFrameOwnerElement* element = DeprecatedLocalOwner())
+    element->CancelPendingLazyLoad();
+
   frame_request.SetFrameType(IsMainFrame()
                                  ? mojom::RequestContextFrameType::kTopLevel
                                  : mojom::RequestContextFrameType::kNested);

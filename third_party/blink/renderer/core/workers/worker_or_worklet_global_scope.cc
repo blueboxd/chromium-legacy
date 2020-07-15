@@ -189,7 +189,7 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     std::unique_ptr<WebContentSettingsClient> content_settings_client,
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     WorkerReportingProxy& reporting_proxy)
-    : ExecutionContext(isolate, agent, SecurityContext::kWorker),
+    : ExecutionContext(isolate, agent),
       name_(name),
       parent_devtools_token_(parent_devtools_token),
       worker_clients_(worker_clients),
@@ -199,8 +199,8 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
           MakeGarbageCollected<WorkerOrWorkletScriptController>(this, isolate)),
       v8_cache_options_(v8_cache_options),
       reporting_proxy_(reporting_proxy) {
-  Initialize(
-      SecurityContextInit(origin, MakeGarbageCollected<OriginTrialContext>()));
+  GetSecurityContext().SetSecurityOrigin(std::move(origin));
+  Initialize(SecurityContextInit(MakeGarbageCollected<OriginTrialContext>()));
   if (worker_clients_)
     worker_clients_->ReattachThread();
 }

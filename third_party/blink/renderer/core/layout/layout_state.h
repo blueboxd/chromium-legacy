@@ -109,7 +109,7 @@ class LayoutState {
 
   LayoutFlowThread* FlowThread() const { return flow_thread_; }
 
-  LayoutObject& GetLayoutObject() const { return layout_object_; }
+  LayoutObject& GetLayoutObject() const { return *layout_object_; }
 
  private:
   // Do not add anything apart from bitfields until after m_flowThread. See
@@ -137,7 +137,7 @@ class LayoutState {
 
   AtomicString input_page_name_;
 
-  LayoutObject& layout_object_;
+  LayoutObject* const layout_object_;
   DISALLOW_COPY_AND_ASSIGN(LayoutState);
 };
 

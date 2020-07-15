@@ -12,11 +12,16 @@
   ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
 
   async function step1() {
-    var styleSheets = TestRunner.cssModel.allStyleSheets();
-    styleSheets.sort();
-    for (var header of styleSheets) {
-      var content = await TestRunner.CSSAgent.getStyleSheetText(header.id);
-
+    const styleSheets = TestRunner.cssModel.allStyleSheets();
+    const styleSheetsWithContent = [];
+    for (const header of styleSheets) {
+      styleSheetsWithContent.push({
+        header,
+        content: await TestRunner.CSSAgent.getStyleSheetText(header.id),
+      });
+    }
+    styleSheetsWithContent.sort((a, b) => a.content.localeCompare(b.content));
+    for (const {header, content} of styleSheetsWithContent) {
       TestRunner.addResult('Stylesheet added:');
       TestRunner.addResult('  - isInline: ' + header.isInline);
       TestRunner.addResult('  - sourceURL: ' + header.sourceURL.substring(header.sourceURL.lastIndexOf('/') + 1));

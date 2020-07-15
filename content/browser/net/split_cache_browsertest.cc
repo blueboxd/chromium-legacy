@@ -762,8 +762,8 @@ IN_PROC_BROWSER_TEST_P(SplitCacheContentBrowserTestEnabled,
       GenURL("e.com", "/worker.js")));
 }
 
-// TODO(http://crbug.com/997732): Flaky on Linux.
-#if defined(OS_LINUX)
+// TODO(http://crbug.com/997732): Flaky on Linux and macOS.
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_SplitCacheDedicatedWorkerScripts \
   DISABLED_SplitCacheDedicatedWorkersScripts
 #else

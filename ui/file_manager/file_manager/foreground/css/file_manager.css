@@ -788,6 +788,11 @@ body.check-select .dialog-header #search-button > .icon {
 
 .dialog-header.files-ng #share-menu-button > .icon {
   -webkit-mask-image: url(../images/files/ui/share_ng.svg);
+  height: 48px;
+  margin-inline-start: -7px;
+  margin-top: -7px;
+  position: absolute;
+  width: 48px;
 }
 
 body.check-select .dialog-header #share-menu-button > .icon {
@@ -3380,6 +3385,13 @@ list.autocomplete-suggestions > [lead] {
 #sort-menu,
 #tasks-menu {
   margin-top: 2px;
+}
+
+body.files-ng #gear-menu,
+body.files-ng #share-menu,
+body.files-ng #sort-menu,
+body.files-ng #tasks-menu {
+  margin-top: 8px;
 }
 
 #gear-menu > cr-menu-item:not(.menuitem-button),

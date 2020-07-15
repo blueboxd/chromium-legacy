@@ -19,6 +19,7 @@
 #include "media/gpu/vp9_reference_frame_vector.h"
 
 namespace media {
+class VP9TemporalLayers;
 class VP9RateControl;
 
 class VP9Encoder : public AcceleratedVideoEncoder {
@@ -94,14 +95,18 @@ class VP9Encoder : public AcceleratedVideoEncoder {
   ScalingSettings GetScalingSettings() const override;
   bool PrepareEncodeJob(EncodeJob* encode_job) override;
   void BitrateControlUpdate(uint64_t encoded_chunk_size_bytes) override;
+  BitstreamBufferMetadata GetMetadata(EncodeJob* encode_job,
+                                      size_t payload_size) override;
 
  private:
   friend class VP9EncoderTest;
 
   void set_rate_ctrl_for_testing(std::unique_ptr<VP9RateControl> rate_ctrl);
 
-  void InitializeFrameHeader();
-  void UpdateFrameHeader(bool keyframe);
+  Vp9FrameHeader GetDefaultFrameHeader(const bool keyframe) const;
+  void SetFrameHeader(bool keyframe,
+                      VP9Picture* picture,
+                      std::array<bool, kVp9NumRefsPerFrame>* ref_frames_used);
   void UpdateReferenceFrames(scoped_refptr<VP9Picture> picture);
   void Reset();
 
@@ -114,8 +119,8 @@ class VP9Encoder : public AcceleratedVideoEncoder {
 
   EncodeParams current_params_;
 
-  Vp9FrameHeader current_frame_hdr_;
   Vp9ReferenceFrameVector reference_frames_;
+  std::unique_ptr<VP9TemporalLayers> temporal_layers_;
 
   std::unique_ptr<VP9RateControl> rate_ctrl_;
   const std::unique_ptr<Accelerator> accelerator_;
@@ -123,7 +128,6 @@ class VP9Encoder : public AcceleratedVideoEncoder {
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(VP9Encoder);
 };
-
 }  // namespace media
 
 #endif  // MEDIA_GPU_VAAPI_VP9_ENCODER_H_

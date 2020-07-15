@@ -87,7 +87,7 @@ struct ManifestShortcutItem {
 struct ManifestImageResource {
   enum Purpose {
     ANY = 0,
-    BADGE,
+    MONOCHROME,
     MASKABLE,
   };
 

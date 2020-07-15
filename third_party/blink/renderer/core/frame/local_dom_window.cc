@@ -230,9 +230,7 @@ static void UntrackAllBeforeUnloadEventListeners(LocalDOMWindow* dom_window) {
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame, WindowAgent* agent)
     : DOMWindow(frame),
-      ExecutionContext(V8PerIsolateData::MainThreadIsolate(),
-                       agent,
-                       SecurityContext::kWindow),
+      ExecutionContext(V8PerIsolateData::MainThreadIsolate(), agent),
       visualViewport_(MakeGarbageCollected<DOMVisualViewport>(this)),
       should_print_when_finished_loading_(false),
       input_method_controller_(
@@ -654,6 +652,16 @@ void LocalDOMWindow::CountUseOnlyInCrossOriginIframe(
     mojom::blink::WebFeature feature) {
   if (GetFrame() && GetFrame()->IsCrossOriginToMainFrame())
     CountUse(feature);
+}
+
+bool LocalDOMWindow::HasInsecureContextInAncestors() {
+  for (Frame* parent = GetFrame()->Tree().Parent(); parent;
+       parent = parent->Tree().Parent()) {
+    auto* origin = parent->GetSecurityContext()->GetSecurityOrigin();
+    if (!origin->IsPotentiallyTrustworthy())
+      return true;
+  }
+  return false;
 }
 
 Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {

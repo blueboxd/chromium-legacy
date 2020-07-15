@@ -164,7 +164,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   base::SingleThreadTaskRunner* ImplThreadTaskRunner() {
     return impl_task_runner_.get();
   }
-  base::SingleThreadTaskRunner* MainThreadTaskRunner() {
+  base::SingleThreadTaskRunner* MainThreadTaskRunner() const {
     return main_task_runner_.get();
   }
   Proxy* proxy();
@@ -177,7 +177,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
     return ended_;
   }
 
-  LayerTreeHost* layer_tree_host();
+  LayerTreeHost* layer_tree_host() const;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager() {
     return gpu_memory_buffer_manager_.get();
   }

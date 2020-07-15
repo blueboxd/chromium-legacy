@@ -107,11 +107,6 @@ class CredentialManagerTestingContext {
   CredentialManagerTestingContext(
       MockCredentialManager* mock_credential_manager)
       : dummy_context_(KURL("https://example.test")) {
-    dummy_context_.GetFrame()
-        .DomWindow()
-        ->GetSecurityContext()
-        .SetSecureContextModeForTesting(SecureContextMode::kSecureContext);
-
     dummy_context_.GetFrame().GetBrowserInterfaceBroker().SetBinderForTesting(
         ::blink::mojom::blink::CredentialManager::Name_,
         WTF::BindRepeating(

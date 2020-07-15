@@ -79,8 +79,7 @@ struct CheckedPtrNoOpImpl {
   static ALWAYS_INLINE void IncrementSwapCountForTest() {}
 };
 
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && \
-    ENABLE_TAG_FOR_CHECKED_PTR2
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 constexpr int kValidAddressBits = 48;
 constexpr uintptr_t kAddressMask = (1ull << kValidAddressBits) - 1;
@@ -92,17 +91,39 @@ static_assert(kTopBit << 1 == 0, "kTopBit should really be the top bit");
 static_assert((kTopBit & kGenerationMask) > 0,
               "kTopBit bit must be inside the generation region");
 
-// This functionality is outside of CheckedPtr2Impl, so that it can be
-// overridden by tests. The implementation is in the .cc file, because including
-// partition_alloc.h here could lead to cyclic includes.
-struct CheckedPtr2ImplPartitionAllocSupport {
-  // Checks if CheckedPtr2 support is enabled in PartitionAlloc for |ptr|.
+// This functionality is outside of CheckedPtr2OrMTEImpl, so that it can be
+// overridden by tests.
+struct CheckedPtr2OrMTEImplPartitionAllocSupport {
+  // Checks if the necessary support is enabled in PartitionAlloc for |ptr|.
+  //
+  // The implementation is in the .cc file, because including partition_alloc.h
+  // here could lead to cyclic includes.
   // TODO(bartekn): Check if this function gets inlined.
   BASE_EXPORT static bool EnabledForPtr(void* ptr);
+
+  // Returns pointer to the tag that protects are pointed by |ptr|.
+  static ALWAYS_INLINE void* TagPointer(void* ptr) {
+    return PartitionTagPointer(ptr);
+  }
+
+#if CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
+  // Returns offset of the tag from the beginning of the slot. Works only with
+  // CheckedPtr2 algorithm.
+  static constexpr size_t TagOffset() {
+#if ENABLE_TAG_FOR_CHECKED_PTR2
+    return kPartitionTagOffset;
+#else
+    // Unreachable, but can't use NOTREACHED() due to constexpr. Return
+    // something weird so that the caller is very likely to crash.
+    return 0x87654321FEDCBA98;
+#endif
+  }
+#endif
 };
 
-template <typename PartitionAllocSupport = CheckedPtr2ImplPartitionAllocSupport>
-struct CheckedPtr2Impl {
+template <typename PartitionAllocSupport =
+              CheckedPtr2OrMTEImplPartitionAllocSupport>
+struct CheckedPtr2OrMTEImpl {
   // This implementation assumes that pointers are 64 bits long and at least 16
   // top bits are unused. The latter is harder to verify statically, but this is
   // true for all currently supported 64-bit architectures (DCHECK when wrapping
@@ -126,9 +147,11 @@ struct CheckedPtr2Impl {
     }
 
     // Read the generation and place it in the top bits of the address.
-    static_assert(sizeof(PartitionTag) * 8 == kGenerationBits, "");
-    uintptr_t generation =
-        *(static_cast<volatile PartitionTag*>(PartitionTagPointer(ptr)));
+    // Even if PartitionAlloc's tag has less than kGenerationBits, we'll read
+    // what's given and pad the rest with 0s.
+    static_assert(sizeof(PartitionTag) * 8 <= kGenerationBits, "");
+    uintptr_t generation = *(static_cast<volatile PartitionTag*>(
+        PartitionAllocSupport::TagPointer(ptr)));
 
     generation <<= kValidAddressBits;
     addr |= generation;
@@ -151,6 +174,11 @@ struct CheckedPtr2Impl {
   static ALWAYS_INLINE void* SafelyUnwrapPtrForDereference(
       uintptr_t wrapped_ptr) {
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
+    // This variant cannot be used with MTECheckedPtr algorithm, because it
+    // relies on the generation to exist at a constant offset before the
+    // allocation.
+    static_assert(!ENABLE_TAG_FOR_MTE_CHECKED_PTR, "");
+
     // Top bit tells if the protection is enabled. Use it to decide whether to
     // read the word before the allocation, which exists only if the protection
     // is enabled. Otherwise it may crash, in which case read the data from the
@@ -189,7 +217,7 @@ struct CheckedPtr2Impl {
     //         matter what we read, as long as this read doesn't crash)
     volatile PartitionTag* generation_ptr =
         static_cast<volatile PartitionTag*>(ExtractPtr(wrapped_ptr)) -
-        offset * (kPartitionTagOffset / sizeof(PartitionTag));
+        offset * (PartitionAllocSupport::TagOffset() / sizeof(PartitionTag));
     uintptr_t generation = *generation_ptr;
     // Shift generation into the right place and add back the enabled bit.
     //
@@ -227,13 +255,13 @@ struct CheckedPtr2Impl {
 #else  // CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
     uintptr_t ptr_generation = wrapped_ptr >> kValidAddressBits;
     if (ptr_generation > 0) {
-      // Read generation from before the allocation.
+      // Read the generation provided by PartitionAlloc.
       //
       // Cast to volatile to ensure memory is read. E.g. in a tight loop, the
       // compiler could cache the value in a register and thus could miss that
       // another thread freed memory and cleared generation.
       uintptr_t read_generation = *static_cast<volatile PartitionTag*>(
-          PartitionTagPointer(ExtractPtr(wrapped_ptr)));
+          PartitionAllocSupport::TagPointer(ExtractPtr(wrapped_ptr)));
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING
       // Use hardware to detect generation mismatch. CPU will crash if top bits
       // aren't all 0 (technically it won't if all bits are 1, but that's a
@@ -301,8 +329,7 @@ struct CheckedPtr2Impl {
   static constexpr uintptr_t kWrappedNullPtr = 0;
 };
 
-#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) &&
-        // ENABLE_TAG_FOR_CHECKED_PTR2
+#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 template <typename T>
 struct DereferencedPointerType {
@@ -331,8 +358,8 @@ struct DereferencedPointerType<void> {};
 //    adding support for cases encountered so far).
 template <typename T,
 #if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && \
-    ENABLE_TAG_FOR_CHECKED_PTR2
-          typename Impl = internal::CheckedPtr2Impl<>>
+    (ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_MTE_CHECKED_PTR)
+          typename Impl = internal::CheckedPtr2OrMTEImpl<>>
 #else
           typename Impl = internal::CheckedPtrNoOpImpl>
 #endif

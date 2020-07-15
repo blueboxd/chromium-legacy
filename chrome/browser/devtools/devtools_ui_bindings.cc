@@ -1192,7 +1192,7 @@ void DevToolsUIBindings::SetPreference(const std::string& name,
 void DevToolsUIBindings::RemovePreference(const std::string& name) {
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kDevToolsPreferences);
-  update.Get()->RemoveWithoutPathExpansion(name, nullptr);
+  update.Get()->RemoveKey(name);
 }
 
 void DevToolsUIBindings::ClearPreferences() {

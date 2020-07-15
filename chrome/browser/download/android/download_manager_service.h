@@ -201,8 +201,8 @@ class DownloadManagerService
       const JavaParamRef<jstring>& jdownload_guid,
       jboolean download_started);
 
-  void UseStartupProfileKeyForTesting() {
-    use_startup_accessor_profile_key_for_testing_ = true;
+  void UseExistingProfileKeyForTesting() {
+    use_existing_profile_key_for_testing_ = true;
   }
 
  private:
@@ -255,7 +255,7 @@ class DownloadManagerService
   // profile type.
   void UpdateCoordinator(
       download::SimpleDownloadManagerCoordinator* coordinator,
-      bool is_off_the_record);
+      ProfileKey* profile_key);
 
   // Called to get the content::DownloadManager instance.
   content::DownloadManager* GetDownloadManager(ProfileKey* profile_key);
@@ -298,10 +298,10 @@ class DownloadManagerService
 
   ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
 
-  bool use_startup_accessor_profile_key_for_testing_{false};
+  bool use_existing_profile_key_for_testing_{false};
 
-  download::SimpleDownloadManagerCoordinator* original_coordinator_;
-  download::SimpleDownloadManagerCoordinator* off_the_record_coordinator_;
+  std::map<ProfileKey*, download::SimpleDownloadManagerCoordinator*>
+      coordinators_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerService);
 };

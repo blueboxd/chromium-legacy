@@ -341,6 +341,14 @@ message DeviceServiceApiAccessResponse {
   optional string auth_code = 1;
 }
 
+// Device Identifier for non-Chrome OS platform.
+message BrowserDeviceIdentifier {
+  // Name of the computer.
+  optional string computer_name = 1;
+  // Device serial number (definition depending on the platform).
+  optional string serial_number = 2;
+}
+
 message PolicyFetchRequest {
   reserved 5;
 
@@ -422,6 +430,9 @@ message PolicyFetchRequest {
 
   // If this is an affiliated user, this is the device's DMToken.
   optional string device_dm_token = 12;
+
+  // Device identifier for helping identify non-Chrome OS devices.
+  optional BrowserDeviceIdentifier browser_device_identifier = 13;
 }
 
 // This message customizes how the device behaves when it is disabled by its
@@ -1806,6 +1817,8 @@ message ChromeDesktopReportRequest {
   optional OSReport os_report = 7;
   // A string contains OS user name.
   optional string os_user_name = 8;
+  // Device identifier for helping identify non-Chrome OS devices.
+  optional BrowserDeviceIdentifier browser_device_identifier = 9;
 }
 
 // Report user level status on Chrome OS platform. Chrome OS equivalent of
@@ -2542,6 +2555,8 @@ message RegisterBrowserRequest {
   optional string os_platform = 2;
   // Platform specific version number, e.g., 6.1.7601.0 or 10.12.6
   optional string os_version = 3;
+  // Device identifier for helping identify non-Chrome OS devices.
+  optional BrowserDeviceIdentifier browser_device_identifier = 4;
 }
 
 // Gets an enrollment token to a managed Google Play account for using it with

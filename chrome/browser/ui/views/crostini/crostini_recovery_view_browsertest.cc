@@ -128,8 +128,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniRecoveryViewBrowserTest, NoViewOnNormalStartup) {
       static_cast<base::HistogramBase::Sample>(kUiSurface), 0);
 }
 
-// TODO(crbug.com/1092657) Times out flakily
-IN_PROC_BROWSER_TEST_F(CrostiniRecoveryViewBrowserTest, DISABLED_Cancel) {
+IN_PROC_BROWSER_TEST_F(CrostiniRecoveryViewBrowserTest, Cancel) {
   base::HistogramTester histogram_tester;
 
   SetUncleanStartup();
@@ -158,8 +157,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniRecoveryViewBrowserTest, DISABLED_Cancel) {
   // Terminal should launch after use clicks 'Cancel'.
   Browser* terminal_browser = web_app::FindSystemWebAppBrowser(
       browser()->profile(), web_app::SystemAppType::TERMINAL);
-  CHECK_NE(nullptr, terminal_browser);
-  WaitForLoadFinished(terminal_browser->tab_strip_model()->GetWebContentsAt(0));
+  EXPECT_NE(nullptr, terminal_browser);
 
   // Any new apps launched should show the dialog again.
   crostini::LaunchCrostiniApp(

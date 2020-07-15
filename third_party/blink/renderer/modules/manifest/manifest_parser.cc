@@ -375,8 +375,9 @@ ManifestParser::ParseIconPurpose(const JSONObject* icon) {
 
     if (!CodeUnitCompareIgnoringASCIICase(keyword, "any")) {
       purposes.push_back(mojom::blink::ManifestImageResource::Purpose::ANY);
-    } else if (!CodeUnitCompareIgnoringASCIICase(keyword, "badge")) {
-      purposes.push_back(mojom::blink::ManifestImageResource::Purpose::BADGE);
+    } else if (!CodeUnitCompareIgnoringASCIICase(keyword, "monochrome")) {
+      purposes.push_back(
+          mojom::blink::ManifestImageResource::Purpose::MONOCHROME);
     } else if (!CodeUnitCompareIgnoringASCIICase(keyword, "maskable")) {
       purposes.push_back(
           mojom::blink::ManifestImageResource::Purpose::MASKABLE);

@@ -23,10 +23,9 @@ NullExecutionContext::NullExecutionContext(
     : ExecutionContext(
           v8::Isolate::GetCurrent(),
           MakeGarbageCollected<Agent>(v8::Isolate::GetCurrent(),
-                                      base::UnguessableToken::Null()),
-          SecurityContext::kWindow),
+                                      base::UnguessableToken::Null())),
       scheduler_(scheduler::CreateDummyFrameScheduler()) {
-  Initialize(SecurityContextInit(nullptr /* origin */, origin_trial_context));
+  Initialize(SecurityContextInit(origin_trial_context));
 }
 
 NullExecutionContext::~NullExecutionContext() {}

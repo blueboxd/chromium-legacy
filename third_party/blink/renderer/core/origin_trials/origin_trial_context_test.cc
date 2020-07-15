@@ -99,10 +99,6 @@ class OriginTrialContextTest : public testing::Test {
     scoped_refptr<SecurityOrigin> page_origin =
         SecurityOrigin::Create(page_url);
     execution_context_->GetSecurityContext().SetSecurityOrigin(page_origin);
-    execution_context_->GetSecurityContext().SetSecureContextModeForTesting(
-        SecurityOrigin::IsSecure(page_url)
-            ? SecureContextMode::kSecureContext
-            : SecureContextMode::kInsecureContext);
   }
 
   bool IsFeatureEnabled(const String& origin, OriginTrialFeature feature) {

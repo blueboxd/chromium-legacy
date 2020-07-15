@@ -1226,8 +1226,6 @@ class TabListMediator {
                         .with(TabProperties.IS_SELECTED, isSelected)
                         .with(TabProperties.IPH_PROVIDER, showIPH ? mIphProvider : null)
                         .with(CARD_ALPHA, 1f)
-                        .with(TabProperties.TAB_CLOSED_LISTENER,
-                                isRealTab ? mTabClosedListener : null)
                         .with(TabProperties.CARD_ANIMATION_STATUS,
                                 ClosableTabGridView.AnimationStatus.CARD_RESTORE)
                         .with(TabProperties.TAB_SELECTION_DELEGATE,
@@ -1277,7 +1275,7 @@ class TabListMediator {
                     TabProperties.SELECTABLE_TAB_CLICKED_LISTENER, mSelectableTabOnClickListener);
         } else {
             tabInfo.set(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener);
-            tabInfo.set(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener);
+            tabInfo.set(TabProperties.TAB_CLOSED_LISTENER, isRealTab ? mTabClosedListener : null);
         }
 
         if (index >= mModel.size()) {

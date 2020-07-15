@@ -31,6 +31,7 @@
   cell.detailTextLabel.text = self.detailText;
   cell.selectionStyle = UITableViewCellSelectionStyleNone;
   if (self.enabled) {
+    [cell setInfoButtonHidden:self.infoButtonHidden];
     [cell setLeadingImage:self.leadingImage
             withTintColor:self.leadingImageTintColor];
     [cell setTrailingImage:self.trailingImage
@@ -44,6 +45,7 @@
             withTintColor:UIColor.cr_secondaryLabelColor];
     [cell setTrailingImage:nil withTintColor:nil];
     [cell hideActivityIndicator];
+    [cell setInfoButtonHidden:YES];
     cell.textLabel.textColor = UIColor.cr_secondaryLabelColor;
     cell.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
   }

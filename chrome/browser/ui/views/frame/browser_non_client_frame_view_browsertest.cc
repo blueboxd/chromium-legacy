@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -24,6 +25,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/theme_change_waiter.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/base/theme_provider.h"
 
@@ -48,20 +50,20 @@ class BrowserNonClientFrameViewBrowserTest
   // longer be hosted apps when BMO ships.
   void InstallAndLaunchBookmarkApp(
       base::Optional<GURL> app_url = base::nullopt) {
-    if (!app_url)
-      app_url = GetAppURL();
+    blink::Manifest manifest;
+    manifest.start_url = app_url.value_or(GetAppURL());
+    manifest.scope = manifest.start_url.GetWithoutFilename();
+    manifest.theme_color = app_theme_color_;
+
     auto web_app_info = std::make_unique<WebApplicationInfo>();
-    web_app_info->app_url = *app_url;
-    web_app_info->scope = app_url->GetWithoutFilename();
-    if (app_theme_color_)
-      web_app_info->theme_color = *app_theme_color_;
+    web_app::UpdateWebAppInfoFromManifest(manifest, web_app_info.get());
 
     web_app::AppId app_id =
         web_app::InstallWebApp(profile(), std::move(web_app_info));
     app_browser_ = web_app::LaunchWebAppBrowser(profile(), app_id);
     web_contents_ = app_browser_->tab_strip_model()->GetActiveWebContents();
     // Ensure the main page has loaded and is ready for ExecJs DOM manipulation.
-    ASSERT_TRUE(content::NavigateToURL(web_contents_, *app_url));
+    ASSERT_TRUE(content::NavigateToURL(web_contents_, manifest.start_url));
 
     app_browser_view_ = BrowserView::GetBrowserViewForBrowser(app_browser_);
     app_frame_view_ = app_browser_view_->frame()->GetFrameView();
@@ -125,6 +127,21 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
                 ThemeProperties::COLOR_FRAME_ACTIVE, false,
                 app_frame_view_->GetNativeTheme()->ShouldUseDarkColors()),
             app_frame_view_->GetFrameColor(BrowserFrameActiveState::kActive));
+}
+
+// Tests that an opaque frame color is used for a web app with a transparent
+// theme color.
+IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
+                       OpaqueFrameColorForTransparentWebAppThemeColor) {
+  // Ensure we're not using the system theme on Linux.
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(browser()->profile());
+  theme_service->UseDefaultTheme();
+
+  app_theme_color_ = SkColorSetA(SK_ColorBLUE, 0x88);
+  InstallAndLaunchBookmarkApp();
+  EXPECT_EQ(app_frame_view_->GetFrameColor(BrowserFrameActiveState::kActive),
+            SK_ColorBLUE);
 }
 
 // Tests the frame color for a bookmark app when the system theme is applied.

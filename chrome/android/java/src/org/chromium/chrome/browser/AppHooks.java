@@ -61,6 +61,9 @@ import java.util.List;
 public abstract class AppHooks {
     private static AppHooksImpl sInstance;
 
+    @Nullable
+    private ExternalAuthUtils mExternalAuthUtils;
+
     /**
      * Sets a mocked instance for testing.
      */
@@ -136,6 +139,19 @@ public abstract class AppHooks {
      */
     public ExternalAuthUtils createExternalAuthUtils() {
         return new ExternalAuthUtils();
+    }
+
+    /**
+     * @return The singleton instance of ExternalAuthUtils.
+     *
+     * TODO(https://crbug.com/1104817): Make createExternalAuthUtils protected.
+     */
+    public ExternalAuthUtils getExternalAuthUtils() {
+        if (mExternalAuthUtils == null) {
+            mExternalAuthUtils = createExternalAuthUtils();
+        }
+
+        return mExternalAuthUtils;
     }
 
     /**

@@ -43,19 +43,21 @@ constexpr auto ProjectedBinaryPredicate(Pred& pred,
 }
 
 // This alias is used below to restrict iterator based APIs to types for which
-// `iterator_category` is defined. This is required in situations where
-// otherwise an undesired overload would be chosen, e.g. copy_if. In spirit this
-// is similar to C++20's std::input_or_output_iterator, a concept that each
-// iterator should satisfy.
-template <typename Iter>
+// `iterator_category` and the pre-increment and post-increment operators are
+// defined. This is required in situations where otherwise an undesired overload
+// would be chosen, e.g. copy_if. In spirit this is similar to C++20's
+// std::input_or_output_iterator, a concept that each iterator should satisfy.
+template <typename Iter,
+          typename = decltype(++std::declval<Iter&>()),
+          typename = decltype(std::declval<Iter&>()++)>
 using iterator_category_t =
     typename std::iterator_traits<Iter>::iterator_category;
 
 // This alias is used below to restrict range based APIs to types for which
-// `iterator_category` is defined for the underlying iterator. This is required
-// in situations where otherwise an undesired overload would be chosen, e.g.
-// transform. In spirit this is similar to C++20's std::ranges::range, a concept
-// that each range should satisfy.
+// `iterator_category_t` is defined for the underlying iterator. This is
+// required in situations where otherwise an undesired overload would be chosen,
+// e.g. transform. In spirit this is similar to C++20's std::ranges::range, a
+// concept that each range should satisfy.
 template <typename Range>
 using range_category_t = iterator_category_t<iterator_t<Range>>;
 
@@ -1309,8 +1311,6 @@ constexpr auto swap_ranges(Range1&& range1, Range2&& range2) {
                              ranges::begin(range2), ranges::end(range2));
 }
 
-// TODO(crbug.com/1071094): Implement.
-
 // [alg.transform] Transform
 // Reference: https://wg21.link/alg.transform
 
@@ -1479,17 +1479,385 @@ constexpr auto transform(Range1&& range1,
 // [alg.replace] Replace
 // Reference: https://wg21.link/alg.replace
 
-// TODO(crbug.com/1071094): Implement.
+// Let `E(i)` be `bool(invoke(proj, *i) == old_value)`.
+//
+// Mandates: `new_value` is writable  to `first`.
+//
+// Effects: Substitutes elements referred by the iterator `i` in the range
+// `[first, last)` with `new_value`, when `E(i)` is true.
+//
+// Returns: `last`
+//
+// Complexity: Exactly `last - first` applications of the corresponding
+// predicate and any projection.
+//
+// Reference: https://wg21.link/alg.replace#:~:text=ranges::replace(I
+template <typename FordwardIterator,
+          typename T,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<FordwardIterator>>
+constexpr auto replace(FordwardIterator first,
+                       FordwardIterator last,
+                       const T& old_value,
+                       const T& new_value,
+                       Proj proj = {}) {
+  // Note: In order to be able to apply `proj` to each element in [first, last)
+  // we are dispatching to std::replace_if instead of std::replace.
+  std::replace_if(
+      first, last,
+      [&proj, &old_value](auto&& lhs) {
+        return invoke(proj, std::forward<decltype(lhs)>(lhs)) == old_value;
+      },
+      new_value);
+  return last;
+}
+
+// Let `E(i)` be `bool(invoke(proj, *i) == old_value)`.
+//
+// Mandates: `new_value` is writable  to `begin(range)`.
+//
+// Effects: Substitutes elements referred by the iterator `i` in `range` with
+// `new_value`, when `E(i)` is true.
+//
+// Returns: `end(range)`
+//
+// Complexity: Exactly `size(range)` applications of the corresponding predicate
+// and any projection.
+//
+// Reference: https://wg21.link/alg.replace#:~:text=ranges::replace(R
+template <typename Range,
+          typename T,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
+constexpr auto replace(Range&& range,
+                       const T& old_value,
+                       const T& new_value,
+                       Proj proj = {}) {
+  return ranges::replace(ranges::begin(range), ranges::end(range), old_value,
+                         new_value, std::move(proj));
+}
+
+// Let `E(i)` be `bool(invoke(pred, invoke(proj, *i)))`.
+//
+// Mandates: `new_value` is writable  to `first`.
+//
+// Effects: Substitutes elements referred by the iterator `i` in the range
+// `[first, last)` with `new_value`, when `E(i)` is true.
+//
+// Returns: `last`
+//
+// Complexity: Exactly `last - first` applications of the corresponding
+// predicate and any projection.
+//
+// Reference: https://wg21.link/alg.replace#:~:text=ranges::replace_if(I
+template <typename FordwardIterator,
+          typename Predicate,
+          typename T,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<FordwardIterator>>
+constexpr auto replace_if(FordwardIterator first,
+                          FordwardIterator last,
+                          Predicate pred,
+                          const T& new_value,
+                          Proj proj = {}) {
+  std::replace_if(first, last, internal::ProjectedUnaryPredicate(pred, proj),
+                  new_value);
+  return last;
+}
+
+// Let `E(i)` be `bool(invoke(pred, invoke(proj, *i)))`.
+//
+// Mandates: `new_value` is writable  to `begin(range)`.
+//
+// Effects: Substitutes elements referred by the iterator `i` in `range` with
+// `new_value`, when `E(i)` is true.
+//
+// Returns: `end(range)`
+//
+// Complexity: Exactly `size(range)` applications of the corresponding predicate
+// and any projection.
+//
+// Reference: https://wg21.link/alg.replace#:~:text=ranges::replace_if(R
+template <typename Range,
+          typename Predicate,
+          typename T,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
+constexpr auto replace_if(Range&& range,
+                          Predicate pred,
+                          const T& new_value,
+                          Proj proj = {}) {
+  return ranges::replace_if(ranges::begin(range), ranges::end(range),
+                            std::move(pred), new_value, std::move(proj));
+}
+
+// Let `E(i)` be `bool(invoke(proj, *(first + (i - result))) == old_value)`.
+//
+// Mandates: The results of the expressions `*first` and `new_value` are
+// writable  to `result`.
+//
+// Preconditions: The ranges `[first, last)` and `[result, result + (last -
+// first))` do not overlap.
+//
+// Effects: Assigns through every iterator `i` in the range `[result, result +
+// (last - first))` a new corresponding value, `new_value` if `E(i)` is true, or
+// `*(first + (i - result))` otherwise.
+//
+// Returns: `result + (last - first)`.
+//
+// Complexity: Exactly `last - first` applications of the corresponding
+// predicate and any projection.
+//
+// Reference: https://wg21.link/alg.replace#:~:text=ranges::replace_copy(I
+template <typename InputIterator,
+          typename OutputIterator,
+          typename T,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto replace_copy(InputIterator first,
+                            InputIterator last,
+                            OutputIterator result,
+                            const T& old_value,
+                            const T& new_value,
+                            Proj proj = {}) {
+  // Note: In order to be able to apply `proj` to each element in [first, last)
+  // we are dispatching to std::replace_copy_if instead of std::replace_copy.
+  std::replace_copy_if(
+      first, last, result,
+      [&proj, &old_value](auto&& lhs) {
+        return invoke(proj, std::forward<decltype(lhs)>(lhs)) == old_value;
+      },
+      new_value);
+  return last;
+}
+
+// Let `E(i)` be
+// `bool(invoke(proj, *(begin(range) + (i - result))) == old_value)`.
+//
+// Mandates: The results of the expressions `*begin(range)` and `new_value` are
+// writable  to `result`.
+//
+// Preconditions: The ranges `range` and `[result, result + size(range))` do not
+// overlap.
+//
+// Effects: Assigns through every iterator `i` in the range `[result, result +
+// size(range))` a new corresponding value, `new_value` if `E(i)` is true, or
+// `*(begin(range) + (i - result))` otherwise.
+//
+// Returns: `result + size(range)`.
+//
+// Complexity: Exactly `size(range)` applications of the corresponding
+// predicate and any projection.
+//
+// Reference: https://wg21.link/alg.replace#:~:text=ranges::replace_copy(R
+template <typename Range,
+          typename OutputIterator,
+          typename T,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto replace_copy(Range&& range,
+                            OutputIterator result,
+                            const T& old_value,
+                            const T& new_value,
+                            Proj proj = {}) {
+  return ranges::replace_copy(ranges::begin(range), ranges::end(range), result,
+                              old_value, new_value, std::move(proj));
+}
+
+// Let `E(i)` be `bool(invoke(pred, invoke(proj, *(first + (i - result)))))`.
+//
+// Mandates: The results of the expressions `*first` and `new_value` are
+// writable  to `result`.
+//
+// Preconditions: The ranges `[first, last)` and `[result, result + (last -
+// first))` do not overlap.
+//
+// Effects: Assigns through every iterator `i` in the range `[result, result +
+// (last - first))` a new corresponding value, `new_value` if `E(i)` is true, or
+// `*(first + (i - result))` otherwise.
+//
+// Returns: `result + (last - first)`.
+//
+// Complexity: Exactly `last - first` applications of the corresponding
+// predicate and any projection.
+//
+// Reference: https://wg21.link/alg.replace#:~:text=ranges::replace_copy_if(I
+template <typename InputIterator,
+          typename OutputIterator,
+          typename Predicate,
+          typename T,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto replace_copy_if(InputIterator first,
+                               InputIterator last,
+                               OutputIterator result,
+                               Predicate pred,
+                               const T& new_value,
+                               Proj proj = {}) {
+  return std::replace_copy_if(first, last, result,
+                              internal::ProjectedUnaryPredicate(pred, proj),
+                              new_value);
+}
+
+// Let `E(i)` be
+// `bool(invoke(pred, invoke(proj, *(begin(range) + (i - result)))))`.
+//
+// Mandates: The results of the expressions `*begin(range)` and `new_value` are
+// writable  to `result`.
+//
+// Preconditions: The ranges `range` and `[result, result + size(range))` do not
+// overlap.
+//
+// Effects: Assigns through every iterator `i` in the range `[result, result +
+// size(range))` a new corresponding value, `new_value` if `E(i)` is true, or
+// `*(begin(range) + (i - result))` otherwise.
+//
+// Returns: `result + size(range)`.
+//
+// Complexity: Exactly `size(range)` applications of the corresponding
+// predicate and any projection.
+//
+// Reference: https://wg21.link/alg.replace#:~:text=ranges::replace_copy_if(R
+template <typename Range,
+          typename OutputIterator,
+          typename Predicate,
+          typename T,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto replace_copy_if(Range&& range,
+                               OutputIterator result,
+                               Predicate pred,
+                               const T& new_value,
+                               Proj proj = {}) {
+  return ranges::replace_copy_if(ranges::begin(range), ranges::end(range),
+                                 result, pred, new_value, std::move(proj));
+}
 
 // [alg.fill] Fill
 // Reference: https://wg21.link/alg.fill
 
-// TODO(crbug.com/1071094): Implement.
+// Let `N` be `last - first`.
+//
+// Mandates: The expression `value` is writable to the output iterator.
+//
+// Effects: Assigns `value` through all the iterators in the range
+// `[first, last)`.
+//
+// Returns: `last`.
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.fill#:~:text=ranges::fill(O
+template <typename OutputIterator,
+          typename T,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto fill(OutputIterator first, OutputIterator last, const T& value) {
+  std::fill(first, last, value);
+  return last;
+}
+
+// Let `N` be `size(range)`.
+//
+// Mandates: The expression `value` is writable to the output iterator.
+//
+// Effects: Assigns `value` through all the iterators in `range`.
+//
+// Returns: `end(range)`.
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.fill#:~:text=ranges::fill(R
+template <typename Range,
+          typename T,
+          typename = internal::range_category_t<Range>>
+constexpr auto fill(Range&& range, const T& value) {
+  return ranges::fill(ranges::begin(range), ranges::end(range), value);
+}
+
+// Let `N` be `max(0, n)`.
+//
+// Mandates: The expression `value` is writable to the output iterator.
+// The type `Size` is convertible to an integral type.
+//
+// Effects: Assigns `value` through all the iterators in `[first, first + N)`.
+//
+// Returns: `first + N`.
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.fill#:~:text=ranges::fill_n(O
+template <typename OutputIterator,
+          typename Size,
+          typename T,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto fill_n(OutputIterator first, Size n, const T& value) {
+  return std::fill_n(first, n, value);
+}
 
 // [alg.generate] Generate
 // Reference: https://wg21.link/alg.generate
 
-// TODO(crbug.com/1071094): Implement.
+// Let `N` be `last - first`.
+//
+// Effects: Assigns the result of successive evaluations of gen() through each
+// iterator in the range `[first, last)`.
+//
+// Returns: `last`.
+//
+// Complexity: Exactly `N` evaluations of `gen()` and assignments.
+//
+// Reference: https://wg21.link/alg.generate#:~:text=ranges::generate(O
+template <typename OutputIterator,
+          typename Generator,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto generate(OutputIterator first,
+                        OutputIterator last,
+                        Generator gen) {
+  std::generate(first, last, std::move(gen));
+  return last;
+}
+
+// Let `N` be `size(range)`.
+//
+// Effects: Assigns the result of successive evaluations of gen() through each
+// iterator in `range`.
+//
+// Returns: `end(range)`.
+//
+// Complexity: Exactly `N` evaluations of `gen()` and assignments.
+//
+// Reference: https://wg21.link/alg.generate#:~:text=ranges::generate(R
+template <typename Range,
+          typename Generator,
+          typename = internal::range_category_t<Range>>
+constexpr auto generate(Range&& range, Generator gen) {
+  return ranges::generate(ranges::begin(range), ranges::end(range),
+                          std::move(gen));
+}
+
+// Let `N` be `max(0, n)`.
+//
+// Mandates: `Size` is convertible to an integral type.
+//
+// Effects: Assigns the result of successive evaluations of gen() through each
+// iterator in the range `[first, first + N)`.
+//
+// Returns: `first + N`.
+//
+// Complexity: Exactly `N` evaluations of `gen()` and assignments.
+//
+// Reference: https://wg21.link/alg.generate#:~:text=ranges::generate_n(O
+template <typename OutputIterator,
+          typename Size,
+          typename Generator,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto generate_n(OutputIterator first, Size n, Generator gen) {
+  return std::generate_n(first, n, std::move(gen));
+}
 
 // [alg.remove] Remove
 // Reference: https://wg21.link/alg.remove

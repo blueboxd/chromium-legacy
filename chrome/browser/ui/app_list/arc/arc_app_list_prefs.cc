@@ -115,7 +115,7 @@ class NotificationsEnabledDeferred {
     DictionaryPrefUpdate update(
         prefs_, arc::prefs::kArcSetNotificationsEnabledDeferred);
     base::DictionaryValue* const dict = update.Get();
-    dict->RemoveWithoutPathExpansion(app_id, /* out_value */ nullptr);
+    dict->RemoveKey(app_id);
   }
 
  private:

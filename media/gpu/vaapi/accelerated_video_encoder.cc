@@ -28,12 +28,6 @@ VaapiEncodeJob* AcceleratedVideoEncoder::EncodeJob::AsVaapiEncodeJob() {
   return nullptr;
 }
 
-BitstreamBufferMetadata AcceleratedVideoEncoder::EncodeJob::Metadata(
-    size_t payload_size) const {
-  return BitstreamBufferMetadata(payload_size, IsKeyframeRequested(),
-                                 timestamp());
-}
-
 void AcceleratedVideoEncoder::EncodeJob::AddSetupCallback(
     base::OnceClosure cb) {
   DCHECK(!cb.is_null());
@@ -75,5 +69,12 @@ void AcceleratedVideoEncoder::BitrateControlUpdate(
   NOTREACHED() << __func__ << "() is called to on an"
                << "AcceleratedVideoEncoder that doesn't support BitrateControl"
                << "::kConstantQuantizationParameter";
+}
+
+BitstreamBufferMetadata AcceleratedVideoEncoder::GetMetadata(
+    EncodeJob* encode_job,
+    size_t payload_size) {
+  return BitstreamBufferMetadata(
+      payload_size, encode_job->IsKeyframeRequested(), encode_job->timestamp());
 }
 }  // namespace media

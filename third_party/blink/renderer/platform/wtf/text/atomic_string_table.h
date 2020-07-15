@@ -61,11 +61,6 @@ class WTF_EXPORT AtomicStringTable final {
 
    private:
     friend bool operator==(const WeakResult& lhs, const WeakResult& rhs);
-    friend bool operator==(const WeakResult& lhs, const String& rhs);
-    friend bool operator==(const String& rhs, const WeakResult& lhs);
-    friend bool operator==(const WeakResult& lhs, const AtomicString& rhs);
-    friend bool operator==(const AtomicString& rhs, const WeakResult& lhs);
-    friend bool operator==(const WeakResult& lhs, const StringImpl* rhs);
     friend bool operator==(const StringImpl* lhs, const WeakResult& rhs);
 
     // Contains the pointer a string in a non-deferenceable form. Do NOT cast
@@ -143,6 +138,16 @@ inline bool operator==(const AtomicStringTable::WeakResult& lhs,
 }
 
 inline bool operator==(const AtomicStringTable::WeakResult& lhs,
+                       const StringImpl* rhs) {
+  return rhs == lhs;
+}
+
+inline bool operator==(const StringImpl* lhs,
+                       const AtomicStringTable::WeakResult& rhs) {
+  return reinterpret_cast<uintptr_t>(lhs) == rhs.ptr_value_;
+}
+
+inline bool operator==(const AtomicStringTable::WeakResult& lhs,
                        const String& rhs) {
   return lhs == rhs.Impl();
 }
@@ -160,16 +165,6 @@ inline bool operator==(const AtomicStringTable::WeakResult& lhs,
 inline bool operator==(const AtomicString& lhs,
                        const AtomicStringTable::WeakResult& rhs) {
   return lhs.Impl() == rhs;
-}
-
-inline bool operator==(const AtomicStringTable::WeakResult& lhs,
-                       const StringImpl* rhs) {
-  return rhs == lhs;
-}
-
-inline bool operator==(const StringImpl* lhs,
-                       const AtomicStringTable::WeakResult& rhs) {
-  return reinterpret_cast<uintptr_t>(lhs) == rhs.ptr_value_;
 }
 
 }  // namespace WTF

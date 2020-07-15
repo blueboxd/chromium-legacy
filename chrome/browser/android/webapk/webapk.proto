@@ -126,9 +126,8 @@ message Image {
     // The icon can be displayed in any context.
     ANY = 1;
 
-    // The icon can be used where space constraints and/or color requirements
-    // differ from those of the application icon.
-    // BADGE = 2; We do not plan to support Badge purpose, and will ignore it.
+    // The icon can be used where a monochrome icon with a solid fill is needed.
+    // MONOCHROME = 2; This is not currently used, so ignore it.
 
     // The icon is designed with the intention to be masked.
     MASKABLE = 3;

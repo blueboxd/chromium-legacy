@@ -163,7 +163,7 @@ export class CameraIntent extends Camera {
         resolution: result.resolution,
         intentResult: confirmed ? metrics.IntentResultType.CONFIRMED :
                                   metrics.IntentResultType.CANCELED,
-        shutterType: this.shutterType_
+        shutterType: this.shutterType_,
       });
       if (confirmed) {
         await this.intent_.finish();

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
-#include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
+#include "chrome/browser/media/router/providers/cast/app_activity.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "components/cast_channel/enum_table.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -40,7 +40,7 @@ CastSessionClientImpl::CastSessionClientImpl(const std::string& client_id,
                                              const url::Origin& origin,
                                              int tab_id,
                                              AutoJoinPolicy auto_join_policy,
-                                             ActivityRecord* activity)
+                                             CastActivity* activity)
     : CastSessionClient(client_id, origin, tab_id),
       auto_join_policy_(auto_join_policy),
       activity_(activity) {}

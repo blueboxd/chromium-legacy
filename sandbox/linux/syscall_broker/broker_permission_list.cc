@@ -57,7 +57,7 @@ BrokerPermissionList::~BrokerPermissionList() {}
 // confusing. We're checking if calling access() should even be allowed with
 // the same policy we would use for open().
 // If |file_to_access| is not nullptr, we will return the matching pointer from
-// the whitelist. For paranoia a caller should then use |file_to_access|. See
+// the allowlist. For paranoia a caller should then use |file_to_access|. See
 // GetFileNameIfAllowedToOpen() for more explanation.
 // return true if calling access() on this file should be allowed, false
 // otherwise.
@@ -80,7 +80,7 @@ bool BrokerPermissionList::GetFileNameIfAllowedToAccess(
 
 // Check if |requested_filename| can be opened with flags |requested_flags|.
 // If |file_to_open| is not nullptr, we will return the matching pointer from
-// the whitelist. For paranoia, a caller should then use |file_to_open| rather
+// the allowlist. For paranoia, a caller should then use |file_to_open| rather
 // than |requested_filename|, so that it never attempts to open an
 // attacker-controlled file name, even if an attacker managed to fool the
 // string comparison mechanism.

@@ -444,8 +444,7 @@ class FrameSinkVideoCapturerTest : public testing::Test {
 
   base::TimeTicks GetNextVsync() const {
     const auto now = task_runner_->NowTicks();
-    const auto num_vsyncs_elapsed = (now - start_time_) / kVsyncInterval;
-    return start_time_ + (num_vsyncs_elapsed + 1) * kVsyncInterval;
+    return now + kVsyncInterval - ((now - start_time_) % kVsyncInterval);
   }
 
   void AdvanceClockToNextVsync() {

@@ -253,6 +253,10 @@ class scoped_refptr {
   // object, if it existed.
   void reset() { scoped_refptr().swap(*this); }
 
+  // Returns the owned pointer (if any), releasing ownership to the caller. The
+  // caller is responsible for managing the lifetime of the reference.
+  T* release() WARN_UNUSED_RESULT;
+
   void swap(scoped_refptr& r) noexcept { std::swap(ptr_, r.ptr_); }
 
   explicit operator bool() const { return ptr_ != nullptr; }
@@ -284,10 +288,6 @@ class scoped_refptr {
   // binary size optimization.
   friend class ::base::internal::BasePromise;
   friend class ::base::WrappedPromise;
-
-  // Returns the owned pointer (if any), releasing ownership to the caller. The
-  // caller is responsible for managing the lifetime of the reference.
-  T* release();
 
   scoped_refptr(T* p, base::subtle::AdoptRefTag) : ptr_(p) {}
 

@@ -27,6 +27,7 @@ include_rules = [
     "+media/video/gpu_video_accelerator_factories.h",
     "+net/third_party/quiche/src/quic",
     "+net/third_party/quiche/src/common",
+    "+net/net_buildflags.h",
     "+net/quic/chromium",
     "+net/quic",
     "+net/test",

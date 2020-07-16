@@ -32,7 +32,7 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
             this::updateSelectedAccountData;
     private final AccountManagerFacade mAccountManagerFacade;
     private final AccountsChangeObserver mAccountsChangeObserver = this::onAccountListUpdated;
-    private @Nullable String mSelectedAccountName = null;
+    private @Nullable String mSelectedAccountName;
 
     AccountPickerBottomSheetMediator(Context context, AccountPickerDelegate accountPickerDelegate) {
         mAccountPickerDelegate = accountPickerDelegate;

@@ -20,7 +20,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
@@ -38,10 +37,10 @@ using base::win::ScopedCoMem;
 
 // The class BackgroundDownloader in this module is an adapter between
 // the CrxDownloader interface and the BITS service interfaces.
-// The interface exposed on the CrxDownloader code runs on the main thread,
-// while the BITS specific code runs on a separate thread passed in by the
-// client. For every url to download, a BITS job is created, unless there is
-// already an existing job for that url, in which case, the downloader
+// The interface exposed on the CrxDownloader code runs on the main sequence,
+// while the BITS specific code runs in a separate sequence bound to a
+// COM apartment. For every url to download, a BITS job is created, unless
+// there is already an existing job for that url, in which case, the downloader
 // connects to it. Once a job is associated with the url, the code looks for
 // changes in the BITS job state. The checks are triggered by a timer.
 // The BITS job contains just one file to download. There could only be one
@@ -396,36 +395,34 @@ void CleanupJob(const ComPtr<IBackgroundCopyJob>& job) {
 }  // namespace
 
 BackgroundDownloader::BackgroundDownloader(
-    std::unique_ptr<CrxDownloader> successor)
+    scoped_refptr<CrxDownloader> successor)
     : CrxDownloader(std::move(successor)),
       com_task_runner_(base::ThreadPool::CreateCOMSTATaskRunner(
           kTaskTraitsBackgroundDownloader)),
       git_cookie_bits_manager_(0),
       git_cookie_job_(0) {}
 
-BackgroundDownloader::~BackgroundDownloader() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  timer_.reset();
-}
+BackgroundDownloader::~BackgroundDownloader() = default;
 
 void BackgroundDownloader::StartTimer() {
-  timer_.reset(new base::OneShotTimer);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  timer_ = std::make_unique<base::OneShotTimer>();
   timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(kJobPollingIntervalSec),
                 this, &BackgroundDownloader::OnTimer);
 }
 
 void BackgroundDownloader::OnTimer() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  timer_ = nullptr;
   com_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloading,
-                                base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloading, this));
 }
 
 void BackgroundDownloader::DoStartDownload(const GURL& url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   com_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BackgroundDownloader::BeginDownload,
-                                base::Unretained(this), url));
+      FROM_HERE,
+      base::BindOnce(&BackgroundDownloader::BeginDownload, this, url));
 }
 
 // Called one time when this class is asked to do a download.
@@ -444,9 +441,8 @@ void BackgroundDownloader::BeginDownload(const GURL& url) {
   VLOG(1) << "Starting BITS download for: " << url.spec();
 
   ResetInterfacePointers();
-  main_task_runner()->PostTask(FROM_HERE,
-                               base::BindOnce(&BackgroundDownloader::StartTimer,
-                                              base::Unretained(this)));
+  main_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BackgroundDownloader::StartTimer, this));
 }
 
 // Creates or opens an existing BITS job to download the |url|, and handles
@@ -535,9 +531,8 @@ void BackgroundDownloader::OnDownloading() {
     return;
 
   ResetInterfacePointers();
-  main_task_runner()->PostTask(FROM_HERE,
-                               base::BindOnce(&BackgroundDownloader::StartTimer,
-                                              base::Unretained(this)));
+  main_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BackgroundDownloader::StartTimer, this));
 }
 
 // Completes the BITS download, picks up the file path of the response, and
@@ -582,13 +577,8 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
   if (!result.error)
     result.response = response_;
   main_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloadComplete,
-                                base::Unretained(this), is_handled, result,
-                                download_metrics));
-
-  // Once the task is posted to the the main thread, this object may be deleted
-  // by its owner. It is not safe to access members of this object on this task
-  // runner from now on.
+      FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloadComplete, this,
+                                is_handled, result, download_metrics));
 }
 
 // Called when the BITS job has been transferred successfully. Completes the
@@ -666,9 +656,8 @@ bool BackgroundDownloader::OnStateTransferring() {
   GetJobByteCount(job_, &downloaded_bytes, &total_bytes);
 
   main_task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&BackgroundDownloader::OnDownloadProgress,
-                     base::Unretained(this), downloaded_bytes, total_bytes));
+      FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloadProgress, this,
+                                downloaded_bytes, total_bytes));
   return false;
 }
 

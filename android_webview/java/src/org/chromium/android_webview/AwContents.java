@@ -424,6 +424,9 @@ public class AwContents implements SmartClipProvider {
     // The base background color, i.e. not accounting for any CSS body from the current page.
     private int mBaseBackgroundColor = Color.WHITE;
 
+    // Did background set by developer, now used for dark mode.
+    private boolean mDidInitBackground;
+
     // Must call AwContentsJni.get().updateLastHitTestData first to update this before use.
     private final HitTestData mPossiblyStaleHitTestData = new HitTestData();
 
@@ -2034,6 +2037,7 @@ public class AwContents implements SmartClipProvider {
 
     public void setBackgroundColor(int color) {
         mBaseBackgroundColor = color;
+        mDidInitBackground = true;
         if (!isDestroyed(WARN)) {
             AwContentsJni.get().setBackgroundColor(mNativeAwContents, AwContents.this, color);
         }
@@ -2046,11 +2050,23 @@ public class AwContents implements SmartClipProvider {
         mAwViewMethods.setLayerType(layerType, paint);
     }
 
+    @VisibleForTesting
+    public int getEffectiveBackgroundColorForTesting() {
+        return getEffectiveBackgroundColor();
+    }
+
     int getEffectiveBackgroundColor() {
         // Do not ask the WebContents for the background color, as it will always
         // report white prior to initial navigation or post destruction,  whereas we want
         // to use the client supplied base value in those cases.
-        if (isDestroyed(NO_WARN) || !mContentsClient.isCachedRendererBackgroundColorValid()) {
+        if (isDestroyed(NO_WARN)) {
+            return mBaseBackgroundColor;
+        } else if (!mContentsClient.isCachedRendererBackgroundColorValid()) {
+            // In force dark mode, if background color not set, this cause a white flash,
+            // just show black background.
+            if (mSettings.isDarkMode() && !mDidInitBackground) {
+                return Color.BLACK;
+            }
             return mBaseBackgroundColor;
         }
         return mContentsClient.getCachedRendererBackgroundColor();

@@ -1797,9 +1797,6 @@ extern const char kOmniboxSuggestionButtonRowDescription[];
 extern const char kOmniboxReverseAnswersName[];
 extern const char kOmniboxReverseAnswersDescription[];
 
-extern const char kOmniboxTabSwitchSuggestionsDedicatedRowName[];
-extern const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[];
-
 extern const char kTabFreezeName[];
 extern const char kTabFreezeDescription[];
 

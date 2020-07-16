@@ -21,19 +21,19 @@
 
 <template is="dom-if" if="[[!pdfViewerUpdateEnabled_]]">
   <viewer-pdf-toolbar id="toolbar" strings="[[strings]]"
-      annotation-available="[[annotationAvailable_]]"
       bookmarks="[[bookmarks_]]" doc-title="[[title_]]"
       has-edits="[[hasEdits_]]"
       has-entered-annotation-mode="[[hasEnteredAnnotationMode_]]"
-      pdf-annotations-enabled="[[pdfAnnotationsEnabled_]]"
       pdf-form-save-enabled="[[pdfFormSaveEnabled_]]"
       printing-enabled="[[printingEnabled_]]"
-<if expr="chromeos">
-      ink-controller="[[inkController_]]"
-</if>
       is-form-field-focused="[[isFormFieldFocused_]]"
       doc-length="[[docLength_]]" page-no="[[pageNo_]]"
       load-progress="[[loadProgress_]]"
+<if expr="chromeos">
+      annotation-available="[[annotationAvailable_]]"
+      ink-controller="[[inkController_]]"
+      pdf-annotations-enabled="[[pdfAnnotationsEnabled_]]"
+</if>
       on-save="onToolbarSave_" on-print="onPrint_"
 <if expr="chromeos">
       on-annotation-mode-toggled="onAnnotationModeToggled_"
@@ -46,12 +46,19 @@
     doc-title="[[title_]]" doc-length="[[docLength_]]" page-no="[[pageNo_]]"
     load-progress="[[loadProgress_]]" has-edits="[[hasEdits_]]"
     has-entered-annotation-mode="[[hasEnteredAnnotationMode_]]"
-    pdf-annotations-enabled="[[pdfAnnotationsEnabled_]]"
     pdf-form-save-enabled="[[pdfFormSaveEnabled_]]"
     printing-enabled="[[printingEnabled_]]"
     is-form-field-focused="[[isFormFieldFocused_]]"
+<if expr="chromeos">
+    annotation-available="[[annotationAvailable_]]"
+    ink-controller="[[inkController_]]"
+    pdf-annotations-enabled="[[pdfAnnotationsEnabled_]]"
+</if>
     on-fit-to-changed="onFitToChanged"
     on-zoom-in="onZoomIn" on-zoom-out="onZoomOut"
+<if expr="chromeos">
+    on-annotation-mode-toggled="onAnnotationModeToggled_"
+</if>
     on-print="onPrint_" on-save="onToolbarSave_" hidden>
   </viewer-pdf-toolbar-new>
 </template>

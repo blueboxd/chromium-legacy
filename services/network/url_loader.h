@@ -46,6 +46,7 @@
 
 namespace net {
 class HttpResponseHeaders;
+struct RedirectInfo;
 class URLRequestContext;
 }  // namespace net
 

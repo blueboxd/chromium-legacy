@@ -15,7 +15,6 @@ import android.graphics.Color;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.test.annotation.UiThreadTest;
 import android.text.TextUtils;
 import android.view.View;
@@ -156,15 +155,9 @@ public class StatusIndicatorViewBinderTest extends DummyUiActivityTestCase {
         assertEquals("Wrong background color.", Color.BLUE,
                 ((ColorDrawable) mContainer.getBackground()).getColor());
         assertEquals("Wrong text color.", Color.RED, mStatusTextView.getCurrentTextColor());
-
-        // There is no way to get the color filter below L. We could technically modify
-        // TextViewWithCompoundDrawables to cache it, but it's not worth the effort. Once the min
-        // apk is L, we won't be using color filters anyway.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            assertEquals("Wrong compound drawables tint",
-                    new PorterDuffColorFilter(Color.GREEN, SRC_IN),
-                    mStatusTextView.getCompoundDrawablesRelative()[0].getColorFilter());
-        }
+        assertEquals("Wrong compound drawables tint",
+                new PorterDuffColorFilter(Color.GREEN, SRC_IN),
+                mStatusTextView.getCompoundDrawablesRelative()[0].getColorFilter());
     }
 
     @Test

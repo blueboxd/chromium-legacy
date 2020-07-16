@@ -2,10 +2,18 @@
 <html>
 <body>
   <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const withTimeout = urlParams.has('withTimeout')
     window.onportalactivate = e => {
       var portal = e.adoptPredecessor();
       document.body.appendChild(portal);
-      portal.activate();
+      if (!withTimeout) {
+        portal.activate();
+      } else {
+        setTimeout(() => {
+          portal.activate();
+        });
+      }
     }
   </script>
 </body>

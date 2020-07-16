@@ -87,138 +87,138 @@ TEST(BrokerProcess, TestOpenAccessNull) {
 }
 
 void TestOpenFilePerms(bool fast_check_in_client, int denied_errno) {
-  const char kR_WhiteListed[] = "/proc/DOESNOTEXIST1";
+  const char kR_AllowListed[] = "/proc/DOESNOTEXIST1";
   // We can't debug the init process, and shouldn't be able to access
   // its auxv file.
-  const char kR_WhiteListedButDenied[] = "/proc/1/auxv";
-  const char kW_WhiteListed[] = "/proc/DOESNOTEXIST2";
-  const char kRW_WhiteListed[] = "/proc/DOESNOTEXIST3";
-  const char k_NotWhitelisted[] = "/proc/DOESNOTEXIST4";
+  const char kR_AllowListedButDenied[] = "/proc/1/auxv";
+  const char kW_AllowListed[] = "/proc/DOESNOTEXIST2";
+  const char kRW_AllowListed[] = "/proc/DOESNOTEXIST3";
+  const char k_NotAllowlisted[] = "/proc/DOESNOTEXIST4";
 
   BrokerCommandSet command_set =
       MakeBrokerCommandSet({COMMAND_ACCESS, COMMAND_OPEN});
 
   std::vector<BrokerFilePermission> permissions = {
-      BrokerFilePermission::ReadOnly(kR_WhiteListed),
-      BrokerFilePermission::ReadOnly(kR_WhiteListedButDenied),
-      BrokerFilePermission::WriteOnly(kW_WhiteListed),
-      BrokerFilePermission::ReadWrite(kRW_WhiteListed)};
+      BrokerFilePermission::ReadOnly(kR_AllowListed),
+      BrokerFilePermission::ReadOnly(kR_AllowListedButDenied),
+      BrokerFilePermission::WriteOnly(kW_AllowListed),
+      BrokerFilePermission::ReadWrite(kRW_AllowListed)};
   BrokerProcess open_broker(denied_errno, command_set, permissions,
                             fast_check_in_client);
   ASSERT_TRUE(open_broker.Init(base::BindOnce(&NoOpCallback)));
 
   int fd = -1;
-  fd = open_broker.Open(kR_WhiteListed, O_RDONLY);
+  fd = open_broker.Open(kR_AllowListed, O_RDONLY);
   ASSERT_EQ(fd, -ENOENT);
-  fd = open_broker.Open(kR_WhiteListed, O_WRONLY);
+  fd = open_broker.Open(kR_AllowListed, O_WRONLY);
   ASSERT_EQ(fd, -denied_errno);
-  fd = open_broker.Open(kR_WhiteListed, O_RDWR);
+  fd = open_broker.Open(kR_AllowListed, O_RDWR);
   ASSERT_EQ(fd, -denied_errno);
   int ret = -1;
-  ret = open_broker.Access(kR_WhiteListed, F_OK);
+  ret = open_broker.Access(kR_AllowListed, F_OK);
   ASSERT_EQ(ret, -ENOENT);
-  ret = open_broker.Access(kR_WhiteListed, R_OK);
+  ret = open_broker.Access(kR_AllowListed, R_OK);
   ASSERT_EQ(ret, -ENOENT);
-  ret = open_broker.Access(kR_WhiteListed, W_OK);
+  ret = open_broker.Access(kR_AllowListed, W_OK);
   ASSERT_EQ(ret, -denied_errno);
-  ret = open_broker.Access(kR_WhiteListed, R_OK | W_OK);
+  ret = open_broker.Access(kR_AllowListed, R_OK | W_OK);
   ASSERT_EQ(ret, -denied_errno);
-  ret = open_broker.Access(kR_WhiteListed, X_OK);
+  ret = open_broker.Access(kR_AllowListed, X_OK);
   ASSERT_EQ(ret, -denied_errno);
-  ret = open_broker.Access(kR_WhiteListed, R_OK | X_OK);
+  ret = open_broker.Access(kR_AllowListed, R_OK | X_OK);
   ASSERT_EQ(ret, -denied_errno);
 
   // Android sometimes runs tests as root.
   // This part of the test requires a process that doesn't have
   // CAP_DAC_OVERRIDE. We check against a root euid as a proxy for that.
   if (geteuid()) {
-    fd = open_broker.Open(kR_WhiteListedButDenied, O_RDONLY);
+    fd = open_broker.Open(kR_AllowListedButDenied, O_RDONLY);
     // The broker process will allow this, but the normal permission system
     // won't.
     ASSERT_EQ(fd, -EACCES);
-    fd = open_broker.Open(kR_WhiteListedButDenied, O_WRONLY);
+    fd = open_broker.Open(kR_AllowListedButDenied, O_WRONLY);
     ASSERT_EQ(fd, -denied_errno);
-    fd = open_broker.Open(kR_WhiteListedButDenied, O_RDWR);
+    fd = open_broker.Open(kR_AllowListedButDenied, O_RDWR);
     ASSERT_EQ(fd, -denied_errno);
-    ret = open_broker.Access(kR_WhiteListedButDenied, F_OK);
+    ret = open_broker.Access(kR_AllowListedButDenied, F_OK);
     // The normal permission system will let us check that the file exists.
     ASSERT_EQ(ret, 0);
-    ret = open_broker.Access(kR_WhiteListedButDenied, R_OK);
+    ret = open_broker.Access(kR_AllowListedButDenied, R_OK);
     ASSERT_EQ(ret, -EACCES);
-    ret = open_broker.Access(kR_WhiteListedButDenied, W_OK);
+    ret = open_broker.Access(kR_AllowListedButDenied, W_OK);
     ASSERT_EQ(ret, -denied_errno);
-    ret = open_broker.Access(kR_WhiteListedButDenied, R_OK | W_OK);
+    ret = open_broker.Access(kR_AllowListedButDenied, R_OK | W_OK);
     ASSERT_EQ(ret, -denied_errno);
-    ret = open_broker.Access(kR_WhiteListedButDenied, X_OK);
+    ret = open_broker.Access(kR_AllowListedButDenied, X_OK);
     ASSERT_EQ(ret, -denied_errno);
-    ret = open_broker.Access(kR_WhiteListedButDenied, R_OK | X_OK);
+    ret = open_broker.Access(kR_AllowListedButDenied, R_OK | X_OK);
     ASSERT_EQ(ret, -denied_errno);
   }
 
-  fd = open_broker.Open(kW_WhiteListed, O_RDONLY);
+  fd = open_broker.Open(kW_AllowListed, O_RDONLY);
   ASSERT_EQ(fd, -denied_errno);
-  fd = open_broker.Open(kW_WhiteListed, O_WRONLY);
+  fd = open_broker.Open(kW_AllowListed, O_WRONLY);
   ASSERT_EQ(fd, -ENOENT);
-  fd = open_broker.Open(kW_WhiteListed, O_RDWR);
+  fd = open_broker.Open(kW_AllowListed, O_RDWR);
   ASSERT_EQ(fd, -denied_errno);
-  ret = open_broker.Access(kW_WhiteListed, F_OK);
+  ret = open_broker.Access(kW_AllowListed, F_OK);
   ASSERT_EQ(ret, -ENOENT);
-  ret = open_broker.Access(kW_WhiteListed, R_OK);
+  ret = open_broker.Access(kW_AllowListed, R_OK);
   ASSERT_EQ(ret, -denied_errno);
-  ret = open_broker.Access(kW_WhiteListed, W_OK);
+  ret = open_broker.Access(kW_AllowListed, W_OK);
   ASSERT_EQ(ret, -ENOENT);
-  ret = open_broker.Access(kW_WhiteListed, R_OK | W_OK);
+  ret = open_broker.Access(kW_AllowListed, R_OK | W_OK);
   ASSERT_EQ(ret, -denied_errno);
-  ret = open_broker.Access(kW_WhiteListed, X_OK);
+  ret = open_broker.Access(kW_AllowListed, X_OK);
   ASSERT_EQ(ret, -denied_errno);
-  ret = open_broker.Access(kW_WhiteListed, R_OK | X_OK);
+  ret = open_broker.Access(kW_AllowListed, R_OK | X_OK);
   ASSERT_EQ(ret, -denied_errno);
 
-  fd = open_broker.Open(kRW_WhiteListed, O_RDONLY);
+  fd = open_broker.Open(kRW_AllowListed, O_RDONLY);
   ASSERT_EQ(fd, -ENOENT);
-  fd = open_broker.Open(kRW_WhiteListed, O_WRONLY);
+  fd = open_broker.Open(kRW_AllowListed, O_WRONLY);
   ASSERT_EQ(fd, -ENOENT);
-  fd = open_broker.Open(kRW_WhiteListed, O_RDWR);
+  fd = open_broker.Open(kRW_AllowListed, O_RDWR);
   ASSERT_EQ(fd, -ENOENT);
-  ret = open_broker.Access(kRW_WhiteListed, F_OK);
+  ret = open_broker.Access(kRW_AllowListed, F_OK);
   ASSERT_EQ(ret, -ENOENT);
-  ret = open_broker.Access(kRW_WhiteListed, R_OK);
+  ret = open_broker.Access(kRW_AllowListed, R_OK);
   ASSERT_EQ(ret, -ENOENT);
-  ret = open_broker.Access(kRW_WhiteListed, W_OK);
+  ret = open_broker.Access(kRW_AllowListed, W_OK);
   ASSERT_EQ(ret, -ENOENT);
-  ret = open_broker.Access(kRW_WhiteListed, R_OK | W_OK);
+  ret = open_broker.Access(kRW_AllowListed, R_OK | W_OK);
   ASSERT_EQ(ret, -ENOENT);
-  ret = open_broker.Access(kRW_WhiteListed, X_OK);
+  ret = open_broker.Access(kRW_AllowListed, X_OK);
   ASSERT_EQ(ret, -denied_errno);
-  ret = open_broker.Access(kRW_WhiteListed, R_OK | X_OK);
+  ret = open_broker.Access(kRW_AllowListed, R_OK | X_OK);
   ASSERT_EQ(ret, -denied_errno);
 
-  fd = open_broker.Open(k_NotWhitelisted, O_RDONLY);
+  fd = open_broker.Open(k_NotAllowlisted, O_RDONLY);
   ASSERT_EQ(fd, -denied_errno);
-  fd = open_broker.Open(k_NotWhitelisted, O_WRONLY);
+  fd = open_broker.Open(k_NotAllowlisted, O_WRONLY);
   ASSERT_EQ(fd, -denied_errno);
-  fd = open_broker.Open(k_NotWhitelisted, O_RDWR);
+  fd = open_broker.Open(k_NotAllowlisted, O_RDWR);
   ASSERT_EQ(fd, -denied_errno);
-  ret = open_broker.Access(k_NotWhitelisted, F_OK);
+  ret = open_broker.Access(k_NotAllowlisted, F_OK);
   ASSERT_EQ(ret, -denied_errno);
-  ret = open_broker.Access(k_NotWhitelisted, R_OK);
+  ret = open_broker.Access(k_NotAllowlisted, R_OK);
   ASSERT_EQ(ret, -denied_errno);
-  ret = open_broker.Access(k_NotWhitelisted, W_OK);
+  ret = open_broker.Access(k_NotAllowlisted, W_OK);
   ASSERT_EQ(ret, -denied_errno);
-  ret = open_broker.Access(k_NotWhitelisted, R_OK | W_OK);
+  ret = open_broker.Access(k_NotAllowlisted, R_OK | W_OK);
   ASSERT_EQ(ret, -denied_errno);
-  ret = open_broker.Access(k_NotWhitelisted, X_OK);
+  ret = open_broker.Access(k_NotAllowlisted, X_OK);
   ASSERT_EQ(ret, -denied_errno);
-  ret = open_broker.Access(k_NotWhitelisted, R_OK | X_OK);
+  ret = open_broker.Access(k_NotAllowlisted, R_OK | X_OK);
   ASSERT_EQ(ret, -denied_errno);
 
   // We have some extra sanity check for clearly wrong values.
-  fd = open_broker.Open(kRW_WhiteListed, O_RDONLY | O_WRONLY | O_RDWR);
+  fd = open_broker.Open(kRW_AllowListed, O_RDONLY | O_WRONLY | O_RDWR);
   ASSERT_EQ(fd, -denied_errno);
 
   // It makes no sense to allow O_CREAT in a 2-parameters open. Ensure this
   // is denied.
-  fd = open_broker.Open(kRW_WhiteListed, O_RDWR | O_CREAT);
+  fd = open_broker.Open(kRW_AllowListed, O_RDWR | O_CREAT);
   ASSERT_EQ(fd, -denied_errno);
 }
 

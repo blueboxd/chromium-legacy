@@ -37,10 +37,8 @@ public class FirstRunUtils {
         boolean javaPrefValue =
                 javaPrefs.readBoolean(ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, false);
         boolean nativePrefValue = isFirstRunEulaAccepted();
-        boolean userHasSeenTos =
-                ToSAckedReceiver.checkAnyUserHasSeenToS();
         boolean isFirstRunComplete = FirstRunStatus.getFirstRunFlowComplete();
-        if (javaPrefValue || nativePrefValue || userHasSeenTos || isFirstRunComplete) {
+        if (javaPrefValue || nativePrefValue || isFirstRunComplete) {
             if (!javaPrefValue) {
                 javaPrefs.writeBoolean(ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, true);
             }
@@ -57,8 +55,7 @@ public class FirstRunUtils {
         // Note: Does not check FirstRunUtils.isFirstRunEulaAccepted() because this may be called
         // before native is initialized.
         return SharedPreferencesManager.getInstance().readBoolean(
-                       ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, false)
-                || ToSAckedReceiver.checkAnyUserHasSeenToS();
+                ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, false);
     }
 
     /**

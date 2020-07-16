@@ -431,7 +431,6 @@ def _RunCompiler(options, javac_cmd, java_files, classpath, jar_path,
   os.makedirs(temp_dir)
   try:
     classes_dir = os.path.join(temp_dir, 'classes')
-    transitive_classes = os.path.join(temp_dir, 'transitive_classes')
     service_provider_configuration = os.path.join(
         temp_dir, 'service_provider_configuration')
 
@@ -461,34 +460,15 @@ def _RunCompiler(options, javac_cmd, java_files, classpath, jar_path,
                                              input_srcjars_dir)
       logging.info('Done extracting srcjars')
 
-    if classpath or options.header_jar:
-      logging.info('Extracting transitive classes to %s', transitive_classes)
-      # All classes under META-INF/TRANSITIVE of all direct dependencies and the
-      # current target's META-INF/TRANSITIVE can be required during compile.
-      for path in classpath + [options.header_jar]:
-        if path.endswith('.turbine.jar'):
-          # Without the META-INF pattern prefix, it takes more than 4 seconds to
-          # extract all the .class files from chrome_java's header jar. With the
-          # prefix it takes less than 0.6 seconds.
-          # Set no_clobber=False since there are some overlaps in base classes
-          # from various header jars.
-          build_utils.ExtractAll(path,
-                                 no_clobber=False,
-                                 path=transitive_classes,
-                                 pattern='META-INF*.class')
-      # Specifying the root directory is required, see:
-      # https://docs.oracle.com/javase/8/docs/technotes/tools/findingclasses.html#userclass
-
+    if options.header_jar:
+      logging.info('Extracting service provider configs')
       # Extract META-INF/services/* so that it can be copied into the output
       # .jar
       build_utils.ExtractAll(options.header_jar,
                              no_clobber=True,
                              path=service_provider_configuration,
                              pattern='META-INF/services/*')
-
-      classpath.append(
-          os.path.join(transitive_classes, 'META-INF', 'TRANSITIVE'))
-      logging.info('Done extracting transitive classes')
+      logging.info('Done extracting service provider configs')
 
     if save_outputs and java_files:
       info_file_context.SubmitFiles(java_files)
@@ -634,7 +614,7 @@ def _ParseOptions(argv):
   parser.add_option(
       '--header-jar',
       help='This is the header jar for the current target that contains '
-      'META-INF/TRANSITIVE class files to be included on the classpath.')
+      'META-INF/services/* files to be included in the output jar.')
 
   options, args = parser.parse_args(argv)
   build_utils.CheckOptions(options, parser, required=('jar_path', ))

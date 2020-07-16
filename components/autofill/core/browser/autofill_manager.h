@@ -367,7 +367,7 @@ class AutofillManager : public AutofillHandler,
                                     const gfx::RectF& bounding_box) override;
   bool ShouldParseForms(const std::vector<FormData>& forms,
                         const base::TimeTicks timestamp) override;
-  void OnFormsParsed(const std::vector<FormStructure*>& form_structures,
+  void OnFormsParsed(const std::vector<const FormData*>& forms,
                      const base::TimeTicks timestamp) override;
 
   AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger() {

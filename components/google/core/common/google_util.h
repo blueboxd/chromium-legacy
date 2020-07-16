@@ -24,9 +24,6 @@ extern const char kGoogleHomepageURL[];
 // returned by GURL::query() or GURL::ref().
 bool HasGoogleSearchQueryParam(base::StringPiece str);
 
-GURL LinkDoctorBaseURL();
-void SetMockLinkDoctorBaseURLForTesting();
-
 // Returns the Google locale corresponding to |application_locale|.  This is
 // the same string as AppendGoogleLocaleParam adds to the URL, only without the
 // leading "hl".

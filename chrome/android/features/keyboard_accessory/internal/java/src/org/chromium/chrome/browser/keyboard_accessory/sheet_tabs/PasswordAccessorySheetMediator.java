@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
-import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
+import androidx.annotation.Nullable;
 
-import javax.annotation.Nullable;
+import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 
 /**
  * This class contains the logic specific to the password accessory sheet.

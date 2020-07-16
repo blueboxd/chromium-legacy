@@ -41,11 +41,11 @@ std::string MediaLogEventToString(MediaLogEvent level) {
   return "";
 }
 
-std::string TruncateUrlString(std::string url) {
-  constexpr size_t kMaxUrlLength = 1000;
+std::string TruncateUrlString(const std::string& url) {
   if (url.length() > kMaxUrlLength) {
-    url.resize(kMaxUrlLength);
-    url.replace(url.end() - 3, url.end(), "...");
+    // Take substring and _then_ replace, to avoid copying unused data.
+    return url.substr(0, kMaxUrlLength)
+        .replace(kMaxUrlLength - 3, kMaxUrlLength, "...");
   }
   return url;
 }

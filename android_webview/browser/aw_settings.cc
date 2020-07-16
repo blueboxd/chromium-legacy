@@ -78,6 +78,7 @@ AwSettings::AwSettings(JNIEnv* env,
       javascript_can_open_windows_automatically_(false),
       allow_third_party_cookies_(false),
       allow_file_access_(false),
+      is_dark_mode_(false),
       aw_settings_(env, obj) {
   web_contents->SetUserData(kAwSettingsUserDataKey,
                             std::make_unique<AwSettingsUserData>(this));
@@ -515,24 +516,23 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   web_prefs->allow_mixed_content_upgrades =
       Java_AwSettings_getAllowMixedContentAutoupgradesLocked(env, obj);
 
-  bool is_dark_mode;
   switch (Java_AwSettings_getForceDarkModeLocked(env, obj)) {
     case ForceDarkMode::FORCE_DARK_OFF:
-      is_dark_mode = false;
+      is_dark_mode_ = false;
       break;
     case ForceDarkMode::FORCE_DARK_ON:
-      is_dark_mode = true;
+      is_dark_mode_ = true;
       break;
     case ForceDarkMode::FORCE_DARK_AUTO: {
       AwContents* contents = AwContents::FromWebContents(web_contents());
-      is_dark_mode = contents && contents->GetViewTreeForceDarkState();
+      is_dark_mode_ = contents && contents->GetViewTreeForceDarkState();
       break;
     }
   }
-  web_prefs->preferred_color_scheme = is_dark_mode
+  web_prefs->preferred_color_scheme = is_dark_mode_
                                           ? blink::PreferredColorScheme::kDark
                                           : blink::PreferredColorScheme::kLight;
-  if (is_dark_mode) {
+  if (is_dark_mode_) {
     switch (Java_AwSettings_getForceDarkBehaviorLocked(env, obj)) {
       case ForceDarkBehavior::FORCE_DARK_ONLY: {
         web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
@@ -560,6 +560,11 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
     web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
     web_prefs->force_dark_mode_enabled = false;
   }
+}
+
+bool AwSettings::IsDarkMode(JNIEnv* env,
+                                 const JavaParamRef<jobject>& obj) {
+  return is_dark_mode_;
 }
 
 bool AwSettings::GetAllowFileAccess() {

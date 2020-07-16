@@ -81,10 +81,6 @@ using error_page::LocalizedError;
 
 namespace {
 
-// Number of seconds to wait for the navigation correction service to return
-// suggestions.  If it takes too long, just use the local error page.
-const int kNavigationCorrectionFetchTimeoutSec = 3;
-
 NetErrorHelperCore::PageType GetLoadingPageType(const GURL& url) {
   if (!url.is_valid() || url.spec() != kUnreachableWebDataURL)
     return NetErrorHelperCore::NON_ERROR_PAGE;
@@ -122,36 +118,6 @@ bool IsRunningInForcedAppMode() {
       switches::kForceAppMode);
 }
 
-const net::NetworkTrafficAnnotationTag& GetNetworkTrafficAnnotationTag() {
-  static const net::NetworkTrafficAnnotationTag network_traffic_annotation_tag =
-      net::DefineNetworkTrafficAnnotation("net_error_helper", R"(
-    semantics {
-      sender: "NetErrorHelper"
-      description:
-        "Chrome asks Link Doctor service when a navigating page returns an "
-        "error to investigate details about what is wrong."
-      trigger:
-        "When Chrome navigates to a page, and the page returns an error."
-      data:
-        "Failed page information including the URL will be sent to the service."
-      destination: GOOGLE_OWNED_SERVICE
-    }
-    policy {
-      cookies_allowed: NO
-      setting:
-        "You can enable or disable this feature via 'Use a web service to help "
-        "resolve navigation errors' in Chrome's settings under Advanced. The "
-        "feature is enabled by default."
-      chrome_policy {
-        AlternateErrorPagesEnabled {
-          policy_options {mode: MANDATORY}
-          AlternateErrorPagesEnabled: false
-        }
-      }
-    })");
-  return network_traffic_annotation_tag;
-}
-
 }  // namespace
 
 NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
@@ -169,9 +135,6 @@ NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
 
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
       base::BindRepeating(&NetErrorHelper::OnNetworkDiagnosticsClientRequest,
-                          base::Unretained(this)));
-  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
-      base::BindRepeating(&NetErrorHelper::OnNavigationCorrectorRequest,
                           base::Unretained(this)));
 }
 
@@ -353,12 +316,6 @@ LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
   return page_state;
 }
 
-void NetErrorHelper::LoadErrorPage(const std::string& html,
-                                   const GURL& failed_url) {
-  render_frame()->LoadHTMLString(html, GURL(kUnreachableWebDataURL), "UTF-8",
-                                 failed_url, true /* replace_current_item */);
-}
-
 void NetErrorHelper::EnablePageHelperFunctions() {
   security_interstitials::SecurityInterstitialPageController::Install(
       render_frame(),
@@ -424,31 +381,6 @@ void NetErrorHelper::ResetEasterEggHighScore() {
   GetRemoteNetworkEasterEgg()->ResetHighScore();
 }
 
-void NetErrorHelper::FetchNavigationCorrections(
-    const GURL& navigation_correction_url,
-    const std::string& navigation_correction_request_body) {
-  DCHECK(!correction_loader_.get());
-
-  std::unique_ptr<network::ResourceRequest> resource_request =
-      CreatePostRequest(navigation_correction_url);
-
-  correction_loader_ = network::SimpleURLLoader::Create(
-      std::move(resource_request), GetNetworkTrafficAnnotationTag());
-  correction_loader_->AttachStringForUpload(navigation_correction_request_body,
-                                            "application/json");
-  correction_loader_->DownloadToString(
-      render_frame()->GetURLLoaderFactory().get(),
-      base::BindOnce(&NetErrorHelper::OnNavigationCorrectionsFetched,
-                     base::Unretained(this)),
-      network::SimpleURLLoader::kMaxBoundedStringDownloadSize);
-  correction_loader_->SetTimeoutDuration(
-      base::TimeDelta::FromSeconds(kNavigationCorrectionFetchTimeoutSec));
-}
-
-void NetErrorHelper::CancelFetchNavigationCorrections() {
-  correction_loader_.reset();
-}
-
 void NetErrorHelper::ReloadFrame() {
   render_frame()->GetWebFrame()->StartReload(blink::WebFrameLoadType::kReload);
 }
@@ -512,34 +444,10 @@ void NetErrorHelper::DNSProbeStatus(int32_t status_num) {
   core_->OnNetErrorInfo(static_cast<DnsProbeStatus>(status_num));
 }
 
-void NetErrorHelper::SetNavigationCorrectionInfo(
-    const GURL& navigation_correction_url,
-    const std::string& language,
-    const std::string& country_code,
-    const std::string& api_key,
-    const GURL& search_url) {
-  core_->OnSetNavigationCorrectionInfo(navigation_correction_url, language,
-                                       country_code, api_key, search_url);
-}
-
-void NetErrorHelper::OnNavigationCorrectionsFetched(
-    std::unique_ptr<std::string> response_body) {
-  bool success = response_body.get() != nullptr;
-  correction_loader_.reset();
-  core_->OnNavigationCorrectionsFetched(success ? *response_body : "",
-                                        base::i18n::IsRTL());
-}
-
 void NetErrorHelper::OnNetworkDiagnosticsClientRequest(
     mojo::PendingAssociatedReceiver<chrome::mojom::NetworkDiagnosticsClient>
         receiver) {
   network_diagnostics_client_receivers_.Add(this, std::move(receiver));
-}
-
-void NetErrorHelper::OnNavigationCorrectorRequest(
-    mojo::PendingAssociatedReceiver<chrome::mojom::NavigationCorrector>
-        receiver) {
-  navigation_corrector_receivers_.Add(this, std::move(receiver));
 }
 
 void NetErrorHelper::SetCanShowNetworkDiagnosticsDialog(bool can_show) {

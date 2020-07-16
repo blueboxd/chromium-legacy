@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.toolbar.top;
 
-import android.annotation.TargetApi;
 import android.graphics.Color;
 import android.os.Build;
 import android.text.TextUtils;
@@ -71,14 +70,13 @@ public class BrandColorTest {
                 + "</html>");
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void checkForBrandColor(final int brandColor) {
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(mToolbarDataProvider.getPrimaryColor(), Matchers.is(brandColor));
             Criteria.checkThat(mToolbarDataProvider.getPrimaryColor(),
                     Matchers.is(mToolbar.getBackgroundDrawable().getColor()));
         });
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && !SysUtils.isLowEndDevice()) {
+        if (!SysUtils.isLowEndDevice()) {
             final int expectedStatusBarColor;
             if (mSupportsDarkStatusIcons) {
                 expectedStatusBarColor = brandColor == mDefaultColor ? Color.WHITE : brandColor;

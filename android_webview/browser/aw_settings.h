@@ -85,6 +85,8 @@ class AwSettings : public content::WebContentsObserver {
 
   void PopulateWebPreferences(content::WebPreferences* web_prefs);
   bool GetAllowFileAccess();
+  bool IsDarkMode(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj);
 
  private:
   AwRenderViewHostExt* GetAwRenderViewHostExt();
@@ -99,6 +101,7 @@ class AwSettings : public content::WebContentsObserver {
   bool javascript_can_open_windows_automatically_;
   bool allow_third_party_cookies_;
   bool allow_file_access_;
+  bool is_dark_mode_;
 
   JavaObjectWeakGlobalRef aw_settings_;
 };

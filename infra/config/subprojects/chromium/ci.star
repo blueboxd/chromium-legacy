@@ -501,6 +501,7 @@ ci.chromium_builder(
 
 ci.chromium_builder(
     name = 'linux-official',
+    builderless = False,
     # TODO(https://crbug.com/1072012) Use the default console view and add
     # main_console_view = settings.main_console_name once the build is green
     console_view = 'chromium.fyi',

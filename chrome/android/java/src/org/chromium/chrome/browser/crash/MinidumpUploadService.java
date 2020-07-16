@@ -323,11 +323,8 @@ public class MinidumpUploadService extends IntentService {
      *
      * Note that this method is asynchronous. All that is guaranteed is that an upload attempt will
      * be enqueued.
-     *
-     * @throws SecurityException if the caller doesn't have permission to start the upload
-     *         service. This can only happen on KitKat and below, due to a framework bug.
      */
-    public static void tryUploadCrashDump(File minidumpFile) throws SecurityException {
+    public static void tryUploadCrashDump(File minidumpFile) {
         assert !shouldUseJobSchedulerForUploads();
         tryUploadCrashDumpNow(minidumpFile);
     }
@@ -338,11 +335,8 @@ public class MinidumpUploadService extends IntentService {
      *
      * Note that the prefered way to upload minidump is through JobScheduler when possible, use this
      * function if want to upload ASAP.
-     *
-     * @throws SecurityException if the caller doesn't have permission to start the upload
-     *         service. This can only happen on KitKat and below, due to a framework bug.
      */
-    static void tryUploadCrashDumpNow(File minidumpFile) throws SecurityException {
+    static void tryUploadCrashDumpNow(File minidumpFile) {
         CrashFileManager fileManager =
                 new CrashFileManager(ContextUtils.getApplicationContext().getCacheDir());
         Intent intent =

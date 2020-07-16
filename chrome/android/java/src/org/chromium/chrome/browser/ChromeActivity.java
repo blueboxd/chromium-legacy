@@ -2153,8 +2153,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     /** @return the theme ID to use. */
     public static int getThemeId() {
-        boolean useLowEndTheme =
-                SysUtils.isLowEndDevice() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+        boolean useLowEndTheme = SysUtils.isLowEndDevice();
         return (useLowEndTheme ? R.style.Theme_Chromium_WithWindowAnimation_LowEnd
                                : R.style.Theme_Chromium_WithWindowAnimation);
     }

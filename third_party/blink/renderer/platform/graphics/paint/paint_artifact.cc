@@ -20,7 +20,6 @@ class DebugDrawingClient final : public DisplayItemClient {
  public:
   DebugDrawingClient() { Invalidate(PaintInvalidationReason::kUncacheable); }
   String DebugName() const final { return "DebugDrawing"; }
-  IntRect VisualRect() const final { return LayoutRect::InfiniteIntRect(); }
 };
 
 }  // namespace
@@ -62,7 +61,8 @@ void PaintArtifact::AppendDebugDrawing(
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   auto& display_item =
       display_item_list_.AllocateAndConstruct<DrawingDisplayItem>(
-          debug_drawing_client, DisplayItem::kDebugDrawing, std::move(record));
+          debug_drawing_client, DisplayItem::kDebugDrawing,
+          LayoutRect::InfiniteIntRect(), std::move(record));
 
   // Create a PaintChunk for the debug drawing.
   chunks_.emplace_back(display_item_list_.size() - 1, display_item_list_.size(),

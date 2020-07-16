@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/i18n/message_formatter.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/no_destructor.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

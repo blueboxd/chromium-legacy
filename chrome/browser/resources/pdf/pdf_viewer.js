@@ -446,11 +446,11 @@ class PDFViewerElement extends PDFViewerBaseElement {
   // <if expr="chromeos">
   /**
    * Handles the annotation mode being toggled on or off.
-   * @param {!CustomEvent<{value: boolean}>} e
+   * @param {!CustomEvent<boolean>} e
    * @private
    */
   async onAnnotationModeToggled_(e) {
-    const annotationMode = e.detail.value;
+    const annotationMode = e.detail;
     this.annotationMode_ = annotationMode;
     if (annotationMode) {
       // Enter annotation mode.

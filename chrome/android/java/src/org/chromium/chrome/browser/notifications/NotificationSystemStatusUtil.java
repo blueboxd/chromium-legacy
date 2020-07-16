@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import android.annotation.TargetApi;
-import android.os.Build;
-
 import androidx.annotation.VisibleForTesting;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -42,11 +39,7 @@ public class NotificationSystemStatusUtil {
      * the histogram "Notifications.AppNotiicationStatus".
      * Notifications may be disabled because either the user, or a management tool, has explicitly
      * disallowed the Chrome App to display notifications.
-     *
-     * This check requires Android KitKat or later. Earlier versions will log an INDETERMINABLE
-     * status.
      */
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     static void recordAppNotificationStatusHistogram() {
         RecordHistogram.recordEnumeratedHistogram("Notifications.AppNotificationStatus",
                 getAppNotificationStatus(), APP_NOTIFICATIONS_STATUS_BOUNDARY);
@@ -55,16 +48,9 @@ public class NotificationSystemStatusUtil {
     @CalledByNative
     @VisibleForTesting
     static int getAppNotificationStatus() {
-        int status;
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            status = APP_NOTIFICATIONS_STATUS_UNDETERMINABLE;
-        } else {
-            NotificationManagerCompat manager =
-                    NotificationManagerCompat.from(ContextUtils.getApplicationContext());
-            status = manager.areNotificationsEnabled() ? APP_NOTIFICATIONS_STATUS_ENABLED
-                                                       : APP_NOTIFICATIONS_STATUS_DISABLED;
-        }
-        return status;
+        NotificationManagerCompat manager =
+                NotificationManagerCompat.from(ContextUtils.getApplicationContext());
+        return manager.areNotificationsEnabled() ? APP_NOTIFICATIONS_STATUS_ENABLED
+                                                 : APP_NOTIFICATIONS_STATUS_DISABLED;
     }
 }

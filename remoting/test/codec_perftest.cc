@@ -150,8 +150,7 @@ TEST_P(CodecPerfTest, MaxFramerate) {
     clock_.Advance(kIntervalBetweenFrames);
   }
 
-  VLOG(0) << "Max framerate: "
-          << (kTotalFrames * base::TimeDelta::FromSeconds(1) / total_latency);
+  VLOG(0) << "Max framerate: " << kTotalFrames / total_latency.InSecondsF();
 }
 
 }  // namespace test

@@ -72,6 +72,9 @@ class CORE_EXPORT CaretDisplayItemClient final : public DisplayItemClient {
   friend class ParameterizedComputeCaretRectTest;
 
   struct CaretRectAndPainterBlock {
+    STACK_ALLOCATED();
+
+   public:
     PhysicalRect caret_rect;  // local to |painter_block|
     LayoutBlock* painter_block = nullptr;
   };

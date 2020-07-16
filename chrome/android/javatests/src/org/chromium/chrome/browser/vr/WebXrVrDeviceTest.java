@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.vr;
 
 import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
 
-import android.os.Build;
-
 import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
@@ -21,7 +19,6 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
@@ -66,7 +63,6 @@ public class WebXrVrDeviceTest {
     @MediumTest
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-            @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebXR is only supported on L+
             public void testWebXrCapabilities() {
         mWebXrVrTestFramework.loadFileAndAwaitInitialization(
                 "test_webxr_capabilities", PAGE_LOAD_TIMEOUT_S);

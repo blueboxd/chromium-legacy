@@ -158,7 +158,7 @@ public class DefaultBrowserPromoManager implements PauseResumeWithNativeObserver
                 intent.setAction(Intent.ACTION_MAIN);
                 intent.addCategory(Intent.CATEGORY_APP_BROWSER);
             }
-            intent.putExtra(DefaultBrowserPromoUtils.DISAMBIGUATION_SHEET_PROMOED_KEY, true);
+            intent.putExtra(DefaultBrowserPromoUtils.getDisambiguationSheetPromoedKey(), true);
             mActivity.startActivity(intent);
         });
     }

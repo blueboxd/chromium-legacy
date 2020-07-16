@@ -461,7 +461,7 @@ class AutofillManagerTest : public testing::Test {
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
-    autofill_manager_->OnFormsSeen(forms, base::TimeTicks());
+    autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
   }
 
   void FormSubmitted(const FormData& form) {
@@ -3765,6 +3765,65 @@ TEST_F(AutofillManagerTest, FillPartlyAutofilledForm) {
     SCOPED_TRACE("Credit card 1");
     ExpectFilledCreditCardFormElvis(response_page_id, response_data, kPageID2,
                                     true);
+  }
+}
+
+// Test that we correctly fill a previously partly auto-filled form.
+TEST_F(AutofillManagerTest, FillPartlyManuallyFilledForm) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSkipFillingFieldsWithChangedValues},
+      // Disabled
+      // We want to query the legacy server rather than the API server.
+      {});
+
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+
+  CreateTestCreditCardFormData(&form, true, false);
+  FormsSeen({form});
+
+  // Michael will be overridden with Elvis because Autofill is triggered from
+  // the first field.
+  form.fields[0].value = base::ASCIIToUTF16("Michael");
+  form.fields[0].properties_mask |= kUserTyped;
+
+  // Jackson will be preserved.
+  form.fields[2].value = base::ASCIIToUTF16("Jackson");
+  form.fields[2].properties_mask |= kUserTyped;
+
+  FormsSeen({form});
+
+  // First fill the address data.
+  const char guid[] = "00000000-0000-0000-0000-000000000001";
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
+                                     MakeFrontendID(std::string(), guid),
+                                     &response_page_id, &response_data);
+  {
+    SCOPED_TRACE("Address");
+    ExpectFilledForm(response_page_id, response_data, kDefaultPageID, "Elvis",
+                     "Aaron", "Jackson", "3734 Elvis Presley Blvd.", "Apt. 10",
+                     "Memphis", "Tennessee", "38116", "United States",
+                     "12345678901", "theking@gmail.com", "", "", "", "", true,
+                     true, false);
+  }
+
+  // Now fill the credit card data.
+  const int kPageID2 = 2;
+  const char guid2[] = "00000000-0000-0000-0000-000000000004";
+  response_page_id = 0;
+  FillAutofillFormDataAndSaveResults(kPageID2, form, form.fields.back(),
+                                     MakeFrontendID(guid2, std::string()),
+                                     &response_page_id, &response_data);
+  {
+    SCOPED_TRACE("Credit card 1");
+    ExpectFilledForm(response_page_id, response_data, kPageID2, "Michael", "",
+                     "Jackson", "", "", "", "", "", "", "", "", "Elvis Presley",
+                     "4234567890123456", "04", "2999", true, true, false);
   }
 }
 

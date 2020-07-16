@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "content/common/service_worker/service_worker_utils.h"
+#include "net/base/io_buffer.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {

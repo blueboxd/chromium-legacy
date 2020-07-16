@@ -24,18 +24,17 @@ class PaintControllerTestBase : public testing::Test {
                           DisplayItem::Type type) {
     if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
       return;
-    DrawingRecorder recorder(context, client, type);
+    DrawingRecorder recorder(context, client, type, IntRect());
   }
 
-  template <typename Rect>
   static void DrawRect(GraphicsContext& context,
                        const DisplayItemClient& client,
                        DisplayItem::Type type,
-                       const Rect& bounds) {
+                       const IntRect& bounds) {
     if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
       return;
-    DrawingRecorder recorder(context, client, type);
-    context.DrawRect(RoundedIntRect(FloatRect(bounds)));
+    DrawingRecorder recorder(context, client, type, bounds);
+    context.DrawRect(bounds);
   }
 
  protected:

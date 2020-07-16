@@ -6687,6 +6687,127 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
   VerifyStreamsClosed(helper);
 }
 
+// Verify that push does not work cross origin when NetworkIsolationKeys don't
+// match.
+TEST_F(SpdyNetworkTransactionTest,
+       ServerPushCrossOriginNetworkIsolationKeyMistmatch) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       // Need to partition connections by NetworkIsolationKey for
+       // SpdySessionKeys to include NetworkIsolationKeys.
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+
+  // "spdy_pooling.pem" is valid for both www.example.org and mail.example.org.
+  const char* url_to_fetch = "https://www.example.org";
+  const char* url_to_push = "https://mail.example.org";
+
+  spdy::SpdySerializedFrame headers(
+      spdy_util_.ConstructSpdyGet(url_to_fetch, 1, LOWEST));
+  spdy::SpdySerializedFrame push_priority(
+      spdy_util_.ConstructSpdyPriority(2, 1, IDLE, true));
+  MockWrite writes[] = {
+      CreateMockWrite(headers, 0),
+      CreateMockWrite(push_priority, 3),
+  };
+
+  spdy::SpdySerializedFrame reply(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame push(
+      spdy_util_.ConstructSpdyPush(nullptr, 0, 2, 1, url_to_push));
+  spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  const char kPushedData[] = "pushed";
+  spdy::SpdySerializedFrame pushed_body(
+      spdy_util_.ConstructSpdyDataFrame(2, kPushedData, true));
+  MockRead reads[] = {
+      CreateMockRead(reply, 1),
+      CreateMockRead(push, 2, SYNCHRONOUS),
+      CreateMockRead(body, 4),
+      CreateMockRead(pushed_body, 5, SYNCHRONOUS),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6),
+  };
+
+  SequencedSocketData data(reads, writes);
+
+  request_.url = GURL(url_to_fetch);
+
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+
+  SequencedSocketData data2(net::MockConnect(ASYNC, net::ERR_FAILED),
+                            base::span<MockRead>(), base::span<MockWrite>());
+  helper.AddData(&data2);
+
+  HttpNetworkTransaction* trans0 = helper.trans();
+  TestCompletionCallback callback0;
+  int rv = trans0->Start(&request_, callback0.callback(), log_);
+  rv = callback0.GetResult(rv);
+  EXPECT_THAT(rv, IsOk());
+
+  SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
+  SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED,
+                     SpdySessionKey::IsProxySession::kFalse, SocketTag(),
+                     NetworkIsolationKey(), false /* disable_secure_dns */);
+  base::WeakPtr<SpdySession> spdy_session =
+      spdy_session_pool->FindAvailableSession(
+          key, /* enable_ip_based_pooling = */ true,
+          /* is_websocket = */ false, log_);
+
+  EXPECT_EQ(1u, num_unclaimed_pushed_streams(spdy_session));
+  EXPECT_TRUE(
+      has_unclaimed_pushed_stream_for_url(spdy_session, GURL(url_to_push)));
+
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
+  HttpRequestInfo push_request;
+  // Use a different NetworkIsolationKey than |spdy_session| (which uses an
+  // empty one).
+  push_request.network_isolation_key = NetworkIsolationKey::CreateTransient();
+  push_request.method = "GET";
+  push_request.url = GURL(url_to_push);
+  push_request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  TestCompletionCallback callback1;
+  rv = trans1.Start(&push_request, callback1.callback(), log_);
+  // This transaction should try and use a new socket, which fails.
+  EXPECT_THAT(callback1.GetResult(rv), IsError(net::ERR_FAILED));
+
+  // The pushed stream should still be pending.
+  EXPECT_EQ(1u, num_unclaimed_pushed_streams(spdy_session));
+
+  // Try again, this time with an empty NetworkIsolationKey, matching the
+  // SpdySession's. This request should successfully get the pushed stream.
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  push_request.network_isolation_key = NetworkIsolationKey();
+  TestCompletionCallback callback2;
+  rv = trans1.Start(&push_request, callback2.callback(), log_);
+  EXPECT_THAT(callback2.GetResult(rv), IsOk());
+
+  HttpResponseInfo response = *trans0->GetResponseInfo();
+  EXPECT_TRUE(response.headers);
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
+
+  std::string result0;
+  ReadResult(trans0, &result0);
+  EXPECT_EQ("hello!", result0);
+
+  HttpResponseInfo push_response = *trans1.GetResponseInfo();
+  EXPECT_TRUE(push_response.headers);
+  EXPECT_EQ("HTTP/1.1 200", push_response.headers->GetStatusLine());
+
+  std::string result1;
+  ReadResult(&trans1, &result1);
+  EXPECT_EQ(kPushedData, result1);
+
+  base::RunLoop().RunUntilIdle();
+  helper.VerifyDataConsumed();
+  VerifyStreamsClosed(helper);
+}
+
 // Regression test for https://crbug.com/832859:  Server push is accepted on a
 // connection with client certificate, as long as SpdySessionKey matches.
 TEST_F(SpdyNetworkTransactionTest, ServerPushWithClientCert) {

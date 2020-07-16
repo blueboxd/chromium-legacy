@@ -82,7 +82,7 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
   if (forms.empty())
     return;
 
-  std::set<FormRendererId> new_form_renderer_ids;
+  std::vector<const FormData*> new_forms;
   for (const FormData& form : forms) {
     const auto parse_form_start_time = AutofillTickClock::NowTicks();
     FormStructure* cached_form_structure =
@@ -123,27 +123,14 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
     if (update_form_signature && !kOldBehavior)
       form_structure->set_form_signature(CalculateFormSignature(form));
 
-    new_form_renderer_ids.insert(form_structure->unique_renderer_id());
+    new_forms.push_back(&form);
     AutofillMetrics::LogParseFormTiming(AutofillTickClock::NowTicks() -
                                         parse_form_start_time);
   }
 
-  if (new_form_renderer_ids.empty())
+  if (new_forms.empty())
     return;
-
-  // Populate the set of newly created form structures and call the
-  // OnFormsParsed handler.
-  std::vector<FormStructure*> new_form_structures;
-  new_form_structures.reserve(new_form_renderer_ids.size());
-  for (auto renderer_id : new_form_renderer_ids) {
-    FormStructure* form_structure = FindCachedFormByRendererId(renderer_id);
-    if (form_structure) {
-      new_form_structures.push_back(form_structure);
-    } else {
-      NOTREACHED();
-    }
-  }
-  OnFormsParsed(new_form_structures, timestamp);
+  OnFormsParsed(new_forms, timestamp);
 }
 
 void AutofillHandler::OnTextFieldDidChange(const FormData& form,

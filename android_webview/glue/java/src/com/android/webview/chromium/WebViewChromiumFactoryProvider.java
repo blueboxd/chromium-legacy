@@ -105,7 +105,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private static boolean sWebLayerRunningInSameProcess;
     // Used to detect if we enter initialization for a second time, e.g. because an app caught and
     // discarded an exception thrown by a previous failed initialization attempt.
-    private static volatile boolean sInitAlreadyStarted = false;
+    private static volatile boolean sInitAlreadyStarted;
 
     private final WebViewChromiumRunQueue mRunQueue = new WebViewChromiumRunQueue(
             () -> { return WebViewChromiumFactoryProvider.this.mAwInit.hasStarted(); });

@@ -67,10 +67,6 @@ class NetErrorHelperCore {
         std::unique_ptr<error_page::ErrorPageParams> params,
         std::string* html) const = 0;
 
-    // Loads the given HTML in the frame for use as an error page.
-    virtual void LoadErrorPage(const std::string& html,
-                               const GURL& failed_url) = 0;
-
     // Create extra Javascript bindings in the error page. Will only be invoked
     // after an error page has finished loading.
     virtual void EnablePageHelperFunctions() = 0;
@@ -93,17 +89,6 @@ class NetErrorHelperCore {
     // preferences from the browser.  The delegate should call
     // OnEasterEggHighScoreReceived() with the response.
     virtual void RequestEasterEggHighScore() = 0;
-
-    // Fetches an error page and calls into OnErrorPageFetched when done.  Any
-    // previous fetch must either be canceled or finished before calling.  Can't
-    // be called synchronously after a previous fetch completes.
-    virtual void FetchNavigationCorrections(
-        const GURL& navigation_correction_url,
-        const std::string& navigation_correction_request_body) = 0;
-
-    // Cancels fetching navigation corrections.  Does nothing if no fetch is
-    // ongoing.
-    virtual void CancelFetchNavigationCorrections() = 0;
 
     // Starts a reload of the observed frame.
     virtual void ReloadFrame() = 0;
@@ -136,20 +121,6 @@ class NetErrorHelperCore {
     virtual ~Delegate() {}
   };
 
-  struct NavigationCorrectionParams {
-    NavigationCorrectionParams();
-    NavigationCorrectionParams(const NavigationCorrectionParams& other);
-    ~NavigationCorrectionParams();
-
-    // URL used both for getting the suggestions and tracking clicks.
-    GURL url;
-
-    std::string language;
-    std::string country_code;
-    std::string api_key;
-    GURL search_url;
-  };
-
   NetErrorHelperCore(Delegate* delegate,
                      bool auto_reload_enabled,
                      bool is_visible);
@@ -172,12 +143,7 @@ class NetErrorHelperCore {
   void OnWasShown();
   void OnWasHidden();
 
-  void CancelPendingFetches();
-
-  // Called when an error page have has been retrieved over the network.  |html|
-  // must be an empty string on error.
-  void OnNavigationCorrectionsFetched(const std::string& corrections,
-                                      bool is_rtl);
+  void CancelPendingAutoReload();
 
   // Notifies |this| that network error information from the browser process
   // has been received.
@@ -187,12 +153,6 @@ class NetErrorHelperCore {
   // delegate.
   void OnSetCanShowNetworkDiagnosticsDialog(
       bool can_show_network_diagnostics_dialog);
-
-  void OnSetNavigationCorrectionInfo(const GURL& navigation_correction_url,
-                                     const std::string& language,
-                                     const std::string& country_code,
-                                     const std::string& api_key,
-                                     const GURL& search_url);
 
   // Notifies |this| about the current high score that's saved in the user's
   // synced preferences.
@@ -250,8 +210,8 @@ class NetErrorHelperCore {
   // Sets values in |pending_error_page_info| for a main frame error page. If
   // |error_html| is not null, it also fetches the string containing the error
   // page HTML, and sets error_html to it. Depending on
-  // |pending_error_page_info|, may use the navigation correction service, or
-  // show a DNS probe error page.  May modify |pending_error_page_info|.
+  // |pending_error_page_info|, may show a DNS probe error page.  May modify
+  // |pending_error_page_info|.
   void PrepareErrorPageForMainFrame(ErrorPageInfo* pending_error_page_info,
                                     std::string* error_html);
 
@@ -288,8 +248,6 @@ class NetErrorHelperCore {
   std::unique_ptr<ErrorPageInfo> committed_error_page_info_;
 
   bool can_show_network_diagnostics_dialog_;
-
-  NavigationCorrectionParams navigation_correction_params_;
 
   // True if auto-reload is enabled at all.
   const bool auto_reload_enabled_;

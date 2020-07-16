@@ -18,9 +18,9 @@ using PaintRecordBuilderTest = PaintControllerTestBase;
 TEST_F(PaintRecordBuilderTest, TransientPaintController) {
   PaintRecordBuilder builder;
   auto& context = builder.Context();
-  FakeDisplayItemClient client("client", IntRect(10, 10, 20, 20));
-  DrawRect(context, client, kBackgroundType, FloatRect(10, 10, 20, 20));
-  DrawRect(context, client, kForegroundType, FloatRect(15, 15, 10, 10));
+  FakeDisplayItemClient client("client");
+  DrawRect(context, client, kBackgroundType, IntRect(10, 10, 20, 20));
+  DrawRect(context, client, kForegroundType, IntRect(15, 15, 10, 10));
   EXPECT_FALSE(ClientCacheIsValid(context.GetPaintController(), client));
 
   MockPaintCanvas canvas;
@@ -41,9 +41,9 @@ TEST_F(PaintRecordBuilderTest, LastingPaintController) {
   auto& context = builder.Context();
   EXPECT_EQ(&context.GetPaintController(), &GetPaintController());
 
-  FakeDisplayItemClient client("client", IntRect(10, 10, 20, 20));
-  DrawRect(context, client, kBackgroundType, FloatRect(10, 10, 20, 20));
-  DrawRect(context, client, kForegroundType, FloatRect(15, 15, 10, 10));
+  FakeDisplayItemClient client("client");
+  DrawRect(context, client, kBackgroundType, IntRect(10, 10, 20, 20));
+  DrawRect(context, client, kForegroundType, IntRect(15, 15, 10, 10));
   EXPECT_FALSE(ClientCacheIsValid(client));
 
   MockPaintCanvas canvas;
@@ -74,26 +74,25 @@ TEST_F(PaintRecordBuilderTest, TransientAndAnotherPaintController) {
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
-  FakeDisplayItemClient client("client", IntRect(10, 10, 20, 20));
-  DrawRect(context, client, kBackgroundType, FloatRect(10, 10, 20, 20));
-  DrawRect(context, client, kForegroundType, FloatRect(15, 15, 10, 10));
+  FakeDisplayItemClient client("client");
+  DrawRect(context, client, kBackgroundType, IntRect(10, 10, 20, 20));
+  DrawRect(context, client, kForegroundType, IntRect(15, 15, 10, 10));
   CommitAndFinishCycle();
   EXPECT_THAT(GetPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&client, kBackgroundType),
                           IsSameId(&client, kForegroundType)));
-  // EXPECT_TRUE(ClientCacheIsValid(client));
+  EXPECT_TRUE(ClientCacheIsValid(client));
 
   PaintRecordBuilder builder;
   EXPECT_NE(&builder.Context().GetPaintController(), &GetPaintController());
-  DrawRect(builder.Context(), client, kBackgroundType,
-           FloatRect(10, 10, 20, 20));
+  DrawRect(builder.Context(), client, kBackgroundType, IntRect(10, 10, 20, 20));
   builder.EndRecording();
 
   // The transient PaintController in PaintRecordBuilder doesn't affect the
   // client's cache status in another PaintController.
-  // EXPECT_TRUE(ClientCacheIsValid(client));
-  // EXPECT_FALSE(
-  //    ClientCacheIsValid(builder.Context().GetPaintController(), client));
+  EXPECT_TRUE(ClientCacheIsValid(client));
+  EXPECT_FALSE(
+      ClientCacheIsValid(builder.Context().GetPaintController(), client));
 }
 
 }  // namespace blink

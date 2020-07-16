@@ -5,14 +5,12 @@
 package org.chromium.chrome.browser.sync.settings;
 
 import android.accounts.Account;
-import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.UserManager;
 
@@ -186,10 +184,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         updateAccountsList();
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private boolean canAddAccounts() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return true;
-
         UserManager userManager =
                 (UserManager) getActivity().getSystemService(Context.USER_SERVICE);
         return !userManager.hasUserRestriction(UserManager.DISALLOW_MODIFY_ACCOUNTS);

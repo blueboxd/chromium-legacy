@@ -3365,21 +3365,6 @@
             ]
         }
     ],
-    "IOSEmbedderBlockRestoreUrl": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EmbedderBlockRestoreUrl"
-                    ]
-                }
-            ]
-        }
-    ],
     "IOSEnablePersistentDownloads": [
         {
             "platforms": [

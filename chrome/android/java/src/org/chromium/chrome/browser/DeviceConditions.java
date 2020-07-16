@@ -113,18 +113,9 @@ public class DeviceConditions {
     }
 
     /**
-     * @return Whether the device is in power save mode. This feature is only available in Lollipop
-     * and later versions of Android devices so it will return false for earlier versions.
+     * @return Whether the device is in power save mode.
      */
     public static boolean isCurrentlyInPowerSaveMode(Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return false;
-        }
-        return isCurrentlyInPowerSaveModeLollipop(context);
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private static boolean isCurrentlyInPowerSaveModeLollipop(Context context) {
         PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         return powerManager.isPowerSaveMode();
     }

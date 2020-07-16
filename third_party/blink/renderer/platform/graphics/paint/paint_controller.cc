@@ -104,9 +104,6 @@ bool PaintController::UseCachedItemIfPossible(const DisplayItemClient& client,
 
   ++num_cached_new_items_;
   EnsureNewDisplayItemListInitialCapacity();
-  // Visual rect can change without needing invalidation of the client, e.g.
-  // when ancestor clip changes. Update the visual rect to the current value.
-  current_paint_artifact_->GetDisplayItemList()[cached_item].UpdateVisualRect();
   if (!RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
     ProcessNewItem(MoveItemFromCurrentListToNewList(cached_item));
 
@@ -515,15 +512,6 @@ void PaintController::CopyCachedSubsequence(wtf_size_t start_chunk_index,
       SECURITY_CHECK(!cached_item.IsTombstone());
 #if DCHECK_IS_ON()
       DCHECK(cached_item.Client().IsAlive());
-      // Visual rect change should not happen in a cached subsequence.
-      // However, because of different method of pixel snapping in different
-      // paths, there are false positives. Just log an error.
-      if (cached_item.VisualRect() != cached_item.Client().VisualRect()) {
-        DLOG(ERROR) << "Visual rect changed in a cached subsequence: "
-                    << cached_item.Client().DebugName()
-                    << " old=" << cached_item.VisualRect()
-                    << " new=" << cached_item.Client().VisualRect();
-      }
 #endif
       auto& item = MoveItemFromCurrentListToNewList(cached_item_index++);
       item.SetMovedFromCachedSubsequence(true);
@@ -763,12 +751,20 @@ void PaintController::CheckUnderInvalidation() {
     return;
   }
 
-  const DisplayItem& new_item = new_display_item_list_.Last();
+  DisplayItem& new_item = new_display_item_list_.Last();
   auto old_item_index = under_invalidation_checking_begin_;
   DisplayItem* old_item =
       old_item_index < current_paint_artifact_->GetDisplayItemList().size()
           ? &current_paint_artifact_->GetDisplayItemList()[old_item_index]
           : nullptr;
+  // TODO(crbug.com/1104064): Temporarily disable visual rect comparison in
+  // under invalidation checking. For now different visual rect happens for
+  // LayoutSVGContainer's mask or clip path display item which doesn't change
+  // and doesn't need repaint while the LayoutSVGContainer's visual rect changes
+  // with descendants. Will remove this when we can compute more accurate visual
+  // rect for these display items.
+  if (old_item)
+    new_item.SetVisualRect(old_item->VisualRect());
 
   if (!old_item || !new_item.Equals(*old_item)) {
     // If we ever skipped reporting any under-invalidations, report the earliest

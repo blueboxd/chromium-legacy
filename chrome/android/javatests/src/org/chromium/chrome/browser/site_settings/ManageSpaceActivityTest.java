@@ -4,9 +4,7 @@
 
 package org.chromium.chrome.browser.site_settings;
 
-import android.annotation.TargetApi;
 import android.content.Intent;
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 
 import androidx.appcompat.app.AlertDialog;
@@ -23,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -37,8 +34,6 @@ import org.chromium.net.test.EmbeddedTestServer;
  * Tests for ManageSpaceActivity.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@TargetApi(Build.VERSION_CODES.KITKAT)
-@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ManageSpaceActivityTest {
     @Rule

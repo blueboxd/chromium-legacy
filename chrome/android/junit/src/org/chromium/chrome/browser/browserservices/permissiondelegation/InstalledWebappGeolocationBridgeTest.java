@@ -59,7 +59,7 @@ public class InstalledWebappGeolocationBridgeTest {
 
     private InstalledWebappGeolocationBridge mGeolocation;
 
-    private boolean mIsHighAccuracy = false;
+    private boolean mIsHighAccuracy;
 
     @Before
     public void setUp() {

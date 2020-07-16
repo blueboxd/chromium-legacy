@@ -243,8 +243,7 @@ class SAChildNode {
    */
   onInvalidNavigation_(error, message) {
     this.valid_ = false;
-    setTimeout(NavigationManager.moveToValidNode, 0);
-    throw SwitchAccess.error(error, message);
+    throw SwitchAccess.error(error, message, true /* shouldRecover */);
   }
 }
 
@@ -278,10 +277,9 @@ class SARootNode {
     if (this.children_.length > 0) {
       return this.children_[0];
     } else {
-      setTimeout(NavigationManager.moveToValidNode, 0);
       throw SwitchAccess.error(
           SAConstants.ErrorType.NO_CHILDREN,
-          'Root nodes must contain children.');
+          'Root nodes must contain children.', true /* shouldRecover */);
     }
   }
 
@@ -290,10 +288,9 @@ class SARootNode {
     if (this.children_.length > 0) {
       return this.children_[this.children_.length - 1];
     } else {
-      setTimeout(NavigationManager.moveToValidNode, 0);
       throw SwitchAccess.error(
           SAConstants.ErrorType.NO_CHILDREN,
-          'Root nodes must contain children.');
+          'Root nodes must contain children.', true /* shouldRecover */);
     }
   }
 

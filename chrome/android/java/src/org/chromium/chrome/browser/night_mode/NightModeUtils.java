@@ -28,13 +28,11 @@ public class NightModeUtils {
     private static Boolean sNightModeDefaultToLightForTesting;
 
     /**
-     * Due to Lemon issues on resources access, night mode is disabled on Kitkat until the issue is
-     * resolved. See https://crbug.com/957286 for details.
      * @return Whether night mode is supported.
      */
     public static boolean isNightModeSupported() {
         if (sNightModeSupportedForTest != null) return sNightModeSupportedForTest;
-        return Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT;
+        return true;
     }
 
     /**

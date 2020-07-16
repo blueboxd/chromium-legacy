@@ -16,7 +16,6 @@ import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory.Type;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsClient;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsHelpClient;
-import org.chromium.components.browser_ui.site_settings.SiteSettingsPrefClient;
 import org.chromium.components.browser_ui.site_settings.WebappSettingsClient;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
@@ -28,9 +27,8 @@ import java.util.Set;
 /**
  * A SiteSettingsClient instance that contains WebLayer-specific Site Settings logic.
  */
-public class WebLayerSiteSettingsClient
-        implements SiteSettingsClient, ManagedPreferenceDelegate, SiteSettingsHelpClient,
-                   SiteSettingsPrefClient, WebappSettingsClient {
+public class WebLayerSiteSettingsClient implements SiteSettingsClient, ManagedPreferenceDelegate,
+                                                   SiteSettingsHelpClient, WebappSettingsClient {
     private final BrowserContextHandle mBrowserContextHandle;
 
     public WebLayerSiteSettingsClient(BrowserContextHandle browserContextHandle) {
@@ -51,11 +49,6 @@ public class WebLayerSiteSettingsClient
 
     @Override
     public SiteSettingsHelpClient getSiteSettingsHelpClient() {
-        return this;
-    }
-
-    @Override
-    public SiteSettingsPrefClient getSiteSettingsPrefClient() {
         return this;
     }
 
@@ -146,22 +139,6 @@ public class WebLayerSiteSettingsClient
 
     @Override
     public void launchProtectedContentHelpAndFeedbackActivity(Activity currentActivity) {}
-
-    // SiteSettingsPrefClient implementation:
-
-    // The quiet notification UI is a Chrome-specific feature for now.
-    @Override
-    public boolean getEnableQuietNotificationPermissionUi() {
-        return false;
-    }
-    @Override
-    public void setEnableQuietNotificationPermissionUi(boolean newValue) {}
-    @Override
-    public void clearEnableNotificationPermissionUi() {}
-
-    // WebLayer doesn't support notifications yet.
-    @Override
-    public void setNotificationsVibrateEnabled(boolean newValue) {}
 
     // WebappSettingsClient implementation:
     // A no-op since WebLayer doesn't support webapps.

@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/redirect_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -132,11 +133,11 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
 
   // If the request is a MAIN_FRAME request, the first-party URL gets
   // updated on redirects.
-  const net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
+  const net::RedirectInfo::FirstPartyURLPolicy first_party_url_policy =
       original_request.resource_type ==
               static_cast<int>(blink::mojom::ResourceType::kMainFrame)
-          ? net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
-          : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
+          ? net::RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT
+          : net::RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL;
   return net::RedirectInfo::ComputeRedirectInfo(
       original_request.method, original_request.url,
       original_request.site_for_cookies, first_party_url_policy,

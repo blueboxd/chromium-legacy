@@ -2,10 +2,10 @@
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Merge results from code coverage swarming runs.
+"""Merge results from code-coverage/pgo swarming runs.
 
-This script merges code coverage profiles from multiple shards. It also merges
-the test results of the shards.
+This script merges code-coverage/pgo profiles from multiple shards. It also
+merges the test results of the shards.
 
 It is functionally similar to merge_steps.py but it accepts the parameters
 passed by swarming api.
@@ -18,7 +18,7 @@ import os
 import subprocess
 import sys
 
-import merge_lib as coverage_merger
+import merge_lib as profile_merger
 
 
 def _MergeAPIArgumentParser(*args, **kwargs):
@@ -87,19 +87,18 @@ def main():
     output_path = os.path.join(
         params.java_coverage_dir, '%s.exec' % params.merged_jacoco_filename)
     logging.info('Merging JaCoCo .exec files to %s', output_path)
-    coverage_merger.merge_java_exec_files(
+    profile_merger.merge_java_exec_files(
         params.task_output_dir, output_path, params.jacococli_path)
 
   # Name the output profdata file name as {test_target}.profdata or
   # default.profdata.
   output_prodata_filename = (params.test_target_name or 'default') + '.profdata'
 
-  # NOTE: The coverage data merge script must make sure that the profraw files
+  # NOTE: The profile data merge script must make sure that the profraw files
   # are deleted from the task output directory after merging, otherwise, other
   # test results merge script such as layout tests will treat them as json test
   # results files and result in errors.
-  logging.info('Merging code coverage profraw data')
-  invalid_profiles, counter_overflows = coverage_merger.merge_profiles(
+  invalid_profiles, counter_overflows = profile_merger.merge_profiles(
       params.task_output_dir,
       os.path.join(params.profdata_dir, output_prodata_filename), '.profraw',
       params.llvm_profdata,
@@ -120,16 +119,10 @@ def main():
               'w') as f:
       json.dump(invalid_profiles, f)
 
-    # We don't want to invalidate shards in a CQ build, because we should not
-    # interfere with the actual test results of a CQ builder.
-    # TODO(crbug.com/1050858) Remove patch_storage completely once recipe-side
-    # change passes --per-cl-coverage.
-    patch_storage = json.loads(params.build_properties).get('patch_storage')
-    if not params.per_cl_coverage and not patch_storage:
+    if not params.per_cl_coverage:
       mark_invalid_shards(
-          coverage_merger.get_shards_to_retry(invalid_profiles),
+          profile_merger.get_shards_to_retry(invalid_profiles),
           params.jsons_to_merge)
-  logging.info('Merging %d test results', len(params.jsons_to_merge))
   failed = False
 
   # If given, always run the additional merge script, even if we only have one
@@ -165,8 +158,8 @@ def main():
         f_write.write(f_read.read())
   else:
     logging.warning(
-        "This script was told to merge %d test results, but no additional "
-        "merge script was given.")
+        'This script was told to merge test results, but no additional merge '
+        'script was given.')
 
   return 1 if (failed or bool(invalid_profiles)) else 0
 

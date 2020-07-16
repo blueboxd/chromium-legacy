@@ -724,10 +724,11 @@ PartitionAllocGetPageForSize(void* ptr) {
   // cause trouble, and the caller is responsible for that not happening.
   auto* page =
       internal::PartitionPage<thread_safe>::FromPointerNoAlignmentCheck(ptr);
-  // This PA_DCHECK has been temporarily commented out, because CheckedPtr2Impl
-  // calls ThreadSafe variant of PartitionAllocGetSlotOffset even in the
-  // NotThreadSafe case. Everything seems to work, except IsValidPage is failing
-  // (PartitionRoot's fields are laid out differently between variants).
+  // This PA_DCHECK has been temporarily commented out, because
+  // CheckedPtr2OrMTEImpl calls ThreadSafe variant of
+  // PartitionAllocGetSlotOffset even in the NotThreadSafe case. Everything
+  // seems to work, except IsValidPage is failing (PartitionRoot's fields are
+  // laid out differently between variants).
   // TODO(bartekn): Uncomment once we figure out thread-safety variant mismatch.
   // TODO(palmer): See if we can afford to make this a CHECK.
   //  PA_DCHECK(PartitionRoot<thread_safe>::IsValidPage(page));

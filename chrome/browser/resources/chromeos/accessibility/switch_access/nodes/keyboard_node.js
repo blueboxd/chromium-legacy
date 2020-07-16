@@ -32,10 +32,10 @@ class KeyboardNode extends NodeWrapper {
 
     const node = this.automationNode;
     if (!node) {
-      setTimeout(NavigationManager.moveToValidNode, 0);
       throw SwitchAccess.error(
           SAConstants.ErrorType.MISSING_BASE_NODE,
-          'Keyboard nodes must have an automation node.');
+          'Keyboard nodes must have an automation node.',
+          true /* shouldRecover */);
     }
 
     const root = new RootNodeWrapper(node);
@@ -137,7 +137,8 @@ class KeyboardRootNode extends RootNodeWrapper {
     if (!KeyboardRootNode.keyboardObject_) {
       throw SwitchAccess.error(
           SAConstants.ErrorType.MISSING_KEYBOARD,
-          'Could not find keyboard in the automation tree');
+          'Could not find keyboard in the automation tree',
+          true /* shouldRecover */);
     }
     const keyboard =
         new AutomationTreeWalker(

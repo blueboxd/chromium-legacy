@@ -35,10 +35,10 @@ public final class EnterpriseInfo {
     private static EnterpriseInfo sInstance;
 
     // Only ever read/written on the UI thread.
-    private OwnedState mOwnedState = null;
+    private OwnedState mOwnedState;
     private Queue<Callback<OwnedState>> mCallbackList;
 
-    private boolean mSkipAsyncCheckForTesting = false;
+    private boolean mSkipAsyncCheckForTesting;
 
     static class OwnedState {
         boolean mDeviceOwned;

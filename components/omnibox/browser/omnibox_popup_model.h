@@ -213,10 +213,6 @@ class OmniboxPopupModel {
                           SkColor vector_icon_color);
 #endif
 
-  // Helper function to see if current selection is a tab switch suggestion
-  // dedicated row.
-  bool SelectedLineIsTabSwitchSuggestion();
-
   OmniboxEditModel* edit_model() { return edit_model_; }
 
   // Gets all the available selections, filtered by |direction| and |step|, as

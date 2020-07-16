@@ -47,7 +47,6 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
 
     private final Context mContext;
     private ChromeSiteSettingsHelpClient mChromeSiteSettingsHelpClient;
-    private ChromeSiteSettingsPrefClient mChromeSiteSettingsPrefClient;
     private ChromeWebappSettingsClient mChromeWebappSettingsClient;
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
 
@@ -79,14 +78,6 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
             mChromeSiteSettingsHelpClient = new ChromeSiteSettingsHelpClient();
         }
         return mChromeSiteSettingsHelpClient;
-    }
-
-    @Override
-    public ChromeSiteSettingsPrefClient getSiteSettingsPrefClient() {
-        if (mChromeSiteSettingsPrefClient == null) {
-            mChromeSiteSettingsPrefClient = new ChromeSiteSettingsPrefClient();
-        }
-        return mChromeSiteSettingsPrefClient;
     }
 
     @Override

@@ -15,7 +15,7 @@ import android.os.Parcelable;
  * @since 83
  */
 public class NavigateParams implements Parcelable {
-    public boolean mShouldReplaceCurrentEntry = false;
+    public boolean mShouldReplaceCurrentEntry;
 
     public static final Parcelable.Creator<NavigateParams> CREATOR =
             new Parcelable.Creator<NavigateParams>() {

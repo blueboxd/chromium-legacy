@@ -10,7 +10,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.view.ViewGroup;
@@ -30,7 +29,6 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.SysUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -546,7 +544,6 @@ public class VoiceRecognitionHandlerTest {
     @SmallTest
     @Feature("OmniboxAssistantVoiceSearch")
     @EnableFeatures("OmniboxAssistantVoiceSearch")
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     public void testStartVoiceRecognition_StartsAssistantVoiceSearch() {
         AssistantVoiceSearchService service = Mockito.mock(AssistantVoiceSearchService.class);
         doReturn(true).when(service).shouldRequestAssistantVoiceSearch();

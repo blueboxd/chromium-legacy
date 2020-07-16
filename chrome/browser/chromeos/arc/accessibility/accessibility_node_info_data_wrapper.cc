@@ -92,10 +92,7 @@ bool AccessibilityNodeInfoDataWrapper::IsImportantInAndroid() const {
 bool AccessibilityNodeInfoDataWrapper::CanBeAccessibilityFocused() const {
   if (!IsAccessibilityFocusableContainer() && !HasAccessibilityFocusableText())
     return false;
-  ui::AXNodeData data;
-  Serialize(&data);
-  // TODO (sarakato): Move name computation to a separate function.
-  return data.HasStringAttribute(ax::mojom::StringAttribute::kName);
+  return !ComputeAXName().empty();
 }
 
 bool AccessibilityNodeInfoDataWrapper::IsAccessibilityFocusableContainer()
@@ -323,80 +320,22 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   bool is_node_tree_root = tree_source_->IsRootOfNodeTree(GetId());
 
   // String properties.
-  int labelled_by = -1;
+  const std::string name = ComputeAXName();
+  if (!name.empty())
+    out_data->SetName(name);
 
-  // Accessible name computation is a concatenated string comprising of:
-  // content description, text, labelled by text, pane title, and cached name
-  // from previous events.
-  std::string text;
-  std::string content_description;
-  std::string label;
-  std::string pane_title;
-  GetProperty(AXStringProperty::CONTENT_DESCRIPTION, &content_description);
-  GetProperty(AXStringProperty::TEXT, &text);
-
-  if (GetProperty(AXIntProperty::LABELED_BY, &labelled_by)) {
-    AccessibilityInfoDataWrapper* labelled_by_node =
-        tree_source_->GetFromId(labelled_by);
-    if (labelled_by_node && labelled_by_node->IsNode()) {
-      ui::AXNodeData labelled_by_data;
-      tree_source_->SerializeNode(labelled_by_node, &labelled_by_data);
-      labelled_by_data.GetStringAttribute(ax::mojom::StringAttribute::kName,
-                                          &label);
-    }
-  }
-
-  GetProperty(AXStringProperty::PANE_TITLE, &pane_title);
-
-  // |hint_text| attribute in Android is often used as a placeholder text within
-  // textfields.
-  std::string hint_text;
-  GetProperty(AXStringProperty::HINT_TEXT, &hint_text);
-
-  if (!text.empty() || !content_description.empty() || !label.empty() ||
-      !pane_title.empty() || !hint_text.empty() || cached_name_) {
-    // Append non empty properties to name attribute.
-    std::vector<std::string> names;
-    if (!content_description.empty())
-      names.push_back(content_description);
-    if (!label.empty())
-      names.push_back(label);
-    if (!pane_title.empty())
-      names.push_back(pane_title);
-    // For a textField, the editable text is contained in the text property, and
-    // this should be set as the value.
-    // This ensures that the edited text will be read out appropriately.
-    if (!text.empty()) {
-      if (out_data->role == ax::mojom::Role::kTextField) {
-        // When the edited text is empty, Android framework shows |hint_text| in
-        // the text field and |text| is also populated with |hint_text|.
-        // Prevent the duplicated output of |hint_text|.
-        if (!GetProperty(AXBooleanProperty::SHOWING_HINT_TEXT))
-          out_data->SetValue(text);
-      } else {
-        names.push_back(text);
-      }
-    }
-
-    // Append hint text as part of name attribute.
-    if (!hint_text.empty())
-      names.push_back(hint_text);
-
-    if (cached_name_ && !(*cached_name_).empty())
-      names.push_back(*cached_name_);
-
-    // TODO(sarakato): Exposing all possible labels for a node, may result in
-    // too much being spoken. For ARC ++, this may result in divergent behaviour
-    // from Talkback.
-    if (!names.empty())
-      out_data->SetName(base::JoinString(names, " "));
-  } else if (tree_source_->IsScreenReaderMode() &&
-             IsAccessibilityFocusableContainer()) {
-    // Compute the name by joining all nodes with names.
-    std::vector<std::string> names;
-    ComputeNameFromContents(&names);
-    if (!names.empty())
-      out_data->SetName(base::JoinString(names, " "));
+  // For a textField, the editable text is contained in the text property, and
+  // this should be set as the value instead of the name.
+  // This ensures that the edited text will be read out appropriately.
+  // When the edited text is empty, Android framework shows |hint_text| in
+  // the text field and |text| is also populated with |hint_text|.
+  // Prevent the duplicated output of |hint_text|.
+  if (GetProperty(AXBooleanProperty::EDITABLE) &&
+      !GetProperty(AXBooleanProperty::SHOWING_HINT_TEXT)) {
+    std::string text;
+    GetProperty(AXStringProperty::TEXT, &text);
+    if (!text.empty())
+      out_data->SetValue(text);
   }
 
   std::string role_description;
@@ -537,6 +476,65 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
         ax::mojom::StringListAttribute::kCustomActionDescriptions,
         custom_action_descriptions);
   }
+}
+
+std::string AccessibilityNodeInfoDataWrapper::ComputeAXName() const {
+  // Accessible name computation is a concatenated string comprising of:
+  // content description, text, labelled by text, pane title, and cached name
+  // from previous events.
+
+  // TODO(sarakato): Exposing all possible labels for a node, may result in
+  // too much being spoken. For ARC ++, this may result in divergent behaviour
+  // from Talkback.
+  std::string text;
+  std::string content_description;
+  std::string label;
+  GetProperty(AXStringProperty::CONTENT_DESCRIPTION, &content_description);
+  GetProperty(AXStringProperty::TEXT, &text);
+
+  int labelled_by = -1;
+  if (GetProperty(AXIntProperty::LABELED_BY, &labelled_by)) {
+    AccessibilityInfoDataWrapper* labelled_by_node =
+        tree_source_->GetFromId(labelled_by);
+    if (labelled_by_node && labelled_by_node->IsNode()) {
+      // TODO(sarakato): Fix potential bug to be an infinite loop.
+      label = labelled_by_node->ComputeAXName();
+    }
+  }
+
+  std::string pane_title;
+  GetProperty(AXStringProperty::PANE_TITLE, &pane_title);
+
+  // |hint_text| attribute in Android is often used as a placeholder text within
+  // textfields.
+  std::string hint_text;
+  GetProperty(AXStringProperty::HINT_TEXT, &hint_text);
+
+  std::vector<std::string> names;
+  // Append non empty properties to name attribute.
+  if (!content_description.empty())
+    names.push_back(content_description);
+  if (!label.empty())
+    names.push_back(label);
+  if (!pane_title.empty())
+    names.push_back(pane_title);
+  if (!text.empty() && !GetProperty(AXBooleanProperty::EDITABLE)) {
+    // EDITABLE is checked here, as EDITABLE field will have text set as value,
+    // this is done in Serialize() function.
+    names.push_back(text);
+  }
+  if (!hint_text.empty())
+    names.push_back(hint_text);
+  if (cached_name_ && !(*cached_name_).empty())
+    names.push_back(*cached_name_);
+
+  // If a node is accessibility focusable, but has no name, the name should be
+  // computed from its descendants.
+  if (names.empty() && tree_source_->IsScreenReaderMode() &&
+      IsAccessibilityFocusableContainer())
+    ComputeNameFromContents(&names);
+
+  return base::JoinString(names, " ");
 }
 
 void AccessibilityNodeInfoDataWrapper::GetChildren(

@@ -49,7 +49,7 @@ public class FeedStream implements Stream {
     // setStreamContentVisibility() is always called once after onCreate(). So we can assume the
     // stream content is hidden initially and it can be made visible later when
     // setStreamContentVisibility() is called.
-    private boolean mIsStreamContentVisible = false;
+    private boolean mIsStreamContentVisible;
     // For loading more content.
     private int mAccumulatedDySinceLastLoadMore;
 

@@ -112,9 +112,9 @@ void AccessibilityWindowInfoDataWrapper::Serialize(
   AccessibilityInfoDataWrapper::Serialize(out_data);
 
   // String properties.
-  std::string title;
-  if (GetProperty(mojom::AccessibilityWindowStringProperty::TITLE, &title)) {
-    out_data->SetName(title);
+  const std::string name = ComputeAXName();
+  if (!name.empty()) {
+    out_data->SetName(name);
     out_data->SetNameFrom(ax::mojom::NameFrom::kTitle);
   }
 
@@ -140,6 +140,12 @@ void AccessibilityWindowInfoDataWrapper::Serialize(
   // Integer properties:
   // We could reflect ARC++ window properties like ANCHOR_NODE_ID,
   // and LAYER_ORDER in ax::mojom::IntAttributes.
+}
+
+std::string AccessibilityWindowInfoDataWrapper::ComputeAXName() const {
+  std::string title;
+  GetProperty(mojom::AccessibilityWindowStringProperty::TITLE, &title);
+  return title;
 }
 
 void AccessibilityWindowInfoDataWrapper::GetChildren(

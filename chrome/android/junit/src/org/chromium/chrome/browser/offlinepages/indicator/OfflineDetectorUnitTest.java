@@ -40,7 +40,7 @@ public class OfflineDetectorUnitTest {
     private long mElapsedTimeMs;
     private OfflineDetector mOfflineDetector;
 
-    private int mNotificationReceivedByObserver = 0;
+    private int mNotificationReceivedByObserver;
     private boolean mLastNotificationReceivedIsOffline;
 
     @Before

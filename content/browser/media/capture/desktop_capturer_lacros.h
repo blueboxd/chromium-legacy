@@ -44,9 +44,6 @@ class DesktopCapturerLacros : public webrtc::DesktopCapturer {
   void SetExcludedWindow(webrtc::WindowId window) override;
 
  private:
-  static void BindReceiverMainThread(
-      mojo::PendingReceiver<crosapi::mojom::ScreenManager> receiver);
-
   // Callback for when ash-chrome returns a snapshot of the screen or window as
   // a bitmap.
   void DidTakeSnapshot(bool success, const crosapi::WindowSnapshot& snapshot);

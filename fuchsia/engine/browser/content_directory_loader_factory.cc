@@ -12,6 +12,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/json/json_reader.h"

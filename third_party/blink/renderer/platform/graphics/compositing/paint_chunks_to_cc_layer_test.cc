@@ -152,7 +152,7 @@ class PaintRecordMatcher
 
 PaintChunk::Id DefaultId() {
   DEFINE_STATIC_LOCAL(FakeDisplayItemClient, fake_client,
-                      ("FakeDisplayItemClient", IntRect(0, 0, 100, 100)));
+                      ("FakeDisplayItemClient"));
   return PaintChunk::Id(fake_client, DisplayItem::kDrawingFirst);
 }
 
@@ -183,9 +183,8 @@ struct TestChunks {
       const base::Optional<IntRect>& drawable_bounds = base::nullopt) {
     auto i = items.size();
     items.AllocateAndConstruct<DrawingDisplayItem>(
-        DefaultId().client, DefaultId().type, std::move(record));
-    if (drawable_bounds)
-      items.Last().SetVisualRectForTesting(*drawable_bounds);
+        DefaultId().client, DefaultId().type,
+        drawable_bounds ? *drawable_bounds : bounds, std::move(record));
     chunks.emplace_back(i, i + 1, DefaultId(),
                         PropertyTreeStateOrAlias(t, c, e));
     chunks.back().bounds = bounds;

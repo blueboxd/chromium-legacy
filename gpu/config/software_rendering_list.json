@@ -1698,7 +1698,7 @@
         "value": "8.17.10"
       },
       "features": [
-        "accelerated_video_decode"
+        "all"
       ]
     }
   ]

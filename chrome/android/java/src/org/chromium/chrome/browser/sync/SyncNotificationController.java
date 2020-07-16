@@ -45,7 +45,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
     private static final String TAG = "SyncUI";
     private final NotificationManagerProxy mNotificationManager;
     private final ProfileSyncService mProfileSyncService;
-    private boolean mTrustedVaultNotificationShownOrCreating = false;
+    private boolean mTrustedVaultNotificationShownOrCreating;
 
     public SyncNotificationController() {
         mNotificationManager =

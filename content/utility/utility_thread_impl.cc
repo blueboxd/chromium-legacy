@@ -13,6 +13,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/debug/crash_logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/trace_event/trace_log.h"

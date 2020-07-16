@@ -140,8 +140,8 @@ NextEarcons = class extends AbstractEarcons {
       case Earcon.SLIDER:
         this.engine_.onSlider();
         break;
-      case Earcon.TOUCH_EXIT:
-        this.engine_.onTouchExitAnchor();
+      case Earcon.NO_POINTER_ANCHOR:
+        this.engine_.onNoPointerAnchor();
         break;
       case Earcon.WRAP:
       case Earcon.WRAP_EDGE:

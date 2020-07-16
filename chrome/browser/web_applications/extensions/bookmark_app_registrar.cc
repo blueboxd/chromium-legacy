@@ -127,6 +127,12 @@ base::Optional<SkColor> BookmarkAppRegistrar::GetAppThemeColor(
   return AppThemeColorInfo::GetThemeColor(extension);
 }
 
+base::Optional<SkColor> BookmarkAppRegistrar::GetAppBackgroundColor(
+    const web_app::AppId& app_id) const {
+  // Only implemented for WebApp. Bookmark apps are going away.
+  return base::nullopt;
+}
+
 const GURL& BookmarkAppRegistrar::GetAppLaunchURL(
     const web_app::AppId& app_id) const {
   const Extension* extension = GetBookmarkAppDchecked(app_id);

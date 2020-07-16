@@ -9,5 +9,19 @@
       background: rgba(255, 255, 255, 0.08);
       border-radius: 50%;
     }
+
+    /* Dark mode styles copied from
+       ui/webui/resources/cr_elements/shared_vars_css.html. Unfortunately there
+       seems to be no great way to share styles with the
+       "prefers-color-scheme: dark" @media query selector. */
+    cr-action-menu[force-dark-mode] {
+        --cr-menu-background-color: var(--google-grey-900);
+        --cr-menu-shadow: rgba(0, 0, 0, .3) 0 1px 2px 0,
+                          rgba(0, 0, 0, .15) 0 3px 6px 2px;
+        --cr-primary-text-color: var(--google-grey-200);
+        --cr-menu-background-focus-color: rgba(var(--google-grey-800-rgb), .6);
+        --cr-menu-background-sheen: rgba(255, 255, 255, .06);
+      }
+
   </style>
 </template>

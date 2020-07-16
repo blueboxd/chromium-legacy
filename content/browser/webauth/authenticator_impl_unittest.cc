@@ -963,38 +963,148 @@ TEST_F(AuthenticatorImplTest, CryptotokenBypass) {
   }
 }
 
-// Requests originating from cryptotoken should only target U2F devices.
-TEST_F(AuthenticatorImplTest, CryptoTokenU2fOnly) {
-  SimulateNavigation(GURL(kTestOrigin1));
+// MakeCredential requests from cryptotoken to a U2F authenticator should
+// succeed.
+TEST_F(AuthenticatorImplTest, CryptoTokenMakeCredentialU2fDevice) {
+  virtual_device_factory_->SetSupportedProtocol(device::ProtocolVersion::kU2f);
+
+  SimulateNavigation(GURL(kCryptotokenOrigin));
+  auto authenticator = ConnectToAuthenticator();
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  options->relying_party.id = kTestOrigin1;
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(std::move(options),
+                                callback_receiver.callback());
+
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+}
+
+// MakeCredential requests from cryptotoken to an authentictor that does not
+// support U2F should fail.
+TEST_F(AuthenticatorImplTest, CryptoTokenMakeCredentialCtap2Device) {
+  virtual_device_factory_->SetSupportedProtocol(
+      device::ProtocolVersion::kCtap2);
+
+  SimulateNavigation(GURL(kCryptotokenOrigin));
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  options->relying_party.id = kTestOrigin1;
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(std::move(options),
+                                callback_receiver.callback());
 
-  // TODO(martinkr): VirtualFidoDeviceFactory does not offer devices that
-  // support both U2F and CTAP yet; we should test those.
-  for (const bool u2f_authenticator : {true, false}) {
-    SCOPED_TRACE(u2f_authenticator ? "U2F" : "CTAP");
-    OverrideLastCommittedOrigin(main_rfh(),
-                                url::Origin::Create(GURL(kCryptotokenOrigin)));
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  callback_receiver.WaitForCallback();
 
-    virtual_device_factory_->SetSupportedProtocol(
-        u2f_authenticator ? device::ProtocolVersion::kU2f
-                          : device::ProtocolVersion::kCtap2);
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+}
 
-    PublicKeyCredentialCreationOptionsPtr options =
-        GetTestPublicKeyCredentialCreationOptions();
-    TestMakeCredentialCallback callback_receiver;
-    authenticator->MakeCredential(std::move(options),
-                                  callback_receiver.callback());
+// GetAssertion requests from cryptotoken to a U2F/CTAP authenticator should
+// use the U2F interface.
+TEST_F(AuthenticatorImplTest, CryptoTokenMakeCredentialDualProtocolDevice) {
+  virtual_device_factory_->SetSupportedProtocol(
+      device::ProtocolVersion::kCtap2);
+  device::VirtualCtap2Device::Config config;
+  config.u2f_support = true;
+  virtual_device_factory_->SetCtap2Config(config);
 
-    base::RunLoop().RunUntilIdle();
-    task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
-    callback_receiver.WaitForCallback();
+  SimulateNavigation(GURL(kCryptotokenOrigin));
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  options->relying_party.id = kTestOrigin1;
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(std::move(options),
+                                callback_receiver.callback());
 
-    EXPECT_EQ((u2f_authenticator ? AuthenticatorStatus::SUCCESS
-                                 : AuthenticatorStatus::NOT_ALLOWED_ERROR),
-              callback_receiver.status());
-  }
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  ASSERT_EQ(virtual_device_factory_->mutable_state()->registrations.size(), 1u);
+  EXPECT_TRUE(virtual_device_factory_->mutable_state()
+                  ->registrations.begin()
+                  ->second.is_u2f);
+}
+
+// GetAssertion requests from cryptotoken to a U2F authenticator should
+// succeed.
+TEST_F(AuthenticatorImplTest, CryptoTokenGetAssertionU2fDevice) {
+  SimulateNavigation(GURL(kCryptotokenOrigin));
+  virtual_device_factory_->SetSupportedProtocol(device::ProtocolVersion::kU2f);
+
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      options->allow_credentials[0].id(), kTestOrigin1));
+  options->appid = kTestOrigin1;
+
+  TestGetAssertionCallback callback_receiver;
+  auto authenticator = ConnectToAuthenticator();
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+}
+
+// GetAssertion requests from cryptotoken to an authentictor that does not
+// support U2F should fail.
+TEST_F(AuthenticatorImplTest, CryptoTokenGetAssertionCtap2Device) {
+  SimulateNavigation(GURL(kCryptotokenOrigin));
+  virtual_device_factory_->SetSupportedProtocol(
+      device::ProtocolVersion::kCtap2);
+
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      options->allow_credentials[0].id(), kTestOrigin1));
+  options->appid = kTestOrigin1;
+
+  TestGetAssertionCallback callback_receiver;
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+}
+
+// GetAssertion requests from cryptotoken should challenge credential on a
+// U2F/CTAP authenticator via the U2F interface.
+TEST_F(AuthenticatorImplTest, CryptoTokenGetAssertionDualProtocolDevice) {
+  SimulateNavigation(GURL(kCryptotokenOrigin));
+  virtual_device_factory_->SetSupportedProtocol(
+      device::ProtocolVersion::kCtap2);
+  device::VirtualCtap2Device::Config config;
+  config.u2f_support = true;
+  config.ignore_u2f_credentials = true;
+  virtual_device_factory_->SetCtap2Config(config);
+
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      options->allow_credentials[0].id(), kTestOrigin1));
+  options->appid = kTestOrigin1;
+
+  TestGetAssertionCallback callback_receiver;
+  auto authenticator = ConnectToAuthenticator();
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
 }
 
 // Test that Cryptotoken requests should only be dispatched to USB
@@ -1043,40 +1153,6 @@ TEST_F(AuthenticatorImplTest, CryptotokenUsbOnly) {
               : AuthenticatorStatus::NOT_ALLOWED_ERROR,
           callback_receiver.status());
     }
-  }
-}
-
-// Requests originating from cryptotoken should only target U2F devices.
-TEST_F(AuthenticatorImplTest, AttestationPermitted) {
-  SimulateNavigation(GURL(kTestOrigin1));
-  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
-      base::Time::Now(), base::TimeTicks::Now());
-  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-
-  // TODO(martinkr): VirtualFidoDeviceFactory does not offer devices that
-  // support both U2F and CTAP yet; we should test those.
-  for (const bool u2f_authenticator : {true, false}) {
-    SCOPED_TRACE(u2f_authenticator ? "U2F" : "CTAP");
-    OverrideLastCommittedOrigin(main_rfh(),
-                                url::Origin::Create(GURL(kCryptotokenOrigin)));
-
-    virtual_device_factory_->SetSupportedProtocol(
-        u2f_authenticator ? device::ProtocolVersion::kU2f
-                          : device::ProtocolVersion::kCtap2);
-
-    PublicKeyCredentialCreationOptionsPtr options =
-        GetTestPublicKeyCredentialCreationOptions();
-    TestMakeCredentialCallback callback_receiver;
-    authenticator->MakeCredential(std::move(options),
-                                  callback_receiver.callback());
-
-    base::RunLoop().RunUntilIdle();
-    task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
-    callback_receiver.WaitForCallback();
-
-    EXPECT_EQ((u2f_authenticator ? AuthenticatorStatus::SUCCESS
-                                 : AuthenticatorStatus::NOT_ALLOWED_ERROR),
-              callback_receiver.status());
   }
 }
 

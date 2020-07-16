@@ -70,7 +70,7 @@ public class MainActivity
      */
     private Runnable mLogImportance = new Runnable() {
         private int mPreviousImportance = -1;
-        private boolean mPreviousServiceInUse = false;
+        private boolean mPreviousServiceInUse;
         private Handler mHandler = new Handler(Looper.getMainLooper());
 
         @Override

@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.payments.ui.PaymentInformation;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection.FocusChangedObserver;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.SelectionResult;
+import org.chromium.chrome.browser.payments.ui.PaymentUIsManager;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -168,60 +169,6 @@ public class PaymentRequestImpl
          */
         @Nullable
         String getTwaPackageName(@Nullable ChromeActivity activity);
-    }
-
-    /**
-     * This class is to coordinate the show state of a bottom sheet UI (either expandable payment
-     * handler or minimal UI) and the Payment Request UI so that these visibility rules are
-     * enforced:
-     * 1. At most one UI is shown at any moment in case the Payment Request UI obstructs the bottom
-     * sheet.
-     * 2. Bottom sheet is prioritized to show over Payment Request UI
-     */
-    public class PaymentUisShowStateReconciler {
-        // Whether the bottom sheet is showing.
-        private boolean mShowingBottomSheet;
-        // Whether to show the Payment Request UI when the bottom sheet is not being shown.
-        private boolean mShouldShowDialog;
-
-        /**
-         * Show the Payment Request UI dialog when the bottom sheet is hidden, i.e., if the bottom
-         * sheet hidden, show the dialog immediately; otherwise, show the dialog after the bottom
-         * sheet hides.
-         */
-        public void showPaymentRequestDialogWhenNoBottomSheet() {
-            mShouldShowDialog = true;
-            updatePaymentRequestDialogShowState();
-        }
-
-        /** Hide the Payment Request UI dialog. */
-        public void hidePaymentRequestDialog() {
-            mShouldShowDialog = false;
-            updatePaymentRequestDialogShowState();
-        }
-
-        /** A callback invoked when the Payment Request UI is closed. */
-        /* package */ void onPaymentRequestUiClosed() {
-            assert mUI == null;
-            mShouldShowDialog = false;
-        }
-
-        /** A callback invoked when the bottom sheet is shown, to enforce the visibility rules. */
-        public void onBottomSheetShown() {
-            mShowingBottomSheet = true;
-            updatePaymentRequestDialogShowState();
-        }
-
-        /** A callback invoked when the bottom sheet is hidden, to enforce the visibility rules. */
-        public void onBottomSheetClosed() {
-            mShowingBottomSheet = false;
-            updatePaymentRequestDialogShowState();
-        }
-
-        private void updatePaymentRequestDialogShowState() {
-            if (mUI == null) return;
-            mUI.setVisible(!mShowingBottomSheet && mShouldShowDialog);
-        }
     }
 
     /**
@@ -492,12 +439,11 @@ public class PaymentRequestImpl
     private AutofillPaymentAppCreator mAutofillPaymentAppCreator;
     private List<PaymentApp> mPendingApps = new ArrayList<>();
     private SectionInformation mPaymentMethodsSection;
-    private PaymentRequestUI mUI;
+    private final PaymentUIsManager mPaymentUIsManager;
     private MinimalUICoordinator mMinimalUi;
     private Callback<PaymentInformation> mPaymentInformationCallback;
     private PaymentApp mInvokedPaymentApp;
     private PaymentHandlerCoordinator mPaymentHandlerUi;
-    private PaymentUisShowStateReconciler mPaymentUisShowStateReconciler;
     private boolean mMerchantSupportsAutofillCards;
     private boolean mUserCanAddCreditCard;
     private boolean mHideServerAutofillCards;
@@ -620,8 +566,7 @@ public class PaymentRequestImpl
         mSkipUiForNonUrlPaymentMethodIdentifiers = mDelegate.skipUiForBasicCard();
 
         if (sObserverForTest != null) sObserverForTest.onPaymentRequestCreated(this);
-
-        mPaymentUisShowStateReconciler = new PaymentUisShowStateReconciler();
+        mPaymentUIsManager = new PaymentUIsManager();
     }
 
     // Implement ComponentPaymentRequestDelegate:
@@ -910,13 +855,16 @@ public class PaymentRequestImpl
                     activity, mAutofillProfiles, mContactEditor, mJourneyLogger);
         }
 
-        mUI = new PaymentRequestUI(activity, this, mMerchantSupportsAutofillCards,
-                !PaymentPreferencesUtil.isPaymentCompleteOnce(), mMerchantName, mTopLevelOrigin,
+        mPaymentUIsManager.setPaymentRequestUI(new PaymentRequestUI(activity, this,
+                mMerchantSupportsAutofillCards, !PaymentPreferencesUtil.isPaymentCompleteOnce(),
+                mMerchantName, mTopLevelOrigin,
                 SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
-                new ShippingStrings(mShippingType), mPaymentUisShowStateReconciler,
-                Profile.fromWebContents(mWebContents));
+                new ShippingStrings(mShippingType),
+                mPaymentUIsManager.getPaymentUisShowStateReconciler(),
+                Profile.fromWebContents(mWebContents)));
         activity.getLifecycleDispatcher().register(
-                mUI); // registered as a PauseResumeWithNativeObserver
+                mPaymentUIsManager
+                        .getPaymentRequestUI()); // registered as a PauseResumeWithNativeObserver
 
         final FaviconHelper faviconHelper = new FaviconHelper();
         faviconHelper.getLocalFaviconImageForURL(Profile.fromWebContents(mWebContents),
@@ -927,16 +875,24 @@ public class PaymentRequestImpl
                     if (client != null && bitmap == null) {
                         client.warnNoFavicon();
                     }
-                    if (mUI != null && bitmap != null) mUI.setTitleBitmap(bitmap);
+                    if (mPaymentUIsManager.getPaymentRequestUI() != null && bitmap != null) {
+                        mPaymentUIsManager.getPaymentRequestUI().setTitleBitmap(bitmap);
+                    }
                     faviconHelper.destroy();
                 });
 
         // Add the callback to change the label of shipping addresses depending on the focus.
-        if (mRequestShipping) mUI.setShippingAddressSectionFocusChangedObserver(this);
+        if (mRequestShipping) {
+            mPaymentUIsManager.getPaymentRequestUI().setShippingAddressSectionFocusChangedObserver(
+                    this);
+        }
 
-        mAddressEditor.setEditorDialog(mUI.getEditorDialog());
-        mCardEditor.setEditorDialog(mUI.getCardEditorDialog());
-        if (mContactEditor != null) mContactEditor.setEditorDialog(mUI.getEditorDialog());
+        mAddressEditor.setEditorDialog(mPaymentUIsManager.getPaymentRequestUI().getEditorDialog());
+        mCardEditor.setEditorDialog(mPaymentUIsManager.getPaymentRequestUI().getCardEditorDialog());
+        if (mContactEditor != null) {
+            mContactEditor.setEditorDialog(
+                    mPaymentUIsManager.getPaymentRequestUI().getEditorDialog());
+        }
 
         return true;
     }
@@ -1014,7 +970,7 @@ public class PaymentRequestImpl
     public void show(boolean isUserGesture, boolean waitForUpdatedDetails) {
         if (getClient() == null) return;
 
-        if (mUI != null || mMinimalUi != null) {
+        if (mPaymentUIsManager.getPaymentRequestUI() != null || mMinimalUi != null) {
             // Can be triggered only by a compromised renderer. In normal operation, calling show()
             // twice on the same instance of PaymentRequest in JavaScript is rejected at the
             // renderer level.
@@ -1060,7 +1016,7 @@ public class PaymentRequestImpl
             calculateWhetherShouldSkipShowingPaymentRequestUi();
             if (!buildUI(chromeActivity)) return;
             if (!mShouldSkipShowingPaymentRequestUi && mSkipToGPayHelper == null) {
-                mUI.show();
+                mPaymentUIsManager.getPaymentRequestUI().show();
             }
         }
 
@@ -1080,7 +1036,7 @@ public class PaymentRequestImpl
             // are the only ones that can open the bottom-sheet.
             return;
         }
-        mUI.dimBackground();
+        mPaymentUIsManager.getPaymentRequestUI().dimBackground();
     }
 
     private void triggerPaymentAppUiSkipIfApplicable(ChromeActivity chromeActivity) {
@@ -1090,7 +1046,7 @@ public class PaymentRequestImpl
                 && mIsFinishedQueryingPaymentApps && mIsCurrentPaymentRequestShowing
                 && !mWaitForUpdatedDetails) {
             assert !mPaymentMethodsSection.isEmpty();
-            assert mUI != null;
+            assert mPaymentUIsManager.getPaymentRequestUI() != null;
 
             if (isMinimalUiApplicable()) {
                 triggerMinimalUi(chromeActivity);
@@ -1134,7 +1090,7 @@ public class PaymentRequestImpl
      */
     private void triggerMinimalUi(ChromeActivity chromeActivity) {
         // Do not show the Payment Request UI dialog even if the minimal UI is suppressed.
-        mPaymentUisShowStateReconciler.onBottomSheetShown();
+        mPaymentUIsManager.getPaymentUisShowStateReconciler().onBottomSheetShown();
 
         mMinimalUi = new MinimalUICoordinator();
         if (mMinimalUi.show(chromeActivity,
@@ -1382,14 +1338,14 @@ public class PaymentRequestImpl
 
     @Override
     public void onPaymentHandlerUiClosed() {
-        mPaymentUisShowStateReconciler.onBottomSheetClosed();
+        mPaymentUIsManager.getPaymentUisShowStateReconciler().onBottomSheetClosed();
         mPaymentHandlerUi = null;
     }
 
     @Override
     public void onPaymentHandlerUiShown() {
         assert mPaymentHandlerUi != null;
-        mPaymentUisShowStateReconciler.onBottomSheetShown();
+        mPaymentUIsManager.getPaymentUisShowStateReconciler().onBottomSheetShown();
     }
 
     @Override
@@ -1412,7 +1368,7 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (mUI == null) {
+        if (mPaymentUIsManager.getPaymentRequestUI() == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.CANNOT_UPDATE_WITHOUT_SHOW);
             return;
@@ -1472,7 +1428,7 @@ public class PaymentRequestImpl
 
         // Do not create shipping section When UI is not built yet. This happens when the show
         // promise gets resolved before all apps are ready.
-        if (mUI != null && shouldShowShippingSection()) {
+        if (mPaymentUIsManager.getPaymentRequestUI() != null && shouldShowShippingSection()) {
             createShippingSection(chromeActivity, mAutofillProfiles);
         }
 
@@ -1505,7 +1461,7 @@ public class PaymentRequestImpl
     public void onPaymentDetailsNotUpdated() {
         if (getClient() == null) return;
 
-        if (mUI == null) {
+        if (mPaymentUIsManager.getPaymentRequestUI() == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.CANNOT_UPDATE_WITHOUT_SHOW);
             return;
@@ -1523,9 +1479,10 @@ public class PaymentRequestImpl
         if (mPaymentInformationCallback != null && mPaymentMethodsSection != null) {
             providePaymentInformation();
         } else {
-            mUI.updateOrderSummarySection(mUiShoppingCart);
+            mPaymentUIsManager.getPaymentRequestUI().updateOrderSummarySection(mUiShoppingCart);
             if (shouldShowShippingSection()) {
-                mUI.updateSection(PaymentRequestUI.DataType.SHIPPING_OPTIONS, mUiShippingOptions);
+                mPaymentUIsManager.getPaymentRequestUI().updateSection(
+                        PaymentRequestUI.DataType.SHIPPING_OPTIONS, mUiShippingOptions);
             }
         }
     }
@@ -1633,7 +1590,9 @@ public class PaymentRequestImpl
         mUiShoppingCart.setAdditionalContents(modifier == null
                         ? null
                         : getLineItems(Arrays.asList(modifier.additionalDisplayItems)));
-        if (mUI != null) mUI.updateOrderSummarySection(mUiShoppingCart);
+        if (mPaymentUIsManager.getPaymentRequestUI() != null) {
+            mPaymentUIsManager.getPaymentRequestUI().updateOrderSummarySection(mUiShoppingCart);
+        }
     }
 
     /** @return The first modifier that matches the given app, or null. */
@@ -1768,14 +1727,15 @@ public class PaymentRequestImpl
     public void getDefaultPaymentInformation(Callback<PaymentInformation> callback) {
         mPaymentInformationCallback = callback;
 
-        // mUI.show() is called only after request.show() is called and all payment apps are ready.
+        // mPaymentUIsManager.getPaymentRequestUI().show() is called only after request.show() is
+        // called and all payment apps are ready.
         assert mIsCurrentPaymentRequestShowing;
         assert mIsFinishedQueryingPaymentApps;
 
         if (mWaitForUpdatedDetails) return;
 
         mHandler.post(() -> {
-            if (mUI != null) providePaymentInformation();
+            if (mPaymentUIsManager.getPaymentRequestUI() != null) providePaymentInformation();
         });
     }
 
@@ -1881,7 +1841,7 @@ public class PaymentRequestImpl
                 mContactSection = new ContactDetailsSection(
                         activity, mAutofillProfiles, mContactEditor, mJourneyLogger);
             }
-            mUI.selectedPaymentMethodUpdated(
+            mPaymentUIsManager.getPaymentRequestUI().selectedPaymentMethodUpdated(
                     new PaymentInformation(mUiShoppingCart, mShippingAddressesSection,
                             mUiShippingOptions, mContactSection, mPaymentMethodsSection));
             PaymentApp paymentApp = (PaymentApp) option;
@@ -1989,7 +1949,7 @@ public class PaymentRequestImpl
         mAddressEditor.edit(toEdit, new Callback<AutofillAddress>() {
             @Override
             public void onResult(AutofillAddress editedAddress) {
-                if (mUI == null) return;
+                if (mPaymentUIsManager.getPaymentRequestUI() == null) return;
 
                 if (editedAddress != null) {
                     mAddressEditor.setAddressErrors(null);
@@ -2018,7 +1978,7 @@ public class PaymentRequestImpl
                             // Update |mContactSection| with the new/edited address, which will
                             // update an existing item or add a new one to the end of the list.
                             mContactSection.addOrUpdateWithAutofillAddress(editedAddress);
-                            mUI.updateSection(
+                            mPaymentUIsManager.getPaymentRequestUI().updateSection(
                                     PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection);
                         }
 
@@ -2041,7 +2001,7 @@ public class PaymentRequestImpl
         mContactEditor.edit(toEdit, new Callback<AutofillContact>() {
             @Override
             public void onResult(AutofillContact editedContact) {
-                if (mUI == null) return;
+                if (mPaymentUIsManager.getPaymentRequestUI() == null) return;
 
                 if (editedContact != null) {
                     mContactEditor.setPayerErrors(null);
@@ -2065,7 +2025,8 @@ public class PaymentRequestImpl
                 // If |editedContact| is null, the user has cancelled out of the "Add flow". No
                 // action to take (if a contact was selected in the UI, it will stay selected).
 
-                mUI.updateSection(PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection);
+                mPaymentUIsManager.getPaymentRequestUI().updateSection(
+                        PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection);
 
                 if (!mRetryQueue.isEmpty()) mHandler.post(mRetryQueue.remove());
             }
@@ -2080,7 +2041,7 @@ public class PaymentRequestImpl
         mCardEditor.edit(toEdit, new Callback<AutofillPaymentInstrument>() {
             @Override
             public void onResult(AutofillPaymentInstrument editedCard) {
-                if (mUI == null) return;
+                if (mPaymentUIsManager.getPaymentRequestUI() == null) return;
 
                 if (editedCard != null) {
                     // A partial or complete card came back from the editor (could have been from
@@ -2102,7 +2063,7 @@ public class PaymentRequestImpl
                 // selected).
 
                 updateAppModifiedTotals();
-                mUI.updateSection(
+                mPaymentUIsManager.getPaymentRequestUI().updateSection(
                         PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
             }
         });
@@ -2110,13 +2071,14 @@ public class PaymentRequestImpl
 
     @Override
     public void onInstrumentDetailsLoadingWithoutUI() {
-        if (getClient() == null || mUI == null || mPaymentResponseHelper == null) {
+        if (getClient() == null || mPaymentUIsManager.getPaymentRequestUI() == null
+                || mPaymentResponseHelper == null) {
             return;
         }
 
         assert getSelectedPaymentAppType() == PaymentAppType.AUTOFILL;
 
-        mUI.showProcessingMessage();
+        mPaymentUIsManager.getPaymentRequestUI().showProcessingMessage();
     }
 
     private @PaymentAppType int getSelectedPaymentAppType() {
@@ -2329,17 +2291,18 @@ public class PaymentRequestImpl
         assert selectedApp != null;
         mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.DataType.PAYMENT_METHODS,
                 /* selection = */ 0, new ArrayList<>(Arrays.asList(selectedApp)));
-        mUI.updateSection(PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
-        mUI.disableAddingNewCardsDuringRetry();
+        mPaymentUIsManager.getPaymentRequestUI().updateSection(
+                PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
+        mPaymentUIsManager.getPaymentRequestUI().disableAddingNewCardsDuringRetry();
 
         // Go back to the payment sheet
-        mUI.onPayButtonProcessingCancelled();
+        mPaymentUIsManager.getPaymentRequestUI().onPayButtonProcessingCancelled();
         PaymentDetailsUpdateServiceHelper.getInstance().reset();
         if (!TextUtils.isEmpty(errors.error)) {
-            mUI.setRetryErrorMessage(errors.error);
+            mPaymentUIsManager.getPaymentRequestUI().setRetryErrorMessage(errors.error);
         } else {
             ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
-            mUI.setRetryErrorMessage(
+            mPaymentUIsManager.getPaymentRequestUI().setRetryErrorMessage(
                     activity.getResources().getString(R.string.payments_error_message));
         }
 
@@ -2400,13 +2363,14 @@ public class PaymentRequestImpl
 
         if (mShippingAddressesSection != null) {
             mShippingAddressesSection.addAndSelectOrUpdateItem(address);
-            mUI.updateSection(
+            mPaymentUIsManager.getPaymentRequestUI().updateSection(
                     PaymentRequestUI.DataType.SHIPPING_ADDRESSES, mShippingAddressesSection);
         }
 
         if (mContactSection != null) {
             mContactSection.addOrUpdateWithAutofillAddress(address);
-            mUI.updateSection(PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection);
+            mPaymentUIsManager.getPaymentRequestUI().updateSection(
+                    PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection);
         }
     }
 
@@ -2437,8 +2401,9 @@ public class PaymentRequestImpl
 
         updateAppModifiedTotals();
 
-        if (mUI != null) {
-            mUI.updateSection(PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
+        if (mPaymentUIsManager.getPaymentRequestUI() != null) {
+            mPaymentUIsManager.getPaymentRequestUI().updateSection(
+                    PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
         }
     }
 
@@ -2451,8 +2416,9 @@ public class PaymentRequestImpl
 
         updateAppModifiedTotals();
 
-        if (mUI != null) {
-            mUI.updateSection(PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
+        if (mPaymentUIsManager.getPaymentRequestUI() != null) {
+            mPaymentUIsManager.getPaymentRequestUI().updateSection(
+                    PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
         }
     }
 
@@ -2816,7 +2782,7 @@ public class PaymentRequestImpl
             calculateWhetherShouldSkipShowingPaymentRequestUi();
             if (!buildUI(chromeActivity)) return;
             if (!mShouldSkipShowingPaymentRequestUi && mSkipToGPayHelper == null) {
-                mUI.show();
+                mPaymentUIsManager.getPaymentRequestUI().show();
             }
         }
 
@@ -2920,8 +2886,9 @@ public class PaymentRequestImpl
 
         // Showing the payment request UI if we were previously skipping it so the loading
         // spinner shows up until the merchant notifies that payment was completed.
-        if (mShouldSkipShowingPaymentRequestUi && mUI != null) {
-            mUI.showProcessingMessageAfterUiSkip();
+        if (mShouldSkipShowingPaymentRequestUi
+                && mPaymentUIsManager.getPaymentRequestUI() != null) {
+            mPaymentUIsManager.getPaymentRequestUI().showProcessingMessageAfterUiSkip();
         }
 
         mJourneyLogger.setEventOccurred(Event.RECEIVED_INSTRUMENT_DETAILS);
@@ -2960,7 +2927,7 @@ public class PaymentRequestImpl
             mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
             disconnectFromClientWithDebugMessage(errorMessage);
         } else {
-            mUI.onPayButtonProcessingCancelled();
+            mPaymentUIsManager.getPaymentRequestUI().onPayButtonProcessingCancelled();
             PaymentDetailsUpdateServiceHelper.getInstance().reset();
         }
     }
@@ -2981,7 +2948,8 @@ public class PaymentRequestImpl
             selectedAddress.setShippingAddressLabelWithoutCountry();
         }
 
-        mUI.updateSection(PaymentRequestUI.DataType.SHIPPING_ADDRESSES, mShippingAddressesSection);
+        mPaymentUIsManager.getPaymentRequestUI().updateSection(
+                PaymentRequestUI.DataType.SHIPPING_ADDRESSES, mShippingAddressesSection);
     }
 
     @Override
@@ -3040,8 +3008,8 @@ public class PaymentRequestImpl
             mMinimalUi = null;
         }
 
-        if (mUI != null) {
-            mUI.close();
+        if (mPaymentUIsManager.getPaymentRequestUI() != null) {
+            mPaymentUIsManager.getPaymentRequestUI().close();
             PaymentRequestClient client = getClient();
             if (client != null) {
                 if (sObserverForTest != null) sObserverForTest.onCompleteReplied();
@@ -3050,10 +3018,11 @@ public class PaymentRequestImpl
             }
             ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
             if (activity != null) {
-                activity.getLifecycleDispatcher().unregister(mUI);
+                activity.getLifecycleDispatcher().unregister(
+                        mPaymentUIsManager.getPaymentRequestUI());
             }
-            mUI = null;
-            mPaymentUisShowStateReconciler.onPaymentRequestUiClosed();
+            mPaymentUIsManager.setPaymentRequestUI(null);
+            mPaymentUIsManager.getPaymentUisShowStateReconciler().onPaymentRequestUiClosed();
         }
 
         setShowingPaymentRequest(null);

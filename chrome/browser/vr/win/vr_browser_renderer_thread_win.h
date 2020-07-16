@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/cancelable_callback.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/model/capturing_state_model.h"

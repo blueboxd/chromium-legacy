@@ -66,11 +66,9 @@ public class DeviceConditionsTest {
 
         /**
          * Sets Build.VERSION.SDK_INT to provided version Code.
-         * @param versionCode Version code to set. Needs to be at least K and at most Q.
+         * @param versionCode Version code to set.
          */
         public void setSdkVersion(int versionCode) {
-            assert VERSION_CODES.KITKAT <= versionCode && versionCode <= VERSION_CODES.Q;
-
             ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", versionCode);
         }
 
@@ -167,7 +165,6 @@ public class DeviceConditionsTest {
     }
 
     private void setIsInteractive(boolean isInteractive) {
-        assert VERSION.SDK_INT >= VERSION_CODES.KITKAT_WATCH;
         doReturn(isInteractive).when(mPowerManager).isInteractive();
     }
 
@@ -223,28 +220,13 @@ public class DeviceConditionsTest {
 
     @Test
     public void testPowerSaveMode() {
-        try (BuildVersionHelper sdkHelper = new BuildVersionHelper()) {
-            // We expect KitKat to never turn on the power safe mode.
-            sdkHelper.setSdkVersion(VERSION_CODES.KITKAT);
-            setPowerSaveMode(false);
-            assertFalse(DeviceConditions.isCurrentlyInPowerSaveMode(mContext));
-            assertFalse(DeviceConditions.getCurrent(mContext).isInPowerSaveMode());
+        setPowerSaveMode(true);
+        assertTrue(DeviceConditions.isCurrentlyInPowerSaveMode(mContext));
+        assertTrue(DeviceConditions.getCurrent(mContext).isInPowerSaveMode());
 
-            setPowerSaveMode(true);
-            assertFalse(DeviceConditions.isCurrentlyInPowerSaveMode(mContext));
-            assertFalse(DeviceConditions.getCurrent(mContext).isInPowerSaveMode());
-
-            // But it should be on LOLLIPOP+.
-            sdkHelper.setSdkVersion(VERSION_CODES.LOLLIPOP);
-            setPowerSaveMode(true);
-            assertTrue(DeviceConditions.isCurrentlyInPowerSaveMode(mContext));
-            assertTrue(DeviceConditions.getCurrent(mContext).isInPowerSaveMode());
-
-            // Unless PowerManager says it is not.
-            setPowerSaveMode(false);
-            assertFalse(DeviceConditions.isCurrentlyInPowerSaveMode(mContext));
-            assertFalse(DeviceConditions.getCurrent(mContext).isInPowerSaveMode());
-        }
+        setPowerSaveMode(false);
+        assertFalse(DeviceConditions.isCurrentlyInPowerSaveMode(mContext));
+        assertFalse(DeviceConditions.getCurrent(mContext).isInPowerSaveMode());
     }
 
     @Test
@@ -273,14 +255,6 @@ public class DeviceConditionsTest {
     @Test
     public void testIsInIdleMode() {
         try (BuildVersionHelper sdkHelper = new BuildVersionHelper()) {
-            // We expect KitKat to never indicate being in idle mode.
-            sdkHelper.setSdkVersion(VERSION_CODES.KITKAT);
-            setDeviceInIdleMode(false);
-            assertFalse(DeviceConditions.isCurrentlyInIdleMode(mContext));
-
-            setDeviceInIdleMode(true);
-            assertFalse(DeviceConditions.isCurrentlyInIdleMode(mContext));
-
             // We expect LOLLIPOP to never indicate being in idle mode.
             sdkHelper.setSdkVersion(VERSION_CODES.LOLLIPOP);
             setDeviceInIdleMode(false);
@@ -381,22 +355,18 @@ public class DeviceConditionsTest {
 
     @Test
     public void testIsScreenOnAndUnlocked() {
-        try (BuildVersionHelper sdkHelper = new BuildVersionHelper()) {
-            setKeyguardManagerToNull();
-            assertFalse(DeviceConditions.isCurrentlyScreenOnAndUnlocked(mContext));
+        setKeyguardManagerToNull();
+        assertFalse(DeviceConditions.isCurrentlyScreenOnAndUnlocked(mContext));
 
-            setIsKeyguardLocked(true);
-            assertFalse(DeviceConditions.isCurrentlyScreenOnAndUnlocked(mContext));
+        setIsKeyguardLocked(true);
+        assertFalse(DeviceConditions.isCurrentlyScreenOnAndUnlocked(mContext));
 
-            setIsKeyguardLocked(false);
-            // Version code has to be above KIT_KAT for this.
-            sdkHelper.setSdkVersion(VERSION_CODES.LOLLIPOP);
-            setIsInteractive(false);
-            assertFalse(DeviceConditions.isCurrentlyScreenOnAndUnlocked(mContext));
+        setIsKeyguardLocked(false);
+        setIsInteractive(false);
+        assertFalse(DeviceConditions.isCurrentlyScreenOnAndUnlocked(mContext));
 
-            setIsInteractive(true);
-            assertTrue(DeviceConditions.isCurrentlyScreenOnAndUnlocked(mContext));
-        }
+        setIsInteractive(true);
+        assertTrue(DeviceConditions.isCurrentlyScreenOnAndUnlocked(mContext));
     }
 
     @Test

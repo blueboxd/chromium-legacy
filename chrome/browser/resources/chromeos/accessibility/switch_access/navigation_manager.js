@@ -168,7 +168,7 @@ class NavigationManager {
       return;
     }
 
-    if (nodeIsValid) {
+    if (nodeIsValid && !(navigator.node_ instanceof BackButtonNode)) {
       // Our group has been invalidated. Move to navigator node to repair the
       // group stack.
       const node = navigator.node_.automationNode;

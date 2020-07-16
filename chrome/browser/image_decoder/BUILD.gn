@@ -32,9 +32,11 @@ if (!is_android) {
     ]
 
     deps = [
+      ":image_decoder",
       "//base",
       "//chrome/app:generated_resources",
       "//chrome/test:test_support",
+      "//chrome/test:test_support_ui",
       "//content/public/browser",
       "//content/test:test_support",
       "//ui/base",

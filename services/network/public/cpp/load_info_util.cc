@@ -4,6 +4,7 @@
 
 #include "services/network/public/cpp/load_info_util.h"
 
+#include "net/base/load_states.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 namespace network {

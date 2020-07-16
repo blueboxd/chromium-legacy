@@ -8,6 +8,7 @@
 #include <lib/sys/cpp/component_context.h>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/fuchsia/process_context.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/frame_service_base.h"

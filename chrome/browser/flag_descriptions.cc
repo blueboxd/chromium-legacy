@@ -3138,12 +3138,6 @@ const char kOmniboxShortBookmarkSuggestionsDescription[] =
     "Match very short input words to beginning of words in bookmark "
     "suggestions.";
 
-const char kOmniboxTabSwitchSuggestionsDedicatedRowName[] =
-    "Omnibox dedicated row tab switch suggestions";
-const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[] =
-    "Put each tab switch suggestion in a separate suggestion, immediately "
-    "following the original suggestion.";
-
 const char kTabFreezeName[] = "Tab Freeze";
 const char kTabFreezeDescription[] =
     "Enables freezing eligible tabs when they have been backgrounded for 5 "

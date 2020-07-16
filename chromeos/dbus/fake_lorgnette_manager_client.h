@@ -5,17 +5,14 @@
 #ifndef CHROMEOS_DBUS_FAKE_LORGNETTE_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_LORGNETTE_MANAGER_CLIENT_H_
 
-#include <map>
 #include <string>
-#include <tuple>
 
+#include "base/optional.h"
 #include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 
 namespace chromeos {
 
-// Lorgnette LorgnetteManagerClient implementation used on Linux desktop,
-// which does nothing.
 class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeLorgnetteManagerClient
     : public LorgnetteManagerClient {
  public:
@@ -33,24 +30,18 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeLorgnetteManagerClient
                          const ScanProperties& properties,
                          DBusMethodCallback<std::string> callback) override;
 
-  // Adds a fake scan data, which will be returned by ScanImageToString(),
-  // if |device_name| and |properties| are matched.
-  void AddScanData(const std::string& device_name,
-                   const ScanProperties& properties,
-                   const std::string& data);
-
   // Sets the response returned by ListScanners().
   void SetListScannersResponse(
-      const lorgnette::ListScannersResponse& list_scanners_response);
+      const base::Optional<lorgnette::ListScannersResponse>&
+          list_scanners_response);
+
+  // Sets the response returned by ScanImageToString().
+  void SetScanImageToStringResponse(
+      const base::Optional<std::string>& scan_image_response);
 
  private:
-  lorgnette::ListScannersResponse list_scanners_response_;
-
-  // Use tuple for a map below, which has pre-defined "less", for convenience.
-  using ScanDataKey = std::tuple<std::string /* device_name */,
-                                 std::string /* ScanProperties.mode */,
-                                 int /* Scanproperties.resolution_dpi */>;
-  std::map<ScanDataKey, std::string /* data */> scan_data_;
+  base::Optional<lorgnette::ListScannersResponse> list_scanners_response_;
+  base::Optional<std::string> scan_image_response_;
 };
 
 }  // namespace chromeos

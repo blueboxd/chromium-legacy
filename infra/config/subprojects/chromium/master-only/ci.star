@@ -1266,6 +1266,9 @@ ci.fuzz_libfuzzer_builder(
         category = 'libfuzz',
         short_name = 'linux-ubsan',
     ),
+    # TODO(https://crbug.com/1106029) Use default timeout once goma outage is
+    # over
+    execution_timeout = 5 * time.hour,
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 5,
     ),
@@ -2899,7 +2902,7 @@ ci.linux_builder(
     os = os.LINUX_TRUSTY,
 )
 
-# TODO(crbug.com/1102997): remove this in favor of new "metadata_exporter"
+# TODO(crbug.com/1102997): remove this in favor of new "metadata-exporter"
 # builder.
 ci.linux_builder(
     name = 'linux_chromium_component_updater',
@@ -2911,7 +2914,7 @@ ci.linux_builder(
 )
 
 ci.linux_builder(
-    name = 'metadata_exporter',
+    name = 'metadata-exporter',
     executable = 'recipe:chromium_export_metadata',
     schedule = '0 0,6,12,18 * * *',
     service_account = 'component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com',

@@ -31,9 +31,6 @@ class TabListContainerProperties {
     public static final PropertyModel.WritableIntPropertyKey TOP_MARGIN =
             new PropertyModel.WritableIntPropertyKey();
 
-    public static final PropertyModel.WritableIntPropertyKey TRANSLATION_Y =
-            new PropertyModel.WritableIntPropertyKey();
-
     public static final PropertyModel.WritableIntPropertyKey BOTTOM_CONTROLS_HEIGHT =
             new PropertyModel.WritableIntPropertyKey();
 
@@ -41,6 +38,6 @@ class TabListContainerProperties {
             new PropertyModel.WritableIntPropertyKey();
 
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {IS_VISIBLE, IS_INCOGNITO,
-            VISIBILITY_LISTENER, INITIAL_SCROLL_INDEX, ANIMATE_VISIBILITY_CHANGES, TRANSLATION_Y,
-            TOP_MARGIN, BOTTOM_CONTROLS_HEIGHT, SHADOW_TOP_OFFSET};
+            VISIBILITY_LISTENER, INITIAL_SCROLL_INDEX, ANIMATE_VISIBILITY_CHANGES, TOP_MARGIN,
+            BOTTOM_CONTROLS_HEIGHT, SHADOW_TOP_OFFSET};
 }

@@ -1090,14 +1090,7 @@ bool AutocompleteMatch::ShouldShowTabMatchButtonInlineInResultView() const {
   // AutocompleteMatch and should be e.g. a static method in
   // OmniboxMatchCellView that takes an AutocompleteMatch.
   return has_tab_match && !associated_keyword &&
-         !OmniboxFieldTrial::IsTabSwitchSuggestionsDedicatedRowEnabled() &&
          !OmniboxFieldTrial::IsSuggestionButtonRowEnabled();
-}
-
-// TODO(orinj): Dedicated tab switch suggestions are eliminated. Delete this
-//  method and clean up any remaining related logic.
-bool AutocompleteMatch::IsTabSwitchSuggestion() const {
-  return false;
 }
 
 void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(

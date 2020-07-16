@@ -48,9 +48,8 @@ static sk_sp<PaintRecord> CreateRectRecordWithTranslate(
 
 TEST_F(DrawingDisplayItemTest, DrawsContent) {
   FloatRect record_bounds(5.5, 6.6, 7.7, 8.8);
-  client_.SetVisualRect(EnclosingIntRect(record_bounds));
-
   DrawingDisplayItem item(client_, DisplayItem::Type::kDocumentBackground,
+                          EnclosingIntRect(record_bounds),
                           CreateRectRecord(record_bounds));
   EXPECT_EQ(EnclosingIntRect(record_bounds), item.VisualRect());
   EXPECT_TRUE(item.DrawsContent());
@@ -58,36 +57,37 @@ TEST_F(DrawingDisplayItemTest, DrawsContent) {
 
 TEST_F(DrawingDisplayItemTest, NullPaintRecord) {
   DrawingDisplayItem item(client_, DisplayItem::Type::kDocumentBackground,
-                          nullptr);
+                          IntRect(), nullptr);
   EXPECT_FALSE(item.DrawsContent());
 }
 
 TEST_F(DrawingDisplayItemTest, EmptyPaintRecord) {
   DrawingDisplayItem item(client_, DisplayItem::Type::kDocumentBackground,
-                          sk_make_sp<PaintRecord>());
+                          IntRect(), sk_make_sp<PaintRecord>());
   EXPECT_FALSE(item.DrawsContent());
 }
 
 TEST_F(DrawingDisplayItemTest, Equals) {
   FloatRect bounds1(100.1, 100.2, 100.3, 100.4);
-  client_.SetVisualRect(EnclosingIntRect(bounds1));
   DrawingDisplayItem item1(client_, DisplayItem::kDocumentBackground,
+                           EnclosingIntRect(bounds1),
                            CreateRectRecord(bounds1));
   DrawingDisplayItem translated(client_, DisplayItem::kDocumentBackground,
+                                EnclosingIntRect(bounds1),
                                 CreateRectRecordWithTranslate(bounds1, 10, 20));
   // This item contains a DrawingRecord that is different from but visually
   // equivalent to item1's.
   DrawingDisplayItem zero_translated(
-      client_, DisplayItem::kDocumentBackground,
+      client_, DisplayItem::kDocumentBackground, EnclosingIntRect(bounds1),
       CreateRectRecordWithTranslate(bounds1, 0, 0));
 
   FloatRect bounds2(100.5, 100.6, 100.7, 100.8);
-  client_.SetVisualRect(EnclosingIntRect(bounds2));
   DrawingDisplayItem item2(client_, DisplayItem::kDocumentBackground,
+                           EnclosingIntRect(bounds1),
                            CreateRectRecord(bounds2));
 
   DrawingDisplayItem empty_item(client_, DisplayItem::kDocumentBackground,
-                                nullptr);
+                                IntRect(), nullptr);
 
   EXPECT_TRUE(item1.Equals(item1));
   EXPECT_FALSE(item1.Equals(item2));

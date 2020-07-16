@@ -78,7 +78,7 @@ void NullVideoSink::CallRender() {
     // If we're behind, find the next nearest on time interval.
     delay = current_render_time_ - now;
     if (delay < base::TimeDelta())
-      delay += interval_ * (-delay / interval_ + 1);
+      delay = interval_ + (delay % interval_);
     current_render_time_ = now + delay;
     last_now_ = now;
   }

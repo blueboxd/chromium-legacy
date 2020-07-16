@@ -713,7 +713,6 @@ mojom("mojo_bindings") {
     "chrome_render_frame.mojom",
     "media/webrtc_logging.mojom",
     "metrics.mojom",
-    "navigation_corrector.mojom",
     "net/net_error_page_support.mojom",
     "net_benchmarking.mojom",
     "network_diagnostics.mojom",

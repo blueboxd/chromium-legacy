@@ -25,7 +25,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
@@ -272,8 +271,10 @@ public class TabGridDialogViewTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1075677")
     public void testDialog_ZoomInZoomOut() {
+        // TODO(crbug.com/1075677): figure out a stable way to separate different stages of the
+        // animation so that we can verify the alpha and view hierarchy of the animation-related
+        // views.
         AtomicReference<ViewGroup> parentViewReference = new AtomicReference<>();
         // Setup the animation with a dummy animation source view.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -285,18 +286,7 @@ public class TabGridDialogViewTest extends DummyUiActivityTestCase {
 
         // Show the dialog with zoom-out animation.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // At the very beginning of showing animation, the animation card should be on the
-            // top and the background frame should be the view below it. Both view should have
-            // alpha set to be 1.
             mTabGridDialogView.showDialog();
-            if (areAnimatorsEnabled()) {
-                Assert.assertSame(
-                        mAnimationCardView, parent.getChildAt(parent.getChildCount() - 1));
-                Assert.assertSame(
-                        mBackgroundFrameView, parent.getChildAt(parent.getChildCount() - 2));
-            }
-            Assert.assertEquals(1f, mAnimationCardView.getAlpha(), 0.0);
-            Assert.assertEquals(1f, mBackgroundFrameView.getAlpha(), 0.0);
             Assert.assertNotNull(mTabGridDialogView.getCurrentDialogAnimatorForTesting());
             Assert.assertEquals(View.VISIBLE, mTabGridDialogView.getVisibility());
         });
@@ -320,14 +310,6 @@ public class TabGridDialogViewTest extends DummyUiActivityTestCase {
         // Hide the dialog with zoom-in animation.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTabGridDialogView.hideDialog();
-            // At the very beginning of hiding animation, the dialog view should be on the top,
-            // and alpha of animation related views should remain 0.
-            if (areAnimatorsEnabled()) {
-                Assert.assertSame(
-                        mTabGridDialogContainer, parent.getChildAt(parent.getChildCount() - 1));
-            }
-            Assert.assertEquals(1f, mTabGridDialogContainer.getAlpha(), 0.0);
-            Assert.assertEquals(1f, mBackgroundFrameView.getAlpha(), 0.0);
             Assert.assertNotNull(mTabGridDialogView.getCurrentDialogAnimatorForTesting());
             // PopupWindow is still showing for the hide animation.
             Assert.assertEquals(View.VISIBLE, mTabGridDialogView.getVisibility());
@@ -350,6 +332,10 @@ public class TabGridDialogViewTest extends DummyUiActivityTestCase {
             Assert.assertEquals(View.GONE, mTabGridDialogView.getVisibility());
             Assert.assertEquals(0f, mAnimationCardView.getAlpha(), 0.0);
             Assert.assertEquals(0f, mBackgroundFrameView.getAlpha(), 0.0);
+            Assert.assertEquals(0f, mTabGridDialogContainer.getTranslationX(), 0.0);
+            Assert.assertEquals(0f, mTabGridDialogContainer.getTranslationY(), 0.0);
+            Assert.assertEquals(1f, mTabGridDialogContainer.getScaleX(), 0.0);
+            Assert.assertEquals(1f, mTabGridDialogContainer.getScaleY(), 0.0);
         });
     }
 

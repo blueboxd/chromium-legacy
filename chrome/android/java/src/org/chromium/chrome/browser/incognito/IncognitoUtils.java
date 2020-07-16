@@ -8,7 +8,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
-import android.os.Build;
 import android.util.Pair;
 
 import androidx.annotation.VisibleForTesting;
@@ -43,8 +42,7 @@ public class IncognitoUtils {
     @SuppressLint("NewApi")
     public static boolean shouldDestroyIncognitoProfileOnStartup(
             boolean selectedTabModelIsIncognito) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
-                || !Profile.getLastUsedRegularProfile().hasOffTheRecordProfile()) {
+        if (!Profile.getLastUsedRegularProfile().hasOffTheRecordProfile()) {
             return false;
         }
 

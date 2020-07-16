@@ -723,11 +723,6 @@ bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions);
 }
 
-bool OmniboxFieldTrial::IsTabSwitchSuggestionsDedicatedRowEnabled() {
-  return base::FeatureList::IsEnabled(
-      omnibox::kOmniboxTabSwitchSuggestionsDedicatedRow);
-}
-
 bool OmniboxFieldTrial::IsPedalSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxPedalSuggestions);
 }

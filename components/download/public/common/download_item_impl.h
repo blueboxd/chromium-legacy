@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/threading/thread_checker.h"
 #include "base/threading/thread_checker_impl.h"
 #include "base/time/time.h"
 #include "components/download/database/in_progress/download_entry.h"

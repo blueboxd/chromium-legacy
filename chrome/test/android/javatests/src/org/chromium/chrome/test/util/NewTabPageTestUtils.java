@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.test.util;
 
-import android.annotation.TargetApi;
-import android.os.Build;
-
 import org.hamcrest.Matchers;
 
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
@@ -35,7 +32,6 @@ public class NewTabPageTestUtils {
      *
      * @param tab The tab to be monitored for NTP loading.
      */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public static void waitForNtpLoaded(final Tab tab) {
         CriteriaHelper.pollUiThread(() -> {
             if (!tab.isIncognito()) {

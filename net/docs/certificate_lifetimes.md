@@ -36,6 +36,13 @@ and may result in the removal of trust of that CA’s certificates.
 
 ## Frequently Asked Questions
 
+* Why is Chrome making this change?
+  * Shortening certificate lifetimes protects users by reducing the impact
+    of compromised keys, and by speeding up the replacement of insecure
+    technologies and practices across the web. Key compromises and the
+    discovery of internet security weaknesses are common events that can lead
+    to real-world harm, and the web’s users should be better protected against
+    them.
 * Does this apply to locally-operated CAs, such as those used within
   enterprises that use enterprise-configured configured CAs?
   * No. This only applies to the set of CAs that are trusted by default by

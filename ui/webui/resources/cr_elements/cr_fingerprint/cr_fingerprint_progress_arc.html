@@ -1,5 +1,6 @@
 <link rel="import" href="../../html/polymer.html">
 <link rel="import" href="cr_fingerprint_icon.html">
+<link rel="import" href="../cr_lottie/cr_lottie.html">
 
 <dom-module id="cr-fingerprint-progress-arc">
   <template>
@@ -8,50 +9,35 @@
         user-select: none;
       }
 
+      .translucent {
+        opacity: 0.3;
+      }
+
       #canvasDiv {
         height: 240px;
+        overflow: hidden;
+        position: relative;
         width:  460px;
       }
 
-      /* Put the image in a separate div with 0 height, otherwise the div will
-         take the height of the image, leaving us with a row of whitespace when
-         we position the #image to be inside #arc. */
-      #imageDiv {
-        height: 0;
-      }
-
-      #scanningAnimation {
-        opacity: 0.3;
-        position: relative;
+      cr-lottie {
+        display: inline-block;
+        position: absolute;
       }
 
       #enrollmentDone {
-        position: relative;
-      }
-
-      #checkmarkDiv {
-        height: 0;
-      }
-
-      #checkmarkAnimation {
-        position: relative;
+        position: absolute;
       }
     </style>
 
     <div id="canvasDiv">
       <canvas id="canvas" height="240" width="460"></canvas>
-    </div>
-    <div id="imageDiv">
-      <img id="scanningAnimation"
-          src="chrome://theme/IDR_FINGERPRINT_ICON_ANIMATION"
-          aria-hidden="true">
+      <cr-lottie id="scanningAnimation"
+          animation-url="chrome://theme/IDR_FINGERPRINT_ICON_ANIMATION"
+          aria-hidden="true" autoplay>
+      </cr-lottie>
       <iron-icon id="enrollmentDone" icon="cr-fingerprint-icon:enrollment-done" hidden>
       </iron-icon>
-    </div>
-    <div id="checkmarkDiv" hidden>
-      <img id="checkmarkAnimation"
-          src="chrome://theme/IDR_FINGERPRINT_COMPLETE_TICK"
-          aria-hidden="true">
     </div>
   </template>
   <script src="cr_fingerprint_progress_arc.js"></script>

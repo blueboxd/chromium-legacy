@@ -43,7 +43,7 @@ public class ListMenuButton
     private AnchoredPopupWindow mPopupMenu;
     private ListMenuButtonDelegate mDelegate;
     private ObserverList<PopupMenuShownListener> mPopupListeners = new ObserverList<>();
-    private boolean mTryToFitLargestItem = false;
+    private boolean mTryToFitLargestItem;
 
     /**
      * Creates a new {@link ListMenuButton}.

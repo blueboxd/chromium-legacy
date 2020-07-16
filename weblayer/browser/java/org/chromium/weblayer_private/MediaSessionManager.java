@@ -28,7 +28,7 @@ class MediaSessionManager {
     @SuppressLint("StaticFieldLeak")
     static MediaNotificationController sController;
 
-    private static int sNotificationId = 0;
+    private static int sNotificationId;
 
     static void serviceStarted(Service service, Intent intent) {
         if (sController != null && sController.processIntent(service, intent)) return;

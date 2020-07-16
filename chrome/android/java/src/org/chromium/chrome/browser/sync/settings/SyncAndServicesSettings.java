@@ -152,7 +152,7 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
 
     private @SyncError int mCurrentSyncError = SyncError.NO_ERROR;
 
-    private boolean mIsSecurityPreferenceRemoved = false;
+    private boolean mIsSecurityPreferenceRemoved;
 
     /**
      * Creates an argument bundle for this fragment.

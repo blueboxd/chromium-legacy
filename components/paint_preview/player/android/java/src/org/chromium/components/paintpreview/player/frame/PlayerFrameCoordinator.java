@@ -10,13 +10,13 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.OverScroller;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.UnguessableToken;
 import org.chromium.components.paintpreview.player.OverscrollHandler;
 import org.chromium.components.paintpreview.player.PlayerCompositorDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-
-import javax.annotation.Nullable;
 
 /**
  * Sets up the view and the logic behind it for a Paint Preview frame.

@@ -20,7 +20,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/branding_buildflags.h"
 #include "components/google/core/common/google_switches.h"
 #include "components/google/core/common/google_tld_list.h"
 #include "components/url_formatter/url_fixer.h"
@@ -28,22 +27,11 @@
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 
-// Only use Link Doctor on official builds.  It uses an API key, too, but
-// seems best to just disable it, for more responsive error pages and to reduce
-// server load.
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#define LINKDOCTOR_SERVER_REQUEST_URL "https://www.googleapis.com/rpc"
-#else
-#define LINKDOCTOR_SERVER_REQUEST_URL ""
-#endif
-
 namespace google_util {
 
 // Helpers --------------------------------------------------------------------
 
 namespace {
-
-bool gUseMockLinkDoctorBaseURLForTesting = false;
 
 bool IsPathHomePageBase(base::StringPiece path) {
   return (path == "/") || (path == "/webhp");
@@ -162,16 +150,6 @@ bool HasGoogleSearchQueryParam(base::StringPiece str) {
       return true;
   }
   return false;
-}
-
-GURL LinkDoctorBaseURL() {
-  if (gUseMockLinkDoctorBaseURLForTesting)
-    return GURL("http://mock.linkdoctor.url/for?testing");
-  return GURL(LINKDOCTOR_SERVER_REQUEST_URL);
-}
-
-void SetMockLinkDoctorBaseURLForTesting() {
-  gUseMockLinkDoctorBaseURLForTesting = true;
 }
 
 std::string GetGoogleLocale(const std::string& application_locale) {

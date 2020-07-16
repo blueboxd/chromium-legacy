@@ -8,9 +8,9 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.util.Size;
 
-import org.chromium.components.paintpreview.player.PlayerUserActionRecorder;
+import androidx.annotation.Nullable;
 
-import javax.annotation.Nullable;
+import org.chromium.components.paintpreview.player.PlayerUserActionRecorder;
 
 /**
  * Handles scaling of the top level frame for the paint preview player.
@@ -18,8 +18,8 @@ import javax.annotation.Nullable;
 public class PlayerFrameScaleController {
     private static final float MAX_SCALE_FACTOR = 5f;
 
-    private float mInitialScaleFactor = 0f;
-    private float mUncommittedScaleFactor = 0f;
+    private float mInitialScaleFactor;
+    private float mUncommittedScaleFactor;
 
     /** References to shared state. */
     private final PlayerFrameViewport mViewport;

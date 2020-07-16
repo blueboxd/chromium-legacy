@@ -150,7 +150,7 @@ public class ContextualSearchManagerTest {
     // TODO(crbug.com/1090043): Use @BeforeClass once this is fixed.
     private static class SharedStaticState {
         private static ChromeActivityTestRule<ChromeActivity> sActivityTestRule;
-        private static boolean sActivityStarted = false;
+        private static boolean sActivityStarted;
         public static ChromeActivityTestRule<ChromeActivity> getActivityTestRule() {
             if (sActivityTestRule == null) {
                 sActivityTestRule = new ChromeActivityTestRule<>(ChromeActivity.class);
@@ -1055,10 +1055,6 @@ public class ContextualSearchManagerTest {
         // refinement from nearby taps. The double-tap timeout is sufficiently
         // short that this shouldn't conflict with tap refinement by the user.
         int doubleTapTimeout = ViewConfiguration.getDoubleTapTimeout();
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
-            // Some tests are flaky on KitKat.  See https://crbug.com/878517.
-            doubleTapTimeout *= 2;
-        }
         Thread.sleep(doubleTapTimeout);
     }
 
@@ -2958,6 +2954,7 @@ public class ContextualSearchManagerTest {
      * Tests that a simple Tap with language determination triggers translation.
      */
     @Test
+    @FlakyTest(message = "https://crbug.com/1105488")
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)

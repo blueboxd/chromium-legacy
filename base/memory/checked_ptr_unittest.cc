@@ -651,7 +651,7 @@ TEST(CheckedPtr2OrMTEImpl, SafelyUnwrapNull) {
             nullptr);
 }
 
-TEST(CheckedPtr2Impl, WrapAndSafelyUnwrap) {
+TEST(CheckedPtr2OrMTEImpl, WrapAndSafelyUnwrap) {
   // Create a fake allocation, with first 2B for generation.
   // It is ok to use a fake allocation, instead of PartitionAlloc, because
   // CheckedPtr2OrMTEImplForTest fakes the functionality is enabled for this
@@ -723,7 +723,7 @@ TEST(CheckedPtr2OrMTEImpl, SafelyUnwrapDisabled) {
             ptr);
 }
 
-TEST(CheckedPtr2Impl, CrashOnGenerationMismatch) {
+TEST(CheckedPtr2OrMTEImpl, CrashOnGenerationMismatch) {
   // Create a fake allocation, with first 2B for generation.
   // It is ok to use a fake allocation, instead of PartitionAlloc, because
   // CheckedPtr2OrMTEImplForTest fakes the functionality is enabled for this

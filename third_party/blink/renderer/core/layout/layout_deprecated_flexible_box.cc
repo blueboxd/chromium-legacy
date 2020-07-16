@@ -40,6 +40,8 @@
 namespace blink {
 
 class FlexBoxIterator {
+  STACK_ALLOCATED();
+
  public:
   FlexBoxIterator(LayoutDeprecatedFlexibleBox* parent)
       : box_(parent), largest_ordinal_(1) {

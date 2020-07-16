@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.os.Build;
-
 import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -15,7 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -225,8 +222,6 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
      */
     @Test
     @MediumTest
-    @DisableIf.
-    Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "https://crbug.com/979159")
     @Feature({"Payments", "RenderTest"})
     public void testRetryWithPayerErrors() throws Throwable {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());

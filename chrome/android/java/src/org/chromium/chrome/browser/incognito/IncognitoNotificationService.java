@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.incognito;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.AppTask;
@@ -13,7 +12,6 @@ import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
@@ -85,11 +83,7 @@ public class IncognitoNotificationService extends IntentService {
         PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
             // Now ensure that the snapshots in recents are all cleared for Tabbed activities
             // to remove any trace of incognito mode.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                focusChromeIfNecessary();
-            } else {
-                removeNonVisibleChromeTabbedRecentEntries();
-            }
+            removeNonVisibleChromeTabbedRecentEntries();
         });
     }
 
@@ -115,7 +109,6 @@ public class IncognitoNotificationService extends IntentService {
         context.startActivity(startIntent);
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void removeNonVisibleChromeTabbedRecentEntries() {
         Set<Integer> visibleTaskIds = getTaskIdsForVisibleActivities();
 

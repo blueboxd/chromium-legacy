@@ -200,7 +200,7 @@ public class AwNonembeddedUmaRecorder implements UmaRecorder {
 
     // Is app context bound to the MetricsBridgeService.
     @GuardedBy("mLock")
-    private boolean mIsBound = false;
+    private boolean mIsBound;
 
     /**
      * Bind the service only once and keep the service binding for the lifetime of the app process.

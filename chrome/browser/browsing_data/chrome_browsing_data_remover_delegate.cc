@@ -124,6 +124,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/net_buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/android/chrome_jni_headers/PackageHash_jni.h"

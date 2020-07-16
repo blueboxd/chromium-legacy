@@ -3136,8 +3136,6 @@ static_library("browser") {
       "enterprise/reporting/profile_report_generator_desktop.h",
       "enterprise/reporting/report_generator.cc",
       "enterprise/reporting/report_generator.h",
-      "enterprise/reporting/report_request_queue_generator.cc",
-      "enterprise/reporting/report_request_queue_generator.h",
       "enterprise/reporting/report_scheduler.cc",
       "enterprise/reporting/report_scheduler.h",
       "enterprise/reporting/reporting_delegate_factory_desktop.cc",

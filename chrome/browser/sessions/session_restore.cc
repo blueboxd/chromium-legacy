@@ -152,7 +152,7 @@ class SessionRestoreImpl : public BrowserListObserver {
         base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
         quit_closure_for_sync_restore_ = loop.QuitClosure();
         loop.Run();
-        quit_closure_for_sync_restore_ = base::Closure();
+        quit_closure_for_sync_restore_ = base::OnceClosure();
       }
       Browser* browser =
           ProcessSessionWindowsAndNotify(&windows_, active_window_id_);
@@ -333,7 +333,7 @@ class SessionRestoreImpl : public BrowserListObserver {
       windows_.swap(windows);
       active_window_id_ = active_window_id;
       CHECK(!quit_closure_for_sync_restore_.is_null());
-      quit_closure_for_sync_restore_.Run();
+      std::move(quit_closure_for_sync_restore_).Run();
       return;
     }
 
@@ -717,7 +717,7 @@ class SessionRestoreImpl : public BrowserListObserver {
 
   // The quit-closure to terminate the nested message-loop started for
   // synchronous session-restore.
-  base::Closure quit_closure_for_sync_restore_;
+  base::OnceClosure quit_closure_for_sync_restore_;
 
   // See description of CLOBBER_CURRENT_TAB.
   const bool clobber_existing_tab_;
@@ -855,8 +855,8 @@ bool SessionRestore::IsRestoringSynchronously() {
 
 // static
 SessionRestore::CallbackSubscription
-    SessionRestore::RegisterOnSessionRestoredCallback(
-        const base::Callback<void(int)>& callback) {
+SessionRestore::RegisterOnSessionRestoredCallback(
+    const base::RepeatingCallback<void(int)>& callback) {
   return on_session_restored_callbacks()->Add(callback);
 }
 

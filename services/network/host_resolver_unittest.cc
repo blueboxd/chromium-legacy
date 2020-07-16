@@ -31,6 +31,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/log/net_log.h"
+#include "net/net_buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -252,6 +252,29 @@ TEST_P(StorageQueueTest, WriteIntoNewStorageQueueAndFlush) {
   storage_queue_->Flush();
 }
 
+TEST_P(StorageQueueTest, ValidateVariousRecordSizes) {
+  std::vector<std::string> blobs;
+  for (size_t i = 16; i < 16 + 16; ++i) {
+    blobs.emplace_back(i, 'R');
+  }
+  CreateStorageQueueOrDie(BuildStorageQueueOptionsOnlyManual());
+  for (const auto& blob : blobs) {
+    WriteStringOrDie(blob);
+  }
+
+  // Set uploader expectations.
+  EXPECT_CALL(set_mock_uploader_expectations_, Call(NotNull()))
+      .WillOnce(Invoke([&blobs](MockUploadClient* mock_upload_client) {
+        MockUploadClient::SetUp client_setup(mock_upload_client);
+        for (const auto& blob : blobs) {
+          client_setup.Required(blob);
+        }
+      }));
+
+  // Flush manually.
+  storage_queue_->Flush();
+}
+
 TEST_P(StorageQueueTest, WriteAndRepeatedlyUploadWithConfirmations) {
   CreateStorageQueueOrDie(BuildStorageQueueOptionsPeriodic());
 

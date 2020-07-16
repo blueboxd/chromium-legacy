@@ -1606,9 +1606,12 @@ bool SpdySession::ValidatePushedStream(spdy::SpdyStreamId stream_id,
                                        const GURL& url,
                                        const HttpRequestInfo& request_info,
                                        const SpdySessionKey& key) const {
-  // Proxy server and privacy mode must match.
-  if (key.proxy_server() != spdy_session_key_.proxy_server() ||
-      key.privacy_mode() != spdy_session_key_.privacy_mode()) {
+  SpdySessionKey::CompareForAliasingResult compare_result =
+      key.CompareForAliasing(spdy_session_key_);
+  // Keys must be aliasable. This code does not support changing the tag of live
+  // sessions, so just fail on a socket tag mismatch.
+  if (!compare_result.is_potentially_aliasable ||
+      !compare_result.is_socket_tag_match) {
     return false;
   }
   // Certificate must match for encrypted schemes only.

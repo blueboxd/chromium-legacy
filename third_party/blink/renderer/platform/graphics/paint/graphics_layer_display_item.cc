@@ -16,9 +16,17 @@
 
 namespace blink {
 
+static IntRect GraphicsLayerVisualRect(const GraphicsLayer& graphics_layer) {
+  return IntRect(graphics_layer.GetOffsetFromTransformNode(),
+                 IntSize(graphics_layer.Size()));
+}
+
 GraphicsLayerDisplayItem::GraphicsLayerDisplayItem(
     const GraphicsLayer& graphics_layer)
-    : DisplayItem(graphics_layer, kGraphicsLayerWrapper, sizeof(*this)),
+    : DisplayItem(graphics_layer,
+                  kGraphicsLayerWrapper,
+                  sizeof(*this),
+                  GraphicsLayerVisualRect(graphics_layer)),
       graphics_layer_(graphics_layer) {}
 
 bool GraphicsLayerDisplayItem::Equals(const DisplayItem& other) const {

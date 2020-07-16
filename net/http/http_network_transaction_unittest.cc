@@ -11114,7 +11114,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
 
 // Test that an explicitly trusted SPDY proxy can push a resource from an
 // origin that is different from that of its associated resource.
-TEST_F(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
+TEST_F(HttpNetworkTransactionTest, CrossOriginSpdyProxyPush) {
   // Configure the proxy delegate to allow cross-origin SPDY pushes.
   auto proxy_delegate = std::make_unique<TestProxyDelegate>();
   proxy_delegate->set_trusted_spdy_proxy(net::ProxyServer::FromURI(

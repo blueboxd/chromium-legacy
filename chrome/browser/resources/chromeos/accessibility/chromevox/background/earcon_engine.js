@@ -381,7 +381,7 @@ EarconEngine = class {
     this.play('selection_reverse');
   }
 
-  onTouchExitAnchor() {
+  onNoPointerAnchor() {
     this.play('static', {gain: this.clickVolume * 0.2});
     const freq1 = 220 * Math.pow(EarconEngine.HALF_STEP, 13);
     this.generateSinusoidal({

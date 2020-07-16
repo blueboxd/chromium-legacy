@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/extensions/extension_installed_bubble_model.h"
 
+#include "base/command_line.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"

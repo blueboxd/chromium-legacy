@@ -262,8 +262,6 @@ public class OfflinePageUtilsTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({"enable-features=OfflinePagesSharing"})
-    @DisableIf.Build(
-            message = "https://crbug.com/853255", sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     public void testSharePublicOfflinePage() throws Exception {
         loadOfflinePage(ASYNC_ID);
         final Semaphore semaphore = new Semaphore(0);

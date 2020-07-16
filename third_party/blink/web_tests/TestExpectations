@@ -2694,6 +2694,8 @@ crbug.com/1100119 [ Mac ] external/wpt/css/css-pseudo/active-selection-053.html 
 crbug.com/1100119 [ Mac ] external/wpt/css/css-pseudo/active-selection-054.html [ Failure ]
 crbug.com/1018465 external/wpt/css/css-pseudo/active-selection-056.html [ Failure ]
 
+crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
+
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Linux ] virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-gutters-014.html [ Failure ]
 crbug.com/626703 [ Mac ] virtual/layout-ng-grid/external/wpt/css/css-grid/alignment/grid-gutters-014.html [ Failure ]
@@ -6857,7 +6859,7 @@ crbug.com/1104186 [ Win ] fast/forms/color-scheme/suggestion-picker/time-suggest
 # Sheriff 2020-07-13
 
 crbug.com/1104910 [ Mac ] external/wpt/webaudio/the-audio-api/the-oscillatornode-interface/osc-basic-waveform.html [ Pass Failure ]
-crbug.com/1104910 fast/dom/cssTarget-crash.html [ Pass Timeout Failure ]
+crbug.com/1105957 fast/dom/cssTarget-crash.html [ Pass Timeout ]
 crbug.com/1104910 fast/peerconnection/RTCPeerConnection-reload-interesting-usage.html [ Pass Failure ]
 crbug.com/1104910 [ Win ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Pass Failure ]
 crbug.com/1104910 [ Mac10.15 ] editing/selection/selection-background.html [ Pass Failure ]
@@ -6874,6 +6876,10 @@ crbug.com/1105275 [ Mac ] fast/dom/Window/window-onFocus.html [ Pass Failure ]
 crbug.com/1105276 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Pass Failure ]
 crbug.com/1105278 [ Mac ] external/wpt/clipboard-apis/feature-policy/clipboard-write/clipboard-write-enabled-on-self-origin-by-feature-policy.tentative.https.sub.html [ Pass Failure ]
 crbug.com/1105279 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-for-different-key-granularity.html [ Pass Timeout Failure ]
+
+# Sheriff 2020-07-15
+
+crbug.com/1104381 fast/hidpi/image-srcset-change-resource-dpr.html [ Pass Failure ]
 
 # Temporarily disable to land DevTools changes
 crbug.com/1101262 http/tests/devtools/application-panel/resources-panel-on-navigation.js [ Pass Failure ]

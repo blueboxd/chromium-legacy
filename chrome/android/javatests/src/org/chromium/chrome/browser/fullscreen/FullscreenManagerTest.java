@@ -504,7 +504,6 @@ public class FullscreenManagerTest {
 
     @Test
     //@LargeTest
-    //@MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
     //@Feature({"Fullscreen"})
     @DisabledTest(message = "crbug.com/979189")
     public void testPersistentFullscreenWithOptions() {

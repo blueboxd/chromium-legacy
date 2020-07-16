@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/enterprise/reporting/report_request_queue_generator.h"
+#include "components/enterprise/browser/reporting/report_request_queue_generator.h"
 
 #include <vector>
 
@@ -39,6 +39,8 @@ const char kActiveProfileName2[] = "active_profile2";
 
 }  // namespace
 
+// TODO(crbug.com/1103732): Get rid of chrome/browser dependencies and then
+// move this file to components/enterprise/browser.
 class ReportRequestQueueGeneratorTest : public ::testing::Test {
  public:
   using ReportRequest = definition::ReportRequest;

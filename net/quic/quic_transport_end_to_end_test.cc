@@ -148,7 +148,7 @@ class QuicTransportEndToEndTest : public TestWithTaskEnvironment {
   std::unique_ptr<URLRequestContext> context_;
   std::unique_ptr<QuicTransportClient> client_;
   TestConnectionHelper* helper_;  // Owned by |context_|.
-  MockVisitor visitor_;
+  ::testing::NiceMock<MockVisitor> visitor_;
   std::unique_ptr<QuicTransportSimpleServer> server_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
@@ -282,23 +282,6 @@ TEST_F(QuicTransportEndToEndTest, OldVersion) {
   EXPECT_TRUE(client_->session()->IsSessionReady());
 }
 
-TEST_F(QuicTransportEndToEndTest, NoCommonVersion) {
-  // Disable all WebTransport versions.
-  for (const quic::ParsedQuicVersion& version :
-       QuicTransportClient::QuicVersionsForWebTransportOriginTrial()) {
-    quic::QuicDisableVersion(version);
-  }
-
-  StartServer();
-  client_ = std::make_unique<QuicTransportClient>(
-      GetURL("/discard"), origin_, &visitor_, isolation_key_, context_.get(),
-      QuicTransportClient::Parameters());
-  client_->Connect();
-  EXPECT_CALL(visitor_, OnConnectionFailed()).WillOnce(StopRunning());
-  Run();
-  EXPECT_TRUE(client_->session() == nullptr);
-  EXPECT_EQ(client_->error().quic_error, quic::QUIC_INVALID_VERSION);
-}
 }  // namespace
 }  // namespace test
 }  // namespace net

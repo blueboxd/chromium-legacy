@@ -26,17 +26,6 @@ class PaintArtifact;
 class TransformPaintPropertyNode;
 class TransformPaintPropertyNodeOrAlias;
 
-class DummyRectClient : public FakeDisplayItemClient {
- public:
-  IntRect VisualRect() const final { return rect_; }
-  void SetVisualRect(const IntRect& rect) { rect_ = rect; }
-
-  sk_sp<PaintRecord> MakeRecord(const IntRect& rect, Color color);
-
- private:
-  IntRect rect_;
-};
-
 // Useful for quickly making a paint artifact in unit tests.
 //
 // If any method that automatically creates display item client is called, the
@@ -69,7 +58,7 @@ class TestPaintArtifact {
   TestPaintArtifact& Chunk() { return Chunk(NewClient()); }
 
   // Add a chunk with the specified client.
-  TestPaintArtifact& Chunk(DummyRectClient&,
+  TestPaintArtifact& Chunk(DisplayItemClient&,
                            DisplayItem::Type = DisplayItem::kDrawingFirst);
 
   // This is for RasterInvalidatorTest, to create a chunk with specific id and
@@ -112,11 +101,11 @@ class TestPaintArtifact {
                                   const FloatPoint& offset);
 
   // Add display item with the specified client in the chunk.
-  TestPaintArtifact& RectDrawing(DummyRectClient&,
+  TestPaintArtifact& RectDrawing(DisplayItemClient&,
                                  const IntRect& bounds,
                                  Color color);
   TestPaintArtifact& ScrollHitTest(
-      DummyRectClient&,
+      DisplayItemClient&,
       const TransformPaintPropertyNode* scroll_translation);
 
   // Sets fake bounds for the last paint chunk. Note that the bounds will be
@@ -136,14 +125,14 @@ class TestPaintArtifact {
   scoped_refptr<PaintArtifact> Build();
 
   // Create a new display item client which is owned by this TestPaintArtifact.
-  DummyRectClient& NewClient();
+  FakeDisplayItemClient& NewClient();
 
-  DummyRectClient& Client(wtf_size_t) const;
+  FakeDisplayItemClient& Client(wtf_size_t) const;
 
  private:
   void DidAddDisplayItem();
 
-  Vector<std::unique_ptr<DummyRectClient>> dummy_clients_;
+  Vector<std::unique_ptr<FakeDisplayItemClient>> clients_;
 
   DisplayItemList display_item_list_;
   Vector<PaintChunk> paint_chunks_;

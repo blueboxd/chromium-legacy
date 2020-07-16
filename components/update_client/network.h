@@ -77,12 +77,13 @@ class NetworkFetcher {
   DISALLOW_COPY_AND_ASSIGN(NetworkFetcher);
 };
 
-class NetworkFetcherFactory : public base::RefCounted<NetworkFetcherFactory> {
+class NetworkFetcherFactory
+    : public base::RefCountedThreadSafe<NetworkFetcherFactory> {
  public:
   virtual std::unique_ptr<NetworkFetcher> Create() const = 0;
 
  protected:
-  friend class base::RefCounted<NetworkFetcherFactory>;
+  friend class base::RefCountedThreadSafe<NetworkFetcherFactory>;
   NetworkFetcherFactory() = default;
   virtual ~NetworkFetcherFactory() = default;
 

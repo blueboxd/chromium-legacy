@@ -18,7 +18,6 @@ extern const base::Feature kOmniboxReverseAnswers;
 extern const base::Feature kOmniboxShortBookmarkSuggestions;
 extern const base::Feature kOmniboxTailSuggestions;
 extern const base::Feature kOmniboxTabSwitchSuggestions;
-extern const base::Feature kOmniboxTabSwitchSuggestionsDedicatedRow;
 extern const base::Feature kExperimentalKeywordMode;
 extern const base::Feature kOmniboxPedalSuggestions;
 extern const base::Feature kEnableClipboardProviderImageSuggestions;

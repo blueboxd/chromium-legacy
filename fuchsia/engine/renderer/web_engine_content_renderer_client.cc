@@ -4,6 +4,7 @@
 
 #include "fuchsia/engine/renderer/web_engine_content_renderer_client.h"
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"

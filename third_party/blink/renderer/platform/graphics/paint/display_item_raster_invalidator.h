@@ -47,8 +47,8 @@ class DisplayItemRasterInvalidator {
   MatchNewDisplayItemInOldChunk(const DisplayItem& new_item,
                                 wtf_size_t& next_old_item_to_match);
   ALWAYS_INLINE void GenerateRasterInvalidation(const DisplayItemClient&,
-                                                const IntRect* old_visual_rect,
-                                                const IntRect* new_visual_rect,
+                                                const IntRect& old_visual_rect,
+                                                const IntRect& new_visual_rect,
                                                 PaintInvalidationReason);
   ALWAYS_INLINE void GenerateIncrementalRasterInvalidation(
       const DisplayItemClient&,

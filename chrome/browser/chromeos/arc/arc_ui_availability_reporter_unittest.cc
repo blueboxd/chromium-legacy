@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/arc/arc_ui_availability_reporter.h"
+
+#include "base/command_line.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"

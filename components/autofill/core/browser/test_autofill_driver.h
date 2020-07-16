@@ -40,7 +40,7 @@ class TestAutofillDriver : public AutofillDriver {
                               const FormData& data) override;
   void PropagateAutofillPredictions(
       const std::vector<autofill::FormStructure*>& forms) override;
-  void HandleParsedForms(const std::vector<FormStructure*>& forms) override;
+  void HandleParsedForms(const std::vector<const FormData*>& forms) override;
   void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) override;
   void RendererShouldAcceptDataListSuggestion(

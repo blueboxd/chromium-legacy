@@ -86,21 +86,21 @@ def FetchItemData(task_id, benchmark, index, temp_dir):
     print("CSV results were not produced!")
 
 
-def GetPercentileValues(benchmark, tags, limit, percentile):
-  """Get the percentile value of recent runs described by given tags.
+def CreateDataframe(benchmark, tags, limit):
+  """Creates the dataframe of values recorded in recent runs.
 
   Given the tags, benchmark this function fetches the data of last {limit}
-  runs, and find the percentile value for each story.
+  runs, and returns a dataframe of values for focused metrics such as
+  frame_times and CPU_wall_time_ratio.
 
   Args:
     benchmark: The benchmark these task are on (desktop/mobile).
     tags: The tags which describe the tasks such as OS and buildername.
     limit: The number of runs to look at.
-    percentile: the percentile to return.
 
   Returns:
-    A dictionary with averages and confidence interval ranges calculated
-    from the percentile of recent runs.
+    A dataframe with averages and confidence interval of frame_times, and
+    average value of CPU_wall_time_ratio of each story of each run.
   """
   items = []
   for tag_set in tags:
@@ -114,7 +114,21 @@ def GetPercentileValues(benchmark, tags, limit, percentile):
       idx += 1
   finally:
     shutil.rmtree(temp_dir)
-  data_frame = pandas.concat(dfs, ignore_index=True)
+  return pandas.concat(dfs, ignore_index=True)
+
+
+def GetPercentileValues(data_frame, percentile):
+  """Get the percentile value of each metric for recorded values in dataframe.
+
+  Args:
+    data_frame: The dataframe with averages and confidence intervals of each
+    story of each run.
+    percentile: the percentile to use for determining the upper limits.
+
+  Returns:
+    A dictionary with averages and confidence interval ranges calculated
+    from the percentile of recent runs.
+  """
 
   if not data_frame.empty:
     avg_df = data_frame.pivot(index='stories', columns='index', values='avg')
@@ -177,9 +191,10 @@ def RecalculateUpperLimits(data_point_count):
   for platform in platform_specific_tags:
     platform_data = platform_specific_tags[platform]
     print('\n- Processing data ({})'.format(platform))
-    results[platform] = GetPercentileValues(
-      platform_data['benchmark'], platform_data['tags'],
-      data_point_count, 0.95)
+
+    dataframe = CreateDataframe(platform_data['benchmark'],
+                                platform_data['tags'], data_point_count)
+    results[platform] = GetPercentileValues(dataframe, 0.95)
 
     # Loop over results and adjust base on current values.
     for story in results[platform]:

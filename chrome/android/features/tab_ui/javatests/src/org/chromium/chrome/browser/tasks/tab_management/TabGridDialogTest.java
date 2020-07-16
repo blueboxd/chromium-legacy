@@ -724,21 +724,9 @@ public class TabGridDialogTest {
     private void triggerShareGroupAndVerify(ChromeTabbedActivity cta) {
         Intents.init();
         selectTabGridDialogToolbarMenuItem(cta, "Share group");
-        // For K and below, we show share dialog; for L and above, we send intent and trigger system
-        // share sheet. See ShareSheetMediator.ShareSheetDelegate for more info.
-        if (TabUiTestHelper.isKitKatAndBelow()) {
-            onView(withId(R.id.action_bar_root))
-                    .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
-                    .check(matches(isDisplayed()));
-            onView(withId(R.id.contentPanel))
-                    .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
-                    .check(matches(isDisplayed()));
-        } else {
-            intended(allOf(hasAction(equalTo(Intent.ACTION_CHOOSER)),
-                    hasExtras(hasEntry(equalTo(Intent.EXTRA_INTENT),
-                            allOf(hasAction(equalTo(Intent.ACTION_SEND)),
-                                    hasType("text/plain"))))));
-        }
+        intended(allOf(hasAction(equalTo(Intent.ACTION_CHOOSER)),
+                hasExtras(hasEntry(equalTo(Intent.EXTRA_INTENT),
+                        allOf(hasAction(equalTo(Intent.ACTION_SEND)), hasType("text/plain"))))));
         Intents.release();
     }
 

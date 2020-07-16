@@ -30,7 +30,6 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.webapk.shell_apk.test.dex_optimizer.IDexOptimizerService;
 
 import java.io.File;
@@ -141,7 +140,6 @@ public class DexLoaderTest {
      */
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
     @DisabledTest(message = "crbug.com/871920")
     public void testLoadFromRemoteDataDir() {
         // Extract the dex file into another app's data directory and optimize the dex.

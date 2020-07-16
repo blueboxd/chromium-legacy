@@ -460,6 +460,29 @@ HRESULT TSFTextStore::InsertTextAtSelection(DWORD flags,
   if (!text_buffer)
     return E_INVALIDARG;
 
+  if (text_buffer_size >= 0) {
+    if (!new_text_inserted_) {
+      new_text_inserted_ = true;
+      replace_text_range_.set_start(start_pos);
+      replace_text_range_.set_end(end_pos);
+      replace_text_size_ = text_buffer_size;
+    } else {
+      // aggregate new replace text with previous replace text into one range.
+      LONG old_delta = (LONG)replace_text_range_.start() -
+                       (LONG)replace_text_range_.end() + replace_text_size_;
+      LONG new_delta = start_pos - end_pos + text_buffer_size;
+      replace_text_range_.set_start(
+          std::min((uint32_t)start_pos, replace_text_range_.start()));
+      // New replacement text ends after previous replacement text. We need to
+      // use the new end after adjusting with previous delta.
+      if ((uint32_t)end_pos >=
+          replace_text_range_.start() + replace_text_size_) {
+        replace_text_range_.set_end(end_pos - old_delta);
+      }
+      replace_text_size_ = replace_text_range_.length() + old_delta + new_delta;
+    }
+  }
+
   DCHECK_LE(start_pos, end_pos);
   string_buffer_document_ =
       string_buffer_document_.substr(0, start_pos) +
@@ -582,6 +605,7 @@ HRESULT TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   // if nothing has changed from input service, then only need to
   // compare our cache with latest textinputstate.
   if (!edit_flag_) {
+    ResetCacheAfterEditSession();
     CalculateTextandSelectionDiffAndNotifyIfNeeded();
     return S_OK;
   }
@@ -599,7 +623,7 @@ HRESULT TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   //    into blink to complete the existing composition(later in this method).
   if (string_pending_insertion_.empty()) {
     if (!text_input_client_->HasCompositionText()) {
-      if (has_composition_range_) {
+      if (has_composition_range_ && on_start_composition_called_) {
         // Remove replacing text first before starting composition.
         if (new_text_inserted_ && !replace_text_range_.is_empty() &&
             !replace_text_size_) {
@@ -613,6 +637,7 @@ HRESULT TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
         composition_start_ = selection_.start();
         CalculateTextandSelectionDiffAndNotifyIfNeeded();
       }
+      ResetCacheAfterEditSession();
       return S_OK;
     } else {
       composition_start_ = last_composition_start;
@@ -628,12 +653,14 @@ HRESULT TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
                      lparam_keydown_cached_);
   }
 
-  // reset |on_start_composition_called_| for next edit session.
-  on_start_composition_called_ = false;
-
   // If the text store is edited in OnLockGranted(), we may need to call
   // TextInputClient::InsertText() or TextInputClient::SetCompositionText().
-  const size_t new_composition_start = composition_start_;
+  // Calculate the end location. we use the replace text end pos if there is no
+  // more active composition.
+  size_t new_composition_start =
+      !has_composition_range_ && new_text_inserted_
+          ? replace_text_range_.start() + replace_text_size_
+          : composition_start_;
 
   // There are several scenarios that we want to commit composition text. For
   // those scenarios, we need to call TextInputClient::InsertText to complete
@@ -691,15 +718,7 @@ HRESULT TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
     StartCompositionOnNewText(new_composition_start, composition_string);
   }
 
-  // reset the flag since we've already inserted/replaced the text.
-  new_text_inserted_ = false;
-  is_selection_interim_char_ = false;
-
-  // reset string_buffer_ if composition is no longer active.
-  if (!text_input_client_->HasCompositionText()) {
-    string_pending_insertion_.clear();
-  }
-
+  ResetCacheAfterEditSession();
   CalculateTextandSelectionDiffAndNotifyIfNeeded();
 
   return S_OK;
@@ -786,13 +805,6 @@ HRESULT TSFTextStore::SetText(DWORD flags,
     return ret;
 
   TS_TEXTCHANGE change;
-  if (text_buffer_size >= 0) {
-    new_text_inserted_ = true;
-    replace_text_range_.set_start(acp_start);
-    replace_text_range_.set_end(acp_end);
-    replace_text_size_ = text_buffer_size;
-  }
-
   ret = InsertTextAtSelection(0, text_buffer, text_buffer_size, &acp_start,
                               &acp_end, &change);
   if (ret != S_OK)
@@ -1293,8 +1305,9 @@ void TSFTextStore::StartCompositionOnExistingText() const {
 
 void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
                                                     size_t new_size) const {
-  if (new_text_inserted_ && !replace_text_range_.is_empty() &&
-      !text_input_client_->HasCompositionText()) {
+  size_t new_committed_string_offset;
+  size_t new_committed_string_size;
+  if (new_text_inserted_ && !text_input_client_->HasCompositionText()) {
     // This is a special case to handle text replacement scenarios during
     // English typing when we are trying to replace an existing text with some
     // new text. Some third-party IMEs also use SetText() API instead of
@@ -1312,14 +1325,13 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
     // current composition text so that |TextInputClient::InsertText| will
     // commit current composition text.
     // Also clamp the offsets if they are out of bounds of the buffer
-    const size_t new_committed_string_offset =
+    new_committed_string_offset =
         std::min(static_cast<ULONG>(replace_text_range_.start()),
                  static_cast<ULONG>(string_buffer_document_.size()));
-    const base::string16& new_committed_string = string_buffer_document_.substr(
-        new_committed_string_offset,
+    new_committed_string_size =
         (new_text_size == 0 && selection_.end() > new_committed_string_offset)
             ? selection_.end() - new_committed_string_offset
-            : new_text_size);
+            : new_text_size;
     // if the |replace_text_range_| start is greater than |old_size|, then we
     // don't need to delete anything because the replacement text hasn't been
     // inserted into blink yet.
@@ -1327,14 +1339,9 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
       text_input_client_->ExtendSelectionAndDelete(
           old_size - replace_text_range_.start(), 0);
     }
-    // TODO(crbug.com/978678): Unify the behavior of
-    //     |TextInputClient::InsertText(text)| for the empty text.
-    if (!new_committed_string.empty())
-      text_input_client_->InsertText(new_committed_string);
   } else {
-    // Construct string to be committed.
-    size_t new_committed_string_offset = old_size;
-    size_t new_committed_string_size = new_size - old_size;
+    new_committed_string_offset = old_size;
+    new_committed_string_size = new_size - old_size;
     // This is a special case. We should only replace existing text and commit
     // the new text if replacement text has already been inserted into Blink.
     if (new_text_inserted_ && (old_size > replace_text_range_.start()) &&
@@ -1350,24 +1357,41 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
     new_committed_string_offset =
         std::min(static_cast<ULONG>(new_committed_string_offset),
                  static_cast<ULONG>(string_buffer_document_.size()));
-    const base::string16& new_committed_string = string_buffer_document_.substr(
-        new_committed_string_offset,
+    new_committed_string_size =
         (new_committed_string_size == 0 &&
          selection_.end() > new_committed_string_offset)
             ? selection_.end() - new_committed_string_offset
-            : new_committed_string_size);
-    // TODO(crbug.com/978678): Unify the behavior of
-    //     |TextInputClient::InsertText(text)| for the empty text.
-    if (!new_committed_string.empty()) {
-      text_input_client_->InsertText(new_committed_string);
-    } else {
-      text_input_client_->ClearCompositionText();
-    }
-    // Notify accessibility about this committed composition
-    text_input_client_->SetActiveCompositionForAccessibility(
-        replace_text_range_, new_committed_string,
-        /*is_composition_committed*/ true);
+            : new_committed_string_size;
   }
+
+  // Construct string to be committed.
+  const base::string16& new_committed_string = string_buffer_document_.substr(
+      new_committed_string_offset, new_committed_string_size);
+  // TODO(crbug.com/978678): Unify the behavior of
+  //     |TextInputClient::InsertText(text)| for the empty text.
+  if (!new_committed_string.empty()) {
+    // If composition was started and committed in one edit session, we still
+    // need to start the composition first and then commit it.
+    if (!text_input_client_->HasCompositionText() &&
+        on_start_composition_called_) {
+      ImeTextSpans spans;
+      ImeTextSpan span;
+      span.start_offset = 0;
+      span.end_offset = new_committed_string.size();
+      spans.push_back(span);
+      CompositionText composition_text;
+      composition_text.text = new_committed_string;
+      composition_text.ime_text_spans = spans;
+      text_input_client_->SetCompositionText(composition_text);
+    }
+    text_input_client_->InsertText(new_committed_string);
+  } else {
+    text_input_client_->ClearCompositionText();
+  }
+  // Notify accessibility about this committed composition
+  text_input_client_->SetActiveCompositionForAccessibility(
+      replace_text_range_, new_committed_string,
+      /*is_composition_committed*/ true);
 }
 
 void TSFTextStore::StartCompositionOnNewText(
@@ -1456,6 +1480,18 @@ void TSFTextStore::GetStyle(const TF_DISPLAYATTRIBUTE& attribute,
                                           GetGValue(attribute.crLine.cr),
                                           GetBValue(attribute.crLine.cr));
   }
+}
+
+void TSFTextStore::ResetCacheAfterEditSession() {
+  // reset the flag since we've already inserted/replaced the text.
+  new_text_inserted_ = false;
+  is_selection_interim_char_ = false;
+  // reset |on_start_composition_called_| for next edit session.
+  on_start_composition_called_ = false;
+
+  // reset string_buffer_ if composition is no longer active.
+  if (text_input_client_ && !text_input_client_->HasCompositionText())
+    string_pending_insertion_.clear();
 }
 
 }  // namespace ui

@@ -11,7 +11,6 @@ import android.content.res.Resources;
 import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
-import android.os.Build;
 import android.os.Handler;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -297,10 +296,6 @@ public class AutofillUiUtils {
      */
     public static void updateColorForInputs(@ErrorType int errorType, Context context,
             EditText monthInput, EditText yearInput, EditText cvcInput) {
-        // The rest of this code makes L-specific assumptions about the background being used to
-        // draw the TextInput.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
-
         ColorFilter filter =
                 new PorterDuffColorFilter(ApiCompatibilityUtils.getColor(context.getResources(),
                                                   R.color.input_underline_error_color),

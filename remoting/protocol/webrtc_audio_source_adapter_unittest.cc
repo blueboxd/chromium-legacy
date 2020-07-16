@@ -41,7 +41,7 @@ class FakeAudioSink : public webrtc::AudioTrackSinkInterface{
     EXPECT_EQ(kSampleRate, sample_rate);
     EXPECT_EQ(kBytesPerSample * 8, bits_per_sample);
     EXPECT_EQ(kChannels, static_cast<int>(number_of_channels));
-    EXPECT_EQ(kSampleRate * kFrameDuration / base::TimeDelta::FromSeconds(1),
+    EXPECT_EQ((kSampleRate * kFrameDuration).InSeconds(),
               static_cast<int>(number_of_samples));
     const int16_t* samples = reinterpret_cast<const int16_t*>(audio_data);
     samples_.insert(samples_.end(), samples,

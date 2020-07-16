@@ -16,6 +16,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
+#include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/features.h"

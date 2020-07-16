@@ -38,13 +38,6 @@ public interface SiteSettingsClient {
     SiteSettingsHelpClient getSiteSettingsHelpClient();
 
     /**
-     * @return The SiteSettingsPrefClient that should be used to access native prefs when rendering
-     *     the Site Settings UI.
-     */
-    // TODO(crbug.com/1071603): Remove this once PrefServiceBridge is componentized.
-    SiteSettingsPrefClient getSiteSettingsPrefClient();
-
-    /**
      * @return The WebappSettingsClient that should be used when showing the Site Settings UI.
      */
     WebappSettingsClient getWebappSettingsClient();

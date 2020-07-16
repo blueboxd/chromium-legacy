@@ -53,15 +53,15 @@ bool BrokerFilePermission::ValidatePath(const char* path) {
 // methods are async signal safe in common standard libs.
 // TODO(leecam): remove dependency on std::string
 bool BrokerFilePermission::MatchPath(const char* requested_filename) const {
-  // Note: This recursive match will allow any path under the whitelisted
-  // path, for any number of directory levels. E.g. if the whitelisted
+  // Note: This recursive match will allow any path under the allowlisted
+  // path, for any number of directory levels. E.g. if the allowlisted
   // path is /good/ then the following will be permitted by the policy.
   //   /good/file1
   //   /good/folder/file2
   //   /good/folder/folder2/file3
   // If an attacker could make 'folder' a symlink to ../../ they would have
   // access to the entire filesystem.
-  // Whitelisting with multiple depths is useful, e.g /proc/ but
+  // Allowlisting with multiple depths is useful, e.g /proc/ but
   // the system needs to ensure symlinks can not be created!
   // That said if an attacker can convert any of the absolute paths
   // to a symlink they can control any file on the system also.
@@ -255,7 +255,7 @@ BrokerFilePermission::BrokerFilePermission(
   // Must have enough length for a '/'
   CHECK(path_.length() > 0) << GetErrorMessageForTests();
 
-  // Whitelisted paths must be absolute.
+  // Allowlisted paths must be absolute.
   CHECK(path_[0] == '/') << GetErrorMessageForTests();
 
   // Don't allow temporary creation without create permission

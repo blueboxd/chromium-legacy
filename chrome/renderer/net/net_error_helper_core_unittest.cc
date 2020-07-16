@@ -15,18 +15,14 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/available_offline_content.mojom.h"
 #include "chrome/renderer/net/available_offline_content_helper.h"
@@ -52,78 +48,6 @@
 namespace {
 
 const char kFailedUrl[] = "http://failed/";
-const char kFailedHttpsUrl[] = "https://failed/";
-
-const char kNavigationCorrectionUrl[] = "http://navigation.corrections/";
-const char kLanguage[] = "en";
-const char kCountry[] = "us";
-const char kApiKey[] = "api_key";
-const char kSearchUrl[] = "http://www.google.com/search";
-
-const char kSuggestedSearchTerms[] = "Happy Goats";
-const char kNavigationCorrectionEventId[] = "#007";
-const char kNavigationCorrectionFingerprint[] = "RandumStuff";
-
-struct NavigationCorrection {
-  const char* correction_type;
-  const char* url_correction;
-  const char* click_type;
-  const char* click_data;
-  bool is_porn;
-  bool is_soft_porn;
-
-  std::unique_ptr<base::DictionaryValue> ToValue() const {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetString("correctionType", correction_type);
-    dict->SetString("urlCorrection", url_correction);
-    dict->SetString("clickType", click_type);
-    dict->SetString("clickData", click_data);
-    dict->SetBoolean("isPorn", is_porn);
-    dict->SetBoolean("isSoftPorn", is_soft_porn);
-    return dict;
-  }
-};
-
-const NavigationCorrection kDefaultCorrections[] = {
-    {"reloadPage", kFailedUrl, "rld", "data1", false, false},
-    {"urlCorrection", "http://somewhere_else/", "btn", "data2", false, false},
-    {"contentOverlap", "http://pony_island/", "btn", "data3", false, false},
-
-    // Porn should be ignored.
-    {"emphasizedUrlCorrection", "http://porn/", "btn", "data4", true, false},
-    {"sitemap", "http://more_porn/", "btn", "data5", false, true},
-
-    {"webSearchQuery", kSuggestedSearchTerms, "frm", "data6", false, false},
-};
-
-std::string SuggestionsToResponse(const NavigationCorrection* corrections,
-                                  int num_corrections) {
-  auto url_corrections = std::make_unique<base::ListValue>();
-  for (int i = 0; i < num_corrections; ++i)
-    url_corrections->Append(corrections[i].ToValue());
-
-  base::DictionaryValue response;
-  response.Set("result.UrlCorrections", std::move(url_corrections));
-  response.SetString("result.eventId", kNavigationCorrectionEventId);
-  response.SetString("result.fingerprint", kNavigationCorrectionFingerprint);
-
-  std::string json;
-  base::JSONWriter::Write(response, &json);
-  return json;
-}
-
-testing::AssertionResult StringValueEquals(const base::DictionaryValue& dict,
-                                           const std::string& key,
-                                           const std::string& expected_value) {
-  std::string actual_value;
-  if (!dict.GetString(key, &actual_value))
-    return testing::AssertionFailure() << key << " not found.";
-  if (actual_value != expected_value) {
-    return testing::AssertionFailure()
-           << "actual: " << actual_value << "\n expected: " << expected_value;
-  }
-  return testing::AssertionSuccess();
-}
 
 // Creates a string from an error that is used as a mock locally generated
 // error page for that error.
@@ -136,11 +60,6 @@ std::string ErrorToString(const error_page::Error& error, bool is_failed_post) {
 
 error_page::Error ProbeError(error_page::DnsProbeStatus status) {
   return error_page::Error::DnsProbeError(GURL(kFailedUrl), status, false);
-}
-
-error_page::Error ProbeErrorForURL(error_page::DnsProbeStatus status,
-                                   const GURL& url) {
-  return error_page::Error::DnsProbeError(url, status, false);
 }
 
 error_page::Error NetErrorForURL(net::Error net_error, const GURL& url) {
@@ -173,7 +92,6 @@ class NetErrorHelperCoreTest : public testing::Test,
   NetErrorHelperCoreTest()
       : timer_(nullptr),
         update_count_(0),
-        error_html_update_count_(0),
         reload_count_(0),
         diagnose_error_count_(0),
         download_count_(0),
@@ -184,10 +102,7 @@ class NetErrorHelperCoreTest : public testing::Test,
     SetUpCore(false, true);
   }
 
-  ~NetErrorHelperCoreTest() override {
-    // No test finishes while an error page is being fetched.
-    EXPECT_FALSE(is_url_being_fetched());
-  }
+  ~NetErrorHelperCoreTest() override = default;
 
   void SetUpCore(bool auto_reload_enabled,
                  bool visible) {
@@ -199,9 +114,6 @@ class NetErrorHelperCoreTest : public testing::Test,
   }
 
   NetErrorHelperCore* core() { return core_.get(); }
-
-  const GURL& url_being_fetched() const { return url_being_fetched_; }
-  bool is_url_being_fetched() const { return !url_being_fetched_.is_empty(); }
 
   int reload_count() const { return reload_count_; }
 
@@ -223,14 +135,9 @@ class NetErrorHelperCoreTest : public testing::Test,
   int update_count() const { return update_count_; }
 
   const std::string& last_error_html() const { return last_error_html_; }
-  int error_html_update_count() const { return error_html_update_count_; }
 
   bool last_can_show_network_diagnostics_dialog() const {
     return last_can_show_network_diagnostics_dialog_;
-  }
-
-  const error_page::ErrorPageParams* last_error_page_params() const {
-    return last_error_page_params_.get();
   }
 
   void set_offline_content_feature_enabled(
@@ -267,21 +174,6 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   base::test::TaskEnvironment* task_environment() { return &task_environment_; }
   content::MockRenderThread* render_thread() { return &render_thread_; }
-
-  void NavigationCorrectionsLoadSuccess(const NavigationCorrection* corrections,
-                                        int num_corrections) {
-    NavigationCorrectionsLoadFinished(
-        SuggestionsToResponse(corrections, num_corrections));
-  }
-
-  void NavigationCorrectionsLoadFailure() {
-    NavigationCorrectionsLoadFinished("");
-  }
-
-  void NavigationCorrectionsLoadFinished(const std::string& result) {
-    url_being_fetched_ = GURL();
-    core()->OnNavigationCorrectionsFetched(result, false);
-  }
 
   void DoErrorLoadOfURL(net::Error error, const GURL& url) {
     core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
@@ -329,26 +221,7 @@ class NetErrorHelperCoreTest : public testing::Test,
     core()->OnNetErrorInfo(final_status);
   }
 
-  void EnableNavigationCorrections() {
-    SetNavigationCorrectionURL(GURL(kNavigationCorrectionUrl));
-  }
-
-  void DisableNavigationCorrections() { SetNavigationCorrectionURL(GURL()); }
-
-  void ExpectDefaultNavigationCorrections() const {
-    // Checks that the last error page params correspond to kDefaultSuggestions.
-    ASSERT_TRUE(last_error_page_params());
-    EXPECT_TRUE(last_error_page_params()->suggest_reload);
-    EXPECT_EQ(1u, last_error_page_params()->override_suggestions->GetSize());
-    EXPECT_EQ(GURL(kSearchUrl), last_error_page_params()->search_url);
-    EXPECT_EQ(kSuggestedSearchTerms, last_error_page_params()->search_terms);
-  }
-
  private:
-  void SetNavigationCorrectionURL(const GURL& navigation_correction_url) {
-    core()->OnSetNavigationCorrectionInfo(navigation_correction_url, kLanguage,
-                                          kCountry, kApiKey, GURL(kSearchUrl));
-  }
   error_page::LocalizedError::PageState GetPageState() const {
     error_page::LocalizedError::PageState result;
     result.auto_fetch_allowed = auto_fetch_allowed_;
@@ -366,15 +239,9 @@ class NetErrorHelperCoreTest : public testing::Test,
       std::string* html) const override {
     last_can_show_network_diagnostics_dialog_ =
         can_show_network_diagnostics_dialog;
-    last_error_page_params_ = std::move(params);
     *html = ErrorToString(error, is_failed_post);
 
     return GetPageState();
-  }
-
-  void LoadErrorPage(const std::string& html, const GURL& failed_url) override {
-    error_html_update_count_++;
-    last_error_html_ = html;
   }
 
   void EnablePageHelperFunctions() override {
@@ -388,7 +255,6 @@ class NetErrorHelperCoreTest : public testing::Test,
     update_count_++;
     last_can_show_network_diagnostics_dialog_ =
         can_show_network_diagnostics_dialog;
-    last_error_page_params_.reset(nullptr);
     last_error_html_ = ErrorToString(error, is_failed_post);
 
     return GetPageState();
@@ -396,35 +262,6 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   void InitializeErrorPageEasterEggHighScore(int high_score) override {}
   void RequestEasterEggHighScore() override {}
-
-  void FetchNavigationCorrections(
-      const GURL& navigation_correction_url,
-      const std::string& navigation_correction_request_body) override {
-    EXPECT_TRUE(url_being_fetched_.is_empty());
-    EXPECT_TRUE(request_body_.empty());
-    EXPECT_EQ(GURL(kNavigationCorrectionUrl), navigation_correction_url);
-
-    url_being_fetched_ = navigation_correction_url;
-    request_body_ = navigation_correction_request_body;
-
-    // Check the body of the request.
-
-    base::Optional<base::Value> parsed_body =
-        base::JSONReader::Read(navigation_correction_request_body);
-    ASSERT_TRUE(parsed_body);
-    base::DictionaryValue* dict = NULL;
-    ASSERT_TRUE(parsed_body->GetAsDictionary(&dict));
-
-    EXPECT_TRUE(StringValueEquals(*dict, "params.urlQuery", kFailedUrl));
-    EXPECT_TRUE(StringValueEquals(*dict, "params.language", kLanguage));
-    EXPECT_TRUE(StringValueEquals(*dict, "params.originCountry", kCountry));
-    EXPECT_TRUE(StringValueEquals(*dict, "params.key", kApiKey));
-  }
-
-  void CancelFetchNavigationCorrections() override {
-    url_being_fetched_ = GURL();
-    request_body_.clear();
-  }
 
   void ReloadFrame() override { reload_count_++; }
 
@@ -460,24 +297,18 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   std::unique_ptr<NetErrorHelperCore> core_;
 
-  GURL url_being_fetched_;
-  std::string request_body_;
-
   // Contains the information passed to the last call to UpdateErrorPage, as a
   // string.
   std::string last_update_string_;
   // Number of times |last_update_string_| has been changed.
   int update_count_;
 
-  // Contains the HTML set by the last call to LoadErrorPageInMainFrame.
+  // Contains the HTML set by the last call to UpdateErrorPage.
   std::string last_error_html_;
-  // Number of times |last_error_html_| has been changed.
-  int error_html_update_count_;
 
   // Values passed in to the last call of GenerateLocalizedErrorPage or
   // UpdateErrorPage.  Mutable because GenerateLocalizedErrorPage is const.
   mutable bool last_can_show_network_diagnostics_dialog_;
-  mutable std::unique_ptr<error_page::ErrorPageParams> last_error_page_params_;
 
   int reload_count_;
   int diagnose_error_count_;
@@ -501,8 +332,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 };
 
 //------------------------------------------------------------------------------
-// Basic tests that don't update the error page for probes or load navigation
-// corrections.
+// Basic tests that don't update the error page for probes.
 //------------------------------------------------------------------------------
 
 TEST_F(NetErrorHelperCoreTest, Null) {}
@@ -513,17 +343,6 @@ TEST_F(NetErrorHelperCoreTest, SuccessfulPageLoad) {
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
-  EXPECT_EQ(0, error_html_update_count());
-}
-
-TEST_F(NetErrorHelperCoreTest, SuccessfulPageLoadWithNavigationCorrections) {
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_EQ(0, update_count());
-  EXPECT_EQ(0, error_html_update_count());
 }
 
 TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsError) {
@@ -547,33 +366,7 @@ TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsError) {
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
-  EXPECT_EQ(0, error_html_update_count());
   EXPECT_EQ(1, enable_page_helper_functions_count());
-}
-
-TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsErrorWithCorrections) {
-  EnableNavigationCorrections();
-
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_CONNECTION_RESET),
-                           false /* is_failed_post */, &html);
-  // Should have returned a local error page.
-  EXPECT_FALSE(html.empty());
-  EXPECT_EQ(NetErrorString(net::ERR_CONNECTION_RESET), html);
-
-  // Error page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_EQ(0, update_count());
-  EXPECT_EQ(0, error_html_update_count());
 }
 
 // Much like above tests, but with a bunch of spurious DNS status messages that
@@ -608,7 +401,6 @@ TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsErrorSpuriousStatus) {
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 
   EXPECT_EQ(0, update_count());
-  EXPECT_EQ(0, error_html_update_count());
 }
 
 TEST_F(NetErrorHelperCoreTest, SubFrameDnsError) {
@@ -630,31 +422,6 @@ TEST_F(NetErrorHelperCoreTest, SubFrameDnsError) {
   core()->OnCommitLoad(NetErrorHelperCore::SUB_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::SUB_FRAME);
   EXPECT_EQ(0, update_count());
-  EXPECT_EQ(0, error_html_update_count());
-}
-
-TEST_F(NetErrorHelperCoreTest, SubFrameDnsErrorWithCorrections) {
-  EnableNavigationCorrections();
-
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::SUB_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::SUB_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  // Should have returned a local error page.
-  EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), html);
-
-  // Error page loads.
-  core()->OnStartLoad(NetErrorHelperCore::SUB_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::SUB_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::SUB_FRAME);
-  EXPECT_EQ(0, update_count());
-  EXPECT_EQ(0, error_html_update_count());
 }
 
 // Much like above tests, but with a bunch of spurious DNS status messages that
@@ -688,12 +455,10 @@ TEST_F(NetErrorHelperCoreTest, SubFrameDnsErrorSpuriousStatus) {
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 
   EXPECT_EQ(0, update_count());
-  EXPECT_EQ(0, error_html_update_count());
 }
 
 //------------------------------------------------------------------------------
-// Tests for updating the error page in response to DNS probe results.  None
-// of these have navigation corrections enabled.
+// Tests for updating the error page in response to DNS probe results.
 //------------------------------------------------------------------------------
 
 // Test case where the error page finishes loading before receiving any DNS
@@ -731,7 +496,6 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbe) {
   core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
-  EXPECT_EQ(0, error_html_update_count());
 }
 
 // Same as above, but the probe is not run.
@@ -765,7 +529,6 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNotRun) {
   core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(1, update_count());
-  EXPECT_EQ(0, error_html_update_count());
 }
 
 // Same as above, but the probe result is inconclusive.
@@ -802,7 +565,6 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeInconclusive) {
   // Any other probe updates should be ignored.
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_INCONCLUSIVE);
   EXPECT_EQ(2, update_count());
-  EXPECT_EQ(0, error_html_update_count());
 }
 
 // Same as above, but the probe result is no internet.
@@ -846,7 +608,6 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNoInternet) {
   set_is_offline_error(false);
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(2, update_count());
-  EXPECT_EQ(0, error_html_update_count());
 
   // Perform a second error page load, and confirm that the previous load
   // doesn't affect the result.
@@ -906,7 +667,6 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeBadConfig) {
   // Any other probe updates should be ignored.
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_BAD_CONFIG);
   EXPECT_EQ(2, update_count());
-  EXPECT_EQ(0, error_html_update_count());
 }
 
 // Test case where the error page finishes loading after receiving the start
@@ -986,7 +746,6 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbePost) {
   EXPECT_EQ(
       ErrorToString(ProbeError(error_page::DNS_PROBE_FINISHED_NXDOMAIN), true),
       last_error_html());
-  EXPECT_EQ(0, error_html_update_count());
 }
 
 // Test case where the probe finishes before the page is committed.
@@ -1086,7 +845,6 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbes) {
   EXPECT_EQ(4, update_count());
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NO_INTERNET),
             last_error_html());
-  EXPECT_EQ(0, error_html_update_count());
 }
 
 // Test case where one error page loads completely before a new navigation
@@ -1145,7 +903,6 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbesAfterSecondStarts) {
   // Other probe results should be ignored.
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(3, update_count());
-  EXPECT_EQ(0, error_html_update_count());
 }
 
 // Same as above, but a new page is loaded before the error page commits.
@@ -1194,751 +951,11 @@ TEST_F(NetErrorHelperCoreTest, ErrorPageLoadInterrupted) {
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NO_INTERNET),
             last_error_html());
-  EXPECT_EQ(0, error_html_update_count());
 }
 
 //------------------------------------------------------------------------------
-// Navigation correction tests.
+// Autoreload tests.
 //------------------------------------------------------------------------------
-
-// Check that corrections are not used for HTTPS URLs.
-TEST_F(NetErrorHelperCoreTest, NoCorrectionsForHttps) {
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // The HTTPS page fails to load.
-  std::string html;
-  auto error =
-      NetErrorForURL(net::ERR_NAME_NOT_RESOLVED, GURL(kFailedHttpsUrl));
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME, error,
-                           false /* is_failed_post */, &html);
-
-  auto probe_error =
-      ProbeErrorForURL(error_page::DNS_PROBE_POSSIBLE, GURL(kFailedHttpsUrl));
-  EXPECT_EQ(ErrorToString(probe_error, false), html);
-  EXPECT_FALSE(is_url_being_fetched());
-  EXPECT_FALSE(last_error_page_params());
-
-  // The blank page loads, no error page is loaded.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_FALSE(is_url_being_fetched());
-  EXPECT_FALSE(last_error_page_params());
-
-  // Page is updated in response to DNS probes as normal.
-  EXPECT_EQ(0, update_count());
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
-  EXPECT_EQ(2, update_count());
-  EXPECT_FALSE(last_error_page_params());
-  auto final_probe_error = ProbeErrorForURL(
-      error_page::DNS_PROBE_FINISHED_NXDOMAIN, GURL(kFailedHttpsUrl));
-  EXPECT_EQ(ErrorToString(final_probe_error, false), last_error_html());
-}
-
-// The blank page loads, then the navigation corrections request succeeds and is
-// loaded.  Then the probe results come in.
-TEST_F(NetErrorHelperCoreTest, CorrectionsReceivedBeforeProbe) {
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-  EXPECT_FALSE(is_url_being_fetched());
-  EXPECT_FALSE(last_error_page_params());
-
-  // The blank page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-
-  // Corrections retrieval starts when the error page finishes loading.
-  EXPECT_FALSE(is_url_being_fetched());
-  EXPECT_FALSE(last_error_page_params());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_TRUE(is_url_being_fetched());
-  EXPECT_FALSE(last_error_page_params());
-
-  // Corrections are retrieved.
-  NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   base::size(kDefaultCorrections));
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
-  ExpectDefaultNavigationCorrections();
-  EXPECT_FALSE(is_url_being_fetched());
-
-  // Corrections load.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-
-  // Any probe statuses should be ignored.
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
-
-  EXPECT_EQ(0, update_count());
-  EXPECT_EQ(1, error_html_update_count());
-}
-
-// The blank page finishes loading, then probe results come in, and then
-// the navigation corrections request succeeds.
-TEST_F(NetErrorHelperCoreTest, CorrectionsRetrievedAfterProbes) {
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and corrections are requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-
-  // The blank page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_TRUE(is_url_being_fetched());
-  EXPECT_FALSE(last_error_page_params());
-
-  // Probe statuses should be ignored.
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
-  EXPECT_EQ(0, update_count());
-  EXPECT_EQ(0, error_html_update_count());
-  EXPECT_FALSE(last_error_page_params());
-
-  // Corrections are retrieved.
-  EXPECT_TRUE(is_url_being_fetched());
-  NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   base::size(kDefaultCorrections));
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
-  ExpectDefaultNavigationCorrections();
-  EXPECT_FALSE(is_url_being_fetched());
-
-  // Corrections load.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(0, update_count());
-}
-
-// The corrections request fails and then the error page loads for an error that
-// does not trigger DNS probes.
-TEST_F(NetErrorHelperCoreTest, CorrectionsFailLoadNoProbes) {
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and corrections are requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_CONNECTION_FAILED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-
-  // The blank page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-
-  // Corrections request fails, final error page is shown.
-  EXPECT_TRUE(is_url_being_fetched());
-  NavigationCorrectionsLoadFailure();
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(last_error_html(), NetErrorString(net::ERR_CONNECTION_FAILED));
-  EXPECT_FALSE(is_url_being_fetched());
-  EXPECT_EQ(0, update_count());
-  EXPECT_FALSE(last_error_page_params());
-
-  // Error page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-
-  // If probe statuses come in last from another page load, they should be
-  // ignored.
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
-  EXPECT_EQ(0, update_count());
-  EXPECT_EQ(1, error_html_update_count());
-}
-
-// The corrections request fails and then the error page loads before probe
-// results are received.
-TEST_F(NetErrorHelperCoreTest, CorrectionsFailLoadBeforeProbe) {
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and corrections are requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-
-  // The blank page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-
-  // Corrections request fails, probe pending page shown.
-  EXPECT_TRUE(is_url_being_fetched());
-  NavigationCorrectionsLoadFailure();
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(last_error_html(),
-            ProbeErrorString(error_page::DNS_PROBE_POSSIBLE));
-  EXPECT_FALSE(is_url_being_fetched());
-  EXPECT_EQ(0, update_count());
-
-  // Probe page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-
-  // Probe statuses comes in, and page is updated.
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
-  EXPECT_EQ(1, update_count());
-  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_STARTED), last_error_html());
-
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
-  EXPECT_EQ(2, update_count());
-  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NXDOMAIN),
-            last_error_html());
-
-  // The commit results in sending a second probe status, which is ignored.
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
-  EXPECT_EQ(2, update_count());
-  EXPECT_EQ(1, error_html_update_count());
-}
-
-// The corrections request fails after receiving probe results.
-TEST_F(NetErrorHelperCoreTest, CorrectionsFailAfterProbe) {
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and corrections are requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-
-  // The blank page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-
-  // Results come in, but end up being ignored.
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
-  EXPECT_EQ(0, update_count());
-
-  // Corrections request fails, probe pending page shown.
-  EXPECT_TRUE(is_url_being_fetched());
-  NavigationCorrectionsLoadFailure();
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(last_error_html(),
-            ProbeErrorString(error_page::DNS_PROBE_POSSIBLE));
-  EXPECT_FALSE(is_url_being_fetched());
-  EXPECT_EQ(0, update_count());
-
-  // Probe page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-
-  // Probe statuses comes in, and page is updated.
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
-  EXPECT_EQ(1, update_count());
-  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NXDOMAIN),
-            last_error_html());
-  EXPECT_EQ(1, error_html_update_count());
-}
-
-// An error page load that would normally load correction is interrupted
-// by a new navigation before the blank page commits.
-TEST_F(NetErrorHelperCoreTest, CorrectionsInterruptedBeforeCommit) {
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and corrections are requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-
-  // The blank page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-
-  // A new page load starts.
-  EXPECT_FALSE(is_url_being_fetched());
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // A new page load interrupts the original load.
-  EXPECT_FALSE(is_url_being_fetched());
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-  EXPECT_FALSE(is_url_being_fetched());
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
-  EXPECT_FALSE(is_url_being_fetched());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-
-  EXPECT_FALSE(is_url_being_fetched());
-  EXPECT_EQ(0, update_count());
-  EXPECT_EQ(0, error_html_update_count());
-}
-
-// An error page load that would normally load corrections is interrupted
-// by a new navigation before the blank page finishes loading.
-TEST_F(NetErrorHelperCoreTest, CorrectionsInterruptedBeforeLoad) {
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and corrections are requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-
-  // The blank page starts loading and is committed.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-
-  // A new page load interrupts the original load.
-  EXPECT_FALSE(is_url_being_fetched());
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-  EXPECT_FALSE(is_url_being_fetched());
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
-  EXPECT_FALSE(is_url_being_fetched());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-
-  EXPECT_FALSE(is_url_being_fetched());
-  EXPECT_EQ(0, update_count());
-  EXPECT_EQ(0, error_html_update_count());
-}
-
-// The corrections request is cancelled due to a new navigation.  The new
-// navigation fails and then loads corrections successfully.
-TEST_F(NetErrorHelperCoreTest, CorrectionsInterrupted) {
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and corrections are requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-
-  // The blank page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_TRUE(is_url_being_fetched());
-
-  // Results come in, but end up being ignored.
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
-  EXPECT_EQ(0, update_count());
-
-  // A new load appears!
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-  EXPECT_FALSE(is_url_being_fetched());
-
-  // It fails, and corrections are requested again once a blank page is loaded.
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  EXPECT_FALSE(is_url_being_fetched());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_TRUE(is_url_being_fetched());
-
-  // Corrections request succeeds.
-  NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   base::size(kDefaultCorrections));
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
-  ExpectDefaultNavigationCorrections();
-  EXPECT_FALSE(is_url_being_fetched());
-
-  // Probe statuses come in, and are ignored.
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
-  EXPECT_EQ(0, update_count());
-}
-
-// The corrections request is cancelled due to call to Stop().  The cross
-// process navigation is cancelled, and then a new load fails and tries to load
-// corrections again, unsuccessfully.
-TEST_F(NetErrorHelperCoreTest, CorrectionsStopped) {
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and corrections are requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-
-  // The blank page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-
-  EXPECT_TRUE(is_url_being_fetched());
-  core()->OnStop();
-  EXPECT_FALSE(is_url_being_fetched());
-
-  // Results come in, but end up being ignored.
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
-  EXPECT_EQ(0, update_count());
-
-  // Cross process navigation must have been cancelled, and a new load appears!
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and corrections are requested again.
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-
-  // The blank page loads again.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_TRUE(is_url_being_fetched());
-
-  // Corrections request fails, probe pending page shown.
-  NavigationCorrectionsLoadFailure();
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(last_error_html(),
-            ProbeErrorString(error_page::DNS_PROBE_POSSIBLE));
-  EXPECT_FALSE(is_url_being_fetched());
-
-  // Probe page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-
-  // Probe statuses comes in, and page is updated.
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
-  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_STARTED), last_error_html());
-  EXPECT_EQ(1, update_count());
-
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
-  EXPECT_EQ(2, update_count());
-  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NXDOMAIN),
-            last_error_html());
-  EXPECT_EQ(1, error_html_update_count());
-}
-
-// Check the case corrections are disabled while the blank page (Loaded
-// before the corrections page) is being loaded.
-TEST_F(NetErrorHelperCoreTest, CorrectionsDisabledBeforeFetch) {
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and corrections are requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-
-  // The blank page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  // Corrections is disabled.
-  DisableNavigationCorrections();
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_TRUE(is_url_being_fetched());
-  EXPECT_FALSE(last_error_page_params());
-
-  // Corrections are retrieved.
-  NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   base::size(kDefaultCorrections));
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
-  EXPECT_FALSE(is_url_being_fetched());
-  ExpectDefaultNavigationCorrections();
-
-  // Corrections load.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(0, update_count());
-}
-
-// Check the case corrections is disabled while fetching the corrections for
-// a failed page load.
-TEST_F(NetErrorHelperCoreTest, CorrectionsDisabledDuringFetch) {
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and corrections are requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-
-  // The blank page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_TRUE(is_url_being_fetched());
-  EXPECT_FALSE(last_error_page_params());
-
-  // Corrections are disabled.
-  DisableNavigationCorrections();
-
-  // Corrections are retrieved.
-  NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   base::size(kDefaultCorrections));
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
-  EXPECT_FALSE(is_url_being_fetched());
-  ExpectDefaultNavigationCorrections();
-
-  // Corrections load.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(0, update_count());
-}
-
-// Checks corrections are is used when there are no search suggestions.
-TEST_F(NetErrorHelperCoreTest, CorrectionsWithoutSearch) {
-  const NavigationCorrection kCorrections[] = {
-      {"urlCorrection", "http://somewhere_else/", "btn", "data", false, false},
-  };
-
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and corrections are requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-
-  // The blank page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_TRUE(is_url_being_fetched());
-  EXPECT_FALSE(last_error_page_params());
-
-  // Corrections are retrieved.
-  NavigationCorrectionsLoadSuccess(kCorrections, base::size(kCorrections));
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
-  EXPECT_FALSE(is_url_being_fetched());
-
-  // Check params.
-  ASSERT_TRUE(last_error_page_params());
-  EXPECT_FALSE(last_error_page_params()->suggest_reload);
-  EXPECT_EQ(1u, last_error_page_params()->override_suggestions->GetSize());
-  EXPECT_FALSE(last_error_page_params()->search_url.is_valid());
-  EXPECT_EQ("", last_error_page_params()->search_terms);
-
-  // Corrections load.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(0, update_count());
-}
-
-// Checks corrections are used when there are only search suggestions.
-TEST_F(NetErrorHelperCoreTest, CorrectionsOnlySearchSuggestion) {
-  const NavigationCorrection kCorrections[] = {
-      {"webSearchQuery", kSuggestedSearchTerms, "frm", "data", false, false},
-  };
-
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and corrections are requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_NAME_NOT_RESOLVED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-
-  // The blank page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_TRUE(is_url_being_fetched());
-  EXPECT_FALSE(last_error_page_params());
-
-  // Corrections are retrieved.
-  NavigationCorrectionsLoadSuccess(kCorrections, base::size(kCorrections));
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
-  EXPECT_FALSE(is_url_being_fetched());
-
-  // Check params.
-  ASSERT_TRUE(last_error_page_params());
-  EXPECT_FALSE(last_error_page_params()->suggest_reload);
-  EXPECT_EQ(0u, last_error_page_params()->override_suggestions->GetSize());
-  EXPECT_EQ(GURL(kSearchUrl), last_error_page_params()->search_url);
-  EXPECT_EQ(kSuggestedSearchTerms, last_error_page_params()->search_terms);
-
-  // Corrections load.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(0, update_count());
-}
-
-// The correction service returns a non-JSON result.
-TEST_F(NetErrorHelperCoreTest, CorrectionServiceReturnsNonJsonResult) {
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and corrections are requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_CONNECTION_FAILED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-
-  // The blank page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-
-  // Corrections request fails, final error page is shown.
-  EXPECT_TRUE(is_url_being_fetched());
-  NavigationCorrectionsLoadFinished("Weird Response");
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(last_error_html(), NetErrorString(net::ERR_CONNECTION_FAILED));
-  EXPECT_FALSE(is_url_being_fetched());
-  EXPECT_EQ(0, update_count());
-  EXPECT_FALSE(last_error_page_params());
-
-  // Error page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-}
-
-// The correction service returns a JSON result that isn't a valid list of
-// corrections.
-TEST_F(NetErrorHelperCoreTest, CorrectionServiceReturnsInvalidJsonResult) {
-  // Original page starts loading.
-  EnableNavigationCorrections();
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and corrections are requested.
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_CONNECTION_FAILED),
-                           false /* is_failed_post */, &html);
-  EXPECT_TRUE(html.empty());
-
-  // The blank page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-
-  // Corrections request fails, final error page is shown.
-  EXPECT_TRUE(is_url_being_fetched());
-  NavigationCorrectionsLoadFinished("{\"result\": 42}");
-  EXPECT_EQ(1, error_html_update_count());
-  EXPECT_EQ(last_error_html(), NetErrorString(net::ERR_CONNECTION_FAILED));
-  EXPECT_FALSE(is_url_being_fetched());
-  EXPECT_EQ(0, update_count());
-  EXPECT_FALSE(last_error_page_params());
-
-  // Error page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-}
 
 TEST_F(NetErrorHelperCoreTest, AutoReloadDisabled) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);

@@ -329,11 +329,6 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
-bool OmniboxPopupModel::SelectedLineIsTabSwitchSuggestion() {
-  return selected_line() != kNoMatch &&
-         result().match_at(selected_line()).IsTabSwitchSuggestion();
-}
-
 std::vector<OmniboxPopupModel::Selection>
 OmniboxPopupModel::GetAllAvailableSelectionsSorted(Direction direction,
                                                    Step step) const {

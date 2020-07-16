@@ -44,21 +44,75 @@ class DisplayItemRasterInvalidatorTest : public PaintControllerTestBase,
 
 INSTANTIATE_PAINT_TEST_SUITE_P(DisplayItemRasterInvalidatorTest);
 
-TEST_P(DisplayItemRasterInvalidatorTest, RemoveItemInMiddle) {
-  FakeDisplayItemClient first("first", IntRect(100, 100, 300, 300));
-  FakeDisplayItemClient second("second", IntRect(100, 100, 200, 200));
+TEST_P(DisplayItemRasterInvalidatorTest,
+       FullInvalidationWithoutGeometryChange) {
+  FakeDisplayItemClient first("first");
+  FakeDisplayItemClient second("second");
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
-  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 200, 200));
-  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 300, 300));
+  DrawRect(context, second, kBackgroundType, IntRect(100, 100, 200, 200));
+  DrawRect(context, first, kForegroundType, IntRect(100, 150, 300, 300));
+  GenerateRasterInvalidations();
+
+  first.Invalidate(PaintInvalidationReason::kStyle);
+  invalidator_.SetTracksRasterInvalidations(true);
+  InitRootChunk();
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 300, 300));
+  DrawRect(context, second, kBackgroundType, IntRect(100, 100, 200, 200));
+  DrawRect(context, first, kForegroundType, IntRect(100, 150, 300, 300));
+
+  EXPECT_THAT(GenerateRasterInvalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  &first, "first", IntRect(100, 100, 300, 350),
+                  PaintInvalidationReason::kStyle}));
+  invalidator_.SetTracksRasterInvalidations(false);
+}
+
+TEST_P(DisplayItemRasterInvalidatorTest, FullInvalidationWithGeometryChange) {
+  FakeDisplayItemClient first("first");
+  FakeDisplayItemClient second("second");
+  GraphicsContext context(GetPaintController());
+
+  InitRootChunk();
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 300, 300));
+  DrawRect(context, second, kBackgroundType, IntRect(100, 100, 200, 200));
+  DrawRect(context, first, kForegroundType, IntRect(100, 150, 300, 300));
+  GenerateRasterInvalidations();
+
+  first.Invalidate(PaintInvalidationReason::kStyle);
+  invalidator_.SetTracksRasterInvalidations(true);
+  InitRootChunk();
+  DrawRect(context, first, kBackgroundType, IntRect(200, 100, 300, 300));
+  DrawRect(context, second, kBackgroundType, IntRect(100, 100, 200, 200));
+  DrawRect(context, first, kForegroundType, IntRect(200, 150, 300, 300));
+
+  EXPECT_THAT(
+      GenerateRasterInvalidations(),
+      UnorderedElementsAre(
+          RasterInvalidationInfo{&first, "first", IntRect(100, 100, 300, 350),
+                                 PaintInvalidationReason::kStyle},
+          RasterInvalidationInfo{&first, "first", IntRect(200, 100, 300, 350),
+                                 PaintInvalidationReason::kStyle}));
+  invalidator_.SetTracksRasterInvalidations(false);
+}
+
+TEST_P(DisplayItemRasterInvalidatorTest, RemoveItemInMiddle) {
+  FakeDisplayItemClient first("first");
+  FakeDisplayItemClient second("second");
+  GraphicsContext context(GetPaintController());
+
+  InitRootChunk();
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 300, 300));
+  DrawRect(context, second, kBackgroundType, IntRect(100, 100, 200, 200));
+  DrawRect(context, first, kForegroundType, IntRect(100, 100, 300, 300));
   GenerateRasterInvalidations();
 
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
-  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 300, 300));
+  DrawRect(context, first, kForegroundType, IntRect(100, 100, 300, 300));
 
   EXPECT_THAT(GenerateRasterInvalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
@@ -68,28 +122,28 @@ TEST_P(DisplayItemRasterInvalidatorTest, RemoveItemInMiddle) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SwapOrder) {
-  FakeDisplayItemClient first("first", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient second("second", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient unaffected("unaffected", IntRect(300, 300, 10, 10));
+  FakeDisplayItemClient first("first");
+  FakeDisplayItemClient second("second");
+  FakeDisplayItemClient unaffected("unaffected");
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, second, kForegroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, unaffected, kBackgroundType, FloatRect(300, 300, 10, 10));
-  DrawRect(context, unaffected, kForegroundType, FloatRect(300, 300, 10, 10));
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, first, kForegroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, second, kBackgroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, second, kForegroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, unaffected, kBackgroundType, IntRect(300, 300, 10, 10));
+  DrawRect(context, unaffected, kForegroundType, IntRect(300, 300, 10, 10));
   GenerateRasterInvalidations();
 
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
-  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, second, kForegroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, unaffected, kBackgroundType, FloatRect(300, 300, 10, 10));
-  DrawRect(context, unaffected, kForegroundType, FloatRect(300, 300, 10, 10));
+  DrawRect(context, second, kBackgroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, second, kForegroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, first, kForegroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, unaffected, kBackgroundType, IntRect(300, 300, 10, 10));
+  DrawRect(context, unaffected, kForegroundType, IntRect(300, 300, 10, 10));
 
   EXPECT_THAT(GenerateRasterInvalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
@@ -99,23 +153,23 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrder) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderAndInvalidateFirst) {
-  FakeDisplayItemClient first("first", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient second("second", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient unaffected("unaffected", IntRect(300, 300, 10, 10));
+  FakeDisplayItemClient first("first");
+  FakeDisplayItemClient second("second");
+  FakeDisplayItemClient unaffected("unaffected");
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, unaffected, kBackgroundType, FloatRect(300, 300, 10, 10));
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, second, kBackgroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, unaffected, kBackgroundType, IntRect(300, 300, 10, 10));
   GenerateRasterInvalidations();
 
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
   first.Invalidate(PaintInvalidationReason::kOutline);
-  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, unaffected, kBackgroundType, FloatRect(300, 300, 10, 10));
+  DrawRect(context, second, kBackgroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, unaffected, kBackgroundType, IntRect(300, 300, 10, 10));
 
   EXPECT_THAT(GenerateRasterInvalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
@@ -125,23 +179,23 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderAndInvalidateFirst) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderAndInvalidateSecond) {
-  FakeDisplayItemClient first("first", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient second("second", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient unaffected("unaffected", IntRect(300, 300, 10, 10));
+  FakeDisplayItemClient first("first");
+  FakeDisplayItemClient second("second");
+  FakeDisplayItemClient unaffected("unaffected");
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, unaffected, kBackgroundType, FloatRect(300, 300, 10, 10));
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, second, kBackgroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, unaffected, kBackgroundType, IntRect(300, 300, 10, 10));
   GenerateRasterInvalidations();
 
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
   second.Invalidate(PaintInvalidationReason::kOutline);
-  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, unaffected, kBackgroundType, FloatRect(300, 300, 10, 10));
+  DrawRect(context, second, kBackgroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, unaffected, kBackgroundType, IntRect(300, 300, 10, 10));
 
   EXPECT_THAT(GenerateRasterInvalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
@@ -151,49 +205,48 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderAndInvalidateSecond) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithIncrementalInvalidation) {
-  FakeDisplayItemClient first("first", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient second("second", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient unaffected("unaffected", IntRect(300, 300, 10, 10));
+  FakeDisplayItemClient first("first");
+  FakeDisplayItemClient second("second");
+  FakeDisplayItemClient unaffected("unaffected");
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, unaffected, kBackgroundType, FloatRect(300, 300, 10, 10));
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, second, kBackgroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, unaffected, kBackgroundType, IntRect(300, 300, 10, 10));
   GenerateRasterInvalidations();
 
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
-  first.SetVisualRect(IntRect(100, 100, 200, 100));
   first.Invalidate(PaintInvalidationReason::kIncremental);
-  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, unaffected, kBackgroundType, FloatRect(300, 300, 10, 10));
+  DrawRect(context, second, kBackgroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, unaffected, kBackgroundType, IntRect(300, 300, 10, 10));
 
   // Incremental invalidation is not applicable when the item is reordered.
   EXPECT_THAT(GenerateRasterInvalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
-                  &first, "first", IntRect(100, 100, 200, 100),
+                  &first, "first", IntRect(100, 100, 100, 100),
                   PaintInvalidationReason::kReordered}));
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, NewItemInMiddle) {
-  FakeDisplayItemClient first("first", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient second("second", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient third("third", IntRect(125, 100, 200, 50));
+  FakeDisplayItemClient first("first");
+  FakeDisplayItemClient second("second");
+  FakeDisplayItemClient third("third");
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, second, kBackgroundType, IntRect(100, 100, 50, 200));
   GenerateRasterInvalidations();
 
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, third, kBackgroundType, FloatRect(125, 100, 200, 50));
-  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, third, kBackgroundType, IntRect(125, 100, 200, 50));
+  DrawRect(context, second, kBackgroundType, IntRect(100, 100, 50, 200));
 
   EXPECT_THAT(GenerateRasterInvalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
@@ -206,29 +259,26 @@ TEST_P(DisplayItemRasterInvalidatorTest, Incremental) {
   IntRect initial_rect(100, 100, 100, 100);
   std::unique_ptr<FakeDisplayItemClient> clients[6];
   for (size_t i = 0; i < base::size(clients); i++) {
-    clients[i] = std::make_unique<FakeDisplayItemClient>(
-        String::Format("%zu", i), initial_rect);
+    clients[i] =
+        std::make_unique<FakeDisplayItemClient>(String::Format("%zu", i));
   }
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
 
   for (auto& client : clients)
-    DrawRect(context, *client, kBackgroundType, FloatRect(initial_rect));
+    DrawRect(context, *client, kBackgroundType, IntRect(initial_rect));
   GenerateRasterInvalidations();
 
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
-  clients[0]->SetVisualRect(IntRect(100, 100, 150, 100));
-  clients[1]->SetVisualRect(IntRect(100, 100, 100, 150));
-  clients[2]->SetVisualRect(IntRect(100, 100, 150, 80));
-  clients[3]->SetVisualRect(IntRect(100, 100, 80, 150));
-  clients[4]->SetVisualRect(IntRect(100, 100, 150, 150));
-  clients[5]->SetVisualRect(IntRect(100, 100, 80, 80));
-  for (auto& client : clients) {
-    client->Invalidate(PaintInvalidationReason::kIncremental);
-    DrawRect(context, *client, kBackgroundType,
-             FloatRect(client->VisualRect()));
+  IntRect visual_rects[] = {
+      IntRect(100, 100, 150, 100), IntRect(100, 100, 100, 150),
+      IntRect(100, 100, 150, 80),  IntRect(100, 100, 80, 150),
+      IntRect(100, 100, 150, 150), IntRect(100, 100, 80, 80)};
+  for (size_t i = 0; i < base::size(clients); i++) {
+    clients[i]->Invalidate(PaintInvalidationReason::kIncremental);
+    DrawRect(context, *clients[i], kBackgroundType, IntRect(visual_rects[i]));
   }
 
   EXPECT_THAT(GenerateRasterInvalidations(),
@@ -268,24 +318,23 @@ TEST_P(DisplayItemRasterInvalidatorTest, Incremental) {
 
 TEST_P(DisplayItemRasterInvalidatorTest, AddRemoveFirstAndInvalidateSecond) {
   FakeDisplayItemClient chunk("chunk");
-  FakeDisplayItemClient first("first", IntRect(100, 100, 150, 150));
-  FakeDisplayItemClient second("second", IntRect(200, 200, 50, 50));
+  FakeDisplayItemClient first("first");
+  FakeDisplayItemClient second("second");
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
-  DrawRect(context, second, kBackgroundType, FloatRect(200, 200, 50, 50));
-  DrawRect(context, second, kForegroundType, FloatRect(200, 200, 50, 50));
+  DrawRect(context, second, kBackgroundType, IntRect(200, 200, 50, 50));
+  DrawRect(context, second, kForegroundType, IntRect(200, 200, 50, 50));
   GenerateRasterInvalidations();
 
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
   first.Invalidate();
   second.Invalidate();
-  second.SetVisualRect(IntRect(150, 250, 100, 100));
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
-  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 150, 150));
-  DrawRect(context, second, kBackgroundType, FloatRect(150, 250, 100, 100));
-  DrawRect(context, second, kForegroundType, FloatRect(150, 250, 100, 100));
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 150, 150));
+  DrawRect(context, first, kForegroundType, IntRect(100, 100, 150, 150));
+  DrawRect(context, second, kBackgroundType, IntRect(150, 250, 100, 100));
+  DrawRect(context, second, kForegroundType, IntRect(150, 250, 100, 100));
   EXPECT_EQ(0u, NumCachedNewItems());
 
   EXPECT_THAT(
@@ -301,8 +350,8 @@ TEST_P(DisplayItemRasterInvalidatorTest, AddRemoveFirstAndInvalidateSecond) {
 
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
-  DrawRect(context, second, kBackgroundType, FloatRect(150, 250, 100, 100));
-  DrawRect(context, second, kForegroundType, FloatRect(150, 250, 100, 100));
+  DrawRect(context, second, kBackgroundType, IntRect(150, 250, 100, 100));
+  DrawRect(context, second, kForegroundType, IntRect(150, 250, 100, 100));
 
   EXPECT_THAT(GenerateRasterInvalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
@@ -312,24 +361,23 @@ TEST_P(DisplayItemRasterInvalidatorTest, AddRemoveFirstAndInvalidateSecond) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, InvalidateFirstAndAddRemoveSecond) {
-  FakeDisplayItemClient first("first", IntRect(100, 100, 150, 150));
-  FakeDisplayItemClient second("second", IntRect(200, 200, 50, 50));
+  FakeDisplayItemClient first("first");
+  FakeDisplayItemClient second("second");
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
-  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 150, 150));
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 150, 150));
+  DrawRect(context, first, kForegroundType, IntRect(100, 100, 150, 150));
   GenerateRasterInvalidations();
 
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
   first.Invalidate();
-  first.SetVisualRect(IntRect(150, 150, 100, 100));
   second.Invalidate();
-  DrawRect(context, first, kBackgroundType, FloatRect(150, 150, 100, 100));
-  DrawRect(context, first, kForegroundType, FloatRect(150, 150, 100, 100));
-  DrawRect(context, second, kBackgroundType, FloatRect(200, 200, 50, 50));
-  DrawRect(context, second, kForegroundType, FloatRect(200, 200, 50, 50));
+  DrawRect(context, first, kBackgroundType, IntRect(150, 150, 100, 100));
+  DrawRect(context, first, kForegroundType, IntRect(150, 150, 100, 100));
+  DrawRect(context, second, kBackgroundType, IntRect(200, 200, 50, 50));
+  DrawRect(context, second, kForegroundType, IntRect(200, 200, 50, 50));
 
   EXPECT_THAT(
       GenerateRasterInvalidations(),
@@ -343,10 +391,9 @@ TEST_P(DisplayItemRasterInvalidatorTest, InvalidateFirstAndAddRemoveSecond) {
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
   first.Invalidate();
-  first.SetVisualRect(IntRect(100, 100, 150, 150));
   second.Invalidate();
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
-  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 150, 150));
+  DrawRect(context, first, kBackgroundType, IntRect(100, 100, 150, 150));
+  DrawRect(context, first, kForegroundType, IntRect(100, 100, 150, 150));
 
   EXPECT_THAT(
       GenerateRasterInvalidations(),
@@ -359,35 +406,35 @@ TEST_P(DisplayItemRasterInvalidatorTest, InvalidateFirstAndAddRemoveSecond) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithChildren) {
-  FakeDisplayItemClient container1("container1", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient content1("content1", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient container2("container2", IntRect(100, 200, 100, 100));
-  FakeDisplayItemClient content2("content2", IntRect(100, 200, 50, 200));
+  FakeDisplayItemClient container1("container1");
+  FakeDisplayItemClient content1("content1");
+  FakeDisplayItemClient container2("container2");
+  FakeDisplayItemClient content2("content2");
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
-  DrawRect(context, container1, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, content1, kForegroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, container1, kForegroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
-  DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
-  DrawRect(context, content2, kForegroundType, FloatRect(100, 200, 50, 200));
-  DrawRect(context, container2, kForegroundType, FloatRect(100, 200, 100, 100));
+  DrawRect(context, container1, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, content1, kBackgroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, content1, kForegroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, container1, kForegroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, container2, kBackgroundType, IntRect(100, 200, 100, 100));
+  DrawRect(context, content2, kBackgroundType, IntRect(100, 200, 50, 200));
+  DrawRect(context, content2, kForegroundType, IntRect(100, 200, 50, 200));
+  DrawRect(context, container2, kForegroundType, IntRect(100, 200, 100, 100));
   GenerateRasterInvalidations();
 
   // Simulate the situation when |container1| gets a z-index that is greater
   // than that of |container2|.
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
-  DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
-  DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
-  DrawRect(context, content2, kForegroundType, FloatRect(100, 200, 50, 200));
-  DrawRect(context, container2, kForegroundType, FloatRect(100, 200, 100, 100));
-  DrawRect(context, container1, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, content1, kForegroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, container1, kForegroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, container2, kBackgroundType, IntRect(100, 200, 100, 100));
+  DrawRect(context, content2, kBackgroundType, IntRect(100, 200, 50, 200));
+  DrawRect(context, content2, kForegroundType, IntRect(100, 200, 50, 200));
+  DrawRect(context, container2, kForegroundType, IntRect(100, 200, 100, 100));
+  DrawRect(context, container1, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, content1, kBackgroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, content1, kForegroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, container1, kForegroundType, IntRect(100, 100, 100, 100));
 
   EXPECT_THAT(GenerateRasterInvalidations(),
               UnorderedElementsAre(
@@ -401,21 +448,21 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithChildren) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithChildrenAndInvalidation) {
-  FakeDisplayItemClient container1("container1", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient content1("content1", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient container2("container2", IntRect(100, 200, 100, 100));
-  FakeDisplayItemClient content2("content2", IntRect(100, 200, 50, 200));
+  FakeDisplayItemClient container1("container1");
+  FakeDisplayItemClient content1("content1");
+  FakeDisplayItemClient container2("container2");
+  FakeDisplayItemClient content2("content2");
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
-  DrawRect(context, container1, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, content1, kForegroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, container1, kForegroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
-  DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
-  DrawRect(context, content2, kForegroundType, FloatRect(100, 200, 50, 200));
-  DrawRect(context, container2, kForegroundType, FloatRect(100, 200, 100, 100));
+  DrawRect(context, container1, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, content1, kBackgroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, content1, kForegroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, container1, kForegroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, container2, kBackgroundType, IntRect(100, 200, 100, 100));
+  DrawRect(context, content2, kBackgroundType, IntRect(100, 200, 50, 200));
+  DrawRect(context, content2, kForegroundType, IntRect(100, 200, 50, 200));
+  DrawRect(context, container2, kForegroundType, IntRect(100, 200, 100, 100));
   GenerateRasterInvalidations();
 
   invalidator_.SetTracksRasterInvalidations(true);
@@ -423,14 +470,14 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithChildrenAndInvalidation) {
   // Simulate the situation when |container1| gets a z-index that is greater
   // than that of |container2|, and |container1| is invalidated.
   container2.Invalidate();
-  DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
-  DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
-  DrawRect(context, content2, kForegroundType, FloatRect(100, 200, 50, 200));
-  DrawRect(context, container2, kForegroundType, FloatRect(100, 200, 100, 100));
-  DrawRect(context, container1, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, content1, kForegroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, container1, kForegroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, container2, kBackgroundType, IntRect(100, 200, 100, 100));
+  DrawRect(context, content2, kBackgroundType, IntRect(100, 200, 50, 200));
+  DrawRect(context, content2, kForegroundType, IntRect(100, 200, 50, 200));
+  DrawRect(context, container2, kForegroundType, IntRect(100, 200, 100, 100));
+  DrawRect(context, container1, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, content1, kBackgroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, content1, kForegroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, container1, kForegroundType, IntRect(100, 100, 100, 100));
 
   EXPECT_THAT(GenerateRasterInvalidations(),
               UnorderedElementsAre(
@@ -447,10 +494,10 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithChildrenAndInvalidation) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderCrossingChunks) {
-  FakeDisplayItemClient container1("container1", IntRect(100, 100, 100, 100));
-  FakeDisplayItemClient content1("content1", IntRect(100, 100, 50, 200));
-  FakeDisplayItemClient container2("container2", IntRect(100, 200, 100, 100));
-  FakeDisplayItemClient content2("content2", IntRect(100, 200, 50, 200));
+  FakeDisplayItemClient container1("container1");
+  FakeDisplayItemClient content1("content1");
+  FakeDisplayItemClient container2("container2");
+  FakeDisplayItemClient content2("content2");
   GraphicsContext context(GetPaintController());
 
   auto container1_effect = CreateOpacityEffect(e0(), 0.5);
@@ -465,24 +512,24 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderCrossingChunks) {
   PaintChunk::Id container2_id(container2, kBackgroundType);
   GetPaintController().UpdateCurrentPaintChunkProperties(&container1_id,
                                                          container1_properties);
-  DrawRect(context, container1, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, container1, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, content1, kBackgroundType, IntRect(100, 100, 50, 200));
   GetPaintController().UpdateCurrentPaintChunkProperties(&container2_id,
                                                          container2_properties);
-  DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
-  DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
+  DrawRect(context, container2, kBackgroundType, IntRect(100, 200, 100, 100));
+  DrawRect(context, content2, kBackgroundType, IntRect(100, 200, 50, 200));
   GenerateRasterInvalidations();
 
   // Move content2 into container1, without invalidation.
   invalidator_.SetTracksRasterInvalidations(true);
   GetPaintController().UpdateCurrentPaintChunkProperties(&container1_id,
                                                          container1_properties);
-  DrawRect(context, container1, kBackgroundType, FloatRect(100, 100, 100, 100));
-  DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
-  DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
+  DrawRect(context, container1, kBackgroundType, IntRect(100, 100, 100, 100));
+  DrawRect(context, content1, kBackgroundType, IntRect(100, 100, 50, 200));
+  DrawRect(context, content2, kBackgroundType, IntRect(100, 200, 50, 200));
   GetPaintController().UpdateCurrentPaintChunkProperties(&container2_id,
                                                          container2_properties);
-  DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
+  DrawRect(context, container2, kBackgroundType, IntRect(100, 200, 100, 100));
 
   EXPECT_THAT(GenerateRasterInvalidations(),
               UnorderedElementsAre(
@@ -496,16 +543,16 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderCrossingChunks) {
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, SkipCache) {
-  FakeDisplayItemClient multicol("multicol", IntRect(100, 100, 200, 200));
-  FakeDisplayItemClient content("content", IntRect(100, 100, 100, 100));
+  FakeDisplayItemClient multicol("multicol");
+  FakeDisplayItemClient content("content");
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
-  FloatRect rect1(100, 100, 50, 50);
-  FloatRect rect2(150, 100, 50, 50);
-  FloatRect rect3(200, 100, 50, 50);
+  IntRect rect1(100, 100, 50, 50);
+  IntRect rect2(150, 100, 50, 50);
+  IntRect rect3(200, 100, 50, 50);
 
-  DrawRect(context, multicol, kBackgroundType, FloatRect(100, 200, 100, 100));
+  DrawRect(context, multicol, kBackgroundType, IntRect(100, 200, 100, 100));
   GetPaintController().BeginSkippingCache();
   DrawRect(context, content, kForegroundType, rect1);
   DrawRect(context, content, kForegroundType, rect2);
@@ -516,7 +563,7 @@ TEST_P(DisplayItemRasterInvalidatorTest, SkipCache) {
   InitRootChunk();
   // Draw again with nothing invalidated.
   EXPECT_TRUE(ClientCacheIsValid(multicol));
-  DrawRect(context, multicol, kBackgroundType, FloatRect(100, 200, 100, 100));
+  DrawRect(context, multicol, kBackgroundType, IntRect(100, 200, 100, 100));
 
   GetPaintController().BeginSkippingCache();
   DrawRect(context, content, kForegroundType, rect1);
@@ -525,7 +572,7 @@ TEST_P(DisplayItemRasterInvalidatorTest, SkipCache) {
 
   EXPECT_THAT(GenerateRasterInvalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
-                  &content, "content", IntRect(100, 100, 100, 100),
+                  &content, "content", UnionRect(rect1, rect2),
                   PaintInvalidationReason::kUncacheable}));
   invalidator_.SetTracksRasterInvalidations(false);
 
@@ -533,7 +580,7 @@ TEST_P(DisplayItemRasterInvalidatorTest, SkipCache) {
   InitRootChunk();
   // Now the multicol becomes 3 columns and repaints.
   multicol.Invalidate();
-  DrawRect(context, multicol, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, multicol, kBackgroundType, IntRect(100, 100, 100, 100));
 
   GetPaintController().BeginSkippingCache();
   DrawRect(context, content, kForegroundType, rect1);
@@ -541,24 +588,28 @@ TEST_P(DisplayItemRasterInvalidatorTest, SkipCache) {
   DrawRect(context, content, kForegroundType, rect3);
   GetPaintController().EndSkippingCache();
 
-  EXPECT_THAT(GenerateRasterInvalidations(),
-              UnorderedElementsAre(
-                  RasterInvalidationInfo{&multicol, "multicol",
-                                         IntRect(100, 100, 200, 200),
-                                         PaintInvalidationReason::kFull},
-                  RasterInvalidationInfo{
-                      &content, "content", IntRect(100, 100, 100, 100),
-                      PaintInvalidationReason::kUncacheable}));
+  EXPECT_THAT(
+      GenerateRasterInvalidations(),
+      UnorderedElementsAre(
+          RasterInvalidationInfo{&multicol, "multicol",
+                                 IntRect(100, 200, 100, 100),
+                                 PaintInvalidationReason::kFull},
+          RasterInvalidationInfo{&multicol, "multicol",
+                                 IntRect(100, 100, 100, 100),
+                                 PaintInvalidationReason::kFull},
+          RasterInvalidationInfo{&content, "content",
+                                 UnionRect(rect1, UnionRect(rect2, rect3)),
+                                 PaintInvalidationReason::kUncacheable}));
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, PartialSkipCache) {
-  FakeDisplayItemClient content("content", IntRect(100, 100, 250, 250));
+  FakeDisplayItemClient content("content");
   GraphicsContext context(GetPaintController());
 
-  FloatRect rect1(100, 100, 50, 50);
-  FloatRect rect2(150, 100, 50, 50);
-  FloatRect rect3(200, 100, 50, 50);
+  IntRect rect1(100, 100, 50, 50);
+  IntRect rect2(150, 100, 50, 50);
+  IntRect rect3(200, 100, 50, 50);
 
   InitRootChunk();
   DrawRect(context, content, kBackgroundType, rect1);
@@ -577,26 +628,27 @@ TEST_P(DisplayItemRasterInvalidatorTest, PartialSkipCache) {
   GetPaintController().EndSkippingCache();
   DrawRect(context, content, kForegroundType, rect3);
 
-  EXPECT_THAT(GenerateRasterInvalidations(),
-              UnorderedElementsAre(RasterInvalidationInfo{
-                  &content, "content", IntRect(100, 100, 250, 250),
-                  PaintInvalidationReason::kUncacheable}));
+  EXPECT_THAT(
+      GenerateRasterInvalidations(),
+      UnorderedElementsAre(RasterInvalidationInfo{
+          &content, "content", UnionRect(rect1, UnionRect(rect2, rect3)),
+          PaintInvalidationReason::kUncacheable}));
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
 TEST_P(DisplayItemRasterInvalidatorTest, Partial) {
-  FakeDisplayItemClient client("client", IntRect(100, 100, 300, 300));
+  FakeDisplayItemClient client("client");
   GraphicsContext context(GetPaintController());
 
   InitRootChunk();
-  DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 300));
+  DrawRect(context, client, kBackgroundType, IntRect(100, 100, 300, 300));
   GenerateRasterInvalidations();
 
   // Test partial rect invalidation without other invalidations.
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
   client.SetPartialInvalidationVisualRect(IntRect(150, 160, 170, 180));
-  DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 300));
+  DrawRect(context, client, kBackgroundType, IntRect(100, 100, 300, 300));
 
   // Partial invalidation.
   EXPECT_THAT(GenerateRasterInvalidations(),
@@ -611,7 +663,7 @@ TEST_P(DisplayItemRasterInvalidatorTest, Partial) {
   InitRootChunk();
   client.SetPartialInvalidationVisualRect(IntRect(150, 160, 170, 180));
   client.Invalidate();
-  DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 300));
+  DrawRect(context, client, kBackgroundType, IntRect(100, 100, 300, 300));
 
   // Partial invalidation is shadowed by full invalidation.
   EXPECT_THAT(GenerateRasterInvalidations(),
@@ -625,8 +677,7 @@ TEST_P(DisplayItemRasterInvalidatorTest, Partial) {
   invalidator_.SetTracksRasterInvalidations(true);
   InitRootChunk();
   client.SetPartialInvalidationVisualRect(IntRect(150, 160, 170, 180));
-  client.SetVisualRect(IntRect(100, 100, 300, 400));
-  DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 400));
+  DrawRect(context, client, kBackgroundType, IntRect(100, 100, 300, 400));
 
   // Both partial invalidation and incremental invalidation.
   EXPECT_THAT(

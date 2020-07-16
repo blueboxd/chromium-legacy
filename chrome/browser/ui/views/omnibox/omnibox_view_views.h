@@ -175,6 +175,9 @@ class OmniboxViewViews : public OmniboxView,
       UserInteractionAndHover);
   FRIEND_TEST_ALL_PREFIXES(
       OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+      SchemeAndTrivialSubdomainElision);
+  FRIEND_TEST_ALL_PREFIXES(
+      OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
       HideOnInteractionAfterFocusAndBlur);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsRevealOnHoverTest, AfterBlur);
   FRIEND_TEST_ALL_PREFIXES(
@@ -447,16 +450,27 @@ class OmniboxViewViews : public OmniboxView,
   // display.
   void OnShouldPreventElisionChanged();
 
-  // Elides or unelides to a simplified version of the URL. Callers should
-  // ensure that the URL is valid before calling.
+  // The methods below elide to or unelide from a simplified version of the URL.
+  // Callers should ensure that the URL is valid before calling.
   //
   // These methods do not animate, but rather immediately elide/unelide. These
   // methods are used when we don't want to draw the user's attention to the URL
   // simplification -- for example, if the URL is already simplified and the
   // user performs a same-document navigation, we want to keep the URL
   // simplified without it appearing to be a change from the user's perspective.
-  void ElideToSimplifiedDomain();
-  void UnelideFromSimplifiedDomain();
+
+  // Elides the URL to a simplified version of the domain. This will be the
+  // registrable domain if OmniboxFieldTrial::ShouldElideToRegistrableDomain()
+  // is true; otherwise it is the hostname with trivial subdomains ("www.")
+  // elided. The scheme, path, and other components of the URL are hidden.
+  void ElideURL();
+  // Show the full URL, including scheme, all subdomains, and path.
+  void ShowFullURL();
+  // Shows the full URL and then elides http/https schemes and the
+  // "www." subdomain (if present) by setting the display rect to the width of
+  // the remaining URL and then setting the display offset to scroll the scheme
+  // and trivial subdomain offscreen.
+  void ShowFullURLWithoutSchemeAndTrivialSubdomain();
 
   // Parses GetText() as a URL, trims trivial subdomains from it (if any and if
   // applicable), and returns the result.
@@ -483,26 +497,19 @@ class OmniboxViewViews : public OmniboxView,
   //
   // These animations are used by different field trials as described below.
 
-  // When ShouldRevealPathQueryRefOnHover() is enabled but not
-  // ShouldHidePathQueryRefOnInteraction(), then the URL is elided in
-  // EmphasizeUrlComponents() and |hover_elide_or_unelide_animation_| is created
-  // in OnThemeChanged(). This animation is used to unelide or elide the URL
-  // when the mouse hovers or exits the omnibox.
+  // This animation is used to unelide or elide the URL
+  // when the mouse hovers or exits the omnibox. The URL will unelide to the
+  // full URL or a partially elided version (with scheme and trivial subdomains
+  // elided) depending on whether the user has interacted with the page yet
+  // (when reveal-on-interaction is enabled).
   std::unique_ptr<ElideAnimation> hover_elide_or_unelide_animation_;
-  // When ShouldHidePathQueryRefOnInteraction() is enabled, we don't
-  // create any animations until the user interacts with the page. When a
+  // When ShouldHidePathQueryRefOnInteraction() is enabled, when a
   // navigation finishes, we unelide the URL if it was a full cross-document
   // navigation. Once the user interacts with the page, we create and run
-  // |elide_after_interaction_animation_| to elide the URL. If
-  // ShouldRevealPathQueryRefOnHover() is also enabled, we defer the creation of
-  // |hover_elide_or_unelide_animation_| until the user interacts with the page
-  // as well, since we don't want to do any hover animations until the URL has
-  // been elided after user interaction. After the first user interaction,
-  // |elide_after_interaction_animation_| doesn't run again until it's
-  // re-created after the next navigation, and
-  // |hover_elide_or_unelide_animation_| behaves as described above for the rest
-  // of the navigation. There are 2 separate animations (one for
-  // after-interaction and one hovering) so that the state of the
+  // |elide_after_interaction_animation_| to elide the URL. After the first user
+  // interaction, |elide_after_interaction_animation_| doesn't run again until
+  // it's re-created after the next navigation. There are 2 separate animations
+  // (one for after-interaction and one hovering) so that the state of the
   // after-interaction animation can be queried to know when the user has or has
   // not already interacted with the page.
   std::unique_ptr<ElideAnimation> elide_after_interaction_animation_;

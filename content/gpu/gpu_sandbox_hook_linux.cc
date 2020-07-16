@@ -26,7 +26,7 @@
 #include "sandbox/linux/syscall_broker/broker_command.h"
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
-#include "sandbox/policy/chromecast_sandbox_whitelist_buildflags.h"
+#include "sandbox/policy/chromecast_sandbox_allowlist_buildflags.h"
 #include "sandbox/policy/linux/bpf_cros_amd_gpu_policy_linux.h"
 #include "sandbox/policy/linux/bpf_cros_arm_gpu_policy_linux.h"
 #include "sandbox/policy/linux/bpf_gpu_policy_linux.h"
@@ -48,8 +48,8 @@ inline bool IsChromeOS() {
 #endif
 }
 
-inline bool UseChromecastSandboxWhitelist() {
-#if BUILDFLAG(ENABLE_CHROMECAST_GPU_SANDBOX_WHITELIST)
+inline bool UseChromecastSandboxAllowlist() {
+#if BUILDFLAG(ENABLE_CHROMECAST_GPU_SANDBOX_ALLOWLIST)
   return true;
 #else
   return false;
@@ -153,7 +153,7 @@ void AddV4L2GpuWhitelist(
   static const char kDevJpegEncPath[] = "/dev/jpeg-enc";
   permissions->push_back(BrokerFilePermission::ReadWrite(kDevJpegEncPath));
 
-  if (UseChromecastSandboxWhitelist()) {
+  if (UseChromecastSandboxAllowlist()) {
     static const char kAmlogicAvcEncoderPath[] = "/dev/amvenc_avc";
     permissions->push_back(
         BrokerFilePermission::ReadWrite(kAmlogicAvcEncoderPath));
@@ -346,7 +346,7 @@ std::vector<BrokerFilePermission> FilePermissionsForGpu(
     }
   }
 
-  if (UseChromecastSandboxWhitelist()) {
+  if (UseChromecastSandboxAllowlist()) {
     if (UseV4L2Codec())
       AddV4L2GpuWhitelist(&permissions, options);
 
@@ -362,7 +362,7 @@ std::vector<BrokerFilePermission> FilePermissionsForGpu(
 
 void LoadArmGpuLibraries() {
   // Preload the Mali library.
-  if (UseChromecastSandboxWhitelist()) {
+  if (UseChromecastSandboxAllowlist()) {
     for (const char* path : kWhitelistedChromecastPaths) {
       const std::string library_path(std::string(path) +
                                      std::string("libMali.so"));
@@ -433,7 +433,7 @@ bool LoadLibrariesForGpu(
     }
     if (options.use_amd_specific_policies)
       return LoadAmdGpuLibraries();
-  } else if (UseChromecastSandboxWhitelist() && IsArchitectureArm()) {
+  } else if (UseChromecastSandboxAllowlist() && IsArchitectureArm()) {
     LoadArmGpuLibraries();
     if (UseV4L2Codec())
       LoadChromecastV4L2Libraries();

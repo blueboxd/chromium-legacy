@@ -61,19 +61,6 @@ void ExecuteCommandLines(system_logs::SystemLogsResponse* response) {
   command = base::CommandLine((base::FilePath("/usr/bin/printenv")));
   commands.emplace_back("env", command);
 
-  // Get a list of file sizes for the whole system (excluding the names of the
-  // files in the Downloads directory for privay reasons).
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    // The following command would hang if run in Linux Chrome OS build on a
-    // Linux Workstation.
-    command = base::CommandLine(base::FilePath("/bin/sh"));
-    command.AppendArg("-c");
-    command.AppendArg(
-        "/usr/bin/du -h --max-depth=5 /home/ /mnt/stateful_partition/ | "
-        "grep -v -e Downloads -e IndexedDB -e databases");
-    commands.emplace_back("system_files", command);
-  }
-
   // Get disk space usage information
   command = base::CommandLine(base::FilePath("/bin/df"));
   commands.emplace_back("disk_usage", command);

@@ -414,7 +414,7 @@ ui::EventDispatchDetails TouchExplorationController::InDoubleTapPending(
     if (current_touch_ids_.size() != 0)
       return DiscardEvent(continuation);
 
-    SendSimulatedClickOrTap(continuation);
+    SendSimulatedClick();
 
     SET_STATE(NO_FINGERS_DOWN);
     return DiscardEvent(continuation);
@@ -433,7 +433,7 @@ ui::EventDispatchDetails TouchExplorationController::InTouchReleasePending(
     if (current_touch_ids_.size() != 0)
       return DiscardEvent(continuation);
 
-    SendSimulatedClickOrTap(continuation);
+    SendSimulatedClick();
     SET_STATE(NO_FINGERS_DOWN);
     return DiscardEvent(continuation);
   }
@@ -575,7 +575,7 @@ ui::EventDispatchDetails TouchExplorationController::InTouchExploreSecondPress(
       return DiscardEvent(continuation);
     }
 
-    SendSimulatedClickOrTap(continuation);
+    SendSimulatedClick();
 
     SET_STATE(TOUCH_EXPLORATION);
     EnterTouchToMouseMode();
@@ -619,15 +619,9 @@ void TouchExplorationController::PlaySoundForTimer() {
   delegate_->PlayVolumeAdjustEarcon();
 }
 
-void TouchExplorationController::SendSimulatedClickOrTap(
-    const Continuation continuation) {
-  // If we got an anchor point from ChromeVox, send a double-tap gesture
-  // and let ChromeVox handle the click.
-  if (anchor_point_state_ == ANCHOR_POINT_EXPLICITLY_SET) {
-    delegate_->HandleAccessibilityGesture(ax::mojom::Gesture::kClick);
-    return;
-  }
-  SendSimulatedTap(continuation);
+void TouchExplorationController::SendSimulatedClick() {
+  // Always send a double tap gesture to ChromeVox.
+  delegate_->HandleAccessibilityGesture(ax::mojom::Gesture::kClick);
 }
 
 void TouchExplorationController::SendSimulatedTap(

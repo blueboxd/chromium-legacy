@@ -100,7 +100,7 @@ class MergeProfilesTest(unittest.TestCase):
     with mock.patch.object(os, 'walk') as mock_walk:
       with mock.patch.object(os, 'remove'):
         mock_walk.return_value = mock_input_dir_walk
-        with mock.patch.object(subprocess, 'check_output') as mock_exec_cmd:
+        with mock.patch.object(subprocess, 'check_call') as mock_exec_cmd:
           merger.merge_profiles('/b/some/path', 'output/dir/default.profdata',
                                 '.profraw', 'llvm-profdata')
           self.assertEqual(
@@ -131,7 +131,7 @@ class MergeProfilesTest(unittest.TestCase):
     with mock.patch.object(os, 'walk') as mock_walk:
       with mock.patch.object(os, 'remove'):
         mock_walk.return_value = mock_input_dir_walk
-        with mock.patch.object(subprocess, 'check_output') as mock_exec_cmd:
+        with mock.patch.object(subprocess, 'check_call') as mock_exec_cmd:
           merger.merge_profiles('/b/some/path',
                                 'output/dir/default.profdata',
                                 '.profraw',
@@ -164,7 +164,7 @@ class MergeProfilesTest(unittest.TestCase):
 
     with mock.patch.object(os, 'walk') as mock_walk:
       mock_walk.return_value = mock_input_dir_walk
-      with mock.patch.object(subprocess, 'check_output') as mock_exec_cmd:
+      with mock.patch.object(subprocess, 'check_call') as mock_exec_cmd:
         merger.merge_profiles('/b/some/path', 'output/dir/default.profdata',
                               '.profraw', 'llvm-profdata')
         self.assertFalse(mock_exec_cmd.called)
@@ -181,7 +181,7 @@ class MergeProfilesTest(unittest.TestCase):
     with mock.patch.object(os, 'walk') as mock_walk:
       with mock.patch.object(os, 'remove'):
         mock_walk.return_value = mock_input_dir_walk
-        with mock.patch.object(subprocess, 'check_output') as mock_exec_cmd:
+        with mock.patch.object(subprocess, 'check_call') as mock_exec_cmd:
           merger.merge_profiles('/b/some/path', 'output/dir/default.profdata',
                                 '.profdata', 'llvm-profdata')
           self.assertEqual(
@@ -214,7 +214,7 @@ class MergeProfilesTest(unittest.TestCase):
     with mock.patch.object(os, 'walk') as mock_walk:
       with mock.patch.object(os, 'remove'):
         mock_walk.return_value = mock_input_dir_walk
-        with mock.patch.object(subprocess, 'check_output') as mock_exec_cmd:
+        with mock.patch.object(subprocess, 'check_call') as mock_exec_cmd:
           input_profdata_filename_pattern = '.+_unittests\.profdata'
           merger.merge_profiles('/b/some/path',
                                 'output/dir/default.profdata',
@@ -236,7 +236,6 @@ class MergeProfilesTest(unittest.TestCase):
 
     # The mock method should only apply when merging .profraw files.
     self.assertFalse(mock_validate_and_convert_profraws.called)
-
 
   @mock.patch('os.remove')
   def test_mark_invalid_shards(self, mock_rm):
@@ -270,7 +269,7 @@ class MergeProfilesTest(unittest.TestCase):
 
     with mock.patch.object(os, 'walk') as mock_walk:
       mock_walk.return_value = mock_input_dir_walk
-      with mock.patch.object(subprocess, 'check_output') as mock_exec_cmd:
+      with mock.patch.object(subprocess, 'check_call') as mock_exec_cmd:
         merger.merge_java_exec_files(
             '/b/some/path', 'output/path', 'path/to/jacococli.jar')
         self.assertEqual(
@@ -297,7 +296,7 @@ class MergeProfilesTest(unittest.TestCase):
 
     with mock.patch.object(os, 'walk') as mock_walk:
       mock_walk.return_value = mock_input_dir_walk
-      with mock.patch.object(subprocess, 'check_output') as mock_exec_cmd:
+      with mock.patch.object(subprocess, 'check_call') as mock_exec_cmd:
         merger.merge_java_exec_files(
             '/b/some/path', 'output/path', 'path/to/jacococli.jar')
         self.assertFalse(mock_exec_cmd.called)

@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * This is the coordinator for MessageCardProvider component. This component is used to build a

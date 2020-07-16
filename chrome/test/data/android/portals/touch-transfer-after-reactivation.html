@@ -11,7 +11,8 @@
 </head>
 <body>
   <div id="scroller"></div>
-  <portal src="activate-predecessor.html"></portal>
+  <!-- TODO(crbug.com/1098773): The timeout shouldn't be necessary. -->
+  <portal src="activate-predecessor.html?withTimeout"></portal>
   <script>
     document.body.addEventListener('touchstart', e => {
       var portal = document.querySelector('portal');

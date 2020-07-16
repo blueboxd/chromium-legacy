@@ -25,7 +25,7 @@ class BrokerPermissionList {
  public:
   // |denied_errno| is the error code returned when IPC requests for system
   // calls such as open() or access() are denied because a file is not in the
-  // whitelist. EACCESS would be a typical value.
+  // allowlist. EACCESS would be a typical value.
   // |permissions| is a list of BrokerPermission objects that define
   // what the broker will allow.
   BrokerPermissionList(int denied_errno,
@@ -40,7 +40,7 @@ class BrokerPermissionList {
   // If |file_to_open| is not NULL, a pointer to the path will be returned.
   // In the case of a recursive match, this will be the requested_filename,
   // otherwise it will return the matching pointer from the
-  // whitelist. For paranoia a caller should then use |file_to_access|. See
+  // allowlist. For paranoia a caller should then use |file_to_access|. See
   // GetFileNameIfAllowedToOpen() for more explanation.
   // return true if calling access() on this file should be allowed, false
   // otherwise.
@@ -53,7 +53,7 @@ class BrokerPermissionList {
   // If |file_to_open| is not NULL, a pointer to the path will be returned.
   // In the case of a recursive match, this will be the requested_filename,
   // otherwise it will return the matching pointer from the
-  // whitelist. For paranoia, a caller should then use |file_to_open| rather
+  // allowlist. For paranoia, a caller should then use |file_to_open| rather
   // than |requested_filename|, so that it never attempts to open an
   // attacker-controlled file name, even if an attacker managed to fool the
   // string comparison mechanism.

@@ -94,7 +94,7 @@ public final class HeaderIphScrollListenerTest {
     private UserEducationHelper mUserEducationHelper;
     private View mFeedRootView;
 
-    private boolean mHasShownMenuIph = false;
+    private boolean mHasShownMenuIph;
 
     @Before
     public void setUp() {

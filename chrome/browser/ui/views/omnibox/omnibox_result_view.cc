@@ -421,9 +421,6 @@ void OmniboxResultView::OnMouseReleased(const ui::MouseEvent& event) {
         event.IsOnlyLeftMouseButton()
             ? WindowOpenDisposition::CURRENT_TAB
             : WindowOpenDisposition::NEW_BACKGROUND_TAB;
-    if (match_.IsTabSwitchSuggestion()) {
-      disposition = WindowOpenDisposition::SWITCH_TO_TAB;
-    }
     popup_contents_view_->OpenMatch(model_index_, disposition,
                                     event.time_stamp());
   }

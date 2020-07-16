@@ -1000,32 +1000,10 @@ LocalizedError::PageState LocalizedError::GetPageState(
     params->suggest_reload = !!(options.buttons & SHOW_BUTTON_RELOAD);
   }
 
-  base::ListValue* suggestions_details = nullptr;
-  base::ListValue* suggestions_summary_list = nullptr;
-
-  bool use_default_suggestions = true;
-  if (!params->override_suggestions) {
-    // Detailed suggestion information.
-    suggestions_details = result.strings.SetList(
-        "suggestionsDetails", std::make_unique<base::ListValue>());
-    suggestions_summary_list = result.strings.SetList(
-        "suggestionsSummaryList", std::make_unique<base::ListValue>());
-  } else {
-    suggestions_summary_list = result.strings.SetList(
-        "suggestionsSummaryList", std::move(params->override_suggestions));
-    use_default_suggestions = false;
-  }
-
-  if (params->search_url.is_valid()) {
-    std::unique_ptr<base::DictionaryValue> search_suggestion(
-        new base::DictionaryValue);
-    search_suggestion->SetString("summary",l10n_util::GetStringUTF16(
-        IDS_ERRORPAGES_SUGGESTION_GOOGLE_SEARCH_SUMMARY));
-    search_suggestion->SetString("searchUrl", params->search_url.spec() +
-                                 params->search_terms);
-    search_suggestion->SetString("searchTerms", params->search_terms);
-    suggestions_summary_list->Append(std::move(search_suggestion));
-  }
+  base::ListValue* suggestions_details = result.strings.SetList(
+      "suggestionsDetails", std::make_unique<base::ListValue>());
+  base::ListValue* suggestions_summary_list = result.strings.SetList(
+      "suggestionsSummaryList", std::make_unique<base::ListValue>());
 
   // Add the reload suggestion, if needed for pages that didn't come
   // from a post.
@@ -1038,20 +1016,18 @@ LocalizedError::PageState LocalizedError::GetPageState(
     result.strings.Set("reloadButton", std::move(reload_button));
   }
 
-  if (use_default_suggestions) {
 #if defined(OS_CHROMEOS)
-    // ChromeOS has its own diagnostics extension, which doesn't rely on a
-    // browser-initiated dialog.
-    can_show_network_diagnostics_dialog = true;
+  // ChromeOS has its own diagnostics extension, which doesn't rely on a
+  // browser-initiated dialog.
+  can_show_network_diagnostics_dialog = true;
 #endif  // defined(OS_CHROMEOS)
 
-    // Add default suggestions and any relevant supporting details.
-    GetSuggestionsSummaryList(error_code, &result.strings, options.suggestions,
-                              locale, suggestions_summary_list,
-                              can_show_network_diagnostics_dialog, failed_url);
-    AddSuggestionsDetails(error_code, &result.strings, options.suggestions,
-                          suggestions_details);
-  }
+  // Add default suggestions and any relevant supporting details.
+  GetSuggestionsSummaryList(error_code, &result.strings, options.suggestions,
+                            locale, suggestions_summary_list,
+                            can_show_network_diagnostics_dialog, failed_url);
+  AddSuggestionsDetails(error_code, &result.strings, options.suggestions,
+                        suggestions_details);
 
 #if defined(OS_ANDROID)
   if (!is_post && !result.reload_button_shown && !is_incognito &&

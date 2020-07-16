@@ -4,7 +4,9 @@
 
 #include "net/url_request/redirect_info.h"
 
+#include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/referrer_policy.h"
@@ -34,8 +36,8 @@ TEST(RedirectInfoTest, MethodForRedirect) {
   const SiteForCookies kOriginalSiteForCookies =
       SiteForCookies::FromUrl(GURL("https://foo.test/"));
   const url::Origin kOriginalTopFrameOrigin = url::Origin::Create(kOriginalUrl);
-  const URLRequest::FirstPartyURLPolicy kOriginalFirstPartyUrlPolicy =
-      net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
+  const RedirectInfo::FirstPartyURLPolicy kOriginalFirstPartyUrlPolicy =
+      RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL;
   const ReferrerPolicy kOriginalReferrerPolicy = ReferrerPolicy::NEVER_CLEAR;
   const std::string kOriginalReferrer = "";
   const GURL kNewLocation = GURL("https://foo.test/redirected");
@@ -85,8 +87,8 @@ TEST(RedirectInfoTest, CopyFragment) {
   const std::string kOriginalMethod = "GET";
   const SiteForCookies kOriginalSiteForCookies =
       SiteForCookies::FromUrl(GURL("https://foo.test/"));
-  const URLRequest::FirstPartyURLPolicy kOriginalFirstPartyUrlPolicy =
-      net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
+  const RedirectInfo::FirstPartyURLPolicy kOriginalFirstPartyUrlPolicy =
+      RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL;
   const ReferrerPolicy kOriginalReferrerPolicy = ReferrerPolicy::NEVER_CLEAR;
   const std::string kOriginalReferrer = "";
   const int kHttpStatusCode = 301;
@@ -111,12 +113,13 @@ TEST(RedirectInfoTest, CopyFragment) {
 
 TEST(RedirectInfoTest, FirstPartyURLPolicy) {
   struct TestCase {
-    URLRequest::FirstPartyURLPolicy original_first_party_url_policy;
+    RedirectInfo::FirstPartyURLPolicy original_first_party_url_policy;
     const char* expected_new_site_for_cookies;
   };
   const TestCase kTests[] = {
-      {URLRequest::NEVER_CHANGE_FIRST_PARTY_URL, "https://foo.test/"},
-      {URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT,
+      {RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL,
+       "https://foo.test/"},
+      {RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT,
        "https://foo.test/redirected"},
   };
 
@@ -430,8 +433,8 @@ TEST(RedirectInfoTest, ReferrerPolicy) {
   const std::string kOriginalMethod = "GET";
   const SiteForCookies kOriginalSiteForCookies =
       SiteForCookies::FromUrl(GURL("https://foo.test/"));
-  const URLRequest::FirstPartyURLPolicy kOriginalFirstPartyUrlPolicy =
-      net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
+  const RedirectInfo::FirstPartyURLPolicy kOriginalFirstPartyUrlPolicy =
+      RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL;
   const bool kInsecureSchemeWasUpgraded = false;
   const bool kCopyFragment = true;
 

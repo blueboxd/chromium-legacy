@@ -101,9 +101,8 @@ void ExitHandler::ExitWhenPossibleOnUIThread(int signal) {
 
 ExitHandler::ExitHandler() {
   on_session_restored_callback_subscription_ =
-      SessionRestore::RegisterOnSessionRestoredCallback(
-          base::Bind(&ExitHandler::OnSessionRestoreDone,
-                     base::Unretained(this)));
+      SessionRestore::RegisterOnSessionRestoredCallback(base::BindRepeating(
+          &ExitHandler::OnSessionRestoreDone, base::Unretained(this)));
 }
 
 ExitHandler::~ExitHandler() {

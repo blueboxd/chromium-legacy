@@ -4,6 +4,7 @@
 
 #include "content/browser/web_package/web_bundle_interceptor_for_tracked_navigation_from_trustable_file_or_from_network.h"
 
+#include "base/command_line.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/web_package/web_bundle_reader.h"
 #include "content/browser/web_package/web_bundle_source.h"

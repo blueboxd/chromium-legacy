@@ -61,11 +61,6 @@ const base::Feature kOmniboxTabSwitchSuggestions{
 #endif
 };
 
-// Feature that enables tab-switch suggestions in their own row.
-const base::Feature kOmniboxTabSwitchSuggestionsDedicatedRow{
-    "OmniboxTabSwitchSuggestionsDedicatedRow",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature used to enable various experiments on keyword mode, UI and
 // suggestions.
 const base::Feature kExperimentalKeywordMode{"OmniboxExperimentalKeywordMode",

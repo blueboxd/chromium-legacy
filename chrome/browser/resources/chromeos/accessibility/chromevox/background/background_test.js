@@ -53,7 +53,7 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
 
   simulateHitTestResult(node) {
     return () => {
-      BackgroundMouseHandler.instance.handleHitTestResult(node);
+      GestureCommandHandler.pointerHandler_.handleHitTestResult(node);
     };
   }
 
@@ -1923,7 +1923,7 @@ TEST_F('ChromeVoxBackgroundTest', 'ReinsertedNodeRecovery', function() {
       });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'HoverTargetsLeafNode', function() {
+TEST_F('ChromeVoxBackgroundTest', 'PointerTargetsLeafNode', function() {
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
@@ -2619,8 +2619,8 @@ TEST_F('ChromeVoxBackgroundTest', 'HitTestOnExoSurface', function() {
       });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'HoverSkipsContainers', function() {
-  BackgroundMouseHandler.MIN_HOVER_EXIT_SOUND_DELAY_MS = -1;
+TEST_F('ChromeVoxBackgroundTest', 'PointerSkipsContainers', function() {
+  PointerHandler.MIN_NO_POINTER_ANCHOR_SOUND_DELAY_MS = -1;
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
@@ -2654,10 +2654,10 @@ TEST_F('ChromeVoxBackgroundTest', 'HoverSkipsContainers', function() {
             })
             .call(simulateHitTestResult(group))
             .expectSpeech('range cleared!')
-            .expectEarcon(Earcon.TOUCH_EXIT)
+            .expectEarcon(Earcon.NO_POINTER_ANCHOR)
             .call(simulateHitTestResult(group))
             .expectSpeech('range cleared!')
-            .expectEarcon(Earcon.TOUCH_EXIT)
+            .expectEarcon(Earcon.NO_POINTER_ANCHOR)
             .replay();
       });
 });
@@ -2778,5 +2778,45 @@ TEST_F('ChromeVoxBackgroundTest', 'ReadFromHereAccumulatesText', function() {
           ChromeVox.tts.speak = keepWaiting;
           doCmd('readFromHere')();
         });
+      });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'PointerOnOffOnRepeatsNode', function() {
+  PointerHandler.MIN_NO_POINTER_ANCHOR_SOUND_DELAY_MS = -1;
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <button>hi</button>
+  `,
+      function(root) {
+        ChromeVoxState.addObserver(new class {
+          onCurrentRangeChanged(range) {
+            if (!range) {
+              ChromeVox.tts.speak('range cleared!');
+            }
+          }
+        }());
+
+        const button = root.find({role: RoleType.BUTTON});
+        assertNotNullNorUndefined(button);
+        mockFeedback.call(simulateHitTestResult(button))
+            .expectSpeech('hi', 'Button')
+
+            // Touch slightly off of the button.
+            .call(GestureCommandHandler.onAccessibilityGesture_.bind(
+                null, 'touchExplore', button.location.left,
+                button.location.top + 60))
+            .expectSpeech('range cleared!')
+            .expectEarcon(Earcon.NO_POINTER_ANCHOR)
+            .call(() => {
+              assertEquals(
+                  button,
+                  GestureCommandHandler.pointerHandler_
+                      .lastValidNodeBeforePointerInvalidation);
+            })
+            .clearPendingOutput()
+            .call(simulateHitTestResult(button))
+            .expectSpeech('hi', 'Button')
+            .replay();
       });
 });

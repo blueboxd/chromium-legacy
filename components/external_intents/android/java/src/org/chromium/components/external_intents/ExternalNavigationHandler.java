@@ -168,7 +168,7 @@ public class ExternalNavigationHandler {
 
     // Helper class to return a boolean by reference.
     private static class MutableBoolean {
-        private Boolean mValue = null;
+        private Boolean mValue;
         public void set(boolean value) {
             mValue = value;
         }

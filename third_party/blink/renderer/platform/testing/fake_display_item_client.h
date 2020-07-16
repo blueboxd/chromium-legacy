@@ -13,12 +13,10 @@ namespace blink {
 // A simple DisplayItemClient implementation suitable for use in unit tests.
 class FakeDisplayItemClient : public DisplayItemClient {
  public:
-  FakeDisplayItemClient(const String& name = "FakeDisplayItemClient",
-                        const IntRect& visual_rect = IntRect())
-      : name_(name), visual_rect_(visual_rect) {}
+  explicit FakeDisplayItemClient(const String& name = "FakeDisplayItemClient")
+      : name_(name) {}
 
   String DebugName() const final { return name_; }
-  IntRect VisualRect() const override { return visual_rect_; }
   IntRect PartialInvalidationVisualRect() const override {
     return partial_invalidation_visual_rect_;
   }
@@ -26,7 +24,6 @@ class FakeDisplayItemClient : public DisplayItemClient {
     partial_invalidation_visual_rect_ = IntRect();
   }
 
-  void SetVisualRect(const IntRect& r) { visual_rect_ = r; }
   void SetPartialInvalidationVisualRect(const IntRect& r) {
     Invalidate(PaintInvalidationReason::kRectangle);
     partial_invalidation_visual_rect_ = r;
@@ -37,7 +34,6 @@ class FakeDisplayItemClient : public DisplayItemClient {
 
  private:
   String name_;
-  IntRect visual_rect_;
   mutable IntRect partial_invalidation_visual_rect_;
 };
 

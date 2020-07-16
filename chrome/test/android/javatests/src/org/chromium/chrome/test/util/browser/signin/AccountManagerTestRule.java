@@ -27,7 +27,7 @@ public class AccountManagerTestRule implements TestRule {
     public static final String TEST_ACCOUNT_EMAIL = "test@gmail.com";
 
     private final FakeAccountManagerFacade mFakeAccountManagerFacade;
-    private boolean mIsSignedIn = false;
+    private boolean mIsSignedIn;
 
     public AccountManagerTestRule() {
         this(new FakeAccountManagerFacade(null));

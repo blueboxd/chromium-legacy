@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,10 +30,13 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/base_control_test_widget.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/test/focus_manager_test.h"
+#include "ui/views/test/view_metadata_test_utils.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_utils.h"
 
@@ -109,43 +113,22 @@ base::string16 ToRTL(const char* ascii) {
 
 }  // namespace
 
-class LabelTest : public ViewsTestBase {
+class LabelTest : public test::BaseControlTestWidget {
  public:
   LabelTest() = default;
-
-  // ViewsTestBase:
-  void SetUp() override {
-    ViewsTestBase::SetUp();
-
-    Widget::InitParams params =
-        CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-    params.bounds = gfx::Rect(200, 200);
-    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget_.Init(std::move(params));
-    View* container = new View();
-    widget_.SetContentsView(container);
-
-    label_ = new Label();
-    container->AddChildView(label_);
-
-    widget_.Show();
-  }
-
-  void TearDown() override {
-    widget_.Close();
-    ViewsTestBase::TearDown();
-  }
+  LabelTest(const LabelTest&) = delete;
+  LabelTest& operator=(const LabelTest&) = delete;
+  ~LabelTest() override = default;
 
  protected:
-  Label* label() { return label_; }
+  void CreateWidgetContent(View* container) override {
+    label_ = container->AddChildView(std::make_unique<Label>());
+  }
 
-  Widget* widget() { return &widget_; }
+  Label* label() { return label_; }
 
  private:
   Label* label_ = nullptr;
-  Widget widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(LabelTest);
 };
 
 // Test fixture for text selection related tests.
@@ -253,6 +236,12 @@ class LabelSelectionTest : public LabelTest {
 
   DISALLOW_COPY_AND_ASSIGN(LabelSelectionTest);
 };
+
+TEST_F(LabelTest, Metadata) {
+  // Calling SetMultiLine() will DCHECK unless the label is in multi-line mode.
+  label()->SetMultiLine(true);
+  test::TestViewMetadata(label());
+}
 
 TEST_F(LabelTest, FontPropertySymbol) {
 #if defined(OS_LINUX)

@@ -192,6 +192,29 @@ public class AwContentsTest {
         Assert.assertEquals(newBlockNetworkLoads, awSettings.getBlockNetworkLoads());
     }
 
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testBackgroundColorInDarkMode() throws Throwable {
+        mActivityTestRule.runOnUiThread(() -> {
+            AwContents awContents =
+                    mActivityTestRule.createAwTestContainerView(mContentsClient).getAwContents();
+            AwSettings awSettings = awContents.getSettings();
+
+            Assert.assertEquals(awContents.getEffectiveBackgroundColorForTesting(), Color.WHITE);
+
+            awSettings.setForceDarkMode(AwSettings.FORCE_DARK_ON);
+            Assert.assertTrue(awSettings.isDarkMode());
+            Assert.assertEquals(awContents.getEffectiveBackgroundColorForTesting(), Color.BLACK);
+
+            awContents.setBackgroundColor(Color.RED);
+            Assert.assertEquals(awContents.getEffectiveBackgroundColorForTesting(), Color.RED);
+
+            awContents.destroy();
+            Assert.assertEquals(awContents.getEffectiveBackgroundColorForTesting(), Color.RED);
+        });
+    }
+
     private int callDocumentHasImagesSync(final AwContents awContents)
             throws Throwable, InterruptedException {
         // Set up a container to hold the result object and a semaphore to
@@ -1074,7 +1097,7 @@ public class AwContentsTest {
             // Until AW gets site isolation, ordinary web content should not be
             // locked to origin.
             boolean isLocked = TestThreadUtils.runOnUiThreadBlocking(
-                    () -> rendererProcess1.isLockedToOriginForTesting());
+                    () -> rendererProcess1.isProcessLockedForTesting());
             Assert.assertFalse("Initial renderer process should not be locked", isLocked);
 
             mActivityTestRule.loadUrlSync(
@@ -1085,7 +1108,7 @@ public class AwContentsTest {
             Assert.assertNotEquals(rendererProcess1, webuiProcess);
             // WebUI pages should be locked to origin even on AW.
             isLocked = TestThreadUtils.runOnUiThreadBlocking(
-                    () -> webuiProcess.isLockedToOriginForTesting());
+                    () -> webuiProcess.isProcessLockedForTesting());
             Assert.assertTrue("WebUI process should be locked", isLocked);
 
             mActivityTestRule.loadUrlSync(
@@ -1096,7 +1119,7 @@ public class AwContentsTest {
                     HELLO_WORLD_TITLE, mActivityTestRule.getTitleOnUiThread(awContents));
             Assert.assertNotEquals(rendererProcess2, webuiProcess);
             isLocked = TestThreadUtils.runOnUiThreadBlocking(
-                    () -> rendererProcess2.isLockedToOriginForTesting());
+                    () -> rendererProcess2.isProcessLockedForTesting());
             Assert.assertFalse("Final renderer process should not be locked", isLocked);
         } finally {
             testServer.stopAndDestroyServer();

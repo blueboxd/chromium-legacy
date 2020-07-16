@@ -438,7 +438,6 @@ public class MultiWindowUtils implements ActivityStateListener {
     /**
      * Makes |intent| able to support multi-instance in pre-N Samsung multi-window mode.
      */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void makeLegacyMultiInstanceIntent(Activity activity, Intent intent) {
         if (isLegacyMultiWindow(activity)) {
             if (TextUtils.equals(ChromeTabbedActivity.class.getName(),

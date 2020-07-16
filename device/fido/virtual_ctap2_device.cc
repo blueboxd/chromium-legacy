@@ -1098,28 +1098,30 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
     return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
   }
 
-  // An empty allow_list could be considered to be a resident-key request, but
-  // some authenticators in practice don't take it that way. Thus this code
-  // mirrors that to better reflect reality. CTAP 2.0 leaves it as undefined
-  // behaviour.
   for (const auto& allowed_credential : request.allow_list) {
     if (0 < config_.max_credential_id_length &&
         config_.max_credential_id_length < allowed_credential.id().size()) {
       return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
     }
-    RegistrationData* found =
+    RegistrationData* registration =
         FindRegistrationData(allowed_credential.id(), rp_id_hash);
-    if (found) {
-      found_registrations.emplace_back(allowed_credential.id(), found);
+    if (registration &&
+        !(registration->is_u2f && config_.ignore_u2f_credentials)) {
+      found_registrations.emplace_back(allowed_credential.id(), registration);
       break;
     }
   }
-  const auto allow_list_it = request_map.find(cbor::Value(3));
-  if (allow_list_it == request_map.end()) {
+
+  // CTAP 2.1 prohibits an empty (but present) allow_list. In CTAP 2.0, it is
+  // technically permissible to send an empty allow_list when asking for
+  // discoverable credentials, but some authenticators in practice don't take it
+  // that way. Thus this code mirrors that to better reflect reality.
+  if (request_map.find(cbor::Value(3)) == request_map.end()) {
     DCHECK(config_.resident_key_support);
     for (auto& registration : mutable_state()->registrations) {
       if (registration.second.is_resident &&
           registration.second.application_parameter == rp_id_hash) {
+        DCHECK(!registration.second.is_u2f);
         found_registrations.emplace_back(registration.first,
                                          &registration.second);
       }

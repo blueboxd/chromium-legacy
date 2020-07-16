@@ -190,8 +190,7 @@ void AdaptiveCongestionControl::UpdateRtt(base::TimeDelta rtt) {
 void AdaptiveCongestionControl::UpdateTargetPlayoutDelay(
     base::TimeDelta delay) {
   const int max_unacked_frames = std::min<int>(
-      kMaxUnackedFrames, 1 + static_cast<int>(delay * max_frame_rate_ /
-                                              base::TimeDelta::FromSeconds(1)));
+      kMaxUnackedFrames, 1 + (delay * max_frame_rate_).InSeconds());
   DCHECK_GT(max_unacked_frames, 0);
   history_size_ = max_unacked_frames + kHistorySize;
   PruneFrameStats();

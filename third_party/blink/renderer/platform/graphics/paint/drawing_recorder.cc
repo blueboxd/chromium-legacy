@@ -20,16 +20,12 @@ DisableListModificationCheck::DisableListModificationCheck()
 
 DrawingRecorder::DrawingRecorder(GraphicsContext& context,
                                  const DisplayItemClient& display_item_client,
-                                 DisplayItem::Type display_item_type)
+                                 DisplayItem::Type display_item_type,
+                                 const IntRect& visual_rect)
     : context_(context),
       client_(display_item_client),
-      type_(display_item_type)
-#if DCHECK_IS_ON()
-      ,
-      initial_display_item_list_size_(
-          context_.GetPaintController().NewDisplayItemList().size())
-#endif
-{
+      type_(display_item_type),
+      visual_rect_(visual_rect) {
   // Must check DrawingRecorder::UseCachedDrawingIfPossible before creating the
   // DrawingRecorder.
   DCHECK(RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
@@ -48,6 +44,11 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context,
       context.SetDOMNodeId(dom_node_id);
     }
   }
+
+#if DCHECK_IS_ON()
+  initial_display_item_list_size_ =
+      context_.GetPaintController().NewDisplayItemList().size();
+#endif
 }
 
 DrawingRecorder::~DrawingRecorder() {
@@ -64,7 +65,7 @@ DrawingRecorder::~DrawingRecorder() {
 #endif
 
   context_.GetPaintController().CreateAndAppend<DrawingDisplayItem>(
-      client_, type_, context_.EndRecording());
+      client_, type_, visual_rect_, context_.EndRecording());
 }
 
 }  // namespace blink

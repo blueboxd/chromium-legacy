@@ -169,7 +169,7 @@ Refer to README.md for content description and update process.
  <item id="mojo_context_state" hash_code="93232258" type="0" deprecated="2017-10-20" content_hash_code="124821232" file_path=""/>
  <item id="navigation_predictor_srp_prefetch" hash_code="57773453" type="0" content_hash_code="38811322" os_list="linux,windows" file_path="chrome/browser/prerender/isolated/isolated_prerender_tab_helper.cc"/>
  <item id="navigation_url_loader" hash_code="63171670" type="0" content_hash_code="129352907" os_list="linux,windows" file_path="content/browser/loader/navigation_url_loader_impl.cc"/>
- <item id="net_error_helper" hash_code="60071001" type="0" content_hash_code="68322861" os_list="linux,windows" file_path="chrome/renderer/net/net_error_helper.cc"/>
+ <item id="net_error_helper" hash_code="60071001" type="0" deprecated="2020-07-10" content_hash_code="68322861" file_path=""/>
  <item id="network_location_provider" hash_code="23472048" type="1" second_id="96590038" content_hash_code="41087976" os_list="linux,windows" semantics_fields="1" policy_fields="3,4" file_path="services/device/geolocation/network_location_provider.cc"/>
  <item id="network_location_request" hash_code="96590038" type="2" content_hash_code="80741011" os_list="linux,windows" semantics_fields="2,3,4,5" policy_fields="-1" file_path="services/device/geolocation/network_location_request.cc"/>
  <item id="network_time_component" hash_code="46188932" type="0" content_hash_code="28051857" os_list="linux,windows" file_path="components/network_time/network_time_tracker.cc"/>

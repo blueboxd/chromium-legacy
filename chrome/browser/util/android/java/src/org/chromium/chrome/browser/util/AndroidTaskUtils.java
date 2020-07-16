@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.util;
 
-import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.app.ActivityManager.AppTask;
 import android.app.ActivityManager.RecentTaskInfo;
@@ -12,7 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -25,7 +23,6 @@ import java.util.List;
 /**
  * Deals with Document-related API calls.
  */
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class AndroidTaskUtils {
     public static final String TAG = "DocumentUtilities";
 
@@ -37,7 +34,7 @@ public class AndroidTaskUtils {
      * @return Intent of one of the tasks that were finished.
      */
     public static Intent finishOtherTasksWithData(Uri data, int canonicalTaskId) {
-        if (data == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return null;
+        if (data == null) return null;
 
         String dataString = data.toString();
         Context context = ContextUtils.getApplicationContext();

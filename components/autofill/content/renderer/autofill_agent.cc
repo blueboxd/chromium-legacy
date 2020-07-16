@@ -153,12 +153,6 @@ void AutofillAgent::BindPendingReceiver(
   receiver_.Bind(std::move(pending_receiver));
 }
 
-bool AutofillAgent::FormDataCompare::operator()(const FormData& lhs,
-                                                const FormData& rhs) const {
-  return std::tie(lhs.name, lhs.url, lhs.action, lhs.is_form_tag) <
-         std::tie(rhs.name, rhs.url, rhs.action, rhs.is_form_tag);
-}
-
 void AutofillAgent::DidCommitProvisionalLoad(ui::PageTransition transition) {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   // TODO(dvadym): check if we need to check if it is main frame navigation
@@ -288,7 +282,7 @@ void AutofillAgent::FireHostSubmitEvents(const FormData& form_data,
                                          bool known_success,
                                          SubmissionSource source) {
   // We don't want to fire duplicate submission event.
-  if (!submitted_forms_.insert(form_data).second)
+  if (!submitted_forms_.insert(form_data.unique_renderer_id).second)
     return;
 
   GetAutofillDriver()->FormSubmitted(form_data, known_success, source);

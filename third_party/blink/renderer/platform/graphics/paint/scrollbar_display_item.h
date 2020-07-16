@@ -31,7 +31,7 @@ class PLATFORM_EXPORT ScrollbarDisplayItem final : public DisplayItem {
   ScrollbarDisplayItem(const DisplayItemClient&,
                        Type,
                        scoped_refptr<cc::Scrollbar>,
-                       const IntRect& rect,
+                       const IntRect& visual_rect,
                        const TransformPaintPropertyNode* scroll_translation,
                        CompositorElementId element_id);
 
@@ -61,13 +61,12 @@ class PLATFORM_EXPORT ScrollbarDisplayItem final : public DisplayItem {
                      const DisplayItemClient&,
                      DisplayItem::Type,
                      scoped_refptr<cc::Scrollbar>,
-                     const IntRect& rect,
+                     const IntRect& visual_rect,
                      const TransformPaintPropertyNode* scroll_translation,
                      CompositorElementId element_id);
 
  private:
   scoped_refptr<cc::Scrollbar> scrollbar_;
-  IntRect rect_;
   const TransformPaintPropertyNode* scroll_translation_;
   CompositorElementId element_id_;
   // This is lazily created for non-composited scrollbar.

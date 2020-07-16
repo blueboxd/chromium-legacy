@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -113,11 +112,6 @@ public abstract class FirstRunFlowSequencer  {
     }
 
     @VisibleForTesting
-    protected boolean hasAnyUserSeenToS() {
-        return ToSAckedReceiver.checkAnyUserHasSeenToS();
-    }
-
-    @VisibleForTesting
     protected boolean shouldSkipFirstUseHints() {
         return ApiCompatibilityUtils.shouldSkipFirstUseHints(mActivity.getContentResolver());
     }
@@ -215,8 +209,8 @@ public abstract class FirstRunFlowSequencer  {
      * @param showSignInSettings Whether the user selected to see the settings once signed in.
      */
     public static void markFlowAsCompleted(String signInAccountName, boolean showSignInSettings) {
-        // When the user accepts ToS in the Setup Wizard (see ToSAckedReceiver), we do not
-        // show the ToS page to the user because the user has already accepted one outside FRE.
+        // When the user accepts ToS in the Setup Wizard, we do not show the ToS page to the user
+        // because the user has already accepted one outside FRE.
         if (!FirstRunUtils.isFirstRunEulaAccepted()) {
             FirstRunUtils.setEulaAccepted();
         }
@@ -227,26 +221,16 @@ public abstract class FirstRunFlowSequencer  {
 
     /**
      * Checks if the First Run needs to be launched.
-     * @param fromIntent The intent that was used to launch Chrome.
      * @param preferLightweightFre Whether to prefer the Lightweight First Run Experience.
      * @return Whether the First Run Experience needs to be launched.
      */
-    public static boolean checkIfFirstRunIsNecessary(
-            Intent fromIntent, boolean preferLightweightFre) {
+    public static boolean checkIfFirstRunIsNecessary(boolean preferLightweightFre) {
         // If FRE is disabled (e.g. in tests), proceed directly to the intent handling.
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
                 || ApiCompatibilityUtils.isDemoUser()
                 || ApiCompatibilityUtils.isRunningInUserTestHarness()) {
             return false;
         }
-
-        // If Chrome isn't opened via the Chrome icon, and the user accepted the ToS
-        // in the Setup Wizard, skip any First Run Experience screens and proceed directly
-        // to the intent handling.
-        final boolean fromChromeIcon =
-                fromIntent != null && TextUtils.equals(fromIntent.getAction(), Intent.ACTION_MAIN);
-        if (!fromChromeIcon && ToSAckedReceiver.checkAnyUserHasSeenToS()) return false;
-
         if (FirstRunStatus.getFirstRunFlowComplete()) {
             // Promo pages are removed, so there is nothing else to show in FRE.
             return false;
@@ -269,7 +253,7 @@ public abstract class FirstRunFlowSequencer  {
     public static boolean launch(Context caller, Intent fromIntent, boolean requiresBroadcast,
             boolean preferLightweightFre) {
         // Check if the user needs to go through First Run at all.
-        if (!checkIfFirstRunIsNecessary(fromIntent, preferLightweightFre)) return false;
+        if (!checkIfFirstRunIsNecessary(preferLightweightFre)) return false;
 
         String intentUrl = IntentHandler.getUrlFromIntent(fromIntent);
         Uri uri = intentUrl != null ? Uri.parse(intentUrl) : null;

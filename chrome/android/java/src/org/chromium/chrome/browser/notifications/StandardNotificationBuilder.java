@@ -67,10 +67,7 @@ public class StandardNotificationBuilder extends NotificationBuilderBase {
         builder.setShowWhen(true);
         builder.setOnlyAlertOnce(!mRenotify);
         setGroupOnBuilder(builder, mOrigin);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Public versions only supported since L, and createPublicNotification requires L+.
-            builder.setPublicVersion(createPublicNotification(mContext));
-        }
+        builder.setPublicVersion(createPublicNotification(mContext));
         return builder.buildNotificationWrapper();
     }
 }

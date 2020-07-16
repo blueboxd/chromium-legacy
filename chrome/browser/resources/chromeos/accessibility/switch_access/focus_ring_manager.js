@@ -77,10 +77,10 @@ class FocusRingManager {
     }
 
     if (!node.location) {
-      setTimeout(NavigationManager.moveToValidNode, 0);
       throw SwitchAccess.error(
           SAConstants.ErrorType.MISSING_LOCATION,
-          'Cannot set focus rings if node location is undefined');
+          'Cannot set focus rings if node location is undefined',
+          true /* shouldRecover */);
     }
 
     // If the primary node is a group, show its first child as the "next" focus.

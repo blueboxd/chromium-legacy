@@ -105,9 +105,16 @@ bool GetAssertionTask::StringFixupPredicate(
 }
 
 void GetAssertionTask::StartTask() {
-  if (device()->supported_protocol() == ProtocolVersion::kCtap2) {
+  if (device()->supported_protocol() == ProtocolVersion::kCtap2 &&
+      !request_.is_u2f_only) {
     GetAssertion();
   } else {
+    // |device_info| should be present iff the device is CTAP2.
+    // |MaybeRevertU2fFallbackAndInvokeCallback| uses this to restore the
+    // protocol of CTAP2 devices once this task is complete.
+    DCHECK_EQ(device()->supported_protocol() == ProtocolVersion::kCtap2,
+              device()->device_info().has_value());
+    device()->set_supported_protocol(ProtocolVersion::kU2f);
     U2fSign();
   }
 }
@@ -188,8 +195,10 @@ void GetAssertionTask::GetAssertion() {
 void GetAssertionTask::U2fSign() {
   DCHECK_EQ(ProtocolVersion::kU2f, device()->supported_protocol());
 
-  sign_operation_ = std::make_unique<U2fSignOperation>(device(), request_,
-                                                       std::move(callback_));
+  sign_operation_ = std::make_unique<U2fSignOperation>(
+      device(), request_,
+      base::BindOnce(&GetAssertionTask::MaybeRevertU2fFallbackAndInvokeCallback,
+                     weak_factory_.GetWeakPtr()));
   sign_operation_->Start();
 }
 
@@ -298,6 +307,18 @@ void GetAssertionTask::HandleDummyMakeCredentialComplete(
     base::Optional<AuthenticatorMakeCredentialResponse> response_data) {
   std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials,
                            base::nullopt);
+}
+
+void GetAssertionTask::MaybeRevertU2fFallbackAndInvokeCallback(
+    CtapDeviceResponseCode status,
+    base::Optional<AuthenticatorGetAssertionResponse> response) {
+  DCHECK_EQ(ProtocolVersion::kU2f, device()->supported_protocol());
+  if (device()->device_info()) {
+    // This was actually a CTAP2 device, but the protocol version was set to U2F
+    // in order to execute a sign command.
+    device()->set_supported_protocol(ProtocolVersion::kCtap2);
+  }
+  std::move(callback_).Run(status, std::move(response));
 }
 
 }  // namespace device

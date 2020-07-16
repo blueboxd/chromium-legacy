@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/containers/queue.h"
 #include "base/debug/crash_logging.h"
 #include "base/location.h"

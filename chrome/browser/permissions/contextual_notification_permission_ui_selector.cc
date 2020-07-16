@@ -21,7 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/pref_names.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/permissions/permission_request.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/db/database_manager.h"

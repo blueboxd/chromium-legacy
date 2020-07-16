@@ -47,6 +47,9 @@ class WebApp {
   const GURL& scope() const { return scope_; }
 
   const base::Optional<SkColor>& theme_color() const { return theme_color_; }
+  const base::Optional<SkColor>& background_color() const {
+    return background_color_;
+  }
 
   DisplayMode display_mode() const { return display_mode_; }
 
@@ -159,6 +162,7 @@ class WebApp {
   void SetLaunchUrl(const GURL& launch_url);
   void SetScope(const GURL& scope);
   void SetThemeColor(base::Optional<SkColor> theme_color);
+  void SetBackgroundColor(base::Optional<SkColor> background_color);
   void SetDisplayMode(DisplayMode display_mode);
   void SetUserDisplayMode(DisplayMode user_display_mode);
   void SetUserPageOrdinal(syncer::StringOrdinal page_ordinal);
@@ -203,6 +207,7 @@ class WebApp {
   // is within the scope.
   GURL scope_;
   base::Optional<SkColor> theme_color_;
+  base::Optional<SkColor> background_color_;
   DisplayMode display_mode_;
   DisplayMode user_display_mode_;
   syncer::StringOrdinal user_page_ordinal_;

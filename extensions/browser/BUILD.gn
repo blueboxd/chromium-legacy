@@ -624,9 +624,6 @@ source_set("unit_tests") {
     "api/declarative_net_request/ruleset_matcher_unittest.cc",
     "api/declarative_webrequest/webrequest_condition_attribute_unittest.cc",
     "api/declarative_webrequest/webrequest_condition_unittest.cc",
-    "api/document_scan/document_scan_api_unittest.cc",
-    "api/document_scan/fake_document_scan_interface.cc",
-    "api/document_scan/fake_document_scan_interface.h",
     "api/file_handlers/app_file_handler_util_unittest.cc",
     "api/file_handlers/directory_util_unittest.cc",
     "api/file_handlers/mime_util_unittest.cc",
@@ -750,7 +747,7 @@ source_set("unit_tests") {
   if (is_chromeos) {
     sources += [
       "api/audio/audio_device_id_calculator_unittest.cc",
-      "api/document_scan/document_scan_interface_chromeos_unittest.cc",
+      "api/document_scan/document_scan_api_unittest.cc",
       "api/feedback_private/access_rate_limiter_chromeos_unittest.cc",
       "api/feedback_private/feedback_private_api_chromeos_unittest.cc",
       "api/feedback_private/feedback_private_api_unittest_base_chromeos.cc",

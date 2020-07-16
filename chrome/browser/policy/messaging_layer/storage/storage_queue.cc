@@ -21,7 +21,6 @@
 #include "base/hash/hash.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/rand_util.h"
 #include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/policy/messaging_layer/util/status_macros.h"
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
 #include "chrome/browser/policy/messaging_layer/util/task_runner_context.h"
+#include "crypto/random.h"
 
 namespace reporting {
 
@@ -344,10 +344,11 @@ Status StorageQueue::WriteHeaderAndBlock(
     const size_t pad_size =
         GetPaddingToNextFrameSize(sizeof(header) + data.size());
     if (pad_size != FRAME_SIZE) {
-      // TODO(b/157943388): Fill in with random bytes.
+      // Fill in with random bytes.
       uint8_t junk_bytes[FRAME_SIZE];
-      memset(&junk_bytes[0], 0, FRAME_SIZE);
-      write_status = file->Append(base::make_span(&junk_bytes[0], pad_size));
+      const auto pad_span = base::make_span(&junk_bytes[0], pad_size);
+      crypto::RandBytes(pad_span);
+      write_status = file->Append(pad_span);
       if (!write_status.ok()) {
         return Status(error::RESOURCE_EXHAUSTED, "Cannot pad file");
       }

@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/time/time.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -93,6 +94,11 @@ MEDIA_EXPORT void CreateLicenseRequest(const KeyIdList& key_ids,
 // |key_ids_init_data| is updated to contain the resulting JSON string.
 MEDIA_EXPORT void CreateKeyIdsInitData(const KeyIdList& key_ids,
                                        std::vector<uint8_t>* key_ids_init_data);
+
+MEDIA_EXPORT std::vector<uint8_t> CreateLicenseReleaseMessage(
+    const KeyIdList& key_ids,
+    const base::Time first_decrypt_time = base::Time(),
+    const base::Time latest_decrypt_time = base::Time());
 
 // Extract the first key from the license request message. Returns true if
 // |license| is a valid license request and contains at least one key,

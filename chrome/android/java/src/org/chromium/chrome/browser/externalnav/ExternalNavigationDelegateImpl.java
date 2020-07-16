@@ -87,8 +87,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     /**
      * Determines whether Chrome will be handling the given Intent.
      *
-     * Note this function is slow on Android versions less than Lollipop.
-     *
      * @param intent            Intent that will be fired.
      * @param matchDefaultOnly  See {@link PackageManager#MATCH_DEFAULT_ONLY}.
      * @return                  True if Chrome will definitely handle the intent, false otherwise.

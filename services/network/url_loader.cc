@@ -41,6 +41,7 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/chunked_data_pipe_upload_data_stream.h"
@@ -613,7 +614,7 @@ URLLoader::URLLoader(
 
   if (request.update_first_party_url_on_redirect) {
     url_request_->set_first_party_url_policy(
-        net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
+        net::RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT);
   }
 
   url_request_->SetLoadFlags(request.load_flags);

@@ -438,7 +438,7 @@ void URLRequest::set_site_for_cookies(const SiteForCookies& site_for_cookies) {
 }
 
 void URLRequest::set_first_party_url_policy(
-    FirstPartyURLPolicy first_party_url_policy) {
+    RedirectInfo::FirstPartyURLPolicy first_party_url_policy) {
   DCHECK(!is_pending_);
   first_party_url_policy_ = first_party_url_policy;
 }
@@ -543,7 +543,8 @@ URLRequest::URLRequest(const GURL& url,
       method_("GET"),
       referrer_policy_(
           ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
-      first_party_url_policy_(NEVER_CHANGE_FIRST_PARTY_URL),
+      first_party_url_policy_(
+          RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL),
       load_flags_(LOAD_NORMAL),
       privacy_mode_(PRIVACY_MODE_ENABLED),
       disable_secure_dns_(false),

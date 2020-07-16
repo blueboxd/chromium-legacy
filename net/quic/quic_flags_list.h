@@ -242,7 +242,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool, FLAGS_quic_enable_http3_grease_randomness, true)
 
 // If true, disable QUIC version h3-25.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_draft_25, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_draft_25, true)
 
 // If true, disable QUIC version h3-27.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_draft_27, false)

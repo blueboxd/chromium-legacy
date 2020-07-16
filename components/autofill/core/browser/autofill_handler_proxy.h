@@ -67,7 +67,7 @@ class AutofillHandlerProxy : public AutofillHandler {
   bool ShouldParseForms(const std::vector<FormData>& forms,
                         const base::TimeTicks timestamp) override;
 
-  void OnFormsParsed(const std::vector<FormStructure*>& form_structures,
+  void OnFormsParsed(const std::vector<const FormData*>& form_structures,
                      const base::TimeTicks timestamp) override;
 
  private:

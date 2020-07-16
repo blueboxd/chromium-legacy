@@ -372,10 +372,10 @@ class RootNodeWrapper extends SARootNode {
                          .filter((child) => child.isValidAndVisible());
 
     if (children.length < 1) {
-      setTimeout(NavigationManager.moveToValidNode, 0);
       throw SwitchAccess.error(
           SAConstants.ErrorType.NO_CHILDREN,
-          'Root node must have at least 1 interesting child.');
+          'Root node must have at least 1 interesting child.',
+          true /* shouldRecover */);
     }
     children.push(new BackButtonNode(root));
     root.children = children;

@@ -30,6 +30,7 @@ class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
   DISABLE_CFI_PERF
   DrawingDisplayItem(const DisplayItemClient& client,
                      Type type,
+                     const IntRect& visual_rect,
                      sk_sp<const PaintRecord> record);
 
   const sk_sp<const PaintRecord>& GetPaintRecord() const { return record_; }
@@ -64,10 +65,12 @@ class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
 DISABLE_CFI_PERF
 inline DrawingDisplayItem::DrawingDisplayItem(const DisplayItemClient& client,
                                               Type type,
+                                              const IntRect& visual_rect,
                                               sk_sp<const PaintRecord> record)
     : DisplayItem(client,
                   type,
                   sizeof(*this),
+                  visual_rect,
                   /* draws_content*/ record && record->size()),
       known_to_be_opaque_is_set_(false),
       known_to_be_opaque_(false),

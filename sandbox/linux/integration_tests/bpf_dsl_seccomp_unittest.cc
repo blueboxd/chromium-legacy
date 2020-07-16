@@ -126,12 +126,12 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(VerboseAPITesting)) {
   }
 }
 
-// A simple blacklist test
+// A simple denylist test
 
-class BlacklistNanosleepPolicy : public Policy {
+class DenylistNanosleepPolicy : public Policy {
  public:
-  BlacklistNanosleepPolicy() {}
-  ~BlacklistNanosleepPolicy() override {}
+  DenylistNanosleepPolicy() {}
+  ~DenylistNanosleepPolicy() override {}
 
   ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
@@ -151,14 +151,14 @@ class BlacklistNanosleepPolicy : public Policy {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BlacklistNanosleepPolicy);
+  DISALLOW_COPY_AND_ASSIGN(DenylistNanosleepPolicy);
 };
 
-BPF_TEST_C(SandboxBPF, ApplyBasicBlacklistPolicy, BlacklistNanosleepPolicy) {
-  BlacklistNanosleepPolicy::AssertNanosleepFails();
+BPF_TEST_C(SandboxBPF, ApplyBasicDenylistPolicy, DenylistNanosleepPolicy) {
+  DenylistNanosleepPolicy::AssertNanosleepFails();
 }
 
-BPF_TEST_C(SandboxBPF, UseVsyscall, BlacklistNanosleepPolicy) {
+BPF_TEST_C(SandboxBPF, UseVsyscall, DenylistNanosleepPolicy) {
   time_t current_time;
   // time() is implemented as a vsyscall. With an older glibc, with
   // vsyscall=emulate and some versions of the seccomp BPF patch
@@ -186,12 +186,12 @@ bool IsSyscallForTestHarness(int sysno) {
   return false;
 }
 
-// Now do a simple whitelist test
+// Now do a simple allowlist test
 
-class WhitelistGetpidPolicy : public Policy {
+class AllowlistGetpidPolicy : public Policy {
  public:
-  WhitelistGetpidPolicy() {}
-  ~WhitelistGetpidPolicy() override {}
+  AllowlistGetpidPolicy() {}
+  ~AllowlistGetpidPolicy() override {}
 
   ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
@@ -202,10 +202,10 @@ class WhitelistGetpidPolicy : public Policy {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WhitelistGetpidPolicy);
+  DISALLOW_COPY_AND_ASSIGN(AllowlistGetpidPolicy);
 };
 
-BPF_TEST_C(SandboxBPF, ApplyBasicWhitelistPolicy, WhitelistGetpidPolicy) {
+BPF_TEST_C(SandboxBPF, ApplyBasicAllowlistPolicy, AllowlistGetpidPolicy) {
   // getpid() should be allowed
   errno = 0;
   BPF_ASSERT(sys_getpid() > 0);
@@ -216,7 +216,7 @@ BPF_TEST_C(SandboxBPF, ApplyBasicWhitelistPolicy, WhitelistGetpidPolicy) {
   BPF_ASSERT(errno == ENOMEM);
 }
 
-// A simple blacklist policy, with a SIGSYS handler
+// A simple denylist policy, with a SIGSYS handler
 intptr_t EnomemHandler(const struct arch_seccomp_data& args, void* aux) {
   // We also check that the auxiliary data is correct
   SANDBOX_ASSERT(aux);
@@ -224,10 +224,10 @@ intptr_t EnomemHandler(const struct arch_seccomp_data& args, void* aux) {
   return -ENOMEM;
 }
 
-class BlacklistNanosleepTrapPolicy : public Policy {
+class DenylistNanosleepTrapPolicy : public Policy {
  public:
-  explicit BlacklistNanosleepTrapPolicy(int* aux) : aux_(aux) {}
-  ~BlacklistNanosleepTrapPolicy() override {}
+  explicit DenylistNanosleepTrapPolicy(int* aux) : aux_(aux) {}
+  ~DenylistNanosleepTrapPolicy() override {}
 
   ResultExpr EvaluateSyscall(int sysno) const override {
     DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
@@ -242,12 +242,12 @@ class BlacklistNanosleepTrapPolicy : public Policy {
  private:
   int* aux_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlacklistNanosleepTrapPolicy);
+  DISALLOW_COPY_AND_ASSIGN(DenylistNanosleepTrapPolicy);
 };
 
 BPF_TEST(SandboxBPF,
-         BasicBlacklistWithSigsys,
-         BlacklistNanosleepTrapPolicy,
+         BasicDenylistWithSigsys,
+         DenylistNanosleepTrapPolicy,
          int /* (*BPF_AUX) */) {
   // getpid() should work properly
   errno = 0;
@@ -2134,7 +2134,7 @@ void* TsyncApplyToTwoThreadsFunc(void* cond_ptr) {
 
   BPF_ASSERT(event->IsSignaled());
 
-  BlacklistNanosleepPolicy::AssertNanosleepFails();
+  DenylistNanosleepPolicy::AssertNanosleepFails();
 
   return nullptr;
 }
@@ -2167,11 +2167,11 @@ SANDBOX_TEST(SandboxBPF, Tsync) {
   BPF_ASSERT_EQ(0, HANDLE_EINTR(syscall(__NR_nanosleep, &ts, NULL)));
 
   // Engage the sandbox.
-  SandboxBPF sandbox(std::make_unique<BlacklistNanosleepPolicy>());
+  SandboxBPF sandbox(std::make_unique<DenylistNanosleepPolicy>());
   BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::SeccompLevel::MULTI_THREADED));
 
   // This thread should have the filter applied as well.
-  BlacklistNanosleepPolicy::AssertNanosleepFails();
+  DenylistNanosleepPolicy::AssertNanosleepFails();
 
   // Signal the condition to invoke the system call.
   event.Signal();

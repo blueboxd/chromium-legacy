@@ -27,8 +27,8 @@ import org.chromium.chrome.browser.safety_check.SafetyCheckBridge.SafetyCheckCom
 @RunWith(BaseRobolectricTestRunner.class)
 public class SafetyCheckBridgeTest {
     class TestObserver implements SafetyCheckCommonObserver {
-        public boolean sbCallbackInvoked = false;
-        public boolean passwordsStateChangeInvoked = false;
+        public boolean sbCallbackInvoked;
+        public boolean passwordsStateChangeInvoked;
 
         private @SafeBrowsingStatus int mSBExpected = -1;
         private @BulkLeakCheckServiceState int mPasswordsStateExpected = -1;

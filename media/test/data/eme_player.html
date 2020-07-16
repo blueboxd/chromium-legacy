@@ -103,7 +103,11 @@
 
       Utils.timeLog('waiting for video to end.');
       video.removeEventListener('ended', Utils.failTest);
-      Utils.installTitleEventHandler(video, 'ended');
+      if (testConfig.sessionToLoad == "PersistentUsageRecord") {
+        video.addEventListener('ended', onEnded);
+      } else {
+        Utils.installTitleEventHandler(video, 'ended');
+      }
       video.removeEventListener('timeupdate', onTimeUpdate);
     }
 
@@ -127,6 +131,16 @@
 
     function onVisibilityChange(e) {
       Utils.timeLog('Event: ' + e.type + ', hidden: ' + document.hidden);
+    }
+
+    function onEnded(e) {
+      Utils.timeLog('Event: ' + e.type);
+      PlayerUtils.removeSession(player).then(function() {
+        Utils.setResultInTitle('ENDED');
+      }).catch(function(error) {
+        Utils.timeLog(error);
+        Utils.failTest('Failed PlayerUtils.removeSession');
+      });
     }
 
     function play(video, playTwice) {

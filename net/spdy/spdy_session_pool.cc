@@ -276,15 +276,11 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
       // It shouldn't be in the aliases table if it doesn't exist!
       DCHECK(available_session_it != available_sessions_.end());
 
-      // This session can be reused only if the proxy and privacy settings
-      // match, as well as the NetworkIsolationKey.
-      if (!(alias_key.proxy_server() == key.proxy_server()) ||
-          !(alias_key.privacy_mode() == key.privacy_mode()) ||
-          !(alias_key.is_proxy_session() == key.is_proxy_session()) ||
-          !(alias_key.network_isolation_key() == key.network_isolation_key()) ||
-          !(alias_key.disable_secure_dns() == key.disable_secure_dns())) {
+      SpdySessionKey::CompareForAliasingResult compare_result =
+          alias_key.CompareForAliasing(key);
+      // Keys must be aliasable.
+      if (!compare_result.is_potentially_aliasable)
         continue;
-      }
 
       if (is_websocket && !available_session_it->second->support_websocket())
         continue;
@@ -306,7 +302,7 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
       bool adding_pooled_alias = true;
 
       // If socket tags differ, see if session's socket tag can be changed.
-      if (alias_key.socket_tag() != key.socket_tag()) {
+      if (!compare_result.is_socket_tag_match) {
         SpdySessionKey old_key = available_session->spdy_session_key();
         SpdySessionKey new_key(old_key.host_port_pair(), old_key.proxy_server(),
                                old_key.privacy_mode(),

@@ -118,6 +118,10 @@ struct WebApplicationInfo {
   // The color to use for the web app frame.
   base::Optional<SkColor> theme_color;
 
+  // The expected page background color of the web app.
+  // https://www.w3.org/TR/appmanifest/#background_color-member
+  base::Optional<SkColor> background_color;
+
   // App preference regarding whether the app should be opened in a tab,
   // in a window (with or without minimal-ui buttons), or full screen. Defaults
   // to browser display mode as specified in

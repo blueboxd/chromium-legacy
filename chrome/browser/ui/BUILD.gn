@@ -108,8 +108,6 @@ static_library("ui") {
     "login/login_tab_helper.h",
     "native_file_system_dialogs.cc",
     "native_file_system_dialogs.h",
-    "navigation_correction_tab_observer.cc",
-    "navigation_correction_tab_observer.h",
     "page_info/chrome_page_info_client.cc",
     "page_info/chrome_page_info_client.h",
     "page_info/chrome_page_info_delegate.cc",

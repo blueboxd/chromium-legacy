@@ -67,6 +67,10 @@ class PLATFORM_EXPORT PaintController {
   explicit PaintController(Usage = kMultiplePaints);
   ~PaintController();
 
+#if DCHECK_IS_ON()
+  Usage GetUsage() const { return usage_; }
+#endif
+
   // For pre-PaintAfterPaint only.
   void InvalidateAll();
   bool CacheIsAllInvalid() const;

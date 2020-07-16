@@ -71,7 +71,7 @@ public class GoogleServicesSettings
     private @Nullable ChromeSwitchPreference mAutofillAssistant;
     private @Nullable Preference mContextualSearch;
 
-    private boolean mIsSecurityPreferenceRemoved = false;
+    private boolean mIsSecurityPreferenceRemoved;
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, String rootKey) {

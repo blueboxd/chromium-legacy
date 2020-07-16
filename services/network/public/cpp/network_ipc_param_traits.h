@@ -25,7 +25,6 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
-#include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/isolation_opt_in_hints.h"
 #include "services/network/public/cpp/net_ipc_param_traits.h"
 #include "services/network/public/cpp/origin_policy.h"

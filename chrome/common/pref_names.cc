@@ -1471,9 +1471,6 @@ const char kLocalDiscoveryNotificationsEnabled[] =
     "local_discovery.notifications_enabled";
 
 #if defined(OS_ANDROID)
-// Enable vibration for web notifications.
-const char kNotificationsVibrateEnabled[] = "notifications.vibrate_enabled";
-
 // Boolean pref indicating whether notification permissions were migrated to
 // notification channels (on Android O+ we use channels to store notification
 // permission, so any existing permissions must be migrated).
@@ -1547,11 +1544,6 @@ const char kHasSeenWelcomePage[] = "browser.has_seen_welcome_page";
 // finch group pinged to keep track of them for the experiment.
 const char kNaviOnboardGroup[] = "browser.navi_onboard_group";
 #endif  // defined(OS_WIN)
-
-// Boolean indicating whether the quiet UX is enabled for notification
-// permission requests.
-const char kEnableQuietNotificationPermissionUi[] =
-    "profile.content_settings.enable_quiet_permission_ui.notifications";
 
 // Boolean indicating whether, as part of the adaptive activation quiet UI dry
 // run experiment, the user has accumulated three notification permission

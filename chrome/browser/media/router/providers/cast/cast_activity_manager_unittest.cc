@@ -21,8 +21,8 @@
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
-#include "chrome/browser/media/router/providers/cast/mirroring_activity_record.h"
-#include "chrome/browser/media/router/providers/cast/mock_cast_activity_record.h"
+#include "chrome/browser/media/router/providers/cast/mirroring_activity.h"
+#include "chrome/browser/media/router/providers/cast/mock_app_activity.h"
 #include "chrome/browser/media/router/providers/cast/test_util.h"
 #include "chrome/browser/media/router/providers/common/buffered_message_sender.h"
 #include "chrome/browser/media/router/test/mock_logger.h"
@@ -101,21 +101,20 @@ base::Value MakeReceiverStatus(const std::string& app_id,
       })");
 }
 
-using MockCastActivityRecordCallback =
-    base::RepeatingCallback<void(MockCastActivityRecord*)>;
+using MockAppActivityCallback = base::RepeatingCallback<void(MockAppActivity*)>;
 
-class MockMirroringActivityRecord : public MirroringActivityRecord {
+class MockMirroringActivity : public MirroringActivity {
  public:
-  MockMirroringActivityRecord(const MediaRoute& route,
-                              const std::string& app_id,
-                              OnStopCallback on_stop)
-      : MirroringActivityRecord(route,
-                                app_id,
-                                nullptr,
-                                nullptr,
-                                0,
-                                CastSinkExtraData(),
-                                std::move(on_stop)) {}
+  MockMirroringActivity(const MediaRoute& route,
+                        const std::string& app_id,
+                        OnStopCallback on_stop)
+      : MirroringActivity(route,
+                          app_id,
+                          nullptr,
+                          nullptr,
+                          0,
+                          CastSinkExtraData(),
+                          std::move(on_stop)) {}
 
   MOCK_METHOD(void, CreateMojoBindings, (mojom::MediaRouter * media_router));
   MOCK_METHOD(void, OnSessionSet, (const CastSession& session));
@@ -127,7 +126,7 @@ class MockMirroringActivityRecord : public MirroringActivityRecord {
 // be closed by a leave_session message, and the URL used to create the test
 // session.
 class CastActivityManagerTest : public testing::Test,
-                                public ActivityRecordFactoryForTest {
+                                public CastActivityFactoryForTest {
  public:
   CastActivityManagerTest()
       : socket_service_(content::GetUIThreadTaskRunner({})),
@@ -139,7 +138,7 @@ class CastActivityManagerTest : public testing::Test,
   ~CastActivityManagerTest() override = default;
 
   void SetUp() override {
-    CastActivityManager::SetActitivyRecordFactoryForTest(this);
+    CastActivityManager::SetActitityFactoryForTest(this);
 
     router_receiver_ = std::make_unique<mojo::Receiver<mojom::MediaRouter>>(
         &mock_router_, router_remote_.BindNewPipeAndPassReceiver());
@@ -168,26 +167,26 @@ class CastActivityManagerTest : public testing::Test,
     RunUntilIdle();
 
     manager_.reset();
-    CastActivityManager::SetActitivyRecordFactoryForTest(nullptr);
+    CastActivityManager::SetActitityFactoryForTest(nullptr);
   }
 
-  // from ActivityRecordFactoryForTest
-  std::unique_ptr<CastActivityRecord> MakeCastActivityRecord(
+  // from CastActivityFactoryForTest
+  std::unique_ptr<AppActivity> MakeAppActivity(
       const MediaRoute& route,
       const std::string& app_id) override {
-    auto activity = std::make_unique<MockCastActivityRecord>(route, app_id);
+    auto activity = std::make_unique<MockAppActivity>(route, app_id);
     cast_activity_ = activity.get();
-    activity_record_callback_.Run(activity.get());
+    cast_activity_callback_.Run(activity.get());
     return activity;
   }
 
-  // from ActivityRecordFactoryForTest
-  std::unique_ptr<MirroringActivityRecord> MakeMirroringActivityRecord(
+  // from CastActivityFactoryForTest
+  std::unique_ptr<MirroringActivity> MakeMirroringActivity(
       const MediaRoute& route,
       const std::string& app_id,
-      MirroringActivityRecord::OnStopCallback on_stop) override {
-    auto activity = std::make_unique<MockMirroringActivityRecord>(
-        route, app_id, std::move(on_stop));
+      MirroringActivity::OnStopCallback on_stop) override {
+    auto activity = std::make_unique<MockMirroringActivity>(route, app_id,
+                                                            std::move(on_stop));
     mirroring_activity_ = activity.get();
     return activity;
   }
@@ -239,12 +238,12 @@ class CastActivityManagerTest : public testing::Test,
         CastMediaSource::FromMediaSourceId(MakeSourceId(app_id, app_params));
     ASSERT_TRUE(source);
 
-    activity_record_callback_ =
-        base::BindLambdaForTesting([this](MockCastActivityRecord* activity) {
+    cast_activity_callback_ =
+        base::BindLambdaForTesting([this](MockAppActivity* activity) {
           // TODO(jrw): Check parameters.
           EXPECT_CALL(*activity, AddClient);
           EXPECT_CALL(*activity, SendMessageToClient).RetiresOnSaturation();
-          activity_record_callback_ = base::DoNothing();
+          cast_activity_callback_ = base::DoNothing();
         });
 
     // Callback will be invoked synchronously.
@@ -396,9 +395,9 @@ class CastActivityManagerTest : public testing::Test,
   MockCastAppDiscoveryService app_discovery_service_;
   std::unique_ptr<CastActivityManager> manager_;
   std::unique_ptr<CastSessionTracker> session_tracker_;
-  MockCastActivityRecord* cast_activity_ = nullptr;
-  MockMirroringActivityRecord* mirroring_activity_ = nullptr;
-  MockCastActivityRecordCallback activity_record_callback_ = base::DoNothing();
+  MockAppActivity* cast_activity_ = nullptr;
+  MockMirroringActivity* mirroring_activity_ = nullptr;
+  MockAppActivityCallback cast_activity_callback_ = base::DoNothing();
   const url::Origin origin_ = url::Origin::Create(GURL(kOrigin));
   const MediaSource::Id route_query_ = "theRouteQuery";
   base::Optional<MediaRoute> updated_route_;

@@ -72,6 +72,9 @@ API_AVAILABLE(macos(10.15))
   if (self = [super init]) {
     base::scoped_nsprotocol<id<MTLDevice>> device(metal::CreateDefaultDevice());
     [self setWantsExtendedDynamicRangeContent:YES];
+    [self setEDRMetadata:[CAEDRMetadata HDR10MetadataWithMinLuminance:0.005
+                                                         maxLuminance:1000
+                                                   opticalOutputScale:100]];
     [self setDevice:device];
     [self setOpaque:NO];
     [self setPresentsWithTransaction:YES];

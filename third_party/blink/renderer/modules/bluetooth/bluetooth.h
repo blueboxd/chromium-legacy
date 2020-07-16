@@ -99,9 +99,9 @@ class Bluetooth final : public EventTargetWithInlineData,
                                 Bluetooth>
       client_receivers_;
 
-  HeapMojoRemote<mojom::blink::WebBluetoothService,
-                 HeapMojoWrapperMode::kForceWithoutContextObserver>
-      service_;
+  // HeapMojoRemote objects are associated with a ContextLifecycleNotifier and
+  // cleaned up automatically when it is destroyed.
+  HeapMojoRemote<mojom::blink::WebBluetoothService> service_;
 };
 
 }  // namespace blink

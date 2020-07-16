@@ -7,6 +7,9 @@ import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import './icons.js';
+// <if expr="chromeos">
+import './viewer-annotations-bar.js';
+// </if>
 import './viewer-download-controls.js';
 import './viewer-page-selector.js';
 import './shared-css.js';
@@ -15,6 +18,9 @@ import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/cr_
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {FittingType} from '../constants.js';
+// <if expr="chromeos">
+import {InkController} from '../ink_controller.js';
+// </if>
 
 export class ViewerPdfToolbarNewElement extends PolymerElement {
   static get is() {
@@ -27,10 +33,23 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
 
   static get properties() {
     return {
+      // <if expr="chromeos">
+      annotationAvailable: Boolean,
+      // </if>
+      annotationMode: {
+        type: Boolean,
+        notify: true,
+        value: false,
+        reflectToAttribute: true,
+      },
       docTitle: String,
       docLength: Number,
       hasEdits: Boolean,
       hasEnteredAnnotationMode: Boolean,
+      // <if expr="chromeos">
+      /** @type {?InkController} */
+      inkController: Object,
+      // </if>
       isFormFieldFocused: Boolean,
 
       loadProgress: {
@@ -55,6 +74,15 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
         type: String,
         computed: 'computeFitToButtonIcon_(fittingType_)',
       },
+
+      // <if expr="chromeos">
+      /** @private */
+      showAnnotationsBar_: {
+        type: Boolean,
+        computed: 'computeShowAnnotationsBar_(' +
+            'loading_, annotationMode, pdfAnnotationsEnabled)',
+      },
+      // </if>
     };
   }
 
@@ -92,6 +120,16 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
   loadProgressChanged_() {
     this.loading_ = this.loadProgress < 100;
   }
+
+  // <if expr="chromeos">
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShowAnnotationsBar_() {
+    return this.pdfAnnotationsEnabled && !this.loading_ && this.annotationMode;
+  }
+  // </if>
 
   /** @private */
   onPrintClick_() {
@@ -136,6 +174,14 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
       noOffset: true,
     });
   }
+
+  // <if expr="chromeos">
+  toggleAnnotation() {
+    this.annotationMode = !this.annotationMode;
+    this.dispatchEvent(new CustomEvent(
+        'annotation-mode-toggled', {detail: this.annotationMode}));
+  }
+  // </if>
 }
 
 customElements.define(

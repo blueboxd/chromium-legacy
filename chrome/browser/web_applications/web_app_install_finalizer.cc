@@ -434,6 +434,10 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
     DCHECK_EQ(SkColorGetA(*web_app_info.theme_color), SK_AlphaOPAQUE);
     web_app->SetThemeColor(web_app_info.theme_color);
   }
+  if (web_app_info.background_color) {
+    DCHECK_EQ(SkColorGetA(*web_app_info.background_color), SK_AlphaOPAQUE);
+    web_app->SetBackgroundColor(*web_app_info.background_color);
+  }
 
   WebApp::SyncFallbackData sync_fallback_data;
   sync_fallback_data.name = base::UTF16ToUTF8(web_app_info.title);

@@ -140,7 +140,7 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
     /**
      * The desired width for the content.
      */
-    private int mDesiredContentWidth = 0;
+    private int mDesiredContentWidth;
 
     // Preferred orientation for the popup with respect to the anchor.
     // Preferred vertical orientation for the popup with respect to the anchor.

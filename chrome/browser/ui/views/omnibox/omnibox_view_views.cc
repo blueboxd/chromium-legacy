@@ -461,7 +461,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
     // show just the simplified domain until the user specifically interacts
     // with the omnibox by hovering over it.
     if (IsURLEligibleForSimplifiedDomainEliding()) {
-      ElideToSimplifiedDomain();
+      ElideURL();
     } else {
       // If the text isn't eligible to be elided to a simplified domain, then
       // ensure that as much of it is visible as will fit.
@@ -700,11 +700,7 @@ void OmniboxViewViews::OnThemeChanged() {
   set_placeholder_text_color(dimmed_text_color);
 
   if (!model()->ShouldPreventElision() &&
-      OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover() &&
-      !OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction()) {
-    // When reveal-on-hover is enabled but not hide-on-interaction, create
-    // the hover elision animation now. When hide-on-interaction is enabled,
-    // the hover animation is created after the user interacts with each page.
+      OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover()) {
     hover_elide_or_unelide_animation_ =
         std::make_unique<ElideAnimation>(this, GetRenderText());
   }
@@ -1166,11 +1162,22 @@ void OmniboxViewViews::OnMouseMoved(const ui::MouseEvent& event) {
     if (starting_color == gfx::kPlaceholderColor)
       starting_color = SK_ColorTRANSPARENT;
     hover_elide_or_unelide_animation_->Stop();
-    std::vector<gfx::Range> ranges_surrounding_simplified_domain;
-    GetSimplifiedDomainBounds(&ranges_surrounding_simplified_domain);
+    // Figure out where we are uneliding from so that the hover animation can
+    // fade the surrounding text in. If the user has already interacted with the
+    // page, then we elided to the simplified domain and that is what we are
+    // uneliding from now. Otherwise, only the scheme and possibly a trivial
+    // subdomain have been elided and those components now need to be faded in.
+    std::vector<gfx::Range> ranges_to_fade_in;
+    if (elide_after_interaction_animation_ ||
+        !OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction()) {
+      GetSimplifiedDomainBounds(&ranges_to_fade_in);
+    } else {
+      url::Component host = GetHostComponentAfterTrivialSubdomain();
+      ranges_to_fade_in.emplace_back(0, host.begin);
+    }
     hover_elide_or_unelide_animation_->Start(
         unelide_bounds, OmniboxFieldTrial::UnelideURLOnHoverThresholdMs(),
-        ranges_surrounding_simplified_domain, starting_color,
+        ranges_to_fade_in, starting_color,
         GetOmniboxColor(GetThemeProvider(),
                         OmniboxPart::LOCATION_BAR_TEXT_DIMMED));
   }
@@ -1192,29 +1199,36 @@ void OmniboxViewViews::OnMouseExited(const ui::MouseEvent& event) {
   // when their mouse exits the omnibox area. The elision animation is the
   // reverse of the unelision animation: we shrink the URL from both sides while
   // shifting the text to the leading edge.
-
-  // When hide-on-interaction is enabled, we don't want to elide or unelide
-  // until there's user interaction with the page. In this variation,
-  // |hover_elide_or_unelide_animation_| is created in DidGetUserInteraction()
-  // so its existence signals that user interaction has taken place already.
-  if (hover_elide_or_unelide_animation_) {
-    SkColor starting_color =
-        hover_elide_or_unelide_animation_->IsAnimating()
-            ? hover_elide_or_unelide_animation_->GetCurrentColor()
-            : GetOmniboxColor(GetThemeProvider(),
-                              OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
-    hover_elide_or_unelide_animation_->Stop();
-    // Elisions don't take display offset into account (see
-    // https://crbug.com/1099078), so the RenderText must be in NO_ELIDE mode to
-    // avoid over-eliding when some of the text is not visible due to display
-    // offset.
-    GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
+  DCHECK(hover_elide_or_unelide_animation_);
+  SkColor starting_color =
+      hover_elide_or_unelide_animation_->IsAnimating()
+          ? hover_elide_or_unelide_animation_->GetCurrentColor()
+          : GetOmniboxColor(GetThemeProvider(),
+                            OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
+  hover_elide_or_unelide_animation_->Stop();
+  // Elisions don't take display offset into account (see
+  // https://crbug.com/1099078), so the RenderText must be in NO_ELIDE mode to
+  // avoid over-eliding when some of the text is not visible due to display
+  // offset.
+  GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
+  // Figure out where to elide to. If the user has already interacted with the
+  // page or reveal-on-interaction is disabled, then elide to the simplified
+  // domain; otherwise just hide the scheme and trivial subdomain (if any).
+  if (elide_after_interaction_animation_ ||
+      !OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction()) {
     std::vector<gfx::Range> ranges_surrounding_simplified_domain;
     gfx::Range simplified_domain =
         GetSimplifiedDomainBounds(&ranges_surrounding_simplified_domain);
     hover_elide_or_unelide_animation_->Start(
         simplified_domain, 0 /* delay_ms */,
         ranges_surrounding_simplified_domain, starting_color,
+        SK_ColorTRANSPARENT);
+  } else {
+    base::string16 text = GetText();
+    url::Component host = GetHostComponentAfterTrivialSubdomain();
+    hover_elide_or_unelide_animation_->Start(
+        gfx::Range(host.begin, text.size()), 0 /* delay_ms */,
+        std::vector<gfx::Range>{gfx::Range(0, host.begin)}, starting_color,
         SK_ColorTRANSPARENT);
   }
 }
@@ -1548,7 +1562,7 @@ void OmniboxViewViews::OnFocus() {
     saved_selection_for_focus_change_.clear();
   }
 
-  UnelideFromSimplifiedDomain();
+  ShowFullURL();
   GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
 
   // Focus changes can affect the visibility of any keyword hint.
@@ -1673,7 +1687,7 @@ void OmniboxViewViews::OnBlur() {
           std::make_unique<OmniboxViewViews::ElideAnimation>(this,
                                                              GetRenderText());
       if (IsURLEligibleForSimplifiedDomainEliding()) {
-        ElideToSimplifiedDomain();
+        ElideURL();
       } else {
         // If the text isn't eligible to be elided to a simplified domain, then
         // ensure that as much of it is visible as will fit.
@@ -1734,7 +1748,7 @@ void OmniboxViewViews::DidFinishNavigation(
     if (IsURLEligibleForSimplifiedDomainEliding() &&
         elide_after_interaction_animation_ &&
         !elide_after_interaction_animation_->IsAnimating()) {
-      ElideToSimplifiedDomain();
+      ElideURL();
     }
     return;
   }
@@ -1749,6 +1763,11 @@ void OmniboxViewViews::DidGetUserInteraction(
       model()->ShouldPreventElision()) {
     return;
   }
+
+  // If there's already a hover animation running, just let it run as we will
+  // end up at the same place.
+  if (hover_elide_or_unelide_animation_->IsAnimating())
+    return;
 
   // This method runs when the user interacts with the page, such as scrolling
   // or typing. In the hide-on-interaction field trial, the URL is shown until
@@ -1773,14 +1792,6 @@ void OmniboxViewViews::DidGetUserInteraction(
         GetOmniboxColor(GetThemeProvider(),
                         OmniboxPart::LOCATION_BAR_TEXT_DIMMED),
         SK_ColorTRANSPARENT);
-  }
-  // Now that the URL is being elided, create the animation to bring it back on
-  // hover (if enabled via field trial), if it hasn't already been created on an
-  // earlier call to this method.
-  if (OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover() &&
-      !hover_elide_or_unelide_animation_) {
-    hover_elide_or_unelide_animation_ =
-        std::make_unique<ElideAnimation>(this, GetRenderText());
   }
 }
 
@@ -1901,13 +1912,8 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
         model()->AcceptInput(WindowOpenDisposition::NEW_WINDOW,
                              event.time_stamp());
       } else {
-        if (model()->popup_model()->SelectedLineIsTabSwitchSuggestion()) {
-          model()->AcceptInput(WindowOpenDisposition::SWITCH_TO_TAB,
-                               event.time_stamp());
-        } else {
-          model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB,
-                               event.time_stamp());
-        }
+        model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB,
+                             event.time_stamp());
       }
       return true;
     }
@@ -2236,8 +2242,7 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
   base::string16 text = GetText();
   url::Component host = GetHostComponentAfterTrivialSubdomain();
   if (ranges_surrounding_simplified_domain) {
-    ranges_surrounding_simplified_domain->push_back(
-        gfx::Range(host.end(), text.size()));
+    ranges_surrounding_simplified_domain->emplace_back(host.end(), text.size());
   }
 
   if (!OmniboxFieldTrial::ShouldElideToRegistrableDomain()) {
@@ -2262,8 +2267,8 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
       text.find(base::ASCIIToUTF16(simplified_domain));
   DCHECK_NE(simplified_domain_pos, std::string::npos);
   if (ranges_surrounding_simplified_domain) {
-    ranges_surrounding_simplified_domain->push_back(
-        gfx::Range(0, simplified_domain_pos));
+    ranges_surrounding_simplified_domain->emplace_back(0,
+                                                       simplified_domain_pos);
   }
   return gfx::Range(simplified_domain_pos, host.end());
 }
@@ -2292,13 +2297,15 @@ void OmniboxViewViews::ResetToHideOnInteraction() {
       model()->ShouldPreventElision()) {
     return;
   }
-  // Delete the animations; they'll get recreated in DidGetUserInteraction().
-  // This prevents us from running any animations until the user interacts with
-  // the page.
-  hover_elide_or_unelide_animation_.reset();
+  // Delete the interaction animation; it'll get recreated in
+  // DidGetUserInteraction(). Recreate the hover animation now because the user
+  // can hover over the URL before interacting with the page to reveal the
+  // scheme and trivial subdomain (if any).
   elide_after_interaction_animation_.reset();
+  hover_elide_or_unelide_animation_ =
+      std::make_unique<OmniboxViewViews::ElideAnimation>(this, GetRenderText());
   if (IsURLEligibleForSimplifiedDomainEliding())
-    UnelideFromSimplifiedDomain();
+    ShowFullURLWithoutSchemeAndTrivialSubdomain();
 }
 
 void OmniboxViewViews::OnShouldPreventElisionChanged() {
@@ -2311,7 +2318,7 @@ void OmniboxViewViews::OnShouldPreventElisionChanged() {
     hover_elide_or_unelide_animation_.reset();
     elide_after_interaction_animation_.reset();
     if (IsURLEligibleForSimplifiedDomainEliding())
-      UnelideFromSimplifiedDomain();
+      ShowFullURL();
     return;
   }
   if (OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction()) {
@@ -2320,19 +2327,16 @@ void OmniboxViewViews::OnShouldPreventElisionChanged() {
     ResetToHideOnInteraction();
   } else if (OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover()) {
     if (IsURLEligibleForSimplifiedDomainEliding()) {
-      ElideToSimplifiedDomain();
+      ElideURL();
     }
     hover_elide_or_unelide_animation_ =
         std::make_unique<ElideAnimation>(this, GetRenderText());
   }
 }
 
-void OmniboxViewViews::ElideToSimplifiedDomain() {
-  if (!OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() &&
-      !OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover()) {
-    return;
-  }
-
+void OmniboxViewViews::ElideURL() {
+  DCHECK(OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() ||
+         OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover());
   DCHECK(IsURLEligibleForSimplifiedDomainEliding());
 
   // The simplified domain string must be a substring of the current display
@@ -2375,7 +2379,7 @@ void OmniboxViewViews::ElideToSimplifiedDomain() {
       (simplified_domain_rect.x() - old_bounds.x()));
 }
 
-void OmniboxViewViews::UnelideFromSimplifiedDomain() {
+void OmniboxViewViews::ShowFullURL() {
   if (!OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() &&
       !OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover()) {
     return;
@@ -2388,6 +2392,66 @@ void OmniboxViewViews::UnelideFromSimplifiedDomain() {
   ApplyCaretVisibility();
   FitToLocalBounds();
   GetRenderText()->SetElideBehavior(gfx::ELIDE_TAIL);
+}
+
+void OmniboxViewViews::ShowFullURLWithoutSchemeAndTrivialSubdomain() {
+  DCHECK(IsURLEligibleForSimplifiedDomainEliding());
+  DCHECK(OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() ||
+         OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover());
+  DCHECK(!model()->ShouldPreventElision());
+
+  // First show the full URL, then figure out what to elide.
+  ShowFullURL();
+
+  if (!IsURLEligibleForSimplifiedDomainEliding() ||
+      model()->ShouldPreventElision()) {
+    return;
+  }
+
+  // TODO(https://crbug.com/1099078): currently, we cannot set the elide
+  // behavior to anything other than NO_ELIDE when the display offset is 0, i.e.
+  // when we are not hiding the scheme and trivial subdomain. This is because
+  // RenderText does not take display offset into account when eliding, so it
+  // will over-elide by however much text is scrolled out of the display area.
+  GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
+
+  GetRenderText()->SetDisplayOffset(0);
+  const gfx::Rect& current_display_rect = GetRenderText()->display_rect();
+
+  // If the scheme and trivial subdomain should be elided, then we want to set
+  // the display offset to where the hostname after the trivial subdomain (if
+  // any) begins, relative to the current display rect.
+  base::string16 text = GetText();
+  url::Component host = GetHostComponentAfterTrivialSubdomain();
+
+  gfx::Rect display_url_bounds;
+  for (const auto& rect : GetRenderText()->GetSubstringBounds(
+           gfx::Range(host.begin, text.size()))) {
+    display_url_bounds.Union(rect);
+  }
+  display_url_bounds.set_height(current_display_rect.height());
+  display_url_bounds.set_y(current_display_rect.y());
+
+  // Set the scheme and trivial subdomain to transparent. This isn't necessary
+  // to hide this portion of the text because it will be scrolled out of
+  // visibility anyway when we set the display offset below. However, if the
+  // user subsequently hovers over the URL to bring back the scheme and trivial
+  // subdomain, the hover animation assumes that the hidden text starts from
+  // transparent and fades it back in.
+  ApplyColor(SK_ColorTRANSPARENT, gfx::Range(0, host.begin));
+
+  // Before setting the display offset, set the display rect to the portion of
+  // the URL that won't be elided, or leave it at the local bounds, whichever is
+  // smaller. The display offset is capped at 0 if the text doesn't overflow the
+  // display rect, so we must fit the display rect to the text so that we can
+  // then set the display offset to scroll the scheme and trivial subdomain out
+  // of visibility.
+  GetRenderText()->SetDisplayRect(
+      gfx::Rect(current_display_rect.x(), display_url_bounds.y(),
+                display_url_bounds.width(), display_url_bounds.height()));
+
+  GetRenderText()->SetDisplayOffset(
+      -1 * (display_url_bounds.x() - current_display_rect.x()));
 }
 
 url::Component OmniboxViewViews::GetHostComponentAfterTrivialSubdomain() {

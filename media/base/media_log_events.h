@@ -12,6 +12,9 @@
 
 namespace media {
 
+// Maximum length of urls that we can show.
+constexpr size_t kMaxUrlLength = 1000;
+
 // Events are changes in the state of a player, or a user interaction, or any
 // other internal representation of a player at a given point in time.
 // This list contains both events that are instant, such as play/pause, as
@@ -68,7 +71,7 @@ enum class MediaLogEvent {
 MEDIA_EXPORT std::string MediaLogEventToString(MediaLogEvent level);
 
 // Sometimes URLs can have encoded data that can be exteremly large.
-MEDIA_EXPORT std::string TruncateUrlString(std::string url);
+MEDIA_EXPORT std::string TruncateUrlString(const std::string& url);
 
 // These events can be triggered with no extra associated data.
 MEDIA_LOG_EVENT_TYPELESS(kPlay);

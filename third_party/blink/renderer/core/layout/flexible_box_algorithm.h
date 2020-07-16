@@ -66,6 +66,8 @@ enum class TransformedWritingMode {
 typedef Vector<FlexItem, 8> FlexItemVector;
 
 class AutoClearOverrideLogicalHeight {
+  STACK_ALLOCATED();
+
  public:
   explicit AutoClearOverrideLogicalHeight(LayoutBox* box)
       : box_(box), old_override_height_(-1) {

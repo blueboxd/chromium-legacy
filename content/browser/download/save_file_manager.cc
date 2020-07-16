@@ -4,6 +4,8 @@
 
 #include "content/browser/download/save_file_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -336,14 +338,6 @@ SavePackage* SaveFileManager::GetSavePackageFromRenderIds(
   return web_contents->save_package();
 }
 
-void SaveFileManager::DeleteDirectoryOrFile(const base::FilePath& full_path,
-                                            bool is_dir) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  download::GetDownloadTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&SaveFileManager::OnDeleteDirectoryOrFile, this,
-                                full_path, is_dir));
-}
-
 void SaveFileManager::SendCancelRequest(SaveItemId save_item_id) {
   // Cancel the request which has specific save id.
   DCHECK(!save_item_id.is_null());
@@ -498,14 +492,6 @@ void SaveFileManager::ClearURLLoader(SaveItemId save_item_id) {
   auto url_loader_iter = url_loader_helpers_.find(save_item_id);
   if (url_loader_iter != url_loader_helpers_.end())
     url_loader_helpers_.erase(url_loader_iter);
-}
-
-void SaveFileManager::OnDeleteDirectoryOrFile(const base::FilePath& full_path,
-                                              bool is_dir) {
-  DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
-  DCHECK(!full_path.empty());
-
-  base::DeleteFile(full_path, is_dir);
 }
 
 void SaveFileManager::RenameAllFiles(const FinalNamesMap& final_names,

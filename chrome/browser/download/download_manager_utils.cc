@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_manager_utils.h"
 
 #include "base/bind.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_offline_content_provider.h"

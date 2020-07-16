@@ -242,7 +242,6 @@ public class MediaViewerUtils {
     }
 
     private static boolean isEnterpriseManaged() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return false;
 
         RestrictionsManager restrictionsManager =
                 (RestrictionsManager) ContextUtils.getApplicationContext().getSystemService(

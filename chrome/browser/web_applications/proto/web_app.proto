@@ -126,4 +126,6 @@ message WebAppProto {
   // A list of icon sizes we successfully downloaded to store on disk.
   repeated DownloadedShortcutsMenuIconSizesProto
       downloaded_shortcuts_menu_icons_sizes = 20;
+
+  optional uint32 background_color = 21;
 }

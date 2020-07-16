@@ -122,7 +122,6 @@ public class StatusBarColorControllerTest {
     @Test
     @LargeTest
     @Feature({"StatusBar"})
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE}) // Status bar is always black on tablets
     public void testColorWithStatusIndicator() {
         final ChromeActivity activity = mActivityTestRule.getActivity();

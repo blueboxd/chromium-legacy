@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from copy import copy
+import logging
 
 from branch_utility import BranchUtility
 from compiled_file_system import SingleFile, Unicode
+from copy import copy
 from docs_server_utils import StringIdentity
 from extensions_paths import API_PATHS, JSON_TEMPLATES
 from file_system import FileNotFoundError
@@ -135,6 +136,13 @@ def _ResolveFeature(feature_name,
 
     for dependency in dependencies:
       dep_type, dep_name = dependency.split(':')
+
+      # Ignore dependencies on behavior features for the purpose of resolving
+      # feature characteristics, since behavior features are generally used for
+      # configuring certain specific allowlisted extension behaviors.
+      if dep_type == 'behavior':
+        continue
+
       if (dep_type not in features_map or
           dep_name in features_map[dep_type].get('unresolved', ())):
         # The dependency itself has not been merged yet or the features map
@@ -345,10 +353,23 @@ class FeaturesBundle(object):
             return any(cache.get('unresolved')
                        for cache in features_map.itervalues())
 
-          # Iterate until everything is resolved. If dependencies are multiple
-          # levels deep, it might take multiple passes to inherit data to the
-          # topmost feature.
-          while has_unresolved():
+          def get_unresolved():
+            '''Returns a dictionary of unresolved features mapping the type of
+            features to the list of unresolved feature names
+            '''
+            unresolved = {}
+            for cache_type, cache in features_map.iteritems():
+              if 'unresolved' not in cache:
+                continue
+              unresolved[cache_type] = cache['unresolved'].keys()
+            return unresolved
+
+          # Iterate until we can't resolve any more features. If dependencies
+          # are multiple levels deep, it might take multiple passes to inherit
+          # data to the topmost feature.
+          any_resolved = True
+          while has_unresolved() and any_resolved:
+            any_resolved = False
             for cache_type, cache in features_map.iteritems():
               if 'unresolved' not in cache:
                 continue
@@ -364,6 +385,9 @@ class FeaturesBundle(object):
                 if not resolve_successful:
                   continue  # Try again on the next iteration of the while loop
 
+                if resolve_successful:
+                  any_resolved = True
+
                 # When successfully resolved, remove it from the unresolved
                 # dict. Add it to the resolved dict if it didn't get deleted.
                 to_remove.append(name)
@@ -372,6 +396,12 @@ class FeaturesBundle(object):
 
               for key in to_remove:
                 del cache['unresolved'][key]
+
+          # TODO(karandeepb): Add a test to ensure that all features are
+          # correctly resolved.
+          if has_unresolved():
+            logging.error('Some features were left unresolved ' +
+                          str(get_unresolved()))
 
           for cache_type, cache in features_map.iteritems():
             self._object_store.Set(cache_type, cache['resolved'])

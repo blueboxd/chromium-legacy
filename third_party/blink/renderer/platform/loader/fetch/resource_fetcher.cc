@@ -37,6 +37,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "services/network/public/cpp/request_mode.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
@@ -69,6 +70,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/stale_revalidation_resource_client.h"
+#include "third_party/blink/renderer/platform/loader/fetch/subresource_web_bundle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
@@ -1260,6 +1262,15 @@ std::unique_ptr<WebURLLoader> ResourceFetcher::CreateURLLoader(
     const ResourceLoaderOptions& options) {
   DCHECK(!GetProperties().IsDetached());
   DCHECK(loader_factory_);
+  for (auto& bundle : subresource_web_bundles_) {
+    if (!bundle->CanHandleRequest(request.Url()))
+      continue;
+    ResourceLoaderOptions new_options(options);
+    new_options.url_loader_factory = base::MakeRefCounted<base::RefCountedData<
+        mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>>>(
+        bundle->GetURLLoaderFactory());
+    return loader_factory_->CreateURLLoader(request, new_options, task_runner_);
+  }
   return loader_factory_->CreateURLLoader(request, options, task_runner_);
 }
 
@@ -2227,6 +2238,17 @@ FrameOrWorkerScheduler* ResourceFetcher::GetFrameOrWorkerScheduler() {
   return frame_or_worker_scheduler_.get();
 }
 
+void ResourceFetcher::AddSubresourceWebBundle(
+    SubresourceWebBundle& subresource_web_bundle) {
+  DCHECK(RuntimeEnabledFeatures::SubresourceWebBundlesEnabled());
+  subresource_web_bundles_.insert(&subresource_web_bundle);
+}
+
+void ResourceFetcher::RemoveSubresourceWebBundle(
+    SubresourceWebBundle& subresource_web_bundle) {
+  subresource_web_bundles_.erase(&subresource_web_bundle);
+}
+
 void ResourceFetcher::Trace(Visitor* visitor) const {
   visitor->Trace(context_);
   visitor->Trace(properties_);
@@ -2245,6 +2267,7 @@ void ResourceFetcher::Trace(Visitor* visitor) const {
   visitor->Trace(matched_preloads_);
   visitor->Trace(resource_timing_info_map_);
   visitor->Trace(blob_registry_remote_);
+  visitor->Trace(subresource_web_bundles_);
 }
 
 // static

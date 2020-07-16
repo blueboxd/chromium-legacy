@@ -11,8 +11,8 @@
 SessionRestoreTestHelper::SessionRestoreTestHelper()
     : restore_notification_seen_(false), loop_is_running_(false) {
   callback_subscription_ = SessionRestore::RegisterOnSessionRestoredCallback(
-      base::Bind(&SessionRestoreTestHelper::OnSessionRestoreDone,
-                 weak_ptr_factory.GetWeakPtr()));
+      base::BindRepeating(&SessionRestoreTestHelper::OnSessionRestoreDone,
+                          weak_ptr_factory.GetWeakPtr()));
 }
 
 SessionRestoreTestHelper::~SessionRestoreTestHelper() {

@@ -42,6 +42,7 @@
 #include "net/socket/connection_attempts.h"
 #include "net/socket/socket_tag.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/referrer_policy.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -84,15 +85,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   typedef URLRequestJob*(ProtocolFactory)(URLRequest* request,
                                           NetworkDelegate* network_delegate,
                                           const std::string& scheme);
-
-  // First-party URL redirect policy: During server redirects, the first-party
-  // URL for cookies normally doesn't change. However, if the request is a
-  // top-level first-party request, the first-party URL should be updated to the
-  // URL on every redirect.
-  enum FirstPartyURLPolicy {
-    NEVER_CHANGE_FIRST_PARTY_URL,
-    UPDATE_FIRST_PARTY_URL_ON_REDIRECT,
-  };
 
   // Max number of http redirects to follow. The Fetch spec says: "If
   // request's redirect count is twenty, return a network error."
@@ -276,10 +268,11 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // The first-party URL policy to apply when updating the first party URL
   // during redirects. The first-party URL policy may only be changed before
   // Start() is called.
-  FirstPartyURLPolicy first_party_url_policy() const {
+  RedirectInfo::FirstPartyURLPolicy first_party_url_policy() const {
     return first_party_url_policy_;
   }
-  void set_first_party_url_policy(FirstPartyURLPolicy first_party_url_policy);
+  void set_first_party_url_policy(
+      RedirectInfo::FirstPartyURLPolicy first_party_url_policy);
 
   // The origin of the context which initiated the request. This is distinct
   // from the "first party for cookies" discussed above in a number of ways:
@@ -850,7 +843,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   std::string method_;  // "GET", "POST", etc. Should be all uppercase.
   std::string referrer_;
   ReferrerPolicy referrer_policy_;
-  FirstPartyURLPolicy first_party_url_policy_;
+  RedirectInfo::FirstPartyURLPolicy first_party_url_policy_;
   HttpRequestHeaders extra_request_headers_;
   int load_flags_;  // Flags indicating the request type for the load;
                     // expected values are LOAD_* enums above.

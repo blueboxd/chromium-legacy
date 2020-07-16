@@ -4,6 +4,7 @@
 
 #include "weblayer/renderer/error_page_helper.h"
 
+#include "base/command_line.h"
 #include "components/error_page/common/error.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"

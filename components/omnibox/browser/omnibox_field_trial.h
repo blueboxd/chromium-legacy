@@ -401,9 +401,6 @@ bool IsSuggestionButtonRowEnabled();
 // Returns true if either the tab switch suggestions flag is enabled.
 bool IsTabSwitchSuggestionsEnabled();
 
-// Returns true if dedicated rows for tab switch suggestions is enabled.
-bool IsTabSwitchSuggestionsDedicatedRowEnabled();
-
 // Returns true if the #omnibox-pedal-suggestions feature is enabled.
 bool IsPedalSuggestionsEnabled();
 

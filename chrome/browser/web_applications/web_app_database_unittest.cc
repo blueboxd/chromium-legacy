@@ -143,6 +143,7 @@ class WebAppDatabaseTest : public WebAppTest {
     const std::string scope =
         base_url + "/scope" + base::NumberToString(suffix);
     const base::Optional<SkColor> theme_color = suffix;
+    const base::Optional<SkColor> background_color = 2 * suffix;
     const base::Optional<SkColor> synced_theme_color = suffix ^ UINT_MAX;
     auto app = std::make_unique<WebApp>(app_id);
 
@@ -165,6 +166,7 @@ class WebAppDatabaseTest : public WebAppTest {
     app->SetLaunchUrl(GURL(launch_url));
     app->SetScope(GURL(scope));
     app->SetThemeColor(theme_color);
+    app->SetBackgroundColor(background_color);
     app->SetIsLocallyInstalled(!(suffix & 2));
     app->SetIsInSyncInstall(!(suffix & 4));
     app->SetUserDisplayMode((suffix & 1) ? DisplayMode::kBrowser
@@ -410,6 +412,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->description().empty());
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
+  EXPECT_FALSE(app->background_color().has_value());
   EXPECT_TRUE(app->icon_infos().empty());
   EXPECT_TRUE(app->downloaded_icon_sizes().empty());
   EXPECT_FALSE(app->is_generated_icon());
@@ -460,6 +463,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->description().empty());
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());
+  EXPECT_FALSE(app_copy->background_color().has_value());
   EXPECT_TRUE(app_copy->last_launch_time().is_null());
   EXPECT_TRUE(app_copy->install_time().is_null());
   EXPECT_TRUE(app_copy->icon_infos().empty());

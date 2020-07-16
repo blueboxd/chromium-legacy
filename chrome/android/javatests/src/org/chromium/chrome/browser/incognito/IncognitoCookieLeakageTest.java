@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.incognito;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.LargeTest;
@@ -26,7 +25,6 @@ import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabIncognitoManager;
@@ -123,9 +121,6 @@ public class IncognitoCookieLeakageTest {
     @Test
     @LargeTest
     @UseMethodParameter(TestParams.IncognitoToIncognito.class)
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP,
-            message = "TODO(crbug.com/1062357): The test is disabled in "
-                    + "Android Kitkat because of incognito CCT flakiness.")
     public void
     testCookiesDoNotLeakFromIncognitoToIncognito(
             String incognitoActivityType1, String incognitoActivityType2) throws TimeoutException {
@@ -149,9 +144,6 @@ public class IncognitoCookieLeakageTest {
     @Test
     @LargeTest
     @UseMethodParameter(IsolatedFlowsParams.class)
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP,
-            message = "TODO(crbug.com/1062357): The test is disabled in "
-                    + "Android Kitkat because of incognito CCT flakiness.")
     public void
     testCookiesDoNotLeakBetweenRegularAndIncognito(
             String setterActivityType, String getterActivityType) throws TimeoutException {

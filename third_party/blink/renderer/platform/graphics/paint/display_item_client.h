@@ -58,7 +58,12 @@ class PLATFORM_EXPORT DisplayItemClient {
 
   // The visual rect of this DisplayItemClient. It's in the space of the parent
   // transform node.
-  virtual IntRect VisualRect() const = 0;
+  // TODO(crbug.com/1104064: Remove this after we can calculate visual rects
+  // for all display items during paint.
+  virtual IntRect VisualRect() const {
+    NOTREACHED();
+    return IntRect();
+  }
 
   // The outset will be used to inflate visual rect after the visual rect is
   // mapped into the space of the composited layer, for any special raster

@@ -7,7 +7,6 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff.Mode;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -94,12 +93,6 @@ public class NavigationBubble extends LinearLayout {
     public NavigationBubble(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        // Workaround to a bug that makes this view sometimes stay invisible after animation.
-        // https://stackoverflow.com/questions/24258832
-        // https://stackoverflow.com/questions/25099043
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
         mBlack = ApiCompatibilityUtils.getColor(getResources(), R.color.navigation_bubble_arrow);
         mBlue = ApiCompatibilityUtils.getColor(getResources(), R.color.default_icon_color_blue);
 

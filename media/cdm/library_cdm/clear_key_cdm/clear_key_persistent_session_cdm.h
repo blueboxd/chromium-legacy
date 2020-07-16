@@ -101,10 +101,15 @@ class ClearKeyPersistentSessionCdm : public ContentDecryptionModule {
   // sessions if it was a persistent session.
   void OnSessionClosed(const std::string& session_id);
 
+  void OnSessionMessage(const std::string& session_id,
+                        CdmMessageType message_type,
+                        const std::vector<uint8_t>& message);
+
   scoped_refptr<AesDecryptor> cdm_;
   CdmHostProxy* const cdm_host_proxy_ = nullptr;
 
   // Callbacks for firing session events. Other events aren't intercepted.
+  SessionMessageCB session_message_cb_;
   SessionClosedCB session_closed_cb_;
 
   // Keep track of current open persistent sessions.

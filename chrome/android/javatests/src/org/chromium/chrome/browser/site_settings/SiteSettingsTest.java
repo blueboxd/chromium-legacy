@@ -87,7 +87,7 @@ public class SiteSettingsTest {
     @Rule
     public PermissionTestRule mPermissionRule = new PermissionTestRule(true);
 
-    private PermissionUpdateWaiter mPermissionUpdateWaiter = null;
+    private PermissionUpdateWaiter mPermissionUpdateWaiter;
 
     @Before
     public void setUp() throws Exception {

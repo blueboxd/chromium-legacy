@@ -4,6 +4,8 @@
 
 // This features file defines switches used to control Extension behaviour,
 // typically whitelist configuration.
+// Note, the features defined here are generally ignored for the purposes of
+// extension documentation.
 // See chrome/common/extensions/api/_features.md to understand this file, as
 // well as feature.h, simple_feature.h, and feature_provider.h.
 

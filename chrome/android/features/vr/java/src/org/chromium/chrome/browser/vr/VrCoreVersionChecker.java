@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.vr;
 
-import android.os.Build;
-
 import androidx.annotation.IntDef;
 
 import com.google.vr.ndk.base.Version;
@@ -37,12 +35,7 @@ public class VrCoreVersionChecker {
 
     public static final String VR_CORE_PACKAGE_ID = "com.google.vr.vrcore";
 
-    private static final int MIN_SDK_VERSION = Build.VERSION_CODES.KITKAT;
-
     public @VrCoreCompatibility int getVrCoreCompatibility() {
-        if (Build.VERSION.SDK_INT < MIN_SDK_VERSION) {
-            return VrCoreCompatibility.VR_NOT_SUPPORTED;
-        }
         try {
             String vrCoreSdkLibraryVersionString =
                     VrCoreUtils.getVrCoreSdkLibraryVersion(ContextUtils.getApplicationContext());

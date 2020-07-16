@@ -77,8 +77,7 @@ class NativeInitializationController {
         }
 
         assert mBackgroundTasksComplete == null;
-        boolean fetchVariationsSeed = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
-                mActivityDelegate.getInitialIntent(), false);
+        boolean fetchVariationsSeed = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(false);
 
         mBackgroundTasksComplete = false;
         new AsyncInitTaskRunner() {

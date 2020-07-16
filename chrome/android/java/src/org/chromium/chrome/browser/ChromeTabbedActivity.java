@@ -27,7 +27,6 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -71,7 +70,6 @@ import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
@@ -106,7 +104,6 @@ import org.chromium.chrome.browser.night_mode.WebContentsDarkModeController;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoVariationManager;
-import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.paint_preview.PaintPreviewHelper;
 import org.chromium.chrome.browser.paint_preview.PaintPreviewTabHelper;
@@ -445,11 +442,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         ChromeTabbedActivity.MAIN_LAUNCHER_ACTIVITY_NAME)) {
             // Keep in sync with the activities that the .Main alias points to in
             // AndroidManifest.xml.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                intent.setClass(appContext, ChromeLauncherActivity.class);
-            } else {
-                intent.setClass(appContext, ChromeTabbedActivity.class);
-            }
+            intent.setClass(appContext, ChromeTabbedActivity.class);
         } else {
             intent.setComponent(component);
         }
@@ -1538,14 +1531,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         }
 
         supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
-
-        // We are starting from history with a URL after data has been cleared. On Samsung this
-        // can happen after user clears data and clicks on a recents item on pre-L devices.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP && getIntent().getData() != null
-                && (getIntent().getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
-                && OmahaBase.isProbablyFreshInstall(this)) {
-            getIntent().setData(null);
-        }
 
         IncognitoTabHostRegistry.getInstance().register(mIncognitoTabHost);
     }

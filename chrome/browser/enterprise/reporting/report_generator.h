@@ -12,10 +12,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
-#include "chrome/browser/enterprise/reporting/report_request_queue_generator.h"
 #include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 #include "components/enterprise/browser/reporting/browser_report_generator.h"
 #include "components/enterprise/browser/reporting/report_request_definition.h"
+#include "components/enterprise/browser/reporting/report_request_queue_generator.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace enterprise_reporting {

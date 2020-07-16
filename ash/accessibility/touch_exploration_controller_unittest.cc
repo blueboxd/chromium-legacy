@@ -612,8 +612,7 @@ TEST_F(TouchExplorationTest, DoubleTap) {
   gfx::Point tap_location(51, 52);
   TapAndVerifyTouchExplore(tap_location);
   // Now double-tap at a different location. This should result in
-  // a single touch press and release at the location of the tap,
-  // not at the location of the double-tap.
+  // no touches at all, but a click gesture to ChromeVox.
   gfx::Point double_tap_location(33, 34);
   generator_->set_current_screen_location(double_tap_location);
   generator_->PressTouch();
@@ -622,13 +621,8 @@ TEST_F(TouchExplorationTest, DoubleTap) {
   generator_->ReleaseTouch();
 
   std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(2U, captured_events.size());
-  EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
-  EXPECT_EQ(tap_location, captured_events[0]->location());
-  EXPECT_TRUE(captured_events[0]->flags() & ui::EF_TOUCH_ACCESSIBILITY);
-  EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
-  EXPECT_EQ(tap_location, captured_events[1]->location());
-  EXPECT_TRUE(captured_events[1]->flags() & ui::EF_TOUCH_ACCESSIBILITY);
+  ASSERT_TRUE(captured_events.empty());
+  EXPECT_EQ(ax::mojom::Gesture::kClick, delegate_.GetLastGesture());
   EXPECT_TRUE(IsInNoFingersDownState());
 }
 
@@ -826,13 +820,8 @@ TEST_F(TouchExplorationTest, SingleTap) {
   ASSERT_EQ(3U, GetTouchExplorePoints().size());
 
   std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(2U, captured_events.size());
-  EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
-  EXPECT_EQ(tap_location, captured_events[0]->location());
-  EXPECT_TRUE(captured_events[0]->flags() & ui::EF_TOUCH_ACCESSIBILITY);
-  EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
-  EXPECT_EQ(tap_location, captured_events[1]->location());
-  EXPECT_TRUE(captured_events[1]->flags() & ui::EF_TOUCH_ACCESSIBILITY);
+  ASSERT_TRUE(captured_events.empty());
+  EXPECT_EQ(ax::mojom::Gesture::kClick, delegate_.GetLastGesture());
 }
 
 // Double-tapping without coming from touch exploration (no previous touch
@@ -905,13 +894,8 @@ TEST_F(TouchExplorationTest, SplitTap) {
   EXPECT_FALSE(IsInNoFingersDownState());
 
   std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(2U, captured_events.size());
-  EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
-  EXPECT_EQ(initial_touch_location, captured_events[0]->location());
-  EXPECT_TRUE(captured_events[0]->flags() & ui::EF_TOUCH_ACCESSIBILITY);
-  EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
-  EXPECT_EQ(initial_touch_location, captured_events[1]->location());
-  EXPECT_TRUE(captured_events[1]->flags() & ui::EF_TOUCH_ACCESSIBILITY);
+  ASSERT_TRUE(captured_events.empty());
+  EXPECT_EQ(ax::mojom::Gesture::kClick, delegate_.GetLastGesture());
   ClearCapturedAndGestureEvents();
 
   ui::TouchEvent touch_explore_release(
@@ -942,8 +926,7 @@ TEST_F(TouchExplorationTest, SplitTapRelease) {
 
   // Now tap at a different location. Release at the first location,
   // then release at the second. This should result in a
-  // single touch and release at the location of the first (held) tap,
-  // not at the location of the second tap and release.
+  // click gesture to ChromeVox.
   ui::TouchEvent split_tap_press(
       ui::ET_TOUCH_PRESSED, second_touch_location, Now(),
       ui::PointerDetails(ui::EventPointerType::kTouch, 1));
@@ -959,13 +942,8 @@ TEST_F(TouchExplorationTest, SplitTapRelease) {
   EXPECT_TRUE(IsInNoFingersDownState());
 
   std::vector<ui::LocatedEvent*> captured_events = GetCapturedLocatedEvents();
-  ASSERT_EQ(2U, captured_events.size());
-  EXPECT_EQ(ui::ET_TOUCH_PRESSED, captured_events[0]->type());
-  EXPECT_EQ(initial_touch_location, captured_events[0]->location());
-  EXPECT_TRUE(captured_events[0]->flags() & ui::EF_TOUCH_ACCESSIBILITY);
-  EXPECT_EQ(ui::ET_TOUCH_RELEASED, captured_events[1]->type());
-  EXPECT_EQ(initial_touch_location, captured_events[1]->location());
-  EXPECT_TRUE(captured_events[1]->flags() & ui::EF_TOUCH_ACCESSIBILITY);
+  EXPECT_TRUE(captured_events.empty());
+  EXPECT_EQ(ax::mojom::Gesture::kClick, delegate_.GetLastGesture());
 }
 
 TEST_F(TouchExplorationTest, SplitTapMultiFinger) {

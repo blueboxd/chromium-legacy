@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/webui/cast_webui.h"
 
+#include "base/command_line.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/browser/webui/cast_resource_data_source.h"
 #include "chromecast/browser/webui/cast_webui_message_handler.h"

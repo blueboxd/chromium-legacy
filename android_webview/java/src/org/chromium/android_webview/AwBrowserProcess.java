@@ -316,7 +316,7 @@ public final class AwBrowserProcess {
             intent.setClassName(getWebViewPackageName(), ServiceNames.CRASH_RECEIVER_SERVICE);
 
             ServiceConnection connection = new ServiceConnection() {
-                private boolean mHasConnected = false;
+                private boolean mHasConnected;
 
                 @Override
                 public void onServiceConnected(ComponentName className, IBinder service) {
@@ -393,7 +393,7 @@ public final class AwBrowserProcess {
         intent.setClassName(getWebViewPackageName(), ServiceNames.METRICS_BRIDGE_SERVICE);
 
         ServiceConnection connection = new ServiceConnection() {
-            private boolean mHasConnected = false;
+            private boolean mHasConnected;
 
             @Override
             public void onServiceConnected(ComponentName className, IBinder service) {

@@ -38,6 +38,7 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -143,6 +144,24 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ThemeColor) {
     EXPECT_EQ(GetAppIdFromApplicationName(app_browser->app_name()), app_id);
     EXPECT_EQ(base::nullopt, app_browser->app_controller()->GetThemeColor());
   }
+}
+
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, BackgroundColor) {
+  // This feature is intentionally not implemented for the obsolete bookmark
+  // apps.
+  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
+    return;
+
+  blink::Manifest manifest;
+  manifest.start_url = GURL(kExampleURL);
+  manifest.scope = GURL(kExampleURL);
+  manifest.background_color = SkColorSetA(SK_ColorBLUE, 0xF0);
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app::UpdateWebAppInfoFromManifest(manifest, web_app_info.get());
+  AppId app_id = InstallWebApp(std::move(web_app_info));
+
+  auto* provider = WebAppProviderBase::GetProviderBase(profile());
+  EXPECT_EQ(provider->registrar().GetAppBackgroundColor(app_id), SK_ColorBLUE);
 }
 
 // This tests that we don't crash when launching a PWA window with an

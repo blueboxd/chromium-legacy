@@ -7967,7 +7967,7 @@ TEST_F(URLRequestTestHTTP, RedirectUpdateFirstPartyURL) {
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     r->set_site_for_cookies(SiteForCookies::FromUrl(original_first_party_url));
     r->set_first_party_url_policy(
-        URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
+        RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT);
 
     r->Start();
     d.RunUntilComplete();

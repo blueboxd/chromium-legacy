@@ -23,11 +23,11 @@ enum class StatWithIntermediatesPermission {
   kAllowStatWithIntermediates
 };
 
-// BrokerFilePermission defines a path for whitelisting.
+// BrokerFilePermission defines a path for allowlisting.
 // Pick the correct static factory method to create a permission.
 // CheckOpen and CheckAccess are async signal safe.
-// Constuction and Destruction are not async signal safe.
-// |path| is the path to be whitelisted.
+// Construction and Destruction are not async signal safe.
+// |path| is the path to be allowlisted.
 class SANDBOX_EXPORT BrokerFilePermission {
  public:
   ~BrokerFilePermission() {}
@@ -116,7 +116,7 @@ class SANDBOX_EXPORT BrokerFilePermission {
   // by this permission as per access(2).
   // If |file_to_access| is not NULL, it is set to point to either
   // the |requested_filename| in the case of a recursive match,
-  // or a pointer to the matched path in the whitelist if an absolute
+  // or a pointer to the matched path in the allowlist if an absolute
   // match.
   // |mode| is per mode argument of access(2).
   // Async signal safe if |file_to_access| is NULL
@@ -128,7 +128,7 @@ class SANDBOX_EXPORT BrokerFilePermission {
   // by this permission.
   // If |file_to_open| is not NULL it is set to point to either
   // the |requested_filename| in the case of a recursive match,
-  // or a pointer the matched path in the whitelist if an absolute
+  // or a pointer the matched path in the allowlist if an absolute
   // match.
   // If not NULL, |unlink_after_open| is set to point to true if the
   // caller is required to unlink the path after opening.
@@ -144,7 +144,7 @@ class SANDBOX_EXPORT BrokerFilePermission {
   // stat() on all of its leading components.
   // If |file_to_open| is not NULL, it is set to point to either
   // the |requested_filename| in the case of a recursive match,
-  // or a pointer to the matched path in the whitelist if an absolute
+  // or a pointer to the matched path in the allowlist if an absolute
   // match.
   // Async signal safe if |file_to_access| is NULL
   bool CheckStat(const char* requested_filename,

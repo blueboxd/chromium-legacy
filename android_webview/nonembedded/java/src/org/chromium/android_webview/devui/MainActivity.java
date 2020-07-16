@@ -36,7 +36,7 @@ import java.util.Map;
 public class MainActivity extends FragmentActivity {
     private PersistentErrorView mErrorView;
     private WebViewPackageError mDifferentPackageError;
-    private boolean mDifferentPackageErrorVisible = false;
+    private boolean mDifferentPackageErrorVisible;
     private boolean mSwitchFragmentOnResume;
     final Map<Integer, Integer> mFragmentIdMap = new HashMap<>();
 

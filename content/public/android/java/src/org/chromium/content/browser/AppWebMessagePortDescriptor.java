@@ -54,8 +54,8 @@ public class AppWebMessagePortDescriptor implements ConnectionErrorHandler {
      * The connector to which the handle has been entangled. This is null if the
      * descriptor owns the handle, otherwise it is set to the Connector.
      */
-    private Connector mConnector = null;
-    private boolean mConnectorErrored = false;
+    private Connector mConnector;
+    private boolean mConnectorErrored;
 
     /**
      * @return a newly created pair of connected AppWebMessagePortDescriptors.

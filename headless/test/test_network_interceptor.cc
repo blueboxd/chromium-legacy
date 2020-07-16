@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/redirect_util.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -51,8 +52,7 @@ class RedirectLoader : public network::mojom::URLLoader {
   void NotifyRedirect(const std::string& location) {
     auto redirect_info = net::RedirectInfo::ComputeRedirectInfo(
         url_request_.method, url_request_.url, url_request_.site_for_cookies,
-        net::URLRequest::FirstPartyURLPolicy::
-            UPDATE_FIRST_PARTY_URL_ON_REDIRECT,
+        net::RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT,
         url_request_.referrer_policy, url_request_.referrer.spec(),
         response_->headers->response_code(), url_.Resolve(location),
         net::RedirectUtil::GetReferrerPolicyHeader(response_->headers.get()),

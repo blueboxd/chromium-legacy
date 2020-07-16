@@ -30,24 +30,20 @@ void FakeLorgnetteManagerClient::ScanImageToString(
     std::string device_name,
     const ScanProperties& properties,
     DBusMethodCallback<std::string> callback) {
-  auto it = scan_data_.find(
-      std::make_tuple(device_name, properties.mode, properties.resolution_dpi));
-  auto data =
-      it == scan_data_.end() ? base::nullopt : base::make_optional(it->second);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(data)));
-}
-
-void FakeLorgnetteManagerClient::AddScanData(const std::string& device_name,
-                                             const ScanProperties& properties,
-                                             const std::string& data) {
-  scan_data_[std::make_tuple(device_name, properties.mode,
-                             properties.resolution_dpi)] = data;
+      FROM_HERE,
+      base::BindOnce(std::move(callback), std::move(scan_image_response_)));
 }
 
 void FakeLorgnetteManagerClient::SetListScannersResponse(
-    const lorgnette::ListScannersResponse& list_scanners_response) {
+    const base::Optional<lorgnette::ListScannersResponse>&
+        list_scanners_response) {
   list_scanners_response_ = list_scanners_response;
+}
+
+void FakeLorgnetteManagerClient::SetScanImageToStringResponse(
+    const base::Optional<std::string>& scan_image_response) {
+  scan_image_response_ = scan_image_response;
 }
 
 }  // namespace chromeos

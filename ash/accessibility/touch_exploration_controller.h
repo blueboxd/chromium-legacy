@@ -115,13 +115,6 @@ class TouchExplorationControllerDelegate {
 // If the user taps and releases their finger, after 300 ms from the initial
 // touch, a single touch explore gesture is fired.
 //
-// While in touch exploration mode, the user can perform a single tap
-// if the user releases their finger and taps before 300 ms passes.
-// This will result in a click on the last successful touch exploration
-// location. This allows the user to perform a single tap
-// anywhere to activate it. (See more information on simulated clicks
-// below.)
-//
 // The user can perform swipe gestures in one of the four cardinal directions
 // which will be interpreted and used to control the UI. All gestures will only
 // be registered if the fingers move outside the slop, and all fingers will only
@@ -300,9 +293,8 @@ class ASH_EXPORT TouchExplorationController
 
   void PlaySoundForTimer();
 
-  // Sends a simulated click, if an anchor point was set explicitly. Otherwise,
-  // sends a simulated tap at anchor point.
-  void SendSimulatedClickOrTap(const Continuation continuation);
+  // Sends a simulated click.
+  void SendSimulatedClick();
 
   // Sends a simulated tap at anchor point.
   void SendSimulatedTap(const Continuation continuation);

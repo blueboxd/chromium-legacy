@@ -46,6 +46,7 @@
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/no_destructor.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
@@ -4035,10 +4036,10 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseMoveFunction::Run() {
   wm::ConvertPointFromScreen(root_window, &start_in_host);
   ConvertPointToHost(root_window, &start_in_host);
 
-  int64_t steps =
-      std::max(base::TimeDelta::FromMilliseconds(params->duration_in_ms) /
-                   event_generator_->interval(),
-               static_cast<int64_t>(1));
+  int64_t steps = std::max(
+      base::Floor<int64_t>(params->duration_in_ms /
+                           event_generator_->interval().InMillisecondsF()),
+      static_cast<int64_t>(1));
   int flags = env->mouse_button_flags();
   ui::EventType type = (flags == 0) ? ui::ET_MOUSE_MOVED : ui::ET_MOUSE_DRAGGED;
   for (int64_t i = 1; i <= steps; ++i) {

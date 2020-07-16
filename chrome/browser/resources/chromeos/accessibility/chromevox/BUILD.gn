@@ -66,7 +66,7 @@ chromevox_modules = [
   "background/logging/tree_dumper.js",
   "background/math_handler.js",
   "background/media_automation_handler.js",
-  "background/mouse_handler.js",
+  "background/pointer_handler.js",
   "background/next_earcons.js",
   "background/notifications.js",
   "background/output.js",

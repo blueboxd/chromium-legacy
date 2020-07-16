@@ -7,13 +7,14 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
-#include "extensions/browser/api/document_scan/document_scan_interface.h"
+#include "base/optional.h"
+#include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/document_scan.h"
 
 namespace extensions {
+
 namespace api {
 
 class DocumentScanScanFunction : public ExtensionFunction {
@@ -33,18 +34,14 @@ class DocumentScanScanFunction : public ExtensionFunction {
   friend class DocumentScanScanFunctionTest;
 
   void OnScannerListReceived(
-      const std::vector<DocumentScanInterface::ScannerDescription>&
-          scanner_descriptions,
-      const std::string& error);
-  void OnResultsReceived(const std::string& scanned_image,
-                         const std::string& mime_type,
-                         const std::string& error);
+      base::Optional<lorgnette::ListScannersResponse> response);
+  void OnResultsReceived(base::Optional<std::string> scanned_image);
 
   std::unique_ptr<document_scan::Scan::Params> params_;
-  std::unique_ptr<DocumentScanInterface> document_scan_interface_;
 };
 
 }  // namespace api
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_DOCUMENT_SCAN_DOCUMENT_SCAN_API_H_

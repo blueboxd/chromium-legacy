@@ -10,13 +10,12 @@ namespace blink {
 
 void DisplayItemRasterInvalidator::Generate() {
   struct OldAndNewDisplayItems {
-    const IntRect* old_visual_rect = nullptr;
-    const IntRect* new_visual_rect = nullptr;
+    // Union of visual rects of all old display items of the client.
+    IntRect old_visual_rect;
+    // Union of visual rects of all new display items of the client.
+    IntRect new_visual_rect;
     PaintInvalidationReason reason = PaintInvalidationReason::kNone;
   };
-  // If there are multiple display items changed for a client, the map will
-  // store only one (pair) of them because we only need the visual rect and the
-  // the multiple items have the same visual rect.
   HashMap<const DisplayItemClient*, OldAndNewDisplayItems>
       clients_to_invalidate;
 
@@ -36,8 +35,8 @@ void DisplayItemRasterInvalidator::Generate() {
         auto& value = clients_to_invalidate
                           .insert(&new_item.Client(), OldAndNewDisplayItems())
                           .stored_value->value;
-        if (!value.new_visual_rect) {
-          value.new_visual_rect = &new_item.VisualRect();
+        value.new_visual_rect.Unite(new_item.VisualRect());
+        if (value.reason == PaintInvalidationReason::kNone) {
           value.reason = new_item.Client().IsCacheable()
                              ? PaintInvalidationReason::kAppeared
                              : PaintInvalidationReason::kUncacheable;
@@ -63,9 +62,9 @@ void DisplayItemRasterInvalidator::Generate() {
                         .insert(&new_item.Client(), OldAndNewDisplayItems())
                         .stored_value->value;
       if (old_item.IsTombstone() || old_item.DrawsContent())
-        value.old_visual_rect = &old_item.VisualRect();
+        value.old_visual_rect.Unite(old_item.VisualRect());
       if (new_item.DrawsContent())
-        value.new_visual_rect = &new_item.VisualRect();
+        value.new_visual_rect.Unite(new_item.VisualRect());
       value.reason = reason;
     }
 
@@ -87,7 +86,7 @@ void DisplayItemRasterInvalidator::Generate() {
     const auto& old_item = old_paint_artifact_.GetDisplayItemList()[i];
     if (old_item.DrawsContent() || old_item.IsTombstone()) {
       clients_to_invalidate.insert(&old_item.Client(), OldAndNewDisplayItems())
-          .stored_value->value.old_visual_rect = &old_item.VisualRect();
+          .stored_value->value.old_visual_rect.Unite(old_item.VisualRect());
     }
   }
 
@@ -142,20 +141,20 @@ void DisplayItemRasterInvalidator::AddRasterInvalidation(
 
 void DisplayItemRasterInvalidator::GenerateRasterInvalidation(
     const DisplayItemClient& client,
-    const IntRect* old_visual_rect,
-    const IntRect* new_visual_rect,
+    const IntRect& old_visual_rect,
+    const IntRect& new_visual_rect,
     PaintInvalidationReason reason) {
-  if (!new_visual_rect || new_visual_rect->IsEmpty()) {
-    if (old_visual_rect && !old_visual_rect->IsEmpty()) {
-      AddRasterInvalidation(client, *old_visual_rect,
+  if (new_visual_rect.IsEmpty()) {
+    if (!old_visual_rect.IsEmpty()) {
+      AddRasterInvalidation(client, old_visual_rect,
                             PaintInvalidationReason::kDisappeared,
                             kClientIsOld);
     }
     return;
   }
 
-  if (!old_visual_rect || old_visual_rect->IsEmpty()) {
-    AddRasterInvalidation(client, *new_visual_rect,
+  if (old_visual_rect.IsEmpty()) {
+    AddRasterInvalidation(client, new_visual_rect,
                           PaintInvalidationReason::kAppeared, kClientIsNew);
     return;
   }
@@ -163,19 +162,19 @@ void DisplayItemRasterInvalidator::GenerateRasterInvalidation(
   if (client.IsJustCreated()) {
     // The old client has been deleted and the new client happens to be at the
     // same address. They have no relationship.
-    AddRasterInvalidation(client, *old_visual_rect,
+    AddRasterInvalidation(client, old_visual_rect,
                           PaintInvalidationReason::kDisappeared, kClientIsOld);
-    AddRasterInvalidation(client, *new_visual_rect,
+    AddRasterInvalidation(client, new_visual_rect,
                           PaintInvalidationReason::kAppeared, kClientIsNew);
     return;
   }
 
   if (!IsFullPaintInvalidationReason(reason) &&
-      old_visual_rect->Location() != new_visual_rect->Location())
+      old_visual_rect.Location() != new_visual_rect.Location())
     reason = PaintInvalidationReason::kGeometry;
 
   if (IsFullPaintInvalidationReason(reason) ||
-      old_visual_rect->Location() != new_visual_rect->Location()) {
+      old_visual_rect.Location() != new_visual_rect.Location()) {
     // Change of selection can cause change of location of visual rect. For now
     // simply do full invalidation. This will change when we can calculate
     // visual rect for the selection display item and kSelection is no longer
@@ -185,13 +184,13 @@ void DisplayItemRasterInvalidator::GenerateRasterInvalidation(
     // This DCHECK will remind us to change this code when we change how we
     // invalidate selections.
     DCHECK(!IsFullPaintInvalidationReason(PaintInvalidationReason::kSelection));
-    GenerateFullRasterInvalidation(client, *old_visual_rect, *new_visual_rect,
+    GenerateFullRasterInvalidation(client, old_visual_rect, new_visual_rect,
                                    reason);
     return;
   }
 
-  GenerateIncrementalRasterInvalidation(client, *old_visual_rect,
-                                        *new_visual_rect);
+  GenerateIncrementalRasterInvalidation(client, old_visual_rect,
+                                        new_visual_rect);
 
   IntRect partial_rect = client.PartialInvalidationVisualRect();
   if (!partial_rect.IsEmpty())

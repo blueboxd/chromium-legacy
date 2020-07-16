@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -51,7 +52,14 @@ class SerialTest : public InProcessBrowserTest {
   SerialChooserContext* context_;
 };
 
-IN_PROC_BROWSER_TEST_F(SerialTest, NavigateWithChooserCrossOrigin) {
+// TODO(crbug/1069695): Flaky on linux-chromeos-chrome.
+#if defined(OS_LINUX)
+#define MAYBE_NavigateWithChooserCrossOrigin \
+  DISABLED_NavigateWithChooserCrossOrigin
+#else
+#define MAYBE_NavigateWithChooserCrossOrigin NavigateWithChooserCrossOrigin
+#endif
+IN_PROC_BROWSER_TEST_F(SerialTest, MAYBE_NavigateWithChooserCrossOrigin) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 

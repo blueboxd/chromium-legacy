@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_features.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 
@@ -108,8 +109,12 @@ void IntentPickerTabHelper::LoadAppIcon(
   }
 
   constexpr bool allow_placeholder_icon = false;
-  proxy->LoadIcon(app_type, app_id, apps::mojom::IconType::kUncompressed,
-                  gfx::kFaviconSize, allow_placeholder_icon,
+  auto icon_type =
+      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+          ? apps::mojom::IconType::kStandard
+          : apps::mojom::IconType::kUncompressed;
+  proxy->LoadIcon(app_type, app_id, icon_type, gfx::kFaviconSize,
+                  allow_placeholder_icon,
                   base::BindOnce(&IntentPickerTabHelper::OnAppIconLoaded,
                                  weak_factory_.GetWeakPtr(), std::move(apps),
                                  std::move(callback), index));

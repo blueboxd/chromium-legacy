@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.browserservices;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -155,10 +154,7 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
             String appName = register.getAppNameForRegisteredUid(uid);
             Intent intent = ClearDataDialogActivity
                     .createIntent(context, appName, domains, origins, uninstalled);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-            }
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
             context.startActivity(intent);
         }
     }

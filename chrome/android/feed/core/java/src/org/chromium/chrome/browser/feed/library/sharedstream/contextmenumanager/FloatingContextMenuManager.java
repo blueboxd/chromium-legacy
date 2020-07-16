@@ -6,9 +6,6 @@ package org.chromium.chrome.browser.feed.library.sharedstream.contextmenumanager
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.os.Build.VERSION;
 import android.view.View;
 import android.view.ViewParent;
 import android.widget.ArrayAdapter;
@@ -66,16 +63,8 @@ public class FloatingContextMenuManager implements ContextMenuManager {
     private ListView createListView(ArrayAdapter<String> adapter, Context context) {
         ListView listView = new ListView(context);
         listView.setAdapter(adapter);
-
-        // In API 21, 22, and 23 (Lollipop and Marshmallow), there aren't any dividers in the system
-        // default context menu. However, in KitKat there are dividers, which we replicate here.
-        if (VERSION.SDK_INT < 21) {
-            listView.setDivider(new ColorDrawable(Color.GRAY));
-            listView.setDividerHeight(1);
-        } else {
-            listView.setDivider(null);
-            listView.setDividerHeight(0);
-        }
+        listView.setDivider(null);
+        listView.setDividerHeight(0);
 
         return listView;
     }

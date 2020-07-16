@@ -33,7 +33,7 @@ class BrokerFilePermission;
 // signal handler.
 // A process would typically create a broker process before entering
 // sandboxing.
-// 1. BrokerProcess open_broker(read_whitelist, write_whitelist);
+// 1. BrokerProcess open_broker(read_allowlist, write_allowlist);
 // 2. CHECK(open_broker.Init(NULL));
 // 3. Enable sandbox.
 // 4. Use open_broker.Open() to open files.
@@ -45,10 +45,10 @@ class SANDBOX_EXPORT BrokerProcess {
                                  void* aux_broker_process);
 
   // |denied_errno| is the error code returned when methods such as Open()
-  // or Access() are invoked on a file which is not in the whitelist (EACCESS
+  // or Access() are invoked on a file which is not in the allowlist (EACCESS
   // would be a typical value).  |allowed_command_mask| is a bitwise-or of
   // kBrokerCommand*Mask constants from broker_command.h that further restrict
-  // the syscalls to execute. |permissions| describes the whitelisted set
+  // the syscalls to execute. |permissions| describes the allowlisted set
   // of files the broker is is allowed to access. |fast_check_in_client|
   // controls whether doomed requests are first filtered on the client side
   // before being proxied. Apart from tests, this should always be true since
@@ -131,7 +131,7 @@ class SANDBOX_EXPORT BrokerProcess {
   const bool quiet_failures_for_tests_;
   syscall_broker::BrokerCommandSet allowed_command_set_;
   syscall_broker::BrokerPermissionList
-      broker_permission_list_;  // File access whitelist.
+      broker_permission_list_;  // File access allowlist.
   std::unique_ptr<syscall_broker::BrokerClient> broker_client_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerProcess);

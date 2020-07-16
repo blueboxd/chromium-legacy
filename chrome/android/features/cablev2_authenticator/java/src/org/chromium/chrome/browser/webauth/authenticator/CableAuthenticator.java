@@ -72,7 +72,7 @@ class CableAuthenticator {
     private final Callback mCallback;
     private final BLEHandler mBleHandler;
     private final SingleThreadTaskRunner mTaskRunner;
-    private boolean mBleStarted = false;
+    private boolean mBleStarted;
 
     public enum Result {
         REGISTER_OK,

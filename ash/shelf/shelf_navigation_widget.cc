@@ -481,38 +481,8 @@ void ShelfNavigationWidget::Initialize(aura::Window* container) {
   set_focus_on_creation(false);
   GetFocusManager()->set_arrow_key_traversal_enabled_for_widget(true);
   SetContentsView(delegate_);
-  SetSize(GetIdealSize());
+  SetSize(CalculateIdealSize(/*only_visible_area=*/false));
   UpdateLayout(/*animate=*/false);
-}
-
-gfx::Size ShelfNavigationWidget::GetIdealSize() const {
-  const int button_count =
-      (IsBackButtonShown(shelf_->IsHorizontalAlignment()) ? 1 : 0) +
-      (IsHomeButtonShown() ? 1 : 0);
-
-  if (button_count == 0)
-    return gfx::Size();
-
-  const int control_size = ShelfConfig::Get()->control_size();
-  const int horizontal_spacing =
-      ShelfConfig::Get()->control_button_edge_spacing(
-          shelf_->IsHorizontalAlignment());
-  const int vertical_spacing = ShelfConfig::Get()->control_button_edge_spacing(
-      !shelf_->IsHorizontalAlignment());
-
-  DCHECK(shelf_->IsHorizontalAlignment() || button_count == 1);
-  gfx::Size ideal_size(
-      button_count * control_size +
-          (button_count - 1) * ShelfConfig::Get()->button_spacing(),
-      control_size);
-
-  // Enlarge the widget to take up available space, this ensures events which
-  // are outside of the HomeButton bounds can be received. Also, ensure spacing
-  // is added on all sides to center the buttons and avoid view targeter
-  // issues.
-  ideal_size.Enlarge(2 * horizontal_spacing, 2 * vertical_spacing);
-
-  return ideal_size;
 }
 
 void ShelfNavigationWidget::OnMouseEvent(ui::MouseEvent* event) {
@@ -575,7 +545,7 @@ void ShelfNavigationWidget::CalculateTargetBounds() {
       shelf_->shelf_widget()->GetTargetBounds().origin();
 
   gfx::Point nav_origin = gfx::Point(shelf_origin.x(), shelf_origin.y());
-  gfx::Size nav_size = GetIdealSize();
+  gfx::Size nav_size = CalculateIdealSize(/*only_visible_area=*/false);
 
   if (shelf_->IsHorizontalAlignment() && base::i18n::IsRTL()) {
     nav_origin.set_x(shelf_->shelf_widget()->GetTargetBounds().size().width() -
@@ -639,9 +609,14 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
     }
     if (update_opacity)
       GetLayer()->SetOpacity(layout_manager->GetOpacity());
-    if (update_bounds)
+    if (update_bounds) {
       SetBounds(target_bounds_);
+      clip_rect_ = CalculateClipRect();
+    }
   }
+
+  if (update_bounds && Shell::Get()->IsInTabletMode())
+    GetLayer()->SetClipRect(clip_rect_);
 
   views::View* const back_button = delegate_->back_button();
   UpdateButtonVisibility(back_button, back_button_shown, animate,
@@ -691,6 +666,10 @@ void ShelfNavigationWidget::UpdateTargetBoundsForGesture(int shelf_position) {
     target_bounds_.set_x(shelf_position);
 }
 
+gfx::Rect ShelfNavigationWidget::GetVisibleBounds() const {
+  return gfx::Rect(target_bounds_.origin(), clip_rect_.size());
+}
+
 void ShelfNavigationWidget::HandleLocaleChange() {
   delegate_->home_button()->HandleLocaleChange();
   delegate_->back_button()->HandleLocaleChange();
@@ -729,6 +708,64 @@ void ShelfNavigationWidget::UpdateButtonVisibility(
     opacity_settings.AddObserver(new AnimationObserverToHideView(button));
 
   button->layer()->SetOpacity(visible ? 1.0f : 0.0f);
+}
+
+gfx::Rect ShelfNavigationWidget::CalculateClipRect() const {
+  if (!Shell::Get()->IsInTabletMode())
+    return gfx::Rect(target_bounds_.size());
+
+  return gfx::Rect(CalculateIdealSize(/*only_visible_area=*/true));
+}
+
+gfx::Size ShelfNavigationWidget::CalculateIdealSize(
+    bool only_visible_area) const {
+  if (!ShelfConfig::Get()->shelf_controls_shown())
+    return gfx::Size();
+
+  int control_button_number;
+  if (Shell::Get()->IsInTabletMode() && !only_visible_area) {
+    // There are home button and back button. So the maximum is 2.
+    control_button_number = 2;
+  } else {
+    control_button_number = CalculateButtonCount();
+  }
+
+  const int control_size = ShelfConfig::Get()->control_size();
+  int controls_space =
+      control_button_number * control_size +
+      (control_button_number - 1) * ShelfConfig::Get()->button_spacing();
+  const int major_axis_spacing =
+      2 * ShelfConfig::Get()->control_button_edge_spacing(
+              shelf_->IsHorizontalAlignment());
+
+  const int major_axis_length = controls_space + major_axis_spacing;
+
+  // Calculate |minor_axis_spacing|.
+  int minor_axis_spacing;
+  if (only_visible_area) {
+    minor_axis_spacing = 2 * ShelfConfig::Get()->control_button_edge_spacing(
+                                 !shelf_->IsHorizontalAlignment());
+  } else {
+    // When calculating the minor axis length of the navigation widget, use
+    // the larger edge spacing between the home launcher state and the in-app
+    // state. It ensures that the widget' size is constant during the transition
+    // between these two states.
+
+    DCHECK_GT(ShelfConfig::Get()->system_shelf_size(),
+              ShelfConfig::Get()->in_app_shelf_size());
+    minor_axis_spacing = ShelfConfig::Get()->system_shelf_size() - control_size;
+  }
+
+  const int minor_axis_length = control_size + minor_axis_spacing;
+
+  return shelf_->IsHorizontalAlignment()
+             ? gfx::Size(major_axis_length, minor_axis_length)
+             : gfx::Size(minor_axis_length, major_axis_length);
+}
+
+int ShelfNavigationWidget::CalculateButtonCount() const {
+  return (IsBackButtonShown(shelf_->IsHorizontalAlignment()) ? 1 : 0) +
+         (IsHomeButtonShown() ? 1 : 0);
 }
 
 }  // namespace ash

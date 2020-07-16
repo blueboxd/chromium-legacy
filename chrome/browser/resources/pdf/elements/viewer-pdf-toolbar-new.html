@@ -2,7 +2,9 @@
   :host {
     --pdf-toolbar-background-color: rgb(50, 54, 57);
     --pdf-toolbar-text-color: rgb(241, 241, 241);
+  }
 
+  #toolbar {
     align-items: center;
     background-color: var(--pdf-toolbar-background-color);
     box-shadow: var(--cr-elevation-2);
@@ -90,50 +92,75 @@
     opacity: 1;
     visibility: visible;
   }
+
+<if expr="chromeos">
+  :host([annotation-mode]) #annotate {
+    background-color: rgba(255, 255, 255, 0.24);
+    border-radius: 50%;
+  }
+</if>
 </style>
 <!-- TODO(dpapad): Add aria-label and title for all buttons -->
-<div id="start">
-  <cr-icon-button id="menuButton" iron-icon="pdf:open-book">
-  </cr-icon-button>
-  <span>[[docTitle]]</span>
-</div>
-<div id="center">
-  <viewer-page-selector doc-length="[[docLength]]" page-no="[[pageNo]]">
-  </viewer-page-selector>
-  <span id="zoom-controls">
-    <cr-icon-button iron-icon="pdf:remove" title="$i18n{tooltipZoomOut}"
-        on-click="onZoomOutClick_">
+<div id="toolbar">
+  <div id="start">
+    <cr-icon-button id="menuButton" iron-icon="pdf:open-book">
     </cr-icon-button>
-    <input type="text" value="100%"></input>
-    <cr-icon-button iron-icon="pdf:add" title="$i18n{tooltipZoomIn}"
-        on-click="onZoomInClick_">
+    <span>[[docTitle]]</span>
+  </div>
+  <div id="center">
+    <viewer-page-selector doc-length="[[docLength]]" page-no="[[pageNo]]">
+    </viewer-page-selector>
+    <span id="zoom-controls">
+      <cr-icon-button iron-icon="pdf:remove" title="$i18n{tooltipZoomOut}"
+          on-click="onZoomOutClick_">
+      </cr-icon-button>
+      <input type="text" value="100%"></input>
+      <cr-icon-button iron-icon="pdf:add" title="$i18n{tooltipZoomIn}"
+          on-click="onZoomInClick_">
+      </cr-icon-button>
+    </span>
+    <cr-icon-button iron-icon="[[fitToButtonIcon_]]"
+        title="[[getFitToButtonTooltip_('$i18nPolymer{tooltipFitToPage}',
+                                        '$i18nPolymer{tooltipFitToWidth}',
+                                        fittingType_)]]"
+        on-click="onFitToButtonClick_">
     </cr-icon-button>
-  </span>
-  <cr-icon-button iron-icon="[[fitToButtonIcon_]]"
-      title="[[getFitToButtonTooltip_('$i18nPolymer{tooltipFitToPage}',
-                                      '$i18nPolymer{tooltipFitToWidth}',
-                                      fittingType_)]]"
-      on-click="onFitToButtonClick_">
-  </cr-icon-button>
-  <cr-icon-button iron-icon="pdf:rotate-left"></cr-icon-button>
-</div>
-<div id="end">
-  <viewer-download-controls id="downloads"
-      has-edits="[[hasEdits]]"
-      has-entered-annotation-mode="[[hasEnteredAnnotationMode]]"
-      is-form-field-focused="[[isFormFieldFocused]]"
-      pdf-form-save-enabled="[[pdfFormSaveEnabled]]">
-  </viewer-download-controls>
-  <cr-icon-button id="print" iron-icon="cr:print"
-      aria-label$="$i18n{tooltipPrint}" hidden="[[!printingEnabled]]"
-      title="$i18n{tooltipPrint}" on-click="onPrintClick_"></cr-icon-button>
-  <cr-icon-button id="more"
-      iron-icon="cr:more-vert" on-click="onMoreClick_"></cr-icon-button>
+    <cr-icon-button iron-icon="pdf:rotate-left"></cr-icon-button>
+  </div>
+  <div id="end">
+  <if expr="chromeos">
+    <template is="dom-if" if="[[pdfAnnotationsEnabled]]">
+      <cr-icon-button id="annotate" iron-icon="pdf:create"
+          disabled="[[!annotationAvailable]]" on-click="toggleAnnotation"
+          aria-label$="$i18n{tooltipAnnotate}"
+          title="$i18n{tooltipAnnotate}"></cr-icon-button>
+    </template>
+  </if>
+    <viewer-download-controls id="downloads"
+        has-edits="[[hasEdits]]"
+        has-entered-annotation-mode="[[hasEnteredAnnotationMode]]"
+        is-form-field-focused="[[isFormFieldFocused]]"
+        pdf-form-save-enabled="[[pdfFormSaveEnabled]]">
+    </viewer-download-controls>
+    <cr-icon-button id="print" iron-icon="cr:print"
+        aria-label$="$i18n{tooltipPrint}" hidden="[[!printingEnabled]]"
+        title="$i18n{tooltipPrint}" on-click="onPrintClick_"></cr-icon-button>
+    <cr-icon-button id="more"
+        iron-icon="cr:more-vert" on-click="onMoreClick_"></cr-icon-button>
+  </div>
 </div>
 <paper-progress id="progress" value="[[loadProgress]]" hidden="[[!loading_]]">
 </paper-progress>
 
-<cr-action-menu>
+<cr-action-menu force-dark-mode>
   <button class="dropdown-item">Single page view</button>
   <button class="dropdown-item">Two page view</button>
 </cr-action-menu>
+
+<if expr="chromeos">
+  <template is="dom-if" if="[[showAnnotationsBar_]]">
+    <viewer-annotations-bar annotation-mode="[[annotationMode]]"
+        ink-controller="[[inkController]]">
+    </viewer-annotations-bar>
+  </template>
+</if>

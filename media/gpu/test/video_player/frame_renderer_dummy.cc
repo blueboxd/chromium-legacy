@@ -213,10 +213,8 @@ void FrameRendererDummy::ScheduleNextRenderFrameTask() {
     //   Vsync. This might result in one or more frames getting dropped.
     next_render_time =
         std::max(now + vsync_interval_duration_, next_frame_time_);
-    int64_t num_intervals_timebase =
-        (next_render_time - vsync_timebase_) / vsync_interval_duration_;
-    next_render_time =
-        vsync_timebase_ + (num_intervals_timebase * vsync_interval_duration_);
+    next_render_time -=
+        (next_render_time - vsync_timebase_) % vsync_interval_duration_;
   }
 
   // The time at which the next frame will be rendered might be later then the

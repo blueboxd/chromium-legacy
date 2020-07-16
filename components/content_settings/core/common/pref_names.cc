@@ -94,4 +94,14 @@ const char kManagedWebUsbBlockedForUrls[] =
 const char kManagedLegacyCookieAccessAllowedForDomains[] =
     "profile.managed_legacy_cookie_access_allowed_for_domains";
 
+// Boolean indicating whether the quiet UX is enabled for notification
+// permission requests.
+const char kEnableQuietNotificationPermissionUi[] =
+    "profile.content_settings.enable_quiet_permission_ui.notifications";
+
+#if defined(OS_ANDROID)
+// Enable vibration for web notifications.
+const char kNotificationsVibrateEnabled[] = "notifications.vibrate_enabled";
+#endif
+
 }  // namespace prefs

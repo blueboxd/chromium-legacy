@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.site_settings;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -58,7 +57,6 @@ import java.util.Collection;
  * Android settings, when Android is restoring ManageSpaceActivity after Chrome was killed, or for
  * tests.
  */
-@TargetApi(Build.VERSION_CODES.KITKAT)
 public class ManageSpaceActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "ManageSpaceActivity";
 
@@ -107,8 +105,6 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
         mManageSiteDataButton.setOnClickListener(this);
         mClearUnimportantButton.setOnClickListener(this);
 
-        // We should only be using this activity if we're >= KitKat.
-        assert android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT;
         mClearAllDataButton = (Button) findViewById(R.id.clear_all_data);
         mClearAllDataButton.setOnClickListener(this);
         super.onCreate(savedInstanceState);

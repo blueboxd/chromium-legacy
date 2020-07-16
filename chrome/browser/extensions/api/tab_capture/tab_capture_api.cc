@@ -142,7 +142,7 @@ bool GetAutoThrottlingFromOptions(TabCapture::CaptureOptions* options) {
       }
       // Remove the key from the properties to avoid an "unrecognized
       // constraint" error in the renderer.
-      props.RemoveWithoutPathExpansion(kEnableAutoThrottlingKey, nullptr);
+      props.RemoveKey(kEnableAutoThrottlingKey);
     }
   }
 

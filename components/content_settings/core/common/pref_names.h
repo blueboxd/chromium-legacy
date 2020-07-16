@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_PREF_NAMES_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_PREF_NAMES_H_
 
+#include "build/build_config.h"
 
 namespace prefs {
 
@@ -54,6 +55,12 @@ extern const char kManagedWebUsbAllowDevicesForUrls[];
 extern const char kManagedWebUsbAskForUrls[];
 extern const char kManagedWebUsbBlockedForUrls[];
 extern const char kManagedLegacyCookieAccessAllowedForDomains[];
+
+extern const char kEnableQuietNotificationPermissionUi[];
+
+#if defined(OS_ANDROID)
+extern const char kNotificationsVibrateEnabled[];
+#endif
 
 }  // namespace prefs
 

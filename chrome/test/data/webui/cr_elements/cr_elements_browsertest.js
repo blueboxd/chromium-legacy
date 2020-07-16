@@ -596,6 +596,7 @@ CrElementsLottieTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../mock_controller.js',
     '../test_util.js',
     'cr_lottie_tests.js',
   ]),

@@ -69,7 +69,7 @@ component("policy") {
       "//media/audio:platform_config",
     ]
     deps += [
-      ":chromecast_sandbox_whitelist_buildflags",
+      ":chromecast_sandbox_allowlist_buildflags",
       "//sandbox:sandbox_buildflags",
       "//sandbox/linux:sandbox_services",
       "//sandbox/linux:seccomp_bpf",
@@ -140,9 +140,9 @@ buildflag_header("sanitizer_buildflags") {
   flags = [ "USING_SANITIZER=$using_sanitizer" ]
 }
 
-buildflag_header("chromecast_sandbox_whitelist_buildflags") {
-  header = "chromecast_sandbox_whitelist_buildflags.h"
-  flags = [ "ENABLE_CHROMECAST_GPU_SANDBOX_WHITELIST=$is_chromecast" ]
+buildflag_header("chromecast_sandbox_allowlist_buildflags") {
+  header = "chromecast_sandbox_allowlist_buildflags.h"
+  flags = [ "ENABLE_CHROMECAST_GPU_SANDBOX_ALLOWLIST=$is_chromecast" ]
 }
 
 # TODO(crbug.com/1097376): Figure out a better organization for //sandbox

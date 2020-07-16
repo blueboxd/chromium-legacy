@@ -12,7 +12,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.text.format.DateFormat;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -119,7 +118,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
             view.setViewPadding(R.id.body_container, 0, scaledPadding, 0, scaledPadding);
             addWorkProfileBadge(view);
 
-            int smallIconId = useMaterial() ? R.id.small_icon_overlay : R.id.small_icon_footer;
+            int smallIconId = R.id.small_icon_overlay;
             view.setViewVisibility(smallIconId, View.VISIBLE);
             if (mSmallIconBitmapForContent != null) {
                 view.setImageViewBitmap(smallIconId, mSmallIconBitmapForContent);
@@ -162,10 +161,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
             addActionToBuilder(builder, mSettingsAction);
         }
         setGroupOnBuilder(builder, mOrigin);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Public versions only supported since L, and createPublicNotification requires L+.
-            builder.setPublicVersion(createPublicNotification(mContext));
-        }
+        builder.setPublicVersion(createPublicNotification(mContext));
 
         return builder.buildWithBigContentView(bigView);
     }
@@ -191,9 +187,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
 
             // If there is an icon then set it and add some padding.
             if (action.iconBitmap != null || action.iconId != 0) {
-                if (useMaterial()) {
-                    view.setInt(R.id.button_icon, "setColorFilter", BUTTON_ICON_COLOR_MATERIAL);
-                }
+                view.setInt(R.id.button_icon, "setColorFilter", BUTTON_ICON_COLOR_MATERIAL);
 
                 int iconWidth = 0;
                 if (action.iconBitmap != null) {
@@ -230,15 +224,12 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         if (mSettingsAction == null) {
             bigView.setViewVisibility(R.id.origin_settings_icon, View.GONE);
             int rightPadding = dpToPx(mContext, BUTTON_ICON_PADDING_DP);
-            int leftPadding =
-                    Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP ? rightPadding : 0;
+            int leftPadding = 0;
             bigView.setViewPadding(R.id.origin, leftPadding, 0, rightPadding, 0);
             return;
         }
         bigView.setOnClickPendingIntent(R.id.origin, mSettingsAction.intent);
-        if (useMaterial()) {
-            bigView.setInt(R.id.origin_settings_icon, "setColorFilter", BUTTON_ICON_COLOR_MATERIAL);
-        }
+        bigView.setInt(R.id.origin_settings_icon, "setColorFilter", BUTTON_ICON_COLOR_MATERIAL);
     }
 
     /**
@@ -308,13 +299,5 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
      */
     private static int pxToDp(float value, DisplayMetrics metrics) {
         return Math.round(value / ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT));
-    }
-
-    /**
-     * Whether to use the Material look and feel or fall back to Holo.
-     */
-    @VisibleForTesting
-    static boolean useMaterial() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 }

@@ -24,7 +24,7 @@ class AwRenderProcess : public content::RenderProcessHostObserver,
   bool TerminateChildProcess(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj);
 
-  bool IsLockedToOriginForTesting(
+  bool IsProcessLockedForTesting(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 

@@ -8,8 +8,6 @@ import static androidx.test.espresso.Espresso.onView;
 
 import static org.hamcrest.Matchers.instanceOf;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.os.SystemClock;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -248,7 +246,6 @@ public class ExploreSitesPageTest {
         mRecyclerView = mEsp.getView().findViewById(R.id.explore_sites_category_recycler);
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public static void waitForEspLoaded(final Tab tab) {
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(tab.getNativePage(), Matchers.instanceOf(ExploreSitesPage.class));

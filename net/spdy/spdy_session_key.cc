@@ -70,6 +70,19 @@ bool SpdySessionKey::operator!=(const SpdySessionKey& other) const {
   return !(*this == other);
 }
 
+SpdySessionKey::CompareForAliasingResult SpdySessionKey::CompareForAliasing(
+    const SpdySessionKey& other) const {
+  CompareForAliasingResult result;
+  result.is_potentially_aliasable =
+      (privacy_mode_ == other.privacy_mode_ &&
+       host_port_proxy_pair_.second == other.host_port_proxy_pair_.second &&
+       is_proxy_session_ == other.is_proxy_session_ &&
+       network_isolation_key_ == other.network_isolation_key_ &&
+       disable_secure_dns_ == other.disable_secure_dns_);
+  result.is_socket_tag_match = (socket_tag_ == other.socket_tag_);
+  return result;
+}
+
 size_t SpdySessionKey::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(host_port_proxy_pair_);
 }

@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
 
 namespace content {
@@ -33,9 +34,8 @@ void WebBundleRedirectURLLoader::OnReadyToRedirect(
   net::RedirectInfo redirect_info = net::RedirectInfo::ComputeRedirectInfo(
       "GET", resource_request.url, resource_request.site_for_cookies,
       resource_request.update_first_party_url_on_redirect
-          ? net::URLRequest::FirstPartyURLPolicy::
-                UPDATE_FIRST_PARTY_URL_ON_REDIRECT
-          : net::URLRequest::FirstPartyURLPolicy::NEVER_CHANGE_FIRST_PARTY_URL,
+          ? net::RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT
+          : net::RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL,
       resource_request.referrer_policy, resource_request.referrer.spec(), 303,
       url, /*referrer_policy_header=*/base::nullopt,
       /*insecure_scheme_was_upgraded=*/false, /*copy_fragment=*/true,

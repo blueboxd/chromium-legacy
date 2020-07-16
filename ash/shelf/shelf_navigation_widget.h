@@ -56,10 +56,6 @@ class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
   // Initializes the widget, sets its contents view and basic properties.
   void Initialize(aura::Window* container);
 
-  // Returns the size that this widget would like to have depending on whether
-  // tablet mode is on.
-  gfx::Size GetIdealSize() const;
-
   // views::Widget:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
@@ -84,9 +80,16 @@ class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
   void UpdateLayout(bool animate) override;
   void UpdateTargetBoundsForGesture(int shelf_position) override;
 
+  // Returns the visible part's bounds in screen coordinates.
+  gfx::Rect GetVisibleBounds() const;
+
   // Called when shelf layout manager detects a locale change. Reloads the
   // home and back button tooltips and accessibility name strings.
   void HandleLocaleChange();
+
+  const views::BoundsAnimator* bounds_animator_for_test() const {
+    return bounds_animator_.get();
+  }
 
  private:
   class Delegate;
@@ -97,9 +100,25 @@ class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
       bool animate,
       NavigationButtonAnimationMetricsReporter* metrics_reporter);
 
+  // Returns the clip rectangle.
+  gfx::Rect CalculateClipRect() const;
+
+  // Returns the ideal size of the whole widget or the visible area only when
+  // |only_visible_area| is true.
+  gfx::Size CalculateIdealSize(bool only_visible_area) const;
+
+  // Returns the number of visible control buttons.
+  int CalculateButtonCount() const;
+
   Shelf* shelf_ = nullptr;
   Delegate* delegate_ = nullptr;
+
+  // In tablet mode, |clip_rect_| is used to hide the invisible widget part.
+  gfx::Rect clip_rect_;
+
+  // The target widget bounds in screen coordinates.
   gfx::Rect target_bounds_;
+
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;
 
   // Animation metrics reporter for back button animations. Owned by the

@@ -294,8 +294,6 @@ void InProcessBrowserTest::SetUp() {
   chrome_browser_net::NetErrorTabHelper::set_state_for_testing(
       chrome_browser_net::NetErrorTabHelper::TESTING_FORCE_DISABLED);
 
-  google_util::SetMockLinkDoctorBaseURLForTesting();
-
 #if defined(OS_CHROMEOS)
   chromeos::device_sync::DeviceSyncImpl::Factory::SetFactoryForTesting(
       GetFakeDeviceSyncImplFactory());

@@ -262,7 +262,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'f4db4dad69d7426c19b8de58ca973858f3c01f94',
+  'catapult_revision': '0ea0cd51026f96232359b78a32ce21eaf41bef1e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -270,7 +270,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'd8d96d5f0af2533c602afe1da141442f04cf4096',
+  'devtools_frontend_revision': '2a41471831919582f75a836c80716ebecc6f2acf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -322,7 +322,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '212c5bd9b2f06dd8f9f47a527d352717d83e8ed1',
+  'dawn_revision': '82961129b0543b27edd3fc185be7bc47e41b2a10',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -346,7 +346,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libavif
   # and whatever else without interference from each other.
-  'libavif_revision': 'f48a33827db60223753e637699cef24f034c547d',
+  'libavif_revision': '01ee4caa5ab52b2f6f3e500fd3a0f70e0099b031',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
@@ -899,7 +899,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '9d9199a509bf792d7d24ac91d92ed0d111f8d9fb',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'ed9e5acd61d7de5301e51fc0744b4f6aaf4aed0f',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1207,7 +1207,7 @@ deps = {
 
   'src/third_party/nasm': {
       'url': Var('chromium_git') + '/chromium/deps/nasm.git' + '@' +
-      '4fa54ca5f7fc3a15a8c78ac94688e64d3e4e4fa1'
+      '19f3fad68da99277b2882939d3b2fa4c4b8d51d9'
   },
 
   'src/third_party/netty-tcnative/src': {
@@ -1252,7 +1252,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '1a82e68482aacc6cdeeeab15c4d95185b49a05ac',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'ddc86ef759d8e5f1c46324aab820427a4a9e444d',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',

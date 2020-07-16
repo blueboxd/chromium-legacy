@@ -139,7 +139,7 @@ public class RuntimePermissionTest {
     private static final String MEDIA_TEST = "/content/test/data/media/getusermedia.html";
     private static final String DOWNLOAD_TEST = "/chrome/test/data/android/download/get.html";
 
-    private TestAndroidPermissionDelegate mTestAndroidPermissionDelegate = null;
+    private TestAndroidPermissionDelegate mTestAndroidPermissionDelegate;
 
     @Before
     public void setUp() throws Exception {

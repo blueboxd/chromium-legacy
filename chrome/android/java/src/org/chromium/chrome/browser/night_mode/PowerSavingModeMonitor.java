@@ -4,12 +4,10 @@
 
 package org.chromium.chrome.browser.night_mode;
 
-import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
 import android.os.PowerManager;
 
 import androidx.annotation.Nullable;
@@ -55,11 +53,6 @@ public class PowerSavingModeMonitor {
     }
 
     private PowerSavingModeMonitor() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            // Power manager not available before Lollipop. mPowerSavingIsOn is false forever.
-            mPowerManager = null;
-            return;
-        }
         mPowerManager = (PowerManager) ContextUtils.getApplicationContext().getSystemService(
                 Context.POWER_SERVICE);
 
@@ -68,7 +61,6 @@ public class PowerSavingModeMonitor {
         ApplicationStatus.registerApplicationStateListener(state -> updateAccordingToAppState());
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void updateAccordingToAppState() {
         final int applicationState = ApplicationStatus.getStateForApplication();
         if (applicationState == ApplicationState.HAS_RUNNING_ACTIVITIES
@@ -79,7 +71,6 @@ public class PowerSavingModeMonitor {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void start() {
         if (mPowerModeReceiver == null) {
             mPowerModeReceiver = new BroadcastReceiver() {
@@ -94,7 +85,6 @@ public class PowerSavingModeMonitor {
         updatePowerSaveMode();
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void stop() {
         if (mPowerModeReceiver != null) {
             ContextUtils.getApplicationContext().unregisterReceiver(mPowerModeReceiver);
@@ -102,7 +92,6 @@ public class PowerSavingModeMonitor {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void updatePowerSaveMode() {
         boolean newValue = mPowerManager != null && mPowerManager.isPowerSaveMode();
         if (newValue == mPowerSavingIsOn) return;

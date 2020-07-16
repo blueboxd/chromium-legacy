@@ -4,6 +4,8 @@
 
 import 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+
 const template = document.createElement('template');
 template.innerHTML = `
 <dom-module id="pdf-shared">{__html_template__}</dom-module>

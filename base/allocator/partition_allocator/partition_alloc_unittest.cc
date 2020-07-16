@@ -859,10 +859,10 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
                                                       offset),
               offset);
     // Testing the mismatched thread-safety variant here and below, because
-    // CheckedPtr2Impl may call the wrong variant and relies on the result to
-    // be identical.
-    // TODO(bartekn): Remove when CheckedPtr2Impl no longer calls mismatched
-    // vartiant.
+    // CheckedPtr2OrMTEImpl may call the wrong variant and relies on the result
+    // to be identical.
+    // TODO(bartekn): Remove when CheckedPtr2OrMTEImpl no longer calls
+    // mismatched vartiant.
     EXPECT_EQ(PartitionAllocGetSlotOffset<NotThreadSafe>(
                   static_cast<char*>(ptr) + offset),
               offset);
@@ -884,8 +884,8 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
     EXPECT_EQ(PartitionAllocGetSlotOffset<ThreadSafe>(static_cast<char*>(ptr) +
                                                       offset),
               offset);
-    // TODO(bartekn): Remove when CheckedPtr2Impl no longer calls mismatched
-    // vartiant.
+    // TODO(bartekn): Remove when CheckedPtr2OrMTEImpl no longer calls
+    // mismatched vartiant.
     EXPECT_EQ(PartitionAllocGetSlotOffset<NotThreadSafe>(
                   static_cast<char*>(ptr) + offset),
               offset);
@@ -911,8 +911,8 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
     EXPECT_EQ(PartitionAllocGetSlotOffset<ThreadSafe>(static_cast<char*>(ptr) +
                                                       offset),
               offset);
-    // TODO(bartekn): Remove when CheckedPtr2Impl no longer calls mismatched
-    // vartiant.
+    // TODO(bartekn): Remove when CheckedPtr2OrMTEImpl no longer calls
+    // mismatched vartiant.
     EXPECT_EQ(PartitionAllocGetSlotOffset<NotThreadSafe>(
                   static_cast<char*>(ptr) + offset),
               offset);
@@ -967,8 +967,8 @@ TEST_F(PartitionAllocTest, GetOffsetMultiplePages) {
     for (size_t offset = 0; offset < requested_size; offset += 13) {
       EXPECT_EQ(allocator.root()->GetSize(ptr), requested_size);
       EXPECT_EQ(PartitionAllocGetSlotOffset<ThreadSafe>(ptr + offset), offset);
-      // TODO(bartekn): Remove when CheckedPtr2Impl no longer calls mismatched
-      // vartiant.
+      // TODO(bartekn): Remove when CheckedPtr2OrMTEImpl no longer calls
+      // mismatched vartiant.
       EXPECT_EQ(PartitionAllocGetSlotOffset<NotThreadSafe>(ptr + offset),
                 offset);
     }

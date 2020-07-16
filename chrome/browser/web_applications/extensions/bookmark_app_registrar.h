@@ -42,6 +42,8 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   std::string GetAppDescription(const web_app::AppId& app_id) const override;
   base::Optional<SkColor> GetAppThemeColor(
       const web_app::AppId& app_id) const override;
+  base::Optional<SkColor> GetAppBackgroundColor(
+      const web_app::AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const web_app::AppId& app_id) const override;
   base::Optional<GURL> GetAppScopeInternal(
       const web_app::AppId& app_id) const override;

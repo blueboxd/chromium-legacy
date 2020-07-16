@@ -187,7 +187,7 @@ class AutofillHandler {
                                 const base::TimeTicks timestamp) = 0;
 
   // Invoked when forms from OnFormsSeen() has been parsed to |form_structures|.
-  virtual void OnFormsParsed(const std::vector<FormStructure*>& form_structures,
+  virtual void OnFormsParsed(const std::vector<const FormData*>& forms,
                              const base::TimeTicks timestamp) = 0;
 
   // Returns the number of FormStructures with the given |form_signature| and

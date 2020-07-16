@@ -859,7 +859,6 @@ SharedImageBackingGLImage::ProduceSkia(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {
-  SharedImageRepresentationGLTextureClient* gl_client = nullptr;
   if (!cached_promise_texture_) {
     if (context_state->GrContextIsMetal()) {
 #if defined(OS_MACOSX)
@@ -869,7 +868,6 @@ SharedImageBackingGLImage::ProduceSkia(
       DCHECK(cached_promise_texture_);
 #endif
     } else {
-      gl_client = this;
       GrBackendTexture backend_texture;
       GetGrBackendTexture(context_state->feature_info(), GetGLTarget(), size(),
                           GetGLServiceId(), format(), &backend_texture);
@@ -877,8 +875,8 @@ SharedImageBackingGLImage::ProduceSkia(
     }
   }
   return std::make_unique<SharedImageRepresentationSkiaImpl>(
-      manager, this, gl_client, std::move(context_state),
-      cached_promise_texture_, tracker);
+      manager, this, context_state->GrContextIsGL() ? this : nullptr,
+      std::move(context_state), cached_promise_texture_, tracker);
 }
 
 std::unique_ptr<SharedImageRepresentationGLTexture>

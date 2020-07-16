@@ -65,7 +65,11 @@ void CrostiniInstallerDialog::GetDialogSize(gfx::Size* size) const {
 }
 
 bool CrostiniInstallerDialog::ShouldShowCloseButton() const {
-  return false;
+  return true;
+}
+
+bool CrostiniInstallerDialog::ShouldShowDialogTitle() const {
+  return true;
 }
 
 // TODO(crbug.com/1053376): We should add a browser test for the dialog to check

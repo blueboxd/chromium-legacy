@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.vr;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
@@ -1045,7 +1044,6 @@ public class VrShellDelegate
                 && orientation == Configuration.ORIENTATION_LANDSCAPE;
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     private void setWindowModeForVr() {
         // Decouple the compositor size from the view size, or we'll get an unnecessary resize due
         // to the orientation change when entering VR, then another resize once VR has settled on
@@ -1070,7 +1068,6 @@ public class VrShellDelegate
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     private void restoreWindowMode() {
         ScreenOrientationProvider.getInstance().setOrientationDelegate(null);
         mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);

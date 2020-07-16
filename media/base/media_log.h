@@ -180,16 +180,6 @@ class MEDIA_EXPORT MediaLog {
   // Helper methods to create events and their parameters.
   std::unique_ptr<MediaLogRecord> CreateRecord(MediaLogRecord::Type type);
 
-  enum : size_t {
-    // Max length of URLs in Created/Load events. Exceeding triggers truncation.
-    kMaxUrlLength = 1000,
-  };
-
-  // URLs (for Created and Load events) may be of arbitrary length from the
-  // untrusted renderer. This method truncates to |kMaxUrlLength| before storing
-  // the event, and sets the last 3 characters to an ellipsis.
-  static std::string TruncateUrlString(std::string log_string);
-
   // The underlying media log.
   scoped_refptr<ParentLogRecord> parent_log_record_;
 

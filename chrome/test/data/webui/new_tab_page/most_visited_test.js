@@ -769,6 +769,7 @@ suite('NewTabPageMostVisitedTest', () => {
     });
     queryAll('.tile-title span').forEach(tile => {
       assertStyle(tile, 'text-shadow', 'none');
+      assertStyle(tile, 'color', 'rgb(60, 64, 67)');
     });
   });
 

@@ -252,11 +252,9 @@ abstract class ElementAdapter<V extends View, M> {
                             public void onInitializeAccessibilityNodeInfo(
                                     View host, AccessibilityNodeInfo info) {
                                 super.onInitializeAccessibilityNodeInfo(host, info);
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                                    info.setCollectionItemInfo(
-                                            AccessibilityNodeInfo.CollectionItemInfo.obtain(
-                                                    -1, 0, 0, 0, true));
-                                }
+                                info.setCollectionItemInfo(
+                                        AccessibilityNodeInfo.CollectionItemInfo.obtain(
+                                                -1, 0, 0, 0, true));
                             }
                         });
                     }

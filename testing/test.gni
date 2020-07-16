@@ -6,6 +6,8 @@
 # TEST SETUP
 # ==============================================================================
 
+import("//build/config/chromeos/ui_mode.gni")
+
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/extract_unwind_tables.gni")
@@ -29,7 +31,8 @@ if (is_ios) {
   import("//build/config/ios/rules.gni")
 }
 
-if ((is_linux && !is_chromeos) || is_mac || is_win) {
+if ((is_linux && !is_chromeos) || is_mac || is_win ||
+    chromeos_is_browser_only) {
   import("//build/config/sanitizers/sanitizers.gni")
   import("//build/util/generate_wrapper.gni")
 }
@@ -375,6 +378,48 @@ template("test") {
         # Give tests the default manifest on Windows (a no-op elsewhere).
         "//build/win:default_exe_manifest",
       ]
+    }
+  } else if (chromeos_is_browser_only) {
+    _runtime_deps_file = "$root_out_dir/${target_name}.runtime_deps"
+    _executable = target_name
+    _gen_runner_target = "${target_name}__runner"
+
+    generate_wrapper(_gen_runner_target) {
+      testonly = true
+      wrapper_script = "$root_build_dir/bin/run_" + _executable
+      executable = "//build/lacros/test_runner.py"
+      executable_args = [
+        "@WrappedPath(./${_executable})",
+        "--test-launcher-bot-mode",
+      ]
+      if (is_asan) {
+        executable_args += [ "--asan=true" ]
+      }
+      if (is_msan) {
+        executable_args += [ "--msan=true" ]
+      }
+      if (is_tsan) {
+        executable_args += [ "--tsan=true" ]
+      }
+      if (use_cfi_diag) {
+        executable_args += [ "--cfi-diag=true" ]
+      }
+
+      data = [
+        "//testing/test_env.py",
+        "//.vpython",
+      ]
+    }
+
+    executable(target_name) {
+      forward_variables_from(invoker, "*")
+      if (!defined(deps)) {
+        deps = []
+      }
+
+      testonly = true
+      write_runtime_deps = _runtime_deps_file
+      deps += [ ":$_gen_runner_target" ]
     }
   } else {
     if ((is_linux && !is_chromeos) || is_mac || is_win) {

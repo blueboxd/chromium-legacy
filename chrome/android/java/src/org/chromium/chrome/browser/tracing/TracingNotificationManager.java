@@ -69,11 +69,6 @@ public class TracingNotificationManager {
      * the user. True if the state can't be determined.
      */
     public static boolean browserNotificationsEnabled() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            // Can't determine the state, so assume they are enabled.
-            return true;
-        }
-
         if (!getNotificationManager(ContextUtils.getApplicationContext())
                         .areNotificationsEnabled()) {
             return false;

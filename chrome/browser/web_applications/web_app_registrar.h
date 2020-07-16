@@ -45,6 +45,8 @@ class WebAppRegistrar : public AppRegistrar, public ProfileManagerObserver {
   std::string GetAppShortName(const AppId& app_id) const override;
   std::string GetAppDescription(const AppId& app_id) const override;
   base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
+  base::Optional<SkColor> GetAppBackgroundColor(
+      const AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const AppId& app_id) const override;
   base::Optional<GURL> GetAppScopeInternal(const AppId& app_id) const override;
   DisplayMode GetAppDisplayMode(const AppId& app_id) const override;

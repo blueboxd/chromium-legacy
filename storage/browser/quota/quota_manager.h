@@ -472,11 +472,14 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   std::set<url::Origin> access_notified_origins_;
 
   // Owns the QuotaClient instances registered via RegisterClient().
-  std::vector<scoped_refptr<QuotaClient>> clients_;
+  //
+  // Iterating over this list is almost always incorrect. Most algorithms should
+  // iterate over an entry in |client_types_|.
+  std::vector<scoped_refptr<QuotaClient>> clients_for_ownership_;
   // Maps QuotaClient instances to client types.
   //
   // The QuotaClient instances pointed to by the map keys are guaranteed to be
-  // alive, because they are owned by |clients_|.
+  // alive, because they are owned by |clients_for_ownership_|.
   base::flat_map<blink::mojom::StorageType,
                  base::flat_map<QuotaClient*, QuotaClientType>>
       client_types_;

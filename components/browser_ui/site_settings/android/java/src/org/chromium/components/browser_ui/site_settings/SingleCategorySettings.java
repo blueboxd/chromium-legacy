@@ -8,6 +8,8 @@ import static org.chromium.components.browser_ui.settings.SearchUtils.handleSear
 import static org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
 import static org.chromium.components.content_settings.PrefNames.BLOCK_THIRD_PARTY_COOKIES;
 import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
+import static org.chromium.components.content_settings.PrefNames.ENABLE_QUIET_NOTIFICATION_PERMISSION_UI;
+import static org.chromium.components.content_settings.PrefNames.NOTIFICATIONS_VIBRATE_ENABLED;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -558,14 +560,13 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         } else if (THIRD_PARTY_COOKIES_TOGGLE_KEY.equals(preference.getKey())) {
             prefService.setBoolean(BLOCK_THIRD_PARTY_COOKIES, (boolean) newValue);
         } else if (NOTIFICATIONS_VIBRATE_TOGGLE_KEY.equals(preference.getKey())) {
-            getPrefs().setNotificationsVibrateEnabled((boolean) newValue);
+            prefService.setBoolean(NOTIFICATIONS_VIBRATE_ENABLED, (boolean) newValue);
         } else if (NOTIFICATIONS_QUIET_UI_TOGGLE_KEY.equals(preference.getKey())) {
-            boolean boolValue = (boolean) newValue;
-            if (boolValue) {
-                getPrefs().setEnableQuietNotificationPermissionUi(true);
+            if ((boolean) newValue) {
+                prefService.setBoolean(ENABLE_QUIET_NOTIFICATION_PERMISSION_UI, true);
             } else {
                 // Clear the pref so if the default changes later the user will get the new default.
-                getPrefs().clearEnableNotificationPermissionUi();
+                prefService.clearPref(ENABLE_QUIET_NOTIFICATION_PERMISSION_UI);
             }
         }
         return true;
@@ -1173,7 +1174,9 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 quiet_ui_pref = (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
                         NOTIFICATIONS_QUIET_UI_TOGGLE_KEY);
             }
-            quiet_ui_pref.setChecked(getPrefs().getEnableQuietNotificationPermissionUi());
+            PrefService prefService = UserPrefs.get(browserContextHandle);
+            quiet_ui_pref.setChecked(
+                    prefService.getBoolean(ENABLE_QUIET_NOTIFICATION_PERMISSION_UI));
         } else if (quiet_ui_pref != null) {
             // Save a reference to allow re-adding it to the screen.
             mNotificationsQuietUiPref = quiet_ui_pref;
@@ -1189,9 +1192,5 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         } else {
             ManagedPreferencesUtils.showManagedByAdministratorToast(getActivity());
         }
-    }
-
-    private SiteSettingsPrefClient getPrefs() {
-        return getSiteSettingsClient().getSiteSettingsPrefClient();
     }
 }

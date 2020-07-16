@@ -295,6 +295,9 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFTextStore
                             size_t* committed_size,
                             ImeTextSpans* spans);
 
+  // Reset all cached flags when |TSFTextStore::RequestLock| returns.
+  void ResetCacheAfterEditSession();
+
   // Gets the style information from the display attribute for the actively
   // composed text.
   void GetStyle(const TF_DISPLAYATTRIBUTE& attribute, ImeTextSpan* span);

@@ -75,9 +75,12 @@ class DesktopNode extends RootNodeWrapper {
     const interestingChildren = RootNodeWrapper.getInterestingChildren(root);
 
     if (interestingChildren.length < 1) {
+      // If the desktop node does not behave as expected, we have no basis for
+      // recovering. Wait for the next user input.
       throw SwitchAccess.error(
           SAConstants.ErrorType.MALFORMED_DESKTOP,
-          'Desktop node must have at least 1 interesting child.');
+          'Desktop node must have at least 1 interesting child.',
+          false /* shouldRecover */);
     }
 
     root.children = interestingChildren.map(childConstructor);

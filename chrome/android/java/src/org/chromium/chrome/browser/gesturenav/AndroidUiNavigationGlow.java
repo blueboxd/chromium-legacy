@@ -4,10 +4,8 @@
 
 package org.chromium.chrome.browser.gesturenav;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EdgeEffect;
@@ -78,11 +76,8 @@ public class AndroidUiNavigationGlow extends NavigationGlow {
             setColor();
         }
 
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         private void setColor() {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                mEdgeEffectRight.setColor(android.R.color.black);
-            }
+            mEdgeEffectRight.setColor(android.R.color.black);
         }
 
         @Override

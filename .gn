@@ -58,7 +58,6 @@ default_args = {
 no_check_targets = [
   # //chrome/*, https://crbug.com/949535
   "//chrome/browser/devtools:*",  # 114 errors
-  "//chrome/browser/image_decoder:*",  # 2 errors
   "//chrome/browser/media/kaleidoscope/internal:*",  # 19 errors
   "//chrome/browser/media/router/discovery:*",  # 26 errors
   "//chrome/browser/media/router:*",  # 225 errors

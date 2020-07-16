@@ -1724,6 +1724,12 @@ TEST_F(QuotaManagerTest, GetEvictionRoundInfo) {
   EXPECT_LE(0, available_space());
 }
 
+TEST_F(QuotaManagerTest, DeleteHostDataNoClients) {
+  DeleteHostData(std::string(), kTemp, AllQuotaClientTypes());
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(QuotaStatusCode::kOk, status());
+}
+
 TEST_F(QuotaManagerTest, DeleteHostDataSimple) {
   static const MockOriginData kData[] = {
     { "http://foo.com/",   kTemp,     1 },
@@ -1861,6 +1867,101 @@ TEST_F(QuotaManagerTest, DeleteHostDataMultiple) {
   EXPECT_EQ(predelete_bar_pers, usage());
 }
 
+TEST_F(QuotaManagerTest, DeleteHostDataMultipleClientsDifferentTypes) {
+  static const MockOriginData kData1[] = {
+      {"http://foo.com/", kPerm, 1},
+      {"http://foo.com:1/", kPerm, 10},
+      {"http://foo.com/", kTemp, 100},
+      {"http://bar.com/", kPerm, 1000},
+  };
+  static const MockOriginData kData2[] = {
+      {"http://foo.com/", kTemp, 10000},
+      {"http://foo.com:1/", kTemp, 100000},
+      {"https://foo.com/", kTemp, 1000000},
+      {"http://bar.com/", kTemp, 10000000},
+  };
+  CreateAndRegisterClient(kData1, QuotaClientType::kFileSystem,
+                          {blink::mojom::StorageType::kTemporary,
+                           blink::mojom::StorageType::kPersistent});
+  CreateAndRegisterClient(kData2, QuotaClientType::kDatabase,
+                          {blink::mojom::StorageType::kTemporary});
+
+  GetGlobalUsage(kTemp);
+  task_environment_.RunUntilIdle();
+  const int64_t predelete_global_tmp = usage();
+
+  GetHostUsageWithBreakdown("foo.com", kTemp);
+  task_environment_.RunUntilIdle();
+  const int64_t predelete_foo_tmp = usage();
+
+  GetHostUsageWithBreakdown("bar.com", kTemp);
+  task_environment_.RunUntilIdle();
+  const int64_t predelete_bar_tmp = usage();
+
+  GetGlobalUsage(kPerm);
+  task_environment_.RunUntilIdle();
+  const int64_t predelete_global_pers = usage();
+
+  GetHostUsageWithBreakdown("foo.com", kPerm);
+  task_environment_.RunUntilIdle();
+  const int64_t predelete_foo_pers = usage();
+
+  GetHostUsageWithBreakdown("bar.com", kPerm);
+  task_environment_.RunUntilIdle();
+  const int64_t predelete_bar_pers = usage();
+
+  reset_status_callback_count();
+  DeleteHostData("foo.com", kPerm, AllQuotaClientTypes());
+  DeleteHostData("bar.com", kPerm, AllQuotaClientTypes());
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(2, status_callback_count());
+
+  DumpOriginInfoTable();
+  task_environment_.RunUntilIdle();
+
+  for (const auto& entry : origin_info_entries()) {
+    if (entry.type != kTemp)
+      continue;
+
+    EXPECT_NE(std::string("http://foo.com/"), entry.origin.GetURL().spec());
+    EXPECT_NE(std::string("http://foo.com:1/"), entry.origin.GetURL().spec());
+    EXPECT_NE(std::string("https://foo.com/"), entry.origin.GetURL().spec());
+    EXPECT_NE(std::string("http://bar.com/"), entry.origin.GetURL().spec());
+  }
+
+  GetGlobalUsage(kTemp);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(predelete_global_tmp, usage());
+
+  GetHostUsageWithBreakdown("foo.com", kTemp);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(predelete_foo_tmp, usage());
+
+  GetHostUsageWithBreakdown("bar.com", kTemp);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(predelete_bar_tmp, usage());
+
+  GetGlobalUsage(kPerm);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(predelete_global_pers - (1 + 10 + 1000), usage());
+
+  GetHostUsageWithBreakdown("foo.com", kPerm);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(predelete_foo_pers - (1 + 10), usage());
+
+  GetHostUsageWithBreakdown("bar.com", kPerm);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(predelete_bar_pers - 1000, usage());
+}
+
+TEST_F(QuotaManagerTest, DeleteOriginDataNoClients) {
+  DeleteOriginData(url::Origin::Create(GURL("http://foo.com/")), kTemp,
+                   AllQuotaClientTypes());
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(QuotaStatusCode::kOk, status());
+}
+
 // Single-run DeleteOriginData cases must be well covered by
 // EvictOriginData tests.
 TEST_F(QuotaManagerTest, DeleteOriginDataMultiple) {
@@ -1952,6 +2053,102 @@ TEST_F(QuotaManagerTest, DeleteOriginDataMultiple) {
   GetHostUsageWithBreakdown("bar.com", kPerm);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_bar_pers, usage());
+}
+
+TEST_F(QuotaManagerTest, DeleteOriginDataMultipleClientsDifferentTypes) {
+  static const MockOriginData kData1[] = {
+      {"http://foo.com/", kPerm, 1},
+      {"http://foo.com:1/", kPerm, 10},
+      {"http://foo.com/", kTemp, 100},
+      {"http://bar.com/", kPerm, 1000},
+  };
+  static const MockOriginData kData2[] = {
+      {"http://foo.com/", kTemp, 10000},
+      {"http://foo.com:1/", kTemp, 100000},
+      {"https://foo.com/", kTemp, 1000000},
+      {"http://bar.com/", kTemp, 10000000},
+  };
+  CreateAndRegisterClient(kData1, QuotaClientType::kFileSystem,
+                          {blink::mojom::StorageType::kTemporary,
+                           blink::mojom::StorageType::kPersistent});
+  CreateAndRegisterClient(kData2, QuotaClientType::kDatabase,
+                          {blink::mojom::StorageType::kTemporary});
+
+  GetGlobalUsage(kTemp);
+  task_environment_.RunUntilIdle();
+  const int64_t predelete_global_tmp = usage();
+
+  GetHostUsageWithBreakdown("foo.com", kTemp);
+  task_environment_.RunUntilIdle();
+  const int64_t predelete_foo_tmp = usage();
+
+  GetHostUsageWithBreakdown("bar.com", kTemp);
+  task_environment_.RunUntilIdle();
+  const int64_t predelete_bar_tmp = usage();
+
+  GetGlobalUsage(kPerm);
+  task_environment_.RunUntilIdle();
+  const int64_t predelete_global_pers = usage();
+
+  GetHostUsageWithBreakdown("foo.com", kPerm);
+  task_environment_.RunUntilIdle();
+  const int64_t predelete_foo_pers = usage();
+
+  GetHostUsageWithBreakdown("bar.com", kPerm);
+  task_environment_.RunUntilIdle();
+  const int64_t predelete_bar_pers = usage();
+
+  for (const MockOriginData& data : kData1) {
+    quota_manager()->NotifyStorageAccessed(
+        url::Origin::Create(GURL(data.origin)), data.type);
+  }
+  for (const MockOriginData& data : kData2) {
+    quota_manager()->NotifyStorageAccessed(
+        url::Origin::Create(GURL(data.origin)), data.type);
+  }
+  task_environment_.RunUntilIdle();
+
+  reset_status_callback_count();
+  DeleteOriginData(ToOrigin("http://foo.com/"), kPerm, AllQuotaClientTypes());
+  DeleteOriginData(ToOrigin("http://bar.com/"), kPerm, AllQuotaClientTypes());
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(2, status_callback_count());
+
+  DumpOriginInfoTable();
+  task_environment_.RunUntilIdle();
+
+  for (const auto& entry : origin_info_entries()) {
+    if (entry.type != kPerm)
+      continue;
+
+    EXPECT_NE(std::string("http://foo.com/"), entry.origin.GetURL().spec());
+    EXPECT_NE(std::string("http://bar.com/"), entry.origin.GetURL().spec());
+  }
+
+  GetGlobalUsage(kTemp);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(predelete_global_tmp, usage());
+
+  GetHostUsageWithBreakdown("foo.com", kTemp);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(predelete_foo_tmp, usage());
+
+  GetHostUsageWithBreakdown("bar.com", kTemp);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(predelete_bar_tmp, usage());
+
+  GetGlobalUsage(kPerm);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(predelete_global_pers - (1 + 1000), usage());
+
+  GetHostUsageWithBreakdown("foo.com", kPerm);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(predelete_foo_pers - 1, usage());
+
+  GetHostUsageWithBreakdown("bar.com", kPerm);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(predelete_bar_pers - 1000, usage());
 }
 
 TEST_F(QuotaManagerTest, GetCachedOrigins) {

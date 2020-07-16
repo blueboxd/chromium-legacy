@@ -839,7 +839,7 @@ gfx::Size HotseatWidget::CalculateTargetBoundsSize(
 
   const gfx::Size status_size =
       shelf_->status_area_widget()->GetTargetBounds().size();
-  const gfx::Rect nav_bounds = shelf_->navigation_widget()->GetTargetBounds();
+  const gfx::Rect nav_bounds = shelf_->navigation_widget()->GetVisibleBounds();
 
   // The navigation widget has extra padding on the hotseat side, to center the
   // buttons inside of it. Make sure to get the extra nav widget padding and

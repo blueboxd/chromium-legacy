@@ -72,11 +72,11 @@ public class ExpandablePaymentHandlerTest {
 
     // Host the tests on https://127.0.0.1, because file:// URLs cannot have service workers.
     private EmbeddedTestServer mServer;
-    private boolean mUiShownCalled = false;
-    private boolean mUiClosedCalled = false;
-    private boolean mWebContentsInitializedCallbackInvoked = false;
+    private boolean mUiShownCalled;
+    private boolean mUiClosedCalled;
+    private boolean mWebContentsInitializedCallbackInvoked;
     private UiDevice mDevice;
-    private boolean mDefaultIsIncognito = false;
+    private boolean mDefaultIsIncognito;
     private ChromeActivity mDefaultActivity;
 
     /**

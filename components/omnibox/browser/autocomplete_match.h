@@ -428,9 +428,6 @@ struct AutocompleteMatch {
   // in the button row.
   bool ShouldShowTabMatchButtonInlineInResultView() const;
 
-  // Returns whether the suggestion is by itself a tab switch suggestion.
-  bool IsTabSwitchSuggestion() const;
-
   // Upgrades this match by absorbing the best properties from
   // |duplicate_match|. For instance: if |duplicate_match| has a higher
   // relevance score, this match's own relevance score will be upgraded.

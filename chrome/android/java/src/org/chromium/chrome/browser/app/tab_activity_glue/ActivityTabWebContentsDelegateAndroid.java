@@ -4,13 +4,11 @@
 
 package org.chromium.chrome.browser.app.tab_activity_glue;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.media.AudioManager;
-import android.os.Build;
 import android.view.KeyEvent;
 import android.view.View;
 
@@ -277,9 +275,7 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
      * Redispatches unhandled media keys. This allows bluetooth headphones with play/pause or
      * other buttons to function correctly.
      */
-    @TargetApi(19)
     private void handleMediaKey(KeyEvent e) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
         switch (e.getKeyCode()) {
             case KeyEvent.KEYCODE_MUTE:
             case KeyEvent.KEYCODE_HEADSETHOOK:

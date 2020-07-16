@@ -1794,6 +1794,21 @@ void AutofillManager::FillOrPreviewDataModelForm(
       }
     }
 
+    // Do not fill fields that have been edited by the user, except if the field
+    // is empty and its initial value (= cached value) was empty as well. A
+    // similar check is done in ForEachMatchingFormFieldCommon(), which
+    // frequently has false negatives.
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillSkipFillingFieldsWithChangedValues) &&
+        ((form.fields[i].properties_mask & kUserTyped)) &&
+        (!form.fields[i].value.empty() ||
+         !form_structure->field(i)->value.empty()) &&
+        !cached_field->SameFieldAs(field)) {
+      buffer << Tr{} << field_number
+             << "Skipped: don't fill user-filled fields";
+      continue;
+    }
+
     // Don't fill previously autofilled fields except the initiating field or
     // when it's a refill.
     if (result.fields[i].is_autofilled && !cached_field->SameFieldAs(field) &&
@@ -2010,10 +2025,9 @@ std::vector<Suggestion> AutofillManager::GetCreditCardSuggestions(
   return suggestions;
 }
 
-void AutofillManager::OnFormsParsed(
-    const std::vector<FormStructure*>& form_structures,
-    const base::TimeTicks timestamp) {
-  DCHECK(!form_structures.empty());
+void AutofillManager::OnFormsParsed(const std::vector<const FormData*>& forms,
+                                    const base::TimeTicks timestamp) {
+  DCHECK(!forms.empty());
 
   // Record the current sync state to be used for metrics on this page.
   sync_state_ = personal_data_->GetSyncSigninState();
@@ -2021,12 +2035,19 @@ void AutofillManager::OnFormsParsed(
   // Setup the url for metrics that we will collect for this form.
   form_interactions_ukm_logger_->OnFormsParsed(client_->GetUkmSourceId());
 
-  driver()->HandleParsedForms(form_structures);
+  driver()->HandleParsedForms(forms);
 
   std::vector<FormStructure*> non_queryable_forms;
   std::vector<FormStructure*> queryable_forms;
   std::set<FormType> form_types;
-  for (FormStructure* form_structure : form_structures) {
+  for (const FormData* form : forms) {
+    FormStructure* form_structure =
+        FindCachedFormByRendererId(form->unique_renderer_id);
+    if (!form_structure) {
+      NOTREACHED();
+      continue;
+    }
+
     // TODO(crbug.com/869482): avoid logging developer engagement multiple
     // times for a given form if it or other forms on the page are dynamic.
     LogDeveloperEngagementUkm(client_->GetUkmRecorder(),
@@ -2084,8 +2105,7 @@ void AutofillManager::OnFormsParsed(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kWaitTimeForDynamicFormsMs),
           base::BindRepeating(&AutofillManager::TriggerRefill,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              form_structure->ToFormData()));
+                              weak_ptr_factory_.GetWeakPtr(), *form));
     }
   }
 
@@ -2560,7 +2580,7 @@ void AutofillManager::GetAvailableSuggestions(
     Suggestion warning_suggestion(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_MIXED_FORM));
     warning_suggestion.frontend_id = POPUP_ITEM_ID_MIXED_FORM_MESSAGE;
-    suggestions->assign(1, warning_suggestion);
+    suggestions->emplace_back(warning_suggestion);
     return;
   }
 

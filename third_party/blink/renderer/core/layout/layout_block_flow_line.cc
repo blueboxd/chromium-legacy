@@ -1458,6 +1458,9 @@ void LayoutBlockFlow::MarkDirtyFloatsForPaintInvalidation(
 //     can have distinct borders/margin/padding that contribute to the min/max
 //     width.
 struct InlineMinMaxIterator {
+  STACK_ALLOCATED();
+
+ public:
   LayoutObject* parent;
   LayoutObject* current;
   bool end_of_inline;

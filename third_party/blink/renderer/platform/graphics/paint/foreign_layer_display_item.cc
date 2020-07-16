@@ -23,30 +23,28 @@ namespace {
 class ForeignLayerDisplayItemClient final : public DisplayItemClient {
  public:
   ForeignLayerDisplayItemClient(const DisplayItemClient& client,
-                                scoped_refptr<cc::Layer> layer,
-                                const FloatPoint& offset)
-      : client_(client), layer_(std::move(layer)), offset_(offset) {
+                                scoped_refptr<cc::Layer> layer)
+      : client_(client), layer_(std::move(layer)) {
     DCHECK(layer_);
     Invalidate(PaintInvalidationReason::kUncacheable);
   }
 
   String DebugName() const final { return client_.DebugName(); }
-
   DOMNodeId OwnerNodeId() const final { return client_.OwnerNodeId(); }
-
-  IntRect VisualRect() const final {
-    const auto& bounds = layer_->bounds();
-    return EnclosingIntRect(
-        FloatRect(offset_.X(), offset_.Y(), bounds.width(), bounds.height()));
-  }
 
   cc::Layer* GetLayer() const { return layer_.get(); }
 
  private:
   const DisplayItemClient& client_;
   scoped_refptr<cc::Layer> layer_;
-  FloatPoint offset_;
 };
+
+static IntRect LayerVisualRect(const cc::Layer& layer,
+                               const FloatPoint& offset) {
+  const auto& bounds = layer.bounds();
+  return EnclosingIntRect(
+      FloatRect(offset.X(), offset.Y(), bounds.width(), bounds.height()));
+}
 
 }  // anonymous namespace
 
@@ -55,10 +53,10 @@ ForeignLayerDisplayItem::ForeignLayerDisplayItem(
     Type type,
     scoped_refptr<cc::Layer> layer,
     const FloatPoint& offset)
-    : DisplayItem(
-          *new ForeignLayerDisplayItemClient(client, std::move(layer), offset),
-          type,
-          sizeof(*this)),
+    : DisplayItem(*new ForeignLayerDisplayItemClient(client, layer),
+                  type,
+                  sizeof(*this),
+                  LayerVisualRect(*layer, offset)),
       offset_(offset) {
   DCHECK(IsForeignLayerType(type));
   DCHECK(!IsCacheable());

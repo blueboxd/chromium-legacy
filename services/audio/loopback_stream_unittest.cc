@@ -152,8 +152,7 @@ class LoopbackStreamTest : public testing::Test {
     sources_.emplace_back(std::make_unique<FakeLoopbackGroupMember>(
         media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                media::GuessChannelLayout(channels), sample_rate,
-                               (sample_rate * kBufferDuration) /
-                                   base::TimeDelta::FromSeconds(1))));
+                               (sample_rate * kBufferDuration).InSeconds())));
     coordinator_.RegisterMember(group_id_, sources_.back().get());
     return sources_.back().get();
   }

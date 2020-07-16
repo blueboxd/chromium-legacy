@@ -15,7 +15,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/values.h"
-#include "chrome/browser/media/router/providers/cast/activity_record.h"
+#include "chrome/browser/media/router/providers/cast/cast_activity.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
@@ -30,14 +30,13 @@
 
 namespace media_router {
 
-class ActivityRecord;
-class ActivityRecordFactoryForTest;
-class CastActivityRecord;
+class CastActivityFactoryForTest;
+class AppActivity;
 class CastSession;
 class MediaSinkServiceBase;
 
 // Base class for CastActivityManager including only functionality needed by
-// CastActivityRecord.
+// AppActivity.
 class CastActivityManagerBase {
  public:
   CastActivityManagerBase() = default;
@@ -126,9 +125,8 @@ class CastActivityManager : public CastActivityManagerBase,
                             const base::Value& media_status,
                             base::Optional<int> request_id) override;
 
-  static void SetActitivyRecordFactoryForTest(
-      ActivityRecordFactoryForTest* factory) {
-    activity_record_factory_for_test_ = factory;
+  static void SetActitityFactoryForTest(CastActivityFactoryForTest* factory) {
+    cast_activity_factory_for_test_ = factory;
   }
 
   cast_channel::ResultCallback MakeResultCallbackForRoute(
@@ -149,8 +147,8 @@ class CastActivityManager : public CastActivityManagerBase,
   FRIEND_TEST_ALL_PREFIXES(CastActivityManagerTest, SendMediaRequestToReceiver);
 
   using ActivityMap =
-      base::flat_map<MediaRoute::Id, std::unique_ptr<ActivityRecord>>;
-  using CastActivityMap = base::flat_map<MediaRoute::Id, CastActivityRecord*>;
+      base::flat_map<MediaRoute::Id, std::unique_ptr<CastActivity>>;
+  using AppActivityMap = base::flat_map<MediaRoute::Id, AppActivity*>;
 
   void SendRouteJsonMessage(const std::string& media_route_id,
                             const std::string& message,
@@ -240,21 +238,19 @@ class CastActivityManager : public CastActivityManagerBase,
       mojom::MediaRouteProvider::TerminateRouteCallback callback,
       cast_channel::Result result);
 
-  CastActivityRecord* FindActivityForAutoJoin(
-      const CastMediaSource& cast_source,
-      const url::Origin& origin,
-      int tab_id);
-  bool CanJoinSession(const CastActivityRecord& activity,
+  AppActivity* FindActivityForAutoJoin(const CastMediaSource& cast_source,
+                                       const url::Origin& origin,
+                                       int tab_id);
+  bool CanJoinSession(const AppActivity& activity,
                       const CastMediaSource& cast_source,
                       bool incognito) const;
-  CastActivityRecord* FindActivityForSessionJoin(
-      const CastMediaSource& cast_source,
-      const std::string& presentation_id);
+  AppActivity* FindActivityForSessionJoin(const CastMediaSource& cast_source,
+                                          const std::string& presentation_id);
 
-  // Creates and stores a CastActivityRecord representing a non-local
+  // Creates and stores a AppActivity representing a non-local
   // activity.
-  void AddNonLocalActivityRecord(const MediaSinkInternal& sink,
-                                 const CastSession& session);
+  void AddNonLocalActivity(const MediaSinkInternal& sink,
+                           const CastSession& session);
 
   void SendFailedToCastIssue(const MediaSink::Id& sink_id,
                              const MediaRoute::Id& route_id);
@@ -263,13 +259,12 @@ class CastActivityManager : public CastActivityManagerBase,
   ActivityMap::iterator FindActivityByChannelId(int channel_id);
   ActivityMap::iterator FindActivityBySink(const MediaSinkInternal& sink);
 
-  CastActivityRecord* AddCastActivityRecord(const MediaRoute& route,
-                                            const std::string& app_id);
-  ActivityRecord* AddMirroringActivityRecord(
-      const MediaRoute& route,
-      const std::string& app_id,
-      int tab_id,
-      const CastSinkExtraData& cast_data);
+  AppActivity* AddAppActivity(const MediaRoute& route,
+                              const std::string& app_id);
+  CastActivity* AddMirroringActivity(const MediaRoute& route,
+                                     const std::string& app_id,
+                                     int tab_id,
+                                     const CastSinkExtraData& cast_data);
 
   // Returns a sink used to convert a mirroring activity to a cast activity.
   // If no conversion should occur, returns base::nullopt.
@@ -278,17 +273,17 @@ class CastActivityManager : public CastActivityManagerBase,
   std::string ChooseAppId(const CastMediaSource& source,
                           const MediaSinkInternal& sink) const;
 
-  static ActivityRecordFactoryForTest* activity_record_factory_for_test_;
+  static CastActivityFactoryForTest* cast_activity_factory_for_test_;
 
   base::flat_set<MediaSource::Id> route_queries_;
 
-  // This map contains all activities--both Cast app activities and mirroring
-  // activities.
+  // This map contains all activities--both presentation activities and
+  // mirroring activities.
   ActivityMap activities_;
 
   // The values of this map are the subset of those in |activites_| where
-  // there is a CastActivityRecord.
-  CastActivityMap cast_activities_;
+  // there is a AppActivity.
+  AppActivityMap app_activities_;
 
   // Mapping from tab IDs to the active route for that tab.  This map is used to
   // ensure that there is at most one active route for each tab.  Removing this

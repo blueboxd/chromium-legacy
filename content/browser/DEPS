@@ -2,7 +2,8 @@ include_rules = [
   # Allow inclusion of specific components that we depend on.
   # See comment in content/DEPS for which components are allowed.
   # *********************************** NOTE ***********************************
-  # If adding a new component dependency, email content/OWNERS first.
+  # If adding a new component dependency, email
+  # content-owners@chromium.org first.
   # ****************************************************************************
   "+components/discardable_memory/common",
   "+components/discardable_memory/public",
@@ -41,7 +42,8 @@ include_rules = [
   "+components/cbor",
   "+components/os_crypt/os_crypt_switches.h",
   # *********************************** NOTE ***********************************
-  # If adding a new component dependency, email content/OWNERS first.
+  # If adding a new component dependency, email
+  # content-owners@chromium.org first.
   # ****************************************************************************
 
   "+content/public/app",

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.annotation.TargetApi;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 
@@ -1480,8 +1479,7 @@ public class UndoTabModelTest {
      */
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(24)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @MinAndroidSdkLevel(Build.VERSION_CODES.N)
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_TAB_MERGING_FOR_TESTING)
     public void testOpenRecentlyClosedTabMultiWindow() throws TimeoutException {
         final ChromeTabbedActivity2 secondActivity =
@@ -1557,7 +1555,6 @@ public class UndoTabModelTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(24)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_TAB_MERGING_FOR_TESTING)
     public void testOpenRecentlyClosedTabMultiWindowFallback() throws TimeoutException {
         final ChromeTabbedActivity2 secondActivity =

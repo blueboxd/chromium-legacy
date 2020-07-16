@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/client_side_detection_service_factory.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"

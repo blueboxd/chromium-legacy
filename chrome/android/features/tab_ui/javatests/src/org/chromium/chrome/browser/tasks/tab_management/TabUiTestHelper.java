@@ -31,7 +31,6 @@ import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAU
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.os.Build;
 import android.provider.Settings;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
@@ -416,13 +415,6 @@ public class TabUiTestHelper {
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(cta.getResources().getConfiguration().orientation, is(orientation));
         });
-    }
-
-    /**
-     * @return whether current running API is lower or equal to KitKat.
-     */
-    static boolean isKitKatAndBelow() {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP;
     }
 
     /**

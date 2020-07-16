@@ -474,7 +474,6 @@ extern const char kLocalDiscoveryEnabled[];
 extern const char kLocalDiscoveryNotificationsEnabled[];
 
 #if defined(OS_ANDROID)
-extern const char kNotificationsVibrateEnabled[];
 extern const char kMigratedToSiteNotificationChannels[];
 extern const char kClearedBlockedSiteNotificationChannels[];
 extern const char kUsageStatsEnabled[];
@@ -514,7 +513,6 @@ extern const char kNaviOnboardGroup[];
 extern const char kCrashReportingEnabled[];
 #endif  // defined(OS_ANDROID)
 
-extern const char kEnableQuietNotificationPermissionUi[];
 extern const char kQuietNotificationPermissionShouldShowPromo[];
 extern const char kQuietNotificationPermissionPromoWasShown[];
 extern const char kNotificationPermissionActions[];

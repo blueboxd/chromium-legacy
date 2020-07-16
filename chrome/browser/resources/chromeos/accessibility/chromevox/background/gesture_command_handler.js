@@ -11,6 +11,7 @@ goog.provide('GestureCommandHandler');
 goog.require('CommandHandler');
 goog.require('EventSourceState');
 goog.require('GestureCommandData');
+goog.require('PointerHandler');
 
 goog.scope(function() {
 const RoleType = chrome.automation.RoleType;
@@ -45,7 +46,7 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture, x, y) {
   EventSourceState.set(EventSourceType.TOUCH_GESTURE);
 
   if (gesture == 'touchExplore') {
-    BackgroundMouseHandler.instance.onMove(x, y);
+    GestureCommandHandler.pointerHandler_.onMove(x, y);
     return;
   }
 
@@ -71,8 +72,11 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture, x, y) {
     }
   }
 
-  if (!ChromeVoxState.instance.currentRange && commandData.shouldRecoverRange) {
-    const recoverTo = BackgroundMouseHandler.instance.lastHoverTarget;
+  // Always try to recover the range to the previous hover target, if there's no
+  // range.
+  if (!ChromeVoxState.instance.currentRange) {
+    const recoverTo = GestureCommandHandler.pointerHandler_
+                          .lastValidNodeBeforePointerInvalidation;
     if (recoverTo) {
       ChromeVoxState.instance.setCurrentRange(
           cursors.Range.fromNode(recoverTo));
@@ -92,6 +96,8 @@ GestureCommandHandler.enabled_ = true;
 GestureCommandHandler.init_ = function() {
   chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
       GestureCommandHandler.onAccessibilityGesture_);
+
+  GestureCommandHandler.pointerHandler_ = new PointerHandler();
 };
 
 /**

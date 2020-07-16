@@ -61,6 +61,7 @@ class Resource;
 class ResourceError;
 class ResourceLoadObserver;
 class ResourceTimingInfo;
+class SubresourceWebBundle;
 class WebURLLoader;
 struct ResourceFetcherInit;
 struct ResourceLoaderOptions;
@@ -282,6 +283,9 @@ class PLATFORM_EXPORT ResourceFetcher
     scheduler_->SetThrottleOptionOverride(throttle_option_override);
   }
 
+  void AddSubresourceWebBundle(SubresourceWebBundle& subresource_web_bundle);
+  void RemoveSubresourceWebBundle(SubresourceWebBundle& subresource_web_bundle);
+
  private:
   friend class ResourceCacheValidationSuppressor;
   enum class StopFetchingTarget {
@@ -436,6 +440,8 @@ class PLATFORM_EXPORT ResourceFetcher
   HeapMojoRemote<mojom::blink::BlobRegistry,
                  HeapMojoWrapperMode::kWithoutContextObserver>
       blob_registry_remote_;
+
+  HeapHashSet<Member<SubresourceWebBundle>> subresource_web_bundles_;
 
   // This is not in the bit field below because we want to use AutoReset.
   bool is_in_request_resource_ = false;

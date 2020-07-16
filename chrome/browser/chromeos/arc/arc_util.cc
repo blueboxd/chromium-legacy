@@ -639,8 +639,7 @@ bool IsPlayStoreAvailable() {
 }
 
 bool IsSecondaryAccountForChildEnabled() {
-  return base::FeatureList::IsEnabled(
-      kEnableSecondaryAccountsForChildExperiment);
+  return base::FeatureList::IsEnabled(kEnableSecondaryAccountsForChild);
 }
 
 bool ShouldStartArcSilentlyForManagedProfile(const Profile* profile) {

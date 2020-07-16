@@ -442,6 +442,16 @@ public class TabGridDialogView extends FrameLayout
         dialogZoomInAnimatorSet.setDuration(DIALOG_ANIMATION_DURATION);
         dialogZoomInAnimatorSet.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
 
+        dialogZoomInAnimatorSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mDialogContainerView.setTranslationX(0f);
+                mDialogContainerView.setTranslationY(0f);
+                mDialogContainerView.setScaleX(1f);
+                mDialogContainerView.setScaleY(1f);
+            }
+        });
+
         // In the first half of the dialog hiding animation, the dialog fades out while it moves and
         // scales down.
         final ObjectAnimator dialogZoomInAlphaAnimator =
@@ -484,6 +494,14 @@ public class TabGridDialogView extends FrameLayout
                 mBackgroundFrame.bringToFront();
                 mAnimationCardView.bringToFront();
             }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                // At the end of the hiding animation, reset the alpha of animation related views to
+                // 0.
+                mBackgroundFrame.setAlpha(0f);
+                mAnimationCardView.setAlpha(0f);
+            }
         });
 
         // During the whole dialog hiding animation, the frame background scales down and moves so
@@ -511,14 +529,6 @@ public class TabGridDialogView extends FrameLayout
                 // At the beginning of the hiding animation, the alpha of white frame needs to be
                 // restored to 1.
                 mBackgroundFrame.setAlpha(1f);
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                // At the end of the hiding animation, reset the alpha of animation related views to
-                // 0.
-                mBackgroundFrame.setAlpha(0f);
-                mAnimationCardView.setAlpha(0f);
             }
         });
 

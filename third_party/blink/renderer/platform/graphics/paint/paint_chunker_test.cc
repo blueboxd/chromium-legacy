@@ -35,16 +35,18 @@ class TestChunkerDisplayItem : public DrawingDisplayItem {
  public:
   explicit TestChunkerDisplayItem(
       const DisplayItemClient& client,
-      DisplayItem::Type type = DisplayItem::kDrawingFirst)
-      : DrawingDisplayItem(client, type, nullptr) {}
+      DisplayItem::Type type = DisplayItem::kDrawingFirst,
+      const IntRect& visual_rect = IntRect())
+      : DrawingDisplayItem(client, type, visual_rect, nullptr) {}
 };
 
 class TestChunkerOpaqueDisplayItem : public DrawingDisplayItem {
  public:
   explicit TestChunkerOpaqueDisplayItem(
       const DisplayItemClient& client,
-      DisplayItem::Type type = DisplayItem::kDrawingFirst)
-      : DrawingDisplayItem(client, type, nullptr) {
+      DisplayItem::Type type = DisplayItem::kDrawingFirst,
+      const IntRect& visual_rect = IntRect())
+      : DrawingDisplayItem(client, type, visual_rect, nullptr) {
     SetKnownToBeOpaqueForTesting();
   }
 };
@@ -518,14 +520,13 @@ TEST_F(PaintChunkerTest, ChunkIdsSkippingCache) {
 
 TEST_F(PaintChunkerTest, AddHitTestDataToCurrentChunk) {
   PaintChunker chunker;
-  client_.SetVisualRect(IntRect(0, 0, 10, 10));
 
   PaintChunk::Id id1(client_, DisplayItemType(1));
 
   chunker.UpdateCurrentPaintChunkProperties(&id1,
                                             DefaultPaintChunkProperties());
-  chunker.IncrementDisplayItemIndex(
-      TestChunkerDisplayItem(client_, DisplayItemType(2)));
+  chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(
+      client_, DisplayItemType(2), IntRect(0, 0, 10, 10)));
 
   PaintChunk::Id id2(client_, DisplayItemType(3));
   auto transform = Create2DTranslation(t0(), 10, 20);
@@ -542,8 +543,8 @@ TEST_F(PaintChunkerTest, AddHitTestDataToCurrentChunk) {
   PaintChunk::Id id3(client_, DisplayItemType(4));
   chunker.AddHitTestDataToCurrentChunk(id3, IntRect(40, 50, 60, 70),
                                        TouchAction::kAuto);
-  chunker.IncrementDisplayItemIndex(
-      TestChunkerDisplayItem(client_, DisplayItemType(5)));
+  chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(
+      client_, DisplayItemType(5), IntRect(0, 0, 10, 10)));
 
   HitTestData hit_test_data;
   hit_test_data.touch_action_rects = {
@@ -573,27 +574,27 @@ TEST_F(PaintChunkerTest, AddHitTestDataToCurrentChunk) {
 TEST_F(PaintChunkerTest, ChunkBoundsAndKnownToBeOpaqueAllOpaqueItems) {
   ScopedCompositeAfterPaintForTest cap(true);
   PaintChunker chunker;
-  FakeDisplayItemClient client1("client1", IntRect(0, 0, 100, 100));
-  FakeDisplayItemClient client2("client2", IntRect(0, 100, 100, 50));
-  FakeDisplayItemClient client3("client3", IntRect(50, 50, 100, 100));
+  FakeDisplayItemClient client1("client1");
+  FakeDisplayItemClient client2("client2");
+  FakeDisplayItemClient client3("client3");
 
   auto properties = DefaultPaintChunkProperties();
   chunker.UpdateCurrentPaintChunkProperties(nullptr, properties);
   // Single opaque item.
-  chunker.IncrementDisplayItemIndex(
-      TestChunkerOpaqueDisplayItem(client1, DisplayItemType(0)));
+  chunker.IncrementDisplayItemIndex(TestChunkerOpaqueDisplayItem(
+      client1, DisplayItemType(0), IntRect(0, 0, 100, 100)));
   chunker.SetForceNewChunk(true);
   // Two opaque items. No empty area in the united bounds.
-  chunker.IncrementDisplayItemIndex(
-      TestChunkerOpaqueDisplayItem(client1, DisplayItemType(1)));
-  chunker.IncrementDisplayItemIndex(
-      TestChunkerOpaqueDisplayItem(client2, DisplayItemType(2)));
+  chunker.IncrementDisplayItemIndex(TestChunkerOpaqueDisplayItem(
+      client1, DisplayItemType(1), IntRect(0, 0, 100, 100)));
+  chunker.IncrementDisplayItemIndex(TestChunkerOpaqueDisplayItem(
+      client2, DisplayItemType(2), IntRect(0, 100, 100, 50)));
   chunker.SetForceNewChunk(true);
   // Two opaque items. Has empty area in the united bounds.
-  chunker.IncrementDisplayItemIndex(
-      TestChunkerOpaqueDisplayItem(client1, DisplayItemType(3)));
-  chunker.IncrementDisplayItemIndex(
-      TestChunkerOpaqueDisplayItem(client3, DisplayItemType(4)));
+  chunker.IncrementDisplayItemIndex(TestChunkerOpaqueDisplayItem(
+      client1, DisplayItemType(3), IntRect(0, 0, 100, 100)));
+  chunker.IncrementDisplayItemIndex(TestChunkerOpaqueDisplayItem(
+      client3, DisplayItemType(4), IntRect(50, 50, 100, 100)));
 
   Vector<PaintChunk> chunks = chunker.ReleasePaintChunks();
   EXPECT_THAT(
@@ -614,9 +615,9 @@ TEST_F(PaintChunkerTest, ChunkBoundsAndKnownToBeOpaqueAllOpaqueItems) {
 TEST_F(PaintChunkerTest, ChunkBoundsAndKnownToBeOpaqueWithHitTest) {
   ScopedCompositeAfterPaintForTest cap(true);
   PaintChunker chunker;
-  FakeDisplayItemClient client1("client1", IntRect(0, 0, 100, 100));
-  FakeDisplayItemClient client2("client2", IntRect(0, 100, 100, 50));
-  FakeDisplayItemClient client3("client3", IntRect(50, 50, 100, 100));
+  FakeDisplayItemClient client1("client1");
+  FakeDisplayItemClient client2("client2");
+  FakeDisplayItemClient client3("client3");
 
   auto properties = DefaultPaintChunkProperties();
   chunker.UpdateCurrentPaintChunkProperties(nullptr, properties);
@@ -626,22 +627,22 @@ TEST_F(PaintChunkerTest, ChunkBoundsAndKnownToBeOpaqueWithHitTest) {
       TouchAction::kAuto);
   chunker.SetForceNewChunk(true);
   // Hit test rect is smaller than the opaque item.
-  chunker.IncrementDisplayItemIndex(
-      TestChunkerOpaqueDisplayItem(client1, DisplayItemType(1)));
+  chunker.IncrementDisplayItemIndex(TestChunkerOpaqueDisplayItem(
+      client1, DisplayItemType(1), IntRect(0, 0, 100, 100)));
   chunker.AddHitTestDataToCurrentChunk(
       PaintChunk::Id(client1, DisplayItemType(2)), IntRect(0, 0, 50, 100),
       TouchAction::kAuto);
   chunker.SetForceNewChunk(true);
   // Hit test rect is the same as the opaque item.
-  chunker.IncrementDisplayItemIndex(
-      TestChunkerOpaqueDisplayItem(client1, DisplayItemType(3)));
+  chunker.IncrementDisplayItemIndex(TestChunkerOpaqueDisplayItem(
+      client1, DisplayItemType(3), IntRect(0, 0, 100, 100)));
   chunker.AddHitTestDataToCurrentChunk(
       PaintChunk::Id(client1, DisplayItemType(4)), IntRect(0, 0, 100, 100),
       TouchAction::kAuto);
   chunker.SetForceNewChunk(true);
   // Hit test rect is bigger than the opaque item.
-  chunker.IncrementDisplayItemIndex(
-      TestChunkerOpaqueDisplayItem(client1, DisplayItemType(5)));
+  chunker.IncrementDisplayItemIndex(TestChunkerOpaqueDisplayItem(
+      client1, DisplayItemType(5), IntRect(0, 0, 100, 100)));
   chunker.AddHitTestDataToCurrentChunk(
       PaintChunk::Id(client1, DisplayItemType(6)), IntRect(0, 100, 200, 100),
       TouchAction::kAuto);
@@ -668,34 +669,36 @@ TEST_F(PaintChunkerTest, ChunkBoundsAndKnownToBeOpaqueWithHitTest) {
 TEST_F(PaintChunkerTest, ChunkBoundsAndKnownToBeOpaqueMixedOpaquenessItems) {
   ScopedCompositeAfterPaintForTest cap(true);
   PaintChunker chunker;
-  FakeDisplayItemClient client1("client1", IntRect(0, 0, 100, 100));
-  FakeDisplayItemClient client3("client2", IntRect(50, 50, 50, 50));
+  FakeDisplayItemClient client1("client1");
+  FakeDisplayItemClient client2("client2");
+  IntRect visual_rect1(0, 0, 100, 100);
+  IntRect visual_rect2(50, 50, 50, 50);
 
   auto properties = DefaultPaintChunkProperties();
   chunker.UpdateCurrentPaintChunkProperties(nullptr, properties);
   // Single translucent item .
   chunker.IncrementDisplayItemIndex(
-      TestChunkerDisplayItem(client1, DisplayItemType(1)));
+      TestChunkerDisplayItem(client1, DisplayItemType(1), visual_rect1));
   chunker.SetForceNewChunk(true);
   // Two items, one translucent, one opaque. The opaque item doesn't contain
   // the translucent item.
   chunker.IncrementDisplayItemIndex(
-      TestChunkerDisplayItem(client1, DisplayItemType(2)));
+      TestChunkerDisplayItem(client1, DisplayItemType(2), visual_rect1));
   chunker.IncrementDisplayItemIndex(
-      TestChunkerOpaqueDisplayItem(client3, DisplayItemType(3)));
+      TestChunkerOpaqueDisplayItem(client2, DisplayItemType(3), visual_rect2));
   chunker.SetForceNewChunk(true);
   // Two items, one translucent, one opaque, with the same visual rect.
   chunker.IncrementDisplayItemIndex(
-      TestChunkerDisplayItem(client1, DisplayItemType(4)));
+      TestChunkerDisplayItem(client1, DisplayItemType(4), visual_rect1));
   chunker.IncrementDisplayItemIndex(
-      TestChunkerOpaqueDisplayItem(client1, DisplayItemType(5)));
+      TestChunkerOpaqueDisplayItem(client1, DisplayItemType(5), visual_rect1));
   chunker.SetForceNewChunk(true);
   // Two items, one opaque, one translucent. The opaque item contains the
   // translucent item.
   chunker.IncrementDisplayItemIndex(
-      TestChunkerOpaqueDisplayItem(client1, DisplayItemType(6)));
+      TestChunkerOpaqueDisplayItem(client1, DisplayItemType(6), visual_rect1));
   chunker.IncrementDisplayItemIndex(
-      TestChunkerDisplayItem(client3, DisplayItemType(7)));
+      TestChunkerDisplayItem(client2, DisplayItemType(7), visual_rect2));
 
   Vector<PaintChunk> chunks = chunker.ReleasePaintChunks();
   EXPECT_THAT(

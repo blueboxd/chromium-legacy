@@ -212,13 +212,8 @@ void Calculator::CalculateResponsivenessIfNecessary(
   // At least |kMeasurementInterval| time has passed, so we want to move forward
   // |last_calculation_time_| and make measurements based on janks in that
   // interval.
-  int64_t number_of_measurement_intervals =
-      time_since_last_calculation / kMeasurementInterval;
-  DCHECK_GE(number_of_measurement_intervals, 1);
-
   const base::TimeTicks new_calculation_time =
-      last_calculation_time_ +
-      number_of_measurement_intervals * kMeasurementInterval;
+      current_time - (time_since_last_calculation % kMeasurementInterval);
 
   // Acquire the janks in the measurement interval from the UI and IO threads.
   std::vector<JankList> execution_janks_from_multiple_threads;

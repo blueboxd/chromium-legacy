@@ -20,6 +20,7 @@ import androidx.annotation.Px;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ActivityState;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
@@ -578,7 +579,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         // When invoked directly from a browser, we want to trigger switch to tab animation.
         // If invoded from other activitiies, ex. searchActivity, we do not need to trigger the
         // animation since Android will show the animation for switching apps.
-        if (mWindowAndroid.equals(tab.getWindowAndroid())) {
+        if (tab.getWindowAndroid().getActivityState() != ActivityState.STOPPED
+                && tab.getWindowAndroid().getActivityState() != ActivityState.DESTROYED) {
             // TODO(1097292):  Do not use Activity to get TabModelSelector.
             assert tab.getWindowAndroid().getActivity().get() instanceof ChromeActivity;
 
@@ -589,13 +591,13 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
             chromeActivity.getTabModelSelector().getCurrentModel().setIndex(
                     tabIndex, TabSelectionType.FROM_OMNIBOX);
         } else {
+            // Browser is in background, bring to to foreground and switch to the tab.
             Intent newIntent = ChromeIntentUtil.createBringTabToFrontIntent(tab.getId());
             if (newIntent != null) {
                 newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 IntentUtils.safeStartActivity(ContextUtils.getApplicationContext(), newIntent);
             }
         }
-
         recordMetrics(position, WindowOpenDisposition.SWITCH_TO_TAB, suggestion);
     }
 

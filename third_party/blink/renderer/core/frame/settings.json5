@@ -977,12 +977,12 @@
     },
     {
       name: "lazyFrameLoadingDistanceThresholdPx3G",
-      initial: 5000,
+      initial: 3500,
       type: "int",
     },
     {
       name: "lazyFrameLoadingDistanceThresholdPx4G",
-      initial: 4000,
+      initial: 2500,
       type: "int",
     },
 
@@ -1011,12 +1011,12 @@
     },
     {
       name: "lazyImageLoadingDistanceThresholdPx3G",
-      initial: 4000,
+      initial: 2500,
       type: "int",
     },
     {
       name: "lazyImageLoadingDistanceThresholdPx4G",
-      initial: 3000,
+      initial: 1250,
       type: "int",
     },
     //

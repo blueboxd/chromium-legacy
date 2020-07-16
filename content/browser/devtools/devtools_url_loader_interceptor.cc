@@ -26,6 +26,7 @@
 #include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_info.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/referrer_policy.h"
 #include "services/network/public/cpp/cors/cors.h"
@@ -1131,9 +1132,8 @@ void InterceptionJob::ProcessRedirectByClient(const GURL& redirect_url) {
 
   auto first_party_url_policy =
       request.update_first_party_url_on_redirect
-          ? net::URLRequest::FirstPartyURLPolicy::
-                UPDATE_FIRST_PARTY_URL_ON_REDIRECT
-          : net::URLRequest::FirstPartyURLPolicy::NEVER_CHANGE_FIRST_PARTY_URL;
+          ? net::RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT
+          : net::RedirectInfo::FirstPartyURLPolicy::NEVER_CHANGE_URL;
 
   response_metadata_->redirect_info = std::make_unique<net::RedirectInfo>(
       net::RedirectInfo::ComputeRedirectInfo(

@@ -15,6 +15,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/log/net_log.h"
+#include "net/net_buildflags.h"
 #include "services/network/host_resolver_mdns_listener.h"
 #include "services/network/public/cpp/host_resolver_mojom_traits.h"
 #include "services/network/resolve_host_request.h"

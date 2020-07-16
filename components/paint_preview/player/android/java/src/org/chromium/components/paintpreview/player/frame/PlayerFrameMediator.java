@@ -11,6 +11,7 @@ import android.util.Size;
 import android.view.View;
 import android.widget.OverScroller;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.UnguessableToken;
@@ -20,8 +21,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * Handles the business logic for the player frame component. Concretely, this class is responsible

@@ -203,11 +203,8 @@ Polymer({
   // <if expr="chromeos">
   toggleAnnotation() {
     this.annotationMode = !this.annotationMode;
-    this.dispatchEvent(new CustomEvent('annotation-mode-toggled', {
-      detail: {
-        value: this.annotationMode,
-      },
-    }));
+    this.dispatchEvent(new CustomEvent(
+        'annotation-mode-toggled', {detail: this.annotationMode}));
   },
   // </if>
 });

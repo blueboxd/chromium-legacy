@@ -142,7 +142,7 @@ void ContentAutofillDriver::PropagateAutofillPredictions(
 }
 
 void ContentAutofillDriver::HandleParsedForms(
-    const std::vector<FormStructure*>& forms) {
+    const std::vector<const FormData*>& forms) {
   // No op.
 }
 

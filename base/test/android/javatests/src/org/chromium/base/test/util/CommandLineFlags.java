@@ -62,7 +62,7 @@ public final class CommandLineFlags {
     private static final String DISABLE_FEATURES = "disable-features";
     private static final String ENABLE_FEATURES = "enable-features";
 
-    private static boolean sInitializedForTest = false;
+    private static boolean sInitializedForTest;
 
     // These members are used to track CommandLine state modifications made by the class/test method
     // currently being run, to be undone when the class/test method finishes.

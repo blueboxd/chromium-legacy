@@ -84,6 +84,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
       CtapDeviceResponseCode response_code,
       base::Optional<AuthenticatorMakeCredentialResponse> response_data);
 
+  void MaybeRevertU2fFallbackAndInvokeCallback(
+      CtapDeviceResponseCode status,
+      base::Optional<AuthenticatorGetAssertionResponse> response);
+
   CtapGetAssertionRequest request_;
   std::vector<std::vector<PublicKeyCredentialDescriptor>> allow_list_batches_;
   size_t current_allow_list_batch_ = 0;

@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"

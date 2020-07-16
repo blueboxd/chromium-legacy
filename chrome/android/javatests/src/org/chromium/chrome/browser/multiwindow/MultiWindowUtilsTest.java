@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.multiwindow;
 
 import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.createSecondChromeTabbedActivity;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
@@ -116,7 +115,6 @@ public class MultiWindowUtilsTest {
     @Test
     @SmallTest
     @Feature("MultiWindow")
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testTabbedActivityForIntentOnlyActivity1IsRunning() {
         ChromeTabbedActivity activity1 = mActivityTestRule.getActivity();
         ChromeTabbedActivity2 activity2 = createSecondChromeTabbedActivity(activity1);
@@ -136,7 +134,6 @@ public class MultiWindowUtilsTest {
     @Test
     @SmallTest
     @Feature("MultiWindow")
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testTabbedActivityForIntentOnlyActivity2IsRunning() {
         ChromeTabbedActivity activity1 = mActivityTestRule.getActivity();
         createSecondChromeTabbedActivity(activity1);
@@ -157,7 +154,6 @@ public class MultiWindowUtilsTest {
     @Test
     @SmallTest
     @Feature("MultiWindow")
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testTabbedActivityForIntentNoActivitiesAlive() {
         ChromeTabbedActivity activity1 = mActivityTestRule.getActivity();
         activity1.finishAndRemoveTask();
@@ -175,7 +171,6 @@ public class MultiWindowUtilsTest {
     @Test
     @SmallTest
     @Feature("MultiWindow")
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testTabbedActivity2TaskRunning() {
         ChromeTabbedActivity activity2 =
                 createSecondChromeTabbedActivity(mActivityTestRule.getActivity());

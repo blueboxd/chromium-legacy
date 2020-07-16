@@ -516,11 +516,7 @@ void AXTreeSourceArc::HandleLiveRegions(std::vector<ui::AXEvent>* events) {
       static_cast<AccessibilityNodeInfoDataWrapper*>(node)
           ->set_container_live_status(live_region_type);
 
-      ui::AXNodeData data;
-      SerializeNode(node, &data);
-      std::string name;
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name);
-      new_live_region_map[node->GetId()] = name;
+      new_live_region_map[node->GetId()] = node->ComputeAXName();
 
       std::vector<int32_t> children;
       if (GetProperty(node->GetNode()->int_list_properties,

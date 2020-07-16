@@ -3215,7 +3215,7 @@
   {
     "name": "omnibox-pedal-suggestions",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 95
   },
   {
     "name": "omnibox-preserve-default-match-against-async-update",
@@ -3273,11 +3273,6 @@
     "expiry_milestone": 92
   },
   {
-    "name": "omnibox-tab-switch-suggestions-dedicated-row",
-    "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 92
-  },
-  {
     "name": "omnibox-ui-elide-to-registrable-domain",
     "owners": [ "estark", "carlosil", "chrome-security-enamel@google.com" ],
     "expiry_milestone": 89
@@ -3290,7 +3285,7 @@
   {
     "name": "omnibox-ui-max-autocomplete-matches",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 95
   },
   {
     "name": "omnibox-ui-reveal-steady-state-url-path-query-and-ref-on-hover",

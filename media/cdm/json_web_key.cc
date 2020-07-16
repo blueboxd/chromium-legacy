@@ -338,10 +338,8 @@ void CreateLicenseRequest(const KeyIdList& key_ids,
   license->swap(result);
 }
 
-void CreateKeyIdsInitData(const KeyIdList& key_ids,
-                          std::vector<uint8_t>* init_data) {
-  // Create the init_data.
-  auto dictionary = std::make_unique<base::DictionaryValue>();
+void AddKeyIdsToDictionary(const KeyIdList& key_ids,
+                           base::DictionaryValue* dictionary) {
   auto list = std::make_unique<base::ListValue>();
   for (const auto& key_id : key_ids) {
     std::string key_id_string;
@@ -353,15 +351,64 @@ void CreateKeyIdsInitData(const KeyIdList& key_ids,
     list->AppendString(key_id_string);
   }
   dictionary->Set(kKeyIdsTag, std::move(list));
+}
 
+std::vector<uint8_t> SerializeDictionaryToVector(
+    const base::DictionaryValue* dictionary) {
   // Serialize the dictionary as a string.
   std::string json;
   JSONStringValueSerializer serializer(&json);
   serializer.Serialize(*dictionary);
 
   // Convert the serialized data into std::vector and return it.
-  std::vector<uint8_t> result(json.begin(), json.end());
-  init_data->swap(result);
+  return std::vector<uint8_t>(json.begin(), json.end());
+}
+
+void CreateKeyIdsInitData(const KeyIdList& key_ids,
+                          std::vector<uint8_t>* init_data) {
+  // Create the init_data.
+  auto dictionary = std::make_unique<base::DictionaryValue>();
+  AddKeyIdsToDictionary(key_ids, dictionary.get());
+
+  auto data = SerializeDictionaryToVector(dictionary.get());
+  init_data->swap(data);
+}
+
+// The format is a JSON object. For sessions of type "persistent-license" and
+// "persistent-usage-record", the object shall contain the following member:
+//
+//    "kids"
+//      An array of key IDs. Each element of the array is the base64url encoding
+//      of the octet sequence containing the key ID value.
+//
+// For sessions of type "persistent-usage-record" the object shall also contain
+// the following members:
+//
+//    "firstTime"
+//      The first decryption time expressed as a number giving the time, in
+//      milliseconds since 01 January, 1970 UTC.
+//    "latestTime"
+//      The latest decryption time expressed as a number giving the time, in
+//      milliseconds since 01 January,
+// 1970 UTC. https://w3c.github.io/encrypted-media/#clear-key-release-format
+std::vector<uint8_t> CreateLicenseReleaseMessage(
+    const KeyIdList& key_ids,
+    const base::Time first_decrypt_time,
+    const base::Time latest_decrypt_time) {
+  // Create the init_data.
+  auto dictionary = std::make_unique<base::DictionaryValue>();
+  AddKeyIdsToDictionary(key_ids, dictionary.get());
+
+  if (!first_decrypt_time.is_null() && !latest_decrypt_time.is_null()) {
+    // Persistent-Usage-Record
+    // Time need to be millisecond since 01 January, 1970 UTC
+    dictionary->SetDouble("firstTime",
+                          first_decrypt_time.ToJsTimeIgnoringNull());
+    dictionary->SetDouble("latestTime",
+                          latest_decrypt_time.ToJsTimeIgnoringNull());
+  }
+
+  return SerializeDictionaryToVector(dictionary.get());
 }
 
 bool ExtractFirstKeyIdFromLicenseRequest(const std::vector<uint8_t>& license,

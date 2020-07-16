@@ -98,9 +98,13 @@ class SwitchAccess {
    * Creates and records the specified error.
    * @param {SAConstants.ErrorType} errorType
    * @param {string} errorString
+   * @param {boolean} shouldRecover
    * @return {!Error}
    */
-  static error(errorType, errorString) {
+  static error(errorType, errorString, shouldRecover = false) {
+    if (shouldRecover) {
+      setTimeout(NavigationManager.moveToValidNode, 0);
+    }
     const errorTypeCountForUMA = Object.keys(SAConstants.ErrorType).length;
     chrome.metricsPrivate.recordEnumerationValue(
         'Accessibility.CrosSwitchAccess.Error', errorType,

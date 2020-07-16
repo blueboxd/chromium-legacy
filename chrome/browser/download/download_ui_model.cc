@@ -248,8 +248,6 @@ base::string16 DownloadUIModel::GetTooltipText() const {
 base::string16 DownloadUIModel::GetWarningText(const base::string16& filename,
                                                size_t* offset) const {
   *offset = std::string::npos;
-  // Should only be called if IsDangerous() or IsMixedContent().
-  DCHECK(IsDangerous() || IsMixedContent());
   switch (GetDangerType()) {
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: {
       return l10n_util::GetStringUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
@@ -330,17 +328,13 @@ base::string16 DownloadUIModel::GetWarningText(const base::string16& filename,
     case download::DownloadItem::MixedContentStatus::SAFE:
     case download::DownloadItem::MixedContentStatus::VALIDATED:
     case download::DownloadItem::MixedContentStatus::SILENT_BLOCK:
-      NOTREACHED();
       break;
   }
 
-  NOTREACHED();
   return base::string16();
 }
 
 base::string16 DownloadUIModel::GetWarningConfirmButtonText() const {
-  // Should only be called if IsDangerous() or IsMixedContent().
-  DCHECK(IsDangerous() || IsMixedContent());
   if (GetDangerType() == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE &&
       IsExtensionDownload()) {
     return l10n_util::GetStringUTF16(IDS_CONTINUE_EXTENSION_DOWNLOAD);

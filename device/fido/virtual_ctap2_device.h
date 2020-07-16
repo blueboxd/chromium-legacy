@@ -154,6 +154,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // |CoseAlgorithmIdentifier::kInvalidForTesting| public-key algorithm to be
     // advertised and supported to aid testing of unknown public-key types.
     bool support_invalid_for_testing_algorithm = false;
+
+    // ignore_u2f_credentials causes credentials created over the
+    // authenticator's U2F interface not to be available over CTAP2 for
+    // assertions.
+    bool ignore_u2f_credentials = false;
   };
 
   VirtualCtap2Device();

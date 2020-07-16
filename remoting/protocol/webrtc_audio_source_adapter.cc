@@ -105,8 +105,7 @@ void WebrtcAudioSourceAdapter::Core::OnAudioPacket(
     partial_frame_.clear();
   }
 
-  size_t samples_per_frame =
-      kAudioFrameDuration * sampling_rate_ / base::TimeDelta::FromSeconds(1);
+  size_t samples_per_frame = (kAudioFrameDuration * sampling_rate_).InSeconds();
   size_t bytes_per_frame = kBytesPerSample * kChannels * samples_per_frame;
 
   const std::string& data = packet->data(0);

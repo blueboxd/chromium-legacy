@@ -12,6 +12,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"

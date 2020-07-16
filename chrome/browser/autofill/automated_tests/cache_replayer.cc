@@ -11,6 +11,8 @@
 
 #include "base/base64.h"
 #include "base/base64url.h"
+#include "base/cancelable_callback.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/strings/strcat.h"

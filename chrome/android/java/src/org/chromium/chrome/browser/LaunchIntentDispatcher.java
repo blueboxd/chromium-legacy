@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 
@@ -392,10 +391,8 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
                                                  .getName();
         newIntent.setClassName(
                 mActivity.getApplicationContext().getPackageName(), targetActivityClassName);
-        newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            newIntent.addFlags(Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
-        }
+        newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK
+                | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
         Uri uri = newIntent.getData();
         boolean isContentScheme = false;
         if (uri != null && UrlConstants.CONTENT_SCHEME.equals(uri.getScheme())) {
@@ -441,10 +438,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         @IntentHandler.ExternalAppId
         int source = IntentHandler.determineExternalIntentSource(mIntent);
         if (mIntent.getPackage() == null && source != IntentHandler.ExternalAppId.CHROME) {
-            int flagsOfInterest = Intent.FLAG_ACTIVITY_NEW_TASK;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                flagsOfInterest |= Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
-            }
+            int flagsOfInterest = Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
             int maskedFlags = mIntent.getFlags() & flagsOfInterest;
             RecordHistogram.recordSparseHistogram("Launch.IntentFlags", maskedFlags);
         }

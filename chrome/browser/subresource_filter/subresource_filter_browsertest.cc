@@ -483,13 +483,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
         url_with_activation_but_not_existent}) {
     SCOPED_TRACE(url_with_activation);
 
-    // In either test case, there is no server-supplied error page, so Chrome's
-    // own navigation error page is shown. This also triggers a background
-    // request to load navigation corrections (aka. Link Doctor), and once the
-    // results are back, there is a navigation to a second error page with the
-    // suggestions. Hence the wait for two navigations in a row.
-    ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-        browser(), url_with_activation, 2);
+    ui_test_utils::NavigateToURL(browser(), url_with_activation);
     ui_test_utils::NavigateToURL(browser(), url_without_activation);
     ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
         kSubframeNames, kExpectScriptInFrameToLoad));

@@ -18,7 +18,8 @@
  * The resource url for the lottier web worker script.
  * @const {string}
  */
-const LOTTIE_JS_URL = 'chrome://resources/lottie/lottie_worker.min.js';
+/* #export */ const LOTTIE_JS_URL =
+    'chrome://resources/lottie/lottie_worker.min.js';
 
 Polymer({
   is: 'cr-lottie',
@@ -27,8 +28,20 @@ Polymer({
     animationUrl: {
       type: String,
       value: '',
+      observer: 'animationUrlChanged_',
     },
+
     autoplay: {
+      type: Boolean,
+      value: false,
+    },
+
+    hidden: {
+      type: Boolean,
+      value: false,
+    },
+
+    singleLoop: {
       type: Boolean,
       value: false,
     },
@@ -37,17 +50,26 @@ Polymer({
   /** @private {?HTMLCanvasElement} */
   canvasElement_: null,
 
-  /** @private {boolean} True if the animation has loaded successfully */
+  /** @private {boolean} Whether the animation has loaded successfully */
   isAnimationLoaded_: false,
 
   /** @private {?OffscreenCanvas} */
   offscreenCanvas_: null,
+
+  /**
+   * @private {boolean} Whether the canvas has been transferred to the worker
+   * thread.
+   */
+  hasTransferredCanvas_: false,
 
   /** @private {?ResizeObserver} */
   resizeObserver_: null,
 
   /** @private {?Worker} */
   worker_: null,
+
+  /** @private {?XMLHttpRequest} The current in-flight request. */
+  xhr_: null,
 
   /** @override */
   attached() {
@@ -71,6 +93,10 @@ Polymer({
     if (this.worker_) {
       this.worker_.terminate();
       this.worker_ = null;
+    }
+    if (this.xhr_) {
+      this.xhr_.abort();
+      this.xhr_ = null;
     }
   },
 
@@ -105,6 +131,29 @@ Polymer({
     }
 
     // Open animation file and start playing the animation.
+    this.sendXmlHttpRequest_(
+        this.animationUrl, 'json', this.initAnimation_.bind(this));
+  },
+
+  /**
+   * Updates the animation that is being displayed.
+   * @param {string} animationUrl the new animation URL.
+   * @param {string} oldAnimationUrl the previous animation URL.
+   * @private
+   */
+  animationUrlChanged_(animationUrl, oldAnimationUrl) {
+    if (!this.worker_) {
+      // The worker hasn't loaded yet. We will load the new animation once the
+      // worker loads.
+      return;
+    }
+    if (this.xhr_) {
+      // There is an in-flight request to load the previous animation. Abort it
+      // before loading a new image.
+      this.xhr_.abort();
+      this.xhr_ = null;
+    }
+    this.isAnimationLoaded_ = false;
     this.sendXmlHttpRequest_(
         this.animationUrl, 'json', this.initAnimation_.bind(this));
   },
@@ -152,13 +201,19 @@ Polymer({
    */
   sendXmlHttpRequest_(url, responseType, successCallback) {
     assert(this.isValidUrl_(url), 'Invalid scheme or data url used.');
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = responseType;
-    xhr.send();
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState === 4 && xhr.status === 200) {
-        successCallback(xhr.response);
+    assert(!this.xhr_);
+
+    this.xhr_ = new XMLHttpRequest();
+    this.xhr_.open('GET', url, true);
+    this.xhr_.responseType = responseType;
+    this.xhr_.send();
+    this.xhr_.onreadystatechange = () => {
+      if (this.xhr_.readyState === 4 && this.xhr_.status === 200) {
+        // |successCallback| might trigger another xhr, so we set to null before
+        // calling it.
+        const response = this.xhr_.response;
+        this.xhr_ = null;
+        successCallback(response);
       }
     };
   },
@@ -181,14 +236,17 @@ Polymer({
    * @private
    */
   initAnimation_(animationData) {
-    this.worker_.postMessage(
-        {
-          canvas: this.offscreenCanvas_,
-          animationData: animationData,
-          drawSize: this.getCanvasDrawBufferSize_(),
-          params: {loop: true, autoplay: this.autoplay}
-        },
-        [this.offscreenCanvas_]);
+    const message = [{
+      animationData,
+      drawSize: this.getCanvasDrawBufferSize_(),
+      params: {loop: !this.singleLoop, autoplay: this.autoplay}
+    }];
+    if (!this.hasTransferredCanvas_) {
+      message[0].canvas = this.offscreenCanvas_;
+      message.push([this.offscreenCanvas_]);
+      this.hasTransferredCanvas_ = true;
+    }
+    this.worker_.postMessage(...message);
   },
 
   /**

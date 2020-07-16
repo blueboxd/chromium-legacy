@@ -343,7 +343,6 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS})
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @DisabledTest(message = "crbug.com/991852 This test is flaky")
     public void testTabToGridFromLiveTabAnimation() throws InterruptedException {
         assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
@@ -514,7 +513,6 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @DisabledTest(message = "crbug.com/993201 This test fails deterministically on Nexus 5X")
     public void testGridToTabToCurrentLiveWithAnimation() throws InterruptedException {
         assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
@@ -534,7 +532,6 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @DisabledTest(message = "crbug.com/993201 This test fails deterministically on Nexus 5X")
     public void testGridToTabToOtherLiveWithAnimation() throws InterruptedException {
         assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());

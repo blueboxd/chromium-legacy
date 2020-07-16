@@ -5,8 +5,8 @@
 #include "chrome/browser/media/router/providers/cast/cast_media_controller.h"
 
 #include "base/json/json_reader.h"
-#include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
-#include "chrome/browser/media/router/providers/cast/mock_cast_activity_record.h"
+#include "chrome/browser/media/router/providers/cast/app_activity.h"
+#include "chrome/browser/media/router/providers/cast/mock_app_activity.h"
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
 #include "chrome/common/media_router/media_route.h"
 #include "content/public/test/browser_task_environment.h"
@@ -191,7 +191,7 @@ class CastMediaControllerTest : public testing::Test {
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
-  MockCastActivityRecord activity_;
+  MockAppActivity activity_;
   std::unique_ptr<CastMediaController> controller_;
   mojo::Remote<mojom::MediaController> mojo_controller_;
   std::unique_ptr<MockMediaStatusObserver> status_observer_;

@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.feed.v2;
 
 import android.view.View;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.R;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
-
-import javax.annotation.Nullable;
 
 /**
  * Provide data that the bottom sheet manager needs to show a bottom sheet.

@@ -3030,7 +3030,7 @@ if (enable_java_templates) {
         ]
       }
 
-      # Temporarily allow a list of directories to bypass direct deps.
+      # Temporarily allow a list of directories to bypass turbine direct deps.
       # TODO(crbug.com/1082904): Remove every entry in this allowlist.
       _allow_transitive_interfaces =
           filter_exclude(
@@ -3052,11 +3052,11 @@ if (enable_java_templates) {
                 "//weblayer*",
               ]) == []
 
-      if (_allow_transitive_interfaces) {
-        args += [ "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)" ]
-      } else {
-        # Prefer direct interface classpath whenever possible.
+      if (invoker.use_turbine && !_allow_transitive_interfaces) {
+        # Prefer direct deps for turbine as much as possible.
         args += [ "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)" ]
+      } else {
+        args += [ "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)" ]
       }
 
       if (_annotation_processing) {

@@ -162,9 +162,10 @@ class PLATFORM_EXPORT DisplayItem {
   DisplayItem(const DisplayItemClient& client,
               Type type,
               wtf_size_t derived_size,
+              const IntRect& visual_rect,
               bool draws_content = false)
       : client_(&client),
-        visual_rect_(client.VisualRect()),
+        visual_rect_(visual_rect),
         fragment_(0),
         type_(type),
         derived_size_(derived_size),
@@ -206,19 +207,19 @@ class PLATFORM_EXPORT DisplayItem {
     return *client_;
   }
 
-  // This equals to Client().VisualRect() as long as the client is alive and is
-  // not invalidated. Otherwise it saves the previous visual rect of the client.
-  // See DisplayItemClient::VisualRect() about its coordinate space.
+  // The bounding box of all pixels of this display item, in the transform space
+  // of the containing paint chunk.
   const IntRect& VisualRect() const { return visual_rect_; }
+
   RasterEffectOutset GetRasterEffectOutset() const {
     return static_cast<RasterEffectOutset>(raster_effect_outset_);
   }
 
   // Visual rect can change without needing invalidation of the client, e.g.
-  // when ancestor clip changes. This is called from PaintController::
-  // UseCachedItemIfPossible() to update the visual rect of a cached display
-  // item.
-  void UpdateVisualRect() { visual_rect_ = client_->VisualRect(); }
+  // when ancestor clip changes. This is called during under invalidation
+  // checking. TODO(crbug.com/1104064): Remove this when we can compute more
+  // accurate visual rects for such display items.
+  void SetVisualRect(const IntRect& visual_rect) { visual_rect_ = visual_rect; }
 
   Type GetType() const { return static_cast<Type>(type_); }
 
@@ -232,8 +233,6 @@ class PLATFORM_EXPORT DisplayItem {
   // different fragments for the same client and type.
   wtf_size_t Fragment() const { return fragment_; }
   void SetFragment(wtf_size_t fragment) { fragment_ = fragment; }
-
-  void SetVisualRectForTesting(const IntRect& r) { visual_rect_ = r; }
 
 // See comments of enum Type for usage of the following macros.
 #define DEFINE_CATEGORY_METHODS(Category)                           \

@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_task_runner_handle.h"

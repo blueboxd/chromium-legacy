@@ -39,7 +39,7 @@ public class EnterpriseInfoTest {
         EnterpriseInfo.OwnedState stateIn = new EnterpriseInfo.OwnedState(false, true);
 
         class CallbackWithResult implements Callback<EnterpriseInfo.OwnedState> {
-            public EnterpriseInfo.OwnedState result = null;
+            public EnterpriseInfo.OwnedState result;
 
             @Override
             public void onResult(EnterpriseInfo.OwnedState result) {

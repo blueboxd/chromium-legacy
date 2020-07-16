@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.ntp.search;
 
 import android.content.Context;
 import android.graphics.drawable.RippleDrawable;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.LinearLayout;
@@ -22,8 +21,7 @@ public class SearchBoxContainerView extends LinearLayout {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
+        if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
             if (getBackground() instanceof RippleDrawable) {
                 ((RippleDrawable) getBackground()).setHotspot(ev.getX(), ev.getY());
             }

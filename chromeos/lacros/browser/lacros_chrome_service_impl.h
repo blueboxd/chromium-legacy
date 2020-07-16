@@ -8,6 +8,10 @@
 #include <memory>
 
 #include "base/component_export.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
 #include "chromeos/crosapi/mojom/select_file.mojom.h"
@@ -19,54 +23,92 @@ namespace chromeos {
 
 class LacrosChromeServiceDelegate;
 
-// Implements LacrosChromeService, which owns the mojo remote connection to
-// ash-chrome.
-// This class is not thread safe. It can only be used on the main thread.
-class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl
-    : public crosapi::mojom::LacrosChromeService {
+// Forward declaration for class defined in .cc file that holds most of the
+// business logic of this class.
+class LacrosChromeServiceNeverBlockingState;
+
+// This class is responsible for receiving and routing mojo messages from
+// ash-chrome via the mojo::Receiver |sequenced_state_.receiver_|. This class is
+// responsible for sending and routing messages to ash-chrome via the
+// mojo::Remote |sequenced_state_.ash_chrome_service_|. Messages are sent and
+// received on a dedicated, never-blocking sequence to avoid deadlocks.
+//
+// This object is constructed, destroyed, and mostly used on an "affine
+// sequence". For most intents and purposes, this is the main/UI thread.
+//
+// This class is a singleton but is not thread safe. Each method is individually
+// documented with threading requirements.
+class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl {
  public:
+  // The getter is safe to call from all threads.
+  //
+  // This method returns nullptr very early or late in the application
+  // lifecycle. We've chosen to have precise constructor/destructor timings
+  // rather than rely on a lazy initializer and no destructor to allow for
+  // more precise testing.
+  //
+  // If this is accessed on a thread other than the affine sequence, the caller
+  // must invalidate or destroy the pointer before shutdown. Attempting to use
+  // this pointer during shutdown can result in UaF.
   static LacrosChromeServiceImpl* Get();
 
+  // This class is expected to be constructed and destroyed on the same
+  // sequence.
   explicit LacrosChromeServiceImpl(
       std::unique_ptr<LacrosChromeServiceDelegate> delegate);
-  ~LacrosChromeServiceImpl() override;
+  ~LacrosChromeServiceImpl();
 
+  // This can be called on any thread. This call allows LacrosChromeServiceImpl
+  // to start receiving messages from ash-chrome.
   void BindReceiver(
       mojo::PendingReceiver<crosapi::mojom::LacrosChromeService> receiver);
 
+  // This must be called on the affine sequence. It exposes a remote that can
+  // be used to show a select-file dialog.
   mojo::Remote<crosapi::mojom::SelectFile>& select_file_remote() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(affine_sequence_checker_);
     return select_file_remote_;
   }
 
+  // This may be called on any thread.
   void BindScreenManagerReceiver(
       mojo::PendingReceiver<crosapi::mojom::ScreenManager> pending_receiver);
 
-  // crosapi::mojom::LacrosChromeService:
-  void RequestAshChromeServiceReceiver(
-      RequestAshChromeServiceReceiverCallback callback) override;
-  void NewWindow(NewWindowCallback callback) override;
-
  private:
-  // Delegate instance to inject Chrome dependent code.
+  // LacrosChromeServiceNeverBlockingState is an implementation detail of this
+  // class.
+  friend class LacrosChromeServiceNeverBlockingState;
+
+  // Creates a new window on the affine sequence.
+  void NewWindowAffineSequence();
+
+  // Delegate instance to inject Chrome dependent code. Must only be used on the
+  // affine sequence.
   std::unique_ptr<LacrosChromeServiceDelegate> delegate_;
 
-  mojo::Receiver<crosapi::mojom::LacrosChromeService> receiver_{this};
-
-  // Proxy to AshChromeService in ash-chrome.
-  mojo::Remote<crosapi::mojom::AshChromeService> ash_chrome_service_;
-
-  // Pending receiver of AshChromeService.
-  // AshChromeService is bound to mojo::Remote on construction, then
-  // when AshChromeService requests via RequestAshChromeServiceReceiver,
-  // its PendingReceiver is returned.
-  // This member holds the PendingReceiver between them. Note that even
-  // during the period, calling a method on AshChromeService via Remote
-  // should be available.
-  mojo::PendingReceiver<crosapi::mojom::AshChromeService>
-      pending_ash_chrome_service_receiver_;
-
-  // Proxy to SelectFile interface in ash-chrome.
+  // This member allows lacros-chrome to use the SelectFile interface. This
+  // member is affine to the affine sequence. It is initialized in the
+  // constructor and it is immediately available for use.
   mojo::Remote<crosapi::mojom::SelectFile> select_file_remote_;
+
+  // This member is instantiated on the affine sequence alongside the
+  // constructor. All subsequent invocations of this member, including
+  // destruction, happen on the |never_blocking_sequence_|.
+  std::unique_ptr<LacrosChromeServiceNeverBlockingState,
+                  base::OnTaskRunnerDeleter>
+      sequenced_state_;
+
+  // This member is instantiated on the affine sequence, but only ever
+  // dereferenced on the |never_blocking_sequence_|.
+  base::WeakPtr<LacrosChromeServiceNeverBlockingState> weak_sequenced_state_;
+
+  // A sequence that is guaranteed to never block.
+  scoped_refptr<base::SequencedTaskRunner> never_blocking_sequence_;
+
+  // Checks that the method is called on the affine sequence.
+  SEQUENCE_CHECKER(affine_sequence_checker_);
+
+  base::WeakPtrFactory<LacrosChromeServiceImpl> weak_factory_{this};
 };
 
 }  // namespace chromeos

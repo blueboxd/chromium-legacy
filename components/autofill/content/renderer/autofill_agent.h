@@ -129,12 +129,6 @@ class AutofillAgent : public content::RenderFrameObserver,
  private:
   friend class FormControlClickDetectionTest;
 
-  // Functor used as a simplified comparison function for FormData. Only
-  // compares forms at a high level (notably name, origin, action).
-  struct FormDataCompare {
-    bool operator()(const FormData& lhs, const FormData& rhs) const;
-  };
-
   // Flags passed to ShowSuggestions.
   struct ShowSuggestionsOptions {
     // All fields are default initialized to false.
@@ -322,8 +316,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   // WILL_SEND_SUBMIT_EVENT and form submitted are both fired for same form.
   // The submitted_forms_ is cleared when we know no more submission could
   // happen for that form.
-  // We use a simplified comparison function.
-  std::set<FormData, FormDataCompare> submitted_forms_;
+  std::set<FormRendererId> submitted_forms_;
 
   // The query node autofill state prior to previewing the form.
   blink::WebAutofillState query_node_autofill_state_;

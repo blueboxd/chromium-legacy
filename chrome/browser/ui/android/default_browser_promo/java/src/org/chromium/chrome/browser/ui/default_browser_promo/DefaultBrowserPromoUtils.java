@@ -54,7 +54,8 @@ public class DefaultBrowserPromoUtils {
     private static final String PROMO_COUNT_PARAM = "max_promo_count";
     private static final String PROMO_INTERVAL_PARAM = "promo_interval";
 
-    static final String DISAMBIGUATION_SHEET_PROMOED_KEY = "disambiguation_sheet_promoed";
+    private static final String DISAMBIGUATION_SHEET_PROMOED_KEY_PREFIX =
+            "disambiguation_sheet_promoed.";
     static final String CHROME_STABLE_PACKAGE_NAME = "com.android.chrome";
 
     // TODO(crbug.com/1090103): move to some util class for reuse.
@@ -194,11 +195,16 @@ public class DefaultBrowserPromoUtils {
      * Called on new intent is received on the activity so that we can record some metrics.
      */
     public static void onNewIntentReceived(Intent intent) {
-        boolean promoed = intent.getBooleanExtra(DISAMBIGUATION_SHEET_PROMOED_KEY, false);
+        boolean promoed = intent.getBooleanExtra(getDisambiguationSheetPromoedKey(), false);
         if (promoed) {
             DefaultBrowserPromoMetrics.recordLaunchedByDisambiguationSheet(
                     getCurrentDefaultBrowserState());
         }
+    }
+
+    static String getDisambiguationSheetPromoedKey() {
+        return DISAMBIGUATION_SHEET_PROMOED_KEY_PREFIX
+                + ContextUtils.getApplicationContext().getPackageName();
     }
 
     /**
@@ -206,7 +212,7 @@ public class DefaultBrowserPromoUtils {
      * chrome will open a new tab.
      */
     public static void maybeRemoveIntentData(Intent intent) {
-        if (intent.getBooleanExtra(DISAMBIGUATION_SHEET_PROMOED_KEY, false)) {
+        if (intent.getBooleanExtra(getDisambiguationSheetPromoedKey(), false)) {
             // Intent with Uri.EMPTY as data will be ignored by the IntentHandler.
             intent.setData(Uri.EMPTY);
         }

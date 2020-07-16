@@ -50,10 +50,6 @@ class LiteralDebugNameClient : public DisplayItemClient {
   LiteralDebugNameClient(const char* name) : name_(name) {}
 
   String DebugName() const override { return name_; }
-  IntRect VisualRect() const override {
-    NOTREACHED();
-    return IntRect();
-  }
 
  private:
   const char* name_;

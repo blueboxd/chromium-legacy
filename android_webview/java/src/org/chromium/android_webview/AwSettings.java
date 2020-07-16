@@ -1726,6 +1726,13 @@ public class AwSettings {
         }
     }
 
+    public boolean isDarkMode() {
+        synchronized (mAwSettingsLock) {
+            assert mNativeAwSettings != 0;
+            return AwSettingsJni.get().isDarkMode(mNativeAwSettings, AwSettings.this);
+        }
+    }
+
     @ForceDarkBehavior
     public int getForceDarkBehavior() {
         synchronized (mAwSettingsLock) {
@@ -1929,5 +1936,6 @@ public class AwSettings {
         void updateWillSuppressErrorStateLocked(long nativeAwSettings, AwSettings caller);
         void updateCookiePolicyLocked(long nativeAwSettings, AwSettings caller);
         void updateAllowFileAccessLocked(long nativeAwSettings, AwSettings caller);
+        boolean isDarkMode(long nativeAwSettings, AwSettings caller);
     }
 }

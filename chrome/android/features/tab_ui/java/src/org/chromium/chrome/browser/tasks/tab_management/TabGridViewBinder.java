@@ -322,18 +322,8 @@ class TabGridViewBinder {
         ChromeImageView backgroundView =
                 (ChromeImageView) rootView.fastFindViewById(R.id.background_view);
 
-        // ViewCompat.SetBackgroundTintList does not work here for L devices, because cardView is a
-        // RelativeLayout, and in order for ViewCompat.SetBackgroundTintList to work on any L-
-        // devices, the view has to implement the TintableBackgroundView interface. RelativeLayout
-        // is not a TintableBackgroundView. The work around here is to set different drawable as the
-        // background depends on the incognito mode.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            cardView.setBackground(TabUiColorProvider.getCardViewBackgroundDrawable(
-                    cardView.getContext(), isIncognito));
-        } else {
-            ViewCompat.setBackgroundTintList(cardView,
-                    TabUiColorProvider.getCardViewTintList(cardView.getContext(), isIncognito));
-        }
+        ViewCompat.setBackgroundTintList(cardView,
+                TabUiColorProvider.getCardViewTintList(cardView.getContext(), isIncognito));
 
         dividerView.setBackgroundColor(
                 TabUiColorProvider.getDividerColor(dividerView.getContext(), isIncognito));

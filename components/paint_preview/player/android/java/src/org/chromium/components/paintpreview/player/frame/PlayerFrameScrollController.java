@@ -9,10 +9,10 @@ import android.os.Handler;
 import android.util.Size;
 import android.widget.OverScroller;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.components.paintpreview.player.OverscrollHandler;
 import org.chromium.components.paintpreview.player.PlayerUserActionRecorder;
-
-import javax.annotation.Nullable;
 
 /**
  * Handles scrolling of a frame for the paint preview player.
@@ -20,8 +20,8 @@ import javax.annotation.Nullable;
 public class PlayerFrameScrollController {
     /** For swipe-to-refresh logic */
     private OverscrollHandler mOverscrollHandler;
-    private boolean mIsOverscrolling = false;
-    private float mOverscrollAmount = 0f;
+    private boolean mIsOverscrolling;
+    private float mOverscrollAmount;
     /** For computing flinging. */
     private final OverScroller mScroller;
     private final Handler mScrollerHandler = new Handler();

@@ -489,8 +489,7 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     ArcAuthServiceTest,
     ::testing::Values(EnabledFeatures{},
-                      EnabledFeatures{
-                          kEnableSecondaryAccountsForChildExperiment}));
+                      EnabledFeatures{kEnableSecondaryAccountsForChild}));
 
 IN_PROC_BROWSER_TEST_P(ArcAuthServiceTest, GetPrimaryAccountForGaiaAccounts) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);

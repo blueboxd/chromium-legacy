@@ -9,8 +9,7 @@
 
 #include "base/auto_reset.h"
 #include "base/macros.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -20,7 +19,7 @@ namespace blink {
 
 class GraphicsContext;
 
-class PLATFORM_EXPORT DrawingRecorder final {
+class PLATFORM_EXPORT DrawingRecorder {
   STACK_ALLOCATED();
 
  public:
@@ -37,10 +36,27 @@ class PLATFORM_EXPORT DrawingRecorder final {
         context, client, DisplayItem::PaintPhaseToDrawingType(phase));
   }
 
+  // See DisplayItem::VisualRect() for the definition of visual rect.
   DrawingRecorder(GraphicsContext&,
                   const DisplayItemClient&,
-                  DisplayItem::Type);
+                  DisplayItem::Type,
+                  const IntRect& visual_rect);
 
+  DrawingRecorder(GraphicsContext& context,
+                  const DisplayItemClient& client,
+                  PaintPhase phase,
+                  const IntRect& visual_rect)
+      : DrawingRecorder(context,
+                        client,
+                        DisplayItem::PaintPhaseToDrawingType(phase),
+                        visual_rect) {}
+
+  // TODO(crbug.com/1104064): Remove this after we can calculate visual rects
+  // for all display items during paint.
+  DrawingRecorder(GraphicsContext& context,
+                  const DisplayItemClient& client,
+                  DisplayItem::Type type)
+      : DrawingRecorder(context, client, type, client.VisualRect()) {}
   DrawingRecorder(GraphicsContext& context,
                   const DisplayItemClient& client,
                   PaintPhase phase)
@@ -54,6 +70,7 @@ class PLATFORM_EXPORT DrawingRecorder final {
   GraphicsContext& context_;
   const DisplayItemClient& client_;
   const DisplayItem::Type type_;
+  const IntRect visual_rect_;
   base::Optional<DOMNodeId> dom_node_id_to_restore_;
 
 #if DCHECK_IS_ON()

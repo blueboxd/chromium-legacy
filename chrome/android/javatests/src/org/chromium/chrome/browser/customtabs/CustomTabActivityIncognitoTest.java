@@ -103,7 +103,7 @@ public class CustomTabActivityIncognitoTest {
     @SmallTest
     @Features.EnableFeatures({ChromeFeatureList.CCT_INCOGNITO})
     @DisabledTest
-    // TODO(crbug.com/1023759) : The test crashes in Android Kitkat and is flaky on marshmallow.
+    // TODO(crbug.com/1023759) : The test is flaky on marshmallow.
     // Need to investigate.
     public void incognitoNotificationClosesIncognitoCustomTab() throws Exception {
         CustomTabActivity activity = launchIncognitoCustomTab();

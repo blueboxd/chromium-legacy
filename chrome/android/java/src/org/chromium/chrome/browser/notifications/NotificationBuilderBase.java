@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -470,7 +469,6 @@ public abstract class NotificationBuilderBase {
      * Creates a public version of the notification to be displayed in sensitive contexts, such as
      * on the lockscreen, displaying just the site origin and badge or generated icon.
      */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     protected Notification createPublicNotification(Context context) {
         // Use a non-compat builder because we want the default small icon behaviour.
         NotificationWrapperBuilder builder =
@@ -563,25 +561,20 @@ public abstract class NotificationBuilderBase {
      */
     @SuppressWarnings("deprecation") // For addAction(int, CharSequence, PendingIntent)
     protected static void addActionToBuilder(NotificationWrapperBuilder builder, Action action) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            // Notification.Action.Builder and RemoteInput were added in KITKAT_WATCH.
-            Notification.Action.Builder actionBuilder = getActionBuilder(action);
-            if (action.type == Action.Type.TEXT) {
-                assert action.placeholder != null;
-                actionBuilder.addRemoteInput(
-                        new RemoteInput.Builder(NotificationConstants.KEY_TEXT_REPLY)
-                                .setLabel(action.placeholder)
-                                .build());
-            }
+        Notification.Action.Builder actionBuilder = getActionBuilder(action);
+        if (action.type == Action.Type.TEXT) {
+            assert action.placeholder != null;
+            actionBuilder.addRemoteInput(
+                    new RemoteInput.Builder(NotificationConstants.KEY_TEXT_REPLY)
+                            .setLabel(action.placeholder)
+                            .build());
+        }
 
-            if (action.umaActionType == NotificationUmaTracker.ActionType.UNKNOWN) {
-                builder.addAction(actionBuilder.build());
-            } else {
-                builder.addAction(actionBuilder.build(), PendingIntent.FLAG_UPDATE_CURRENT,
-                        action.umaActionType);
-            }
+        if (action.umaActionType == NotificationUmaTracker.ActionType.UNKNOWN) {
+            builder.addAction(actionBuilder.build());
         } else {
-            builder.addAction(action.iconId, action.title, action.intent);
+            builder.addAction(
+                    actionBuilder.build(), PendingIntent.FLAG_UPDATE_CURRENT, action.umaActionType);
         }
     }
 
@@ -590,9 +583,8 @@ public abstract class NotificationBuilderBase {
      * Note, after this notification is built and posted, a further summary notification must be
      * posted for notifications in the group to appear grouped in the notification shade.
      */
-    @SuppressLint("NewApi") // For setGroup
     static void setGroupOnBuilder(NotificationWrapperBuilder builder, CharSequence origin) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT_WATCH || origin == null) return;
+        if (origin == null) return;
         builder.setGroup(NotificationConstants.GROUP_WEB_PREFIX + origin);
         // TODO(crbug.com/674927) Post a group summary notification.
         // Notifications with the same group will only actually be stacked if we post a group
@@ -600,7 +592,6 @@ public abstract class NotificationBuilderBase {
         // all Chrome notifications on N though (see crbug.com/674015).
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // For Notification.Action.Builder
     @SuppressWarnings("deprecation") // For Builder(int, CharSequence, PendingIntent)
     private static Notification.Action.Builder getActionBuilder(Action action) {
         Notification.Action.Builder actionBuilder;

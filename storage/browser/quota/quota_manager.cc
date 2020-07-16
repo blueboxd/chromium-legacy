@@ -532,9 +532,9 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
 
  protected:
   void Run() override {
-    error_count_ = 0;
-    remaining_clients_ = manager()->clients_.size();
     DCHECK(manager()->client_types_.contains(type_));
+    remaining_clients_ = manager()->client_types_[type_].size();
+
     for (const auto& client_and_type : manager()->client_types_[type_]) {
       QuotaClient* client = client_and_type.first;
       QuotaClientType client_type = client_and_type.second;
@@ -549,10 +549,12 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
                            weak_factory_.GetWeakPtr(), tracing_id));
       } else {
         ++skipped_clients_;
-        if (--remaining_clients_ == 0)
-          CallCompleted();
+        --remaining_clients_;
       }
     }
+
+    if (remaining_clients_ == 0)
+      CallCompleted();
   }
 
   void Completed() override {
@@ -622,10 +624,11 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
 
  protected:
   void Run() override {
-    error_count_ = 0;
-    remaining_clients_ = manager()->clients_.size();
-    for (const auto& client : manager()->clients_) {
-      client->GetOriginsForHost(
+    DCHECK(manager()->client_types_.contains(type_));
+    remaining_clients_ = manager()->client_types_[type_].size();
+
+    for (const auto& client_and_type : manager()->client_types_[type_]) {
+      client_and_type.first->GetOriginsForHost(
           type_, host_,
           base::BindOnce(&HostDataDeleter::DidGetOriginsForHost,
                          weak_factory_.GetWeakPtr()));
@@ -715,14 +718,14 @@ class QuotaManager::StorageCleanupHelper : public QuotaTask {
 
  protected:
   void Run() override {
+    DCHECK(manager()->client_types_.contains(type_));
     base::RepeatingClosure barrier = base::BarrierClosure(
-        manager()->clients_.size(),
+        manager()->client_types_[type_].size(),
         base::BindOnce(&StorageCleanupHelper::CallCompleted,
                        weak_factory_.GetWeakPtr()));
 
     // This may synchronously trigger |callback_| at the end of the for loop,
     // make sure we do nothing after this block.
-    DCHECK(manager()->client_types_.contains(type_));
     for (const auto& client_and_type : manager()->client_types_[type_]) {
       QuotaClient* client = client_and_type.first;
       QuotaClientType client_type = client_and_type.second;
@@ -1060,7 +1063,9 @@ void QuotaManager::DeleteHostData(const std::string& host,
                                   StatusCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LazyInitialize();
-  if (host.empty() || clients_.empty()) {
+
+  DCHECK(client_types_.contains(type));
+  if (host.empty() || client_types_[type].empty()) {
     std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk);
     return;
   }
@@ -1217,8 +1222,12 @@ bool QuotaManager::ResetUsageTracker(StorageType type) {
 
 QuotaManager::~QuotaManager() {
   proxy_->manager_ = nullptr;
-  for (const auto& client : clients_)
+
+  // Iterating over |clients_for_ownership_| is correct here because we want to
+  // call OnQuotaManagerDestroyed() once per QuotaClient.
+  for (const auto& client : clients_for_ownership_)
     client->OnQuotaManagerDestroyed();
+
   if (database_)
     db_runner_->DeleteSoon(FROM_HERE, database_.release());
 }
@@ -1307,7 +1316,7 @@ void QuotaManager::RegisterClient(
 
   for (blink::mojom::StorageType storage_type : storage_types)
     client_types_[storage_type].insert({client.get(), client_type});
-  clients_.push_back(std::move(client));
+  clients_for_ownership_.push_back(std::move(client));
 }
 
 UsageTracker* QuotaManager::GetUsageTracker(StorageType type) const {
@@ -1445,11 +1454,6 @@ void QuotaManager::DeleteOriginDataInternal(const url::Origin& origin,
                                             StatusCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   LazyInitialize();
-
-  if (clients_.empty()) {
-    std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk);
-    return;
-  }
 
   OriginDataDeleter* deleter =
       new OriginDataDeleter(this, origin, type, std::move(quota_client_types),

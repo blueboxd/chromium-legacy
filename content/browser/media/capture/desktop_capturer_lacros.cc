@@ -4,13 +4,11 @@
 
 #include "content/browser/media/capture/desktop_capturer_lacros.h"
 
-#include "base/debug/stack_trace.h"
-#include "base/logging.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 
 #include "chromeos/crosapi/cpp/window_snapshot.h"
 #include "chromeos/lacros/browser/lacros_chrome_service_impl.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
@@ -21,9 +19,12 @@ DesktopCapturerLacros::DesktopCapturerLacros(
   mojo::PendingRemote<crosapi::mojom::ScreenManager> pending_screen_manager;
   mojo::PendingReceiver<crosapi::mojom::ScreenManager> pending_receiver =
       pending_screen_manager.InitWithNewPipeAndPassReceiver();
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&DesktopCapturerLacros::BindReceiverMainThread,
-                                std::move(pending_receiver)));
+
+  // The lacros chrome service exists at all times except during early start-up
+  // and late shut-down. This class should never be used in those two times.
+  auto* lacros_chrome_service = chromeos::LacrosChromeServiceImpl::Get();
+  DCHECK(lacros_chrome_service);
+  lacros_chrome_service->BindScreenManagerReceiver(std::move(pending_receiver));
 
   // We create a SharedRemote that binds the underlying Remote onto a
   // dedicated sequence.
@@ -102,19 +103,6 @@ void DesktopCapturerLacros::SetSharedMemoryFactory(
     std::unique_ptr<webrtc::SharedMemoryFactory> shared_memory_factory) {}
 
 void DesktopCapturerLacros::SetExcludedWindow(webrtc::WindowId window) {}
-
-// static
-void DesktopCapturerLacros::BindReceiverMainThread(
-    mojo::PendingReceiver<crosapi::mojom::ScreenManager> receiver) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // The lacros chrome service must exist at all points in time for the lacros
-  // browser.
-  auto* lacros_chrome_service = chromeos::LacrosChromeServiceImpl::Get();
-  DCHECK(lacros_chrome_service);
-
-  lacros_chrome_service->BindScreenManagerReceiver(std::move(receiver));
-}
 
 void DesktopCapturerLacros::DidTakeSnapshot(
     bool success,

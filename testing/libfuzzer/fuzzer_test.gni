@@ -14,6 +14,7 @@ import("//testing/test.gni")
 # - (required) sources - fuzzer test source files
 # - deps - test dependencies
 # - libs - Additional libraries to link.
+# - frameworks - Apple-only. Additional frameworks to link.
 # - additional_configs - additional configs to be used for compilation
 # - dict - a dictionary file for the fuzzer.
 # - environment_variables - certain whitelisted environment variables for the
@@ -198,6 +199,7 @@ template("fuzzer_test") {
                                "include_dirs",
                                "sources",
                                "libs",
+                               "frameworks",
                              ])
       deps = test_deps
       data_deps = test_data_deps

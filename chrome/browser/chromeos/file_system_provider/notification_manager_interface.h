@@ -18,16 +18,15 @@ class NotificationManagerInterface {
   enum NotificationResult { ABORT, CONTINUE };
 
   // Callback for handling result of a notification.
-  typedef base::Callback<void(NotificationResult)> NotificationCallback;
+  typedef base::OnceCallback<void(NotificationResult)> NotificationCallback;
 
   NotificationManagerInterface() {}
   virtual ~NotificationManagerInterface() {}
 
   // Shows a notification about the request being unresponsive. The |callback|
   // is called when the notification is closed.
-  virtual void ShowUnresponsiveNotification(
-      int id,
-      const NotificationCallback& callback) = 0;
+  virtual void ShowUnresponsiveNotification(int id,
+                                            NotificationCallback callback) = 0;
 
   // Hides a notification previously shown with |id|.
   virtual void HideUnresponsiveNotification(int id) = 0;

@@ -52,13 +52,13 @@ constexpr FilenameToURLPolicy kFilenameToURLPolicy =
 
 template <typename StringType>
 PlatformClipboard::Data ToClipboardData(const StringType& data_string) {
-  PlatformClipboard::Data result;
-  auto* begin =
-      reinterpret_cast<typename PlatformClipboard::Data::const_pointer>(
-          data_string.data());
-  result.assign(begin, begin + (data_string.size() *
-                                sizeof(typename StringType::value_type)));
-  return result;
+  auto* begin = reinterpret_cast<typename std::vector<uint8_t>::const_pointer>(
+      data_string.data());
+  std::vector<uint8_t> result(
+      begin,
+      begin + (data_string.size() * sizeof(typename StringType::value_type)));
+  return scoped_refptr<base::RefCountedBytes>(
+      base::RefCountedBytes::TakeVector(&result));
 }
 
 }  // namespace
@@ -155,7 +155,7 @@ class WaylandDataDragControllerTest : public WaylandTest {
     // Now the server can read the data and give it to our callback.
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     auto callback = base::BindOnce(
-        [](base::RunLoop* loop, PlatformClipboard::Data&& data) {
+        [](base::RunLoop* loop, std::vector<uint8_t>&& data) {
           std::string result(data.begin(), data.end());
           EXPECT_EQ(wl::kSampleTextForDragAndDrop, result);
           loop->Quit();
@@ -215,7 +215,7 @@ TEST_P(WaylandDataDragControllerTest, StartDragWithWrongMimeType) {
   // to read it with a different mime type.
   base::RunLoop run_loop;
   auto callback = base::BindOnce(
-      [](base::RunLoop* loop, PlatformClipboard::Data&& data) {
+      [](base::RunLoop* loop, std::vector<uint8_t>&& data) {
         std::string result(data.begin(), data.end());
         EXPECT_TRUE(result.empty());
         loop->Quit();
@@ -243,7 +243,7 @@ TEST_P(WaylandDataDragControllerTest, StartDragWithText) {
   // |kTextMimeTypeUtf8|.
   base::RunLoop run_loop;
   auto callback = base::BindOnce(
-      [](base::RunLoop* loop, PlatformClipboard::Data&& data) {
+      [](base::RunLoop* loop, std::vector<uint8_t>&& data) {
         std::string result(data.begin(), data.end());
         EXPECT_EQ(wl::kSampleTextForDragAndDrop, result);
         loop->Quit();
@@ -278,10 +278,10 @@ TEST_P(WaylandDataDragControllerTest, ReceiveDrag) {
 
   Sync();
 
-  auto callback = base::BindOnce([](const PlatformClipboard::Data& contents) {
+  auto callback = base::BindOnce([](PlatformClipboard::Data contents) {
     std::string result;
-    result.assign(reinterpret_cast<std::string::const_pointer>(&contents[0]),
-                  contents.size());
+    EXPECT_TRUE(contents);
+    result.assign(contents->front_as<char>(), contents->size());
     EXPECT_EQ(wl::kSampleTextForDragAndDrop, result);
   });
 

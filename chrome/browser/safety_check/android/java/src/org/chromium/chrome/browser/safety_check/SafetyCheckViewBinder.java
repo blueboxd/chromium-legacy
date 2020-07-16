@@ -151,10 +151,13 @@ class SafetyCheckViewBinder {
             SafetyCheckElementPreference preference = fragment.findPreference(PASSWORDS_KEY);
             if (state == PasswordsState.UNCHECKED) {
                 preference.clearStatusIndicator();
+                preference.setEnabled(true);
             } else if (state == PasswordsState.CHECKING) {
                 preference.showProgressBar();
+                preference.setEnabled(false);
             } else {
                 preference.showStatusIcon(getStatusIconForPasswords(state));
+                preference.setEnabled(true);
             }
         } else if (SafetyCheckProperties.SAFE_BROWSING_STATE == propertyKey) {
             @SafeBrowsingState
@@ -163,10 +166,13 @@ class SafetyCheckViewBinder {
             SafetyCheckElementPreference preference = fragment.findPreference(SAFE_BROWSING_KEY);
             if (state == SafeBrowsingState.UNCHECKED) {
                 preference.clearStatusIndicator();
+                preference.setEnabled(true);
             } else if (state == SafeBrowsingState.CHECKING) {
                 preference.showProgressBar();
+                preference.setEnabled(false);
             } else {
                 preference.showStatusIcon(getStatusIconForPasswords(state));
+                preference.setEnabled(true);
             }
         } else if (SafetyCheckProperties.UPDATES_STATE == propertyKey) {
             @UpdatesState
@@ -175,10 +181,13 @@ class SafetyCheckViewBinder {
             SafetyCheckElementPreference preference = fragment.findPreference(UPDATES_KEY);
             if (state == UpdatesState.UNCHECKED) {
                 preference.clearStatusIndicator();
+                preference.setEnabled(true);
             } else if (state == UpdatesState.CHECKING) {
                 preference.showProgressBar();
+                preference.setEnabled(false);
             } else {
                 preference.showStatusIcon(getStatusIconForPasswords(state));
+                preference.setEnabled(true);
             }
         } else if (SafetyCheckProperties.SAFETY_CHECK_BUTTON_CLICK_LISTENER == propertyKey) {
             fragment.getCheckButton().setOnClickListener((View.OnClickListener) model.get(

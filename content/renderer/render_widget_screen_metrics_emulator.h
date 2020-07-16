@@ -59,9 +59,12 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
   // Sets new parameters and applies them to the RenderWidget.
   void ChangeEmulationParams(const blink::WebDeviceEmulationParams& params);
 
-  void OnSynchronizeVisualProperties(const blink::ScreenInfo& screen_info,
-                                     const gfx::Size& widget_size,
-                                     const gfx::Size& visible_viewport_size);
+  void OnSynchronizeVisualProperties(
+      const blink::ScreenInfo& screen_info,
+      const gfx::Size& widget_size,
+      const gfx::Size& visible_viewport_size,
+      const std::vector<gfx::Rect>& root_window_segments);
+
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
 
@@ -85,6 +88,7 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
   gfx::Size original_visible_viewport_size_;
   gfx::Rect original_view_screen_rect_;
   gfx::Rect original_window_screen_rect_;
+  std::vector<gfx::Rect> original_root_window_segments_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetScreenMetricsEmulator);
 };

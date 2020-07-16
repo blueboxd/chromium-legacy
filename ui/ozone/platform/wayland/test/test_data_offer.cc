@@ -21,9 +21,9 @@ namespace wl {
 namespace {
 
 void WriteDataOnWorkerThread(base::ScopedFD fd,
-                             const ui::PlatformClipboard::Data& data) {
-  if (!base::WriteFileDescriptor(
-          fd.get(), reinterpret_cast<const char*>(data.data()), data.size())) {
+                             ui::PlatformClipboard::Data data) {
+  if (!base::WriteFileDescriptor(fd.get(), data->front_as<char>(),
+                                 data->size())) {
     LOG(ERROR) << "Failed to write selection data to clipboard.";
   }
 }
@@ -81,7 +81,7 @@ void TestDataOffer::Receive(const std::string& mime_type, base::ScopedFD fd) {
 }
 
 void TestDataOffer::OnOffer(const std::string& mime_type,
-                            const ui::PlatformClipboard::Data& data) {
+                            ui::PlatformClipboard::Data data) {
   data_to_offer_[mime_type] = data;
   wl_data_offer_send_offer(resource(), mime_type.c_str());
 }

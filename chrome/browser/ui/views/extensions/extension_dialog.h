@@ -82,19 +82,13 @@ class ExtensionDialog : public views::DialogDelegate,
   // Focus to the render view if possible.
   void MaybeFocusRenderView();
 
-  // Sets the window title.
-  void set_title(const base::string16& title) { window_title_ = title; }
-
   // Sets minimum contents size in pixels and makes the window resizable.
   void SetMinimumContentsSize(int width, int height);
 
   extensions::ExtensionViewHost* host() const { return host_.get(); }
 
   // views::DialogDelegate:
-  bool CanResize() const override;
   ui::ModalType GetModalType() const override;
-  bool ShouldShowWindowTitle() const override;
-  base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
   void DeleteDelegate() override;
   views::Widget* GetWidget() override;

@@ -2422,6 +2422,9 @@ TEST_F(WebContentsImplTest, RegisterProtocolHandlerDifferentOrigin) {
   EXPECT_CALL(delegate,
               RegisterProtocolHandler(contents(), "mailto", handler_url1, true))
       .Times(1);
+  EXPECT_CALL(delegate,
+              RegisterProtocolHandler(contents(), "mailto", handler_url2, true))
+      .Times(0);
 
   {
     contents()->RegisterProtocolHandler(main_test_rfh(), "mailto", handler_url1,

@@ -343,11 +343,13 @@ void DocumentMarkerController::MoveMarkers(const Text& src_node,
   if (!src_markers)
     return;
 
-  if (!markers_.Contains(&dst_node)) {
-    markers_.insert(&dst_node, MakeGarbageCollected<MarkerLists>(
-                                   DocumentMarker::kMarkerTypeIndexesCount));
+  auto& dst_marker_entry =
+      markers_.insert(&dst_node, nullptr).stored_value->value;
+  if (!dst_marker_entry) {
+    dst_marker_entry = MakeGarbageCollected<MarkerLists>(
+        DocumentMarker::kMarkerTypeIndexesCount);
   }
-  MarkerLists* const dst_markers = markers_.at(&dst_node);
+  MarkerLists* const dst_markers = dst_marker_entry;
 
   bool doc_dirty = false;
   for (DocumentMarker::MarkerType type : DocumentMarker::MarkerTypes::All()) {

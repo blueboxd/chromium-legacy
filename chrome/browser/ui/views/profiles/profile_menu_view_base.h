@@ -69,6 +69,12 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
     kNoPrimaryAccount,
   };
 
+  struct SyncInfo {
+    int description_string_id;
+    int button_string_id;
+    SyncInfoContainerBackgroundState background_state;
+  };
+
   struct EditButtonParams {
     EditButtonParams(const gfx::VectorIcon* edit_icon,
                      const base::string16& edit_tooltip_text,
@@ -122,11 +128,9 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
       const gfx::VectorIcon& icon = kUserAccountAvatarIcon,
       ui::NativeTheme::ColorId icon_color_id =
           ui::NativeTheme::kColorId_MenuIconColor);
-  void SetSyncInfo(const base::string16& description,
-                   const base::string16& clickable_text,
-                   SyncInfoContainerBackgroundState background_state,
-                   base::RepeatingClosure action,
-                   bool show_badge = true);
+  void SetSyncInfo(const SyncInfo& sync_info,
+                   const base::RepeatingClosure& action,
+                   bool show_badge);
   void AddShortcutFeatureButton(const gfx::VectorIcon& icon,
                                 const base::string16& text,
                                 base::RepeatingClosure action);

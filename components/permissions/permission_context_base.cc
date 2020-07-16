@@ -188,11 +188,12 @@ void PermissionContextBase::RequestPermission(
     return;
   }
 
-  // Make sure we do not show a UI for cached documents
-  if (content::BackForwardCache::EvictIfCached(
-          content::GlobalFrameRoutingId(id.render_process_id(),
-                                        id.render_frame_id()),
-          "PermissionContextBase::RequestPermission")) {
+  // Don't show request permission UI for an inactive RenderFrameHost. If this
+  // is called when RenderFrameHost is in BackForwardCache, evict the document
+  // as the page might not distinguish properly between user denying the
+  // permission and automatic rejection, leading to an inconsistent UX after
+  // restoring the page from the cache.
+  if (rfh->IsInactiveAndDisallowReactivation()) {
     std::move(callback).Run(result.content_setting);
     return;
   }

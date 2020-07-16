@@ -44,8 +44,8 @@ NotificationManager::~NotificationManager() {
 
 void NotificationManager::ShowUnresponsiveNotification(
     int id,
-    const NotificationCallback& callback) {
-  callbacks_[id] = callback;
+    NotificationCallback callback) {
+  callbacks_[id] = std::move(callback);
   ShowNotification();
 }
 
@@ -119,9 +119,9 @@ void NotificationManager::OnNotificationResult(NotificationResult result) {
   CallbackMap::iterator it = callbacks_.begin();
   while (it != callbacks_.end()) {
     CallbackMap::iterator current_it = it++;
-    NotificationCallback callback = current_it->second;
+    NotificationCallback callback = std::move(current_it->second);
     callbacks_.erase(current_it);
-    callback.Run(result);
+    std::move(callback).Run(result);
   }
 }
 

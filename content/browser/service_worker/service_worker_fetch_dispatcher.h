@@ -109,6 +109,8 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
 
   ServiceWorkerMetrics::EventType GetEventType() const;
 
+  bool IsEventDispatched() const;
+
   blink::mojom::FetchAPIRequestPtr request_;
   std::string client_id_;
   scoped_refptr<ServiceWorkerVersion> version_;

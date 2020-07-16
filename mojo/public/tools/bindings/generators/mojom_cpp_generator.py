@@ -689,8 +689,11 @@ class Generator(generator.Generator):
     value_name_cppname = (value, parameter_name, cpp_parameter_name)
     # TODO(crbug.com/1103623): Support more involved types.
     if mojom.IsEnumKind(kind):
-      # TODO(crbug.com/1103623): Pretty-print enums.
-      yield '%s->SetInteger("%s", static_cast<int>(%s));' % value_name_cppname
+      if self._IsTypemappedKind(kind) or IsNativeOnlyKind(kind):
+        yield '%s->SetInteger("%s", static_cast<int>(%s));' % value_name_cppname
+      else:
+        yield '%s->SetString("%s", base::trace_event::'\
+            'TracedValue::ValueToString(%s));' % value_name_cppname
       return
     if mojom.IsStringKind(kind):
       if self.for_blink:

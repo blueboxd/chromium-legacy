@@ -669,6 +669,49 @@ TEST_F(DownloadManagerCoordinatorTest, DecidePolicyForDownload) {
   EXPECT_EQ(0U, queue->size());
 }
 
+// Tests downloadManagerTabHelper:decidePolicyForDownload:completionHandler:.
+// Coordinator should present the confirmation dialog.
+TEST_F(DownloadManagerCoordinatorTest,
+       DecidePolicyForDownloadFromBackgroundTab) {
+  web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  task.SetWebState(&web_state_);
+  coordinator_.downloadTask = nullptr;  // Current Tab does not have task.
+
+  OverlayRequestQueue* queue = OverlayRequestQueue::FromWebState(
+      &web_state_, OverlayModality::kWebContentArea);
+  ASSERT_EQ(0U, queue->size());
+  [coordinator_ downloadManagerTabHelper:&tab_helper_
+                 decidePolicyForDownload:&task
+                       completionHandler:^(NewDownloadPolicy){
+                       }];
+
+  // Verify that confirm request was sent.
+  ASSERT_EQ(1U, queue->size());
+
+  alert_overlays::AlertRequest* config =
+      queue->front_request()->GetConfig<alert_overlays::AlertRequest>();
+  ASSERT_TRUE(config);
+  EXPECT_NSEQ(@"Start New Download?", config->title());
+  EXPECT_NSEQ(@"This will stop all progress for your current download.",
+              config->message());
+  ASSERT_EQ(2U, config->button_configs().size());
+  EXPECT_NSEQ(@"OK", config->button_configs()[0].title);
+  EXPECT_EQ(kDownloadReplaceActionName,
+            config->button_configs()[0].user_action_name);
+  EXPECT_NSEQ(@"Cancel", config->button_configs()[1].title);
+  EXPECT_EQ(kDownloadDoNotReplaceActionName,
+            config->button_configs()[1].user_action_name);
+
+  queue->CancelAllRequests();
+  @autoreleasepool {
+    // task_environment_ has to outlive the coordinator. Dismissing coordinator
+    // retains are autoreleases it.
+    [coordinator_ stop];
+  }
+
+  EXPECT_EQ(0U, queue->size());
+}
+
 // Tests starting the download. Verifies that download task is started and its
 // file writer is configured to write into download directory.
 TEST_F(DownloadManagerCoordinatorTest, StartDownload) {

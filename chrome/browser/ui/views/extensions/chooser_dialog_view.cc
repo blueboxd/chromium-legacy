@@ -54,6 +54,8 @@ ChooserDialogView::ChooserDialogView(
           views::CONTROL, views::CONTROL)));
 
   SetExtraView(device_chooser_content_view_->CreateExtraView());
+  SetShowCloseButton(false);
+  SetTitle(device_chooser_content_view_->GetWindowTitle());
 
   SetAcceptCallback(
       base::BindOnce(&DeviceChooserContentView::Accept,
@@ -69,14 +71,6 @@ ChooserDialogView::ChooserDialogView(
 }
 
 ChooserDialogView::~ChooserDialogView() = default;
-
-base::string16 ChooserDialogView::GetWindowTitle() const {
-  return device_chooser_content_view_->GetWindowTitle();
-}
-
-bool ChooserDialogView::ShouldShowCloseButton() const {
-  return false;
-}
 
 ui::ModalType ChooserDialogView::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;

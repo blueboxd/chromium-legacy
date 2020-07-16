@@ -263,6 +263,8 @@ class CONTENT_EXPORT RenderWidget
                             const gfx::Size& visible_viewport_size) override;
   void SetScreenRects(const gfx::Rect& widget_screen_rect,
                       const gfx::Rect& window_screen_rect) override;
+  void SetRootWindowSegments(
+      const std::vector<gfx::Rect>& root_window_segments) override;
 
   // blink::WebWidgetClient
   void ScheduleAnimation() override;

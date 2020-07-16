@@ -353,6 +353,11 @@ void ServiceWorkerStorageControlImpl::
                                                         std::move(callback));
 }
 
+void ServiceWorkerStorageControlImpl::PerformStorageCleanup(
+    PerformStorageCleanupCallback callback) {
+  storage_->PerformStorageCleanup(std::move(callback));
+}
+
 void ServiceWorkerStorageControlImpl::ApplyPolicyUpdates(
     const std::vector<storage::mojom::LocalStoragePolicyUpdatePtr>
         policy_updates) {

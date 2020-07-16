@@ -282,7 +282,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
         }
       }));
 
-  web::WebState* webState = self.downloadTask->GetWebState();
+  web::WebState* webState = download->GetWebState();
   OverlayRequestQueue::FromWebState(webState, OverlayModality::kWebContentArea)
       ->AddRequest(std::move(request));
 }

@@ -377,8 +377,12 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
         }
       }
       if (activityWithCompletion) {
+        // This function is called when the scene is activated (or unblocked).
+        // Consider the scene as still not active at this point as the handling
+        // of startup parameters is not yet done (and will be later in this
+        // function).
         [UserActivityHandler continueUserActivity:activityWithCompletion
-                              applicationIsActive:YES
+                              applicationIsActive:NO
                                         tabOpener:self
                             connectionInformation:self
                                startupInformation:self.mainController];

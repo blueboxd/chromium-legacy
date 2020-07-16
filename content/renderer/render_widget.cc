@@ -588,24 +588,6 @@ void RenderWidget::OnUpdateVisualProperties(
   if (for_frame()) {
     SetZoomLevel(visual_properties.zoom_level);
 
-    if (root_widget_window_segments_ !=
-        visual_properties.root_widget_window_segments) {
-      root_widget_window_segments_ =
-          visual_properties.root_widget_window_segments;
-
-      blink::WebVector<blink::WebRect> web_segments;
-      web_segments.reserve(root_widget_window_segments_.size());
-      for (const auto& segment : root_widget_window_segments_)
-        web_segments.emplace_back(segment);
-
-      GetWebWidget()->SetWindowSegments(std::move(web_segments));
-
-      // Propagate changes down to child local root RenderWidgets in other frame
-      // trees/processes.
-      for (auto& observer : render_frame_proxies_)
-        observer.OnRootWindowSegmentsChanged(root_widget_window_segments_);
-    }
-
     bool capture_sequence_number_changed =
         visual_properties.capture_sequence_number !=
         last_capture_sequence_number_;
@@ -655,8 +637,12 @@ void RenderWidget::OnUpdateVisualProperties(
     // emulation.
     device_emulator_->OnSynchronizeVisualProperties(
         visual_properties.screen_info, visual_properties.new_size,
-        visual_properties.visible_viewport_size);
+        visual_properties.visible_viewport_size,
+        visual_properties.root_widget_window_segments);
   } else {
+    if (for_frame())
+      SetRootWindowSegments(visual_properties.root_widget_window_segments);
+
     // We can ignore browser-initialized resizing during synchronous
     // (renderer-controlled) mode, unless it is switching us to/from
     // fullsreen mode or changing the device scale factor.
@@ -787,9 +773,6 @@ void RenderWidget::OnEnableDeviceEmulation(
         window_screen_rect_);
   }
   device_emulator_->ChangeEmulationParams(params);
-  // TODO: crbug.com/1099026
-  // https://chromium-review.googlesource.com/c/chromium/src/+/2262193/1
-  // Update root_widget_window_segments here.
 }
 
 void RenderWidget::OnDisableDeviceEmulation() {
@@ -851,6 +834,25 @@ void RenderWidget::SetZoomLevel(double zoom_level) {
     zoom_level_ = zoom_level;
     for (auto& observer : render_frame_proxies_)
       observer.OnZoomLevelChanged(zoom_level);
+  }
+}
+
+void RenderWidget::SetRootWindowSegments(
+    const std::vector<gfx::Rect>& root_window_segments) {
+  if (root_widget_window_segments_ != root_window_segments) {
+    root_widget_window_segments_ = root_window_segments;
+
+    blink::WebVector<blink::WebRect> web_segments;
+    web_segments.reserve(root_widget_window_segments_.size());
+    for (const auto& segment : root_widget_window_segments_)
+      web_segments.emplace_back(segment);
+
+    GetWebWidget()->SetWindowSegments(std::move(web_segments));
+
+    // Propagate changes down to child local root RenderWidgets in other frame
+    // trees/processes.
+    for (auto& observer : render_frame_proxies_)
+      observer.OnRootWindowSegmentsChanged(root_widget_window_segments_);
   }
 }
 

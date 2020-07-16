@@ -8,7 +8,7 @@
 #include "content/common/content_export.h"
 #include "net/url_request/referrer_policy.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
-#include "third_party/blink/public/mojom/referrer.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/referrer.mojom-forward.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

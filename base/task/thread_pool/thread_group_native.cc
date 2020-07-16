@@ -170,11 +170,6 @@ size_t ThreadGroupNative::GetMaxConcurrentNonBlockedTasksDeprecated() const {
   return std::max(3, num_cores - 1);
 }
 
-void ThreadGroupNative::ReportHeartbeatMetrics() const {
-  // Native thread pools do not provide the capability to determine the
-  // number of worker threads created.
-}
-
 void ThreadGroupNative::DidUpdateCanRunPolicy() {
   ScopedCommandsExecutor executor(this);
   CheckedAutoLock auto_lock(lock_);

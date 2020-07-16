@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/paint/file_upload_control_painter.h"
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/core/layout/layout_button.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
@@ -57,8 +57,7 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
     LayoutUnit text_y;
     // We want to match the button's baseline
     // FIXME: Make this work with transforms.
-    if (LayoutButton* button_layout_object =
-            ToLayoutButton(button->GetLayoutObject()))
+    if (LayoutBox* button_layout_object = button->GetLayoutBox())
       text_y = paint_offset.top + layout_file_upload_control_.BorderTop() +
                layout_file_upload_control_.PaddingTop() +
                button_layout_object->BaselinePosition(

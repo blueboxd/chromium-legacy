@@ -33,8 +33,7 @@ class WaylandWindow;
 // such as copy-and-paste and drag-and-drop mechanisms.
 class WaylandDataDevice : public WaylandDataDeviceBase {
  public:
-  using RequestDataCallback =
-      base::OnceCallback<void(const PlatformClipboard::Data&)>;
+  using RequestDataCallback = base::OnceCallback<void(PlatformClipboard::Data)>;
 
   // DragDelegate is responsible for handling drag and drop sessions.
   class DragDelegate {

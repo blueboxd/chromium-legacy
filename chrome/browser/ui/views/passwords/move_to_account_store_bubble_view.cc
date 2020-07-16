@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/passwords/bubble_controllers/move_to_account_store_bubble_controller.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
@@ -35,13 +36,30 @@ namespace {
 // The space between the right/bottom edge of the badge and the
 // right/bottom edge of the main icon.
 constexpr int kBadgeSpacing = 4;
+constexpr int kBadgeBorderWidth = 2;
 constexpr int kImageSize = BadgedProfilePhoto::kImageSize;
 // Width and Height of the badged icon.
-constexpr int kBadgedProfilePhotoWidth = kImageSize + kBadgeSpacing;
-constexpr int kBadgedProfilePhotoHeight = kImageSize;
+constexpr int kBadgedProfilePhotoSize = kImageSize + kBadgeSpacing;
+
+// An images view with an empty space for the badge.
+class ImageViewWithPlaceForBadge : public views::ImageView {
+  // views::ImageView
+  void OnPaint(gfx::Canvas* canvas) override {
+    const int kBadgeIconSize = gfx::kFaviconSize;
+    // Remove the part of the ImageView that contains the badge.
+    SkPath mask;
+    mask.addCircle(
+        /*x=*/kBadgedProfilePhotoSize - kBadgeIconSize / 2,
+        /*y=*/kBadgedProfilePhotoSize - kBadgeIconSize / 2,
+        /*radius=*/kBadgeIconSize / 2 + kBadgeBorderWidth);
+    mask.toggleInverseFillType();
+    canvas->ClipPath(mask, true);
+    ImageView::OnPaint(canvas);
+  }
+};
 
 // An image view that shows a vector icon and tracks changes in the theme.
-class VectorIconView : public views::ImageView {
+class VectorIconView : public ImageViewWithPlaceForBadge {
  public:
   explicit VectorIconView(const gfx::VectorIcon& icon, int size)
       : icon_(icon), size_(size) {}
@@ -82,7 +100,7 @@ class ImageWithBadge : public views::View {
 
 ImageWithBadge::ImageWithBadge(const gfx::ImageSkia& main_image) {
   set_can_process_events_within_subtree(false);
-  auto main_view = std::make_unique<views::ImageView>();
+  auto main_view = std::make_unique<ImageViewWithPlaceForBadge>();
   main_view->SetImage(main_image);
   main_view->SizeToPreferredSize();
   AddChildView(std::move(main_view));
@@ -102,18 +120,20 @@ void ImageWithBadge::AddDefaultBadge() {
   // Use a Globe icon as the default badge.
   auto badge_view =
       std::make_unique<VectorIconView>(kGlobeIcon, kBadgeIconSize);
-  badge_view->SetPosition(
-      gfx::Point(kBadgedProfilePhotoWidth - kBadgeIconSize,
-                 kBadgedProfilePhotoHeight - kBadgeIconSize));
+  badge_view->SetPosition(gfx::Point(kBadgedProfilePhotoSize - kBadgeIconSize,
+                                     kBadgedProfilePhotoSize - kBadgeIconSize));
   badge_view->SizeToPreferredSize();
   badge_view_ = AddChildView(std::move(badge_view));
 
-  SetPreferredSize(
-      gfx::Size(kBadgedProfilePhotoWidth, kBadgedProfilePhotoHeight));
+  SetPreferredSize(gfx::Size(kBadgedProfilePhotoSize, kBadgedProfilePhotoSize));
 }
 
 void ImageWithBadge::UpdateBadge(const gfx::ImageSkia& badge_image) {
-  badge_view_->SetImage(badge_image);
+  gfx::Image rounded_badge = profiles::GetSizedAvatarIcon(
+      gfx::Image(badge_image),
+      /*is_rectangle=*/true, /*width=*/gfx::kFaviconSize,
+      /*height=*/gfx::kFaviconSize, profiles::SHAPE_CIRCLE);
+  badge_view_->SetImage(rounded_badge.ToImageSkia());
   badge_view_->SizeToPreferredSize();
 }
 
@@ -170,6 +190,8 @@ MoveToAccountStoreBubbleView::MovingBannerView::MovingBannerView(
 
   from_view = AddChildView(std::move(from_image));
 
+  // TODO(crbug.com/1100814): this arrow will point to the wrong direction in
+  // RTL setup.
   auto arrow_view = std::make_unique<VectorIconView>(
       kBookmarkbarTouchOverflowIcon, kImageSize);
   AddChildView(std::move(arrow_view));

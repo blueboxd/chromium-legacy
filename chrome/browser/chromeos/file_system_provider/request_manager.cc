@@ -171,8 +171,8 @@ void RequestManager::OnRequestTimeout(int request_id) {
   if (!IsInteractingWithUser()) {
     notification_manager_->ShowUnresponsiveNotification(
         request_id,
-        base::Bind(&RequestManager::OnUnresponsiveNotificationResult,
-                   weak_ptr_factory_.GetWeakPtr(), request_id));
+        base::BindOnce(&RequestManager::OnUnresponsiveNotificationResult,
+                       weak_ptr_factory_.GetWeakPtr(), request_id));
   } else {
     ResetTimer(request_id);
   }

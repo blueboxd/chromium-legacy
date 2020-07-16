@@ -39,8 +39,6 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   void UpdateGalleries() override;
 
   // views::DialogDelegate:
-  base::string16 GetWindowTitle() const override;
-  bool ShouldShowCloseButton() const override;
   void DeleteDelegate() override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;

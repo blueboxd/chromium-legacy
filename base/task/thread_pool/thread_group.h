@@ -113,9 +113,6 @@ class BASE_EXPORT ThreadGroup {
   // TODO(fdoray): Remove this method. https://crbug.com/687264
   virtual size_t GetMaxConcurrentNonBlockedTasksDeprecated() const = 0;
 
-  // Reports relevant metrics per implementation.
-  virtual void ReportHeartbeatMetrics() const = 0;
-
   // Wakes up workers as appropriate for the new CanRunPolicy policy. Must be
   // called after an update to CanRunPolicy in TaskTracker.
   virtual void DidUpdateCanRunPolicy() = 0;

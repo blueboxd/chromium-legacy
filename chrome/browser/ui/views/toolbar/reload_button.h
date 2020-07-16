@@ -26,15 +26,12 @@ class ReloadButton : public ToolbarButton,
                      public views::ButtonListener,
                      public ui::SimpleMenuModel::Delegate {
  public:
-  // TODO(http://crbug.com/1099607) Remove IconStyle once WebAppFrameToolbarView
-  // doesn't need this.
-  enum class IconStyle { kBrowser, kMinimalUi };
   enum class Mode { kReload = 0, kStop };
 
   // The button's class name.
   static const char kViewClassName[];
 
-  explicit ReloadButton(CommandUpdater* command_updater, IconStyle icon_style);
+  explicit ReloadButton(CommandUpdater* command_updater);
   ReloadButton(const ReloadButton&) = delete;
   ReloadButton& operator=(const ReloadButton&) = delete;
   ~ReloadButton() override;
@@ -42,13 +39,10 @@ class ReloadButton : public ToolbarButton,
   // Ask for a specified button state.  If |force| is true this will be applied
   // immediately.
   void ChangeMode(Mode mode, bool force);
+  Mode visible_mode() const { return visible_mode_; }
 
   // Enable reload drop-down menu.
   void set_menu_enabled(bool enable) { menu_enabled_ = enable; }
-
-  // TODO(http://crbug.com/1099607) Remove this once WebAppFrameToolbarView
-  // doesn't need this.
-  void SetColors(SkColor normal_color, SkColor disabled_color);
 
   // views::View:
   void OnThemeChanged() override;
@@ -93,8 +87,6 @@ class ReloadButton : public ToolbarButton,
   // This may be NULL when testing.
   CommandUpdater* command_updater_;
 
-  const IconStyle icon_style_;
-
   // The mode we should be in assuming no timers are running.
   Mode intended_mode_ = Mode::kReload;
 
@@ -105,10 +97,6 @@ class ReloadButton : public ToolbarButton,
   // them.
   base::TimeDelta double_click_timer_delay_;
   base::TimeDelta mode_switch_timer_delay_;
-
-  // The colors used for the icon if explicitly set by SetColors().
-  base::Optional<SkColor> normal_color_;
-  base::Optional<SkColor> disabled_color_;
 
   // Indicates if reload menu is enabled.
   bool menu_enabled_ = false;

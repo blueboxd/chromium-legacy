@@ -57,23 +57,24 @@ ExtensionInstallBlockedDialogView::ExtensionInstallBlockedDialogView(
     const base::string16& custom_error_message,
     const gfx::ImageSkia& icon,
     base::OnceClosure done_callback)
-    : title_(l10n_util::GetStringFUTF16(
-          IDS_EXTENSION_BLOCKED_BY_POLICY_PROMPT_TITLE,
-          base::UTF8ToUTF16(extension_name))),
-      custom_error_message_(custom_error_message),
-      icon_(gfx::ImageSkiaOperations::CreateResizedImage(
-          icon,
-          skia::ImageOperations::ResizeMethod::RESIZE_BEST,
-          gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
-                    extension_misc::EXTENSION_ICON_SMALL))),
-      done_callback_(std::move(done_callback)) {
+    : done_callback_(std::move(done_callback)) {
   SetButtons(ui::DIALOG_BUTTON_CANCEL);
   SetDefaultButton(ui::DIALOG_BUTTON_CANCEL);
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                  l10n_util::GetStringUTF16(IDS_CLOSE));
+  SetShowIcon(true);
+  SetIcon(gfx::ImageSkiaOperations::CreateResizedImage(
+      icon, skia::ImageOperations::ResizeMethod::RESIZE_BEST,
+      gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
+                extension_misc::EXTENSION_ICON_SMALL)));
+  SetTitle(
+      l10n_util::GetStringFUTF16(IDS_EXTENSION_BLOCKED_BY_POLICY_PROMPT_TITLE,
+                                 base::UTF8ToUTF16(extension_name)));
   set_draggable(true);
   set_close_on_deactivate(false);
-  AddCustomMessageContents();
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+  if (!custom_error_message.empty())
+    AddCustomMessageContents(custom_error_message);
 }
 
 ExtensionInstallBlockedDialogView::~ExtensionInstallBlockedDialogView() {
@@ -88,35 +89,15 @@ gfx::Size ExtensionInstallBlockedDialogView::CalculatePreferredSize() const {
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
-bool ExtensionInstallBlockedDialogView::IsDialogButtonEnabled(
-    ui::DialogButton button) const {
-  DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
-  return true;
-}
-
-base::string16 ExtensionInstallBlockedDialogView::GetWindowTitle() const {
-  return title_;
-}
-
-bool ExtensionInstallBlockedDialogView::ShouldShowWindowIcon() const {
-  return true;
-}
-
-gfx::ImageSkia ExtensionInstallBlockedDialogView::GetWindowIcon() {
-  return icon_;
-}
-
 ui::ModalType ExtensionInstallBlockedDialogView::GetModalType() const {
   // Make sure user know the installation is blocked before taking further
   // action.
   return ui::MODAL_TYPE_CHILD;
 }
 
-void ExtensionInstallBlockedDialogView::AddCustomMessageContents() {
-  SetLayoutManager(std::make_unique<views::FillLayout>());
-
-  if (custom_error_message_.empty())
-    return;
+void ExtensionInstallBlockedDialogView::AddCustomMessageContents(
+    const base::string16& custom_error_message) {
+  DCHECK(!custom_error_message.empty());
 
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   auto extension_info_container = std::make_unique<views::View>();
@@ -134,7 +115,7 @@ void ExtensionInstallBlockedDialogView::AddCustomMessageContents() {
 
   auto* header_label =
       extension_info_container->AddChildView(std::make_unique<views::Label>(
-          custom_error_message_, CONTEXT_BODY_TEXT_LARGE));
+          custom_error_message, CONTEXT_BODY_TEXT_LARGE));
   header_label->SetMultiLine(true);
   header_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   header_label->SizeToFit(content_width);

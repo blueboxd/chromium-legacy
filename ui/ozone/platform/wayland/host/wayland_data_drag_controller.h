@@ -80,7 +80,7 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
   void Offer(const OSExchangeData& data, int operation);
   void CreateIconSurfaceIfNeeded(const OSExchangeData& data);
   void HandleUnprocessedMimeTypes();
-  void OnMimeTypeDataTransferred(const PlatformClipboard::Data& contents);
+  void OnMimeTypeDataTransferred(PlatformClipboard::Data contents);
   void OnDataTransferFinished(
       std::unique_ptr<ui::OSExchangeData> received_data);
   std::string GetNextUnprocessedMimeType();

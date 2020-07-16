@@ -62,6 +62,8 @@ class ChooserController {
   };
 
   // Returns the text to be displayed in the chooser title.
+  // Note that this is only called once, and there is no way to update the title
+  // for a given instance of ChooserController.
   base::string16 GetTitle() const;
 
   // Returns whether the chooser needs to show an icon before the text.

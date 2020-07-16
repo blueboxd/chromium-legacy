@@ -87,7 +87,7 @@ class SharingImplTest : public testing::Test {
   }
 
  protected:
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojo::Remote<mojom::Sharing> remote_;
   std::unique_ptr<SharingImpl> service_;
 };

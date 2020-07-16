@@ -63,8 +63,6 @@ class LayoutButton final : public LayoutFlexibleBox {
   LayoutBlock* inner_;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutButton, IsLayoutButton());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BUTTON_H_

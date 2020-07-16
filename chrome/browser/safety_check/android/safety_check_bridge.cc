@@ -49,6 +49,11 @@ void SafetyCheckBridge::CheckSafeBrowsing(
 void SafetyCheckBridge::CheckPasswords(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
+  // If a password check is already in progress, starting a new one will not
+  // change the state of the underlying service, so ignore extra requests.
+  if (password_check_observed_) {
+    return;
+  }
   password_check_observed_ = true;
   password_check_controller_->AddObserver(this);
   password_check_controller_->StartPasswordCheck();

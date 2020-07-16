@@ -220,10 +220,12 @@ public abstract class RequestGenerator {
      */
     @VisibleForTesting
     public int getNumSignedIn() {
-        // The native needs to be loaded for the usage of IdentityManager.
-        ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
-        // We only have a single account.
-        return IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount() ? 1 : 0;
+        return PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
+            // The native needs to be loaded for the usage of IdentityManager.
+            ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
+            // We only have a single account.
+            return IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount() ? 1 : 0;
+        });
     }
 
     /**

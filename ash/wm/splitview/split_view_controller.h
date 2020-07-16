@@ -23,7 +23,6 @@
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/wm/public/activation_change_observer.h"
 
 namespace ui {
 class Layer;
@@ -43,7 +42,6 @@ class SplitViewOverviewSessionTest;
 // TODO(xdai): Make it work for multi-display non mirror environment.
 class ASH_EXPORT SplitViewController : public aura::WindowObserver,
                                        public WindowStateObserver,
-                                       public wm::ActivationChangeObserver,
                                        public ShellObserver,
                                        public OverviewObserver,
                                        public display::DisplayObserver,
@@ -204,6 +202,13 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // on the middle split position).
   void InitDividerPositionForTransition(int divider_position);
 
+  // Returns true if |window| is in a transitinal state which means that
+  // |SplitViewController| has already changed its internal snapped state for
+  // |window| but the snapped state has not been applied to |window|'s window
+  // state yet. The transional state can be happen in some clients (e.g. ARC
+  // app) which handle window states asynchronously.
+  bool IsWindowInTransitionalState(const aura::Window* window) const;
+
   // Called when the overview button tray has been long pressed. Enters
   // splitview mode if the active window is snappable. Also enters overview mode
   // if device is not currently in overview mode.
@@ -235,11 +240,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // WindowStateObserver:
   void OnPostWindowStateTypeChange(WindowState* window_state,
                                    WindowStateType old_type) override;
-
-  // wm::ActivationChangeObserver:
-  void OnWindowActivated(ActivationReason reason,
-                         aura::Window* gained_active,
-                         aura::Window* lost_active) override;
 
   // ShellObserver:
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
@@ -279,6 +279,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   friend class SplitViewOverviewSessionTest;
   class TabDraggedWindowObserver;
   class DividerSnapAnimation;
+  class AutoSnapController;
 
   // These functions return |left_window_| and |right_window_|, swapped in
   // nonprimary screen orientations. Note that they may return null.
@@ -506,6 +507,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
 
   // Records the presentation time of resize operation in split view mode.
   std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
+
+  // Observes windows and performs auto snapping if needed.
+  std::unique_ptr<AutoSnapController> auto_snap_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SplitViewController);
 };

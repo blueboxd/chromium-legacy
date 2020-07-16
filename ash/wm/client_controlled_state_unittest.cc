@@ -11,6 +11,7 @@
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/screen_pinning_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -585,6 +586,37 @@ TEST_F(ClientControlledStateTest,
   const WMEvent normal_event(WM_EVENT_NORMAL);
   window_state()->OnWMEvent(&normal_event);
 
+  EXPECT_EQ(WindowStateType::kMaximized, delegate()->new_state());
+}
+
+TEST_F(ClientControlledStateTest,
+       IgnoreWmEventWhenWindowIsInTransitionalSnappedState) {
+  auto* split_view_controller =
+      SplitViewController::Get(window_state()->window());
+
+  widget_delegate()->EnableSnap();
+  split_view_controller->SnapWindow(window_state()->window(),
+                                    SplitViewController::SnapPosition::RIGHT);
+
+  EXPECT_EQ(WindowStateType::kRightSnapped, delegate()->new_state());
+  EXPECT_FALSE(window_state()->IsSnapped());
+
+  // Ensures the window is in a transitional snapped state.
+  EXPECT_TRUE(split_view_controller->IsWindowInTransitionalState(
+      window_state()->window()));
+  EXPECT_EQ(WindowStateType::kRightSnapped, delegate()->new_state());
+  EXPECT_FALSE(window_state()->IsSnapped());
+
+  // Ignores WMEvent if in a transitional state.
+  widget()->Maximize();
+  EXPECT_NE(WindowStateType::kMaximized, delegate()->new_state());
+
+  // Applies snap request.
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_TRUE(window_state()->IsSnapped());
+
+  // After exiting the transitional state, works normally.
+  widget()->Maximize();
   EXPECT_EQ(WindowStateType::kMaximized, delegate()->new_state());
 }
 

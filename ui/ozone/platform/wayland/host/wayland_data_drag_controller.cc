@@ -295,9 +295,10 @@ void WaylandDataDragController::HandleUnprocessedMimeTypes() {
 }
 
 void WaylandDataDragController::OnMimeTypeDataTransferred(
-    const PlatformClipboard::Data& contents) {
+    PlatformClipboard::Data contents) {
   DCHECK_EQ(state_, State::kTransferring);
-  if (!contents.empty()) {
+  DCHECK(contents);
+  if (!contents->data().empty()) {
     std::string mime_type = unprocessed_mime_types_.front();
     wl::AddToOSExchangeData(contents, mime_type, received_data_.get());
   }

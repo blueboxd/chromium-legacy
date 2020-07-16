@@ -326,6 +326,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsRenderFrameCreated() override;
   bool IsRenderFrameLive() override;
   bool IsCurrent() override;
+  bool IsInactiveAndDisallowReactivation() override;
   size_t GetProxyCount() override;
   bool HasSelection() override;
   void RequestTextSurroundingSelection(
@@ -393,27 +394,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void SendAccessibilityEventsToManager(
       const AXEventNotificationDetails& details);
-
-  // Returns true iff the RenderFrameHost is inactive i.e., when the
-  // |lifecycle_state_| of this RenderFrameHost is in either kInBackForwardCache
-  // or kRunningUnloadHandlers or kReadyToBeDeleted states. This function should
-  // be used when we are unsure if inactive RenderFrameHost can be properly
-  // handled and their processing shouldn't be deferred until the
-  // RenderFrameHost becomes active again.
-  //
-  // This method additionally has a side effect for back-forward cache: it
-  // disallows reactivating by evicting the document from the cache and
-  // triggering deletion. This avoids reactivating the frame as restoring would
-  // be unsafe after dropping an event, which means that the frame will never be
-  // shown to the user again and the event can be safely ignored.
-  //
-  // Note that if |IsInactiveAndDisallowReactivation()| returns false, then
-  // IsCurrent() returns false as well.
-  // We shouldn't be calling this for a speculative RenderFrameHost as we don't
-  // want to support disallowing activation before the document became active
-  // for the first time. In that case |IsInactiveAndDisallowReactivation()|
-  // returns false along with terminating the renderer process.
-  bool IsInactiveAndDisallowReactivation();
 
   void EvictFromBackForwardCacheWithReason(
       BackForwardCacheMetrics::NotRestoredReason reason);

@@ -477,6 +477,12 @@ void ServiceWorkerVersion::StopWorker(base::OnceClosure callback) {
   switch (running_status()) {
     case EmbeddedWorkerStatus::STARTING:
     case EmbeddedWorkerStatus::RUNNING: {
+      // Endpoint isn't available after calling StopWorker(). This needs to be
+      // set here without waiting until the worker is actually stopped because
+      // subsequent StartWorker() may read the flag to decide whether an event
+      // can be dispatched or not.
+      is_endpoint_ready_ = false;
+
       // EmbeddedWorkerInstance::Stop() may synchronously call
       // ServiceWorkerVersion::OnStopped() and destroy |this|. This protection
       // avoids it.
@@ -583,8 +589,9 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
     StatusCallback error_callback,
     const base::TimeDelta& timeout,
     TimeoutBehavior timeout_behavior) {
-  DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status())
-      << "Can only start a request with a running worker.";
+  DCHECK(EmbeddedWorkerStatus::RUNNING == running_status() ||
+         EmbeddedWorkerStatus::STARTING == running_status())
+      << "Can only start a request with a running or starting worker.";
   DCHECK(event_type == ServiceWorkerMetrics::EventType::INSTALL ||
          event_type == ServiceWorkerMetrics::EventType::ACTIVATE ||
          event_type == ServiceWorkerMetrics::EventType::MESSAGE ||
@@ -1021,6 +1028,7 @@ void ServiceWorkerVersion::InitializeGlobalScope(
   }
 
   DCHECK(worker_host_);
+  DCHECK(service_worker_remote_);
   service_worker_remote_->InitializeGlobalScope(
       std::move(service_worker_host_),
       worker_host_->container_host()->CreateServiceWorkerRegistrationObjectInfo(
@@ -1028,6 +1036,8 @@ void ServiceWorkerVersion::InitializeGlobalScope(
       worker_host_->container_host()->CreateServiceWorkerObjectInfoToSend(this),
       fetch_handler_existence_, std::move(subresource_loader_factories),
       std::move(reporting_observer_receiver_));
+
+  is_endpoint_ready_ = true;
 }
 
 void ServiceWorkerVersion::SetValidOriginTrialTokens(
@@ -1868,11 +1878,13 @@ void ServiceWorkerVersion::StartWorkerInternal() {
       base::BindOnce(&OnConnectionError, embedded_worker_->AsWeakPtr()));
   receiver_.reset();
   receiver_.Bind(service_worker_host_.InitWithNewEndpointAndPassReceiver());
+
   // Initialize the global scope now if the worker won't be paused. Otherwise,
   // delay initialization until the main script is loaded.
-  if (!initialize_global_scope_after_main_script_loaded_)
+  if (!initialize_global_scope_after_main_script_loaded_) {
     InitializeGlobalScope(/*script_loader_factories=*/nullptr,
                           /*subresource_loader_factories=*/nullptr);
+  }
 
   if (!controller_receiver_.is_valid()) {
     controller_receiver_ = remote_controller_.BindNewPipeAndPassReceiver();
@@ -2230,6 +2242,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   request_timeouts_.clear();
   external_request_uuid_to_request_id_.clear();
   service_worker_remote_.reset();
+  is_endpoint_ready_ = false;
   remote_controller_.reset();
   DCHECK(!controller_receiver_.is_valid());
   installed_scripts_sender_.reset();

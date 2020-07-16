@@ -24,8 +24,6 @@ class ChooserDialogView : public views::DialogDelegateView,
   ~ChooserDialogView() override;
 
   // views::WidgetDelegate:
-  base::string16 GetWindowTitle() const override;
-  bool ShouldShowCloseButton() const override;
   ui::ModalType GetModalType() const override;
 
   // views::DialogDelegate:

@@ -31,8 +31,11 @@
 //           - FanInfo
 //           - StatefulPartitionInfo
 //           - BluetoothAdapterInfo
-//   3) NonRemovableBlockDeviceInfo: use uint32 to store manufacturer_id instead
-//      of uint8 in case we want to extend manufacturer range.
+//   3) NonRemovableBlockDeviceInfo:
+//      3.1) use uint32 to store manufacturer_id instead of uint8 in case we
+//           want to extend manufacturer range.
+//      3.2) use string to store serial in a decimal numeral system instead
+//           of uint32 in case we want to extend serial number range.
 //   4) LogicalCpuInfo:
 //      4.1) rename idle_time_user_hz to idle_time_user, because of typo in
 //           cros_healthd interface;
@@ -188,8 +191,9 @@ struct NonRemovableBlockDeviceInfo {
   UInt32Value? manufacturer_id;
   // PNM: Product name, ASCII characters for 6 bytes.
   string? name;
-  // PSN: Product serial number, 32 bits.
-  UInt32Value? serial;
+  // PSN: Product serial number, encoded unsigned integer in decimal numeral
+  // system.
+  string? serial;
   // Bytes read since last boot.
   UInt64Value? bytes_read_since_last_boot;
   // Bytes written since last boot.

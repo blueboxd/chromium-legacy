@@ -71,6 +71,12 @@ class AwGLSurfaceExternalStencil::BlitContext {
   ~BlitContext() { glDeleteProgram(program_); }
 
   void Bind() {
+    // If vertex array objects are supported we need to reset it to default one,
+    // so we won't break someones else VAS by changing attributes.
+    if (gl::g_current_gl_driver->fn.glBindVertexArrayOESFn) {
+      glBindVertexArrayOES(0);
+    }
+
     glUseProgram(program_);
     for (GLint i = 2; i < gl_max_vertex_attribs_; ++i) {
       glDisableVertexAttribArray(i);
@@ -257,7 +263,7 @@ void AwGLSurfaceExternalStencil::RecalculateClipAndTransform(
     // Adjust transform, clip rect and viewport to be in original clip rect
     // space as we will draw to FBO of clip_rect size and blit it to screen at
     // original location.
-    transform->Translate(-clip_rect->x(), -clip_rect->y());
+    transform->PostTranslate(-clip_rect->x(), -clip_rect->y());
     clip_rect->set_origin(gfx::Point(0, 0));
     *viewport = clip_rect_.size();
   } else {

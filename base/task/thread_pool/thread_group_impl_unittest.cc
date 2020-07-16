@@ -1837,15 +1837,5 @@ TEST_F(ThreadGroupImplImplStartInBodyTest, RacyCleanup) {
   thread_group_.reset();
 }
 
-TEST_P(ThreadGroupImplImplTestParam, ReportHeartbeatMetrics) {
-  HistogramTester tester;
-  thread_group_->ReportHeartbeatMetrics();
-  EXPECT_FALSE(
-      tester.GetAllSamples("ThreadPool.NumWorkers.TestThreadGroup").empty());
-  EXPECT_FALSE(
-      tester.GetAllSamples("ThreadPool.NumActiveWorkers.TestThreadGroup")
-          .empty());
-}
-
 }  // namespace internal
 }  // namespace base

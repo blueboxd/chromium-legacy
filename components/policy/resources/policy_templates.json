@@ -4282,11 +4282,10 @@
       'caption': '''Configure extension installation blacklist''',
       'tags': [],
       'desc': '''This policy is deprecated, please use the '<ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME">ExtensionInstallBlocklist</ph>' policy instead.
-          Allows you to specify which extensions the users can NOT install. Extensions already installed will be disabled if blacklisted, without a way for the user to enable them. Once an extension disabled due to the blacklist is removed from it, it will automatically get re-enabled.
 
-          A blacklist value of '*' means all extensions are blacklisted unless they are explicitly listed in the whitelist.
+       Setting the policy specifies which extensions users can't install. Extensions already installed are turned off, if prohibited, without a way for users to turn them on. If a prohibited extension gets removed from the blocked list, it's automatically re-enabled. Use a value of <ph name="ALL_EXTENSIONS">*</ph> to prohibit all extensions, except those explicitly allowed.
 
-          If this policy is left not set the user can install any extension in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      If the policy is unset, users can install any extension in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
       'label': '''Extension IDs the user should be prevented from installing (or * for all)''',
     },
     {
@@ -4331,11 +4330,11 @@
       'id': 738,
       'caption': '''Configure extension installation allow list''',
       'tags': [],
-      'desc': '''Allows you to specify which extensions are not subject to the blocklist.
+      'desc': '''Setting the policy specifies which extensions are not subject to the blocklist.
 
-          A blocklist value of * means all extensions are blocked and users can only install extensions listed in the allow list.
+       A blocklist value of <ph name="ALL_EXTENSIONS">*</ph> means all extensions are blocked and users can only install extensions listed in the allow list.
 
-          By default, all extensions are allowed, but if all extensions have been blocked by policy, the allow list can be used to override that policy.''',
+       By default, all extensions are allowed. But, if you prohibited extensions by policy, use the list of allowed extensions to change that policy.''',
       'label': '''Extension IDs to exempt from the blocklist''',
     },
     {
@@ -4357,11 +4356,8 @@
       'caption': '''Configure extension installation whitelist''',
       'tags': [],
       'desc': '''This policy is deprecated, please use the '<ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME">ExtensionInstallAllowlist</ph>' policy instead.
-          Allows you to specify which extensions are not subject to the blacklist.
 
-          A blacklist value of * means all extensions are blacklisted and users can only install extensions listed in the whitelist.
-
-          By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.''',
+      Setting the policy specifies which extensions are exempt from the list of prohibited extensions. Use a value of <ph name="ALL_EXTENSIONS">*</ph> for <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph> to prohibit all extensions, and users can only install explicitly allowed extensions. By default, all extensions are allowed. But, if you prohibited extensions by policy, use the list of allowed extensions to change that policy.''',
       'label': '''Extension IDs to exempt from the blacklist''',
     },
     {
@@ -4381,29 +4377,19 @@
       'id': 34,
       'caption': '''Configure the list of force-installed apps and extensions''',
       'tags': ['full-admin-access'],
-      'desc': '''Specifies a list of apps and extensions that are installed silently,
-          without user interaction, and which cannot be uninstalled nor
-          disabled by the user. All permissions requested by the
-          apps/extensions are granted implicitly, without user interaction,
-          including any additional permissions requested by future versions of
-          the app/extension. Furthermore, permissions are granted for the
-          enterprise.deviceAttributes and enterprise.platformKeys extension
-          APIs. (These two APIs are not available to apps/extensions that are
-          not force-installed.)
+      'desc': '''Setting the policy specifies a list of apps and extensions that install silently, without user interaction, and which users can't uninstall or turn off. Permissions are granted implicitly, including for the enterprise.deviceAttributes and enterprise.platformKeys extension APIs. (These 2 APIs aren't available to apps and extensions that aren't force-installed.)
 
-          This policy takes precedence over a potentially conflicting <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME">ExtensionInstallBlocklist</ph> policy. If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      Leaving the policy unset means no apps or extensions are autoinstalled, and users can uninstall any app or extension in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-          Forced installation is limited to apps and extensions listed in the Chrome Web Store For instances that are not one of the following: Windows instances that are joined to a Microsoft® Active Directory® domain. or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are managed via MDM or joined to a domain via MCX.
+      This policy superseeds <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME">ExtensionInstallBlocklist</ph> policy. If a previously force-installed app or extension is removed from this list, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically uninstalls it.
 
-          Note that the source code of any extension may be altered by users via Developer Tools (potentially rendering the extension dysfunctional). If this is a concern, the <ph name="DEVELOPER_TOOLS_POLICY_NAME">DeveloperToolsDisabled</ph> policy should be set.
+      For Windows® instances not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, forced installation is limited to apps and extensions in the Chrome Web Store.
 
-          Each list item of the policy is a string that contains an extension ID and, optionally, an "update" URL separated by a semicolon (<ph name="SEMICOLON">;</ph>). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK">chrome://extensions</ph> when in developer mode. The "update" URL, if specified, should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>. By default, the Chrome Web Store's update URL is used (which currently is "https://clients2.google.com/service/update2/crx"). Note that the "update" URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest. Note also that specifying the "update" URL explicitly was mandatory in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> versions up to and including 67.
+      The source code of any extension may be altered by users through developer tools, potentially rendering the extension dysfunctional. If this is a concern, set the <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME">DeveloperToolsDisabled</ph> policy.
 
-          For example, <ph name="EXTENSION_POLICY_EXAMPLE">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa;https://clients2.google.com/service/update2/crx</ph> installs the extension with id <ph name="EXTENSION_ID_SAMPLE">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</ph> from the standard Chrome Web Store "update" URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2">https://developer.chrome.com/extensions/hosting</ph>.
+      Each list item of the policy is a string that contains an extension ID and, optionally, an "update" URL separated by a semicolon (;). The extension ID is the 32-letter string found, for example, on chrome://extensions when in Developer mode. If specified, the "update" URL should point to an Update Manifest XML document ( https://developer.chrome.com/extensions/autoupdate ). By default, the Chrome Web Store's update URL is used. The "update" URL set in this policy is only used for the initial installation; subsequent updates of the extension use the update URL in the extension's manifest.
 
-          If this policy is left not set, no apps or extensions are installed automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-
-          Note that this policy doesn't apply to incognito mode.''',
+       Note: This policy doesn't apply to Incognito mode. Read about hosting extensions ( https://developer.chrome.com/extensions/hosting ).''',
       'label': '''Extension/App IDs and update URLs to be silently installed''',
       'arc_support': 'Android apps can be force-installed from the Google Admin console using Google Play. They do not use this policy.',
     },
@@ -4425,13 +4411,11 @@
       'id': 148,
       'caption': '''Configure extension, app, and user script install sources''',
       'tags': ['full-admin-access', 'system-security'],
-      'desc': '''Allows you to specify which URLs are allowed to install extensions, apps, and themes.
+      'desc': '''Setting the policy specifies which URLs may install extensions, apps, and themes. Before <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 21, users could click on a link to a *.crx file, and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> would offer to install the file after a few warnings. Afterwards, such files must be downloaded and dragged to the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> settings page. This setting allows specific URLs to have the old, easier installation flow.
 
-          Starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 21, it is more difficult to install extensions, apps, and user scripts from outside the Chrome Web Store. Previously, users could click on a link to a *.crx file, and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> would offer to install the file after a few warnings. After <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 21, such files must be downloaded and dragged onto the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> settings page. This setting allows specific URLs to have the old, easier installation flow.
+      Each item in this list is an extension-style match pattern (see https://developer.chrome.com/extensions/match_patterns). Users can easily install items from any URL that matches an item in this list. Both the location of the *.crx file and the page where the download is started from (the referrer) must be allowed by these patterns.
 
-          Each item in this list is an extension-style match pattern (see https://developer.chrome.com/extensions/match_patterns). Users will be able to easily install items from any URL that matches an item in this list. Both the location of the *.crx file and the page where the download is started from (i.e. the referrer) must be allowed by these patterns.
-
-          <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME">ExtensionInstallBlocklist</ph> takes precedence over this policy. That is, an extension on the blacklist won't be installed, even if it happens from a site on this list.''',
+      <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME">ExtensionInstallBlocklist</ph> takes precedence over this policy. That is, an extension on the blocklist won't be installed, even if it happens from a site on this list.''',
       'label': '''URL patterns to allow extension, app, and user script installs from''',
     },
     {
@@ -4449,12 +4433,11 @@
       'id': 516,
       'caption': '''Allow insecure algorithms in integrity checks on extension updates and installs''',
       'tags': ['system-security'],
-      'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> provides for the secure update and installation of extensions. However, the content of some extensions hosted outside of the Chrome Web Store may only be protected by insecure signing or hashing algorithms such as SHA1. When this policy is disabled, fresh installation of and updates to such extensions will not be permitted by Chrome (until the extension developers rebuild the extension with stronger algorithms). When this policy is enabled, installation and updates for such extensions will be permitted.
+      'desc': '''Setting the policy to Enabled means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> permits installation and updates for extensions hosted outside the Chrome Web Store, the content of which might only be minimally protected.
 
-          This will default to the enabled behavior when unset.
-          Starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 76, this will default to the disabled behavior when unset.
+      Setting the policy to Disabled means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> won't permit fresh installation of (and updates to) such extensions. The policy has no effect in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 78 and later.
 
-          Starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 78, this policy will be ignored and treated as disabled.''',
+      Leaving this policy unset means it is Enabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 73 to 75, and Disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 76 and 77.''',
     },
     {
       'name': 'ExtensionAllowedTypes',
@@ -4484,17 +4467,29 @@
       'id': 168,
       'caption': '''Configure allowed app/extension types''',
       'tags': [],
-      'desc': '''Controls which app/extension types are allowed to be installed and limits runtime access.
+      'desc': '''Setting the policy controls which apps and extensions may be installed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, which hosts they can interact with, and limits runtime access.
 
-          This setting white-lists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and which hosts they can interact with. The value is a list of strings, each of which should be one of the following: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". See the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extensions documentation for more information on these types.
+      Leaving the policy unset results in no restrictions on the acceptable extension and app types.
 
-          Note that this policy also affects extensions and apps to be force-installed via ExtensionInstallForcelist.
+      Extensions and apps which have a type that's not on the list won't be installed. Each value should be one of these strings:
 
-          If this setting is configured, extensions/apps which have a type that is not on the list will not be installed.
+      * "extension"
 
-          If this settings is left not-configured, no restrictions on the acceptable extension/app types are enforced.
+      * "theme"
 
-          Prior to version 75 using multiple comma separated extension IDs is not supported and will be skipped. The rest of the policy will continue to apply.''',
+      * "user_script"
+
+      * "hosted_app"
+
+      * "legacy_packaged_app"
+
+      * "platform_app"
+
+      See the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extensions documentation for more information on these types.
+
+      Versions earlier than 75 that use multiple comma separated extension IDs aren't supported and are skipped. The rest of the policy applies.
+
+      Note: This policy also affects extensions and apps to be force-installed using <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>.''',
       'label': '''Types of extensions/apps that are allowed to be installed''',
     },
     {
@@ -4638,14 +4633,11 @@
       'id': 278,
       'caption': 'Extension management settings',
       'tags': [],
-      'desc': '''Configures extension management settings for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''Setting the policy controls extension management settings for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, including any controlled by existing extension-related policies. The policy supersedes any legacy policies that might be set.
 
-          This policy controls multiple settings, including settings controlled by any existing extension-related policies. This policy will override any legacy policies if both are set.
+      This policy maps an extension ID or an update URL to its specific setting only. A default configuration can be set for the special ID <ph name="DEFAULT_SCOPE">"*"</ph>, which applies to all extensions without a custom configuration in this policy. With an update URL, configuration applies to extensions with the exact update URL stated in the extension manifest ( http://support.google.com/chrome/a?p=Configure_ExtensionSettings_policy ).
 
-          This policy maps an extension ID or an update URL to its configuration. With an extension ID, configuration will be applied to the specified extension only. A default configuration can be set for the special ID <ph name="DEFAULT_SCOPE">"*"</ph>, which will apply to all extensions that don't have a custom configuration set in this policy. With an update URL, configuration will be applied to all extensions with the exact update URL stated in manifest of this extension, as described at <ph name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>.
-
-          For Windows instances that are not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
-          ''',
+      Note: For Windows® instances not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.''',
     },
     {
       'name': 'ExtensionInstallListsMergeEnabled',
@@ -9671,7 +9663,7 @@
 
       Setting the policy to Disabled allows no audio output while users are signed in.
 
-      Note: The policy affects all audio input (not just the built-in microphone), including audio accessibility features. Do not turn the policy on if a user requires a screen reader.''',
+      Note: The policy affects all audio output, including audio accessibility features. Do not turn the policy off if a user requires a screen reader.''',
     },
     {
       'name': 'AudioCaptureAllowed',

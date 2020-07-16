@@ -526,20 +526,6 @@ void BackForwardCache::DisableForRenderFrameHost(GlobalFrameRoutingId id,
     rfh->DisableBackForwardCache(reason);
 }
 
-// static
-bool BackForwardCache::EvictIfCached(GlobalFrameRoutingId id,
-                                     base::StringPiece reason) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* rfh = RenderFrameHostImpl::FromID(id);
-  if (rfh && rfh->IsInBackForwardCache()) {
-    BackForwardCacheCanStoreDocumentResult can_store;
-    can_store.NoDueToDisableForRenderFrameHostCalled({reason.as_string()});
-    rfh->EvictFromBackForwardCacheWithReasons(can_store);
-    return true;
-  }
-  return false;
-}
-
 void BackForwardCacheImpl::DisableForTesting(DisableForTestingReason reason) {
   is_disabled_for_testing_ = true;
 

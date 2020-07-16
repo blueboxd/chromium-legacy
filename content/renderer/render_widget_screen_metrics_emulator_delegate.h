@@ -33,6 +33,9 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulatorDelegate {
   virtual void SetScreenRects(const gfx::Rect& view_screen_rect,
                               const gfx::Rect& window_screen_rect) = 0;
 
+  virtual void SetRootWindowSegments(
+      const std::vector<gfx::Rect>& root_window_segments) = 0;
+
  protected:
   virtual ~RenderWidgetScreenMetricsEmulatorDelegate() {}
 };

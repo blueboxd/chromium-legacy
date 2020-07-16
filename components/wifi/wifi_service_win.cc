@@ -934,7 +934,7 @@ void WiFiServiceImpl::WaitForNetworkConnect(const std::string& network_guid,
     if (error != ERROR_SUCCESS)
       LOG(ERROR) << error;
     // There is no need to keep created profile as network is connected.
-    created_profiles_.RemoveWithoutPathExpansion(network_guid, nullptr);
+    created_profiles_.RemoveKey(network_guid);
     // Restore previously suppressed notifications.
     enable_notify_network_changed_ = true;
     RestoreNwCategoryWizard();
@@ -1698,7 +1698,7 @@ DWORD WiFiServiceImpl::DeleteCreatedProfile(const std::string& network_guid) {
     base::string16 profile_name = ProfileNameFromGUID(network_guid);
     error_code = WlanDeleteProfile_function_(client_, &interface_guid_,
                                              profile_name.c_str(), nullptr);
-    created_profiles_.RemoveWithoutPathExpansion(network_guid, nullptr);
+    created_profiles_.RemoveKey(network_guid);
   }
   return error_code;
 }

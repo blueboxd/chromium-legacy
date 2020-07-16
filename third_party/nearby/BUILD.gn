@@ -360,7 +360,6 @@ source_set("core_v2_internal") {
 }
 
 # src/cpp/core_v2/internal/mediums
-# TODO(himanshujaju) - Add bloom filter after resolving smhasher dependency.
 source_set("core_v2_internal_mediums") {
   public_configs = [ ":nearby_include_config" ]
   sources = [
@@ -368,6 +367,7 @@ source_set("core_v2_internal_mediums") {
     "src/cpp/core_v2/internal/mediums/ble_advertisement.cc",
     "src/cpp/core_v2/internal/mediums/ble_advertisement_header.cc",
     "src/cpp/core_v2/internal/mediums/ble_packet.cc",
+    "src/cpp/core_v2/internal/mediums/bloom_filter.cc",
     "src/cpp/core_v2/internal/mediums/bluetooth_classic.cc",
     "src/cpp/core_v2/internal/mediums/bluetooth_radio.cc",
     "src/cpp/core_v2/internal/mediums/mediums.cc",
@@ -381,6 +381,7 @@ source_set("core_v2_internal_mediums") {
     "src/cpp/core_v2/internal/mediums/ble_advertisement_header.h",
     "src/cpp/core_v2/internal/mediums/ble_packet.h",
     "src/cpp/core_v2/internal/mediums/ble_peripheral.h",
+    "src/cpp/core_v2/internal/mediums/bloom_filter.h",
     "src/cpp/core_v2/internal/mediums/bluetooth_classic.h",
     "src/cpp/core_v2/internal/mediums/bluetooth_radio.h",
     "src/cpp/core_v2/internal/mediums/lost_entity_tracker.h",

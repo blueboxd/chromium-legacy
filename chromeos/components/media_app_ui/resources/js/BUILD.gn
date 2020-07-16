@@ -19,17 +19,13 @@ js_type_check("closure_compile_index") {
   deps = [
     ":app_context_test_support",
     ":launch",
-    ":message_pipe",
     ":mojo_api_bootstrap",
   ]
 }
 
 js_type_check("closure_compile_app") {
   closure_flags = media_closure_flags
-  deps = [
-    ":message_pipe",
-    ":receiver",
-  ]
+  deps = [ ":receiver" ]
 }
 
 js_library("app_context_test_support") {
@@ -45,13 +41,10 @@ js_library("launch") {
     "media_app.externs.js",
   ]
   deps = [
-    ":message_pipe",
     ":message_types",
     ":mojo_api_bootstrap",
+    "//chromeos/components/system_apps/public/js:message_pipe",
   ]
-}
-
-js_library("message_pipe") {
 }
 
 js_library("message_types") {
@@ -60,8 +53,8 @@ js_library("message_types") {
 js_library("receiver") {
   externs_list = [ "media_app.externs.js" ]
   deps = [
-    ":message_pipe",
     ":message_types",
+    "//chromeos/components/system_apps/public/js:message_pipe",
   ]
 }
 

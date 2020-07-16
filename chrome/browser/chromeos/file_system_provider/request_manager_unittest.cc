@@ -38,10 +38,9 @@ class FakeNotificationManager : public NotificationManagerInterface {
   ~FakeNotificationManager() override {}
 
   // NotificationManagerInterface overrides:
-  void ShowUnresponsiveNotification(
-      int id,
-      const NotificationCallback& callback) override {
-    callbacks_[id] = callback;
+  void ShowUnresponsiveNotification(int id,
+                                    NotificationCallback callback) override {
+    callbacks_[id] = std::move(callback);
   }
 
   void HideUnresponsiveNotification(int id) override { callbacks_.erase(id); }
@@ -64,9 +63,9 @@ class FakeNotificationManager : public NotificationManagerInterface {
     CallbackMap::iterator it = callbacks_.begin();
     while (it != callbacks_.end()) {
       CallbackMap::iterator current_it = it++;
-      NotificationCallback callback = current_it->second;
+      NotificationCallback callback = std::move(current_it->second);
       callbacks_.erase(current_it);
-      callback.Run(result);
+      std::move(callback).Run(result);
     }
   }
 

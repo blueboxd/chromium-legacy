@@ -294,7 +294,6 @@
       'bf_cache_android_browsertests': {
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI,ProactivelySwapBrowsingInstance',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.android_browsertests.filter'
         ],
         'test': 'android_browsertests',
       },
@@ -315,7 +314,6 @@
       'bf_cache_content_shell_test_apk': {
         'args': [
           '--enable-features=BackForwardCache,BackForwardCacheNoTimeEviction,ServiceWorkerOnUI,ProactivelySwapBrowsingInstance',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_shell_test_apk.filter'
         ],
         'swarming': {
           'shards': 5,

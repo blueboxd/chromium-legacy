@@ -96,18 +96,12 @@ class ExtensionUninstallDialogDelegateView
   ui::ModalType GetModalType() const override {
     return is_bubble_ ? ui::MODAL_TYPE_NONE : ui::MODAL_TYPE_WINDOW;
   }
-  base::string16 GetWindowTitle() const override;
-  gfx::ImageSkia GetWindowIcon() override { return image_; }
-  bool ShouldShowWindowIcon() const override { return true; }
-  bool ShouldShowCloseButton() const override { return false; }
 
   ExtensionUninstallDialogViews* dialog_;
-  const base::string16 extension_name_;
   const bool is_bubble_;
 
   views::Label* heading_;
   views::Checkbox* checkbox_;
-  gfx::ImageSkia image_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstallDialogDelegateView);
 };
@@ -199,17 +193,19 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
                                anchor_view ? views::BubbleBorder::TOP_RIGHT
                                            : views::BubbleBorder::NONE),
       dialog_(dialog_view),
-      extension_name_(base::UTF8ToUTF16(extension->name())),
       is_bubble_(anchor_view != nullptr),
-      checkbox_(nullptr),
-      image_(gfx::ImageSkiaOperations::CreateResizedImage(
-          *image,
-          skia::ImageOperations::ResizeMethod::RESIZE_GOOD,
-          gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
-                    extension_misc::EXTENSION_ICON_SMALL))) {
+      checkbox_(nullptr) {
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
+  SetIcon(gfx::ImageSkiaOperations::CreateResizedImage(
+      *image, skia::ImageOperations::ResizeMethod::RESIZE_GOOD,
+      gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
+                extension_misc::EXTENSION_ICON_SMALL)));
+  SetShowCloseButton(false);
+  SetShowIcon(true);
+  SetTitle(l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_TITLE,
+                                      base::UTF8ToUTF16(extension->name())));
 
   SetAcceptCallback(base::BindOnce(
       [](ExtensionUninstallDialogDelegateView* view) {
@@ -292,11 +288,6 @@ gfx::Size ExtensionUninstallDialogDelegateView::CalculatePreferredSize() const {
                                    : DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
-}
-
-base::string16 ExtensionUninstallDialogDelegateView::GetWindowTitle() const {
-  return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_TITLE,
-                                    extension_name_);
 }
 
 }  // namespace

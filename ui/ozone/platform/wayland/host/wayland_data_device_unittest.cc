@@ -34,13 +34,10 @@ namespace {
 
 template <typename StringType>
 ui::PlatformClipboard::Data ToClipboardData(const StringType& data_string) {
-  ui::PlatformClipboard::Data result;
-  auto* begin =
-      reinterpret_cast<typename ui::PlatformClipboard::Data::const_pointer>(
-          data_string.data());
-  result.assign(begin, begin + (data_string.size() *
-                                sizeof(typename StringType::value_type)));
-  return result;
+  std::vector<uint8_t> data_vector;
+  data_vector.assign(data_string.begin(), data_string.end());
+  return scoped_refptr<base::RefCountedBytes>(
+      base::RefCountedBytes::TakeVector(&data_vector));
 }
 
 }  // namespace
@@ -64,7 +61,7 @@ class MockClipboardClient {
   ~MockClipboardClient() = default;
 
   // Fill the clipboard backing store with sample data.
-  void SetData(const PlatformClipboard::Data& data,
+  void SetData(PlatformClipboard::Data data,
                const std::string& mime_type,
                PlatformClipboard::OfferDataClosure callback) {
     data_types_[mime_type] = data;
@@ -115,17 +112,19 @@ class WaylandDataDeviceManagerTest : public WaylandTest {
 
 TEST_P(WaylandDataDeviceManagerTest, WriteToClipboard) {
   // The client writes data to the clipboard ...
-  PlatformClipboard::Data data;
-  data.assign(wl::kSampleClipboardText,
-              wl::kSampleClipboardText + strlen(wl::kSampleClipboardText));
-  clipboard_client_->SetData(data, wl::kTextMimeTypeUtf8,
-                             base::BindOnce([]() {}));
+  std::vector<uint8_t> data_vector(
+      wl::kSampleClipboardText,
+      wl::kSampleClipboardText + strlen(wl::kSampleClipboardText));
+  clipboard_client_->SetData(
+      scoped_refptr<base::RefCountedBytes>(
+          base::RefCountedBytes::TakeVector(&data_vector)),
+      {wl::kTextMimeTypeUtf8}, base::BindOnce([]() {}));
   Sync();
 
   // ... and the server reads it.
   base::RunLoop run_loop;
   auto callback = base::BindOnce(
-      [](base::RunLoop* loop, PlatformClipboard::Data&& data) {
+      [](base::RunLoop* loop, std::vector<uint8_t>&& data) {
         std::string string_data(data.begin(), data.end());
         EXPECT_EQ(wl::kSampleClipboardText, string_data);
         loop->Quit();
@@ -150,7 +149,8 @@ TEST_P(WaylandDataDeviceManagerTest, ReadFromClipboard) {
   // expectation.
   auto callback =
       base::BindOnce([](const base::Optional<PlatformClipboard::Data>& data) {
-        std::string string_data = std::string(data->begin(), data->end());
+        auto& bytes = data->get()->data();
+        std::string string_data = std::string(bytes.begin(), bytes.end());
         EXPECT_EQ(wl::kSampleClipboardText, string_data);
       });
   clipboard_client_->ReadData(wl::kTextMimeTypeUtf8, std::move(callback));
@@ -163,7 +163,8 @@ TEST_P(WaylandDataDeviceManagerTest, ReadFromClipboardWithoutOffer) {
   // an empty string.
   auto callback =
       base::BindOnce([](const base::Optional<PlatformClipboard::Data>& data) {
-        std::string string_data = std::string(data->begin(), data->end());
+        auto& bytes = data->get()->data();
+        std::string string_data = std::string(bytes.begin(), bytes.end());
         EXPECT_EQ("", string_data);
       });
   clipboard_client_->ReadData(wl::kTextMimeTypeUtf8, std::move(callback));
@@ -171,10 +172,13 @@ TEST_P(WaylandDataDeviceManagerTest, ReadFromClipboardWithoutOffer) {
 
 TEST_P(WaylandDataDeviceManagerTest, IsSelectionOwner) {
   auto callback = base::BindOnce([]() {});
-  PlatformClipboard::Data data;
-  data.assign(wl::kSampleClipboardText,
-              wl::kSampleClipboardText + strlen(wl::kSampleClipboardText));
-  clipboard_client_->SetData(data, wl::kTextMimeTypeUtf8, std::move(callback));
+  std::vector<uint8_t> data_vector(
+      wl::kSampleClipboardText,
+      wl::kSampleClipboardText + strlen(wl::kSampleClipboardText));
+  clipboard_client_->SetData(
+      scoped_refptr<base::RefCountedBytes>(
+          base::RefCountedBytes::TakeVector(&data_vector)),
+      {wl::kTextMimeTypeUtf8}, std::move(callback));
   Sync();
   ASSERT_TRUE(clipboard_client_->IsSelectionOwner());
 

@@ -51,9 +51,6 @@ namespace {
 constexpr char kDetachDurationHistogramPrefix[] = "ThreadPool.DetachDuration.";
 constexpr char kNumTasksBeforeDetachHistogramPrefix[] =
     "ThreadPool.NumTasksBeforeDetach.";
-constexpr char kNumWorkersHistogramPrefix[] = "ThreadPool.NumWorkers.";
-constexpr char kNumActiveWorkersHistogramPrefix[] =
-    "ThreadPool.NumActiveWorkers.";
 constexpr size_t kMaxNumberOfWorkers = 256;
 
 // In a background thread group:
@@ -379,31 +376,6 @@ ThreadGroupImpl::ThreadGroupImpl(StringPiece histogram_label,
                     1000,
                     50,
                     HistogramBase::kUmaTargetedHistogramFlag)),
-      // Mimics the UMA_HISTOGRAM_COUNTS_100 macro. A ThreadGroup is
-      // expected to run between zero and a few tens of workers.
-      // When it runs more than 100 worker, there is no need to know the exact
-      // number of workers that ran.
-      num_workers_histogram_(
-          histogram_label.empty()
-              ? nullptr
-              : Histogram::FactoryGet(
-                    JoinString({kNumWorkersHistogramPrefix, histogram_label},
-                               ""),
-                    1,
-                    100,
-                    50,
-                    HistogramBase::kUmaTargetedHistogramFlag)),
-      num_active_workers_histogram_(
-          histogram_label.empty()
-              ? nullptr
-              : Histogram::FactoryGet(
-                    JoinString(
-                        {kNumActiveWorkersHistogramPrefix, histogram_label},
-                        ""),
-                    1,
-                    100,
-                    50,
-                    HistogramBase::kUmaTargetedHistogramFlag)),
       tracked_ref_factory_(this) {
   DCHECK(!thread_group_label_.empty());
 }
@@ -563,25 +535,6 @@ size_t ThreadGroupImpl::GetMaxTasksForTesting() const {
 size_t ThreadGroupImpl::NumberOfIdleWorkersForTesting() const {
   CheckedAutoLock auto_lock(lock_);
   return idle_workers_stack_.Size();
-}
-
-void ThreadGroupImpl::ReportHeartbeatMetrics() const {
-  HistogramBase::Sample num_workers_sample;
-  HistogramBase::Sample num_active_workers_sample;
-
-  // Increase histogram counts while |lock_| isn't being held,
-  // in case histogram code triggers PostTasks in callbacks.
-  {
-    CheckedAutoLock auto_lock(lock_);
-    num_workers_sample = workers_.size();
-    num_active_workers_sample = workers_.size() - idle_workers_stack_.Size();
-  }
-
-  if (num_workers_histogram_)
-    num_workers_histogram_->Add(num_workers_sample);
-
-  if (num_active_workers_histogram_)
-    num_active_workers_histogram_->Add(num_active_workers_sample);
 }
 
 ThreadGroupImpl::WorkerThreadDelegateImpl::WorkerThreadDelegateImpl(

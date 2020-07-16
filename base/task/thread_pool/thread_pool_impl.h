@@ -136,8 +136,6 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   // |all_tasks_user_blocking_| is set.
   TaskTraits VerifyAndAjustIncomingTraits(TaskTraits traits) const;
 
-  void ReportHeartbeatMetrics() const;
-
   const ThreadGroup* GetThreadGroupForTraits(const TaskTraits& traits) const;
 
   // ThreadGroup::Delegate:

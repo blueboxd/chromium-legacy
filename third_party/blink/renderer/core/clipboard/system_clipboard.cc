@@ -49,7 +49,7 @@ void SystemClipboard::SetSelectionMode(bool selection_mode) {
 }
 
 bool SystemClipboard::CanSmartReplace() {
-  if (!IsValidBufferType(buffer_))
+  if (!IsValidBufferType(buffer_) || !clipboard_.is_bound())
     return false;
   bool result = false;
   clipboard_->IsFormatAvailable(mojom::ClipboardFormat::kSmartPaste, buffer_,
@@ -58,7 +58,7 @@ bool SystemClipboard::CanSmartReplace() {
 }
 
 bool SystemClipboard::IsHTMLAvailable() {
-  if (!IsValidBufferType(buffer_))
+  if (!IsValidBufferType(buffer_) || !clipboard_.is_bound())
     return false;
   bool result = false;
   clipboard_->IsFormatAvailable(mojom::ClipboardFormat::kHtml, buffer_,
@@ -67,7 +67,7 @@ bool SystemClipboard::IsHTMLAvailable() {
 }
 
 uint64_t SystemClipboard::SequenceNumber() {
-  if (!IsValidBufferType(buffer_))
+  if (!IsValidBufferType(buffer_) || !clipboard_.is_bound())
     return 0;
   uint64_t result = 0;
   clipboard_->GetSequenceNumber(buffer_, &result);
@@ -75,7 +75,7 @@ uint64_t SystemClipboard::SequenceNumber() {
 }
 
 Vector<String> SystemClipboard::ReadAvailableTypes() {
-  if (!IsValidBufferType(buffer_))
+  if (!IsValidBufferType(buffer_) || !clipboard_.is_bound())
     return {};
   Vector<String> types;
   clipboard_->ReadAvailableTypes(buffer_, &types);
@@ -87,7 +87,7 @@ String SystemClipboard::ReadPlainText() {
 }
 
 String SystemClipboard::ReadPlainText(mojom::ClipboardBuffer buffer) {
-  if (!IsValidBufferType(buffer))
+  if (!IsValidBufferType(buffer) || !clipboard_.is_bound())
     return String();
   String text;
   clipboard_->ReadText(buffer, &text);
@@ -131,7 +131,7 @@ void SystemClipboard::WriteHTML(const String& markup,
 }
 
 String SystemClipboard::ReadRTF() {
-  if (!IsValidBufferType(buffer_))
+  if (!IsValidBufferType(buffer_) || !clipboard_.is_bound())
     return String();
   String rtf;
   clipboard_->ReadRtf(buffer_, &rtf);
@@ -139,7 +139,7 @@ String SystemClipboard::ReadRTF() {
 }
 
 SkBitmap SystemClipboard::ReadImage(mojom::ClipboardBuffer buffer) {
-  if (!IsValidBufferType(buffer))
+  if (!IsValidBufferType(buffer) || !clipboard_.is_bound())
     return SkBitmap();
   SkBitmap image;
   clipboard_->ReadImage(buffer, &image);
@@ -185,7 +185,7 @@ void SystemClipboard::WriteImage(const SkBitmap& bitmap) {
 }
 
 String SystemClipboard::ReadCustomData(const String& type) {
-  if (!IsValidBufferType(buffer_))
+  if (!IsValidBufferType(buffer_) || !clipboard_.is_bound())
     return String();
   String data;
   clipboard_->ReadCustomData(buffer_, NonNullString(type), &data);

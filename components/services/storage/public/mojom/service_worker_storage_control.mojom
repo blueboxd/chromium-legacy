@@ -247,6 +247,9 @@ interface ServiceWorkerStorageControl {
   ClearUserDataForAllRegistrationsByKeyPrefix(string key_prefix) =>
       (ServiceWorkerDatabaseStatus status);
 
+  // Removes traces of deleted data on disk.
+  PerformStorageCleanup() => ();
+
   // Applies changes to data retention policy which are relevant at shutdown.
   // This is analogous to LocalStorageControl::ApplyPolicyUpdates.
   ApplyPolicyUpdates(array<LocalStoragePolicyUpdate> policy_updates);

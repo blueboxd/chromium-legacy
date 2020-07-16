@@ -896,7 +896,7 @@ Your Google account may have other forms of browsing history like searches and a
         An error occurred.
       </message>
       <message name="IDS_SAFETY_CHECK_SAFE_BROWSING_DISABLED" desc="Text to display when Safe Browsing is disabled.">
-        Safe Browsing is off. Chrome recommends turning it on.
+        Off <ph name="SEPARATOR">•</ph> Not recommended
       </message>
       <message name="IDS_SAFETY_CHECK_SAFE_BROWSING_ENABLED_STANDARD" desc="Text to display when Safe Browsing is set to standard protection.">
         Standard Protection is on
@@ -908,7 +908,7 @@ Your Google account may have other forms of browsing history like searches and a
         Your administrator has turned off Safe Browsing
       </message>
       <message name="IDS_SAFETY_CHECK_PASSWORDS_NO_PASSWORDS" desc="Text to display when no passwords are saved.">
-        No saved passwords. Chrome can check your passwords when you save them.
+        No saved passwords
       </message>
       <message name="IDS_SAFETY_CHECK_UPDATES_UPDATED" desc="Text to display when the updates check confirms that the latest version is already installed.">
         You are running the latest version of Chrome
@@ -920,7 +920,7 @@ Your Google account may have other forms of browsing history like searches and a
         Chrome can't check for updates. Try checking your internet connection.
       </message>
       <message name="IDS_SAFETY_CHECK_UPDATES_ERROR" desc="Text to display when the updates check failed for some reason.">
-        Chrome could not check for updates
+        Chrome can’t check for updates
       </message>
 
        <!-- Security preferences -->

@@ -81,12 +81,12 @@ void WaylandDataDevice::SetSelectionSource(WaylandDataSource* source) {
   connection()->ScheduleFlush();
 }
 
-void WaylandDataDevice::ReadDragDataFromFD(
-    base::ScopedFD fd,
-    base::OnceCallback<void(const PlatformClipboard::Data&)> callback) {
-  PlatformClipboard::Data contents;
+void WaylandDataDevice::ReadDragDataFromFD(base::ScopedFD fd,
+                                           RequestDataCallback callback) {
+  std::vector<uint8_t> contents;
   wl::ReadDataFromFD(std::move(fd), &contents);
-  std::move(callback).Run(contents);
+  std::move(callback).Run(scoped_refptr<base::RefCountedBytes>(
+      base::RefCountedBytes::TakeVector(&contents)));
 }
 
 // static

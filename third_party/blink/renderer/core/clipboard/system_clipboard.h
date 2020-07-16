@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
-#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -22,7 +21,7 @@ class KURL;
 class LocalFrame;
 
 // SystemClipboard:
-// - is a singleton.
+// - is a LocalFrame bounded object.
 // - provides sanitized, platform-neutral read/write access to the clipboard.
 // - mediates between core classes and mojom::ClipboardHost.
 //
@@ -79,9 +78,7 @@ class CORE_EXPORT SystemClipboard final
  private:
   bool IsValidBufferType(mojom::ClipboardBuffer);
 
-  HeapMojoRemote<mojom::blink::ClipboardHost,
-                 HeapMojoWrapperMode::kForceWithoutContextObserver>
-      clipboard_;
+  HeapMojoRemote<mojom::blink::ClipboardHost> clipboard_;
   // In X11, |buffer_| may equal ClipboardBuffer::kStandard or kSelection.
   // Outside X11, |buffer_| always equals ClipboardBuffer::kStandard.
   mojom::ClipboardBuffer buffer_ = mojom::ClipboardBuffer::kStandard;

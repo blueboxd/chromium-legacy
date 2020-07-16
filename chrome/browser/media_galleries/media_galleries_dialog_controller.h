@@ -60,7 +60,8 @@ class MediaGalleriesDialogController {
 
   typedef std::vector<Entry> Entries;
 
-  // The title of the dialog view.
+  // The title of the dialog view. Note that this is only guaranteed to be
+  // called once, and once called there is no way to update the title text.
   virtual base::string16 GetHeader() const = 0;
 
   // Explanatory text directly below the title.

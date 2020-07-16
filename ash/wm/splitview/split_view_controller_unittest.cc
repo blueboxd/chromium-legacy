@@ -2706,6 +2706,54 @@ TEST_P(SplitViewControllerTest, EndSplitViewWhileDragging) {
       1);
 }
 
+// Tests that auto snapping is properly triggered if a window is going to
+// unminimized (visible but minimized) in tablet split view mode.
+TEST_P(SplitViewControllerTest, AutoSnapFromMinimizedState) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateNonSnappableWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+
+  // Nothing should happen in clamshell mode.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  WindowState::Get(window1.get())->Minimize();
+  window1->Show();
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->IsWindowInSplitView(window1.get()));
+
+  // Nothing should happen not in tablet split view mode.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  WindowState::Get(window1.get())->Minimize();
+  window1->Show();
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->IsWindowInSplitView(window1.get()));
+
+  // Nothing should happen for a non-snappable window.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  WindowState::Get(window2.get())->Minimize();
+  window2->Show();
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->IsWindowInSplitView(window2.get()));
+
+  // Should performs auto snapping when showing a snappable window in table
+  // split view mode.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  split_view_controller()->SnapWindow(window3.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(split_view_controller()->InTabletSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window3.get()));
+  EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(window3.get()),
+            SplitViewController::LEFT);
+
+  WindowState::Get(window1.get())->Minimize();
+  window1->Show();
+  EXPECT_TRUE(split_view_controller()->InTabletSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
+  EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(window1.get()),
+            SplitViewController::RIGHT);
+
+  EndSplitView();
+}
+
 // Test the tab-dragging related functionalities in tablet mode. Tab(s) can be
 // dragged out of a window and then put in split view mode or merge into another
 // window.

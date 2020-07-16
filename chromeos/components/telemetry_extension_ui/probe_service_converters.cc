@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/notreached.h"
+#include "base/strings/string_number_conversions.h"
 #include "chromeos/components/telemetry_extension_ui/mojom/probe_service.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 
@@ -88,7 +89,7 @@ health::mojom::NonRemovableBlockDeviceInfoPtr UncheckedConvertPtr(
   return health::mojom::NonRemovableBlockDeviceInfo::New(
       std::move(input->path), Convert(input->size), std::move(input->type),
       Convert(static_cast<uint32_t>(input->manufacturer_id)),
-      std::move(input->name), Convert(static_cast<uint32_t>(input->serial)),
+      std::move(input->name), base::NumberToString(input->serial),
       Convert(input->bytes_read_since_last_boot),
       Convert(input->bytes_written_since_last_boot),
       Convert(input->read_time_seconds_since_last_boot),

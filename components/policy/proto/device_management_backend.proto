@@ -1818,6 +1818,8 @@ message ChromeDesktopReportRequest {
   // A string contains OS user name.
   optional string os_user_name = 8;
   // Device identifier for helping identify non-Chrome OS devices.
+  // TODO(crbug.com/1105938): This will also replace the computer_name and
+  // serial_number fields.
   optional BrowserDeviceIdentifier browser_device_identifier = 9;
 }
 
@@ -2556,6 +2558,7 @@ message RegisterBrowserRequest {
   // Platform specific version number, e.g., 6.1.7601.0 or 10.12.6
   optional string os_version = 3;
   // Device identifier for helping identify non-Chrome OS devices.
+  // TODO(crbug.com/1105938): This will also replace the machine_name field.
   optional BrowserDeviceIdentifier browser_device_identifier = 4;
 }
 

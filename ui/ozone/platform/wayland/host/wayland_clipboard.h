@@ -56,8 +56,7 @@ class WaylandClipboard : public PlatformClipboard {
 
   // TODO(nickdiego): Get rid of these methods once DataDevice implementations
   // are decoupled from WaylandClipboard.
-  void SetData(const std::vector<uint8_t>& contents,
-               const std::string& mime_type);
+  void SetData(PlatformClipboard::Data contents, const std::string& mime_type);
   void UpdateSequenceNumber(ClipboardBuffer buffer);
 
  private:

@@ -46,34 +46,32 @@ int MimeTypeToFormat(const std::string& mime_type) {
 
 // Converts raw data to either narrow or wide string.
 template <typename StringType>
-StringType BytesTo(const PlatformClipboard::Data& bytes) {
-  if (bytes.size() % sizeof(typename StringType::value_type) != 0U) {
+StringType BytesTo(PlatformClipboard::Data bytes) {
+  using ValueType = typename StringType::value_type;
+  if (bytes->size() % sizeof(ValueType) != 0U) {
     // This is suspicious.
     LOG(WARNING)
         << "Data is possibly truncated, or a wrong conversion is requested.";
   }
 
-  StringType result;
-  result.assign(reinterpret_cast<typename StringType::const_pointer>(&bytes[0]),
-                bytes.size() / sizeof(typename StringType::value_type));
+  StringType result(bytes->front_as<ValueType>(),
+                    bytes->size() / sizeof(ValueType));
   return result;
 }
 
-void AddString(const PlatformClipboard::Data& data,
-               OSExchangeData* os_exchange_data) {
+void AddString(PlatformClipboard::Data data, OSExchangeData* os_exchange_data) {
   DCHECK(os_exchange_data);
 
-  if (data.empty())
+  if (data->data().empty())
     return;
 
   os_exchange_data->SetString(base::UTF8ToUTF16(BytesTo<std::string>(data)));
 }
 
-void AddHtml(const PlatformClipboard::Data& data,
-             OSExchangeData* os_exchange_data) {
+void AddHtml(PlatformClipboard::Data data, OSExchangeData* os_exchange_data) {
   DCHECK(os_exchange_data);
 
-  if (data.empty())
+  if (data->data().empty())
     return;
 
   os_exchange_data->SetHtml(base::UTF8ToUTF16(BytesTo<std::string>(data)),
@@ -85,8 +83,7 @@ void AddHtml(const PlatformClipboard::Data& data,
 // 2.  Non-comment lines shall be URIs (URNs or URLs).
 // 3.  Lines are terminated with a CRLF pair.
 // 4.  URL encoding is used.
-void AddFiles(const PlatformClipboard::Data& data,
-              OSExchangeData* os_exchange_data) {
+void AddFiles(PlatformClipboard::Data data, OSExchangeData* os_exchange_data) {
   DCHECK(os_exchange_data);
 
   std::string data_as_string = BytesTo<std::string>(data);
@@ -124,11 +121,10 @@ void AddFiles(const PlatformClipboard::Data& data,
 // two lines separated with newline, where the first line is the URL and
 // the second one is page title.  The unpleasant feature of text/x-moz-url is
 // that the URL has UTF-16 encoding.
-void AddUrl(const PlatformClipboard::Data& data,
-            OSExchangeData* os_exchange_data) {
+void AddUrl(PlatformClipboard::Data data, OSExchangeData* os_exchange_data) {
   DCHECK(os_exchange_data);
 
-  if (data.empty())
+  if (data->data().empty())
     return;
 
   base::string16 data_as_string16 = BytesTo<base::string16>(data);
@@ -163,9 +159,10 @@ bool ContainsMimeType(const OSExchangeData& exchange_data,
   return exchange_data.HasAnyFormat(MimeTypeToFormat(mime_type), {});
 }
 
-void AddToOSExchangeData(const PlatformClipboard::Data& data,
+void AddToOSExchangeData(PlatformClipboard::Data data,
                          const std::string& mime_type,
                          OSExchangeData* exchange_data) {
+  DCHECK(data);
   DCHECK(IsMimeTypeSupported(mime_type));
   DCHECK(exchange_data);
   int format = MimeTypeToFormat(mime_type);

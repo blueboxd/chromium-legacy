@@ -94,6 +94,8 @@ ExtensionsMenuView::ExtensionsMenuView(
   set_margins(gfx::Insets(0));
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetShowCloseButton(true);
+  SetTitle(IDS_EXTENSIONS_MENU_TITLE);
 
   EnableUpDownKeyboardAccelerators();
 
@@ -113,14 +115,6 @@ ExtensionsMenuView::~ExtensionsMenuView() {
 
   // Note: No need to call TabStripModel::RemoveObserver(), because it's handled
   // directly within TabStripModelObserver::~TabStripModelObserver().
-}
-
-base::string16 ExtensionsMenuView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_EXTENSIONS_MENU_TITLE);
-}
-
-bool ExtensionsMenuView::ShouldShowCloseButton() const {
-  return true;
 }
 
 gfx::Size ExtensionsMenuView::CalculatePreferredSize() const {

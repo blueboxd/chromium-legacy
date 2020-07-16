@@ -114,9 +114,6 @@ compile_entitlements("entitlements") {
   if (ios_chrome_entitlements_additions != []) {
     entitlements_templates += ios_chrome_entitlements_additions
   }
-  if (ios_enable_credential_provider_extension) {
-    entitlements_templates += [ "resources/CredentialProvider.entitlements" ]
-  }
   substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
   output_name = "$target_gen_dir/$chromium_short_name.entitlements"
 }

@@ -4,21 +4,28 @@
 
 #include "chromeos/memory/userspace_swap/userspace_swap.h"
 
+#include <vector>
+
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/process/process_metrics.h"
+#include "base/rand_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chromeos/memory/userspace_swap/region.h"
 #include "chromeos/memory/userspace_swap/swap_storage.h"
 #include "chromeos/memory/userspace_swap/userfaultfd.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 
 namespace chromeos {
 namespace memory {
 namespace userspace_swap {
 
 namespace {
+
+using memory_instrumentation::mojom::VmRegion;
+
 // NOTE: Descriptions for these feature params can be found in the userspace
 // swap header file for the UserspaceSwapConfig struct.
 const base::Feature kUserspaceSwap{"UserspaceSwapEnabled",
@@ -169,6 +176,61 @@ CHROMEOS_EXPORT bool KernelSupportsUserspaceSwap() {
   }();
 
   return userfault_fd_supported && mremap_dontunmap_supported;
+}
+
+CHROMEOS_EXPORT bool IsVMASwapEligible(
+    const memory_instrumentation::mojom::VmRegionPtr& vma) {
+  // We only conisder VMAs which are Private Anonymous
+  // Readable/Writable that aren't locked and a certain size.
+  uint32_t target_perms =
+      VmRegion::kProtectionFlagsRead | VmRegion::kProtectionFlagsWrite;
+  if (vma->protection_flags != target_perms)
+    return false;
+
+  if (!vma->mapped_file.empty())
+    return false;
+
+  if (vma->byte_locked > 0)
+    return false;
+
+  // It must be within the VMA size bounds configured.
+  const auto& config = UserspaceSwapConfig::Get();
+  if (vma->size_in_bytes < config.vma_region_minimum_size_bytes ||
+      vma->size_in_bytes > config.vma_region_maximum_size_bytes)
+    return false;
+
+  return true;
+}
+
+CHROMEOS_EXPORT bool GetAllSwapEligibleVMAs(base::PlatformThreadId pid,
+                                            std::vector<Region>* regions) {
+  DCHECK(regions);
+  regions->clear();
+
+  const auto& config = UserspaceSwapConfig::Get();
+
+  std::vector<memory_instrumentation::mojom::VmRegionPtr> vmas =
+      memory_instrumentation::OSMetrics::GetProcessMemoryMaps(pid);
+
+  if (vmas.empty()) {
+    return false;
+  }
+
+  // Only consider VMAs which match our criteria.
+  for (const auto& v : vmas) {
+    if (IsVMASwapEligible(v)) {
+      regions->push_back(Region(static_cast<uintptr_t>(v->start_address),
+                                static_cast<uintptr_t>(v->size_in_bytes)));
+    }
+  }
+
+  // We can shuffle the VMA maps (if configured) so we don't always start from
+  // the same VMA on subsequent swaps.
+  if (config.shuffle_maps_on_swap) {
+    base::RandomShuffle(regions->begin(), regions->end());
+  }
+
+  return true;
 }
 
 }  // namespace userspace_swap

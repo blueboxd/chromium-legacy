@@ -14,7 +14,7 @@
 
 #include "base/bind.h"
 #include "base/mac/foundation_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -799,7 +799,15 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       delegate->set_handler(self.applicationCommandsHandler);
 
       if (IsInfobarUIRebootEnabled()) {
+        // Count only new infobar showings, not replacements.
+        if (![self findInfobarOfType:InfobarType::kInfobarTypePasswordSave
+                              manual:manual]) {
+          base::UmaHistogramBoolean("PasswordManager.iOS.InfoBar.PasswordSave",
+                                    true);
+        }
+
         std::unique_ptr<InfoBarIOS> infobar;
+
         // If manual save, skip showing banner.
         bool skip_banner = manual;
         if (IsInfobarOverlayUIEnabled()) {
@@ -827,6 +835,13 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     }
     case PasswordInfoBarType::UPDATE: {
       if (IsInfobarUIRebootEnabled()) {
+        // Count only new infobar showings, not replacements.
+        if (![self findInfobarOfType:InfobarType::kInfobarTypePasswordUpdate
+                              manual:manual]) {
+          base::UmaHistogramBoolean(
+              "PasswordManager.iOS.InfoBar.PasswordUpdate", true);
+        }
+
         auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
             isSyncUser, /*password_update*/ true, std::move(form));
         delegate->set_handler(self.applicationCommandsHandler);

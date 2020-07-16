@@ -24,7 +24,7 @@ bool ContainsMimeType(const ui::OSExchangeData& exchange_data,
 
 // Add clipboard |data| content with |mime_type| format to the |exchange_data|.
 // |mime_type| is assumed to be supported (See IsMimeTypeSupported for more).
-void AddToOSExchangeData(const ui::PlatformClipboard::Data& data,
+void AddToOSExchangeData(ui::PlatformClipboard::Data data,
                          const std::string& mime_type,
                          ui::OSExchangeData* exchange_data);
 

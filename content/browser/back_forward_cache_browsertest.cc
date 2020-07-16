@@ -5392,15 +5392,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       EvictIfCachedIsNoopIfNotCached) {
+                       IsInactiveAndDisallowReactivationIsNoopWhenActive) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
-  EXPECT_FALSE(BackForwardCache::EvictIfCached(
-      current_frame_host()->GetGlobalFrameRoutingId(), kDisabledReasonForTest));
+  EXPECT_FALSE(current_frame_host()->IsInactiveAndDisallowReactivation());
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
@@ -5412,7 +5411,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                 FROM_HERE);
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, EvictIfCachedDoesEvict) {
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTest,
+    IsInactiveAndDisallowReactivationDoesEvictForCachedFrames) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
@@ -5420,19 +5421,18 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, EvictIfCachedDoesEvict) {
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameDeletedObserver delete_observer_rfh_a(current_frame_host());
-  GlobalFrameRoutingId id_a = current_frame_host()->GetGlobalFrameRoutingId();
+  RenderFrameHostImpl* rfh_a = current_frame_host();
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  EXPECT_TRUE(BackForwardCache::EvictIfCached(id_a, kDisabledReasonForTest));
+  EXPECT_TRUE(rfh_a->IsInactiveAndDisallowReactivation());
 
   // 3) Go back to A.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  ExpectDisabledWithReason(kDisabledReasonForTest, FROM_HERE);
-  ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
-                         kDisableForRenderFrameHostCalled},
-                    FROM_HERE);
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kIgnoreEventAndEvict},
+      FROM_HERE);
 }
 
 // Test for functionality of memory controls in back-forward cache for low

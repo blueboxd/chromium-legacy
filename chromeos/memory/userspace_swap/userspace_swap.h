@@ -7,10 +7,13 @@
 
 #include <sys/mman.h>
 #include <cstdint>
+#include <vector>
 
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/memory/userspace_swap/region.h"
+#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
 #ifndef MREMAP_DONTUNMAP
 #define MREMAP_DONTUNMAP 4
@@ -116,6 +119,26 @@ struct CHROMEOS_EXPORT UserspaceSwapConfig {
 // support this method is the source of truth for the browser UserspaceSwap and
 // the rendererer UserspaceSwapImpl.
 CHROMEOS_EXPORT bool KernelSupportsUserspaceSwap();
+
+// A swap eligible VMA is one that meets the required swapping criteria,
+// which are:
+//   - RW protections
+//   - Not file backed (Anonymous)
+//   - Not shared (Private)
+//   - Contains no locked memory
+//   - Meets the size constraints set by vma_region_min_size_bytes
+//     and vma_region_max_size_bytes
+CHROMEOS_EXPORT bool IsVMASwapEligible(
+    const memory_instrumentation::mojom::VmRegionPtr& vma);
+
+// GetAllSwapEligibleVMAs will return a vector of regions which are swap
+// eligible, these regions are NOT "swap region" sized they are the VMAs and as
+// such must then be split in the appropriate region size by the userspace swap
+// mechanism. On error it will return false and errno will be set appropriately.
+//
+// This vector may be shuffled if shuffle_maps_on_swap has been set to true.
+CHROMEOS_EXPORT bool GetAllSwapEligibleVMAs(base::PlatformThreadId pid,
+                                            std::vector<Region>* regions);
 
 }  // namespace userspace_swap
 }  // namespace memory

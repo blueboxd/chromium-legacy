@@ -195,11 +195,8 @@ bool ContentPasswordManagerDriver::IsMainFrame() const {
 }
 
 bool ContentPasswordManagerDriver::CanShowAutofillUi() const {
-  // TODO(crbug.com/1041021): Use RenderFrameHost::IsActive here when available.
-  return !content::BackForwardCache::EvictIfCached(
-      {render_frame_host_->GetProcess()->GetID(),
-       render_frame_host_->GetRoutingID()},
-      "ContentPasswordManagerDriver::CanShowAutofillUi");
+  // Don't show AutofillUi for non-current RenderFrameHost.
+  return render_frame_host_->IsCurrent();
 }
 
 const GURL& ContentPasswordManagerDriver::GetLastCommittedURL() const {

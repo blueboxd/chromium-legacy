@@ -6102,7 +6102,6 @@ crbug.com/1025321 [ Win ] http/tests/devtools/tracing/console-timeline.js [ Pass
 crbug.com/977033 http/tests/priorities/resource-load-priorities-media-preload.html [ Timeout ]
 
 # Sheriff 2019-11-26
-crbug.com/1028482 http/tests/devtools/sources/debugger/navigator-view.js [ Pass Crash ]
 crbug.com/1028684 inspector-protocol/animation/animation-release.js [ Pass Failure ]
 
 # Sheriff 2019-11-29
@@ -6887,3 +6886,10 @@ crbug.com/1101262 http/tests/devtools/application-panel/resources-panel-resource
 crbug.com/1101262 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
 crbug.com/1101262 http/tests/devtools/application-panel/resources-panel-websql.js [ Pass Failure ]
 crbug.com/1101262 http/tests/devtools/resource-tree/resource-tree-non-unique-url.js [ Pass Failure ]
+
+# Temporarily disable tests to allow fixing of devtools path escaping
+crbug.com/1094436 http/tests/devtools/overrides/project-added-with-existing-files-bind.js [ Pass Timeout ]
+crbug.com/1094436 http/tests/devtools/persistence/automapping-urlencoded-paths.js [ Pass Failure ]
+crbug.com/1094436 http/tests/devtools/sources/debugger-ui/snippet-edit-breakpoint.js [ Pass Timeout ]
+crbug.com/1094436 http/tests/devtools/sources/debugger/navigator-view.js [ Pass Failure Crash ]
+

@@ -36,6 +36,7 @@
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/containers/flat_set.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
@@ -57,6 +58,7 @@
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -356,6 +358,187 @@ class SplitViewController::DividerSnapAnimation
   base::Optional<ui::ThroughputTracker> tracker_;
 };
 
+// The controller that observes the window state and performs auto snapping
+// for the window if needed. When it's created, it observes the root window
+// and all windows in a current active desk. When 1) an observed window is
+// activated or 2) changed to visible from minimized, this class performs
+// auto snapping for the window if it's possible.
+class SplitViewController::AutoSnapController
+    : public wm::ActivationChangeObserver,
+      public aura::WindowObserver {
+ public:
+  explicit AutoSnapController(SplitViewController* split_view_controller)
+      : split_view_controller_(split_view_controller) {
+    Shell::Get()->activation_client()->AddObserver(this);
+    AddWindow(split_view_controller->root_window());
+    for (auto* window :
+         Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk)) {
+      AddWindow(window);
+    }
+  }
+
+  ~AutoSnapController() override {
+    for (auto* window : observed_windows_)
+      window->RemoveObserver(this);
+    Shell::Get()->activation_client()->RemoveObserver(this);
+  }
+
+  AutoSnapController(const AutoSnapController&) = delete;
+  AutoSnapController& operator=(const AutoSnapController&) = delete;
+
+  // wm::ActivationChangeObserver:
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override {
+    if (!gained_active)
+      return;
+
+    // If |gained_active| was activated as a side effect of a window disposition
+    // change, do nothing. For example, when a snapped window is closed, another
+    // window will be activated before OnWindowDestroying() is called. We should
+    // not try to snap another window in this case.
+    if (reason == ActivationReason::WINDOW_DISPOSITION_CHANGED)
+      return;
+
+    AutoSnapWindowIfNeeded(gained_active);
+  }
+
+  // aura::WindowObserver:
+  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override {
+    // TODO(toshikikikuchi): Consider avoiding to use kAnimationsDisabledKey
+    // here just for |DragWindowFromShelfController|.
+    if (visible && WindowState::Get(window) &&
+        WindowState::Get(window)->IsMinimized() &&
+        !window->GetProperty(aura::client::kAnimationsDisabledKey)) {
+      // A visible but minimized window state triggers an implicit un-minimizing
+      // by someone (e.g.
+      // |WorkspaceLayoutManager::OnChildWindowVisibilityChanged| or
+      // |WorkspaceLayoutManager::OnWindowActivating|). This emits a window
+      // state change event but it is unnecessary for to-be-snapped windows
+      // because some clients (e.g. ARC app) handle a window state change
+      // asynchronously. So in the case, we here try to snap a window before
+      // other's handling. Animation-disabled visibility changes are used for
+      // transient hide & show operations so not applicable for auto snapping.
+      AutoSnapWindowIfNeeded(window);
+    }
+  }
+
+  void OnWindowAddedToRootWindow(aura::Window* window) override {
+    AddWindow(window);
+  }
+
+  void OnWindowRemovingFromRootWindow(aura::Window* window,
+                                      aura::Window* new_root) override {
+    RemoveWindow(window);
+  }
+
+  void OnWindowDestroying(aura::Window* window) override {
+    RemoveWindow(window);
+  }
+
+ private:
+  void AutoSnapWindowIfNeeded(aura::Window* window) {
+    DCHECK(window);
+
+    if (window->GetRootWindow() != split_view_controller_->root_window())
+      return;
+
+    // We perform an "auto" snapping only if split view mode is active.
+    if (!split_view_controller_->InSplitViewMode())
+      return;
+
+    if (DesksController::Get()->AreDesksBeingModified()) {
+      // Activating a desk from its mini view will activate its most-recently
+      // used window, but this should not result in snapping and ending overview
+      // mode now. Overview will be ended explicitly as part of the desk
+      // activation animation.
+      return;
+    }
+
+    // Only windows that are in the MRU list and are not already in split view
+    // can be auto-snapped.
+    if (split_view_controller_->IsWindowInSplitView(window) ||
+        !base::Contains(
+            Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk),
+            window)) {
+      return;
+    }
+
+    // We do not auto snap windows in clamshell splitview mode if a new window
+    // is activated when clamshell splitview mode is active. In this case we'll
+    // just end overview mode which will then end splitview mode.
+    // TODO(xdai): Handle this logic in OverivewSession::OnWindowActivating().
+    if (split_view_controller_->InClamshellSplitViewMode()) {
+      Shell::Get()->overview_controller()->EndOverview();
+      return;
+    }
+
+    DCHECK(split_view_controller_->InTabletSplitViewMode());
+
+    // Do not snap the window if the activation change is caused by dragging a
+    // window, or by dragging a tab. Note the two values
+    // WindowState::is_dragged() and IsDraggingTabs() might not be exactly the
+    // same under certain circumstance, e.g., when a tab is dragged out from a
+    // browser window, a new browser window will be created for the dragged tab
+    // and then be activated, and at that time, IsDraggingTabs() is true, but
+    // WindowState::is_dragged() is still false. And later after the window drag
+    // starts, WindowState::is_dragged() will then be true.
+    if (WindowState::Get(window)->is_dragged() ||
+        window_util::IsDraggingTabs(window)) {
+      return;
+    }
+
+    // If the divider is animating, then |window| cannot be snapped (and is
+    // not already snapped either, because then we would have bailed out by
+    // now). Then if |window| is user-positionable, we should end split view
+    // mode, but the cannot snap toast would be inappropriate because the user
+    // still might be able to snap |window|.
+    if (split_view_controller_->IsDividerAnimating()) {
+      if (WindowState::Get(window)->IsUserPositionable())
+        split_view_controller_->EndSplitView(
+            EndReason::kUnsnappableWindowActivated);
+      return;
+    }
+
+    // If it's a user positionable window but can't be snapped, end split view
+    // mode and show the cannot snap toast.
+    if (!split_view_controller_->CanSnapWindow(window)) {
+      if (WindowState::Get(window)->IsUserPositionable()) {
+        split_view_controller_->EndSplitView(
+            EndReason::kUnsnappableWindowActivated);
+        ShowAppCannotSnapToast();
+      }
+      return;
+    }
+
+    // Snap the window on the non-default side of the screen if split view mode
+    // is active.
+    split_view_controller_->SnapWindow(
+        window, (split_view_controller_->default_snap_position() == LEFT)
+                    ? RIGHT
+                    : LEFT);
+  }
+
+  void AddWindow(aura::Window* window) {
+    if (split_view_controller_->root_window() != window->GetRootWindow())
+      return;
+
+    if (!window->HasObserver(this))
+      window->AddObserver(this);
+    observed_windows_.insert(window);
+  }
+
+  void RemoveWindow(aura::Window* window) {
+    window->RemoveObserver(this);
+    observed_windows_.erase(window);
+  }
+
+  SplitViewController* split_view_controller_;
+
+  // Tracks observed windows.
+  base::flat_set<aura::Window*> observed_windows_;
+};
+
 // static
 SplitViewController* SplitViewController::Get(const aura::Window* window) {
   DCHECK(window);
@@ -459,7 +642,8 @@ void SplitViewController::SnapWindow(aura::Window* window,
     // Add observers when the split view mode starts.
     Shell::Get()->AddShellObserver(this);
     Shell::Get()->overview_controller()->AddObserver(this);
-    Shell::Get()->activation_client()->AddObserver(this);
+
+    auto_snap_controller_ = std::make_unique<AutoSnapController>(this);
 
     // If there is pre-set |divider_position_|, use it. It can happen during
     // tablet <-> clamshell transition or multi-user transition.
@@ -867,7 +1051,8 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
   // Remove observers when the split view mode ends.
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->overview_controller()->RemoveObserver(this);
-  Shell::Get()->activation_client()->RemoveObserver(this);
+
+  auto_snap_controller_.reset();
 
   StopObserving(LEFT);
   StopObserving(RIGHT);
@@ -905,6 +1090,14 @@ void SplitViewController::InitDividerPositionForTransition(
   DCHECK(!InSplitViewMode());
   DCHECK_EQ(divider_position_, -1);
   divider_position_ = divider_position;
+}
+
+bool SplitViewController::IsWindowInTransitionalState(
+    const aura::Window* window) const {
+  if (!IsWindowInSplitView(window))
+    return false;
+  return WindowState::Get(window)->GetStateType() !=
+         GetStateTypeFromSnapPosition(GetPositionOfSnappedWindow(window));
 }
 
 void SplitViewController::OnOverviewButtonTrayLongPressed(
@@ -1126,86 +1319,6 @@ void SplitViewController::OnPostWindowStateTypeChange(
         Shell::Get()->overview_controller()->EndOverview();
     }
   }
-}
-
-void SplitViewController::OnWindowActivated(ActivationReason reason,
-                                            aura::Window* gained_active,
-                                            aura::Window* lost_active) {
-  if (!gained_active || gained_active->GetRootWindow() != root_window_)
-    return;
-
-  if (DesksController::Get()->AreDesksBeingModified()) {
-    // Activating a desk from its mini view will activate its most-recently used
-    // window, but this should not result in snapping and ending overview mode
-    // now. Overview will be ended explicitly as part of the desk activation
-    // animation.
-    return;
-  }
-
-  // If |gained_active| was activated as a side effect of a window disposition
-  // change, do nothing. For example, when a snapped window is closed, another
-  // window will be activated before OnWindowDestroying() is called. We should
-  // not try to snap another window in this case.
-  if (reason == ActivationReason::WINDOW_DISPOSITION_CHANGED)
-    return;
-
-  // Only windows that are in the MRU list and are not already in split view can
-  // be auto-snapped.
-  if (IsWindowInSplitView(gained_active) ||
-      !base::Contains(
-          Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk),
-          gained_active)) {
-    return;
-  }
-
-  // We do not auto snap windows in clamshell splitview mode if a new window
-  // is activated when clamshell splitview mode is active. In this case we'll
-  // just end overview mode which will then end splitview mode.
-  // TODO(xdai): Handle this logic in OverivewSession::OnWindowActivating().
-  if (InClamshellSplitViewMode()) {
-    Shell::Get()->overview_controller()->EndOverview();
-    return;
-  }
-
-  DCHECK(InTabletSplitViewMode());
-
-  // Do not snap the window if the activation change is caused by dragging a
-  // window, or by dragging a tab. Note the two values WindowState::is_dragged()
-  // and IsDraggingTabs() might not be exactly the same under certain
-  // circumstance, e.g., when a tab is dragged out from a browser window, a new
-  // browser window will be created for the dragged tab and then be activated,
-  // and at that time, IsDraggingTabs() is true, but WindowState::is_dragged()
-  // is still false. And later after the window drag starts,
-  // WindowState::is_dragged() will then be true.
-  if (WindowState::Get(gained_active)->is_dragged() ||
-      window_util::IsDraggingTabs(gained_active)) {
-    return;
-  }
-
-  // If the divider is animating, then |gained_active| cannot be snapped (and is
-  // not already snapped either, because then we would have bailed out by now).
-  // Then if |gained_active| is user-positionable, we should end split view
-  // mode, but the cannot snap toast would be inappropriate because the user
-  // still might be able to snap |gained_active|.
-  if (IsDividerAnimating()) {
-    if (WindowState::Get(gained_active)->IsUserPositionable())
-      EndSplitView(EndReason::kUnsnappableWindowActivated);
-    return;
-  }
-
-  // If it's a user positionable window but can't be snapped, end split view
-  // mode and show the cannot snap toast.
-  if (!CanSnapWindow(gained_active)) {
-    if (WindowState::Get(gained_active)->IsUserPositionable()) {
-      EndSplitView(EndReason::kUnsnappableWindowActivated);
-      ShowAppCannotSnapToast();
-    }
-    return;
-  }
-
-  // Snap the window on the non-default side of the screen if split view mode
-  // is active.
-  SnapWindow(gained_active, (default_snap_position_ == LEFT) ? RIGHT : LEFT);
 }
 
 void SplitViewController::OnPinnedStateChanged(aura::Window* pinned_window) {

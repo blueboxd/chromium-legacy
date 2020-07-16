@@ -38,6 +38,12 @@ namespace ui {
 
 namespace {
 
+// TODO(crbug.com/1105892): those three constants can be found in a few other
+// places.  Perhaps it would be worth finding some common place for them?
+constexpr char kMimeTypeX11String[] = "STRING";
+constexpr char kMimeTypeX11Text[] = "TEXT";
+constexpr char kMimeTypeX11Utf8String[] = "UTF8_STRING";
+
 // The amount of time to wait for a request to complete before aborting it.
 constexpr base::TimeDelta kRequestTimeout = base::TimeDelta::FromSeconds(10);
 
@@ -102,7 +108,7 @@ class ClipboardOzone::AsyncClipboardOzone {
       auto it = offered_data_[buffer].find(mime_type);
       if (it == offered_data_[buffer].end())
         return {};
-      return base::make_span(it->second.data(), it->second.size());
+      return base::make_span(it->second->front(), it->second->size());
     }
 
     Request request(RequestType::kRead);
@@ -113,7 +119,7 @@ class ClipboardOzone::AsyncClipboardOzone {
     auto it = offered_data_[buffer].find(mime_type);
     if (it == offered_data_[buffer].end())
       return {};
-    return base::make_span(it->second.data(), it->second.size());
+    return base::make_span(it->second->front(), it->second->size());
   }
 
   std::vector<std::string> RequestMimeTypes(ClipboardBuffer buffer) {
@@ -145,9 +151,14 @@ class ClipboardOzone::AsyncClipboardOzone {
     ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
   }
 
-  void InsertData(std::vector<uint8_t> data, const std::string& mime_type) {
-    DCHECK_EQ(data_to_offer_.count(mime_type), 0U);
-    data_to_offer_[mime_type] = std::move(data);
+  void InsertData(std::vector<uint8_t> data,
+                  const std::set<std::string>& mime_types) {
+    auto wrapped_data = scoped_refptr<base::RefCountedBytes>(
+        base::RefCountedBytes::TakeVector(&data));
+    for (const auto& mime_type : mime_types) {
+      DCHECK_EQ(data_to_offer_.count(mime_type), 0U);
+      data_to_offer_[mime_type] = wrapped_data;
+    }
     ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
   }
 
@@ -248,7 +259,7 @@ class ClipboardOzone::AsyncClipboardOzone {
     platform_clipboard_->GetAvailableMimeTypes(buffer, std::move(callback));
   }
 
-  void OnTextRead(const base::Optional<std::vector<uint8_t>>& data) {
+  void OnTextRead(const base::Optional<PlatformClipboard::Data>& data) {
     // |data| is already set in request's data_map, so just finish request
     // processing.
     CompleteRequest();
@@ -543,7 +554,9 @@ void ClipboardOzone::WritePlatformRepresentations(
 
 void ClipboardOzone::WriteText(const char* text_data, size_t text_len) {
   std::vector<uint8_t> data(text_data, text_data + text_len);
-  async_clipboard_ozone_->InsertData(std::move(data), kMimeTypeText);
+  async_clipboard_ozone_->InsertData(
+      std::move(data), {kMimeTypeText, kMimeTypeX11Text, kMimeTypeX11String,
+                        kMimeTypeX11Utf8String});
 }
 
 void ClipboardOzone::WriteHTML(const char* markup_data,
@@ -551,12 +564,12 @@ void ClipboardOzone::WriteHTML(const char* markup_data,
                                const char* url_data,
                                size_t url_len) {
   std::vector<uint8_t> data(markup_data, markup_data + markup_len);
-  async_clipboard_ozone_->InsertData(std::move(data), kMimeTypeHTML);
+  async_clipboard_ozone_->InsertData(std::move(data), {kMimeTypeHTML});
 }
 
 void ClipboardOzone::WriteRTF(const char* rtf_data, size_t data_len) {
   std::vector<uint8_t> data(rtf_data, rtf_data + data_len);
-  async_clipboard_ozone_->InsertData(std::move(data), kMimeTypeRTF);
+  async_clipboard_ozone_->InsertData(std::move(data), {kMimeTypeRTF});
 }
 
 void ClipboardOzone::WriteBookmark(const char* title_data,
@@ -572,25 +585,25 @@ void ClipboardOzone::WriteBookmark(const char* title_data,
   std::vector<uint8_t> data(
       reinterpret_cast<const uint8_t*>(bookmark.data()),
       reinterpret_cast<const uint8_t*>(bookmark.data() + bookmark.size()));
-  async_clipboard_ozone_->InsertData(std::move(data), kMimeTypeMozillaURL);
+  async_clipboard_ozone_->InsertData(std::move(data), {kMimeTypeMozillaURL});
 }
 
 void ClipboardOzone::WriteWebSmartPaste() {
   async_clipboard_ozone_->InsertData(std::vector<uint8_t>(),
-                                     kMimeTypeWebkitSmartPaste);
+                                     {kMimeTypeWebkitSmartPaste});
 }
 
 void ClipboardOzone::WriteBitmap(const SkBitmap& bitmap) {
   std::vector<unsigned char> output;
   if (gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, false, &output))
-    async_clipboard_ozone_->InsertData(std::move(output), kMimeTypePNG);
+    async_clipboard_ozone_->InsertData(std::move(output), {kMimeTypePNG});
 }
 
 void ClipboardOzone::WriteData(const ClipboardFormatType& format,
                                const char* data_data,
                                size_t data_len) {
   std::vector<uint8_t> data(data_data, data_data + data_len);
-  async_clipboard_ozone_->InsertData(std::move(data), format.GetName());
+  async_clipboard_ozone_->InsertData(std::move(data), {format.GetName()});
 }
 
 SkBitmap ClipboardOzone::ReadImageInternal(ClipboardBuffer buffer) const {

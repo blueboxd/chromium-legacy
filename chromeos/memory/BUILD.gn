@@ -27,6 +27,7 @@ component("memory") {
     "//chromeos/dbus/constants",
     "//crypto",
     "//crypto:platform",
+    "//services/resource_coordinator/public/cpp/memory_instrumentation",
     "//third_party/zlib/google:compression_utils",
   ]
   sources = [
@@ -56,6 +57,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chromeos:chromeos_buildflags",
     "//mojo/core/embedder",
+    "//services/resource_coordinator/public/cpp/memory_instrumentation",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -63,5 +65,6 @@ source_set("unit_tests") {
     "pagemap_unittest.cc",
     "userspace_swap/swap_storage_unittest.cc",
     "userspace_swap/userfaultfd_unittest.cc",
+    "userspace_swap/userspace_swap_unittest.cc",
   ]
 }

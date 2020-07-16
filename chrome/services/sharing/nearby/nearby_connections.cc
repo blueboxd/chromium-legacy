@@ -5,6 +5,7 @@
 #include "chrome/services/sharing/nearby/nearby_connections.h"
 
 #include "base/run_loop.h"
+#include "third_party/nearby/src/cpp/core_v2/core.h"
 
 namespace location {
 namespace nearby {
@@ -41,11 +42,11 @@ NearbyConnections::NearbyConnections(
   // There should only be one instance of NearbyConnections in a process.
   DCHECK(!g_instance);
   g_instance = this;
-  // TODO(alexchau): Create Core here after g_instance is set.
+  core_ = std::make_unique<Core>();
 }
 
 NearbyConnections::~NearbyConnections() {
-  // TODO(alexhcau): Destroy Core here before g_instance is reset.
+  core_.reset();
   g_instance = nullptr;
 }
 

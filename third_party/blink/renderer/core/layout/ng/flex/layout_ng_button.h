@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class LayoutNGButton : public LayoutNGFlexibleBox {
+class LayoutNGButton final : public LayoutNGFlexibleBox {
  public:
   explicit LayoutNGButton(Element*);
   ~LayoutNGButton() override;

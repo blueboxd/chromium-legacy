@@ -70,9 +70,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/omnibox/browser/omnibox_edit_model.h"
-#include "components/omnibox/browser/omnibox_popup_model.h"
-#include "components/omnibox/browser/omnibox_view.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
@@ -626,12 +623,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     return display_test_result;
   }
 
-  std::unique_ptr<TestPrerender> ExpectPrerender(
-      FinalStatus expected_final_status) {
-    return prerender_contents_factory()->ExpectPrerenderContents(
-        expected_final_status);
-  }
-
   void AddPrerender(const GURL& url, int index) {
     std::string javascript =
         base::StringPrintf("AddPrerender('%s', %d)", url.spec().c_str(), index);
@@ -985,150 +976,6 @@ INSTANTIATE_TEST_SUITE_P(PrerenderSafeBrowsingTest,
                              false,
                              true)) /* Enable delayed warnings experiment */
 );
-
-// Test interaction of the webNavigation and tabs API with prerender.
-class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
-                                           public extensions::ExtensionApiTest {
- public:
-  PrerenderBrowserTestWithExtensions() {
-    // The individual tests start the test server through ExtensionApiTest, so
-    // the port number can be passed through to the extension.
-    set_autostart_test_server(false);
-  }
-
-  void SetUp() override { PrerenderBrowserTest::SetUp(); }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    PrerenderBrowserTest::SetUpInProcessBrowserTestFixture();
-    extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-  }
-
-  void TearDownInProcessBrowserTestFixture() override {
-    PrerenderBrowserTest::TearDownInProcessBrowserTestFixture();
-    extensions::ExtensionApiTest::TearDownInProcessBrowserTestFixture();
-  }
-
-  void TearDownOnMainThread() override {
-    PrerenderBrowserTest::TearDownOnMainThread();
-    extensions::ExtensionApiTest::TearDownOnMainThread();
-  }
-
-  void SetUpOnMainThread() override {
-    PrerenderBrowserTest::SetUpOnMainThread();
-    extensions::ExtensionApiTest::SetUpOnMainThread();
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, WebNavigation) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
-  extensions::FrameNavigationState::set_allow_extension_scheme(true);
-
-  // Wait for the extension to set itself up and return control to us.
-  ASSERT_TRUE(RunExtensionTest("webnavigation/prerender")) << message_;
-
-  extensions::ResultCatcher catcher;
-
-  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
-
-  ChannelDestructionWatcher channel_close_watcher;
-  channel_close_watcher.WatchChannel(browser()
-                                         ->tab_strip_model()
-                                         ->GetActiveWebContents()
-                                         ->GetMainFrame()
-                                         ->GetProcess());
-  NavigateToDestURL();
-  channel_close_watcher.WaitForChannelClose();
-
-  ASSERT_TRUE(IsEmptyPrerenderLinkManager());
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, TabsApi) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
-  extensions::FrameNavigationState::set_allow_extension_scheme(true);
-
-  // Wait for the extension to set itself up and return control to us.
-  ASSERT_TRUE(RunExtensionTest("tabs/on_replaced")) << message_;
-
-  extensions::ResultCatcher catcher;
-
-  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
-
-  ChannelDestructionWatcher channel_close_watcher;
-  channel_close_watcher.WatchChannel(browser()
-                                         ->tab_strip_model()
-                                         ->GetActiveWebContents()
-                                         ->GetMainFrame()
-                                         ->GetProcess());
-  NavigateToDestURL();
-  channel_close_watcher.WaitForChannelClose();
-
-  ASSERT_TRUE(IsEmptyPrerenderLinkManager());
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-// Checks that non-http/https/chrome-extension subresource cancels the
-// prerender.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderCancelSubresourceUnsupportedScheme) {
-  GURL image_url = GURL("invalidscheme://www.google.com/test.jpg");
-  base::StringPairs replacement_text;
-  replacement_text.push_back(
-      std::make_pair("REPLACE_WITH_IMAGE_URL", image_url.spec()));
-  std::string replacement_path = net::test_server::GetFilePathWithReplacements(
-      "/prerender/prerender_with_image.html", replacement_text);
-  // Disable load event checks because they race with cancellation.
-  DisableLoadEventCheck();
-  PrerenderTestURL(replacement_path, FINAL_STATUS_UNSUPPORTED_SCHEME, 0);
-}
-
-// Attempt a swap-in in a new tab. The session storage doesn't match, so it
-// should not swap.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTab) {
-  PrerenderTestURL("/prerender/prerender_page.html",
-                   FINAL_STATUS_APP_TERMINATING, 1);
-
-  // Open a new tab to navigate in.
-  ui_test_utils::NavigateToURLWithDisposition(
-      current_browser(), GURL(url::kAboutBlankURL),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
-
-  // Now navigate in the new tab.
-  NavigateToDestURLWithDisposition(WindowOpenDisposition::CURRENT_TAB, false);
-}
-
-class PrerenderOmniboxBrowserTest : public PrerenderBrowserTest {
- public:
-  LocationBar* GetLocationBar() {
-    return current_browser()->window()->GetLocationBar();
-  }
-
-  OmniboxView* GetOmniboxView() { return GetLocationBar()->GetOmniboxView(); }
-
-  predictors::AutocompleteActionPredictor* GetAutocompleteActionPredictor() {
-    Profile* profile = current_browser()->profile();
-    return predictors::AutocompleteActionPredictorFactory::GetForProfile(
-        profile);
-  }
-
-  std::unique_ptr<TestPrerender> StartOmniboxPrerender(
-      const GURL& url,
-      FinalStatus expected_final_status) {
-    std::unique_ptr<TestPrerender> prerender =
-        ExpectPrerender(expected_final_status);
-    WebContents* web_contents = GetActiveWebContents();
-    GetAutocompleteActionPredictor()->StartPrerendering(
-        url, web_contents->GetController().GetDefaultSessionStorageNamespace(),
-        gfx::Size(50, 50));
-    prerender->WaitForStart();
-    return prerender;
-  }
-};
 
 }  // namespace prerender
 

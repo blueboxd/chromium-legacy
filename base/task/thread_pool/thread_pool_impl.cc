@@ -77,10 +77,7 @@ ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label)
 ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label,
                                std::unique_ptr<TaskTrackerImpl> task_tracker)
     : task_tracker_(std::move(task_tracker)),
-      service_thread_(std::make_unique<ServiceThread>(
-          task_tracker_.get(),
-          BindRepeating(&ThreadPoolImpl::ReportHeartbeatMetrics,
-                        Unretained(this)))),
+      service_thread_(std::make_unique<ServiceThread>(task_tracker_.get())),
       single_thread_task_runner_manager_(task_tracker_->GetTrackedRef(),
                                          &delayed_task_manager_),
       has_disable_best_effort_switch_(HasDisableBestEffortTasksSwitch()),
@@ -547,12 +544,6 @@ TaskTraits ThreadPoolImpl::VerifyAndAjustIncomingTraits(
   if (all_tasks_user_blocking_.IsSet())
     traits.UpdatePriority(TaskPriority::USER_BLOCKING);
   return traits;
-}
-
-void ThreadPoolImpl::ReportHeartbeatMetrics() const {
-  foreground_thread_group_->ReportHeartbeatMetrics();
-  if (background_thread_group_)
-    background_thread_group_->ReportHeartbeatMetrics();
 }
 
 }  // namespace internal

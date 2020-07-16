@@ -44,7 +44,8 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kExperimental, "experimental",
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kGeolocation, "geolocation",
-     APIPermissionInfo::kFlagCannotBeOptional},
+     APIPermissionInfo::kFlagCannotBeOptional |
+         APIPermissionInfo::kFlagRequiresManagementUIWarning},
     {APIPermission::kNotifications, "notifications",
      APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},
     {APIPermission::kGcm, "gcm",

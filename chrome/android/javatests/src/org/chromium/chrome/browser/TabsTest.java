@@ -97,6 +97,7 @@ import org.chromium.ui.test.util.UiRestriction;
 import java.io.File;
 import java.util.Locale;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -407,8 +408,8 @@ public class TabsTest {
         assertWaitForSelectedText("helloworld");
 
         // Switch to tab-switcher mode, switch back, and scroll page.
-        showOverviewAndWaitForAnimation();
-        hideOverviewAndWaitForAnimation();
+        showOverviewWithNoAnimation();
+        hideOverviewWithNoAnimation();
         scrollDown();
         assertWaitForSelectedText("");
     }
@@ -672,28 +673,16 @@ public class TabsTest {
         }
     }
 
-    /**
-     * Displays the tabSwitcher mode and wait for it to settle.
-     */
-    private void showOverviewAndWaitForAnimation() {
-        OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
-                mActivityTestRule.getActivity().getLayoutManager(), true, false);
-        // For some unknown reasons calling clickById(R.id.tab_switcher_button) sometimes hang.
-        // The following is verbose but more reliable.
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                new ClickOptionButtonOnMainThread());
-        overviewModeWatcher.waitForBehavior();
+    /** Enters the tab switcher without animation.*/
+    private void showOverviewWithNoAnimation() {
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
     }
 
-    /**
-     * Exits the tabSwitcher mode and wait for it to settle.
-     */
-    private void hideOverviewAndWaitForAnimation() {
-        OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
-                mActivityTestRule.getActivity().getLayoutManager(), false, true);
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                new ClickOptionButtonOnMainThread());
-        overviewModeWatcher.waitForBehavior();
+    /** Exits the tab switcher without animation. */
+    private void hideOverviewWithNoAnimation() {
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().getLayoutManager().hideOverview(false));
     }
 
     /**
@@ -737,7 +726,7 @@ public class TabsTest {
         // Open one more tabs than maxTabsDrawn.
         final int maxTabsDrawn = 8;
         int tabCount = openTabs(maxTabsDrawn + 1, false);
-        showOverviewAndWaitForAnimation();
+        showOverviewWithNoAnimation();
 
         // Check counts.
         LayoutManagerChromePhone layoutManager =
@@ -785,15 +774,15 @@ public class TabsTest {
         // Selecting the first tab to scroll all the way to the top.
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> TabModelUtils.setIndex(
                                 mActivityTestRule.getActivity().getCurrentTabModel(), 0));
-        showOverviewAndWaitForAnimation();
+        showOverviewWithNoAnimation();
         checkTabsStacking();
 
         // Selecting the last tab to scroll all the way to the bottom.
-        hideOverviewAndWaitForAnimation();
+        hideOverviewWithNoAnimation();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> TabModelUtils.setIndex(
                                 mActivityTestRule.getActivity().getCurrentTabModel(), count - 1));
-        showOverviewAndWaitForAnimation();
+        showOverviewWithNoAnimation();
         checkTabsStacking();
     }
 
@@ -847,14 +836,14 @@ public class TabsTest {
         long lastAllocatedSize = 0;
         long currentAllocatedSize = 2 * threshold;
         while (tries < maxTries && (lastAllocatedSize + threshold) < currentAllocatedSize) {
-            showOverviewAndWaitForAnimation();
+            showOverviewWithNoAnimation();
 
             lastAllocatedSize = currentAllocatedSize;
             currentAllocatedSize = getStableAllocatedSize();
             //Log.w("MEMORY_TEST", "[" + tries + "/" + maxTries + "]" +
             //        "currentAllocatedSize " + currentAllocatedSize);
 
-            hideOverviewAndWaitForAnimation();
+            hideOverviewWithNoAnimation();
             tries++;
         }
 
@@ -1044,7 +1033,7 @@ public class TabsTest {
         }
         Assert.assertEquals("Number of open tabs does not match", additionalTabsToOpen + 1,
                 mActivityTestRule.getActivity().getCurrentTabModel().getCount());
-        showOverviewAndWaitForAnimation();
+        showOverviewWithNoAnimation();
 
         float[] coordinates = getStackTabClickTarget(tabIndexToSelect, false, isLandscape);
         float clickX = coordinates[0];
@@ -1120,7 +1109,7 @@ public class TabsTest {
         Assert.assertEquals("wrong count after new tabs", tabCount + 3,
                 mActivityTestRule.getActivity().getCurrentTabModel().getCount());
 
-        showOverviewAndWaitForAnimation();
+        showOverviewWithNoAnimation();
         swipeToCloseNTabs(3, false, false, SWIPE_TO_LEFT_DIRECTION);
 
         Assert.assertEquals("Wrong tab counts after closing a few of them", tabCount,
@@ -1148,7 +1137,7 @@ public class TabsTest {
         Assert.assertEquals("wrong count after new tabs", tabCount + 3,
                 mActivityTestRule.getActivity().getCurrentTabModel().getCount());
 
-        showOverviewAndWaitForAnimation();
+        showOverviewWithNoAnimation();
         swipeToCloseTab(0, true, false, SWIPE_TO_LEFT_DIRECTION);
         swipeToCloseTab(0, true, false, SWIPE_TO_LEFT_DIRECTION);
         swipeToCloseTab(0, true, false, SWIPE_TO_LEFT_DIRECTION);
@@ -1169,7 +1158,7 @@ public class TabsTest {
                 ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         mActivityTestRule.newIncognitoTabsFromMenu(2);
 
-        showOverviewAndWaitForAnimation();
+        showOverviewWithNoAnimation();
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
         swipeToCloseNTabs(2, false, true, SWIPE_TO_LEFT_DIRECTION);
     }
@@ -1186,7 +1175,7 @@ public class TabsTest {
                 ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         mActivityTestRule.newIncognitoTabsFromMenu(5);
 
-        showOverviewAndWaitForAnimation();
+        showOverviewWithNoAnimation();
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
         swipeToCloseNTabs(5, false, true, SWIPE_TO_LEFT_DIRECTION);
     }
@@ -1239,7 +1228,7 @@ public class TabsTest {
 
         mActivityTestRule.newIncognitoTabFromMenu();
         ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(), cta);
-        showOverviewAndWaitForAnimation();
+        showOverviewWithNoAnimation();
         final int normalTabCount = getLayoutTabInStackCount(false);
         final int incognitoTabCount = getLayoutTabInStackCount(true);
         Assert.assertEquals(2, normalTabCount);
@@ -1279,7 +1268,7 @@ public class TabsTest {
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         mActivityTestRule.newIncognitoTabFromMenu();
 
-        showOverviewAndWaitForAnimation();
+        showOverviewWithNoAnimation();
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
         swipeToCloseTab(0, true, true, SWIPE_TO_LEFT_DIRECTION);
     }
@@ -1296,7 +1285,7 @@ public class TabsTest {
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         mActivityTestRule.newIncognitoTabsFromMenu(5);
 
-        showOverviewAndWaitForAnimation();
+        showOverviewWithNoAnimation();
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
         swipeToCloseNTabs(5, true, true, SWIPE_TO_LEFT_DIRECTION);
     }
@@ -1376,12 +1365,14 @@ public class TabsTest {
     @MediumTest
     @Feature({"Android-TabSwitcher"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testNewTabButton() throws InterruptedException {
+    public void testNewTabButton() throws ExecutionException, InterruptedException {
         int initialTabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
-        showOverviewAndWaitForAnimation();
+        showOverviewWithNoAnimation();
 
-        ChromeTabUtils.clickNewTabButton(
-                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity()
+                        .findViewById(R.id.new_tab_button)
+                        .performClick());
 
         int newTabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
         Assert.assertEquals("Tab count is expected to increment by 1 after clicking new tab button",
@@ -1665,7 +1656,7 @@ public class TabsTest {
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         mActivityTestRule.loadUrl(RESIZE_TEST_URL);
 
-        showOverviewAndWaitForAnimation();
+        showOverviewWithNoAnimation();
         final WebContents webContents = mActivityTestRule.getWebContents();
         JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents, "resizeHappened = false;");
         mActivityTestRule.getActivity().setRequestedOrientation(

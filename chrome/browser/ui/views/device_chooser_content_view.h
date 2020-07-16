@@ -63,6 +63,9 @@ class DeviceChooserContentView : public views::View,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // Note that there is no way to update the window title - for any given
+  // instance of DeviceChooserContentView, this method is only called once to
+  // initially set the window title.
   base::string16 GetWindowTitle() const;
   std::unique_ptr<views::View> CreateExtraView();
   bool IsDialogButtonEnabled(ui::DialogButton button) const;

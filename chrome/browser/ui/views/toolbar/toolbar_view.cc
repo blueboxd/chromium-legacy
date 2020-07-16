@@ -203,8 +203,8 @@ void ToolbarView::Init() {
   std::unique_ptr<ToolbarButton> forward = std::make_unique<BackForwardButton>(
       BackForwardButton::Direction::kForward, this, browser_);
 
-  std::unique_ptr<ReloadButton> reload = std::make_unique<ReloadButton>(
-      browser_->command_controller(), ReloadButton::IconStyle::kBrowser);
+  std::unique_ptr<ReloadButton> reload =
+      std::make_unique<ReloadButton>(browser_->command_controller());
 
   std::unique_ptr<HomeButton> home =
       std::make_unique<HomeButton>(this, browser_);

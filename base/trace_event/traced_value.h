@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -129,6 +130,14 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
     const char* name_;
     KeptValueType kept_value_type_;
   };
+
+  // Return std::string representation given by |value|'s ostream operator<<.
+  template <class T>
+  static std::string ValueToString(const T& value) {
+    std::stringstream ss;
+    ss << value;
+    return ss.str();
+  }
 
   // A custom serialization class can be supplied by implementing the
   // Writer interface and supplying a factory class to SetWriterFactoryCallback.

@@ -168,7 +168,8 @@ TEST(ProbeServiceConvertors, NonRemovableBlockDeviceInfoPtr) {
   constexpr char kType[] = "NVMe";
   constexpr uint8_t kManufacturerId = 200;
   constexpr char kName[] = "goog";
-  constexpr uint32_t kSerial = 0xaabbccdd;
+  constexpr uint32_t kSerial = 4287654321;
+  constexpr char kSerialString[] = "4287654321";
   constexpr uint64_t kBytesReadSinceLastBoot = (1ULL << 62) + 222;
   constexpr uint64_t kBytesWrittenSinceLastBoot = (1ULL << 61) + 333;
   constexpr uint64_t kReadTimeSecondsSinceLastBoot = (1ULL << 60) + 444;
@@ -198,7 +199,7 @@ TEST(ProbeServiceConvertors, NonRemovableBlockDeviceInfoPtr) {
       health::mojom::NonRemovableBlockDeviceInfo::New(
           kPath, health::mojom::UInt64Value::New(kSize), kType,
           health::mojom::UInt32Value::New(kManufacturerId), kName,
-          health::mojom::UInt32Value::New(kSerial),
+          kSerialString,
           health::mojom::UInt64Value::New(kBytesReadSinceLastBoot),
           health::mojom::UInt64Value::New(kBytesWrittenSinceLastBoot),
           health::mojom::UInt64Value::New(kReadTimeSecondsSinceLastBoot),

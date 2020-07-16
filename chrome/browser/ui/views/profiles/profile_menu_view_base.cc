@@ -598,12 +598,13 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
                                subtitle);
 }
 
-void ProfileMenuViewBase::SetSyncInfo(
-    const base::string16& description,
-    const base::string16& clickable_text,
-    SyncInfoContainerBackgroundState sync_background_state,
-    base::RepeatingClosure action,
-    bool show_badge) {
+void ProfileMenuViewBase::SetSyncInfo(const SyncInfo& sync_info,
+                                      const base::RepeatingClosure& action,
+                                      bool show_badge) {
+  const base::string16 description =
+      l10n_util::GetStringUTF16(sync_info.description_string_id);
+  const base::string16 clickable_text =
+      l10n_util::GetStringUTF16(sync_info.button_string_id);
   const int kDescriptionIconSpacing =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_LABEL_HORIZONTAL);
@@ -612,7 +613,7 @@ void ProfileMenuViewBase::SetSyncInfo(
   const int kBorderCornerRadius =
       views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
 
-  sync_background_state_ = sync_background_state;
+  sync_background_state_ = sync_info.background_state;
   UpdateSyncInfoContainerBackground();
 
   sync_info_container_->RemoveAllChildViews(/*delete_children=*/true);

@@ -21,21 +21,21 @@ import java.lang.annotation.RetentionPolicy;
  * Exception information for a given origin.
  */
 public class ContentSettingException implements Serializable {
-    @IntDef({Type.ADS, Type.AUTOMATIC_DOWNLOADS, Type.BACKGROUND_SYNC, Type.COOKIE, Type.JAVASCRIPT,
-            Type.POPUP, Type.SOUND, Type.BLUETOOTH_SCANNING})
+    @IntDef({Type.ADS, Type.AUTOMATIC_DOWNLOADS, Type.BACKGROUND_SYNC, Type.BLUETOOTH_SCANNING,
+            Type.COOKIE, Type.JAVASCRIPT, Type.POPUP, Type.SOUND})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
         // Values used to address array index - should be enumerated from 0 and can't have gaps.
         // All updates here must also be reflected in {@link #getContentSettingsType(int)
         // getContentSettingsType} and {@link SingleWebsiteSettings.PERMISSION_PREFERENCE_KEYS}.
         int ADS = 0;
-        int BACKGROUND_SYNC = 1;
-        int COOKIE = 2;
-        int JAVASCRIPT = 3;
-        int POPUP = 4;
-        int SOUND = 5;
-        int AUTOMATIC_DOWNLOADS = 6;
-        int BLUETOOTH_SCANNING = 7;
+        int AUTOMATIC_DOWNLOADS = 1;
+        int BACKGROUND_SYNC = 2;
+        int BLUETOOTH_SCANNING = 3;
+        int COOKIE = 4;
+        int JAVASCRIPT = 5;
+        int POPUP = 6;
+        int SOUND = 7;
         /**
          * Number of handled exceptions used for calculating array sizes.
          */

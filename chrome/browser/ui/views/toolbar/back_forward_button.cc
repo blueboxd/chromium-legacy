@@ -45,23 +45,7 @@ BackForwardButton::BackForwardButton(Direction direction,
 
 BackForwardButton::~BackForwardButton() = default;
 
-void BackForwardButton::OverrideImageModel(const ui::ImageModel& normal,
-                                           const ui::ImageModel& disabled) {
-  normal_model_ = normal;
-  disabled_model_ = disabled;
-  UpdateIcon();
-}
-
 void BackForwardButton::UpdateIcon() {
-  if (normal_model_.has_value()) {
-    DCHECK_EQ(normal_model_.has_value(), disabled_model_.has_value());
-    SetImageModel(STATE_NORMAL, *normal_model_);
-    SetImageModel(STATE_HOVERED, *normal_model_);
-    SetImageModel(STATE_PRESSED, *normal_model_);
-    SetImageModel(STATE_DISABLED, *disabled_model_);
-    return;
-  }
-
   const gfx::VectorIcon* image = nullptr;
   const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
   if (direction_ == Direction::kBack) {

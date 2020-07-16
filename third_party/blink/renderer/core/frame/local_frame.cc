@@ -720,8 +720,16 @@ LocalDOMWindow* LocalFrame::DomWindow() const {
 
 void LocalFrame::SetDOMWindow(LocalDOMWindow* dom_window) {
   DCHECK(dom_window);
-  if (this->DomWindow())
+  if (this->DomWindow()) {
     this->DomWindow()->Reset();
+    // SystemClipboard and RawSystemClipboard uses HeapMojo wrappers. HeapMojo
+    // wrappers uses LocalDOMWindow (ExecutionContext) to reset the mojo
+    // objects when the ExecutionContext was destroyed. So when new
+    // LocalDOMWindow was set, we need to create new SystemClipboard and
+    // RawSystemClipboard.
+    system_clipboard_ = nullptr;
+    raw_system_clipboard_ = nullptr;
+  }
   GetScriptController().ClearWindowProxy();
   dom_window_ = dom_window;
 }

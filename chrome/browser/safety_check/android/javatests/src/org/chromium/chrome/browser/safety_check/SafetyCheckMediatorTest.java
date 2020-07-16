@@ -6,8 +6,11 @@ package org.chromium.chrome.browser.safety_check;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
+
+import android.os.Handler;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +36,8 @@ public class SafetyCheckMediatorTest {
     private SafetyCheckUpdatesDelegate mUpdatesDelegate;
     @Mock
     private SafetyCheckBridge mBridge;
+    @Mock
+    private Handler mHandler;
 
     private SafetyCheckMediator mMediator;
 
@@ -40,7 +45,15 @@ public class SafetyCheckMediatorTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mModel = SafetyCheckProperties.createSafetyCheckModel();
-        mMediator = new SafetyCheckMediator(mModel, mUpdatesDelegate, mBridge);
+        mMediator = new SafetyCheckMediator(mModel, mUpdatesDelegate, mBridge, mHandler);
+        // Execute any delayed tasks immediately.
+        doAnswer(invocation -> {
+            Runnable runnable = (Runnable) (invocation.getArguments()[0]);
+            runnable.run();
+            return null;
+        })
+                .when(mHandler)
+                .postDelayed(any(Runnable.class), anyLong());
     }
 
     @Test

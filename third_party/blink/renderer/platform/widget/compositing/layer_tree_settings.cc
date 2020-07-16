@@ -428,10 +428,7 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
 
 #else   // defined(OS_ANDROID)
   bool using_synchronous_compositor = false;  // Only for Android WebView.
-  // On desktop, we never use the low memory policy unless we are simulating
-  // low-end mode via a switch.
-  bool using_low_memory_policy =
-      cmd.HasSwitch(::switches::kEnableLowEndDeviceMode);
+  bool using_low_memory_policy = base::SysInfo::IsLowEndDevice();
 
   if (ui::IsOverlayScrollbarEnabled()) {
     settings.scrollbar_animator = cc::LayerTreeSettings::AURA_OVERLAY;
@@ -445,11 +442,13 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
         ui::OverlayScrollbarFlashWhenMouseEnter();
   }
 
-  // On desktop, if there's over 4GB of memory on the machine, increase the
-  // working set size to 256MB for both gpu and software.
+  // If there's over 4GB of RAM, increase the working set size to 256MB for both
+  // gpu and software.
   const int kImageDecodeMemoryThresholdMB = 4 * 1024;
-  if (base::SysInfo::AmountOfPhysicalMemoryMB() >=
-      kImageDecodeMemoryThresholdMB) {
+  if (using_low_memory_policy) {
+    settings.decoded_image_working_set_budget_bytes = 32 * 1024 * 1024;
+  } else if (base::SysInfo::AmountOfPhysicalMemoryMB() >=
+             kImageDecodeMemoryThresholdMB) {
     settings.decoded_image_working_set_budget_bytes = 256 * 1024 * 1024;
   } else {
     // This is the default, but recorded here as well.

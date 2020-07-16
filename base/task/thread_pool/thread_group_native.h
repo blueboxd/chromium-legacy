@@ -25,7 +25,6 @@ class BASE_EXPORT ThreadGroupNative : public ThreadGroup {
   // ThreadGroup:
   void JoinForTesting() override;
   size_t GetMaxConcurrentNonBlockedTasksDeprecated() const override;
-  void ReportHeartbeatMetrics() const override;
   void DidUpdateCanRunPolicy() override;
 
  protected:

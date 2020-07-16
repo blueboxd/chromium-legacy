@@ -37,19 +37,12 @@ class ExtensionInstallBlockedDialogView
  private:
   // views::BubbleDialogDelegateView
   gfx::Size CalculatePreferredSize() const override;
-  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
-  base::string16 GetWindowTitle() const override;
-  bool ShouldShowWindowIcon() const override;
-  gfx::ImageSkia GetWindowIcon() override;
   ui::ModalType GetModalType() const override;
 
   // Creates the contents area that contains custom error message that is set by
   // administrator.
-  void AddCustomMessageContents();
+  void AddCustomMessageContents(const base::string16& custom_error_message);
 
-  const base::string16 title_;
-  const base::string16 custom_error_message_;
-  const gfx::ImageSkia icon_;
   base::OnceClosure done_callback_;
 };
 

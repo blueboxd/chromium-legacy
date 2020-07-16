@@ -43,11 +43,6 @@ void RequestFileSystemDialogView::ShowDialog(
 
 RequestFileSystemDialogView::~RequestFileSystemDialogView() {}
 
-base::string16 RequestFileSystemDialogView::GetAccessibleWindowTitle() const {
-  return l10n_util::GetStringUTF16(
-      IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_TITLE);
-}
-
 ui::ModalType RequestFileSystemDialogView::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
@@ -63,6 +58,8 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
     bool writable,
     base::OnceCallback<void(ui::DialogButton)> callback)
     : callback_(std::move(callback)) {
+  SetAccessibleTitle(l10n_util::GetStringUTF16(
+      IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_TITLE));
   SetDefaultButton(ui::DIALOG_BUTTON_CANCEL);
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(

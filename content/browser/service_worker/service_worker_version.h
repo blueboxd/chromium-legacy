@@ -339,13 +339,16 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // code and the dispatch time. See service_worker.mojom.
   SimpleEventCallback CreateSimpleEventCallback(int request_id);
 
-  // This must be called when the worker is running.
+  // This must be called when is_endpoint_ready() returns true, which is after
+  // InitializeGlobalScope() is called.
   blink::mojom::ServiceWorker* endpoint() {
     DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
            running_status() == EmbeddedWorkerStatus::RUNNING);
     DCHECK(service_worker_remote_.is_bound());
     return service_worker_remote_.get();
   }
+
+  bool is_endpoint_ready() const { return is_endpoint_ready_; }
 
   // Returns the 'controller' interface ptr of this worker. It is expected that
   // the worker is already starting or running, or is going to be started soon.
@@ -910,6 +913,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   Status status_ = NEW;
   std::unique_ptr<EmbeddedWorkerInstance> embedded_worker_;
+  // True if endpoint() is ready to dispatch events, which means
+  // InitializeGlobalScope() is already called.
+  bool is_endpoint_ready_ = false;
   std::vector<StatusCallback> start_callbacks_;
   std::vector<base::OnceClosure> stop_callbacks_;
   std::vector<base::OnceClosure> status_change_callbacks_;

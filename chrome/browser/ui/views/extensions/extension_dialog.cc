@@ -82,25 +82,8 @@ void ExtensionDialog::SetMinimumContentsSize(int width, int height) {
   extension_view_->SetPreferredSize(gfx::Size(width, height));
 }
 
-bool ExtensionDialog::CanResize() const {
-#if defined(OS_CHROMEOS)
-  // Prevent dialog resize mouse cursor in tablet mode, crbug.com/453634.
-  if (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())
-    return false;
-#endif
-  return true;
-}
-
 ui::ModalType ExtensionDialog::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
-}
-
-bool ExtensionDialog::ShouldShowWindowTitle() const {
-  return !window_title_.empty();
-}
-
-base::string16 ExtensionDialog::GetWindowTitle() const {
-  return window_title_;
 }
 
 void ExtensionDialog::WindowClosing() {
@@ -113,12 +96,15 @@ void ExtensionDialog::DeleteDelegate() {
   Release();
 }
 
+// TODO(ellyjones): Are either of these overrides necessary? It seems like
+// extension_view_ is always this dialog's contents view, in which case
+// GetWidget will already behave this way.
 views::Widget* ExtensionDialog::GetWidget() {
-  return extension_view_->GetWidget();
+  return extension_view_ ? extension_view_->GetWidget() : nullptr;
 }
 
 const views::Widget* ExtensionDialog::GetWidget() const {
-  return extension_view_->GetWidget();
+  return extension_view_ ? extension_view_->GetWidget() : nullptr;
 }
 
 views::View* ExtensionDialog::GetContentsView() {
@@ -190,7 +176,16 @@ ExtensionDialog::ExtensionDialog(
                  source);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION);
 
-  set_title(init_params.title);
+  SetShowTitle(!init_params.title.empty());
+  SetTitle(init_params.title);
+
+  bool can_resize = true;
+#if defined(OS_CHROMEOS)
+  // Prevent dialog resize mouse cursor in tablet mode, crbug.com/453634.
+  if (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())
+    can_resize = false;
+#endif
+  SetCanResize(can_resize);
 
   views::Widget* window =
       init_params.is_modal

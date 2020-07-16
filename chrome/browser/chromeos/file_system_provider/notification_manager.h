@@ -40,9 +40,8 @@ class NotificationManager : public NotificationManagerInterface,
   ~NotificationManager() override;
 
   // NotificationManagerInterface overrides:
-  void ShowUnresponsiveNotification(
-      int id,
-      const NotificationCallback& callback) override;
+  void ShowUnresponsiveNotification(int id,
+                                    NotificationCallback callback) override;
   void HideUnresponsiveNotification(int id) override;
 
   // AppIconLoaderDelegate overrides:

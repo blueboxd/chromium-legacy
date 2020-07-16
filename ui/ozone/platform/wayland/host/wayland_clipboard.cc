@@ -109,7 +109,7 @@ class ClipboardImpl final : public Clipboard, public DataSource::Delegate {
     if (it == data_.end() && mime_type == ui::kMimeTypeTextUtf8)
       it = data_.find(ui::kMimeTypeText);
     if (it != data_.end())
-      contents->assign(it->second.begin(), it->second.end());
+      contents->assign(it->second->data().begin(), it->second->data().end());
   }
 
   // The device manager used to access data device and create data sources.
@@ -157,8 +157,10 @@ void WaylandClipboard::RequestClipboardData(
   data_map_ = data_map;
   read_clipboard_closure_ = std::move(callback);
   auto* clipboard = GetClipboard(buffer);
-  if (!clipboard || !clipboard->Read(mime_type))
-    SetData({}, mime_type);
+  if (!clipboard || !clipboard->Read(mime_type)) {
+    SetData(scoped_refptr<base::RefCountedBytes>(new base::RefCountedBytes()),
+            mime_type);
+  }
 }
 
 bool WaylandClipboard::IsSelectionOwner(ClipboardBuffer buffer) {
@@ -183,11 +185,12 @@ void WaylandClipboard::GetAvailableMimeTypes(
   std::move(callback).Run(mime_types);
 }
 
-void WaylandClipboard::SetData(const std::vector<uint8_t>& contents,
+void WaylandClipboard::SetData(PlatformClipboard::Data contents,
                                const std::string& mime_type) {
   if (!data_map_)
     return;
 
+  DCHECK(contents);
   (*data_map_)[mime_type] = contents;
 
   if (!read_clipboard_closure_.is_null()) {

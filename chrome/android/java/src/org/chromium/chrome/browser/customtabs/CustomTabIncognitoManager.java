@@ -63,14 +63,7 @@ public class CustomTabIncognitoManager implements NativeInitObserver, Destroyabl
     }
 
     public Profile getProfile() {
-        if (mOTRProfileID == null) {
-            // TODO(https://crbug.com/1023759): This creates a new OffTheRecord
-            // profile for each call to open an incognito CCT.
-            // To be updated for apps which have introduced themselves, are
-            // resurrecting, and prefer to use their previous profile if it
-            // still alive.
-            mOTRProfileID = OTRProfileID.createUnique("CCT:Incognito");
-        }
+        if (mOTRProfileID == null) mOTRProfileID = OTRProfileID.createUnique("CCT:Incognito");
         return Profile.getLastUsedRegularProfile().getOffTheRecordProfile(mOTRProfileID);
     }
 

@@ -1,0 +1,41 @@
+Tests that device emulation of window segments is propagated and powers getWindowSegments API.
+No segments:
+Main frame segments:
+1
+0 0 800 600
+Iframe segments:
+1
+0 0 800 600
+Side-by-side segments
+Main frame segments:
+2
+0 0 390 600
+410 0 390 600
+Iframe segments:
+2
+0 0 390 600
+410 0 390 600
+Unspecified display feature
+Main frame segments:
+1
+0 0 800 600
+Iframe segments:
+1
+0 0 800 600
+Stacked segments
+Main frame segments:
+2
+0 0 800 290
+0 310 800 290
+Iframe segments:
+2
+0 0 800 290
+0 310 800 290
+Emulation disabled
+Main frame segments:
+1
+0 0 800 600
+Iframe segments:
+1
+0 0 800 600
+

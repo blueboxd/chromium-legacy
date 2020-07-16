@@ -16,9 +16,13 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
+#include <memory>
+
 namespace location {
 namespace nearby {
 namespace connections {
+
+class Core;
 
 // Implementation of the NearbyConnections mojo interface.
 // This class acts as a bridge to the NearbyConnections library which is pulled
@@ -57,6 +61,8 @@ class NearbyConnections : public mojom::NearbyConnections {
   mojo::Remote<bluetooth::mojom::Adapter> bluetooth_adapter_;
   mojo::Remote<sharing::mojom::WebRtcSignalingMessenger>
       webrtc_signaling_messenger_;
+
+  std::unique_ptr<Core> core_;
 
   base::WeakPtrFactory<NearbyConnections> weak_ptr_factory_{this};
 };

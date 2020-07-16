@@ -65,7 +65,7 @@ struct X11ClipboardOzone::SelectionState {
   std::vector<std::string> mime_types;
 
   // Data most recently read from remote clipboard.
-  std::vector<unsigned char> data;
+  PlatformClipboard::Data data;
 
   // Mime type of most recently read data from remote clipboard.
   std::string data_mime_type;
@@ -171,7 +171,7 @@ bool X11ClipboardOzone::OnSelectionRequest(
     auto it = offer_data_map.find(key);
     if (it != offer_data_map.end()) {
       ui::SetArrayProperty(event.requestor, event.property, event.target,
-                           it->second);
+                           it->second->data());
     }
   }
 
@@ -228,7 +228,8 @@ bool X11ClipboardOzone::OnSelectionNotify(
     ui::GetArrayProperty(x_window_, x_property_, &data, &type);
     ui::DeleteProperty(x_window_, x_property_);
     if (type != x11::Atom::None)
-      selection_state.data = std::move(data);
+      selection_state.data = scoped_refptr<base::RefCountedBytes>(
+          base::RefCountedBytes::TakeVector(&data));
 
     // If we have a saved callback, invoke it now, otherwise this was a prefetch
     // and we have already saved |data_| for the next call to
@@ -253,7 +254,7 @@ bool X11ClipboardOzone::OnSetSelectionOwnerNotify(
     auto& selection_state = GetSelectionState(selection);
     selection_state.mime_types.clear();
     selection_state.data_mime_type.clear();
-    selection_state.data.clear();
+    selection_state.data.reset();
     QueryTargets(selection);
   }
 
@@ -301,7 +302,7 @@ void X11ClipboardOzone::QueryTargets(x11::Atom selection) {
 
 void X11ClipboardOzone::ReadRemoteClipboard(x11::Atom selection) {
   auto& selection_state = GetSelectionState(selection);
-  selection_state.data.clear();
+  selection_state.data.reset();
   // Allow conversions for text/plain[;charset=utf-8] <=> [UTF8_]STRING.
   std::string target = selection_state.data_mime_type;
   if (!Contains(selection_state.mime_types, target)) {
@@ -346,8 +347,9 @@ void X11ClipboardOzone::RequestClipboardData(
   // If we have already prefetched the clipboard for the correct mime type,
   // then send it right away, otherwise save the callback and attempt to get the
   // requested mime type from the remote clipboard.
-  if (!using_xfixes_ || (selection_state.data_mime_type == mime_type &&
-                         !selection_state.data.empty())) {
+  if (!using_xfixes_ ||
+      (selection_state.data_mime_type == mime_type && selection_state.data &&
+       !selection_state.data->data().empty())) {
     data_map->emplace(mime_type, selection_state.data);
     std::move(callback).Run(selection_state.data);
     return;

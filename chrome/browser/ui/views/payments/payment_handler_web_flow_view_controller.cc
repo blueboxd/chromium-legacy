@@ -16,8 +16,11 @@
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/payments/content/icon/icon_size.h"
+#include "components/payments/core/features.h"
 #include "components/payments/core/native_error_strings.h"
+#include "components/payments/core/payments_experimental_features.h"
 #include "components/payments/core/url_util.h"
+#include "components/vector_icons/vector_icons.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/navigation_handle.h"
@@ -29,6 +32,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -90,8 +94,28 @@ class ReadOnlyOriginView : public views::View {
       title_label->SetEnabledColor(foreground);
     }
 
-    title_origin_layout->StartRow(views::GridLayout::kFixedSize, 0);
-    auto* origin_label = title_origin_layout->AddView(
+    auto origin_container = std::make_unique<views::View>();
+    views::GridLayout* origin_layout = origin_container->SetLayoutManager(
+        std::make_unique<views::GridLayout>());
+
+    columns = origin_layout->AddColumnSet(0);
+    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+                       1.0, views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
+    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
+                       1.0, views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
+    origin_layout->StartRow(views::GridLayout::kFixedSize, 0);
+    if (PaymentsExperimentalFeatures::IsEnabled(
+            features::kPaymentHandlerLockIcon) &&
+        origin.SchemeIs(url::kHttpsScheme)) {
+      // TODO(https://crbug.com/1052493):
+      // Selecting the correct icon based on the SSL certificate state
+      // and adding test coverage for this code path.
+      auto lock_icon = std::make_unique<views::ImageView>();
+      lock_icon->SetImage(gfx::CreateVectorIcon(vector_icons::kLockIcon, 16,
+                                                gfx::kChromeIconGrey));
+      origin_layout->AddView(std::move(lock_icon));
+    }
+    auto* origin_label = origin_layout->AddView(
         std::make_unique<views::Label>(base::UTF8ToUTF16(origin.host())));
     origin_label->SetElideBehavior(gfx::ELIDE_HEAD);
     if (!title_is_valid) {
@@ -108,6 +132,8 @@ class ReadOnlyOriginView : public views::View {
     origin_label->SetAutoColorReadabilityEnabled(false);
     origin_label->SetEnabledColor(foreground);
     origin_label->SetBackgroundColor(background_color);
+    title_origin_layout->StartRow(views::GridLayout::kFixedSize, 0);
+    title_origin_layout->AddView(std::move(origin_container));
 
     views::GridLayout* top_level_layout =
         SetLayoutManager(std::make_unique<views::GridLayout>());

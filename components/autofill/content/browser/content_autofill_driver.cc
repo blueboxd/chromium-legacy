@@ -86,11 +86,10 @@ bool ContentAutofillDriver::IsInMainFrame() const {
 }
 
 bool ContentAutofillDriver::CanShowAutofillUi() const {
-  // TODO(crbug.com/1041021): Use RenderFrameHost::IsActive here when available.
-  return !content::BackForwardCache::EvictIfCached(
-      {render_frame_host_->GetProcess()->GetID(),
-       render_frame_host_->GetRoutingID()},
-      "ContentAutofillDriver::CanShowAutofillUi");
+  // Don't show AutofillUi for non-current RenderFrameHost. Here it is safe to
+  // ignore the calls from inactive RFH as the renderer is not expecting a reply
+  // and it doesn't lead to browser-renderer consistency issues.
+  return render_frame_host_->IsCurrent();
 }
 
 ui::AXTreeID ContentAutofillDriver::GetAxTreeId() const {

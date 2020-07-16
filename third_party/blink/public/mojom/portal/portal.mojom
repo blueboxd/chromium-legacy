@@ -7,7 +7,7 @@ module blink.mojom;
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
-import "third_party/blink/public/mojom/referrer.mojom";
+import "third_party/blink/public/mojom/loader/referrer.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 import "url/mojom/origin.mojom";

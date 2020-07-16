@@ -47,6 +47,7 @@ group("closure_compile") {
     "//chromeos/components/media_app_ui:closure_compile",
     "//chromeos/components/multidevice/debug_webui/resources:closure_compile",
     "//chromeos/components/print_management:closure_compile",
+    "//chromeos/components/system_apps:closure_compile",
   ]
 
   if (!is_official_build) {

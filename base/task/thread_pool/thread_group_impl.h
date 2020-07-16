@@ -93,7 +93,6 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // ThreadGroup:
   void JoinForTesting() override;
   size_t GetMaxConcurrentNonBlockedTasksDeprecated() const override;
-  void ReportHeartbeatMetrics() const override;
   void DidUpdateCanRunPolicy() override;
 
   const HistogramBase* num_tasks_before_detach_histogram() const {
@@ -351,14 +350,6 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // ThreadPool.NumTasksBeforeDetach.[thread group name] histogram.
   // Intentionally leaked.
   HistogramBase* const num_tasks_before_detach_histogram_;
-
-  // ThreadPool.NumWorkers.[thread group name] histogram.
-  // Intentionally leaked.
-  HistogramBase* const num_workers_histogram_;
-
-  // ThreadPool.NumActiveWorkers.[thread group name] histogram.
-  // Intentionally leaked.
-  HistogramBase* const num_active_workers_histogram_;
 
   // Ensures recently cleaned up workers (ref.
   // WorkerThreadDelegateImpl::CleanupLockRequired()) had time to exit as

@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/back_forward_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
-#include "chrome/browser/ui/views/toolbar/button_utils.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/web_apps/web_app_menu_button.h"
@@ -74,6 +73,10 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/views/window/hit_test_utils.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 namespace {
 
@@ -115,6 +118,109 @@ class WebAppToolbarActionsBar : public ToolbarActionsBar {
   DISALLOW_COPY_AND_ASSIGN(WebAppToolbarActionsBar);
 };
 
+template <class BaseClass>
+class WebAppToolbarButton : public BaseClass {
+ public:
+  using BaseClass::BaseClass;
+  WebAppToolbarButton(const WebAppToolbarButton&) = delete;
+  WebAppToolbarButton& operator=(const WebAppToolbarButton&) = delete;
+  ~WebAppToolbarButton() override = default;
+
+#if defined(OS_WIN)
+  bool ShouldUseWindowsIconsForMinimalUI() const {
+    return base::win::GetVersion() >= base::win::Version::WIN10;
+  }
+#endif
+
+  void SetIconColor(SkColor icon_color) {
+    if (icon_color_ == icon_color)
+      return;
+
+    icon_color_ = icon_color;
+    UpdateIcon();
+  }
+
+  virtual const gfx::VectorIcon* GetAlternativeIcon() const { return nullptr; }
+
+  // ToolbarButton:
+  void UpdateIcon() override {
+    if (const auto* icon = GetAlternativeIcon()) {
+      BaseClass::UpdateIconsWithStandardColors(*icon);
+      return;
+    }
+
+    BaseClass::UpdateIcon();
+  }
+
+ protected:
+  // ToolbarButton:
+  SkColor GetForegroundColor(views::Button::ButtonState state) const override {
+    if (state == views::Button::STATE_DISABLED)
+      return SkColorSetA(icon_color_, gfx::kDisabledControlAlpha);
+
+    return icon_color_;
+  }
+
+ private:
+  SkColor icon_color_ = gfx::kPlaceholderColor;
+};
+
+class WebAppToolbarBackButton : public WebAppToolbarButton<BackForwardButton> {
+ public:
+  WebAppToolbarBackButton(views::ButtonListener* listener, Browser* browser);
+  WebAppToolbarBackButton(const WebAppToolbarBackButton&) = delete;
+  WebAppToolbarBackButton& operator=(const WebAppToolbarBackButton&) = delete;
+  ~WebAppToolbarBackButton() override = default;
+
+  // WebAppToolbarButton:
+  const gfx::VectorIcon* GetAlternativeIcon() const override;
+};
+
+WebAppToolbarBackButton::WebAppToolbarBackButton(
+    views::ButtonListener* listener,
+    Browser* browser)
+    : WebAppToolbarButton<BackForwardButton>(
+          BackForwardButton::Direction::kBack,
+          listener,
+          browser) {}
+
+const gfx::VectorIcon* WebAppToolbarBackButton::GetAlternativeIcon() const {
+#if defined(OS_WIN)
+  if (ShouldUseWindowsIconsForMinimalUI()) {
+    return ui::TouchUiController::Get()->touch_ui()
+               ? &kBackArrowWindowsTouchIcon
+               : &kBackArrowWindowsIcon;
+  }
+#endif
+  return nullptr;
+}
+
+class WebAppToolbarReloadButton : public WebAppToolbarButton<ReloadButton> {
+ public:
+  using WebAppToolbarButton<ReloadButton>::WebAppToolbarButton;
+  WebAppToolbarReloadButton(const WebAppToolbarReloadButton&) = delete;
+  WebAppToolbarReloadButton& operator=(const WebAppToolbarReloadButton&) =
+      delete;
+  ~WebAppToolbarReloadButton() override = default;
+
+  // WebAppToolbarButton:
+  const gfx::VectorIcon* GetAlternativeIcon() const override;
+};
+
+const gfx::VectorIcon* WebAppToolbarReloadButton::GetAlternativeIcon() const {
+#if defined(OS_WIN)
+  if (ShouldUseWindowsIconsForMinimalUI()) {
+    const bool is_reload = visible_mode() == ReloadButton::Mode::kReload;
+    if (ui::TouchUiController::Get()->touch_ui()) {
+      return is_reload ? &kReloadWindowsTouchIcon
+                       : &kNavigateStopWindowsTouchIcon;
+    }
+    return is_reload ? &kReloadWindowsIcon : &kNavigateStopWindowsIcon;
+  }
+#endif
+  return nullptr;
+}
+
 int HorizontalPaddingBetweenPageActionsAndAppMenuButtons() {
   return views::LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
@@ -134,15 +240,6 @@ void SetInsetsForWebAppToolbarButton(ToolbarButton* toolbar_button,
                                      bool is_browser_focus_mode) {
   if (!is_browser_focus_mode)
     toolbar_button->SetLayoutInsets(gfx::Insets(2));
-}
-
-const gfx::VectorIcon& GetBackImage(bool touch_ui) {
-#if defined(OS_WIN)
-  if (UseWindowsIconsForMinimalUI())
-    return touch_ui ? kBackArrowWindowsTouchIcon : kBackArrowWindowsIcon;
-#endif
-
-  return touch_ui ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
 }
 
 }  // namespace
@@ -258,26 +355,12 @@ class WebAppFrameToolbarView::NavigationButtonContainer
   explicit NavigationButtonContainer(BrowserView* browser_view);
   ~NavigationButtonContainer() override;
 
-  BackForwardButton* back_button() { return back_button_; }
-
-  ReloadButton* reload_button() { return reload_button_; }
+  WebAppToolbarBackButton* back_button() { return back_button_; }
+  WebAppToolbarReloadButton* reload_button() { return reload_button_; }
 
   void SetIconColor(SkColor icon_color) {
-    icon_color_ = icon_color;
-    GenerateMinimalUIButtonImages();
-  }
-
-  void GenerateMinimalUIButtonImages() {
-    const SkColor disabled_color =
-        SkColorSetA(icon_color_, gfx::kDisabledControlAlpha);
-
-    const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
-    const gfx::VectorIcon& back_image = GetBackImage(touch_ui);
-    back_button_->OverrideImageModel(
-        ui::ImageModel::FromVectorIcon(back_image, icon_color_),
-        ui::ImageModel::FromVectorIcon(back_image, disabled_color));
-
-    reload_button_->SetColors(icon_color_, disabled_color);
+    back_button_->SetIconColor(icon_color);
+    reload_button_->SetIconColor(icon_color);
   }
 
  protected:
@@ -311,16 +394,9 @@ class WebAppFrameToolbarView::NavigationButtonContainer
   // The containing browser view.
   BrowserView* const browser_view_;
 
-  SkColor icon_color_ = gfx::kPlaceholderColor;
-
-  std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
-      ui::TouchUiController::Get()->RegisterCallback(base::BindRepeating(
-          &NavigationButtonContainer::GenerateMinimalUIButtonImages,
-          base::Unretained(this)));
-
   // These members are owned by the views hierarchy.
-  BackForwardButton* back_button_ = nullptr;
-  ReloadButton* reload_button_ = nullptr;
+  WebAppToolbarBackButton* back_button_ = nullptr;
+  WebAppToolbarReloadButton* reload_button_ = nullptr;
 };
 
 WebAppFrameToolbarView::NavigationButtonContainer::NavigationButtonContainer(
@@ -336,12 +412,11 @@ WebAppFrameToolbarView::NavigationButtonContainer::NavigationButtonContainer(
   layout.set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  back_button_ = AddChildView(std::make_unique<BackForwardButton>(
-      BackForwardButton::Direction::kBack, this, browser_view_->browser()));
+  back_button_ = AddChildView(std::make_unique<WebAppToolbarBackButton>(
+      this, browser_view_->browser()));
   back_button_->set_tag(IDC_BACK);
-  reload_button_ = AddChildView(std::make_unique<ReloadButton>(
-      browser_view_->browser()->command_controller(),
-      ReloadButton::IconStyle::kMinimalUi));
+  reload_button_ = AddChildView(std::make_unique<WebAppToolbarReloadButton>(
+      browser_view_->browser()->command_controller()));
   reload_button_->set_tag(IDC_RELOAD);
 
   const bool is_browser_focus_mode = browser_view_->browser()->is_focus_mode();

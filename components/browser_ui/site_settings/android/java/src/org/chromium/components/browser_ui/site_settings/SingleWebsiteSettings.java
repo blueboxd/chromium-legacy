@@ -71,10 +71,9 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
 
     // Website permissions (if adding new, see hasPermissionsPreferences and resetSite below)
     // All permissions from the permissions preference category must be listed here.
-    private static final String[] PERMISSION_PREFERENCE_KEYS = {
+    public static final String[] PERMISSION_PREFERENCE_KEYS = {
             // Permission keys mapped for next {@link ContentSettingException.Type} values.
             "ads_permission_list", // ContentSettingException.Type.ADS
-            "ar_permission_list", // PermissionInfo.Type.AUGMENTED_REALITY
             "automatic_downloads_permission_list",
             // ContentSettingException.Type.AUTOMATIC_DOWNLOADS
             "background_sync_permission_list", // ContentSettingException.Type.BACKGROUND_SYNC
@@ -84,6 +83,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
             "popup_permission_list", // ContentSettingException.Type.POPUP
             "sound_permission_list", // ContentSettingException.Type.SOUND
             // Permission keys mapped for next {@link PermissionInfo.Type} values.
+            "ar_permission_list", // PermissionInfo.Type.AUGMENTED_REALITY
             "camera_permission_list", // PermissionInfo.Type.CAMERA
             "clipboard_permission_list", // PermissionInfo.Type.CLIPBOARD
             "location_access_list", // PermissionInfo.Type.GEOLOCATION
@@ -934,7 +934,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         });
     }
 
-    private int getContentSettingsTypeFromPreferenceKey(String preferenceKey) {
+    public static int getContentSettingsTypeFromPreferenceKey(String preferenceKey) {
         for (int i = 0; i < PERMISSION_PREFERENCE_KEYS.length; i++) {
             if (PERMISSION_PREFERENCE_KEYS[i].equals(preferenceKey)) {
                 return i < ContentSettingException.Type.NUM_ENTRIES

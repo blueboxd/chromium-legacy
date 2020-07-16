@@ -54,8 +54,8 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
+#include "third_party/blink/public/mojom/loader/referrer.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
-#include "third_party/blink/public/mojom/referrer.mojom.h"
 
 using blink::mojom::CacheStorageError;
 using blink::mojom::CacheStorageVerboseError;

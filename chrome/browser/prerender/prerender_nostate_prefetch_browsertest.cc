@@ -22,6 +22,8 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
+#include "chrome/browser/predictors/autocomplete_action_predictor.h"
+#include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -31,12 +33,16 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/embedder_support/switches.h"
+#include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/appcache_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -1709,6 +1715,16 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchIncognitoBrowserTest,
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 0);
 }
 
+// Checks that prerenders are aborted when an incognito profile is closed.
+// ToDo(crbug.com/994068): The test is crashing on multiple platforms.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchIncognitoBrowserTest,
+                       PrerenderIncognitoClosed) {
+  std::unique_ptr<TestPrerender> test_prerender =
+      PrefetchFromFile(kHungPrerenderPage, FINAL_STATUS_PROFILE_DESTROYED);
+  current_browser()->window()->Close();
+  test_prerender->WaitForStop();
+}
+
 // Checks that when the history is cleared, NoStatePrefetch history is cleared.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ClearHistory) {
   std::unique_ptr<TestPrerender> test_prerender = PrefetchFromFile(
@@ -1800,6 +1816,52 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrerenderExcessiveMemory) {
   PrefetchFromURL(
       src_server()->GetURL("/prerender/prerender_excessive_memory.html"),
       FINAL_STATUS_MEMORY_LIMIT_EXCEEDED);
+}
+
+class NoStatePrefetchOmniboxBrowserTest : public NoStatePrefetchBrowserTest {
+ public:
+  LocationBar* GetLocationBar() {
+    return current_browser()->window()->GetLocationBar();
+  }
+
+  OmniboxView* GetOmniboxView() { return GetLocationBar()->GetOmniboxView(); }
+
+  predictors::AutocompleteActionPredictor* GetAutocompleteActionPredictor() {
+    Profile* profile = current_browser()->profile();
+    return predictors::AutocompleteActionPredictorFactory::GetForProfile(
+        profile);
+  }
+
+  std::unique_ptr<TestPrerender> ExpectPrerender(
+      FinalStatus expected_final_status) {
+    return prerender_contents_factory()->ExpectPrerenderContents(
+        expected_final_status);
+  }
+
+  std::unique_ptr<TestPrerender> StartOmniboxPrerender(
+      const GURL& url,
+      FinalStatus expected_final_status) {
+    std::unique_ptr<TestPrerender> prerender =
+        ExpectPrerender(expected_final_status);
+    content::WebContents* web_contents = GetActiveWebContents();
+    GetAutocompleteActionPredictor()->StartPrerendering(
+        url, web_contents->GetController().GetDefaultSessionStorageNamespace(),
+        gfx::Size(50, 50));
+    prerender->WaitForStart();
+    return prerender;
+  }
+};
+
+// Checks that closing the omnibox popup cancels an omnibox prerender.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchOmniboxBrowserTest,
+                       PrerenderOmniboxCancel) {
+  // Fake an omnibox prerender.
+  std::unique_ptr<TestPrerender> prerender = StartOmniboxPrerender(
+      embedded_test_server()->GetURL("/empty.html"), FINAL_STATUS_CANCELLED);
+
+  // Revert the location bar. This should cancel the prerender.
+  GetLocationBar()->Revert();
+  prerender->WaitForStop();
 }
 
 }  // namespace prerender

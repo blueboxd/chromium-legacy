@@ -404,8 +404,7 @@ struct BASE_EXPORT PartitionRoot {
   // nothing) instead of true|false, so that we can just add or subtract the
   // size instead of having an if branch on the hot paths.
   bool allow_extras;
-  // Atomic as initialization can be concurrent.
-  std::atomic<bool> initialized = {};
+  bool initialized = false;
   char* next_super_page = nullptr;
   char* next_partition_page = nullptr;
   char* next_partition_page_end = nullptr;
@@ -432,6 +431,9 @@ struct BASE_EXPORT PartitionRoot {
   Bucket buckets[kGenericNumBuckets] = {};
 
   PartitionRoot() = default;
+  explicit PartitionRoot(bool enable_tag_pointers) {
+    Init(enable_tag_pointers);
+  }
   ~PartitionRoot() = default;
 
   // Public API
@@ -444,15 +446,7 @@ struct BASE_EXPORT PartitionRoot {
   //
   // Moving it a layer lower couples PartitionRoot and PartitionBucket, but
   // preserves the layering of the includes.
-  ALWAYS_INLINE void Init(bool enforce_alignment) {
-    if (LIKELY(initialized.load(std::memory_order_relaxed)))
-      return;
-
-    InitSlowPath(enforce_alignment);
-#if ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_MTE_CHECKED_PTR
-    current_partition_tag = base::RandUint64();
-#endif
-  }
+  void Init(bool enforce_alignment);
 
   ALWAYS_INLINE static bool IsValidPage(Page* page);
   ALWAYS_INLINE static PartitionRoot* FromPage(Page* page);
@@ -507,7 +501,6 @@ struct BASE_EXPORT PartitionRoot {
   internal::PartitionBucket<thread_safe>* SizeToBucket(size_t size) const;
 
  private:
-  void InitSlowPath(bool enforce_alignment);
   ALWAYS_INLINE void* AllocFromBucket(Bucket* bucket, int flags, size_t size)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
   bool ReallocDirectMappedInPlace(internal::PartitionPage<thread_safe>* page,

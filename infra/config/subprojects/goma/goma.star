@@ -406,12 +406,14 @@ goma_builder(
     name = 'Chromium Android ARM 32-bit Goma RBE ToT',
     goma_backend = goma.backend.RBE_TOT,
     goma_enable_ats = False,
+    goma_use_luci_auth = True,
 )
 
 goma_builder(
     name = 'Chromium Android ARM 32-bit Goma RBE ToT (ATS)',
     goma_backend = goma.backend.RBE_TOT,
     goma_enable_ats = True,
+    goma_use_luci_auth = True,
 )
 
 goma_builder(
@@ -442,12 +444,14 @@ goma_builder(
     name = 'Chromium Linux Goma RBE ToT',
     goma_backend = goma.backend.RBE_TOT,
     goma_enable_ats = False,
+    goma_use_luci_auth = True,
 )
 
 goma_builder(
     name = 'Chromium Linux Goma RBE ToT (ATS)',
     goma_backend = goma.backend.RBE_TOT,
     goma_enable_ats = True,
+    goma_use_luci_auth = True,
 )
 
 
@@ -464,6 +468,7 @@ goma_mac_builder(
     name = 'Chromium iOS Goma RBE ToT',
     caches = [xcode_cache.x11c29],
     goma_backend = goma.backend.RBE_TOT,
+    goma_use_luci_auth = True,
     os = os.MAC_10_14,
     properties = {
       'xcode_build_version': "11c29",
@@ -488,6 +493,7 @@ goma_mac_builder(
 goma_mac_builder(
     name = 'Chromium Mac Goma RBE ToT',
     goma_backend = goma.backend.RBE_TOT,
+    goma_use_luci_auth = True,
 )
 
 goma_mac_builder(
@@ -517,6 +523,7 @@ goma_windows_builder(
 goma_windows_builder(
     name = 'Chromium Win Goma RBE ToT',
     goma_backend = goma.backend.RBE_TOT,
+    goma_use_luci_auth = True,
 )
 
 goma_windows_builder(

@@ -190,11 +190,9 @@ public class InputMethodManagerWrapperImpl implements InputMethodManagerWrapper 
     @Override
     public void updateCursorAnchorInfo(View view, CursorAnchorInfo cursorAnchorInfo) {
         if (DEBUG_LOGS) Log.i(TAG, "updateCursorAnchorInfo");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            InputMethodManager manager = getInputMethodManager();
-            if (manager == null) return;
-            manager.updateCursorAnchorInfo(view, cursorAnchorInfo);
-        }
+        InputMethodManager manager = getInputMethodManager();
+        if (manager == null) return;
+        manager.updateCursorAnchorInfo(view, cursorAnchorInfo);
     }
 
     @Override

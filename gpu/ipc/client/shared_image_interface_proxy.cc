@@ -60,6 +60,8 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage) {
   GpuChannelMsg_CreateSharedImage_Params params;
   params.mailbox = Mailbox::GenerateForSharedImage();
@@ -67,6 +69,8 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   params.size = size;
   params.color_space = color_space;
   params.usage = usage;
+  params.surface_origin = surface_origin;
+  params.alpha_type = alpha_type;
   {
     base::AutoLock lock(lock_);
     AddMailbox(params.mailbox, usage);
@@ -84,6 +88,8 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     base::span<const uint8_t> pixel_data) {
   // Pixel data's size must fit into a uint32_t to be sent via
@@ -116,6 +122,8 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   params.pixel_data_size = pixel_data.size();
   params.done_with_shm = done_with_shm;
   params.release_id = ++next_release_id_;
+  params.surface_origin = surface_origin;
+  params.alpha_type = alpha_type;
   last_flush_id_ = host_->EnqueueDeferredMessage(
       GpuChannelMsg_CreateSharedImageWithData(route_id_, params));
 
@@ -127,6 +135,8 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
     gfx::GpuMemoryBuffer* gpu_memory_buffer,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage) {
   DCHECK(gpu_memory_buffer->GetType() == gfx::NATIVE_PIXMAP ||
          gpu_memory_buffer->GetType() == gfx::ANDROID_HARDWARE_BUFFER ||
@@ -141,6 +151,8 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   params.format = gpu_memory_buffer->GetFormat();
   params.color_space = color_space;
   params.usage = usage;
+  params.surface_origin = surface_origin;
+  params.alpha_type = alpha_type;
 
   // TODO(piman): DCHECK GMB format support.
   DCHECK(gpu::IsImageSizeValidForGpuMemoryBufferFormat(params.size,
@@ -354,6 +366,8 @@ SharedImageInterface::SwapChainMailboxes
 SharedImageInterfaceProxy::CreateSwapChain(viz::ResourceFormat format,
                                            const gfx::Size& size,
                                            const gfx::ColorSpace& color_space,
+                                           GrSurfaceOrigin surface_origin,
+                                           SkAlphaType alpha_type,
                                            uint32_t usage) {
 #if defined(OS_WIN)
   GpuChannelMsg_CreateSwapChain_Params params;
@@ -363,6 +377,8 @@ SharedImageInterfaceProxy::CreateSwapChain(viz::ResourceFormat format,
   params.size = size;
   params.color_space = color_space;
   params.usage = usage;
+  params.surface_origin = surface_origin;
+  params.alpha_type = alpha_type;
   {
     base::AutoLock lock(lock_);
 

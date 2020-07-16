@@ -417,7 +417,8 @@ void NavigationURLLoaderImpl::CreateInterceptors(
   if (prefetched_signed_exchange_cache) {
     std::unique_ptr<NavigationLoaderInterceptor>
         prefetched_signed_exchange_interceptor =
-            prefetched_signed_exchange_cache->MaybeCreateInterceptor(url_);
+            prefetched_signed_exchange_cache->MaybeCreateInterceptor(
+                url_, frame_tree_node_id_);
     if (prefetched_signed_exchange_interceptor) {
       interceptors_.push_back(
           std::move(prefetched_signed_exchange_interceptor));

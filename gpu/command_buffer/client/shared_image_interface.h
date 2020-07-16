@@ -14,6 +14,8 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/buffer_types.h"
 
 #if !defined(OS_NACL)
@@ -55,12 +57,13 @@ class GPU_EXPORT SharedImageInterface {
   // The |SharedImageInterface| keeps ownership of the image until
   // |DestroySharedImage| is called or the interface itself is destroyed (e.g.
   // the GPU channel is lost).
-  virtual Mailbox CreateSharedImage(
-      viz::ResourceFormat format,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      uint32_t usage,
-      gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle) = 0;
+  virtual Mailbox CreateSharedImage(viz::ResourceFormat format,
+                                    const gfx::Size& size,
+                                    const gfx::ColorSpace& color_space,
+                                    GrSurfaceOrigin surface_origin,
+                                    SkAlphaType alpha_type,
+                                    uint32_t usage,
+                                    gpu::SurfaceHandle surface_handle) = 0;
 
   // Same behavior as the above, except that this version takes |pixel_data|
   // which is used to populate the SharedImage.  |pixel_data| should have the
@@ -69,6 +72,8 @@ class GPU_EXPORT SharedImageInterface {
   virtual Mailbox CreateSharedImage(viz::ResourceFormat format,
                                     const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
+                                    GrSurfaceOrigin surface_origin,
+                                    SkAlphaType alpha_type,
                                     uint32_t usage,
                                     base::span<const uint8_t> pixel_data) = 0;
 
@@ -93,6 +98,8 @@ class GPU_EXPORT SharedImageInterface {
       gfx::GpuMemoryBuffer* gpu_memory_buffer,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage) = 0;
 
   // Updates a shared image after its GpuMemoryBuffer (if any) was modified on
@@ -129,6 +136,8 @@ class GPU_EXPORT SharedImageInterface {
   virtual SwapChainMailboxes CreateSwapChain(viz::ResourceFormat format,
                                              const gfx::Size& size,
                                              const gfx::ColorSpace& color_space,
+                                             GrSurfaceOrigin surface_origin,
+                                             SkAlphaType alpha_type,
                                              uint32_t usage) = 0;
 
   // Swaps front and back buffer of a swap chain. Back buffer mailbox still

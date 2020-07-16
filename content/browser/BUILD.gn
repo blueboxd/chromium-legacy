@@ -1910,6 +1910,8 @@ jumbo_source_set("browser") {
     "web_package/prefetched_signed_exchange_cache.h",
     "web_package/prefetched_signed_exchange_cache_adapter.cc",
     "web_package/prefetched_signed_exchange_cache_adapter.h",
+    "web_package/prefetched_signed_exchange_cache_entry.cc",
+    "web_package/prefetched_signed_exchange_cache_entry.h",
     "web_package/save_as_web_bundle_job.cc",
     "web_package/save_as_web_bundle_job.h",
     "web_package/signed_exchange_cert_fetcher.cc",

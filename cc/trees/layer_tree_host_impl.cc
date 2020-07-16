@@ -5945,7 +5945,8 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
           layer_tree_frame_sink_->context_provider();
       auto* sii = context_provider->SharedImageInterface();
       mailbox = sii->CreateSharedImage(
-          format, upload_size, color_space, shared_image_usage,
+          format, upload_size, color_space, kTopLeft_GrSurfaceOrigin,
+          kPremul_SkAlphaType, shared_image_usage,
           base::span<const uint8_t>(bitmap.GetPixels(), bitmap.SizeInBytes()));
     } else {
       DCHECK_EQ(bitmap.GetFormat(), UIResourceBitmap::RGBA8);
@@ -6009,7 +6010,8 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
           layer_tree_frame_sink_->context_provider();
       auto* sii = context_provider->SharedImageInterface();
       mailbox = sii->CreateSharedImage(
-          format, upload_size, color_space, shared_image_usage,
+          format, upload_size, color_space, kTopLeft_GrSurfaceOrigin,
+          kPremul_SkAlphaType, shared_image_usage,
           base::span<const uint8_t>(
               reinterpret_cast<const uint8_t*>(pixmap.addr()),
               pixmap.computeByteSize()));

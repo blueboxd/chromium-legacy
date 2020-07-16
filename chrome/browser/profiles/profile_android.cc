@@ -128,6 +128,11 @@ jboolean ProfileAndroid::HasPrimaryOTRProfile(
   return profile_->HasPrimaryOTRProfile();
 }
 
+jboolean ProfileAndroid::IsPrimaryOTRProfile(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
+  return profile_->IsPrimaryOTRProfile();
+}
+
 base::android::ScopedJavaLocalRef<jobject> ProfileAndroid::GetProfileKey(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {

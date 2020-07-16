@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
@@ -102,6 +103,7 @@ public class CustomTabActivityTabController implements InflationObserver {
     private final StartupTabPreloader mStartupTabPreloader;
     private final ReparentingTaskProvider mReparentingTaskProvider;
     private final Lazy<CustomTabIncognitoManager> mCustomTabIncognitoManager;
+    private final ProfileProvider mProfileProvider;
 
     @Nullable
     private final CustomTabsSessionToken mSession;
@@ -127,7 +129,8 @@ public class CustomTabActivityTabController implements InflationObserver {
             CustomTabNavigationEventObserver tabNavigationEventObserver,
             CustomTabActivityTabProvider tabProvider, StartupTabPreloader startupTabPreloader,
             ReparentingTaskProvider reparentingTaskProvider,
-            Lazy<CustomTabIncognitoManager> customTabIncognitoManager) {
+            Lazy<CustomTabIncognitoManager> customTabIncognitoManager,
+            ProfileProvider profileProvider) {
         mCustomTabDelegateFactory = customTabDelegateFactory;
         mActivity = activity;
         mConnection = connection;
@@ -145,6 +148,7 @@ public class CustomTabActivityTabController implements InflationObserver {
         mStartupTabPreloader = startupTabPreloader;
         mReparentingTaskProvider = reparentingTaskProvider;
         mCustomTabIncognitoManager = customTabIncognitoManager;
+        mProfileProvider = profileProvider;
 
         mSession = mIntentDataProvider.getSession();
         mIntent = mIntentDataProvider.getIntent();
@@ -429,8 +433,10 @@ public class CustomTabActivityTabController implements InflationObserver {
             return mWebContentsFactory.createWebContentsWithWarmRenderer(
                     mCustomTabIncognitoManager.get().getProfile(), false);
         } else {
-            return mWebContentsFactory.createWebContentsWithWarmRenderer(
-                    mIntentDataProvider.isIncognito(), false);
+            Profile profile = mIntentDataProvider.isIncognito()
+                    ? mProfileProvider.getPrimaryOTRProfile()
+                    : mProfileProvider.getLastUsedRegularProfile();
+            return mWebContentsFactory.createWebContentsWithWarmRenderer(profile, false);
         }
     }
 

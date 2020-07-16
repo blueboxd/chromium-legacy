@@ -10,6 +10,7 @@ android_library("java") {
     "//base:jni_java",
     "//chrome/android/modules/test_dummy/public:java",
     "//chrome/browser/test_dummy:java",
+    "//components/module_installer/android:module_installer_java",
   ]
   sources = [ "java/src/org/chromium/chrome/modules/test_dummy/TestDummyModuleProvider.java" ]
 }

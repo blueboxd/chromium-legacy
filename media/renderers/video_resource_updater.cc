@@ -385,8 +385,9 @@ class VideoResourceUpdater::HardwarePlaneResource
                                                     BufferFormat(format), caps);
     }
     auto* sii = SharedImageInterface();
-    mailbox_ =
-        sii->CreateSharedImage(format, size, color_space, shared_image_usage);
+    mailbox_ = sii->CreateSharedImage(
+        format, size, color_space, kTopLeft_GrSurfaceOrigin,
+        kPremul_SkAlphaType, shared_image_usage, gpu::kNullSurfaceHandle);
     ContextGL()->WaitSyncTokenCHROMIUM(
         sii->GenUnverifiedSyncToken().GetConstData());
   }

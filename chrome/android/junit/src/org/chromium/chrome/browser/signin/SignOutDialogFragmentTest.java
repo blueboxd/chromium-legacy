@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.signin;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -31,6 +32,7 @@ import org.robolectric.shadows.ShadowAlertDialog;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 import org.chromium.components.signin.GAIAServiceType;
 
@@ -55,6 +57,9 @@ public class SignOutDialogFragmentTest {
     @Mock
     private SigninManager mSigninManagerMock;
 
+    @Mock
+    private Profile mProfile;
+
     @Spy
     private final DummySignOutTargetFragment mTargetFragment = new DummySignOutTargetFragment();
 
@@ -67,7 +72,8 @@ public class SignOutDialogFragmentTest {
         initMocks(this);
         mocker.mock(SigninUtilsJni.TEST_HOOKS, mSigninUtilsNativeMock);
         IdentityServicesProvider.setInstanceForTests(mock(IdentityServicesProvider.class));
-        when(IdentityServicesProvider.get().getSigninManager()).thenReturn(mSigninManagerMock);
+        Profile.setLastUsedProfileForTesting(mProfile);
+        when(IdentityServicesProvider.get().getSigninManager(any())).thenReturn(mSigninManagerMock);
         setUpSignOutDialog();
     }
 

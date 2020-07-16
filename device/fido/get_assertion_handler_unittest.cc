@@ -102,7 +102,7 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 
     auto handler = std::make_unique<GetAssertionRequestHandler>(
         fake_discovery_factory_.get(), supported_transports_,
-        std::move(request),
+        std::move(request), CtapGetAssertionOptions(),
         /*allow_skipping_pin_touch=*/true, get_assertion_cb_.callback());
     return handler;
   }
@@ -729,7 +729,8 @@ TEST(GetAssertionRequestHandlerTest, IncorrectTransportType) {
       &virtual_device_factory,
       base::flat_set<FidoTransportProtocol>(
           {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
-      std::move(request), /*allow_skipping_pin_touch=*/true, cb.callback());
+      std::move(request), CtapGetAssertionOptions(),
+      /*allow_skipping_pin_touch=*/true, cb.callback());
 
   task_environment.FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(cb.was_called());
@@ -797,6 +798,7 @@ TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
             {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         CtapGetAssertionRequest(test_data::kRelyingPartyId,
                                 test_data::kClientDataJson),
+        CtapGetAssertionOptions(),
         /*allow_skipping_pin_touch=*/true, cb.callback());
     // Register an observer that disables automatic dispatch. Dispatch to the
     // (unimplemented) fake Windows API would immediately result in an invalid

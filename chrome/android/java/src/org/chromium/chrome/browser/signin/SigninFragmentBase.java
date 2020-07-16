@@ -404,7 +404,8 @@ public abstract class SigninFragmentBase
         // as this is needed for the previous account check.
         final long seedingStartTime = SystemClock.elapsedRealtime();
         final AccountTrackerService accountTrackerService =
-                IdentityServicesProvider.get().getAccountTrackerService();
+                IdentityServicesProvider.get().getAccountTrackerService(
+                        Profile.getLastUsedRegularProfile());
         if (accountTrackerService.checkAndSeedSystemAccounts()) {
             recordAccountTrackerServiceSeedingTime(seedingStartTime);
             runStateMachineAndSignin(settingsClicked);
@@ -655,8 +656,9 @@ public abstract class SigninFragmentBase
                 && mGooglePlayServicesUpdateErrorHandler.isShowing()) {
             return;
         }
-        boolean cancelable =
-                !IdentityServicesProvider.get().getSigninManager().isForceSigninEnabled();
+        boolean cancelable = !IdentityServicesProvider.get()
+                                      .getSigninManager(Profile.getLastUsedRegularProfile())
+                                      .isForceSigninEnabled();
         mGooglePlayServicesUpdateErrorHandler =
                 new UserRecoverableErrorHandler.ModalDialog(getActivity(), cancelable);
         mGooglePlayServicesUpdateErrorHandler.handleError(getActivity(), gmsErrorCode);

@@ -10,6 +10,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_ipc_export.h"
+#include "ui/gfx/ipc/skia/gfx_skia_param_traits_macros.h"
 
 class SkBitmap;
 struct SkImageInfo;

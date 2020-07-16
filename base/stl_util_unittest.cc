@@ -808,5 +808,16 @@ TEST(STLUtilTest, OptionalOrNullptr) {
   EXPECT_NE(nullptr, base::OptionalOrNullptr(optional));
 }
 
+TEST(STLUtilTest, STLIsSortedConstexpr) {
+  constexpr int kArrayAscending[] = {1, 2, 3, 4};
+  static_assert(base::STLIsSorted(kArrayAscending), "");
+
+  constexpr int kArrayDescending[] = {4, 3, 2, 1};
+  static_assert(!base::STLIsSorted(kArrayDescending), "");
+
+  constexpr int kArrayEqual[] = {1, 1, 1, 1};
+  static_assert(base::STLIsSorted(kArrayEqual), "");
+}
+
 }  // namespace
 }  // namespace base

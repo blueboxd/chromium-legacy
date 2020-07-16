@@ -59,26 +59,6 @@ public class WebContentsFactory {
      *
      * Also creates and initializes the renderer.
      *
-     * @param incognito       Whether or not the {@link WebContents} should be built with an
-     *                        off-the-record profile or not.
-     * @param initiallyHidden Whether or not the {@link WebContents} should be initially hidden.
-     * @return                A newly created {@link WebContents} object.
-     *
-     * @deprecated use {@link #createWebContentsWithWarmRenderer(Profile, boolean)} instead.
-     */
-    @Deprecated
-    public WebContents createWebContentsWithWarmRenderer(
-            boolean incognito, boolean initiallyHidden) {
-        Profile profile = Profile.getLastUsedRegularProfile();
-        if (incognito) profile = profile.getPrimaryOTRProfile();
-        return createWebContents(profile, initiallyHidden, true);
-    }
-
-    /**
-     * A factory method to build a {@link WebContents} object.
-     *
-     * Also creates and initializes the renderer.
-     *
      * @param profile         The profile to be used by the WebContents.
      * @param initiallyHidden Whether or not the {@link WebContents} should be initially hidden.
      * @return                A newly created {@link WebContents} object.

@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/web_package/prefetched_signed_exchange_cache_entry.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
@@ -61,7 +62,8 @@ SignedExchangeLoader::SignedExchangeLoader(
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     int frame_tree_node_id,
     scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
-    const std::string& accept_langs)
+    const std::string& accept_langs,
+    bool keep_entry_for_prefetch_cache)
     : outer_request_(outer_request),
       outer_response_head_(std::move(outer_response_head)),
       forwarding_client_(std::move(forwarding_client)),
@@ -75,6 +77,12 @@ SignedExchangeLoader::SignedExchangeLoader(
       metric_recorder_(std::move(metric_recorder)),
       accept_langs_(accept_langs) {
   DCHECK(outer_request_.url.is_valid());
+
+  if (keep_entry_for_prefetch_cache) {
+    cache_entry_ = std::make_unique<PrefetchedSignedExchangeCacheEntry>();
+    cache_entry_->SetOuterUrl(outer_request_.url);
+    cache_entry_->SetOuterResponse(outer_response_head_->Clone());
+  }
 
   // |metric_recorder_| could be null in some tests.
   if (!(outer_request_.load_flags & net::LOAD_PREFETCH) && metric_recorder_) {
@@ -211,17 +219,10 @@ void SignedExchangeLoader::ConnectToClient(
   mojo::FusePipes(std::move(pending_client_receiver_), std::move(client));
 }
 
-base::Optional<net::SHA256HashValue>
-SignedExchangeLoader::ComputeHeaderIntegrity() const {
-  if (!signed_exchange_handler_)
-    return base::nullopt;
-  return signed_exchange_handler_->ComputeHeaderIntegrity();
-}
-
-base::Time SignedExchangeLoader::GetSignatureExpireTime() const {
-  if (!signed_exchange_handler_)
-    return base::Time();
-  return signed_exchange_handler_->GetSignatureExpireTime();
+std::unique_ptr<PrefetchedSignedExchangeCacheEntry>
+SignedExchangeLoader::TakePrefetchedSignedExchangeCacheEntry() {
+  DCHECK(cache_entry_);
+  return std::move(cache_entry_);
 }
 
 void SignedExchangeLoader::OnHTTPExchangeFound(
@@ -256,6 +257,18 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
   }
   DCHECK_EQ(result, SignedExchangeLoadResult::kSuccess);
   inner_request_url_ = request_url;
+
+  if (cache_entry_) {
+    cache_entry_->SetInnerUrl(*inner_request_url_);
+    auto inner_response_for_cache = resource_response->Clone();
+    inner_response_for_cache->was_fetched_via_cache = true;
+    inner_response_for_cache->was_in_prefetch_cache = true;
+    cache_entry_->SetInnerResponse(std::move(inner_response_for_cache));
+    const bool get_info_result =
+        signed_exchange_handler_->GetSignedExchangeInfoForPrefetchCache(
+            *cache_entry_);
+    DCHECK(get_info_result);
+  }
 
   forwarding_client_->OnReceiveRedirect(
       signed_exchange_utils::CreateRedirectInfo(
@@ -387,7 +400,7 @@ void SignedExchangeLoader::ReportLoadResult(SignedExchangeLoadResult result) {
   }
 
   if (reporter_)
-    reporter_->ReportResultAndFinish(result);
+    reporter_->ReportLoadResultAndFinish(result);
 }
 
 void SignedExchangeLoader::SetSignedExchangeHandlerFactoryForTest(

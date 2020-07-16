@@ -582,6 +582,54 @@ AsCTAPRequestValuePair(const UvTokenRequest& request) {
       });
 }
 
+static std::vector<uint8_t> EncryptToVector(
+    base::span<const uint8_t, SHA256_DIGEST_LENGTH> key,
+    base::span<const uint8_t> plaintext) {
+  std::vector<uint8_t> ret;
+  ret.resize(plaintext.size());
+  Encrypt(key.data(), plaintext, ret.data());
+  return ret;
+}
+
+static std::vector<uint8_t> ConcatSalts(
+    base::span<const uint8_t, 32> salt1,
+    const base::Optional<std::array<uint8_t, 32>>& salt2) {
+  const size_t salts_size =
+      salt1.size() + (salt2.has_value() ? salt2->size() : 0);
+  std::vector<uint8_t> salts(salts_size);
+
+  memcpy(salts.data(), salt1.data(), salt1.size());
+  if (salt2.has_value()) {
+    memcpy(salts.data() + salt1.size(), salt2->data(), salt2->size());
+  }
+
+  return salts;
+}
+
+HMACSecretRequest::HMACSecretRequest(
+    const KeyAgreementResponse& peer_key,
+    base::span<const uint8_t, 32> salt1,
+    const base::Optional<std::array<uint8_t, 32>>& salt2)
+    : public_key_x962(GenerateSharedKey(peer_key, shared_key_.data())),
+      encrypted_salts(EncryptToVector(shared_key_, ConcatSalts(salt1, salt2))),
+      salts_auth(MakePinAuth(shared_key_, encrypted_salts)) {}
+
+HMACSecretRequest::~HMACSecretRequest() = default;
+
+HMACSecretRequest::HMACSecretRequest(const HMACSecretRequest& other) = default;
+
+base::Optional<std::vector<uint8_t>> HMACSecretRequest::Decrypt(
+    base::span<const uint8_t> ciphertext) {
+  if (ciphertext.size() != this->encrypted_salts.size()) {
+    return base::nullopt;
+  }
+
+  std::vector<uint8_t> ret;
+  ret.resize(ciphertext.size());
+  pin::Decrypt(shared_key_.data(), ciphertext, ret.data());
+  return ret;
+}
+
 }  // namespace pin
 
 }  // namespace device

@@ -52,6 +52,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
   void MakeCredential(CtapMakeCredentialRequest request,
                       MakeCredentialCallback callback) override;
   void GetAssertion(CtapGetAssertionRequest request,
+                    CtapGetAssertionOptions options,
                     GetAssertionCallback callback) override;
   void GetTouch(base::OnceClosure callback) override;
   void Cancel() override;

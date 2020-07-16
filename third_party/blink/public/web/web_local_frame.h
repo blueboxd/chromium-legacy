@@ -316,21 +316,6 @@ class WebLocalFrame : public WebFrame {
   // Document.
   virtual void ClearIsolatedWorldCSPForTesting(int32_t world_id) = 0;
 
-  // Sets up an isolated world by associating a |world_id| with |info|.
-  // worldID must be > 0 (as 0 represents the main world).
-  // worldID must be < kEmbedderWorldIdLimit, high number used internally.
-  // TODO(karandeepb): This modifies the global isolated world info and hence
-  // should ideally be moved out of WebLocalFrame.
-  virtual void SetIsolatedWorldInfo(int32_t world_id,
-                                    const WebIsolatedWorldInfo& info) = 0;
-
-  // Returns the stable ID that was set with SetIsolatedWorldInfo.
-  virtual WebString GetIsolatedWorldStableId(v8::Local<v8::Context>) const = 0;
-
-  // Returns the human readable name that was set with SetIsolatedWorldInfo.
-  virtual WebString GetIsolatedWorldHumanReadableName(
-      v8::Local<v8::Context>) const = 0;
-
   // Executes script in the context of the current page and returns the value
   // that the script evaluated to.
   // DEPRECATED: Use WebLocalFrame::requestExecuteScriptAndReturnValue.

@@ -59,6 +59,12 @@ void LayoutButton::RemoveChild(LayoutObject* old_child) {
 void LayoutButton::UpdateAnonymousChildStyle(const LayoutObject* child,
                                              ComputedStyle& child_style) const {
   DCHECK_EQ(inner_, child);
+  UpdateAnonymousChildStyle(StyleRef(), child_style);
+}
+
+// This function is shared with LayoutNGButton.
+void LayoutButton::UpdateAnonymousChildStyle(const ComputedStyle& parent_style,
+                                             ComputedStyle& child_style) {
   child_style.SetFlexGrow(1.0f);
   // min-width: 0; is needed for correct shrinking.
   child_style.SetMinWidth(Length::Fixed(0));
@@ -66,13 +72,13 @@ void LayoutButton::UpdateAnonymousChildStyle(const LayoutObject* child,
   // when the content overflows, treat it the same as align-items: flex-start.
   child_style.SetMarginTop(Length());
   child_style.SetMarginBottom(Length());
-  child_style.SetFlexDirection(StyleRef().FlexDirection());
-  child_style.SetJustifyContent(StyleRef().JustifyContent());
-  child_style.SetFlexWrap(StyleRef().FlexWrap());
+  child_style.SetFlexDirection(parent_style.FlexDirection());
+  child_style.SetJustifyContent(parent_style.JustifyContent());
+  child_style.SetFlexWrap(parent_style.FlexWrap());
   // TODO (lajava): An anonymous box must not be used to resolve children's auto
   // values.
-  child_style.SetAlignItems(StyleRef().AlignItems());
-  child_style.SetAlignContent(StyleRef().AlignContent());
+  child_style.SetAlignItems(parent_style.AlignItems());
+  child_style.SetAlignContent(parent_style.AlignContent());
 }
 
 LayoutUnit LayoutButton::BaselinePosition(

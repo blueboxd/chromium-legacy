@@ -35,9 +35,18 @@ public class TabListSceneLayer extends SceneLayer {
     private TabModelSelector mTabModelSelector;
     private int[] mAdditionalIds = new int[4];
     private boolean mUseAdditionalIds;
+    private boolean mIsInitialized;
 
     public void setTabModelSelector(TabModelSelector tabModelSelector) {
         mTabModelSelector = tabModelSelector;
+    }
+
+    public void init(LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
+            ResourceManager resourceManager) {
+        if (mNativePtr == 0 || mIsInitialized) return;
+        TabListSceneLayerJni.get().setDependencies(mNativePtr, TabListSceneLayer.this,
+                tabContentManager, layerTitleCache, resourceManager);
+        mIsInitialized = true;
     }
 
     /**
@@ -72,11 +81,16 @@ public class TabListSceneLayer extends SceneLayer {
         LayoutTab[] tabs = layout.getLayoutTabsToRender();
         int tabsCount = tabs != null ? tabs.length : 0;
 
+        if (!mIsInitialized) {
+            init(layerTitleCache, tabContentManager, resourceManager);
+        }
+
         TabListSceneLayerJni.get().beginBuildingFrame(mNativePtr, TabListSceneLayer.this);
 
+        // TODO(crbug.com/1070281): Use Supplier to get viewport and forward it to native, then
+        // updateLayer can become obsolete.
         TabListSceneLayerJni.get().updateLayer(mNativePtr, TabListSceneLayer.this, tabListBgColor,
-                viewport.left, viewport.top, viewport.width(), viewport.height(), layerTitleCache,
-                tabContentManager, resourceManager);
+                viewport.left, viewport.top, viewport.width(), viewport.height());
 
         if (backgroundResourceId != INVALID_RESOURCE_ID) {
             TabListSceneLayerJni.get().putBackgroundLayer(mNativePtr, TabListSceneLayer.this,
@@ -189,10 +203,12 @@ public class TabListSceneLayer extends SceneLayer {
         long init(TabListSceneLayer caller);
         void beginBuildingFrame(long nativeTabListSceneLayer, TabListSceneLayer caller);
         void finishBuildingFrame(long nativeTabListSceneLayer, TabListSceneLayer caller);
+        void setDependencies(long nativeTabListSceneLayer, TabListSceneLayer caller,
+                TabContentManager tabContentManager, LayerTitleCache layerTitleCache,
+                ResourceManager resourceManager);
         void updateLayer(long nativeTabListSceneLayer, TabListSceneLayer caller,
                 int backgroundColor, float viewportX, float viewportY, float viewportWidth,
-                float viewportHeight, LayerTitleCache layerTitleCache,
-                TabContentManager tabContentManager, ResourceManager resourceManager);
+                float viewportHeight);
         // TODO(meiliang): Need to provide a resource that indicates the selected tab on the layer.
         void putTabLayer(long nativeTabListSceneLayer, TabListSceneLayer caller, int selectedId,
                 int[] ids, boolean useAdditionalIds, int toolbarResourceId,

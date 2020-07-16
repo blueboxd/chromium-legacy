@@ -16,7 +16,8 @@ class SharesheetButton : public ToolbarButton, public views::ButtonListener {
   SharesheetButton& operator=(const SharesheetButton&) = delete;
   ~SharesheetButton() override;
 
-  void UpdateIcon();
+  // ToolbarButton:
+  void UpdateIcon() override;
 
  private:
   // views::ButtonListener:

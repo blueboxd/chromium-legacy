@@ -76,6 +76,7 @@ android_library("runtime_library_javatests") {
     "//base:base_java_test_support",
     "//chrome/test/android:chrome_java_test_support",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
   ]

@@ -98,6 +98,8 @@ void AvatarToolbarButton::UpdateIcon() {
   for (auto state : kButtonStates)
     SetImage(state, GetAvatarIcon(state, gaia_account_image));
   delegate_->ShowIdentityAnimation(gaia_account_image);
+
+  SetInsets();
 }
 
 void AvatarToolbarButton::UpdateText() {
@@ -197,7 +199,6 @@ void AvatarToolbarButton::OnBlur() {
 
 void AvatarToolbarButton::OnThemeChanged() {
   ToolbarButton::OnThemeChanged();
-  UpdateIcon();
   UpdateText();
 }
 

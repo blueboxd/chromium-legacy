@@ -24,9 +24,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.util.ShadowUrlUtilities;
@@ -49,9 +52,17 @@ public class CustomTabActivityTabControllerUnitTest {
 
     private CustomTabActivityTabController mTabController;
 
+    @Mock
+    public ProfileProvider mProfileProvider;
+
+    @Mock
+    private Profile mProfile;
+
     @Before
     public void setUp() {
-        mTabController = env.createTabController();
+        MockitoAnnotations.initMocks(this);
+        when(mProfileProvider.getLastUsedRegularProfile()).thenReturn(mProfile);
+        mTabController = env.createTabController(mProfileProvider);
     }
 
     @Test
@@ -137,7 +148,7 @@ public class CustomTabActivityTabControllerUnitTest {
     @Test
     public void usesWebContentsCreatedWithWarmRenderer_ByDefault() {
         WebContents webContents = mock(WebContents.class);
-        when(env.webContentsFactory.createWebContentsWithWarmRenderer(anyBoolean(), anyBoolean()))
+        when(env.webContentsFactory.createWebContentsWithWarmRenderer(any(), anyBoolean()))
                 .thenReturn(webContents);
         env.reachNativeInit(mTabController);
         assertEquals(webContents, env.webContentsCaptor.getValue());

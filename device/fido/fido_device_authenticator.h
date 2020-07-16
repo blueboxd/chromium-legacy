@@ -22,6 +22,7 @@
 namespace device {
 
 struct CtapGetAssertionRequest;
+struct CtapGetAssertionOptions;
 struct CtapMakeCredentialRequest;
 struct EnumerateRPsResponse;
 class FidoDevice;
@@ -41,6 +42,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void MakeCredential(CtapMakeCredentialRequest request,
                       MakeCredentialCallback callback) override;
   void GetAssertion(CtapGetAssertionRequest request,
+                    CtapGetAssertionOptions options,
                     GetAssertionCallback callback) override;
   void GetNextAssertion(GetAssertionCallback callback) override;
   void GetTouch(base::OnceCallback<void()> callback) override;
@@ -132,6 +134,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void OnHaveEphemeralKey(GetEphemeralKeyCallback callback,
                           CtapDeviceResponseCode status,
                           base::Optional<pin::KeyAgreementResponse> key);
+  void DoGetAssertion(CtapGetAssertionRequest request,
+                      CtapGetAssertionOptions options,
+                      GetAssertionCallback callback);
+  void OnHaveEphemeralKeyForGetAssertion(
+      CtapGetAssertionRequest request,
+      CtapGetAssertionOptions options,
+      GetAssertionCallback callback,
+      CtapDeviceResponseCode status,
+      base::Optional<pin::KeyAgreementResponse> key);
   void OnHaveEphemeralKeyForGetPINToken(
       std::string pin,
       uint8_t permissions,

@@ -84,7 +84,7 @@ export function getFilenameFromURL(url) {
   }
 }
 
-class PDFViewerElement extends PDFViewerBaseElement {
+export class PDFViewerElement extends PDFViewerBaseElement {
   static get is() {
     return 'pdf-viewer';
   }

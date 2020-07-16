@@ -11,7 +11,6 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
-#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/events/event.h"
 
 class AvatarToolbarButtonDelegate;
@@ -45,7 +44,6 @@ class AvatarToolbarButton : public ToolbarButton,
   AvatarToolbarButton(Browser* browser, ToolbarIconContainerView* parent);
   ~AvatarToolbarButton() override;
 
-  void UpdateIcon();
   void UpdateText();
   void ShowAvatarHighlightAnimation();
   bool IsParentHighlighted() const;
@@ -60,6 +58,7 @@ class AvatarToolbarButton : public ToolbarButton,
   void OnMouseExited(const ui::MouseEvent& event) override;
   void OnBlur() override;
   void OnThemeChanged() override;
+  void UpdateIcon() override;
 
   // ToolbarIconContainerView::Observer:
   void OnHighlightChanged() override;
@@ -80,17 +79,10 @@ class AvatarToolbarButton : public ToolbarButton,
 
   void SetInsets();
 
-  void OnTouchUiChanged();
-
   std::unique_ptr<AvatarToolbarButtonDelegate> delegate_;
 
   Browser* const browser_;
   ToolbarIconContainerView* const parent_;
-
-  std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
-      ui::TouchUiController::Get()->RegisterCallback(
-          base::BindRepeating(&AvatarToolbarButton::SetInsets,
-                              base::Unretained(this)));
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 

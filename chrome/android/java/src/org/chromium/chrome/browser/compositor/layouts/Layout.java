@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.resources.ResourceManager;
 
 import java.lang.annotation.Retention;
@@ -284,13 +285,13 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * Update snapping to pixel. To be called once every frame.
      *
      * TODO(crbug.com/1070281): Temporary placement. This is some Mediator logic and should move to
-     * the appropriate location when doing MVC.
+     * the appropriate location when doing MVC. Maybe move to {@link LayoutMediator}.
      *
      * @param dt The delta time between update frames in ms.
      * @param layoutTab The {@link LayoutTab} that needs to be updating.
      * @return   True if the snapping requests to render at least one more frame.
      */
-    protected boolean updateSnap(long dt, LayoutTab layoutTab) {
+    protected boolean updateSnap(long dt, PropertyModel layoutTab) {
         final float step = dt * SNAP_SPEED / 1000.0f;
         final float renderX = layoutTab.get(LayoutTab.RENDER_X);
         final float renderY = layoutTab.get(LayoutTab.RENDER_Y);

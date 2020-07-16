@@ -6,3 +6,10 @@ include_rules = [
   "+ui/base",
   "+ui/latency",
 ]
+
+specific_include_rules = {
+  "gpu_messages.h": [
+    "+third_party/skia/include/gpu/GrTypes.h",
+    "+third_party/skia/include/core/SkImageInfo.h",
+  ],
+}

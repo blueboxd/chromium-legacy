@@ -46,9 +46,8 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
  public:
   explicit AuthenticatorImpl(RenderFrameHost* render_frame_host);
 
-  // By being able to set AuthenticatorCommon, this constructor permits setting
-  // the timer for testing. Using this constructor will also empty out the
-  // protocol set, since no device discovery will take place during tests.
+  // Constructs an AuthenticatorImpl with an injected AuthenticatorCommon for
+  // testing.
   AuthenticatorImpl(RenderFrameHost* render_frame_host,
                     std::unique_ptr<AuthenticatorCommon> authenticator_common);
   ~AuthenticatorImpl() override;

@@ -19,6 +19,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
@@ -187,6 +188,8 @@ public class TabGridDialogView extends FrameLayout
             @Override
             public void onAnimationEnd(Animator animation) {
                 mCurrentDialogAnimator = null;
+                mDialogContainerView.requestFocus();
+                mDialogContainerView.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
             }
         };
         mHideDialogAnimationListener = new AnimatorListenerAdapter() {
@@ -194,6 +197,7 @@ public class TabGridDialogView extends FrameLayout
             public void onAnimationEnd(Animator animation) {
                 setVisibility(View.GONE);
                 mCurrentDialogAnimator = null;
+                mDialogContainerView.clearFocus();
             }
         };
 

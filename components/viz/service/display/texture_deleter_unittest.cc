@@ -26,9 +26,10 @@ TEST(TextureDeleterTest, Destroy) {
 
   auto* sii = context_provider->SharedImageInterface();
 
-  gpu::Mailbox mailbox =
-      sii->CreateSharedImage(ResourceFormat::RGBA_8888, gfx::Size(1, 1),
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
+  gpu::Mailbox mailbox = sii->CreateSharedImage(
+      ResourceFormat::RGBA_8888, gfx::Size(1, 1), gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
 
   EXPECT_TRUE(context_provider->HasOneRef());
   EXPECT_EQ(1u, sii->shared_image_count());
@@ -58,9 +59,10 @@ TEST(TextureDeleterTest, NullTaskRunner) {
 
   auto* sii = context_provider->SharedImageInterface();
 
-  gpu::Mailbox mailbox =
-      sii->CreateSharedImage(ResourceFormat::RGBA_8888, gfx::Size(1, 1),
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
+  gpu::Mailbox mailbox = sii->CreateSharedImage(
+      ResourceFormat::RGBA_8888, gfx::Size(1, 1), gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
 
   EXPECT_TRUE(context_provider->HasOneRef());
   EXPECT_EQ(1u, sii->shared_image_count());

@@ -1364,7 +1364,7 @@ TEST_F('OSSettingsInputMethodOptionsPageTest', 'AllJsTests', () => {
 var OSSettingsResetPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'reset_page/reset_page.html';
+    return super.browsePreload + 'chromeos/os_reset_page/os_reset_page.html';
   }
 
   /** @override */

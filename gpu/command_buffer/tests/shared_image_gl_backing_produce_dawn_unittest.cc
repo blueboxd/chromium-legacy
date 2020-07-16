@@ -110,7 +110,8 @@ TEST_F(SharedImageGLBackingProduceDawnTest, Basic) {
   SharedImageInterface* sii = gl_context_->GetSharedImageInterface();
   Mailbox gl_mailbox = sii->CreateSharedImage(
       viz::ResourceFormat::RGBA_8888, {1, 1}, gfx::ColorSpace::CreateSRGB(),
-      SHARED_IMAGE_USAGE_GLES2);
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, SHARED_IMAGE_USAGE_GLES2,
+      kNullSurfaceHandle);
   SyncToken mailbox_produced_token = sii->GenVerifiedSyncToken();
   gl()->WaitSyncTokenCHROMIUM(mailbox_produced_token.GetConstData());
   GLuint texture =

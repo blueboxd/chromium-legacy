@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/optional.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -77,6 +78,10 @@ class ToolbarButton : public views::LabelButton,
   // Updates the images using the given icon and the default colors returned by
   // GetForegroundColor().
   void UpdateIconsWithStandardColors(const gfx::VectorIcon& icon);
+
+  // Updates the icon images and colors as necessary. Should be called any time
+  // icon state changes, e.g. in response to theme or touch mode changes.
+  virtual void UpdateIcon() {}
 
   // Sets |layout_insets_|, see comment there.
   void SetLayoutInsets(const gfx::Insets& insets);
@@ -272,6 +277,11 @@ class ToolbarButton : public views::LabelButton,
   // values.
   base::Optional<SkColor> last_border_color_;
   gfx::Insets last_paint_insets_;
+
+  std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
+      ui::TouchUiController::Get()->RegisterCallback(
+          base::BindRepeating(&ToolbarButton::UpdateIcon,
+                              base::Unretained(this)));
 
   // A factory for tasks that show the dropdown context menu for the button.
   base::WeakPtrFactory<ToolbarButton> show_menu_factory_{this};

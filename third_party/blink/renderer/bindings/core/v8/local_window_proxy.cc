@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/local_window_proxy.h"
 
 #include "base/debug/dump_without_crashing.h"
+#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
@@ -181,22 +182,23 @@ void LocalWindowProxy::Initialize() {
         V8String(GetIsolate(), csp->EvalDisabledErrorMessage()));
   }
 
-  const SecurityOrigin* origin = nullptr;
+  scoped_refptr<const SecurityOrigin> origin;
   if (world_->IsMainWorld()) {
     // ActivityLogger for main world is updated within updateDocumentInternal().
     UpdateDocumentInternal();
     origin = GetFrame()->DomWindow()->GetSecurityOrigin();
   } else {
     UpdateActivityLogger();
-    origin = world_->IsolatedWorldSecurityOrigin();
-    SetSecurityToken(origin);
+    origin = world_->IsolatedWorldSecurityOrigin(
+        GetFrame()->DomWindow()->GetAgentClusterID());
+    SetSecurityToken(origin.get());
   }
 
   {
     TRACE_EVENT1("v8", "ContextCreatedNotification", "IsMainFrame",
                  GetFrame()->IsMainFrame());
     MainThreadDebugger::Instance()->ContextCreated(script_state_, GetFrame(),
-                                                   origin);
+                                                   origin.get());
     GetFrame()->Client()->DidCreateScriptContext(context, world_->GetWorldId());
   }
 

@@ -16,7 +16,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
@@ -70,10 +69,6 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkItem>
 
     // Keep track of the currently highlighted bookmark - used for "show in folder" action.
     private BookmarkId mHighlightedBookmark;
-
-    // For metrics
-    private int mDragReorderCount;
-    private int mMoveButtonCount;
 
     private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
@@ -276,7 +271,6 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkItem>
     // BookmarkUIObserver implementations.
     @Override
     public void onDestroy() {
-        recordSessionReorderInfo(); // For metrics
         mDelegate.removeUIObserver(this);
         mDelegate.getModel().removeObserver(mBookmarkModelObserver);
         mDelegate.getSelectionDelegate().removeObserver(this);
@@ -294,7 +288,6 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkItem>
         mCurrentFolder = folder;
 
         if (!(folder.equals(mCurrentFolder))) {
-            recordSessionReorderInfo();
             mCurrentFolder = folder;
         }
         enableDrag();
@@ -308,7 +301,6 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkItem>
 
     @Override
     public void onSearchStateSet() {
-        recordSessionReorderInfo(); // For metrics
         clearHighlight();
         disableDrag();
         // Headers should not appear in Search mode
@@ -372,20 +364,6 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkItem>
         }
         mTopLevelFolders.clear();
         populateTopLevelFoldersList();
-    }
-
-    private void recordSessionReorderInfo() {
-        // Record metrics when we are exiting a folder (mCurrentFolder must not be null)
-        // Cannot reorder top level folders or partner bookmarks
-        if (mCurrentFolder != null && !topLevelFoldersShowing()
-                && mCurrentFolder.getType() != BookmarkType.PARTNER) {
-            RecordHistogram.recordCount1000Histogram(
-                    "BookmarkManager.NumDraggedInSession", mDragReorderCount);
-            RecordHistogram.recordCount1000Histogram(
-                    "BookmarkManager.NumReorderButtonInSession", mMoveButtonCount);
-            mDragReorderCount = 0;
-            mMoveButtonCount = 0;
-        }
     }
 
     /**
@@ -490,9 +468,6 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkItem>
         mDelegate.getModel().reorderBookmarks(mCurrentFolder, newOrder);
         if (mDragStateDelegate.getDragActive()) {
             RecordUserAction.record("MobileBookmarkManagerDragReorder");
-            mDragReorderCount++;
-        } else {
-            mMoveButtonCount++;
         }
     }
 

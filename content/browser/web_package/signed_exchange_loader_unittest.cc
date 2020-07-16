@@ -192,7 +192,8 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
           nullptr /* reporter */, CreateMockPingLoaderFactory(),
           base::BindRepeating(&SignedExchangeLoaderTest::ThrottlesGetter),
           FrameTreeNode::kFrameTreeNodeInvalidId, nullptr /* metric_recorder */,
-          std::string() /* accept_langs */);
+          std::string() /* accept_langs */,
+          false /* keep_entry_for_prefetch_cache */);
 
   EXPECT_CALL(mock_loader, PauseReadingBodyFromNet());
   signed_exchange_loader->PauseReadingBodyFromNet();

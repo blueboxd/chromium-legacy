@@ -38,6 +38,18 @@ bool AreGetAssertionRequestMapKeysCorrect(
 }
 }  // namespace
 
+CtapGetAssertionOptions::CtapGetAssertionOptions() = default;
+CtapGetAssertionOptions::CtapGetAssertionOptions(
+    const CtapGetAssertionOptions&) = default;
+CtapGetAssertionOptions::CtapGetAssertionOptions(CtapGetAssertionOptions&&) =
+    default;
+CtapGetAssertionOptions::~CtapGetAssertionOptions() = default;
+
+CtapGetAssertionOptions::PRFInput::PRFInput() = default;
+CtapGetAssertionOptions::PRFInput::PRFInput(const PRFInput&) = default;
+CtapGetAssertionOptions::PRFInput::PRFInput(PRFInput&&) = default;
+CtapGetAssertionOptions::PRFInput::~PRFInput() = default;
+
 CtapGetAssertionRequest::HMACSecret::HMACSecret(
     base::span<const uint8_t, kP256X962Length> in_public_key_x962,
     base::span<const uint8_t> in_encrypted_salts,

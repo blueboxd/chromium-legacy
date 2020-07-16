@@ -128,8 +128,7 @@ public class VideoFullscreenOrientationLockTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(message = "crbug.com/837423", sdk_is_greater_than = Build.VERSION_CODES.KITKAT,
-            sdk_is_less_than = Build.VERSION_CODES.M)
+    @DisableIf.Build(message = "crbug.com/837423", sdk_is_less_than = Build.VERSION_CODES.M)
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     public void testEnterExitFullscreenWithControlsButton() throws Exception {
         // Start playback to guarantee it's properly loaded.

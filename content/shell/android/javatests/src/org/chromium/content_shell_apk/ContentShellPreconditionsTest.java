@@ -4,9 +4,7 @@
 
 package org.chromium.content_shell_apk;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
 import android.os.PowerManager;
 import android.support.test.InstrumentationRegistry;
 
@@ -25,7 +23,6 @@ import org.chromium.base.test.util.Feature;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class ContentShellPreconditionsTest {
     @Test
-    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH)
     @SuppressWarnings("deprecation")
     @MediumTest
     @Feature({"TestInfrastructure"})
@@ -33,10 +30,6 @@ public class ContentShellPreconditionsTest {
         PowerManager pm = (PowerManager) InstrumentationRegistry.getContext().getSystemService(
                 Context.POWER_SERVICE);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            Assert.assertTrue("Many tests will fail if the screen is not on.", pm.isInteractive());
-        } else {
-            Assert.assertTrue("Many tests will fail if the screen is not on.", pm.isScreenOn());
-        }
+        Assert.assertTrue("Many tests will fail if the screen is not on.", pm.isInteractive());
     }
 }

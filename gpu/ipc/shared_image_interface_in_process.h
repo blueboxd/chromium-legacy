@@ -45,12 +45,13 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
   // The |SharedImageInterface| keeps ownership of the image until
   // |DestroySharedImage| is called or the interface itself is destroyed (e.g.
   // the GPU channel is lost).
-  Mailbox CreateSharedImage(
-      viz::ResourceFormat format,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      uint32_t usage,
-      gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle) override;
+  Mailbox CreateSharedImage(viz::ResourceFormat format,
+                            const gfx::Size& size,
+                            const gfx::ColorSpace& color_space,
+                            GrSurfaceOrigin surface_origin,
+                            SkAlphaType alpha_type,
+                            uint32_t usage,
+                            gpu::SurfaceHandle surface_handle) override;
 
   // Same behavior as the above, except that this version takes |pixel_data|
   // which is used to populate the SharedImage.  |pixel_data| should have the
@@ -59,6 +60,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
   Mailbox CreateSharedImage(viz::ResourceFormat format,
                             const gfx::Size& size,
                             const gfx::ColorSpace& color_space,
+                            GrSurfaceOrigin surface_origin,
+                            SkAlphaType alpha_type,
                             uint32_t usage,
                             base::span<const uint8_t> pixel_data) override;
 
@@ -76,6 +79,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
   Mailbox CreateSharedImage(gfx::GpuMemoryBuffer* gpu_memory_buffer,
                             GpuMemoryBufferManager* gpu_memory_buffer_manager,
                             const gfx::ColorSpace& color_space,
+                            GrSurfaceOrigin surface_origin,
+                            SkAlphaType alpha_type,
                             uint32_t usage) override;
 
   // Updates a shared image after its GpuMemoryBuffer (if any) was modified on
@@ -103,6 +108,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
   SwapChainMailboxes CreateSwapChain(viz::ResourceFormat format,
                                      const gfx::Size& size,
                                      const gfx::ColorSpace& color_space,
+                                     GrSurfaceOrigin surface_origin,
+                                     SkAlphaType alpha_type,
                                      uint32_t usage) override;
 
   // Swaps front and back buffer of a swap chain. Not reached in this
@@ -161,12 +168,16 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
                                     gpu::SurfaceHandle surface_handle,
                                     const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
+                                    GrSurfaceOrigin surface_origin,
+                                    SkAlphaType alpha_type,
                                     uint32_t usage,
                                     const SyncToken& sync_token);
   void CreateSharedImageWithDataOnGpuThread(const Mailbox& mailbox,
                                             viz::ResourceFormat format,
                                             const gfx::Size& size,
                                             const gfx::ColorSpace& color_space,
+                                            GrSurfaceOrigin surface_origin,
+                                            SkAlphaType alpha_type,
                                             uint32_t usage,
                                             const SyncToken& sync_token,
                                             std::vector<uint8_t> pixel_data);
@@ -176,6 +187,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SharedImageInterfaceInProcess
                                        gfx::BufferFormat format,
                                        const gfx::Size& size,
                                        const gfx::ColorSpace& color_space,
+                                       GrSurfaceOrigin surface_origin,
+                                       SkAlphaType alpha_type,
                                        uint32_t usage,
                                        const SyncToken& sync_token);
   void UpdateSharedImageOnGpuThread(const Mailbox& mailbox,

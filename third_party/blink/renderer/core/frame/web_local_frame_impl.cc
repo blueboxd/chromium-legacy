@@ -813,47 +813,6 @@ void WebLocalFrameImpl::ClearIsolatedWorldCSPForTesting(int32_t world_id) {
   GetFrame()->DomWindow()->ClearIsolatedWorldCSPForTesting(world_id);
 }
 
-void WebLocalFrameImpl::SetIsolatedWorldInfo(int32_t world_id,
-                                             const WebIsolatedWorldInfo& info) {
-  DCHECK(GetFrame());
-  CHECK_GT(world_id, DOMWrapperWorld::kMainWorldId);
-  CHECK_LT(world_id, DOMWrapperWorld::kDOMWrapperWorldEmbedderWorldIdLimit);
-
-  // The security origin received via IPC doesn't contain the agent cluster
-  // ID so we need to make sure it contains the cluster agent ID from
-  // the current document.
-  scoped_refptr<SecurityOrigin> security_origin =
-      info.security_origin.Get()
-          ? info.security_origin.Get()
-                ->IsolatedCopy()
-                ->GetOriginForAgentCluster(
-                    GetFrame()->DomWindow()->GetAgentClusterID())
-          : nullptr;
-
-  CHECK(info.content_security_policy.IsNull() || security_origin);
-
-  DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world_id, security_origin);
-  DOMWrapperWorld::SetNonMainWorldStableId(world_id, info.stable_id);
-  DOMWrapperWorld::SetNonMainWorldHumanReadableName(world_id,
-                                                    info.human_readable_name);
-  IsolatedWorldCSP::Get().SetContentSecurityPolicy(
-      world_id, info.content_security_policy, security_origin);
-}
-
-WebString WebLocalFrameImpl::GetIsolatedWorldStableId(
-    v8::Local<v8::Context> context) const {
-  const DOMWrapperWorld& world = DOMWrapperWorld::World(context);
-  DCHECK(!world.IsMainWorld());
-  return world.NonMainWorldStableId();
-}
-
-WebString WebLocalFrameImpl::GetIsolatedWorldHumanReadableName(
-    v8::Local<v8::Context> context) const {
-  const DOMWrapperWorld& world = DOMWrapperWorld::World(context);
-  DCHECK(!world.IsMainWorld());
-  return world.NonMainWorldHumanReadableName();
-}
-
 void WebLocalFrameImpl::Alert(const WebString& message) {
   DCHECK(GetFrame());
   ScriptState* script_state = ToScriptStateForMainWorld(GetFrame());

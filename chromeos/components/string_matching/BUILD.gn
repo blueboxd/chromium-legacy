@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
+
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 source_set("string_matching") {
@@ -48,5 +50,13 @@ source_set("unit_tests") {
   deps = [
     ":string_matching",
     "//testing/gtest",
+  ]
+}
+
+fuzzer_test("tokenized_string_fuzzer") {
+  sources = [ "tokenized_string_fuzzer.cc" ]
+  deps = [
+    ":string_matching",
+    "//base",
   ]
 }

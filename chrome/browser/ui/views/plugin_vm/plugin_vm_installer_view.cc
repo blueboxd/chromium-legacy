@@ -30,6 +30,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/chromeos/devicetype_utils.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -94,9 +95,7 @@ PluginVmInstallerView::PluginVmInstallerView(Profile* profile)
           plugin_vm::PluginVmInstallerFactory::GetForProfile(profile)) {
   // Layout constants from the spec.
   gfx::Insets kDialogInsets(60, 64, 0, 64);
-  constexpr gfx::Insets kLowerContainerInsets(12, 0, 52, 0);
   constexpr gfx::Size kLogoImageSize(32, 32);
-  constexpr gfx::Size kBigImageSize(264, 264);
   constexpr int kTitleFontSize = 28;
   const gfx::FontList kTitleFont({"Google Sans"}, gfx::Font::NORMAL,
                                  kTitleFontSize, gfx::Font::Weight::NORMAL);
@@ -128,9 +127,9 @@ PluginVmInstallerView::PluginVmInstallerView(Profile* profile)
   AddChildView(upper_container_view);
 
   views::View* lower_container_view = new views::View();
-  views::BoxLayout* lower_container_layout =
+  lower_container_layout_ =
       lower_container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical, kLowerContainerInsets));
+          views::BoxLayout::Orientation::kVertical));
   AddChildView(lower_container_view);
 
   views::ImageView* logo_image = new views::ImageView();
@@ -183,14 +182,10 @@ PluginVmInstallerView::PluginVmInstallerView(Profile* profile)
   upper_container_view->AddChildView(download_progress_message_label_);
 
   big_image_ = new views::ImageView();
-  big_image_->SetImageSize(kBigImageSize);
-  big_image_->SetImage(
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_PLUGIN_VM_INSTALLER));
   lower_container_view->AddChildView(big_image_);
 
   // Make sure the lower_container_view is pinned to the bottom of the dialog.
-  lower_container_layout->set_main_axis_alignment(
+  lower_container_layout_->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kEnd);
   layout->SetFlexForView(lower_container_view, 1, true);
 }
@@ -615,15 +610,26 @@ void PluginVmInstallerView::SetMessageLabel() {
 }
 
 void PluginVmInstallerView::SetBigImage() {
-  if (state_ == State::kError) {
+  constexpr gfx::Size kRegularImageSize(314, 191);
+  constexpr gfx::Size kErrorImageSize(264, 264);
+  constexpr int kRegularImageBottomInset = 52 + 57;
+  constexpr int kErrorImageBottomInset = 52;
+
+  auto setImage = [this](int image_id, gfx::Size size, int bottom_inset) {
+    big_image_->SetImageSize(size);
+    lower_container_layout_->set_inside_border_insets(
+        gfx::Insets(0, 0, bottom_inset, 0));
     big_image_->SetImage(
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_PLUGIN_VM_INSTALLER_ERROR));
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(image_id));
+  };
+
+  if (state_ == State::kError) {
+    setImage(IDR_PLUGIN_VM_INSTALLER_ERROR, kErrorImageSize,
+             kErrorImageBottomInset);
     return;
   }
-  big_image_->SetImage(
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_PLUGIN_VM_INSTALLER));
+  setImage(IDR_PLUGIN_VM_INSTALLER, kRegularImageSize,
+           kRegularImageBottomInset);
 }
 
 void PluginVmInstallerView::StartInstallation() {

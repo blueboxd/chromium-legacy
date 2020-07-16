@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninUtils;
@@ -31,12 +32,15 @@ public class AccountPickerDelegate {
     private final ChromeActivity mChromeActivity;
     private final Tab mTab;
     private final String mContinueUrl;
+    private final SigninManager mSigninManager;
 
     public AccountPickerDelegate(ChromeActivity chromeActivity, String continueUrl) {
         mChromeActivity = chromeActivity;
         // TODO(https://crbug.com/1095554): Check if website redirects after sign-in
         mTab = mChromeActivity.getActivityTab();
         mContinueUrl = continueUrl;
+        mSigninManager = IdentityServicesProvider.get().getSigninManager(
+                Profile.getLastUsedRegularProfile());
     }
     /**
      * Signs the user into the account of the given accountName.
@@ -44,7 +48,7 @@ public class AccountPickerDelegate {
     public void signIn(String accountName) {
         Account account = AccountUtils.findAccountByName(
                 AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(), accountName);
-        IdentityServicesProvider.get().getSigninManager().signIn(
+        mSigninManager.signIn(
                 SigninAccessPoint.WEB_SIGNIN, account, new SigninManager.SignInCallback() {
                     @Override
                     public void onSignInComplete() {

@@ -106,9 +106,9 @@ class SkiaReadbackPixelTest : public cc::PixelTest,
     gpu::SharedImageInterface* sii =
         child_context_provider_->SharedImageInterface();
     DCHECK(sii);
-    gpu::Mailbox mailbox =
-        sii->CreateSharedImage(format, size, gfx::ColorSpace(),
-                               gpu::SHARED_IMAGE_USAGE_DISPLAY, pixels);
+    gpu::Mailbox mailbox = sii->CreateSharedImage(
+        format, size, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
+        kPremul_SkAlphaType, gpu::SHARED_IMAGE_USAGE_DISPLAY, pixels);
     gpu::SyncToken sync_token = sii->GenUnverifiedSyncToken();
 
     TransferableResource gl_resource = TransferableResource::MakeGL(

@@ -36,6 +36,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
@@ -152,6 +153,8 @@ public class LayoutManagerTest implements MockTabModelDelegate {
         }
         mTabModelSelector.selectModel(incognitoSelected);
         LayoutManagerHost layoutManagerHost = new MockLayoutHost(context);
+        TabContentManager tabContentManager = new TabContentManager(context, null, false, null);
+        tabContentManager.initWithNative();
 
         // Build a fake content container
         FrameLayout parentContainer = new FrameLayout(context);
@@ -161,7 +164,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
         mManagerPhone = new LayoutManagerChromePhone(layoutManagerHost, null);
         mManager = mManagerPhone;
         CompositorAnimationHandler.setTestingMode(true);
-        mManager.init(mTabModelSelector, null, null, container, null, null, null);
+        mManager.init(mTabModelSelector, null, tabContentManager, container, null, null, null);
         initializeMotionEvent();
     }
 

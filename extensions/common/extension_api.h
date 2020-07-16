@@ -172,9 +172,6 @@ class ExtensionAPI {
       std::map<std::string, std::unique_ptr<const base::DictionaryValue>>;
   SchemaMap schemas_;
 
-  using StringPieceMap = std::map<std::string, base::StringPiece>;
-  StringPieceMap schema_strings_;
-
   // FeatureProviders used for resolving dependencies.
   typedef std::map<std::string, const FeatureProvider*> FeatureProviderMap;
   FeatureProviderMap dependency_providers_;

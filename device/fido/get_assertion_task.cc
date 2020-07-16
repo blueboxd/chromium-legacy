@@ -12,6 +12,7 @@
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/ctap2_device_operation.h"
 #include "device/fido/make_credential_task.h"
+#include "device/fido/pin.h"
 #include "device/fido/u2f_sign_operation.h"
 
 namespace device {
@@ -57,13 +58,47 @@ bool SetResponseCredential(
   return true;
 }
 
+// HasCredentialSpecificPRFInputs returns true if |options| specifies any PRF
+// inputs that are specific to a credential ID.
+bool HasCredentialSpecificPRFInputs(const CtapGetAssertionOptions& options) {
+  const size_t num = options.prf_inputs.size();
+  return num > 1 ||
+         (num == 1 && options.prf_inputs[0].credential_id.has_value());
+}
+
+// GetDefaultPRFInput returns the default PRF input from |options|, if any.
+const CtapGetAssertionOptions::PRFInput* GetDefaultPRFInput(
+    const CtapGetAssertionOptions& options) {
+  if (options.prf_inputs.empty() ||
+      options.prf_inputs[0].credential_id.has_value()) {
+    return nullptr;
+  }
+  return &options.prf_inputs[0];
+}
+
+// GetPRFInputForCredential returns the PRF input specific to the given
+// credential ID from |options|, or the default PRF input if there's nothing
+// specific for |id|, or |nullptr| if there's not a default value.
+const CtapGetAssertionOptions::PRFInput* GetPRFInputForCredential(
+    const CtapGetAssertionOptions& options,
+    const std::vector<uint8_t>& id) {
+  for (const auto& prf_input : options.prf_inputs) {
+    if (prf_input.credential_id == id) {
+      return &prf_input;
+    }
+  }
+  return GetDefaultPRFInput(options);
+}
+
 }  // namespace
 
 GetAssertionTask::GetAssertionTask(FidoDevice* device,
                                    CtapGetAssertionRequest request,
+                                   CtapGetAssertionOptions options,
                                    GetAssertionTaskCallback callback)
     : FidoTask(device),
       request_(std::move(request)),
+      options_(std::move(options)),
       callback_(std::move(callback)) {
   // This code assumes that user-presence is requested in order to implement
   // possible U2F-fallback.
@@ -130,6 +165,8 @@ CtapGetAssertionRequest GetAssertionTask::NextSilentRequest() {
 
 void GetAssertionTask::GetAssertion() {
   if (request_.allow_list.empty()) {
+    MaybeSetPRFParameters(&request_, GetDefaultPRFInput(options_));
+
     sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), request_,
@@ -165,9 +202,12 @@ void GetAssertionTask::GetAssertion() {
   // If the filtered allowList is small enough to be sent in a single request,
   // do so.
   if (allow_list_batches_.size() == 1 &&
-      !MayFallbackToU2fWithAppIdExtension(*device(), request_)) {
+      !MayFallbackToU2fWithAppIdExtension(*device(), request_) &&
+      !HasCredentialSpecificPRFInputs(options_)) {
     CtapGetAssertionRequest request = request_;
     request.allow_list = allow_list_batches_.front();
+    MaybeSetPRFParameters(&request, GetDefaultPRFInput(options_));
+
     sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), std::move(request),
@@ -179,8 +219,8 @@ void GetAssertionTask::GetAssertion() {
   }
 
   // If the filtered list is too large to be sent at once, or if an App ID might
-  // need to be tested because the site used the appid extension, probe the
-  // credential IDs silently.
+  // need to be tested because the site used the appid extension, or if we might
+  // need to send specific PRF inputs, probe the credential IDs silently.
   sign_operation_ =
       std::make_unique<Ctap2DeviceOperation<CtapGetAssertionRequest,
                                             AuthenticatorGetAssertionResponse>>(
@@ -227,11 +267,40 @@ void GetAssertionTask::HandleResponse(
     return;
   }
 
-  if (response_code == CtapDeviceResponseCode::kSuccess &&
-      !SetResponseCredential(&response_data.value(), allow_list)) {
-    FIDO_LOG(DEBUG) << "Assertion response has invalid credential information";
-    response_code = CtapDeviceResponseCode::kCtap2ErrOther;
-    response_data.reset();
+  if (response_code == CtapDeviceResponseCode::kSuccess) {
+    if (!SetResponseCredential(&response_data.value(), allow_list)) {
+      FIDO_LOG(DEBUG)
+          << "Assertion response has invalid credential information";
+      std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
+                               base::nullopt);
+      return;
+    }
+
+    // Decrypt any hmac-secret response.
+    const base::Optional<cbor::Value>& extensions_cbor =
+        response_data->auth_data().extensions();
+    if (extensions_cbor) {
+      // Parsing has already checked that |extensions_cbor| is a map.
+      const cbor::Value::MapValue& extensions = extensions_cbor->GetMap();
+      auto it = extensions.find(cbor::Value(kExtensionHmacSecret));
+      if (it != extensions.end()) {
+        if (!hmac_secret_request_ || !it->second.is_bytestring()) {
+          FIDO_LOG(DEBUG) << "Unexpected or invalid hmac_secret extension";
+          std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
+                                   base::nullopt);
+          return;
+        }
+        base::Optional<std::vector<uint8_t>> plaintext =
+            hmac_secret_request_->Decrypt(it->second.GetBytestring());
+        if (!plaintext) {
+          FIDO_LOG(DEBUG) << "Failed to decrypt hmac_secret extension";
+          std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
+                                   base::nullopt);
+          return;
+        }
+        response_data->set_hmac_secret(std::move(plaintext.value()));
+      }
+    }
   }
 
   std::move(callback_).Run(response_code, std::move(response_data));
@@ -258,7 +327,12 @@ void GetAssertionTask::HandleResponseToSilentRequest(
           &response_data.value(),
           allow_list_batches_.at(current_allow_list_batch_ - 1))) {
     CtapGetAssertionRequest request = request_;
-    request.allow_list = {*response_data->credential()};
+    const PublicKeyCredentialDescriptor& matching_credential =
+        *response_data->credential();
+    request.allow_list = {matching_credential};
+    MaybeSetPRFParameters(
+        &request, GetPRFInputForCredential(options_, matching_credential.id()));
+
     sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), std::move(request),
@@ -307,6 +381,20 @@ void GetAssertionTask::HandleDummyMakeCredentialComplete(
     base::Optional<AuthenticatorMakeCredentialResponse> response_data) {
   std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials,
                            base::nullopt);
+}
+
+void GetAssertionTask::MaybeSetPRFParameters(
+    CtapGetAssertionRequest* request,
+    const CtapGetAssertionOptions::PRFInput* maybe_inputs) {
+  if (maybe_inputs == nullptr) {
+    return;
+  }
+
+  hmac_secret_request_ = std::make_unique<pin::HMACSecretRequest>(
+      *options_.key, maybe_inputs->salt1, maybe_inputs->salt2);
+  request->hmac_secret.emplace(hmac_secret_request_->public_key_x962,
+                               hmac_secret_request_->encrypted_salts,
+                               hmac_secret_request_->salts_auth);
 }
 
 void GetAssertionTask::MaybeRevertU2fFallbackAndInvokeCallback(

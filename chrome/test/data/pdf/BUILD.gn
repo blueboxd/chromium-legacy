@@ -12,10 +12,42 @@ js_type_check("closure_compile") {
                     "js_module_root=./gen/chrome/test/data/webui/",
                   ]
   deps = [
+    #":annotations_feature_enabled_test",
+    #":basic_plugin_test",
+    ":basic_test",
+
+    #":beep_test",
+    #":bookmarks_test",
     ":download_controls_test",
     ":gesture_detector_test",
+
+    #":layout_test",
+    #":material_elements_test",
+    #":metrics_test",
+    #":navigator_test",
+    #":nobeep_test",
+    #":page_change_test",
+    #":params_parser_test",
+    #":printing_icon_test",
+    #":redirects_fail_test",
     ":test_util",
+
+    #":title_test",
+    #":toolbar_manager_test",
+    #":touch_handling_test",
+    #":viewport_test",
+    #":whitespace_title_test",
+    #":zoom_manager_test",
   ]
+}
+
+js_library("basic_test") {
+  deps = [
+    "//chrome/browser/resources/pdf:pdf_viewer",
+    "//chrome/browser/resources/pdf/elements:viewer-pdf-toolbar",
+    "//chrome/browser/resources/pdf/elements:viewer-toolbar-dropdown",
+  ]
+  externs_list = [ "$externs_path/test.js" ]
 }
 
 js_library("gesture_detector_test") {

@@ -37,11 +37,9 @@ class MediaToolbarButtonView : public ToolbarButton,
   // views::ButtonListener implementation.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // views::InkDropHostView implementation.
+  // ToolbarButton implementation.
   SkColor GetInkDropBaseColor() const override;
-
-  // Updates the icon image.
-  void UpdateIcon();
+  void UpdateIcon() override;
 
   void ShowPromo();
 

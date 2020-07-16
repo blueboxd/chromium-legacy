@@ -39,6 +39,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Matchers;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -159,7 +160,7 @@ public class SigninFragmentTest {
         // Wait for sign in process to finish.
         CriteriaHelper.pollUiThread(() -> {
             return IdentityServicesProvider.get()
-                    .getSigninManager()
+                    .getSigninManager(Profile.getLastUsedRegularProfile())
                     .getIdentityManager()
                     .hasPrimaryAccount();
         }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, CriteriaHelper.DEFAULT_POLLING_INTERVAL);

@@ -53,6 +53,9 @@ class LayoutButton final : public LayoutFlexibleBox {
                               LineDirectionMode,
                               LinePositionMode) const override;
 
+  static void UpdateAnonymousChildStyle(const ComputedStyle& parent_sytle,
+                                        ComputedStyle& child_style);
+
  private:
   void UpdateAnonymousChildStyle(const LayoutObject* child,
                                  ComputedStyle& child_style) const override;

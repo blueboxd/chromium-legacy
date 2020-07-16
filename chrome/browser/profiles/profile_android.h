@@ -72,6 +72,10 @@ class ProfileAndroid : public base::SupportsUserData::Data {
   jboolean IsOffTheRecord(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);
 
+  // Whether this profile is primary off the record profile.
+  jboolean IsPrimaryOTRProfile(JNIEnv* env,
+                               const base::android::JavaParamRef<jobject>& obj);
+
   // Whether this profile is signed in to a child account.
   jboolean IsChild(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj);

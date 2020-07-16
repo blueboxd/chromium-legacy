@@ -209,14 +209,16 @@ std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
           ", autocomplete=" + ScrubElementID(field->autocomplete_attribute);
 
     if (field->server_type() != autofill::NO_SERVER_DATA) {
-      field_info +=
-          ", SERVER_PREDICTION: " +
-          autofill::AutofillType::ServerFieldTypeToString(field->server_type());
+      base::StrAppend(&field_info,
+                      {", SERVER_PREDICTION: ",
+                       autofill::AutofillType::ServerFieldTypeToString(
+                           field->server_type())});
     }
 
     for (ServerFieldType type : field->possible_types())
-      field_info +=
-          ", VOTE: " + autofill::AutofillType::ServerFieldTypeToString(type);
+      base::StrAppend(
+          &field_info,
+          {", VOTE: ", autofill::AutofillType::ServerFieldTypeToString(type)});
 
     if (field->vote_type())
       field_info += ", vote_type=" + VoteTypeToString(field->vote_type());

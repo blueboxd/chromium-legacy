@@ -24,6 +24,7 @@ import org.robolectric.shadows.ShadowToast;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 /** Tests for the method startSigninActivityIfAllowed {@link SigninUtils}. */
@@ -35,13 +36,17 @@ public class SigninUtilsStartActivityTest {
     @Mock
     private SigninActivityLauncher mLauncherMock;
 
+    @Mock
+    private Profile mProfile;
+
     private final Context mContext = RuntimeEnvironment.application.getApplicationContext();
 
     @Before
     public void setUp() {
         initMocks(this);
         IdentityServicesProvider.setInstanceForTests(mock(IdentityServicesProvider.class));
-        when(IdentityServicesProvider.get().getSigninManager()).thenReturn(mSigninManagerMock);
+        Profile.setLastUsedProfileForTesting(mProfile);
+        when(IdentityServicesProvider.get().getSigninManager(any())).thenReturn(mSigninManagerMock);
         SigninActivityLauncher.setLauncherForTest(mLauncherMock);
     }
 

@@ -667,6 +667,12 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   // Sets experimental features.
   bool enable_experimental_web_platform_features =
       command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures);
+
+  if (command_line.HasSwitch(switches::kEnableBlinkTestFeatures)) {
+    enable_experimental_web_platform_features = true;
+    WebRuntimeFeatures::EnableTestOnlyFeatures(true);
+  }
+
   if (enable_experimental_web_platform_features)
     WebRuntimeFeatures::EnableExperimentalFeatures(true);
 

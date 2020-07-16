@@ -334,6 +334,11 @@ class _SchemasCCGenerator(object):
     c.Append('#include "%s"' % (os.path.join(self._bundle._source_file_dir,
                                              'generated_schemas.h')))
     c.Append()
+    c.Append('#include <algorithm>')
+    c.Append('#include <iterator>')
+    c.Append()
+    c.Append('#include "base/stl_util.h"')
+    c.Append()
     c.Append('namespace {')
     for api in self._bundle._api_defs:
       namespace = self._bundle._model.namespaces[api.get('namespace')]
@@ -348,8 +353,9 @@ class _SchemasCCGenerator(object):
           json_content[i:i + max_length]
           for i in range(0, len(json_content), max_length)
       ]
-      c.Append('const char %s[] = R"R(%s)R";' % (_FormatNameAsConstant(
-          namespace.name), ')R" R"R('.join(segments)))
+      c.Append(
+          'constexpr char %s[] = R"R(%s)R";' %
+          (_FormatNameAsConstant(namespace.name), ')R" R"R('.join(segments)))
     c.Append('}  // namespace')
     c.Append()
     c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
@@ -363,9 +369,13 @@ class _SchemasCCGenerator(object):
     c.Append('// static')
     c.Sblock('base::StringPiece %s::Get(base::StringPiece name) {' %
              self._bundle._GenerateBundleClass('GeneratedSchemas'))
-    c.Append('static const struct {')
-    c.Append('  base::StringPiece name;')
-    c.Append('  base::StringPiece schema;')
+    c.Sblock('static constexpr struct kSchemaMapping {')
+    c.Append('const base::StringPiece name;')
+    c.Append('const base::StringPiece schema;')
+    c.Sblock('constexpr bool operator<(const kSchemaMapping& that) const {')
+    c.Append('return name < that.name;')
+    c.Eblock('}')
+    c.Eblock()
     c.Sblock('} kSchemas[] = {')
     namespaces = [self._bundle._model.namespaces[api.get('namespace')].name
                   for api in self._bundle._api_defs]
@@ -373,11 +383,18 @@ class _SchemasCCGenerator(object):
       schema_constant_name = _FormatNameAsConstant(namespace)
       c.Append('{"%s", %s},' % (namespace, schema_constant_name))
     c.Eblock('};')
-    c.Sblock('for (const auto& schema : kSchemas) {')
-    c.Sblock('if (schema.name == name)')
-    c.Append('return schema.schema;')
+    c.Append('static_assert(base::STLIsSorted(kSchemas), "|kSchemas| should be '
+             'sorted.");')
+
+    c.Sblock('auto it = std::lower_bound(std::begin(kSchemas), '
+             'std::end(kSchemas),')
+    c.Append('kSchemaMapping{name, base::StringPiece()});')
     c.Eblock()
-    c.Eblock('}')
+
+    c.Sblock('if (it != std::end(kSchemas) && it->name == name)')
+    c.Append('return it->schema;')
+    c.Eblock()
+
     c.Append('return base::StringPiece();')
     c.Eblock('}')
     c.Append()

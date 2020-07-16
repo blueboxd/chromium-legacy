@@ -498,6 +498,7 @@ int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
   // DBus is initialized in ChromeMainDelegate::PostEarlyInitialization().
   CHECK(DBusThreadManager::IsInitialized());
 
+#if !defined(USE_REAL_DBUS_CLIENTS)
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       parsed_command_line().HasSwitch(
           switches::kFakeDriveFsLauncherChrootPath) &&
@@ -509,6 +510,7 @@ int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
         parsed_command_line().GetSwitchValuePath(
             switches::kFakeDriveFsLauncherSocketPath));
   }
+#endif  // !defined(USE_REAL_DBUS_CLIENTS)
 
   return ChromeBrowserMainPartsLinux::PreEarlyInitialization();
 }

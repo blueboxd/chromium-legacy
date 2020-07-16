@@ -57,14 +57,6 @@ class InternalAuthenticatorImpl : public autofill::InternalAuthenticator,
  private:
   friend class InternalAuthenticatorImplTest;
 
-  // By being able to set AuthenticatorCommon, this constructor permits setting
-  // the connector and timer for testing. Using this constructor will also empty
-  // out the protocol set, since no device discovery will take place during
-  // tests.
-  InternalAuthenticatorImpl(
-      RenderFrameHost* render_frame_host,
-      std::unique_ptr<AuthenticatorCommon> authenticator_common);
-
   AuthenticatorCommon* get_authenticator_common_for_testing() {
     return authenticator_common_.get();
   }

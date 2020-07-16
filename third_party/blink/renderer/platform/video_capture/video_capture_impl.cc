@@ -144,7 +144,8 @@ struct VideoCaptureImpl::BufferContext
       buffer_context->gmb_resources_->mailbox = sii->CreateSharedImage(
           gpu_memory_buffer.get(),
           buffer_context->gpu_factories_->GpuMemoryBufferManager(),
-          *(info->color_space), usage);
+          *(info->color_space), kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+          usage);
     } else {
       sii->UpdateSharedImage(buffer_context->gmb_resources_->release_sync_token,
                              buffer_context->gmb_resources_->mailbox);

@@ -7,7 +7,6 @@ package org.chromium.device.sensors;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.os.Build;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
@@ -109,12 +108,9 @@ public class PlatformSensor implements SensorEventListener {
      */
     @CalledByNative
     protected int getReportingMode() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            return mSensor.getReportingMode() == Sensor.REPORTING_MODE_CONTINUOUS
-                    ? ReportingMode.CONTINUOUS
-                    : ReportingMode.ON_CHANGE;
-        }
-        return ReportingMode.CONTINUOUS;
+        return mSensor.getReportingMode() == Sensor.REPORTING_MODE_CONTINUOUS
+                ? ReportingMode.CONTINUOUS
+                : ReportingMode.ON_CHANGE;
     }
 
     /**

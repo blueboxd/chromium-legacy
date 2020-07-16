@@ -717,6 +717,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsProgress() const { return IsOfType(kLayoutObjectProgress); }
   bool IsQuote() const { return IsOfType(kLayoutObjectQuote); }
   bool IsLayoutButton() const { return IsOfType(kLayoutObjectLayoutButton); }
+  bool IsLayoutNGButton() const { return IsOfType(kLayoutObjectNGButton); }
   bool IsLayoutNGCustom() const {
     return IsOfType(kLayoutObjectLayoutNGCustom);
   }
@@ -2653,6 +2654,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectMathMLRoot,
     kLayoutObjectMedia,
     kLayoutObjectNGBlockFlow,
+    kLayoutObjectNGButton,
     kLayoutObjectNGFieldset,
     kLayoutObjectNGFlexibleBox,
     kLayoutObjectNGGrid,

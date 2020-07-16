@@ -247,20 +247,7 @@ var elementsFromCoordinates = function(root, coordinates) {
 
   if (currentElement.tagName.toLowerCase() === 'iframe' ||
       currentElement.tagName.toLowerCase() === 'frame') {
-    // Check if the frame is in a different domain using only information
-    // visible to the current frame (i.e. currentElement.src) to avoid
-    // triggering a SecurityError in the console.
-    if (!__gCrWeb.common.isSameOrigin(
-        window.location.href, currentElement.src)) {
-      return currentElement;
-    }
-    var framePosition = getPositionInWindow(currentElement);
-    coordinates.viewPortX -= framePosition.x - coordinates.window.pageXOffset;
-    coordinates.viewPortY -= framePosition.y - coordinates.window.pageYOffset;
-    coordinates.window = currentElement.contentWindow;
-    coordinates.x -= framePosition.x + coordinates.window.pageXOffset;
-    coordinates.y -= framePosition.y + coordinates.window.pageYOffset;
-    return elementsFromCoordinates(coordinates.window.document, coordinates);
+    return currentElement;
   }
 
   if (currentElement.shadowRoot) {
@@ -366,9 +353,10 @@ window.addEventListener('message', function(message) {
   var payload = message.data;
   if (payload.hasOwnProperty('type') &&
       payload.type == 'org.chromium.contextMenuMessage') {
-    __gCrWeb.findElementAtPointInPageCoordinates(payload.requestId,
-                                                 payload.x,
-                                                 payload.y);
+    __gCrWeb.findElementAtPointInPageCoordinates(
+        payload.requestId,
+        payload.x + window.pageXOffset,
+        payload.y + window.pageYOffset);
   }
 });
 

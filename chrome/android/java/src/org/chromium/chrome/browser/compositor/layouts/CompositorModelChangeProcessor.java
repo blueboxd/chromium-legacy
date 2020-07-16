@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.compositor.layouts;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
@@ -26,17 +28,18 @@ public class CompositorModelChangeProcessor<V extends SceneLayer> {
      * request another frame.
      */
     public static class FrameRequestSupplier extends ObservableSupplierImpl<Long> {
-        private final LayoutManagerHost mHost;
+        private final LayoutUpdateHost mHost;
 
-        public FrameRequestSupplier(LayoutManagerHost host) {
+        public FrameRequestSupplier(LayoutUpdateHost host) {
             mHost = host;
         }
 
         /**
          * Request to generate a new frame.
          */
-        private void request() {
-            mHost.requestRender();
+        @VisibleForTesting
+        void request() {
+            mHost.requestUpdate();
         }
     }
 

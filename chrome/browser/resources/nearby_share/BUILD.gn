@@ -10,6 +10,7 @@ js_type_check("closure_compile") {
   deps = [
     ":app",
     ":nearby_confirmation_page",
+    ":nearby_device",
     ":nearby_discovery_page",
     ":nearby_preview",
     ":nearby_progress",
@@ -36,8 +37,15 @@ js_library("nearby_confirmation_page") {
   ]
 }
 
+js_library("nearby_device") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
 js_library("nearby_discovery_page") {
   deps = [
+    ":nearby_device",
     ":nearby_preview",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
@@ -62,6 +70,7 @@ html_to_js("web_components") {
     "app.js",
     "icons.js",
     "nearby_confirmation_page.js",
+    "nearby_device.js",
     "nearby_discovery_page.js",
     "nearby_preview.js",
     "nearby_progress.js",

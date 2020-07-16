@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {getFilenameFromURL} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer.js';
+import {getFilenameFromURL, PDFViewerElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer.js';
 import {shouldIgnoreKeyEvents} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer_utils.js';
 import {$} from 'chrome://resources/js/util.m.js';
 import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
@@ -13,7 +13,8 @@ const tests = [
    * verifies that Polymer is working correctly.
    */
   function testHasElements() {
-    const viewer = document.body.querySelector('pdf-viewer');
+    const viewer = /** @type {!PDFViewerElement} */ (
+        document.body.querySelector('pdf-viewer'));
     const elementNames = [
       'viewer-pdf-toolbar',
       'viewer-zoom-toolbar',
@@ -32,7 +33,8 @@ const tests = [
    * Test that the plugin element exists and is navigated to the correct URL.
    */
   function testPluginElement() {
-    const viewer = document.body.querySelector('pdf-viewer');
+    const viewer = /** @type {!PDFViewerElement} */ (
+        document.body.querySelector('pdf-viewer'));
     const plugin = viewer.shadowRoot.querySelector('#plugin');
     chrome.test.assertEq('embed', plugin.localName);
 
@@ -47,9 +49,11 @@ const tests = [
    */
   function testIgnoreKeyEvents() {
     // Test that the traversal through the shadow DOM works correctly.
-    const viewer = document.body.querySelector('pdf-viewer');
-    const toolbar = viewer.shadowRoot.querySelector('#toolbar');
-    toolbar.$.pageselector.pageSelector.focus();
+    const viewer = /** @type {!PDFViewerElement} */ (
+        document.body.querySelector('pdf-viewer'));
+    const toolbar = /** @type {!ViewerPdfToolbarElement} */ (
+        viewer.shadowRoot.querySelector('#toolbar'));
+    toolbar.$$('#pageselector').pageSelector.focus();
     chrome.test.assertTrue(shouldIgnoreKeyEvents(toolbar));
 
     // Test case where the active element has a shadow root of its own.
@@ -67,10 +71,13 @@ const tests = [
    * pressing escape.
    */
   function testOpenCloseBookmarks() {
-    const viewer = document.body.querySelector('pdf-viewer');
-    const toolbar = viewer.shadowRoot.querySelector('#toolbar');
+    const viewer = /** @type {!PDFViewerElement} */ (
+        document.body.querySelector('pdf-viewer'));
+    const toolbar = /** @type {!ViewerPdfToolbarElement} */ (
+        viewer.shadowRoot.querySelector('#toolbar'));
     toolbar.show();
-    const dropdown = toolbar.$.bookmarks;
+    const dropdown =
+        /** @type {!ViewerToolbarDropdownElement} */ (toolbar.$$('#bookmarks'));
     const plugin = viewer.shadowRoot.querySelector('#plugin');
     const ESC_KEY = 27;
 

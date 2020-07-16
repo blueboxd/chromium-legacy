@@ -808,7 +808,7 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
 
   UpdateAccessibilityNodeInfoBoundsRect(env, obj, info, unique_id, node);
 
-  Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoLollipopAttributes(
+  Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoAttributes(
       env, obj, info, node->CanOpenPopup(), node->IsContentInvalid(),
       node->IsDismissable(), node->IsMultiLine(), node->AndroidInputType(),
       node->AndroidLiveRegionType(),
@@ -892,30 +892,6 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityEvent(
     }
     default:
       break;
-  }
-
-  Java_WebContentsAccessibilityImpl_setAccessibilityEventLollipopAttributes(
-      env, obj, event, node->CanOpenPopup(), node->IsContentInvalid(),
-      node->IsDismissable(), node->IsMultiLine(), node->AndroidInputType(),
-      node->AndroidLiveRegionType());
-  if (node->IsCollection()) {
-    Java_WebContentsAccessibilityImpl_setAccessibilityEventCollectionInfo(
-        env, obj, event, node->RowCount(), node->ColumnCount(),
-        node->IsHierarchical());
-  }
-  if (node->IsHeading()) {
-    Java_WebContentsAccessibilityImpl_setAccessibilityEventHeadingFlag(
-        env, obj, event, true);
-  }
-  if (node->IsCollectionItem()) {
-    Java_WebContentsAccessibilityImpl_setAccessibilityEventCollectionItemInfo(
-        env, obj, event, node->RowIndex(), node->RowSpan(), node->ColumnIndex(),
-        node->ColumnSpan());
-  }
-  if (node->IsRangeType()) {
-    Java_WebContentsAccessibilityImpl_setAccessibilityEventRangeInfo(
-        env, obj, event, node->AndroidRangeType(), node->RangeMin(),
-        node->RangeMax(), node->RangeCurrentValue());
   }
 
   return true;

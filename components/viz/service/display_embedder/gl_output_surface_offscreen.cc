@@ -51,8 +51,9 @@ void GLOutputSurfaceOffscreen::EnsureBackbuffer() {
                            gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
                            gpu::SHARED_IMAGE_USAGE_DISPLAY;
 
-    mailbox_ = sii->CreateSharedImage(kFboTextureFormat, texture_size,
-                                      color_space_, flags);
+    mailbox_ = sii->CreateSharedImage(
+        kFboTextureFormat, texture_size, color_space_, kTopLeft_GrSurfaceOrigin,
+        kPremul_SkAlphaType, flags, gpu::kNullSurfaceHandle);
 
     // Ensure mailbox is valid before using it.
     gl->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());

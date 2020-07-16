@@ -5881,7 +5881,15 @@ const FeatureEntry kFeatureEntries[] = {
     {"lite-video-force-override-decision",
      flag_descriptions::kLiteVideoForceOverrideDecisionName,
      flag_descriptions::kLiteVideoForceOverrideDecisionDescription, kOsAll,
-     SINGLE_VALUE_TYPE(lite_video::switches::kLiteVideoForceOverrideDecision)}
+     SINGLE_VALUE_TYPE(lite_video::switches::kLiteVideoForceOverrideDecision)},
+
+#if !defined(OS_ANDROID)
+    {"edit-passwords-in-settings",
+     flag_descriptions::kEditPasswordsInDesktopSettingsName,
+     flag_descriptions::kEditPasswordsInDesktopSettingsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kEditPasswordsInDesktopSettings)}
+#endif  // !defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

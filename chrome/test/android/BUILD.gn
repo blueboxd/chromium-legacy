@@ -43,6 +43,7 @@ android_library("chrome_java_test_pagecontroller") {
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
     "//chrome/browser/ui/android/appmenu/test:test_support_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_drawerlayout_drawerlayout_java",
     "//third_party/android_deps:androidx_test_uiautomator_uiautomator_java",
     "//third_party/android_support_test_runner:runner_java",
@@ -67,6 +68,7 @@ instrumentation_test_apk("chrome_java_test_pagecontroller_tests") {
     "//base:base_java_test_support",
     "//chrome/browser/flags:java",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",
   ]
@@ -87,11 +89,13 @@ instrumentation_test_apk("chrome_java_test_wpr_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
+    "//chrome/browser/flags:java",
     "//chrome/browser/tab:java",
     "//chrome/browser/ui/android/native_page:java",
     "//components/embedder_support/android:util_java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_deps:com_android_support_drawerlayout_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_deps:espresso_java",
@@ -119,6 +123,7 @@ instrumentation_test_apk("chrome_java_test_webapk_launch_tests") {
     "//chrome/android/webapk/libs/client:client_java",
     "//components/webapk/android/libs/client:java",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
   ]
@@ -139,6 +144,8 @@ instrumentation_test_apk("chrome_java_test_pagecontroller_codelab") {
   sources = [ "javatests/src/org/chromium/chrome/test/pagecontroller/tests/codelab/SettingsForCodelabTest.java" ]
   deps = [
     ":chrome_java_test_pagecontroller",
+    "//base:base_java_test_support",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/junit",
   ]
 
@@ -248,9 +255,11 @@ android_library("chrome_java_test_support") {
     "//chrome/android/third_party/compositor_animator:compositor_animator_java",
     "//chrome/browser/flags:java",
     "//chrome/browser/preferences:java",
+    "//chrome/browser/profiles/android:java",
     "//chrome/browser/settings:test_support_java",
     "//chrome/browser/tab:java",
     "//chrome/browser/tabmodel:java",
+    "//chrome/browser/thumbnail/generator:java",
     "//chrome/browser/ui/android/appmenu:java",
     "//chrome/browser/ui/android/appmenu/test:test_support_java",
     "//chrome/browser/ui/android/favicon:java",

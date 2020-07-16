@@ -178,6 +178,12 @@ void AssistiveWindowController::SetButtonHighlighted(
       tts_handler_->Announce(button.announce_string);
       break;
     case ui::ime::AssistiveWindowType::kUndoWindow:
+      if (!undo_window_)
+        return;
+
+      undo_window_->SetButtonHighlighted(button, highlighted);
+      tts_handler_->Announce(button.announce_string);
+      break;
     case ui::ime::AssistiveWindowType::kNone:
       break;
   }

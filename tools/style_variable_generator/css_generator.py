@@ -55,8 +55,16 @@ class CSSStyleGenerator(BaseGenerator):
     def GetGlobals(self):
         return {
             'css_color_from_rgb_var': self._CssColorFromRGBVar,
-            'in_files': self.in_files,
+            'in_files': self.in_file_to_context.keys(),
         }
+
+    def GetCSSVarNames(self):
+        '''Returns generated CSS variable names (excluding the rgb versions)'''
+        names = set()
+        for name in self.model[VariableType.COLOR].keys():
+            names.add(self._ToCSSVarName(name))
+
+        return names
 
     def _GetCSSVarPrefix(self, model_name):
         prefix = self.context_map[model_name].get('prefix')

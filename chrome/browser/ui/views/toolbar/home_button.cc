@@ -6,6 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -191,4 +192,11 @@ int HomeButton::OnPerformDrop(const ui::DropTargetEvent& event) {
     HomePageUndoBubble::ShowBubble(browser_, old_is_ntp, old_homepage, this);
   }
   return ui::DragDropTypes::DRAG_NONE;
+}
+
+void HomeButton::UpdateIcon() {
+  const gfx::VectorIcon& home_image = ui::TouchUiController::Get()->touch_ui()
+                                          ? kNavigateHomeTouchIcon
+                                          : kNavigateHomeIcon;
+  UpdateIconsWithStandardColors(home_image);
 }

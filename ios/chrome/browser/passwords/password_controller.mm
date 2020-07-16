@@ -423,7 +423,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     _lastTypedfieldIdentifier = formQuery.uniqueFieldID;
     _lastTypedValue = formQuery.typedValue;
 
-    if ([formQuery.type isEqual:@"text"]) {
+    if ([formQuery.type isEqual:@"input"]) {
       [self.formHelper updateFieldDataOnUserInput:formQuery.uniqueFieldID
                                        inputValue:formQuery.typedValue];
     }

@@ -1738,6 +1738,94 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
       omnibox_view(), kSimplifiedDomainDisplayUrlSubdomainAndScheme));
 }
 
+// Tests that simplified domain elisions are re-applied when the omnibox's
+// bounds change.
+TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest, BoundsChanged) {
+  SetUpSimplifiedDomainTest();
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(false);
+  omnibox_view()->DidFinishNavigation(&navigation);
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      omnibox_view()->GetRenderText(),
+      gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                 kSimplifiedDomainDisplayUrl.size())));
+
+  // After the bounds change, the URL should remain unelided.
+  omnibox_view()->OnBoundsChanged(gfx::Rect());
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      omnibox_view()->GetRenderText(),
+      gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                 kSimplifiedDomainDisplayUrl.size())));
+
+  // Hover over the omnibox and change the bounds during the animation. The
+  // animation should be cancelled and immediately transition back to the
+  // unelided URL.
+  omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  OmniboxViewViews::ElideAnimation* unelide_animation =
+      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  ASSERT_TRUE(unelide_animation);
+  EXPECT_TRUE(unelide_animation->IsAnimating());
+  omnibox_view()->OnBoundsChanged(gfx::Rect());
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      omnibox_view()->GetRenderText(),
+      gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                 kSimplifiedDomainDisplayUrl.size())));
+
+  // Simulate a user interaction and change the bounds during the animation. The
+  // animation should be cancelled and immediately transition to the animation's
+  // end state (simplified domain).
+  omnibox_view()->DidGetUserInteraction(
+      blink::WebInputEvent::Type::kGestureScrollBegin);
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_TRUE(elide_animation->IsAnimating());
+  omnibox_view()->OnBoundsChanged(gfx::Rect());
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
+}
+
+// Tests that simplified domain elisions are re-applied when the omnibox's
+// bounds change when only reveal-on-hover is enabled.
+TEST_P(OmniboxViewViewsRevealOnHoverTest, BoundsChanged) {
+  SetUpSimplifiedDomainTest();
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
+
+  // After the bounds change, the URL should remain elided.
+  omnibox_view()->OnBoundsChanged(gfx::Rect());
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
+
+  // Hover over the omnibox and change the bounds during the animation. The
+  // animation should be cancelled and immediately transition back to the
+  // simplified domain.
+  omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  OmniboxViewViews::ElideAnimation* unelide_animation =
+      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  ASSERT_TRUE(unelide_animation);
+  EXPECT_TRUE(unelide_animation->IsAnimating());
+  omnibox_view()->OnBoundsChanged(gfx::Rect());
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      kSimplifiedDomainDisplayUrlSubdomain,
+      kSimplifiedDomainDisplayUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
+}
+
 // Tests scheme and trivial subdomain elision when simplified domain field
 // trials are enabled.
 TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,

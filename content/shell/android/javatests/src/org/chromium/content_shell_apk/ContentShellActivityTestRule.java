@@ -4,12 +4,10 @@
 
 package org.chromium.content_shell_apk;
 
-import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.PowerManager;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
@@ -72,17 +70,12 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH)
     @SuppressWarnings("deprecation")
     protected void beforeActivityLaunched() {
         PowerManager pm = (PowerManager) InstrumentationRegistry.getInstrumentation()
                                   .getContext()
                                   .getSystemService(Context.POWER_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            Assert.assertTrue("Many tests will fail if the screen is not on.", pm.isInteractive());
-        } else {
-            Assert.assertTrue("Many tests will fail if the screen is not on.", pm.isScreenOn());
-        }
+        Assert.assertTrue("Many tests will fail if the screen is not on.", pm.isInteractive());
     }
 
     /**

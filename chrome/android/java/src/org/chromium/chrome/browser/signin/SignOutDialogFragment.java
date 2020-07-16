@@ -17,6 +17,7 @@ import androidx.fragment.app.DialogFragment;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
 import org.chromium.components.signin.GAIAServiceType;
 
@@ -64,7 +65,9 @@ public class SignOutDialogFragment extends DialogFragment implements
             mGaiaServiceType = getArguments().getInt(
                     SHOW_GAIA_SERVICE_TYPE_EXTRA, mGaiaServiceType);
         }
-        String domain = IdentityServicesProvider.get().getSigninManager().getManagementDomain();
+        String domain = IdentityServicesProvider.get()
+                                .getSigninManager(Profile.getLastUsedRegularProfile())
+                                .getManagementDomain();
         if (domain != null) {
             return createDialogForManagedAccount(domain);
         }
@@ -100,7 +103,9 @@ public class SignOutDialogFragment extends DialogFragment implements
     public void onClick(DialogInterface dialog, int which) {
         if (which == AlertDialog.BUTTON_POSITIVE) {
             SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT, mGaiaServiceType);
-            if (IdentityServicesProvider.get().getSigninManager().getManagementDomain() == null) {
+            SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
+                    Profile.getLastUsedRegularProfile());
+            if (signinManager.getManagementDomain() == null) {
                 RecordHistogram.recordBooleanHistogram(
                         "Signin.UserRequestedWipeDataOnSignout", mWipeUserData.isChecked());
             }

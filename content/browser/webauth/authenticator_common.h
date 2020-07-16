@@ -16,6 +16,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -67,9 +68,7 @@ CONTENT_EXPORT extern const char kGetType[];
 // Common code for any WebAuthn Authenticator interfaces.
 class CONTENT_EXPORT AuthenticatorCommon {
  public:
-  // Permits setting timer for testing.
-  AuthenticatorCommon(RenderFrameHost* render_frame_host,
-                      std::unique_ptr<base::OneShotTimer>);
+  explicit AuthenticatorCommon(RenderFrameHost* render_frame_host);
   virtual ~AuthenticatorCommon();
 
   // This is not-quite an implementation of blink::mojom::Authenticator. The
@@ -183,7 +182,8 @@ class CONTENT_EXPORT AuthenticatorCommon {
   url::Origin caller_origin_;
   std::string relying_party_id_;
   scoped_refptr<WebAuthRequestSecurityChecker> security_checker_;
-  std::unique_ptr<base::OneShotTimer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_ =
+      std::make_unique<base::OneShotTimer>();
   base::Optional<device::AuthenticatorSelectionCriteria>
       authenticator_selection_criteria_;
   base::Optional<std::string> app_id_;
@@ -192,11 +192,13 @@ class CONTENT_EXPORT AuthenticatorCommon {
   base::Optional<device::MakeCredentialRequestHandler::Options>
       make_credential_options_;
   base::Optional<device::CtapGetAssertionRequest> ctap_get_assertion_request_;
+  base::Optional<device::CtapGetAssertionOptions> ctap_get_assertion_options_;
   // awaiting_attestation_response_ is true if the embedder has been queried
   // about an attestsation decision and the response is still pending.
   bool awaiting_attestation_response_ = false;
   blink::mojom::AuthenticatorStatus error_awaiting_user_acknowledgement_ =
       blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
+  bool prf_requested_ = false;
 
   base::WeakPtrFactory<AuthenticatorCommon> weak_factory_{this};
 

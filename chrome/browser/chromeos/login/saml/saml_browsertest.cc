@@ -1221,9 +1221,11 @@ void SAMLEnrollmentTest::StartSamlAndWaitForIdpPageLoad(
   LoginDisplayHost::default_host()->StartWizard(
       EnrollmentScreenView::kScreenId);
   WaitForGaiaPageBackButtonUpdate();
+  auto flow_change_waiter =
+      OobeBaseTest::CreateGaiaPageEventWaiter("authFlowChange");
   SigninFrameJS().TypeIntoPath(gaia_email, {"identifier"});
   SigninFrameJS().TapOn("nextButton");
-  OobeBaseTest::WaitForGaiaPageEvent("authFlowChange");
+  flow_change_waiter->Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithoutCredentialsPassingAPI) {

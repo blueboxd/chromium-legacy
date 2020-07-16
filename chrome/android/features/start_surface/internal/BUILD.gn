@@ -79,6 +79,7 @@ android_library("java") {
     "//components/prefs/android:java",
     "//components/user_prefs/android:java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_google_android_material_material_java",
     "//ui/android:ui_full_java",
   ]

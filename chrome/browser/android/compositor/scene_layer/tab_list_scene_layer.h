@@ -15,6 +15,7 @@
 #include "cc/layers/ui_resource_layer.h"
 #include "chrome/browser/android/compositor/layer/layer.h"
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
+#include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace ui {
@@ -36,17 +37,13 @@ class TabListSceneLayer : public SceneLayer {
                           const base::android::JavaParamRef<jobject>& jobj);
   void FinishBuildingFrame(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& jobj);
-  void UpdateLayer(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jobj,
-      jint background_color,
-      jfloat viewport_x,
-      jfloat viewport_y,
-      jfloat viewport_width,
-      jfloat viewport_height,
-      const base::android::JavaParamRef<jobject>& jlayer_title_cache,
-      const base::android::JavaParamRef<jobject>& jtab_content_manager,
-      const base::android::JavaParamRef<jobject>& jresource_manager);
+  void UpdateLayer(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& jobj,
+                   jint background_color,
+                   jfloat viewport_x,
+                   jfloat viewport_y,
+                   jfloat viewport_width,
+                   jfloat viewport_height);
   // TODO(meiliang): This method needs another parameter, a resource that can be
   // used to indicate the currently selected tab for the TabLayer.
   // TODO(dtrainor): This method is ridiculous.  Break this apart?
@@ -111,6 +108,13 @@ class TabListSceneLayer : public SceneLayer {
                           jint resource_id,
                           jfloat alpha,
                           jint top_offset);
+
+  void SetDependencies(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      const base::android::JavaParamRef<jobject>& jtab_content_manager,
+      const base::android::JavaParamRef<jobject>& jlayer_title_cache,
+      const base::android::JavaParamRef<jobject>& jresource_manager);
 
   void OnDetach() override;
   bool ShouldShowBackground() override;

@@ -516,6 +516,48 @@
         ]
       },
       {
+        "name": "setAssistiveWindowButtonHighlighted",
+        "type": "function",
+        "description": "Highlights/Unhighlights a button in an assistive window.",
+        "platforms": ["chromeos"],
+        "parameters": [
+          {
+            "name": "parameters",
+            "type": "object",
+            "properties": {
+              "contextID": {
+                "description": "ID of the context owning the assistive window.",
+                "type": "integer"
+              },
+              "buttonID": {
+                "$ref": "AssistiveWindowButton",
+                "description": "The ID of the button"
+              },
+              "windowType": {
+                "$ref": "AssistiveWindowType",
+                "description": "The window type the button belongs to."
+              },
+              "announceString": {
+                "optional": true,
+                "type": "string",
+                "description": "The text for the screenreader to announce."
+              },
+              "highlighted": {
+                "description": "Whether the button should be highlighted.",
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the operation completes. On failure, $(ref:runtime.lastError) is set.",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "setMenuItems",
         "type": "function",
         "description": "Adds the provided menu items to the language menu when this IME is active.",

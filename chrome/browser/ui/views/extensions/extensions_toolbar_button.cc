@@ -43,12 +43,6 @@ ExtensionsToolbarButton::~ExtensionsToolbarButton() {
   CHECK(!IsInObserverList());
 }
 
-void ExtensionsToolbarButton::UpdateIcon() {
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(vector_icons::kExtensionIcon, GetIconSize(),
-                                 extensions_container_->GetIconColor()));
-}
-
 gfx::Size ExtensionsToolbarButton::CalculatePreferredSize() const {
   return extensions_container_->GetToolbarActionSize();
 }
@@ -87,6 +81,13 @@ void ExtensionsToolbarButton::OnBoundsChanged(
 
 const char* ExtensionsToolbarButton::GetClassName() const {
   return "ExtensionsToolbarButton";
+}
+
+void ExtensionsToolbarButton::UpdateIcon() {
+  SetImageModel(views::Button::STATE_NORMAL,
+                ui::ImageModel::FromVectorIcon(
+                    vector_icons::kExtensionIcon,
+                    extensions_container_->GetIconColor(), GetIconSize()));
 }
 
 void ExtensionsToolbarButton::ButtonPressed(views::Button* sender,

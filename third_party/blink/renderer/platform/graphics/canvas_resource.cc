@@ -393,11 +393,13 @@ CanvasResourceRasterSharedImage::CanvasResourceRasterSharedImage(
   if (gpu_memory_buffer_) {
     shared_image_mailbox = shared_image_interface->CreateSharedImage(
         gpu_memory_buffer_.get(), gpu_memory_buffer_manager,
-        ColorParams().GetStorageGfxColorSpace(), shared_image_usage_flags);
+        ColorParams().GetStorageGfxColorSpace(), kTopLeft_GrSurfaceOrigin,
+        kPremul_SkAlphaType, shared_image_usage_flags);
   } else {
     shared_image_mailbox = shared_image_interface->CreateSharedImage(
         ColorParams().TransferableResourceFormat(), gfx::Size(size),
-        ColorParams().GetStorageGfxColorSpace(), shared_image_usage_flags);
+        ColorParams().GetStorageGfxColorSpace(), kTopLeft_GrSurfaceOrigin,
+        kPremul_SkAlphaType, shared_image_usage_flags, gpu::kNullSurfaceHandle);
   }
 
   // Wait for the mailbox to be ready to be used.
@@ -741,7 +743,8 @@ CanvasResourceWebGPUSharedImage::CanvasResourceWebGPUSharedImage(
 
   shared_image_mailbox = shared_image_interface->CreateSharedImage(
       ColorParams().TransferableResourceFormat(), gfx::Size(size),
-      ColorParams().GetStorageGfxColorSpace(), shared_image_usage_flags);
+      ColorParams().GetStorageGfxColorSpace(), kTopLeft_GrSurfaceOrigin,
+      kPremul_SkAlphaType, shared_image_usage_flags, gpu::kNullSurfaceHandle);
 
   auto* webgpu = WebGPUInterface();
 
@@ -1270,9 +1273,10 @@ CanvasResourceSwapChain::CanvasResourceSwapChain(
       context_provider_wrapper_->ContextProvider()->SharedImageInterface();
   DCHECK(sii);
   gpu::SharedImageInterface::SwapChainMailboxes mailboxes =
-      sii->CreateSwapChain(ColorParams().TransferableResourceFormat(),
-                           gfx::Size(size),
-                           ColorParams().GetStorageGfxColorSpace(), usage);
+      sii->CreateSwapChain(
+          ColorParams().TransferableResourceFormat(), gfx::Size(size),
+          ColorParams().GetStorageGfxColorSpace(), kTopLeft_GrSurfaceOrigin,
+          kPremul_SkAlphaType, usage);
   back_buffer_mailbox_ = mailboxes.back_buffer;
   front_buffer_mailbox_ = mailboxes.front_buffer;
   sync_token_ = sii->GenVerifiedSyncToken();

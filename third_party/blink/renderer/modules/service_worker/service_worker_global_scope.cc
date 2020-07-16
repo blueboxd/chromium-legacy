@@ -96,7 +96,6 @@
 #include "third_party/blink/renderer/modules/payments/payment_request_respond_with_observer.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_event.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_message_data.h"
-#include "third_party/blink/renderer/modules/push_messaging/push_messaging_type_converter.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_change_event.h"
 #include "third_party/blink/renderer/modules/service_worker/cross_origin_resource_policy_checker.h"
 #include "third_party/blink/renderer/modules/service_worker/extendable_event.h"
@@ -2063,8 +2062,9 @@ void ServiceWorkerGlobalScope::StartPushSubscriptionChangeEvent(
       this, WaitUntilObserver::kPushSubscriptionChange, event_id);
   Event* event = PushSubscriptionChangeEvent::Create(
       event_type_names::kPushsubscriptionchange,
-      new_subscription.To<blink::PushSubscription*>(),
-      old_subscription.To<blink::PushSubscription*>(), observer);
+      PushSubscription::Create(std::move(new_subscription), registration_),
+      PushSubscription::Create(std::move(old_subscription), registration_),
+      observer);
   DispatchExtendableEvent(event, observer);
 }
 

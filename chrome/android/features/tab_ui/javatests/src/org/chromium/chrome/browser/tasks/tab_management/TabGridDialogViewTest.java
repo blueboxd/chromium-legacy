@@ -281,6 +281,7 @@ public class TabGridDialogViewTest extends DummyUiActivityTestCase {
             View sourceView = new View(getActivity());
             mTabGridDialogView.setupDialogAnimation(sourceView);
             parentViewReference.set((ViewGroup) mTabGridDialogContainer.getParent());
+            Assert.assertFalse(mTabGridDialogContainer.isFocused());
         });
         ViewGroup parent = parentViewReference.get();
 
@@ -304,8 +305,10 @@ public class TabGridDialogViewTest extends DummyUiActivityTestCase {
                                 mTabGridDialogView.getCurrentDialogAnimatorForTesting(),
                                 Matchers.nullValue()));
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertEquals(0f, mBackgroundFrameView.getAlpha(), 0.0));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(0f, mBackgroundFrameView.getAlpha(), 0.0);
+            Assert.assertTrue(mTabGridDialogContainer.isFocused());
+        });
 
         // Hide the dialog with zoom-in animation.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -336,6 +339,7 @@ public class TabGridDialogViewTest extends DummyUiActivityTestCase {
             Assert.assertEquals(0f, mTabGridDialogContainer.getTranslationY(), 0.0);
             Assert.assertEquals(1f, mTabGridDialogContainer.getScaleX(), 0.0);
             Assert.assertEquals(1f, mTabGridDialogContainer.getScaleY(), 0.0);
+            Assert.assertFalse(mTabGridDialogContainer.isFocused());
         });
     }
 
@@ -346,6 +350,7 @@ public class TabGridDialogViewTest extends DummyUiActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             View sourceView = new View(getActivity());
             mTabGridDialogView.setupDialogAnimation(sourceView);
+            Assert.assertFalse(mTabGridDialogContainer.isFocused());
         });
         // Show the dialog.
         TestThreadUtils.runOnUiThreadBlocking(() -> mTabGridDialogView.showDialog());
@@ -358,6 +363,7 @@ public class TabGridDialogViewTest extends DummyUiActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(0f, mAnimationCardView.getAlpha(), 0.0);
             Assert.assertEquals(0f, mBackgroundFrameView.getAlpha(), 0.0);
+            Assert.assertTrue(mTabGridDialogContainer.isFocused());
         });
 
         // Hide the dialog with basic fade-out animation.
@@ -381,6 +387,7 @@ public class TabGridDialogViewTest extends DummyUiActivityTestCase {
             Assert.assertEquals(View.GONE, mTabGridDialogView.getVisibility());
             Assert.assertEquals(0f, mAnimationCardView.getAlpha(), 0.0);
             Assert.assertEquals(0f, mBackgroundFrameView.getAlpha(), 0.0);
+            Assert.assertFalse(mTabGridDialogContainer.isFocused());
         });
     }
 
@@ -393,6 +400,7 @@ public class TabGridDialogViewTest extends DummyUiActivityTestCase {
             // Initially alpha of animation related views should be 0.
             Assert.assertEquals(0f, mAnimationCardView.getAlpha(), 0.0);
             Assert.assertEquals(0f, mBackgroundFrameView.getAlpha(), 0.0);
+            Assert.assertFalse(mTabGridDialogContainer.isFocused());
         });
 
         // Show the dialog with basic fade-in animation.
@@ -411,6 +419,7 @@ public class TabGridDialogViewTest extends DummyUiActivityTestCase {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(0f, mAnimationCardView.getAlpha(), 0.0);
             Assert.assertEquals(0f, mBackgroundFrameView.getAlpha(), 0.0);
+            Assert.assertTrue(mTabGridDialogContainer.isFocused());
         });
 
         // Hide the dialog with basic fade-out animation.
@@ -436,6 +445,7 @@ public class TabGridDialogViewTest extends DummyUiActivityTestCase {
             Assert.assertEquals(View.GONE, mTabGridDialogView.getVisibility());
             Assert.assertEquals(0f, mAnimationCardView.getAlpha(), 0.0);
             Assert.assertEquals(0f, mBackgroundFrameView.getAlpha(), 0.0);
+            Assert.assertFalse(mTabGridDialogContainer.isFocused());
         });
     }
 

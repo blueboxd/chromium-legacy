@@ -26,6 +26,13 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 bool IsConvertibleToU2fRegisterCommand(
     const CtapMakeCredentialRequest& request);
 
+// ShouldPreferCTAP2 returns true if the given request should be routed over
+// CTAP2, if the authenticator supports it, even if we might want to route it
+// over U2F to avoid a PIN prompt to create the credential.
+COMPONENT_EXPORT(DEVICE_FIDO)
+bool ShouldPreferCTAP2EvenIfItNeedsAPIN(
+    const CtapMakeCredentialRequest& request);
+
 // Checks whether user verification is not required and that allow list is
 // not empty.
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#using-the-ctap2-authenticatorgetassertion-command-with-ctap1-u2f-authenticators

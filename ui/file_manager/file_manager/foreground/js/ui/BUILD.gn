@@ -436,6 +436,8 @@ js_library("location_line") {
 
 js_library("multi_menu") {
   deps = [
+    # TODO(files-ng): remove util dep when the files-ng flag is removed.
+    "//ui/file_manager/file_manager/common/js:util",
     "//ui/webui/resources/js:event_tracker",
     "//ui/webui/resources/js/cr/ui:menu",
     "//ui/webui/resources/js/cr/ui:menu_item",
@@ -446,6 +448,8 @@ js_library("multi_menu") {
 
 js_library("multi_menu_button") {
   deps = [
+    # TODO(files-ng): remove util dep when the files-ng flag is removed.
+    "//ui/file_manager/file_manager/common/js:util",
     "//ui/webui/resources/js:event_tracker",
     "//ui/webui/resources/js/cr/ui:menu",
     "//ui/webui/resources/js/cr/ui:menu_button",

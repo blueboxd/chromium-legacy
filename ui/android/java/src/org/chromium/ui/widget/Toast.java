@@ -42,7 +42,7 @@ public class Toast {
     private Toast(Context context, android.widget.Toast toast) {
         mToast = toast;
 
-        if (SysUtils.isLowEndDevice() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (SysUtils.isLowEndDevice()) {
             // Don't HW accelerate Toasts. Unfortunately the only way to do that is to make
             // toast.getView().getContext().getApplicationInfo() return lies to prevent
             // WindowManagerGlobal.addView() from adding LayoutParams.FLAG_HARDWARE_ACCELERATED.

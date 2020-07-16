@@ -128,6 +128,8 @@ gpu::Mailbox TestSharedImageInterface::CreateSharedImage(
     ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     gpu::SurfaceHandle surface_handle) {
   base::AutoLock locked(lock_);
@@ -141,6 +143,8 @@ gpu::Mailbox TestSharedImageInterface::CreateSharedImage(
     ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     base::span<const uint8_t> pixel_data) {
   base::AutoLock locked(lock_);
@@ -153,6 +157,8 @@ gpu::Mailbox TestSharedImageInterface::CreateSharedImage(
     gfx::GpuMemoryBuffer* gpu_memory_buffer,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage) {
   base::AutoLock locked(lock_);
   auto mailbox = gpu::Mailbox::GenerateForSharedImage();
@@ -188,6 +194,8 @@ gpu::SharedImageInterface::SwapChainMailboxes
 TestSharedImageInterface::CreateSwapChain(ResourceFormat format,
                                           const gfx::Size& size,
                                           const gfx::ColorSpace& color_space,
+                                          GrSurfaceOrigin surface_origin,
+                                          SkAlphaType alpha_type,
                                           uint32_t usage) {
   auto front_buffer = gpu::Mailbox::GenerateForSharedImage();
   auto back_buffer = gpu::Mailbox::GenerateForSharedImage();

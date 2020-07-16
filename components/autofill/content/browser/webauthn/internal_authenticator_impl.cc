@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/timer/timer.h"
 #include "content/browser/webauth/authenticator_common.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -18,20 +17,12 @@ namespace content {
 
 InternalAuthenticatorImpl::InternalAuthenticatorImpl(
     RenderFrameHost* render_frame_host)
-    : InternalAuthenticatorImpl(render_frame_host,
-                                std::make_unique<AuthenticatorCommon>(
-                                    render_frame_host,
-                                    std::make_unique<base::OneShotTimer>())) {}
-
-InternalAuthenticatorImpl::InternalAuthenticatorImpl(
-    RenderFrameHost* render_frame_host,
-    std::unique_ptr<AuthenticatorCommon> authenticator_common)
     : WebContentsObserver(WebContents::FromRenderFrameHost(render_frame_host)),
       render_frame_host_(render_frame_host),
       effective_origin_(render_frame_host->GetLastCommittedOrigin()),
-      authenticator_common_(std::move(authenticator_common)) {
+      authenticator_common_(
+          std::make_unique<AuthenticatorCommon>(render_frame_host)) {
   DCHECK(render_frame_host_);
-  DCHECK(authenticator_common_);
   // Disabling WebAuthn modal dialogs to avoid conflict with Autofill's own
   // modal dialogs. Since WebAuthn is designed for websites, rather than browser
   // components, the UI can be confusing for users in the case for Autofill.

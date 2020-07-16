@@ -26,7 +26,6 @@ namespace content {
 
 class SignedExchangeDevToolsProxy;
 class SignedExchangeCertFetcher;
-class SignedExchangeReporter;
 
 // An interface for creating SignedExchangeCertFetcher object.
 class CONTENT_EXPORT SignedExchangeCertFetcherFactory {
@@ -38,8 +37,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcherFactory {
       const GURL& cert_url,
       bool force_fetch,
       SignedExchangeCertFetcher::CertificateCallback callback,
-      SignedExchangeDevToolsProxy* devtools_proxy,
-      SignedExchangeReporter* reporter) = 0;
+      SignedExchangeDevToolsProxy* devtools_proxy) = 0;
 
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>>()>;

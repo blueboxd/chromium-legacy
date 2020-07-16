@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.FullscreenTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.GestureListenerManager;
@@ -157,6 +158,37 @@ public class FullscreenManagerTest {
 
         FullscreenTestUtils.togglePersistentFullscreenAndAssert(
                 tab, false, mActivityTestRule.getActivity());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Fullscreen"})
+    public void testDelayedPersistentFullscreen() {
+        mActivityTestRule.startMainActivityWithURL(LONG_HTML_TEST_PAGE);
+
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        TabWebContentsDelegateAndroid delegate = TabTestUtils.getTabWebContentsDelegate(tab);
+        FullscreenTestUtils.waitForFullscreenFlag(tab, false, mActivityTestRule.getActivity());
+        FullscreenTestUtils.waitForPersistentFullscreen(delegate, false);
+
+        // Open a new tab, which puts the tab to test background.
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+
+        // Having the background tab enter fullscreen should be delayed until it comes foreground.
+        FullscreenTestUtils.togglePersistentFullscreen(delegate, true);
+        Assert.assertFalse(getPersistentFullscreenMode());
+
+        // Put the tab foreground and assert the fullscreen was entered.
+        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), tab.getId());
+        Assert.assertEquals(tab, mActivityTestRule.getActivity().getActivityTab());
+        Assert.assertTrue(getPersistentFullscreenMode());
+    }
+
+    private boolean getPersistentFullscreenMode() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                mActivityTestRule.getActivity()
+                        .getFullscreenManager()::getPersistentFullscreenMode);
     }
 
     @Test

@@ -1546,6 +1546,46 @@ bool OmniboxViewViews::HandleAccessibleAction(
   return Textfield::HandleAccessibleAction(action_data);
 }
 
+void OmniboxViewViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  Textfield::OnBoundsChanged(previous_bounds);
+
+  if (!OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover() &&
+      !OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction()) {
+    return;
+  }
+
+  // When simplified domain display field trials are enabled,
+  // Textfield::OnBoundsChanged() may have undone the effect of any previous URL
+  // elisions, because it expands the Textfield's display rect to the local
+  // bounds, which may bring more of the URL into view than intended. Re-apply
+  // simplified domain elisions now.
+
+  // Cancel any running animations. This could cause some abrupt transitions,
+  // but we can't adapt running animations to new bounds.
+  if (hover_elide_or_unelide_animation_)
+    hover_elide_or_unelide_animation_->Stop();
+  if (elide_after_interaction_animation_)
+    elide_after_interaction_animation_->Stop();
+
+  // |elide_after_interaction_animation_| is created when the user interacts
+  // with the page, if hide-on-interaction is enabled. If hide-on-interaction is
+  // disabled or the user has already interacted with the page, the simplified
+  // domain should have been showing before the bounds changed (or we would have
+  // been in the process of animating to the simplified domain).
+  if (!OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() ||
+      elide_after_interaction_animation_) {
+    if (IsURLEligibleForSimplifiedDomainEliding() &&
+        !model()->ShouldPreventElision()) {
+      ElideURL();
+    }
+  } else {
+    // The user hasn't interacted with the page yet. This resets animation state
+    // and shows the partially elided URL with scheme and trivial subdomains
+    // hidden.
+    ResetToHideOnInteraction();
+  }
+}
+
 void OmniboxViewViews::OnFocus() {
   views::Textfield::OnFocus();
   // TODO(tommycli): This does not seem like it should be necessary.

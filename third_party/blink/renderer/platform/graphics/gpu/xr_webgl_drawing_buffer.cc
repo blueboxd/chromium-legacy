@@ -444,9 +444,10 @@ XRWebGLDrawingBuffer::CreateColorBuffer() {
   uint32_t usage = gpu::SHARED_IMAGE_USAGE_DISPLAY |
                    gpu::SHARED_IMAGE_USAGE_GLES2 |
                    gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
-  gpu::Mailbox mailbox =
-      sii->CreateSharedImage(alpha_ ? viz::RGBA_8888 : viz::RGBX_8888,
-                             gfx::Size(size_), gfx::ColorSpace(), usage);
+  gpu::Mailbox mailbox = sii->CreateSharedImage(
+      alpha_ ? viz::RGBA_8888 : viz::RGBX_8888, gfx::Size(size_),
+      gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
+      gpu::kNullSurfaceHandle);
 
   gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
   gl->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());

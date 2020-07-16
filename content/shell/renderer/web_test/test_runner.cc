@@ -1108,7 +1108,7 @@ void TestRunnerBindings::SetIsolatedWorldInfo(
   // Clear the document->isolated world CSP mapping.
   GetWebFrame()->ClearIsolatedWorldCSPForTesting(world_id);
 
-  GetWebFrame()->SetIsolatedWorldInfo(world_id, info);
+  blink::SetIsolatedWorldInfo(world_id, info);
 }
 
 void TestRunnerBindings::AddOriginAccessAllowListEntry(

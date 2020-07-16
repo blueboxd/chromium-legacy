@@ -685,8 +685,9 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
           gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_DISPLAY;
       if (overlays_supported)
         usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
-      gpu_mailbox =
-          sii->CreateSharedImage(format, size, gfx::ColorSpace(), usage);
+      gpu_mailbox = sii->CreateSharedImage(
+          format, size, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
+          kPremul_SkAlphaType, usage, gpu::kNullSurfaceHandle);
       in_sync_token = sii->GenUnverifiedSyncToken();
     }
 

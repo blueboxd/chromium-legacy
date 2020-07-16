@@ -352,6 +352,10 @@ const char kEnableExperimentalWebAssemblyFeatures[] =
 const char kEnableExperimentalWebPlatformFeatures[] =
     "enable-experimental-web-platform-features";
 
+// Enables blink runtime enabled features with status:"test" or
+// status:"experimental", which are enabled when running web tests.
+const char kEnableBlinkTestFeatures[] = "enable-blink-test-features";
+
 // Enables support for FTP URLs. See https://crbug.com/333943.
 const char kEnableFtp[] = "enable-ftp";
 

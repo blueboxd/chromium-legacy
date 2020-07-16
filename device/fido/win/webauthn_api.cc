@@ -331,7 +331,8 @@ std::pair<CtapDeviceResponseCode,
 AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
                                   HWND h_wnd,
                                   GUID cancellation_id,
-                                  CtapGetAssertionRequest request) {
+                                  CtapGetAssertionRequest request,
+                                  CtapGetAssertionOptions request_options) {
   DCHECK(webauthn_api->IsAvailable());
 
   base::string16 rp_id16 = base::UTF8ToUTF16(request.rp_id);
@@ -425,6 +426,10 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
   FIDO_LOG(DEBUG) << "WebAuthNAuthenticatorGetAssertion()=" << *assertion;
   base::Optional<AuthenticatorGetAssertionResponse> response =
       ToAuthenticatorGetAssertionResponse(*assertion, request.allow_list);
+  if (response && !request_options.prf_inputs.empty()) {
+    // Windows does not yet support passing in inputs for hmac_secret.
+    response->set_hmac_secret_not_evaluated(true);
+  }
   return {response ? CtapDeviceResponseCode::kSuccess
                    : CtapDeviceResponseCode::kCtap2ErrOther,
           std::move(response)};

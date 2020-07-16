@@ -100,7 +100,8 @@ ResourceId CreateGpuResource(scoped_refptr<ContextProvider> context_provider,
   gpu::SharedImageInterface* sii = context_provider->SharedImageInterface();
   DCHECK(sii);
   gpu::Mailbox mailbox = sii->CreateSharedImage(
-      format, size, color_space, gpu::SHARED_IMAGE_USAGE_DISPLAY, pixels);
+      format, size, color_space, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_DISPLAY, pixels);
   gpu::SyncToken sync_token = sii->GenUnverifiedSyncToken();
 
   TransferableResource gl_resource = TransferableResource::MakeGL(

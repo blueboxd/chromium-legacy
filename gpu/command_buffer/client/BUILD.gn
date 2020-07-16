@@ -5,6 +5,10 @@
 import("//build/config/jumbo.gni")
 import("//ui/gl/features.gni")
 
+if (!is_nacl) {
+  import("//skia/features.gni")
+}
+
 declare_args() {
   # Enable GPU client logging without DCHECK being on.
   enable_gpu_client_logging = false
@@ -71,13 +75,10 @@ jumbo_source_set("client_sources") {
     "mapped_memory.h",
     "ring_buffer.cc",
     "ring_buffer.h",
-    "shared_image_interface.cc",
-    "shared_image_interface.h",
     "transfer_buffer.cc",
     "transfer_buffer.h",
     "transfer_buffer_cmd_copy_helpers.h",
   ]
-
   configs += [ "//gpu:gpu_implementation" ]
 
   all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]
@@ -93,6 +94,18 @@ jumbo_source_set("client_sources") {
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
   ]
+
+  # These files now rely on Skia which isn't allowed as a dependency in nacl builds.
+  if (!is_nacl) {
+    sources += [
+      "shared_image_interface.cc",
+      "shared_image_interface.h",
+    ]
+
+    public_deps += [ "//skia" ]
+
+    deps += [ "//skia:buildflags" ]
+  }
 }
 
 source_set("gles2_cmd_helper_sources") {

@@ -195,7 +195,8 @@ TransferableResource CreateTestTexture(
       child_context_provider->SharedImageInterface();
   DCHECK(sii);
   gpu::Mailbox mailbox = sii->CreateSharedImage(
-      RGBA_8888, size, gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_DISPLAY,
+      RGBA_8888, size, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
+      kPremul_SkAlphaType, gpu::SHARED_IMAGE_USAGE_DISPLAY,
       MakePixelSpan(pixels));
   gpu::SyncToken sync_token = sii->GenVerifiedSyncToken();
 

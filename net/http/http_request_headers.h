@@ -130,6 +130,9 @@ class NET_EXPORT HttpRequestHeaders {
   // Sets the header value pair for |key| and |value|, if |key| does not exist.
   // If |key| already exists, the call is a no-op.
   // When comparing |key|, case is ignored.
+  //
+  // The caller must ensure that |key| passes HttpUtil::IsValidHeaderName() and
+  // |value| passes HttpUtil::IsValidHeaderValue().
   void SetHeaderIfMissing(const base::StringPiece& key,
                           const base::StringPiece& value);
 

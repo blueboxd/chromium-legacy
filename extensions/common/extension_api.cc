@@ -224,18 +224,12 @@ Feature::Availability ExtensionAPI::IsAvailable(const std::string& full_name,
 base::StringPiece ExtensionAPI::GetSchemaStringPiece(
     const std::string& api_name) {
   DCHECK_EQ(api_name, GetAPINameFromFullName(api_name, nullptr));
-  auto cached = schema_strings_.find(api_name);
-  if (cached != schema_strings_.end())
-    return cached->second;
-
   ExtensionsClient* client = ExtensionsClient::Get();
   DCHECK(client);
   if (!default_configuration_initialized_)
     return base::StringPiece();
 
   base::StringPiece schema = client->GetAPISchema(api_name);
-  if (!schema.empty())
-    schema_strings_[api_name] = schema;
   return schema;
 }
 

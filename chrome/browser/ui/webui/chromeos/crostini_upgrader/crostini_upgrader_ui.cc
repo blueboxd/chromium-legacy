@@ -47,6 +47,7 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"done", IDS_CROSTINI_UPGRADER_DONE_BUTTON},
       {"restore", IDS_CROSTINI_UPGRADER_RESTORE_BUTTON},
       {"learnMore", IDS_LEARN_MORE},
+      {"notNow", IDS_CROSTINI_UPGRADER_NOT_NOW},
 
       {"promptTitle", IDS_CROSTINI_UPGRADER_TITLE},
       {"backingUpTitle", IDS_CROSTINI_UPGRADER_BACKING_UP_TITLE},

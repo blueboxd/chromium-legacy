@@ -17,7 +17,7 @@ using AshColorMode = ash::AshColorProvider::AshColorMode;
 
 enum class ColorName {
   kGoogleGrey900,
-  kDefaultTextColor,
+  kTextColorPrimary,
   kToggleColor,
 };
 
@@ -25,14 +25,14 @@ constexpr SkColor ResolveColor(ColorName color_name, AshColorMode color_mode) {
   switch (color_name) {
     case ColorName::kGoogleGrey900:
       return SkColorSetRGB(0x20, 0x21, 0x24);
-    case ColorName::kDefaultTextColor:
+    case ColorName::kTextColorPrimary:
       if (color_mode == AshColorMode::kLight) {
         return ResolveColor(ColorName::kGoogleGrey900, color_mode);
       } else {
         return SkColorSetRGB(0xFF, 0xFF, 0xFF);
       }
     case ColorName::kToggleColor:
-      return SkColorSetA(ResolveColor(ColorName::kDefaultTextColor, color_mode), 0x19);
+      return SkColorSetA(ResolveColor(ColorName::kTextColorPrimary, color_mode), 0x19);
   }
 }
 

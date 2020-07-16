@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "content/browser/web_package/prefetched_signed_exchange_cache_entry.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_loader.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
@@ -30,19 +31,14 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
     URLLoaderThrottlesGetter loader_throttles_getter,
     network::mojom::URLLoaderClient* forwarding_client,
     scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
-    const std::string& accept_langs)
+    const std::string& accept_langs,
+    bool keep_entry_for_prefetch_cache)
     : forwarding_client_(forwarding_client) {
   network::mojom::URLLoaderClientEndpointsPtr endpoints =
       network::mojom::URLLoaderClientEndpoints::New(
           std::move(network_loader), std::move(network_client_receiver));
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       std::move(network_loader_factory);
-
-  // We need the SSLInfo as the prefetched signed exchange may be used as a main
-  // frame main resource. Users can inspect the certificate for the main frame
-  // using the info bubble in Omnibox.
-  const uint32_t url_loader_options =
-      network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
 
   auto reporter = SignedExchangeReporter::MaybeCreate(
       resource_request.url, resource_request.referrer.spec(), *response_head,
@@ -54,10 +50,11 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
       resource_request, std::move(response_head), std::move(response_body),
       loader_client_receiver_.BindNewPipeAndPassRemote(), std::move(endpoints),
-      url_loader_options, false /* should_redirect_to_fallback */,
-      std::move(devtools_proxy), std::move(reporter),
-      std::move(url_loader_factory), loader_throttles_getter,
-      frame_tree_node_id, std::move(metric_recorder), accept_langs);
+      network::mojom::kURLLoadOptionNone,
+      false /* should_redirect_to_fallback */, std::move(devtools_proxy),
+      std::move(reporter), std::move(url_loader_factory),
+      loader_throttles_getter, frame_tree_node_id, std::move(metric_recorder),
+      accept_langs, keep_entry_for_prefetch_cache);
 }
 
 SignedExchangePrefetchHandler::~SignedExchangePrefetchHandler() = default;
@@ -74,17 +71,10 @@ SignedExchangePrefetchHandler::FollowRedirect(
   return pending_receiver;
 }
 
-base::Optional<net::SHA256HashValue>
-SignedExchangePrefetchHandler::ComputeHeaderIntegrity() const {
-  if (!signed_exchange_loader_)
-    return base::nullopt;
-  return signed_exchange_loader_->ComputeHeaderIntegrity();
-}
-
-base::Time SignedExchangePrefetchHandler::GetSignatureExpireTime() const {
-  if (!signed_exchange_loader_)
-    return base::Time();
-  return signed_exchange_loader_->GetSignatureExpireTime();
+std::unique_ptr<PrefetchedSignedExchangeCacheEntry>
+SignedExchangePrefetchHandler::TakePrefetchedSignedExchangeCacheEntry() {
+  DCHECK(signed_exchange_loader_);
+  return signed_exchange_loader_->TakePrefetchedSignedExchangeCacheEntry();
 }
 
 void SignedExchangePrefetchHandler::OnReceiveResponse(

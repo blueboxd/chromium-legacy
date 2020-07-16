@@ -23,13 +23,12 @@ class ExtensionsToolbarButton : public ToolbarButton,
                           ExtensionsToolbarContainer* extensions_container);
   ~ExtensionsToolbarButton() override;
 
-  void UpdateIcon();
-
   // ToolbarButton:
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   const char* GetClassName() const override;
+  void UpdateIcon() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

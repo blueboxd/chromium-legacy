@@ -18,26 +18,26 @@
     /*
      * Core colors.
      */
-    default_text_color: {
+    text_color_primary: {
       light: "$google_grey_900",
       dark: "$google_grey_200",
     },
-    default_text_color_secondary: {
+    text_color_secondary: {
       light: "$google_grey_700",
       dark: "$google_grey_500",
     },
 
-    default_bg_color: {
+    bg_color: {
       light: "#ffffff",
       dark: "$google_grey_900",
     },
 
-    default_icon_color_primary: {
+    icon_color_primary: {
       light: "$google_grey_700",
       dark: "$google_grey_200",
     },
 
-    default_icon_color_prominent: {
+    icon_color_prominent: {
       light: "$google_blue_600",
       dark: "$google_blue_300",
     },
@@ -45,20 +45,20 @@
     /*
      * Component colors.
      */
-    default_toolbar_bg_color: "#ffffff",
-    default_toolbar_search_bg_color: "$google_grey_100",
+    toolbar_bg_color: "#ffffff",
+    toolbar_search_bg_color: "$google_grey_100",
 
     menu_button_bg_color_active: "$google_blue_50",
     menu_button_bg_color_hover: "$google_grey_100",
     menu_button_outline_color_focused: "$google_blue_600",
 
-    toggle_color: "$default_icon_color_prominent",
+    toggle_color: "$icon_color_prominent",
     toggle_bg_color_inactive: "$google_grey_400",
     toggle_button_color_inactive: "#ffffff",
     toggle_ripple_color: "rgba($toggle_color_rgb, .2)",
     toggle_ripple_color_inactive: "rgba($google_grey_600_rgb, .15)",
 
-    radio_button_color: "$default_icon_color_prominent",
+    radio_button_color: "$icon_color_prominent",
     radio_button_ripple_color: "rgba($radio_button_color_rgb, .2)",
     radio_button_color_unchecked: "$google_grey_700",
     radio_button_ripple_color_unchecked: "rgba($google_grey_600_rgb, .15)",
@@ -68,79 +68,79 @@
     link_color: "$google_blue_700",
 
     /* button-primary */
-    default_button_background_color_primary:
-        "$default_icon_color_prominent",
-    default_button_label_color_primary: {
+    button_background_color_primary:
+        "$icon_color_prominent",
+    button_label_color_primary: {
       light: "$google_grey_200",
       dark: "$google_grey_900",
     },
     /* button-primary:hover */
     /* TODO(calamity): Generate a linear-gradient() to use for compositing
        backgrounds */
-    default_button_background_color_primary_hover_overlay: {
+    button_background_color_primary_hover_overlay: {
       light: "rgba(255, 255, 255, 0.08)",
       dark: "rgba(0, 0, 0, 0.08)",
     },
     /* button-primary[disabled] */
-    default_button_background_color_primary_disabled: {
+    button_background_color_primary_disabled: {
       light: "$google_grey_100",
       dark: "$google_grey_800",
     },
-    default_button_label_color_primary_disabled: {
+    button_label_color_primary_disabled: {
       light: "$google_grey_600",
       dark: "$google_grey_500",
     },
 
     /* button-secondary */
-    default_button_label_color_secondary:
-        "$default_icon_color_prominent",
-    default_button_stroke_color_secondary: {
+    button_label_color_secondary:
+        "$icon_color_prominent",
+    button_stroke_color_secondary: {
       light: "$google_grey_300",
       dark: "$google_grey_700",
     },
     /* button-secondary:hover */
-    default_button_background_color_secondary_hover:
-        "rgba($default_icon_color_prominent_rgb, 0.04)",
+    button_background_color_secondary_hover:
+        "rgba($icon_color_prominent_rgb, 0.04)",
     /* button-secondary[disabled] */
-    default_button_label_color_secondary_disabled: {
+    button_label_color_secondary_disabled: {
       light: "$google_grey_600",
       dark: "$google_grey_500",
     },
-    default_button_stroke_color_secondary_disabled: {
+    button_stroke_color_secondary_disabled: {
       light: "$google_grey_100",
       dark: "$google_grey_800",
     },
 
     /* textfield */
-    default_textfield_background_color: {
+    textfield_background_color: {
       light: "$google_grey_100",
       dark: "rgba(0, 0, 0, 0.3)",
     },
-    default_texfield_label_color: {
+    textfield_label_color: {
       light: "$google_grey_700",
       dark: "rgba(255, 255, 255, 0.6)",
     },
-    default_texfield_input_color: {
+    textfield_input_color: {
       light: "$google_grey_900",
       dark: "rgba(255, 255, 255, 0.87)",
     },
     /* textfield:focus */
-    default_texfield_label_color_focus: "$default_icon_color_prominent",
+    textfield_label_color_focus: "$icon_color_prominent",
     /* textfield[error] */
-    default_texfield_label_color_error: {
+    textfield_label_color_error: {
       light: "$google_red_600",
       dark: "$google_red_300",
     },
     /* textfield[disabled] */
-    default_textfield_background_color_disabled: {
+    textfield_background_color_disabled: {
       light: "rgba($google_grey_100_rgb, 0.38)",
       dark: "rgba(0, 0, 0, 0.11)",
     },
-    default_texfield_label_color_disabled: {
+    textfield_label_color_disabled: {
       light: "rgba($google_grey_700_rgb, 0.38)",
       dark: "rgba(0, 0, 0, 0.23)",
     },
-    default_texfield_input_color_disabled: {
+    textfield_input_color_disabled: {
       light: "rgba($google_grey_900_rgb, 0.38)",
       dark: "rgba(255, 255, 255, 0.33)",
     },

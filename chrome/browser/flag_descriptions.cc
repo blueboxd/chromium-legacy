@@ -3025,6 +3025,10 @@ const char kAndroidNightModeTabReparentingDescription[] =
 
 #else  // !defined(OS_ANDROID)
 
+const char kEditPasswordsInDesktopSettingsName[] = "Edit passwords in settings";
+const char kEditPasswordsInDesktopSettingsDescription[] =
+    "Enables password editing in settings.";
+
 const char kEnableAccessibilityLiveCaptionsName[] = "Live Captions";
 const char kEnableAccessibilityLiveCaptionsDescription[] =
     "Enables the live captions feature which generates captions for "

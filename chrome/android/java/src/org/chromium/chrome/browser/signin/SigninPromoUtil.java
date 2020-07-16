@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.base.WindowAndroid;
@@ -46,9 +47,10 @@ public class SigninPromoUtil {
         List<String> accountNames = AccountUtils.toAccountNames(
                 AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts());
         Supplier<Set<String>> accountNamesSupplier = () -> new ArraySet<>(accountNames);
+        IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
+                Profile.getLastUsedRegularProfile());
         if (!shouldLaunchSigninPromo(preferencesManager, currentMajorVersion,
-                    IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount(),
-                    wasSignedIn, accountNamesSupplier)) {
+                    identityManager.hasPrimaryAccount(), wasSignedIn, accountNamesSupplier)) {
             return false;
         }
 

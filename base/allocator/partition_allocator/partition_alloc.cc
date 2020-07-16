@@ -193,10 +193,9 @@ void PartitionAllocGlobalUninitForTesting() {
 }
 
 template <bool thread_safe>
-void PartitionRoot<thread_safe>::InitSlowPath(bool enforce_alignment) {
+void PartitionRoot<thread_safe>::Init(bool enforce_alignment) {
   ScopedGuard guard{lock_};
-
-  if (initialized.load(std::memory_order_relaxed))
+  if (initialized)
     return;
 
 #if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)

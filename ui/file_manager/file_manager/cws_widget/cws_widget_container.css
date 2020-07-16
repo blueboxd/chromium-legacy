@@ -48,7 +48,7 @@
 
 body.files-ng .cws-widget-buttons {
   align-items: center;
-  background: var(--cros-default-bg-color);
+  background: var(--cros-bg-color);
   display: flex;
   /* subtract the bottom padding from the container outside */
   height: calc(64px - 20px);
@@ -67,7 +67,7 @@ body.files-ng .cws-widget-buttons {
 }
 
 body.files-ng .cws-widget-webstore-button {
-  color: var(--cros-default-button-background-color-primary);
+  color: var(--cros-button-background-color-primary);
   height: 24px;
   padding-inline-start: 0;
 }

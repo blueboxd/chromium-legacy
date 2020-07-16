@@ -1009,6 +1009,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "edit-passwords-in-settings",
+    "owners": [ "irfedorova", "jdoerrie" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "elastic-overscroll-win",
     "owners": [ "arakeri@microsoft.com" ],
     "expiry_milestone": 90

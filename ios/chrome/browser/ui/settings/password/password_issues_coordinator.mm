@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/settings/password/password_issues_coordinator.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator.h"
+#import "ios/chrome/browser/ui/settings/password/password_issue_with_form.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_presenter.h"
@@ -78,7 +80,15 @@
 }
 
 - (void)presentPasswordIssueDetails:(id<PasswordIssue>)password {
-  // TODO(crbug.com/1075494) - Show Password details page
+  autofill::PasswordForm form =
+      base::mac::ObjCCastStrict<PasswordIssueWithForm>(password).form;
+
+  PasswordDetailsCoordinator* passwordDetails =
+      [[PasswordDetailsCoordinator alloc]
+          initWithBaseNavigationController:self.baseNavigationController
+                                  password:form];
+  // TODO:(crbug.com/1075494) - Add self as delegate for coordinator.
+  [passwordDetails start];
 }
 
 @end

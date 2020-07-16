@@ -31,6 +31,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -588,6 +589,26 @@ TEST_P(PasswordsTableViewControllerTest, PasswordCheckStateRunning) {
   EXPECT_TRUE(checkPassword.enabled);
   EXPECT_FALSE(checkPassword.indicatorHidden);
   EXPECT_FALSE(checkPassword.trailingImage);
+}
+
+// Test verifies error state of password check cell.
+TEST_P(PasswordsTableViewControllerTest, PasswordCheckStateError) {
+  if (!GetParam().password_check_enabled)
+    return;
+
+  ChangePasswordCheckState(PasswordCheckStateError);
+
+  CheckTextCellTextWithId(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON,
+                          GetSectionIndex(PasswordCheck), 1);
+  CheckDetailItemTextWithIds(IDS_IOS_CHECK_PASSWORDS,
+                             IDS_IOS_PASSWORD_CHECK_ERROR,
+                             GetSectionIndex(PasswordCheck), 0);
+  SettingsCheckItem* checkPassword =
+      GetTableViewItem(GetSectionIndex(PasswordCheck), 0);
+  EXPECT_TRUE(checkPassword.enabled);
+  EXPECT_TRUE(checkPassword.indicatorHidden);
+  EXPECT_FALSE(checkPassword.trailingImage);
+  EXPECT_FALSE(checkPassword.infoButtonHidden);
 }
 
 // Test verifies tapping start with no saved passwords has no effect.

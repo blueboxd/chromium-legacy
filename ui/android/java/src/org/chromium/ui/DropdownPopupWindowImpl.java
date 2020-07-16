@@ -25,7 +25,7 @@ import org.chromium.ui.widget.AnchoredPopupWindow;
 import org.chromium.ui.widget.ViewRectProvider;
 
 /**
- * The dropdown popup window for use on KitKat+. Internally uses an AnchoredPopupWindow
+ * The dropdown popup window for use on Lollipop+. Internally uses an AnchoredPopupWindow
  * anchored to a view to display a list of options.
  */
 class DropdownPopupWindowImpl

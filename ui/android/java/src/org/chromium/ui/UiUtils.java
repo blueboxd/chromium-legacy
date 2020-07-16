@@ -419,12 +419,8 @@ public class UiUtils {
      * @return Typeface that can be applied to a View.
      */
     public static Typeface createRobotoMediumTypeface() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Roboto Medium, regular.
-            return Typeface.create("sans-serif-medium", Typeface.NORMAL);
-        } else {
-            return Typeface.create("sans-serif", Typeface.BOLD);
-        }
+        // Roboto Medium, regular.
+        return Typeface.create("sans-serif-medium", Typeface.NORMAL);
     }
 
     /**

@@ -277,7 +277,8 @@ void FakeSkiaOutputSurface::CopyOutput(
     auto* sii = context_provider_->SharedImageInterface();
     gpu::Mailbox mailbox = sii->CreateSharedImage(
         ResourceFormat::RGBA_8888, geometry.result_selection.size(),
-        color_space, gpu::SHARED_IMAGE_USAGE_GLES2);
+        color_space, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+        gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
 
     auto* gl = context_provider_->ContextGL();
     gpu::SyncToken sync_token;

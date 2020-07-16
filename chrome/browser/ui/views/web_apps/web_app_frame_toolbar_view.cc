@@ -258,7 +258,7 @@ class WebAppFrameToolbarView::NavigationButtonContainer
   explicit NavigationButtonContainer(BrowserView* browser_view);
   ~NavigationButtonContainer() override;
 
-  ToolbarButton* back_button() { return back_button_; }
+  BackForwardButton* back_button() { return back_button_; }
 
   ReloadButton* reload_button() { return reload_button_; }
 
@@ -273,10 +273,9 @@ class WebAppFrameToolbarView::NavigationButtonContainer
 
     const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
     const gfx::VectorIcon& back_image = GetBackImage(touch_ui);
-    back_button_->SetImage(views::Button::STATE_NORMAL,
-                           gfx::CreateVectorIcon(back_image, icon_color_));
-    back_button_->SetImage(views::Button::STATE_DISABLED,
-                           gfx::CreateVectorIcon(back_image, disabled_color));
+    back_button_->OverrideImageModel(
+        ui::ImageModel::FromVectorIcon(back_image, icon_color_),
+        ui::ImageModel::FromVectorIcon(back_image, disabled_color));
 
     reload_button_->SetColors(icon_color_, disabled_color);
   }
@@ -320,7 +319,7 @@ class WebAppFrameToolbarView::NavigationButtonContainer
           base::Unretained(this)));
 
   // These members are owned by the views hierarchy.
-  ToolbarButton* back_button_ = nullptr;
+  BackForwardButton* back_button_ = nullptr;
   ReloadButton* reload_button_ = nullptr;
 };
 

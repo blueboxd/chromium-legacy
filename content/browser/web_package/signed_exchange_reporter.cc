@@ -41,6 +41,7 @@ constexpr char kSXGResultCertVerificationError[] =
 constexpr char kSXGResultCertFetchError[] = "sxg.cert_fetch_error";
 constexpr char kSXGResultCertParseError[] = "sxg.cert_parse_error";
 constexpr char kSXGResultVariantMismatch[] = "sxg.variant_mismatch";
+constexpr char kSXGHeaderIntegrityMismatch[] = "sxg.header_integrity_mismatch";
 
 const char* GetResultTypeString(SignedExchangeLoadResult result) {
   switch (result) {
@@ -191,7 +192,7 @@ void SignedExchangeReporter::set_cert_url(const GURL& cert_url) {
   report_->cert_url = cert_url;
 }
 
-void SignedExchangeReporter::ReportResultAndFinish(
+void SignedExchangeReporter::ReportLoadResultAndFinish(
     SignedExchangeLoadResult result) {
   DCHECK(report_);
 
@@ -211,6 +212,14 @@ void SignedExchangeReporter::ReportResultAndFinish(
     report_->elapsed_time = base::TimeTicks::Now() - request_start_;
   }
 
+  ReportResult(frame_tree_node_id_, std::move(report_));
+}
+
+void SignedExchangeReporter::ReportHeaderIntegrityMismatch() {
+  DCHECK(report_);
+  report_->success = false;
+  report_->type = kSXGHeaderIntegrityMismatch;
+  report_->elapsed_time = base::TimeDelta();
   ReportResult(frame_tree_node_id_, std::move(report_));
 }
 

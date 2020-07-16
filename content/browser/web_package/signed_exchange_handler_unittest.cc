@@ -108,8 +108,7 @@ class MockSignedExchangeCertFetcherFactory
       const GURL& cert_url,
       bool force_fetch,
       SignedExchangeCertFetcher::CertificateCallback callback,
-      SignedExchangeDevToolsProxy* devtools_proxy,
-      SignedExchangeReporter* reporter) override {
+      SignedExchangeDevToolsProxy* devtools_proxy) override {
     EXPECT_EQ(cert_url, expected_cert_url_);
 
     auto cert_chain = SignedExchangeCertificateChain::Parse(
@@ -119,7 +118,7 @@ class MockSignedExchangeCertFetcherFactory
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), SignedExchangeLoadResult::kSuccess,
-                       std::move(cert_chain)));
+                       std::move(cert_chain), net::IPAddress()));
     return nullptr;
   }
 

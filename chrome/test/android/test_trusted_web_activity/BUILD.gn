@@ -13,5 +13,8 @@ android_library("test_trusted_web_activity_java") {
     "src/org/chromium/chrome/browser/browserservices/MessengerService.java",
     "src/org/chromium/chrome/browser/browserservices/TestTrustedWebActivityService.java",
   ]
-  deps = [ "//third_party/android_sdk/androidx_browser:androidx_browser_java" ]
+  deps = [
+    "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_sdk/androidx_browser:androidx_browser_java",
+  ]
 }

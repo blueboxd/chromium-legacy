@@ -354,7 +354,7 @@ public class WarmupManager {
 
         mWebContentsCreatedForCCT = forCCT;
         mSpareWebContents = new WebContentsFactory().createWebContentsWithWarmRenderer(
-                false /* incognito */, true /* initiallyHidden */);
+                Profile.getLastUsedRegularProfile(), true /* initiallyHidden */);
         mObserver = new RenderProcessGoneObserver();
         mSpareWebContents.addObserver(mObserver);
         mWebContentsCreationTimeMs = SystemClock.elapsedRealtime();

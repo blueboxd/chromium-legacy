@@ -4,6 +4,11 @@
     text-align: end;
   }
 
+  #device-list {
+    overflow: auto;
+    width: 191px;
+  }
+
   nearby-preview {
     margin-inline-end: 10px;
     margin-inline-start: 10px;
@@ -27,7 +32,9 @@
   #process-row {
     display: flex;
     flex-grow: 1;
+    justify-content: space-between;
     margin-top: 48px;
+    overflow: hidden;
   }
 
   #subtitle {
@@ -54,6 +61,21 @@
 
   <div id="process-row">
     <nearby-preview title="Doggo.jpg"></nearby-preview>
+    <div id="device-list">
+      <nearby-device name="Alyssa's Pixel"></nearby-device>
+      <nearby-device name="Shangela's Pixel 2XL Name Is Looong"></nearby-device>
+      <nearby-device name="MirasChromebookIsAllInOneWord"></nearby-device>
+      <nearby-device name="One"></nearby-device>
+      <nearby-device name="Two"></nearby-device>
+      <nearby-device name="Three"></nearby-device>
+      <nearby-device name="Four"></nearby-device>
+      <nearby-device name="Five"></nearby-device>
+      <nearby-device name="Six"></nearby-device>
+      <nearby-device name="Seven"></nearby-device>
+      <nearby-device name="Eight"></nearby-device>
+      <nearby-device name="Nine"></nearby-device>
+      <nearby-device name="Ten"></nearby-device>
+    </div>
   </div>
 
   <div id="help">

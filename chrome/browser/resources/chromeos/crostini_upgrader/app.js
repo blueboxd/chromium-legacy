@@ -428,6 +428,8 @@ Polymer({
       case State.SUCCEEDED:
       case State.RESTORE_SUCCEEDED:
         return loadTimeData.getString('close');
+      case State.PROMPT:
+        return loadTimeData.getString('notNow');
       default:
         return loadTimeData.getString('cancel');
     }

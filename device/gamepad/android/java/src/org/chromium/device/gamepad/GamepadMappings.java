@@ -4,7 +4,6 @@
 
 package org.chromium.device.gamepad;
 
-import android.annotation.TargetApi;
 import android.os.Build;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -54,10 +53,7 @@ abstract class GamepadMappings {
     private static final float BUTTON_AXIS_DEADZONE = 0.01f;
 
     public static GamepadMappings getMappings(InputDevice device, int[] axes, BitSet buttons) {
-        GamepadMappings mappings = null;
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            mappings = getMappings(device.getProductId(), device.getVendorId(), axes);
-        }
+        GamepadMappings mappings = getMappings(device.getProductId(), device.getVendorId(), axes);
         if (mappings == null) {
             mappings = getMappings(device.getName());
         }
@@ -67,7 +63,6 @@ abstract class GamepadMappings {
         return mappings;
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     @VisibleForTesting
     static GamepadMappings getMappings(int productId, int vendorId, int[] axes) {
         // Device name of a DualShock 4 gamepad is "Wireless Controller". This is not reliably

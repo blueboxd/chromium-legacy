@@ -13,9 +13,15 @@ js_type_check("closure_compile") {
                   ]
   deps = [
     ":nearby_confirmation_page_test",
+    ":nearby_device_test",
     ":nearby_preview_test",
     ":nearby_progress_test",
   ]
+}
+
+js_library("nearby_device_test") {
+  deps = [ "//chrome/browser/resources/nearby_share:nearby_device" ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
 js_library("nearby_confirmation_page_test") {

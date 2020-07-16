@@ -356,8 +356,6 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEventIndices_SelectionOFF_CharacterGranularity() throws Throwable {
         // Build a simple web page with an input and the text "Testing"
         int editTextVirtualViewId = buildWebPageWithEditText(
@@ -403,8 +401,6 @@ public class WebContentsAccessibilityTest {
     @Test
     @LargeTest
     @Ignore("Skipping due to long run time")
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEventIndices_SelectionON_CharacterGranularity() throws Throwable {
         // Build a simple web page with an input and the text "Testing"
         int editTextVirtualViewId = buildWebPageWithEditText(
@@ -505,8 +501,6 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEventIndices_SelectionOFF_WordGranularity() throws Throwable {
         // Build a simple web page with an input and the text "Testing this output is correct"
         int editTextVirtualViewId = buildWebPageWithEditText(
@@ -556,8 +550,6 @@ public class WebContentsAccessibilityTest {
     @Test
     @LargeTest
     @Ignore("Skipping due to long run time")
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEventIndices_SelectionON_WordGranularity() throws Throwable {
         // Build a simple web page with an input and the text "Testing this output is correct"
         int editTextVirtualViewId = buildWebPageWithEditText(
@@ -663,8 +655,6 @@ public class WebContentsAccessibilityTest {
     @Test
     @LargeTest
     @Ignore("Skipping due to long run time")
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEventIndices_contenteditable_SelectionON_CharacterGranularity()
             throws Throwable {
         int contentEditableVirtualViewId =
@@ -773,8 +763,6 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testTextFieldExposesActionSetText() {
         // Load a web page with a text field.
         final String data = "<h1>Simple test page</h1>"
@@ -797,8 +785,6 @@ public class WebContentsAccessibilityTest {
      **/
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testContentEditableClassName() {
         final String data = "<div contenteditable>Edit This</div>";
 
@@ -819,8 +805,6 @@ public class WebContentsAccessibilityTest {
      **/
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEditTextFieldAriaInvalidTrueErrorMessage() {
         final String data = "<form>\n"
                 + "  First name:<br>\n"
@@ -844,8 +828,6 @@ public class WebContentsAccessibilityTest {
      **/
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEditTextFieldAriaInvalidSpellingErrorMessage() {
         final String data = "<input type='text' aria-invalid='spelling'><br>\n";
 
@@ -866,8 +848,6 @@ public class WebContentsAccessibilityTest {
      **/
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEditTextFieldAriaInvalidGrammarErrorMessage() {
         final String data = "<input type='text' aria-invalid='grammar'><br>\n";
 
@@ -887,8 +867,6 @@ public class WebContentsAccessibilityTest {
      **/
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEditTextFieldValidNoErrorMessage() {
         final String data = "<input type='text'><br>\n";
         mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
@@ -908,8 +886,6 @@ public class WebContentsAccessibilityTest {
      **/
     @Test
     @MediumTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testSpellingError() {
         // Load a web page containing a text field with one misspelling.
         // Note that for content_shell, no spelling suggestions are enabled

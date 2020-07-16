@@ -20,8 +20,19 @@ class BackForwardButton : public ToolbarButton {
   BackForwardButton& operator=(const BackForwardButton&) = delete;
   ~BackForwardButton() override;
 
+  // TODO(http://crbug.com/1099607) Remove this once WebAppFrameToolbarView
+  // doesn't need this.
+  void OverrideImageModel(const ui::ImageModel& normal,
+                          const ui::ImageModel& disabled);
+
+  // ToolbarButton:
+  void UpdateIcon() override;
+
  private:
   Direction direction_;
+
+  base::Optional<ui::ImageModel> normal_model_;
+  base::Optional<ui::ImageModel> disabled_model_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_BACK_FORWARD_BUTTON_H_

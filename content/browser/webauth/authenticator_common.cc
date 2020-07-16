@@ -311,7 +311,8 @@ blink::mojom::MakeCredentialAuthenticatorResponsePtr
 CreateMakeCredentialResponse(
     const std::string& client_data_json,
     device::AuthenticatorMakeCredentialResponse response_data,
-    AttestationErasureOption attestation_erasure) {
+    AttestationErasureOption attestation_erasure,
+    bool prf_requested) {
   auto response = blink::mojom::MakeCredentialAuthenticatorResponse::New();
   auto common_info = blink::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json.begin(),
@@ -344,6 +345,8 @@ CreateMakeCredentialResponse(
   }
 
   response->transports = std::move(transports);
+  response->echo_prf = prf_requested;
+  response->prf = false;
 
   const base::Optional<cbor::Value>& maybe_extensions =
       response_data.attestation_object().authenticator_data().extensions();
@@ -354,8 +357,12 @@ CreateMakeCredentialResponse(
         extensions.find(cbor::Value(device::kExtensionHmacSecret));
     if (hmac_secret_it != extensions.end() &&
         hmac_secret_it->second.is_bool()) {
-      response->echo_hmac_create_secret = true;
-      response->hmac_create_secret = hmac_secret_it->second.GetBool();
+      if (prf_requested) {
+        response->prf = true;
+      } else {
+        response->echo_hmac_create_secret = true;
+        response->hmac_create_secret = hmac_secret_it->second.GetBool();
+      }
     }
   }
 
@@ -391,7 +398,8 @@ CreateMakeCredentialResponse(
 blink::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
     const std::string& client_data_json,
     device::AuthenticatorGetAssertionResponse response_data,
-    base::Optional<bool> echo_appid_extension) {
+    base::Optional<bool> echo_appid_extension,
+    bool echo_prf_extension) {
   auto response = blink::mojom::GetAssertionAuthenticatorResponse::New();
   auto common_info = blink::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json.begin(),
@@ -409,6 +417,22 @@ blink::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
   if (echo_appid_extension) {
     response->echo_appid_extension = true;
     response->appid_extension = *echo_appid_extension;
+  }
+  response->echo_prf = echo_prf_extension;
+  base::Optional<base::span<const uint8_t>> hmac_secret =
+      response_data.hmac_secret();
+  if (hmac_secret) {
+    auto prf_values = blink::mojom::PRFValues::New();
+    DCHECK(hmac_secret->size() == 32 || hmac_secret->size() == 64);
+    prf_values->first =
+        device::fido_parsing_utils::Materialize(hmac_secret->subspan(0, 32));
+    if (hmac_secret->size() == 64) {
+      prf_values->second =
+          device::fido_parsing_utils::Materialize(hmac_secret->subspan(32, 32));
+    }
+    response->prf_results = std::move(prf_values);
+  } else {
+    response->prf_not_evaluated = response_data.hmac_secret_not_evaluated();
   }
   response_data.user_entity()
       ? response->user_handle.emplace(response_data.user_entity()->id)
@@ -510,15 +534,11 @@ base::flat_set<device::FidoTransportProtocol> GetAvailableTransports(
 
 }  // namespace
 
-AuthenticatorCommon::AuthenticatorCommon(
-    RenderFrameHost* render_frame_host,
-    std::unique_ptr<base::OneShotTimer> timer)
+AuthenticatorCommon::AuthenticatorCommon(RenderFrameHost* render_frame_host)
     : render_frame_host_(render_frame_host),
       security_checker_(static_cast<RenderFrameHostImpl*>(render_frame_host)
-                            ->GetWebAuthRequestSecurityChecker()),
-      timer_(std::move(timer)) {
+                            ->GetWebAuthRequestSecurityChecker()) {
   DCHECK(render_frame_host_);
-  DCHECK(timer_);
   // Disable the back-forward cache for any document that makes WebAuthn
   // requests. Pages using privacy-sensitive APIs are generally exempt from
   // back-forward cache for now as a precaution.
@@ -638,7 +658,8 @@ void AuthenticatorCommon::StartGetAssertionRequest(
       discovery_factory,
       GetAvailableTransports(render_frame_host_, request_delegate_.get(),
                              caller_origin_),
-      *ctap_get_assertion_request_, allow_skipping_pin_touch,
+      *ctap_get_assertion_request_, *ctap_get_assertion_options_,
+      allow_skipping_pin_touch,
       base::BindOnce(&AuthenticatorCommon::OnSignResponse,
                      weak_factory_.GetWeakPtr()));
 
@@ -863,7 +884,9 @@ void AuthenticatorCommon::MakeCredential(
       client_data_json_, options->relying_party, options->user,
       device::PublicKeyCredentialParams(options->public_key_parameters));
   ctap_make_credential_request_->exclude_list = options->exclude_credentials;
-  ctap_make_credential_request_->hmac_secret = options->hmac_create_secret;
+  prf_requested_ = options->prf_enable;
+  ctap_make_credential_request_->hmac_secret =
+      options->hmac_create_secret || prf_requested_;
   ctap_make_credential_request_->app_id = std::move(appid_exclude);
   ctap_make_credential_request_->is_incognito_mode =
       browser_context()->IsOffTheRecord();
@@ -1014,6 +1037,53 @@ void AuthenticatorCommon::GetAssertion(
   ctap_get_assertion_request_ = CreateCtapGetAssertionRequest(
       client_data_json_, std::move(options), app_id_,
       browser_context()->IsOffTheRecord());
+  ctap_get_assertion_options_.emplace();
+
+  bool is_first = true;
+  base::Optional<std::vector<uint8_t>> last_id;
+  prf_requested_ = options->prf;
+  for (const auto& prf_input_from_renderer : options->prf_inputs) {
+    device::CtapGetAssertionOptions::PRFInput prf_input;
+
+    // This statement enforces invariants that should be established by the
+    // renderer.
+    if (
+        // Only the first element in the vector may be the default.
+        (!is_first && !prf_input_from_renderer->id) ||
+        // The PRF inputs must be sorted by credential ID to show that there are
+        // no duplicates.
+        (last_id.has_value() && prf_input_from_renderer->id.has_value() &&
+         *last_id >= *prf_input_from_renderer->id) ||
+        // The lengths are specified in authenticator.mojom, so hopefully Mojo
+        // enforces them too.
+        prf_input_from_renderer->first.size() != prf_input.salt1.size() ||
+        (prf_input_from_renderer->second &&
+         prf_input_from_renderer->second->size() != prf_input.salt1.size())) {
+      NOTREACHED();
+
+      InvokeCallbackAndCleanup(
+          std::move(callback),
+          blink::mojom::AuthenticatorStatus::UNKNOWN_ERROR);
+      return;
+    }
+    is_first = false;
+    last_id = prf_input_from_renderer->id;
+
+    if (prf_input_from_renderer->id) {
+      prf_input.credential_id = std::move(*prf_input_from_renderer->id);
+    }
+
+    memcpy(prf_input.salt1.data(), prf_input_from_renderer->first.data(),
+           prf_input.salt1.size());
+    if (prf_input_from_renderer->second) {
+      prf_input.salt2.emplace();
+      memcpy(prf_input.salt2->data(), prf_input_from_renderer->second->data(),
+             prf_input.salt2->size());
+    }
+
+    ctap_get_assertion_options_->prf_inputs.emplace_back(std::move(prf_input));
+  }
+
   ctap_get_assertion_request_->is_u2f_only = origin_is_crypto_token_extension;
   if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport) &&
       !origin_is_crypto_token_extension && !is_cross_origin) {
@@ -1221,7 +1291,7 @@ void AuthenticatorCommon::OnRegisterResponse(
             blink::mojom::AuthenticatorStatus::SUCCESS,
             CreateMakeCredentialResponse(client_data_json_,
                                          std::move(*response_data),
-                                         *attestation_erasure),
+                                         *attestation_erasure, prf_requested_),
             Focus::kDoCheck);
       }
 
@@ -1287,7 +1357,7 @@ void AuthenticatorCommon::OnRegisterResponseAttestationDecided(
       std::move(make_credential_response_callback_),
       blink::mojom::AuthenticatorStatus::SUCCESS,
       CreateMakeCredentialResponse(client_data_json_, std::move(response_data),
-                                   attestation_erasure),
+                                   attestation_erasure, prf_requested_),
       Focus::kDoCheck);
 }
 
@@ -1409,7 +1479,7 @@ void AuthenticatorCommon::OnAccountSelected(
       std::move(get_assertion_response_callback_),
       blink::mojom::AuthenticatorStatus::SUCCESS,
       CreateGetAssertionResponse(client_data_json_, std::move(response),
-                                 echo_appid_extension));
+                                 echo_appid_extension, prf_requested_));
   return;
 }
 
@@ -1502,6 +1572,8 @@ void AuthenticatorCommon::Cleanup() {
   request_.reset();
   ctap_make_credential_request_.reset();
   make_credential_options_.reset();
+  ctap_get_assertion_request_.reset();
+  ctap_get_assertion_options_.reset();
   request_delegate_.reset();
   make_credential_response_callback_.Reset();
   get_assertion_response_callback_.Reset();
@@ -1513,6 +1585,7 @@ void AuthenticatorCommon::Cleanup() {
   empty_allow_list_ = false;
   error_awaiting_user_acknowledgement_ =
       blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
+  prf_requested_ = false;
 }
 
 void AuthenticatorCommon::DisableUI() {

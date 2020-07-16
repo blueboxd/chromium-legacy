@@ -63,7 +63,7 @@ TEST_F(FidoGetAssertionTaskTest, TestGetAssertionSuccess) {
           test_data::kTestGetAssertionCredentialId)));
 
   auto task = std::make_unique<GetAssertionTask>(
-      device.get(), std::move(request_param),
+      device.get(), std::move(request_param), CtapGetAssertionOptions(),
       get_assertion_callback_receiver().callback());
 
   get_assertion_callback_receiver().WaitForCallback();
@@ -86,7 +86,7 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fSignSuccess) {
       fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)));
 
   auto task = std::make_unique<GetAssertionTask>(
-      device.get(), std::move(request_param),
+      device.get(), std::move(request_param), CtapGetAssertionOptions(),
       get_assertion_callback_receiver().callback());
 
   get_assertion_callback_receiver().WaitForCallback();
@@ -111,7 +111,7 @@ TEST_F(FidoGetAssertionTaskTest, TestSignSuccessWithFake) {
   done.WaitForCallback();
 
   auto task = std::make_unique<GetAssertionTask>(
-      device.get(), std::move(request_param),
+      device.get(), std::move(request_param), CtapGetAssertionOptions(),
       get_assertion_callback_receiver().callback());
 
   get_assertion_callback_receiver().WaitForCallback();
@@ -146,7 +146,7 @@ TEST_F(FidoGetAssertionTaskTest, TestIncorrectGetAssertionResponse) {
       device.get(),
       CtapGetAssertionRequest(test_data::kRelyingPartyId,
                               test_data::kClientDataJson),
-      get_assertion_callback_receiver().callback());
+      CtapGetAssertionOptions(), get_assertion_callback_receiver().callback());
 
   get_assertion_callback_receiver().WaitForCallback();
   EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,
@@ -165,7 +165,7 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fSignRequestWithEmptyAllowedList) {
       test_data::kApduEncodedNoErrorSignResponse);
 
   auto task = std::make_unique<GetAssertionTask>(
-      device.get(), std::move(request),
+      device.get(), std::move(request), CtapGetAssertionOptions(),
       get_assertion_callback_receiver().callback());
 
   get_assertion_callback_receiver().WaitForCallback();
@@ -198,7 +198,7 @@ TEST_F(FidoGetAssertionTaskTest, TestSilentSignInWhenAppIdExtensionPresent) {
                                       test_data::kTestGetAssertionResponse);
 
   auto task = std::make_unique<GetAssertionTask>(
-      device.get(), std::move(request),
+      device.get(), std::move(request), CtapGetAssertionOptions(),
       get_assertion_callback_receiver().callback());
 
   get_assertion_callback_receiver().WaitForCallback();
@@ -242,7 +242,7 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fFallbackForAppIdExtension) {
       test_data::kApduEncodedNoErrorSignResponse);
 
   auto task = std::make_unique<GetAssertionTask>(
-      device.get(), std::move(request),
+      device.get(), std::move(request), CtapGetAssertionOptions(),
       get_assertion_callback_receiver().callback());
   get_assertion_callback_receiver().WaitForCallback();
   EXPECT_EQ(CtapDeviceResponseCode::kSuccess,
@@ -272,7 +272,7 @@ TEST_F(FidoGetAssertionTaskTest, TestAvoidSilentSignInForCtapOnlyDevice) {
                                       error);
 
   auto task = std::make_unique<GetAssertionTask>(
-      device.get(), std::move(request),
+      device.get(), std::move(request), CtapGetAssertionOptions(),
       get_assertion_callback_receiver().callback());
   get_assertion_callback_receiver().WaitForCallback();
   EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,

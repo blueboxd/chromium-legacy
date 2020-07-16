@@ -253,8 +253,9 @@ void TestPlugin::UpdateGeometry(const blink::WebRect& window_rect,
     auto* sii = context_provider_->data->SharedImageInterface();
     mailbox_ = sii->CreateSharedImage(
         viz::ResourceFormat::RGBA_8888, gfx::Size(rect_.width, rect_.height),
-        gfx::ColorSpace(),
-        gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_DISPLAY);
+        gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+        gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_DISPLAY,
+        gpu::kNullSurfaceHandle);
     gl_->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
 
     GLuint color_texture =

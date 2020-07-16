@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_tag.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -739,6 +740,34 @@ TEST(CheckedPtr2OrMTEImpl, CrashOnGenerationMismatch) {
 void HandleOOM(size_t unused_size) {
   LOG(FATAL) << "Out of memory";
 }
+
+// This test works only when PartitionAlloc is used, when tags are enabled.
+// Don't enable it when MEMORY_TOOL_REPLACES_ALLOCATOR is defined, because it
+// makes PartitionAlloc take a different path that doesn't provide tags, thus no
+// crash on UaF, thus missing the EXPECT_DEATH_IF_SUPPORTED expectation.
+#if BUILDFLAG(USE_PARTITION_ALLOC) &&                                  \
+    (ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_MTE_CHECKED_PTR) && \
+    !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+
+TEST(CheckedPtr2OrMTEImpl, CrashOnUseAfterFree) {
+  // This test works only if GigaCage is enabled. Bail out otherwise.
+  if (!IsPartitionAllocGigaCageEnabled())
+    return;
+
+  // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
+  // new/delete once PartitionAlloc Everywhere is fully enabled.
+  PartitionAllocGlobalInit(HandleOOM);
+  PartitionAllocator<ThreadSafe> allocator;
+  allocator.init();
+  void* raw_ptr = allocator.root()->Alloc(sizeof(int), "int");
+  CheckedPtr<int> ptr = static_cast<int*>(raw_ptr);
+  *ptr = 42;
+  EXPECT_TRUE(*ptr == 42);
+  allocator.root()->Free(raw_ptr);
+  EXPECT_DEATH_IF_SUPPORTED(if (*ptr == 42) return, "");
+}
+
+#endif
 
 }  // namespace internal
 }  // namespace base

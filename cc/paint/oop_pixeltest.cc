@@ -177,7 +177,8 @@ class OopPixelTest : public testing::Test,
                      gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
     gpu::Mailbox mailbox = sii->CreateSharedImage(
         viz::ResourceFormat::RGBA_8888, gfx::Size(width, height),
-        options.color_space, flags);
+        options.color_space, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+        flags, gpu::kNullSurfaceHandle);
     EXPECT_TRUE(mailbox.Verify());
     raster_implementation->WaitSyncTokenCHROMIUM(
         sii->GenUnverifiedSyncToken().GetConstData());
@@ -268,7 +269,9 @@ class OopPixelTest : public testing::Test,
     uint32_t flags = gpu::SHARED_IMAGE_USAGE_RASTER |
                      gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
     gpu::Mailbox mailbox = sii->CreateSharedImage(
-        image_format, options.resource_size, options.color_space, flags);
+        image_format, options.resource_size, options.color_space,
+        kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, flags,
+        gpu::kNullSurfaceHandle);
     EXPECT_TRUE(mailbox.Verify());
     ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
 

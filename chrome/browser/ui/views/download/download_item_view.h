@@ -134,6 +134,9 @@ class DownloadItemView : public views::View,
   // Sets the current mode to |mode| and updates UI appropriately.
   void UpdateMode(Mode mode);
 
+  // Updates the visibility, text, size, etc. of all labels.
+  void UpdateLabels();
+
   // Updates the visible and enabled state of all buttons.
   void UpdateButtons();
 
@@ -144,10 +147,6 @@ class DownloadItemView : public views::View,
   // submission fails.
   bool SubmitDownloadToFeedbackService(
       DownloadCommands::Command download_command);
-
-  // This function calculates the vertical coordinate to draw the file name text
-  // relative to local bounds.
-  int GetYForFilenameText() const;
 
   void DrawIcon(gfx::Canvas* canvas);
   void LoadIcon();
@@ -228,8 +227,8 @@ class DownloadItemView : public views::View,
   // Callback for |progress_timer_|.
   void ProgressTimerFired();
 
-  // Returns the status text to show in the notification.
-  base::string16 GetStatusText() const;
+  // Returns the text and style to use for the status label.
+  std::pair<base::string16, int> GetStatusTextAndStyle() const;
 
   // Returns the file name to report to user. It might be elided to fit into
   // the text width.
@@ -307,7 +306,7 @@ class DownloadItemView : public views::View,
 
   views::Label* file_name_label_;
   views::Label* status_label_;
-  views::StyledLabel* dangerous_download_label_;
+  views::StyledLabel* warning_label_;
   views::StyledLabel* deep_scanning_label_;
 
   views::MdTextButton* open_now_button_;

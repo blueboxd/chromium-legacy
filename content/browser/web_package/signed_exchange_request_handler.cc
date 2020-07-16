@@ -109,7 +109,8 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
       std::move(client), url_loader->Unbind(), url_loader_options_,
       true /* should_redirect_to_fallback */, std::move(devtools_proxy),
       std::move(reporter), url_loader_factory_, url_loader_throttles_getter_,
-      frame_tree_node_id_, metric_recorder_, accept_langs_);
+      frame_tree_node_id_, metric_recorder_, accept_langs_,
+      false /* keep_entry_for_prefetch_cache */);
 
   *skip_other_interceptors = true;
   return true;

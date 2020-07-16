@@ -432,54 +432,52 @@ public class GamepadMappingsTest {
     @Test
     @Feature({"Gamepad"})
     public void testXboxOneSBluetooth2016FirmwareMappings() {
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            int[] axes = new int[] {MotionEvent.AXIS_X, MotionEvent.AXIS_Y, MotionEvent.AXIS_Z,
-                    MotionEvent.AXIS_RZ, MotionEvent.AXIS_LTRIGGER, MotionEvent.AXIS_RTRIGGER,
-                    MotionEvent.AXIS_HAT_X, MotionEvent.AXIS_HAT_Y};
-            GamepadMappings mappings =
-                    GamepadMappings.getMappings(GamepadMappings.XBOX_ONE_S_2016_FIRMWARE_PRODUCT_ID,
-                            GamepadMappings.XBOX_ONE_S_2016_FIRMWARE_VENDOR_ID, axes);
-            mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
+        int[] axes = new int[] {MotionEvent.AXIS_X, MotionEvent.AXIS_Y, MotionEvent.AXIS_Z,
+                MotionEvent.AXIS_RZ, MotionEvent.AXIS_LTRIGGER, MotionEvent.AXIS_RTRIGGER,
+                MotionEvent.AXIS_HAT_X, MotionEvent.AXIS_HAT_Y};
+        GamepadMappings mappings =
+                GamepadMappings.getMappings(GamepadMappings.XBOX_ONE_S_2016_FIRMWARE_PRODUCT_ID,
+                        GamepadMappings.XBOX_ONE_S_2016_FIRMWARE_VENDOR_ID, axes);
+        mappings.mapToStandardGamepad(mMappedAxes, mMappedButtons, mRawAxes, mRawButtons);
 
-            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.PRIMARY],
-                    mRawButtons[KeyEvent.KEYCODE_BUTTON_A], ERROR_TOLERANCE);
-            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.SECONDARY],
-                    mRawButtons[KeyEvent.KEYCODE_BUTTON_B], ERROR_TOLERANCE);
-            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.TERTIARY],
-                    mRawButtons[KeyEvent.KEYCODE_BUTTON_C], ERROR_TOLERANCE);
-            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.QUATERNARY],
-                    mRawButtons[KeyEvent.KEYCODE_BUTTON_X], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.PRIMARY],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_A], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.SECONDARY],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_B], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.TERTIARY],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_C], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.QUATERNARY],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_X], ERROR_TOLERANCE);
 
-            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_SHOULDER],
-                    mRawButtons[KeyEvent.KEYCODE_BUTTON_Y], ERROR_TOLERANCE);
-            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_SHOULDER],
-                    mRawButtons[KeyEvent.KEYCODE_BUTTON_Z], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_SHOULDER],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_Y], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_SHOULDER],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_Z], ERROR_TOLERANCE);
 
-            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_THUMBSTICK],
-                    mRawButtons[KeyEvent.KEYCODE_BUTTON_L2], ERROR_TOLERANCE);
-            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_THUMBSTICK],
-                    mRawButtons[KeyEvent.KEYCODE_BUTTON_R2], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_THUMBSTICK],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_L2], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_THUMBSTICK],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_R2], ERROR_TOLERANCE);
 
-            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.BACK_SELECT],
-                    mRawButtons[KeyEvent.KEYCODE_BUTTON_L1], ERROR_TOLERANCE);
-            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.START],
-                    mRawButtons[KeyEvent.KEYCODE_BUTTON_R1], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.BACK_SELECT],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_L1], ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.START],
+                mRawButtons[KeyEvent.KEYCODE_BUTTON_R1], ERROR_TOLERANCE);
 
-            // The triggers range from -1 to 1 with -1 as the idle value.
-            float leftTriggerValue = (mRawAxes[MotionEvent.AXIS_Z] + 1.0f) / 2.0f;
-            float rightTriggerValue = (mRawAxes[MotionEvent.AXIS_RZ] + 1.0f) / 2.0f;
-            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_TRIGGER], leftTriggerValue,
-                    ERROR_TOLERANCE);
-            Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER],
-                    rightTriggerValue, ERROR_TOLERANCE);
+        // The triggers range from -1 to 1 with -1 as the idle value.
+        float leftTriggerValue = (mRawAxes[MotionEvent.AXIS_Z] + 1.0f) / 2.0f;
+        float rightTriggerValue = (mRawAxes[MotionEvent.AXIS_RZ] + 1.0f) / 2.0f;
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.LEFT_TRIGGER], leftTriggerValue,
+                ERROR_TOLERANCE);
+        Assert.assertEquals(mMappedButtons[CanonicalButtonIndex.RIGHT_TRIGGER], rightTriggerValue,
+                ERROR_TOLERANCE);
 
-            assertMappedHatAxisToDpadButtons();
-            assertMappedXYAxes();
-            assertMappedRXAndRYAxesToRightStick();
-            expectNoMetaButton(mappings);
+        assertMappedHatAxisToDpadButtons();
+        assertMappedXYAxes();
+        assertMappedRXAndRYAxesToRightStick();
+        expectNoMetaButton(mappings);
 
-            assertMapping(mappings);
-        }
+        assertMapping(mappings);
     }
 
     @Test
@@ -487,14 +485,12 @@ public class GamepadMappingsTest {
     public void testXboxOneSBluetoothUsesDefaultMappings() {
         // Test that Xbox One S gamepads with updated firmware connected over Bluetooth use the
         // default mapping.
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            int[] axes = new int[] {MotionEvent.AXIS_X, MotionEvent.AXIS_Y, MotionEvent.AXIS_Z,
-                    MotionEvent.AXIS_RZ, MotionEvent.AXIS_LTRIGGER, MotionEvent.AXIS_RTRIGGER,
-                    MotionEvent.AXIS_HAT_X, MotionEvent.AXIS_HAT_Y};
-            GamepadMappings deviceIdMappings = GamepadMappings.getMappings(XBOX_ONE_S_PRODUCT_ID,
-                    GamepadMappings.XBOX_ONE_S_2016_FIRMWARE_VENDOR_ID, axes);
-            Assert.assertNull(deviceIdMappings);
-        }
+        int[] axes = new int[] {MotionEvent.AXIS_X, MotionEvent.AXIS_Y, MotionEvent.AXIS_Z,
+                MotionEvent.AXIS_RZ, MotionEvent.AXIS_LTRIGGER, MotionEvent.AXIS_RTRIGGER,
+                MotionEvent.AXIS_HAT_X, MotionEvent.AXIS_HAT_Y};
+        GamepadMappings deviceIdMappings = GamepadMappings.getMappings(
+                XBOX_ONE_S_PRODUCT_ID, GamepadMappings.XBOX_ONE_S_2016_FIRMWARE_VENDOR_ID, axes);
+        Assert.assertNull(deviceIdMappings);
 
         GamepadMappings deviceNameMappings = GamepadMappings.getMappings(XBOX_WIRELESS_DEVICE_NAME);
         Assert.assertNull(deviceNameMappings);

@@ -80,9 +80,10 @@ class VideoFrameYUVMailboxesHolder {
       }
       for (size_t plane = 0; plane < kNumYUVPlanes; ++plane) {
         gfx::Size tex_size = plane == kYIndex ? y_size : uv_size;
-        holders_[plane].mailbox =
-            sii->CreateSharedImage(viz::ResourceFormat::LUMINANCE_8, tex_size,
-                                   video_frame->ColorSpace(), mailbox_usage);
+        holders_[plane].mailbox = sii->CreateSharedImage(
+            viz::ResourceFormat::LUMINANCE_8, tex_size,
+            video_frame->ColorSpace(), kTopLeft_GrSurfaceOrigin,
+            kPremul_SkAlphaType, mailbox_usage, gpu::kNullSurfaceHandle);
         holders_[plane].texture_target = GL_TEXTURE_2D;
       }
 

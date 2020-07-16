@@ -94,8 +94,10 @@ public class SigninSignoutIntegrationTest {
         initMocks(this);
         mocker.mock(SigninUtilsJni.TEST_HOOKS, mSigninUtilsNativeMock);
         mActivityTestRule.startMainActivityOnBlankPage();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mSigninManager = IdentityServicesProvider.get().getSigninManager(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mSigninManager = IdentityServicesProvider.get().getSigninManager(
+                    Profile.getLastUsedRegularProfile());
+        });
         mSigninManager.addSignInStateObserver(mSignInStateObserverMock);
     }
 

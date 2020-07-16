@@ -17,7 +17,6 @@
 #include "base/util/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
@@ -68,7 +67,6 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
@@ -915,39 +913,11 @@ void ToolbarView::LoadImages() {
         ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR));
   }
 
-  const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
-
-  const gfx::VectorIcon& back_image =
-      touch_ui ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
-  back_->UpdateIconsWithStandardColors(back_image);
-
-  const gfx::VectorIcon& forward_image =
-      touch_ui ? kForwardArrowTouchIcon : vector_icons::kForwardArrowIcon;
-  forward_->UpdateIconsWithStandardColors(forward_image);
-
-  const gfx::VectorIcon& home_image =
-      touch_ui ? kNavigateHomeTouchIcon : kNavigateHomeIcon;
-  home_->UpdateIconsWithStandardColors(home_image);
-
   if (extensions_container_)
     extensions_container_->UpdateAllIcons();
 
-  if (cast_)
-    cast_->UpdateIcon();
-
-  if (media_button_)
-    media_button_->UpdateIcon();
-
-  if (sharesheet_button_)
-    sharesheet_button_->UpdateIcon();
-
-  if (avatar_)
-    avatar_->UpdateIcon();
-
   if (toolbar_account_icon_container_)
     toolbar_account_icon_container_->UpdateAllIcons();
-
-  app_menu_button_->UpdateIcon();
 }
 
 void ToolbarView::ShowCriticalNotification() {

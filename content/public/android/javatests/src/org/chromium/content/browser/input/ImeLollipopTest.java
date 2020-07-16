@@ -4,8 +4,6 @@
 
 package org.chromium.content.browser.input;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.view.inputmethod.CursorAnchorInfo;
 import android.view.inputmethod.InputConnection;
 
@@ -19,7 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -31,8 +28,6 @@ import java.util.concurrent.Callable;
  * Integration tests for text input for Android L (or above) features.
  */
 @RunWith(ContentJUnit4ClassRunner.class)
-@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class ImeLollipopTest {
     @Rule
     public ImeActivityTestRule mRule = new ImeActivityTestRule();

@@ -141,6 +141,13 @@ public class Profile implements BrowserContextHandle {
         return ProfileJni.get().hasPrimaryOTRProfile(mNativeProfileAndroid, Profile.this);
     }
 
+    /**
+     * Returns if the profile is a primary OTR Profile.
+     */
+    public boolean isPrimaryOTRProfile() {
+        return ProfileJni.get().isPrimaryOTRProfile(mNativeProfileAndroid, Profile.this);
+    }
+
     public ProfileKey getProfileKey() {
         return (ProfileKey) ProfileJni.get().getProfileKey(mNativeProfileAndroid, Profile.this);
     }
@@ -219,6 +226,7 @@ public class Profile implements BrowserContextHandle {
                 long nativeProfileAndroid, Profile caller, OTRProfileID otrProfileID);
         boolean hasPrimaryOTRProfile(long nativeProfileAndroid, Profile caller);
         boolean isOffTheRecord(long nativeProfileAndroid, Profile caller);
+        boolean isPrimaryOTRProfile(long nativeProfileAndroid, Profile caller);
         boolean isChild(long nativeProfileAndroid, Profile caller);
         void wipe(long nativeProfileAndroid, Profile caller);
         Object getProfileKey(long nativeProfileAndroid, Profile caller);

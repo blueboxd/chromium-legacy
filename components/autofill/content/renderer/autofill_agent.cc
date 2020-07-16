@@ -213,14 +213,6 @@ void AutofillAgent::DidChangeScrollOffsetImpl(
 
 void AutofillAgent::FocusedElementChanged(const WebElement& element) {
   was_focused_before_now_ = false;
-
-  if ((IsKeyboardAccessoryEnabled() || !focus_requires_scroll_) &&
-      !element.IsNull() &&
-      element.GetDocument().GetFrame()->HasTransientUserActivation()) {
-    focused_node_was_last_clicked_ = true;
-    HandleFocusChangeComplete();
-  }
-
   HidePopup();
 
   if (element.IsNull()) {
@@ -234,13 +226,29 @@ void AutofillAgent::FocusedElementChanged(const WebElement& element) {
 
   const WebInputElement* input = ToWebInputElement(&element);
 
+  bool focus_moved_to_new_form = false;
   if (!last_interacted_form_.IsNull() &&
       (!input || last_interacted_form_ != input->Form())) {
     // The focused element is not part of the last interacted form (could be
     // in a different form).
     GetAutofillDriver()->FocusNoLongerOnForm();
-    return;
+    focus_moved_to_new_form = true;
   }
+
+  // Calls HandleFocusChangeComplete() after notifying the focus is no longer on
+  // the previous form, then early return. No need to notify the newly focused
+  // element because that will be done by HandleFocusChangeComplete() which
+  // triggers FormControlElementClicked().
+  // Refer to http://crbug.com/1105254
+  if ((IsKeyboardAccessoryEnabled() || !focus_requires_scroll_) &&
+      !element.IsNull() &&
+      element.GetDocument().GetFrame()->HasTransientUserActivation()) {
+    focused_node_was_last_clicked_ = true;
+    HandleFocusChangeComplete();
+  }
+
+  if (focus_moved_to_new_form)
+    return;
 
   if (!input || !input->IsEnabled() || input->IsReadOnly() ||
       !input->IsTextField())

@@ -18,6 +18,8 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsUtils;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
@@ -150,6 +152,14 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      */
     private Tab mCurrentTab;
 
+    private final ObservableSupplierImpl<TabModelSelector> mTabModelSelectorSupplier =
+            new ObservableSupplierImpl<>();
+    private final ObservableSupplierImpl<TabContentManager> mTabContentManagerSupplier =
+            new ObservableSupplierImpl<>();
+    private final ObservableSupplierImpl<BrowserControlsStateProvider>
+            mBrowserControlsStateProviderSupplier = new ObservableSupplierImpl<>();
+    private final CompositorModelChangeProcessor.FrameRequestSupplier mFrameRequestSupplier;
+
     /**
      * Protected class to handle {@link TabModelObserver} related tasks. Extending classes will
      * need to override any related calls to add new functionality */
@@ -239,8 +249,13 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
         mOverlayPanelManager = new OverlayPanelManager();
 
+        mFrameRequestSupplier = new CompositorModelChangeProcessor.FrameRequestSupplier(this);
+
+        // TODO(crbug.com/1070281): Move this to #init.
         // Build Layouts
-        mStaticLayout = new StaticLayout(mContext, this, renderHost, null, mOverlayPanelManager);
+        mStaticLayout = new StaticLayout(mContext, this, renderHost, mHost, mFrameRequestSupplier,
+                mTabModelSelectorSupplier, mTabContentManagerSupplier,
+                mBrowserControlsStateProviderSupplier);
 
         // Set up layout parameters
         mStaticLayout.setLayoutHandlesTabLifecycles(true);
@@ -366,11 +381,15 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         // has its own timer.
         boolean areAnimatorsComplete = mAnimationHandler.pushUpdate();
 
+        // TODO(crbug.com/1070281): Remove after the FrameRequestSupplier migrates to the animation
+        //  system.
         final Layout layout = getActiveLayout();
         if (layout != null && layout.onUpdate(timeMs, dtMs) && layout.isHiding()
                 && areAnimatorsComplete) {
             layout.doneHiding();
         }
+
+        mFrameRequestSupplier.set(timeMs);
         return mUpdateRequested;
     }
 
@@ -410,6 +429,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
         // Initialize Layouts
         mStaticLayout.setTabModelSelector(selector, content);
+        mTabContentManagerSupplier.set(content);
+        mBrowserControlsStateProviderSupplier.set(mHost.getBrowserControlsManager());
 
         // Initialize Contextual Search Panel
         mContextualSearchPanel.setManagementDelegate(contextualSearchDelegate);
@@ -432,7 +453,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
     public void setTabModelSelector(TabModelSelector selector) {
         mTabModelSelector = selector;
-        mStaticLayout.setTabModelSelector(selector, null);
+        mTabModelSelectorSupplier.set(selector);
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {

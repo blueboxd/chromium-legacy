@@ -52,6 +52,10 @@ source_set("command_buffer_traits_sources") {
     "//ui/gfx/ipc/buffer_types",
     "//ui/gfx/ipc/geometry",
   ]
+
+  if (!is_nacl) {
+    deps += [ "//ui/gfx/ipc/skia" ]
+  }
 }
 
 source_set("ipc_common_sources") {
@@ -135,6 +139,10 @@ source_set("ipc_common_sources") {
     "//ui/gfx/ipc/geometry",
     "//ui/gl",
   ]
+
+  if (!is_nacl) {
+    deps += [ "//ui/gfx/ipc/skia" ]
+  }
 
   if (is_android) {
     sources += [

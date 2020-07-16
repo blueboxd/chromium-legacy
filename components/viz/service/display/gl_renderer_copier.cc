@@ -597,9 +597,10 @@ void GLRendererCopier::RenderAndSendTextureResult(
   DCHECK_EQ(request->result_format(), ResultFormat::RGBA_TEXTURE);
 
   auto* sii = context_provider_->SharedImageInterface();
-  gpu::Mailbox mailbox =
-      sii->CreateSharedImage(ResourceFormat::RGBA_8888, result_rect.size(),
-                             color_space, gpu::SHARED_IMAGE_USAGE_GLES2);
+  gpu::Mailbox mailbox = sii->CreateSharedImage(
+      ResourceFormat::RGBA_8888, result_rect.size(), color_space,
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
   auto* gl = context_provider_->ContextGL();
   gl->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
   GLuint texture = gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);

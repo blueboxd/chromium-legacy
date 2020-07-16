@@ -887,10 +887,10 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
       uint32_t usage =
           gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_RASTER |
           gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
-      plane_resource.mailbox =
-          sii->CreateSharedImage(plane_resource.gpu_memory_buffer.get(),
-                                 gpu_factories_->GpuMemoryBufferManager(),
-                                 video_frame->ColorSpace(), usage);
+      plane_resource.mailbox = sii->CreateSharedImage(
+          plane_resource.gpu_memory_buffer.get(),
+          gpu_factories_->GpuMemoryBufferManager(), video_frame->ColorSpace(),
+          kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage);
     } else if (!plane_resource.mailbox.IsZero()) {
       sii->UpdateSharedImage(frame_resources->sync_token,
                              plane_resource.mailbox);

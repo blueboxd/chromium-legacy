@@ -46,6 +46,8 @@ namespace SetCandidateWindowProperties =
     extensions::api::input_ime::SetCandidateWindowProperties;
 namespace SetAssistiveWindowProperties =
     extensions::api::input_ime::SetAssistiveWindowProperties;
+namespace SetAssistiveWindowButtonHighlighted =
+    extensions::api::input_ime::SetAssistiveWindowButtonHighlighted;
 namespace ClearComposition = extensions::api::input_ime::ClearComposition;
 namespace OnCompositionBoundsChanged =
     extensions::api::input_method_private::OnCompositionBoundsChanged;
@@ -109,6 +111,18 @@ ui::ime::AssistiveWindowType ConvertAssistiveWindowType(
       return ui::ime::AssistiveWindowType::kNone;
     case input_ime::ASSISTIVE_WINDOW_TYPE_UNDO:
       return ui::ime::AssistiveWindowType::kUndoWindow;
+  }
+}
+
+ui::ime::ButtonId ConvertAssistiveWindowButtonId(
+    input_ime::AssistiveWindowButton id) {
+  switch (id) {
+    case input_ime::ASSISTIVE_WINDOW_BUTTON_ADDTODICTIONARY:
+      return ui::ime::ButtonId::kAddToDictionary;
+    case input_ime::ASSISTIVE_WINDOW_BUTTON_UNDO:
+      return ui::ime::ButtonId::kUndo;
+    case input_ime::ASSISTIVE_WINDOW_BUTTON_NONE:
+      return ui::ime::ButtonId::kNone;
   }
 }
 
@@ -688,6 +702,33 @@ InputImeSetAssistiveWindowPropertiesFunction::Run() {
   if (!error.empty())
     return RespondNow(Error(InformativeError(error, function_name())));
   return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
+}
+
+ExtensionFunction::ResponseAction
+InputImeSetAssistiveWindowButtonHighlightedFunction::Run() {
+  std::string error;
+  InputMethodEngine* engine = GetEngineIfActive(
+      Profile::FromBrowserContext(browser_context()), extension_id(), &error);
+  if (!engine) {
+    return RespondNow(Error(InformativeError(error, function_name())));
+  }
+  std::unique_ptr<SetAssistiveWindowButtonHighlighted::Params> parent_params(
+      SetAssistiveWindowButtonHighlighted::Params::Create(*args_));
+  const SetAssistiveWindowButtonHighlighted::Params::Parameters& params =
+      parent_params->parameters;
+  ui::ime::AssistiveWindowButton button;
+
+  button.id = ConvertAssistiveWindowButtonId(params.button_id);
+  button.window_type = ConvertAssistiveWindowType(params.window_type);
+  if (params.announce_string)
+    button.announce_string = *params.announce_string;
+
+  engine->SetButtonHighlighted(params.context_id, button, params.highlighted,
+                               &error);
+  if (!error.empty())
+    return RespondNow(Error(InformativeError(error, function_name())));
+
+  return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction

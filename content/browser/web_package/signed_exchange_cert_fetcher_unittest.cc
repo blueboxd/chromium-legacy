@@ -153,7 +153,8 @@ void ForwardCertificateCallback(
     SignedExchangeLoadResult* out_result,
     std::unique_ptr<SignedExchangeCertificateChain>* out_cert,
     SignedExchangeLoadResult result,
-    std::unique_ptr<SignedExchangeCertificateChain> cert_chain) {
+    std::unique_ptr<SignedExchangeCertificateChain> cert_chain,
+    net::IPAddress cert_server_ip_address) {
   *out_result = result;
   *called = true;
   *out_cert = std::move(cert_chain);
@@ -225,8 +226,8 @@ class SignedExchangeCertFetcherTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &mock_loader_factory_),
         std::move(throttles_), url, force_fetch, std::move(callback),
-        nullptr /* devtools_proxy */, nullptr /* reporter */,
-        base::nullopt /* throttling_profile_id */, net::IsolationInfo());
+        nullptr /* devtools_proxy */, base::nullopt /* throttling_profile_id */,
+        net::IsolationInfo());
   }
 
   void CallOnReceiveResponse() {

@@ -35,6 +35,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
@@ -71,6 +72,9 @@ public class ConfirmSyncDataIntegrationTest extends DummyUiActivityTestCase {
     @Mock
     private ConfirmSyncDataStateMachine.Listener mListenerMock;
 
+    @Mock
+    private Profile mProfile;
+
     private ConfirmSyncDataStateMachineDelegate mDelegate;
 
     @Before
@@ -78,7 +82,8 @@ public class ConfirmSyncDataIntegrationTest extends DummyUiActivityTestCase {
         initMocks(this);
         mocker.mock(SigninManagerJni.TEST_HOOKS, mSigninManagerNativeMock);
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProviderMock);
-        when(IdentityServicesProvider.get().getSigninManager()).thenReturn(mSigninManagerMock);
+        Profile.setLastUsedProfileForTesting(mProfile);
+        when(IdentityServicesProvider.get().getSigninManager(any())).thenReturn(mSigninManagerMock);
         mDelegate =
                 new ConfirmSyncDataStateMachineDelegate(getActivity().getSupportFragmentManager());
     }

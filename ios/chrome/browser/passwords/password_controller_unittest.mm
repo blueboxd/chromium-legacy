@@ -367,7 +367,7 @@ class PasswordControllerTest : public ChromeWebTest {
              fieldIdentifier:SysUTF8ToNSString(field_identifier)
                uniqueFieldID:uniqueFieldID
                    fieldType:@"not_important"
-                        type:@"text"
+                        type:@"input"
                   typedValue:SysUTF8ToNSString(typed_value)
                      frameID:SysUTF8ToNSString(main_frame_id)];
     [passwordController_ checkIfSuggestionsAvailableForForm:form_query

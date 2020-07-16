@@ -29,15 +29,6 @@ struct TypeConverter<blink::mojom::blink::PushSubscriptionOptionsPtr,
       const blink::PushSubscriptionOptions* input);
 };
 
-// Converts a {blink::mojom::blink::PushSubscriptionPtr} object into a
-// {blink::PushSubscription*}, currently returning nullptr
-template <>
-struct TypeConverter<blink::PushSubscription*,
-                     blink::mojom::blink::PushSubscriptionPtr> {
-  static blink::PushSubscription* Convert(
-      const blink::mojom::blink::PushSubscriptionPtr& input);
-};
-
 }  // namespace mojo
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_MESSAGING_TYPE_CONVERTER_H_

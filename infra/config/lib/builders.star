@@ -162,7 +162,7 @@ def _chromium_tests_property(*, bucketed_triggers):
   return chromium_tests or None
 
 
-def _goma_property(*, goma_backend, goma_debug, goma_enable_ats, goma_jobs, os):
+def _goma_property(*, goma_backend, goma_debug, goma_enable_ats, goma_jobs, goma_use_luci_auth, os):
   goma_properties = {}
 
   goma_backend = defaults.get_value('goma_backend', goma_backend)
@@ -186,6 +186,10 @@ def _goma_property(*, goma_backend, goma_debug, goma_enable_ats, goma_jobs, os):
   goma_jobs = defaults.get_value('goma_jobs', goma_jobs)
   if goma_jobs != None:
     goma_properties['jobs'] = goma_jobs
+
+  goma_use_luci_auth = defaults.get_value('goma_use_luci_auth', goma_use_luci_auth)
+  if goma_use_luci_auth:
+    goma_properties['use_luci_auth'] = True
 
   return goma_properties or None
 
@@ -239,6 +243,7 @@ defaults = args.defaults(
     goma_debug = False,
     goma_enable_ats = args.COMPUTE,
     goma_jobs = None,
+    goma_use_luci_auth = None,
     mastername = None,
     os = None,
     pool = None,
@@ -279,6 +284,7 @@ def builder(
     goma_debug=args.DEFAULT,
     goma_enable_ats=args.DEFAULT,
     goma_jobs=args.DEFAULT,
+    goma_use_luci_auth=args.DEFAULT,
     use_clang_coverage=args.DEFAULT,
     use_java_coverage=args.DEFAULT,
     coverage_exclude_sources=args.DEFAULT,
@@ -351,6 +357,9 @@ def builder(
       to be used by the builder. Sets the 'jobs' field of the '$build/goma'
       property will be set according to the enum member. By default, the 'jobs'
       considered None.
+    * goma_use_luci_auth - a boolean indicating whether luci_auth should be
+      used for accessing goma backend. If True, the 'use_luci_auth' field
+      will be set in the '$build/goma' property. By default, considered False.
     * use_clang_coverage - a boolean indicating whether clang coverage should be
       used. If True, the 'use_clang_coverage" field will be set in the
       '$build/code_coverage' property. By default, considered False.
@@ -446,6 +455,7 @@ def builder(
       goma_debug = goma_debug,
       goma_enable_ats = goma_enable_ats,
       goma_jobs = goma_jobs,
+      goma_use_luci_auth = goma_use_luci_auth,
       os = os,
   )
   if goma != None:

@@ -66,16 +66,18 @@ using network::mojom::blink::TrustTokenOperationType;
 FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
     ScriptState* script_state,
     const FetchRequestData* original) {
-  auto* request = MakeGarbageCollected<FetchRequestData>(
-      ExecutionContext::From(script_state));
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  auto* request = MakeGarbageCollected<FetchRequestData>(context);
   request->SetURL(original->Url());
   request->SetMethod(original->Method());
   request->SetHeaderList(original->HeaderList()->Clone());
-  request->SetOrigin(ExecutionContext::From(script_state)->GetSecurityOrigin());
+  request->SetOrigin(context->GetSecurityOrigin());
   // FIXME: Set client.
   DOMWrapperWorld& world = script_state->World();
-  if (world.IsIsolatedWorld())
-    request->SetIsolatedWorldOrigin(world.IsolatedWorldSecurityOrigin());
+  if (world.IsIsolatedWorld()) {
+    request->SetIsolatedWorldOrigin(
+        world.IsolatedWorldSecurityOrigin(context->GetAgentClusterID()));
+  }
   // FIXME: Set ForceOriginHeaderFlag.
   request->SetReferrerString(original->ReferrerString());
   request->SetReferrerPolicy(original->GetReferrerPolicy());

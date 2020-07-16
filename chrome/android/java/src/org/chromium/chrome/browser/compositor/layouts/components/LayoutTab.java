@@ -28,7 +28,7 @@ public class LayoutTab extends PropertyModel {
     public static final float SHADOW_ALPHA_ON_LIGHT_BG = 0.8f;
     public static final float SHADOW_ALPHA_ON_DARK_BG = 1.0f;
 
-    private static float sDpToPx;
+    public static float sDpToPx;
     private static float sPxToDp;
     // End section --------------
 
@@ -158,7 +158,10 @@ public class LayoutTab extends PropertyModel {
 
     // End section --------------
 
-    private static final PropertyKey[] ALL_KEYS = new PropertyKey[] {TAB_ID, IS_INCOGNITO, SCALE,
+    public static final PropertyModel.WritableFloatPropertyKey CONTENT_OFFSET =
+            new PropertyModel.WritableFloatPropertyKey();
+
+    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {TAB_ID, IS_INCOGNITO, SCALE,
             TILT_X_IN_DEGREES, TILT_Y_IN_DEGREES, TILT_X_PIVOT_OFFSET, TILT_Y_PIVOT_OFFSET, X, Y,
             RENDER_X, RENDER_Y, CLIPPED_X, CLIPPED_Y, CLIPPED_WIDTH, CLIPPED_HEIGHT, ALPHA,
             SATURATION, BORDER_ALPHA, BORDER_CLOSE_BUTTON_ALPHA, BORDER_SCALE,
@@ -167,7 +170,8 @@ public class LayoutTab extends PropertyModel {
             CAN_USE_LIVE_TEXTURE, SHOW_TOOLBAR, ANONYMIZE_TOOLBAR, TOOLBAR_ALPHA,
             INSET_BORDER_VERTICAL, TOOLBAR_Y_OFFSET, SIDE_BORDER_SCALE, CLOSE_BUTTON_IS_ON_RIGHT,
             BOUNDS, CLOSE_PLACEMENT, DECORATION_ALPHA, IS_TITLE_NEEDED, INIT_FROM_HOST_CALLED,
-            BACKGROUND_COLOR, TOOLBAR_BACKGROUND_COLOR, TEXT_BOX_BACKGROUND_COLOR, TEXT_BOX_ALPHA};
+            BACKGROUND_COLOR, TOOLBAR_BACKGROUND_COLOR, TEXT_BOX_BACKGROUND_COLOR, TEXT_BOX_ALPHA,
+            CONTENT_OFFSET};
 
     /**
      * Default constructor for a {@link LayoutTab}.

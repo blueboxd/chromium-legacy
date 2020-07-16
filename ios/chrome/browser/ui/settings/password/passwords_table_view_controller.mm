@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
+#include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
@@ -68,9 +69,12 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
@@ -175,6 +179,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     PasswordExportActivityViewControllerDelegate,
     PasswordsConsumer,
     PasswordIssuesCoordinatorDelegate,
+    PopoverLabelViewControllerDelegate,
     UISearchControllerDelegate,
     UISearchBarDelegate,
     SuccessfulReauthTimeAccessor> {
@@ -268,9 +273,13 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     DCHECK(_passwordStore);
     _passwordCheck =
         IOSChromePasswordCheckManagerFactory::GetForBrowserState(_browserState);
-    _mediator =
-        [[PasswordsMediator alloc] initWithPasswordStore:_passwordStore
-                                    passwordCheckManager:_passwordCheck.get()];
+    _mediator = [[PasswordsMediator alloc]
+        initWithPasswordStore:_passwordStore
+         passwordCheckManager:_passwordCheck
+                  authService:AuthenticationServiceFactory::GetForBrowserState(
+                                  _browserState)
+                  syncService:SyncSetupServiceFactory::GetForBrowserState(
+                                  _browserState)];
     _mediator.consumer = self;
     _passwordManagerEnabled = [[PrefBackedBoolean alloc]
         initWithPrefService:_browserState->GetPrefs()
@@ -576,6 +585,13 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   return passwordItem;
 }
 
+#pragma mark - PopoverLabelViewControllerDelegate
+
+- (void)didTapLinkURL:(NSURL*)URL {
+  GURL convertedURL = net::GURLWithNSURL(URL);
+  [self view:nil didTapLinkURL:convertedURL];
+}
+
 #pragma mark - BooleanObserver
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
@@ -627,6 +643,28 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       buttonView.bounds;
   bubbleViewController.popoverPresentationController.permittedArrowDirections =
       UIPopoverArrowDirectionAny;
+}
+
+// Called when user tapped on the information button of the password check
+// item. Shows popover with detailed description of an error.
+- (void)didTapPasswordCheckInfoButton:(UIButton*)buttonView {
+  NSAttributedString* info = [_mediator passwordCheckErrorInfo];
+  // If no info returned by mediator handle this tap as tap on a cell.
+  if (!info) {
+    [self showPasswordIssuesPage];
+    return;
+  }
+
+  PopoverLabelViewController* errorInfoPopover =
+      [[PopoverLabelViewController alloc] initWithPrimaryAttributedString:info
+                                                secondaryAttributedString:nil];
+  errorInfoPopover.delegate = self;
+
+  errorInfoPopover.popoverPresentationController.sourceView = buttonView;
+  errorInfoPopover.popoverPresentationController.sourceRect = buttonView.bounds;
+  errorInfoPopover.popoverPresentationController.permittedArrowDirections =
+      UIPopoverArrowDirectionAny;
+  [self presentViewController:errorInfoPopover animated:YES completion:nil];
 }
 
 #pragma mark - PasswordsConsumer
@@ -884,6 +922,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     case PasswordCheckStateSafe:
     case PasswordCheckStateUnSafe:
     case PasswordCheckStateDefault:
+    case PasswordCheckStateError:
       _checkForProblemsItem.textColor = [UIColor colorNamed:kBlueColor];
       _checkForProblemsItem.accessibilityTraits &=
           ~UIAccessibilityTraitNotEnabled;
@@ -916,6 +955,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   _passwordProblemsItem.trailingImage = nil;
   _passwordProblemsItem.enabled = YES;
   _passwordProblemsItem.indicatorHidden = YES;
+  _passwordProblemsItem.infoButtonHidden = YES;
   _passwordProblemsItem.accessoryType = UITableViewCellAccessoryNone;
   _passwordProblemsItem.detailText =
       l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_DESCRIPTION);
@@ -952,7 +992,12 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
           [UIColor colorNamed:kGreenColor];
       break;
     }
-    case PasswordCheckStateDefault: {
+    case PasswordCheckStateDefault:
+      break;
+    case PasswordCheckStateError: {
+      _passwordProblemsItem.detailText =
+          l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR);
+      _passwordProblemsItem.infoButtonHidden = NO;
       break;
     }
   }
@@ -1273,6 +1318,15 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       [managedCell.trailingButton
                  addTarget:self
                     action:@selector(didTapManagedUIInfoButton:)
+          forControlEvents:UIControlEventTouchUpInside];
+      break;
+    }
+    case ItemTypePasswordCheckStatus: {
+      SettingsCheckCell* passwordCheckCell =
+          base::mac::ObjCCastStrict<SettingsCheckCell>(cell);
+      [passwordCheckCell.infoButton
+                 addTarget:self
+                    action:@selector(didTapPasswordCheckInfoButton:)
           forControlEvents:UIControlEventTouchUpInside];
       break;
     }

@@ -11,14 +11,8 @@
 namespace {
 
 base::ThreadSafePartitionRoot& Allocator() {
-  static base::NoDestructor<base::ThreadSafePartitionRoot> allocator;
-  allocator->Init(false /* enforce_alignment */);
-  return *allocator;
-}
-
-base::ThreadSafePartitionRoot& AlignedAllocator() {
-  static base::NoDestructor<base::ThreadSafePartitionRoot> allocator;
-  allocator->Init(true /* enforce_alignment */);
+  static base::NoDestructor<base::ThreadSafePartitionRoot> allocator{
+      false /* enforce_alignment */};
   return *allocator;
 }
 
@@ -39,7 +33,9 @@ void* PartitionMemalign(const AllocatorDispatch*,
                         size_t alignment,
                         size_t size,
                         void* context) {
-  return AlignedAllocator().AlignedAlloc(alignment, size);
+  static base::NoDestructor<base::ThreadSafePartitionRoot> aligned_allocator{
+      true /* enforce_alignment */};
+  return aligned_allocator->AlignedAlloc(alignment, size);
 }
 
 void* PartitionRealloc(const AllocatorDispatch*,

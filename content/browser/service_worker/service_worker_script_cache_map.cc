@@ -10,10 +10,7 @@
 #include "base/check_op.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_disk_cache.h"
-#include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
 namespace content {
@@ -112,16 +109,13 @@ void ServiceWorkerScriptCacheMap::WriteMetadata(
     return;
   }
 
-  scoped_refptr<net::IOBuffer> buffer =
-      base::MakeRefCounted<net::IOBuffer>(data.size());
-  if (data.size())
-    memmove(buffer->data(), &data[0], data.size());
-  std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer;
-  writer = context_->storage()->CreateResponseMetadataWriter(
-      found->second->resource_id);
-  ServiceWorkerResponseMetadataWriter* raw_writer = writer.get();
+  mojo_base::BigBuffer buffer(base::as_bytes(data));
+  mojo::Remote<storage::mojom::ServiceWorkerResourceMetadataWriter> writer;
+  context_->GetStorageControl()->CreateResourceMetadataWriter(
+      found->second->resource_id, writer.BindNewPipeAndPassReceiver());
+  auto* raw_writer = writer.get();
   raw_writer->WriteMetadata(
-      buffer.get(), data.size(),
+      std::move(buffer),
       base::BindOnce(&ServiceWorkerScriptCacheMap::OnMetadataWritten,
                      weak_factory_.GetWeakPtr(), std::move(writer),
                      std::move(callback)));
@@ -134,7 +128,7 @@ void ServiceWorkerScriptCacheMap::ClearMetadata(
 }
 
 void ServiceWorkerScriptCacheMap::OnMetadataWritten(
-    std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer,
+    mojo::Remote<storage::mojom::ServiceWorkerResourceMetadataWriter> writer,
     net::CompletionOnceCallback callback,
     int result) {
   std::move(callback).Run(result);

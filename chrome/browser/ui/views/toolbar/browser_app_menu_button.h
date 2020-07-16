@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "components/feature_engagement/buildflags.h"
-#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/views/view.h"
 
 class ToolbarView;
@@ -45,15 +44,11 @@ class BrowserAppMenuButton : public AppMenuButton {
   // noticeable color, and the menu item appearance may be affected.
   void SetPromoFeature(base::Optional<InProductHelpFeature> promo_feature);
 
-  // Updates the presentation according to |severity_| and the theme provider.
-  void UpdateIcon();
-
   // Opens the app menu immediately during a drag-and-drop operation.
   // Used only in testing.
   static bool g_open_app_immediately_for_testing;
 
   // AppMenuButton:
-  void OnThemeChanged() override;
   const char* GetClassName() const override;
   bool GetDropFormats(int* formats,
                       std::set<ui::ClipboardFormatType>* format_types) override;
@@ -68,6 +63,8 @@ class BrowserAppMenuButton : public AppMenuButton {
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   SkColor GetInkDropBaseColor() const override;
   base::string16 GetTooltipText(const gfx::Point& p) const override;
+  // Updates the presentation according to |severity_| and the theme provider.
+  void UpdateIcon() override;
 
  protected:
   // If the button is being used as an anchor for a promo, returns the best

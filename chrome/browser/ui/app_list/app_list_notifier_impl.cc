@@ -49,9 +49,18 @@ void AppListNotifierImpl::NotifyResultsUpdated(
 
 void AppListNotifierImpl::NotifySearchQueryChanged(
     const base::string16& query) {
+  // In some cases the query can change after the launcher is closed, in
+  // particular this happens when abandoning the launcher with a non-empty
+  // query. Only do a state transition if the launcher is open.
+  if (view_ != ash::AppListViewState::kClosed) {
+    DoStateTransition(Location::kList, State::kShown);
+    DoStateTransition(Location::kTile, State::kShown);
+  }
+
+  // Update the stored |query_| after performing the state transitions, so that
+  // an abandon triggered by the query change correctly uses the pre-abandon
+  // query.
   query_ = query;
-  DoStateTransition(Location::kList, State::kShown);
-  DoStateTransition(Location::kTile, State::kShown);
 }
 
 void AppListNotifierImpl::NotifyUIStateChanged(ash::AppListViewState view) {

@@ -390,16 +390,17 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
         gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_RASTER;
     if (mailbox_texture_is_overlay_candidate)
       usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
-    *mailbox = sii->CreateSharedImage(resource_format, resource_size,
-                                      color_space, usage);
+    *mailbox = sii->CreateSharedImage(
+        resource_format, resource_size, color_space, kTopLeft_GrSurfaceOrigin,
+        kPremul_SkAlphaType, usage, gpu::kNullSurfaceHandle);
   }
 
   // Create staging shared image.
   if (staging_buffer->mailbox.IsZero()) {
     const uint32_t usage = gpu::SHARED_IMAGE_USAGE_RASTER;
-    staging_buffer->mailbox =
-        sii->CreateSharedImage(staging_buffer->gpu_memory_buffer.get(),
-                               gpu_memory_buffer_manager_, color_space, usage);
+    staging_buffer->mailbox = sii->CreateSharedImage(
+        staging_buffer->gpu_memory_buffer.get(), gpu_memory_buffer_manager_,
+        color_space, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage);
   } else {
     sii->UpdateSharedImage(staging_buffer->sync_token, staging_buffer->mailbox);
   }

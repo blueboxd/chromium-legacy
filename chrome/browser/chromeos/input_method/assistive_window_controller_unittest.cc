@@ -226,22 +226,24 @@ TEST_F(
 }
 
 TEST_F(AssistiveWindowControllerTest,
-       DoesNotAnnounceWhenSetButtonHighlightedInUndoWindowHasAnnounceString) {
+       AnnouncesWhenSetButtonHighlightedInUndoWindowHasAnnounceString) {
   profile_->GetPrefs()->SetBoolean(
       ash::prefs::kAccessibilitySpokenFeedbackEnabled, true);
-  InitEmojiSuggestionWindow();
+  AssistiveWindowProperties window;
+  window.type = ui::ime::AssistiveWindowType::kUndoWindow;
+  window.visible = true;
   ui::ime::AssistiveWindowButton button;
   button.window_type = ui::ime::AssistiveWindowType::kUndoWindow;
   button.announce_string = kAnnounceString;
 
   ui::IMEBridge::Get()
       ->GetAssistiveWindowHandler()
-      ->SetAssistiveWindowProperties(emoji_window_);
+      ->SetAssistiveWindowProperties(window);
   ui::IMEBridge::Get()->GetAssistiveWindowHandler()->SetButtonHighlighted(
       button, true);
   task_environment()->RunUntilIdle();
 
-  tts_handler_->VerifyAnnouncement(base::EmptyString());
+  tts_handler_->VerifyAnnouncement(kAnnounceString);
 }
 
 TEST_F(

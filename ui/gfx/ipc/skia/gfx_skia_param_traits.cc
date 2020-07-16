@@ -10,7 +10,6 @@
 #include "ipc/ipc_message_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "ui/gfx/ipc/skia/gfx_skia_param_traits_macros.h"
 #include "ui/gfx/transform.h"
 
 // Generate param traits write methods.

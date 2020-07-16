@@ -157,9 +157,10 @@ static scoped_refptr<VideoFrame> CreateSharedImageRGBAFrame(
   DCHECK_EQ(i, pixels_size);
 
   auto* sii = context_provider->SharedImageInterface();
-  gpu::Mailbox mailbox =
-      sii->CreateSharedImage(viz::ResourceFormat::RGBA_8888, coded_size,
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
+  gpu::Mailbox mailbox = sii->CreateSharedImage(
+      viz::ResourceFormat::RGBA_8888, coded_size, gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
   auto* gl = context_provider->ContextGL();
   gl->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
   UploadPixels(gl, mailbox, coded_size, GL_RGBA, GL_UNSIGNED_BYTE,
@@ -222,15 +223,18 @@ static scoped_refptr<VideoFrame> CreateSharedImageI420Frame(
   DCHECK_EQ(uv_i, uv_pixels_size);
 
   auto* sii = context_provider->SharedImageInterface();
-  gpu::Mailbox y_mailbox =
-      sii->CreateSharedImage(viz::ResourceFormat::LUMINANCE_8, coded_size,
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
-  gpu::Mailbox u_mailbox =
-      sii->CreateSharedImage(viz::ResourceFormat::LUMINANCE_8, uv_size,
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
-  gpu::Mailbox v_mailbox =
-      sii->CreateSharedImage(viz::ResourceFormat::LUMINANCE_8, uv_size,
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
+  gpu::Mailbox y_mailbox = sii->CreateSharedImage(
+      viz::ResourceFormat::LUMINANCE_8, coded_size, gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
+  gpu::Mailbox u_mailbox = sii->CreateSharedImage(
+      viz::ResourceFormat::LUMINANCE_8, uv_size, gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
+  gpu::Mailbox v_mailbox = sii->CreateSharedImage(
+      viz::ResourceFormat::LUMINANCE_8, uv_size, gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
   auto* gl = context_provider->ContextGL();
   gl->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
   UploadPixels(gl, y_mailbox, coded_size, GL_LUMINANCE, GL_UNSIGNED_BYTE,
@@ -288,12 +292,14 @@ static scoped_refptr<VideoFrame> CreateSharedImageNV12Frame(
   DCHECK_EQ(uv_i, uv_pixels_size);
 
   auto* sii = context_provider->SharedImageInterface();
-  gpu::Mailbox y_mailbox =
-      sii->CreateSharedImage(viz::ResourceFormat::LUMINANCE_8, coded_size,
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
-  gpu::Mailbox uv_mailbox =
-      sii->CreateSharedImage(viz::ResourceFormat::RG_88, uv_size,
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
+  gpu::Mailbox y_mailbox = sii->CreateSharedImage(
+      viz::ResourceFormat::LUMINANCE_8, coded_size, gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
+  gpu::Mailbox uv_mailbox = sii->CreateSharedImage(
+      viz::ResourceFormat::RG_88, uv_size, gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      gpu::SHARED_IMAGE_USAGE_GLES2, gpu::kNullSurfaceHandle);
   auto* gl = context_provider->ContextGL();
   gl->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
   UploadPixels(gl, y_mailbox, coded_size, GL_LUMINANCE, GL_UNSIGNED_BYTE,

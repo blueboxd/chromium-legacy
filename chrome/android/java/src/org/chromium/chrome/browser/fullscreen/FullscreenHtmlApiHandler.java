@@ -231,13 +231,16 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
             @Override
             public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
                 if (navigation.isInMainFrame() && !navigation.isSameDocument()) {
-                    if (tab == mTab) exitPersistentFullscreenMode();
+                    if (tab == modelSelector.getCurrentTab()) exitPersistentFullscreenMode();
                 }
             }
 
             @Override
             public void onInteractabilityChanged(Tab tab, boolean interactable) {
-                if (!interactable || tab != mTab) return;
+                // Compare |tab| with |TabModelSelector#getCurrentTab()| which is a safer
+                // indicator for the active tab than |mTab|, since the invocation order of
+                // ActivityTabTabObserver and TabModelSelectorTabObserver is not explicitly defined.
+                if (!interactable || tab != modelSelector.getCurrentTab()) return;
                 Runnable enterFullscreen = getEnterFullscreenRunnable(tab);
                 if (enterFullscreen != null) enterFullscreen.run();
             }

@@ -3037,7 +3037,8 @@ if (enable_java_templates) {
               [ get_label_info(":$target_name", "label_no_toolchain") ],
               [
                 "//base*",
-                "//chrome*",
+                "//chrome/browser*",
+                "//chromecast*",
                 "//clank*",
                 "//components*",
                 "//content*",
@@ -3050,6 +3051,9 @@ if (enable_java_templates) {
                 "//third_party*",
                 "//ui*",
                 "//weblayer*",
+
+                # This is due to the "special group" bypass.
+                "*_bundle_module__java__header",
               ]) == []
 
       if (invoker.use_turbine && !_allow_transitive_interfaces) {

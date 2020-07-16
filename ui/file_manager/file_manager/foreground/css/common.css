@@ -161,7 +161,7 @@ cr-menu.chrome-menu > [checked]::before {
 }
 
 .cr-dialog-container.files-ng .cr-dialog-buttons > button {
-  background-color: var(--cros-default-button-background-color-secondary);
+  background-color: var(--cros-button-background-color-secondary);
   border: 0;
   border-radius: 4px;
   box-sizing: border-box;
@@ -184,76 +184,76 @@ cr-menu.chrome-menu > [checked]::before {
 
 .cr-dialog-container:not(.files-ng) .cr-dialog-buttons > button.cr-dialog-ok,
 .cr-dialog-container:not(.files-ng) .cr-dialog-buttons > button.cr-dialog-ok:hover {
-  background-color: var(--cros-default-button-background-color-primary);
-  color: var(--cros-default-button-label-color-primary);
+  background-color: var(--cros-button-background-color-primary);
+  color: var(--cros-button-label-color-primary);
   order: 1;
 }
 
 .cr-dialog-container.files-ng .cr-dialog-buttons > button.cr-dialog-ok,
 .cr-dialog-container.files-ng .cr-dialog-buttons > button.cr-dialog-ok:hover {
-  background-color: var(--cros-default-button-background-color-primary);
-  color: var(--cros-default-button-label-color-primary);
+  background-color: var(--cros-button-background-color-primary);
+  color: var(--cros-button-label-color-primary);
   order: 1;
 }
 
 .cr-dialog-container:not(.files-ng) .cr-dialog-buttons > button.cr-dialog-ok:hover {
   background:
-      linear-gradient(var(--cros-default-button-background-color-primary-hover-overlay),
-                      var(--cros-default-button-background-color-primary-hover-overlay));
-              var(--cros-default-button-background-color-primary),
+      linear-gradient(var(--cros-button-background-color-primary-hover-overlay),
+                      var(--cros-button-background-color-primary-hover-overlay));
+              var(--cros-button-background-color-primary),
 }
 
 .cr-dialog-container.files-ng .cr-dialog-buttons > button.cr-dialog-ok:hover {
   background:
-      linear-gradient(var(--cros-default-button-background-color-primary-hover-overlay),
-                      var(--cros-default-button-background-color-primary-hover-overlay)),
-              var(--cros-default-button-background-color-primary);
+      linear-gradient(var(--cros-button-background-color-primary-hover-overlay),
+                      var(--cros-button-background-color-primary-hover-overlay)),
+              var(--cros-button-background-color-primary);
 }
 
 .cr-dialog-container:not(.files-ng) .cr-dialog-buttons > button.cr-dialog-ok[disabled],
 .cr-dialog-container:not(.files-ng) .cr-dialog-buttons > button.cr-dialog-ok[disabled]:hover {
   background-color:
-      var(--cros-default-button-background-color-primary-disabled);
-  color: var(--cros-default-button-label-color-primary-disabled);
+      var(--cros-button-background-color-primary-disabled);
+  color: var(--cros-button-label-color-primary-disabled);
 }
 
 .cr-dialog-container.files-ng .cr-dialog-buttons > button.cr-dialog-ok[disabled],
 .cr-dialog-container.files-ng .cr-dialog-buttons > button.cr-dialog-ok[disabled]:hover {
   background-color:
-      var(--cros-default-button-background-color-primary-disabled);
-  color: var(--cros-default-button-label-color-primary-disabled);
+      var(--cros-button-background-color-primary-disabled);
+  color: var(--cros-button-label-color-primary-disabled);
 }
 
 .cr-dialog-container:not(.files-ng) .cr-dialog-buttons > button.cr-dialog-cancel {
-  border: 1px solid var(--cros-default-button-stroke-color-secondary);
-  color: var(--cros-default-button-label-color-secondary);
+  border: 1px solid var(--cros-button-stroke-color-secondary);
+  color: var(--cros-button-label-color-secondary);
   order: 0;
 }
 
 .cr-dialog-container.files-ng .cr-dialog-buttons > button.cr-dialog-cancel {
-  border: 1px solid var(--cros-default-button-stroke-color-secondary);
-  color: var(--cros-default-button-label-color-secondary);
+  border: 1px solid var(--cros-button-stroke-color-secondary);
+  color: var(--cros-button-label-color-secondary);
   order: 0;
 }
 
 .cr-dialog-container:not(.files-ng) .cr-dialog-buttons > button.cr-dialog-cancel:hover {
-  background: var(--cros-default-button-background-color-secondary-hover);
+  background: var(--cros-button-background-color-secondary-hover);
 }
 
 .cr-dialog-container.files-ng .cr-dialog-buttons > button.cr-dialog-cancel:hover {
-  background: var(--cros-default-button-background-color-secondary-hover);
+  background: var(--cros-button-background-color-secondary-hover);
 }
 
 .cr-dialog-container:not(.files-ng) .cr-dialog-buttons > button.cr-dialog-cancel[disabled],
 .cr-dialog-container:not(.files-ng) .cr-dialog-buttons > button.cr-dialog-cancel[disabled]:hover  {
-  border: 1px solid var(--cros-default-button-stroke-color-secondary-disabled);
-  color: var(--cros-default-button-label-color-secondary-disabled);
+  border: 1px solid var(--cros-button-stroke-color-secondary-disabled);
+  color: var(--cros-button-label-color-secondary-disabled);
 }
 
 .cr-dialog-container.files-ng .cr-dialog-buttons > button.cr-dialog-cancel[disabled],
 .cr-dialog-container.files-ng .cr-dialog-buttons > button.cr-dialog-cancel[disabled]:hover  {
-  border: 1px solid var(--cros-default-button-stroke-color-secondary-disabled);
-  color: var(--cros-default-button-label-color-secondary-disabled);
+  border: 1px solid var(--cros-button-stroke-color-secondary-disabled);
+  color: var(--cros-button-label-color-secondary-disabled);
 }
 
 .cr-dialog-container:not(.files-ng) .cr-dialog-buttons > button:not(:active):focus {
@@ -327,11 +327,11 @@ html[dir='rtl'] .entry-name {
 }
 
 .cr-dialog-container:not(.files-ng) .cr-dialog-frame {
-  background-color: var(--cros-default-bg-color);
+  background-color: var(--cros-bg-color);
   border-radius: 2px;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2),
               0 2px 6px 0 rgba(0, 0, 0, 0.1);
-  color: var(--cros-default-text-color);
+  color: var(--cros-text-color-primary);
   cursor: default;
   display: flex;
   flex-direction: column;
@@ -342,11 +342,11 @@ html[dir='rtl'] .entry-name {
 }
 
 .cr-dialog-container.files-ng .cr-dialog-frame {
-  background-color: var(--cros-default-bg-color);
+  background-color: var(--cros-bg-color);
   border-radius: 12px;
   box-shadow: 0 4px 8px 3px rgba(var(--google-grey-800-rgb), 15%),
               0 1px 3px 0 rgba(var(--google-grey-800-rgb), 30%);
-  color: var(--cros-default-text-color);
+  color: var(--cros-text-color-primary);
   cursor: default;
   display: flex;
   flex-direction: column;
@@ -420,7 +420,7 @@ html[dir='rtl'] .entry-name {
 }
 
 .cr-dialog-container.files-ng .cr-dialog-title {
-  color: var(--cros-default-text-color);
+  color: var(--cros-text-color-primary);
   display: block;
   font-size: 16px;
   font-weight: 500;
@@ -438,7 +438,7 @@ html[dir='rtl'] .entry-name {
 
 .cr-dialog-container:not(.files-ng) .cr-dialog-text,
 .cr-dialog-container:not(.files-ng) .cr-dialog-title {
-  color: var(--cros-default-text-color);
+  color: var(--cros-text-color-primary);
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -449,11 +449,11 @@ html[dir='rtl'] .entry-name {
 }
 
 .cr-dialog-container.files-ng .cr-dialog-text {
-  color: var(--cros-default-text-color-secondary);
+  color: var(--cros-text-color-secondary);
 }
 
 .cr-dialog-container.files-ng .no-title .cr-dialog-text {
-  color: var(--cros-default-text-color);
+  color: var(--cros-text-color-primary);
 }
 
 .cr-dialog-container:not(.files-ng) .cr-dialog-frame input {
@@ -563,7 +563,7 @@ html[dir='rtl'] .cr-dialog-container:not(.files-ng) .cr-dialog-close {
 
 /* Common typography styles for ChromeOS. */
 body.files-ng .headline2 {
-  color: var(--cros-default-text-color);
+  color: var(--cros-text-color-primary);
   font-family: Roboto;
   font-size: 15px;
   font-weight: 500;
@@ -571,7 +571,7 @@ body.files-ng .headline2 {
 }
 
 body.files-ng .button2 {
-  color: var(--cros-default-text-color);
+  color: var(--cros-text-color-primary);
   font-family: Roboto;
   font-size: 13px;
   font-weight: 500;
@@ -579,14 +579,14 @@ body.files-ng .button2 {
 }
 
 body.files-ng .body2-primary {
-  color: var(--cros-default-text-color);
+  color: var(--cros-text-color-primary);
   font-family: Roboto;
   font-size: 13px;
   line-height: 20px;
 }
 
 body.files-ng .annotation1-primary {
-  color: var(--cros-default-text-color);
+  color: var(--cros-text-color-primary);
   font-family: Roboto;
   font-size: 12px;
   line-height: 18px;

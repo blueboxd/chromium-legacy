@@ -11,6 +11,8 @@
 // For Windows 10 and later, we use custom icons for minimal-ui web app
 // Back and Reload buttons, to conform to the native OS' appearance.
 // https://w3c.github.io/manifest/#dom-displaymodetype-minimal-ui
+// TODO(http://crbug.com/1099607) Remove this once WebAppFrameToolbarView
+// doesn't need this.
 bool UseWindowsIconsForMinimalUI();
 #endif
 

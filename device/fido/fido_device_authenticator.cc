@@ -117,7 +117,37 @@ void FidoDeviceAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
 }
 
 void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
+                                           CtapGetAssertionOptions options,
                                            GetAssertionCallback callback) {
+  if (!options.prf_inputs.empty()) {
+    GetEphemeralKey(base::BindOnce(
+        &FidoDeviceAuthenticator::OnHaveEphemeralKeyForGetAssertion,
+        weak_factory_.GetWeakPtr(), std::move(request), std::move(options),
+        std::move(callback)));
+    return;
+  }
+
+  DoGetAssertion(std::move(request), std::move(options), std::move(callback));
+}
+
+void FidoDeviceAuthenticator::OnHaveEphemeralKeyForGetAssertion(
+    CtapGetAssertionRequest request,
+    CtapGetAssertionOptions options,
+    GetAssertionCallback callback,
+    CtapDeviceResponseCode status,
+    base::Optional<pin::KeyAgreementResponse> key) {
+  if (status != CtapDeviceResponseCode::kSuccess) {
+    std::move(callback).Run(status, base::nullopt);
+    return;
+  }
+
+  options.key.emplace(std::move(*key));
+  DoGetAssertion(std::move(request), std::move(options), std::move(callback));
+}
+
+void FidoDeviceAuthenticator::DoGetAssertion(CtapGetAssertionRequest request,
+                                             CtapGetAssertionOptions options,
+                                             GetAssertionCallback callback) {
   if (!request.pin_auth &&
       options_->user_verification_availability ==
           AuthenticatorSupportedOptions::UserVerificationAvailability::
@@ -127,8 +157,10 @@ void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
   } else {
     request.user_verification = UserVerificationRequirement::kDiscouraged;
   }
+
   RunTask<GetAssertionTask, AuthenticatorGetAssertionResponse,
-          CtapGetAssertionRequest>(std::move(request), std::move(callback));
+          CtapGetAssertionRequest, CtapGetAssertionOptions>(
+      std::move(request), std::move(options), std::move(callback));
 }
 
 void FidoDeviceAuthenticator::GetNextAssertion(GetAssertionCallback callback) {
@@ -183,7 +215,7 @@ void FidoDeviceAuthenticator::GetEphemeralKey(
   DCHECK(
       Options()->client_pin_availability !=
           AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported ||
-      Options()->supports_pin_uv_auth_token);
+      Options()->supports_pin_uv_auth_token || SupportsHMACSecretExtension());
 
   RunOperation<pin::KeyAgreementRequest, pin::KeyAgreementResponse>(
       pin::KeyAgreementRequest(),
@@ -334,7 +366,8 @@ FidoDeviceAuthenticator::WillNeedPINToMakeCredential(
   const bool u2f_fallback_possible =
       device()->device_info() &&
       device()->device_info()->versions.contains(ProtocolVersion::kU2f) &&
-      IsConvertibleToU2fRegisterCommand(request);
+      IsConvertibleToU2fRegisterCommand(request) &&
+      !ShouldPreferCTAP2EvenIfItNeedsAPIN(request);
   if (device_support == ClientPinAvailability::kSupportedAndPinSet &&
       !u2f_fallback_possible) {
     if (can_collect_pin) {

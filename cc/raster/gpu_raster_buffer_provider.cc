@@ -138,8 +138,9 @@ static void RasterizeSourceOOP(
                      gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
     if (texture_is_overlay_candidate)
       flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
-    *mailbox = sii->CreateSharedImage(resource_format, resource_size,
-                                      color_space, flags);
+    *mailbox = sii->CreateSharedImage(
+        resource_format, resource_size, color_space, kTopLeft_GrSurfaceOrigin,
+        kPremul_SkAlphaType, flags, gpu::kNullSurfaceHandle);
     ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
   } else {
     ri->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
@@ -192,8 +193,9 @@ static void RasterizeSource(
                      gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
     if (texture_is_overlay_candidate)
       flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
-    *mailbox = sii->CreateSharedImage(resource_format, resource_size,
-                                      color_space, flags);
+    *mailbox = sii->CreateSharedImage(
+        resource_format, resource_size, color_space, kTopLeft_GrSurfaceOrigin,
+        kPremul_SkAlphaType, flags, gpu::kNullSurfaceHandle);
     ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
   } else {
     // Wait on the SyncToken that was created on the compositor thread after

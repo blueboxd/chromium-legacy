@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ChromeSigninController;
@@ -58,9 +59,10 @@ public class IdentityManagerIntegrationTest {
 
         mAccountManagerTestRule.waitForSeeding();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Profile profile = Profile.getLastUsedRegularProfile();
             mIdentityMutator =
-                    IdentityServicesProvider.get().getSigninManager().getIdentityMutator();
-            mIdentityManager = IdentityServicesProvider.get().getIdentityManager();
+                    IdentityServicesProvider.get().getSigninManager(profile).getIdentityMutator();
+            mIdentityManager = IdentityServicesProvider.get().getIdentityManager(profile);
         });
     }
 

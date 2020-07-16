@@ -28,7 +28,8 @@ namespace {
 bool CtapDeviceShouldUseU2fBecauseClientPinIsSet(
     const FidoDevice* device,
     const CtapMakeCredentialRequest& request) {
-  if (!IsConvertibleToU2fRegisterCommand(request)) {
+  if (!IsConvertibleToU2fRegisterCommand(request) ||
+      ShouldPreferCTAP2EvenIfItNeedsAPIN(request)) {
     return false;
   }
 

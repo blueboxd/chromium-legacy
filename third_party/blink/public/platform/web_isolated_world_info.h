@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "v8/include/v8.h"
 
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_ISOLATED_WORLD_INFO_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_ISOLATED_WORLD_INFO_H_
@@ -48,6 +50,19 @@ struct WebIsolatedWorldInfo {
   // this empty.
   WebString stable_id;
 };
+
+// Sets up an isolated world by associating a |world_id| with |info|.
+// worldID must be > 0 (as 0 represents the main world).
+// worldID must be < kEmbedderWorldIdLimit, high number used internally.
+BLINK_EXPORT void SetIsolatedWorldInfo(int32_t world_id,
+                                       const WebIsolatedWorldInfo& info);
+
+// Returns the stable ID that was set with SetIsolatedWorldInfo.
+BLINK_EXPORT WebString GetIsolatedWorldStableId(v8::Local<v8::Context>);
+
+// Returns the human readable name that was set with SetIsolatedWorldInfo.
+BLINK_EXPORT WebString
+    GetIsolatedWorldHumanReadableName(v8::Local<v8::Context>);
 
 }  // namespace blink
 

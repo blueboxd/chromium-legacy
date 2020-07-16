@@ -11,6 +11,7 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace views {
+class BoxLayout;
 class ImageView;
 class Label;
 class Link;
@@ -89,6 +90,7 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   views::Label* message_label_ = nullptr;
   views::ProgressBar* progress_bar_ = nullptr;
   views::Label* download_progress_message_label_ = nullptr;
+  views::BoxLayout* lower_container_layout_ = nullptr;
   views::ImageView* big_image_ = nullptr;
   views::Link* learn_more_link_ = nullptr;
   base::TimeTicks setup_start_tick_;

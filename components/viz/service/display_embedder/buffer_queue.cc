@@ -153,7 +153,8 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface(
   DCHECK(format_);
   const ResourceFormat format = GetResourceFormat(format_.value());
   const gpu::Mailbox mailbox = sii_->CreateSharedImage(
-      format, size_, color_space_,
+      format, size_, color_space_, kTopLeft_GrSurfaceOrigin,
+      kPremul_SkAlphaType,
       gpu::SHARED_IMAGE_USAGE_SCANOUT |
           gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT,
       surface_handle_);

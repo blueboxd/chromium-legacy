@@ -101,6 +101,7 @@ void WinWebAuthnApiAuthenticator::MakeCredentialDone(
 }
 
 void WinWebAuthnApiAuthenticator::GetAssertion(CtapGetAssertionRequest request,
+                                               CtapGetAssertionOptions options,
                                                GetAssertionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!is_pending_);
@@ -112,7 +113,8 @@ void WinWebAuthnApiAuthenticator::GetAssertion(CtapGetAssertionRequest request,
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
       base::BindOnce(&AuthenticatorGetAssertionBlocking, win_api_,
-                     current_window_, cancellation_id_, std::move(request)),
+                     current_window_, cancellation_id_, std::move(request),
+                     std::move(options)),
       base::BindOnce(&WinWebAuthnApiAuthenticator::GetAssertionDone,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }

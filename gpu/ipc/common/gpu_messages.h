@@ -31,6 +31,8 @@
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence_handle.h"
@@ -38,6 +40,7 @@
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
+#include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
@@ -76,6 +79,8 @@ IPC_STRUCT_BEGIN(GpuCommandBufferMsg_CreateImage_Params)
   IPC_STRUCT_MEMBER(uint64_t, image_release_count)
 IPC_STRUCT_END()
 
+IPC_ENUM_TRAITS_MAX_VALUE(GrSurfaceOrigin, kBottomLeft_GrSurfaceOrigin)
+
 IPC_STRUCT_BEGIN(GpuChannelMsg_CreateSharedImage_Params)
   IPC_STRUCT_MEMBER(gpu::Mailbox, mailbox)
   IPC_STRUCT_MEMBER(viz::ResourceFormat, format)
@@ -83,6 +88,8 @@ IPC_STRUCT_BEGIN(GpuChannelMsg_CreateSharedImage_Params)
   IPC_STRUCT_MEMBER(gfx::ColorSpace, color_space)
   IPC_STRUCT_MEMBER(uint32_t, usage)
   IPC_STRUCT_MEMBER(uint32_t, release_id)
+  IPC_STRUCT_MEMBER(GrSurfaceOrigin, surface_origin)
+  IPC_STRUCT_MEMBER(SkAlphaType, alpha_type)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuChannelMsg_CreateSharedImageWithData_Params)
@@ -95,6 +102,8 @@ IPC_STRUCT_BEGIN(GpuChannelMsg_CreateSharedImageWithData_Params)
   IPC_STRUCT_MEMBER(uint32_t, pixel_data_offset)
   IPC_STRUCT_MEMBER(uint32_t, pixel_data_size)
   IPC_STRUCT_MEMBER(bool, done_with_shm)
+  IPC_STRUCT_MEMBER(GrSurfaceOrigin, surface_origin)
+  IPC_STRUCT_MEMBER(SkAlphaType, alpha_type)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuChannelMsg_CreateGMBSharedImage_Params)
@@ -105,6 +114,8 @@ IPC_STRUCT_BEGIN(GpuChannelMsg_CreateGMBSharedImage_Params)
   IPC_STRUCT_MEMBER(gfx::ColorSpace, color_space)
   IPC_STRUCT_MEMBER(uint32_t, usage)
   IPC_STRUCT_MEMBER(uint32_t, release_id)
+  IPC_STRUCT_MEMBER(GrSurfaceOrigin, surface_origin)
+  IPC_STRUCT_MEMBER(SkAlphaType, alpha_type)
 IPC_STRUCT_END()
 
 #if defined(OS_WIN)
@@ -116,6 +127,8 @@ IPC_STRUCT_BEGIN(GpuChannelMsg_CreateSwapChain_Params)
   IPC_STRUCT_MEMBER(gfx::ColorSpace, color_space)
   IPC_STRUCT_MEMBER(uint32_t, usage)
   IPC_STRUCT_MEMBER(uint32_t, release_id)
+  IPC_STRUCT_MEMBER(GrSurfaceOrigin, surface_origin)
+  IPC_STRUCT_MEMBER(SkAlphaType, alpha_type)
 IPC_STRUCT_END()
 #endif  // OS_WIN
 

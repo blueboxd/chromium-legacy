@@ -16,7 +16,6 @@
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
-#include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -80,7 +79,6 @@ SignedExchangeCertFetcher::CreateAndStart(
     bool force_fetch,
     CertificateCallback callback,
     SignedExchangeDevToolsProxy* devtools_proxy,
-    SignedExchangeReporter* reporter,
     const base::Optional<base::UnguessableToken>& throttling_profile_id,
     net::IsolationInfo isolation_info) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
@@ -88,7 +86,7 @@ SignedExchangeCertFetcher::CreateAndStart(
   std::unique_ptr<SignedExchangeCertFetcher> cert_fetcher(
       new SignedExchangeCertFetcher(
           std::move(shared_url_loader_factory), std::move(throttles), cert_url,
-          force_fetch, std::move(callback), devtools_proxy, reporter,
+          force_fetch, std::move(callback), devtools_proxy,
           throttling_profile_id, std::move(isolation_info)));
   cert_fetcher->Start();
   return cert_fetcher;
@@ -102,15 +100,13 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
     bool force_fetch,
     CertificateCallback callback,
     SignedExchangeDevToolsProxy* devtools_proxy,
-    SignedExchangeReporter* reporter,
     const base::Optional<base::UnguessableToken>& throttling_profile_id,
     net::IsolationInfo isolation_info)
     : shared_url_loader_factory_(std::move(shared_url_loader_factory)),
       throttles_(std::move(throttles)),
       resource_request_(std::make_unique<network::ResourceRequest>()),
       callback_(std::move(callback)),
-      devtools_proxy_(devtools_proxy),
-      reporter_(reporter) {
+      devtools_proxy_(devtools_proxy) {
   // TODO(https://crbug.com/803774): Revisit more ResourceRequest flags.
   resource_request_->url = cert_url;
   // |request_initiator| is used for cookie checks, but cert requests don't use
@@ -175,7 +171,8 @@ void SignedExchangeCertFetcher::Abort() {
   handle_watcher_ = nullptr;
   body_string_.clear();
   devtools_proxy_ = nullptr;
-  std::move(callback_).Run(SignedExchangeLoadResult::kCertFetchError, nullptr);
+  std::move(callback_).Run(SignedExchangeLoadResult::kCertFetchError, nullptr,
+                           net::IPAddress());
 }
 
 void SignedExchangeCertFetcher::OnHandleReady(MojoResult result) {
@@ -222,12 +219,12 @@ void SignedExchangeCertFetcher::OnDataComplete() {
   if (!cert_chain) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_, "Failed to get certificate chain from message.");
-    std::move(callback_).Run(SignedExchangeLoadResult::kCertParseError,
-                             nullptr);
+    std::move(callback_).Run(SignedExchangeLoadResult::kCertParseError, nullptr,
+                             cert_server_ip_address_);
     return;
   }
   std::move(callback_).Run(SignedExchangeLoadResult::kSuccess,
-                           std::move(cert_chain));
+                           std::move(cert_chain), cert_server_ip_address_);
 }
 
 // network::mojom::URLLoaderClient
@@ -241,8 +238,7 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
                                                  resource_request_->url, *head);
   }
 
-  if (reporter_)
-    reporter_->set_cert_server_ip_address(head->remote_endpoint.address());
+  cert_server_ip_address_ = head->remote_endpoint.address();
 
   // |headers| is null when loading data URL.
   if (head->headers && head->headers->response_code() != net::HTTP_OK) {

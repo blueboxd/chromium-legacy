@@ -80,10 +80,13 @@ if (is_android) {
   android_library("test_support_java") {
     testonly = true
     deps = [
+      "//base:base_java",
       "//chrome/android:chrome_all_java",
       "//components/autofill/android:autofill_java",
       "//components/payments/content/android:java",
       "//components/payments/mojom:mojom_java",
+      "//content/public/android:content_java",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
       "//third_party/blink/public/mojom:android_mojo_bindings_java",
     ]
     sources = [ "android/test_support/src/org/chromium/chrome/test_support/PaymentRequestTestBridge.java" ]
@@ -3264,7 +3267,6 @@ test("unit_tests") {
     "../browser/page_load_metrics/metrics_web_contents_observer_unittest.cc",
     "../browser/page_load_metrics/observers/aborts_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_unittest.cc",
-    "../browser/page_load_metrics/observers/ad_metrics/page_ad_density_tracker_unittest.cc",
     "../browser/page_load_metrics/observers/amp_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.cc",
     "../browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.h",
@@ -6879,16 +6881,6 @@ if (is_win) {
     # Directory contains useful and non-useful files. Don't worry about
     # non-useful since they are eliminated during pruning.
     seed_corpus = "data/safe_browsing/download_protection/"
-  }
-}
-
-if (is_chromeos) {
-  fuzzer_test("tokenized_string_fuzzer") {
-    sources = [ "../common/string_matching/tokenized_string_fuzzer.cc" ]
-    deps = [
-      "//base",
-      "//chrome/common/string_matching",
-    ]
   }
 }
 

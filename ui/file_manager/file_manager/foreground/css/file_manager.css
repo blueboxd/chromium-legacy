@@ -78,7 +78,7 @@ a:focus {
 }
 
 body.files-ng .dialog-container {
-  background-color: var(--cros-default-bg-color);
+  background-color: var(--cros-bg-color);
 }
 
 /* List and grid are inside this container. */
@@ -1393,8 +1393,8 @@ body:not(.files-ng) .dialog-footer .primary:hover {
 
 body.files-ng .dialog-footer .primary,
 body.files-ng .dialog-footer .primary:hover {
-  background-color: var(--cros-default-button-background-color-primary);
-  color: var(--cros-default-button-label-color-primary);
+  background-color: var(--cros-button-background-color-primary);
+  color: var(--cros-button-label-color-primary);
 }
 
 body:not(.files-ng) .dialog-footer .secondary {
@@ -1402,9 +1402,9 @@ body:not(.files-ng) .dialog-footer .secondary {
 }
 
 body.files-ng .dialog-footer .secondary {
-  background-color: var(--cros-default-button-background-color-secondary);
-  border: 1px solid var(--cros-default-button-stroke-color-secondary);
-  color: var(--cros-default-button-label-color-secondary);
+  background-color: var(--cros-button-background-color-secondary);
+  border: 1px solid var(--cros-button-stroke-color-secondary);
+  color: var(--cros-button-label-color-secondary);
   margin-inline-end: 8px;
 }
 
@@ -1413,7 +1413,7 @@ body:not(.files-ng) .dialog-footer .secondary:hover {
 }
 
 body.files-ng .dialog-footer .secondary:hover {
-  background: var(--cros-default-button-background-color-secondary-hover);
+  background: var(--cros-button-background-color-secondary-hover);
 }
 
 body:not(.files-ng) .dialog-footer .select {
@@ -3222,7 +3222,7 @@ body.files-ng .table-row-cell:first-child > * {
 }
 
 body.files-ng .table-row-cell .filename-label {
-  color: var(--cros-default-text-color);
+  color: var(--cros-text-color-primary);
 
   padding-top: 0;
 }
@@ -3312,7 +3312,7 @@ body.files-ng #list-container li .detail-thumbnail {
 }
 
 .cr-dialog-container.files-ng .install-linux-package-detail-label {
-  color: var(--cros-default-text-color);
+  color: var(--cros-text-color-primary);
   display: inline;
   margin-inline-end: 5px;
 }
@@ -3324,7 +3324,7 @@ body.files-ng #list-container li .detail-thumbnail {
 }
 
 .cr-dialog-container.files-ng .install-linux-package-detail-value {
-  color: var(--cros-default-text-color-secondary);
+  color: var(--cros-text-color-secondary);
   display: inline;
   margin-bottom: 5px;
   white-space: pre-wrap;
@@ -3385,13 +3385,20 @@ list.autocomplete-suggestions > [lead] {
   background-color: rgba(0, 0, 0, 8%);
 }
 
-#gear-menu,
-#share-menu,
-#sort-menu,
-#tasks-menu {
+body:not(.files-ng) #gear-menu,
+body:not(.files-ng) #share-menu,
+body:not(.files-ng) #sort-menu,
+body:not(.files-ng) #tasks-menu {
   margin-top: 2px;
 }
 
+/*
+ * TODO(files-ng): remove these rules and do them in the multi-menu JS because
+ * #tasks-menu is distinguished here: it is used as a menu and a submenu, thus
+ * gets 8px margin-top in all cases.  It should only have this 8px gap when it
+ * is shown as a menu; it should have no margin-top when it is a submenu (just
+ * like every other submenu in files app - none of them have margin-top).
+ */
 body.files-ng #gear-menu,
 body.files-ng #share-menu,
 body.files-ng #sort-menu,

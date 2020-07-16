@@ -26,6 +26,7 @@
 namespace device {
 
 struct CtapGetAssertionRequest;
+struct CtapGetAssertionOptions;
 struct CtapMakeCredentialRequest;
 
 namespace pin {
@@ -80,6 +81,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   virtual void MakeCredential(CtapMakeCredentialRequest request,
                               MakeCredentialCallback callback) = 0;
   virtual void GetAssertion(CtapGetAssertionRequest request,
+                            CtapGetAssertionOptions options,
                             GetAssertionCallback callback) = 0;
   // GetNextAssertion fetches the next assertion from a device that indicated in
   // the response to |GetAssertion| that multiple results were available.

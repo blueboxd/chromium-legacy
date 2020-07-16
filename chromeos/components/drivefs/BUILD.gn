@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chromeos/dbus/use_real_dbus_clients.gni")
+
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 component("drivefs") {
@@ -18,9 +20,13 @@ component("drivefs") {
     "drivefs_session.cc",
     "drivefs_session.h",
     "drivefs_util.h",
-    "fake_drivefs_launcher_client.cc",
-    "fake_drivefs_launcher_client.h",
   ]
+  if (!use_real_dbus_clients) {
+    sources += [
+      "fake_drivefs_launcher_client.cc",
+      "fake_drivefs_launcher_client.h",
+    ]
+  }
   deps = [
     "//base",
     "//chromeos/components/drivefs/mojom",

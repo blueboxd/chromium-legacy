@@ -29,6 +29,11 @@ bool IsConvertibleToU2fRegisterCommand(
       });
 }
 
+bool ShouldPreferCTAP2EvenIfItNeedsAPIN(
+    const CtapMakeCredentialRequest& request) {
+  return request.hmac_secret;
+}
+
 bool IsConvertibleToU2fSignCommand(const CtapGetAssertionRequest& request) {
   return request.user_verification != UserVerificationRequirement::kRequired &&
          !request.allow_list.empty();

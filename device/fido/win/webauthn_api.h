@@ -84,7 +84,8 @@ std::pair<CtapDeviceResponseCode,
 AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
                                   HWND h_wnd,
                                   GUID cancellation_id,
-                                  CtapGetAssertionRequest request);
+                                  CtapGetAssertionRequest request,
+                                  CtapGetAssertionOptions request_options);
 
 }  // namespace device
 

@@ -98,3 +98,5 @@ crbug.com/688906 virtual/omt-worker-fetch/external/wpt/fetch/api/basic/request-u
 crbug.com/688906 virtual/omt-worker-fetch/external/wpt/fetch/api/basic/request-upload.any.worker.html [ Failure ]
 crbug.com/688906 external/wpt/service-workers/service-worker/fetch-event.https.html [ Failure ]
 
+# Subresource WBN is only supported with OOR-CORS.
+crbug.com/1082020 virtual/subresource-web-bundles/external/wpt/web-bundle/subresource-loading/subresource-loading-from-web-bundle.tentative.html [ Failure ]

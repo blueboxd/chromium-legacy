@@ -1,0 +1,90 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/chrome/browser/web/lookalike_url_app_interface.h"
+
+#include "components/lookalikes/core/lookalike_url_util.h"
+#import "ios/chrome/browser/web/lookalike_url_constants.h"
+#import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
+#include "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
+#include "ios/components/security_interstitials/lookalikes/lookalike_url_error.h"
+#include "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
+#import "ios/web/public/navigation/web_state_policy_decider.h"
+#import "ios/web/public/web_state_user_data.h"
+#import "net/base/mac/url_conversions.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+namespace {
+
+// This decider determines whether a URL is a lookalike. If so, it cancels
+// navigation and shows an error.
+class LookalikeUrlDecider : public web::WebStatePolicyDecider,
+                            public web::WebStateUserData<LookalikeUrlDecider> {
+ public:
+  LookalikeUrlDecider(web::WebState* web_state)
+      : web::WebStatePolicyDecider(web_state), web_state_(web_state) {}
+
+  void ShouldAllowResponse(
+      NSURLResponse* response,
+      bool for_main_frame,
+      web::WebStatePolicyDecider::PolicyDecisionCallback callback) override {
+    LookalikeUrlContainer* lookalike_container =
+        LookalikeUrlContainer::FromWebState(web_state_);
+    LookalikeUrlTabAllowList* allow_list =
+        LookalikeUrlTabAllowList::FromWebState(web_state_);
+
+    GURL response_url = net::GURLWithNSURL(response.URL);
+    if (allow_list->IsDomainAllowed(response_url.host())) {
+      return std::move(callback).Run(
+          web::WebStatePolicyDecider::PolicyDecision::Allow());
+    }
+    if (response_url.path() == kLookalikePagePathForTesting) {
+      GURL::Replacements safeReplacements;
+      safeReplacements.SetPathStr("echo");
+      lookalike_container->SetLookalikeUrlInfo(
+          response_url.ReplaceComponents(safeReplacements), response_url,
+          LookalikeUrlMatchType::kSkeletonMatchTop5k);
+      std::move(callback).Run(CreateLookalikeErrorDecision());
+      return;
+    }
+    if (response_url.path() == kLookalikePageEmptyUrlPathForTesting) {
+      lookalike_container->SetLookalikeUrlInfo(
+          GURL::EmptyGURL(), response_url,
+          LookalikeUrlMatchType::kSkeletonMatchTop5k);
+      std::move(callback).Run(CreateLookalikeErrorDecision());
+      return;
+    }
+    return std::move(callback).Run(
+        web::WebStatePolicyDecider::PolicyDecision::Allow());
+  }
+
+  WEB_STATE_USER_DATA_KEY_DECL();
+
+ private:
+  web::WebState* web_state_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(LookalikeUrlDecider);
+};
+
+WEB_STATE_USER_DATA_KEY_IMPL(LookalikeUrlDecider)
+
+}  // namespace
+
+@implementation LookalikeUrlAppInterface
+
++ (void)setUpLookalikeUrlDeciderForWebState {
+  LookalikeUrlDecider::CreateForWebState(
+      chrome_test_util::GetCurrentWebState());
+}
+
++ (void)tearDownLookalikeUrlDeciderForWebState {
+  LookalikeUrlDecider::RemoveFromWebState(
+      chrome_test_util::GetCurrentWebState());
+}
+
+@end

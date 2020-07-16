@@ -133,7 +133,9 @@ Buffer::Texture::Texture(
       gpu::SHARED_IMAGE_USAGE_RASTER | gpu::SHARED_IMAGE_USAGE_DISPLAY;
 
   mailbox_ = sii->CreateSharedImage(viz::ResourceFormat::RGBA_8888, size,
-                                    gfx::ColorSpace(), usage);
+                                    gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
+                                    kPremul_SkAlphaType, usage,
+                                    gpu::kNullSurfaceHandle);
   DCHECK(!mailbox_.IsZero());
   gpu::raster::RasterInterface* ri = context_provider_->RasterInterface();
   ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
@@ -161,7 +163,8 @@ Buffer::Texture::Texture(
                          gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
   mailbox_ = sii->CreateSharedImage(
-      gpu_memory_buffer_, gpu_memory_buffer_manager, gfx::ColorSpace(), usage);
+      gpu_memory_buffer_, gpu_memory_buffer_manager, gfx::ColorSpace(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage);
   DCHECK(!mailbox_.IsZero());
   gpu::raster::RasterInterface* ri = context_provider_->RasterInterface();
   ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());

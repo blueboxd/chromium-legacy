@@ -276,11 +276,12 @@ XMLHttpRequest* XMLHttpRequest::Create(ScriptState* script_state) {
   DOMWrapperWorld& world = script_state->World();
   v8::Isolate* isolate = script_state->GetIsolate();
 
-  return world.IsIsolatedWorld()
-             ? MakeGarbageCollected<XMLHttpRequest>(
-                   context, isolate, true, world.IsolatedWorldSecurityOrigin())
-             : MakeGarbageCollected<XMLHttpRequest>(context, isolate, false,
-                                                    nullptr);
+  return world.IsIsolatedWorld() ? MakeGarbageCollected<XMLHttpRequest>(
+                                       context, isolate, true,
+                                       world.IsolatedWorldSecurityOrigin(
+                                           context->GetAgentClusterID()))
+                                 : MakeGarbageCollected<XMLHttpRequest>(
+                                       context, isolate, false, nullptr);
 }
 
 XMLHttpRequest* XMLHttpRequest::Create(ExecutionContext* context) {

@@ -447,10 +447,22 @@ typename Map::iterator TryEmplace(Map& map,
                                   std::forward<Args>(args)...);
 }
 
-// Returns true if the container is sorted.
+// Returns true if the container is sorted. Requires constexpr std::begin/end,
+// which exists for arrays in C++14.
+// Note that std::is_sorted is constexpr beginning C++20 and this should be
+// switched to use it when C++20 is supported.
 template <typename Container>
-bool STLIsSorted(const Container& cont) {
-  return std::is_sorted(std::begin(cont), std::end(cont));
+constexpr bool STLIsSorted(const Container& cont) {
+  auto it = std::begin(cont);
+  const auto end = std::end(cont);
+  if (it == end)
+    return true;
+
+  for (auto prev = it++; it != end; prev = it++) {
+    if (*it < *prev)
+      return false;
+  }
+  return true;
 }
 
 // Returns a new ResultType containing the difference of two sorted containers.

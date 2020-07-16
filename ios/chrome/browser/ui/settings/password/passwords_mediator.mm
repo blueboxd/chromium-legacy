@@ -4,13 +4,24 @@
 
 #import "ios/chrome/browser/ui/settings/password/passwords_mediator.h"
 
+#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "ios/chrome/browser/passwords/password_check_observer_bridge.h"
 #include "ios/chrome/browser/passwords/password_store_observer_bridge.h"
 #import "ios/chrome/browser/passwords/save_passwords_consumer.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#include "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/string_util.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#include "ios/chrome/grit/ios_chromium_strings.h"
+#import "net/base/mac/url_conversions.h"
+#include "ui/base/l10n/l10n_util_mac.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,10 +31,16 @@
                                  PasswordStoreObserver,
                                  SavePasswordsConsumerDelegate> {
   // The service responsible for password check feature.
-  IOSChromePasswordCheckManager* _manager;
+  scoped_refptr<IOSChromePasswordCheckManager> _passwordCheckManager;
 
   // The interface for getting and manipulating a user's saved passwords.
   scoped_refptr<password_manager::PasswordStore> _passwordStore;
+
+  // Service used to check if user is signed in.
+  AuthenticationService* _authService;
+
+  // Service to check if passwords are synced.
+  SyncSetupService* _syncService;
 
   // A helper object for passing data about changes in password check status
   // and changes to compromised credentials list.
@@ -44,21 +61,26 @@
 
 @implementation PasswordsMediator
 
-- (instancetype)initWithPasswordStore:
-                    (scoped_refptr<password_manager::PasswordStore>)
-                        passwordStore
-                 passwordCheckManager:(IOSChromePasswordCheckManager*)manager {
+- (instancetype)
+    initWithPasswordStore:
+        (scoped_refptr<password_manager::PasswordStore>)passwordStore
+     passwordCheckManager:
+         (scoped_refptr<IOSChromePasswordCheckManager>)passwordCheckManager
+              authService:(AuthenticationService*)authService
+              syncService:(SyncSetupService*)syncService {
   self = [super init];
   if (self) {
-    _manager = manager;
     _passwordStore = passwordStore;
+    _authService = authService;
+    _syncService = syncService;
     _savedPasswordsConsumer =
         std::make_unique<ios::SavePasswordsConsumer>(self);
 
     if (base::FeatureList::IsEnabled(
             password_manager::features::kPasswordCheck)) {
-      _passwordCheckObserver =
-          std::make_unique<PasswordCheckObserverBridge>(self, manager);
+      _passwordCheckManager = passwordCheckManager;
+      _passwordCheckObserver = std::make_unique<PasswordCheckObserverBridge>(
+          self, _passwordCheckManager.get());
       _passwordStoreObserver =
           std::make_unique<PasswordStoreObserverBridge>(self);
       _passwordStore->AddObserver(_passwordStoreObserver.get());
@@ -78,8 +100,50 @@
     return;
   _consumer = consumer;
   [self loginsDidChange];
-  [self.consumer setPasswordCheckUIState:
-                     [self computePasswordCheckUIStateWithChangedState:NO]];
+
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordCheck)) {
+    _currentState = _passwordCheckManager->GetPasswordCheckState();
+    [self.consumer setPasswordCheckUIState:
+                       [self computePasswordCheckUIStateWith:_currentState]];
+  }
+}
+
+- (NSAttributedString*)passwordCheckErrorInfo {
+  if (!_passwordCheckManager->GetCompromisedCredentials().empty())
+    return nil;
+
+  NSString* message;
+  GURL linkURL;
+
+  switch (_currentState) {
+    case PasswordCheckState::kRunning:
+    case PasswordCheckState::kNoPasswords:
+    case PasswordCheckState::kCanceled:
+    case PasswordCheckState::kIdle:
+      return nil;
+    case PasswordCheckState::kSignedOut:
+      message = l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR_SIGNED_OUT);
+      break;
+    case PasswordCheckState::kOffline:
+      message = l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR_OFFLINE);
+      break;
+    case PasswordCheckState::kQuotaLimit:
+      if ([self canUseAccountPasswordCheckup]) {
+        message = l10n_util::GetNSString(
+            IDS_IOS_PASSWORD_CHECK_ERROR_QUOTA_LIMIT_VISIT_GOOGLE);
+        linkURL = password_manager::GetPasswordCheckupURL(
+            password_manager::PasswordCheckupReferrer::kPasswordCheck);
+      } else {
+        message =
+            l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR_QUOTA_LIMIT);
+      }
+      break;
+    case PasswordCheckState::kOther:
+      message = l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR_OTHER);
+      break;
+  }
+  return [self configureTextWithLink:message link:linkURL];
 }
 
 #pragma mark - PasswordCheckObserver
@@ -88,10 +152,9 @@
   if (state == _currentState)
     return;
 
-  _currentState = state;
   DCHECK(self.consumer);
-  [self.consumer setPasswordCheckUIState:
-                     [self computePasswordCheckUIStateWithChangedState:YES]];
+  [self.consumer
+      setPasswordCheckUIState:[self computePasswordCheckUIStateWith:state]];
 }
 
 - (void)compromisedCredentialsDidChange:
@@ -99,38 +162,78 @@
         credentials {
   DCHECK(self.consumer);
   [self.consumer setPasswordCheckUIState:
-                     [self computePasswordCheckUIStateWithChangedState:NO]];
+                     [self computePasswordCheckUIStateWith:_currentState]];
 }
 
 #pragma mark - Private Methods
 
 // Returns PasswordCheckUIState based on PasswordCheckState.
-// Parameter indicates whether function called when |_currentState| changed as
-// safe status is only possible if state changed from kRunning to kIdle.
-- (PasswordCheckUIState)computePasswordCheckUIStateWithChangedState:
-    (BOOL)stateChanged {
+- (PasswordCheckUIState)computePasswordCheckUIStateWith:
+    (PasswordCheckState)newState {
+  BOOL wasRunning = _currentState == PasswordCheckState::kRunning;
+  _currentState = newState;
+
   switch (_currentState) {
-    case PasswordCheckState::kRunning: {
+    case PasswordCheckState::kRunning:
       return PasswordCheckStateRunning;
-    }
-    case PasswordCheckState::kNoPasswords: {
+    case PasswordCheckState::kNoPasswords:
       return PasswordCheckStateDisabled;
-    }
-    case PasswordCheckState::kIdle:
     case PasswordCheckState::kSignedOut:
     case PasswordCheckState::kOffline:
     case PasswordCheckState::kQuotaLimit:
+    case PasswordCheckState::kOther:
+      return _passwordCheckManager->GetCompromisedCredentials().empty()
+                 ? PasswordCheckStateError
+                 : PasswordCheckStateUnSafe;
     case PasswordCheckState::kCanceled:
-    case PasswordCheckState::kOther: {
-      if (!_manager->GetCompromisedCredentials().empty()) {
+    case PasswordCheckState::kIdle: {
+      if (!_passwordCheckManager->GetCompromisedCredentials().empty()) {
         return PasswordCheckStateUnSafe;
       } else if (_currentState == PasswordCheckState::kIdle) {
-        return stateChanged ? PasswordCheckStateSafe
-                            : PasswordCheckStateDefault;
+        // Safe state is only possible after the state transitioned from
+        // kRunning to kIdle.
+        return wasRunning ? PasswordCheckStateSafe : PasswordCheckStateDefault;
       }
       return PasswordCheckStateDefault;
     }
   }
+}
+
+// Compute whether user is capable to run password check in Google Account.
+- (BOOL)canUseAccountPasswordCheckup {
+  return (_authService->IsAuthenticated() &&
+          _authService->GetAuthenticatedIdentity()) &&
+         (_syncService->IsSyncEnabled() &&
+          !_syncService->IsEncryptEverythingEnabled());
+}
+
+// Configures text for Error Info Popover.
+- (NSAttributedString*)configureTextWithLink:(NSString*)text link:(GURL)link {
+  NSRange range;
+
+  NSString* strippedText = ParseStringWithLink(text, &range);
+
+  NSRange fullRange = NSMakeRange(0, strippedText.length);
+  NSMutableAttributedString* attributedText =
+      [[NSMutableAttributedString alloc] initWithString:strippedText];
+  [attributedText addAttribute:NSForegroundColorAttributeName
+                         value:[UIColor colorNamed:kTextSecondaryColor]
+                         range:fullRange];
+
+  [attributedText
+      addAttribute:NSFontAttributeName
+             value:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]
+             range:fullRange];
+
+  if (range.location != NSNotFound && range.length != 0) {
+    NSURL* URL = net::NSURLWithGURL(link);
+    id linkValue = URL ? URL : @"";
+    [attributedText addAttribute:NSLinkAttributeName
+                           value:linkValue
+                           range:range];
+  }
+
+  return attributedText;
 }
 
 #pragma mark - PasswordStoreObserver

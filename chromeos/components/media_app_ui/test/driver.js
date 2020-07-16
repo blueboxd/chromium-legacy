@@ -146,10 +146,6 @@ class FakeFileSystemFileHandle extends FakeFileSystemHandle {
     this.nextCreateWritableError;
   }
   /** @override */
-  createWriter(options) {
-    throw new Error('createWriter() deprecated.');
-  }
-  /** @override */
   async createWritable(options) {
     if (this.nextCreateWritableError) {
       throw this.nextCreateWritableError;

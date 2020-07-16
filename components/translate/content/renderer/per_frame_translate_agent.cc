@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/translate/content/renderer/isolated_world_util.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_metrics.h"
 #include "components/translate/core/common/translate_util.h"
@@ -23,7 +24,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_language_detection_details.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -35,7 +35,6 @@ using blink::WebDocument;
 using blink::WebLanguageDetectionDetails;
 using blink::WebLocalFrame;
 using blink::WebScriptSource;
-using blink::WebSecurityOrigin;
 using blink::WebString;
 using blink::WebVector;
 
@@ -60,9 +59,6 @@ const int kMaxTranslateStatusCheckAttempts = 10;
 
 // Language name passed to the Translate element for it to detect the language.
 const char kAutoDetectionLanguage[] = "auto";
-
-// Isolated world sets following content-security-policy.
-const char kContentSecurityPolicy[] = "script-src 'self' 'unsafe-eval'";
 
 }  // namespace
 
@@ -131,16 +127,7 @@ void PerFrameTranslateAgent::TranslateFrame(const std::string& translate_script,
   GURL url(render_frame()->GetWebFrame()->GetDocument().Url());
   ReportPageScheme(url.scheme());
 
-  if (!isolated_world_initialized_) {
-    // Set up v8 isolated world with proper content-security-policy and
-    // security-origin.
-    blink::WebIsolatedWorldInfo info;
-    info.security_origin =
-        WebSecurityOrigin::Create(GetTranslateSecurityOrigin());
-    info.content_security_policy = WebString::FromUTF8(kContentSecurityPolicy);
-    render_frame()->GetWebFrame()->SetIsolatedWorldInfo(world_id_, info);
-    isolated_world_initialized_ = true;
-  }
+  EnsureIsolatedWorldInitialized(world_id_);
 
   if (!IsTranslateLibAvailable()) {
     // Evaluate the script to add the translation related method to the global
@@ -206,7 +193,7 @@ base::TimeDelta PerFrameTranslateAgent::AdjustDelay(int delay_in_milliseconds) {
 }
 
 void PerFrameTranslateAgent::ExecuteScript(const std::string& script) {
-  EnsureIsolatedWorldInitialized();
+  EnsureIsolatedWorldInitialized(world_id_);
   WebLocalFrame* local_frame = render_frame()->GetWebFrame();
   if (!local_frame)
     return;
@@ -218,7 +205,7 @@ void PerFrameTranslateAgent::ExecuteScript(const std::string& script) {
 bool PerFrameTranslateAgent::ExecuteScriptAndGetBoolResult(
     const std::string& script,
     bool fallback) {
-  EnsureIsolatedWorldInitialized();
+  EnsureIsolatedWorldInitialized(world_id_);
   WebLocalFrame* local_frame = render_frame()->GetWebFrame();
   if (!local_frame)
     return fallback;
@@ -235,7 +222,7 @@ bool PerFrameTranslateAgent::ExecuteScriptAndGetBoolResult(
 
 std::string PerFrameTranslateAgent::ExecuteScriptAndGetStringResult(
     const std::string& script) {
-  EnsureIsolatedWorldInitialized();
+  EnsureIsolatedWorldInitialized(world_id_);
   WebLocalFrame* local_frame = render_frame()->GetWebFrame();
   if (!local_frame)
     return std::string();
@@ -257,7 +244,7 @@ std::string PerFrameTranslateAgent::ExecuteScriptAndGetStringResult(
 
 double PerFrameTranslateAgent::ExecuteScriptAndGetDoubleResult(
     const std::string& script) {
-  EnsureIsolatedWorldInitialized();
+  EnsureIsolatedWorldInitialized(world_id_);
   WebLocalFrame* local_frame = render_frame()->GetWebFrame();
   if (!local_frame)
     return 0.0;
@@ -274,7 +261,7 @@ double PerFrameTranslateAgent::ExecuteScriptAndGetDoubleResult(
 
 int64_t PerFrameTranslateAgent::ExecuteScriptAndGetIntegerResult(
     const std::string& script) {
-  EnsureIsolatedWorldInitialized();
+  EnsureIsolatedWorldInitialized(world_id_);
   WebLocalFrame* local_frame = render_frame()->GetWebFrame();
   if (!local_frame)
     return 0;
@@ -420,19 +407,6 @@ void PerFrameTranslateAgent::CancelPendingTranslation() {
   }
   source_lang_.clear();
   target_lang_.clear();
-}
-
-void PerFrameTranslateAgent::EnsureIsolatedWorldInitialized() {
-  if (!isolated_world_initialized_) {
-    // Set up v8 isolated world with proper content-security-policy and
-    // security-origin.
-    blink::WebIsolatedWorldInfo info;
-    info.security_origin =
-        WebSecurityOrigin::Create(GetTranslateSecurityOrigin());
-    info.content_security_policy = WebString::FromUTF8(kContentSecurityPolicy);
-    render_frame()->GetWebFrame()->SetIsolatedWorldInfo(world_id_, info);
-    isolated_world_initialized_ = true;
-  }
 }
 
 void PerFrameTranslateAgent::BindReceiver(

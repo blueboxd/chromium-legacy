@@ -33,8 +33,7 @@ class SignedExchangeCertFetcherFactoryImpl
       const GURL& cert_url,
       bool force_fetch,
       SignedExchangeCertFetcher::CertificateCallback callback,
-      SignedExchangeDevToolsProxy* devtools_proxy,
-      SignedExchangeReporter* reporter) override;
+      SignedExchangeDevToolsProxy* devtools_proxy) override;
 
  private:
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
@@ -48,16 +47,15 @@ SignedExchangeCertFetcherFactoryImpl::CreateFetcherAndStart(
     const GURL& cert_url,
     bool force_fetch,
     SignedExchangeCertFetcher::CertificateCallback callback,
-    SignedExchangeDevToolsProxy* devtools_proxy,
-    SignedExchangeReporter* reporter) {
+    SignedExchangeDevToolsProxy* devtools_proxy) {
   DCHECK(url_loader_factory_);
   DCHECK(url_loader_throttles_getter_);
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
       std::move(url_loader_throttles_getter_).Run();
   return SignedExchangeCertFetcher::CreateAndStart(
       std::move(url_loader_factory_), std::move(throttles), cert_url,
-      force_fetch, std::move(callback), devtools_proxy, reporter,
-      throttling_profile_id_, isolation_info_);
+      force_fetch, std::move(callback), devtools_proxy, throttling_profile_id_,
+      isolation_info_);
 }
 
 // static

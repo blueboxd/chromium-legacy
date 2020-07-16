@@ -54,10 +54,11 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromePhone;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromeTablet;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
-import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
+import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -774,7 +775,7 @@ public class InstantStartTest {
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @Features.DisableFeatures(ChromeFeatureList.START_SURFACE_ANDROID)
     public void testInstantStartWithoutStartSurface() throws IOException {
-        createTabStateFile(new int[] {0});
+        createTabStateFile(new int[] {123});
         mActivityTestRule.startMainActivityFromLauncher();
 
         Assert.assertTrue(TabUiFeatureUtilities.supportInstantStart(false));
@@ -783,10 +784,9 @@ public class InstantStartTest {
 
         Assert.assertEquals(1,
                 mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount());
-        LayoutTab layoutTab =
-                mActivityTestRule.getActivity().getLayoutManager().getLayoutTabForTesting(
-                        mActivityTestRule.getActivity().getTabModelSelector().getCurrentTabId());
-        Assert.assertNotNull(layoutTab);
+        Layout activeLayout = mActivityTestRule.getActivity().getLayoutManager().getActiveLayout();
+        Assert.assertTrue(activeLayout instanceof StaticLayout);
+        Assert.assertEquals(123, ((StaticLayout) activeLayout).getCurrentTabIdForTesting());
     }
 
     /**

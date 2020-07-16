@@ -105,8 +105,6 @@ ExtensionsToolbarContainer::~ExtensionsToolbarContainer() {
 }
 
 void ExtensionsToolbarContainer::UpdateAllIcons() {
-  extensions_button_->UpdateIcon();
-
   for (const auto& action : actions_)
     action->UpdateState();
 }

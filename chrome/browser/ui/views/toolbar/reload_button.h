@@ -26,6 +26,8 @@ class ReloadButton : public ToolbarButton,
                      public views::ButtonListener,
                      public ui::SimpleMenuModel::Delegate {
  public:
+  // TODO(http://crbug.com/1099607) Remove IconStyle once WebAppFrameToolbarView
+  // doesn't need this.
   enum class IconStyle { kBrowser, kMinimalUi };
   enum class Mode { kReload = 0, kStop };
 
@@ -44,6 +46,8 @@ class ReloadButton : public ToolbarButton,
   // Enable reload drop-down menu.
   void set_menu_enabled(bool enable) { menu_enabled_ = enable; }
 
+  // TODO(http://crbug.com/1099607) Remove this once WebAppFrameToolbarView
+  // doesn't need this.
   void SetColors(SkColor normal_color, SkColor disabled_color);
 
   // views::View:
@@ -56,6 +60,7 @@ class ReloadButton : public ToolbarButton,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool ShouldShowMenu() override;
   void ShowDropDownMenu(ui::MenuSourceType source_type) override;
+  void UpdateIcon() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* /* button */,
@@ -75,9 +80,6 @@ class ReloadButton : public ToolbarButton,
   std::unique_ptr<ui::SimpleMenuModel> CreateMenuModel();
 
   void ExecuteBrowserCommand(int command, int event_flags);
-
-  // Updates the icon images.
-  void UpdateIcon();
 
   void OnDoubleClickTimer();
   void OnStopToReloadTimer();

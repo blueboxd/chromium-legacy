@@ -58,6 +58,7 @@ public class ProfileTest {
 
             Profile incognitoProfile1 = mRegularProfile.getPrimaryOTRProfile();
             Assert.assertTrue(incognitoProfile1.isOffTheRecord());
+            Assert.assertTrue(incognitoProfile1.isPrimaryOTRProfile());
             Assert.assertTrue(incognitoProfile1.isNativeInitialized());
             Assert.assertTrue(mRegularProfile.hasPrimaryOTRProfile());
 
@@ -80,6 +81,7 @@ public class ProfileTest {
             Profile nonPrimaryOtrProfile1 = mRegularProfile.getOffTheRecordProfile(profileID);
 
             Assert.assertTrue(nonPrimaryOtrProfile1.isOffTheRecord());
+            Assert.assertFalse(nonPrimaryOtrProfile1.isPrimaryOTRProfile());
             Assert.assertTrue(nonPrimaryOtrProfile1.isNativeInitialized());
             Assert.assertTrue(mRegularProfile.hasOffTheRecordProfile(profileID));
             Assert.assertFalse(mRegularProfile.hasPrimaryOTRProfile());
@@ -108,10 +110,12 @@ public class ProfileTest {
             Profile nonPrimaryOtrProfile2 = mRegularProfile.getOffTheRecordProfile(profileID2);
 
             Assert.assertTrue(nonPrimaryOtrProfile1.isOffTheRecord());
+            Assert.assertFalse(nonPrimaryOtrProfile1.isPrimaryOTRProfile());
             Assert.assertTrue(nonPrimaryOtrProfile1.isNativeInitialized());
             Assert.assertTrue(mRegularProfile.hasOffTheRecordProfile(profileID1));
 
             Assert.assertTrue(nonPrimaryOtrProfile2.isOffTheRecord());
+            Assert.assertFalse(nonPrimaryOtrProfile2.isPrimaryOTRProfile());
             Assert.assertTrue(nonPrimaryOtrProfile2.isNativeInitialized());
             Assert.assertTrue(mRegularProfile.hasOffTheRecordProfile(profileID2));
 

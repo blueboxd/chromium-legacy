@@ -28,13 +28,4 @@ TypeConverter<blink::mojom::blink::PushSubscriptionOptionsPtr,
       input->userVisibleOnly(), std::move(application_server_key));
 }
 
-// TODO(viviy): implement conversion
-// static
-blink::PushSubscription*
-TypeConverter<blink::PushSubscription*,
-              blink::mojom::blink::PushSubscriptionPtr>::
-    Convert(const blink::mojom::blink::PushSubscriptionPtr& input) {
-  return nullptr;
-}
-
 }  // namespace mojo

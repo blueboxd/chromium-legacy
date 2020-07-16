@@ -118,14 +118,6 @@ public class ChipView extends LinearLayout {
         setIcon(INVALID_ICON_ID, false);
     }
 
-    @Override
-    protected void drawableStateChanged() {
-        super.drawableStateChanged();
-        if (mRippleBackgroundHelper != null) {
-            mRippleBackgroundHelper.onDrawableStateChanged();
-        }
-    }
-
     /**
      * Unlike setSelected, setEnabled doesn't properly propagate the new state to its subcomponents.
      * Enforce this so ColorStateLists used for the text appearance apply as intended.

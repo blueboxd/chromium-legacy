@@ -13,6 +13,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
@@ -180,12 +181,12 @@ void AddLocallySavedPredictions(FieldInfoManager* field_info_manager,
         field.type = NOT_USERNAME;
     }
     if (logger && local_prediction != UNKNOWN_TYPE) {
-      std::string message =
-          "form signature=" +
-          NumberToString(predictions->form_signature.value()) +
-          " , field signature=" + NumberToString(field.signature.value()) +
-          ", type=" +
-          autofill::AutofillType::ServerFieldTypeToString(local_prediction);
+      std::string message = base::StrCat(
+          {"form signature=",
+           NumberToString(predictions->form_signature.value()),
+           " , field signature=", NumberToString(field.signature.value()),
+           ", type=",
+           autofill::AutofillType::ServerFieldTypeToString(local_prediction)});
       logger->LogString(Logger::STRING_LOCALLY_SAVED_PREDICTION, message);
     }
   }

@@ -16,6 +16,7 @@ import androidx.fragment.app.DialogFragment;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
 
@@ -106,8 +107,10 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
         mConfirmImportOption.setRadioButtonGroup(radioGroup);
         mKeepSeparateOption.setRadioButtonGroup(radioGroup);
 
+        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
+                Profile.getLastUsedRegularProfile());
         // If the account is managed, disallow merging information.
-        if (IdentityServicesProvider.get().getSigninManager().getManagementDomain() != null) {
+        if (signinManager.getManagementDomain() != null) {
             mKeepSeparateOption.setChecked(true);
             mConfirmImportOption.setOnClickListener(
                     view -> ManagedPreferencesUtils.showManagedByAdministratorToast(getActivity()));

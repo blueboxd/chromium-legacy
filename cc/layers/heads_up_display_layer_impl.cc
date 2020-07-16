@@ -270,9 +270,10 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       }
       if (backing->overlay_candidate)
         flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
-      backing->mailbox =
-          sii->CreateSharedImage(pool_resource.format(), pool_resource.size(),
-                                 pool_resource.color_space(), flags);
+      backing->mailbox = sii->CreateSharedImage(
+          pool_resource.format(), pool_resource.size(),
+          pool_resource.color_space(), kTopLeft_GrSurfaceOrigin,
+          kPremul_SkAlphaType, flags, gpu::kNullSurfaceHandle);
       if (raster_context_provider) {
         auto* ri = raster_context_provider->RasterInterface();
         ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());

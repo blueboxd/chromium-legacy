@@ -397,18 +397,22 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
   ExpectIdentifierPage();
 
   // Move to password page.
+  auto back_button_waiter = CreateGaiaPageEventWaiter("backButton");
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserEmail, {"identifier"});
   test::OobeJS().ClickOnPath(kPrimaryButton);
-  WaitForGaiaPageBackButtonUpdate();
+  back_button_waiter->Wait();
   ExpectPasswordPage();
 
   // Click back to identifier page.
+  back_button_waiter = CreateGaiaPageEventWaiter("backButton");
   test::OobeJS().ClickOnPath({"gaia-signin", "signin-back-button"});
-  WaitForGaiaPageBackButtonUpdate();
+  back_button_waiter->Wait();
   ExpectIdentifierPage();
+
+  back_button_waiter = CreateGaiaPageEventWaiter("backButton");
   // Click next to password page, user id is remembered.
   test::OobeJS().ClickOnPath(kPrimaryButton);
-  WaitForGaiaPageBackButtonUpdate();
+  back_button_waiter->Wait();
   ExpectPasswordPage();
 
   // Finish sign-up.

@@ -18,6 +18,7 @@ import com.google.android.gms.auth.GoogleAuthUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
@@ -102,8 +103,9 @@ public class SigninHelper {
 
     private SigninHelper() {
         mProfileSyncService = ProfileSyncService.get();
-        mSigninManager = IdentityServicesProvider.get().getSigninManager();
-        mAccountTrackerService = IdentityServicesProvider.get().getAccountTrackerService();
+        Profile profile = Profile.getLastUsedRegularProfile();
+        mSigninManager = IdentityServicesProvider.get().getSigninManager(profile);
+        mAccountTrackerService = IdentityServicesProvider.get().getAccountTrackerService(profile);
         mPrefsManager = SigninPreferencesManager.getInstance();
     }
 

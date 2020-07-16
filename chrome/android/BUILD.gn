@@ -866,10 +866,12 @@ junit_binary("chrome_junit_tests") {
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
     "//third_party/android_deps:androidx_swiperefreshlayout_swiperefreshlayout_java",
     "//third_party/android_deps:androidx_test_core_java",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_deps:com_google_dagger_dagger_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
     "//third_party/android_deps:com_googlecode_java_diff_utils_diffutils_java",
     "//third_party/android_sdk/androidx_browser:androidx_browser_java",
+    "//third_party/android_support_test_runner:runner_java",
     "//third_party/blink/public:blink_headers_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
     "//third_party/blink/public/mojom:mojom_platform_java",
@@ -1107,6 +1109,7 @@ android_library("chrome_test_java") {
     "//third_party/android_deps:androidx_lifecycle_lifecycle_common_java",
     "//third_party/android_deps:androidx_preference_preference_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_deps:androidx_viewpager_viewpager_java",
     "//url:origin_java",
 
@@ -1211,6 +1214,7 @@ if (enable_vr || enable_arcore) {
     "//chrome/android:app_hooks_java",
     "//chrome/android:chrome_java",
     "//chrome/android/features/vr:java",
+    "//chrome/browser/flags:java",
     "//chrome/browser/tab:java",
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/util:java",
@@ -1225,6 +1229,7 @@ if (enable_vr || enable_arcore) {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_lifecycle_lifecycle_common_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_sdk/androidx_browser:androidx_browser_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
@@ -1866,6 +1871,7 @@ android_library("browser_java_test_support") {
     "//components/sync/protocol:protocol_java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
     "//third_party/junit",
   ]
@@ -2430,6 +2436,7 @@ android_test_apk("chrome_smoke_test_apk") {
     "//base:base_java_test_support",
     "//chrome/test/android:chrome_java_test_pagecontroller",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
     "//third_party/ub-uiautomator:ub_uiautomator_java",
@@ -2470,6 +2477,7 @@ android_test_apk("chrome_bundle_smoke_test_apk") {
     "//base:base_java_test_support",
     "//chrome/test/android:chrome_java_test_pagecontroller",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
   ]
@@ -3227,6 +3235,7 @@ android_library("native_java_unittests_java") {
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
     "//url:gurl_java",
+    "//url:origin_java",
     "//url/mojom:url_mojom_gurl_java",
   ]
 

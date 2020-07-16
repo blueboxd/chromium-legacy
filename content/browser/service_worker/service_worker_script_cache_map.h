@@ -13,8 +13,10 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 
@@ -24,7 +26,6 @@ namespace content {
 
 class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
-class ServiceWorkerResponseMetadataWriter;
 
 // Class that maintains the mapping between urls and a resource id
 // for a particular version's implicit script resources.
@@ -80,7 +81,7 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
   ~ServiceWorkerScriptCacheMap();
 
   void OnMetadataWritten(
-      std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer,
+      mojo::Remote<storage::mojom::ServiceWorkerResourceMetadataWriter>,
       net::CompletionOnceCallback callback,
       int result);
 

@@ -350,7 +350,8 @@ void FastInkHost::SubmitCompositorFrame() {
               ->context_factory()
               ->GetGpuMemoryBufferManager();
       resource->mailbox = sii->CreateSharedImage(
-          gpu_memory_buffer_.get(), gmb_manager, gfx::ColorSpace(), usage);
+          gpu_memory_buffer_.get(), gmb_manager, gfx::ColorSpace(),
+          kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage);
     } else {
       sii->UpdateSharedImage(resource->sync_token, resource->mailbox);
     }

@@ -37,7 +37,9 @@ class CONTENT_EXPORT SignedExchangeReporter {
 
   // Queues the signed exchange report. This method must be called at the last
   // method to be called on |this|, and must be called only once.
-  void ReportResultAndFinish(SignedExchangeLoadResult result);
+  void ReportLoadResultAndFinish(SignedExchangeLoadResult result);
+
+  void ReportHeaderIntegrityMismatch();
 
  private:
   SignedExchangeReporter(const GURL& outer_url,

@@ -785,6 +785,7 @@ _CONFIG = [
             'third_party/blink/renderer/modules/webcodecs/',
         ],
         'allowed': [
+            'gpu::kNullSurfaceHandle',
             'media::.+',
         ]
     },

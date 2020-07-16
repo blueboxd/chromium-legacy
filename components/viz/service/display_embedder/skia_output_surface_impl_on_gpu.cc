@@ -540,6 +540,8 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
   gpu::Mailbox CreateSharedImage(ResourceFormat format,
                                  const gfx::Size& size,
                                  const gfx::ColorSpace& color_space,
+                                 GrSurfaceOrigin surface_origin,
+                                 SkAlphaType alpha_type,
                                  uint32_t usage,
                                  gpu::SurfaceHandle surface_handle) override {
     auto mailbox = gpu::Mailbox::GenerateForSharedImage();
@@ -553,6 +555,8 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
       ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       base::span<const uint8_t> pixel_data) override {
     auto mailbox = gpu::Mailbox::GenerateForSharedImage();
@@ -566,6 +570,8 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
       gfx::GpuMemoryBuffer* gpu_memory_buffer,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage) override {
     // We do not support creating GMB backed SharedImages.
     NOTIMPLEMENTED();
@@ -596,6 +602,8 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
   SwapChainMailboxes CreateSwapChain(ResourceFormat format,
                                      const gfx::Size& size,
                                      const gfx::ColorSpace& color_space,
+                                     GrSurfaceOrigin surface_origin,
+                                     SkAlphaType alpha_type,
                                      uint32_t usage) override {
     NOTREACHED();
     return {};

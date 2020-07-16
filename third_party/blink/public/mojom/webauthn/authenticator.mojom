@@ -94,6 +94,12 @@ struct MakeCredentialAuthenticatorResponse {
   bool echo_hmac_create_secret;
   bool hmac_create_secret;
 
+  // True if getClientExtensionResults() called on the returned
+  // PublicKeyCredential instance should contain a `prf` extension output. If
+  // so, |prf| contains the value of the `enabled` member.
+  bool echo_prf;
+  bool prf;
+
   // The DER-encoded, ASN.1 public key of the newly created credential. May be
   // missing if the browser does not understand the public-key type.
   array<uint8>? public_key_der;
@@ -139,6 +145,15 @@ struct GetAssertionAuthenticatorResponse {
   bool echo_user_verification_methods;
   [EnableIf=is_android]
   array<UvmEntry>? user_verification_methods;
+
+  // echo_prf indicates whether the PRF extension should be present in the
+  // output.
+  bool echo_prf;
+  // prf_results contains PRF outputs to include in the extension, if any.
+  PRFValues? prf_results;
+  // prf_not_evaluated indicates the the PRF inputs could not be processed
+  // because of a lack of operating system support.
+  bool prf_not_evaluated;
 };
 
 // Information about the relying party. These fields take arbitrary input.
@@ -212,6 +227,16 @@ struct CableRegistration {
   array<uint8, 65> relying_party_public_key;
 };
 
+// See https://w3c.github.io/webauthn/#dictdef-authenticationextensionsprfvalues
+struct PRFValues {
+  // In the Javascript-to-native direction, id is the credential ID for these
+  // inputs. If null then these are the default values for when no credential
+  // IDs match. In the other direction, id will always be null.
+  array<uint8>? id;
+  array<uint8, 32> first;
+  array<uint8, 32>? second;
+};
+
 // Parameters passed into calls to GetAssertion.
 struct PublicKeyCredentialRequestOptions {
   // An indefinite-length blob passed from the the relying party server,
@@ -250,6 +275,15 @@ struct PublicKeyCredentialRequestOptions {
   // the RP. See https://w3c.github.io/webauthn/#sctn-uvm-extension
   [EnableIf=is_android]
   bool user_verification_methods;
+
+  // prf is true if the request contained a PRF extension.
+  bool prf;
+
+  // List of PRF inputs. The first element may have a null |id| member,
+  // indicating that it's the default value when none of the elements with a
+  // credential ID match. Otherwise all elements must have an |id| member and
+  // must be sorted lexicographically by it.
+  array<PRFValues> prf_inputs;
 };
 
 // See https://w3c.github.io/webauthn/#enumdef-attestationconveyancepreference
@@ -332,6 +366,11 @@ struct PublicKeyCredentialCreationOptions {
   // The contents of the hmacCreateSecret extension, if any. See
   // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#sctn-hmac-secret-extension
   bool hmac_create_secret;
+
+  // Whether the PRF extension was present. (Evaluation of the PRF at creation
+  // time is never supported currently, owing to a lack of hardware support.)
+  // https://w3c.github.io/webauthn/#prf-extension
+  bool prf_enable;
 
   // Only supported by fido2 devices on android, will eventually supported by
   // other platform.

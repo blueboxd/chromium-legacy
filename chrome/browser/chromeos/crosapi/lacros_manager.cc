@@ -241,7 +241,7 @@ void LacrosManager::OnMojoDisconnected() {
   lacros_chrome_service_.reset();
   ash_chrome_service_ = nullptr;
   base::ThreadPool::PostTaskAndReply(
-      FROM_HERE, {base::MayBlock()},
+      FROM_HERE, {base::WithBaseSyncPrimitives()},
       base::BindOnce(&TerminateLacrosChrome, std::move(lacros_process_)),
       base::BindOnce(&LacrosManager::OnLacrosChromeTerminated,
                      weak_factory_.GetWeakPtr()));

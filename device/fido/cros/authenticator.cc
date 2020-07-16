@@ -166,10 +166,11 @@ void ChromeOSAuthenticator::OnMakeCredentialResp(
 }
 
 void ChromeOSAuthenticator::GetAssertion(CtapGetAssertionRequest request,
+                                         CtapGetAssertionOptions options,
                                          GetAssertionCallback callback) {
-  dbus::Bus::Options options;
-  options.bus_type = dbus::Bus::SYSTEM;
-  scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
+  dbus::Bus::Options dbus_options;
+  dbus_options.bus_type = dbus::Bus::SYSTEM;
+  scoped_refptr<dbus::Bus> bus = new dbus::Bus(dbus_options);
   dbus::ObjectProxy* u2f_proxy = bus->GetObjectProxy(
       u2f::kU2FServiceName, dbus::ObjectPath(u2f::kU2FServicePath));
 

@@ -46,9 +46,10 @@ void LookalikeUrlControllerClient::GoBack() {
   if (!safe_url_.is_valid()) {
     IOSBlockingPageControllerClient::GoBack();
   } else {
-    // TODO(crbug.com/1058898): Replace the last committed navigation
-    // (the interstitial) with the safe URL navigation to prevent the
-    // back button from returning to the bad site.
+    // For simplicity and because replacement doesn't always work, the
+    // navigation to the safe URL does not replace the navigation to
+    // the interstitial. However, this is acceptable since if a user
+    // navigates back to the lookalike, the interstitial will be shown.
     OpenUrlInCurrentTab(safe_url_);
   }
 }

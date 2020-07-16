@@ -20,6 +20,7 @@
 #include "device/fido/device_operation.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_task.h"
+#include "device/fido/pin.h"
 
 namespace cbor {
 class Value;
@@ -45,6 +46,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
 
   GetAssertionTask(FidoDevice* device,
                    CtapGetAssertionRequest request,
+                   CtapGetAssertionOptions options,
                    GetAssertionTaskCallback callback);
   ~GetAssertionTask() override;
 
@@ -84,17 +86,23 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
       CtapDeviceResponseCode response_code,
       base::Optional<AuthenticatorMakeCredentialResponse> response_data);
 
+  void MaybeSetPRFParameters(
+      CtapGetAssertionRequest* request,
+      const CtapGetAssertionOptions::PRFInput* maybe_inputs);
+
   void MaybeRevertU2fFallbackAndInvokeCallback(
       CtapDeviceResponseCode status,
       base::Optional<AuthenticatorGetAssertionResponse> response);
 
   CtapGetAssertionRequest request_;
+  CtapGetAssertionOptions options_;
   std::vector<std::vector<PublicKeyCredentialDescriptor>> allow_list_batches_;
   size_t current_allow_list_batch_ = 0;
 
   std::unique_ptr<SignOperation> sign_operation_;
   std::unique_ptr<RegisterOperation> dummy_register_operation_;
   GetAssertionTaskCallback callback_;
+  std::unique_ptr<pin::HMACSecretRequest> hmac_secret_request_;
 
   bool canceled_ = false;
 

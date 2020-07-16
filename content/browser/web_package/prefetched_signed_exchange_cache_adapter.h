@@ -12,14 +12,6 @@
 
 class GURL;
 
-namespace base {
-class Time;
-}  // namespace base
-
-namespace net {
-struct SHA256HashValue;
-}  // namespace net
-
 namespace storage {
 class BlobBuilderFromStream;
 class BlobDataHandle;
@@ -40,12 +32,8 @@ class PrefetchedSignedExchangeCacheAdapter {
       PrefetchURLLoader* prefetch_url_loader);
   ~PrefetchedSignedExchangeCacheAdapter();
 
-  void OnReceiveOuterResponse(network::mojom::URLResponseHeadPtr response);
-  void OnReceiveRedirect(
-      const GURL& new_url,
-      const base::Optional<net::SHA256HashValue> header_integrity,
-      const base::Time& signature_expire_time);
-  void OnReceiveInnerResponse(network::mojom::URLResponseHeadPtr response);
+  void OnReceiveSignedExchange(
+      std::unique_ptr<PrefetchedSignedExchangeCacheEntry> entry);
   void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body);
   void OnComplete(const network::URLLoaderCompletionStatus& status);
 
@@ -86,7 +74,7 @@ class PrefetchedSignedExchangeCacheAdapter {
 
   // A temporary entry of PrefetchedSignedExchangeCache, which will be stored
   // to |prefetched_signed_exchange_cache_|.
-  std::unique_ptr<PrefetchedSignedExchangeCache::Entry> cached_exchange_;
+  std::unique_ptr<PrefetchedSignedExchangeCacheEntry> cached_exchange_;
 
   // Used to create a BlobDataHandle from a DataPipe of signed exchange's inner
   // response body. This should only be accessed on the IO thread.

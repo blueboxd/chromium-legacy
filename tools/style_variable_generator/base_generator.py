@@ -75,7 +75,10 @@ class BaseGenerator:
 
     def __init__(self):
         self.out_file_path = None
-        self.in_files = []
+        # A map of input filepaths to their context object.
+        self.in_file_to_context = dict()
+
+        # If specified, only generates the given mode.
         self.generate_single_mode = None
 
         # The mode that colors will fallback to when not specified in a
@@ -117,19 +120,28 @@ class BaseGenerator:
             raise ValueError('Error parsing color "%s": %s' % (value_obj, err))
 
     def AddJSONFileToModel(self, path):
-        self.in_files.append(path)
         try:
             with open(path, 'r') as f:
-                self.AddJSONToModel(f.read(), self.GetName())
+                return self.AddJSONToModel(f.read(), self.GetName(), path)
         except ValueError as err:
             raise ValueError('\n%s:\n    %s' % (path, err))
 
-    def AddJSONToModel(self, json_string, generator_name=None):
+    def AddJSONToModel(self, json_string, generator_name=None, in_file=None):
+        '''Adds a |json_string| with variable definitions to the model.
+
+        See *test.json5 files for a defacto format reference.
+
+        |generator_name| is used to get the generator-specific context from the
+        'options' object.
+        |in_file| is used to populate a file-to-context map.
+        '''
         # TODO(calamity): Add allow_duplicate_keys=False once pyjson5 is
         # rolled.
         data = json5.loads(json_string,
                            object_pairs_hook=collections.OrderedDict)
         generator_context = data.get('options', {}).get(generator_name, None)
+        self.in_file_to_context[in_file] = generator_context
+
         for name, value in data['colors'].items():
             if not re.match('^[a-z0-9_]+$', name):
                 raise ValueError(
@@ -138,6 +150,7 @@ class BaseGenerator:
 
             self.AddColor(name, value, generator_context)
 
+        return generator_context
 
     def ApplyTemplate(self, style_generator, path_to_template, params):
         loader_root_dir = path_overrides.GetFileSystemLoaderRootDirectory()

@@ -37,7 +37,7 @@ public class CompositorModelChangeProcessorUnitTest {
     @Mock
     private PropertyModelChangeProcessor.ViewBinder mViewBinder;
     @Mock
-    private LayoutManagerHost mLayoutManagerHost;
+    private LayoutUpdateHost mLayoutUpdateHost;
 
     private CompositorModelChangeProcessor.FrameRequestSupplier mFrameSupplier;
     private CompositorModelChangeProcessor mCompositorMCP;
@@ -48,8 +48,7 @@ public class CompositorModelChangeProcessorUnitTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        mFrameSupplier =
-                new CompositorModelChangeProcessor.FrameRequestSupplier(mLayoutManagerHost);
+        mFrameSupplier = new CompositorModelChangeProcessor.FrameRequestSupplier(mLayoutUpdateHost);
         mModel = new PropertyModel(PROPERTY_CHANGED);
 
         mCompositorMCP = CompositorModelChangeProcessor.create(
@@ -59,7 +58,7 @@ public class CompositorModelChangeProcessorUnitTest {
     @Test
     public void testBindAndRequestFrame() {
         mModel.set(PROPERTY_CHANGED, mPropertyChangedValue.getAndSet(!mPropertyChangedValue.get()));
-        verify(mLayoutManagerHost).requestRender();
+        verify(mLayoutUpdateHost).requestUpdate();
 
         mFrameSupplier.set(System.currentTimeMillis());
         verify(mViewBinder).bind(eq(mModel), eq(mView), eq(null));
@@ -70,14 +69,14 @@ public class CompositorModelChangeProcessorUnitTest {
         mFrameSupplier.set(System.currentTimeMillis());
 
         verify(mViewBinder).bind(eq(mModel), eq(mView), eq(null));
-        verify(mLayoutManagerHost, never()).requestRender();
+        verify(mLayoutUpdateHost, never()).requestUpdate();
     }
 
     @Test
     public void testRequestFrameAndNoBindOnPropertyChanged() {
         mModel.set(PROPERTY_CHANGED, mPropertyChangedValue.getAndSet(!mPropertyChangedValue.get()));
 
-        verify(mLayoutManagerHost).requestRender();
+        verify(mLayoutUpdateHost).requestUpdate();
         verify(mViewBinder, never()).bind(any(), any(), any());
     }
 }

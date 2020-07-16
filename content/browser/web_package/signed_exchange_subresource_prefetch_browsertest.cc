@@ -328,8 +328,8 @@ class SignedExchangePrefetchBrowserTest
     EXPECT_EQ(1u, cached_exchanges.size());
     const auto it = cached_exchanges.find(sxg_url);
     ASSERT_TRUE(it != cached_exchanges.end());
-    const std::unique_ptr<const PrefetchedSignedExchangeCache::Entry>&
-        exchange = it->second;
+    const std::unique_ptr<const PrefetchedSignedExchangeCacheEntry>& exchange =
+        it->second;
     EXPECT_EQ(sxg_url, exchange->outer_url());
     EXPECT_EQ(inner_url, exchange->inner_url());
     EXPECT_EQ(header_integrity, *exchange->header_integrity());
@@ -860,7 +860,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
 
       const auto script_it = cached_exchanges.find(sxg_script_url);
       ASSERT_TRUE(script_it != cached_exchanges.end());
-      const std::unique_ptr<const PrefetchedSignedExchangeCache::Entry>&
+      const std::unique_ptr<const PrefetchedSignedExchangeCacheEntry>&
           script_exchange = script_it->second;
       EXPECT_EQ(sxg_script_url, script_exchange->outer_url());
       EXPECT_EQ(inner_url_script_url, script_exchange->inner_url());
@@ -876,7 +876,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
     }
     const auto page_it = cached_exchanges.find(sxg_page_url);
     ASSERT_TRUE(page_it != cached_exchanges.end());
-    const std::unique_ptr<const PrefetchedSignedExchangeCache::Entry>&
+    const std::unique_ptr<const PrefetchedSignedExchangeCacheEntry>&
         page_exchange = page_it->second;
     EXPECT_EQ(sxg_page_url, page_exchange->outer_url());
     EXPECT_EQ(inner_url_page_url, page_exchange->inner_url());

@@ -85,6 +85,8 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   gpu::Mailbox CreateSharedImage(viz::ResourceFormat format,
                                  const gfx::Size& size,
                                  const gfx::ColorSpace& color_space,
+                                 GrSurfaceOrigin surface_origin,
+                                 SkAlphaType alpha_type,
                                  uint32_t usage,
                                  gpu::SurfaceHandle surface_handle) override {
     NOTREACHED();
@@ -95,6 +97,8 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       base::span<const uint8_t> pixel_data) override {
     NOTREACHED();
@@ -105,6 +109,8 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
       gfx::GpuMemoryBuffer* gpu_memory_buffer,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage) override {
     gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->CloneHandle();
     CHECK_EQ(handle.type, gfx::GpuMemoryBufferType::NATIVE_PIXMAP);
@@ -138,6 +144,8 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   SwapChainMailboxes CreateSwapChain(viz::ResourceFormat format,
                                      const gfx::Size& size,
                                      const gfx::ColorSpace& color_space,
+                                     GrSurfaceOrigin surface_origin,
+                                     SkAlphaType alpha_type,
                                      uint32_t usage) override {
     NOTREACHED();
     return SwapChainMailboxes();

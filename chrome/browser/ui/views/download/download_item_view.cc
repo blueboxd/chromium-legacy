@@ -260,14 +260,13 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   status_label->GetViewAccessibility().OverrideIsIgnored(true);
   status_label_ = AddChildView(std::move(status_label));
 
-  auto dangerous_download_label = std::make_unique<views::StyledLabel>(
+  auto warning_label = std::make_unique<views::StyledLabel>(
       base::string16(), /*listener=*/nullptr);
-  dangerous_download_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
-  dangerous_download_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  dangerous_download_label->SetAutoColorReadabilityEnabled(false);
-  dangerous_download_label->set_can_process_events_within_subtree(false);
-  dangerous_download_label_ = AddChildView(std::move(dangerous_download_label));
-  dangerous_download_label_->SetVisible(false);
+  warning_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
+  warning_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  warning_label->SetAutoColorReadabilityEnabled(false);
+  warning_label->set_can_process_events_within_subtree(false);
+  warning_label_ = AddChildView(std::move(warning_label));
 
   auto deep_scanning_label = std::make_unique<views::StyledLabel>(
       base::string16(), /*listener=*/nullptr);
@@ -276,7 +275,6 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   deep_scanning_label->SetAutoColorReadabilityEnabled(false);
   deep_scanning_label->set_can_process_events_within_subtree(false);
   deep_scanning_label_ = AddChildView(std::move(deep_scanning_label));
-  deep_scanning_label_->SetVisible(false);
 
   auto open_now_button = views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_OPEN_DOWNLOAD_NOW));
@@ -303,8 +301,6 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
 
   // Further configure default state, e.g. child visibility.
   OnDownloadUpdated();
-
-  UpdateColorsFromTheme();
 }
 
 DownloadItemView::~DownloadItemView() {
@@ -316,17 +312,15 @@ DownloadItemView::~DownloadItemView() {
 void DownloadItemView::Layout() {
   View::Layout();
 
-  UpdateColorsFromTheme();
-
   open_button_->SetBoundsRect(GetLocalBounds());
 
   if (is_download_warning(mode_)) {
     gfx::Point child_origin(
         kStartPadding + GetWarningIconSize() + kStartPadding,
-        (height() - dangerous_download_label_->height()) / 2);
-    dangerous_download_label_->SetPosition(child_origin);
+        (height() - warning_label_->height()) / 2);
+    warning_label_->SetPosition(child_origin);
 
-    child_origin.Offset(dangerous_download_label_->width() + kLabelPadding, 0);
+    child_origin.Offset(warning_label_->width() + kLabelPadding, 0);
     gfx::Size button_size = GetButtonSize();
     child_origin.set_y((height() - button_size.height()) / 2);
     if (save_button_->GetVisible()) {
@@ -340,10 +334,10 @@ void DownloadItemView::Layout() {
   } else if (is_mixed_content(mode_)) {
     gfx::Point child_origin(
         kStartPadding + GetWarningIconSize() + kStartPadding,
-        (height() - dangerous_download_label_->height()) / 2);
-    dangerous_download_label_->SetPosition(child_origin);
+        (height() - warning_label_->height()) / 2);
+    warning_label_->SetPosition(child_origin);
 
-    child_origin.Offset(dangerous_download_label_->width() + kLabelPadding, 0);
+    child_origin.Offset(warning_label_->width() + kLabelPadding, 0);
     gfx::Size button_size = GetButtonSize();
     child_origin.set_y((height() - button_size.height()) / 2);
     if (save_button_->GetVisible())
@@ -367,7 +361,11 @@ void DownloadItemView::Layout() {
     int mirrored_x = GetMirroredXWithWidthInView(
         kStartPadding + kProgressIndicatorSize + kProgressTextPadding,
         kTextWidth);
-    int file_name_y = GetYForFilenameText();
+
+    int text_height = font_list_.GetHeight();
+    if (!status_label_->GetText().empty())
+      text_height += status_font_list_.GetHeight();
+    int file_name_y = (height() - text_height) / 2;
     file_name_label_->SetBoundsRect(
         gfx::Rect(mirrored_x, file_name_y, kTextWidth, font_list_.GetHeight()));
 
@@ -557,6 +555,7 @@ void DownloadItemView::OnDownloadUpdated() {
 }
 
 void DownloadItemView::OnDownloadOpened() {
+  file_name_label_->SetTextStyle(views::style::STYLE_DISABLED);
   // First, Calculate the download status opening string width.
   base::string16 status_string =
       l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING, base::string16());
@@ -607,7 +606,7 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
   if (has_warning_label(mode_)) {
     // Width.
     width = kStartPadding + GetWarningIconSize() + kStartPadding +
-            dangerous_download_label_->width() + kLabelPadding;
+            warning_label_->width() + kLabelPadding;
     gfx::Size button_size = GetButtonSize();
     if (save_button_->GetVisible() && discard_button_->GetVisible())
       width += button_size.width() + kSaveDiscardButtonPadding;
@@ -696,36 +695,13 @@ DownloadItemView::Mode DownloadItemView::GetDesiredMode() const {
 }
 
 void DownloadItemView::UpdateMode(Mode mode) {
-  // TODO(pkasting): This function is currently enormous and has a lot of
-  // repeated and/or unnecessary code.  Refactor further.
-
-  if (mode_ != Mode::kNormal) {
-    file_name_label_->SetVisible(true);
-    status_label_->SetVisible(true);
-    if (is_mixed_content(mode_) || is_download_warning(mode_)) {
-      dangerous_download_label_->SetVisible(false);
-    } else if (mode_ == Mode::kDeepScanning) {
-      deep_scanning_label_->SetVisible(false);
-    }
-  }
+  // TODO(pkasting): Refactor further.
 
   mode_ = mode;
+  UpdateLabels();
   UpdateButtons();
 
-  if (is_mixed_content(mode_)) {
-    dangerous_download_label_->SetVisible(true);
-    const base::string16 filename = ElidedFilename();
-    size_t filename_offset;
-    dangerous_download_label_->SetText(
-        model_->GetWarningText(filename, &filename_offset));
-    StyleFilename(*dangerous_download_label_, filename_offset,
-                  filename.length());
-    dangerous_download_label_->SizeToFit(
-        GetLabelWidth(*dangerous_download_label_));
-
-    file_name_label_->SetVisible(false);
-    status_label_->SetVisible(false);
-  } else if (is_download_warning(mode_)) {
+  if (is_download_warning(mode_)) {
     time_download_warning_shown_ = base::Time::Now();
     download::DownloadDangerType danger_type = model_->GetDangerType();
     RecordDangerousDownloadWarningShown(danger_type);
@@ -743,46 +719,13 @@ void DownloadItemView::UpdateMode(Mode mode) {
       UpdateAccessibleAlert(model_->GetWarningText(unelided_filename, &ignore),
                             true);
     }
-
-    dangerous_download_label_->SetVisible(true);
-    const base::string16 filename = ElidedFilename();
-    size_t filename_offset;
-    dangerous_download_label_->SetText(
-        model_->GetWarningText(filename, &filename_offset));
-    StyleFilename(*dangerous_download_label_, filename_offset,
-                  filename.length());
-    dangerous_download_label_->SizeToFit(
-        GetLabelWidth(*dangerous_download_label_));
-
-    file_name_label_->SetVisible(false);
-    status_label_->SetVisible(false);
   } else if (mode_ == Mode::kDeepScanning) {
-    const int id = (model_->download() &&
-                    safe_browsing::DeepScanningRequest::ShouldUploadBinary(
-                        model_->download()))
-                       ? IDS_PROMPT_DEEP_SCANNING_DOWNLOAD
-                       : IDS_PROMPT_DEEP_SCANNING_APP_DOWNLOAD;
-    deep_scanning_label_->SetVisible(true);
-    const base::string16 filename = ElidedFilename();
-    size_t filename_offset;
-    deep_scanning_label_->SetText(
-        l10n_util::GetStringFUTF16(id, filename, &filename_offset));
-    StyleFilename(*deep_scanning_label_, filename_offset, filename.length());
-    deep_scanning_label_->SizeToFit(GetLabelWidth(*deep_scanning_label_));
-
-    file_name_label_->SetVisible(false);
-    status_label_->SetVisible(false);
-
     UpdateAccessibleAlert(
         l10n_util::GetStringFUTF16(
             IDS_DEEP_SCANNING_ACCESSIBLE_ALERT,
             model_->GetFileNameToReportUser().LossyDisplayName()),
         false);
-  } else {
-    status_label_->SetText(GetStatusText());
-    status_label_->GetViewAccessibility().OverrideIsIgnored(
-        status_label_->GetText().empty());
-    file_name_label_->SetY(GetYForFilenameText());
+  } else if (mode_ == Mode::kNormal) {
     switch (model_->GetState()) {
       case DownloadItem::IN_PROGRESS:
         // No need to send accessible alert for "paused", as the button ends
@@ -842,6 +785,43 @@ void DownloadItemView::UpdateMode(Mode mode) {
   // Force the shelf to layout again as our size has changed.
   shelf_->Layout();
   shelf_->SchedulePaint();
+}
+
+void DownloadItemView::UpdateLabels() {
+  file_name_label_->SetVisible(mode_ == Mode::kNormal);
+
+  status_label_->SetVisible(mode_ == Mode::kNormal);
+  if (status_label_->GetVisible()) {
+    const auto text_and_style = GetStatusTextAndStyle();
+    status_label_->SetText(text_and_style.first);
+    status_label_->SetTextStyle(text_and_style.second);
+    status_label_->GetViewAccessibility().OverrideIsIgnored(
+        status_label_->GetText().empty());
+  }
+
+  warning_label_->SetVisible(has_warning_label(mode_));
+  if (warning_label_->GetVisible()) {
+    const base::string16 filename = ElidedFilename();
+    size_t filename_offset;
+    warning_label_->SetText(model_->GetWarningText(filename, &filename_offset));
+    StyleFilename(*warning_label_, filename_offset, filename.length());
+    warning_label_->SizeToFit(GetLabelWidth(*warning_label_));
+  }
+
+  deep_scanning_label_->SetVisible(mode_ == Mode::kDeepScanning);
+  if (deep_scanning_label_->GetVisible()) {
+    const int id = (model_->download() &&
+                    safe_browsing::DeepScanningRequest::ShouldUploadBinary(
+                        model_->download()))
+                       ? IDS_PROMPT_DEEP_SCANNING_DOWNLOAD
+                       : IDS_PROMPT_DEEP_SCANNING_APP_DOWNLOAD;
+    const base::string16 filename = ElidedFilename();
+    size_t filename_offset;
+    deep_scanning_label_->SetText(
+        l10n_util::GetStringFUTF16(id, filename, &filename_offset));
+    StyleFilename(*deep_scanning_label_, filename_offset, filename.length());
+    deep_scanning_label_->SizeToFit(GetLabelWidth(*deep_scanning_label_));
+  }
 }
 
 void DownloadItemView::UpdateButtons() {
@@ -913,13 +893,6 @@ bool DownloadItemView::SubmitDownloadToFeedbackService(
   NOTREACHED();
   return false;
 #endif
-}
-
-int DownloadItemView::GetYForFilenameText() const {
-  int text_height = font_list_.GetHeight();
-  if (!status_label_->GetText().empty())
-    text_height += status_font_list_.GetHeight();
-  return (height() - text_height) / 2;
 }
 
 void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
@@ -1023,17 +996,6 @@ void DownloadItemView::UpdateColorsFromTheme() {
   if (!GetThemeProvider())
     return;
 
-  file_name_label_->SetTextStyle(GetEnabled() ? views::style::STYLE_PRIMARY
-                                              : views::style::STYLE_DISABLED);
-  if (model_->GetDangerType() ==
-      download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE) {
-    status_label_->SetTextStyle(STYLE_GREEN);
-  } else if (model_->GetDangerType() ==
-             download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS) {
-    status_label_->SetTextStyle(STYLE_RED);
-  } else {
-    status_label_->SetTextStyle(views::style::STYLE_PRIMARY);
-  }
   SkColor background_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF);
   file_name_label_->SetBackgroundColor(background_color);
@@ -1191,6 +1153,7 @@ int DownloadItemView::GetLabelWidth(const views::StyledLabel& label) const {
 }
 
 void DownloadItemView::Reenable() {
+  file_name_label_->SetTextStyle(views::style::STYLE_PRIMARY);
   file_name_label_->SetText(ElidedFilename());
   SetEnabled(true);  // Triggers a repaint.
 }
@@ -1222,7 +1185,7 @@ void DownloadItemView::StopDownloadProgress() {
 void DownloadItemView::UpdateAccessibleName() {
   base::string16 new_name;
   if (has_warning_label(mode_)) {
-    new_name = dangerous_download_label_->GetText();
+    new_name = warning_label_->GetText();
   } else {
     new_name = status_label_->GetText() + base::char16(' ') +
                model_->GetFileNameToReportUser().LossyDisplayName();
@@ -1369,30 +1332,29 @@ void DownloadItemView::ProgressTimerFired() {
     SchedulePaint();
 }
 
-base::string16 DownloadItemView::GetStatusText() const {
-  if (model_->GetDangerType() ==
-      download::DownloadDangerType::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE) {
-    return l10n_util::GetStringUTF16(IDS_PROMPT_DOWNLOAD_DEEP_SCANNED_SAFE);
-  } else if (model_->GetDangerType() ==
-             download::DownloadDangerType::
-                 DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS) {
-    return l10n_util::GetStringUTF16(
-        IDS_PROMPT_DOWNLOAD_DEEP_SCANNED_OPENED_DANGEROUS);
+std::pair<base::string16, int> DownloadItemView::GetStatusTextAndStyle() const {
+  using DangerType = download::DownloadDangerType;
+  const auto type = model_->GetDangerType();
+  if (type == DangerType::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE) {
+    return {l10n_util::GetStringUTF16(IDS_PROMPT_DOWNLOAD_DEEP_SCANNED_SAFE),
+            STYLE_GREEN};
   }
+  constexpr int kDangerous = IDS_PROMPT_DOWNLOAD_DEEP_SCANNED_OPENED_DANGEROUS;
+  if (type == DangerType::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS)
+    return {l10n_util::GetStringUTF16(kDangerous), STYLE_RED};
 
-  if (!model_->ShouldPromoteOrigin() ||
-      model_->GetOriginalURL().GetOrigin().is_empty()) {
-    // Use the default status text.
-    return model_->GetStatusText();
-  }
-
-#if !defined(OS_ANDROID)
-  return url_formatter::ElideUrl(model_->GetOriginalURL().GetOrigin(),
-                                 status_font_list_, kTextWidth);
+  const GURL url = model_->GetOriginalURL().GetOrigin();
+  const base::string16 text =
+      (!model_->ShouldPromoteOrigin() || url.is_empty())
+          ? model_->GetStatusText()
+#if defined(OS_ANDROID)
+          // url_formatter::ElideUrl() doesn't exist on Android.
+          : base::string16();
 #else
-  NOTREACHED();
-  return base::string16();
+          : url_formatter::ElideUrl(url, status_label_->font_list(),
+                                    kTextWidth);
 #endif
+  return {text, views::style::STYLE_PRIMARY};
 }
 
 base::string16 DownloadItemView::ElidedFilename() {

@@ -79,10 +79,39 @@ base::Optional<GetAssertionStatus> ConvertDeviceResponseCode(
   }
 }
 
+// ValidateResponseExtensions returns true iff |extensions| is valid as a
+// response to |request| and |options|.
+bool ValidateResponseExtensions(const CtapGetAssertionRequest& request,
+                                const CtapGetAssertionOptions& options,
+                                const cbor::Value& extensions) {
+  if (!extensions.is_map()) {
+    return false;
+  }
+
+  for (const auto& it : extensions.GetMap()) {
+    if (!it.first.is_string()) {
+      return false;
+    }
+    const std::string& ext_name = it.first.GetString();
+
+    if (ext_name == kExtensionHmacSecret) {
+      // This extension is checked by |GetAssertionTask| because it needs to be
+      // decrypted there.
+      continue;
+    } else {
+      // Authenticators may not return unknown extensions.
+      return false;
+    }
+  }
+
+  return true;
+}
+
 // ResponseValid returns whether |response| is permissible for the given
 // |authenticator| and |request|.
 bool ResponseValid(const FidoAuthenticator& authenticator,
                    const CtapGetAssertionRequest& request,
+                   const CtapGetAssertionOptions& options,
                    const AuthenticatorGetAssertionResponse& response,
                    const base::Optional<AndroidClientDataExtensionInput>&
                        android_client_data_ext_in) {
@@ -129,11 +158,10 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
     return false;
   }
 
-  // No extensions are supported when getting assertions therefore no extensions
-  // are permitted in the response.
   const base::Optional<cbor::Value>& extensions =
       response.auth_data().extensions();
-  if (extensions) {
+  if (extensions &&
+      !ValidateResponseExtensions(request, options, *extensions)) {
     FIDO_LOG(ERROR) << "assertion response invalid due to extensions block: "
                     << cbor::DiagnosticWriter::Write(*extensions);
     return false;
@@ -201,6 +229,7 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
     FidoDiscoveryFactory* fido_discovery_factory,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapGetAssertionRequest request,
+    CtapGetAssertionOptions options,
     bool allow_skipping_pin_touch,
     CompletionCallback completion_callback)
     : FidoRequestHandlerBase(
@@ -210,6 +239,7 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
               GetTransportsAllowedByRP(request))),
       completion_callback_(std::move(completion_callback)),
       request_(std::move(request)),
+      options_(std::move(options)),
       allow_skipping_pin_touch_(allow_skipping_pin_touch) {
   transport_availability_info().request_type =
       FidoRequestHandlerBase::RequestType::kGetAssertion;
@@ -314,7 +344,7 @@ void GetAssertionRequestHandler::DispatchRequest(
   FIDO_LOG(DEBUG) << "Asking for assertion from "
                   << authenticator->GetDisplayName();
   authenticator->GetAssertion(
-      std::move(request),
+      std::move(request), options_,
       base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
                      weak_factory_.GetWeakPtr(), authenticator,
                      base::ElapsedTimer()));
@@ -383,7 +413,7 @@ void GetAssertionRequestHandler::HandleResponse(
                base::nullopt, authenticator);
       return;
     }
-    if (!ResponseValid(*authenticator, request_, *response,
+    if (!ResponseValid(*authenticator, request_, options_, *response,
                        android_client_data_ext_)) {
       FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
                       << authenticator->GetDisplayName();
@@ -452,7 +482,7 @@ void GetAssertionRequestHandler::HandleResponse(
     return;
   }
 
-  if (!response || !ResponseValid(*authenticator, request_, *response,
+  if (!response || !ResponseValid(*authenticator, request_, options_, *response,
                                   android_client_data_ext_)) {
     FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
                     << authenticator->GetDisplayName();
@@ -508,7 +538,7 @@ void GetAssertionRequestHandler::HandleNextResponse(
     return;
   }
 
-  if (!ResponseValid(*authenticator, request_, *response,
+  if (!ResponseValid(*authenticator, request_, options_, *response,
                      android_client_data_ext_)) {
     FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
                     << authenticator->GetDisplayName();
@@ -754,7 +784,7 @@ void GetAssertionRequestHandler::DispatchRequestWithToken(
   ReportGetAssertionRequestTransport(authenticator_);
 
   authenticator_->GetAssertion(
-      std::move(request),
+      std::move(request), options_,
       base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
                      weak_factory_.GetWeakPtr(), authenticator_,
                      base::ElapsedTimer()));

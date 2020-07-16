@@ -99,11 +99,11 @@ std::string FormStructuresToString(
   for (const auto& kv : forms) {
     const auto* form = kv.second.get();
     for (const auto& field : *form) {
-      forms_string += field->Type().ToString();
-      forms_string += " | " + base::UTF16ToUTF8(field->name);
-      forms_string += " | " + base::UTF16ToUTF8(field->label);
-      forms_string += " | " + base::UTF16ToUTF8(field->value);
-      forms_string += " | " + field->section;
+      forms_string += base::JoinString(
+          {field->Type().ToString(), base::UTF16ToUTF8(field->name),
+           base::UTF16ToUTF8(field->label), base::UTF16ToUTF8(field->value),
+           field->section},
+          base::StringPiece(" | "));
       forms_string += "\n";
     }
   }

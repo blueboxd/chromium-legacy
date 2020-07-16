@@ -322,7 +322,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '82961129b0543b27edd3fc185be7bc47e41b2a10',
+  'dawn_revision': '1b9b53a395769e15ca7b79a5b964f1b254fc3f84',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -899,7 +899,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'ed9e5acd61d7de5301e51fc0744b4f6aaf4aed0f',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e9e8c01f3c5a92657c57adc134d074454f29933d',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -947,10 +947,10 @@ deps = {
     Var('chromium_git') + '/external/github.com/google/emoji-segmenter.git' + '@' + Var('emoji_segmenter_revision'),
 
   'src/third_party/libgav1/src':
-    Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'ba8dd2919fcaf65646858a6d7fd5e75ed4946cb1',
+    Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'e46493b9148e0d1e63f55b5890bff503822616e5',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'b481744aea1ecf52ee4591afaa0f5e270b9d1636',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '4f72970ed3e0508626e6692857329c173b66690b',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1252,7 +1252,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'ddc86ef759d8e5f1c46324aab820427a4a9e444d',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c63cdce64c9e4dc5fb9fa4f820b39bac1de8553b',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1552,7 +1552,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ed9549e829b50f49a5112a16b257406174110d2c',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@21731f72a5879d1c7974267e2ae098ee550d4420',
     'condition': 'checkout_src_internal',
   },
 
@@ -1571,7 +1571,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'kja0EkIEJxvfaxk2OLA8JxNbZ4dGj9MBSTSAZFoPEkAC',
+        'version': '2Ci5mbO7xjTsQepp4zPBnSBFD21jNiVQSncC7uK12TwC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

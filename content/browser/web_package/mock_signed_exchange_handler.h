@@ -28,7 +28,7 @@ class MockSignedExchangeHandlerParams {
       const GURL& inner_url,
       const std::string& mime_type,
       std::vector<std::pair<std::string, std::string>> response_headers,
-      base::Optional<net::SHA256HashValue> header_integrity,
+      const net::SHA256HashValue& header_integrity,
       const base::Time& signature_expire_time = base::Time());
   MockSignedExchangeHandlerParams(const MockSignedExchangeHandlerParams& other);
   ~MockSignedExchangeHandlerParams();
@@ -38,7 +38,7 @@ class MockSignedExchangeHandlerParams {
   const GURL inner_url;
   const std::string mime_type;
   const std::vector<std::pair<std::string, std::string>> response_headers;
-  const base::Optional<net::SHA256HashValue> header_integrity;
+  const net::SHA256HashValue header_integrity;
   const base::Time signature_expire_time;
 };
 
@@ -48,12 +48,14 @@ class MockSignedExchangeHandler final : public SignedExchangeHandler {
                             std::unique_ptr<net::SourceStream> body,
                             ExchangeHeadersCallback headers_callback);
   ~MockSignedExchangeHandler() override;
-  base::Optional<net::SHA256HashValue> ComputeHeaderIntegrity() const override;
-  base::Time GetSignatureExpireTime() const override;
+  bool GetSignedExchangeInfoForPrefetchCache(
+      PrefetchedSignedExchangeCacheEntry& entry) const override;
 
  private:
-  const base::Optional<net::SHA256HashValue> header_integrity_;
+  const net::SHA256HashValue header_integrity_;
   const base::Time signature_expire_time_;
+  const GURL cert_url_;
+  const net::IPAddress cert_server_ip_address_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSignedExchangeHandler);
 };

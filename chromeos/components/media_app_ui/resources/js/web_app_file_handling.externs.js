@@ -103,13 +103,6 @@ let FileSystemCreateWriterOptions;
 /** @interface */
 class FileSystemFileHandle extends FileSystemHandle {
   /**
-   * @deprecated TODO(b/151564533): Remove when m82 is stable.
-   * @param {FileSystemCreateWriterOptions=} options
-   * @return {!Promise<!FileSystemWriter>}
-   */
-  createWriter(options) {}
-
-  /**
    * @param {FileSystemCreateWriterOptions=} options
    * @return {!Promise<!FileSystemWritableFileStream>}
    */

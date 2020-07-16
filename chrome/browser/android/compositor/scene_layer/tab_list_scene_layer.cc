@@ -68,22 +68,7 @@ void TabListSceneLayer::UpdateLayer(
     jfloat viewport_x,
     jfloat viewport_y,
     jfloat viewport_width,
-    jfloat viewport_height,
-    const JavaParamRef<jobject>& jlayer_title_cache,
-    const JavaParamRef<jobject>& jtab_content_manager,
-    const JavaParamRef<jobject>& jresource_manager) {
-  // TODO(changwan): move these to constructor if possible
-  if (!resource_manager_) {
-    resource_manager_ =
-        ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
-  }
-  if (!layer_title_cache_)
-    layer_title_cache_ = LayerTitleCache::FromJavaObject(jlayer_title_cache);
-  if (!tab_content_manager_) {
-    tab_content_manager_ =
-        TabContentManager::FromJavaObject(jtab_content_manager);
-  }
-
+    jfloat viewport_height) {
   background_color_ = background_color;
   own_tree_->SetPosition(gfx::PointF(viewport_x, viewport_y));
   own_tree_->SetBounds(gfx::Size(viewport_width, viewport_height));
@@ -145,6 +130,13 @@ void TabListSceneLayer::PutTabLayer(
     jfloat content_offset,
     jfloat side_border_scale,
     jboolean inset_border) {
+  DCHECK(tab_content_manager_)
+      << "TabContentManager must be set before updating the TabLayer";
+  DCHECK(layer_title_cache_)
+      << "LayerTitleCache must be set before updating the TabLayer";
+  DCHECK(resource_manager_)
+      << "ResourceManager must be set before updating the TabLayer";
+
   scoped_refptr<TabLayer> layer;
   auto iter = tab_map_.find(id);
   if (iter != tab_map_.end()) {
@@ -220,6 +212,25 @@ void TabListSceneLayer::PutBackgroundLayer(
   background_layer_->SetBounds(size);
   background_layer_->SetOpacity(alpha);
   background_layer_->SetPosition(gfx::PointF(0, top_offset));
+}
+
+void TabListSceneLayer::SetDependencies(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj,
+    const base::android::JavaParamRef<jobject>& jtab_content_manager,
+    const base::android::JavaParamRef<jobject>& jlayer_title_cache,
+    const base::android::JavaParamRef<jobject>& jresource_manager) {
+  if (!tab_content_manager_) {
+    tab_content_manager_ =
+        TabContentManager::FromJavaObject(jtab_content_manager);
+  }
+  if (!layer_title_cache_) {
+    layer_title_cache_ = LayerTitleCache::FromJavaObject(jlayer_title_cache);
+  }
+  if (!resource_manager_) {
+    resource_manager_ =
+        ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
+  }
 }
 
 void TabListSceneLayer::OnDetach() {

@@ -270,11 +270,6 @@ void BrowserAppMenuButton::UpdateIcon() {
   }
 }
 
-void BrowserAppMenuButton::OnThemeChanged() {
-  AppMenuButton::OnThemeChanged();
-  UpdateIcon();
-}
-
 const char* BrowserAppMenuButton::GetClassName() const {
   return "BrowserAppMenuButton";
 }
@@ -368,7 +363,6 @@ base::string16 BrowserAppMenuButton::GetTooltipText(const gfx::Point& p) const {
 }
 
 void BrowserAppMenuButton::OnTouchUiChanged() {
-  UpdateIcon();
   UpdateColorsAndInsets();
   PreferredSizeChanged();
 }

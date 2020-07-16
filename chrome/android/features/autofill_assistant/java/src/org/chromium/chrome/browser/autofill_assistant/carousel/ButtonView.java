@@ -111,14 +111,6 @@ public class ButtonView extends LinearLayout {
         mPrimaryText.setLayoutParams(layoutParams);
     }
 
-    @Override
-    protected void drawableStateChanged() {
-        super.drawableStateChanged();
-        if (mRippleBackgroundHelper != null) {
-            mRippleBackgroundHelper.onDrawableStateChanged();
-        }
-    }
-
     /**
      * Sets the icon at the start of the chip view.
      * @param icon The resource id pointing to the icon.

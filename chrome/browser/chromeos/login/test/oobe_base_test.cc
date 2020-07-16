@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -38,6 +39,46 @@
 #include "net/dns/mock_host_resolver.h"
 
 namespace chromeos {
+
+namespace {
+
+class GaiaPageEventWaiter : public test::TestConditionWaiter {
+ public:
+  GaiaPageEventWaiter(const std::string& authenticator_id,
+                      const std::string& event) {
+    std::string js =
+        R"((function() {
+              var authenticator = $AuthenticatorId;
+              var f = function() {
+                authenticator.removeEventListener('$Event', f);
+                window.domAutomationController.send('Done');
+              };
+              authenticator.addEventListener('$Event', f);
+            })();)";
+    base::ReplaceSubstringsAfterOffset(&js, 0, "$AuthenticatorId",
+                                       authenticator_id);
+    base::ReplaceSubstringsAfterOffset(&js, 0, "$Event", event);
+    test::OobeJS().Evaluate(js);
+  }
+
+  ~GaiaPageEventWaiter() override { EXPECT_TRUE(wait_called_); }
+
+  // test::TestConditionWaiter:
+  void Wait() override {
+    ASSERT_FALSE(wait_called_) << "Wait should be called once";
+    wait_called_ = true;
+    std::string message;
+    do {
+      ASSERT_TRUE(message_queue.WaitForMessage(&message));
+    } while (message != "\"Done\"");
+  }
+
+ private:
+  content::DOMMessageQueue message_queue;
+  bool wait_called_ = false;
+};
+
+}  // namespace
 
 OobeBaseTest::OobeBaseTest() {
   set_exit_when_last_browser_closes(false);
@@ -141,35 +182,16 @@ void OobeBaseTest::WaitForGaiaPageLoadAndPropertyUpdate() {
 }
 
 void OobeBaseTest::WaitForGaiaPageReload() {
-  WaitForGaiaPageEvent("ready");
+  CreateGaiaPageEventWaiter("ready")->Wait();
 }
 
 void OobeBaseTest::WaitForGaiaPageBackButtonUpdate() {
-  WaitForGaiaPageEvent("backButton");
+  CreateGaiaPageEventWaiter("backButton")->Wait();
 }
 
-void OobeBaseTest::WaitForGaiaPageEvent(const std::string& event) {
-  // Starts listening to message before executing the JS code that generates
-  // the message below.
-  content::DOMMessageQueue message_queue;
-  std::string js =
-      R"((function() {
-            var authenticator = $AuthenticatorId;
-            var f = function() {
-              authenticator.removeEventListener('$Event', f);
-              window.domAutomationController.send('Done');
-            };
-            authenticator.addEventListener('$Event', f);
-          })();)";
-  base::ReplaceSubstringsAfterOffset(&js, 0, "$AuthenticatorId",
-                                     authenticator_id_);
-  base::ReplaceSubstringsAfterOffset(&js, 0, "$Event", event);
-  test::OobeJS().Evaluate(js);
-
-  std::string message;
-  do {
-    ASSERT_TRUE(message_queue.WaitForMessage(&message));
-  } while (message != "\"Done\"");
+std::unique_ptr<test::TestConditionWaiter>
+OobeBaseTest::CreateGaiaPageEventWaiter(const std::string& event) {
+  return std::make_unique<GaiaPageEventWaiter>(authenticator_id_, event);
 }
 
 void OobeBaseTest::WaitForSigninScreen() {

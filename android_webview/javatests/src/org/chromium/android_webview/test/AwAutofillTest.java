@@ -606,7 +606,6 @@ public class AwAutofillTest {
             mTest.loadUrlSync(url);
             mTest.executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
             mTest.dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
-            // Note that we currently call ENTER/EXIT one more time.
             mCnt += mTest.waitForCallbackAndVerifyTypes(mCnt,
                     new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_SESSION_STARTED,
                             AUTOFILL_VALUE_CHANGED});
@@ -647,11 +646,9 @@ public class AwAutofillTest {
             // Start a new session by moving focus to another form.
             mTest.executeJavaScriptAndWaitForResult("document.getElementById('text2').select();");
             mTest.dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
-            // Note that we currently call ENTER/EXIT one more time.
             mCnt += mTest.waitForCallbackAndVerifyTypes(mCnt,
                     new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED,
-                            AUTOFILL_SESSION_STARTED, AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED,
-                            AUTOFILL_VALUE_CHANGED});
+                            AUTOFILL_SESSION_STARTED, AUTOFILL_VALUE_CHANGED});
         }
 
         public void simulateUserChangeField() throws Throwable {
@@ -1130,8 +1127,7 @@ public class AwAutofillTest {
         dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
         waitForCallbackAndVerifyTypes(cnt,
                 new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED,
-                        AUTOFILL_SESSION_STARTED, AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED,
-                        AUTOFILL_VALUE_CHANGED});
+                        AUTOFILL_SESSION_STARTED, AUTOFILL_VALUE_CHANGED});
     }
 
     /**

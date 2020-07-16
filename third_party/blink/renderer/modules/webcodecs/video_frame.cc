@@ -278,7 +278,8 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
       // Use coded_size() to comply with media::ConvertFromVideoFrameYUV.
       dest_holder.mailbox = shared_image_interface->CreateSharedImage(
           viz::ResourceFormat::RGBA_8888, frame_->coded_size(),
-          gfx::ColorSpace(), usage);
+          gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+          usage, gpu::kNullSurfaceHandle);
       dest_holder.sync_token = shared_image_interface->GenUnverifiedSyncToken();
       dest_holder.texture_target = GL_TEXTURE_2D;
 

@@ -4947,14 +4947,9 @@ void WebContentsImpl::OnGoToEntryAtOffset(RenderFrameHostImpl* source,
   // TODO(arthursonzogni): See if this should check for ongoing navigations in
   // the frame(s) affected by the session history navigation, rather than just
   // the main frame.
-  if (!has_user_gesture) {
-    NavigationRequest* ongoing_navigation_request =
-        frame_tree_.root()->navigation_request();
-    if (ongoing_navigation_request &&
-        ongoing_navigation_request->browser_initiated()) {
-      return;
-    }
-  }
+  if (Navigator::ShouldIgnoreIncomingRendererRequest(
+          frame_tree_.root()->navigation_request(), has_user_gesture))
+    return;
 
   // All frames are allowed to navigate the global history.
   if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {

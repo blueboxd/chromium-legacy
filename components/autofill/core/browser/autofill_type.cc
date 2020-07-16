@@ -460,6 +460,7 @@ std::string AutofillType::ToString() const {
 
   switch (html_type_) {
     case HTML_TYPE_UNSPECIFIED:
+    case HTML_TYPE_UNRECOGNIZED:
       NOTREACHED();
       break;
     case HTML_TYPE_NAME:
@@ -548,8 +549,6 @@ std::string AutofillType::ToString() const {
       return "HTML_TRANSACTION_CURRENCY";
     case HTML_TYPE_UPI_VPA:
       return "HTML_TYPE_UPI_VPA";
-    case HTML_TYPE_UNRECOGNIZED:
-      return "HTML_TYPE_UNRECOGNIZED";
   }
 
   NOTREACHED();

@@ -7,6 +7,7 @@
 #include "base/containers/flat_map.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "v8/include/v8.h"
@@ -87,9 +88,9 @@ class FrameAssociatedMeasurementDelegate : public v8::MeasureMemoryDelegate {
 
         if (world_id != content::ISOLATED_WORLD_ID_GLOBAL) {
           isolated_world_usage->stable_id =
-              frame->GetIsolatedWorldStableId(context).Utf8();
+              blink::GetIsolatedWorldStableId(context).Utf8();
           isolated_world_usage->human_readable_name =
-              frame->GetIsolatedWorldHumanReadableName(context).Utf8();
+              blink::GetIsolatedWorldHumanReadableName(context).Utf8();
         }
 
         DCHECK(

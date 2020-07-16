@@ -127,8 +127,8 @@
   <message name="IDS_ERRORPAGES_HEADING_NOT_FOUND" desc="Heading in the error page when the server returns a 404 or 410.">
     This <ph name="HOST_NAME">&lt;span jscontent="hostName"&gt;&lt;/span&gt;<ex>www.whatever.com</ex></ph> page can’t be found
   </message>
-  <message name="IDS_ERRORPAGES_HEADING_FILE_NOT_FOUND" desc="Heading in the error page when the local file was not found.">
-    Your file was not found
+  <message name="IDS_ERRORPAGES_HEADING_FILE_NOT_FOUND" desc="Heading in the error page when the local file could not be accessed.">
+    Your file couldn’t be accessed
   </message>
   <message name="IDS_ERRORPAGES_HEADING_BLOCKED" desc="Heading of the error page when a request is blocked by the administrator policy, extension or the browser itself.">
     <ph name="HOST_NAME">&lt;span jscontent="hostName"&gt;&lt;/span&gt;<ex>www.example.com</ex></ph> is blocked
@@ -190,8 +190,8 @@
   <message name="IDS_ERRORPAGES_SUMMARY_NOT_FOUND" desc="Summary in the error page when the server returns a 404.">
     No webpage was found for the web address: <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>
   </message>
-  <message name="IDS_ERRORPAGES_SUMMARY_FILE_NOT_FOUND" desc="Summary in the error page when a local file is not found.">
-    It may have been moved or deleted.
+  <message name="IDS_ERRORPAGES_SUMMARY_FILE_NOT_FOUND" desc="Summary in the error page when a local file could not be accessed.">
+    It may have been moved, edited, or deleted.
   </message>
   <message name="IDS_ERRORPAGES_SUMMARY_TOO_MANY_REDIRECTS" desc="Summary in the error page when there are too many URL redirects.">
     <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph> redirected you too many times.

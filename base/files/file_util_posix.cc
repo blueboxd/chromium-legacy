@@ -531,7 +531,17 @@ bool ReadSymbolicLink(const FilePath& symlink_path, FilePath* target_path) {
   ssize_t count =
       ::readlink(symlink_path.value().c_str(), buf, base::size(buf));
 
-  if (count <= 0) {
+#if defined(OS_ANDROID) && defined(__LP64__)
+  // A few 64-bit Android L/M devices return INT_MAX instead of -1 here for
+  // errors; this is related to bionic's (incorrect) definition of ssize_t as
+  // being long int instead of int. Cast it so the compiler generates the
+  // comparison we want here. https://crbug.com/1101940
+  bool error = static_cast<int32_t>(count) <= 0;
+#else
+  bool error = count <= 0;
+#endif
+
+  if (error) {
     target_path->clear();
     return false;
   }

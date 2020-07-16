@@ -56,11 +56,6 @@ sed --in-place --regexp-extended \
   -e 's~^import "ml~import "chromeos/services/machine_learning/public~g' \
   *.mojom
 
-echo "Applying Mojo syntax changes ..."
-sed --in-place --regexp-extended \
-  -e 's/(GraphExecutor|Model|TextClassifier|HandwritingRecognizer)& request/pending_receiver<\1> receiver/g' \
-  *.mojom
-
 echo "OK. Now:"
 echo "1. Examine 'git diff' to double-check the results of this tool."
 echo "2. After submitting, also update any google3 files generated from these "

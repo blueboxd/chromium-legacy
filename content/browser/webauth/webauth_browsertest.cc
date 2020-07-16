@@ -514,7 +514,8 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
         std::vector<device::PublicKeyCredentialDescriptor>(),
         device::AuthenticatorSelectionCriteria(),
         device::AttestationConveyancePreference::kNone, nullptr,
-        false /* no hmac_secret */, blink::mojom::ProtectionPolicy::UNSPECIFIED,
+        false /* no hmac_secret */, false /* no PRF extension */,
+        blink::mojom::ProtectionPolicy::UNSPECIFIED,
         false /* protection policy not enforced */,
         base::nullopt /* no appid_exclude */);
 
@@ -537,7 +538,8 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
     auto mojo_options = blink::mojom::PublicKeyCredentialRequestOptions::New(
         kTestChallenge, base::TimeDelta::FromSeconds(30), "acme.com",
         std::move(credentials), device::UserVerificationRequirement::kPreferred,
-        base::nullopt, std::vector<device::CableDiscoveryData>());
+        base::nullopt, std::vector<device::CableDiscoveryData>(), /*prf=*/false,
+        /*prf_inputs=*/std::vector<blink::mojom::PRFValuesPtr>());
     return mojo_options;
   }
 

@@ -221,6 +221,27 @@ class UvTokenRequest : public TokenRequest {
   base::Optional<std::string> rp_id_;
 };
 
+class HMACSecretRequest {
+ public:
+  HMACSecretRequest(const KeyAgreementResponse& peer_key,
+                    base::span<const uint8_t, 32> salt1,
+                    const base::Optional<std::array<uint8_t, 32>>& salt2);
+  HMACSecretRequest(const HMACSecretRequest&);
+  ~HMACSecretRequest();
+  HMACSecretRequest& operator=(const HMACSecretRequest&);
+
+  base::Optional<std::vector<uint8_t>> Decrypt(
+      base::span<const uint8_t> ciphertext);
+
+ private:
+  std::array<uint8_t, 32> shared_key_ = {};
+
+ public:
+  const std::array<uint8_t, kP256X962Length> public_key_x962;
+  const std::vector<uint8_t> encrypted_salts;
+  const std::vector<uint8_t> salts_auth;
+};
+
 // TokenResponse represents the response to a pin-token request. In order to
 // decrypt a response, the shared key from the request is needed. Once a pin-
 // token has been decrypted, it can be used to calculate the pinAuth parameters

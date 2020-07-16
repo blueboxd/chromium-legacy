@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
@@ -57,7 +58,8 @@ class OobeBaseTest : public MixinBasedInProcessBrowserTest {
   void WaitForGaiaPageLoadAndPropertyUpdate();
   void WaitForGaiaPageReload();
   void WaitForGaiaPageBackButtonUpdate();
-  void WaitForGaiaPageEvent(const std::string& event);
+  WARN_UNUSED_RESULT std::unique_ptr<test::TestConditionWaiter>
+  CreateGaiaPageEventWaiter(const std::string& event);
   void WaitForSigninScreen();
   void CheckJsExceptionErrors(int number);
   test::JSChecker SigninFrameJS();

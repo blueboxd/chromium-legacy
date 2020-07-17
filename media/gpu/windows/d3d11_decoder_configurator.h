@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "media/base/status.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_picture_buffer.h"
 #include "media/gpu/windows/d3d11_video_processor_proxy.h"
@@ -40,9 +41,9 @@ class MEDIA_GPU_EXPORT D3D11DecoderConfigurator {
   bool SupportsDevice(ComD3D11VideoDevice video_device);
 
   // Create the decoder's output texture.
-  ComD3D11Texture2D CreateOutputTexture(ComD3D11Device device,
-                                        gfx::Size size,
-                                        uint32_t array_size);
+  ErrorOr<ComD3D11Texture2D> CreateOutputTexture(ComD3D11Device device,
+                                                 gfx::Size size,
+                                                 uint32_t array_size);
 
   const D3D11_VIDEO_DECODER_DESC* DecoderDescriptor() const {
     return &decoder_desc_;

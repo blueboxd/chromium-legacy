@@ -35,8 +35,12 @@ export const State = {
   PLAYING_RESULT_VIDEO: 'playing-result-video',
   PREVIEW_VERTICAL_DOCK: 'preview-vertical-dock',
   PRINT_PERFORMANCE_LOGS: 'print-performance-logs',
+  // Starts/Ends from start()/at stop() of MediaRecorder.
   RECORDING: 'recording',
+  // Binds with paused state of MediaRecorder.
   RECORDING_PAUSED: 'recording-paused',
+  // Controls appearance of paused/resumed UI.
+  RECORDING_UI_PAUSED: 'recording-ui-paused',
   REVIEW_PHOTO_RESULT: 'review-photo-result',
   REVIEW_RESULT: 'review-result',
   REVIEW_VIDEO_RESULT: 'review-video-result',

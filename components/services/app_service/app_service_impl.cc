@@ -43,7 +43,8 @@ enum class PreferredAppsUpdateAction {
   kAdd = 0,
   kDeleteForFilter = 1,
   kDeleteForAppId = 2,
-  kMaxValue = kDeleteForAppId,
+  kUpgraded = 3,
+  kMaxValue = kUpgraded,
 };
 
 void Connect(apps::mojom::Publisher* publisher,
@@ -99,16 +100,20 @@ namespace apps {
 
 AppServiceImpl::AppServiceImpl(PrefService* profile_prefs,
                                const base::FilePath& profile_dir,
-                               base::OnceClosure read_completed_for_testing)
+                               bool is_share_intents_supported,
+                               base::OnceClosure read_completed_for_testing,
+                               base::OnceClosure write_completed_for_testing)
     : pref_service_(profile_prefs),
       profile_dir_(profile_dir),
+      is_share_intents_supported_(is_share_intents_supported),
       should_write_preferred_apps_to_file_(false),
       writing_preferred_apps_(false),
       task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock(),
            base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
-      read_completed_for_testing_(std::move(read_completed_for_testing)) {
+      read_completed_for_testing_(std::move(read_completed_for_testing)),
+      write_completed_for_testing_(std::move(write_completed_for_testing)) {
   DCHECK(pref_service_);
   InitializePreferredApps();
 }
@@ -388,11 +393,6 @@ PreferredAppsList& AppServiceImpl::GetPreferredAppsForTesting() {
   return preferred_apps_;
 }
 
-void AppServiceImpl::SetWriteCompletedCallbackForTesting(
-    base::OnceClosure testing_callback) {
-  write_completed_for_testing_ = std::move(testing_callback);
-}
-
 void AppServiceImpl::OnPublisherDisconnected(apps::mojom::AppType app_type) {
   publishers_.erase(app_type);
 }
@@ -462,6 +462,7 @@ void AppServiceImpl::ReadFromJSON(const base::FilePath& profile_dir) {
 
 void AppServiceImpl::ReadCompleted(std::string preferred_apps_string) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  bool preferred_apps_upgraded = false;
   if (preferred_apps_string.empty()) {
     preferred_apps_.Init();
   } else {
@@ -479,9 +480,17 @@ void AppServiceImpl::ReadCompleted(std::string preferred_apps_string) {
     } else {
       auto preferred_apps =
           apps::ParseValueToPreferredApps(*preferred_apps_value);
+      if (is_share_intents_supported_) {
+        preferred_apps_upgraded = UpgradePreferredApps(preferred_apps);
+      }
       preferred_apps_.Init(preferred_apps);
     }
   }
+  if (preferred_apps_upgraded) {
+    LogPreferredAppUpdateAction(PreferredAppsUpdateAction::kUpgraded);
+    WriteToJSON(profile_dir_, preferred_apps_);
+  }
+
   for (auto& subscriber : subscribers_) {
     subscriber->InitializePreferredApps(preferred_apps_.GetValue());
   }

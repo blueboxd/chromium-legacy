@@ -434,7 +434,7 @@ body.taking.video #recordvideo .red-dot {
   width: var(--size);
 }
 
-body:not(.recording-paused).video #pause-recordvideo .red-dot {
+body:not(.recording-ui-paused).video #pause-recordvideo .red-dot {
   --dot-size: 0px;
 }
 
@@ -469,15 +469,15 @@ body.taking.video #recordvideo .white-square {
   width: var(--bar-size);
 }
 
-body.video.recording.recording-paused #recordvideo {
+body.video.recording.recording-ui-paused #recordvideo {
   --size: 44px;
 }
 
-body.video.recording-paused #pause-recordvideo {
+body.video.recording-ui-paused #pause-recordvideo {
   --size: 60px;
 }
 
-body.video.recording-paused #pause-recordvideo .two-bars {
+body.video.recording-ui-paused #pause-recordvideo .two-bars {
   --bar-size: 0px;
 }
 
@@ -993,7 +993,7 @@ body:not(.grid):not(.view-grid-settings) #preview-grid-vertical::before {
   pointer-events: none;
 }
 
-body.recording-paused #record-time {
+body.recording-ui-paused #record-time {
   background-color: black;
 }
 
@@ -1010,8 +1010,8 @@ body.recording-paused #record-time {
   width: 6px;
 }
 
-body.recording-paused #record-time .icon,
-body:not(.recording-paused) #record-time [i18n-content=record_video_paused_msg] {
+body.recording-ui-paused #record-time .icon,
+body:not(.recording-ui-paused) #record-time [i18n-content=record_video_paused_msg] {
   display: none;
 }
 

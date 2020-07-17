@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/dactyloscoper.h"
 
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_token_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -43,19 +44,34 @@ void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
       .Record(document->UkmRecorder());
 }
 
+// The anonymous namespace ensures this StringToBytes has internal linkage,
+// in case someone defines another blink::StringToBytes elsewhere.
+namespace {
+
+base::span<const uint8_t> StringToBytes(String str) {
+  return str.Is8Bit() ? str.Span8() : as_bytes(str.Span16());
+}
+
+}  // namespace
+
 void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
                                         WebFeature feature,
                                         String str) {
-  auto* window = DynamicTo<LocalDOMWindow>(context);
-  if (!window)
-    return;
   if (str.IsEmpty())
     return;
-  Document* document = window->document();
-  IdentifiabilityMetricBuilder(document->UkmSourceID())
-      .SetWebfeature(feature,
-                     str.Is8Bit() ? str.Span8() : as_bytes(str.Span16()))
-      .Record(document->UkmRecorder());
+  Dactyloscoper::RecordDirectSurface(context, feature, StringToBytes(str));
+}
+
+void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
+                                        WebFeature feature,
+                                        Vector<String> strs) {
+  if (strs.IsEmpty())
+    return;
+  IdentifiableTokenBuilder builder;
+  for (const auto& str : strs) {
+    builder.AddAtomic(StringToBytes(str));
+  }
+  Dactyloscoper::RecordDirectSurface(context, feature, builder.GetToken());
 }
 
 }  // namespace blink

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/dedicated_worker_id.h"
 #include "content/public/browser/shared_worker_id.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -23,7 +24,6 @@
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
-#include "third_party/blink/public/mojom/tokens/worker_tokens.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 
 namespace blink {
@@ -68,7 +68,7 @@ class CONTENT_EXPORT WorkerScriptFetchInitiator {
   // thread. |callback| will be called with the result on the UI thread.
   static void Start(
       int worker_process_id,
-      const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+      DedicatedWorkerId dedicated_worker_id,
       SharedWorkerId shared_worker_id,
       const GURL& initial_request_url,
       RenderFrameHost* creator_render_frame_host,
@@ -113,7 +113,7 @@ class CONTENT_EXPORT WorkerScriptFetchInitiator {
 
   static void CreateScriptLoader(
       int worker_process_id,
-      const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+      DedicatedWorkerId dedicated_worker_id,
       SharedWorkerId shared_worker_id,
       const GURL& initial_request_url,
       RenderFrameHost* creator_render_frame_host,

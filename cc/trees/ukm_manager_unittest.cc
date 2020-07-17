@@ -4,6 +4,7 @@
 
 #include "cc/trees/ukm_manager.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/time/time.h"
@@ -65,7 +66,7 @@ const char kVizBreakdownSwapStartToSwapEnd[] =
 const char kVizBreakdownSwapEndToPresentationCompositorFrame[] =
     "SubmitCompositorFrameToPresentationCompositorFrame."
     "SwapEndToPresentationCompositorFrame";
-const char kTotalLatencyToSwapEnd[] = "TotalLatencyToSwapEnd";
+const char kTotalLatencyToSwapBegin[] = "TotalLatencyToSwapBegin";
 const char kTotalLatency[] = "TotalLatency";
 
 // Names of frame sequence types use in compositor latency UKM metrics (see
@@ -383,7 +384,7 @@ TEST_F(UkmManagerTest, EventLatency) {
   viz_breakdown.presentation_feedback.timestamp =
       (now += base::TimeDelta::FromMicroseconds(5));
 
-  const base::TimeTicks swap_end_time = viz_breakdown.swap_timings.swap_end;
+  const base::TimeTicks swap_start_time = viz_breakdown.swap_timings.swap_start;
   const base::TimeTicks present_time =
       viz_breakdown.presentation_feedback.timestamp;
 
@@ -449,8 +450,8 @@ TEST_F(UkmManagerTest, EventLatency) {
         entry, kSubmitCompositorFrameToPresentationCompositorFrame,
         (present_time - submit_time).InMicroseconds());
     test_ukm_recorder_->ExpectEntryMetric(
-        entry, kTotalLatencyToSwapEnd,
-        (swap_end_time - event_time).InMicroseconds());
+        entry, kTotalLatencyToSwapBegin,
+        (swap_start_time - event_time).InMicroseconds());
     test_ukm_recorder_->ExpectEntryMetric(
         entry, kTotalLatency, (present_time - event_time).InMicroseconds());
   }

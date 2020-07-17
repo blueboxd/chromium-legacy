@@ -5,6 +5,8 @@
 #ifndef CC_INPUT_SCROLLBAR_CONTROLLER_H_
 #define CC_INPUT_SCROLLBAR_CONTROLLER_H_
 
+#include <memory>
+
 #include "cc/cc_export.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/scrollbar.h"

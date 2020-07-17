@@ -27,7 +27,7 @@ class MockVideoProcessorProxy : public VideoProcessorProxy {
  public:
   MockVideoProcessorProxy() : VideoProcessorProxy(nullptr, nullptr) {}
 
-  bool Init(uint32_t width, uint32_t height) override {
+  Status Init(uint32_t width, uint32_t height) override {
     return MockInit(width, height);
   }
 
@@ -70,7 +70,7 @@ class MockVideoProcessorProxy : public VideoProcessorProxy {
     return MockVideoProcessorBlt();
   }
 
-  MOCK_METHOD2(MockInit, bool(uint32_t, uint32_t));
+  MOCK_METHOD2(MockInit, Status(uint32_t, uint32_t));
   MOCK_METHOD0(MockCreateVideoProcessorOutputView, HRESULT());
   MOCK_METHOD0(MockCreateVideoProcessorInputView, HRESULT());
   MOCK_METHOD0(MockVideoProcessorBlt, HRESULT());
@@ -86,25 +86,25 @@ class MockTexture2DWrapper : public Texture2DWrapper {
  public:
   MockTexture2DWrapper() {}
 
-  bool ProcessTexture(ComD3D11Texture2D texture,
-                      size_t array_slice,
-                      const gfx::ColorSpace& input_color_space,
-                      MailboxHolderArray* mailbox_dest,
-                      gfx::ColorSpace* output_color_space) override {
+  Status ProcessTexture(ComD3D11Texture2D texture,
+                        size_t array_slice,
+                        const gfx::ColorSpace& input_color_space,
+                        MailboxHolderArray* mailbox_dest,
+                        gfx::ColorSpace* output_color_space) override {
     // Pretend we created an arbitrary color space, so that we're sure that it
     // is returned from the copying wrapper.
     *output_color_space = gfx::ColorSpace::CreateHDR10();
     return MockProcessTexture();
   }
 
-  bool Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-            GetCommandBufferHelperCB get_helper_cb) override {
+  Status Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+              GetCommandBufferHelperCB get_helper_cb) override {
     gpu_task_runner_ = std::move(gpu_task_runner);
     return MockInit();
   }
 
-  MOCK_METHOD0(MockInit, bool());
-  MOCK_METHOD0(MockProcessTexture, bool());
+  MOCK_METHOD0(MockInit, Status());
+  MOCK_METHOD0(MockProcessTexture, Status());
   MOCK_METHOD1(SetStreamHDRMetadata, void(const HDRMetadata& stream_metadata));
   MOCK_METHOD1(SetDisplayHDRMetadata,
                void(const DXGI_HDR_METADATA_HDR10& dxgi_display_metadata));
@@ -138,7 +138,9 @@ class D3D11CopyingTexture2DWrapperTest
   std::unique_ptr<MockVideoProcessorProxy> ExpectProcessorProxy() {
     auto result = std::make_unique<MockVideoProcessorProxy>();
     ON_CALL(*result.get(), MockInit(_, _))
-        .WillByDefault(Return(GetProcessorProxyInit()));
+        .WillByDefault(Return(GetProcessorProxyInit()
+                                  ? StatusCode::kOk
+                                  : StatusCode::kCodeOnlyForTesting));
 
     ON_CALL(*result.get(), MockCreateVideoProcessorOutputView())
         .WillByDefault(Return(GetCreateVideoProcessorOutputView()));
@@ -156,10 +158,14 @@ class D3D11CopyingTexture2DWrapperTest
     auto result = std::make_unique<MockTexture2DWrapper>();
 
     ON_CALL(*result.get(), MockInit())
-        .WillByDefault(Return(GetTextureWrapperInit()));
+        .WillByDefault(Return(GetTextureWrapperInit()
+                                  ? StatusCode::kOk
+                                  : StatusCode::kCodeOnlyForTesting));
 
     ON_CALL(*result.get(), MockProcessTexture())
-        .WillByDefault(Return(GetProcessTexture()));
+        .WillByDefault(Return(GetProcessTexture()
+                                  ? StatusCode::kOk
+                                  : StatusCode::kCodeOnlyForTesting));
 
     return result;
   }
@@ -216,13 +222,15 @@ TEST_P(D3D11CopyingTexture2DWrapperTest,
   MailboxHolderArray mailboxes;
   gfx::ColorSpace input_color_space = gfx::ColorSpace::CreateSCRGBLinear();
   gfx::ColorSpace output_color_space;
-  EXPECT_EQ(wrapper->Init(gpu_task_runner_, CreateMockHelperCB()),
+  EXPECT_EQ(wrapper->Init(gpu_task_runner_, CreateMockHelperCB()).is_ok(),
             InitSucceeds());
   task_environment_.RunUntilIdle();
   if (GetProcessorProxyInit())
     EXPECT_EQ(texture_wrapper_raw->gpu_task_runner_, gpu_task_runner_);
-  EXPECT_EQ(wrapper->ProcessTexture(nullptr, 0, input_color_space, &mailboxes,
-                                    &output_color_space),
+  EXPECT_EQ(wrapper
+                ->ProcessTexture(nullptr, 0, input_color_space, &mailboxes,
+                                 &output_color_space)
+                .is_ok(),
             ProcessTextureSucceeds());
 
   if (ProcessTextureSucceeds()) {

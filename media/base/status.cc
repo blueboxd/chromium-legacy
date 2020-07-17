@@ -14,7 +14,11 @@ Status::Status() = default;
 Status::Status(StatusCode code,
                base::StringPiece message,
                const base::Location& location) {
-  DCHECK(code != StatusCode::kOk);
+  // Note that |message| is dropped in this case.
+  if (code == StatusCode::kOk) {
+    DCHECK(message.empty());
+    return;
+  }
   data_ = std::make_unique<StatusInternal>(code, message.as_string());
   AddFrame(location);
 }
@@ -70,7 +74,7 @@ void Status::AddFrame(const base::Location& location) {
 }
 
 Status OkStatus() {
-  return Status();
+  return Status(StatusCode::kOk);
 }
 
 }  // namespace media

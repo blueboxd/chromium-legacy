@@ -28,6 +28,7 @@ class ScreenEnumerationImpl : public blink::mojom::ScreenEnumeration {
 
   // blink::mojom::ScreenEnumeration:
   void GetDisplays(GetDisplaysCallback callback) override;
+  void HasMultipleDisplays(HasMultipleDisplaysCallback callback) override;
 
  private:
   // Called with the result of the permission request in GetDisplays().

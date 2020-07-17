@@ -34,7 +34,6 @@ class CONTENT_EXPORT DedicatedWorkerHostFactoryImpl
 
   // blink::mojom::DedicatedWorkerHostFactory:
   void CreateWorkerHost(
-      blink::mojom::DedicatedWorkerTokenPtr token,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           broker_receiver,
       base::OnceCallback<void(const network::CrossOriginEmbedderPolicy&)>
@@ -42,7 +41,6 @@ class CONTENT_EXPORT DedicatedWorkerHostFactoryImpl
 
   // PlzDedicatedWorker:
   void CreateWorkerHostAndStartScriptLoad(
-      blink::mojom::DedicatedWorkerTokenPtr token,
       const GURL& script_url,
       network::mojom::CredentialsMode credentials_mode,
       blink::mojom::FetchClientSettingsObjectPtr

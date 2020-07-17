@@ -6,10 +6,10 @@
 #define CONTENT_PUBLIC_BROWSER_SERVICE_WORKER_CLIENT_INFO_H_
 
 #include "content/common/content_export.h"
+#include "content/public/browser/dedicated_worker_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/shared_worker_id.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
-#include "third_party/blink/public/mojom/tokens/worker_tokens.mojom.h"
 
 namespace content {
 
@@ -18,8 +18,7 @@ namespace content {
 class CONTENT_EXPORT ServiceWorkerClientInfo {
  public:
   explicit ServiceWorkerClientInfo(int frame_tree_node_id);
-  explicit ServiceWorkerClientInfo(
-      const blink::mojom::DedicatedWorkerToken& dedicated_worker_token);
+  explicit ServiceWorkerClientInfo(DedicatedWorkerId dedicated_worker_id);
   explicit ServiceWorkerClientInfo(SharedWorkerId shared_worker_id);
 
   ServiceWorkerClientInfo(const ServiceWorkerClientInfo& other);
@@ -31,7 +30,7 @@ class CONTENT_EXPORT ServiceWorkerClientInfo {
   blink::mojom::ServiceWorkerClientType type() const { return type_; }
 
   int GetFrameTreeNodeId() const;
-  const blink::mojom::DedicatedWorkerToken& GetDedicatedWorkerToken() const;
+  DedicatedWorkerId GetDedicatedWorkerId() const;
   SharedWorkerId GetSharedWorkerId() const;
 
  private:
@@ -42,7 +41,7 @@ class CONTENT_EXPORT ServiceWorkerClientInfo {
   int frame_tree_node_id_ = content::RenderFrameHost::kNoFrameTreeNodeId;
 
   // The ID of the client, if this is a dedicated worker client.
-  blink::mojom::DedicatedWorkerToken dedicated_worker_token_;
+  DedicatedWorkerId dedicated_worker_id_;
 
   // The ID of the client, if this is a shared worker client.
   SharedWorkerId shared_worker_id_;

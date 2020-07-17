@@ -400,6 +400,16 @@ class SelectionPaintState {
     PaintRect(context, *selection_rect_, color);
   }
 
+  // Transposes selection_rect_. Called before we paint vertical selected text
+  // under a rotation transform.
+  void TransposeSelectionRect(const PhysicalOffset& origin) {
+    DCHECK(selection_rect_);
+    selection_rect_->Move(-origin);
+    std::swap(selection_rect_->offset.top, selection_rect_->offset.left);
+    std::swap(selection_rect_->size.width, selection_rect_->size.height);
+    selection_rect_->Move(origin);
+  }
+
   // Paint the selected text only.
   void PaintSelectedText(NGTextPainter& text_painter,
                          unsigned length,
@@ -588,13 +598,8 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
   base::Optional<GraphicsContextStateSaver> state_saver;
 
   // 1. Paint backgrounds behind text if needed. Examples of such backgrounds
-  // include selection and composition highlights.
-  // Since NGPaintFragment::ComputeLocalSelectionRectForText() returns
-  // PhysicalRect rather than LogicalRect, we should paint selection
-  // before GraphicsContext flip.
-  // TODO(yoichio): Make NGPhysicalTextFragment::LocalRect and
-  // NGPaintFragment::ComputeLocalSelectionRectForText logical so that we can
-  // paint selection in same flipped dimension as NGTextPainter.
+  // include selection and composition highlights. They use physical coordinates
+  // so are painted before GraphicsContext rotation.
   const DocumentMarkerVector& markers_to_paint =
       ComputeMarkersToPaint(node, text_item.IsEllipsis());
   if (paint_info.phase != PaintPhase::kSelectionDragImage &&
@@ -689,6 +694,8 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
     // Paint only the text that is selected.
     if (!selection->IsSelectionRectComputed())
       selection->ComputeSelectionRect(box_rect.offset);
+    if (!is_horizontal)
+      selection->TransposeSelectionRect(box_rect.offset);
     selection->PaintSelectedText(text_painter, length, text_style, node_id);
   }
 

@@ -36,14 +36,16 @@ class ReceivedFile {
     /** @type {!OverwriteFileMessage} */
     const message = {token: this.token, blob: blob};
 
-    const result = /** @type {!OverwriteFileResponse} */ (
+    const result = /** @type {!OverwriteViaFilePickerResponse} */ (
         await parentMessagePipe.sendMessage(Message.OVERWRITE_FILE, message));
-
     // Note the following are skipped if an exception is thrown above.
+    if (result.renamedTo) {
+      this.name = result.renamedTo;
+    }
+    this.error = result.errorName || '';
     this.blob = blob;
     this.size = blob.size;
     this.mimeType = blob.type;
-    return result;
   }
 
   /**

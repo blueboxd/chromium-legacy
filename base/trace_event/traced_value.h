@@ -131,14 +131,6 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
     KeptValueType kept_value_type_;
   };
 
-  // Return std::string representation given by |value|'s ostream operator<<.
-  template <class T>
-  static std::string ValueToString(const T& value) {
-    std::stringstream ss;
-    ss << value;
-    return ss.str();
-  }
-
   // A custom serialization class can be supplied by implementing the
   // Writer interface and supplying a factory class to SetWriterFactoryCallback.
   // Primarily used by Perfetto to write TracedValues directly into its proto
@@ -238,6 +230,14 @@ class BASE_EXPORT TracedValueJSON : public TracedValue {
   // and new lines for better human readability of complex values.
   std::string ToFormattedJSON() const;
 };
+
+// Return std::string representation given by |value|'s ostream operator<<.
+template <typename T>
+std::string ValueToString(const T& value) {
+  std::stringstream ss;
+  ss << value;
+  return ss.str();
+}
 
 }  // namespace trace_event
 }  // namespace base

@@ -318,7 +318,7 @@ TEST_P(WaylandSurfaceFactoryTest,
 
   // This will result in Wayland server releasing previously attached buffer for
   // swap id=0u and calling OnSubmission for buffer with swap id=1u.
-  mock_surface->ReleasePrevAttachedBuffer();
+  mock_surface->ReleaseBuffer(mock_surface->prev_attached_buffer());
 
   Sync();
 
@@ -368,7 +368,7 @@ TEST_P(WaylandSurfaceFactoryTest,
 
   // This will result in Wayland server releasing previously attached buffer for
   // swap id=1u and calling OnSubmission for buffer with swap id=2u.
-  mock_surface->ReleasePrevAttachedBuffer();
+  mock_surface->ReleaseBuffer(mock_surface->prev_attached_buffer());
 
   Sync();
 

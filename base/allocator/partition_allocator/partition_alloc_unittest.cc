@@ -2515,9 +2515,9 @@ TEST_F(PartitionAllocTest, TagBasic) {
   constexpr PartitionTag kTag1 = static_cast<PartitionTag>(0xBADA);
   constexpr PartitionTag kTag2 = static_cast<PartitionTag>(0xDB8A);
   constexpr PartitionTag kTag3 = static_cast<PartitionTag>(0xA3C4);
-  PartitionTagSetValue(ptr1, kTag1);
-  PartitionTagSetValue(ptr2, kTag2);
-  PartitionTagSetValue(ptr3, kTag3);
+  PartitionTagSetValue(ptr1, page->bucket->slot_size, kTag1);
+  PartitionTagSetValue(ptr2, page->bucket->slot_size, kTag2);
+  PartitionTagSetValue(ptr3, page->bucket->slot_size, kTag3);
 
   memset(ptr1, 0, kTestAllocSize);
   memset(ptr2, 0, kTestAllocSize);

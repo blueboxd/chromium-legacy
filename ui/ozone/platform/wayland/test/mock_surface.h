@@ -57,11 +57,14 @@ class MockSurface : public ServerObject {
     frame_callback_ = callback_resource;
   }
 
+  wl_resource* attached_buffer() const { return attached_buffer_; }
+  wl_resource* prev_attached_buffer() const { return prev_attached_buffer_; }
+
   bool has_role() const { return !!xdg_surface_ || !!sub_surface_; }
 
   void AttachNewBuffer(wl_resource* buffer_resource, int32_t x, int32_t y);
   void DestroyPrevAttachedBuffer();
-  void ReleasePrevAttachedBuffer();
+  void ReleaseBuffer(wl_resource* buffer);
   void SendFrameCallback();
 
  private:

@@ -23,6 +23,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/power_manager/idle.pb.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
@@ -135,6 +136,14 @@ void AmbientAshTestBase::SimulateSystemSuspendAndWait(
 
 void AmbientAshTestBase::SimulateSystemResumeAndWait() {
   chromeos::FakePowerManagerClient::Get()->SendSuspendDone();
+  base::RunLoop().RunUntilIdle();
+}
+
+void AmbientAshTestBase::SetScreenDimmedAndWait(bool is_screen_dimmed) {
+  power_manager::ScreenIdleState screen_idle_state;
+  screen_idle_state.set_dimmed(is_screen_dimmed);
+  chromeos::FakePowerManagerClient::Get()->SendScreenIdleStateChanged(
+      screen_idle_state);
   base::RunLoop().RunUntilIdle();
 }
 

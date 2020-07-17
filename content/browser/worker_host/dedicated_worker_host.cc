@@ -37,7 +37,7 @@ namespace content {
 
 DedicatedWorkerHost::DedicatedWorkerHost(
     DedicatedWorkerServiceImpl* service,
-    const blink::mojom::DedicatedWorkerToken& token,
+    DedicatedWorkerId id,
     RenderProcessHost* worker_process_host,
     base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
     GlobalFrameRoutingId ancestor_render_frame_host_id,
@@ -46,7 +46,7 @@ DedicatedWorkerHost::DedicatedWorkerHost(
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         coep_reporter)
     : service_(service),
-      token_(token),
+      id_(id),
       worker_process_host_(worker_process_host),
       scoped_process_host_observer_(this),
       creator_render_frame_host_id_(creator_render_frame_host_id),
@@ -58,19 +58,18 @@ DedicatedWorkerHost::DedicatedWorkerHost(
       cross_origin_embedder_policy_(cross_origin_embedder_policy),
       coep_reporter_(std::move(coep_reporter)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!token_.value.is_empty());
   DCHECK(worker_process_host_);
   DCHECK(worker_process_host_->IsInitializedAndNotDead());
   DCHECK(coep_reporter_);
 
   scoped_process_host_observer_.Add(worker_process_host_);
 
-  service_->NotifyWorkerCreated(token_, worker_process_host_->GetID(),
+  service_->NotifyWorkerCreated(id_, worker_process_host_->GetID(),
                                 ancestor_render_frame_host_id_);
 }
 
 DedicatedWorkerHost::~DedicatedWorkerHost() {
-  service_->NotifyBeforeWorkerDestroyed(token_, ancestor_render_frame_host_id_);
+  service_->NotifyBeforeWorkerDestroyed(id_, ancestor_render_frame_host_id_);
 }
 
 void DedicatedWorkerHost::BindBrowserInterfaceBrokerReceiver(
@@ -190,7 +189,7 @@ void DedicatedWorkerHost::StartScriptLoad(
       storage_partition_impl->GetServiceWorkerContext(), base::DoNothing());
 
   WorkerScriptFetchInitiator::Start(
-      worker_process_host_->GetID(), token_, SharedWorkerId(), script_url,
+      worker_process_host_->GetID(), id_, SharedWorkerId(), script_url,
       creator_render_frame_host,
       nearest_ancestor_render_frame_host->ComputeSiteForCookies(),
       creator_origin_,
@@ -229,7 +228,7 @@ void DedicatedWorkerHost::DidStartScriptLoad(
 
   // TODO(https://crbug.com/986188): Check if the main script's final response
   // URL is committable.
-  service_->NotifyWorkerFinalResponseURLDetermined(token_, final_response_url);
+  service_->NotifyWorkerFinalResponseURLDetermined(id_, final_response_url);
 
   // TODO(cammie): Change this approach when we support shared workers
   // creating dedicated workers, as there might be no ancestor frame.

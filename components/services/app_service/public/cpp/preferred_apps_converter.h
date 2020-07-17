@@ -49,6 +49,10 @@ base::Value ConvertPreferredAppsToValue(
 PreferredAppsList::PreferredApps ParseValueToPreferredApps(
     const base::Value& preferred_apps_value);
 
+// Upgrade the preferred apps struct to contain action in the filters. Return
+// true if |preferred_apps| is upgraded.
+bool UpgradePreferredApps(PreferredAppsList::PreferredApps& preferred_apps);
+
 }  // namespace apps
 
 #endif  // COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_PREFERRED_APPS_CONVERTER_H_

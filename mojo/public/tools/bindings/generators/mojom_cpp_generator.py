@@ -692,8 +692,8 @@ class Generator(generator.Generator):
       if self._IsTypemappedKind(kind) or IsNativeOnlyKind(kind):
         yield '%s->SetInteger("%s", static_cast<int>(%s));' % value_name_cppname
       else:
-        yield '%s->SetString("%s", base::trace_event::'\
-            'TracedValue::ValueToString(%s));' % value_name_cppname
+        yield '%s->SetString("%s", base::trace_event::ValueToString(%s));'\
+            % value_name_cppname
       return
     if mojom.IsStringKind(kind):
       if self.for_blink:

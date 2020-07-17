@@ -43,7 +43,7 @@ void UnscheduleDelayedCryptohomeRemoval(const cryptohome::Identification& id) {
   {
     DictionaryPrefUpdate dict_update(local_state,
                                      prefs::kAllKioskUsersToRemove);
-    dict_update->RemoveWithoutPathExpansion(id.id(), nullptr);
+    dict_update->RemoveKey(id.id());
   }
   local_state->CommitPendingWrite();
 }

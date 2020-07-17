@@ -73,6 +73,15 @@ let LoadFilesMessage;
 let OverwriteFileMessage;
 
 /**
+ * Response message to a successful overwrite (no error thrown). If fields are
+ * defined, indicates that an overwrite failed, but the user was able to select
+ * a new file from a file picker. The UI should update to reflect the new name.
+ * `errorName` is the error on the write attempt that triggered the picker.
+ * @typedef {{renamedTo: (string|undefined), errorName: (string|undefined)}}
+ */
+let OverwriteViaFilePickerResponse;
+
+/**
  * Message sent by the unprivileged context to the privileged context requesting
  * the app be relaunched with the next/previous file in the current directory
  * set to writable. Direction must be either 'next' or 'prev'.

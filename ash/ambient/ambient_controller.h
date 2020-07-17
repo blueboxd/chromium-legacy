@@ -61,6 +61,8 @@ class ASH_EXPORT AmbientController
                         const base::TimeTicks& timestamp) override;
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void ScreenIdleStateChanged(
+      const power_manager::ScreenIdleState& idle_state) override;
 
   void AddAmbientViewDelegateObserver(AmbientViewDelegateObserver* observer);
   void RemoveAmbientViewDelegateObserver(AmbientViewDelegateObserver* observer);

@@ -31,14 +31,14 @@ class MEDIA_GPU_EXPORT CopyingTexture2DWrapper : public Texture2DWrapper {
                           base::Optional<gfx::ColorSpace> output_color_space);
   ~CopyingTexture2DWrapper() override;
 
-  bool ProcessTexture(ComD3D11Texture2D texture,
-                      size_t array_slice,
-                      const gfx::ColorSpace& input_color_space,
-                      MailboxHolderArray* mailbox_dest,
-                      gfx::ColorSpace* output_color_space) override;
+  Status ProcessTexture(ComD3D11Texture2D texture,
+                        size_t array_slice,
+                        const gfx::ColorSpace& input_color_space,
+                        MailboxHolderArray* mailbox_dest,
+                        gfx::ColorSpace* output_color_space) override;
 
-  bool Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-            GetCommandBufferHelperCB get_helper_cb) override;
+  Status Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+              GetCommandBufferHelperCB get_helper_cb) override;
 
   void SetStreamHDRMetadata(const HDRMetadata& stream_metadata) override;
   void SetDisplayHDRMetadata(

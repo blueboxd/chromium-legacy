@@ -4,6 +4,8 @@
 
 #include "media/gpu/windows/d3d11_video_processor_proxy.h"
 
+#include "media/base/status_codes.h"
+#include "media/gpu/windows/hresult_status_debug_device.h"
 #include "ui/gfx/color_space_win.h"
 
 namespace media {
@@ -15,7 +17,7 @@ VideoProcessorProxy::VideoProcessorProxy(
     ComD3D11DeviceContext d3d11_device_context)
     : video_device_(video_device), device_context_(d3d11_device_context) {}
 
-bool VideoProcessorProxy::Init(uint32_t width, uint32_t height) {
+Status VideoProcessorProxy::Init(uint32_t width, uint32_t height) {
   processor_enumerator_.Reset();
   video_processor_.Reset();
 
@@ -31,18 +33,31 @@ bool VideoProcessorProxy::Init(uint32_t width, uint32_t height) {
   desc.OutputHeight = height;
   desc.Usage = D3D11_VIDEO_USAGE_PLAYBACK_NORMAL;
 
-  if (!SUCCEEDED(video_device_->CreateVideoProcessorEnumerator(
-          &desc, &processor_enumerator_)))
-    return false;
+  // Get the device in case we need it for error generation.
+  ComD3D11Device device;
+  device_context_->GetDevice(&device);
 
-  if (!SUCCEEDED(video_device_->CreateVideoProcessor(
-          processor_enumerator_.Get(), 0, &video_processor_)))
-    return false;
+  HRESULT hr = video_device_->CreateVideoProcessorEnumerator(
+      &desc, &processor_enumerator_);
+  if (!SUCCEEDED(hr)) {
+    return Status(StatusCode::kCreateVideoProcessorEnumeratorFailed)
+        .AddCause(D3D11HresultToStatus(hr, device));
+  }
 
-  if (!SUCCEEDED(device_context_.As(&video_context_)))
-    return false;
+  hr = video_device_->CreateVideoProcessor(processor_enumerator_.Get(), 0,
+                                           &video_processor_);
+  if (!SUCCEEDED(hr)) {
+    return Status(StatusCode::kCreateVideoProcessorFailed)
+        .AddCause(D3D11HresultToStatus(hr, device));
+  }
 
-  return true;
+  hr = device_context_.As(&video_context_);
+  if (!SUCCEEDED(hr)) {
+    return Status(StatusCode::kQueryVideoContextFailed)
+        .AddCause(D3D11HresultToStatus(hr, device));
+  }
+
+  return OkStatus();
 }
 
 HRESULT VideoProcessorProxy::CreateVideoProcessorOutputView(

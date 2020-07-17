@@ -14,6 +14,8 @@ static_library("enterprise") {
     "browser/reporting/policy_info.h",
     "browser/reporting/profile_report_generator.cc",
     "browser/reporting/profile_report_generator.h",
+    "browser/reporting/report_generator.cc",
+    "browser/reporting/report_generator.h",
     "browser/reporting/report_request_definition.h",
     "browser/reporting/report_request_queue_generator.cc",
     "browser/reporting/report_request_queue_generator.h",

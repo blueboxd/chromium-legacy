@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/util/timer/wall_clock_timer.h"
 #include "chrome/browser/enterprise/reporting/notification/extension_request_observer_factory.h"
-#include "chrome/browser/enterprise/reporting/report_generator.h"
 #include "chrome/browser/upgrade_detector/build_state_observer.h"
+#include "components/enterprise/browser/reporting/report_generator.h"
 #include "components/enterprise/browser/reporting/report_uploader.h"
 #include "components/prefs/pref_change_registrar.h"
 

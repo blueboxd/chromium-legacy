@@ -62,11 +62,10 @@ content::WebUIDataSource* CreateTrustedSysemAppTestDataSource() {
   auto* trusted_source = content::WebUIDataSource::Create(kSystemAppTestHost);
 
   // We need a CSP override to be able to embed a chrome-untrusted:// iframe.
-  // TODO(crbug.com/1105408): use FrameSrc instead of ChildSrc.
   std::string csp =
-      std::string("child-src ") + kUntrustedSystemAppTestURL + ";";
+      std::string("frame-src ") + kUntrustedSystemAppTestURL + ";";
   trusted_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::ChildSrc, csp);
+      network::mojom::CSPDirectiveName::FrameSrc, csp);
 
   SetRequestFilterForDataSource(*trusted_source);
   return trusted_source;

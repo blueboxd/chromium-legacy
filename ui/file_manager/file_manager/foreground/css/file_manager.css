@@ -3392,20 +3392,6 @@ body:not(.files-ng) #tasks-menu {
   margin-top: 2px;
 }
 
-/*
- * TODO(files-ng): remove these rules and do them in the multi-menu JS because
- * #tasks-menu is distinguished here: it is used as a menu and a submenu, thus
- * gets 8px margin-top in all cases.  It should only have this 8px gap when it
- * is shown as a menu; it should have no margin-top when it is a submenu (just
- * like every other submenu in files app - none of them have margin-top).
- */
-body.files-ng #gear-menu,
-body.files-ng #share-menu,
-body.files-ng #sort-menu,
-body.files-ng #tasks-menu {
-  margin-top: 8px;
-}
-
 #gear-menu > cr-menu-item:not(.menuitem-button),
 #sort-menu > cr-menu-item {
   margin-inline-end: 50px;

@@ -10,5 +10,7 @@
 ] partial interface Window {
   [CallWith=ScriptState, RaisesException] Promise<sequence<Screen>> getScreens();
 
+  [CallWith=ScriptState, RaisesException] Promise<boolean> isMultiScreen();
+
   attribute EventHandler onscreenschange;
 };

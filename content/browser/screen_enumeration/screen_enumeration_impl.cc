@@ -28,9 +28,8 @@ void ScreenEnumerationImpl::Bind(
 
 void ScreenEnumerationImpl::GetDisplays(GetDisplaysCallback callback) {
   // Ensure the callback is run if this object is prematurely destroyed.
-  auto scoped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-      std::move(callback), std::vector<display::Display>(),
-      display::kInvalidDisplayId, display::kInvalidDisplayId, false);
+  auto scoped_callback =
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), nullptr);
 
   auto* permission_controller = PermissionControllerImpl::FromBrowserContext(
       render_frame_host_->GetProcess()->GetBrowserContext());
@@ -46,18 +45,26 @@ void ScreenEnumerationImpl::GetDisplaysWithPermissionStatus(
     GetDisplaysCallback callback,
     blink::mojom::PermissionStatus permission_status) {
   if (permission_status != blink::mojom::PermissionStatus::GRANTED) {
-    std::move(callback).Run({}, display::kInvalidDisplayId,
-                            display::kInvalidDisplayId, false);
+    std::move(callback).Run(nullptr);
     return;
   }
 
   display::Screen* screen = display::Screen::GetScreen();
-  const std::vector<display::Display> displays = screen->GetAllDisplays();
-  const int64_t internal_id = display::Display::HasInternalDisplay()
-                                  ? display::Display::InternalDisplayId()
-                                  : display::kInvalidDisplayId;
-  const int64_t primary_id = screen->GetPrimaryDisplay().id();
-  std::move(callback).Run(std::move(displays), internal_id, primary_id, true);
+  auto result = blink::mojom::Displays::New();
+  result->displays = screen->GetAllDisplays();
+  result->internal_id = display::Display::HasInternalDisplay()
+                            ? display::Display::InternalDisplayId()
+                            : display::kInvalidDisplayId;
+  result->primary_id = screen->GetPrimaryDisplay().id();
+  std::move(callback).Run(std::move(result));
+}
+
+void ScreenEnumerationImpl::HasMultipleDisplays(
+    HasMultipleDisplaysCallback callback) {
+  auto result = display::Screen::GetScreen()->GetNumDisplays() > 1
+                    ? blink::mojom::MultipleDisplays::kTrue
+                    : blink::mojom::MultipleDisplays::kFalse;
+  std::move(callback).Run(result);
 }
 
 }  // namespace content

@@ -140,15 +140,12 @@ static_library("performance_manager") {
     "worker_watcher.h",
   ]
 
-  deps = [ "//third_party/blink/public/common:headers" ]
-
   public_deps = [
     "//base",
     "//base/allocator:buildflags",
     "//components/performance_manager/public/mojom",
     "//content/public/browser",
     "//services/metrics/public/cpp:metrics_cpp",
-    "//third_party/blink/public/common",
     "//url",
   ]
 

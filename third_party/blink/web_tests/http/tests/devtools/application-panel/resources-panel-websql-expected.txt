@@ -26,6 +26,9 @@ Background Services
   Push Messaging
 Frames
   top
+    Scripts
+      json-value.js
+    inspected-page.html
 Found: true
 Database created state:
 Application
@@ -54,6 +57,9 @@ Background Services
   Push Messaging
 Frames
   top
+    Scripts
+      json-value.js
+    inspected-page.html
 Table added:
 Application
   Manifest
@@ -82,4 +88,7 @@ Background Services
   Push Messaging
 Frames
   top
+    Scripts
+      json-value.js
+    inspected-page.html
 

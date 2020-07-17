@@ -28,6 +28,7 @@ Background Services
   Push Messaging
 Frames
   top
+    inspected-page.html
 Selection: ["cookies://http://127.0.0.1:8000","category://Cookies"]
 Visible view is a cookie view: true
 Page reloaded.
@@ -58,6 +59,7 @@ Background Services
   Push Messaging
 Frames
   top
+    inspected-page.html
 Selection: ["cookies://http://127.0.0.1:8000","category://Cookies"]
 Visible view is a cookie view: true
 

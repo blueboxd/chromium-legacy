@@ -8,6 +8,7 @@
 #include <limits.h>
 #include <cstddef>
 
+#include "base/allocator/partition_allocator/checked_ptr_support.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 
 #include "build/build_config.h"
@@ -152,8 +153,13 @@ static_assert(alignof(std::max_align_t) <= 16,
 //
 // In practice, this means 8 bytes alignment on 32 bit architectures, and 16
 // bytes on 64 bit ones.
+#if ENABLE_TAG_FOR_MTE_CHECKED_PTR
+// MTECheckedPtr requires 16B-alignment because kBytesPerPartitionTag is 16.
+static const size_t kGenericMinBucketedOrder = 5;
+#else
 static const size_t kGenericMinBucketedOrder =
     alignof(std::max_align_t) == 16 ? 5 : 4;  // 2^(order - 1), that is 16 or 8.
+#endif
 // The largest bucketed order is 1 << (20 - 1), storing [512 KiB, 1 MiB):
 static const size_t kGenericMaxBucketedOrder = 20;
 static const size_t kGenericNumBucketedOrders =

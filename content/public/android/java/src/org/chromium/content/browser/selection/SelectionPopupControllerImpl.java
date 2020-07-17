@@ -886,7 +886,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     /**
      * Intialize the menu items for processing text, if there is any.
      */
-    private void initializeTextProcessingMenu(Menu menu) {
+    @VisibleForTesting
+    /* package */ void initializeTextProcessingMenu(Menu menu) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M
                 || !isSelectActionModeAllowed(MENU_ITEM_PROCESS_TEXT)) {
             return;
@@ -896,6 +897,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                 PackageManagerUtils.queryIntentActivities(createProcessTextIntent(), 0);
         for (int i = 0; i < supportedActivities.size(); i++) {
             ResolveInfo resolveInfo = supportedActivities.get(i);
+            if (resolveInfo.activityInfo == null || !resolveInfo.activityInfo.exported) continue;
+
             CharSequence label = resolveInfo.loadLabel(mContext.getPackageManager());
             menu.add(R.id.select_action_menu_text_processing_menus, Menu.NONE,
                         MENU_ITEM_ORDER_TEXT_PROCESS_START + i, label)

@@ -471,11 +471,6 @@ static String ParsePortFromStringPosition(const String& value,
   while (value[port_start] == '0' && port_start < port_end - 1)
     ++port_start;
 
-  // Required for backwards compat.
-  // https://www.w3.org/Bugs/Public/show_bug.cgi?id=23463
-  if (port_start == port_end)
-    return "0";
-
   return value.Substring(port_start, port_end - port_start);
 }
 
@@ -518,8 +513,9 @@ void KURL::SetHostAndPort(const String& host_and_port) {
   url::Replacements<char> replacements;
   replacements.SetHost(CharactersOrEmpty(host_utf8),
                        url::Component(0, host_utf8.size()));
-  replacements.SetPort(CharactersOrEmpty(port_utf8),
-                       url::Component(0, port_utf8.size()));
+  if (port_utf8.size())
+    replacements.SetPort(CharactersOrEmpty(port_utf8),
+                         url::Component(0, port_utf8.size()));
   ReplaceComponents(replacements);
 }
 
@@ -533,7 +529,8 @@ void KURL::RemovePort() {
 
 void KURL::SetPort(const String& port) {
   String parsed_port = ParsePortFromStringPosition(port, 0);
-  SetPort(parsed_port.ToUInt());
+  if (!parsed_port.IsEmpty())
+    SetPort(parsed_port.ToUInt());
 }
 
 void KURL::SetPort(uint16_t port) {

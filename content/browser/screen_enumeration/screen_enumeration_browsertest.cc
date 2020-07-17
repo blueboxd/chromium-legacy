@@ -19,12 +19,12 @@ namespace content {
 
 namespace {
 
-// Used to get info about the screens in a list of dictionary values.
+// Used to get async getScreens() info in a list of dictionary values.
 constexpr char kGetScreensScript[] = R"(
   (async () => {
     const screens = await self.getScreens();
     let result = [];
-    for (s of screens) {
+    for (let s of screens) {
       result.push({ availHeight: s.availHeight,
                     availLeft: s.availLeft,
                     availTop: s.availTop,
@@ -44,6 +44,11 @@ constexpr char kGetScreensScript[] = R"(
     }
     return result;
   })();
+)";
+
+// Used to get the async result of isMultiScreen().
+constexpr char kIsMultiScreenScript[] = R"(
+  (async () => { return await self.isMultiScreen(); })();
 )";
 
 // Returns a list of dictionary values from native screen information, intended
@@ -107,6 +112,14 @@ IN_PROC_BROWSER_TEST_F(ScreenEnumerationTest, GetScreensBasic) {
   EXPECT_EQ(GetExpectedScreens(), base::Value::AsListValue(result.value));
 }
 
+IN_PROC_BROWSER_TEST_F(ScreenEnumerationTest, IsMultiScreenBasic) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetTestUrl(nullptr, "empty.html")));
+  ASSERT_EQ(true, EvalJs(shell()->web_contents(), "'isMultiScreen' in self"));
+  auto result = EvalJs(shell()->web_contents(), kIsMultiScreenScript);
+  EXPECT_EQ(display::Screen::GetScreen()->GetNumDisplays() > 1,
+            result.ExtractBool());
+}
+
 // Tests screen enumeration functionality with a fake Screen object.
 class FakeScreenEnumerationTest : public ScreenEnumerationTest {
  public:
@@ -153,12 +166,33 @@ IN_PROC_BROWSER_TEST_F(FakeScreenEnumerationTest, MAYBE_GetScreensFaked) {
   ASSERT_EQ(true, EvalJs(test_shell()->web_contents(), "'getScreens' in self"));
 
   screen()->display_list().AddDisplay({1, gfx::Rect(100, 100, 801, 802)},
-                                      display::DisplayList::Type::PRIMARY);
+                                      display::DisplayList::Type::NOT_PRIMARY);
   screen()->display_list().AddDisplay({2, gfx::Rect(901, 100, 801, 802)},
                                       display::DisplayList::Type::NOT_PRIMARY);
 
   auto result = EvalJs(test_shell()->web_contents(), kGetScreensScript);
   EXPECT_EQ(GetExpectedScreens(), base::Value::AsListValue(result.value));
+}
+
+// TODO(crbug.com/1042990): Windows crashes static casting to ScreenWin.
+// TODO(crbug.com/1042990): Android requires a GetDisplayNearestView overload.
+#if defined(OS_ANDROID) || defined(OS_WIN)
+#define MAYBE_IsMultiScreenFaked DISABLED_IsMultiScreenFaked
+#else
+#define MAYBE_IsMultiScreenFaked IsMultiScreenFaked
+#endif
+IN_PROC_BROWSER_TEST_F(FakeScreenEnumerationTest, MAYBE_IsMultiScreenFaked) {
+  ASSERT_TRUE(NavigateToURL(test_shell(), GetTestUrl(nullptr, "empty.html")));
+  ASSERT_EQ(true,
+            EvalJs(test_shell()->web_contents(), "'isMultiScreen' in self"));
+  EXPECT_EQ(false, EvalJs(test_shell()->web_contents(), kIsMultiScreenScript));
+
+  screen()->display_list().AddDisplay({1, gfx::Rect(100, 100, 801, 802)},
+                                      display::DisplayList::Type::NOT_PRIMARY);
+  EXPECT_EQ(true, EvalJs(test_shell()->web_contents(), kIsMultiScreenScript));
+
+  screen()->display_list().RemoveDisplay(1);
+  EXPECT_EQ(false, EvalJs(test_shell()->web_contents(), kIsMultiScreenScript));
 }
 
 // TODO(crbug.com/1042990): Windows crashes static casting to ScreenWin.

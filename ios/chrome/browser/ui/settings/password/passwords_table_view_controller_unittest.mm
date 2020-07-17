@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #import "base/test/ios/wait_util.h"
@@ -38,11 +40,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using password_manager::CompromiseType;
 using password_manager::TestPasswordStore;
 using password_manager::MockBulkLeakCheckService;
 using ::testing::Return;
@@ -226,6 +231,23 @@ class PasswordsTableViewControllerTest
     AddPasswordForm(std::move(form));
   }
 
+  password_manager::CompromisedCredentials MakeCompromised(
+      base::StringPiece signon_realm,
+      base::StringPiece username) {
+    return {
+        std::string(signon_realm),
+        base::ASCIIToUTF16(username),
+        base::Time::Now(),
+        CompromiseType::kLeaked,
+    };
+  }
+
+  void AddCompromisedCredential1() {
+    GetTestStore().AddCompromisedCredentials(
+        MakeCompromised("http://www.example.com/", "test@egmail.com"));
+    RunUntilIdle();
+  }
+
   // Deletes the item at (row, section) and wait util condition returns true or
   // timeout.
   bool deleteItemAndWait(int section, int row, ConditionBlock condition) {
@@ -235,6 +257,19 @@ class PasswordsTableViewControllerTest
         deleteItems:@[ [NSIndexPath indexPathForRow:row inSection:section] ]];
     return base::test::ios::WaitUntilConditionOrTimeout(
         base::test::ios::kWaitForUIElementTimeout, condition);
+  }
+
+  void CheckDetailItemTextWithPluralIds(int expected_text_id,
+                                        int expected_detail_text_id,
+                                        int count,
+                                        int section,
+                                        int item) {
+    SettingsCheckItem* cell =
+        static_cast<SettingsCheckItem*>(GetTableViewItem(section, item));
+    EXPECT_NSEQ(l10n_util::GetNSString(expected_text_id), [cell text]);
+    EXPECT_NSEQ(base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
+                    IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT, count)),
+                [cell detailText]);
   }
 
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
@@ -570,6 +605,45 @@ TEST_P(PasswordsTableViewControllerTest, PasswordCheckStateDefault) {
   EXPECT_TRUE(checkPassword.enabled);
   EXPECT_TRUE(checkPassword.indicatorHidden);
   EXPECT_FALSE(checkPassword.trailingImage);
+}
+
+// Test verifies safe state of password check cell.
+TEST_P(PasswordsTableViewControllerTest, PasswordCheckStateSafe) {
+  if (!GetParam().password_check_enabled)
+    return;
+
+  ChangePasswordCheckState(PasswordCheckStateSafe);
+
+  CheckTextCellTextWithId(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON,
+                          GetSectionIndex(PasswordCheck), 1);
+  CheckDetailItemTextWithPluralIds(IDS_IOS_CHECK_PASSWORDS,
+                                   IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT, 0,
+                                   GetSectionIndex(PasswordCheck), 0);
+  SettingsCheckItem* checkPassword =
+      GetTableViewItem(GetSectionIndex(PasswordCheck), 0);
+  EXPECT_TRUE(checkPassword.enabled);
+  EXPECT_TRUE(checkPassword.indicatorHidden);
+  EXPECT_TRUE(checkPassword.trailingImage);
+}
+
+// Test verifies unsafe state of password check cell.
+TEST_P(PasswordsTableViewControllerTest, PasswordCheckStateUnSafe) {
+  if (!GetParam().password_check_enabled)
+    return;
+  AddSavedForm1();
+  AddCompromisedCredential1();
+  ChangePasswordCheckState(PasswordCheckStateUnSafe);
+
+  CheckTextCellTextWithId(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON,
+                          GetSectionIndex(PasswordCheck), 1);
+  CheckDetailItemTextWithPluralIds(IDS_IOS_CHECK_PASSWORDS,
+                                   IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT, 1,
+                                   GetSectionIndex(PasswordCheck), 0);
+  SettingsCheckItem* checkPassword =
+      GetTableViewItem(GetSectionIndex(PasswordCheck), 0);
+  EXPECT_TRUE(checkPassword.enabled);
+  EXPECT_TRUE(checkPassword.indicatorHidden);
+  EXPECT_TRUE(checkPassword.trailingImage);
 }
 
 // Test verifies running state of password check cell.

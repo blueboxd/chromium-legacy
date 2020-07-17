@@ -62,7 +62,7 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui,
   // The guest is in an <iframe>. Add it to CSP.
   std::string csp = std::string("frame-src ") + kChromeUIMediaAppGuestURL + ";";
   host_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::ChildSrc, csp);
+      network::mojom::CSPDirectiveName::FrameSrc, csp);
 
   // Register auto-granted permissions.
   auto* allowlist = WebUIAllowlist::GetOrCreate(browser_context);

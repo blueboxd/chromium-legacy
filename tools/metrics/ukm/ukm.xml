@@ -4143,10 +4143,10 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
-  <metric name="TotalLatencyToSwapEnd">
+  <metric name="TotalLatencyToSwapBegin">
     <summary>
       The time from when the event is created in the browser to when the
-      gpu-swap is completed, for scroll and pinch events.
+      gpu-swap is started, for scroll events.
     </summary>
     <aggregation>
       <history>
@@ -4156,6 +4156,16 @@ be describing additional metrics about the same event.
         </statistics>
       </history>
     </aggregation>
+  </metric>
+  <metric name="TotalLatencyToSwapEnd">
+    <obsolete>
+      Deprecated as of 07/2020. Replaced with TotalLatencyToSwapBegin which
+      measures what we actually intended to measure.
+    </obsolete>
+    <summary>
+      The time from when the event is created in the browser to when the
+      gpu-swap is completed, for scroll events.
+    </summary>
   </metric>
 </event>
 

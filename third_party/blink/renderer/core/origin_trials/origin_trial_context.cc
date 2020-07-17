@@ -463,12 +463,6 @@ bool OriginTrialContext::EnableTrialFromToken(
     bool is_script_origin_secure,
     const String& token) {
   DCHECK(!token.IsEmpty());
-
-  if (!trial_token_validator_) {
-    RecordTokenValidationResultHistogram(OriginTrialTokenStatus::kNotSupported);
-    return false;
-  }
-
   bool valid = false;
   StringUTF8Adaptor token_string(token);
   url::Origin script_url_origin;

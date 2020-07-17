@@ -8,7 +8,6 @@
 
 #include "base/feature_list.h"
 #include "base/optional.h"
-#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
@@ -93,8 +92,7 @@ DedicatedWorker::DedicatedWorker(ExecutionContext* context,
       factory_client_(
           Platform::Current()->CreateDedicatedWorkerHostFactoryClient(
               this,
-              GetExecutionContext()->GetBrowserInterfaceBroker())),
-      token_(base::UnguessableToken::Create()) {
+              GetExecutionContext()->GetBrowserInterfaceBroker())) {
   DCHECK(context->IsContextThread());
   DCHECK(script_request_url_.IsValid());
   DCHECK(context_proxy_);
@@ -195,7 +193,7 @@ void DedicatedWorker::Start() {
     }
 
     factory_client_->CreateWorkerHost(
-        token_.value, script_request_url_, credentials_mode,
+        script_request_url_, credentials_mode,
         WebFetchClientSettingsObject(*outside_fetch_client_settings_object_),
         std::move(blob_url_token));
     // Continue in OnScriptLoadStarted() or OnScriptLoadStartFailed().
@@ -216,7 +214,6 @@ void DedicatedWorker::Start() {
     // asynchronous OnHostCreated call, so we call it directly here.
     // See https://crbug.com/1101603#c8.
     factory_client_->CreateWorkerHostDeprecated(
-        token_.value,
         WTF::Bind([](const network::CrossOriginEmbedderPolicy&) {}));
     OnHostCreated(std::move(blob_url_loader_factory),
                   network::CrossOriginEmbedderPolicy());
@@ -224,7 +221,6 @@ void DedicatedWorker::Start() {
   }
 
   factory_client_->CreateWorkerHostDeprecated(
-      token_.value,
       WTF::Bind(&DedicatedWorker::OnHostCreated, WrapWeakPersistent(this),
                 std::move(blob_url_loader_factory)));
 }

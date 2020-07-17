@@ -1112,8 +1112,10 @@ CSSRule* InspectorStyleSheet::SetStyleText(const SourceRange& range,
   else
     style = To<CSSKeyframeRule>(rule)->style();
 
+  Document* owner_document = page_style_sheet_->OwnerDocument();
   ExecutionContext* execution_context =
-      page_style_sheet_->OwnerDocument()->GetExecutionContext();
+      owner_document ? owner_document->GetExecutionContext() : nullptr;
+
   style->setCSSText(execution_context, text, exception_state);
 
   ReplaceText(source_data->rule_body_range, text, new_range, old_text);

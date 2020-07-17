@@ -313,8 +313,8 @@ void UkmManager::RecordEventLatencyUKM(
           static_cast<int64_t>(*event_metrics.scroll_type()));
 
       if (!viz_breakdown.swap_timings.is_null()) {
-        builder.SetTotalLatencyToSwapEnd(
-            (viz_breakdown.swap_timings.swap_end - event_metrics.time_stamp())
+        builder.SetTotalLatencyToSwapBegin(
+            (viz_breakdown.swap_timings.swap_start - event_metrics.time_stamp())
                 .InMicroseconds());
       }
     }

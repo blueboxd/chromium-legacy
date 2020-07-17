@@ -280,6 +280,8 @@ TEST_F(WebUIDataSourceTest, SetCspValues) {
   EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
                     network::mojom::CSPDirectiveName::DefaultSrc));
   EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
+                    network::mojom::CSPDirectiveName::FrameSrc));
+  EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
                     network::mojom::CSPDirectiveName::ImgSrc));
   EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
                     network::mojom::CSPDirectiveName::MediaSrc));
@@ -306,6 +308,12 @@ TEST_F(WebUIDataSourceTest, SetCspValues) {
   EXPECT_EQ("default-src 'self';",
             url_data_source->GetContentSecurityPolicy(
                 network::mojom::CSPDirectiveName::DefaultSrc));
+
+  source()->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::FrameSrc, "frame-src 'self';");
+  EXPECT_EQ("frame-src 'self';",
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::FrameSrc));
 
   source()->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ImgSrc, "img-src 'self' blob:;");

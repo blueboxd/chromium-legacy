@@ -55,8 +55,12 @@ async function runTestQuery(data) {
     }
   } else if (data.overwriteLastFile) {
     const testBlob = new Blob([data.overwriteLastFile]);
-    extraResultData = await assertCast(firstReceivedItem().overwriteOriginal)
-                          .call(firstReceivedItem(), testBlob);
+    const file = firstReceivedItem();
+    await assertCast(file.overwriteOriginal).call(file, testBlob);
+    extraResultData = {
+      receiverFileName: file.name,
+      receiverErrorName: file.error
+    };
     result = 'overwriteOriginal resolved';
   } else if (data.deleteLastFile) {
     try {

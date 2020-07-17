@@ -598,7 +598,8 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
   }
 
   if (allow_extras && !bucket->is_direct_mapped()) {
-    internal::PartitionTagSetValue(ret, GetNewPartitionTag());
+    internal::PartitionTagSetValue(ret, page->bucket->slot_size,
+                                   GetNewPartitionTag());
   }
 
   return ret;
@@ -625,7 +626,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::Free(void* ptr) {
   auto* root = PartitionRoot<thread_safe>::FromPage(page);
   if (root->allow_extras && !page->bucket->is_direct_mapped()) {
     // TODO(tasak): clear partition tag. Temporarily set the tag to be 0.
-    internal::PartitionTagClearValue(ptr);
+    internal::PartitionTagClearValue(ptr, page->bucket->slot_size);
   }
   ptr = internal::PartitionPointerAdjustSubtract(root->allow_extras, ptr);
   internal::DeferredUnmap deferred_unmap;

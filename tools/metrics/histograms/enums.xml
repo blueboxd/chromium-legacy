@@ -56036,6 +56036,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Add preferred app"/>
   <int value="1" label="Delete preferred app"/>
   <int value="2" label="Delete preferred app for an app id"/>
+  <int value="3" label="Upgrade preferred app to newer version"/>
 </enum>
 
 <enum name="PrefetchRedirect">

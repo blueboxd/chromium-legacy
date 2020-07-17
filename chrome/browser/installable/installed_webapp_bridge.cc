@@ -63,21 +63,6 @@ void InstalledWebappBridge::SetProviderInstance(
       base::android::AttachCurrentThread(), (jlong) provider);
 }
 
-bool InstalledWebappBridge::ShouldDelegateLocationPermission(
-    const GURL& origin_url) {
-  if (!base::FeatureList::IsEnabled(
-          chrome::android::kTrustedWebActivityLocationDelegation)) {
-    return false;
-  }
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_origin =
-      base::android::ConvertUTF8ToJavaString(env, origin_url.spec());
-  jboolean result = Java_InstalledWebappBridge_shouldDelegateLocationPermission(
-      env, j_origin);
-  return result;
-}
-
 void InstalledWebappBridge::DecidePermission(
     const GURL& origin_url,
     PermissionResponseCallback callback) {

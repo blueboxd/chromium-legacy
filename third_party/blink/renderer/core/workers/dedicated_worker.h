@@ -11,7 +11,6 @@
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/common/loader/worker_main_script_load_parameters.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/tokens/worker_tokens.mojom-blink.h"
 #include "third_party/blink/public/platform/web_dedicated_worker.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -96,12 +95,6 @@ class CORE_EXPORT DedicatedWorker final
 
   void DispatchErrorEventForScriptFetchFailure();
 
-  // Returns a unique identifier for this worker, shared between the browser
-  // process and this renderer. This is generated in the renderer process when
-  // the worker is created, and it is subsequently communicated to the browser
-  // process.
-  const mojom::blink::DedicatedWorkerToken& GetToken() const { return token_; }
-
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
 
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState state) override;
@@ -157,10 +150,6 @@ class CORE_EXPORT DedicatedWorker final
 
   // Whether the worker is frozen due to a call from this context.
   bool requested_frozen_ = false;
-
-  // The unique identifier for this DedicatedWorker. This is created in the
-  // renderer process, and passed to the browser.
-  mojom::blink::DedicatedWorkerToken token_;
 };
 
 }  // namespace blink

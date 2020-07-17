@@ -1747,6 +1747,7 @@ jumbo_component("base") {
         "allocator/partition_allocator/address_pool_manager.h",
         "allocator/partition_allocator/address_space_randomization.cc",
         "allocator/partition_allocator/address_space_randomization.h",
+        "allocator/partition_allocator/checked_ptr_support.h",
         "allocator/partition_allocator/memory_reclaimer.cc",
         "allocator/partition_allocator/memory_reclaimer.h",
         "allocator/partition_allocator/oom.h",

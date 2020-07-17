@@ -28,6 +28,7 @@ Background Services
   Push Messaging
 Frames
   top
+    inspected-page.html
 Visible view is a query view: true
 Page reloaded.
 After navigation:
@@ -57,5 +58,6 @@ Background Services
   Push Messaging
 Frames
   top
+    inspected-page.html
 Visible view is a query view: false
 

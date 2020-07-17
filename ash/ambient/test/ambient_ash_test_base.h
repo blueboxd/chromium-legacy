@@ -57,6 +57,10 @@ class AmbientAshTestBase : public AshTestBase {
   // Wait until the event has been processed.
   void SimulateSystemResumeAndWait();
 
+  // Simulates a screen dimmed event.
+  // Wait until the event has been processed.
+  void SetScreenDimmedAndWait(bool is_screen_dimmed);
+
   // Set the size of the next image that will be loaded.
   void SetPhotoViewImageSize(int width, int height);
 

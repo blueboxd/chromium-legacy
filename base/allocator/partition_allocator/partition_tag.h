@@ -5,6 +5,8 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_TAG_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_TAG_H_
 
+#include <string.h>
+
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_tag_bitmap.h"
@@ -61,7 +63,7 @@ ALWAYS_INLINE void* PartitionTagPointerAdjustAdd(void* ptr) {
                                  kInSlotTagBufferSize);
 }
 
-ALWAYS_INLINE void PartitionTagSetValue(void* ptr, PartitionTag value) {
+ALWAYS_INLINE void PartitionTagSetValue(void* ptr, size_t, PartitionTag value) {
   *PartitionTagPointer(ptr) = value;
 }
 
@@ -69,7 +71,7 @@ ALWAYS_INLINE PartitionTag PartitionTagGetValue(void* ptr) {
   return *PartitionTagPointer(ptr);
 }
 
-ALWAYS_INLINE void PartitionTagClearValue(void* ptr) {
+ALWAYS_INLINE void PartitionTagClearValue(void* ptr, size_t) {
   PA_DCHECK(PartitionTagGetValue(ptr));
   *PartitionTagPointer(ptr) = 0;
 }
@@ -122,20 +124,32 @@ ALWAYS_INLINE void* PartitionTagPointerAdjustAdd(void* ptr) {
   return ptr;
 }
 
-ALWAYS_INLINE void PartitionTagSetValue(void* ptr, PartitionTag value) {
-  *PartitionTagPointer(ptr) = value;
+ALWAYS_INLINE void PartitionTagSetValue(void* ptr,
+                                        size_t size,
+                                        PartitionTag value) {
+  PA_DCHECK((size % tag_bitmap::kBytesPerPartitionTag) == 0);
+  size_t tag_count = size >> tag_bitmap::kBytesPerPartitionTagShift;
+  PartitionTag* tag_ptr = PartitionTagPointer(ptr);
+  if (sizeof(PartitionTag) == 1) {
+    memset(tag_ptr, value, tag_count);
+  } else {
+    while (tag_count-- > 0)
+      *tag_ptr++ = value;
+  }
 }
 
 ALWAYS_INLINE PartitionTag PartitionTagGetValue(void* ptr) {
   return *PartitionTagPointer(ptr);
 }
 
-ALWAYS_INLINE void PartitionTagClearValue(void* ptr) {
-  PA_DCHECK(PartitionTagGetValue(ptr));
-  *PartitionTagPointer(ptr) = 0;
+ALWAYS_INLINE void PartitionTagClearValue(void* ptr, size_t size) {
+  size_t tag_region_size = size >> tag_bitmap::kBytesPerPartitionTagShift
+                                       << tag_bitmap::kPartitionTagSizeShift;
+  PA_DCHECK(!memchr(PartitionTagPointer(ptr), 0, tag_region_size));
+  memset(PartitionTagPointer(ptr), 0, tag_region_size);
 }
 
-#else  // !ENABLE_TAG_FOR_CHECKED_PTR2
+#else  // !ENABLE_TAG_FOR_CHECKED_PTR2 && !ENABLE_TAG_FOR_MTE_CHECKED_PTR
 
 using PartitionTag = uint16_t;
 
@@ -163,13 +177,13 @@ ALWAYS_INLINE void* PartitionTagPointerAdjustAdd(void* ptr) {
   return ptr;
 }
 
-ALWAYS_INLINE void PartitionTagSetValue(void*, PartitionTag) {}
+ALWAYS_INLINE void PartitionTagSetValue(void*, size_t, PartitionTag) {}
 
 ALWAYS_INLINE PartitionTag PartitionTagGetValue(void*) {
   return 0;
 }
 
-ALWAYS_INLINE void PartitionTagClearValue(void* ptr) {}
+ALWAYS_INLINE void PartitionTagClearValue(void* ptr, size_t) {}
 
 #endif  // !ENABLE_TAG_FOR_CHECKED_PTR2
 

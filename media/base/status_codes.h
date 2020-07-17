@@ -36,10 +36,14 @@ enum class StatusCode : StatusCodeType {
   kEncryptedContentUnsupported = 0x00000106,
   kClearContentUnsupported = 0x00000107,
   kDecoderMissingCdmForEncryptedContent = 0x00000108,
-  kDecoderFailedInitialization = 0x00000109,
+  kDecoderInitializationFailed = 0x00000109,  // Prefer this one.
+  kDecoderFailedInitialization = kDecoderInitializationFailed,  // Do not use.
   kDecoderCantChangeCodec = 0x0000010A,
-  kDecoderFailedCreation = 0x0000010B,
+  kDecoderCreationFailed = 0x0000010B,              // Prefer this one.
+  kDecoderFailedCreation = kDecoderCreationFailed,  // Do not use.
   kInitializationUnspecifiedFailure = 0x0000010C,
+  kDecoderVideoFrameConstructionFailed = 0x0000010D,
+  kMakeContextCurrentFailed = 0x0000010E,
 
   // Windows Errors: 0x02
   kWindowsWrappedHresult = 0x00000201,
@@ -47,16 +51,26 @@ enum class StatusCode : StatusCodeType {
   kWindowsD3D11Error = 0x00000203,
 
   // D3D11VideoDecoder Errors: 0x03
-  kCantMakeContextCurrent = 0x00000301,
-  kCantPostTexture = 0x00000302,
-  kCantPostAcquireStream = 0x00000303,
-  kCantCreateEglStream = 0x00000304,
-  kCantCreateEglStreamConsumer = 0x00000305,
-  kCantCreateEglStreamProducer = 0x00000306,
-  kCannotCreateTextureSelector = 0x00000307,
-  kCannotQueryID3D11Multithread = 0x00000308,
-  kCannotGetDecoderConfigCount = 0x00000309,
-  kCannotGetDecoderConfig = 0x0000030A,
+  kPostTextureFailed = 0x00000301,
+  kPostAcquireStreamFailed = 0x00000302,
+  kCreateEglStreamFailed = 0x00000303,
+  kCreateEglStreamConsumerFailed = 0x00000304,
+  kCreateEglStreamProducerFailed = 0x00000305,
+  kCreateTextureSelectorFailed = 0x00000306,
+  kQueryID3D11MultithreadFailed = 0x00000307,
+  kGetDecoderConfigCountFailed = 0x00000308,
+  kGetDecoderConfigFailed = 0x00000309,
+  kProcessTextureFailed = 0x0000030A,
+  kUnsupportedTextureFormatForBind = 0x0000030B,
+  kCreateDecoderOutputViewFailed = 0x0000030C,
+  kAllocateTextureForCopyingWrapperFailed = 0x0000030D,
+  kCreateDecoderOutputTextureFailed = 0x0000030E,
+  kCreateVideoProcessorInputViewFailed = 0x0000030F,
+  kVideoProcessorBltFailed = 0x00000310,
+  kCreateVideoProcessorOutputViewFailed = 0x00000311,
+  kCreateVideoProcessorEnumeratorFailed = 0x00000312,
+  kCreateVideoProcessorFailed = 0x00000313,
+  kQueryVideoContextFailed = 0x00000314,
 
   // MojoDecoder Errors: 0x04
   kMojoDecoderNoWrappedDecoder = 0x00000401,

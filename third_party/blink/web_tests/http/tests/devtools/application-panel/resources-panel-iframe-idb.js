@@ -31,7 +31,11 @@
   }
 
   // create IndexedDB in iframe
-  await TestRunner.addIframe('http://localhost:8000/devtools/application-panel/resources/indexeddb-in-iframe.html', {'id': 'indexeddb_page'});
+  // We are enforcing OOPIFs here, so that we are sure that the bots on all platforms create an OOPIF.
+  // This would not be guaranteed otherwise and could potentially result in a different display name
+  // for the iframe in the frame tree.
+  await TestRunner.addIframe('http://devtools.oopif.test:8000/devtools/application-panel/resources/indexeddb-in-iframe.html', {'id': 'indexeddb_page'});
+
   await TestRunner.addSnifferPromise(UI.panels.resources._sidebar.indexedDBListTreeElement, '_indexedDBLoadedForTest');
 
   // create IndexedDB in main frame
@@ -55,7 +59,7 @@
   dumpTree(view._sidebar._sidebarTree.rootElement(), 0);
 
   TestRunner.addResult('\nAdd iframe to page again...\n');
-  await TestRunner.addIframe('http://localhost:8000/devtools/application-panel/resources/indexeddb-in-iframe.html', {'id': 'indexeddb_page'});
+  await TestRunner.addIframe('http://devtools.oopif.test:8000/devtools/application-panel/resources/indexeddb-in-iframe.html', {'id': 'indexeddb_page'});
   await TestRunner.addSnifferPromise(UI.panels.resources._sidebar.indexedDBListTreeElement, '_indexedDBLoadedForTest');
 
   dumpTree(view._sidebar._sidebarTree.rootElement(), 0);

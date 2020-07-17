@@ -56,7 +56,7 @@ SampleSystemWebAppUI::SampleSystemWebAppUI(content::WebUI* web_ui)
   std::string csp =
       std::string("frame-src ") + kChromeUIUntrustedSampleSystemWebAppURL + ";";
   trusted_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::ChildSrc, csp);
+      network::mojom::CSPDirectiveName::FrameSrc, csp);
   auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource::Add(browser_context, trusted_source.release());
   content::WebUIDataSource::Add(browser_context,

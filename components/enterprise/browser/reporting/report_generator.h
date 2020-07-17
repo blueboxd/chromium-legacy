@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ENTERPRISE_REPORTING_REPORT_GENERATOR_H_
-#define CHROME_BROWSER_ENTERPRISE_REPORTING_REPORT_GENERATOR_H_
+#ifndef COMPONENTS_ENTERPRISE_BROWSER_REPORTING_REPORT_GENERATOR_H_
+#define COMPONENTS_ENTERPRISE_BROWSER_REPORTING_REPORT_GENERATOR_H_
 
 #include <memory>
 #include <queue>
@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "build/build_config.h"
 #include "components/enterprise/browser/reporting/browser_report_generator.h"
 #include "components/enterprise/browser/reporting/report_request_definition.h"
 #include "components/enterprise/browser/reporting/report_request_queue_generator.h"
@@ -20,7 +19,7 @@
 
 namespace enterprise_reporting {
 
-class ReportingDelegateFactoryDesktop;
+class ReportingDelegateFactory;
 
 class ReportGenerator {
  public:
@@ -41,7 +40,7 @@ class ReportGenerator {
     virtual void SetAndroidAppInfos(ReportRequest* basic_request) = 0;
   };
 
-  explicit ReportGenerator(ReportingDelegateFactoryDesktop* delegate_factory);
+  explicit ReportGenerator(ReportingDelegateFactory* delegate_factory);
   virtual ~ReportGenerator();
 
   // Asynchronously generates a queue of report requests, providing them to
@@ -91,4 +90,4 @@ class ReportGenerator {
 
 }  // namespace enterprise_reporting
 
-#endif  // CHROME_BROWSER_ENTERPRISE_REPORTING_REPORT_GENERATOR_H_
+#endif  // COMPONENTS_ENTERPRISE_BROWSER_REPORTING_REPORT_GENERATOR_H_

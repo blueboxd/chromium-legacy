@@ -718,7 +718,10 @@ export class Video extends ModeBase {
    * Toggles pause/resume state of video recording.
    * @return {!Promise} Promise resolved when recording is paused/resumed.
    */
-  togglePaused() {
+  async togglePaused() {
+    if (!state.get(state.State.RECORDING)) {
+      return;
+    }
     if (this.togglePaused_ !== null) {
       return this.togglePaused_;
     }
@@ -735,12 +738,18 @@ export class Video extends ModeBase {
       this.togglePaused_ = null;
       waitable.signal();
     };
-    this.mediaRecorder_.addEventListener(toggledEvent, onToggled);
+    const playEffect = async () => {
+      state.set(state.State.RECORDING_UI_PAUSED, toBePaused);
+      await sound.play(toBePaused ? '#sound-rec-pause' : '#sound-rec-start');
+    };
 
+    this.mediaRecorder_.addEventListener(toggledEvent, onToggled);
     if (toBePaused) {
+      waitable.wait().then(playEffect);
       this.recordTime_.stop({pause: true});
       this.mediaRecorder_.pause();
     } else {
+      await playEffect();
       this.recordTime_.start({resume: true});
       this.mediaRecorder_.resume();
     }
@@ -841,6 +850,7 @@ export class Video extends ModeBase {
       const onstop = (event) => {
         state.set(state.State.RECORDING, false);
         state.set(state.State.RECORDING_PAUSED, false);
+        state.set(state.State.RECORDING_UI_PAUSED, false);
 
         this.mediaRecorder_.removeEventListener(
             'dataavailable', ondataavailable);
@@ -858,6 +868,7 @@ export class Video extends ModeBase {
       this.mediaRecorder_.start(100);
       state.set(state.State.RECORDING, true);
       state.set(state.State.RECORDING_PAUSED, false);
+      state.set(state.State.RECORDING_UI_PAUSED, false);
     });
   }
 }

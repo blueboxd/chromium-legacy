@@ -9,6 +9,7 @@
 
 #include "components/enterprise/browser/reporting/browser_report_generator.h"
 #include "components/enterprise/browser/reporting/profile_report_generator.h"
+#include "components/enterprise/browser/reporting/report_generator.h"
 
 namespace enterprise_reporting {
 
@@ -25,6 +26,9 @@ class ReportingDelegateFactory {
 
   virtual std::unique_ptr<ProfileReportGenerator::Delegate>
   GetProfileReportGeneratorDelegate() = 0;
+
+  virtual std::unique_ptr<ReportGenerator::Delegate>
+  GetReportGeneratorDelegate() = 0;
 };
 
 }  // namespace enterprise_reporting

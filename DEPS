@@ -199,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '3164b4494fbaed40e22c1c15df9abf25f4930f04',
+  'skia_revision': '9acf5844cae6cd48bc106ea9bf5a2b337c8d1d33',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -270,7 +270,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '832dab01db1d5995b096e83e209653e7487e962e',
+  'devtools_frontend_revision': '4cbb6ef49709470e4b4d4cd91ea656a93d6ecf77',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1330,7 +1330,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'DGIj4lLT8ky5-X2nCeWM01poovHhDF8f2Lyu7xDeEjoC'
+              'version': '7tTJSIthT9aU92WEsZxJHtVESVO1zjkkD8KjYxqSjAgC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1480,7 +1480,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '0c5f244817c22303d65811e6a25b3d97f8a08127',
+    Var('webrtc_git') + '/src.git' + '@' + 'b8c03e40673fccdc9be3cc731d627de87f38ea03',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1552,7 +1552,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b150835596913d2051f12b3e60d8b12a38398f91',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8428d2664eb5d1c74aaeb2022bcef03409adac9b',
     'condition': 'checkout_src_internal',
   },
 
@@ -1560,7 +1560,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': '1XLVSh3k-pIPAMRHWfJCplE490YVs_aTLs81WqTGqUgC',
+        'version': 'vqT-WqhwS504vwcLdBC9Y998VXTrAydEbVVHCjdZSPMC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

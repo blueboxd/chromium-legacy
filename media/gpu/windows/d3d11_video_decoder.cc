@@ -217,13 +217,13 @@ D3D11VideoDecoder::CreateD3D11Decoder() {
                         : TextureSelector::HDRMode::kSDROnly,
       &format_checker, media_log_.get());
   if (!texture_selector_)
-    return StatusCode::kCannotCreateTextureSelector;
+    return StatusCode::kCreateTextureSelectorFailed;
 
   UINT config_count = 0;
   hr = video_device_->GetVideoDecoderConfigCount(
       decoder_configurator_->DecoderDescriptor(), &config_count);
   if (FAILED(hr) || config_count == 0) {
-    return Status(StatusCode::kCannotGetDecoderConfigCount)
+    return Status(StatusCode::kGetDecoderConfigCountFailed)
         .AddCause(HresultToStatus(hr));
   }
 
@@ -234,7 +234,7 @@ D3D11VideoDecoder::CreateD3D11Decoder() {
     hr = video_device_->GetVideoDecoderConfig(
         decoder_configurator_->DecoderDescriptor(), i, &dec_config);
     if (FAILED(hr)) {
-      return Status(StatusCode::kCannotGetDecoderConfig)
+      return Status(StatusCode::kGetDecoderConfigFailed)
           .AddCause(HresultToStatus(hr));
     }
 
@@ -278,7 +278,7 @@ D3D11VideoDecoder::CreateD3D11Decoder() {
   hr = video_device_->CreateVideoDecoder(
       decoder_configurator_->DecoderDescriptor(), &dec_config, &video_decoder);
   if (!video_decoder.Get() || FAILED(hr)) {
-    return Status(StatusCode::kDecoderFailedCreation)
+    return Status(StatusCode::kDecoderCreationFailed)
         .AddCause(HresultToStatus(hr));
   }
 
@@ -369,7 +369,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     ComD3D11Multithread multi_threaded;
     hr = device_->QueryInterface(IID_PPV_ARGS(&multi_threaded));
     if (!SUCCEEDED(hr)) {
-      NotifyError(Status(StatusCode::kCannotQueryID3D11Multithread)
+      NotifyError(Status(StatusCode::kQueryID3D11MultithreadFailed)
                       .AddCause(HresultToStatus(hr)));
       return;
     }
@@ -705,22 +705,25 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
   for (size_t i = 0; i < D3D11DecoderConfigurator::BUFFER_COUNT; i++) {
     // Create an input texture / texture array if we haven't already.
     if (!in_texture) {
-      in_texture = decoder_configurator_->CreateOutputTexture(
+      auto result = decoder_configurator_->CreateOutputTexture(
           device_, size,
           use_single_video_decoder_texture_
               ? 1
               : D3D11DecoderConfigurator::BUFFER_COUNT);
+      if (result.has_value()) {
+        in_texture = std::move(result.value());
+      } else {
+        NotifyError(std::move(result.error()).AddHere());
+        return;
+      }
     }
 
-    if (!in_texture) {
-      NotifyError("Failed to create a Texture2D for PictureBuffers");
-      return;
-    }
+    DCHECK(!!in_texture);
 
     auto tex_wrapper = texture_selector_->CreateTextureWrapper(
         device_, video_device_, device_context_, size);
     if (!tex_wrapper) {
-      NotifyError("Unable to allocate a texture for a CopyingTexture2DWrapper");
+      NotifyError(StatusCode::kAllocateTextureForCopyingWrapperFailed);
       return;
     }
 
@@ -728,10 +731,11 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
     picture_buffers_.push_back(
         new D3D11PictureBuffer(decoder_task_runner_, in_texture, array_slice,
                                std::move(tex_wrapper), size, i /* level */));
-    if (!picture_buffers_[i]->Init(
-            gpu_task_runner_, get_helper_cb_, video_device_,
-            decoder_configurator_->DecoderGuid(), media_log_->Clone())) {
-      NotifyError("Unable to allocate PictureBuffer");
+    Status result = picture_buffers_[i]->Init(
+        gpu_task_runner_, get_helper_cb_, video_device_,
+        decoder_configurator_->DecoderGuid(), media_log_->Clone());
+    if (!result.is_ok()) {
+      NotifyError(std::move(result).AddHere());
       return;
     }
 
@@ -790,10 +794,11 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
 
   MailboxHolderArray mailbox_holders;
   gfx::ColorSpace output_color_space;
-  if (!picture_buffer->ProcessTexture(
-          picture->get_colorspace().ToGfxColorSpace(), &mailbox_holders,
-          &output_color_space)) {
-    NotifyError("Unable to process texture");
+  Status result = picture_buffer->ProcessTexture(
+      picture->get_colorspace().ToGfxColorSpace(), &mailbox_holders,
+      &output_color_space);
+  if (!result.is_ok()) {
+    NotifyError(std::move(result).AddHere());
     return false;
   }
 
@@ -805,7 +810,7 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   if (!frame) {
     // This can happen if, somehow, we get an unsupported combination of
     // pixel format, etc.
-    NotifyError("Failed to construct video frame");
+    NotifyError(StatusCode::kDecoderVideoFrameConstructionFailed);
     return false;
   }
 

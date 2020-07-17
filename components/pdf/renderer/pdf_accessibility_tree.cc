@@ -404,12 +404,6 @@ class PdfAccessibilityTreeBuilder {
     ui::AXNodeData* static_text_node = nullptr;
     ui::AXNodeData* previous_on_line_node = nullptr;
     std::string static_text;
-    uint32_t current_link_index = 0;
-    uint32_t current_image_index = 0;
-    uint32_t current_highlight_index = 0;
-    uint32_t current_text_field_index = 0;
-    uint32_t current_button_index = 0;
-    uint32_t current_choice_field_index = 0;
     LineHelper line_helper(text_runs_);
     bool pdf_forms_enabled =
         base::FeatureList::IsEnabled(chrome_pdf::features::kAccessiblePDFForm);
@@ -425,49 +419,49 @@ class PdfAccessibilityTreeBuilder {
 
       // If the |text_run_index| is less than or equal to the link's
       // text_run_index, then push the link node in the paragraph.
-      if (IsObjectInTextRun(links_, current_link_index, text_run_index)) {
+      if (IsObjectInTextRun(links_, current_link_index_, text_run_index)) {
         FinishStaticNode(&static_text_node, &static_text);
         const ppapi::PdfAccessibilityLinkInfo& link =
-            links_[current_link_index++];
+            links_[current_link_index_++];
         AddLinkToParaNode(link, para_node, &previous_on_line_node,
                           &text_run_index);
 
         if (link.text_run_count == 0)
           continue;
 
-      } else if (IsObjectInTextRun(images_, current_image_index,
+      } else if (IsObjectInTextRun(images_, current_image_index_,
                                    text_run_index)) {
         FinishStaticNode(&static_text_node, &static_text);
-        AddImageToParaNode(images_[current_image_index++], para_node,
+        AddImageToParaNode(images_[current_image_index_++], para_node,
                            &text_run_index);
         continue;
-      } else if (IsObjectInTextRun(highlights_, current_highlight_index,
+      } else if (IsObjectInTextRun(highlights_, current_highlight_index_,
                                    text_run_index) &&
                  base::FeatureList::IsEnabled(
                      chrome_pdf::features::kAccessiblePDFHighlight)) {
         FinishStaticNode(&static_text_node, &static_text);
-        AddHighlightToParaNode(highlights_[current_highlight_index++],
+        AddHighlightToParaNode(highlights_[current_highlight_index_++],
                                para_node, &previous_on_line_node,
                                &text_run_index);
-      } else if (IsObjectInTextRun(text_fields_, current_text_field_index,
+      } else if (IsObjectInTextRun(text_fields_, current_text_field_index_,
                                    text_run_index) &&
                  pdf_forms_enabled) {
         FinishStaticNode(&static_text_node, &static_text);
-        AddTextFieldToParaNode(text_fields_[current_text_field_index++],
+        AddTextFieldToParaNode(text_fields_[current_text_field_index_++],
                                para_node, &text_run_index);
         continue;
-      } else if (IsObjectInTextRun(buttons_, current_button_index,
+      } else if (IsObjectInTextRun(buttons_, current_button_index_,
                                    text_run_index) &&
                  pdf_forms_enabled) {
         FinishStaticNode(&static_text_node, &static_text);
-        AddButtonToParaNode(buttons_[current_button_index++], para_node,
+        AddButtonToParaNode(buttons_[current_button_index_++], para_node,
                             &text_run_index);
         continue;
-      } else if (IsObjectInTextRun(choice_fields_, current_choice_field_index,
+      } else if (IsObjectInTextRun(choice_fields_, current_choice_field_index_,
                                    text_run_index) &&
                  pdf_forms_enabled) {
         FinishStaticNode(&static_text_node, &static_text);
-        AddChoiceFieldToParaNode(choice_fields_[current_choice_field_index++],
+        AddChoiceFieldToParaNode(choice_fields_[current_choice_field_index_++],
                                  para_node, &text_run_index);
         continue;
       } else {
@@ -529,21 +523,7 @@ class PdfAccessibilityTreeBuilder {
       }
     }
 
-    base::span<const ppapi::PdfAccessibilityLinkInfo> remaining_links =
-        base::make_span(links_).subspan(current_link_index);
-    base::span<const ppapi::PdfAccessibilityImageInfo> remaining_images =
-        base::make_span(images_).subspan(current_image_index);
-    base::span<const ppapi::PdfAccessibilityTextFieldInfo>
-        remaining_text_fields =
-            base::make_span(text_fields_).subspan(current_text_field_index);
-    base::span<const ppapi::PdfAccessibilityButtonInfo> remaining_buttons =
-        base::make_span(buttons_).subspan(current_button_index);
-    base::span<const ppapi::PdfAccessibilityChoiceFieldInfo>
-        remaining_choice_fields =
-            base::make_span(choice_fields_).subspan(current_text_field_index);
-    AddRemainingAnnotations(remaining_links, remaining_images,
-                            remaining_text_fields, remaining_buttons,
-                            remaining_choice_fields, para_node);
+    AddRemainingAnnotations(para_node);
   }
 
  private:
@@ -1056,17 +1036,14 @@ class PdfAccessibilityTreeBuilder {
     --(*text_run_index);
   }
 
-  void AddRemainingAnnotations(
-      base::span<const ppapi::PdfAccessibilityLinkInfo> links,
-      base::span<const ppapi::PdfAccessibilityImageInfo> images,
-      base::span<const ppapi::PdfAccessibilityTextFieldInfo> text_fields,
-      base::span<const ppapi::PdfAccessibilityButtonInfo> buttons,
-      base::span<const ppapi::PdfAccessibilityChoiceFieldInfo> choice_fields,
-      ui::AXNodeData* para_node) {
+  void AddRemainingAnnotations(ui::AXNodeData* para_node) {
     // If we don't have additional links, images or form fields to insert in the
     // tree, then return.
-    if (links.empty() && images.empty() && text_fields.empty() &&
-        buttons.empty() && choice_fields.empty()) {
+    if (current_link_index_ >= links_.size() &&
+        current_image_index_ >= images_.size() &&
+        current_text_field_index_ >= text_fields_.size() &&
+        current_button_index_ >= buttons_.size() &&
+        current_choice_field_index_ >= choice_fields_.size()) {
       return;
     }
 
@@ -1078,13 +1055,13 @@ class PdfAccessibilityTreeBuilder {
       page_node_->child_ids.push_back(para_node->id);
     }
     // Push all the links not anchored to any text run to the last paragraph.
-    for (const ppapi::PdfAccessibilityLinkInfo& link : links) {
-      ui::AXNodeData* link_node = CreateLinkNode(link);
+    for (size_t i = current_link_index_; i < links_.size(); i++) {
+      ui::AXNodeData* link_node = CreateLinkNode(links_[i]);
       para_node->child_ids.push_back(link_node->id);
     }
     // Push all the images not anchored to any text run to the last paragraph.
-    for (const ppapi::PdfAccessibilityImageInfo& image : images) {
-      ui::AXNodeData* image_node = CreateImageNode(image);
+    for (size_t i = current_image_index_; i < images_.size(); i++) {
+      ui::AXNodeData* image_node = CreateImageNode(images_[i]);
       para_node->child_ids.push_back(image_node->id);
     }
 
@@ -1092,24 +1069,24 @@ class PdfAccessibilityTreeBuilder {
             chrome_pdf::features::kAccessiblePDFForm)) {
       // Push all the text fields not anchored to any text run to the last
       // paragraph.
-      for (const ppapi::PdfAccessibilityTextFieldInfo& text_field :
-           text_fields) {
-        ui::AXNodeData* text_field_node = CreateTextFieldNode(text_field);
+      for (size_t i = current_text_field_index_; i < text_fields_.size(); i++) {
+        ui::AXNodeData* text_field_node = CreateTextFieldNode(text_fields_[i]);
         para_node->child_ids.push_back(text_field_node->id);
       }
 
       // Push all the buttons not anchored to any text run to the last
       // paragraph.
-      for (const ppapi::PdfAccessibilityButtonInfo& button : buttons) {
-        ui::AXNodeData* button_node = CreateButtonNode(button);
+      for (size_t i = current_button_index_; i < buttons_.size(); i++) {
+        ui::AXNodeData* button_node = CreateButtonNode(buttons_[i]);
         para_node->child_ids.push_back(button_node->id);
       }
 
       // Push all the choice fields not anchored to any text run to the last
       // paragraph.
-      for (const ppapi::PdfAccessibilityChoiceFieldInfo& choice_field :
-           choice_fields) {
-        ui::AXNodeData* choice_field_node = CreateChoiceFieldNode(choice_field);
+      for (size_t i = current_choice_field_index_; i < choice_fields_.size();
+           i++) {
+        ui::AXNodeData* choice_field_node =
+            CreateChoiceFieldNode(choice_fields_[i]);
         para_node->child_ids.push_back(choice_field_node->id);
       }
     }
@@ -1119,11 +1096,17 @@ class PdfAccessibilityTreeBuilder {
   const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs_;
   const std::vector<PP_PrivateAccessibilityCharInfo>& chars_;
   const std::vector<ppapi::PdfAccessibilityLinkInfo>& links_;
+  uint32_t current_link_index_ = 0;
   const std::vector<ppapi::PdfAccessibilityImageInfo>& images_;
+  uint32_t current_image_index_ = 0;
   const std::vector<ppapi::PdfAccessibilityHighlightInfo>& highlights_;
+  uint32_t current_highlight_index_ = 0;
   const std::vector<ppapi::PdfAccessibilityTextFieldInfo>& text_fields_;
+  uint32_t current_text_field_index_ = 0;
   const std::vector<ppapi::PdfAccessibilityButtonInfo>& buttons_;
+  uint32_t current_button_index_ = 0;
   const std::vector<ppapi::PdfAccessibilityChoiceFieldInfo>& choice_fields_;
+  uint32_t current_choice_field_index_ = 0;
   const gfx::RectF& page_bounds_;
   uint32_t page_index_;
   ui::AXNodeData* page_node_;

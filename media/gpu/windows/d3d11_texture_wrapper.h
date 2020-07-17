@@ -45,16 +45,17 @@ class MEDIA_GPU_EXPORT Texture2DWrapper {
   virtual ~Texture2DWrapper();
 
   // Initialize the wrapper.
-  virtual bool Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-                    GetCommandBufferHelperCB get_helper_cb) = 0;
+  virtual Status Init(
+      scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+      GetCommandBufferHelperCB get_helper_cb) = 0;
 
   // Import |texture|, |array_slice| and return the mailbox(es) that can be
   // used to refer to it.
-  virtual bool ProcessTexture(ComD3D11Texture2D texture,
-                              size_t array_slice,
-                              const gfx::ColorSpace& input_color_space,
-                              MailboxHolderArray* mailbox_dest_out,
-                              gfx::ColorSpace* output_color_space) = 0;
+  virtual Status ProcessTexture(ComD3D11Texture2D texture,
+                                size_t array_slice,
+                                const gfx::ColorSpace& input_color_space,
+                                MailboxHolderArray* mailbox_dest_out,
+                                gfx::ColorSpace* output_color_space) = 0;
 
   virtual void SetStreamHDRMetadata(const HDRMetadata& stream_metadata) = 0;
   virtual void SetDisplayHDRMetadata(
@@ -75,14 +76,14 @@ class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
   DefaultTexture2DWrapper(const gfx::Size& size, DXGI_FORMAT dxgi_format);
   ~DefaultTexture2DWrapper() override;
 
-  bool Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-            GetCommandBufferHelperCB get_helper_cb) override;
+  Status Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+              GetCommandBufferHelperCB get_helper_cb) override;
 
-  bool ProcessTexture(ComD3D11Texture2D texture,
-                      size_t array_slice,
-                      const gfx::ColorSpace& input_color_space,
-                      MailboxHolderArray* mailbox_dest,
-                      gfx::ColorSpace* output_color_space) override;
+  Status ProcessTexture(ComD3D11Texture2D texture,
+                        size_t array_slice,
+                        const gfx::ColorSpace& input_color_space,
+                        MailboxHolderArray* mailbox_dest,
+                        gfx::ColorSpace* output_color_space) override;
 
   void SetStreamHDRMetadata(const HDRMetadata& stream_metadata) override;
   void SetDisplayHDRMetadata(

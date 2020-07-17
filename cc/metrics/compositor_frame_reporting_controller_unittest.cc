@@ -1160,8 +1160,8 @@ TEST_F(CompositorFrameReportingControllerTest,
   // Verify that EventLatency histograms are recorded.
   const int64_t total_latency_ms =
       (details.presentation_feedback.timestamp - event_time).InMicroseconds();
-  const int64_t swap_end_latency_ms =
-      (details.swap_timings.swap_end - event_time).InMicroseconds();
+  const int64_t swap_begin_latency_ms =
+      (details.swap_timings.swap_start - event_time).InMicroseconds();
   struct {
     const char* name;
     const int64_t latency_ms;
@@ -1169,12 +1169,12 @@ TEST_F(CompositorFrameReportingControllerTest,
   } expected_counts[] = {
       {"EventLatency.GestureScrollBegin.Wheel.TotalLatency", total_latency_ms,
        1},
-      {"EventLatency.GestureScrollBegin.Wheel.TotalLatencyToSwapEnd",
-       swap_end_latency_ms, 1},
+      {"EventLatency.GestureScrollBegin.Wheel.TotalLatencyToSwapBegin",
+       swap_begin_latency_ms, 1},
       {"EventLatency.GestureScrollUpdate.Wheel.TotalLatency", total_latency_ms,
        2},
-      {"EventLatency.GestureScrollUpdate.Wheel.TotalLatencyToSwapEnd",
-       swap_end_latency_ms, 2},
+      {"EventLatency.GestureScrollUpdate.Wheel.TotalLatencyToSwapBegin",
+       swap_begin_latency_ms, 2},
   };
   for (const auto& expected_count : expected_counts) {
     histogram_tester.ExpectTotalCount(expected_count.name,

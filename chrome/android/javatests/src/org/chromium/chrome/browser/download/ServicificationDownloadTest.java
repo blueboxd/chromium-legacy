@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
@@ -99,6 +100,7 @@ public final class ServicificationDownloadTest {
 
     @Test
     @LargeTest
+    @DisabledTest(message = "Noop since UseDownloadOfflineContentProvider is enabled in debug.")
     @Feature({"Download"})
     public void testResumeInterruptedDownload() {
         if (useDownloadOfflineContentProvider()) return;

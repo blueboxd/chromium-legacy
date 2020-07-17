@@ -14,7 +14,6 @@ import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_container.mojom";
-import "third_party/blink/public/mojom/tokens/worker_tokens.mojom";
 import "url/mojom/url.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the
@@ -75,7 +74,6 @@ interface DedicatedWorkerHostFactory {
   // Creates a new DedicatedWorkerHost, and requests |browser_interface_broker|
   // to provide the worker access to mojo interfaces.
   CreateWorkerHost(
-      blink.mojom.DedicatedWorkerToken token,
       pending_receiver<blink.mojom.BrowserInterfaceBroker>
           browser_interface_broker) =>
     (network.mojom.CrossOriginEmbedderPolicy parent_coep);
@@ -91,7 +89,6 @@ interface DedicatedWorkerHostFactory {
   // |client| is used for notifying the renderer process of results of worker
   // host creation and script loading.
   CreateWorkerHostAndStartScriptLoad(
-      blink.mojom.DedicatedWorkerToken token,
       url.mojom.Url script_url,
       network.mojom.CredentialsMode credentials_mode,
       blink.mojom.FetchClientSettingsObject

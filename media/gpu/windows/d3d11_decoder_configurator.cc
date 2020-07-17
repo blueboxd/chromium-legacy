@@ -9,6 +9,8 @@
 #include "base/feature_list.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/base/status_codes.h"
+#include "media/base/win/hresult_status_helper.h"
 #include "media/gpu/windows/d3d11_copying_texture_wrapper.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/direct_composition_surface_win.h"
@@ -71,7 +73,7 @@ bool D3D11DecoderConfigurator::SupportsDevice(
   return false;
 }
 
-ComD3D11Texture2D D3D11DecoderConfigurator::CreateOutputTexture(
+ErrorOr<ComD3D11Texture2D> D3D11DecoderConfigurator::CreateOutputTexture(
     ComD3D11Device device,
     gfx::Size size,
     uint32_t array_size) {
@@ -79,12 +81,15 @@ ComD3D11Texture2D D3D11DecoderConfigurator::CreateOutputTexture(
   output_texture_desc_.Height = size.height();
   output_texture_desc_.ArraySize = array_size;
 
-  ComD3D11Texture2D result;
-  if (!SUCCEEDED(
-          device->CreateTexture2D(&output_texture_desc_, nullptr, &result)))
-    return nullptr;
+  ComD3D11Texture2D texture;
+  HRESULT hr =
+      device->CreateTexture2D(&output_texture_desc_, nullptr, &texture);
+  if (!SUCCEEDED(hr)) {
+    return Status(StatusCode::kCreateDecoderOutputTextureFailed)
+        .AddCause(HresultToStatus(hr));
+  }
 
-  return result;
+  return texture;
 }
 
 // private

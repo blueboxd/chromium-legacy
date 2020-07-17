@@ -75,6 +75,7 @@
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "net/base/mac/url_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
@@ -972,7 +973,9 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     }
     case PasswordCheckStateUnSafe: {
       _passwordProblemsItem.detailText =
-          l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_UNSAFE_STATE);
+          base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
+              IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT,
+              _passwordCheck->GetCompromisedCredentials().size()));
       UIImage* unSafeIconImage = [[UIImage imageNamed:@"settings_unsafe_state"]
           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       _passwordProblemsItem.trailingImage = unSafeIconImage;
@@ -983,10 +986,12 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       break;
     }
     case PasswordCheckStateSafe: {
+      DCHECK(_passwordCheck->GetCompromisedCredentials().empty());
       UIImage* safeIconImage = [[UIImage imageNamed:@"settings_safe_state"]
           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       _passwordProblemsItem.detailText =
-          l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_SAFE_STATE);
+          base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
+              IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT, 0));
       _passwordProblemsItem.trailingImage = safeIconImage;
       _passwordProblemsItem.trailingImageTintColor =
           [UIColor colorNamed:kGreenColor];

@@ -53,7 +53,7 @@ HelpAppUI::HelpAppUI(content::WebUI* web_ui,
   std::string csp =
       std::string("frame-src ") + kChromeUIHelpAppUntrustedURL + ";";
   host_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::ChildSrc, csp);
+      network::mojom::CSPDirectiveName::FrameSrc, csp);
 
   content::WebUIDataSource* untrusted_source =
       CreateHelpAppUntrustedDataSource(delegate_.get());

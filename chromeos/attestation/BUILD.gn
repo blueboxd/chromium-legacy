@@ -35,10 +35,13 @@ source_set("test_support") {
   deps = [
     "//base/test:test_support",
     "//chromeos/dbus/attestation:attestation_proto",
+    "//chromeos/dbus/constants:constants",
     "//components/account_id",
     "//testing/gmock",
   ]
   sources = [
+    "fake_attestation_flow.cc",
+    "fake_attestation_flow.h",
     "mock_attestation_flow.cc",
     "mock_attestation_flow.h",
   ]

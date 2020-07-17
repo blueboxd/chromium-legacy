@@ -94,7 +94,7 @@ guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
  * @param {string} fileName
  * @param {string} errorName
  * @param {!OverwriteFileMessage} overwrite
- * @return {!Promise<!OverwriteFileResponse>}
+ * @return {!Promise<!OverwriteViaFilePickerResponse>}
  */
 async function pickFileForFailedOverwrite(fileName, errorName, overwrite) {
   const fileHandle = await pickWritableFile(fileName, overwrite.blob.type);

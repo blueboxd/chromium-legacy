@@ -9,9 +9,9 @@
 
 #include <memory>
 
-#include "chrome/browser/enterprise/reporting/report_generator.h"
 #include "components/enterprise/browser/reporting/browser_report_generator.h"
 #include "components/enterprise/browser/reporting/profile_report_generator.h"
+#include "components/enterprise/browser/reporting/report_generator.h"
 
 namespace enterprise_reporting {
 
@@ -32,7 +32,8 @@ class ReportingDelegateFactoryDesktop : public ReportingDelegateFactory {
   std::unique_ptr<ProfileReportGenerator::Delegate>
   GetProfileReportGeneratorDelegate() override;
 
-  std::unique_ptr<ReportGenerator::Delegate> GetReportGeneratorDelegate();
+  std::unique_ptr<ReportGenerator::Delegate> GetReportGeneratorDelegate()
+      override;
 };
 
 }  // namespace enterprise_reporting

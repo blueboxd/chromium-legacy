@@ -6351,7 +6351,7 @@ crbug.com/1046784 http/tests/devtools/coverage/reveal-autoformat.js [ Pass Timeo
 crbug.com/1046784 http/tests/devtools/file-system-project.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/devtools/bindings/navigator-frame-attach-detach.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/devtools/forced-layout-in-microtask.js [ Pass Timeout ]
-crbug.com/1046784 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Pass Failure Timeout ]
+crbug.com/1046784 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/inspector-protocol/service-worker/target-reloaded-after-crash.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/inspector-protocol/network/navigate-iframe-out2in.js [ Pass Timeout ]
@@ -6872,16 +6872,8 @@ crbug.com/1105279 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-for-different-
 
 crbug.com/1104381 fast/hidpi/image-srcset-change-resource-dpr.html [ Pass Failure ]
 
-# Temporarily disable to land DevTools changes
-crbug.com/1101262 http/tests/devtools/application-panel/resources-panel-on-navigation.js [ Pass Failure ]
-crbug.com/1101262 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Pass Failure ]
-crbug.com/1101262 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
-crbug.com/1101262 http/tests/devtools/application-panel/resources-panel-websql.js [ Pass Failure ]
-crbug.com/1101262 http/tests/devtools/resource-tree/resource-tree-non-unique-url.js [ Pass Failure ]
-
 # Temporarily disable tests to allow fixing of devtools path escaping
 crbug.com/1094436 http/tests/devtools/overrides/project-added-with-existing-files-bind.js [ Pass Timeout ]
 crbug.com/1094436 http/tests/devtools/persistence/automapping-urlencoded-paths.js [ Pass Failure ]
 crbug.com/1094436 http/tests/devtools/sources/debugger-ui/snippet-edit-breakpoint.js [ Pass Timeout ]
 crbug.com/1094436 http/tests/devtools/sources/debugger/navigator-view.js [ Pass Failure Crash ]
-

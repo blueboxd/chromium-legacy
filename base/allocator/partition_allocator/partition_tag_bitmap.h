@@ -5,17 +5,14 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_TAG_BITMAP_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_TAG_BITMAP_H_
 
+#include "base/allocator/partition_allocator/checked_ptr_support.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
-
-#define ENABLE_TAG_FOR_CHECKED_PTR2 0
-#define ENABLE_TAG_FOR_MTE_CHECKED_PTR 0
 
 namespace base {
 
 namespace internal {
 
 #if ENABLE_TAG_FOR_MTE_CHECKED_PTR
-#undef ENABLE_TAG_FOR_CHECKED_PTR2
 
 // Normal bucket layout
 // +----------------+ super_page_base
@@ -62,6 +59,9 @@ static constexpr size_t kBytesPerPartitionTagShift = 4;
 //  +-----------+ slot_size
 static constexpr size_t kBytesPerPartitionTag = 1U
                                                 << kBytesPerPartitionTagShift;
+static_assert(
+    kGenericMinBucketedOrder >= kBytesPerPartitionTagShift + 1,
+    "MTECheckedPtr requires kBytesPerPartitionTagShift-bytes alignment.");
 
 static constexpr size_t kBytesPerPartitionTagRatio =
     kBytesPerPartitionTag / kPartitionTagSize;

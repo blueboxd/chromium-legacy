@@ -11932,6 +11932,7 @@ interface webkitURL
     method getScreens
     method getSelection
     method getWindowSegments
+    method isMultiScreen
     method matchMedia
     method moveBy
     method moveTo

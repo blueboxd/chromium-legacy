@@ -62,7 +62,7 @@ DefaultTexture2DWrapper::DefaultTexture2DWrapper(const gfx::Size& size,
 
 DefaultTexture2DWrapper::~DefaultTexture2DWrapper() = default;
 
-bool DefaultTexture2DWrapper::ProcessTexture(
+Status DefaultTexture2DWrapper::ProcessTexture(
     ComD3D11Texture2D texture,
     size_t array_slice,
     const gfx::ColorSpace& input_color_space,
@@ -72,7 +72,8 @@ bool DefaultTexture2DWrapper::ProcessTexture(
   // from some previous operation.
   // TODO(liberato): Return the error.
   if (received_error_)
-    return false;
+    return Status(StatusCode::kProcessTextureFailed)
+        .AddCause(std::move(*received_error_));
 
   // Temporary check to track down https://crbug.com/1077645
   CHECK(texture);
@@ -90,10 +91,10 @@ bool DefaultTexture2DWrapper::ProcessTexture(
   // We're just binding, so the output and output color spaces are the same.
   *output_color_space = input_color_space;
 
-  return true;
+  return OkStatus();
 }
 
-bool DefaultTexture2DWrapper::Init(
+Status DefaultTexture2DWrapper::Init(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
     GetCommandBufferHelperCB get_helper_cb) {
   gpu_resources_ = base::SequenceBound<GpuResources>(
@@ -113,7 +114,8 @@ bool DefaultTexture2DWrapper::Init(
       textures_per_picture = 1;
       break;
     default:
-      return false;
+      return Status(StatusCode::kUnsupportedTextureFormatForBind)
+          .WithData("dxgi_format", dxgi_format_);
   }
 
   // Generate mailboxes and holders.
@@ -134,7 +136,7 @@ bool DefaultTexture2DWrapper::Init(
   gpu_resources_.Post(FROM_HERE, &GpuResources::Init, std::move(get_helper_cb),
                       std::move(mailboxes), GL_TEXTURE_EXTERNAL_OES, size_,
                       textures_per_picture);
-  return true;
+  return OkStatus();
 }
 
 void DefaultTexture2DWrapper::OnError(Status status) {
@@ -167,7 +169,7 @@ void DefaultTexture2DWrapper::GpuResources::Init(
   helper_ = get_helper_cb.Run();
 
   if (!helper_ || !helper_->MakeContextCurrent()) {
-    NotifyError(StatusCode::kCantMakeContextCurrent);
+    NotifyError(StatusCode::kMakeContextCurrentFailed);
     return;
   }
 
@@ -193,7 +195,7 @@ void DefaultTexture2DWrapper::GpuResources::Init(
   };
   EGLStreamKHR stream = eglCreateStreamKHR(egl_display, stream_attributes);
   if (!stream) {
-    NotifyError(StatusCode::kCantCreateEglStream);
+    NotifyError(StatusCode::kCreateEglStreamFailed);
     return;
   }
 
@@ -232,7 +234,7 @@ void DefaultTexture2DWrapper::GpuResources::Init(
   EGLBoolean result = eglStreamConsumerGLTextureExternalAttribsNV(
       egl_display, stream, consumer_attributes.data());
   if (!result) {
-    NotifyError(StatusCode::kCantCreateEglStreamConsumer);
+    NotifyError(StatusCode::kCreateEglStreamConsumerFailed);
     return;
   }
 
@@ -243,7 +245,7 @@ void DefaultTexture2DWrapper::GpuResources::Init(
   result = eglCreateStreamProducerD3DTextureANGLE(egl_display, stream,
                                                   producer_attributes);
   if (!result) {
-    NotifyError(StatusCode::kCantCreateEglStreamProducer);
+    NotifyError(StatusCode::kCreateEglStreamProducerFailed);
     return;
   }
 
@@ -269,7 +271,7 @@ void DefaultTexture2DWrapper::GpuResources::PushNewTexture(
   gl_image_->SetTexture(texture, array_slice);
 
   if (!helper_ || !helper_->MakeContextCurrent()) {
-    NotifyError(StatusCode::kCantMakeContextCurrent);
+    NotifyError(StatusCode::kMakeContextCurrentFailed);
     return;
   }
 
@@ -284,12 +286,12 @@ void DefaultTexture2DWrapper::GpuResources::PushNewTexture(
   if (!eglStreamPostD3DTextureANGLE(egl_display, stream_,
                                     static_cast<void*>(texture.Get()),
                                     frame_attributes)) {
-    NotifyError(StatusCode::kCantPostTexture);
+    NotifyError(StatusCode::kPostTextureFailed);
     return;
   }
 
   if (!eglStreamConsumerAcquireKHR(egl_display, stream_)) {
-    NotifyError(StatusCode::kCantPostAcquireStream);
+    NotifyError(StatusCode::kPostAcquireStreamFailed);
     return;
   }
 }

@@ -4,6 +4,8 @@
 
 #include "cc/layers/viewport.h"
 
+#include <algorithm>
+
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "cc/input/browser_controls_offset_manager.h"

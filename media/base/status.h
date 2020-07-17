@@ -40,13 +40,16 @@ class StatusDataView;
 // successful returns.
 class MEDIA_EXPORT Status {
  public:
-  // Default constructor can be used for OkStatus();
+  // This will create a kOk status, but please don't use it.  Use either
+  // Status(StatusCode::kOk) or OkStatus().  This is here because the mojo
+  // bindings assume that it is.
+  // TODO(crbug.com/1106492): Remove this.
   Status();
 
   // Constructor to create a new Status from a numeric code & message.
   // These are immutable; if you'd like to change them, then you likely should
-  // create a new Status. {} or OkStatus() should be used to create a
-  // success status.
+  // create a new Status. Either {StatusCode::kOk} or OkStatus() may be used to
+  // create a success status.
   // NOTE: This should never be given a location parameter when called - It is
   // defaulted in order to grab the caller location.
   Status(StatusCode code,
@@ -147,6 +150,8 @@ class MEDIA_EXPORT Status {
 // if they are added.
 MEDIA_EXPORT Status OkStatus();
 
+// TODO(liberato): Add more helper functions for common error returns.
+
 // Helper class to allow returning a |T| or a Status.  Typical usage:
 //
 // ErrorOr<std::unique_ptr<MyObject>> FactoryFn() {
@@ -206,11 +211,13 @@ class ErrorOr {
 
   // Return a ref to the value.  It's up to the caller to verify that we have a
   // value before calling this.
-  T& value() { return *value_; }
+  T& value() { return std::get<0>(*value_); }
 
  private:
   base::Optional<Status> error_;
-  base::Optional<T> value_;
+  // We wrap |T| in a container so that windows COM wrappers work.  They
+  // override operator& and similar, and won't compile in a base::Optional.
+  base::Optional<std::tuple<T>> value_;
 };
 
 }  // namespace media

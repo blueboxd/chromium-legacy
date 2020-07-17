@@ -2596,6 +2596,7 @@ static_library("test_support") {
     # TODO(https://crbug.com/644336): Remove dependencies on CrasAudioClient.
     "//chromeos/dbus/audio",
     "//chromeos/dbus/power",
+    "//chromeos/dbus/power:power_manager_proto",
     "//chromeos/dbus/system_clock",
 
     # TODO(https://crbug.com/644355): Remove Shill dependencies.

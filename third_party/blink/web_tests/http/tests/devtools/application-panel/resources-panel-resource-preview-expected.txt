@@ -26,6 +26,11 @@ Background Services
   Push Messaging
 Frames
   top
+    Images
+      image.png
+    Scripts
+      json-value.js
+    inspected-page.html
 log: visible view: unknown
 Revealed json-value.js:
 Application

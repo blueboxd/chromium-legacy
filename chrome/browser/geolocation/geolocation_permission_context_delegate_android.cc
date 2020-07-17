@@ -18,6 +18,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "url/gurl.h"
 
 GeolocationPermissionContextDelegateAndroid::
@@ -34,8 +35,8 @@ bool GeolocationPermissionContextDelegateAndroid::DecidePermission(
     bool user_gesture,
     permissions::BrowserPermissionCallback* callback,
     permissions::GeolocationPermissionContext* context) {
-  if (InstalledWebappBridge::ShouldDelegateLocationPermission(
-          requesting_origin)) {
+  if (web_contents->GetDelegate() &&
+      web_contents->GetDelegate()->GetInstalledWebappGeolocationContext()) {
     InstalledWebappBridge::PermissionResponseCallback permission_callback =
         base::BindOnce(
             &permissions::GeolocationPermissionContext::NotifyPermissionSet,

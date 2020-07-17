@@ -32,6 +32,7 @@
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "ui/base/ui_base_types.h"
@@ -339,6 +340,20 @@ void AmbientController::OnPowerStatusChanged() {
   }
 }
 
+void AmbientController::ScreenIdleStateChanged(
+    const power_manager::ScreenIdleState& idle_state) {
+  if (!IsUiClosed(ambient_ui_model_.ui_visibility()))
+    return;
+
+  auto* session_controller = Shell::Get()->session_controller();
+  if (idle_state.dimmed() && !session_controller->IsScreenLocked() &&
+      session_controller->CanLockScreen()) {
+    // TODO(b/161469136): revise this behavior after further discussion.
+    // Locks the device when screen is dimmed to start ambient screen.
+    Shell::Get()->session_controller()->LockScreen();
+  }
+}
+
 void AmbientController::AddAmbientViewDelegateObserver(
     AmbientViewDelegateObserver* observer) {
   delegate_.AddObserver(observer);
@@ -458,7 +473,7 @@ void AmbientController::HandleOnResume() {
 
   // Enables auto-show and starts the timer.
   autoshow_enabled_ = true;
-  if (LockScreen::HasInstance()) {
+  if (!inactivity_monitor_ && LockScreen::HasInstance()) {
     inactivity_monitor_ = std::make_unique<InactivityMonitor>(
         LockScreen::Get()->widget()->GetWeakPtr(),
         base::BindOnce(&AmbientController::OnAutoShowTimeOut,

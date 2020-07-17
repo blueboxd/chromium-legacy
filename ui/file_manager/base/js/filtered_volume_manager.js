@@ -170,7 +170,7 @@ class FilteredVolumeManager extends cr.EventTarget {
 
     // Cache volumeInfoList.
     const volumeInfoList = [];
-    for (var i = 0; i < this.volumeManager_.volumeInfoList.length; i++) {
+    for (let i = 0; i < this.volumeManager_.volumeInfoList.length; i++) {
       const volumeInfo = this.volumeManager_.volumeInfoList.item(i);
       // TODO(hidehiko): Filter mounted volumes located on Drive File System.
       if (!this.isAllowedVolume_(volumeInfo)) {
@@ -244,24 +244,24 @@ class FilteredVolumeManager extends cr.EventTarget {
   onVolumeInfoListUpdated_(event) {
     // Filters some volumes.
     let index = event.index;
-    for (var i = 0; i < event.index; i++) {
-      var volumeInfo = this.volumeManager_.volumeInfoList.item(i);
+    for (let i = 0; i < event.index; i++) {
+      const volumeInfo = this.volumeManager_.volumeInfoList.item(i);
       if (!this.isAllowedVolume_(volumeInfo)) {
         index--;
       }
     }
 
     let numRemovedVolumes = 0;
-    for (var i = 0; i < event.removed.length; i++) {
-      var volumeInfo = event.removed[i];
+    for (let i = 0; i < event.removed.length; i++) {
+      const volumeInfo = event.removed[i];
       if (this.isAllowedVolume_(volumeInfo)) {
         numRemovedVolumes++;
       }
     }
 
     const addedVolumes = [];
-    for (var i = 0; i < event.added.length; i++) {
-      var volumeInfo = event.added[i];
+    for (let i = 0; i < event.added.length; i++) {
+      const volumeInfo = event.added[i];
       if (this.isAllowedVolume_(volumeInfo)) {
         addedVolumes.push(volumeInfo);
       }

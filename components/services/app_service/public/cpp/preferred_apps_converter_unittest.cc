@@ -469,3 +469,24 @@ TEST_F(PreferredAppsConverterTest, ParseJsonWithInvalidValue) {
   parsed_entry = apps::ParseValueToPreferredApps(test_value.value());
   EXPECT_TRUE(parsed_entry.empty());
 }
+
+TEST_F(PreferredAppsConverterTest, UpgradePreferredApp) {
+  // Create preferred app with old filter.
+  GURL filter_url = GURL("https://www.google.com/abc");
+  auto old_intent_filter = apps_util::CreateIntentFilterForUrlScope(filter_url);
+
+  apps::PreferredAppsList old_preferred_apps;
+  old_preferred_apps.Init();
+  old_preferred_apps.AddPreferredApp(kAppId1, old_intent_filter);
+
+  auto new_intent_filter = apps_util::CreateIntentFilterForUrlScope(
+      filter_url, /*with_action_view=*/true);
+
+  apps::PreferredAppsList new_preferred_apps;
+  new_preferred_apps.Init();
+  new_preferred_apps.AddPreferredApp(kAppId1, new_intent_filter);
+
+  auto old_preferred_apps_value = old_preferred_apps.GetValue();
+  EXPECT_TRUE(apps::UpgradePreferredApps(old_preferred_apps_value));
+  EXPECT_EQ(old_preferred_apps_value, new_preferred_apps.GetReference());
+}

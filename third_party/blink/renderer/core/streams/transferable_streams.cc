@@ -454,9 +454,10 @@ void CrossRealmTransformWritable::HandleMessage(MessageType type,
                                                 v8::Local<v8::Value> value) {
   switch (type) {
     case MessageType::kPull:
-      DCHECK(backpressure_promise_);
-      backpressure_promise_->ResolveWithUndefined(script_state_);
-      backpressure_promise_ = nullptr;
+      if (backpressure_promise_) {
+        backpressure_promise_->ResolveWithUndefined(script_state_);
+        backpressure_promise_ = nullptr;
+      }
       return;
 
     case MessageType::kCancel:

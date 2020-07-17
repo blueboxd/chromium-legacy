@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/enterprise/reporting/report_generator.h"
+#include "components/enterprise/browser/reporting/report_generator.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
+#include "build/build_config.h"
+#include "components/enterprise/browser/reporting/browser_report_generator.h"
+#include "components/enterprise/browser/reporting/reporting_delegate_factory.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 
 #if defined(OS_WIN)
@@ -19,8 +21,7 @@ namespace em = enterprise_management;
 
 namespace enterprise_reporting {
 
-ReportGenerator::ReportGenerator(
-    ReportingDelegateFactoryDesktop* delegate_factory)
+ReportGenerator::ReportGenerator(ReportingDelegateFactory* delegate_factory)
     : delegate_(delegate_factory->GetReportGeneratorDelegate()),
       report_request_queue_generator_(delegate_factory),
       browser_report_generator_(delegate_factory) {}

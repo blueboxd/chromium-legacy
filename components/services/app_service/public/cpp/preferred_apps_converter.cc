@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/preferred_apps_converter.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 
@@ -159,6 +160,17 @@ PreferredAppsList::PreferredApps ParseValueToPreferredApps(
     preferred_apps.push_back(std::move(new_preferred_app));
   }
   return preferred_apps;
+}
+
+bool UpgradePreferredApps(PreferredAppsList::PreferredApps& preferred_apps) {
+  bool preferred_apps_upgraded = false;
+  for (auto& preferred_app : preferred_apps) {
+    if (apps_util::FilterNeedsUpgrade(preferred_app->intent_filter)) {
+      apps_util::UpgradeFilter(preferred_app->intent_filter);
+      preferred_apps_upgraded = true;
+    }
+  }
+  return preferred_apps_upgraded;
 }
 
 }  // namespace apps

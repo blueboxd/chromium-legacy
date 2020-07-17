@@ -22,9 +22,14 @@ class GlobalScreenEnumeration {
 
  public:
   // Resolves to the list of |Screen| objects in the device's screen space.
-  static ScriptPromise getScreens(ScriptState*,
+  static ScriptPromise getScreens(ScriptState* script_state,
                                   LocalDOMWindow&,
-                                  ExceptionState&);
+                                  ExceptionState& exception_state);
+
+  // Resolves to true if the number of available screens is greater than one.
+  static ScriptPromise isMultiScreen(ScriptState* script_state,
+                                     LocalDOMWindow&,
+                                     ExceptionState& exception_state);
 
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(screenschange, kScreenschange)
 };

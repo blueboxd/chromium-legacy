@@ -9,10 +9,7 @@ mojom_component("tokens") {
   output_prefix = "tokens_mojom"
   macro_prefix = "TOKENS_MOJOM"
 
-  sources = [
-    "frame_token.mojom",
-    "worker_tokens.mojom",
-  ]
+  sources = [ "frame_token.mojom" ]
 
   public_deps = [ "//mojo/public/mojom/base" ]
 
@@ -20,9 +17,9 @@ mojom_component("tokens") {
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
   export_header = "third_party/blink/public/common/common_export.h"
 
-  export_class_attribute_blink = "PLATFORM_EXPORT"
-  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
-  export_header_blink = "third_party/blink/renderer/platform/platform_export.h"
+  export_class_attribute_blink = "CORE_EXPORT"
+  export_define_blink = "BLINK_CORE_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/renderer/core/core_export.h"
 
   generate_java = true
 }

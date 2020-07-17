@@ -54,10 +54,6 @@ void TrialTokenValidator::ResetOriginTrialPolicyGetter() {
       []() -> blink::OriginTrialPolicy* { return nullptr; }));
 }
 
-OriginTrialPolicy* TrialTokenValidator::Policy() {
-  return PolicyGetter().Run();
-}
-
 TrialTokenResult TrialTokenValidator::ValidateToken(
     base::StringPiece token,
     const url::Origin& origin,
@@ -70,9 +66,9 @@ TrialTokenResult TrialTokenValidator::ValidateToken(
     const url::Origin& origin,
     const url::Origin* third_party_origin,
     base::Time current_time) const {
-  OriginTrialPolicy* policy = Policy();
+  OriginTrialPolicy* policy = PolicyGetter().Run();
 
-  if (!policy->IsOriginTrialsSupported())
+  if (!policy || !policy->IsOriginTrialsSupported())
     return TrialTokenResult(OriginTrialTokenStatus::kNotSupported);
 
   std::vector<base::StringPiece> public_keys = policy->GetPublicKeys();
@@ -196,7 +192,7 @@ TrialTokenValidator::GetValidTokens(const url::Origin& origin,
 
 // static
 bool TrialTokenValidator::IsTrialPossibleOnOrigin(const GURL& url) {
-  OriginTrialPolicy* policy = Policy();
+  OriginTrialPolicy* policy = PolicyGetter().Run();
   return policy && policy->IsOriginTrialsSupported() &&
          policy->IsOriginSecure(url);
 }

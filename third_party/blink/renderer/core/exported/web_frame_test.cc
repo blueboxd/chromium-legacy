@@ -769,7 +769,7 @@ TEST_F(WebFrameTest, LocationSetHostWithMissingPort) {
   std::string content = WebFrameContentDumper::DumpWebViewAsText(
                             web_view_helper.GetWebView(), 1024)
                             .Utf8();
-  EXPECT_EQ("http://internal.test:0/" + file_name, content);
+  EXPECT_EQ("http://internal.test/" + file_name, content);
 }
 
 TEST_F(WebFrameTest, LocationSetEmptyPort) {
@@ -792,7 +792,7 @@ TEST_F(WebFrameTest, LocationSetEmptyPort) {
   std::string content = WebFrameContentDumper::DumpWebViewAsText(
                             web_view_helper.GetWebView(), 1024)
                             .Utf8();
-  EXPECT_EQ("http://internal.test:0/" + file_name, content);
+  EXPECT_EQ("http://internal.test/" + file_name, content);
 }
 
 class EvaluateOnLoadWebFrameClient

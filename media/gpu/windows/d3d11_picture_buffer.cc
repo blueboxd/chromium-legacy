@@ -14,6 +14,8 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "media/base/media_log.h"
+#include "media/base/status_codes.h"
+#include "media/base/win/hresult_status_helper.h"
 #include "media/base/win/mf_helpers.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
@@ -39,7 +41,7 @@ D3D11PictureBuffer::D3D11PictureBuffer(
 D3D11PictureBuffer::~D3D11PictureBuffer() {
 }
 
-bool D3D11PictureBuffer::Init(
+Status D3D11PictureBuffer::Init(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
     GetCommandBufferHelperCB get_helper_cb,
     ComD3D11VideoDevice video_device,
@@ -50,10 +52,11 @@ bool D3D11PictureBuffer::Init(
   view_desc.ViewDimension = D3D11_VDOV_DIMENSION_TEXTURE2D;
   view_desc.Texture2D.ArraySlice = array_slice_;
 
-  if (!texture_wrapper_->Init(std::move(gpu_task_runner),
-                              std::move(get_helper_cb))) {
+  Status result = texture_wrapper_->Init(std::move(gpu_task_runner),
+                                         std::move(get_helper_cb));
+  if (!result.is_ok()) {
     MEDIA_LOG(ERROR, media_log) << "Failed to Initialize the wrapper";
-    return false;
+    return result;
   }
 
   HRESULT hr = video_device->CreateVideoDecoderOutputView(
@@ -61,13 +64,14 @@ bool D3D11PictureBuffer::Init(
 
   if (!SUCCEEDED(hr)) {
     MEDIA_LOG(ERROR, media_log) << "Failed to CreateVideoDecoderOutputView";
-    return false;
+    return Status(StatusCode::kCreateDecoderOutputViewFailed)
+        .AddCause(HresultToStatus(hr));
   }
 
-  return true;
+  return OkStatus();
 }
 
-bool D3D11PictureBuffer::ProcessTexture(
+Status D3D11PictureBuffer::ProcessTexture(
     const gfx::ColorSpace& input_color_space,
     MailboxHolderArray* mailbox_dest,
     gfx::ColorSpace* output_color_space) {

@@ -30,6 +30,9 @@ class CORE_EXPORT Dactyloscoper {
                                   WebFeature,
                                   IdentifiableToken);
   static void RecordDirectSurface(ExecutionContext*, WebFeature, String);
+  static void RecordDirectSurface(ExecutionContext*,
+                                  WebFeature,
+                                  Vector<String>);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Dactyloscoper);

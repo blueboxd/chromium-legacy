@@ -116,6 +116,7 @@
       <!-- TODO(crbug.com/980846): Add FFMpeg library here with comrpession enabled once video recording is ready to test in SWA -->
 
       <include name="IDR_CAMERA_RECORD_END_OGG" file="src/sounds/record_end.ogg" type="BINDATA" />
+      <include name="IDR_CAMERA_RECORD_PAUSE_OGG" file="src/sounds/record_pause.ogg" type="BINDATA" />
       <include name="IDR_CAMERA_RECORD_START_OGG" file="src/sounds/record_start.ogg" type="BINDATA" />
       <include name="IDR_CAMERA_SHUTTER_OGG" file="src/sounds/shutter.ogg" type="BINDATA" />
       <include name="IDR_CAMERA_TICK_FINAL_OGG" file="src/sounds/tick_final.ogg" type="BINDATA" />

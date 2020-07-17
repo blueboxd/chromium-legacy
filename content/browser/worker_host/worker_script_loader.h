@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/public/browser/dedicated_worker_id.h"
 #include "content/public/browser/shared_worker_id.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -23,7 +24,6 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "third_party/blink/public/mojom/tokens/worker_tokens.mojom.h"
 
 namespace blink {
 class ThrottlingURLLoader;
@@ -70,7 +70,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   // chrome-extension:// URL.
   WorkerScriptLoader(
       int process_id,
-      const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+      DedicatedWorkerId dedicated_worker_id,
       SharedWorkerId shared_worker_id,
       int32_t routing_id,
       int32_t request_id,

@@ -76,6 +76,13 @@ int GetFilterMatchLevel(const apps::mojom::IntentFilterPtr& intent_filter);
 // intent with same match level.
 bool FiltersHaveOverlap(const apps::mojom::IntentFilterPtr& filter1,
                         const apps::mojom::IntentFilterPtr& filter2);
+
+// Check if the filter is the older version that doesn't contain action.
+bool FilterNeedsUpgrade(const apps::mojom::IntentFilterPtr& filter);
+
+// Upgrade the filter to contain action view.
+void UpgradeFilter(apps::mojom::IntentFilterPtr& filter);
+
 }  // namespace apps_util
 
 #endif  // COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_INTENT_FILTER_UTIL_H_

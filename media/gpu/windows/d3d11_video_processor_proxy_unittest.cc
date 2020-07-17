@@ -86,7 +86,7 @@ TEST_F(D3D11VideoProcessorProxyUnittest, EnsureMethodPassthrough) {
   EXPECT_CALL(*vctx_.Get(),
               VideoProcessorBlt(proc_.Get(), out_view, 6, 7, streams));
 
-  EXPECT_TRUE(proxy->Init(0, 0));
+  EXPECT_TRUE(proxy->Init(0, 0).is_ok());
   proxy->CreateVideoProcessorOutputView(texture, out_desc, nullptr);
   proxy->CreateVideoProcessorInputView(texture, in_desc, nullptr);
   proxy->VideoProcessorBlt(out_view, 6, 7, streams);

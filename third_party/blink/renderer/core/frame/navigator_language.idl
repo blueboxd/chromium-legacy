@@ -6,5 +6,5 @@
 
 interface mixin NavigatorLanguage {
     [HighEntropy=Direct, MeasureAs=NavigatorLanguage] readonly attribute DOMString language;
-    [CachedAttribute=IsLanguagesDirty, HighEntropy, MeasureAs=NavigatorLanguages] readonly attribute FrozenArray<DOMString> languages;
+    [CachedAttribute=IsLanguagesDirty, HighEntropy=Direct, MeasureAs=NavigatorLanguages] readonly attribute FrozenArray<DOMString> languages;
 };

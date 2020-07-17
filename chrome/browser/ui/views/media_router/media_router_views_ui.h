@@ -233,14 +233,8 @@ class MediaRouterViewsUI
       const MediaSink::Id& sink_id,
       const base::string16& presentation_request_source_name);
 
-// Creates and sends an issue if casting fails due to lack of screen
-// permissions.
-#if defined(OS_MACOSX)
-  void SendIssueForScreenPermission(const MediaSink::Id& sink_id);
-#endif
-
   // Creates and sends an issue if casting fails for any reason other than
-  // those above.
+  // timeout.
   void SendIssueForUnableToCast(MediaCastMode cast_mode,
                                 const MediaSink::Id& sink_id);
 

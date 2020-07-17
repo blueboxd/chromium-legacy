@@ -613,6 +613,9 @@ void CompositorFrameReporter::ReportCompositorLatencyHistogram(
     CHECK_LT(histogram_index, kMaxCompositorLatencyHistogramIndex);
     CHECK_GE(histogram_index, 0);
 
+    // Note: There's a 1:1 mapping between `histogram_index` and the name
+    // returned by `GetCompositorLatencyHistogramName()` which allows the use of
+    // `STATIC_HISTOGRAM_POINTER_GROUP()` to cache histogram objects.
     STATIC_HISTOGRAM_POINTER_GROUP(
         GetCompositorLatencyHistogramName(
             report_type_index, frame_sequence_tracker_type, stage_type_index),
@@ -640,20 +643,23 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
     const int histogram_base_index =
         event_type_index * kEventLatencyScrollTypeCount + scroll_type_index;
 
-    // For scroll events, report total latency up to gpu-swap-end. This is
+    // For scroll events, report total latency up to gpu-swap-begin. This is
     // useful in comparing new EventLatency metrics with LatencyInfo-based
     // scroll event latency metrics.
     if (event_metrics.scroll_type() && !viz_breakdown_.swap_timings.is_null()) {
-      const base::TimeDelta swap_end_latency =
-          viz_breakdown_.swap_timings.swap_end - event_metrics.time_stamp();
-      const std::string swap_end_histogram_name =
-          histogram_base_name + ".TotalLatencyToSwapEnd";
+      const base::TimeDelta swap_begin_latency =
+          viz_breakdown_.swap_timings.swap_start - event_metrics.time_stamp();
+      const std::string swap_begin_histogram_name =
+          histogram_base_name + ".TotalLatencyToSwapBegin";
+      // Note: There's a 1:1 mapping between `histogram_base_index` and
+      // `swap_begin_histogram_name` which allows the use of
+      // `STATIC_HISTOGRAM_POINTER_GROUP()` to cache histogram objects.
       STATIC_HISTOGRAM_POINTER_GROUP(
-          swap_end_histogram_name, histogram_base_index,
+          swap_begin_histogram_name, histogram_base_index,
           kMaxEventLatencyHistogramBaseIndex,
-          AddTimeMicrosecondsGranularity(swap_end_latency),
+          AddTimeMicrosecondsGranularity(swap_begin_latency),
           base::Histogram::FactoryMicrosecondsTimeGet(
-              swap_end_histogram_name, kEventLatencyHistogramMin,
+              swap_begin_histogram_name, kEventLatencyHistogramMin,
               kEventLatencyHistogramMax, kEventLatencyHistogramBucketCount,
               base::HistogramBase::kUmaTargetedHistogramFlag));
     }
@@ -682,6 +688,9 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
         stage_it->start_time - event_metrics.time_stamp();
     const std::string b2r_histogram_name =
         histogram_base_name + ".BrowserToRendererCompositor";
+    // Note: There's a 1:1 mapping between `histogram_base_index` and
+    // `b2r_histogram_name` which allows the use of
+    // `STATIC_HISTOGRAM_POINTER_GROUP()` to cache histogram objects.
     STATIC_HISTOGRAM_POINTER_GROUP(
         b2r_histogram_name, histogram_base_index,
         kMaxEventLatencyHistogramBaseIndex,
@@ -768,6 +777,9 @@ void CompositorFrameReporter::ReportEventLatencyHistogram(
   const int histogram_index =
       histogram_base_index * (kStageTypeCount + kAllBreakdownCount) +
       stage_type_index;
+  // Note: There's a 1:1 mapping between `histogram_index` and `histogram_name`
+  // which allows the use of `STATIC_HISTOGRAM_POINTER_GROUP()` to cache
+  // histogram objects.
   STATIC_HISTOGRAM_POINTER_GROUP(
       histogram_name, histogram_index, kMaxEventLatencyHistogramIndex,
       AddTimeMicrosecondsGranularity(latency),

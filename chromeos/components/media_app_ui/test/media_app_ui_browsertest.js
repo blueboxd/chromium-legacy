@@ -488,6 +488,9 @@ TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalIPC', async () => {
   const writeResult = await handle.lastWritable.closePromise;
 
   assertEquals(testResponse.testQueryResult, 'overwriteOriginal resolved');
+  assertEquals(
+      testResponse.testQueryResultData['receiverFileName'], 'test_file.png');
+  assertEquals(testResponse.testQueryResultData['receiverErrorName'], '');
   assertEquals(await writeResult.text(), 'Foo');
   assertEquals(handle.lastWritable.writes.length, 1);
   assertDeepEquals(
@@ -511,8 +514,10 @@ TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalPickerFallback', async () => {
   const writeResult = await pickedFile.lastWritable.closePromise;
 
   assertEquals(testResponse.testQueryResult, 'overwriteOriginal resolved');
-  assertEquals(testResponse.testQueryResultData['renamedTo'], 'pickme.png');
-  assertEquals(testResponse.testQueryResultData['errorName'], 'FakeError');
+  assertEquals(
+      testResponse.testQueryResultData['receiverFileName'], 'pickme.png');
+  assertEquals(
+      testResponse.testQueryResultData['receiverErrorName'], 'FakeError');
   assertEquals(await writeResult.text(), 'Foo');
   assertEquals(pickedFile.lastWritable.writes.length, 1);
   assertDeepEquals(

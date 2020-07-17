@@ -22,9 +22,6 @@ class InstalledWebappBridge {
 
   static void SetProviderInstance(InstalledWebappProvider* provider);
 
-  // Returns whether permission should be delegate to TWA.
-  static bool ShouldDelegateLocationPermission(const GURL& origin_url);
-
   static void DecidePermission(const GURL& origin_url,
                                PermissionResponseCallback callback);
 

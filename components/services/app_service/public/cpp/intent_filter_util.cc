@@ -125,4 +125,22 @@ bool FiltersHaveOverlap(const apps::mojom::IntentFilterPtr& filter1,
   return true;
 }
 
+bool FilterNeedsUpgrade(const apps::mojom::IntentFilterPtr& filter) {
+  for (const auto& condition : filter->conditions) {
+    if (condition->condition_type == apps::mojom::ConditionType::kAction) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void UpgradeFilter(apps::mojom::IntentFilterPtr& filter) {
+  std::vector<apps::mojom::ConditionValuePtr> condition_values;
+  condition_values.push_back(apps_util::MakeConditionValue(
+      apps_util::kIntentActionView, apps::mojom::PatternMatchType::kNone));
+  auto condition = apps_util::MakeCondition(apps::mojom::ConditionType::kAction,
+                                            std::move(condition_values));
+  filter->conditions.insert(filter->conditions.begin(), std::move(condition));
+}
+
 }  // namespace apps_util

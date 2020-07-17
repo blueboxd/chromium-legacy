@@ -99,10 +99,8 @@ MockSurface* MockSurface::FromResource(wl_resource* resource) {
 void MockSurface::AttachNewBuffer(wl_resource* buffer_resource,
                                   int32_t x,
                                   int32_t y) {
-  if (attached_buffer_) {
-    DCHECK(!prev_attached_buffer_);
+  if (attached_buffer_)
     prev_attached_buffer_ = attached_buffer_;
-  }
   attached_buffer_ = buffer_resource;
 
   Attach(buffer_resource, x, y);
@@ -113,13 +111,14 @@ void MockSurface::DestroyPrevAttachedBuffer() {
   prev_attached_buffer_ = nullptr;
 }
 
-void MockSurface::ReleasePrevAttachedBuffer() {
-  if (!prev_attached_buffer_)
-    return;
-
-  wl_buffer_send_release(prev_attached_buffer_);
-  wl_client_flush(wl_resource_get_client(prev_attached_buffer_));
-  prev_attached_buffer_ = nullptr;
+void MockSurface::ReleaseBuffer(wl_resource* buffer) {
+  DCHECK(buffer);
+  wl_buffer_send_release(buffer);
+  wl_client_flush(wl_resource_get_client(buffer));
+  if (buffer == prev_attached_buffer_)
+    prev_attached_buffer_ = nullptr;
+  if (buffer == attached_buffer_)
+    attached_buffer_ = nullptr;
 }
 
 void MockSurface::SendFrameCallback() {

@@ -12,9 +12,7 @@ group("chrome_camera_app") {
   # According to crbug.com/855747, we should list all the files we want to copy
   # rather than list only the folders to avoid potential building issue and ease
   # the difficulty to diagnose.
-  deps = [
-    "src/strings:camera_strings",
-  ]
+  deps = [ "src/strings:camera_strings" ]
 
   data_deps = [
     ":chrome_camera_app_base",
@@ -203,6 +201,7 @@ copy("chrome_camera_app_js_views_camera") {
 copy("chrome_camera_app_sounds") {
   sources = [
     "src/sounds/record_end.ogg",
+    "src/sounds/record_pause.ogg",
     "src/sounds/record_start.ogg",
     "src/sounds/shutter.ogg",
     "src/sounds/tick_final.ogg",

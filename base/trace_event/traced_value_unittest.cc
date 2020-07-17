@@ -16,7 +16,7 @@ namespace base {
 namespace trace_event {
 
 TEST(TraceEventArgumentTest, ValueToString) {
-  std::string zero = TracedValue::ValueToString(0);
+  std::string zero = ValueToString(0);
   EXPECT_EQ("0", zero);
 }
 

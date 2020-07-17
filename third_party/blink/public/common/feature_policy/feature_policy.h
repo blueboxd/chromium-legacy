@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy_features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-forward.h"
 #include "url/origin.h"
@@ -69,9 +70,10 @@ namespace blink {
 // feature is available when no policy has been declared, ans determines how the
 // feature is inherited across origin boundaries.
 //
-// If the default policy  is in effect for a frame, then it controls how the
+// If the default policy is in effect for a frame, then it controls how the
 // feature is inherited by any cross-origin iframes embedded by the frame. (See
-// the comments below in FeaturePolicy::FeatureDefault for specifics)
+// the comments in |FeaturePolicyFeatureDefault| in feature_policy_features.h
+// for specifics)
 //
 // Policy Inheritance
 // ------------------
@@ -80,7 +82,7 @@ namespace blink {
 // receive the same set of enables features as the parent frame. Whether or not
 // features are inherited by cross-origin iframes without an explicit policy is
 // determined by the feature's default policy. (Again, see the comments in
-// FeaturePolicy::FeatureDefault for details)
+// |FeaturePolicyFeatureDefault| in feature_policy_features.h for details)
 
 // This struct holds feature policy allowlist data that needs to be replicated
 // between a RenderFrame and any of its associated RenderFrameProxies. A list of
@@ -164,30 +166,6 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
     bool matches_opaque_src_{false};
   };
 
-  // The FeaturePolicy::FeatureDefault enum defines the default enable state for
-  // a feature when neither it nor any parent frame have declared an explicit
-  // policy. The three possibilities map directly to Feature Policy Allowlist
-  // semantics.
-  //
-  // The default values for each feature are set in GetDefaultFeatureList.
-  enum class FeatureDefault {
-    // Equivalent to []. If this default policy is in effect for a frame, then
-    // the feature will not be enabled for that frame or any of its children.
-    DisableForAll,
-
-    // Equivalent to ["self"]. If this default policy is in effect for a frame,
-    // then the feature will be enabled for that frame, and any same-origin
-    // child frames, but not for any cross-origin child frames.
-    EnableForSelf,
-
-    // Equivalent to ["*"]. If in effect for a frame, then the feature is
-    // enabled for that frame and all of its children.
-    EnableForAll
-  };
-
-  using FeatureList =
-      std::map<mojom::FeaturePolicyFeature, FeaturePolicy::FeatureDefault>;
-
   ~FeaturePolicy();
 
   static std::unique_ptr<FeaturePolicy> CreateFromParentPolicy(
@@ -228,8 +206,7 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
   const url::Origin& GetOriginForTest() const { return origin_; }
 
   // Returns the list of features which can be controlled by Feature Policy.
-  const FeatureList& GetFeatureList() const;
-  static const FeatureList& GetDefaultFeatureList();
+  const FeaturePolicyFeatureList& GetFeatureList() const;
 
   static mojom::FeaturePolicyFeature FeatureForSandboxFlag(
       network::mojom::WebSandboxFlags flag);
@@ -237,12 +214,13 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
  private:
   friend class FeaturePolicyTest;
 
-  FeaturePolicy(url::Origin origin, const FeatureList& feature_list);
+  FeaturePolicy(url::Origin origin,
+                const FeaturePolicyFeatureList& feature_list);
   static std::unique_ptr<FeaturePolicy> CreateFromParentPolicy(
       const FeaturePolicy* parent_policy,
       const ParsedFeaturePolicy& container_policy,
       const url::Origin& origin,
-      const FeatureList& features);
+      const FeaturePolicyFeatureList& features);
 
   // Updates the inherited policy with the declarations from the iframe allow*
   // attributes.
@@ -265,7 +243,7 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
   // https://crbug.com/937131.
   FeatureState proposed_inherited_policies_;
 
-  const FeatureList& feature_list_;
+  const FeaturePolicyFeatureList& feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FeaturePolicy);
 };

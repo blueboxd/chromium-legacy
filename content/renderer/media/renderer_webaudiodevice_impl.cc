@@ -83,7 +83,7 @@ int GetOutputBufferSize(const blink::WebAudioLatencyHint& latency_hint,
   return 0;
 }
 
-int FrameIdFromCurrentContext() {
+base::UnguessableToken FrameTokenFromCurrentContext() {
   // Assumption: This method is being invoked within a V8 call stack.  CHECKs
   // will fail in the call to frameForCurrentContext() otherwise.
   //
@@ -93,15 +93,14 @@ int FrameIdFromCurrentContext() {
   // an extension creates a object that is passed and used within a page).
   blink::WebLocalFrame* const web_frame =
       blink::WebLocalFrame::FrameForCurrentContext();
-  RenderFrame* const render_frame = RenderFrame::FromWebFrame(web_frame);
-  return render_frame ? render_frame->GetRoutingID() : MSG_ROUTING_NONE;
+  return web_frame ? web_frame->GetFrameToken() : base::UnguessableToken();
 }
 
 media::AudioParameters GetOutputDeviceParameters(
-    int frame_id,
+    const base::UnguessableToken& frame_token,
     const base::UnguessableToken& session_id,
     const std::string& device_id) {
-  return AudioDeviceFactory::GetOutputDeviceInfo(frame_id,
+  return AudioDeviceFactory::GetOutputDeviceInfo(frame_token,
                                                  {session_id, device_id})
       .output_params();
 }
@@ -118,7 +117,7 @@ std::unique_ptr<RendererWebAudioDeviceImpl> RendererWebAudioDeviceImpl::Create(
       new RendererWebAudioDeviceImpl(
           layout, channels, latency_hint, callback, session_id,
           base::BindOnce(&GetOutputDeviceParameters),
-          base::BindOnce(&FrameIdFromCurrentContext)));
+          base::BindOnce(&FrameTokenFromCurrentContext)));
 }
 
 RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
@@ -128,16 +127,17 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     WebAudioDevice::RenderCallback* callback,
     const base::UnguessableToken& session_id,
     OutputDeviceParamsCallback device_params_cb,
-    RenderFrameIdCallback render_frame_id_cb)
+    RenderFrameTokenCallback render_frame_token_cb)
     : latency_hint_(latency_hint),
       client_callback_(callback),
       session_id_(session_id),
-      frame_id_(std::move(render_frame_id_cb).Run()) {
+      frame_token_(std::move(render_frame_token_cb).Run()) {
   DCHECK(client_callback_);
-  DCHECK(session_id.is_empty() || frame_id_ != MSG_ROUTING_NONE);
+  DCHECK(session_id.is_empty() || !frame_token_.is_empty());
 
   media::AudioParameters hardware_params(
-      std::move(device_params_cb).Run(frame_id_, session_id_, std::string()));
+      std::move(device_params_cb)
+          .Run(frame_token_, session_id_, std::string()));
 
   // On systems without audio hardware the returned parameters may be invalid.
   // In which case just choose whatever we want for the fake device.
@@ -176,7 +176,7 @@ void RendererWebAudioDeviceImpl::Start() {
     return;  // Already started.
 
   sink_ = AudioDeviceFactory::NewAudioRendererSink(
-      GetLatencyHintSourceType(latency_hint_.Category()), frame_id_,
+      GetLatencyHintSourceType(latency_hint_.Category()), frame_token_,
       media::AudioSinkParameters(session_id_, std::string()));
 
   // Use a task runner instead of the render thread for fake Render() calls

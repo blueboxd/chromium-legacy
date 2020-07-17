@@ -59,16 +59,16 @@ VerificationResult RunDecodeAndVerifyCredentials(
 }
 
 void VerifyDestinationCompleted(
-    const NetworkingCastPrivateDelegate::VerifiedCallback& success_callback,
-    const NetworkingCastPrivateDelegate::FailureCallback& failure_callback,
+    NetworkingCastPrivateDelegate::VerifiedCallback success_callback,
+    NetworkingCastPrivateDelegate::FailureCallback failure_callback,
     VerificationResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (result == VerificationResult::DECODE_FAILURE) {
-    failure_callback.Run(kErrorEncryptionError);
+    std::move(failure_callback).Run(kErrorEncryptionError);
     return;
   }
 
-  success_callback.Run(result == VerificationResult::SUCCESS);
+  std::move(success_callback).Run(result == VerificationResult::SUCCESS);
 }
 
 // Called from a blocking pool task runner. Returns |data| encoded using
@@ -103,14 +103,14 @@ std::string RunVerifyAndEncryptData(
 }
 
 void VerifyAndEncryptDataCompleted(
-    const NetworkingCastPrivateDelegate::DataCallback& success_callback,
-    const NetworkingCastPrivateDelegate::FailureCallback& failure_callback,
+    NetworkingCastPrivateDelegate::DataCallback success_callback,
+    NetworkingCastPrivateDelegate::FailureCallback failure_callback,
     const std::string& encrypted_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (encrypted_data.empty())
-    failure_callback.Run(kErrorEncryptionError);
+    std::move(failure_callback).Run(kErrorEncryptionError);
   else
-    success_callback.Run(encrypted_data);
+    std::move(success_callback).Run(encrypted_data);
 }
 
 }  // namespace
@@ -134,25 +134,25 @@ ChromeNetworkingCastPrivateDelegate::~ChromeNetworkingCastPrivateDelegate() {}
 
 void ChromeNetworkingCastPrivateDelegate::VerifyDestination(
     std::unique_ptr<Credentials> credentials,
-    const VerifiedCallback& success_callback,
-    const FailureCallback& failure_callback) {
+    VerifiedCallback success_callback,
+    FailureCallback failure_callback) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&RunDecodeAndVerifyCredentials, std::move(credentials)),
-      base::BindOnce(&VerifyDestinationCompleted, success_callback,
-                     failure_callback));
+      base::BindOnce(&VerifyDestinationCompleted, std::move(success_callback),
+                     std::move(failure_callback)));
 }
 
 void ChromeNetworkingCastPrivateDelegate::VerifyAndEncryptData(
     const std::string& data,
     std::unique_ptr<Credentials> credentials,
-    const DataCallback& success_callback,
-    const FailureCallback& failure_callback) {
+    DataCallback success_callback,
+    FailureCallback failure_callback) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&RunVerifyAndEncryptData, data, std::move(credentials)),
-      base::BindOnce(&VerifyAndEncryptDataCompleted, success_callback,
-                     failure_callback));
+      base::BindOnce(&VerifyAndEncryptDataCompleted,
+                     std::move(success_callback), std::move(failure_callback)));
 }
 
 }  // namespace extensions

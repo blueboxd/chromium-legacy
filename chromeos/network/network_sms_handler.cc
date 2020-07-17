@@ -88,9 +88,10 @@ NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::
   // Set the handler for received Sms messaages.
   ModemMessagingClient::Get()->SetSmsReceivedHandler(
       service_name_, object_path_,
-      base::Bind(&NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::
-                     SmsReceivedCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(
+          &NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::
+              SmsReceivedCallback,
+          weak_ptr_factory_.GetWeakPtr()));
 
   // List the existing messages.
   ModemMessagingClient::Get()->List(

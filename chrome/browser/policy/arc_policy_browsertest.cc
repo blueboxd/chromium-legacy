@@ -50,8 +50,7 @@ class ArcPolicyTest : public PolicyTest {
   void SetArcEnabledByPolicy(bool enabled) {
     PolicyMap policies;
     policies.Set(key::kArcEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 base::WrapUnique(new base::Value(enabled)), nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(enabled), nullptr);
     UpdateProviderPolicy(policies);
     if (browser()) {
       const PrefService* const prefs = browser()->profile()->GetPrefs();
@@ -95,11 +94,11 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcBackupRestoreServiceEnabled) {
 
   // Set ARC backup and restore to user control via policy.
   PolicyMap policies;
-  policies.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(
-                   static_cast<int>(ArcServicePolicyValue::kUnderUserControl)),
-               nullptr);
+  policies.Set(
+      key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
+      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+      base::Value(static_cast<int>(ArcServicePolicyValue::kUnderUserControl)),
+      nullptr);
   UpdateProviderPolicy(policies);
 
   // User choice should be honored now.
@@ -113,8 +112,7 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcBackupRestoreServiceEnabled) {
   // Set ARC backup and restore to disabled via policy.
   policies.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(
-                   static_cast<int>(ArcServicePolicyValue::kDisabled)),
+               base::Value(static_cast<int>(ArcServicePolicyValue::kDisabled)),
                nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
@@ -126,8 +124,7 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcBackupRestoreServiceEnabled) {
   // Set ARC backup and restore to enabled via policy.
   policies.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(
-                   static_cast<int>(ArcServicePolicyValue::kEnabled)),
+               base::Value(static_cast<int>(ArcServicePolicyValue::kEnabled)),
                nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(pref->GetBoolean(arc::prefs::kArcBackupRestoreEnabled));
@@ -172,13 +169,12 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcGoogleLocationServicesEnabled) {
       if (test_policy_value.is_int()) {
         policies.Set(key::kArcGoogleLocationServicesEnabled,
                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                     POLICY_SOURCE_CLOUD, test_policy_value.CreateDeepCopy(),
-                     nullptr);
+                     POLICY_SOURCE_CLOUD, test_policy_value.Clone(), nullptr);
       }
       if (test_default_geo_policy_value.is_int()) {
         policies.Set(key::kDefaultGeolocationSetting, POLICY_LEVEL_MANDATORY,
                      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                     test_default_geo_policy_value.CreateDeepCopy(), nullptr);
+                     test_default_geo_policy_value.Clone(), nullptr);
       }
       UpdateProviderPolicy(policies);
 

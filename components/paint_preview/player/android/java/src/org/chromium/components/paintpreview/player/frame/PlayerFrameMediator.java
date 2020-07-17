@@ -11,13 +11,14 @@ import android.util.Size;
 import android.view.View;
 import android.widget.OverScroller;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.UnguessableToken;
 import org.chromium.components.paintpreview.player.OverscrollHandler;
 import org.chromium.components.paintpreview.player.PlayerCompositorDelegate;
+import org.chromium.components.paintpreview.player.PlayerGestureListener;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,10 +74,12 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
 
     private final PlayerFrameBitmapStateController mBitmapStateController;
 
+    private PlayerGestureListener mGestureListener;
+
     PlayerFrameMediator(PropertyModel model, PlayerCompositorDelegate compositorDelegate,
             PlayerFrameViewport viewport, OverScroller scroller,
-            @Nullable Runnable userInteractionCallback, UnguessableToken frameGuid,
-            int contentWidth, int contentHeight, int initialScrollX, int initialScrollY) {
+            PlayerGestureListener gestureListener, UnguessableToken frameGuid, int contentWidth,
+            int contentHeight, int initialScrollX, int initialScrollY) {
         mModel = model;
         mModel.set(PlayerFrameProperties.SCALE_MATRIX, mBitmapScaleMatrix);
 
@@ -86,10 +89,11 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
         mContentSize = new Size(contentWidth, contentHeight);
         mBitmapStateController = new PlayerFrameBitmapStateController(
                 mGuid, mViewport, mContentSize, mCompositorDelegate, this);
-        mScrollController = new PlayerFrameScrollController(
-                scroller, mViewport, mContentSize, this, userInteractionCallback);
+        mScrollController = new PlayerFrameScrollController(scroller, mViewport, mContentSize, this,
+                gestureListener::onScroll, gestureListener::onFling);
         mScaleController = new PlayerFrameScaleController(
-                mViewport, mContentSize, mBitmapScaleMatrix, this, userInteractionCallback);
+                mViewport, mContentSize, mBitmapScaleMatrix, this, gestureListener::onScale);
+        mGestureListener = gestureListener;
         mViewport.offset(initialScrollX, initialScrollY);
         mViewport.setScale(0f);
     }
@@ -191,13 +195,19 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
     }
 
     @Override
-    public void onClick(int x, int y) {
+    public void onTap(int x, int y) {
         // x and y are in the View's coordinate system (scaled). This needs to be adjusted to the
         // absolute coordinate system for hit testing.
         final float scaleFactor = mViewport.getScale();
-        mCompositorDelegate.onClick(mGuid,
+        GURL url = mCompositorDelegate.onClick(mGuid,
                 Math.round((float) (mViewport.getTransX() + x) / scaleFactor),
                 Math.round((float) (mViewport.getTransY() + y) / scaleFactor));
+        mGestureListener.onTap(url);
+    }
+
+    @Override
+    public void onLongPress(int x, int y) {
+        mGestureListener.onLongPress();
     }
 
     // PlayerFrameMediatorDelegate

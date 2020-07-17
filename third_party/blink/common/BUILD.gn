@@ -7,6 +7,26 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/blink/renderer/build/scripts/scripts.gni")
 
+blink_python_runner("make_generated_feature_policy_features") {
+  script = "../renderer/build/scripts/make_feature_policy_features.py"
+
+  inputs =
+      scripts_for_json5_files + [
+        "../renderer/build/scripts/make_feature_policy_features.py",
+        "../renderer/core/feature_policy/feature_policy_features.json5",
+        "../renderer/build/scripts/templates/feature_policy_features.cc.tmpl",
+      ]
+  outputs = [ "$root_gen_dir/third_party/blink/common/feature_policy/feature_policy_features.cc" ]
+
+  args = [
+    rebase_path("../renderer/core/feature_policy/feature_policy_features.json5",
+                root_build_dir),
+    "--output_dir",
+    rebase_path("$root_gen_dir/third_party/blink/common/feature_policy",
+                root_build_dir),
+  ]
+}
+
 blink_python_runner("make_generated_document_policy_features") {
   script = "../renderer/build/scripts/make_document_policy_features.py"
 
@@ -134,9 +154,11 @@ jumbo_source_set("common") {
   ]
 
   sources += get_target_outputs(":make_generated_document_policy_features")
+  sources += get_target_outputs(":make_generated_feature_policy_features")
 
   public_deps = [
     ":make_generated_document_policy_features",
+    ":make_generated_feature_policy_features",
     "//third_party/blink/common/privacy_budget:privacy_budget",
     "//third_party/blink/public/common:headers",
   ]

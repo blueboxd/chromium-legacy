@@ -60,7 +60,8 @@ function parsePackageGraphModelFromJson(jsonGraph) {
  */
 function parseClassGraphModelFromJson(jsonGraph) {
   const makeClassNode = nodeData => new ClassNode(
-      nodeData.name, shortenClassName(nodeData.name), nodeData.meta.package);
+      nodeData.name, shortenClassName(nodeData.name), nodeData.meta.package,
+      nodeData.meta.build_targets);
   return parseGraphModelFromJson(jsonGraph, makeClassNode);
 }
 

@@ -14,6 +14,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -94,13 +95,21 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
             mModel.set(AccountPickerBottomSheetProperties.IS_ACCOUNT_LIST_EXPANDED, false);
             mSelectedAccountName = null;
             mModel.set(AccountPickerBottomSheetProperties.SELECTED_ACCOUNT_DATA, null);
-        } else {
-            // TODO(https://crbug.com/1096977): Test and handle the scenario when
-            // the existing account list changes to a different list, we need to
-            // separate the two cases when the current selected account name is in the
-            // new list and not in the new list.
+        } else if (!mModel.get(AccountPickerBottomSheetProperties.IS_ACCOUNT_LIST_EXPANDED)
+                && !isSelectedAccountInAccountList(accounts)) {
+            // The selected account is _only_ updated when the account list is collapsed and
+            // the current selected account name is not in the new account list
+            // (or there is no selected account).
             setSelectedAccountName(accounts.get(0).name);
         }
+    }
+
+    /**
+     * Returns true if there is selected account and it is in the account list.
+     */
+    private boolean isSelectedAccountInAccountList(List<Account> accounts) {
+        return mSelectedAccountName != null
+                && AccountUtils.findAccountByName(accounts, mSelectedAccountName) != null;
     }
 
     private void setSelectedAccountName(String accountName) {

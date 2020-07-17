@@ -30,6 +30,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace pp {
+class Graphics2D;
+class Size;
 class TextInput_Dev;
 }
 
@@ -60,6 +62,8 @@ class OutOfProcessInstance : public pp::Instance,
   void StopFind() override;
 
   // pp::PaintManager::Client implementation.
+  pp::Graphics2D CreatePaintGraphics(const pp::Size& size) override;
+  bool BindPaintGraphics(pp::Graphics2D& graphics) override;
   void OnPaint(const std::vector<pp::Rect>& paint_rects,
                std::vector<PaintReadyRect>* ready,
                std::vector<pp::Rect>* pending) override;

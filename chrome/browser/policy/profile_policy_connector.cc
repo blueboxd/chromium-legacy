@@ -213,7 +213,7 @@ void ProfilePolicyConnector::Init(
   }
 #endif
 
-  std::vector<std::unique_ptr<ExtensionPolicyMigrator>> migrators;
+  std::vector<std::unique_ptr<PolicyMigrator>> migrators;
 #if defined(OS_WIN)
   migrators.push_back(
       std::make_unique<browser_switcher::BrowserSwitcherPolicyMigrator>());
@@ -344,7 +344,7 @@ ConfigurationPolicyProvider* ProfilePolicyConnector::GetPlatformProvider(
 std::unique_ptr<PolicyService>
 ProfilePolicyConnector::CreatePolicyServiceWithInitializationThrottled(
     const std::vector<ConfigurationPolicyProvider*>& policy_providers,
-    std::vector<std::unique_ptr<ExtensionPolicyMigrator>> migrators,
+    std::vector<std::unique_ptr<PolicyMigrator>> migrators,
     ConfigurationPolicyProvider* user_policy_delegate) {
   DCHECK(user_policy_delegate);
 

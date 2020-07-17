@@ -651,6 +651,7 @@ void DownloadItemImpl::UpdateResumptionInfo(bool user_resume) {
 void DownloadItemImpl::Cancel(bool user_cancel) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(20) << __func__ << "() download = " << DebugString(true);
+  download_schedule_ = base::nullopt;
   InterruptAndDiscardPartialState(
       user_cancel ? DOWNLOAD_INTERRUPT_REASON_USER_CANCELED
                   : DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN);
@@ -1844,6 +1845,8 @@ void DownloadItemImpl::OnTargetResolved() {
     UpdateObservers();
     return;
   }
+
+  download_schedule_ = base::nullopt;
 
   TransitionTo(IN_PROGRESS_INTERNAL);
   // TODO(asanka): Calling UpdateObservers() prior to MaybeCompleteDownload() is

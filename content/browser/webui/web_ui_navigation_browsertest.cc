@@ -656,7 +656,8 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
   EXPECT_EQ(main_frame_url, webui_rfh->GetLastCommittedURL());
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
       webui_rfh->GetProcess()->GetID()));
-  EXPECT_TRUE(webui_site_instance->GetSiteInfo().process_lock_url().is_valid());
+  EXPECT_FALSE(
+      webui_site_instance->GetSiteInfo().process_lock_url().is_empty());
   EXPECT_EQ(ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
                 root->current_frame_host()->GetProcess()->GetID()),
             webui_site_instance->GetProcessLock());

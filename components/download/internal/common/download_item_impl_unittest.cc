@@ -2699,6 +2699,11 @@ TEST_P(DownloadLaterTest, TestDownloadScheduleAfterTargetDetermined) {
     ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_CRASH, item->GetLastReason());
   }
 
+  if (param.state == DownloadItem::IN_PROGRESS) {
+    EXPECT_FALSE(item->GetDownloadSchedule().has_value())
+        << "Download schedule should be cleared before completion.";
+  }
+
   CleanupItem(item, download_file, param.state);
 }
 
@@ -2734,6 +2739,22 @@ TEST_P(DownloadLaterTest, TestOnDownloadScheduleChanged) {
   if (param.state == DownloadItem::INTERRUPTED) {
     ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_CRASH, item->GetLastReason());
   }
+}
+
+TEST_F(DownloadItemTest, CancelWithDownloadSchedule) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kDownloadLater);
+
+  auto item = CreateDownloadItem(DownloadItem::DownloadState::INTERRUPTED,
+                                 DOWNLOAD_INTERRUPT_REASON_CRASH);
+  auto download_schedule = base::make_optional<DownloadSchedule>(
+      false, base::Time::Now() + base::TimeDelta::FromDays(10));
+  item->OnDownloadScheduleChanged(std::move(download_schedule));
+
+  EXPECT_EQ(item->GetState(), DownloadItem::DownloadState::INTERRUPTED);
+  EXPECT_TRUE(item->GetDownloadSchedule().has_value());
+  item->Cancel(true);
+  EXPECT_FALSE(item->GetDownloadSchedule().has_value());
 }
 
 }  // namespace

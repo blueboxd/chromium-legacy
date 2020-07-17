@@ -196,6 +196,11 @@ bool GPUTestBotConfig::SetGPUInfo(const GPUInfo& gpu_info) {
   ClearGPUVendor();
   AddGPUVendor(gpu_info.gpu.vendor_id);
   set_gpu_device_id(gpu_info.gpu.device_id);
+  if (gpu_info.passthrough_cmd_decoder) {
+    set_command_decoder(kCommandDecoderPassthrough);
+  } else {
+    set_command_decoder(kCommandDecoderValidating);
+  }
   return true;
 }
 
@@ -286,7 +291,8 @@ bool GPUTestBotConfig::LoadCurrentConfig(const GPUInfo* gpu_info) {
     rt = false;
 #else
     GPUInfo my_gpu_info;
-    if (!CollectBasicGraphicsInfo(&my_gpu_info)) {
+    if (!CollectBasicGraphicsInfo(base::CommandLine::ForCurrentProcess(),
+                                  &my_gpu_info)) {
       LOG(ERROR) << "Fail to identify GPU";
       rt = false;
     } else {
@@ -306,14 +312,6 @@ bool GPUTestBotConfig::LoadCurrentConfig(const GPUInfo* gpu_info) {
 #else
   set_build_type(kBuildTypeDebug);
 #endif
-  // GLManager::Initialize uses this function to determine which command decoder
-  // to be run under these tests. The test config should do the same.
-  if (gl::UsePassthroughCommandDecoder(
-          base::CommandLine::ForCurrentProcess())) {
-    set_command_decoder(kCommandDecoderPassthrough);
-  } else {
-    set_command_decoder(kCommandDecoderValidating);
-  }
   return rt;
 }
 

@@ -1454,6 +1454,13 @@ bool SkiaOutputSurfaceImplOnGpu::Initialize() {
   }
 #endif
 
+  context_state_ = dependency_->GetSharedContextState();
+  DCHECK(context_state_);
+  if (!context_state_->gr_context()) {
+    DLOG(ERROR) << "Failed to create GrContext";
+    return false;
+  }
+
   if (is_using_vulkan()) {
     if (!InitializeForVulkan())
       return false;
@@ -1472,12 +1479,6 @@ bool SkiaOutputSurfaceImplOnGpu::Initialize() {
 }
 
 bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
-  context_state_ = dependency_->GetSharedContextState();
-  if (!context_state_) {
-    DLOG(ERROR) << "Failed to create GrContext";
-    return false;
-  }
-
   auto* context = context_state_->real_context();
   auto* current_gl = context->GetCurrentGL();
   api_ = current_gl->Api;
@@ -1547,8 +1548,6 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
 }
 
 bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
-  context_state_ = dependency_->GetSharedContextState();
-  DCHECK(context_state_);
 #if BUILDFLAG(ENABLE_VULKAN)
   if (dependency_->IsOffscreen()) {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
@@ -1610,8 +1609,6 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
 }
 
 bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
-  context_state_ = dependency_->GetSharedContextState();
-  DCHECK(context_state_);
 #if BUILDFLAG(SKIA_USE_DAWN)
   if (dependency_->IsOffscreen()) {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(

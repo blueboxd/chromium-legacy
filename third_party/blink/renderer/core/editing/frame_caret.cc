@@ -66,10 +66,6 @@ void FrameCaret::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
 }
 
-const DisplayItemClient& FrameCaret::GetDisplayItemClient() const {
-  return *display_item_client_;
-}
-
 const PositionWithAffinity FrameCaret::CaretPosition() const {
   const VisibleSelection& selection =
       selection_editor_->ComputeVisibleSelectionInDOMTree();

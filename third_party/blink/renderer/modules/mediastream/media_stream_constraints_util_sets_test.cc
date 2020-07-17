@@ -6,7 +6,6 @@
 
 #include <cmath>
 #include <string>
-#include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
@@ -36,7 +35,7 @@ constexpr double kDefaultAspectRatio =
 
 // Checks if |point| is an element of |vertices| using
 // Point::IsApproximatelyEqualTo() to test for equality.
-void VerticesContain(const std::vector<Point>& vertices, const Point& point) {
+void VerticesContain(const Vector<Point>& vertices, const Point& point) {
   bool result = false;
   for (const auto& vertex : vertices) {
     if (point.IsApproximatelyEqualTo(vertex)) {
@@ -47,7 +46,7 @@ void VerticesContain(const std::vector<Point>& vertices, const Point& point) {
   EXPECT_TRUE(result);
 }
 
-bool AreCounterclockwise(const std::vector<Point>& vertices) {
+bool AreCounterclockwise(const Vector<Point>& vertices) {
   // Single point or segment are trivial cases.
   if (vertices.size() <= 2)
     return true;
@@ -63,7 +62,8 @@ bool AreCounterclockwise(const std::vector<Point>& vertices) {
   // Compute orientation using the determinant of each diagonal in the
   // polygon, using the first vertex as reference.
   Point prev_diagonal = vertices[1] - vertices[0];
-  for (auto vertex = vertices.begin() + 2; vertex != vertices.end(); ++vertex) {
+  for (auto* vertex = vertices.begin() + 2; vertex != vertices.end();
+       ++vertex) {
     Point current_diagonal = *vertex - vertices[0];
     // The determinant of the two diagonals returns the signed area of the
     // parallelogram they generate. The area is positive if the diagonals are in
@@ -81,8 +81,7 @@ bool AreCounterclockwise(const std::vector<Point>& vertices) {
 
 // Determines if |vertices| is valid according to the contract for
 // ResolutionCandidateSet::ComputeVertices().
-bool AreValidVertices(const ResolutionSet& set,
-                      const std::vector<Point>& vertices) {
+bool AreValidVertices(const ResolutionSet& set, const Vector<Point>& vertices) {
   // Verify that every vertex is included in |set|.
   for (const auto& vertex : vertices) {
     if (!set.ContainsPoint(vertex))
@@ -1370,7 +1369,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetString) {
   EXPECT_FALSE(set.HasExplicitElements());
 
   // Constrained set.
-  set = StringSet(std::vector<std::string>({"a", "b", "c"}));
+  set = StringSet(Vector<std::string>({"a", "b", "c"}));
   EXPECT_TRUE(set.Contains("a"));
   EXPECT_TRUE(set.Contains("b"));
   EXPECT_TRUE(set.Contains("c"));
@@ -1389,8 +1388,8 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetString) {
   EXPECT_FALSE(set.HasExplicitElements());
 
   // Intersection.
-  set = StringSet(std::vector<std::string>({"a", "b", "c"}));
-  StringSet set2 = StringSet(std::vector<std::string>({"b", "c", "d"}));
+  set = StringSet(Vector<std::string>({"a", "b", "c"}));
+  StringSet set2 = StringSet(Vector<std::string>({"b", "c", "d"}));
   auto intersection = set.Intersection(set2);
   EXPECT_FALSE(intersection.Contains("a"));
   EXPECT_TRUE(intersection.Contains("b"));
@@ -1402,7 +1401,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetString) {
   EXPECT_EQ(std::string("b"), intersection.FirstElement());
 
   // Empty intersection.
-  set2 = StringSet(std::vector<std::string>({"d", "e", "f"}));
+  set2 = StringSet(Vector<std::string>({"d", "e", "f"}));
   intersection = set.Intersection(set2);
   EXPECT_FALSE(intersection.Contains("a"));
   EXPECT_FALSE(intersection.Contains("b"));

@@ -40,6 +40,7 @@
 #include "ppapi/cpp/dev/memory_dev.h"
 #include "ppapi/cpp/dev/text_input_dev.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
+#include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/module.h"
@@ -47,6 +48,7 @@
 #include "ppapi/cpp/private/pdf.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/resource.h"
+#include "ppapi/cpp/size.h"
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/var_array.h"
 #include "ppapi/cpp/var_array_buffer.h"
@@ -446,7 +448,7 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
     : pp::Instance(instance),
       pp::Find_Private(this),
       pp::Printing_Dev(this),
-      paint_manager_(this, this) {
+      paint_manager_(this) {
   callback_factory_.Initialize(this);
   pp::Module::Get()->AddPluginInterface(kPPPPdfInterface, &ppp_private);
   AddPerInstanceObject(kPPPPdfInterface, this);
@@ -946,6 +948,14 @@ void OutOfProcessInstance::StopFind() {
   engine_->StopFind();
   tickmarks_.clear();
   SetTickmarks(tickmarks_);
+}
+
+pp::Graphics2D OutOfProcessInstance::CreatePaintGraphics(const pp::Size& size) {
+  return pp::Graphics2D(this, size, /*is_always_opaque=*/true);
+}
+
+bool OutOfProcessInstance::BindPaintGraphics(pp::Graphics2D& graphics) {
+  return BindGraphics(graphics);
 }
 
 void OutOfProcessInstance::OnPaint(const std::vector<pp::Rect>& paint_rects,

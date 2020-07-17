@@ -27,7 +27,6 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation_update.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
@@ -180,24 +179,6 @@ class CORE_EXPORT StyleResolverState {
   void SetHasDirAutoAttribute(bool value) { has_dir_auto_attribute_ = value; }
   bool HasDirAutoAttribute() const { return has_dir_auto_attribute_; }
 
-  const CSSValue* GetCascadedColorValue() const {
-    return cascaded_color_value_;
-  }
-  const CSSValue* GetCascadedVisitedColorValue() const {
-    return cascaded_visited_color_value_;
-  }
-
-  void SetCascadedColorValue(const CSSValue* color) {
-    cascaded_color_value_ = color;
-  }
-  void SetCascadedVisitedColorValue(const CSSValue* color) {
-    cascaded_visited_color_value_ = color;
-  }
-
-  HeapHashMap<CSSPropertyID, Member<const CSSValue>>&
-  ParsedPropertiesForPendingSubstitutionCache(
-      const cssvalue::CSSPendingSubstitutionValue&) const;
-
   CSSParserMode GetParserMode() const;
 
   // If the input CSSValue is a CSSLightDarkValuePair, return the light or dark
@@ -291,9 +272,6 @@ class CORE_EXPORT StyleResolverState {
   bool has_dir_auto_attribute_ = false;
   PseudoElementStyleRequest::RequestType pseudo_request_type_;
 
-  const CSSValue* cascaded_color_value_ = nullptr;
-  const CSSValue* cascaded_visited_color_value_ = nullptr;
-
   FontBuilder font_builder_;
 
   std::unique_ptr<CachedUAStyle> cached_ua_style_;
@@ -309,10 +287,6 @@ class CORE_EXPORT StyleResolverState {
   // CSSProperty::kComputedValueComparable flag set.
   bool has_incomparable_dependency_ = false;
 
-  mutable HeapHashMap<
-      Member<const cssvalue::CSSPendingSubstitutionValue>,
-      Member<HeapHashMap<CSSPropertyID, Member<const CSSValue>>>>
-      parsed_properties_for_pending_substitution_cache_;
   DISALLOW_COPY_AND_ASSIGN(StyleResolverState);
 };
 

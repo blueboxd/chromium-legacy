@@ -1033,6 +1033,11 @@ var OSSettingsPeoplePageLockScreenTest = class extends OSSettingsBrowserTest {
   }
 
   /** @override */
+  get featureList() {
+    return {enabled: ['features::kQuickUnlockPinAutosubmit']};
+  }
+
+  /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
       BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
@@ -1096,6 +1101,37 @@ var OSSettingsPeoplePageSetupPinDialogTest =
 
 TEST_F('OSSettingsPeoplePageSetupPinDialogTest', 'AllJsTests', () => {
   settings_people_page_quick_unlock.registerSetupPinDialogTests();
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var OSSettingsPeoplePagePinAutosubmitDialogTest =
+    class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'chromeos/os_people_page/pin_autosubmit_dialog.html';
+  }
+
+  /** @override */
+  get featureList() {
+    return {enabled: ['features::kQuickUnlockPinAutosubmit']};
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
+      BROWSER_SETTINGS_PATH + 'fake_settings_private.js',
+      'fake_quick_unlock_private.js',
+      'quick_unlock_authenticate_browsertest_chromeos.js'
+    ]);
+  }
+};
+
+TEST_F('OSSettingsPeoplePagePinAutosubmitDialogTest', 'AllJsTests', () => {
+  settings_people_page_quick_unlock.registerAutosubmitDialogTests();
   mocha.run();
 });
 

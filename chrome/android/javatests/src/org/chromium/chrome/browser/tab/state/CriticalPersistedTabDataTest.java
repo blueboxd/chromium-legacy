@@ -55,6 +55,7 @@ public class CriticalPersistedTabDataTest {
 
     @SmallTest
     @Test
+    @DisabledTest(message = "https://crbug.com/1101760")
     public void testNonEncryptedSaveRestore() throws InterruptedException {
         testSaveRestoreDelete(false);
     }

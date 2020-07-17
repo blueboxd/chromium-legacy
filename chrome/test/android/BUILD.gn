@@ -75,7 +75,7 @@ instrumentation_test_apk("chrome_java_test_pagecontroller_tests") {
 
   if (!is_java_debug) {
     proguard_enabled = true
-    proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
+    proguard_configs = [ "//chrome/android/proguard/apk_for_test.flags" ]
   }
 }
 
@@ -107,7 +107,7 @@ instrumentation_test_apk("chrome_java_test_wpr_tests") {
 
   if (!is_java_debug) {
     proguard_enabled = true
-    proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
+    proguard_configs = [ "//chrome/android/proguard/apk_for_test.flags" ]
   }
 }
 
@@ -133,7 +133,7 @@ instrumentation_test_apk("chrome_java_test_webapk_launch_tests") {
 
   if (!is_java_debug) {
     proguard_enabled = true
-    proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
+    proguard_configs = [ "//chrome/android/proguard/apk_for_test.flags" ]
   }
 }
 
@@ -151,7 +151,7 @@ instrumentation_test_apk("chrome_java_test_pagecontroller_codelab") {
 
   if (!is_java_debug) {
     proguard_enabled = true
-    proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
+    proguard_configs = [ "//chrome/android/proguard/apk_for_test.flags" ]
   }
 }
 

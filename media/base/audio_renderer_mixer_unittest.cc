@@ -86,7 +86,7 @@ class AudioRendererMixerTest
         new FakeAudioRenderCallback(step, output_parameters_.sample_rate()));
   }
 
-  AudioRendererMixer* GetMixer(int owner_id,
+  AudioRendererMixer* GetMixer(const base::UnguessableToken& owner_token,
                                const AudioParameters& params,
                                AudioLatency::LatencyType latency,
                                const OutputDeviceInfo& sink_info,
@@ -99,7 +99,7 @@ class AudioRendererMixerTest
   }
 
   scoped_refptr<AudioRendererSink> GetSink(
-      int owner_id,
+      const base::UnguessableToken& owner_token,
       const std::string& device_id) override {
     return sink_;
   }
@@ -334,9 +334,9 @@ class AudioRendererMixerTest
 
   scoped_refptr<AudioRendererMixerInput> CreateMixerInput() {
     auto input = base::MakeRefCounted<AudioRendererMixerInput>(
-        this,
-        // Zero frame id, default device ID.
-        0, std::string(), AudioLatency::LATENCY_PLAYBACK);
+        this, base::UnguessableToken::Create(),
+        // default device ID.
+        std::string(), AudioLatency::LATENCY_PLAYBACK);
     input->GetOutputDeviceInfoAsync(
         base::DoNothing());  // Primes input, needed for tests.
     task_env_.RunUntilIdle();

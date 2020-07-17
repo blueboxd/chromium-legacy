@@ -142,8 +142,16 @@ constexpr double kFakeBatteryCurrentNow =
     kExpectedBatteryCurrentNow / 1000.0;  // (A)
 constexpr char kFakeBatteryTechnology[] = "fake_battery_technology";
 constexpr char kFakeBatteryStatus[] = "fake_battery_status";
-// Cached VPD test values:
-constexpr char kFakeSkuNumber[] = "fake_sku_number";
+// System test values:
+const char kFakeFirstPowerDate[] = "2020-40";
+const char kFakeManufactureDate[] = "2019-01-01";
+const char kFakeSkuNumber[] = "ABCD&^A";
+constexpr char kFakeMarketingName[] = "Latitude 1234 Chromebook Enterprise";
+constexpr char kFakeBiosVersion[] = "Google_BoardName.12200.68.0";
+constexpr char kFakeBoardName[] = "BoardName";
+constexpr char kFakeBoardVersion[] = "rev1234";
+constexpr uint64_t kFakeChassisType = 9;
+constexpr char kFakeProductName[] = "ProductName";
 // CPU test values:
 constexpr uint32_t kFakeNumTotalThreads = 8;
 constexpr char kFakeModelName[] = "fake_cpu_model_name";
@@ -489,9 +497,13 @@ cros_healthd::NonRemovableBlockDeviceResultPtr CreateBlockDeviceResult() {
       std::move(storage_vector));
 }
 
-cros_healthd::CachedVpdResultPtr CreateVpdResult() {
-  return cros_healthd::CachedVpdResult::NewVpdInfo(
-      cros_healthd::CachedVpdInfo::New(kFakeSkuNumber));
+cros_healthd::SystemResultPtr CreateSystemResult() {
+  return cros_healthd::SystemResult::NewSystemInfo(
+      cros_healthd::SystemInfo::New(
+          kFakeFirstPowerDate, kFakeManufactureDate, kFakeSkuNumber,
+          kFakeMarketingName, kFakeBiosVersion, kFakeBoardName,
+          kFakeBoardVersion, cros_healthd::UInt64Value::New(kFakeChassisType),
+          kFakeProductName));
 }
 
 std::vector<cros_healthd::CpuCStateInfoPtr> CreateCStateInfo() {
@@ -594,7 +606,7 @@ void FetchFakeFullCrosHealthdData(
       cros_healthd::TelemetryInfo fake_info;
       fake_info.battery_result = CreateBatteryResult();
       fake_info.block_device_result = CreateBlockDeviceResult();
-      fake_info.vpd_result = CreateVpdResult();
+      fake_info.system_result = CreateSystemResult();
       fake_info.cpu_result = CreateCpuResult();
       fake_info.timezone_result = CreateTimezoneResult();
       fake_info.memory_result = CreateMemoryResult();
@@ -3033,6 +3045,8 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceBluetoothInfo, false);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceSystemInfo, false);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceVpdInfo, false);
   GetStatus();
   ASSERT_EQ(device_status_.cpu_info_size(), 0);
@@ -3062,6 +3076,8 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
       chromeos::kReportDeviceFanInfo, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceBluetoothInfo, true);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceSystemInfo, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceVpdInfo, true);
   GetStatus();
@@ -3114,9 +3130,20 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   EXPECT_EQ(disk.discard_time_seconds_since_last_boot(),
             kFakeStorageDiscardTimeSeconds);
 
-  // Verify the Cached VPD.
+  // Verify the system info.
   ASSERT_TRUE(device_status_.has_system_status());
+  EXPECT_EQ(device_status_.system_status().first_power_date(),
+            kFakeFirstPowerDate);
+  EXPECT_EQ(device_status_.system_status().manufacture_date(),
+            kFakeManufactureDate);
   EXPECT_EQ(device_status_.system_status().vpd_sku_number(), kFakeSkuNumber);
+  EXPECT_EQ(device_status_.system_status().marketing_name(),
+            kFakeMarketingName);
+  EXPECT_EQ(device_status_.system_status().bios_version(), kFakeBiosVersion);
+  EXPECT_EQ(device_status_.system_status().board_name(), kFakeBoardName);
+  EXPECT_EQ(device_status_.system_status().board_version(), kFakeBoardVersion);
+  EXPECT_EQ(device_status_.system_status().chassis_type(), kFakeChassisType);
+  EXPECT_EQ(device_status_.system_status().product_name(), kFakeProductName);
 
   // Verify the CPU data.
   ASSERT_TRUE(device_status_.has_global_cpu_info());
@@ -3234,6 +3261,65 @@ TEST_F(DeviceStatusCollectorTest, TestPartialCrosHealthdInfo) {
   EXPECT_FALSE(device_status_.has_storage_status());
   EXPECT_EQ(device_status_.backlight_info_size(), 0);
   EXPECT_EQ(device_status_.fan_info_size(), 0);
+}
+
+TEST_F(DeviceStatusCollectorTest, TestCrosHealthdVpdAndSystemInfo) {
+  // Create a fake response from cros_healthd and populate it with some
+  // arbitrary values.
+  auto options = CreateEmptyDeviceStatusCollectorOptions();
+  options->cros_healthd_data_fetcher =
+      base::BindRepeating(&FetchFakeFullCrosHealthdData);
+  RestartStatusCollector(std::move(options));
+
+  // If the ReportDeviceHardwareStatus policy is false, the policies
+  // corresponding to cros_healthd data are ignored. The policy is true by
+  // default, but set it explicitly to ensure the other policies are tested.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceHardwareStatus, true);
+
+  // When the vpd reporting policy is turned on and the system reporting
+  // property is turned off, we only expect the protobuf to only have vpd info.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceSystemInfo, false);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceVpdInfo, true);
+  GetStatus();
+
+  // Verify the only vpd info is populated.
+  ASSERT_TRUE(device_status_.has_system_status());
+  EXPECT_EQ(device_status_.system_status().first_power_date(),
+            kFakeFirstPowerDate);
+  EXPECT_EQ(device_status_.system_status().manufacture_date(),
+            kFakeManufactureDate);
+  EXPECT_EQ(device_status_.system_status().vpd_sku_number(), kFakeSkuNumber);
+  ASSERT_FALSE(device_status_.system_status().has_marketing_name());
+  ASSERT_FALSE(device_status_.system_status().has_bios_version());
+  ASSERT_FALSE(device_status_.system_status().has_board_name());
+  ASSERT_FALSE(device_status_.system_status().has_board_version());
+  ASSERT_FALSE(device_status_.system_status().has_chassis_type());
+  ASSERT_FALSE(device_status_.system_status().has_product_name());
+
+  // When the system reporting policy is turned on and the vpd reporting policy
+  // is turned off, we expect the protobuf to have all system info except the
+  // subset of vpd info.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceSystemInfo, true);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceVpdInfo, false);
+  GetStatus();
+
+  // Verify all system info except vpd info exists.
+  ASSERT_TRUE(device_status_.has_system_status());
+  ASSERT_FALSE(device_status_.system_status().has_first_power_date());
+  ASSERT_FALSE(device_status_.system_status().has_manufacture_date());
+  ASSERT_FALSE(device_status_.system_status().has_vpd_sku_number());
+  EXPECT_EQ(device_status_.system_status().marketing_name(),
+            kFakeMarketingName);
+  EXPECT_EQ(device_status_.system_status().bios_version(), kFakeBiosVersion);
+  EXPECT_EQ(device_status_.system_status().board_name(), kFakeBoardName);
+  EXPECT_EQ(device_status_.system_status().board_version(), kFakeBoardVersion);
+  EXPECT_EQ(device_status_.system_status().chassis_type(), kFakeChassisType);
+  EXPECT_EQ(device_status_.system_status().product_name(), kFakeProductName);
 }
 
 TEST_F(DeviceStatusCollectorTest, GenerateAppInfo) {

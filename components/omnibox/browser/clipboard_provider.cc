@@ -33,6 +33,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_util.h"
 
 namespace {
@@ -376,18 +377,20 @@ void ClipboardProvider::OnReceiveImage(
   if (!optional_image)
     return;
   done_ = false;
+  gfx::ImageSkia image_skia = *optional_image.value().ToImageSkia();
+  image_skia.MakeThreadSafe();
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::BindOnce(&ClipboardProvider::EncodeClipboardImage,
-                     optional_image.value()),
+      base::BindOnce(&ClipboardProvider::EncodeClipboardImage, image_skia),
       base::BindOnce(&ClipboardProvider::ConstructImageMatchCallback,
                      callback_weak_ptr_factory_.GetWeakPtr(), input,
                      url_service, clipboard_contents_age));
 }
 
 scoped_refptr<base::RefCountedMemory> ClipboardProvider::EncodeClipboardImage(
-    gfx::Image image) {
-  gfx::Image resized_image = gfx::ResizedImageForSearchByImage(image);
+    gfx::ImageSkia image_skia) {
+  gfx::Image resized_image =
+      gfx::ResizedImageForSearchByImage(gfx::Image(image_skia));
   return resized_image.As1xPNGBytes();
 }
 

@@ -53,7 +53,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
 
   void SetProperties(const std::string& service_path,
                      const base::DictionaryValue& user_settings,
-                     const base::Closure& callback,
+                     base::OnceClosure callback,
                      network_handler::ErrorCallback error_callback) override;
 
   void CreateConfiguration(
@@ -64,12 +64,12 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
 
   void RemoveConfiguration(
       const std::string& service_path,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       network_handler::ErrorCallback error_callback) const override;
 
   void RemoveConfigurationFromCurrentProfile(
       const std::string& service_path,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       network_handler::ErrorCallback error_callback) const override;
 
   void SetPolicy(::onc::ONCSource onc_source,
@@ -196,7 +196,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   void SetShillProperties(
       const std::string& service_path,
       std::unique_ptr<base::DictionaryValue> shill_dictionary,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       network_handler::ErrorCallback error_callback);
 
   // Sets the active proxy values in managed network configurations depending on

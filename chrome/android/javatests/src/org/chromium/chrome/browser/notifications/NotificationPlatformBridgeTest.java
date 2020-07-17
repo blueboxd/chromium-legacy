@@ -38,7 +38,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.engagement.SiteEngagementService;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.permissions.PermissionTestRule;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -49,6 +48,7 @@ import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.permissions.PermissionDialogController;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -444,8 +444,8 @@ public class NotificationPlatformBridgeTest {
         // Disable notification vibration in preferences.
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> PrefServiceBridge.getInstance().setBoolean(
-                                NOTIFICATIONS_VIBRATE_ENABLED, false));
+                        -> UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                   .setBoolean(NOTIFICATIONS_VIBRATE_ENABLED, false));
 
         Notification notification = showAndGetNotification("MyNotification", notificationOptions);
 
@@ -494,8 +494,8 @@ public class NotificationPlatformBridgeTest {
         // By default, vibration is enabled in notifications.
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> Assert.assertTrue(PrefServiceBridge.getInstance().getBoolean(
-                                NOTIFICATIONS_VIBRATE_ENABLED)));
+                        -> Assert.assertTrue(UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                                     .getBoolean(NOTIFICATIONS_VIBRATE_ENABLED)));
 
         Notification notification = showAndGetNotification("MyNotification", "{ vibrate: 42 }");
 

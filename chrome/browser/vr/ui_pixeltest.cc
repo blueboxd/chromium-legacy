@@ -10,6 +10,10 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace vr {
 
 namespace {
@@ -19,6 +23,11 @@ constexpr gfx::Transform kIdentity;
 }  // namespace
 
 TEST_F(UiPixelTest, DrawVrBrowsingMode) {
+#if defined(OS_WIN)
+  // VR is not supported on Windows 7.
+  if (base::win::GetVersion() <= base::win::Version::WIN7)
+    return;
+#endif
   // Set up scene.
   UiInitialState ui_initial_state;
   ui_initial_state.in_web_vr = false;

@@ -67,7 +67,7 @@
     outline: none;
   }
 
-  .list-item[highlighted_] {
+  .list-item.highlighted {
     background-color: var(--google-blue-refresh-100);
   }
 
@@ -121,28 +121,38 @@
         no-cancel-on-esc-key>
       <div slot="dropdown-content">
         <template is="dom-repeat" items="[[itemList]]">
-          <button id="[[item.key]]" class="list-item" on-click="onSelect_"
-              tabindex="-1" value="[[item.key]]">
+          <button id="[[item.key]]" tabindex="-1" value="[[item.key]]"
+              on-click="onSelect_"
+              class$="list-item [[getHighlightedClass_(item.key,
+                  highlightedIndex_)]]">
             <printer-status-icon-cros background="white"
                 state$="[[computePrinterState_(item.printerStatusReason)]]">
             </printer-status-icon-cros>
             <span class="printer-display-name">[[item.displayName]]</span>
           </button>
         </template>
-        <button class="list-item" on-click="onSelect_" tabindex="-1"
-          value="[[pdfDestinationKey]]" hidden$="[[pdfPrinterDisabled]]">
+        <button on-click="onSelect_" tabindex="-1" value="[[pdfDestinationKey]]"
+          hidden$="[[pdfPrinterDisabled]]"
+          class$="list-item [[getHighlightedClass_(pdfDestinationKey,
+              highlightedIndex_)]]">
           $i18n{printToPDF}
         </button>
-        <button class="list-item" on-click="onSelect_" tabindex="-1"
-          value="[[driveDestinationKey]]" hidden$="[[!driveDestinationKey]]">
+        <button on-click="onSelect_" tabindex="-1"
+          value="[[driveDestinationKey]]" hidden$="[[!driveDestinationKey]]"
+          class$="list-item [[getHighlightedClass_(driveDestinationKey,
+              highlightedIndex_)]]">
           $i18n{printToGoogleDrive}
         </button>
-        <button class="list-item" on-click="onSelect_" tabindex="-1"
-          value="noDestinations" hidden$="[[!noDestinations]]">
+        <button on-click="onSelect_" tabindex="-1" value="noDestinations"
+          hidden$="[[!noDestinations]]"
+          class$="list-item [[getHighlightedClass_('noDestinations',
+              highlightedIndex_)]]">
           $i18n{noDestinationsMessage}
         </button>
-        <button class="list-item" on-click="onSelect_" tabindex="-1"
-          value="seeMore" aria-label$="[[i18n(seeMoreDestinationsLabel)]]">
+        <button on-click="onSelect_" tabindex="-1" value="seeMore"
+          aria-label$="[[i18n(seeMoreDestinationsLabel)]]"
+          class$="list-item [[getHighlightedClass_('seeMore',
+              highlightedIndex_)]]">
           $i18n{seeMore}
         </button>
       </div>

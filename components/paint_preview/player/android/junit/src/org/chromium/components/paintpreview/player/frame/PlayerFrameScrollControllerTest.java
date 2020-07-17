@@ -44,20 +44,21 @@ public class PlayerFrameScrollControllerTest {
     private PlayerFrameMediatorDelegate mMediatorDelegateMock;
     @Mock
     private OverscrollHandler mOverscrollHandlerMock;
-    private Runnable mUserInteractionCallback;
-    private boolean mHasUserInteraction;
+    private boolean mDidScroll;
+    private boolean mDidFling;
     private PlayerFrameScrollController mScrollController;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mScroller = new OverScroller(ContextUtils.getApplicationContext());
-        mHasUserInteraction = false;
-        mUserInteractionCallback = () -> mHasUserInteraction = true;
+        mDidScroll = false;
+        Runnable mOnScrollListener = () -> mDidScroll = true;
+        Runnable mOnFlingListener = () -> mDidFling = true;
         mViewport = new PlayerFrameViewport();
         mScrollController = new PlayerFrameScrollController(mScroller, mViewport,
-                new Size(CONTENT_WIDTH, CONTENT_HEIGHT), mMediatorDelegateMock,
-                mUserInteractionCallback);
+                new Size(CONTENT_WIDTH, CONTENT_HEIGHT), mMediatorDelegateMock, mOnScrollListener,
+                mOnFlingListener);
     }
 
     /**
@@ -74,7 +75,7 @@ public class PlayerFrameScrollControllerTest {
         Assert.assertEquals(100f, mViewport.getTransX(), TOLERANCE);
         Assert.assertEquals(100f, mViewport.getTransY(), TOLERANCE);
         verify(mMediatorDelegateMock).updateVisuals(eq(false));
-        Assert.assertTrue(mHasUserInteraction);
+        Assert.assertTrue(mDidScroll);
     }
 
     /**
@@ -135,6 +136,7 @@ public class PlayerFrameScrollControllerTest {
         mViewport.setSize(100, 100);
 
         Assert.assertTrue(mScrollController.onFling(100, 0));
+        Assert.assertTrue(mDidFling);
         ShadowLooper.runUiThreadTasks();
         Assert.assertTrue(mScroller.isFinished());
         Assert.assertEquals(mScroller.getFinalX(), mViewport.getTransX(), TOLERANCE);

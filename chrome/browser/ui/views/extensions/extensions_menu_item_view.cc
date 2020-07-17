@@ -103,6 +103,8 @@ void ExtensionsMenuItemView::ButtonPressed(views::Button* sender,
     model_->SetActionVisibility(controller_->GetId(), !IsPinned());
     return;
   } else if (sender->GetID() == EXTENSION_CONTEXT_MENU) {
+    base::RecordAction(base::UserMetricsAction(
+        "Extensions.Toolbar.MoreActionsButtonPressedFromMenu"));
     // TODO(crbug.com/998298): Cleanup the menu source type.
     context_menu_controller_->ShowContextMenuForViewImpl(
         sender, sender->GetMenuPosition(),

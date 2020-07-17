@@ -61,9 +61,6 @@ void InitializeGpuPreferencesForTestingFromCommandLine(
     const base::CommandLine& command_line,
     GpuPreferences* preferences) {
   // Only initialize specific GpuPreferences members used for testing.
-  // GPUTestBotConfig::LoadCurrentConfig uses the same method to determine
-  // which command decoder should match the test config. Any updates to this
-  // function should be forwarded to gpu_test_config.cc
   preferences->use_passthrough_cmd_decoder =
       gles2::UsePassthroughCommandDecoder(&command_line);
 }

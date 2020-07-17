@@ -48,10 +48,6 @@ class CORE_EXPORT LayoutNGTableColumn : public LayoutBox {
 
   void ImageChanged(WrappedImagePtr, CanDeferInvalidation) final;
 
-  LayoutObject* FirstChild() const { return children_.FirstChild(); }
-
-  void SlowFirstChild() const = delete;
-
  protected:
   // Required by LayoutBox, but not used.
   MinMaxSizes ComputeIntrinsicLogicalWidths() const override {
@@ -74,8 +70,13 @@ class CORE_EXPORT LayoutNGTableColumn : public LayoutBox {
 
   LayoutObjectChildList* VirtualChildren() override { return &children_; }
 
+  const LayoutObjectChildList* VirtualChildren() const override {
+    return &children_;
+  }
+
   // LayoutObject methods end
 
+ private:
   unsigned span_ = 1;
   LayoutObjectChildList children_;
 };

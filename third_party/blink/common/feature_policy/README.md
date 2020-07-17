@@ -55,10 +55,6 @@ described in the file's comments.
 2. Append the new feature enum with a brief description as well in
 `third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom`
 
-3. In `third_party/blink/renderer/platform/feature_policy/feature_policy.cc`,
-add an entry to `FeaturePolicy::GetDefaultFeatureList` with the default value
-to use for the new feature.
-
 ##### Integrate the feature behaviour with feature policy
 1. The most common way to check if features are enabled is `ExecutionContext::IsFeatureEnabled`.
 

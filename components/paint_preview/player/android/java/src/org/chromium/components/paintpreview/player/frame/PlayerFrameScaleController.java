@@ -10,7 +10,7 @@ import android.util.Size;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.components.paintpreview.player.PlayerUserActionRecorder;
+import org.chromium.base.Callback;
 
 /**
  * Handles scaling of the top level frame for the paint preview player.
@@ -27,16 +27,16 @@ public class PlayerFrameScaleController {
     private final Matrix mBitmapScaleMatrix;
     /** Interface for calling shared methods on the mediator. */
     private final PlayerFrameMediatorDelegate mMediatorDelegate;
-    private final Runnable mUserInteractionCallback;
+    private final Callback<Boolean> mOnScaleListener;
 
     PlayerFrameScaleController(PlayerFrameViewport viewport, Size contentSize,
             Matrix bitmapScaleMatrix, PlayerFrameMediatorDelegate mediatorDelegate,
-            @Nullable Runnable userInteractionCallback) {
+            @Nullable Callback<Boolean> onScaleListener) {
         mViewport = viewport;
         mContentSize = contentSize;
         mBitmapScaleMatrix = bitmapScaleMatrix;
         mMediatorDelegate = mediatorDelegate;
-        mUserInteractionCallback = userInteractionCallback;
+        mOnScaleListener = onScaleListener;
     }
 
     /**
@@ -156,9 +156,8 @@ public class PlayerFrameScaleController {
             bitmapScaleMatrixValues[Matrix.MTRANS_Y] += deltaY;
             mBitmapScaleMatrix.setValues(bitmapScaleMatrixValues);
         }
-
         mMediatorDelegate.setBitmapScaleMatrix(mBitmapScaleMatrix, correctedAggregateScaleFactor);
-        if (mUserInteractionCallback != null) mUserInteractionCallback.run();
+        if (mOnScaleListener != null) mOnScaleListener.onResult(false);
         return true;
     }
 
@@ -174,8 +173,8 @@ public class PlayerFrameScaleController {
         mMediatorDelegate.resetScaleFactorOfAllSubframes();
         mMediatorDelegate.updateVisuals(true);
         mMediatorDelegate.forceRedrawVisibleSubframes();
-        PlayerUserActionRecorder.recordZoom();
         mUncommittedScaleFactor = 0f;
+        if (mOnScaleListener != null) mOnScaleListener.onResult(true);
         return true;
     }
 }

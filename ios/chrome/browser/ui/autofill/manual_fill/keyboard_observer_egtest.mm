@@ -31,6 +31,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(KeyboardObserverHelperAppInterface);
 #endif  // defined(CHROME_EARL_GREY_2)
 
 using base::TimeDelta;
+using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::SpinRunLoopWithMinDelay;
 using base::test::ios::WaitUntilConditionOrTimeout;
 using chrome_test_util::TapWebElementWithId;
@@ -105,7 +106,7 @@ void TapOnWebElementWithID(const std::string& elementID) {
 
   // Brings up the keyboard by tapping on one of the form's field.
   TapOnWebElementWithID(kFormElementID1);
-  SpinRunLoopWithMinDelay(TimeDelta::FromSeconds(1));
+  SpinRunLoopWithMinDelay(TimeDelta::FromSeconds(kWaitForUIElementTimeout));
 
   // Verifies that the taped element is focused.
   AssertElementIsFocused(kFormElementID1);
@@ -117,7 +118,7 @@ void TapOnWebElementWithID(const std::string& elementID) {
 
   // Tap the "Submit" button, and let the run loop spin.
   TapOnWebElementWithID(kFormElementSubmit);
-  SpinRunLoopWithMinDelay(TimeDelta::FromSeconds(1));
+  SpinRunLoopWithMinDelay(TimeDelta::FromSeconds(kWaitForUIElementTimeout));
 
   // Verify the state changed.
   GREYAssertFalse(observer.keyboardState.isVisible,

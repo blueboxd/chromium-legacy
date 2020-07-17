@@ -322,7 +322,7 @@ bool GraphicsLayer::Paint() {
     EnsureRasterInvalidator().Generate(
         raster_invalidation_function_,
         GetPaintController().GetPaintArtifactShared(), layer_bounds,
-        layer_state_->state.Unalias(), VisualRectSubpixelOffset(), this);
+        layer_state_->state.Unalias(), this);
 
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
         PaintsContentOrHitTest()) {
@@ -749,7 +749,6 @@ scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(
   PaintChunksToCcLayer::ConvertInto(
       GetPaintController().PaintChunks(), layer_state_->state.Unalias(),
       gfx::Vector2dF(layer_state_->offset.X(), layer_state_->offset.Y()),
-      VisualRectSubpixelOffset(),
       paint_controller.GetPaintArtifact().GetDisplayItemList(), *display_list);
 
   PaintController::ClearFlagsForBenchmark();
@@ -764,15 +763,6 @@ size_t GraphicsLayer::GetApproximateUnsharedMemoryUsage() const {
   if (raster_invalidator_)
     result += raster_invalidator_->ApproximateUnsharedMemoryUsage();
   return result;
-}
-
-// Subpixel offset for visual rects which excluded composited layer's subpixel
-// accumulation during paint invalidation.
-// See PaintInvalidator::ExcludeCompositedLayerSubpixelAccumulation().
-FloatSize GraphicsLayer::VisualRectSubpixelOffset() const {
-  if (GetCompositingReasons() & CompositingReason::kComboAllDirectReasons)
-    return FloatSize(client_.SubpixelAccumulation());
-  return FloatSize();
 }
 
 }  // namespace blink

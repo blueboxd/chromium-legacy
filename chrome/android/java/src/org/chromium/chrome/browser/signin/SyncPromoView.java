@@ -95,7 +95,7 @@ public class SyncPromoView extends LinearLayout implements AndroidSyncSettingsOb
 
     private void update() {
         ViewState viewState;
-        if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
+        if (!AndroidSyncSettings.get().doesMasterSyncSettingAllowChromeSync()) {
             viewState = getStateForEnableAndroidSync();
         } else if (!AndroidSyncSettings.get().isChromeSyncEnabled()) {
             viewState = getStateForEnableChromeSync();

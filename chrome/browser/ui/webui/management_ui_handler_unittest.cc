@@ -257,21 +257,21 @@ class ManagementUIHandlerTests : public TestingBaseClass {
   void EnablePolicy(const char* policy_key, policy::PolicyMap& policies) {
     policies.Set(policy_key, policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(true), nullptr);
+                 base::Value(true), nullptr);
   }
   void SetPolicyValue(const char* policy_key,
                       int value,
                       policy::PolicyMap& policies) {
     policies.Set(policy_key, policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(value), nullptr);
+                 base::Value(value), nullptr);
   }
   void SetPolicyValue(const char* policy_key,
                       bool value,
                       policy::PolicyMap& policies) {
     policies.Set(policy_key, policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(value), nullptr);
+                 base::Value(value), nullptr);
   }
   void SetConnectorPolicyValue(const char* policy_key,
                                const std::string& value,
@@ -280,8 +280,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     EXPECT_TRUE(policy_value.has_value());
     policies.Set(policy_key, policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(std::move(policy_value.value())),
-                 nullptr);
+                 std::move(policy_value.value()), nullptr);
   }
 
   base::string16 ExtractPathFromDict(const base::Value& data,

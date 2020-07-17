@@ -173,7 +173,7 @@ ProcessLock::ProcessLock() = default;
 
 bool ProcessLock::IsASiteOrOrigin() const {
   const GURL& lock_url = ProcessLock::lock_url();
-  return lock_url.has_scheme() && lock_url.has_host();
+  return lock_url.has_scheme() && lock_url.has_host() && lock_url.is_valid();
 }
 
 bool ProcessLock::HasOpaqueOrigin() const {

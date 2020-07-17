@@ -337,9 +337,10 @@ void Portal::Activate(blink::TransferableMessage data,
   DCHECK_EQ(PAGE_TYPE_NORMAL,
             predecessor_controller.GetLastCommittedEntry()->GetPageType());
 
-  // If the portal is showing an error page, reject activation.
-  if (portal_controller.GetLastCommittedEntry()->GetPageType() !=
-      PAGE_TYPE_NORMAL) {
+  // If the portal is crashed or is showing an error page, reject activation.
+  if (portal_contents_->IsCrashed() ||
+      portal_controller.GetLastCommittedEntry()->GetPageType() !=
+          PAGE_TYPE_NORMAL) {
     std::move(callback).Run(
         blink::mojom::PortalActivateResult::kRejectedDueToErrorInPortal);
     return;
@@ -541,6 +542,10 @@ void Portal::NavigationStateChanged(WebContents* source,
   if (!outer_contents->GetDelegate())
     return;
   outer_contents->GetDelegate()->NavigationStateChanged(source, changed_flags);
+}
+
+bool Portal::ShouldFocusPageAfterCrash() {
+  return false;
 }
 
 void Portal::CanDownload(const GURL& url,

@@ -438,6 +438,13 @@ internal::FeaturePolicyNode ParsingContext::ParseFeaturePolicyToIR(
 
 internal::FeaturePolicyNode ParsingContext::ParsePermissionsPolicyToIR(
     const String& policy) {
+  if (policy.length() > MAX_LENGTH_PARSE) {
+    logger_.Error("Permissions policy declaration exceeds size limit(" +
+                  String::Number(policy.length()) + ">" +
+                  String::Number(MAX_LENGTH_PARSE) + ")");
+    return {};
+  }
+
   auto root = net::structured_headers::ParseDictionary(policy.Utf8());
   if (!root) {
     logger_.Error(

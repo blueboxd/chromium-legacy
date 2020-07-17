@@ -26,36 +26,6 @@ INSTANTIATE_PAINT_TEST_SUITE_P(PaintControllerPaintTest);
 using PaintControllerPaintTestForCAP = PaintControllerPaintTest;
 INSTANTIATE_CAP_TEST_SUITE_P(PaintControllerPaintTestForCAP);
 
-TEST_P(PaintControllerPaintTest, FullDocumentPaintingWithCaret) {
-  SetBodyInnerHTML(
-      "<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
-  GetDocument().GetPage()->GetFocusController().SetActive(true);
-  GetDocument().GetPage()->GetFocusController().SetFocused(true);
-  auto& div = *To<Element>(GetDocument().body()->firstChild());
-  auto& layout_text = *To<Text>(div.firstChild())->GetLayoutObject();
-  const DisplayItemClient* text_inline_box = layout_text.FirstTextBox();
-  if (layout_text.IsInLayoutNGInlineFormattingContext()) {
-    NGInlineCursor cursor;
-    cursor.MoveTo(layout_text);
-    text_inline_box = cursor.Current().GetDisplayItemClient();
-  }
-  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
-              ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
-                                   kDocumentBackgroundType),
-                          IsSameId(text_inline_box, kForegroundType)));
-
-  div.focus();
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_THAT(
-      RootPaintController().GetDisplayItemList(),
-      ElementsAre(
-          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
-          IsSameId(text_inline_box, kForegroundType),
-          // New!
-          IsSameId(&CaretDisplayItemClientForTesting(), DisplayItem::kCaret)));
-}
-
 TEST_P(PaintControllerPaintTest, InlineRelayout) {
   SetBodyInnerHTML(
       "<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA "

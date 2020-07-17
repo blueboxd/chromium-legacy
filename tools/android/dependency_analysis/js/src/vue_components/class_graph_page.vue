@@ -28,13 +28,8 @@
             :selected-node-details-data="pageModel.selectedNodeDetailsData"
             @[CUSTOM_EVENTS.ADD_TO_FILTER_CLICKED]="addNodeToFilter"
             @[CUSTOM_EVENTS.REMOVE_FROM_FILTER_CLICKED]="removeNodeFromFilter"/>
-        <LinkToGraph
-            v-if="pageModel.selectedNodeDetailsData.selectedNode !== null"
-            :filter="
-              [pageModel.selectedNodeDetailsData.selectedNode.packageName]"
-            :graph-type="PagePathName.PACKAGE"
-            :text="'View ' +
-              pageModel.selectedNodeDetailsData.selectedNode.packageName"/>
+        <ClassDetailsPanel
+            :selected-class="pageModel.selectedNodeDetailsData.selectedNode"/>
       </div>
     </div>
     <PageUrlGenerator
@@ -51,6 +46,7 @@ import {GraphNode} from '../graph_model.js';
 import {PageModel} from '../page_model.js';
 import {parseClassGraphModelFromJson} from '../process_graph_json.js';
 
+import ClassDetailsPanel from './class_details_panel.vue';
 import GraphFilterInput from './graph_filter_input.vue';
 import GraphFilterItems from './graph_filter_items.vue';
 import GraphInboundInput from './graph_inbound_input.vue';
@@ -62,6 +58,7 @@ import PageUrlGenerator from './page_url_generator.vue';
 
 const ClassGraphPage = {
   components: {
+    ClassDetailsPanel,
     GraphFilterInput,
     GraphFilterItems,
     GraphInboundInput,

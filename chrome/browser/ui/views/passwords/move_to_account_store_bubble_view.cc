@@ -49,7 +49,7 @@ class ImageViewWithPlaceForBadge : public views::ImageView {
     // Remove the part of the ImageView that contains the badge.
     SkPath mask;
     mask.addCircle(
-        /*x=*/kBadgedProfilePhotoSize - kBadgeIconSize / 2,
+        /*x=*/GetMirroredXInView(kBadgedProfilePhotoSize - kBadgeIconSize / 2),
         /*y=*/kBadgedProfilePhotoSize - kBadgeIconSize / 2,
         /*radius=*/kBadgeIconSize / 2 + kBadgeBorderWidth);
     mask.toggleInverseFillType();
@@ -190,10 +190,9 @@ MoveToAccountStoreBubbleView::MovingBannerView::MovingBannerView(
 
   from_view = AddChildView(std::move(from_image));
 
-  // TODO(crbug.com/1100814): this arrow will point to the wrong direction in
-  // RTL setup.
   auto arrow_view = std::make_unique<VectorIconView>(
       kBookmarkbarTouchOverflowIcon, kImageSize);
+  arrow_view->EnableCanvasFlippingForRTLUI(true);
   AddChildView(std::move(arrow_view));
 
   to_view = AddChildView(std::move(to_image));

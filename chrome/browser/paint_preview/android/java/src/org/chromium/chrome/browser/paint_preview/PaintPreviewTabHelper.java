@@ -77,13 +77,6 @@ public class PaintPreviewTabHelper extends EmptyTabObserver implements UserData 
         mPaintPreviewDemoManager.destroy();
     }
 
-    @Override
-    public void onPageLoadFinished(Tab tab, String url) {
-        if (qualifiesForCapture(tab)) {
-            PaintPreviewExperiments.runCaptureExperiment(tab.getWebContents());
-        }
-    }
-
     /**
      * Checks whether a given {@link Tab} qualifies for Paint Preview capture.
      */

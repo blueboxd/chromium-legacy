@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/chrome_extension_browser_constants.h"
@@ -580,6 +582,8 @@ void ExtensionContextMenuModel::HandlePageAccessCommand(
   if (!web_contents)
     return;
 
+  LogPageAccessAction(command_id);
+
   if (command_id == PAGE_ACCESS_LEARN_MORE) {
     content::OpenURLParams params(
         GURL(chrome_extension_constants::kRuntimeHostPermissionsHelpURL),
@@ -612,6 +616,30 @@ void ExtensionContextMenuModel::HandlePageAccessCommand(
     runner->HandlePageAccessModified(extension,
                                      convert_page_access(current_access),
                                      convert_page_access(command_id));
+}
+
+void ExtensionContextMenuModel::LogPageAccessAction(int command_id) const {
+  switch (command_id) {
+    case PAGE_ACCESS_LEARN_MORE:
+      base::RecordAction(base::UserMetricsAction(
+          "Extensions.ContextMenu.Hosts.LearnMoreClicked"));
+      break;
+    case PAGE_ACCESS_RUN_ON_CLICK:
+      base::RecordAction(base::UserMetricsAction(
+          "Extensions.ContextMenu.Hosts.OnClickClicked"));
+      break;
+    case PAGE_ACCESS_RUN_ON_SITE:
+      base::RecordAction(base::UserMetricsAction(
+          "Extensions.ContextMenu.Hosts.OnSiteClicked"));
+      break;
+    case PAGE_ACCESS_RUN_ON_ALL_SITES:
+      base::RecordAction(base::UserMetricsAction(
+          "Extensions.ContextMenu.Hosts.OnAllSitesClicked"));
+      break;
+    default:
+      NOTREACHED() << "Unknown option: " << command_id;
+      break;
+  }
 }
 
 content::WebContents* ExtensionContextMenuModel::GetActiveWebContents() const {

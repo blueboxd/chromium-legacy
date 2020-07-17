@@ -33,6 +33,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
 #include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/browser_context.h"
@@ -372,6 +373,9 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
       "networkHealthLabel",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_HEALTH));
   localized_strings->SetString(
+      "networkDiagnosticsLabel",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_DIAGNOSTICS));
+  localized_strings->SetString(
       "visibleNetworksLabel",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_VISIBLE_NETWORKS));
   localized_strings->SetString(
@@ -497,6 +501,13 @@ void NetworkUI::BindInterface(
     mojo::PendingReceiver<network_health::mojom::NetworkHealthService>
         receiver) {
   network_health::NetworkHealthService::GetInstance()->BindRemote(
+      std::move(receiver));
+}
+
+void NetworkUI::BindInterface(
+    mojo::PendingReceiver<
+        network_diagnostics::mojom::NetworkDiagnosticsRoutines> receiver) {
+  network_health::NetworkHealthService::GetInstance()->BindDiagnosticsRemote(
       std::move(receiver));
 }
 

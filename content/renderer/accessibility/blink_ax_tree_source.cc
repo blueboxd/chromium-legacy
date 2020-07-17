@@ -1248,19 +1248,6 @@ void BlinkAXTreeSource::SerializeElementAttributes(WebAXObject src,
       TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kRole,
                                     role);
   }
-
-  // Frames and iframes:
-  // If there are children, the fallback content has been rendered and should
-  // be used instead. For example, the fallback content may be rendered if
-  // there was an error loading an <object>. In that case, only expose the
-  // children. A node should not have both children and a child tree.
-  base::Optional<base::UnguessableToken> child_embedding_token =
-      element.GetEmbeddingToken();
-
-  if (child_embedding_token && !src.ChildCount()) {
-    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kChildTreeId,
-                                  child_embedding_token->ToString());
-  }
 }
 
 void BlinkAXTreeSource::SerializeHTMLAttributes(WebAXObject src,

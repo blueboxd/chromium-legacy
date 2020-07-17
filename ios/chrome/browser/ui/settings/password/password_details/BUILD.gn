@@ -48,12 +48,46 @@ source_set("password_details_ui") {
     "//components/autofill/core/common",
     "//components/password_manager/core/browser:browser",
     "//components/strings",
+    "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/settings:settings_root",
     "//ios/chrome/browser/ui/settings/autofill",
     "//ios/chrome/browser/ui/table_view/cells",
+    "//ios/chrome/browser/ui/table_view/cells:cells_constants",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui/util",
     "//ui/base",
+  ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [ "password_detials_view_controller_unittest.mm" ]
+  deps = [
+    ":password_details",
+    ":password_details_ui",
+    "//base",
+    "//base/test:test_support",
+    "//components/autofill/core/common",
+    "//components/password_manager/core/browser:test_support",
+    "//components/password_manager/core/common",
+    "//components/strings",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/ui/settings/cells",
+    "//ios/chrome/browser/ui/table_view:test_support",
+    "//ios/chrome/browser/ui/table_view/cells",
+    "//ios/chrome/browser/ui/table_view/cells:cells_constants",
+    "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/ui/colors",
+    "//ios/chrome/test/app:test_support",
+    "//ios/web/public/test",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/ocmock",
+    "//ui/base",
+    "//url",
   ]
 }

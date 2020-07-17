@@ -134,9 +134,6 @@ struct CORE_EXPORT PaintInvalidatorContext {
  private:
   friend class PaintInvalidator;
 
-  bool ShouldExcludeCompositedLayerSubpixelAccumulation(
-      const LayoutObject&) const;
-
   const PaintPropertyTreeBuilderFragmentContext* tree_builder_context_ =
       nullptr;
 

@@ -25,13 +25,13 @@ NetworkActivationHandlerImpl::~NetworkActivationHandlerImpl() = default;
 
 void NetworkActivationHandlerImpl::CompleteActivation(
     const std::string& service_path,
-    const base::Closure& success_callback,
+    base::OnceClosure success_callback,
     network_handler::ErrorCallback error_callback) {
   NET_LOG(USER) << "CompleteActivation: " << NetworkPathId(service_path);
   ShillServiceClient::Get()->CompleteCellularActivation(
       dbus::ObjectPath(service_path),
       base::BindOnce(&NetworkActivationHandlerImpl::HandleShillSuccess,
-                     AsWeakPtr(), success_callback),
+                     AsWeakPtr(), std::move(success_callback)),
       base::BindOnce(&network_handler::ShillErrorCallbackFunction,
                      kErrorShillError, service_path,
                      std::move(error_callback)));

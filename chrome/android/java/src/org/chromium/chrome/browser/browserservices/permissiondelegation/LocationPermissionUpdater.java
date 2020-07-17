@@ -61,13 +61,18 @@ public class LocationPermissionUpdater {
     void checkPermission(Origin origin, long callback) {
         mTrustedWebActivityClient.checkLocationPermission(
                 origin, new TrustedWebActivityClient.PermissionCheckCallback() {
+                    private boolean mCalled;
                     @Override
                     public void onPermissionCheck(ComponentName answeringApp, boolean enabled) {
+                        if (mCalled) return;
+                        mCalled = true;
                         updatePermission(origin, callback, answeringApp, enabled);
                     }
 
                     @Override
                     public void onNoTwaFound() {
+                        if (mCalled) return;
+                        mCalled = true;
                         mPermissionManager.resetStoredPermission(origin, TYPE);
                         InstalledWebappBridge.onGetPermissionResult(callback, false);
                     }

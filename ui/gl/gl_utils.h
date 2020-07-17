@@ -26,6 +26,8 @@ GL_EXPORT base::ScopedFD MergeFDs(base::ScopedFD a, base::ScopedFD b);
 GL_EXPORT bool UsePassthroughCommandDecoder(
     const base::CommandLine* command_line);
 
+GL_EXPORT bool PassthroughCommandDecoderSupported();
+
 #if defined(OS_WIN)
 GL_EXPORT bool AreOverlaysSupportedWin();
 #endif

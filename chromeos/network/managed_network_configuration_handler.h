@@ -88,7 +88,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   // properties.
   virtual void SetProperties(const std::string& service_path,
                              const base::DictionaryValue& user_settings,
-                             const base::Closure& callback,
+                             base::OnceClosure callback,
                              network_handler::ErrorCallback error_callback) = 0;
 
   // Initially configures an unconfigured network with the given user settings
@@ -107,7 +107,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   // configuration will remain. If it was managed, it will still be configured.
   virtual void RemoveConfiguration(
       const std::string& service_path,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       network_handler::ErrorCallback error_callback) const = 0;
 
   // Removes the user's configuration from the network with |service_path| in
@@ -116,7 +116,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   // configuration is only removed from a single network profile.
   virtual void RemoveConfigurationFromCurrentProfile(
       const std::string& service_path,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       network_handler::ErrorCallback error_callback) const = 0;
 
   // Only to be called by NetworkConfigurationUpdater or from tests. Sets

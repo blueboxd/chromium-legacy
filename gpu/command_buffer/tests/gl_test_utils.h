@@ -102,10 +102,10 @@ class GpuCommandBufferTestEGL {
   GpuCommandBufferTestEGL();
   ~GpuCommandBufferTestEGL();
 
-  // Reinitialize GL to the EGLGLES2 implementation if it is available and not
-  // the current initialized GL implementation. Return true on sucess, false
+  // Reinitialize GL to an EGL implementation if it is available and not
+  // the current initialized GL implementation. Return true on success, false
   // otherwise.
-  bool InitializeEGLGLES2(int width, int height);
+  bool InitializeEGL(int width, int height);
 
   // Restore the default GL implementation.
   void RestoreGLDefault();

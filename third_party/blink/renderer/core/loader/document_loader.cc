@@ -1688,6 +1688,8 @@ void DocumentLoader::CommitNavigation() {
 
       frame_->DomWindow()->SetOriginPolicyIds(ids);
     }
+  } else {
+    frame_->DomWindow()->ClearForReuse();
   }
 
   // Now that we have the final window and Agent, ensure the security origin has

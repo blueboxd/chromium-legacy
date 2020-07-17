@@ -23,13 +23,14 @@ namespace content {
 namespace {
 
 void CreateMojoAudioInputStreamOnMainThread(
-    int frame_id,
+    const base::UnguessableToken& frame_token,
     const media::AudioSourceParameters& source_params,
     mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
     const media::AudioParameters& params,
     bool automatic_gain_control,
     uint32_t total_segments) {
-  RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(frame_id);
+  RenderFrameImpl* frame = RenderFrameImpl::FromWebFrame(
+      blink::WebFrame::FromFrameToken(frame_token));
   if (frame) {
     frame->GetAudioInputStreamFactory()->CreateStream(
         std::move(client), source_params.session_id, params,
@@ -39,7 +40,7 @@ void CreateMojoAudioInputStreamOnMainThread(
 
 void CreateMojoAudioInputStream(
     scoped_refptr<base::SequencedTaskRunner> main_task_runner,
-    int frame_id,
+    const base::UnguessableToken& frame_token,
     const media::AudioSourceParameters& source_params,
     mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
     const media::AudioParameters& params,
@@ -47,29 +48,31 @@ void CreateMojoAudioInputStream(
     uint32_t total_segments) {
   main_task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(&CreateMojoAudioInputStreamOnMainThread, frame_id,
+      base::BindOnce(&CreateMojoAudioInputStreamOnMainThread, frame_token,
                      source_params, std::move(client), params,
                      automatic_gain_control, total_segments));
 }
 
 void AssociateInputAndOutputForAec(
     scoped_refptr<base::SequencedTaskRunner> main_task_runner,
-    int frame_id,
+    const base::UnguessableToken& frame_token,
     const base::UnguessableToken& input_stream_id,
     const std::string& output_device_id) {
   main_task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
-          [](int frame_id, const base::UnguessableToken& input_stream_id,
+          [](const base::UnguessableToken& frame_token,
+             const base::UnguessableToken& input_stream_id,
              const std::string& output_device_id) {
-            RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(frame_id);
+            RenderFrameImpl* frame = RenderFrameImpl::FromWebFrame(
+                blink::WebFrame::FromFrameToken(frame_token));
             if (frame) {
               frame->GetAudioInputStreamFactory()
                   ->AssociateInputAndOutputForAec(input_stream_id,
                                                   output_device_id);
             }
           },
-          frame_id, input_stream_id, output_device_id));
+          frame_token, input_stream_id, output_device_id));
 }
 }  // namespace
 
@@ -90,15 +93,15 @@ AudioInputIPCFactory::~AudioInputIPCFactory() {
 }
 
 std::unique_ptr<media::AudioInputIPC> AudioInputIPCFactory::CreateAudioInputIPC(
-    int frame_id,
+    const base::UnguessableToken& frame_token,
     const media::AudioSourceParameters& source_params) const {
   CHECK(!source_params.session_id.is_empty());
   return std::make_unique<MojoAudioInputIPC>(
       source_params,
       base::BindRepeating(&CreateMojoAudioInputStream, main_task_runner_,
-                          frame_id),
+                          frame_token),
       base::BindRepeating(&AssociateInputAndOutputForAec, main_task_runner_,
-                          frame_id));
+                          frame_token));
 }
 
 }  // namespace content

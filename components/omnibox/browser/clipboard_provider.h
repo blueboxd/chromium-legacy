@@ -63,7 +63,7 @@ class ClipboardProvider : public AutocompleteProvider {
   // Resize and encode the image data into bytes. This can take some time if the
   // image is large, so this should happen on a background thread.
   static scoped_refptr<base::RefCountedMemory> EncodeClipboardImage(
-      gfx::Image image);
+      gfx::ImageSkia image);
   // Construct the actual image match once the image has been encoded into
   // bytes. This should be called back on the main thread.
   void ConstructImageMatchCallback(

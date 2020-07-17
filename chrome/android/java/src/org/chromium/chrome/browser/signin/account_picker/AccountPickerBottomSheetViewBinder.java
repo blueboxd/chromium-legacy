@@ -18,12 +18,18 @@ class AccountPickerBottomSheetViewBinder {
             view.getSelectedAccountView().setOnClickListener(v -> {
                 model.get(AccountPickerBottomSheetProperties.ON_SELECTED_ACCOUNT_CLICKED).run();
             });
-        } else if (propertyKey == AccountPickerBottomSheetProperties.IS_ACCOUNT_LIST_EXPANDED
-                && model.get(AccountPickerBottomSheetProperties.IS_ACCOUNT_LIST_EXPANDED)) {
-            view.expandAccountList();
+        } else if (propertyKey == AccountPickerBottomSheetProperties.IS_ACCOUNT_LIST_EXPANDED) {
+            if (model.get(AccountPickerBottomSheetProperties.IS_ACCOUNT_LIST_EXPANDED)) {
+                view.expandAccountList();
+            } else {
+                boolean isSelectedAccountNonNull =
+                        model.get(AccountPickerBottomSheetProperties.SELECTED_ACCOUNT_DATA) != null;
+                view.collapseAccountList(isSelectedAccountNonNull);
+            }
         } else if (propertyKey == AccountPickerBottomSheetProperties.SELECTED_ACCOUNT_DATA
                 && !model.get(AccountPickerBottomSheetProperties.IS_ACCOUNT_LIST_EXPANDED)) {
-            // Selected account data is only updated when the account list is collapsed.
+            // Selected account data (which can be null) is only updated
+            // when the account list is collapsed.
             DisplayableProfileData profileData =
                     model.get(AccountPickerBottomSheetProperties.SELECTED_ACCOUNT_DATA);
             view.collapseAccountList(profileData != null);

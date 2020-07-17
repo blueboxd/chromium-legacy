@@ -14,7 +14,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
-#include "ash/assistant/util/resource_util.h"
+#include "ash/assistant/ui/main_stage/assistant_onboarding_suggestion_view.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -25,19 +25,15 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
 namespace {
 
-using assistant::util::ResourceLinkType;
 using chromeos::assistant::AssistantSuggestion;
 using chromeos::assistant::AssistantSuggestionType;
 
@@ -53,16 +49,9 @@ constexpr int kIntroLabelSizeDelta = 2;
 // Suggestions.
 constexpr int kSuggestionsColumnCount = 3;
 constexpr int kSuggestionsColumnSetId = 1;
-constexpr int kSuggestionsCornerRadiusDip = 12;
-constexpr int kSuggestionsIconSizeDip = 24;
-constexpr int kSuggestionsLabelLineHeight = 20;
-constexpr int kSuggestionsLabelSizeDelta = 2;
 constexpr int kSuggestionsMaxCount = 6;
 constexpr int kSuggestionsMarginDip = 16;
 constexpr int kSuggestionsMarginTopDip = 32;
-constexpr int kSuggestionsPaddingDip = 16;
-constexpr int kSuggestionsPreferredHeightDip = 72;
-constexpr int kSuggestionsSpacingDip = 16;
 
 // Helpers ---------------------------------------------------------------------
 
@@ -98,135 +87,6 @@ std::string GetGreetingMessage(AssistantViewDelegate* delegate) {
       IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_NIGHT,
       base::UTF8ToUTF16(delegate->GetPrimaryUserGivenName()));
 }
-
-SkColor GetSuggestionBackgroundColor(int index) {
-  DCHECK_GE(index, 0);
-  DCHECK_LT(index, kSuggestionsMaxCount);
-  constexpr SkColor background_colors[kSuggestionsMaxCount] = {
-      gfx::kGoogleBlue050,
-      gfx::kGoogleRed050,
-      gfx::kGoogleYellow050,
-      gfx::kGoogleGreen050,
-      SkColorSetRGB(0xF6, 0xE9, 0xF8),
-      gfx::kGoogleBlue050};
-  return background_colors[index];
-}
-
-SkColor GetSuggestionForegroundColor(int index) {
-  DCHECK_GE(index, 0);
-  DCHECK_LT(index, kSuggestionsMaxCount);
-  constexpr SkColor foreground_colors[kSuggestionsMaxCount] = {
-      gfx::kGoogleBlue800,
-      gfx::kGoogleRed800,
-      SkColorSetRGB(0xBF, 0x50, 0x00),
-      gfx::kGoogleGreen800,
-      SkColorSetRGB(0x8A, 0x0E, 0x9E),
-      gfx::kGoogleBlue800};
-  return foreground_colors[index];
-}
-
-// SuggestionView --------------------------------------------------------------
-
-class SuggestionView : public views::Button, public views::ButtonListener {
- public:
-  SuggestionView(AssistantViewDelegate* delegate,
-                 const AssistantSuggestion& suggestion,
-                 int index)
-      : views::Button(this),
-        delegate_(delegate),
-        suggestion_id_(suggestion.id),
-        index_(index) {
-    InitLayout(suggestion);
-  }
-
-  SuggestionView(const SuggestionView&) = delete;
-  SuggestionView& operator=(const SuggestionView&) = delete;
-  ~SuggestionView() override = default;
-
-  // views::Button:
-  const char* GetClassName() const override { return "SuggestionView"; }
-
-  int GetHeightForWidth(int width) const override {
-    return kSuggestionsPreferredHeightDip;
-  }
-
-  void ChildPreferredSizeChanged(views::View* child) override {
-    PreferredSizeChanged();
-  }
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    delegate_->OnSuggestionPressed(suggestion_id_);
-  }
-
- private:
-  void InitLayout(const AssistantSuggestion& suggestion) {
-    // Background.
-    SetBackground(views::CreateRoundedRectBackground(
-        GetSuggestionBackgroundColor(index_), kSuggestionsCornerRadiusDip));
-
-    // Layout.
-    SetLayoutManager(std::make_unique<views::FlexLayout>())
-        ->SetCollapseMargins(true)
-        .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
-        .SetDefault(views::kFlexBehaviorKey, views::FlexSpecification())
-        .SetDefault(views::kMarginsKey, gfx::Insets(0, kSuggestionsSpacingDip))
-        .SetInteriorMargin(gfx::Insets(0, kSuggestionsPaddingDip))
-        .SetOrientation(views::LayoutOrientation::kHorizontal);
-
-    // Icon.
-    icon_ = AddChildView(std::make_unique<views::ImageView>());
-    icon_->SetImageSize({kSuggestionsIconSizeDip, kSuggestionsIconSizeDip});
-    icon_->SetPreferredSize({kSuggestionsIconSizeDip, kSuggestionsIconSizeDip});
-
-    const GURL& url = suggestion.icon_url;
-    if (assistant::util::IsResourceLinkType(url, ResourceLinkType::kIcon)) {
-      // Handle local images.
-      icon_->SetImage(assistant::util::CreateVectorIcon(
-          assistant::util::AppendOrReplaceColorParam(
-              url, GetSuggestionForegroundColor(index_)),
-          kSuggestionsIconSizeDip));
-    } else if (url.is_valid()) {
-      // Handle remote images.
-      delegate_->DownloadImage(url,
-                               base::BindOnce(&SuggestionView::OnIconDownloaded,
-                                              weak_factory_.GetWeakPtr()));
-    }
-
-    // Label.
-    label_ = AddChildView(std::make_unique<views::Label>());
-    label_->SetAutoColorReadabilityEnabled(false);
-    label_->SetEnabledColor(GetSuggestionForegroundColor(index_));
-    label_->SetFontList(assistant::ui::GetDefaultFontList()
-                            .DeriveWithSizeDelta(kSuggestionsLabelSizeDelta)
-                            .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
-    label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-    label_->SetLineHeight(kSuggestionsLabelLineHeight);
-    label_->SetMaxLines(2);
-    label_->SetMultiLine(true);
-    label_->SetPreferredSize(gfx::Size(INT_MAX, INT_MAX));
-    label_->SetProperty(
-        views::kFlexBehaviorKey,
-        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                                 views::MaximumFlexSizeRule::kUnbounded,
-                                 /*adjust_height_for_width=*/true));
-    label_->SetText(base::UTF8ToUTF16(suggestion.text));
-  }
-
-  void OnIconDownloaded(const gfx::ImageSkia& icon) {
-    if (!icon.isNull())
-      icon_->SetImage(icon);
-  }
-
-  AssistantViewDelegate* const delegate_;
-  const base::UnguessableToken suggestion_id_;
-  const int index_;
-
-  views::ImageView* icon_;  // Owned by view hierarchy.
-  views::Label* label_;     // Owned by view hierarchy.
-
-  base::WeakPtrFactory<SuggestionView> weak_factory_{this};
-};
 
 }  // namespace
 
@@ -363,8 +223,8 @@ void AssistantOnboardingView::UpdateSuggestions() {
                          /*column_set_id=*/kSuggestionsColumnSetId);
       }
     }
-    layout->AddView(
-        std::make_unique<SuggestionView>(delegate_, suggestions.at(i), i));
+    layout->AddView(std::make_unique<AssistantOnboardingSuggestionView>(
+        delegate_, suggestions.at(i), i));
   }
 }
 

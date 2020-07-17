@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/custom_property.h"
 
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/property_registration.h"
@@ -81,7 +82,6 @@ void CustomProperty::ApplyInherit(StyleResolverState& state) const {
 void CustomProperty::ApplyValue(StyleResolverState& state,
                                 const CSSValue& value) const {
   if (value.IsInvalidVariableValue()) {
-    DCHECK(RuntimeEnabledFeatures::CSSCascadeEnabled());
     state.Style()->SetVariableData(name_, nullptr, IsInherited());
     if (registration_)
       state.Style()->SetVariableValue(name_, nullptr, IsInherited());
@@ -103,14 +103,6 @@ void CustomProperty::ApplyValue(StyleResolverState& state,
   } else if (inherit) {
     ApplyInherit(state);
   } else {
-    if (!RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-      state.Style()->SetVariableData(name_, declaration.Value(),
-                                     is_inherited_property);
-      if (registration_)
-        state.Style()->SetVariableValue(name_, nullptr, is_inherited_property);
-      return;
-    }
-
     scoped_refptr<CSSVariableData> data = declaration.Value();
     DCHECK(!data->NeedsVariableResolution());
 

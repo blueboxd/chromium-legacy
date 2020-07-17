@@ -115,18 +115,18 @@ class TestNetworkingCastPrivateDelegate
 
   // VerifyDelegate
   void VerifyDestination(std::unique_ptr<Credentials> credentials,
-                         const VerifiedCallback& success_callback,
-                         const FailureCallback& failure_callback) override {
+                         VerifiedCallback success_callback,
+                         FailureCallback failure_callback) override {
     AssertCredentials(*credentials);
-    success_callback.Run(true);
+    std::move(success_callback).Run(true);
   }
 
   void VerifyAndEncryptData(const std::string& data,
                             std::unique_ptr<Credentials> credentials,
-                            const DataCallback& success_callback,
-                            const FailureCallback& failure_callback) override {
+                            DataCallback success_callback,
+                            FailureCallback failure_callback) override {
     AssertCredentials(*credentials);
-    success_callback.Run("encrypted_data");
+    std::move(success_callback).Run("encrypted_data");
   }
 
  private:
@@ -335,7 +335,7 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
   }
 
   void SetUp() override {
-    networking_cast_delegate_factory_ = base::Bind(
+    networking_cast_delegate_factory_ = base::BindRepeating(
         &NetworkingPrivateChromeOSApiTest::CreateNetworkingCastPrivateDelegate,
         base::Unretained(this));
     ChromeNetworkingCastPrivateDelegate::SetFactoryCallbackForTest(
@@ -848,8 +848,9 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
 
   TestListener listener(
       "notifyPortalDetectorObservers",
-      base::Bind(&NetworkPortalDetectorTestImpl::NotifyObserversForTesting,
-                 base::Unretained(detector())));
+      base::BindRepeating(
+          &NetworkPortalDetectorTestImpl::NotifyObserversForTesting,
+          base::Unretained(detector())));
   EXPECT_TRUE(RunNetworkingSubtest("captivePortalNotification")) << message_;
 }
 

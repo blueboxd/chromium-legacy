@@ -56,6 +56,12 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // of the 2D translation root.
     PhysicalOffset offset_to_2d_translation_root;
 
+    // For paint invalidation optimization for subpixel movement under
+    // composited layer. It's reset to zero if subpixel can't be propagated
+    // thus the optimization is not applicable (e.g. when crossing a
+    // non-translation transform).
+    PhysicalOffset directly_composited_container_paint_offset_subpixel_delta;
+
     // The PaintLayer corresponding to the origin of |paint_offset|.
     const LayoutObject* paint_offset_root = nullptr;
     // Whether newly created children should flatten their inherited transform
@@ -63,6 +69,10 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // be updated whenever |transform| is; flattening only needs to happen
     // to immediate children.
     bool should_flatten_inherited_transform = false;
+
+    // True if any fixed-position children within this context are fixed to the
+    // root of the FrameView (and hence above its scroll).
+    bool fixed_position_children_fixed_to_root = false;
 
     // Rendering context for 3D sorting. See
     // TransformPaintPropertyNode::renderingContextId.
@@ -78,10 +88,6 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // reference a scroll offset transform, scroll nodes should be updated if
     // the transform tree changes.
     const ScrollPaintPropertyNode* scroll = nullptr;
-
-    // True if any fixed-position children within this context are fixed to the
-    // root of the FrameView (and hence above its scroll).
-    bool fixed_position_children_fixed_to_root = false;
   };
 
   ContainingBlockContext current;

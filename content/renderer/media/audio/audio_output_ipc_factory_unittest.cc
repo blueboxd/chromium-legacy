@@ -30,6 +30,13 @@ namespace {
 
 const int kRenderFrameId = 0;
 
+base::UnguessableToken TokenFromInt(int i) {
+  static base::UnguessableToken base_token = base::UnguessableToken::Create();
+  return base::UnguessableToken::Deserialize(
+      base_token.GetHighForSerialization() + i,
+      base_token.GetLowForSerialization() + i);
+}
+
 std::unique_ptr<base::Thread> MakeIOThread() {
   auto io_thread = std::make_unique<base::Thread>("test IO thread");
   base::Thread::Options thread_options(base::MessagePumpType::IO, 0);
@@ -119,7 +126,8 @@ TEST_F(AudioOutputIPCFactoryTest, CallFactoryFromIOThread) {
 
   AudioOutputIPCFactory ipc_factory(io_thread->task_runner());
 
-  ipc_factory.RegisterRemoteFactory(kRenderFrameId, &interface_broker);
+  ipc_factory.RegisterRemoteFactory(TokenFromInt(kRenderFrameId),
+                                    &interface_broker);
 
   // To make sure that the pointer stored in |ipc_factory| is connected to
   // |remote_factory|, and also that it's bound to |io_thread|, we create an
@@ -127,14 +135,15 @@ TEST_F(AudioOutputIPCFactoryTest, CallFactoryFromIOThread) {
   // This is supposed to call |remote_factory| on the main thread.
   io_thread->task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&AudioOutputIPCFactoryTest::RequestAuthorizationOnIOThread,
-                     base::Unretained(this),
-                     ipc_factory.CreateAudioOutputIPC(kRenderFrameId)));
+      base::BindOnce(
+          &AudioOutputIPCFactoryTest::RequestAuthorizationOnIOThread,
+          base::Unretained(this),
+          ipc_factory.CreateAudioOutputIPC(TokenFromInt(kRenderFrameId))));
 
   // Wait for call to |remote_factory|:
   run_loop.Run();
 
-  ipc_factory.MaybeDeregisterRemoteFactory(0);
+  ipc_factory.MaybeDeregisterRemoteFactory(TokenFromInt(0));
 
   interface_broker.SetBinderForTesting(
       mojom::RendererAudioOutputStreamFactory::Name_, {});
@@ -166,34 +175,37 @@ TEST_F(AudioOutputIPCFactoryTest, SeveralFactories) {
   AudioOutputIPCFactory ipc_factory(io_thread->task_runner());
 
   for (size_t i = 0; i < n_factories; i++) {
-    ipc_factory.RegisterRemoteFactory(kRenderFrameId + i, &interface_broker);
+    ipc_factory.RegisterRemoteFactory(TokenFromInt(kRenderFrameId + i),
+                                      &interface_broker);
   }
 
   base::RunLoop run_loop;
   remote_factories[0].SetOnCalledCallback(run_loop.QuitWhenIdleClosure());
   io_thread->task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&AudioOutputIPCFactoryTest::RequestAuthorizationOnIOThread,
-                     base::Unretained(this),
-                     ipc_factory.CreateAudioOutputIPC(kRenderFrameId)));
+      base::BindOnce(
+          &AudioOutputIPCFactoryTest::RequestAuthorizationOnIOThread,
+          base::Unretained(this),
+          ipc_factory.CreateAudioOutputIPC(TokenFromInt(kRenderFrameId))));
   run_loop.Run();
 
   // Do some operation and make sure the internal state isn't messed up:
-  ipc_factory.MaybeDeregisterRemoteFactory(1);
+  ipc_factory.MaybeDeregisterRemoteFactory(TokenFromInt(1));
 
   base::RunLoop run_loop2;
   remote_factories[2].SetOnCalledCallback(run_loop2.QuitWhenIdleClosure());
   io_thread->task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&AudioOutputIPCFactoryTest::RequestAuthorizationOnIOThread,
-                     base::Unretained(this),
-                     ipc_factory.CreateAudioOutputIPC(kRenderFrameId + 2)));
+      base::BindOnce(
+          &AudioOutputIPCFactoryTest::RequestAuthorizationOnIOThread,
+          base::Unretained(this),
+          ipc_factory.CreateAudioOutputIPC(TokenFromInt(kRenderFrameId + 2))));
   run_loop2.Run();
 
   for (size_t i = 0; i < n_factories; i++) {
     if (i == 1)
       continue;
-    ipc_factory.MaybeDeregisterRemoteFactory(i);
+    ipc_factory.MaybeDeregisterRemoteFactory(TokenFromInt(i));
   }
 
   interface_broker.SetBinderForTesting(
@@ -219,8 +231,9 @@ TEST_F(AudioOutputIPCFactoryTest, RegisterDeregisterBackToBack_Deregisters) {
 
   AudioOutputIPCFactory ipc_factory(io_thread->task_runner());
 
-  ipc_factory.RegisterRemoteFactory(kRenderFrameId, &interface_broker);
-  ipc_factory.MaybeDeregisterRemoteFactory(kRenderFrameId);
+  ipc_factory.RegisterRemoteFactory(TokenFromInt(kRenderFrameId),
+                                    &interface_broker);
+  ipc_factory.MaybeDeregisterRemoteFactory(TokenFromInt(kRenderFrameId));
   // That there is no factory remaining at destruction is DCHECKed in the
   // AudioOutputIPCFactory destructor.
 

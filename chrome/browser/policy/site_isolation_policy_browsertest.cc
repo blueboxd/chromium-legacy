@@ -90,7 +90,7 @@ class SitePerProcessPolicyBrowserTest : public SiteIsolationPolicyBrowserTest {
 #endif
     values.Set(kPolicyName, policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(policy_value), nullptr);
+               base::Value(policy_value), nullptr);
     provider_.UpdateChromePolicy(values);
   }
 
@@ -118,11 +118,11 @@ class IsolateOriginsPolicyBrowserTest : public SiteIsolationPolicyBrowserTest {
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 
     policy::PolicyMap values;
-    values.Set(policy::key::kIsolateOrigins, policy::POLICY_LEVEL_MANDATORY,
-               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(
-                   "https://policy1.example.org/,http://policy2.example.com"),
-               nullptr);
+    values.Set(
+        policy::key::kIsolateOrigins, policy::POLICY_LEVEL_MANDATORY,
+        policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+        base::Value("https://policy1.example.org/,http://policy2.example.com"),
+        nullptr);
     provider_.UpdateChromePolicy(values);
   }
 
@@ -168,11 +168,11 @@ IN_PROC_BROWSER_TEST_F(IsolateOriginsPolicyBrowserTest, Simple) {
 
   // Simulate updating the policy at "browser runtime".
   policy::PolicyMap values;
-  values.Set(policy::key::kIsolateOrigins, policy::POLICY_LEVEL_MANDATORY,
-             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(
-                 "https://policy3.example.org/,http://policy4.example.com"),
-             nullptr);
+  values.Set(
+      policy::key::kIsolateOrigins, policy::POLICY_LEVEL_MANDATORY,
+      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+      base::Value("https://policy3.example.org/,http://policy4.example.com"),
+      nullptr);
   provider_.UpdateChromePolicy(values);
 
   // Verify that the policy update above has taken effect:

@@ -270,13 +270,11 @@ class TestCascadeAutoLock {
 
 class StyleCascadeTest
     : public PageTestBase,
-      private ScopedCSSCascadeForTest,
       private ScopedCSSRevertForTest,
       private ScopedCSSMatchedPropertiesCacheDependenciesForTest {
  public:
   StyleCascadeTest()
-      : ScopedCSSCascadeForTest(true),
-        ScopedCSSRevertForTest(true),
+      : ScopedCSSRevertForTest(true),
         ScopedCSSMatchedPropertiesCacheDependenciesForTest(true) {}
 
   CSSStyleSheet* CreateSheet(const String& css_text) {

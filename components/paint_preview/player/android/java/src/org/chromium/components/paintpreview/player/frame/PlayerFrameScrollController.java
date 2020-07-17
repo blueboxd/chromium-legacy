@@ -12,7 +12,6 @@ import android.widget.OverScroller;
 import androidx.annotation.Nullable;
 
 import org.chromium.components.paintpreview.player.OverscrollHandler;
-import org.chromium.components.paintpreview.player.PlayerUserActionRecorder;
 
 /**
  * Handles scrolling of a frame for the paint preview player.
@@ -30,16 +29,18 @@ public class PlayerFrameScrollController {
     private final Size mContentSize;
     /** Interface for calling shared methods on the mediator. */
     private final PlayerFrameMediatorDelegate mMediatorDelegate;
-    private final Runnable mUserInteractionCallback;
+    private final Runnable mOnScrollListener;
+    private final Runnable mOnFlingListener;
 
     PlayerFrameScrollController(OverScroller scroller, PlayerFrameViewport viewport,
             Size contentSize, PlayerFrameMediatorDelegate mediatorDelegate,
-            @Nullable Runnable userInteractionCallback) {
+            @Nullable Runnable onScrollListener, @Nullable Runnable onFlingListener) {
         mScroller = scroller;
         mViewport = viewport;
         mContentSize = contentSize;
         mMediatorDelegate = mediatorDelegate;
-        mUserInteractionCallback = userInteractionCallback;
+        mOnScrollListener = onScrollListener;
+        mOnFlingListener = onFlingListener;
     }
 
     /**
@@ -58,7 +59,7 @@ public class PlayerFrameScrollController {
     public boolean scrollBy(float distanceX, float distanceY) {
         mScroller.forceFinished(true);
         boolean result = scrollByInternal(distanceX, distanceY);
-        if (result) PlayerUserActionRecorder.recordScroll();
+        if (result && mOnScrollListener != null) mOnScrollListener.run();
         return result;
     }
 
@@ -78,8 +79,8 @@ public class PlayerFrameScrollController {
                 scaledContentWidth - viewportRect.width(), 0,
                 scaledContentHeight - viewportRect.height());
 
+        if (!mScroller.isFinished() && mOnFlingListener != null) mOnFlingListener.run();
         mScrollerHandler.post(this::handleFling);
-        if (!mScroller.isFinished()) PlayerUserActionRecorder.recordFling();
         return true;
     }
 
@@ -148,7 +149,6 @@ public class PlayerFrameScrollController {
         mMediatorDelegate.offsetBitmapScaleMatrix(validDistanceX, validDistanceY);
         mViewport.offset(validDistanceX, validDistanceY);
         mMediatorDelegate.updateVisuals(false);
-        if (mUserInteractionCallback != null) mUserInteractionCallback.run();
         return true;
     }
 

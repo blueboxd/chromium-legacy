@@ -18,8 +18,8 @@ namespace extensions {
 class ChromeNetworkingCastPrivateDelegate
     : public NetworkingCastPrivateDelegate {
  public:
-  using FactoryCallback =
-      base::Callback<std::unique_ptr<ChromeNetworkingCastPrivateDelegate>()>;
+  using FactoryCallback = base::RepeatingCallback<
+      std::unique_ptr<ChromeNetworkingCastPrivateDelegate>()>;
   static void SetFactoryCallbackForTest(FactoryCallback* factory_callback);
 
   static std::unique_ptr<ChromeNetworkingCastPrivateDelegate> Create();
@@ -28,12 +28,12 @@ class ChromeNetworkingCastPrivateDelegate
 
   // NetworkingCastPrivateDelegate overrides:
   void VerifyDestination(std::unique_ptr<Credentials> credentials,
-                         const VerifiedCallback& success_callback,
-                         const FailureCallback& failure_callback) override;
+                         VerifiedCallback success_callback,
+                         FailureCallback failure_callback) override;
   void VerifyAndEncryptData(const std::string& data,
                             std::unique_ptr<Credentials> credentials,
-                            const DataCallback& success_callback,
-                            const FailureCallback& failure_callback) override;
+                            DataCallback success_callback,
+                            FailureCallback failure_callback) override;
 
  protected:
   ChromeNetworkingCastPrivateDelegate();

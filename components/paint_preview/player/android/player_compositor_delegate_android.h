@@ -44,10 +44,11 @@ class PlayerCompositorDelegateAndroid : public PlayerCompositorDelegate {
       jint j_clip_height);
 
   // Called from Java on touch event on a frame.
-  void OnClick(JNIEnv* env,
-               const base::android::JavaParamRef<jobject>& j_frame_guid,
-               jint j_x,
-               jint j_y);
+  base::android::ScopedJavaLocalRef<jstring> OnClick(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_frame_guid,
+      jint j_x,
+      jint j_y);
 
   // Called to set if compression should happen at close time.
   void SetCompressOnClose(JNIEnv* env, jboolean compress_on_close);

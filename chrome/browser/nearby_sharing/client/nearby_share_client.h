@@ -10,7 +10,6 @@
 
 #include "base/callback_forward.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_request_error.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace nearbyshare {
 namespace proto {
@@ -48,33 +47,25 @@ class NearbyShareClient {
   virtual void UpdateDevice(
       const nearbyshare::proto::UpdateDeviceRequest& request,
       UpdateDeviceCallback&& callback,
-      ErrorCallback&& error_callback,
-      const net::PartialNetworkTrafficAnnotationTag&
-          partial_traffic_annotation) = 0;
+      ErrorCallback&& error_callback) = 0;
 
   // NearbyShareService v1: CheckContactsReachability
   virtual void CheckContactsReachability(
       const nearbyshare::proto::CheckContactsReachabilityRequest& request,
       CheckContactsReachabilityCallback&& callback,
-      ErrorCallback&& error_callback,
-      const net::PartialNetworkTrafficAnnotationTag&
-          partial_traffic_annotation) = 0;
+      ErrorCallback&& error_callback) = 0;
 
   // NearbyShareService v1: ListContactPeople
   virtual void ListContactPeople(
       const nearbyshare::proto::ListContactPeopleRequest& request,
       ListContactPeopleCallback&& callback,
-      ErrorCallback&& error_callback,
-      const net::PartialNetworkTrafficAnnotationTag&
-          partial_traffic_annotation) = 0;
+      ErrorCallback&& error_callback) = 0;
 
   // NearbyShareService v1: ListPublicCertificates
   virtual void ListPublicCertificates(
       const nearbyshare::proto::ListPublicCertificatesRequest& request,
       ListPublicCertificatesCallback&& callback,
-      ErrorCallback&& error_callback,
-      const net::PartialNetworkTrafficAnnotationTag&
-          partial_traffic_annotation) = 0;
+      ErrorCallback&& error_callback) = 0;
 
   // Returns the access token used to make the request. If no request has been
   // made yet, this function will return an empty string.

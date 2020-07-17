@@ -1696,7 +1696,7 @@
   {
     "name": "enable-md-rounded-corners-on-dialogs",
     "owners": [ "tluk" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 87
   },
   {
     "name": "enable-media-feeds",
@@ -3135,7 +3135,7 @@
   {
     "name": "omnibox-assistant-voice-search",
     "owners": [ "wylieb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 88
   },
   {
     "name": "omnibox-autocomplete-titles",

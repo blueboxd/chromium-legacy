@@ -716,8 +716,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   PolicyMap policies;
   policies.Set(policy::key::kExtensionInstallForcelist,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD, forcelist.CreateDeepCopy(),
-               nullptr);
+               policy::POLICY_SOURCE_CLOUD, forcelist.Clone(), nullptr);
   extensions::TestExtensionRegistryObserver install_observer(registry);
   UpdateProviderPolicy(policies);
   install_observer.WaitForExtensionWillBeInstalled();
@@ -821,8 +820,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   PolicyMap policies;
   policies.Set(policy::key::kExtensionInstallForcelist,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD, forcelist.CreateDeepCopy(),
-               nullptr);
+               policy::POLICY_SOURCE_CLOUD, forcelist.Clone(), nullptr);
   extensions::TestExtensionRegistryObserver install_observer(registry);
   UpdateProviderPolicy(policies);
 
@@ -862,8 +860,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   // and force enable it too.
   policies.Set(policy::key::kExtensionInstallForcelist,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD, forcelist.CreateDeepCopy(),
-               nullptr);
+               policy::POLICY_SOURCE_CLOUD, forcelist.Clone(), nullptr);
 
   extensions::TestExtensionRegistryObserver extension_observer(registry);
   UpdateProviderPolicy(policies);

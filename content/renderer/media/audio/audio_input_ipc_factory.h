@@ -15,6 +15,7 @@
 namespace base {
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
+class UnguessableToken;
 }  // namespace base
 
 namespace media {
@@ -43,7 +44,7 @@ class CONTENT_EXPORT AudioInputIPCFactory {
 
   // The returned object may only be used on io_task_runner().
   std::unique_ptr<media::AudioInputIPC> CreateAudioInputIPC(
-      int frame_id,
+      const base::UnguessableToken& frame_token,
       const media::AudioSourceParameters& source_params) const;
 
  private:

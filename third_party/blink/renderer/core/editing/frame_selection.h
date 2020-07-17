@@ -42,7 +42,7 @@
 
 namespace blink {
 
-class DisplayItemClient;
+class CaretDisplayItemClient;
 class Element;
 class LayoutBlock;
 class LayoutText;
@@ -294,7 +294,7 @@ class CORE_EXPORT FrameSelection final
   friend class PaintControllerPaintTestBase;
   friend class SelectionControllerTest;
 
-  const DisplayItemClient& CaretDisplayItemClientForTesting() const;
+  const CaretDisplayItemClient& CaretDisplayItemClientForTesting() const;
 
   // Note: We have |selectionInFlatTree()| for unit tests, we should
   // use |visibleSelection<EditingInFlatTreeStrategy>()|.

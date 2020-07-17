@@ -20,6 +20,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.SyncContentResolverDelegate;
@@ -120,11 +121,11 @@ public class AndroidSyncSettings {
      * @return true if sync is on, false otherwise
      */
     public boolean isSyncEnabled() {
-        return mMasterSyncEnabled && mChromeSyncEnabled;
+        return mChromeSyncEnabled && doesMasterSyncSettingAllowChromeSync();
     }
 
     /**
-     * Checks whether sync is currently enabled from Chrome for a given account.
+     * Checks whether sync is currently enabled for Chrome for a given account.
      *
      * It checks only Chrome sync setting for the given account,
      * and ignores the master sync setting.
@@ -137,10 +138,13 @@ public class AndroidSyncSettings {
     }
 
     /**
-     * Checks whether the master sync flag for Android is currently enabled.
+     * Checks whether the master sync flag for Android allows syncing Chrome
+     * data.
      */
-    public boolean isMasterSyncEnabled() {
-        return mMasterSyncEnabled;
+    public boolean doesMasterSyncSettingAllowChromeSync() {
+        return mMasterSyncEnabled
+                || ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.DECOUPLE_SYNC_FROM_ANDROID_MASTER_SYNC);
     }
 
     /**

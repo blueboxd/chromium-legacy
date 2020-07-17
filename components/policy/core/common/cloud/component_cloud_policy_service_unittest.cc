@@ -113,11 +113,9 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     public_key_ = builder_.GetPublicSigningKeyAsString();
 
     expected_policy_.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                         POLICY_SOURCE_CLOUD,
-                         std::make_unique<base::Value>("disabled"), nullptr);
+                         POLICY_SOURCE_CLOUD, base::Value("disabled"), nullptr);
     expected_policy_.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-                         POLICY_SOURCE_CLOUD,
-                         std::make_unique<base::Value>("maybe"), nullptr);
+                         POLICY_SOURCE_CLOUD, base::Value("maybe"), nullptr);
   }
 
   void SetUp() override {
@@ -576,13 +574,11 @@ TEST_F(ComponentCloudPolicyServiceTest, LoadInvalidPolicyFromCache) {
   PolicyBundle expected_bundle;
   expected_bundle.Get(kTestExtensionNS)
       .Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("published"),
-           nullptr);
+           POLICY_SOURCE_CLOUD, base::Value("published"), nullptr);
   // The second policy should be invalid.
   expected_bundle.Get(kTestExtensionNS)
       .Set("Undeclared Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("not published"),
-           nullptr);
+           POLICY_SOURCE_CLOUD, base::Value("not published"), nullptr);
   expected_bundle.Get(kTestExtensionNS)
       .GetMutable("Undeclared Name")
       ->SetInvalid();

@@ -699,12 +699,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)stopChromeMain {
-  // Teardown UI state that is associated with scenes.
-  for (SceneState* sceneState in self.appState.connectedScenes) {
-    sceneState.activationLevel = SceneActivationLevelUnattached;
-  }
-  // End of per-window code.
-
   OmahaService::Stop();
 
   [_spotlightManager shutdown];

@@ -164,7 +164,19 @@ void ForceInstalledMetrics::ReportMetrics() {
   base::UmaHistogramCounts100("Extensions.ForceInstalledTotalCandidateCount",
                               tracker_->extensions().size());
   std::set<ExtensionId> missing_forced_extensions;
+  InstallStageTracker* install_stage_tracker =
+      InstallStageTracker::Get(profile_);
   for (const auto& extension : tracker_->extensions()) {
+    InstallStageTracker::InstallationData installation =
+        install_stage_tracker->Get(extension.first);
+    if (installation.download_manifest_finish_time) {
+      DCHECK(installation.download_manifest_started_time);
+      base::UmaHistogramLongTimes(
+          "Extensions.ForceInstalledTime.DownloadingStartTo."
+          "ManifestDownloadComplete",
+          installation.download_manifest_finish_time.value() -
+              installation.download_manifest_started_time.value());
+    }
     if (!IsStatusGood(extension.second.status))
       missing_forced_extensions.insert(extension.first);
   }
@@ -176,8 +188,6 @@ void ForceInstalledMetrics::ReportMetrics() {
     VLOG(2) << "All forced extensions seems to be installed";
     return;
   }
-  InstallStageTracker* install_stage_tracker =
-      InstallStageTracker::Get(profile_);
   size_t enabled_missing_count = missing_forced_extensions.size();
   size_t blocklisted_count = 0;
   auto installed_extensions = registry_->GenerateInstalledExtensionsSet();

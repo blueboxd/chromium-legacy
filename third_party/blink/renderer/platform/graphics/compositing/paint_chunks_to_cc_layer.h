@@ -25,7 +25,6 @@ namespace blink {
 
 class DisplayItemList;
 class PaintChunkSubset;
-class FloatSize;
 class PropertyTreeState;
 class RasterInvalidationTracking;
 
@@ -61,7 +60,6 @@ class PLATFORM_EXPORT PaintChunksToCcLayer {
   static void ConvertInto(const PaintChunkSubset&,
                           const PropertyTreeState& layer_state,
                           const gfx::Vector2dF& layer_offset,
-                          const FloatSize& visual_rect_subpixel_offset,
                           const DisplayItemList&,
                           cc::DisplayItemList&);
 

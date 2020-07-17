@@ -191,20 +191,20 @@ UIProxyConfigService::UIProxyConfigService(
     profile_registrar_.Init(profile_prefs_);
     profile_registrar_.Add(
         ::proxy_config::prefs::kProxy,
-        base::Bind(&UIProxyConfigService::OnPreferenceChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&UIProxyConfigService::OnPreferenceChanged,
+                            base::Unretained(this)));
     profile_registrar_.Add(
         ::proxy_config::prefs::kUseSharedProxies,
-        base::Bind(&UIProxyConfigService::OnPreferenceChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&UIProxyConfigService::OnPreferenceChanged,
+                            base::Unretained(this)));
   }
 
   DCHECK(local_state_prefs_);
   local_state_registrar_.Init(local_state_prefs_);
   local_state_registrar_.Add(
       ::proxy_config::prefs::kProxy,
-      base::Bind(&UIProxyConfigService::OnPreferenceChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&UIProxyConfigService::OnPreferenceChanged,
+                          base::Unretained(this)));
   network_state_handler_ = network_state_handler;
   network_profile_handler_ = network_profile_handler;
 }

@@ -202,19 +202,6 @@ void StyleResolverState::SetTextOrientation(ETextOrientation text_orientation) {
   }
 }
 
-HeapHashMap<CSSPropertyID, Member<const CSSValue>>&
-StyleResolverState::ParsedPropertiesForPendingSubstitutionCache(
-    const cssvalue::CSSPendingSubstitutionValue& value) const {
-  HeapHashMap<CSSPropertyID, Member<const CSSValue>>* map =
-      parsed_properties_for_pending_substitution_cache_.at(&value);
-  if (!map) {
-    map = MakeGarbageCollected<
-        HeapHashMap<CSSPropertyID, Member<const CSSValue>>>();
-    parsed_properties_for_pending_substitution_cache_.Set(&value, map);
-  }
-  return *map;
-}
-
 CSSParserMode StyleResolverState::GetParserMode() const {
   return GetDocument().InQuirksMode() ? kHTMLQuirksMode : kHTMLStandardMode;
 }

@@ -175,10 +175,8 @@ void RasterInvalidator::GenerateRasterInvalidations(
     const PaintArtifact& new_paint_artifact,
     const PaintChunkSubset& new_chunks,
     const PropertyTreeState& layer_state,
-    const FloatSize& visual_rect_subpixel_offset,
     Vector<PaintChunkInfo>& new_chunks_info) {
-  ChunkToLayerMapper mapper(layer_state, layer_bounds_.OffsetFromOrigin(),
-                            visual_rect_subpixel_offset);
+  ChunkToLayerMapper mapper(layer_state, layer_bounds_.OffsetFromOrigin());
   Vector<bool> old_chunks_matched;
   old_chunks_matched.resize(old_paint_chunks_info_.size());
   wtf_size_t old_index = 0;
@@ -318,11 +316,10 @@ void RasterInvalidator::Generate(
     scoped_refptr<const PaintArtifact> new_paint_artifact,
     const gfx::Rect& layer_bounds,
     const PropertyTreeState& layer_state,
-    const FloatSize& visual_rect_subpixel_offset,
     const DisplayItemClient* layer_client) {
   Generate(raster_invalidation_function, new_paint_artifact,
            new_paint_artifact->PaintChunks(), layer_bounds, layer_state,
-           visual_rect_subpixel_offset, layer_client);
+           layer_client);
 }
 
 void RasterInvalidator::Generate(
@@ -331,7 +328,6 @@ void RasterInvalidator::Generate(
     const PaintChunkSubset& paint_chunks,
     const gfx::Rect& layer_bounds,
     const PropertyTreeState& layer_state,
-    const FloatSize& visual_rect_subpixel_offset,
     const DisplayItemClient* layer_client) {
   if (RasterInvalidationTracking::ShouldAlwaysTrack())
     EnsureTracking();
@@ -346,8 +342,7 @@ void RasterInvalidator::Generate(
     // No raster invalidation is needed if either the old bounds or the new
     // bounds is empty, but we still need to update new_chunks_info for the
     // next cycle.
-    ChunkToLayerMapper mapper(layer_state, layer_bounds.OffsetFromOrigin(),
-                              visual_rect_subpixel_offset);
+    ChunkToLayerMapper mapper(layer_state, layer_bounds.OffsetFromOrigin());
     for (auto it = paint_chunks.begin(); it != paint_chunks.end(); ++it) {
       if (ShouldSkipForRasterInvalidation(*new_paint_artifact, *it))
         continue;
@@ -363,7 +358,7 @@ void RasterInvalidator::Generate(
   } else {
     GenerateRasterInvalidations(raster_invalidation_function,
                                 *new_paint_artifact, paint_chunks, layer_state,
-                                visual_rect_subpixel_offset, new_chunks_info);
+                                new_chunks_info);
   }
 
   if (tracking_info_)

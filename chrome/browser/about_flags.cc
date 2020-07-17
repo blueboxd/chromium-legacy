@@ -1192,6 +1192,14 @@ const FeatureEntry::FeatureVariation kOmniboxMaxURLMatchesVariations[] = {
 
 const FeatureEntry::FeatureVariation kDynamicMaxAutocompleteVariations[] = {
     {
+        "9 suggestions if 0 or less URLs",
+        (FeatureEntry::FeatureParam[]){
+            {"OmniboxDynamicMaxAutocompleteUrlCutoff", "0"},
+            {"OmniboxDynamicMaxAutocompleteIncreasedLimit", "9"}},
+        2,
+        nullptr,
+    },
+    {
         "9 suggestions if 1 or less URLs",
         (FeatureEntry::FeatureParam[]){
             {"OmniboxDynamicMaxAutocompleteUrlCutoff", "1"},
@@ -1204,6 +1212,14 @@ const FeatureEntry::FeatureVariation kDynamicMaxAutocompleteVariations[] = {
         (FeatureEntry::FeatureParam[]){
             {"OmniboxDynamicMaxAutocompleteUrlCutoff", "2"},
             {"OmniboxDynamicMaxAutocompleteIncreasedLimit", "9"}},
+        2,
+        nullptr,
+    },
+    {
+        "10 suggestions if 0 or less URLs",
+        (FeatureEntry::FeatureParam[]){
+            {"OmniboxDynamicMaxAutocompleteUrlCutoff", "0"},
+            {"OmniboxDynamicMaxAutocompleteIncreasedLimit", "10"}},
         2,
         nullptr,
     },

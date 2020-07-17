@@ -21,6 +21,7 @@
 #include "content/renderer/render_frame_impl.h"
 #include "media/audio/audio_device_description.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace {
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -259,7 +260,8 @@ bool PepperPlatformAudioOutputDev::Initialize(int sample_rate,
 
   client_ = client;
 
-  ipc_ = AudioOutputIPCFactory::get()->CreateAudioOutputIPC(render_frame_id_);
+  ipc_ = AudioOutputIPCFactory::get()->CreateAudioOutputIPC(
+      render_frame->GetWebFrame()->GetFrameToken());
   CHECK(ipc_);
 
   params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,

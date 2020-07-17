@@ -85,7 +85,7 @@ class PlayerFrameGestureDetector
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
-        mPlayerFrameViewDelegate.onClick((int) e.getX(), (int) e.getY());
+        mPlayerFrameViewDelegate.onTap((int) e.getX(), (int) e.getY());
         return true;
     }
 
@@ -115,7 +115,9 @@ class PlayerFrameGestureDetector
     }
 
     @Override
-    public void onLongPress(MotionEvent e) {}
+    public void onLongPress(MotionEvent e) {
+        mPlayerFrameViewDelegate.onLongPress((int) e.getX(), (int) e.getY());
+    }
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {

@@ -205,13 +205,10 @@ network::mojom::URLLoaderFactoryParamsPtr
 URLLoaderFactoryParamsHelper::CreateForRendererProcess(
     RenderProcessHost* process) {
   // Attempt to use the process lock as |request_initiator_site_lock|.
-  base::Optional<url::Origin> request_initiator_site_lock;
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   ProcessLock process_lock = policy->GetProcessLock(process->GetID());
-  if (process_lock.lock_url().is_valid()) {
-    request_initiator_site_lock =
-        SiteInstanceImpl::GetRequestInitiatorSiteLock(process_lock.lock_url());
-  }
+  base::Optional<url::Origin> request_initiator_site_lock =
+      SiteInstanceImpl::GetRequestInitiatorSiteLock(process_lock);
 
   // Since this function is about to get deprecated (crbug.com/1098938), it
   // should be fine to not add support for isolation info thus using an empty

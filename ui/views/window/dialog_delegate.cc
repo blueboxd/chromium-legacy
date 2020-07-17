@@ -247,7 +247,7 @@ std::unique_ptr<NonClientFrameView> DialogDelegate::CreateDialogFrameView(
       border->SetCornerRadius(
           base::FeatureList::IsEnabled(
               features::kEnableMDRoundedCornersOnDialogs)
-              ? provider->GetCornerRadiusMetric(views::EMPHASIS_HIGH)
+              ? provider->GetCornerRadiusMetric(views::EMPHASIS_MEDIUM)
               : 2);
     }
     frame->SetFootnoteView(delegate->DisownFootnoteView());

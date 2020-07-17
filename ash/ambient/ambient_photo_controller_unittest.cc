@@ -16,6 +16,7 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/hash/sha1.h"
@@ -104,26 +105,51 @@ TEST_F(AmbientPhotoControllerTest, ShouldSaveAndDeleteImagesOnDisk) {
   base::FilePath home_dir;
   base::PathService::Get(base::DIR_HOME, &home_dir);
 
-  // Start to refresh images.
-  photo_controller()->StartScreenUpdate();
-  base::FilePath root_path =
+  base::FilePath ambient_image_path =
       home_dir.Append(FILE_PATH_LITERAL(kAmbientModeDirectoryName));
-  EXPECT_TRUE(!base::PathExists(root_path) ||
-              base::IsDirectoryEmpty(root_path));
 
+  // Save a file to check if it gets deleted by StartScreenUpdate.
+  auto file_to_delete = ambient_image_path.Append("file_to_delete");
+  base::WriteFile(file_to_delete, "delete_me");
+
+  // Start to refresh images. Kicks off tasks that cleans |ambient_image_path|,
+  // then downloads a test image and writes it to a subdirectory of
+  // |ambient_image_path| in a delayed task.
+  photo_controller()->StartScreenUpdate();
   task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
+
+  EXPECT_TRUE(base::PathExists(ambient_image_path));
+  EXPECT_FALSE(base::PathExists(file_to_delete));
+
+  {
+    // Count files and directories in root_path. There should only be one
+    // subdirectory that was just created to save image files for this ambient
+    // mode session.
+    base::FileEnumerator files(
+        ambient_image_path, /*recursive=*/false,
+        base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+    int count = 0;
+    for (base::FilePath current = files.Next(); !current.empty();
+         current = files.Next()) {
+      EXPECT_TRUE(files.GetInfo().IsDirectory());
+      count++;
+    }
+
+    EXPECT_EQ(count, 1);
+  }
+
   auto image = photo_controller()->ambient_backend_model()->GetNextImage();
   EXPECT_FALSE(image.isNull());
-  EXPECT_TRUE(base::PathExists(root_path));
-  EXPECT_FALSE(base::IsDirectoryEmpty(root_path));
 
   // Stop to refresh images.
   photo_controller()->StopScreenUpdate();
   task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
+
+  EXPECT_TRUE(base::PathExists(ambient_image_path));
+  EXPECT_TRUE(base::IsDirectoryEmpty(ambient_image_path));
+
   image = photo_controller()->ambient_backend_model()->GetNextImage();
   EXPECT_TRUE(image.isNull());
-  EXPECT_TRUE(base::PathExists(root_path));
-  EXPECT_TRUE(base::IsDirectoryEmpty(root_path));
 }
 
 }  // namespace ash

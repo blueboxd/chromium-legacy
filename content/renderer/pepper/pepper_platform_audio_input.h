@@ -103,6 +103,7 @@ class PepperPlatformAudioInput
 
   // The frame containing the Pepper widget.
   int render_frame_id_;
+  base::UnguessableToken render_frame_token_;
 
   // The unique ID to identify the opened device. THIS MUST ONLY BE ACCESSED ON
   // THE MAIN THREAD.

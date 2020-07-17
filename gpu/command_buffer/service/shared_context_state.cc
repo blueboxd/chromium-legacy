@@ -122,40 +122,44 @@ SharedContextState::SharedContextState(
       real_context_(std::move(context)),
       surface_(std::move(surface)),
       sk_surface_cache_(MaxNumSkSurface()) {
-  if (GrContextIsVulkan()) {
-#if BUILDFLAG(ENABLE_VULKAN)
-    gr_context_ = vk_context_provider_->GetGrContext();
-#endif
-    use_virtualized_gl_contexts_ = false;
-    DCHECK(gr_context_);
-  }
-  if (GrContextIsMetal()) {
-#if defined(OS_MACOSX)
-    gr_context_ = metal_context_provider_->GetGrContext();
-#endif
-    use_virtualized_gl_contexts_ = false;
-    DCHECK(gr_context_);
-  }
-  if (GrContextIsDawn()) {
-#if BUILDFLAG(SKIA_USE_DAWN)
-    gr_context_ = dawn_context_provider_->GetGrContext();
-#endif
-    use_virtualized_gl_contexts_ = false;
-    DCHECK(gr_context_);
-  }
+  static crash_reporter::CrashKeyString<16> crash_key("gr-context-type");
+  crash_key.Set(
+      base::StringPrintf("%u", static_cast<uint32_t>(gr_context_type_)));
 
-  // Ensure that the context type is consistent with the provided factories.
+  // If |gr_context_type_| is not GL, then initialize |gr_context_| here. In
+  // the case of GL, |gr_context_| will be initialized in InitializeGrContext.
+  // Note that if |gr_context_| is not GL and also not initialized here (e.g,
+  // due to vk/metal/dawn_context_provider_ being nullptr), then
+  // InitializeGrContext will fail.
   switch (gr_context_type_) {
     case GrContextType::kGL:
       break;
     case GrContextType::kVulkan:
-      DCHECK(vk_context_provider_);
+      if (vk_context_provider_) {
+#if BUILDFLAG(ENABLE_VULKAN)
+        gr_context_ = vk_context_provider_->GetGrContext();
+#endif
+        use_virtualized_gl_contexts_ = false;
+        DCHECK(gr_context_);
+      }
       break;
     case GrContextType::kMetal:
-      DCHECK(metal_context_provider_);
+      if (metal_context_provider_) {
+#if defined(OS_MACOSX)
+        gr_context_ = metal_context_provider_->GetGrContext();
+#endif
+        use_virtualized_gl_contexts_ = false;
+        DCHECK(gr_context_);
+      }
       break;
     case GrContextType::kDawn:
-      DCHECK(dawn_context_provider_);
+      if (dawn_context_provider_) {
+#if BUILDFLAG(SKIA_USE_DAWN)
+        gr_context_ = dawn_context_provider_->GetGrContext();
+#endif
+        use_virtualized_gl_contexts_ = false;
+        DCHECK(gr_context_);
+      }
       break;
   }
 
@@ -167,9 +171,6 @@ SharedContextState::SharedContextState(
   scratch_deserialization_buffer_.resize(
       kInitialScratchDeserializationBufferSize);
 
-  static crash_reporter::CrashKeyString<16> crash_key("gr-context-type");
-  crash_key.Set(
-      base::StringPrintf("%u", static_cast<uint32_t>(gr_context_type_)));
 }
 
 SharedContextState::~SharedContextState() {
@@ -224,7 +225,7 @@ bool SharedContextState::InitializeGrContext(
   DetermineGrCacheLimitsFromAvailableMemory(&max_resource_cache_bytes,
                                             &glyph_cache_max_texture_bytes);
 
-  if (GrContextIsGL()) {
+  if (gr_context_type_ == GrContextType::kGL) {
     DCHECK(context_->IsCurrent(nullptr));
     bool use_version_es2 = false;
 #if defined(OS_ANDROID)

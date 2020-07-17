@@ -48,24 +48,24 @@ class MockAudioDeviceFactory : public AudioDeviceFactory {
   // implemented.
   MOCK_METHOD3(CreateFinalAudioRendererSink,
                scoped_refptr<media::AudioRendererSink>(
-                   int render_frame_id,
+                   const base::UnguessableToken& frame_token,
                    const media::AudioSinkParameters& params,
                    base::TimeDelta auth_timeout));
   MOCK_METHOD3(CreateAudioRendererSink,
                scoped_refptr<media::AudioRendererSink>(
                    blink::WebAudioDeviceSourceType source_type,
-                   int render_frame_id,
+                   const base::UnguessableToken& frame_token,
                    const media::AudioSinkParameters& params));
   MOCK_METHOD3(CreateSwitchableAudioRendererSink,
                scoped_refptr<media::SwitchableAudioRendererSink>(
                    blink::WebAudioDeviceSourceType source_type,
-                   int render_frame_id,
+                   const base::UnguessableToken& frame_token,
                    const media::AudioSinkParameters& params));
 
   // Returns mock_capturer_source_ once. If called a second time, the process
   // will crash.
   scoped_refptr<media::AudioCapturerSource> CreateAudioCapturerSource(
-      int render_frame_id,
+      const base::UnguessableToken& frame_token,
       const media::AudioSourceParameters& params) override;
 
  private:

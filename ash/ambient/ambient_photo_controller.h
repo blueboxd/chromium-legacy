@@ -164,7 +164,7 @@ class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
   ScopedObserver<AmbientBackendModel, AmbientBackendModelObserver>
       ambient_backend_model_observer_{this};
 
-  base::FilePath root_path_;
+  base::FilePath photo_path_;
 
   std::unique_ptr<AmbientURLLoader> url_loader_;
 

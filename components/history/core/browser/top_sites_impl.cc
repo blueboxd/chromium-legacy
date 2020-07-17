@@ -300,13 +300,6 @@ bool TopSitesImpl::AddPrepopulatedPages(MostVisitedURLList* urls) const {
 
 MostVisitedURLList TopSitesImpl::ApplyBlockedUrls(
     const MostVisitedURLList& urls) {
-  // Log the number of times ApplyBlockedUrls is called so we can compute the
-  // average number of blocked urls per user.
-  const base::DictionaryValue* blocked_urls =
-      pref_service_->GetDictionary(kBlockedUrlsPrefsKey);
-  UMA_HISTOGRAM_BOOLEAN("TopSites.NumberOfApplyBlacklist", true);
-  UMA_HISTOGRAM_COUNTS_100("TopSites.NumberOfBlacklistedItems",
-                           (blocked_urls ? blocked_urls->size() : 0));
   MostVisitedURLList result;
   for (const auto& url : urls) {
     if (IsBlocked(url.url))

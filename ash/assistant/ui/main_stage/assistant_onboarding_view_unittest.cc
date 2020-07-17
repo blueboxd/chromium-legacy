@@ -13,6 +13,7 @@
 #include "ash/assistant/model/assistant_suggestions_model.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/test/assistant_ash_test_base.h"
+#include "ash/assistant/ui/main_stage/assistant_onboarding_suggestion_view.h"
 #include "ash/assistant/ui/test_support/mock_assistant_view_delegate.h"
 #include "ash/assistant/util/test_support/macros.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
@@ -63,7 +64,7 @@ void FindDescendentByClassName(views::View* parent, T** result) {
     auto* candidate = children.front();
     children.pop();
 
-    if (candidate->GetClassName() == T::kViewClassName) {
+    if (candidate->GetClassName() == T::kClassName) {
       *result = static_cast<T*>(candidate);
       return;
     }
@@ -155,10 +156,6 @@ class AssistantOnboardingViewTest : public AssistantAshTestBase {
 
   views::Label* intro_label() {
     return static_cast<views::Label*>(onboarding_view()->children().at(1));
-  }
-
-  views::View* suggestions_grid() {
-    return onboarding_view()->children().at(2);
   }
 
  private:
@@ -343,27 +340,22 @@ TEST_F(AssistantOnboardingViewTest, ShouldHaveExpectedSuggestions) {
         break;
     }
 
-    // Show Assistant UI and verify the expected number of suggestion views.
     ShowAssistantUi();
-    ASSERT_EQ(suggestions_grid()->children().size(),
-              expected_suggestions.size());
+
+    // Verify the expected number of suggestion views.
+    auto suggestion_views = GetOnboardingSuggestionViews();
+    ASSERT_EQ(suggestion_views.size(), expected_suggestions.size());
 
     // Verify that each suggestion view has the expected message and icon.
     for (size_t i = 0; i < expected_suggestions.size(); ++i) {
-      auto* suggestion_view = suggestions_grid()->children().at(i);
+      const auto* suggestion_view = suggestion_views.at(i);
       const auto& expected_suggestion = expected_suggestions.at(i);
 
-      views::Label* label = nullptr;
-      FindDescendentByClassName(suggestion_view, &label);
-      ASSERT_NE(label, nullptr);
-      EXPECT_EQ(label->GetText(),
+      EXPECT_EQ(suggestion_view->GetText(),
                 base::UTF8ToUTF16(expected_suggestion.message));
 
-      views::ImageView* icon = nullptr;
-      FindDescendentByClassName(suggestion_view, &icon);
-      ASSERT_NE(icon, nullptr);
       ASSERT_PIXELS_EQ(
-          icon->GetImage(),
+          suggestion_view->GetIcon(),
           gfx::CreateVectorIcon(expected_suggestion.icon_with_color->icon,
                                 /*size=*/24,
                                 expected_suggestion.icon_with_color->color));
@@ -372,9 +364,11 @@ TEST_F(AssistantOnboardingViewTest, ShouldHaveExpectedSuggestions) {
 }
 
 TEST_F(AssistantOnboardingViewTest, ShouldHandleSuggestionPresses) {
-  // Show Assistant UI and verify onboarding suggestions exist.
   ShowAssistantUi();
-  ASSERT_FALSE(suggestions_grid()->children().empty());
+
+  // Verify onboarding suggestions exist.
+  auto suggestion_views = GetOnboardingSuggestionViews();
+  ASSERT_FALSE(suggestion_views.empty());
 
   // Expect a text interaction originating from the onboarding feature...
   MockAssistantInteractionSubscriber subscriber(assistant_service());
@@ -386,13 +380,13 @@ TEST_F(AssistantOnboardingViewTest, ShouldHandleSuggestionPresses) {
           }));
 
   // ...when an onboarding suggestion is pressed.
-  TapOnAndWait(suggestions_grid()->children().at(0));
+  TapOnAndWait(suggestion_views.at(0));
 }
 
 TEST_F(AssistantOnboardingViewTest, ShouldHandleSuggestionUpdates) {
   // Show Assistant UI and verify suggestions exist.
   ShowAssistantUi();
-  EXPECT_FALSE(suggestions_grid()->children().empty());
+  ASSERT_FALSE(GetOnboardingSuggestionViews().empty());
 
   // Manually create a suggestion.
   AssistantSuggestion suggestion;
@@ -406,27 +400,21 @@ TEST_F(AssistantOnboardingViewTest, ShouldHandleSuggestionUpdates) {
   SetOnboardingSuggestions(std::move(suggestions));
 
   // Verify view state is updated to reflect model state.
-  ASSERT_EQ(suggestions_grid()->children().size(), 1u);
-  views::Label* label = nullptr;
-  FindDescendentByClassName(suggestions_grid()->children().at(0), &label);
-  ASSERT_NE(nullptr, label);
-  EXPECT_EQ(label->GetText(), base::UTF8ToUTF16("Forced suggestion"));
+  auto suggestion_views = GetOnboardingSuggestionViews();
+  ASSERT_EQ(suggestion_views.size(), 1u);
+  EXPECT_EQ(suggestion_views.at(0)->GetText(),
+            base::UTF8ToUTF16("Forced suggestion"));
 }
 
 TEST_F(AssistantOnboardingViewTest, ShouldHandleLocalIcons) {
-  MockAssistantViewDelegate delegate;
-  EXPECT_CALL(delegate, GetPrimaryUserGivenName)
-      .WillOnce(testing::Return("Primary User Given Name"));
-
-  AssistantOnboardingView onboarding_view(&delegate);
   SetOnboardingSuggestions({CreateSuggestionWithIconUrl(
       "googleassistant://resource?type=icon&name=assistant")});
 
-  views::ImageView* icon_view = nullptr;
-  FindDescendentByClassName(&onboarding_view, &icon_view);
-  ASSERT_NE(nullptr, icon_view);
+  ShowAssistantUi();
+  auto suggestion_views = GetOnboardingSuggestionViews();
+  ASSERT_EQ(suggestion_views.size(), 1u);
 
-  const auto& actual = icon_view->GetImage();
+  const auto& actual = suggestion_views.at(0)->GetIcon();
   gfx::ImageSkia expected = gfx::CreateVectorIcon(
       gfx::IconDescription(ash::kAssistantIcon, /*size=*/24));
 
@@ -451,11 +439,11 @@ TEST_F(AssistantOnboardingViewTest, ShouldHandleRemoteIcons) {
   SetOnboardingSuggestions({CreateSuggestionWithIconUrl(
       "https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png")});
 
-  views::ImageView* icon_view = nullptr;
-  FindDescendentByClassName(&onboarding_view, &icon_view);
-  ASSERT_NE(nullptr, icon_view);
+  AssistantOnboardingSuggestionView* suggestion_view = nullptr;
+  FindDescendentByClassName(&onboarding_view, &suggestion_view);
+  ASSERT_NE(nullptr, suggestion_view);
 
-  const auto& actual = icon_view->GetImage();
+  const auto& actual = suggestion_view->GetIcon();
   EXPECT_TRUE(actual.BackedBySameObjectAs(expected));
 }
 

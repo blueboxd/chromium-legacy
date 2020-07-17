@@ -393,10 +393,6 @@
       status: "test",
     },
     {
-      name: "CSSCascade",
-      status: "stable",
-    },
-    {
       // Support for the CSS color-scheme property from the css-color-adjust spec.
       // https://drafts.csswg.org/css-color-adjust/#color-scheme-prop
       name: "CSSColorScheme",
@@ -472,7 +468,6 @@
     // Enables dependency support for the MatchedPropertiesCache.
     {
       name: "CSSMatchedPropertiesCacheDependencies",
-      depends_on: ["CSSCascade"]
     },
     {
       name: "CSSMathStyle",
@@ -542,7 +537,6 @@
     {
       name: "CSSRevert",
       status: "stable",
-      depends_on: ["CSSCascade"],
     },
     // Support for declarative parts of scroll-animations-1, i.e.
     // the animation-timeline property and the @scroll-timeline rule.

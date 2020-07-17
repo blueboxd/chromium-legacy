@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -17,6 +18,7 @@
 #include "cc/paint/filter_operations.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/largest_draw_quad.h"
+#include "components/viz/common/quads/quad_list.h"
 #include "components/viz/common/viz_common_export.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/rect.h"
@@ -35,30 +37,7 @@ class DrawQuad;
 class RenderPassDrawQuad;
 class SharedQuadState;
 
-// A list of DrawQuad objects, sorted internally in front-to-back order. To
-// add a new quad drawn behind another quad, it must be placed after the other
-// quad.
-class VIZ_COMMON_EXPORT QuadList : public cc::ListContainer<DrawQuad> {
- public:
-  QuadList();
-  explicit QuadList(size_t default_size_to_reserve);
-
-  typedef QuadList::ReverseIterator BackToFrontIterator;
-  typedef QuadList::ConstReverseIterator ConstBackToFrontIterator;
-
-  inline BackToFrontIterator BackToFrontBegin() { return rbegin(); }
-  inline BackToFrontIterator BackToFrontEnd() { return rend(); }
-  inline ConstBackToFrontIterator BackToFrontBegin() const { return rbegin(); }
-  inline ConstBackToFrontIterator BackToFrontEnd() const { return rend(); }
-
-  // This function is used by overlay algorithm to fill the backbuffer with
-  // transparent black.
-  void ReplaceExistingQuadWithOpaqueTransparentSolidColor(Iterator at);
-  Iterator InsertCopyBeforeDrawQuad(Iterator at, size_t count);
-};
-
 using SharedQuadStateList = cc::ListContainer<SharedQuadState>;
-
 using RenderPassId = uint64_t;
 
 class VIZ_COMMON_EXPORT RenderPass {

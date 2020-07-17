@@ -215,7 +215,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetProperties(
 void ManagedNetworkConfigurationHandlerImpl::SetProperties(
     const std::string& service_path,
     const base::DictionaryValue& user_settings,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     network_handler::ErrorCallback error_callback) {
   const NetworkState* state =
       network_state_handler_->GetNetworkStateFromServicePath(
@@ -305,8 +305,8 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
           *profile, guid, &policies->global_network_config, network_policy,
           validated_user_settings.get()));
 
-  SetShillProperties(service_path, std::move(shill_dictionary), callback,
-                     std::move(error_callback));
+  SetShillProperties(service_path, std::move(shill_dictionary),
+                     std::move(callback), std::move(error_callback));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::SetManagedActiveProxyValues(
@@ -330,10 +330,11 @@ void ManagedNetworkConfigurationHandlerImpl::SetManagedActiveProxyValues(
 void ManagedNetworkConfigurationHandlerImpl::SetShillProperties(
     const std::string& service_path,
     std::unique_ptr<base::DictionaryValue> shill_dictionary,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     network_handler::ErrorCallback error_callback) {
   network_configuration_handler_->SetShillProperties(
-      service_path, *shill_dictionary, callback, std::move(error_callback));
+      service_path, *shill_dictionary, std::move(callback),
+      std::move(error_callback));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
@@ -454,19 +455,19 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
 
 void ManagedNetworkConfigurationHandlerImpl::RemoveConfiguration(
     const std::string& service_path,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     network_handler::ErrorCallback error_callback) const {
   network_configuration_handler_->RemoveConfiguration(
-      service_path, callback, std::move(error_callback));
+      service_path, std::move(callback), std::move(error_callback));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::
     RemoveConfigurationFromCurrentProfile(
         const std::string& service_path,
-        const base::Closure& callback,
+        base::OnceClosure callback,
         network_handler::ErrorCallback error_callback) const {
   network_configuration_handler_->RemoveConfigurationFromCurrentProfile(
-      service_path, callback, std::move(error_callback));
+      service_path, std::move(callback), std::move(error_callback));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::SetPolicy(

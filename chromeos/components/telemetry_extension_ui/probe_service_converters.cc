@@ -24,7 +24,7 @@ cros_healthd::mojom::ProbeCategoryEnum Convert(
     case health::mojom::ProbeCategoryEnum::kNonRemovableBlockDevices:
       return cros_healthd::mojom::ProbeCategoryEnum::kNonRemovableBlockDevices;
     case health::mojom::ProbeCategoryEnum::kCachedVpdData:
-      return cros_healthd::mojom::ProbeCategoryEnum::kCachedVpdData;
+      return cros_healthd::mojom::ProbeCategoryEnum::kSystem;
     case health::mojom::ProbeCategoryEnum::kCpu:
       return cros_healthd::mojom::ProbeCategoryEnum::kCpu;
     case health::mojom::ProbeCategoryEnum::kTimezone:
@@ -114,17 +114,18 @@ health::mojom::NonRemovableBlockDeviceResultPtr UncheckedConvertPtr(
 }
 
 health::mojom::CachedVpdInfoPtr UncheckedConvertPtr(
-    cros_healthd::mojom::CachedVpdInfoPtr input) {
-  return health::mojom::CachedVpdInfo::New(std::move(input->sku_number));
+    cros_healthd::mojom::SystemInfoPtr input) {
+  return health::mojom::CachedVpdInfo::New(
+      std::move(input->product_sku_number));
 }
 
 health::mojom::CachedVpdResultPtr UncheckedConvertPtr(
-    cros_healthd::mojom::CachedVpdResultPtr input) {
+    cros_healthd::mojom::SystemResultPtr input) {
   switch (input->which()) {
-    case cros_healthd::mojom::CachedVpdResult::Tag::VPD_INFO:
+    case cros_healthd::mojom::SystemResult::Tag::SYSTEM_INFO:
       return health::mojom::CachedVpdResult::NewVpdInfo(
-          ConvertPtr(std::move(input->get_vpd_info())));
-    case cros_healthd::mojom::CachedVpdResult::Tag::ERROR:
+          ConvertPtr(std::move(input->get_system_info())));
+    case cros_healthd::mojom::SystemResult::Tag::ERROR:
       return health::mojom::CachedVpdResult::NewError(
           ConvertPtr(std::move(input->get_error())));
   }
@@ -303,7 +304,7 @@ health::mojom::TelemetryInfoPtr UncheckedConvertPtr(
   return health::mojom::TelemetryInfo::New(
       ConvertPtr(std::move(input->battery_result)),
       ConvertPtr(std::move(input->block_device_result)),
-      ConvertPtr(std::move(input->vpd_result)),
+      ConvertPtr(std::move(input->system_result)),
       ConvertPtr(std::move(input->cpu_result)),
       ConvertPtr(std::move(input->timezone_result)),
       ConvertPtr(std::move(input->memory_result)),

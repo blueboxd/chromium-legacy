@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_STRING_H_
 
 #include <cstring>
+#include <limits>
 #include <string>
 
 #include "base/memory/scoped_refptr.h"

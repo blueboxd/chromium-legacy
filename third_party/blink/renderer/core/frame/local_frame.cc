@@ -732,6 +732,7 @@ void LocalFrame::SetDOMWindow(LocalDOMWindow* dom_window) {
   }
   GetScriptController().ClearWindowProxy();
   dom_window_ = dom_window;
+  dom_window->Initialize();
 }
 
 Document* LocalFrame::GetDocument() const {
@@ -1823,6 +1824,7 @@ void LocalFrame::ForceSynchronousDocumentInstall(
   // Any Document requires Shutdown() before detach, even the initial empty
   // document.
   GetDocument()->Shutdown();
+  DomWindow()->ClearForReuse();
 
   DomWindow()->InstallNewDocument(
       DocumentInit::Create()

@@ -71,7 +71,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
   // clear any existing properties.
   void SetShillProperties(const std::string& service_path,
                           const base::DictionaryValue& shill_properties,
-                          const base::Closure& callback,
+                          base::OnceClosure callback,
                           network_handler::ErrorCallback error_callback);
 
   // Removes the properties with the given property paths. If any of them are
@@ -82,7 +82,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
   // errors, |callback| will be run.
   void ClearShillProperties(const std::string& service_path,
                             const std::vector<std::string>& property_paths,
-                            const base::Closure& callback,
+                            base::OnceClosure callback,
                             network_handler::ErrorCallback error_callback);
 
   // Creates a network with the given |properties| in the specified Shill
@@ -100,20 +100,20 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
 
   // Removes the network |service_path| from any profiles that include it.
   void RemoveConfiguration(const std::string& service_path,
-                           const base::Closure& callback,
+                           base::OnceClosure callback,
                            network_handler::ErrorCallback error_callback);
 
   // Removes the network |service_path| from the profile that contains its
   // currently active configuration.
   void RemoveConfigurationFromCurrentProfile(
       const std::string& service_path,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       network_handler::ErrorCallback error_callback);
 
   // Changes the profile for the network |service_path| to |profile_path|.
   void SetNetworkProfile(const std::string& service_path,
                          const std::string& profile_path,
-                         const base::Closure& callback,
+                         base::OnceClosure callback,
                          network_handler::ErrorCallback error_callback);
 
   // Changes the value of a shill manager property.
@@ -165,7 +165,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
   // Callback after moving a network configuration.
   void SetNetworkProfileCompleted(const std::string& service_path,
                                   const std::string& profile_path,
-                                  const base::Closure& callback);
+                                  base::OnceClosure callback);
 
   // Set the Name and GUID properties correctly and Invoke |callback|.
   void GetPropertiesCallback(network_handler::ResultCallback callback,
@@ -178,7 +178,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
   void SetPropertiesSuccessCallback(
       const std::string& service_path,
       std::unique_ptr<base::DictionaryValue> set_properties,
-      const base::Closure& callback);
+      base::OnceClosure callback);
   void SetPropertiesErrorCallback(const std::string& service_path,
                                   network_handler::ErrorCallback error_callback,
                                   const std::string& dbus_error_name,
@@ -188,7 +188,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
   // for the service after clearing properties.
   void ClearPropertiesSuccessCallback(const std::string& service_path,
                                       const std::vector<std::string>& names,
-                                      const base::Closure& callback,
+                                      base::OnceClosure callback,
                                       const base::ListValue& result);
   void ClearPropertiesErrorCallback(
       const std::string& service_path,
@@ -202,7 +202,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
   void RemoveConfigurationFromProfile(
       const std::string& service_path,
       const std::string& profile_path,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       network_handler::ErrorCallback error_callback);
 
   // Unowned associated Network*Handlers (global or test instance).

@@ -34,7 +34,7 @@ class CONTENT_EXPORT AudioRendererSinkCache {
 
   // Returns output device information for a specified sink.
   virtual media::OutputDeviceInfo GetSinkInfo(
-      int source_render_frame_id,
+      const base::UnguessableToken& source_frame_token,
       const base::UnguessableToken& session_id,
       const std::string& device_id) = 0;
 
@@ -42,7 +42,7 @@ class CONTENT_EXPORT AudioRendererSinkCache {
   // calling ReleaseSink(). The sink must be stopped by the user before
   // deletion, but after releasing it from the cache.
   virtual scoped_refptr<media::AudioRendererSink> GetSink(
-      int source_render_frame_id,
+      const base::UnguessableToken& source_frame_token,
       const std::string& device_id) = 0;
 
   // Notifies the cache that the sink is not in use any more. Must be

@@ -111,6 +111,9 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   base::TimeDelta GetPreferredFrameInterval(
       mojom::CompositorFrameSinkType* type) const;
   void InitializeCompositorFrameSinkType(mojom::CompositorFrameSinkType type);
+  // Throttles the BeginFrames to send at |interval| if |interval| is greater
+  // than zero, or clears previously set throttle if zero.
+  void ThrottleBeginFrame(base::TimeDelta interval);
 
   // SurfaceClient implementation.
   void OnSurfaceActivated(Surface* surface) override;
@@ -340,6 +343,11 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   static_assert(kFrameIndexStart > 1,
                 "|last_drawn_frame_index| relies on kFrameIndexStart > 1");
   uint64_t last_drawn_frame_index_ = kFrameIndexStart - 1;
+
+  // This value represents throttling on sending a BeginFrame. If non-zero, it
+  // represents the duration of time in between sending two consecutive frames.
+  // If zero, no throttling would be applied.
+  base::TimeDelta begin_frame_interval_;
 
   // The set of surfaces owned by this frame sink that have pending frame.
   base::flat_set<Surface*> pending_surfaces_;

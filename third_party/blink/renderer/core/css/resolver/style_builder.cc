@@ -46,11 +46,9 @@
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/properties/longhand.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/variable.h"
-#include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -72,27 +70,9 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
   CSSPropertyID id = property.PropertyID();
   bool is_inherited = property.IsInherited();
 
-  if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-    // These values must be resolved by StyleCascade before application:
-    DCHECK(!value.IsVariableReferenceValue());
-    DCHECK(!value.IsPendingSubstitutionValue());
-  } else {
-    if (id != CSSPropertyID::kVariable &&
-        (value.IsVariableReferenceValue() ||
-         value.IsPendingSubstitutionValue())) {
-      bool omit_animation_tainted =
-          CSSAnimations::IsAnimationAffectingProperty(property);
-      const CSSValue* resolved_value =
-          CSSVariableResolver(state).ResolveVariableReferences(
-              id, value, omit_animation_tainted);
-      ApplyProperty(property, state, *resolved_value);
-
-      if (!state.Style()->HasVariableReferenceFromNonInheritedProperty() &&
-          !is_inherited)
-        state.Style()->SetHasVariableReferenceFromNonInheritedProperty();
-      return;
-    }
-  }
+  // These values must be resolved by StyleCascade before application:
+  DCHECK(!value.IsVariableReferenceValue());
+  DCHECK(!value.IsPendingSubstitutionValue());
 
   DCHECK(!property.IsShorthand())
       << "Shorthand property id = " << static_cast<int>(id)

@@ -609,7 +609,14 @@ TEST_F(FeaturePolicyParserTest, ParseTooLongPolicy) {
       policy_string.c_str(), origin_a_.get(), origin_b_.get(), logger,
       test_feature_name_map);
   EXPECT_EQ(1UL, logger.GetMessages().size())
-      << "Should fail to parse string with size " << policy_string.size();
+      << "Should fail to parse feature policy string with size "
+      << policy_string.size();
+  FeaturePolicyParser::ParsePermissionsPolicyForTest(
+      policy_string.c_str(), origin_a_.get(), origin_b_.get(), logger,
+      test_feature_name_map);
+  EXPECT_EQ(2UL, logger.GetMessages().size())
+      << "Should fail to parse permissions policy string with size "
+      << policy_string.size();
 }
 
 // Test histogram counting the use of feature policies in header.

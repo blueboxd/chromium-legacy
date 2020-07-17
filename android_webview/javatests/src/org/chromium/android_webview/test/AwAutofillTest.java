@@ -647,7 +647,7 @@ public class AwAutofillTest {
             mTest.executeJavaScriptAndWaitForResult("document.getElementById('text2').select();");
             mTest.dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
             mCnt += mTest.waitForCallbackAndVerifyTypes(mCnt,
-                    new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED,
+                    new Integer[] {AUTOFILL_VIEW_EXITED, AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED,
                             AUTOFILL_SESSION_STARTED, AUTOFILL_VALUE_CHANGED});
         }
 
@@ -1126,7 +1126,7 @@ public class AwAutofillTest {
         executeJavaScriptAndWaitForResult("document.getElementById('text2').select();");
         dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
         waitForCallbackAndVerifyTypes(cnt,
-                new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED,
+                new Integer[] {AUTOFILL_VIEW_EXITED, AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED,
                         AUTOFILL_SESSION_STARTED, AUTOFILL_VALUE_CHANGED});
     }
 

@@ -344,14 +344,12 @@ config("common_linker_setup") {
 config("cfi_linker") {
   # Control Flow Guard (CFG)
   # https://msdn.microsoft.com/en-us/library/windows/desktop/mt637065.aspx
-  # /DYNAMICBASE (ASLR) is turned off in debug builds, therefore CFG can’t be
+  # /DYNAMICBASE (ASLR) is turned off in debug builds, therefore CFG cannot be
   # turned on either.
-  # CFG seems to lead to random corruption with incremental linking so turn off
-  # CFG in component builds. https://crbug.com/812421
   # ASan and CFG leads to slow process startup. Chromium's test runner uses
   # lots of child processes, so this means things are really slow. Disable CFG
   # for now. https://crbug.com/846966
-  if (!is_debug && !is_component_build && !is_asan) {
+  if (!is_debug && !is_asan) {
     # Turn on CFG bitmap generation and CFG load config.
     ldflags = [ "/guard:cf" ]
   }

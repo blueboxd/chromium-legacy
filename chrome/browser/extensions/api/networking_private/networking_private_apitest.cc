@@ -60,41 +60,43 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
   }
 
   void GetState(const std::string& guid,
-                const DictionaryCallback& success_callback,
-                const FailureCallback& failure_callback) override {
-    DictionaryResult(guid, success_callback, failure_callback);
+                DictionaryCallback success_callback,
+                FailureCallback failure_callback) override {
+    DictionaryResult(guid, std::move(success_callback),
+                     std::move(failure_callback));
   }
 
   void SetProperties(const std::string& guid,
                      std::unique_ptr<base::DictionaryValue> properties,
                      bool allow_set_shared_config,
-                     const VoidCallback& success_callback,
-                     const FailureCallback& failure_callback) override {
-    VoidResult(success_callback, failure_callback);
+                     VoidCallback success_callback,
+                     FailureCallback failure_callback) override {
+    VoidResult(std::move(success_callback), std::move(failure_callback));
   }
 
   void CreateNetwork(bool shared,
                      std::unique_ptr<base::DictionaryValue> properties,
-                     const StringCallback& success_callback,
-                     const FailureCallback& failure_callback) override {
-    StringResult(success_callback, failure_callback, kSuccess);
+                     StringCallback success_callback,
+                     FailureCallback failure_callback) override {
+    StringResult(std::move(success_callback), std::move(failure_callback),
+                 kSuccess);
   }
 
   void ForgetNetwork(const std::string& guid,
                      bool allow_forget_shared_network,
-                     const VoidCallback& success_callback,
-                     const FailureCallback& failure_callback) override {
-    VoidResult(success_callback, failure_callback);
+                     VoidCallback success_callback,
+                     FailureCallback failure_callback) override {
+    VoidResult(std::move(success_callback), std::move(failure_callback));
   }
 
   void GetNetworks(const std::string& network_type,
                    bool configured_only,
                    bool visible_only,
                    int limit,
-                   const NetworkListCallback& success_callback,
-                   const FailureCallback& failure_callback) override {
+                   NetworkListCallback success_callback,
+                   FailureCallback failure_callback) override {
     if (fail_) {
-      failure_callback.Run(kFailure);
+      std::move(failure_callback).Run(kFailure);
     } else {
       std::unique_ptr<base::ListValue> result(new base::ListValue);
       std::unique_ptr<base::DictionaryValue> network(new base::DictionaryValue);
@@ -102,59 +104,58 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
                          ::onc::network_config::kEthernet);
       network->SetString(::onc::network_config::kGUID, kGuid);
       result->Append(std::move(network));
-      success_callback.Run(std::move(result));
+      std::move(success_callback).Run(std::move(result));
     }
   }
 
   void StartConnect(const std::string& guid,
-                    const VoidCallback& success_callback,
-                    const FailureCallback& failure_callback) override {
-    VoidResult(success_callback, failure_callback);
+                    VoidCallback success_callback,
+                    FailureCallback failure_callback) override {
+    VoidResult(std::move(success_callback), std::move(failure_callback));
   }
 
   void StartDisconnect(const std::string& guid,
-                       const VoidCallback& success_callback,
-                       const FailureCallback& failure_callback) override {
-    VoidResult(success_callback, failure_callback);
+                       VoidCallback success_callback,
+                       FailureCallback failure_callback) override {
+    VoidResult(std::move(success_callback), std::move(failure_callback));
   }
 
   void StartActivate(const std::string& guid,
                      const std::string& carrier,
-                     const VoidCallback& success_callback,
-                     const FailureCallback& failure_callback) override {
-    VoidResult(success_callback, failure_callback);
+                     VoidCallback success_callback,
+                     FailureCallback failure_callback) override {
+    VoidResult(std::move(success_callback), std::move(failure_callback));
   }
 
-  void GetCaptivePortalStatus(
-      const std::string& guid,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) override {
-    StringResult(success_callback, failure_callback, kOnline);
+  void GetCaptivePortalStatus(const std::string& guid,
+                              StringCallback success_callback,
+                              FailureCallback failure_callback) override {
+    StringResult(std::move(success_callback), std::move(failure_callback),
+                 kOnline);
   }
 
   void UnlockCellularSim(const std::string& guid,
                          const std::string& pin,
                          const std::string& puk,
-                         const VoidCallback& success_callback,
-                         const FailureCallback& failure_callback) override {
-    VoidResult(success_callback, failure_callback);
+                         VoidCallback success_callback,
+                         FailureCallback failure_callback) override {
+    VoidResult(std::move(success_callback), std::move(failure_callback));
   }
 
   void SetCellularSimState(const std::string& guid,
                            bool require_pin,
                            const std::string& current_pin,
                            const std::string& new_pin,
-                           const VoidCallback& success_callback,
-                           const FailureCallback& failure_callback) override {
-    VoidResult(success_callback, failure_callback);
+                           VoidCallback success_callback,
+                           FailureCallback failure_callback) override {
+    VoidResult(std::move(success_callback), std::move(failure_callback));
   }
 
-  void SelectCellularMobileNetwork(
-      const std::string& guid,
-      const std::string& nework_id,
-      const VoidCallback& success_callback,
-      const FailureCallback& failure_callback) override {
-    VoidResult(success_callback, failure_callback);
+  void SelectCellularMobileNetwork(const std::string& guid,
+                                   const std::string& nework_id,
+                                   VoidCallback success_callback,
+                                   FailureCallback failure_callback) override {
+    VoidResult(std::move(success_callback), std::move(failure_callback));
   }
 
   // Synchronous methods
@@ -209,44 +210,44 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
   const std::vector<std::string>& GetScanRequested() { return scan_requested_; }
 
   void DictionaryResult(const std::string& guid,
-                        const DictionaryCallback& success_callback,
-                        const FailureCallback& failure_callback) {
+                        DictionaryCallback success_callback,
+                        FailureCallback failure_callback) {
     if (fail_) {
-      failure_callback.Run(kFailure);
+      std::move(failure_callback).Run(kFailure);
     } else {
       std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
       result->SetString(::onc::network_config::kGUID, guid);
       result->SetString(::onc::network_config::kType,
                         ::onc::network_config::kWiFi);
-      success_callback.Run(std::move(result));
+      std::move(success_callback).Run(std::move(result));
     }
   }
 
-  void StringResult(const StringCallback& success_callback,
-                    const FailureCallback& failure_callback,
+  void StringResult(StringCallback success_callback,
+                    FailureCallback failure_callback,
                     const std::string& result) {
     if (fail_) {
-      failure_callback.Run(kFailure);
+      std::move(failure_callback).Run(kFailure);
     } else {
-      success_callback.Run(result);
+      std::move(success_callback).Run(result);
     }
   }
 
-  void BoolResult(const BoolCallback& success_callback,
-                  const FailureCallback& failure_callback) {
+  void BoolResult(BoolCallback success_callback,
+                  FailureCallback failure_callback) {
     if (fail_) {
-      failure_callback.Run(kFailure);
+      std::move(failure_callback).Run(kFailure);
     } else {
-      success_callback.Run(true);
+      std::move(success_callback).Run(true);
     }
   }
 
-  void VoidResult(const VoidCallback& success_callback,
-                  const FailureCallback& failure_callback) {
+  void VoidResult(VoidCallback success_callback,
+                  FailureCallback failure_callback) {
     if (fail_) {
-      failure_callback.Run(kFailure);
+      std::move(failure_callback).Run(kFailure);
     } else {
-      success_callback.Run();
+      std::move(success_callback).Run();
     }
   }
 
@@ -280,23 +281,23 @@ class TestNetworkingCastPrivateDelegate
   ~TestNetworkingCastPrivateDelegate() override {}
 
   void VerifyDestination(std::unique_ptr<Credentials> credentials,
-                         const VerifiedCallback& success_callback,
-                         const FailureCallback& failure_callback) override {
+                         VerifiedCallback success_callback,
+                         FailureCallback failure_callback) override {
     if (fail_) {
-      failure_callback.Run(kFailure);
+      std::move(failure_callback).Run(kFailure);
     } else {
-      success_callback.Run(true);
+      std::move(success_callback).Run(true);
     }
   }
 
   void VerifyAndEncryptData(const std::string& data,
                             std::unique_ptr<Credentials> credentials,
-                            const DataCallback& success_callback,
-                            const FailureCallback& failure_callback) override {
+                            DataCallback success_callback,
+                            FailureCallback failure_callback) override {
     if (fail_) {
-      failure_callback.Run(kFailure);
+      std::move(failure_callback).Run(kFailure);
     } else {
-      success_callback.Run("encrypted_data");
+      std::move(success_callback).Run("encrypted_data");
     }
   }
 
@@ -312,7 +313,7 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
   ~NetworkingPrivateApiTest() override = default;
 
   void SetUp() override {
-    networking_cast_delegate_factory_ = base::Bind(
+    networking_cast_delegate_factory_ = base::BindRepeating(
         &NetworkingPrivateApiTest::CreateTestNetworkingCastPrivateDelegate,
         base::Unretained(this), test_failure_);
     ChromeNetworkingCastPrivateDelegate::SetFactoryCallbackForTest(

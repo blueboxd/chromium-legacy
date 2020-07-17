@@ -1108,14 +1108,6 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
 }
 
 TEST_P(QuicHttpStreamTest, LogGranularQuicErrorIfHandshakeNotConfirmed) {
-  // TODO(nharper): Figure out why this test does not send packets
-  // when TLS is used.
-  if (version_.UsesTls()) {
-    Initialize();
-
-    return;
-  }
-
   // By default the test setup defaults handshake to be confirmed. Manually set
   // it to be not confirmed.
   crypto_client_stream_factory_.set_handshake_mode(

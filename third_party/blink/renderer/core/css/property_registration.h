@@ -66,9 +66,6 @@ class CORE_EXPORT PropertyRegistration final
   const scoped_refptr<CSSVariableData> initial_variable_data_;
   const InterpolationTypes interpolation_types_;
   mutable bool referenced_;
-
-  FRIEND_TEST_ALL_PREFIXES(CSSVariableResolverTest,
-                           NeedsResolutionClearedByResolver);
 };
 
 }  // namespace blink

@@ -27,9 +27,10 @@ class NetworkingCastPrivateDelegate {
  public:
   virtual ~NetworkingCastPrivateDelegate() {}
 
-  using FailureCallback = base::Callback<void(const std::string& error)>;
-  using VerifiedCallback = base::Callback<void(bool is_valid)>;
-  using DataCallback = base::Callback<void(const std::string& encrypted_data)>;
+  using FailureCallback = base::OnceCallback<void(const std::string& error)>;
+  using VerifiedCallback = base::OnceCallback<void(bool is_valid)>;
+  using DataCallback =
+      base::OnceCallback<void(const std::string& encrypted_data)>;
 
   // API independent wrapper around cast device verification properties.
   class Credentials {
@@ -67,17 +68,16 @@ class NetworkingCastPrivateDelegate {
 
   // Verifies that data provided in |credentials| authenticates a cast device.
   virtual void VerifyDestination(std::unique_ptr<Credentials> credentials,
-                                 const VerifiedCallback& success_callback,
-                                 const FailureCallback& failure_callback) = 0;
+                                 VerifiedCallback success_callback,
+                                 FailureCallback failure_callback) = 0;
 
   // Verifies that data provided in |credentials| authenticates a cast device.
   // If the device is verified as a cast device, it returns |data| encrypted
   // with a public key derived from |credentials|.
-  virtual void VerifyAndEncryptData(
-      const std::string& data,
-      std::unique_ptr<Credentials> credentials,
-      const DataCallback& enrypted_data_callback,
-      const FailureCallback& failure_callback) = 0;
+  virtual void VerifyAndEncryptData(const std::string& data,
+                                    std::unique_ptr<Credentials> credentials,
+                                    DataCallback enrypted_data_callback,
+                                    FailureCallback failure_callback) = 0;
 };
 
 }  // namespace extensions

@@ -14,10 +14,10 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
-#include "components/policy/core/common/extension_policy_migrator.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/mock_policy_service.h"
+#include "components/policy/core/common/policy_migrator.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/strings/grit/components_strings.h"
@@ -96,7 +96,7 @@ class ChangePolicyObserver : public PolicyService::Observer {
   bool observer_invoked_;
 };
 
-class MockPolicyMigrator : public ExtensionPolicyMigrator {
+class MockPolicyMigrator : public PolicyMigrator {
  public:
   MOCK_METHOD1(Migrate, void(PolicyBundle* bundle));
 };

@@ -1340,8 +1340,7 @@ void StartupBrowserCreatorFirstRunTest::SetUpInProcessBrowserTestFixture() {
   // Set a policy that prevents the first-run dialog from being shown.
   policy_map_.Set(policy::key::kMetricsReportingEnabled,
                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                  policy::POLICY_SOURCE_CLOUD,
-                  std::make_unique<base::Value>(false), nullptr);
+                  policy::POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   provider_.UpdateChromePolicy(policy_map_);
 #endif  // defined(OS_LINUX) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
@@ -1400,18 +1399,16 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // Set the following user policies:
   // * RestoreOnStartup = RestoreOnStartupIsURLs
   // * RestoreOnStartupURLs = [ "/title1.html" ]
-  policy_map_.Set(
-      policy::key::kRestoreOnStartup, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::Value(SessionStartupPref::kPrefValueURLs)),
-      nullptr);
+  policy_map_.Set(policy::key::kRestoreOnStartup,
+                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                  policy::POLICY_SOURCE_CLOUD,
+                  base::Value(SessionStartupPref::kPrefValueURLs), nullptr);
   base::ListValue startup_urls;
   startup_urls.AppendString(
       embedded_test_server()->GetURL("/title1.html").spec());
   policy_map_.Set(policy::key::kRestoreOnStartupURLs,
                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                  policy::POLICY_SOURCE_CLOUD, startup_urls.CreateDeepCopy(),
-                  nullptr);
+                  policy::POLICY_SOURCE_CLOUD, startup_urls.Clone(), nullptr);
   provider_.UpdateChromePolicy(policy_map_);
   base::RunLoop().RunUntilIdle();
 
@@ -1530,8 +1527,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // * RestoreOnStartupURLs = [ "/title1.html" ]
   policy_map_.Set(policy::key::kRestoreOnStartup,
                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-                  policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(4),
-                  nullptr);
+                  policy::POLICY_SOURCE_CLOUD, base::Value(4), nullptr);
   auto url_list = std::make_unique<base::Value>(base::Value::Type::LIST);
   url_list->Append(
       base::Value(embedded_test_server()->GetURL("/title1.html").spec()));
@@ -1622,9 +1618,9 @@ class StartupBrowserCreatorWelcomeBackTest : public InProcessBrowserTest {
       policy::PolicyMap values;
       values.Set(policy::key::kRestoreOnStartup, variant.value(),
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(4), nullptr);
-      auto url_list = std::make_unique<base::Value>(base::Value::Type::LIST);
-      url_list->Append(base::Value("http://managed.site.com/"));
+                 base::Value(4), nullptr);
+      base::Value url_list(base::Value::Type::LIST);
+      url_list.Append("http://managed.site.com/");
       values.Set(policy::key::kRestoreOnStartupURLs, variant.value(),
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
                  std::move(url_list), nullptr);
@@ -1750,8 +1746,8 @@ class StartupBrowserCreatorInfobarsTest
       policy::PolicyMap policies;
       policies.Set(policy::key::kCommandLineFlagSecurityWarningsEnabled,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_PLATFORM,
-                   std::make_unique<base::Value>(is_enabled), nullptr);
+                   policy::POLICY_SOURCE_PLATFORM, base::Value(is_enabled),
+                   nullptr);
       policy_provider_.UpdateChromePolicy(policies);
     }
   }

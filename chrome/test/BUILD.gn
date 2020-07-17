@@ -566,6 +566,7 @@ if (is_android) {
       "//base:base_java",
       "//base:base_java_test_support",
       "//chrome/android:chrome_all_java",
+      "//chrome/browser/tabmodel:java",
       "//components/crash/android:handler_java",
       "//components/crash/android:java",
       "//components/module_installer/android:module_installer_java",
@@ -3266,6 +3267,7 @@ test("unit_tests") {
     "../browser/page_load_metrics/metrics_web_contents_observer_unittest.cc",
     "../browser/page_load_metrics/observers/aborts_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_unittest.cc",
+    "../browser/page_load_metrics/observers/ad_metrics/page_ad_density_tracker_unittest.cc",
     "../browser/page_load_metrics/observers/amp_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.cc",
     "../browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.h",
@@ -3621,8 +3623,6 @@ test("unit_tests") {
       "../browser/media/feeds/media_feeds_fetcher_unittest.cc",
       "../browser/media/feeds/media_feeds_service_unittest.cc",
       "../browser/media/kaleidoscope/kaleidoscope_switches_unittest.cc",
-      "../browser/nearby_sharing/client/nearby_share_api_call_flow_impl_unittest.cc",
-      "../browser/nearby_sharing/client/nearby_share_client_impl_unittest.cc",
       "../browser/nearby_sharing/fake_nearby_connections_manager.cc",
       "../browser/nearby_sharing/fake_nearby_connections_manager.h",
       "../browser/nearby_sharing/fast_initiation_manager_unittest.cc",
@@ -4340,6 +4340,7 @@ test("unit_tests") {
 
     deps += [
       "//chrome/browser/nearby_sharing/certificates:unit_tests",
+      "//chrome/browser/nearby_sharing/client:unit_tests",
       "//chrome/browser/nearby_sharing/logging:unit_tests",
       "//chrome/browser/nearby_sharing/proto",
       "//chrome/browser/nearby_sharing/scheduling:unit_tests",

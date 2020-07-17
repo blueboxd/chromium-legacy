@@ -101,24 +101,48 @@ class OzonePlatformGbm : public OzonePlatform {
   // In multi-process mode, this function must be executed in Viz as it sets up
   // the callbacks needed for Mojo receivers. In single process mode, it may be
   // called on any thread. It must follow one of |InitializeUI| or
-  // |InitializeGPU|. While the caller may choose to invoke this method before
-  // entering the sandbox, the actual interface adding has to happen on the DRM
-  // Device thread and so will be deferred until the DRM thread is running.
+  // |InitializeGPU|.
   void AddInterfaces(mojo::BinderMap* binders) override {
-    binders->Add<ozone::mojom::DrmDevice>(
-        base::BindRepeating(&OzonePlatformGbm::CreateDrmDeviceReceiver,
-                            weak_factory_.GetWeakPtr()),
-        base::ThreadTaskRunnerHandle::Get());
+    if (single_process()) {
+      // This logic in multi-process mode causes deadlock to happen, where
+      // |gpu_task_runner_| blocks on drm_thread while drm_thread has not
+      // received DrmDevice mojo endpoint. Hence, the caller should invoke this
+      // method after drm_thread is started.
+      binders->Add<ozone::mojom::DrmDevice>(
+          base::BindRepeating(
+              &OzonePlatformGbm::CreateDrmDeviceReceiverOnGpuThread,
+              weak_factory_.GetWeakPtr()),
+          gpu_task_runner_);
+    } else {
+      // In multi-process mode DRM thread is started right after sandbox entry,
+      // |AddInterfaces| is invoked from VizMainImpl so DRM thread must have
+      // been started. |WaitUntilDrmThreadStarted| is not expected to do a real
+      // wait but helps assuming that the task runner exists.
+      drm_thread_proxy_->WaitUntilDrmThreadStarted();
+      // There's no need for binder callback to bounce on |gpu_task_runner_|.
+      // Binder callbacks should directly run on DRM thread.
+      binders->Add<ozone::mojom::DrmDevice>(
+          base::BindRepeating(
+              &OzonePlatformGbm::CreateDrmDeviceReceiverOnDrmThread,
+              weak_factory_.GetWeakPtr()),
+          drm_thread_proxy_->GetDrmThreadTaskRunner());
+    }
   }
 
-  // Runs on the thread where AddInterfaces was invoked. But the endpoint is
-  // always bound on the DRM thread.
-  void CreateDrmDeviceReceiver(
+  // Runs on the gpu thread. But the endpoint is always bound on the DRM thread.
+  void CreateDrmDeviceReceiverOnGpuThread(
       mojo::PendingReceiver<ozone::mojom::DrmDevice> receiver) {
+    CHECK(single_process());
     if (drm_thread_started_)
       drm_thread_proxy_->AddDrmDeviceReceiver(std::move(receiver));
     else
       pending_gpu_adapter_receivers_.push_back(std::move(receiver));
+  }
+
+  void CreateDrmDeviceReceiverOnDrmThread(
+      mojo::PendingReceiver<ozone::mojom::DrmDevice> receiver) {
+    CHECK(!single_process());
+    drm_thread_proxy_->AddDrmDeviceReceiver(std::move(receiver));
   }
 
   // Runs on the thread that invoked |AddInterfaces| to drain the queue of

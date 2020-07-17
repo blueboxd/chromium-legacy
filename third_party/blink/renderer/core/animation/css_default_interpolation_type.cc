@@ -30,12 +30,10 @@ InterpolationValue CSSDefaultInterpolationType::MaybeConvertSingle(
     return nullptr;
   }
 
-  if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-    css_value = To<CSSInterpolationEnvironment>(environment)
-                    .Resolve(GetProperty(), css_value);
-    if (!css_value)
-      return nullptr;
-  }
+  css_value = To<CSSInterpolationEnvironment>(environment)
+                  .Resolve(GetProperty(), css_value);
+  if (!css_value)
+    return nullptr;
 
   return InterpolationValue(std::make_unique<InterpolableList>(0),
                             CSSDefaultNonInterpolableValue::Create(css_value));

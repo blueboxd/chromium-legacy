@@ -205,6 +205,11 @@ translate::TranslateInfoBarDelegate* TranslateCompactInfoBar::GetDelegate() {
 void TranslateCompactInfoBar::OnTranslateStepChanged(
     translate::TranslateStep step,
     translate::TranslateErrors::Type error_type) {
+  // If the tab lost active state while translation was occurring, the Java
+  // infobar will now be gone. In that case there is nothing to do here.
+  if (!HasSetJavaInfoBar())
+    return;  // No connected Java infobar
+
   if (!owner())
     return;  // We're closing; don't call anything.
 

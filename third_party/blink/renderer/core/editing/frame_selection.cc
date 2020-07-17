@@ -112,9 +112,9 @@ FrameSelection::FrameSelection(LocalFrame& frame)
 
 FrameSelection::~FrameSelection() = default;
 
-const DisplayItemClient& FrameSelection::CaretDisplayItemClientForTesting()
+const CaretDisplayItemClient& FrameSelection::CaretDisplayItemClientForTesting()
     const {
-  return frame_caret_->GetDisplayItemClient();
+  return frame_caret_->CaretDisplayItemClientForTesting();
 }
 
 bool FrameSelection::IsAvailable() const {

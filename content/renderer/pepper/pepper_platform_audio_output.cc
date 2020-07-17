@@ -22,14 +22,12 @@ namespace content {
 PepperPlatformAudioOutput* PepperPlatformAudioOutput::Create(
     int sample_rate,
     int frames_per_buffer,
-    int source_render_frame_id,
+    const base::UnguessableToken& source_frame_token,
     AudioHelper* client) {
   scoped_refptr<PepperPlatformAudioOutput> audio_output(
       new PepperPlatformAudioOutput());
-  if (audio_output->Initialize(sample_rate,
-                               frames_per_buffer,
-                               source_render_frame_id,
-                               client)) {
+  if (audio_output->Initialize(sample_rate, frames_per_buffer,
+                               source_frame_token, client)) {
     // Balanced by Release invoked in
     // PepperPlatformAudioOutput::ShutDownOnIOThread().
     audio_output->AddRef();
@@ -130,15 +128,15 @@ PepperPlatformAudioOutput::PepperPlatformAudioOutput()
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(ChildProcess::current()->io_task_runner()) {}
 
-bool PepperPlatformAudioOutput::Initialize(int sample_rate,
-                                           int frames_per_buffer,
-                                           int source_render_frame_id,
-                                           AudioHelper* client) {
+bool PepperPlatformAudioOutput::Initialize(
+    int sample_rate,
+    int frames_per_buffer,
+    const base::UnguessableToken& source_frame_token,
+    AudioHelper* client) {
   DCHECK(client);
   client_ = client;
 
-  ipc_ = AudioOutputIPCFactory::get()->CreateAudioOutputIPC(
-      source_render_frame_id);
+  ipc_ = AudioOutputIPCFactory::get()->CreateAudioOutputIPC(source_frame_token);
   CHECK(ipc_);
 
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,

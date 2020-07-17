@@ -172,8 +172,7 @@ class QuicAllowedPolicyIsFalse: public QuicAllowedPolicyTestBase {
  protected:
   void GetQuicAllowedPolicy(PolicyMap* values) override {
     values->Set(key::kQuicAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(false),
-                nullptr);
+                POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   }
 
  private:
@@ -236,8 +235,7 @@ class QuicAllowedPolicyIsTrue: public QuicAllowedPolicyTestBase {
  protected:
   void GetQuicAllowedPolicy(PolicyMap* values) override {
     values->Set(key::kQuicAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
-                nullptr);
+                POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
   }
 
  private:
@@ -385,8 +383,7 @@ class QuicAllowedPolicyDynamicTest : public QuicTestBase {
                             bool value) {
     PolicyMap policy_map;
     policy_map.Set(key::kQuicAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                   POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(value),
-                   nullptr);
+                   POLICY_SOURCE_CLOUD, base::Value(value), nullptr);
     provider->UpdateChromePolicy(policy_map);
     base::RunLoop().RunUntilIdle();
 

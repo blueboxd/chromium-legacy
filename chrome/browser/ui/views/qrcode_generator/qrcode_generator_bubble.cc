@@ -150,6 +150,7 @@ void QRCodeGeneratorBubble::OnCodeGeneratorResponse(
 
   ShrinkAndHideDisplay(center_error_label_);
   bottom_error_label_->SetVisible(false);
+  download_button_->SetEnabled(true);
   gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(response->bitmap);
   UpdateQRImage(image);
 }
@@ -166,6 +167,7 @@ void QRCodeGeneratorBubble::DisplayPlaceholderImage() {
 }
 
 void QRCodeGeneratorBubble::DisplayError(mojom::QRCodeGeneratorError error) {
+  download_button_->SetEnabled(false);
   if (error == mojom::QRCodeGeneratorError::INPUT_TOO_LONG) {
     ShrinkAndHideDisplay(center_error_label_);
     DisplayPlaceholderImage();

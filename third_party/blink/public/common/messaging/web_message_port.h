@@ -217,9 +217,9 @@ class BLINK_COMMON_EXPORT WebMessagePort::MessageReceiver {
   MessageReceiver& operator=(MessageReceiver&&) = delete;
   virtual ~MessageReceiver();
 
-  // Invoked by incoming messages. This should return true if the message was
-  // successfully handled, false otherwise. If this returns false the pipe
-  // will be torn down and a call to OnPipeError will be made.
+  // Called for each incoming |message|. Returns false if the message could not
+  // be successfully handled, in which case the pipe should be torn-down and
+  // OnPipeError() invoked.
   virtual bool OnMessage(Message message);
 
   // Invoked when the underlying pipe has experienced an error.

@@ -49,27 +49,19 @@ class NearbyShareClientImpl : public NearbyShareClient {
   // NearbyShareClient:
   void UpdateDevice(const nearbyshare::proto::UpdateDeviceRequest& request,
                     UpdateDeviceCallback&& callback,
-                    ErrorCallback&& error_callback,
-                    const net::PartialNetworkTrafficAnnotationTag&
-                        partial_traffic_annotation) override;
+                    ErrorCallback&& error_callback) override;
   void CheckContactsReachability(
       const nearbyshare::proto::CheckContactsReachabilityRequest& request,
       CheckContactsReachabilityCallback&& callback,
-      ErrorCallback&& error_callback,
-      const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation)
-      override;
+      ErrorCallback&& error_callback) override;
   void ListContactPeople(
       const nearbyshare::proto::ListContactPeopleRequest& request,
       ListContactPeopleCallback&& callback,
-      ErrorCallback&& error_callback,
-      const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation)
-      override;
+      ErrorCallback&& error_callback) override;
   void ListPublicCertificates(
       const nearbyshare::proto::ListPublicCertificatesRequest& request,
       ListPublicCertificatesCallback&& callback,
-      ErrorCallback&& error_callback,
-      const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation)
-      override;
+      ErrorCallback&& error_callback) override;
   std::string GetAccessTokenUsed() override;
 
  private:

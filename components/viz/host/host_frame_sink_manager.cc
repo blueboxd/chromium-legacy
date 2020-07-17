@@ -291,6 +291,17 @@ void HostFrameSinkManager::RequestCopyOfOutput(
   frame_sink_manager_->RequestCopyOfOutput(surface_id, std::move(request));
 }
 
+void HostFrameSinkManager::StartThrottling(
+    const std::vector<FrameSinkId>& frame_sink_ids,
+    base::TimeDelta interval) {
+  DCHECK_GT(interval, base::TimeDelta());
+  frame_sink_manager_->StartThrottling(frame_sink_ids, interval);
+}
+
+void HostFrameSinkManager::EndThrottling() {
+  frame_sink_manager_->EndThrottling();
+}
+
 void HostFrameSinkManager::AddHitTestRegionObserver(
     HitTestRegionObserver* observer) {
   observers_.AddObserver(observer);

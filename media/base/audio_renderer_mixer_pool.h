@@ -10,6 +10,10 @@
 #include "media/base/audio_latency.h"
 #include "media/base/output_device_info.h"
 
+namespace base {
+class UnguessableToken;
+}  // namespace base
+
 namespace media {
 class AudioParameters;
 class AudioRendererMixer;
@@ -31,7 +35,7 @@ class MEDIA_EXPORT AudioRendererMixerPool {
   // GetOutputDeviceInfoAsync() on |sink| to get |sink_info|, and it must have
   // a device_status() == OUTPUT_DEVICE_STATUS_OK.
   virtual AudioRendererMixer* GetMixer(
-      int owner_id,
+      const base::UnguessableToken& owner_token,
       const AudioParameters& input_params,
       AudioLatency::LatencyType latency,
       const OutputDeviceInfo& sink_info,
@@ -44,7 +48,7 @@ class MEDIA_EXPORT AudioRendererMixerPool {
   // Returns an AudioRendererSink for use with GetMixer(). Inputs must call this
   // to get a sink to use with a subsequent GetMixer()
   virtual scoped_refptr<AudioRendererSink> GetSink(
-      int owner_id,
+      const base::UnguessableToken& owner_token,
       const std::string& device_id) = 0;
 
  private:

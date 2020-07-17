@@ -23,6 +23,7 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -276,6 +277,8 @@ void NotificationPlatformBridgeAndroid::Display(
       ConvertUTF8ToJavaString(env, notification.id());
   ScopedJavaLocalRef<jstring> j_origin =
       ConvertUTF8ToJavaString(env, origin_url.spec());
+  ScopedJavaLocalRef<jobject> android_profile =
+      ProfileAndroid::FromProfile(profile)->GetJavaObject();
   ScopedJavaLocalRef<jstring> title =
       ConvertUTF16ToJavaString(env, notification.title());
   ScopedJavaLocalRef<jstring> body =
@@ -309,7 +312,7 @@ void NotificationPlatformBridgeAndroid::Display(
 
   Java_NotificationPlatformBridge_displayNotification(
       env, java_object_, j_notification_id, j_notification_type, j_origin,
-      j_scope_url, j_profile_id, profile->IsOffTheRecord(), title, body, image,
+      j_scope_url, j_profile_id, android_profile, title, body, image,
       notification_icon, badge, vibration_pattern,
       notification.timestamp().ToJavaTime(), notification.renotify(),
       notification.silent(), actions);

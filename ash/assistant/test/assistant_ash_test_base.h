@@ -28,6 +28,7 @@ class Widget;
 namespace ash {
 
 class AppListView;
+class AssistantOnboardingSuggestionView;
 class AssistantTestApi;
 class SuggestionChipView;
 class TestAssistantClient;
@@ -171,8 +172,12 @@ class AssistantAshTestBase : public AshTestBase {
   // Return the container with all the suggestion chips.
   views::View* suggestion_chip_container();
 
+  // Return the onboarding suggestions that are currently displayed.
+  std::vector<AssistantOnboardingSuggestionView*>
+  GetOnboardingSuggestionViews();
+
   // Return the suggestion chips that are currently displayed.
-  std::vector<ash::SuggestionChipView*> GetSuggestionChips();
+  std::vector<SuggestionChipView*> GetSuggestionChips();
 
   // Show/Dismiss the on-screen keyboard.
   void ShowKeyboard();

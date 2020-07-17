@@ -37,18 +37,18 @@ class TestNetworkingCastPrivateDelegate
   ~TestNetworkingCastPrivateDelegate() override {}
 
   void VerifyDestination(std::unique_ptr<Credentials> credentials,
-                         const VerifiedCallback& success_callback,
-                         const FailureCallback& failure_callback) override {
+                         VerifiedCallback success_callback,
+                         FailureCallback failure_callback) override {
     AssertCredentials(*credentials);
-    success_callback.Run(true);
+    std::move(success_callback).Run(true);
   }
 
   void VerifyAndEncryptData(const std::string& data,
                             std::unique_ptr<Credentials> credentials,
-                            const DataCallback& success_callback,
-                            const FailureCallback& failure_callback) override {
+                            DataCallback success_callback,
+                            FailureCallback failure_callback) override {
     AssertCredentials(*credentials);
-    success_callback.Run("encrypted_data");
+    std::move(success_callback).Run("encrypted_data");
   }
 
  private:
@@ -83,7 +83,7 @@ class NetworkingCastPrivateApiTest : public ExtensionApiTest {
   }
 
   void SetUp() override {
-    networking_cast_private_delegate_factory_ = base::Bind(
+    networking_cast_private_delegate_factory_ = base::BindRepeating(
         &NetworkingCastPrivateApiTest::CreateNetworkingCastPrivateDelegate,
         base::Unretained(this));
     ChromeNetworkingCastPrivateDelegate::SetFactoryCallbackForTest(

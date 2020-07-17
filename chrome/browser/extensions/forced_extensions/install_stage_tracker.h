@@ -290,6 +290,11 @@ class InstallStageTracker : public KeyedService {
     // Type of app status error received from update server when manifest was
     // fetched.
     base::Optional<AppStatusError> app_status_error;
+    // Time at which the download is started.
+    base::Optional<base::Time> download_manifest_started_time;
+    // Time at which the update manifest is downloaded and successfully parsed
+    // from the server.
+    base::Optional<base::Time> download_manifest_finish_time;
   };
 
   class Observer : public base::CheckedObserver {

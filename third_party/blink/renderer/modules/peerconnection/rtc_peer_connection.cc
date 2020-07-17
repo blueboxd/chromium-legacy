@@ -2707,18 +2707,15 @@ RTCDtlsTransport* RTCPeerConnection::CreateOrUpdateDtlsTransport(
   if (!native_transport.get()) {
     return nullptr;
   }
-  auto transport_locator =
-      dtls_transports_by_native_transport_.find(native_transport);
-  if (transport_locator != dtls_transports_by_native_transport_.end()) {
-    auto transport = transport_locator->value;
-    transport->ChangeState(information);
-    return transport;
+  auto& transport = dtls_transports_by_native_transport_
+                        .insert(native_transport.get(), nullptr)
+                        .stored_value->value;
+  if (!transport) {
+    RTCIceTransport* ice_transport =
+        CreateOrUpdateIceTransport(native_transport->ice_transport());
+    transport = MakeGarbageCollected<RTCDtlsTransport>(
+        GetExecutionContext(), std::move(native_transport), ice_transport);
   }
-  RTCDtlsTransport* transport = MakeGarbageCollected<RTCDtlsTransport>(
-      GetExecutionContext(), native_transport,
-      CreateOrUpdateIceTransport(native_transport->ice_transport()));
-  dtls_transports_by_native_transport_.insert(native_transport.get(),
-                                              transport);
   transport->ChangeState(information);
   return transport;
 }
@@ -2728,14 +2725,13 @@ RTCIceTransport* RTCPeerConnection::CreateOrUpdateIceTransport(
   if (!ice_transport.get()) {
     return nullptr;
   }
-  auto transport_locator =
-      ice_transports_by_native_transport_.find(ice_transport);
-  if (transport_locator != ice_transports_by_native_transport_.end()) {
-    return transport_locator->value;
+  auto& transport =
+      ice_transports_by_native_transport_.insert(ice_transport, nullptr)
+          .stored_value->value;
+  if (!transport) {
+    transport = RTCIceTransport::Create(GetExecutionContext(),
+                                        std::move(ice_transport), this);
   }
-  RTCIceTransport* transport =
-      RTCIceTransport::Create(GetExecutionContext(), ice_transport, this);
-  ice_transports_by_native_transport_.insert(ice_transport.get(), transport);
   return transport;
 }
 

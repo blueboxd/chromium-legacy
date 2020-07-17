@@ -425,9 +425,9 @@ struct SkiaRenderer::DrawRPDQParams {
   sk_sp<SkColorFilter> color_filter = nullptr;
   // Root of the calculated backdrop filter DAG to be applied to the render pass
   sk_sp<SkImageFilter> backdrop_filter = nullptr;
-  // Resolved mask image and calculated transform matrix
-  sk_sp<SkImage> mask_image = nullptr;
-  SkMatrix mask_to_quad_matrix;
+  // Resolved mask image and calculated transform matrix baked into an SkShader,
+  // which will be applied using SkCanvas::clipShader in RPDQ's coord space.
+  sk_sp<SkShader> mask_shader = nullptr;
   // Backdrop border box for the render pass, to clip backdrop-filtered content
   base::Optional<gfx::RRectF> backdrop_filter_bounds;
   // The content space bounds that includes any filtered extents. If empty,
@@ -540,14 +540,11 @@ SkiaRenderer::DrawQuadParams::DrawQuadParams(const gfx::Transform& cdt,
 
 enum class SkiaRenderer::BypassMode {
   // The RenderPass's contents' blendmode would have made a transparent black
-  // image
-  // and the RenderPass's own blend mode has no effect on transparent black.
+  // image and the RenderPass's own blend mode does not effect transparent black
   kSkip,
   // The renderPass's contents' creates a transparent image, but the
-  // RenderPass's
-  // own blend mode must still process the transparent pixels (e.g. certain
-  // filters
-  // affect transparent black).
+  // RenderPass's own blend mode must still process the transparent pixels (e.g.
+  // certain filters affect transparent black).
   kDrawTransparentQuad,
   // Can draw the bypass quad with the modified parameters
   kDrawBypassQuad
@@ -1145,20 +1142,6 @@ void SkiaRenderer::PrepareCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
     }
   }
 
-  if (rpdq_params.mask_image.get()) {
-    // The old behavior (in skia) was to filter the clipmask based on the
-    // setting in the layer's paint. Now we can set that to whatever we want
-    // when we make the clip-shader. For now, I will replicate the old (impl)
-    // logic.
-    SkFilterQuality filtering =
-        layer_paint.getFilterQuality() == kNone_SkFilterQuality
-            ? kNone_SkFilterQuality
-            : kLow_SkFilterQuality;
-    current_canvas_->save();
-    current_canvas_->clipShader(rpdq_params.mask_image->makeShader(
-        SkTileMode::kClamp, SkTileMode::kClamp,
-        &rpdq_params.mask_to_quad_matrix, filtering));
-  }
   SkRect bounds = gfx::RectFToSkRect(rpdq_params.bypass_clip.has_value()
                                          ? *rpdq_params.bypass_clip
                                          : params->visible_rect);
@@ -1196,16 +1179,21 @@ void SkiaRenderer::PreparePaintOrCanvasForRPDQ(
   // the canvas. But there are several requirements in order for the order of
   // operations to be consistent with what RenderPasses require:
   // 1. Backdrop filtering always requires a layer.
-  // 2. A complex image filter needs a layer if there is a mask, since Skia
-  // applies the mask filter before the paint's image filter.
-  // 3. The content bypassing the renderpass needs to be clipped before the
+  // 2. The content bypassing the renderpass needs to be clipped before the
   //    image filter is evaluated.
   bool needs_bypass_clip = rpdq_params.needs_bypass_clip(params->visible_rect);
   bool needs_save_layer = false;
   if (rpdq_params.backdrop_filter)
     needs_save_layer = true;
   else if (rpdq_params.has_complex_image_filter())
-    needs_save_layer = rpdq_params.mask_image || needs_bypass_clip;
+    needs_save_layer = needs_bypass_clip;
+
+  if (rpdq_params.mask_shader) {
+    // Apply the mask image using clipShader(), this works the same regardless
+    // of if we need a saveLayer for image filtering since the clip is applied
+    // at the end automatically.
+    current_canvas_->clipShader(rpdq_params.mask_shader);
+  }
 
   if (needs_save_layer) {
     PrepareCanvasForRPDQ(rpdq_params, params);
@@ -1213,12 +1201,10 @@ void SkiaRenderer::PreparePaintOrCanvasForRPDQ(
     paint->setAlphaf(params->opacity);
     paint->setBlendMode(params->blend_mode);
   } else {
-    // At this point, the image filter and/or color filter can be set on the
-    // paint. If there is a mask image, it can be converted to a mask shader.
+    // At this point, the image filter and/or color filter are on the paint.
     DCHECK(!rpdq_params.backdrop_filter);
     if (rpdq_params.color_filter) {
-      // Use the color filter directly, instead of the image filter; since color
-      // filters are applied before masks, this could be combined with a mask
+      // Use the color filter directly, instead of the image filter.
       if (paint->getColorFilter()) {
         paint->setColorFilter(
             rpdq_params.color_filter->makeComposed(paint->refColorFilter()));
@@ -1227,9 +1213,7 @@ void SkiaRenderer::PreparePaintOrCanvasForRPDQ(
       }
       DCHECK(paint->getColorFilter());
     } else if (rpdq_params.image_filter) {
-      // Store the image filter on the paint, but since this effect is applied
-      // last it's not compatible with masks as a shader
-      DCHECK(!rpdq_params.mask_image);
+      // Store the image filter on the paint.
       if (params->opacity != 1.f) {
         // Apply opacity as the last step of image filter so it is uniform
         // across any overlapping content produced by the image filters.
@@ -1241,29 +1225,6 @@ void SkiaRenderer::PreparePaintOrCanvasForRPDQ(
       } else {
         paint->setImageFilter(rpdq_params.image_filter);
       }
-    }
-
-    // This is not an else-if since the color filter image filter can be
-    // combined with the mask filter correctly.
-    if (rpdq_params.mask_image) {
-      // The mask shader is evaluated in the bypass'ed quad's local coordinate
-      // space, so must update the shader matrix to still sample the image in
-      // the RP coordinate space.
-      SkMatrix local_matrix = SkMatrix::I();
-      if (rpdq_params.bypass_transform.has_value()) {
-        bool inverted = rpdq_params.bypass_transform->invert(&local_matrix);
-        // Invertibility was a requirement for being bypassable.
-        DCHECK(inverted);
-      }
-      local_matrix.preConcat(rpdq_params.mask_to_quad_matrix);
-
-      auto mask_filter = SkShaderMaskFilter::Make(
-          rpdq_params.mask_image->makeShader(&local_matrix));
-      // Confirm that the paint didn't already have a mask filter, and that it's
-      // captured properly afterwards on the paint.
-      DCHECK(!paint->getMaskFilter());
-      paint->setMaskFilter(std::move(mask_filter));
-      DCHECK(paint->getMaskFilter());
     }
   }
 
@@ -1281,8 +1242,12 @@ void SkiaRenderer::PrepareColorOrCanvasForRPDQ(
   // When the draw call only takes a color and not an SkPaint, rpdq params
   // with just a color filter can be handled directly. Otherwise, the rpdq
   // params must use a layer on the canvas.
-  bool needs_save_layer = rpdq_params.has_complex_image_filter() ||
-                          rpdq_params.backdrop_filter || rpdq_params.mask_image;
+  bool needs_save_layer =
+      rpdq_params.has_complex_image_filter() || rpdq_params.backdrop_filter;
+  if (rpdq_params.mask_shader) {
+    current_canvas_->clipShader(rpdq_params.mask_shader);
+  }
+
   if (needs_save_layer) {
     PrepareCanvasForRPDQ(rpdq_params, params);
   } else if (rpdq_params.color_filter) {
@@ -2326,15 +2291,17 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
   const SkImage* mask_image = mask_image_builder.sk_image();
   DCHECK_EQ(!!mask_resource_id, !!mask_image);
   if (mask_image) {
-    rpdq_params.mask_image = sk_ref_sp(mask_image);
-
     // Scale normalized uv rect into absolute texel coordinates.
     SkRect mask_rect = gfx::RectFToSkRect(
         gfx::ScaleRect(quad->mask_uv_rect, quad->mask_texture_size.width(),
                        quad->mask_texture_size.height()));
     // Map to full quad rect so that mask coordinates don't change with clipping
-    rpdq_params.mask_to_quad_matrix = SkMatrix::MakeRectToRect(
+    SkMatrix mask_to_quad_matrix = SkMatrix::MakeRectToRect(
         mask_rect, gfx::RectToSkRect(quad->rect), SkMatrix::kFill_ScaleToFit);
+
+    rpdq_params.mask_shader =
+        mask_image->makeShader(SkTileMode::kClamp, SkTileMode::kClamp,
+                               &mask_to_quad_matrix, kLow_SkFilterQuality);
   }
 
   const cc::FilterOperations* filters = FiltersForPass(quad->render_pass_id);
@@ -2515,7 +2482,7 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   // When the RPDQ was needed because of a copy request, it may not require any
   // advanced filtering/effects at which point it's basically a tiled quad.
   if (!rpdq_params.image_filter && !rpdq_params.backdrop_filter &&
-      !rpdq_params.mask_image) {
+      !rpdq_params.mask_shader) {
     DCHECK(!MustFlushBatchedQuads(quad, nullptr, *params));
     AddQuadToBatch(content_image.get(), valid_texel_bounds, params);
     return;

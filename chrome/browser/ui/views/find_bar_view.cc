@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -44,8 +45,10 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/painter.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -460,10 +463,13 @@ void FindBarView::OnThemeChanged() {
                   0xFF);
   auto border = std::make_unique<views::BubbleBorder>(
       views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW, bg_color);
-  // TODO(tluk): Remove when fixing https://crbug.com/822075 and use
-  // EMPHASIS_HIGH metric values from the LayoutProvider to get the
-  // corner radius.
-  border->SetCornerRadius(2);
+
+  border->SetCornerRadius(
+      base::FeatureList::IsEnabled(
+          views::features::kEnableMDRoundedCornersOnDialogs)
+          ? views::LayoutProvider::Get()->GetCornerRadiusMetric(
+                views::EMPHASIS_MEDIUM)
+          : 2);
 
   SetBackground(std::make_unique<views::BubbleBackground>(border.get()));
   SetBorder(std::move(border));

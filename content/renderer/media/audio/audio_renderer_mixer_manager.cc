@@ -124,7 +124,7 @@ std::unique_ptr<AudioRendererMixerManager> AudioRendererMixerManager::Create() {
 
 scoped_refptr<media::AudioRendererMixerInput>
 AudioRendererMixerManager::CreateInput(
-    int source_render_frame_id,
+    const base::UnguessableToken& source_frame_token,
     const base::UnguessableToken& session_id,
     const std::string& device_id,
     media::AudioLatency::LatencyType latency) {
@@ -136,11 +136,11 @@ AudioRendererMixerManager::CreateInput(
   // NewAudioRenderingMixingStrategy didn't ship, https://crbug.com/870836.
   DCHECK(session_id.is_empty());
   return base::MakeRefCounted<media::AudioRendererMixerInput>(
-      this, source_render_frame_id, device_id, latency);
+      this, source_frame_token, device_id, latency);
 }
 
 media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
-    int source_render_frame_id,
+    const base::UnguessableToken& source_frame_token,
     const media::AudioParameters& input_params,
     media::AudioLatency::LatencyType latency,
     const media::OutputDeviceInfo& sink_info,
@@ -149,7 +149,7 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
   DCHECK(sink->HasOneRef());
   DCHECK_EQ(sink_info.device_status(), media::OUTPUT_DEVICE_STATUS_OK);
 
-  const MixerKey key(source_render_frame_id, input_params, latency,
+  const MixerKey key(source_frame_token, input_params, latency,
                      sink_info.device_id());
   base::AutoLock auto_lock(mixers_lock_);
 
@@ -200,19 +200,19 @@ void AudioRendererMixerManager::ReturnMixer(media::AudioRendererMixer* mixer) {
 }
 
 scoped_refptr<media::AudioRendererSink> AudioRendererMixerManager::GetSink(
-    int source_render_frame_id,
+    const base::UnguessableToken& source_frame_token,
     const std::string& device_id) {
   return create_sink_cb_.Run(
-      source_render_frame_id,
+      source_frame_token,
       media::AudioSinkParameters(base::UnguessableToken(), device_id));
 }
 
 AudioRendererMixerManager::MixerKey::MixerKey(
-    int source_render_frame_id,
+    const base::UnguessableToken& source_frame_token,
     const media::AudioParameters& params,
     media::AudioLatency::LatencyType latency,
     const std::string& device_id)
-    : source_render_frame_id(source_render_frame_id),
+    : source_frame_token(source_frame_token),
       params(params),
       latency(latency),
       device_id(device_id) {}

@@ -154,9 +154,9 @@ std::tuple<int, double> OscillatorHandler::ProcessKRateVector(
   return std::make_tuple(k, virtual_read_index);
 }
 
-static __m128 WrapVirtualIndexVectorPd(__m128d x,
-                                       __m128d wave_size,
-                                       __m128d inv_wave_size) {
+static __m128d WrapVirtualIndexVectorPd(__m128d x,
+                                        __m128d wave_size,
+                                        __m128d inv_wave_size) {
   // Wrap the virtual index |x| to the range 0 to wave_size - 1.  This is done
   // by computing x - floor(x/wave_size)*wave_size.
   //
@@ -174,7 +174,7 @@ static __m128 WrapVirtualIndexVectorPd(__m128d x,
   // cmplt(a,b) returns 0xffffffffffffffff (-1) if a < b and 0 if not.  So cmp
   // is -1 or 0 depending on whether r < f, which is what we need to compute
   // floor(r).
-  __m128d cmp = _mm_cmplt_pd(r, _mm_cvtepi32_pd(f));
+  __m128i cmp = reinterpret_cast<__m128i>(_mm_cmplt_pd(r, _mm_cvtepi32_pd(f)));
 
   // Take the low 32 bits of each 64-bit result and move them into the two
   // lowest 32-bit fields.
@@ -226,8 +226,9 @@ double OscillatorHandler::ProcessARateVectorKernel(
 
   // Convert the virtual read index (parts) to an integer, and carefully
   // merge them into one vector.
-  const __m128i v_read0 = _mm_movelh_ps(_mm_cvttpd_epi32(v_read_index_lo),
-                                        _mm_cvttpd_epi32(v_read_index_hi));
+  const __m128i v_read0 = reinterpret_cast<__m128i>(_mm_movelh_ps(
+      reinterpret_cast<__m128>(_mm_cvttpd_epi32(v_read_index_lo)),
+      reinterpret_cast<__m128>(_mm_cvttpd_epi32(v_read_index_hi))));
 
   // Get index to next element being sure to wrap the index around if needed.
   const __m128i v_read1 =

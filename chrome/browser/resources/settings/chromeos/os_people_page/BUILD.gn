@@ -592,6 +592,12 @@ polymer_modulizer("setup_fingerprint_dialog") {
   auto_imports = os_settings_auto_imports
 }
 
+polymer_modulizer("pin_autosubmit_dialog") {
+  js_file = "pin_autosubmit_dialog.js"
+  html_file = "pin_autosubmit_dialog.html"
+  html_type = "dom-module"
+}
+
 polymer_modulizer("setup_pin_dialog") {
   js_file = "setup_pin_dialog.js"
   html_file = "setup_pin_dialog.html"

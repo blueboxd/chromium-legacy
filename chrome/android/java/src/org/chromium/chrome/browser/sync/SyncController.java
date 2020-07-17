@@ -114,7 +114,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         // TODO(crbug.com/921025): Don't mix these two concepts.
 
         mProfileSyncService.setSyncAllowedByPlatform(
-                AndroidSyncSettings.get().isMasterSyncEnabled());
+                AndroidSyncSettings.get().doesMasterSyncSettingAllowChromeSync());
 
         boolean isSyncEnabled = AndroidSyncSettings.get().isSyncEnabled();
         if (isSyncEnabled == mProfileSyncService.isSyncRequested()) return;
@@ -127,7 +127,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
                 // prefs (here and in the Sync customization UI).
                 AndroidSyncSettings.get().enableChromeSync();
             } else {
-                if (AndroidSyncSettings.get().isMasterSyncEnabled()) {
+                if (AndroidSyncSettings.get().doesMasterSyncSettingAllowChromeSync()) {
                     RecordHistogram.recordEnumeratedHistogram("Sync.StopSource",
                             StopSource.ANDROID_CHROME_SYNC, StopSource.STOP_SOURCE_LIMIT);
                 } else {

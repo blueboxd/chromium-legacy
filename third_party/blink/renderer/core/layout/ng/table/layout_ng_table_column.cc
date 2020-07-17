@@ -48,7 +48,7 @@ bool LayoutNGTableColumn::CanHaveChildren() const {
 }
 
 void LayoutNGTableColumn::ClearNeedsLayoutForChildren() const {
-  LayoutObject* child = FirstChild();
+  LayoutObject* child = children_.FirstChild();
   while (child) {
     child->ClearNeedsLayout();
     child = child->NextSibling();

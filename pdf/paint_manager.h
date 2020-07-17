@@ -14,9 +14,9 @@
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace pp {
-class Instance;
 class Point;
 class Rect;
+class Size;
 }  // namespace pp
 
 namespace chrome_pdf {
@@ -32,6 +32,14 @@ class PaintManager {
  public:
   class Client {
    public:
+    // Creates a new, unbound `pp::Graphics2D` for the paint manager, with the
+    // given |size| and always-opaque rendering.
+    virtual pp::Graphics2D CreatePaintGraphics(const pp::Size& size) = 0;
+
+    // Binds a `pp::Graphics2D` created by `CreatePaintGraphics()`, returning
+    // `true` if binding was successful.
+    virtual bool BindPaintGraphics(pp::Graphics2D& graphics) = 0;
+
     // Paints the given invalid area of the plugin to the given graphics
     // device. Returns true if anything was painted.
     //
@@ -56,20 +64,15 @@ class PaintManager {
 
    protected:
     // You shouldn't be doing deleting through this interface.
-    virtual ~Client() {}
+    ~Client() = default;
   };
 
-  // The instance is the plugin instance using this paint manager to do its
-  // painting. Painting will automatically go to this instance and you don't
-  // have to manually bind any device context (this is all handled by the
-  // paint manager).
-  //
   // The Client is a non-owning pointer and must remain valid (normally the
   // object implementing the Client interface will own the paint manager).
   //
   // You will need to call SetSize before this class will do anything. Normally
   // you do this from the ViewChanged method of your plugin instance.
-  PaintManager(pp::Instance* instance, Client* client);
+  explicit PaintManager(Client* client);
   PaintManager(const PaintManager&) = delete;
   PaintManager& operator=(const PaintManager&) = delete;
   ~PaintManager();
@@ -139,8 +142,6 @@ class PaintManager {
   // Callback for manual scheduling of paints when there is no flush callback
   // pending.
   void OnManualCallbackComplete(int32_t);
-
-  pp::Instance* const instance_;
 
   // Non-owning pointer. See the constructor.
   Client* const client_;

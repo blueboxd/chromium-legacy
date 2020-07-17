@@ -159,6 +159,10 @@ class NGTableBorders {
     return *cached_table_border_padding_;
   }
 
+  WritingDirectionMode TableWritingDirection() const {
+    return writing_direction_;
+  }
+
   // This method is necessary because collapsed table's border rect and
   // visual overflow rect use different borders.
   // Border rect uses inline start/end of the first row.
@@ -176,20 +180,7 @@ class NGTableBorders {
                         wtf_size_t section_index,
                         const ComputedStyle& cell_style) const;
 
-  NGBoxStrut CellPadding(wtf_size_t row,
-                         wtf_size_t column,
-                         const ComputedStyle& cell_style) const;
-
-  NGBoxStrut CellBorderPadding(wtf_size_t row,
-                               wtf_size_t column,
-                               wtf_size_t rowspan,
-                               wtf_size_t colspan,
-                               wtf_size_t section_index,
-                               const ComputedStyle& cell_style) const {
-    return CellBorder(row, column, rowspan, colspan, section_index,
-                      cell_style) +
-           CellPadding(row, column, cell_style);
-  }
+  NGBoxStrut CellPaddingForMeasure(const ComputedStyle& cell_style) const;
 
   void ComputeCollapsedTableBorderPadding(wtf_size_t table_row_count,
                                           wtf_size_t table_column_count);
@@ -348,4 +339,7 @@ class NGTableBorders {
 };
 
 }  // namespace blink
+
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::NGTableBorders::Edge)
+
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_TABLE_NG_TABLE_BORDERS_H_

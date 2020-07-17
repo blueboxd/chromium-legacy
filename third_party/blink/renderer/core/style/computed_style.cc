@@ -299,9 +299,8 @@ ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
   if (!non_inherited_equal && old_style.ChildHasExplicitInheritance()) {
     return Difference::kInherited;
   }
-  bool variables_independent = RuntimeEnabledFeatures::CSSCascadeEnabled() &&
-                               !old_style.HasVariableReference() &&
-                               !old_style.HasVariableDeclaration();
+  bool variables_independent =
+      !old_style.HasVariableReference() && !old_style.HasVariableDeclaration();
   bool inherited_variables_equal = old_style.InheritedVariablesEqual(new_style);
   if (!inherited_variables_equal && !variables_independent)
     return Difference::kInherited;

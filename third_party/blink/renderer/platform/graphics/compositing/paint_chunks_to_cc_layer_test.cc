@@ -590,7 +590,7 @@ TEST_P(PaintChunksToCcLayerTest, VisualRect) {
       cc::DisplayItemList::kTopLevelDisplayItemList);
   PaintChunksToCcLayer::ConvertInto(
       chunks.chunks, PropertyTreeState(*layer_transform, c0(), e0()),
-      gfx::Vector2dF(100, 200), FloatSize(), chunks.items, *cc_list);
+      gfx::Vector2dF(100, 200), chunks.items, *cc_list);
   EXPECT_EQ(gfx::Rect(-50, -100, 100, 100), cc_list->VisualRectForTesting(4));
 
   EXPECT_THAT(*cc_list->ReleaseAsRecord(),
@@ -612,8 +612,7 @@ TEST_P(PaintChunksToCcLayerTest, NoncompositedClipPath) {
   auto cc_list = base::MakeRefCounted<cc::DisplayItemList>(
       cc::DisplayItemList::kTopLevelDisplayItemList);
   PaintChunksToCcLayer::ConvertInto(chunks.chunks, PropertyTreeState::Root(),
-                                    gfx::Vector2dF(), FloatSize(), chunks.items,
-                                    *cc_list);
+                                    gfx::Vector2dF(), chunks.items, *cc_list);
 
   EXPECT_THAT(
       *cc_list->ReleaseAsRecord(),
@@ -1333,8 +1332,8 @@ TEST_P(PaintChunksToCcLayerTest, ReferenceFilterOnEmptyChunk) {
   auto cc_list = base::MakeRefCounted<cc::DisplayItemList>(
       cc::DisplayItemList::kTopLevelDisplayItemList);
   PaintChunksToCcLayer::ConvertInto(chunks.chunks, PropertyTreeState::Root(),
-                                    gfx::Vector2dF(5, 10), FloatSize(),
-                                    chunks.items, *cc_list);
+                                    gfx::Vector2dF(5, 10), chunks.items,
+                                    *cc_list);
   ASSERT_EQ(5u, cc_list->TotalOpCount());
   // (16 32) is (11, 22) + layer_offset.
   gfx::Rect expected_visual_rect(6, 12, 33, 44);
@@ -1367,8 +1366,8 @@ TEST_P(PaintChunksToCcLayerTest, ReferenceFilterOnChunkWithDrawingDisplayItem) {
   auto cc_list = base::MakeRefCounted<cc::DisplayItemList>(
       cc::DisplayItemList::kTopLevelDisplayItemList);
   PaintChunksToCcLayer::ConvertInto(chunks.chunks, PropertyTreeState::Root(),
-                                    gfx::Vector2dF(5, 10), FloatSize(),
-                                    chunks.items, *cc_list);
+                                    gfx::Vector2dF(5, 10), chunks.items,
+                                    *cc_list);
   ASSERT_EQ(7u, cc_list->TotalOpCount());
   // This is the visual rect for all filter related paint operations, which is
   // the union of the draw record and reference box of the filter in the layer's

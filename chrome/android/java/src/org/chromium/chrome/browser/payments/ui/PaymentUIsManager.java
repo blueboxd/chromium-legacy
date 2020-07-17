@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.payments.ui;
 
+import org.chromium.chrome.browser.payments.AddressEditor;
+import org.chromium.chrome.browser.payments.AutofillPaymentAppCreator;
+import org.chromium.chrome.browser.payments.CardEditor;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl;
 
 /**
@@ -13,6 +16,17 @@ import org.chromium.chrome.browser.payments.PaymentRequestImpl;
 public class PaymentUIsManager {
     private PaymentRequestUI mPaymentRequestUI;
     private PaymentUisShowStateReconciler mPaymentUisShowStateReconciler;
+
+    private final AddressEditor mAddressEditor;
+    private final CardEditor mCardEditor;
+
+    private boolean mMerchantSupportsAutofillCards;
+    private SectionInformation mPaymentMethodsSection;
+    private SectionInformation mShippingAddressesSection;
+    private ContactDetailsSection mContactSection;
+    private AutofillPaymentAppCreator mAutofillPaymentAppCreator;
+
+    private boolean mCanUserAddCreditCard;
 
     /**
      * This class is to coordinate the show state of a bottom sheet UI (either expandable payment
@@ -68,8 +82,14 @@ public class PaymentUIsManager {
         }
     }
 
-    /** Create PaymentUIsManager. */
-    public PaymentUIsManager() {
+    /**
+     * Create PaymentUIsManager.
+     * @param addressEditor The AddressEditor of the PaymentRequest UI.
+     * @param cardEditor The CardEditor of the PaymentRequest UI.
+     */
+    public PaymentUIsManager(AddressEditor addressEditor, CardEditor cardEditor) {
+        mAddressEditor = addressEditor;
+        mCardEditor = cardEditor;
         mPaymentUisShowStateReconciler = new PaymentUisShowStateReconciler();
     }
 
@@ -89,5 +109,75 @@ public class PaymentUIsManager {
     /** @return The PaymentUisShowStateReconciler. */
     public PaymentUisShowStateReconciler getPaymentUisShowStateReconciler() {
         return mPaymentUisShowStateReconciler;
+    }
+
+    /** @return Get the AddressEditor of the PaymentRequest UI. */
+    public AddressEditor getAddressEditor() {
+        return mAddressEditor;
+    }
+
+    /** @return Get the CardEditor of the PaymentRequest UI. */
+    public CardEditor getCardEditor() {
+        return mCardEditor;
+    }
+
+    /** @return Whether the merchant supports autofill cards. */
+    public boolean merchantSupportsAutofillCards() {
+        return mMerchantSupportsAutofillCards;
+    }
+
+    /** Set whether the merchant supports autofill cards. */
+    public void setMerchantSupportsAutofillCards(boolean merchantSupportsAutofillCards) {
+        mMerchantSupportsAutofillCards = merchantSupportsAutofillCards;
+    }
+
+    /** @return Get the PaymentMethodsSection of the PaymentRequest UI. */
+    public SectionInformation getPaymentMethodsSection() {
+        return mPaymentMethodsSection;
+    }
+
+    /** Set the PaymentMethodsSection of the PaymentRequest UI. */
+    public void setPaymentMethodsSection(SectionInformation paymentMethodsSection) {
+        mPaymentMethodsSection = paymentMethodsSection;
+    }
+
+    /** Get the ShippingAddressesSection of the PaymentRequest UI. */
+    public SectionInformation getShippingAddressesSection() {
+        return mShippingAddressesSection;
+    }
+
+    /** Set the ShippingAddressesSection of the PaymentRequest UI. */
+    public void setShippingAddressesSection(SectionInformation shippingAddressesSection) {
+        mShippingAddressesSection = shippingAddressesSection;
+    }
+
+    /** Get the ContactSection of the PaymentRequest UI. */
+    public ContactDetailsSection getContactSection() {
+        return mContactSection;
+    }
+
+    /** Set the ContactSection of the PaymentRequest UI. */
+    public void setContactSection(ContactDetailsSection contactSection) {
+        mContactSection = contactSection;
+    }
+
+    /** Get the AutofillPaymentAppCreator. */
+    public AutofillPaymentAppCreator getAutofillPaymentAppCreator() {
+        return mAutofillPaymentAppCreator;
+    }
+
+    /** Set the AutofillPaymentAppCreator. */
+    public void setAutofillPaymentAppCreator(AutofillPaymentAppCreator autofillPaymentAppCreator) {
+        mAutofillPaymentAppCreator = autofillPaymentAppCreator;
+    }
+
+    /** @return Whether user can add credit card. */
+    public boolean canUserAddCreditCard() {
+        return mCanUserAddCreditCard;
+    }
+
+    /** Set whether user can add credit card. */
+    public void setCanUserAddCreditCard(boolean canUserAddCreditCard) {
+        mCanUserAddCreditCard = canUserAddCreditCard;
     }
 }

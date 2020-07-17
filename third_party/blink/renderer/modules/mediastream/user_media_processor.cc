@@ -1215,8 +1215,8 @@ MediaStreamSource* UserMediaProcessor::InitializeVideoSourceObject(
     String device_id(device.id.data());
     source->SetCapabilities(ComputeCapabilitiesForVideoSource(
         // TODO(crbug.com/704136): Change ComputeCapabilitiesForVideoSource to
-        // operate over WTF::Vector and WTF::String.
-        blink::WebString::FromUTF8(device.id),
+        // operate over WTF::Vector.
+        String::FromUTF8(device.id),
         ToStdVector(*current_request_info_->GetNativeVideoFormats(device_id)),
         device.video_facing, current_request_info_->is_video_device_capture(),
         device.group_id));

@@ -48,7 +48,6 @@ import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelega
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemShareInfo;
-import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
 import java.io.Closeable;
@@ -373,11 +372,7 @@ class DateOrderedListMediator {
         mDeleteController.canDelete(items, delete -> {
             if (delete) {
                 for (OfflineItem item : itemsToDelete) {
-                    if (item.state != OfflineItemState.COMPLETE) {
-                        mProvider.cancelDownload(item);
-                    } else {
-                        mProvider.removeItem(item);
-                    }
+                    mProvider.removeItem(item);
 
                     // Remove and have a single decision path for cleaning up thumbnails when the
                     // glue layer is no longer needed.

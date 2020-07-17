@@ -138,6 +138,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
                        EvictBackBufferCallback callback) override;
   void UpdateDebugRendererSettings(
       const DebugRendererSettings& debug_settings) override;
+  void StartThrottling(const std::vector<FrameSinkId>& frame_sink_ids,
+                       base::TimeDelta interval) override;
+  void EndThrottling() override;
 
   // SurfaceObserver implementation.
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
@@ -278,6 +281,11 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   bool ChildContains(const FrameSinkId& child_frame_sink_id,
                      const FrameSinkId& search_frame_sink_id) const;
 
+  // Updates throttling recursively on a frame sink specified by its |id|
+  // and all its descendants to send BeginFrames at |interval|.
+  void UpdateThrottlingRecursively(const FrameSinkId& id,
+                                   base::TimeDelta interval);
+
   // SharedBitmapManager for the viz display service for receiving software
   // resources in CompositorFrameSinks.
   SharedBitmapManager* const shared_bitmap_manager_;
@@ -331,6 +339,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       video_capturers_;
 
   base::flat_map<uint32_t, base::ScopedClosureRunner> cached_back_buffers_;
+
+  // This tells if any frame sinks are currently throttled.
+  bool frame_sinks_throttled = false;
 
   THREAD_CHECKER(thread_checker_);
 

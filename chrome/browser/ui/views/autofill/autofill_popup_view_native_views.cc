@@ -948,14 +948,8 @@ void AutofillPopupRowView::SetSelected(bool is_selected) {
     return;
 
   is_selected_ = is_selected;
-  if (is_selected) {
-    // Before firing the selection event, ensure that focus appears to be
-    // within the popup. This is helpful for ATs on some platforms,
-    // specifically on Windows, where selection events in a list are mapped
-    // to focus events. Without this call, the focus appears to be in content.
-    GetViewAccessibility().SetPopupFocusOverride();
-    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
-  }
+  if (is_selected)
+    popup_view_->NotifyAXSelection(this);
   RefreshStyle();
 }
 
@@ -1020,21 +1014,6 @@ void AutofillPopupViewNativeViews::GetAccessibleNodeData(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
 }
 
-void AutofillPopupViewNativeViews::VisibilityChanged(View* starting_from,
-                                                     bool is_visible) {
-  // Fire menu end event. The menu start event is delayed until the user
-  // navigates into the menu, otherwise some screen readers will ignore
-  // any focus events outside of the menu, including a focus event on
-  // the form control itself.
-  if (!is_visible) {
-    if (is_ax_menu_start_event_fired_) {
-      NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd, true);
-      GetViewAccessibility().EndPopupFocusOverride();
-    }
-    is_ax_menu_start_event_fired_ = false;
-  }
-}
-
 void AutofillPopupViewNativeViews::OnThemeChanged() {
   AutofillPopupBaseView::OnThemeChanged();
   SetBackground(views::CreateSolidBackground(GetBackgroundColor()));
@@ -1064,15 +1043,6 @@ void AutofillPopupViewNativeViews::Hide() {
 void AutofillPopupViewNativeViews::OnSelectedRowChanged(
     base::Optional<int> previous_row_selection,
     base::Optional<int> current_row_selection) {
-  if (!is_ax_menu_start_event_fired_) {
-    // By firing these and the matching kMenuEnd events, we are telling screen
-    // readers that the focus is only changing temporarily, and the screen
-    // reader will restore the focus back to the appropriate textfield when the
-    // menu closes.
-    NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
-    is_ax_menu_start_event_fired_ = true;
-  }
-
   if (previous_row_selection) {
     rows_[*previous_row_selection]->SetSelected(false);
   }

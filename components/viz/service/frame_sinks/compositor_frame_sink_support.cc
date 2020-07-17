@@ -38,7 +38,8 @@ enum class SendBeginFrameResult {
   kSendBlockedEmbedded = 5,
   kThrottleUndrawnFrames = 6,
   kSendDefault = 7,
-  kMaxValue = kSendDefault
+  kThrottleAsRequested = 8,
+  kMaxValue = kThrottleAsRequested
 };
 
 void RecordShouldSendBeginFrame(SendBeginFrameResult result) {
@@ -142,6 +143,10 @@ void CompositorFrameSinkSupport::SetBeginFrameSource(
   }
   begin_frame_source_ = begin_frame_source;
   UpdateNeedsBeginFramesInternal();
+}
+
+void CompositorFrameSinkSupport::ThrottleBeginFrame(base::TimeDelta interval) {
+  begin_frame_interval_ = interval;
 }
 
 void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
@@ -833,9 +838,21 @@ int64_t CompositorFrameSinkSupport::ComputeTraceId() {
 
 bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
     base::TimeTicks frame_time) {
+  // We should throttle OnBeginFrame() if it has been less than
+  // |begin_frame_interval_| since the last one was sent because clients have
+  // requested to update at such rate.
+  const bool should_throttle_as_requested =
+      begin_frame_interval_ > base::TimeDelta() &&
+      (frame_time - last_frame_time_) < begin_frame_interval_;
+  // We might throttle this OnBeginFrame() if it's been less than a second since
+  // the last one was sent, either because clients are unresponsive or have
+  // submitted too many undrawn frames.
+  const bool can_throttle_if_unresponsive_or_excessive =
+      frame_time - last_frame_time_ < base::TimeDelta::FromSeconds(1);
+
   // If there are pending timing details from the previous frame(s),
   // then the client needs to receive the begin-frame.
-  if (!frame_timing_details_.empty()) {
+  if (!frame_timing_details_.empty() && !should_throttle_as_requested) {
     RecordShouldSendBeginFrame(SendBeginFrameResult::kSendFrameTiming);
     return true;
   }
@@ -851,13 +868,9 @@ bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
     return false;
   }
 
-  // We might throttle this OnBeginFrame() if it's been less than a second since
-  // the last one was sent.
-  bool can_throttle =
-      (frame_time - last_frame_time_) < base::TimeDelta::FromSeconds(1);
-
   // Throttle clients that are unresponsive.
-  if (can_throttle && begin_frame_tracker_.ShouldThrottleBeginFrame()) {
+  if (can_throttle_if_unresponsive_or_excessive &&
+      begin_frame_tracker_.ShouldThrottleBeginFrame()) {
     RecordShouldSendBeginFrame(
         SendBeginFrameResult::kThrottleUnresponsiveClient);
     return false;
@@ -875,6 +888,11 @@ bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
     return true;
   }
 
+  if (should_throttle_as_requested) {
+    RecordShouldSendBeginFrame(SendBeginFrameResult::kThrottleAsRequested);
+    return false;
+  }
+
   Surface* surface =
       surface_manager_->GetSurfaceForId(last_activated_surface_id_);
 
@@ -890,7 +908,8 @@ bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
 
   // Throttle clients that have submitted too many undrawn frames.
   uint64_t num_undrawn_frames = active_frame_index - last_drawn_frame_index_;
-  if (can_throttle && num_undrawn_frames > kUndrawnFrameLimit) {
+  if (can_throttle_if_unresponsive_or_excessive &&
+      num_undrawn_frames > kUndrawnFrameLimit) {
     RecordShouldSendBeginFrame(SendBeginFrameResult::kThrottleUndrawnFrames);
     return false;
   }

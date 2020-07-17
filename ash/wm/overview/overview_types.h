@@ -42,9 +42,6 @@ enum OverviewAnimationType {
   // Used to fade in the label which tells users they are in overview mode with
   // no window in and out.
   OVERVIEW_ANIMATION_NO_RECENTS_FADE,
-  // Used to animate the overview highlight which is activated by using tab or
-  // the arrow keys.
-  OVERVIEW_ANIMATION_FRAME_HEADER_CLIP,
   // Used to fade in all windows when window drag starts or during window drag.
   OVERVIEW_ANIMATION_OPACITY_ON_WINDOW_DRAG,
 };

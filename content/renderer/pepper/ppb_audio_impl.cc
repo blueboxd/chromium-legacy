@@ -17,6 +17,7 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_audio_config_api.h"
 #include "ppapi/thunk/thunk.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 using ppapi::PpapiGlobals;
 using ppapi::thunk::EnterResourceNoLock;
@@ -134,8 +135,7 @@ int32_t PPB_Audio_Impl::Open(PP_Resource config,
   audio_ = PepperPlatformAudioOutput::Create(
       static_cast<int>(enter.object()->GetSampleRate()),
       static_cast<int>(enter.object()->GetSampleFrameCount()),
-      instance->render_frame()->GetRoutingID(),
-      this);
+      instance->render_frame()->GetWebFrame()->GetFrameToken(), this);
   if (!audio_)
     return PP_ERROR_FAILED;
 

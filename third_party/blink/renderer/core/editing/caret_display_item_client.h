@@ -63,8 +63,7 @@ class CORE_EXPORT CaretDisplayItemClient final : public DisplayItemClient {
                   const PhysicalOffset& paint_offset,
                   DisplayItem::Type) const;
 
-  // DisplayItemClient methods.
-  IntRect VisualRect() const final;
+  // DisplayItemClient.
   String DebugName() const final;
 
  private:

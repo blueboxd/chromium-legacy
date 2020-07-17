@@ -47,10 +47,10 @@ health::mojom::NonRemovableBlockDeviceResultPtr UncheckedConvertPtr(
     cros_healthd::mojom::NonRemovableBlockDeviceResultPtr input);
 
 health::mojom::CachedVpdInfoPtr UncheckedConvertPtr(
-    cros_healthd::mojom::CachedVpdInfoPtr input);
+    cros_healthd::mojom::SystemInfoPtr input);
 
 health::mojom::CachedVpdResultPtr UncheckedConvertPtr(
-    cros_healthd::mojom::CachedVpdResultPtr input);
+    cros_healthd::mojom::SystemResultPtr input);
 
 health::mojom::CpuCStateInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::CpuCStateInfoPtr input);

@@ -64,4 +64,8 @@ const base::Feature kSyncDeviceInfoInTransportMode{
 const base::Feature kProfileSyncServiceUsesThreadPool{
     "ProfileSyncServiceUsesThreadPool", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Stops honoring the Android master sync toggle.
+const base::Feature kDecoupleSyncFromAndroidMasterSync{
+    "DecoupleSyncFromAndroidMasterSync", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace switches

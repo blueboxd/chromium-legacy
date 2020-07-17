@@ -19,6 +19,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_device_description.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {
 
@@ -146,6 +147,7 @@ bool PepperPlatformAudioInput::Initialize(
     return false;
 
   render_frame_id_ = render_frame_id;
+  render_frame_token_ = render_frame->GetWebFrame()->GetFrameToken();
   client_ = client;
 
   if (!GetMediaDeviceManager())
@@ -176,7 +178,7 @@ void PepperPlatformAudioInput::InitializeOnIOThread(
 
   if (ipc_startup_state_ != kStopped)
     ipc_ = AudioInputIPCFactory::get()->CreateAudioInputIPC(
-        render_frame_id_, media::AudioSourceParameters(session_id));
+        render_frame_token_, media::AudioSourceParameters(session_id));
   if (!ipc_)
     return;
 

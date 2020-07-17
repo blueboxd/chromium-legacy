@@ -800,6 +800,25 @@ void AXObject::Serialize(ui::AXNodeData* node_data) {
   if (GetTextAlign() != ax::mojom::blink::TextAlign::kNone) {
     node_data->SetTextAlign(GetTextAlign());
   }
+
+  // If this is an HTMLFrameOwnerElement (such as an iframe), we may need
+  // to embed the ID of the child frame.
+  if (auto* html_frame_owner_element =
+          DynamicTo<HTMLFrameOwnerElement>(GetElement())) {
+    base::Optional<base::UnguessableToken> child_token =
+        html_frame_owner_element->GetEmbeddingToken();
+
+    // Only add the attribute for the embedding token if there aren't children,
+    // because if there are children, the fallback content has been rendered
+    // and should be used instead. For example, the fallback content may be
+    // rendered if there was an error loading an <object>. The AXNodeData
+    // should not have both children and a child tree.
+    if (child_token && !(IsDetached() || ChildCountIncludingIgnored())) {
+      node_data->AddStringAttribute(
+          ax::mojom::blink::StringAttribute::kChildTreeId,
+          child_token->ToString());
+    }
+  }
 }
 
 bool AXObject::IsAXNodeObject() const {

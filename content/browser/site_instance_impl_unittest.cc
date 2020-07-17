@@ -187,6 +187,81 @@ class SiteInstanceTest : public testing::Test {
   url::ScopedSchemeRegistryForTests scoped_registry_;
 };
 
+// Tests that SiteInfo works correct as a key for std::map and std::set.
+TEST_F(SiteInstanceTest, SiteInfoAsContainerKey) {
+  std::map<SiteInfo, int> test_map;
+  std::set<SiteInfo> test_set;
+
+  SiteInfo site_info_1(GURL("https://www.foo.com"), GURL("https://foo.com"));
+  SiteInfo site_info_2(GURL("https://www.foo.com"),
+                       GURL("https://www.foo.com"));
+  SiteInfo site_info_3(GURL("https://www.foo.com"),
+                       GURL("https://sub.foo.com"));
+  SiteInfo site_info_4(GURL("https://www.foo.com"), GURL());
+
+  // Test SiteInfoOperators.
+  // Use EXPECT_TRUE and == below to avoid need to define SiteInfo::operator<<.
+  EXPECT_TRUE(site_info_1 == site_info_1);
+  EXPECT_FALSE(site_info_1 == site_info_2);
+  EXPECT_FALSE(site_info_1 == site_info_3);
+  EXPECT_FALSE(site_info_1 == site_info_4);
+  EXPECT_TRUE(site_info_2 == site_info_2);
+  EXPECT_FALSE(site_info_2 == site_info_3);
+  EXPECT_FALSE(site_info_2 == site_info_4);
+  EXPECT_TRUE(site_info_3 == site_info_3);
+  EXPECT_FALSE(site_info_3 == site_info_4);
+  EXPECT_TRUE(site_info_4 == site_info_4);
+
+  EXPECT_TRUE(site_info_1 < site_info_3);  // 'f' before 's'/
+  EXPECT_TRUE(site_info_3 < site_info_2);  // 's' before 'w'/
+  EXPECT_TRUE(site_info_4 < site_info_1);  // Empty string first.
+
+  // Map tests.
+  test_map[site_info_1] = 1;
+  test_map[site_info_2] = 2;
+  test_map[site_info_4] = 4;
+
+  // Make sure std::map treated the different SiteInfo's as distinct.
+  EXPECT_EQ(3u, test_map.size());
+
+  // Test that std::map::find() looks up the correct key.
+  auto it1 = test_map.find(site_info_1);
+  EXPECT_NE(it1, test_map.end());
+  EXPECT_EQ(1, it1->second);
+
+  auto it2 = test_map.find(site_info_2);
+  EXPECT_NE(it2, test_map.end());
+  EXPECT_EQ(2, it2->second);
+
+  EXPECT_EQ(test_map.end(), test_map.find(site_info_3));
+
+  auto it4 = test_map.find(site_info_4);
+  EXPECT_NE(it4, test_map.end());
+  EXPECT_EQ(4, it4->second);
+
+  // Set tests.
+  test_set.insert(site_info_1);
+  test_set.insert(site_info_2);
+  test_set.insert(site_info_4);
+
+  EXPECT_EQ(3u, test_set.size());
+
+  auto itS1 = test_set.find(site_info_1);
+  auto itS2 = test_set.find(site_info_2);
+  auto itS3 = test_set.find(site_info_3);
+  auto itS4 = test_set.find(site_info_4);
+
+  EXPECT_NE(test_set.end(), itS1);
+  EXPECT_NE(test_set.end(), itS2);
+  EXPECT_EQ(test_set.end(), itS3);
+  EXPECT_NE(test_set.end(), itS4);
+
+  // Use EXPECT_TRUE and == below to avoid need to define SiteInfo::operator<<.
+  EXPECT_TRUE(site_info_1 == *itS1);
+  EXPECT_TRUE(site_info_2 == *itS2);
+  EXPECT_TRUE(site_info_4 == *itS4);
+}
+
 // Test to ensure no memory leaks for SiteInstance objects.
 TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
   TestBrowserContext context;

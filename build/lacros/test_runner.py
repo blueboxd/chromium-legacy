@@ -13,10 +13,12 @@ using ash_chrome.
 
 import argparse
 import os
+import logging
 import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import zipfile
 
 _SRC_ROOT = os.path.abspath(
@@ -37,8 +39,6 @@ _GS_ASH_CHROME_LATEST_VERSION_FILE = _GS_URL_BASE + '/latest/linux-chromeos.txt'
 _GS_ASH_CHROME_PATH = 'linux-chromeos/chrome-linux-chromeos.zip'
 
 # Directory to cache downloaded ash-chrome versions to avoid re-downloading.
-# TODO(crbug.com/1104318): Cleans up unused versions regularly to avoid
-# consuming too much disk space.
 _PREBUILT_ASH_CHROME_DIR = os.path.join(os.path.dirname(__file__),
                                         'prebuilt_ash_chrome')
 
@@ -46,6 +46,39 @@ _PREBUILT_ASH_CHROME_DIR = os.path.join(os.path.dirname(__file__),
 def _GetAshChromeDirPath(version):
   """Returns a path to the dir storing the downloaded version of ash-chrome."""
   return os.path.join(_PREBUILT_ASH_CHROME_DIR, version)
+
+
+def _remove_unused_ash_chrome_versions(version_to_skip):
+  """Removes unused ash-chrome versions to save disk space.
+
+  Currently, when an ash-chrome zip is downloaded and unpacked, the atime/mtime
+  of the dir and the files are NOW instead of the time when they were built, but
+  there is no garanteen it will always be the behavior in the future, so avoid
+  removing the current version just in case.
+
+  Args:
+    version_to_skip (str): the version to skip removing regardless of its age.
+  """
+  days = 7
+  expiration_duration = 60 * 60 * 24 * days
+
+  for f in os.listdir(_PREBUILT_ASH_CHROME_DIR):
+    if f == version_to_skip:
+      continue
+
+    p = os.path.join(_PREBUILT_ASH_CHROME_DIR, f)
+    if os.path.isfile(p):
+      # The prebuilt ash-chrome dir is NOT supposed to contain any files, remove
+      # them to keep the directory clean.
+      os.remove(p)
+      continue
+
+    age = time.time() - os.path.getatime(os.path.join(p, 'chrome'))
+    if age > expiration_duration:
+      logging.info(
+          'Removing ash-chrome: "%s" as it hasn\'t been used in the '
+          'past %d days', p, days)
+      shutil.rmtree(p)
 
 
 def _DownloadAshChromeIfNecessary(version):
@@ -97,6 +130,8 @@ def _DownloadAshChromeIfNecessary(version):
       for info in zf.infolist():
         ExtractFile(zf, info, ash_chrome_dir)
 
+  _remove_unused_ash_chrome_versions(version)
+
 
 def _GetLatestVersionOfAshChrome():
   """Returns the latest version of uploaded official ash-chrome."""
@@ -123,6 +158,7 @@ def _ParseArguments():
 
 
 def Main():
+  logging.basicConfig(level=logging.INFO)
   args, forward_args = _ParseArguments()
   return subprocess.call([args.command] + forward_args)
 

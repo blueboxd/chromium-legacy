@@ -48,28 +48,28 @@ class CONTENT_EXPORT AudioRendererMixerManager
 
   // Creates an AudioRendererMixerInput with the proper callbacks necessary to
   // retrieve an AudioRendererMixer instance from AudioRendererMixerManager.
-  // |source_render_frame_id| refers to the RenderFrame containing the entity
+  // |source_frame_token| refers to the RenderFrame containing the entity
   // rendering the audio.  Caller must ensure AudioRendererMixerManager outlives
   // the returned input. |device_id| and |session_id| identify the output
   // device to use. If |device_id| is empty and |session_id| is nonzero,
   // output device associated with the opened input device designated by
   // |session_id| is used. Otherwise, |session_id| is ignored.
   scoped_refptr<media::AudioRendererMixerInput> CreateInput(
-      int source_render_frame_id,
+      const base::UnguessableToken& source_frame_token,
       const base::UnguessableToken& session_id,
       const std::string& device_id,
       media::AudioLatency::LatencyType latency);
 
   // AudioRendererMixerPool implementation.
   media::AudioRendererMixer* GetMixer(
-      int source_render_frame_id,
+      const base::UnguessableToken& source_frame_token,
       const media::AudioParameters& input_params,
       media::AudioLatency::LatencyType latency,
       const media::OutputDeviceInfo& sink_info,
       scoped_refptr<media::AudioRendererSink> sink) final;
   void ReturnMixer(media::AudioRendererMixer* mixer) final;
   scoped_refptr<media::AudioRendererSink> GetSink(
-      int source_render_frame_id,
+      const base::UnguessableToken& source_frame_token,
       const std::string& device_id) final;
 
  protected:
@@ -77,7 +77,7 @@ class CONTENT_EXPORT AudioRendererMixerManager
   // more details on the parameters.
   using CreateSinkCB =
       base::RepeatingCallback<scoped_refptr<media::AudioRendererSink>(
-          int source_render_frame_id,
+          const base::UnguessableToken& source_frame_token,
           const media::AudioSinkParameters& params)>;
 
   explicit AudioRendererMixerManager(CreateSinkCB create_sink_cb);
@@ -88,12 +88,12 @@ class CONTENT_EXPORT AudioRendererMixerManager
   // Define a key so that only those AudioRendererMixerInputs from the same
   // RenderView, AudioParameters and output device can be mixed together.
   struct MixerKey {
-    MixerKey(int source_render_frame_id,
+    MixerKey(const base::UnguessableToken& source_frame_token,
              const media::AudioParameters& params,
              media::AudioLatency::LatencyType latency,
              const std::string& device_id);
     MixerKey(const MixerKey& other);
-    int source_render_frame_id;
+    base::UnguessableToken source_frame_token;
     media::AudioParameters params;
     media::AudioLatency::LatencyType latency;
     std::string device_id;
@@ -103,8 +103,8 @@ class CONTENT_EXPORT AudioRendererMixerManager
   // mixers where only irrelevant keys mismatch.
   struct MixerKeyCompare {
     bool operator()(const MixerKey& a, const MixerKey& b) const {
-      if (a.source_render_frame_id != b.source_render_frame_id)
-        return a.source_render_frame_id < b.source_render_frame_id;
+      if (a.source_frame_token != b.source_frame_token)
+        return a.source_frame_token < b.source_frame_token;
       if (a.params.channels() != b.params.channels())
         return a.params.channels() < b.params.channels();
 

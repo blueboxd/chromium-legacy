@@ -16,23 +16,23 @@ class FuchsiaAudioDeviceFactory : public AudioDeviceFactory {
 
  protected:
   scoped_refptr<media::AudioRendererSink> CreateFinalAudioRendererSink(
-      int render_frame_id,
+      const base::UnguessableToken& frame_token,
       const media::AudioSinkParameters& params,
       base::TimeDelta auth_timeout) final;
 
   scoped_refptr<media::AudioRendererSink> CreateAudioRendererSink(
       blink::WebAudioDeviceSourceType source_type,
-      int render_frame_id,
+      const base::UnguessableToken& frame_token,
       const media::AudioSinkParameters& params) final;
 
   scoped_refptr<media::SwitchableAudioRendererSink>
   CreateSwitchableAudioRendererSink(
       blink::WebAudioDeviceSourceType source_type,
-      int render_frame_id,
+      const base::UnguessableToken& frame_token,
       const media::AudioSinkParameters& params) final;
 
   scoped_refptr<media::AudioCapturerSource> CreateAudioCapturerSource(
-      int render_frame_id,
+      const base::UnguessableToken& frame_token,
       const media::AudioSourceParameters& params) final;
 };
 

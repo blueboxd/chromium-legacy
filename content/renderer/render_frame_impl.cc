@@ -1914,8 +1914,6 @@ RenderFrameImpl::~RenderFrameImpl() {
 
   base::trace_event::TraceLog::GetInstance()->RemoveProcessLabel(routing_id_);
 
-  if (auto* factory = AudioOutputIPCFactory::get())
-    factory->MaybeDeregisterRemoteFactory(GetRoutingID());
 
   if (is_main_frame_) {
     // Ensure the RenderView doesn't point to this object, once it is destroyed.
@@ -1957,7 +1955,8 @@ void RenderFrameImpl::Initialize() {
 
   // AudioOutputIPCFactory may be null in tests.
   if (auto* factory = AudioOutputIPCFactory::get())
-    factory->RegisterRemoteFactory(GetRoutingID(), GetBrowserInterfaceBroker());
+    factory->RegisterRemoteFactory(GetWebFrame()->GetFrameToken(),
+                                   GetBrowserInterfaceBroker());
 
   AudioRendererSinkCache::ObserveFrame(this);
 
@@ -4001,6 +4000,9 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
   for (auto& observer : observers_)
     observer.FrameDetached();
 
+  if (auto* factory = AudioOutputIPCFactory::get())
+    factory->MaybeDeregisterRemoteFactory(GetWebFrame()->GetFrameToken());
+
   // Send a state update before the frame is detached.
   SendUpdateState();
 
@@ -4238,8 +4240,8 @@ void RenderFrameImpl::DidCommitNavigation(
       // TODO(https://crbug.com/668275): Still, it is odd for one specific
       // factory to be registered here, make this a RenderFrameObserver.
       // code.
-      factory->MaybeDeregisterRemoteFactory(GetRoutingID());
-      factory->RegisterRemoteFactory(GetRoutingID(),
+      factory->MaybeDeregisterRemoteFactory(GetWebFrame()->GetFrameToken());
+      factory->RegisterRemoteFactory(GetWebFrame()->GetFrameToken(),
                                      GetBrowserInterfaceBroker());
     }
 
@@ -6255,8 +6257,9 @@ void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
   std::move(
       blink::ConvertToOutputDeviceStatusCB(std::move(completion_callback)))
       .Run(AudioDeviceFactory::GetOutputDeviceInfo(
-               GetRoutingID(), media::AudioSinkParameters(
-                                   base::UnguessableToken(), sink_id.Utf8()))
+               GetWebFrame()->GetFrameToken(),
+               media::AudioSinkParameters(base::UnguessableToken(),
+                                          sink_id.Utf8()))
                .device_status());
 }
 

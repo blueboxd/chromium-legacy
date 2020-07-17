@@ -24,7 +24,7 @@ TEST(NativeMessagingHostListPolicyHandlerTest, CheckPolicySettings) {
 
   policy_map.Set(policy::key::kNativeMessagingBlacklist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+                 policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   {
     policy::PolicyErrorMap errors;
     EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
@@ -34,7 +34,7 @@ TEST(NativeMessagingHostListPolicyHandlerTest, CheckPolicySettings) {
   list.AppendString("test.a.b");
   policy_map.Set(policy::key::kNativeMessagingBlacklist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+                 policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   {
     policy::PolicyErrorMap errors;
     EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
@@ -44,7 +44,7 @@ TEST(NativeMessagingHostListPolicyHandlerTest, CheckPolicySettings) {
   list.AppendString("*");
   policy_map.Set(policy::key::kNativeMessagingBlacklist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+                 policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   {
     policy::PolicyErrorMap errors;
     EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
@@ -54,7 +54,7 @@ TEST(NativeMessagingHostListPolicyHandlerTest, CheckPolicySettings) {
   list.AppendString("invalid Name");
   policy_map.Set(policy::key::kNativeMessagingBlacklist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+                 policy::POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   {
     policy::PolicyErrorMap errors;
     EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
@@ -78,7 +78,7 @@ TEST(NativeMessagingHostListPolicyHandlerTest, ApplyPolicySettings) {
 
   policy_map.Set(policy::key::kNativeMessagingBlacklist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_CLOUD, policy.CreateDeepCopy(), nullptr);
+                 policy::POLICY_SOURCE_CLOUD, policy.Clone(), nullptr);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_EQ(expected, *value);
@@ -88,7 +88,7 @@ TEST(NativeMessagingHostListPolicyHandlerTest, ApplyPolicySettings) {
 
   policy_map.Set(policy::key::kNativeMessagingBlacklist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_CLOUD, policy.CreateDeepCopy(), nullptr);
+                 policy::POLICY_SOURCE_CLOUD, policy.Clone(), nullptr);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_EQ(expected, *value);
@@ -96,7 +96,7 @@ TEST(NativeMessagingHostListPolicyHandlerTest, ApplyPolicySettings) {
   policy.AppendString("invalid Name");
   policy_map.Set(policy::key::kNativeMessagingBlacklist,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_CLOUD, policy.CreateDeepCopy(), nullptr);
+                 policy::POLICY_SOURCE_CLOUD, policy.Clone(), nullptr);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_EQ(expected, *value);

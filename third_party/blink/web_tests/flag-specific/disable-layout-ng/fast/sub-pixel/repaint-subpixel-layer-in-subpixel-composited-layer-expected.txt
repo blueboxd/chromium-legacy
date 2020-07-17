@@ -11,8 +11,8 @@
       "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
       "bounds": [100, 50],
       "invalidations": [
-        [11, 0, 14, 12],
-        [9, 0, 14, 12]
+        [12, 0, 12, 12],
+        [10, 0, 12, 12]
       ],
       "transform": 1
     }
@@ -42,8 +42,8 @@
       "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
       "bounds": [100, 50],
       "invalidations": [
-        [11, 0, 14, 12],
-        [9, 0, 14, 12]
+        [11, 0, 13, 12],
+        [9, 0, 13, 12]
       ],
       "transform": 1
     }
@@ -73,8 +73,8 @@
       "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
       "bounds": [100, 50],
       "invalidations": [
-        [12, 0, 14, 12],
-        [10, 0, 14, 12]
+        [12, 0, 13, 12],
+        [10, 0, 13, 12]
       ],
       "transform": 1
     }
@@ -104,8 +104,8 @@
       "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
       "bounds": [100, 50],
       "invalidations": [
-        [11, 0, 14, 12],
-        [9, 0, 14, 12]
+        [12, 0, 13, 12],
+        [10, 0, 13, 12]
       ],
       "transform": 1
     }
@@ -135,8 +135,8 @@
       "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
       "bounds": [100, 50],
       "invalidations": [
-        [12, 0, 14, 12],
-        [10, 0, 14, 12]
+        [12, 0, 13, 12],
+        [10, 0, 13, 12]
       ],
       "transform": 1
     }

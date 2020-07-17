@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/scoped_feature_list.h"
+#include "base/values.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -72,7 +73,7 @@ IN_PROC_BROWSER_TEST_P(CorsPolicyTest, CorsMitigationExtraHeadersTest) {
   PolicyMap policies;
   policies.Set(key::kCorsMitigationList, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::ListValue>(), nullptr);
+               base::Value(base::Value::Type::LIST), nullptr);
   UpdateProviderPolicy(policies);
 
   // Now the list is managed, and it enforces the webRequest API to use the
@@ -99,8 +100,8 @@ IN_PROC_BROWSER_TEST_P(CorsPolicyTest, CorsLegacyModeEnabledConsistencyTest) {
   // returning a consistent value that returned at the first access.
   PolicyMap policies;
   policies.Set(key::kCorsLegacyModeEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(true),
+               nullptr);
   UpdateProviderPolicy(policies);
 
   EXPECT_TRUE(prefs->GetBoolean(prefs::kCorsLegacyModeEnabled));
@@ -110,8 +111,8 @@ IN_PROC_BROWSER_TEST_P(CorsPolicyTest, CorsLegacyModeEnabledConsistencyTest) {
 
   // Flip the value, and check again.
   policies.Set(key::kCorsLegacyModeEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
 
   EXPECT_FALSE(prefs->GetBoolean(prefs::kCorsLegacyModeEnabled));

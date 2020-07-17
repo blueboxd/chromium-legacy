@@ -32,14 +32,8 @@
 
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
-#include "third_party/blink/renderer/core/animation/css_interpolation_environment.h"
-#include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
-#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
-#include "third_party/blink/renderer/core/animation/transition_interpolation.h"
-#include "third_party/blink/renderer/core/css/css_color_value.h"
-#include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
@@ -47,23 +41,17 @@
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
-#include "third_party/blink/renderer/core/css/css_property_value_set.h"
-#include "third_party/blink/renderer/core/css/css_reflect_value.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/css_selector_watch.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
-#include "third_party/blink/renderer/core/css/css_unset_value.h"
-#include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/element_rule_collector.h"
 #include "third_party/blink/renderer/core/css/font_face.h"
 #include "third_party/blink/renderer/core/css/page_rule_collector.h"
 #include "third_party/blink/renderer/core/css/part_names.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
-#include "third_party/blink/renderer/core/css/resolver/css_variable_animator.h"
-#include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/match_result.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/selector_filter_parent_scope.h"
@@ -94,7 +82,6 @@
 #include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/style/style_inherited_variables.h"
 #include "third_party/blink/renderer/core/style/style_initial_data.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
@@ -790,8 +777,6 @@ static ElementAnimations* GetElementAnimations(
 
 static const ComputedStyle* CachedAnimationBaseComputedStyle(
     StyleResolverState& state) {
-  if (!RuntimeEnabledFeatures::CSSCascadeEnabled())
-    return nullptr;
   ElementAnimations* element_animations = GetElementAnimations(state);
   if (!element_animations)
     return nullptr;
@@ -849,8 +834,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
       matching_behavior == kMatchAllRules;
 
   STACK_UNINITIALIZED StyleCascade cascade(state);
-  StyleCascade* cascade_ptr =
-      RuntimeEnabledFeatures::CSSCascadeEnabled() ? &cascade : nullptr;
+  StyleCascade* cascade_ptr = &cascade;
 
   ApplyBaseComputedStyle(element, state, cascade_ptr,
                          cascade.MutableMatchResult(), matching_behavior,
@@ -1000,12 +984,8 @@ void StyleResolver::ApplyBaseComputedStyle(
     if (state.HasDirAutoAttribute())
       state.Style()->SetSelfOrAncestorHasDirAutoAttribute(true);
 
-    if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-      DCHECK(cascade);
-      CascadeAndApplyMatchedProperties(state, *cascade);
-    } else {
-      ApplyMatchedProperties(state, match_result);
-    }
+    DCHECK(cascade);
+    CascadeAndApplyMatchedProperties(state, *cascade);
 
     ApplyCallbackSelectors(state);
 
@@ -1043,20 +1023,14 @@ CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
                            parent_style);
   state.SetStyle(ComputedStyle::Clone(base_style));
   if (value) {
-    if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-      STACK_UNINITIALIZED StyleCascade cascade(state);
-      auto* set = MakeGarbageCollected<MutableCSSPropertyValueSet>(
-          state.GetParserMode());
-      set->SetProperty(property.GetCSSProperty().PropertyID(), *value);
-      cascade.MutableMatchResult().FinishAddingUARules();
-      cascade.MutableMatchResult().FinishAddingUserRules();
-      cascade.MutableMatchResult().AddMatchedProperties(set);
-      cascade.Apply();
-    } else {
-      StyleBuilder::ApplyProperty(property.GetCSSPropertyName(), state, *value);
-      state.GetFontBuilder().CreateFont(state.StyleRef(), parent_style);
-      CSSVariableResolver(state).ResolveVariableDefinitions();
-    }
+    STACK_UNINITIALIZED StyleCascade cascade(state);
+    auto* set =
+        MakeGarbageCollected<MutableCSSPropertyValueSet>(state.GetParserMode());
+    set->SetProperty(property.GetCSSProperty().PropertyID(), *value);
+    cascade.MutableMatchResult().FinishAddingUARules();
+    cascade.MutableMatchResult().FinishAddingUserRules();
+    cascade.MutableMatchResult().AddMatchedProperties(set);
+    cascade.Apply();
   }
   return CompositorKeyframeValueFactory::Create(property, *state.Style());
 }
@@ -1080,8 +1054,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
   // user agent rules, don't waste time walking those rules.
 
   STACK_UNINITIALIZED StyleCascade cascade(state);
-  StyleCascade* cascade_ptr =
-      RuntimeEnabledFeatures::CSSCascadeEnabled() ? &cascade : nullptr;
+  StyleCascade* cascade_ptr = &cascade;
 
   if (ShouldComputeBaseComputedStyle(animation_base_computed_style)) {
     if (pseudo_style_request.AllowsInheritance(state.ParentStyle())) {
@@ -1123,10 +1096,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
       return false;
     }
 
-    if (RuntimeEnabledFeatures::CSSCascadeEnabled())
-      CascadeAndApplyMatchedProperties(state, cascade);
-    else
-      ApplyMatchedProperties(state, cascade.GetMatchResult());
+    CascadeAndApplyMatchedProperties(state, cascade);
 
     ApplyCallbackSelectors(state);
 
@@ -1222,25 +1192,7 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(
           GetDocument().GetScopedStyleResolver())
     scoped_resolver->MatchPageRules(collector);
 
-  bool inherited_only = false;
-
-  NeedsApplyPass needs_apply_pass;
-  const MatchResult& result = collector.MatchedResult();
-
-  if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-    cascade.Apply();
-  } else {
-    ApplyMatchedProperties<kAnimationPropertyPriority, kUpdateNeedsApplyPass>(
-        state, result.AllRules(), false, inherited_only, needs_apply_pass);
-    ApplyMatchedProperties<kHighPropertyPriority, kCheckNeedsApplyPass>(
-        state, result.AllRules(), false, inherited_only, needs_apply_pass);
-
-    // If our font got dirtied, go ahead and update it now.
-    UpdateFont(state);
-
-    ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
-        state, result.AllRules(), false, inherited_only, needs_apply_pass);
-  }
+  cascade.Apply();
 
   // Now return the style.
   return state.TakeStyle();
@@ -1382,10 +1334,7 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
     return false;
   }
 
-  if (!state.IsAnimationInterpolationMapReady() ||
-      RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-    CalculateAnimationUpdate(state);
-  }
+  CalculateAnimationUpdate(state);
 
   CSSAnimations::CalculateCompositorAnimationUpdate(
       state.AnimationUpdate(), animating_element, element, *state.Style(),
@@ -1412,35 +1361,20 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
   const ActiveInterpolationsMap& custom_transitions =
       state.AnimationUpdate().ActiveInterpolationsForCustomTransitions();
 
-  if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-    DCHECK(cascade);
-    cascade->AddInterpolations(&standard_animations, CascadeOrigin::kAnimation);
-    cascade->AddInterpolations(&standard_transitions,
-                               CascadeOrigin::kTransition);
-    cascade->AddInterpolations(&custom_animations, CascadeOrigin::kAnimation);
-    cascade->AddInterpolations(&custom_transitions, CascadeOrigin::kTransition);
+  DCHECK(cascade);
+  cascade->AddInterpolations(&standard_animations, CascadeOrigin::kAnimation);
+  cascade->AddInterpolations(&standard_transitions, CascadeOrigin::kTransition);
+  cascade->AddInterpolations(&custom_animations, CascadeOrigin::kAnimation);
+  cascade->AddInterpolations(&custom_transitions, CascadeOrigin::kTransition);
 
-    CascadeFilter filter;
-    if (IsForcedColorsModeEnabled(state))
-      filter = filter.Add(CSSProperty::kIsAffectedByForcedColors, true);
-    if (state.Style()->StyleType() == kPseudoIdMarker)
-      filter = filter.Add(CSSProperty::kValidForMarker, false);
-    filter = filter.Add(CSSProperty::kAnimation, true);
+  CascadeFilter filter;
+  if (IsForcedColorsModeEnabled(state))
+    filter = filter.Add(CSSProperty::kIsAffectedByForcedColors, true);
+  if (state.Style()->StyleType() == kPseudoIdMarker)
+    filter = filter.Add(CSSProperty::kValidForMarker, false);
+  filter = filter.Add(CSSProperty::kAnimation, true);
 
-    cascade->Apply(filter);
-  } else {
-    ApplyAnimatedStandardProperties<kHighPropertyPriority>(state,
-                                                           standard_animations);
-    ApplyAnimatedStandardProperties<kHighPropertyPriority>(
-        state, standard_transitions);
-
-    UpdateFont(state);
-
-    ApplyAnimatedStandardProperties<kLowPropertyPriority>(state,
-                                                          standard_animations);
-    ApplyAnimatedStandardProperties<kLowPropertyPriority>(state,
-                                                          standard_transitions);
-  }
+  cascade->Apply(filter);
 
   // Start loading resources used by animations.
   state.LoadPendingResources();
@@ -1475,238 +1409,6 @@ StyleRuleKeyframes* StyleResolver::FindKeyframesRule(
   return nullptr;
 }
 
-static bool PassesPropertyFilter(ValidPropertyFilter valid_property_filter,
-                                 CSSPropertyID property,
-                                 const Document& document) {
-  switch (valid_property_filter) {
-    case ValidPropertyFilter::kNoFilter:
-      return true;
-    case ValidPropertyFilter::kFirstLetter:
-      return CSSProperty::Get(property).IsValidForFirstLetter();
-    case ValidPropertyFilter::kCue:
-      return CSSProperty::Get(property).IsValidForCue();
-    case ValidPropertyFilter::kMarker:
-      return CSSProperty::Get(property).IsValidForMarker();
-  }
-  NOTREACHED();
-  return true;
-}
-
-template <CSSPropertyPriority priority>
-void StyleResolver::ApplyAnimatedStandardProperties(
-    StyleResolverState& state,
-    const ActiveInterpolationsMap& active_interpolations_map) {
-  static_assert(priority != kResolveVariables,
-                "Use CSSVariableAnimator for custom property animations");
-  // TODO(alancutter): Don't apply presentation attribute animations here,
-  // they should instead apply in
-  // SVGElement::CollectStyleForPresentationAttribute().
-  for (const auto& entry : active_interpolations_map) {
-    CSSPropertyID property =
-        entry.key.IsCSSProperty()
-            ? entry.key.GetCSSProperty().PropertyID()
-            : entry.key.PresentationAttribute().PropertyID();
-    if (!CSSPropertyPriorityData<priority>::PropertyHasPriority(property))
-      continue;
-    if (IsForcedColorsModeEnabled() && entry.key.IsCSSProperty() &&
-        entry.key.GetCSSProperty().IsAffectedByForcedColors() &&
-        state.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone)
-      continue;
-    if (state.Style()->StyleType() == kPseudoIdMarker &&
-        !PassesPropertyFilter(ValidPropertyFilter::kMarker, property,
-                              state.GetDocument()))
-      continue;
-    const Interpolation& interpolation = *entry.value.front();
-    if (IsA<InvalidatableInterpolation>(interpolation)) {
-      CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry(),
-                                   state.GetDocument());
-      CSSInterpolationEnvironment environment(map, state, nullptr);
-      InvalidatableInterpolation::ApplyStack(entry.value, environment);
-    } else {
-      To<TransitionInterpolation>(interpolation).Apply(state);
-    }
-  }
-}
-
-static inline void ApplyProperty(const CSSProperty& property,
-                                 StyleResolverState& state,
-                                 const CSSValue& value,
-                                 unsigned apply_mask) {
-  if (apply_mask & kApplyMaskRegular)
-    StyleBuilder::ApplyProperty(property, state, value);
-  if (apply_mask & kApplyMaskVisited) {
-    if (const CSSProperty* visited = property.GetVisitedProperty())
-      StyleBuilder::ApplyProperty(*visited, state, value);
-  }
-}
-
-// This method expands the 'all' shorthand property to longhand properties
-// and applies the expanded longhand properties.
-template <CSSPropertyPriority priority>
-void StyleResolver::ApplyAllProperty(StyleResolverState& state,
-                                     const CSSValue& all_value,
-                                     bool inherited_only,
-                                     ValidPropertyFilter valid_property_filter,
-                                     unsigned apply_mask) {
-  // The 'all' property doesn't apply to variables:
-  // https://drafts.csswg.org/css-variables/#defining-variables
-  if (priority == kResolveVariables)
-    return;
-
-  unsigned start_css_property =
-      static_cast<unsigned>(CSSPropertyPriorityData<priority>::First());
-  unsigned end_css_property =
-      static_cast<unsigned>(CSSPropertyPriorityData<priority>::Last());
-
-  for (unsigned i = start_css_property; i <= end_css_property; ++i) {
-    CSSPropertyID property_id = static_cast<CSSPropertyID>(i);
-    const CSSProperty& property_class =
-        CSSProperty::Get(resolveCSSPropertyID(property_id));
-
-    // StyleBuilder does not allow any expanded shorthands.
-    if (property_class.IsShorthand())
-      continue;
-
-    // all shorthand spec says:
-    // The all property is a shorthand that resets all CSS properties
-    // except direction and unicode-bidi.
-    // c.f. https://drafts.csswg.org/css-cascade/#all-shorthand
-    // We skip applyProperty when a given property is unicode-bidi or
-    // direction.
-    if (!property_class.IsAffectedByAll())
-      continue;
-
-    if (!PassesPropertyFilter(valid_property_filter, property_id,
-                              GetDocument()))
-      continue;
-
-    // When hitting matched properties' cache, only inherited properties will be
-    // applied.
-    if (inherited_only && !property_class.IsInherited())
-      continue;
-
-    ApplyProperty(property_class, state, all_value, apply_mask);
-  }
-}
-
-template <CSSPropertyPriority priority>
-static inline void ApplyProperty(
-    const CSSPropertyValueSet::PropertyReference& reference,
-    StyleResolverState& state,
-    unsigned apply_mask) {
-  static_assert(
-      priority != kResolveVariables,
-      "Application of custom properties must use specialized template");
-  DCHECK_NE(reference.Id(), CSSPropertyID::kVariable);
-  ApplyProperty(reference.Property(), state, reference.Value(), apply_mask);
-}
-
-template <>
-inline void ApplyProperty<kResolveVariables>(
-    const CSSPropertyValueSet::PropertyReference& reference,
-    StyleResolverState& state,
-    unsigned apply_mask) {
-  CSSPropertyRef ref(reference.Name(), state.GetDocument());
-  ApplyProperty(ref.GetProperty(), state, reference.Value(), apply_mask);
-}
-
-template <CSSPropertyPriority priority,
-          StyleResolver::ShouldUpdateNeedsApplyPass shouldUpdateNeedsApplyPass>
-void StyleResolver::ApplyProperties(StyleResolverState& state,
-                                    const CSSPropertyValueSet* properties,
-                                    bool is_important,
-                                    bool inherited_only,
-                                    NeedsApplyPass& needs_apply_pass,
-                                    ValidPropertyFilter valid_property_filter,
-                                    unsigned apply_mask,
-                                    ForcedColorFilter forced_colors) {
-  unsigned property_count = properties->PropertyCount();
-  for (unsigned i = 0; i < property_count; ++i) {
-    CSSPropertyValueSet::PropertyReference current = properties->PropertyAt(i);
-    CSSPropertyID property_id = current.Id();
-
-    if (property_id == CSSPropertyID::kAll &&
-        is_important == current.IsImportant()) {
-      if (shouldUpdateNeedsApplyPass) {
-        needs_apply_pass.Set(kAnimationPropertyPriority, is_important);
-        needs_apply_pass.Set(kHighPropertyPriority, is_important);
-        needs_apply_pass.Set(kLowPropertyPriority, is_important);
-      }
-      ApplyAllProperty<priority>(state, current.Value(), inherited_only,
-                                 valid_property_filter, apply_mask);
-      continue;
-    }
-
-    if (shouldUpdateNeedsApplyPass)
-      needs_apply_pass.Set(PriorityForProperty(property_id),
-                           current.IsImportant());
-
-    if (is_important != current.IsImportant())
-      continue;
-
-    if (!PassesPropertyFilter(valid_property_filter, property_id,
-                              GetDocument()))
-      continue;
-
-    if (!CSSPropertyPriorityData<priority>::PropertyHasPriority(property_id))
-      continue;
-
-    if (inherited_only && !current.IsInherited()) {
-      // If the property value is explicitly inherited, we need to apply further
-      // non-inherited properties as they might override the value inherited
-      // here. For this reason we don't allow declarations with explicitly
-      // inherited properties to be cached.
-      DCHECK(!current.Value().IsInheritedValue() ||
-             (!(apply_mask & kApplyMaskRegular) &&
-              (!(apply_mask & kApplyMaskVisited) ||
-               !current.Property().GetVisitedProperty())));
-      continue;
-    }
-
-    if (IsForcedColorsModeEnabled() &&
-        forced_colors == ForcedColorFilter::kEnabled &&
-        !current.Property().IsAffectedByForcedColors()) {
-      continue;
-    }
-
-    ApplyProperty<priority>(current, state, apply_mask);
-  }
-}
-
-template <CSSPropertyPriority priority,
-          StyleResolver::ShouldUpdateNeedsApplyPass shouldUpdateNeedsApplyPass>
-void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
-                                           const MatchedPropertiesRange& range,
-                                           bool is_important,
-                                           bool inherited_only,
-                                           NeedsApplyPass& needs_apply_pass,
-                                           ForcedColorFilter forced_colors) {
-  DCHECK(!RuntimeEnabledFeatures::CSSCascadeEnabled());
-
-  if (range.IsEmpty())
-    return;
-
-  if (!shouldUpdateNeedsApplyPass &&
-      !needs_apply_pass.Get(priority, is_important))
-    return;
-
-  for (const auto& matched_properties : range) {
-    static_assert(static_cast<int>(kApplyMaskRegular) ==
-                      static_cast<int>(CSSSelector::kMatchLink),
-                  "kApplyMaskRegular and kMatchLink must match");
-    static_assert(static_cast<int>(kApplyMaskVisited) ==
-                      static_cast<int>(CSSSelector::kMatchVisited),
-                  "kApplyMaskVisited and kMatchVisited must match");
-    const unsigned apply_mask = matched_properties.types_.link_match_type;
-    ApplyProperties<priority, shouldUpdateNeedsApplyPass>(
-        state, matched_properties.properties.Get(), is_important,
-        inherited_only, needs_apply_pass,
-        static_cast<ValidPropertyFilter>(
-            matched_properties.types_.valid_property_filter),
-        apply_mask, forced_colors);
-  }
-}
-
 void StyleResolver::InvalidateMatchedPropertiesCache() {
   matched_properties_cache_.Clear();
 }
@@ -1720,80 +1422,6 @@ void StyleResolver::SetResizedForViewportUnits() {
 
 void StyleResolver::ClearResizedForViewportUnits() {
   was_viewport_resized_ = false;
-}
-
-template <CSSPropertyPriority priority>
-void StyleResolver::ApplyForcedColors(StyleResolverState& state,
-                                      const MatchResult& match_result,
-                                      bool apply_inherited_only,
-                                      NeedsApplyPass& needs_apply_pass) {
-  if (!IsForcedColorsModeEnabled())
-    return;
-  if (state.Style()->ForcedColorAdjust() == EForcedColorAdjust::kNone)
-    return;
-
-  const CSSValue* unset = cssvalue::CSSUnsetValue::Create();
-  unsigned apply_mask = kApplyMaskRegular | kApplyMaskVisited;
-
-  // This simulates 'revert !important' in the user origin.
-  // https://drafts.csswg.org/css-color-adjust-1/#forced-colors-properties
-  if (priority == kHighPropertyPriority) {
-    ApplyProperty(GetCSSPropertyColor(), state, *unset, apply_mask);
-    ApplyUaForcedColors<priority>(state, match_result, apply_inherited_only,
-                                  needs_apply_pass);
-  } else {
-    DCHECK(priority == kLowPropertyPriority);
-    ApplyProperty(GetCSSPropertyBorderBottomColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyBorderLeftColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyBorderRightColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyBorderTopColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyBoxShadow(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyColumnRuleColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyFill(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyOutlineColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyStroke(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyTextDecorationColor(), state, *unset,
-                  apply_mask);
-    ApplyProperty(GetCSSPropertyTextShadow(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyWebkitTapHighlightColor(), state, *unset,
-                  apply_mask);
-    ApplyProperty(GetCSSPropertyWebkitTextEmphasisColor(), state, *unset,
-                  apply_mask);
-
-    // Background colors compute to the Canvas system color for all values
-    // except for the alpha channel.
-    RGBA32 prev_bg_color = state.Style()->BackgroundColor().GetColor().Rgb();
-    RGBA32 sys_bg_color =
-        LayoutTheme::GetTheme()
-            .SystemColor(CSSValueID::kCanvas, WebColorScheme::kLight)
-            .Rgb();
-    ApplyProperty(GetCSSPropertyBackgroundColor(), state,
-                  *cssvalue::CSSColorValue::Create(sys_bg_color), apply_mask);
-
-    ApplyUaForcedColors<priority>(state, match_result, apply_inherited_only,
-                                  needs_apply_pass);
-
-    RGBA32 current_bg_color = state.Style()->BackgroundColor().GetColor().Rgb();
-    RGBA32 bg_color =
-        MakeRGBA(RedChannel(current_bg_color), GreenChannel(current_bg_color),
-                 BlueChannel(current_bg_color), AlphaChannel(prev_bg_color));
-    ApplyProperty(GetCSSPropertyBackgroundColor(), state,
-                  *cssvalue::CSSColorValue::Create(bg_color), apply_mask);
-  }
-}
-
-template <CSSPropertyPriority priority>
-void StyleResolver::ApplyUaForcedColors(StyleResolverState& state,
-                                        const MatchResult& match_result,
-                                        bool apply_inherited_only,
-                                        NeedsApplyPass& needs_apply_pass) {
-  auto force_colors = ForcedColorFilter::kEnabled;
-  ApplyMatchedProperties<priority, kCheckNeedsApplyPass>(
-      state, match_result.UaRules(), false, apply_inherited_only,
-      needs_apply_pass, force_colors);
-  ApplyMatchedProperties<priority, kCheckNeedsApplyPass>(
-      state, match_result.UaRules(), true, apply_inherited_only,
-      needs_apply_pass, force_colors);
 }
 
 bool StyleResolver::CacheSuccess::EffectiveZoomChanged(
@@ -1897,45 +1525,6 @@ void StyleResolver::MaybeAddToMatchedPropertiesCache(
   }
 }
 
-void StyleResolver::ApplyCustomProperties(StyleResolverState& state,
-                                          const MatchResult& match_result,
-                                          const CacheSuccess& cache_success,
-                                          NeedsApplyPass& needs_apply_pass) {
-  DCHECK(!cache_success.IsFullCacheHit());
-  bool apply_inherited_only = cache_success.ShouldApplyInheritedOnly();
-
-  // TODO(leviw): We need the proper bit for tracking whether we need to do
-  // this work.
-  ApplyMatchedProperties<kResolveVariables, kUpdateNeedsApplyPass>(
-      state, match_result.UserRules(), false, apply_inherited_only,
-      needs_apply_pass);
-  ApplyMatchedProperties<kResolveVariables, kUpdateNeedsApplyPass>(
-      state, match_result.AuthorRules(), false, apply_inherited_only,
-      needs_apply_pass);
-  ApplyMatchedProperties<kResolveVariables, kCheckNeedsApplyPass>(
-      state, match_result.AuthorRules(), true, apply_inherited_only,
-      needs_apply_pass);
-  ApplyMatchedProperties<kResolveVariables, kCheckNeedsApplyPass>(
-      state, match_result.UserRules(), true, apply_inherited_only,
-      needs_apply_pass);
-}
-
-void StyleResolver::ApplyMatchedAnimationProperties(
-    StyleResolverState& state,
-    const MatchResult& match_result,
-    const CacheSuccess& cache_success,
-    NeedsApplyPass& needs_apply_pass) {
-  DCHECK(!cache_success.IsFullCacheHit());
-  bool apply_inherited_only = cache_success.ShouldApplyInheritedOnly();
-
-  ApplyMatchedProperties<kAnimationPropertyPriority, kUpdateNeedsApplyPass>(
-      state, match_result.AllRules(), false, apply_inherited_only,
-      needs_apply_pass);
-  ApplyMatchedProperties<kAnimationPropertyPriority, kCheckNeedsApplyPass>(
-      state, match_result.AllRules(), true, apply_inherited_only,
-      needs_apply_pass);
-}
-
 void StyleResolver::CalculateAnimationUpdate(StyleResolverState& state) {
   Element* animating_element = state.GetAnimatingElement();
 
@@ -1963,167 +1552,6 @@ void StyleResolver::CalculateAnimationUpdate(StyleResolverState& state) {
            .IsEmpty()) {
     state.SetIsAnimatingCustomProperties(true);
   }
-}
-
-void StyleResolver::ApplyMatchedHighPriorityProperties(
-    StyleResolverState& state,
-    const MatchResult& match_result,
-    const CacheSuccess& cache_success,
-    bool& apply_inherited_only,
-    NeedsApplyPass& needs_apply_pass) {
-  // Now we have all of the matched rules in the appropriate order. Walk the
-  // rules and apply high-priority properties first, i.e., those properties that
-  // other properties depend on.  The order is (1) high-priority not important,
-  // (2) high-priority important, (3) normal not important and (4) normal
-  // important.
-  ApplyMatchedProperties<kHighPropertyPriority, kCheckNeedsApplyPass>(
-      state, match_result.AllRules(), false, apply_inherited_only,
-      needs_apply_pass);
-  for (auto range : ImportantAuthorRanges(match_result)) {
-    ApplyMatchedProperties<kHighPropertyPriority, kCheckNeedsApplyPass>(
-        state, range, true, apply_inherited_only, needs_apply_pass);
-  }
-  for (auto range : ImportantUserRanges(match_result)) {
-    ApplyMatchedProperties<kHighPropertyPriority, kCheckNeedsApplyPass>(
-        state, range, true, apply_inherited_only, needs_apply_pass);
-  }
-  ApplyMatchedProperties<kHighPropertyPriority, kCheckNeedsApplyPass>(
-      state, match_result.UaRules(), true, apply_inherited_only,
-      needs_apply_pass);
-
-  if (IsForcedColorsModeEnabled() &&
-      state.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone) {
-    ApplyForcedColors<kHighPropertyPriority>(
-        state, match_result, apply_inherited_only, needs_apply_pass);
-  }
-
-  if (cache_success.cached_matched_properties &&
-      cache_success.cached_matched_properties->computed_style
-              ->EffectiveZoom() != state.Style()->EffectiveZoom()) {
-    state.GetFontBuilder().DidChangeEffectiveZoom();
-    apply_inherited_only = false;
-  }
-
-  ApplyCascadedColorValue(state);
-
-  // If our font got dirtied, go ahead and update it now.
-  UpdateFont(state);
-
-  // Many properties depend on the font. If it changes we just apply all
-  // properties.
-  if (cache_success.cached_matched_properties &&
-      cache_success.cached_matched_properties->computed_style
-              ->GetFontDescription() != state.Style()->GetFontDescription())
-    apply_inherited_only = false;
-}
-
-void StyleResolver::ApplyMatchedLowPriorityProperties(
-    StyleResolverState& state,
-    const MatchResult& match_result,
-    const CacheSuccess& cache_success,
-    bool& apply_inherited_only,
-    NeedsApplyPass& needs_apply_pass) {
-  // Now do the normal priority UA properties.
-  ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
-      state, match_result.UaRules(), false, apply_inherited_only,
-      needs_apply_pass);
-
-  // Cache the UA properties to pass them to LayoutTheme in
-  // StyleAdjuster::AdjustComputedStyle.
-  state.CacheUserAgentBorderAndBackground();
-
-  // Now do the author and user normal priority properties and all the
-  // !important properties.
-  ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
-      state, match_result.UserRules(), false, apply_inherited_only,
-      needs_apply_pass);
-  ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
-      state, match_result.AuthorRules(), false, apply_inherited_only,
-      needs_apply_pass);
-  for (auto range : ImportantAuthorRanges(match_result)) {
-    ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
-        state, range, true, apply_inherited_only, needs_apply_pass);
-  }
-  for (auto range : ImportantUserRanges(match_result)) {
-    ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
-        state, range, true, apply_inherited_only, needs_apply_pass);
-  }
-
-  if (state.Style()->HasAppearance() && !apply_inherited_only) {
-    // Check whether the final border and background differs from the cached UA
-    // ones.  When there is a partial match in the MatchedPropertiesCache, these
-    // flags will already be set correctly and the value stored in
-    // cacheUserAgentBorderAndBackground is incorrect, so doing this check again
-    // would give the wrong answer.
-    state.Style()->SetHasAuthorBackground(HasAuthorBackground(state));
-    state.Style()->SetHasAuthorBorder(HasAuthorBorder(state));
-  }
-
-  ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
-      state, match_result.UaRules(), true, apply_inherited_only,
-      needs_apply_pass);
-
-  if (IsForcedColorsModeEnabled() &&
-      state.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone) {
-    ApplyForcedColors<kLowPropertyPriority>(
-        state, match_result, apply_inherited_only, needs_apply_pass);
-  }
-
-  MaybeAddToMatchedPropertiesCache(state, cache_success, match_result);
-
-  DCHECK(!state.GetFontBuilder().FontDirty());
-}
-
-void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
-                                           const MatchResult& match_result) {
-  DCHECK(!RuntimeEnabledFeatures::CSSCascadeEnabled());
-
-  INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
-                                matched_property_apply, 1);
-
-  CacheSuccess cache_success = ApplyMatchedCache(state, match_result);
-  bool apply_inherited_only = cache_success.ShouldApplyInheritedOnly();
-  NeedsApplyPass needs_apply_pass;
-
-  if (!cache_success.IsFullCacheHit()) {
-    ApplyCustomProperties(state, match_result, cache_success, needs_apply_pass);
-    ApplyMatchedAnimationProperties(state, match_result, cache_success,
-                                    needs_apply_pass);
-    ApplyMatchedHighPriorityProperties(state, match_result, cache_success,
-                                       apply_inherited_only, needs_apply_pass);
-  }
-
-  if (HasAnimationsOrTransitions(state)) {
-    // Calculate pre-animated computed values for all registered properties.
-    // This is needed to calculate the animation update.
-    CSSVariableResolver(state).ComputeRegisteredVariables();
-
-    // Animation update calculation must happen after application of high
-    // priority properties, otherwise we can't resolve em' units, making it
-    // impossible to know if we should transition in some cases.
-    CalculateAnimationUpdate(state);
-
-    if (state.IsAnimatingCustomProperties()) {
-      cache_success.SetFailed();
-
-      CSSVariableAnimator(state).ApplyAll();
-
-      // Apply high priority properties again to re-resolve var() references
-      // to (now-)animated custom properties.
-      // TODO(andruud): Avoid this with https://crbug.com/947004
-      ApplyMatchedHighPriorityProperties(state, match_result, cache_success,
-                                         apply_inherited_only,
-                                         needs_apply_pass);
-    }
-  }
-
-  if (cache_success.IsFullCacheHit())
-    return;
-
-  CSSVariableResolver(state).ResolveVariableDefinitions();
-
-  ApplyMatchedLowPriorityProperties(state, match_result, cache_success,
-                                    apply_inherited_only, needs_apply_pass);
 }
 
 bool StyleResolver::CanReuseBaseComputedStyle(const StyleResolverState& state) {
@@ -2176,10 +1604,8 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForInterpolations(
   StyleResolverState state(GetDocument(), element);
   STACK_UNINITIALIZED StyleCascade cascade(state);
 
-  ApplyBaseComputedStyle(
-      &element, state,
-      RuntimeEnabledFeatures::CSSCascadeEnabled() ? &cascade : nullptr,
-      cascade.MutableMatchResult(), kMatchAllRules, true);
+  ApplyBaseComputedStyle(&element, state, &cascade,
+                         cascade.MutableMatchResult(), kMatchAllRules, true);
   ApplyInterpolations(state, cascade, interpolations);
 
   return state.TakeStyle();
@@ -2189,16 +1615,8 @@ void StyleResolver::ApplyInterpolations(
     StyleResolverState& state,
     StyleCascade& cascade,
     ActiveInterpolationsMap& interpolations) {
-  if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-    cascade.AddInterpolations(&interpolations, CascadeOrigin::kAnimation);
-    cascade.Apply();
-  } else {
-    ApplyAnimatedStandardProperties<kHighPropertyPriority>(state,
-                                                           interpolations);
-    UpdateFont(state);
-    ApplyAnimatedStandardProperties<kLowPropertyPriority>(state,
-                                                          interpolations);
-  }
+  cascade.AddInterpolations(&interpolations, CascadeOrigin::kAnimation);
+  cascade.Apply();
 }
 
 scoped_refptr<ComputedStyle>
@@ -2231,7 +1649,6 @@ StyleResolver::BeforeChangeStyleForTransitionUpdate(
 
 void StyleResolver::CascadeAndApplyMatchedProperties(StyleResolverState& state,
                                                      StyleCascade& cascade) {
-  DCHECK(RuntimeEnabledFeatures::CSSCascadeEnabled());
   const MatchResult& result = cascade.GetMatchResult();
 
   CacheSuccess cache_success = ApplyMatchedCache(state, result);
@@ -2357,68 +1774,6 @@ bool StyleResolver::IsForcedColorsModeEnabled(
     const StyleResolverState& state) const {
   return IsForcedColorsModeEnabled() &&
          state.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone;
-}
-
-void StyleResolver::ApplyCascadedColorValue(StyleResolverState& state) {
-  if (RuntimeEnabledFeatures::CSSCascadeEnabled())
-    return;
-
-  if (const CSSValue* color_value = state.GetCascadedColorValue()) {
-    state.SetCascadedColorValue(nullptr);
-    const auto* identifier_value = DynamicTo<CSSIdentifierValue>(color_value);
-    if (identifier_value) {
-      switch (identifier_value->GetValueID()) {
-        case CSSValueID::kCurrentcolor:
-          // As per the spec, 'color: currentColor' is treated as 'color:
-          // inherit'
-        case CSSValueID::kInherit:
-          state.Style()->SetColor(state.ParentStyle()->GetColor());
-          break;
-        case CSSValueID::kInitial:
-          state.Style()->SetColor(state.Style()->InitialColorForColorScheme());
-          break;
-        default:
-          identifier_value = nullptr;
-          break;
-      }
-    }
-    if (!identifier_value) {
-      state.Style()->SetColor(
-          StyleBuilderConverter::ConvertStyleColor(state, *color_value));
-    }
-  } else if (state.GetElement() == GetDocument().documentElement()) {
-    state.Style()->SetColor(state.Style()->InitialColorForColorScheme());
-  }
-
-  if (const CSSValue* visited_color_value =
-          state.GetCascadedVisitedColorValue()) {
-    state.SetCascadedVisitedColorValue(nullptr);
-    const auto* identifier_value =
-        DynamicTo<CSSIdentifierValue>(visited_color_value);
-    if (identifier_value) {
-      switch (identifier_value->GetValueID()) {
-        case CSSValueID::kCurrentcolor:
-          // As per the spec, 'color: currentColor' is treated as 'color:
-          // inherit'
-        case CSSValueID::kInherit:
-          state.Style()->SetInternalVisitedColor(
-              state.ParentStyle()->GetColor());
-          break;
-        case CSSValueID::kInitial:
-          state.Style()->SetInternalVisitedColor(
-              state.Style()->InitialColorForColorScheme());
-          break;
-        default:
-          identifier_value = nullptr;
-          break;
-      }
-    }
-    if (!identifier_value) {
-      state.Style()->SetInternalVisitedColor(
-          StyleBuilderConverter::ConvertStyleColor(state, *visited_color_value,
-                                                   true));
-    }
-  }
 }
 
 }  // namespace blink

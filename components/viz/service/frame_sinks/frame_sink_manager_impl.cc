@@ -626,4 +626,35 @@ void FrameSinkManagerImpl::UpdateDebugRendererSettings(
   debug_settings_ = debug_settings;
 }
 
+void FrameSinkManagerImpl::UpdateThrottlingRecursively(
+    const FrameSinkId& frame_sink_id,
+    base::TimeDelta interval) {
+  auto it = support_map_.find(frame_sink_id);
+  if (it != support_map_.end()) {
+    it->second->ThrottleBeginFrame(interval);
+  }
+  auto children = GetChildrenByParent(frame_sink_id);
+  for (auto& id : children)
+    UpdateThrottlingRecursively(id, interval);
+}
+
+void FrameSinkManagerImpl::StartThrottling(
+    const std::vector<FrameSinkId>& frame_sink_ids,
+    base::TimeDelta interval) {
+  DCHECK_GT(interval, base::TimeDelta());
+  if (frame_sinks_throttled)
+    EndThrottling();
+
+  frame_sinks_throttled = true;
+  for (auto& frame_sink_id : frame_sink_ids) {
+    UpdateThrottlingRecursively(frame_sink_id, interval);
+  }
+}
+
+void FrameSinkManagerImpl::EndThrottling() {
+  for (auto& support_map_item : support_map_) {
+    support_map_item.second->ThrottleBeginFrame(base::TimeDelta());
+  }
+  frame_sinks_throttled = false;
+}
 }  // namespace viz

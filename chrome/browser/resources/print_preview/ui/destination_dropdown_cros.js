@@ -51,6 +51,12 @@ Polymer({
     destinationIcon: String,
 
     isCurrentDestinationCrosLocal: Boolean,
+
+    /**
+     * Index of the highlighted item in the dropdown.
+     * @private
+     */
+    highlightedIndex_: Number,
   },
 
   listeners: {
@@ -90,12 +96,8 @@ Polymer({
       return;
     }
 
-    const selectedItem = this.getButtonListFromDropdown_().find(
+    this.highlightedIndex_ = this.getButtonListFromDropdown_().findIndex(
         item => item.value === this.value.key);
-    if (selectedItem) {
-      selectedItem.toggleAttribute('highlighted_', true);
-    }
-
     this.$$('iron-dropdown').open();
     this.opened_ = true;
   },
@@ -104,37 +106,24 @@ Polymer({
   closeDropdown_() {
     this.$$('iron-dropdown').close();
     this.opened_ = false;
-
-    const highlightedItem = this.findHighlightedItem_();
-    if (highlightedItem) {
-      highlightedItem.toggleAttribute('highlighted_', false);
-    }
+    this.highlightedIndex_ = -1;
   },
 
   /**
+   * Highlight the item the mouse is hovering over. If the user uses the
+   * keyboard, the highlight will shift. But once the user moves the mouse,
+   * the highlight should be updated based on the location of the mouse
+   * cursor.
    * @param {!Event} event
    * @private
    */
   onMouseMove_(event) {
-    const item = event.composedPath().find(
-        elm => elm.classList && elm.classList.contains('list-item'));
+    const item = /** @type {!Element} */ (event.composedPath().find(
+        elm => elm.classList && elm.classList.contains('list-item')));
     if (!item) {
       return;
     }
-
-    // Highlight the item the mouse is hovering over. If the user uses the
-    // keyboard, the highlight will shift. But once the user moves the mouse,
-    // the highlight should be updated based on the location of the mouse
-    // cursor.
-    const highlightedItem = this.findHighlightedItem_();
-    if (item === highlightedItem) {
-      return;
-    }
-
-    if (highlightedItem) {
-      highlightedItem.toggleAttribute('highlighted_', false);
-    }
-    item.toggleAttribute('highlighted_', true);
+    this.highlightedIndex_ = this.getButtonListFromDropdown_().indexOf(item);
   },
 
   /**
@@ -187,7 +176,8 @@ Polymer({
         break;
       case 'Enter': {
         if (dropdown.opened) {
-          this.dropdownValueSelected_(this.findHighlightedItem_());
+          this.dropdownValueSelected_(
+              this.getButtonListFromDropdown_()[this.highlightedIndex_]);
           break;
         }
         this.openDropdown_();
@@ -218,26 +208,23 @@ Polymer({
     // highlighted in the dropdown. If the dropdown is closed, use the arrow key
     // press to change the selected destination.
     if (dropdown.opened) {
-      const currentIndex =
-          items.findIndex(item => item.hasAttribute('highlighted_'));
-      const nextIndex =
-          this.getNextItemIndexInList_(eventCode, currentIndex, items.length);
+      const nextIndex = this.getNextItemIndexInList_(
+          eventCode, this.highlightedIndex_, items.length);
       if (nextIndex === -1) {
         return;
       }
-      items[currentIndex].toggleAttribute('highlighted_', false);
-      items[nextIndex].toggleAttribute('highlighted_', true);
-      items[nextIndex].focus();
-    } else {
-      const currentIndex =
-          items.findIndex(item => item.value === this.value.key);
-      const nextIndex =
-          this.getNextItemIndexInList_(eventCode, currentIndex, items.length);
-      if (nextIndex === -1) {
-        return;
-      }
-      this.fire('dropdown-value-selected', items[nextIndex]);
+      this.highlightedIndex_ = nextIndex;
+      items[this.highlightedIndex_].focus();
+      return;
     }
+
+    const currentIndex = items.findIndex(item => item.value === this.value.key);
+    const nextIndex =
+        this.getNextItemIndexInList_(eventCode, currentIndex, items.length);
+    if (nextIndex === -1) {
+      return;
+    }
+    this.fire('dropdown-value-selected', items[nextIndex]);
   },
 
   /**
@@ -263,17 +250,6 @@ Polymer({
       this.fire('dropdown-value-selected', dropdownItem);
     }
     this.$$('#destination-dropdown').focus();
-  },
-
-  /**
-   * Finds the currently highlighted dropdown item.
-   * @return {Element|undefined} Currently highlighted dropdown item, or
-   *   undefined if no item is highlighted.
-   * @private
-   */
-  findHighlightedItem_() {
-    const items = this.getButtonListFromDropdown_();
-    return items.find(item => item.hasAttribute('highlighted_'));
   },
 
   /**
@@ -311,5 +287,20 @@ Polymer({
   updateTabIndex_() {
     this.$$('#destination-dropdown')
         .setAttribute('tabindex', this.disabled ? '-1' : '0');
+  },
+
+  /**
+   * Determines if an item in the dropdown should be highlighted based on the
+   * current value of |highlightedIndex_|.
+   * @param {string} itemValue
+   * @return {string}
+   * @private
+   */
+  getHighlightedClass_(itemValue) {
+    const itemToHighlight =
+        this.getButtonListFromDropdown_()[this.highlightedIndex_];
+    return itemToHighlight && itemValue === itemToHighlight.value ?
+        'highlighted' :
+        '';
   },
 });

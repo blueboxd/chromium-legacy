@@ -72,7 +72,7 @@ public class SyncSettingsUtils {
      */
     @SyncError
     public static int getSyncError() {
-        if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
+        if (!AndroidSyncSettings.get().doesMasterSyncSettingAllowChromeSync()) {
             return SyncError.ANDROID_SYNC_DISABLED;
         }
 
@@ -159,7 +159,7 @@ public class SyncSettingsUtils {
         ProfileSyncService profileSyncService = ProfileSyncService.get();
         Resources res = context.getResources();
 
-        if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
+        if (!AndroidSyncSettings.get().doesMasterSyncSettingAllowChromeSync()) {
             return res.getString(R.string.sync_android_master_sync_disabled);
         }
 

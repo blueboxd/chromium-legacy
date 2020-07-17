@@ -1375,6 +1375,12 @@
                  file="chromeos/os_people_page/lock_state_behavior.html"
                  compress="false" type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_OS_SETTINGS_PEOPLE_PIN_AUTOSUBMIT_DIALOG_JS"
+                 file="chromeos/os_people_page/pin_autosubmit_dialog.js"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_PEOPLE_PIN_AUTOSUBMIT_DIALOG_HTML"
+                 file="chromeos/os_people_page/pin_autosubmit_dialog.html"
+                 compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_PEOPLE_SETUP_PIN_DIALOG_JS"
                  file="chromeos/os_people_page/setup_pin_dialog.js"
                  compress="false" type="chrome_html" />

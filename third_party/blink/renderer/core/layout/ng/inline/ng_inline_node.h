@@ -33,7 +33,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   LayoutBlockFlow* GetLayoutBlockFlow() const {
     return To<LayoutBlockFlow>(box_);
   }
-  NGLayoutInputNode NextSibling() { return nullptr; }
+  NGLayoutInputNode NextSibling() const { return nullptr; }
 
   // True in quirks mode or limited-quirks mode, which require line-height
   // quirks.

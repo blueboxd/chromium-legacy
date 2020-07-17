@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -336,7 +337,7 @@ double StringConstraintFitnessDistance(
 // |formats|. |facing_mode| is valid only in case of video device capture.
 MODULES_EXPORT MediaStreamSource::Capabilities
 ComputeCapabilitiesForVideoSource(
-    const blink::WebString& device_id,
+    const String& device_id,
     const media::VideoCaptureFormats& formats,
     media::VideoFacingMode facing_mode,
     bool is_device_capture,

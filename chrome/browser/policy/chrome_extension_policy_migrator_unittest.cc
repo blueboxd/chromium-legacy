@@ -51,7 +51,7 @@ void SetPolicy(PolicyMap* policy,
 class TestingPolicyMigrator : public ChromeExtensionPolicyMigrator {
  public:
   void Migrate(PolicyBundle* bundle) override {
-    using Migration = ExtensionPolicyMigrator::Migration;
+    using Migration = PolicyMigrator::Migration;
     const Migration migrations[] = {
         Migration(kOldPolicy1, kNewPolicy1),
         Migration(kOldPolicy2, kNewPolicy2),

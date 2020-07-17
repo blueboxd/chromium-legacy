@@ -80,11 +80,13 @@ class PackageNode extends GraphNode {
 
 /** A node representing a Java class. */
 class ClassNode extends GraphNode {
-  constructor(id, displayName, packageName) {
+  constructor(id, displayName, packageName, buildTargets) {
     super(id, displayName);
 
     /** @public {string} */
     this.packageName = packageName;
+    /** @public {!Array<string>} */
+    this.buildTargets = buildTargets;
   }
 }
 

@@ -344,7 +344,7 @@ BubbleDialogDelegate::CreateNonClientFrameView(Widget* widget) {
   if (CustomShadowsSupported() && GetParams().round_corners) {
     border->SetCornerRadius(
         base::FeatureList::IsEnabled(features::kEnableMDRoundedCornersOnDialogs)
-            ? provider->GetCornerRadiusMetric(views::EMPHASIS_HIGH)
+            ? provider->GetCornerRadiusMetric(views::EMPHASIS_MEDIUM)
             : 2);
   }
 

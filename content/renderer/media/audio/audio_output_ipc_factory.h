@@ -52,30 +52,32 @@ class CONTENT_EXPORT AudioOutputIPCFactory {
   // Enables |this| to create MojoAudioOutputIPCs for the specified frame.
   // Does nothing if not using mojo factories.
   void RegisterRemoteFactory(
-      int frame_id,
+      const base::UnguessableToken& frame_token,
       blink::BrowserInterfaceBrokerProxy* interface_broker);
 
   // Every call to the above method must be matched by a call to this one when
   // the frame is destroyed. Does nothing if not using mojo factories.
-  void MaybeDeregisterRemoteFactory(int frame_id);
+  void MaybeDeregisterRemoteFactory(const base::UnguessableToken& frame_token);
 
   // The returned object may only be used on |io_task_runner()|.
   std::unique_ptr<media::AudioOutputIPC> CreateAudioOutputIPC(
-      int frame_id) const;
+      const base::UnguessableToken& frame_token) const;
 
  private:
   using StreamFactoryMap =
-      base::flat_map<int,
+      base::flat_map<base::UnguessableToken,
                      mojo::Remote<mojom::RendererAudioOutputStreamFactory>>;
 
-  mojom::RendererAudioOutputStreamFactory* GetRemoteFactory(int frame_id) const;
+  mojom::RendererAudioOutputStreamFactory* GetRemoteFactory(
+      const base::UnguessableToken& frame_token) const;
 
   void RegisterRemoteFactoryOnIOThread(
-      int frame_id,
+      const base::UnguessableToken& frame_token,
       mojo::PendingRemote<mojom::RendererAudioOutputStreamFactory>
           factory_pending_remote);
 
-  void MaybeDeregisterRemoteFactoryOnIOThread(int frame_id);
+  void MaybeDeregisterRemoteFactoryOnIOThread(
+      const base::UnguessableToken& frame_token);
 
   // Indicates whether mojo factories are used.
   bool UsingMojoFactories() const;

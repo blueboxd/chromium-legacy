@@ -12,6 +12,10 @@
 #include "ui/gl/gl_features.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(USE_EGL)
+#include "ui/gl/gl_surface_egl.h"
+#endif  // defined(USE_EGL)
+
 #if defined(OS_ANDROID)
 #include "base/posix/eintr_wrapper.h"
 #include "third_party/libsync/src/include/sync/sync.h"
@@ -79,6 +83,21 @@ bool UsePassthroughCommandDecoder(const base::CommandLine* command_line) {
     return base::FeatureList::IsEnabled(
         features::kDefaultPassthroughCommandDecoder);
   }
+}
+
+bool PassthroughCommandDecoderSupported() {
+#if defined(USE_EGL)
+  // Using the passthrough command buffer requires that specific ANGLE
+  // extensions are exposed
+  return gl::GLSurfaceEGL::IsCreateContextBindGeneratesResourceSupported() &&
+         gl::GLSurfaceEGL::IsCreateContextWebGLCompatabilitySupported() &&
+         gl::GLSurfaceEGL::IsRobustResourceInitSupported() &&
+         gl::GLSurfaceEGL::IsDisplayTextureShareGroupSupported() &&
+         gl::GLSurfaceEGL::IsCreateContextClientArraysSupported();
+#else
+  // The passthrough command buffer is only supported on top of ANGLE/EGL
+  return false;
+#endif  // defined(USE_EGL)
 }
 
 #if defined(OS_WIN)

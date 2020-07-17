@@ -14,6 +14,7 @@
 <link rel="import" href="fingerprint_browser_proxy.html">
 <link rel="import" href="lock_state_behavior.html">
 <link rel="import" href="setup_pin_dialog.html">
+<link rel="import" href="pin_autosubmit_dialog.html">
 <link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="../../prefs/prefs_behavior.html">
 <link rel="import" href="../../prefs/prefs.html">
@@ -67,6 +68,11 @@
         opacity: var(--settings-disabled-opacity);
         pointer-events: none;
       }
+
+      #autosubmitToggle {
+        padding-inline-start: 16px;
+        width: 100%;
+      }
     </style>
 
     <div>
@@ -112,6 +118,17 @@
                       [[getSetupPinText_(hasPin)]]
                     </cr-button>
                   </div>
+                </div>
+              </template>
+              <template is="dom-if"
+                  if="[[quickUnlockPinAutosubmitFeatureEnabled_]]">
+                <div id="autosubmitToggle"
+                    hidden="[[!hasPin]]">
+                  <settings-toggle-button id="enablePinAutoSubmit"
+                      pref="{{prefs.pin_unlock_autosubmit_enabled}}" no-set-pref
+                      on-settings-boolean-control-change="onPinAutosubmitChange_"
+                      label="$i18n{lockScreenPinAutoSubmit}">
+                  </settings-toggle-button>
                 </div>
               </template>
             </cr-radio-group>
@@ -169,6 +186,13 @@
         <settings-setup-pin-dialog id="setupPin" set-modes="[[setModes]]"
             on-close="onSetupPinDialogClose_">
         </settings-setup-pin-dialog>
+      </template>
+
+      <template is="dom-if" if="[[showPinAutosubmitDialog_]]" restamp>
+        <settings-pin-autosubmit-dialog id="pinAutosubmitDialog"
+            auth-token="[[authToken]]"
+            on-close="onPinAutosubmitDialogClose_">
+        </settings-pin-autosubmit-dialog>
       </template>
     </div>
   </template>

@@ -10,11 +10,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /** Helper class for recording paint preview user actions. */
-public class PlayerUserActionRecorder {
+class PlayerUserActionRecorder {
     private static final String ACTION_FLING = "PaintPreview.Player.Flung";
     private static final String ACTION_SCROLL = "PaintPreview.Player.Scrolled";
     private static final String ACTION_ZOOM = "PaintPreview.Player.Zoomed";
     private static final String ACTION_LINK_CLICK = "PaintPreview.Player.LinkClicked";
+    private static final String ACTION_UNCONSUMED_TAP = "PaintPreview.Player.UnconsumedTap";
+    private static final String ACTION_LONG_PRESS = "PaintPreview.Player.LongPress";
 
     private static final long NO_RECORD_WINDOW_MS = (long) (.5 * 1000);
     private static Map<String, Long> sLastRecordMap = new HashMap<>();
@@ -49,5 +51,13 @@ public class PlayerUserActionRecorder {
 
     public static void recordLinkClick() {
         RecordUserAction.record(ACTION_LINK_CLICK);
+    }
+
+    public static void recordUnconsumedTap() {
+        RecordUserAction.record(ACTION_UNCONSUMED_TAP);
+    }
+
+    public static void recordLongPress() {
+        RecordUserAction.record(ACTION_LONG_PRESS);
     }
 }

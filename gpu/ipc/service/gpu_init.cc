@@ -374,11 +374,12 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;
 
   // Compute passthrough decoder status before ComputeGpuFeatureInfo below.
+  // Do this after GL is initialized so extensions can be queried.
   gpu_info_.passthrough_cmd_decoder =
       gles2::UsePassthroughCommandDecoder(command_line) &&
       gles2::PassthroughCommandDecoderSupported();
 
-  // We need to collect GL strings (VENDOR, RENDERER) for blocklisting purposes.
+  // We need to collect GL strings (VENDOR, RENDERER) for blacklisting purposes.
   if (!gl_disabled) {
     if (!gl_use_swiftshader_) {
       if (!CollectGraphicsInfo(&gpu_info_))
@@ -718,6 +719,8 @@ void GpuInit::AdjustInfoToSwiftShader() {
   gpu_feature_info_for_hardware_gpu_ = gpu_feature_info_;
   gpu_feature_info_ = ComputeGpuFeatureInfoForSwiftShader();
   CollectContextGraphicsInfo(&gpu_info_);
+
+  DCHECK_EQ(gpu_info_.passthrough_cmd_decoder, false);
 }
 
 scoped_refptr<gl::GLSurface> GpuInit::TakeDefaultOffscreenSurface() {

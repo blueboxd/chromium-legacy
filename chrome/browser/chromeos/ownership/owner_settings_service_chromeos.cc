@@ -661,6 +661,7 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
     //   kReportDeviceVpdInfo
     //   kReportDeviceUsers
     //   kReportDeviceAppInfo
+    //   kReportDeviceSystemInfo
     //   kServiceAccountIdentity
     //   kSystemTimezonePolicy
     //   kVariationsRestrictParameter

@@ -42,7 +42,6 @@ class PLATFORM_EXPORT RasterInvalidator {
                 scoped_refptr<const PaintArtifact>,
                 const gfx::Rect& layer_bounds,
                 const PropertyTreeState& layer_state,
-                const FloatSize& visual_rect_subpixel_offset = FloatSize(),
                 const DisplayItemClient* layer_client = nullptr);
 
   // Generate raster invalidations for a subset of the paint chunks in the
@@ -52,7 +51,6 @@ class PLATFORM_EXPORT RasterInvalidator {
                 const PaintChunkSubset&,
                 const gfx::Rect& layer_bounds,
                 const PropertyTreeState& layer_state,
-                const FloatSize& visual_rect_subpixel_offset = FloatSize(),
                 const DisplayItemClient* layer_client = nullptr);
 
   const gfx::Rect& LayerBounds() const { return layer_bounds_; }
@@ -99,7 +97,6 @@ class PLATFORM_EXPORT RasterInvalidator {
                                    const PaintArtifact&,
                                    const PaintChunkSubset&,
                                    const PropertyTreeState& layer_state,
-                                   const FloatSize& visual_rect_subpixel_offset,
                                    Vector<PaintChunkInfo>& new_chunks_info);
 
   ALWAYS_INLINE const PaintChunk& GetOldChunk(wtf_size_t index) const;

@@ -205,8 +205,8 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
         service_path,
         base::BindOnce(&NetworkConnectionHandlerImplTest::SuccessCallback,
                        base::Unretained(this)),
-        base::Bind(&NetworkConnectionHandlerImplTest::ErrorCallback,
-                   base::Unretained(this)),
+        base::BindOnce(&NetworkConnectionHandlerImplTest::ErrorCallback,
+                       base::Unretained(this)),
         true /* check_error_state */, ConnectCallbackMode::ON_COMPLETED);
     task_environment_.RunUntilIdle();
   }
@@ -216,8 +216,8 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
         service_path,
         base::BindOnce(&NetworkConnectionHandlerImplTest::SuccessCallback,
                        base::Unretained(this)),
-        base::Bind(&NetworkConnectionHandlerImplTest::ErrorCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&NetworkConnectionHandlerImplTest::ErrorCallback,
+                       base::Unretained(this)));
     task_environment_.RunUntilIdle();
   }
 

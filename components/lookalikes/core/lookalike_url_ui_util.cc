@@ -70,10 +70,12 @@ void PopulateLookalikeUrlBlockingPageStrings(
     // domain fails IDN spoof checks but isn't a lookalike of a known domain.
     // TODO: Change to actual strings.
     load_time_data->SetString(
-        "heading", l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_TITLE));
+        "heading",
+        l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_HEADING_NO_SUGGESTED_URL));
     load_time_data->SetString(
         "primaryParagraph",
-        l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH));
+        l10n_util::GetStringUTF16(
+            IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH_NO_SUGGESTED_URL));
     load_time_data->SetString(
         "proceedButtonText",
         l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_IGNORE));

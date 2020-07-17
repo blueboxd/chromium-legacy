@@ -2899,6 +2899,13 @@ RenderWidgetHostImpl::GetFrameWidgetInputHandler() {
   return frame_widget_input_handler_.get();
 }
 
+base::Optional<blink::VisualProperties>
+RenderWidgetHostImpl::GetLastVisualPropertiesSentToRendererForTesting() {
+  if (!old_visual_properties_)
+    return base::nullopt;
+  return *old_visual_properties_;
+}
+
 void RenderWidgetHostImpl::DispatchInputEventWithLatencyInfo(
     const blink::WebInputEvent& event,
     ui::LatencyInfo* latency) {

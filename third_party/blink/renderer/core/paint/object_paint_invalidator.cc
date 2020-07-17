@@ -207,6 +207,9 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
   if (object_.ShouldDoFullPaintInvalidation())
     return object_.FullPaintInvalidationReason();
 
+  if (context_.fragment_data->PaintOffset() != context_.old_paint_offset)
+    return PaintInvalidationReason::kGeometry;
+
   if (object_.GetDocument().InForcedColorsMode() && object_.IsLayoutBlockFlow())
     return PaintInvalidationReason::kBackplate;
 
@@ -215,16 +218,8 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
   if (object_.StyleRef().BackgroundClip() == EFillBox::kText)
     return PaintInvalidationReason::kBackground;
 
-  // Most paintings are pixel-snapped so subpixel change of paint offset doesn't
-  // directly cause full raster invalidation.
-  if (RoundedIntPoint(context_.fragment_data->PaintOffset()) !=
-      RoundedIntPoint(context_.old_paint_offset))
-    return PaintInvalidationReason::kGeometry;
-
   // Incremental invalidation is only applicable to LayoutBoxes. Return
-  // PaintInvalidationIncremental no matter if oldVisualRect and newVisualRect
-  // are equal because a LayoutBox may need paint invalidation if its border box
-  // changes. BoxPaintInvalidator may also override this reason with a full
+  // kIncremental. BoxPaintInvalidator may override this reason with a full
   // paint invalidation reason if needed.
   if (object_.IsBox())
     return PaintInvalidationReason::kIncremental;

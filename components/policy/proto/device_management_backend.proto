@@ -1077,9 +1077,32 @@ message BoardStatus {
   repeated ThermalInfo thermal_infos = 1;
 }
 
-// Status for various system-wide non-hardware elements.
+// Status about a system's various elements.
 message SystemStatus {
+  // The product SKU (stock keeping unit) number.
   optional string vpd_sku_number = 1;
+  // The date the device was first activated.
+  // Format: YYYY-WW.
+  optional string first_power_date = 2;
+  // The date the device was manufactured (finalized in factory).
+  // Format: YYYY-MM-DD.
+  optional string manufacture_date = 3;
+  // Contents of CrosConfig in /arc/build-properties/marketing-name. E.g. "HP
+  // Chromebook x360 14"
+  optional string marketing_name = 4;
+  // The BIOS version. E.g. "Google_Sarien.12200.58.0"
+  optional string bios_version = 5;
+  // The product name of the motherboard. E.g. "Sarien"
+  optional string board_name = 6;
+  // The version of the motherboard. E.g. "rev16"
+  optional string board_version = 7;
+  // The chassis type of the device. The values reported by chassis type are
+  // mapped in
+  // www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.0.0.pdf.
+  // E.g. "9"
+  optional uint64 chassis_type = 8;
+  // The product name (model) of the system. E.g. "Sarien"
+  optional string product_name = 9;
 }
 
 // Status of a single C-state. C-states are various modes the CPU can transition
@@ -1316,7 +1339,8 @@ message DeviceStatusReportRequest {
   // Status of various main board components.
   optional BoardStatus board_status = 27;
 
-  // Status for various system-wide non-hardware elements.
+  // Information about a system's various non-hardware elements. This includes
+  // information from cached VPD, CrosConfig, and DMI.
   optional SystemStatus system_status = 28;
 
   // Stateful Partition Information for user data.

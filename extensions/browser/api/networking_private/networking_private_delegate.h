@@ -26,13 +26,13 @@ class NetworkingPrivateDelegateObserver;
 class NetworkingPrivateDelegate : public KeyedService {
  public:
   using DictionaryCallback =
-      base::Callback<void(std::unique_ptr<base::DictionaryValue>)>;
-  using VoidCallback = base::Callback<void()>;
-  using BoolCallback = base::Callback<void(bool)>;
-  using StringCallback = base::Callback<void(const std::string&)>;
+      base::OnceCallback<void(std::unique_ptr<base::DictionaryValue>)>;
+  using VoidCallback = base::OnceCallback<void()>;
+  using BoolCallback = base::OnceCallback<void(bool)>;
+  using StringCallback = base::OnceCallback<void(const std::string&)>;
   using NetworkListCallback =
-      base::Callback<void(std::unique_ptr<base::ListValue>)>;
-  using FailureCallback = base::Callback<void(const std::string&)>;
+      base::OnceCallback<void(std::unique_ptr<base::ListValue>)>;
+  using FailureCallback = base::OnceCallback<void(const std::string&)>;
   using DeviceStateList = std::vector<
       std::unique_ptr<api::networking_private::DeviceStateProperties>>;
 
@@ -70,57 +70,56 @@ class NetworkingPrivateDelegate : public KeyedService {
   virtual void GetManagedProperties(const std::string& guid,
                                     PropertiesCallback callback) = 0;
   virtual void GetState(const std::string& guid,
-                        const DictionaryCallback& success_callback,
-                        const FailureCallback& failure_callback) = 0;
+                        DictionaryCallback success_callback,
+                        FailureCallback failure_callback) = 0;
   virtual void SetProperties(const std::string& guid,
                              std::unique_ptr<base::DictionaryValue> properties,
                              bool allow_set_shared_config,
-                             const VoidCallback& success_callback,
-                             const FailureCallback& failure_callback) = 0;
+                             VoidCallback success_callback,
+                             FailureCallback failure_callback) = 0;
   virtual void CreateNetwork(bool shared,
                              std::unique_ptr<base::DictionaryValue> properties,
-                             const StringCallback& success_callback,
-                             const FailureCallback& failure_callback) = 0;
+                             StringCallback success_callback,
+                             FailureCallback failure_callback) = 0;
   virtual void ForgetNetwork(const std::string& guid,
                              bool allow_forget_shared_config,
-                             const VoidCallback& success_callback,
-                             const FailureCallback& failure_callback) = 0;
+                             VoidCallback success_callback,
+                             FailureCallback failure_callback) = 0;
   virtual void GetNetworks(const std::string& network_type,
                            bool configured_only,
                            bool visible_only,
                            int limit,
-                           const NetworkListCallback& success_callback,
-                           const FailureCallback& failure_callback) = 0;
+                           NetworkListCallback success_callback,
+                           FailureCallback failure_callback) = 0;
   virtual void StartConnect(const std::string& guid,
-                            const VoidCallback& success_callback,
-                            const FailureCallback& failure_callback) = 0;
+                            VoidCallback success_callback,
+                            FailureCallback failure_callback) = 0;
   virtual void StartDisconnect(const std::string& guid,
-                               const VoidCallback& success_callback,
-                               const FailureCallback& failure_callback) = 0;
+                               VoidCallback success_callback,
+                               FailureCallback failure_callback) = 0;
   virtual void StartActivate(const std::string& guid,
                              const std::string& carrier,
-                             const VoidCallback& success_callback,
-                             const FailureCallback& failure_callback);
-  virtual void GetCaptivePortalStatus(
-      const std::string& guid,
-      const StringCallback& success_callback,
-      const FailureCallback& failure_callback) = 0;
+                             VoidCallback success_callback,
+                             FailureCallback failure_callback);
+  virtual void GetCaptivePortalStatus(const std::string& guid,
+                                      StringCallback success_callback,
+                                      FailureCallback failure_callback) = 0;
   virtual void UnlockCellularSim(const std::string& guid,
                                  const std::string& pin,
                                  const std::string& puk,
-                                 const VoidCallback& success_callback,
-                                 const FailureCallback& failure_callback) = 0;
+                                 VoidCallback success_callback,
+                                 FailureCallback failure_callback) = 0;
   virtual void SetCellularSimState(const std::string& guid,
                                    bool require_pin,
                                    const std::string& current_pin,
                                    const std::string& new_pin,
-                                   const VoidCallback& success_callback,
-                                   const FailureCallback& failure_callback) = 0;
+                                   VoidCallback success_callback,
+                                   FailureCallback failure_callback) = 0;
   virtual void SelectCellularMobileNetwork(
       const std::string& guid,
       const std::string& network_id,
-      const VoidCallback& success_callback,
-      const FailureCallback& failure_callback) = 0;
+      VoidCallback success_callback,
+      FailureCallback failure_callback) = 0;
 
   // Synchronous methods
 

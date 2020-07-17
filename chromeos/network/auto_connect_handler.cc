@@ -212,7 +212,7 @@ void AutoConnectHandler::ScanCompleted(const DeviceState* device) {
     if (connected_network && !connected_network->IsManagedByPolicy()) {
       network_connection_handler_->ConnectToNetwork(
           managed_network->path(), base::DoNothing(),
-          base::Bind(&ConnectToNetworkErrorCallback), false,
+          base::BindOnce(&ConnectToNetworkErrorCallback), false,
           ConnectCallbackMode::ON_COMPLETED);
       return;
     }
@@ -372,7 +372,7 @@ void AutoConnectHandler::DisconnectNetwork(const std::string& service_path) {
                  << NetworkPathId(service_path);
   network_connection_handler_->DisconnectNetwork(
       service_path, base::DoNothing(),
-      base::Bind(&DisconnectErrorCallback, service_path));
+      base::BindOnce(&DisconnectErrorCallback, service_path));
 }
 
 void AutoConnectHandler::RemoveNetworkConfigurationForNetwork(
@@ -381,7 +381,7 @@ void AutoConnectHandler::RemoveNetworkConfigurationForNetwork(
                  << NetworkPathId(service_path);
   managed_configuration_handler_->RemoveConfiguration(
       service_path, base::DoNothing(),
-      base::Bind(&RemoveNetworkConfigurationErrorCallback));
+      base::BindOnce(&RemoveNetworkConfigurationErrorCallback));
 }
 
 void AutoConnectHandler::DisableAutoconnectForWiFiNetwork(
@@ -393,7 +393,7 @@ void AutoConnectHandler::DisableAutoconnectForWiFiNetwork(
                      base::Value(false));
   managed_configuration_handler_->SetProperties(
       service_path, properties, base::DoNothing(),
-      base::Bind(&SetPropertiesErrorCallback));
+      base::BindOnce(&SetPropertiesErrorCallback));
 }
 
 void AutoConnectHandler::CallShillConnectToBestServices() {

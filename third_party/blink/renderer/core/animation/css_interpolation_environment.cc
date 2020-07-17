@@ -13,7 +13,6 @@ namespace blink {
 const CSSValue* CSSInterpolationEnvironment::Resolve(
     const PropertyHandle& property,
     const CSSValue* value) const {
-  DCHECK(RuntimeEnabledFeatures::CSSCascadeEnabled());
   DCHECK(cascade_);
   DCHECK(cascade_resolver_);
   if (!value)

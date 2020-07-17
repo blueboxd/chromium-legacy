@@ -576,7 +576,9 @@ void Combobox::PaintIconAndText(gfx::Canvas* canvas) {
     gfx::ImageSkia icon_skia =
         GetImageSkiaFromImageModel(&icon, GetNativeTheme());
     int icon_y = y + (contents_height - icon_skia.height()) / 2;
-    canvas->DrawImageInt(icon_skia, x, icon_y);
+    gfx::Rect icon_bounds(x, icon_y, icon_skia.width(), icon_skia.height());
+    AdjustBoundsForRTLUI(&icon_bounds);
+    canvas->DrawImageInt(icon_skia, icon_bounds.x(), icon_bounds.y());
     x += icon_skia.width() + LayoutProvider::Get()->GetDistanceMetric(
                                  DISTANCE_RELATED_LABEL_HORIZONTAL);
   }

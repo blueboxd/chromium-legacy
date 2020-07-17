@@ -3450,6 +3450,9 @@
   <message name="IDS_NETWORK_UI_NETWORK_HEALTH" desc="Label for network health snapshot. 'Network Health' is a condensend summary of all networking devices on the system and their active networks">
     Network Health Snapshot
   </message>
+  <message name="IDS_NETWORK_UI_NETWORK_DIAGNOSTICS" desc="Label for network diagnostics routines">
+    Network Diagnostic Routines
+  </message>
   <message name="IDS_NETWORK_UI_NETWORK_LISTS" desc="Label for network lists section">
     Network (Service) and Device properties
   </message>
@@ -3555,6 +3558,43 @@
   <message name="IDS_NETWORK_HEALTH_STATE_ONLINE" desc="Network State - Online. This state is when a network device is connected to a network and can access the internet.">
     Online
   </message>
+  <message name="IDS_NETWORK_DIAGNOSTICS_LAN_CONNECTIVITY" desc="Label for Network diagnostics `LAN connectivity` test. This test determines if the device is connected to a Local Area Network (LAN)">
+    Lan Connectivity
+  </message>
+  <message name="IDS_NETWORK_DIAGNOSTICS_SIGNAL_STRENGTH" desc="Label for Network diagnostics `signal strength` test. This test ensures that a WiFi signal is strong enough for a stable connection.">
+    Signal Strength
+  </message>
+  <message name="IDS_NETWORK_DIAGNOSTICS_GATEWAY_CAN_BE_PINGED" desc="Label for Network diagnostics `gateway can be pinged` test. This test ensures that there is a connection to the network gateway.">
+    Gateway can be Pinged
+  </message>
+  <message name="IDS_NETWORK_DIAGNOSTICS_HAS_SECURE_WIFI_CONNECTION" desc="Label for Network diagnostics `has secure WiFi connection` test. This test ensures that the WiFi connection is properly secure.">
+    Secure WiFi Connection
+  </message>
+  <message name="IDS_NETWORK_DIAGNOSTICS_DNS_RESOLVER_PRESENT" desc="Label for Network diagnostics `DNS resolver present` test. This test ensures that the Domain Name Service (DNS) exists.">
+    DNS Resolver Present
+  </message>
+  <message name="IDS_NETWORK_DIAGNOSTICS_DNS_LATENCY" desc="Label for Network diagnostics `DNS latency` test. This test makes sure the latency between the device and the Domain Name Server (DNS) is acceptable.">
+    DNS Latency
+  </message>
+  <message name="IDS_NETWORK_DIAGNOSTICS_DNS_RESOLUTION" desc="Label for Network diagnostics `DNS resolution` test. This test ensures that the Domain Name Server (DNS) can resolve network requests.">
+    DNS Resolution
+  </message>
+  <message name="IDS_NETWORK_DIAGNOSTICS_PASSED" desc="Label shown when a Network diagnostics routine passed">
+    Passed
+  </message>
+  <message name="IDS_NETWORK_DIAGNOSTICS_FAILED" desc="Label shown when a Network diagnostics routine failed">
+    Failed
+  </message>
+  <message name="IDS_NETWORK_DIAGNOSTICS_NOT_RUN" desc="Label shown when a Network diagnostics routine did not run">
+    Not Run
+  </message>
+  <message name="IDS_NETWORK_DIAGNOSTICS_RUN" desc="Label for Network diagnostics run routine button">
+    Run
+  </message>
+  <message name="IDS_NETWORK_DIAGNOSTICS_RUN_ALL" desc="Label for Network diagnostics run all routines button">
+    Run All Routines
+  </message>
+
 
   <!-- Set time/date UI display strings -->
   <message name="IDS_SET_TIME_TITLE" desc="Title of the set time/date UI.">
@@ -5449,6 +5489,9 @@ You can manage this account’s settings by installing the Family Link app on yo
   </message>
   <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_MISMATCHED" desc="Message shown below the title that tells the user they have entered two different PIN values.">
     PINs do not match
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_PIN_PROMPT_INVALID_PIN" desc="Text on a pin field that tells the user the PIN is incorrect.">
+    Invalid PIN
   </message>
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_ACCOUNT_REMOVED_MESSAGE" desc="Notification message after account removal.">
     <ph name="EMAIL">$1<ex>abcd@google.com</ex></ph> was removed from this device

@@ -79,8 +79,9 @@ class TestCertResolveObserver : public ClientCertResolver::Observer {
 class TestNetworkConnectionHandler : public NetworkConnectionHandler {
  public:
   TestNetworkConnectionHandler(
-      const base::Callback<void(const std::string&)>& disconnect_handler)
-      : NetworkConnectionHandler(), disconnect_handler_(disconnect_handler) {}
+      base::OnceCallback<void(const std::string&)> disconnect_handler)
+      : NetworkConnectionHandler(),
+        disconnect_handler_(std::move(disconnect_handler)) {}
   ~TestNetworkConnectionHandler() override = default;
 
   // NetworkConnectionHandler:
@@ -88,7 +89,7 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
       const std::string& service_path,
       base::OnceClosure success_callback,
       network_handler::ErrorCallback error_callback) override {
-    disconnect_handler_.Run(service_path);
+    std::move(disconnect_handler_).Run(service_path);
     std::move(success_callback).Run();
   }
 
@@ -104,7 +105,7 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
                 managed_network_configuration_handler) override {}
 
  private:
-  base::Callback<void(const std::string&)> disconnect_handler_;
+  base::OnceCallback<void(const std::string&)> disconnect_handler_;
 };
 
 }  // namespace
@@ -143,7 +144,7 @@ class AutoConnectHandlerTest : public testing::Test {
         nullptr /* prohibited_technologies_handler */);
 
     test_network_connection_handler_.reset(
-        new TestNetworkConnectionHandler(base::Bind(
+        new TestNetworkConnectionHandler(base::BindOnce(
             &AutoConnectHandlerTest::SetDisconnected, base::Unretained(this))));
 
     client_cert_resolver_.reset(new ClientCertResolver());

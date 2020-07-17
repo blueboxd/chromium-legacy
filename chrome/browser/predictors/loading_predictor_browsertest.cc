@@ -31,6 +31,9 @@
 #include "chrome/browser/predictors/preconnect_manager.h"
 #include "chrome/browser/predictors/predictors_enums.h"
 #include "chrome/browser/predictors/predictors_features.h"
+#include "chrome/browser/prerender/prerender_handle.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_switches.h"
@@ -705,6 +708,71 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   url::Origin origin = url::Origin::Create(url);
   net::NetworkIsolationKey network_isolation_key(origin, origin);
   // Ensure that no backgound task would make a host lookup or attempt to
+  // preconnect.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(preconnect_manager_observer()->HasHostBeenLookedUp(
+      url.host(), network_isolation_key));
+  EXPECT_FALSE(preconnect_manager_observer()->HasHostBeenLookedUp(
+      "", network_isolation_key));
+  EXPECT_FALSE(preconnect_manager_observer()->HasOriginAttemptedToPreconnect(
+      url.GetOrigin()));
+  EXPECT_FALSE(
+      preconnect_manager_observer()->HasOriginAttemptedToPreconnect(GURL()));
+}
+
+namespace {
+class TestPrerenderStopObserver : public prerender::PrerenderHandle::Observer {
+ public:
+  explicit TestPrerenderStopObserver(base::OnceClosure on_stop_closure)
+      : on_stop_closure_(std::move(on_stop_closure)) {}
+  ~TestPrerenderStopObserver() override = default;
+
+  void OnPrerenderStop(prerender::PrerenderHandle* contents) override {
+    if (on_stop_closure_) {
+      std::move(on_stop_closure_).Run();
+    }
+  }
+
+  void OnPrerenderStart(prerender::PrerenderHandle* handle) override {}
+  void OnPrerenderStopLoading(prerender::PrerenderHandle* handle) override {}
+  void OnPrerenderDomContentLoaded(
+      prerender::PrerenderHandle* handle) override {}
+  void OnPrerenderNetworkBytesChanged(
+      prerender::PrerenderHandle* handle) override {}
+
+ private:
+  base::OnceClosure on_stop_closure_;
+};
+}  // namespace
+
+// Tests that the LoadingPredictor doesn't preconnect during a prerender.
+IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
+                       PrepareForPageLoadDuringPrerender) {
+  GURL url("http://test.com");
+  base::RunLoop prerender_run_loop;
+  TestPrerenderStopObserver prerender_observer(
+      prerender_run_loop.QuitClosure());
+
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
+          browser()->profile());
+
+  std::unique_ptr<prerender::PrerenderHandle> handle =
+      prerender_manager->AddPrerenderFromNavigationPredictor(
+          url,
+          browser()
+              ->tab_strip_model()
+              ->GetActiveWebContents()
+              ->GetController()
+              .GetDefaultSessionStorageNamespace(),
+          gfx::Size(640, 480));
+  ASSERT_TRUE(handle);
+  handle->SetObserver(&prerender_observer);
+  prerender_run_loop.Run();
+
+  url::Origin origin = url::Origin::Create(url);
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
+  // Ensure that the prerender does not make a host lookup or attempt to
   // preconnect.
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(preconnect_manager_observer()->HasHostBeenLookedUp(

@@ -26,6 +26,14 @@ DOCLAVA_DIR = os.path.join(REPOSITORY_ROOT, 'buildtools', 'android', 'doclava')
 SDK_DIR = os.path.join(REPOSITORY_ROOT, 'third_party', 'android_sdk', 'public')
 JAVADOC_PATH = os.path.join(build_utils.JAVA_HOME, 'bin', 'javadoc')
 
+JAVADOC_WARNING = """\
+javadoc: warning - The old Doclet and Taglet APIs in the packages
+com.sun.javadoc, com.sun.tools.doclets and their implementations
+are planned to be removed in a future JDK release. These
+components have been superseded by the new APIs in jdk.javadoc.doclet.
+Users are strongly recommended to migrate to the new APIs.
+"""
+
 class CronetPostprocessor(Postprocessor):
   def run(self, text):
     return text.replace('@Override', '&commat;Override')
@@ -69,7 +77,11 @@ def GenerateJavadoc(options, src_dir, output_dir):
       if filename.endswith(".java"):
         javadoc_cmd += [os.path.join(subdir, filename)]
   try:
-    build_utils.CheckOutput(javadoc_cmd, cwd=working_dir)
+    def stderr_filter(stderr):
+      return stderr.replace(JAVADOC_WARNING, '')
+
+    build_utils.CheckOutput(javadoc_cmd, cwd=working_dir,
+                            stderr_filter=stderr_filter)
   except build_utils.CalledProcessError:
     build_utils.DeleteDirectory(output_dir)
     raise

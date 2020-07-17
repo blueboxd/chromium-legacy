@@ -100,22 +100,23 @@ std::string ConstructNetworkGuid(const dbus::ObjectPath& device_path,
 // to the failure callback.
 void ReportNotSupported(
     const std::string& method_name,
-    const NetworkingPrivateDelegate::FailureCallback& failure_callback) {
+    NetworkingPrivateDelegate::FailureCallback failure_callback) {
   LOG(WARNING) << method_name << " is not supported";
-  failure_callback.Run(extensions::networking_private::kErrorNotSupported);
+  std::move(failure_callback)
+      .Run(extensions::networking_private::kErrorNotSupported);
 }
 
 // Fires the appropriate callback when the network connect operation succeeds
 // or fails.
 void OnNetworkConnectOperationCompleted(
     std::unique_ptr<std::string> error,
-    const NetworkingPrivateDelegate::VoidCallback& success_callback,
-    const NetworkingPrivateDelegate::FailureCallback& failure_callback) {
+    NetworkingPrivateDelegate::VoidCallback success_callback,
+    NetworkingPrivateDelegate::FailureCallback failure_callback) {
   if (!error->empty()) {
-    failure_callback.Run(*error);
+    std::move(failure_callback).Run(*error);
     return;
   }
-  success_callback.Run();
+  std::move(success_callback).Run();
 }
 
 // Fires the appropriate callback when the network properties are returned
@@ -123,13 +124,13 @@ void OnNetworkConnectOperationCompleted(
 void GetCachedNetworkPropertiesCallback(
     std::unique_ptr<std::string> error,
     std::unique_ptr<base::DictionaryValue> properties,
-    const NetworkingPrivateDelegate::DictionaryCallback& success_callback,
-    const NetworkingPrivateDelegate::FailureCallback& failure_callback) {
+    NetworkingPrivateDelegate::DictionaryCallback success_callback,
+    NetworkingPrivateDelegate::FailureCallback failure_callback) {
   if (!error->empty()) {
-    failure_callback.Run(*error);
+    std::move(failure_callback).Run(*error);
     return;
   }
-  success_callback.Run(std::move(properties));
+  std::move(success_callback).Run(std::move(properties));
 }
 
 // Fires the appropriate callback when the network properties are returned
@@ -193,14 +194,8 @@ void NetworkingPrivateLinux::Initialize() {
   network_map_.reset(new NetworkMap());
 }
 
-bool NetworkingPrivateLinux::CheckNetworkManagerSupported(
-    const FailureCallback& failure_callback) {
-  if (!network_manager_proxy_) {
-    ReportNotSupported("NetworkManager over DBus", failure_callback);
-    return false;
-  }
-
-  return true;
+bool NetworkingPrivateLinux::CheckNetworkManagerSupported() {
+  return network_manager_proxy_ != nullptr;
 }
 
 void NetworkingPrivateLinux::GetProperties(const std::string& guid,
@@ -237,12 +232,13 @@ void NetworkingPrivateLinux::GetManagedProperties(const std::string& guid,
                           extensions::networking_private::kErrorNotSupported);
 }
 
-void NetworkingPrivateLinux::GetState(
-    const std::string& guid,
-    const DictionaryCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  if (!CheckNetworkManagerSupported(failure_callback))
+void NetworkingPrivateLinux::GetState(const std::string& guid,
+                                      DictionaryCallback success_callback,
+                                      FailureCallback failure_callback) {
+  if (!CheckNetworkManagerSupported()) {
+    ReportNotSupported("GetState", std::move(failure_callback));
     return;
+  }
 
   std::unique_ptr<std::string> error(new std::string);
   std::unique_ptr<base::DictionaryValue> network_properties(
@@ -258,8 +254,8 @@ void NetworkingPrivateLinux::GetState(
                      base::Unretained(network_prop_ptr),
                      base::Unretained(error_ptr)),
       base::BindOnce(&GetCachedNetworkPropertiesCallback, base::Passed(&error),
-                     base::Passed(&network_properties), success_callback,
-                     failure_callback));
+                     base::Passed(&network_properties),
+                     std::move(success_callback), std::move(failure_callback)));
 }
 
 void NetworkingPrivateLinux::GetCachedNetworkProperties(
@@ -293,36 +289,35 @@ void NetworkingPrivateLinux::SetProperties(
     const std::string& guid,
     std::unique_ptr<base::DictionaryValue> properties,
     bool allow_set_shared_config,
-    const VoidCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ReportNotSupported("SetProperties", failure_callback);
+    VoidCallback success_callback,
+    FailureCallback failure_callback) {
+  ReportNotSupported("SetProperties", std::move(failure_callback));
 }
 
 void NetworkingPrivateLinux::CreateNetwork(
     bool shared,
     std::unique_ptr<base::DictionaryValue> properties,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ReportNotSupported("CreateNetwork", failure_callback);
+    StringCallback success_callback,
+    FailureCallback failure_callback) {
+  ReportNotSupported("CreateNetwork", std::move(failure_callback));
 }
 
-void NetworkingPrivateLinux::ForgetNetwork(
-    const std::string& guid,
-    bool allow_forget_shared_config,
-    const VoidCallback& success_callback,
-    const FailureCallback& failure_callback) {
+void NetworkingPrivateLinux::ForgetNetwork(const std::string& guid,
+                                           bool allow_forget_shared_config,
+                                           VoidCallback success_callback,
+                                           FailureCallback failure_callback) {
   // TODO(zentaro): Implement for Linux.
-  ReportNotSupported("ForgetNetwork", failure_callback);
+  ReportNotSupported("ForgetNetwork", std::move(failure_callback));
 }
 
-void NetworkingPrivateLinux::GetNetworks(
-    const std::string& network_type,
-    bool configured_only,
-    bool visible_only,
-    int limit,
-    const NetworkListCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  if (!CheckNetworkManagerSupported(failure_callback)) {
+void NetworkingPrivateLinux::GetNetworks(const std::string& network_type,
+                                         bool configured_only,
+                                         bool visible_only,
+                                         int limit,
+                                         NetworkListCallback success_callback,
+                                         FailureCallback failure_callback) {
+  if (!CheckNetworkManagerSupported()) {
+    ReportNotSupported("GetNetworks", std::move(failure_callback));
     return;
   }
 
@@ -333,7 +328,7 @@ void NetworkingPrivateLinux::GetNetworks(
         network_type == ::onc::network_type::kAllTypes)) {
     // Only enumerating WiFi networks is supported on linux.
     ReportNotSupported("GetNetworks with network_type=" + network_type,
-                       failure_callback);
+                       std::move(failure_callback));
     return;
   }
 
@@ -347,7 +342,7 @@ void NetworkingPrivateLinux::GetNetworks(
                      limit, base::Unretained(network_map_ptr)),
       base::BindOnce(&NetworkingPrivateLinux::OnAccessPointsFound,
                      base::Unretained(this), base::Passed(&network_map),
-                     success_callback, failure_callback));
+                     std::move(success_callback), std::move(failure_callback)));
 }
 
 bool NetworkingPrivateLinux::GetNetworksForScanRequest() {
@@ -538,12 +533,13 @@ void NetworkingPrivateLinux::DisconnectFromNetwork(const std::string& guid,
   }
 }
 
-void NetworkingPrivateLinux::StartConnect(
-    const std::string& guid,
-    const VoidCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  if (!CheckNetworkManagerSupported(failure_callback))
+void NetworkingPrivateLinux::StartConnect(const std::string& guid,
+                                          VoidCallback success_callback,
+                                          FailureCallback failure_callback) {
+  if (!CheckNetworkManagerSupported()) {
+    ReportNotSupported("StartConnect", std::move(failure_callback));
     return;
+  }
 
   std::unique_ptr<std::string> error(new std::string);
 
@@ -554,15 +550,16 @@ void NetworkingPrivateLinux::StartConnect(
       base::BindOnce(&NetworkingPrivateLinux::ConnectToNetwork,
                      base::Unretained(this), guid, base::Unretained(error_ptr)),
       base::BindOnce(&OnNetworkConnectOperationCompleted, base::Passed(&error),
-                     success_callback, failure_callback));
+                     std::move(success_callback), std::move(failure_callback)));
 }
 
-void NetworkingPrivateLinux::StartDisconnect(
-    const std::string& guid,
-    const VoidCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  if (!CheckNetworkManagerSupported(failure_callback))
+void NetworkingPrivateLinux::StartDisconnect(const std::string& guid,
+                                             VoidCallback success_callback,
+                                             FailureCallback failure_callback) {
+  if (!CheckNetworkManagerSupported()) {
+    ReportNotSupported("StartDisconnect", std::move(failure_callback));
     return;
+  }
 
   std::unique_ptr<std::string> error(new std::string);
 
@@ -573,23 +570,23 @@ void NetworkingPrivateLinux::StartDisconnect(
       base::BindOnce(&NetworkingPrivateLinux::DisconnectFromNetwork,
                      base::Unretained(this), guid, base::Unretained(error_ptr)),
       base::BindOnce(&OnNetworkConnectOperationCompleted, base::Passed(&error),
-                     success_callback, failure_callback));
+                     std::move(success_callback), std::move(failure_callback)));
 }
 
 void NetworkingPrivateLinux::GetCaptivePortalStatus(
     const std::string& guid,
-    const StringCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ReportNotSupported("GetCaptivePortalStatus", failure_callback);
+    StringCallback success_callback,
+    FailureCallback failure_callback) {
+  ReportNotSupported("GetCaptivePortalStatus", std::move(failure_callback));
 }
 
 void NetworkingPrivateLinux::UnlockCellularSim(
     const std::string& guid,
     const std::string& pin,
     const std::string& puk,
-    const VoidCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ReportNotSupported("UnlockCellularSim", failure_callback);
+    VoidCallback success_callback,
+    FailureCallback failure_callback) {
+  ReportNotSupported("UnlockCellularSim", std::move(failure_callback));
 }
 
 void NetworkingPrivateLinux::SetCellularSimState(
@@ -597,17 +594,18 @@ void NetworkingPrivateLinux::SetCellularSimState(
     bool require_pin,
     const std::string& current_pin,
     const std::string& new_pin,
-    const VoidCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ReportNotSupported("SetCellularSimState", failure_callback);
+    VoidCallback success_callback,
+    FailureCallback failure_callback) {
+  ReportNotSupported("SetCellularSimState", std::move(failure_callback));
 }
 
 void NetworkingPrivateLinux::SelectCellularMobileNetwork(
     const std::string& guid,
     const std::string& network_id,
-    const VoidCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  ReportNotSupported("SelectCellularMobileNetwork", failure_callback);
+    VoidCallback success_callback,
+    FailureCallback failure_callback) {
+  ReportNotSupported("SelectCellularMobileNetwork",
+                     std::move(failure_callback));
 }
 
 std::unique_ptr<base::ListValue>
@@ -662,14 +660,14 @@ void NetworkingPrivateLinux::RemoveObserver(
 
 void NetworkingPrivateLinux::OnAccessPointsFound(
     std::unique_ptr<NetworkMap> network_map,
-    const NetworkListCallback& success_callback,
-    const FailureCallback& failure_callback) {
+    NetworkListCallback success_callback,
+    FailureCallback failure_callback) {
   std::unique_ptr<base::ListValue> network_list =
       CopyNetworkMapToList(*network_map);
   // Give ownership to the member variable.
   network_map_.swap(network_map);
   SendNetworkListChangedEvent(*network_list);
-  success_callback.Run(std::move(network_list));
+  std::move(success_callback).Run(std::move(network_list));
 }
 
 void NetworkingPrivateLinux::OnAccessPointsFoundViaScan(

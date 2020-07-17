@@ -185,11 +185,11 @@ template("trichrome_library_apk_tmpl") {
       proguard_configs = [
         "//base/android/proguard/chromium_apk.flags",
         "//base/android/proguard/chromium_code.flags",
-        "//chrome/android/java/trichrome.flags",
+        "//chrome/android/proguard/trichrome.flags",
       ]
       if (trichrome_synchronized_proguard) {
         proguard_configs += [
-          "//chrome/android/java/static_library_dex_reference_workarounds.flags",
+          "//chrome/android/proguard/static_library_dex_reference_workarounds.flags",
           "//base/android/proguard/enable_obfuscation.flags",
         ]
       } else {

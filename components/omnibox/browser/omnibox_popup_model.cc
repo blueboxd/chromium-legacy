@@ -178,9 +178,9 @@ void OmniboxPopupModel::SetSelection(Selection new_selection,
                                     base::string16(), keyword, is_keyword_hint,
                                     base::string16());
   } else if (old_selection.line != selection_.line ||
-             old_selection.state == FOCUSED_BUTTON_HEADER) {
+             old_selection.IsButtonFocused()) {
     // Otherwise, only update the edit model for line number changes, or
-    // when the old selection was a Header. Updating the edit model for every
+    // when the old selection was a button. Updating the edit model for every
     // state change breaks keyword mode.
     if (reset_to_default) {
       edit_model_->OnPopupDataChanged(

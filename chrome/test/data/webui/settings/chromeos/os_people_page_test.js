@@ -245,7 +245,12 @@ cr.define('settings_people_page', function() {
       const fingerprintTrigger =
           peoplePage.$$('#fingerprint-list').$$('#addFingerprint');
       fingerprintTrigger.click();
-      peoplePage.authToken_ = undefined;
+
+      // Invalidate the auth token by firing an event.
+      assertFalse(peoplePage.authToken_ === undefined);
+      const event = new CustomEvent('invalidate-auth-token-requested');
+      lockScreenPage.dispatchEvent(event);
+      assertTrue(peoplePage.authToken_ === undefined);
 
       assertEquals(
           settings.Router.getInstance().getCurrentRoute(),

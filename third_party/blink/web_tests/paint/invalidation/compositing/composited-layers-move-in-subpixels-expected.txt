@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV id='first'",
+      "name": "LayoutNGBlockFlow DIV id='first'",
       "bounds": [784, 52],
       "contentsOpaque": true,
       "backgroundColor": "#FFFF00",
@@ -16,16 +16,32 @@
     {
       "name": "LayoutNGBlockFlow DIV",
       "bounds": [784, 52],
-      "contentsOpaque": true,
-      "backgroundColor": "#D3D3D3",
       "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow DIV",
-      "bounds": [784, 52],
-      "contentsOpaque": true,
-      "backgroundColor": "#D3D3D3",
+      "bounds": [784, 53],
       "transform": 3
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV",
+      "bounds": [784, 52],
+      "transform": 4
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV",
+      "bounds": [784, 52],
+      "transform": 5
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV",
+      "bounds": [784, 52],
+      "transform": 6
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV",
+      "bounds": [784, 52],
+      "transform": 7
     }
   ],
   "transforms": [
@@ -44,7 +60,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [8, 162, 0, 1]
+        [8, 164, 0, 1]
       ]
     },
     {
@@ -53,7 +69,43 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [8, 214, 0, 1]
+        [8, 218, 0, 1]
+      ]
+    },
+    {
+      "id": 4,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 273, 0, 1]
+      ]
+    },
+    {
+      "id": 5,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 327, 0, 1]
+      ]
+    },
+    {
+      "id": 6,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 381, 0, 1]
+      ]
+    },
+    {
+      "id": 7,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 435, 0, 1]
       ]
     }
   ]

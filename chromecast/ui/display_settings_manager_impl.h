@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "chromecast/ui/display_settings_manager.h"
 #include "chromecast/ui/mojom/display_settings.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -61,7 +62,7 @@ class DisplaySettingsManagerImpl : public DisplaySettingsManager,
   void SetBrightness(float brightness) override;
   void SetBrightnessSmooth(float brightness, base::TimeDelta duration) override;
   void ResetBrightness() override;
-  void SetScreenOn(bool screen_on) override;
+  void SetScreenOn(bool screen_on, bool display_power) override;
 
  private:
   // mojom::DisplaySettingsObserver implementation
@@ -69,6 +70,11 @@ class DisplaySettingsManagerImpl : public DisplaySettingsManager,
       mojo::PendingRemote<mojom::DisplaySettingsObserver> observer) override;
 
   void UpdateBrightness(base::TimeDelta duration);
+#if defined(USE_AURA)
+  void OnDisplayOn(bool status);
+  void OnDisplayOnTimeoutCompleted();
+  void OnDisplayOffTimeoutCompleted();
+#endif  // defined(USE_AURA)
 
   CastWindowManager* const window_manager_;
   shell::CastDisplayConfigurator* const display_configurator_;
@@ -79,12 +85,17 @@ class DisplaySettingsManagerImpl : public DisplaySettingsManager,
 
   float brightness_;
   bool screen_on_;
+#if defined(USE_AURA)
+  bool screen_power_on_;
+#endif  // defined(USE_AURA)
 
   std::unique_ptr<ColorTemperatureAnimation> color_temperature_animation_;
   std::unique_ptr<BrightnessAnimation> brightness_animation_;
 
   mojo::ReceiverSet<mojom::DisplaySettings> receivers_;
   mojo::RemoteSet<mojom::DisplaySettingsObserver> observers_;
+
+  base::WeakPtrFactory<DisplaySettingsManagerImpl> weak_factory_;
 };
 
 }  // namespace chromecast

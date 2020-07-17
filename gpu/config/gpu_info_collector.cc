@@ -30,6 +30,7 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/create_gr_gl_interface.h"
 #include "ui/gl/init/gl_factory.h"
@@ -213,6 +214,9 @@ bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
   std::string use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
   std::string use_angle =
       command_line->GetSwitchValueASCII(switches::kUseANGLE);
+  gpu_info->passthrough_cmd_decoder =
+      gl::UsePassthroughCommandDecoder(command_line) &&
+      gl::PassthroughCommandDecoderSupported();
 
   // If GL is disabled then we don't need GPUInfo.
   if (use_gl == gl::kGLImplementationDisabledName) {

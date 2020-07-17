@@ -14,6 +14,7 @@ namespace network_health {
 namespace {
 
 constexpr webui::LocalizedString kLocalizedStrings[] = {
+    // Network Health Summary Strings
     {"NetworkHealthState", IDS_NETWORK_HEALTH_STATE},
     {"NetworkHealthStateUninitialized", IDS_NETWORK_HEALTH_STATE_UNINITIALIZED},
     {"NetworkHealthStateDisabled", IDS_NETWORK_HEALTH_STATE_DISABLED},
@@ -23,6 +24,25 @@ constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"NetworkHealthStatePortal", IDS_NETWORK_HEALTH_STATE_PORTAL},
     {"NetworkHealthStateConnected", IDS_NETWORK_HEALTH_STATE_CONNECTED},
     {"NetworkHealthStateOnline", IDS_NETWORK_HEALTH_STATE_ONLINE},
+
+    // Network Diagnostics Strings
+    {"NetworkDiagnosticsLanConnectivity",
+     IDS_NETWORK_DIAGNOSTICS_LAN_CONNECTIVITY},
+    {"NetworkDiagnosticsSignalStrength",
+     IDS_NETWORK_DIAGNOSTICS_SIGNAL_STRENGTH},
+    {"NetworkDiagnosticsGatewayCanBePinged",
+     IDS_NETWORK_DIAGNOSTICS_GATEWAY_CAN_BE_PINGED},
+    {"NetworkDiagnosticsHasSecureWiFiConnection",
+     IDS_NETWORK_DIAGNOSTICS_HAS_SECURE_WIFI_CONNECTION},
+    {"NetworkDiagnosticsDnsResolverPresent",
+     IDS_NETWORK_DIAGNOSTICS_DNS_RESOLVER_PRESENT},
+    {"NetworkDiagnosticsDnsLatency", IDS_NETWORK_DIAGNOSTICS_DNS_LATENCY},
+    {"NetworkDiagnosticsDnsResolution", IDS_NETWORK_DIAGNOSTICS_DNS_RESOLUTION},
+    {"NetworkDiagnosticsPassed", IDS_NETWORK_DIAGNOSTICS_PASSED},
+    {"NetworkDiagnosticsFailed", IDS_NETWORK_DIAGNOSTICS_FAILED},
+    {"NetworkDiagnosticsNotRun", IDS_NETWORK_DIAGNOSTICS_NOT_RUN},
+    {"NetworkDiagnosticsRun", IDS_NETWORK_DIAGNOSTICS_RUN},
+    {"NetworkDiagnosticsRunAll", IDS_NETWORK_DIAGNOSTICS_RUN_ALL},
 };
 
 }  // namespace

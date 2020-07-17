@@ -44,10 +44,10 @@ NetworkingCastPrivateVerifyDestinationFunction::Run() {
       ExtensionsAPIClient::Get()->GetNetworkingCastPrivateDelegate();
   delegate->VerifyDestination(
       AsCastCredentials(params->properties),
-      base::Bind(&NetworkingCastPrivateVerifyDestinationFunction::Success,
-                 this),
-      base::Bind(&NetworkingCastPrivateVerifyDestinationFunction::Failure,
-                 this));
+      base::BindOnce(&NetworkingCastPrivateVerifyDestinationFunction::Success,
+                     this),
+      base::BindOnce(&NetworkingCastPrivateVerifyDestinationFunction::Failure,
+                     this));
 
   // VerifyDestination might respond synchronously, e.g. in tests.
   return did_respond() ? AlreadyResponded() : RespondLater();
@@ -75,10 +75,10 @@ NetworkingCastPrivateVerifyAndEncryptDataFunction::Run() {
       ExtensionsAPIClient::Get()->GetNetworkingCastPrivateDelegate();
   delegate->VerifyAndEncryptData(
       params->data, AsCastCredentials(params->properties),
-      base::Bind(&NetworkingCastPrivateVerifyAndEncryptDataFunction::Success,
-                 this),
-      base::Bind(&NetworkingCastPrivateVerifyAndEncryptDataFunction::Failure,
-                 this));
+      base::BindOnce(
+          &NetworkingCastPrivateVerifyAndEncryptDataFunction::Success, this),
+      base::BindOnce(
+          &NetworkingCastPrivateVerifyAndEncryptDataFunction::Failure, this));
 
   // VerifyAndEncryptData might respond synchronously, e.g. in tests.
   return did_respond() ? AlreadyResponded() : RespondLater();

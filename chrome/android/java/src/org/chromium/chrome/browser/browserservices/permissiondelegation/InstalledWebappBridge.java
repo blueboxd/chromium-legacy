@@ -22,7 +22,6 @@ import org.chromium.components.embedder_support.util.Origin;
  */
 public class InstalledWebappBridge {
     private static long sNativeInstalledWebappProvider;
-    private static long sNativePermissionResultCallback;
 
     /**
      * A POD class to store the combination of a permission setting and the origin the permission is

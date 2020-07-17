@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/chrome_extension_browser_constants.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
@@ -652,6 +653,13 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextUninstall) {
 }
 
 TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
+  base::UserActionTester user_action_tester;
+  constexpr char kOnClickAction[] =
+      "Extensions.ContextMenu.Hosts.OnClickClicked";
+  constexpr char kOnSiteAction[] = "Extensions.ContextMenu.Hosts.OnSiteClicked";
+  constexpr char kOnAllSitesAction[] =
+      "Extensions.ContextMenu.Hosts.OnAllSitesClicked";
+
   InitializeEmptyExtensionService();
 
   // Add an extension with all urls, and withhold permission.
@@ -707,11 +715,18 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   const PermissionsData* permissions = extension->permissions_data();
   EXPECT_FALSE(permissions->withheld_permissions().IsEmpty());
 
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kOnClickAction));
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kOnSiteAction));
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kOnAllSitesAction));
+
   // Change the mode to be "Run on site".
   menu.ExecuteCommand(kRunOnSite, 0);
   EXPECT_FALSE(menu.IsCommandIdChecked(kRunOnClick));
   EXPECT_TRUE(menu.IsCommandIdChecked(kRunOnSite));
   EXPECT_FALSE(menu.IsCommandIdChecked(kRunOnAllSites));
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kOnClickAction));
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kOnSiteAction));
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kOnAllSitesAction));
 
   // The extension should have access to the active url, but not to another
   // arbitrary url, and the extension should still have withheld permissions.
@@ -746,6 +761,9 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   EXPECT_FALSE(menu.IsCommandIdChecked(kRunOnClick));
   EXPECT_FALSE(menu.IsCommandIdChecked(kRunOnSite));
   EXPECT_TRUE(menu.IsCommandIdChecked(kRunOnAllSites));
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kOnClickAction));
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kOnSiteAction));
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kOnAllSitesAction));
 
   // The extension should be able to run on any url, and shouldn't have any
   // withheld permissions.
@@ -776,6 +794,9 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   EXPECT_TRUE(menu.IsCommandIdChecked(kRunOnClick));
   EXPECT_FALSE(menu.IsCommandIdChecked(kRunOnSite));
   EXPECT_FALSE(menu.IsCommandIdChecked(kRunOnAllSites));
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kOnClickAction));
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kOnSiteAction));
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kOnAllSitesAction));
 
   // We should return to the initial state - no access.
   EXPECT_FALSE(permissions_modifier.HasGrantedHostPermission(kActiveUrl));
@@ -1412,6 +1433,9 @@ TEST_F(ExtensionContextMenuModelTest,
 }
 
 TEST_F(ExtensionContextMenuModelTest, TestClickingPageAccessLearnMore) {
+  base::UserActionTester user_action_tester;
+  constexpr char kLearnMoreAction[] =
+      "Extensions.ContextMenu.Hosts.LearnMoreClicked";
   InitializeEmptyExtensionService();
 
   // Add an extension that wants access to a.com.
@@ -1429,6 +1453,7 @@ TEST_F(ExtensionContextMenuModelTest, TestClickingPageAccessLearnMore) {
   ExtensionContextMenuModel menu(extension.get(), browser,
                                  ExtensionContextMenuModel::VISIBLE, nullptr,
                                  true);
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kLearnMoreAction));
 
   const ExtensionContextMenuModel::MenuEntries kLearnMore =
       ExtensionContextMenuModel::PAGE_ACCESS_LEARN_MORE;
@@ -1439,6 +1464,7 @@ TEST_F(ExtensionContextMenuModelTest, TestClickingPageAccessLearnMore) {
   EXPECT_EQ(2, browser->tab_strip_model()->count());
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kLearnMoreAction));
 
   // Test web contents need a poke to commit.
   content::NavigationController& controller = web_contents->GetController();

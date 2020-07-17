@@ -85,12 +85,12 @@ ci.builder(
                 'cipd_yaml': 'third_party/android_sdk/cipd/build-tools/25.0.2.yaml'
             },
             {
-                'sdk_package_name': 'build-tools;27.0.3',
-                'cipd_yaml': 'third_party/android_sdk/cipd/build-tools/27.0.3.yaml'
-            },
-            {
                 'sdk_package_name': 'build-tools;29.0.2',
                 'cipd_yaml': 'third_party/android_sdk/cipd/build-tools/29.0.2.yaml'
+            },
+            {
+                'sdk_package_name': 'build-tools;30.0.1',
+                'cipd_yaml': 'third_party/android_sdk/cipd/build-tools/30.0.1.yaml'
             },
             {
                 'sdk_package_name': 'cmdline-tools;latest',
@@ -109,14 +109,6 @@ ci.builder(
                 'cipd_yaml': 'third_party/android_sdk/cipd/patcher/v4.yaml'
             },
             {
-                'sdk_package_name': 'platforms;android-23',
-                'cipd_yaml': 'third_party/android_sdk/cipd/platforms/android-23.yaml'
-            },
-            {
-                'sdk_package_name': 'platforms;android-28',
-                'cipd_yaml': 'third_party/android_sdk/cipd/platforms/android-28.yaml'
-            },
-            {
                 'sdk_package_name': 'platforms;android-29',
                 'cipd_yaml': 'third_party/android_sdk/cipd/platforms/android-29.yaml'
             },
@@ -129,30 +121,14 @@ ci.builder(
                 'cipd_yaml': 'third_party/android_sdk/cipd/platform-tools.yaml'
             },
             {
-                'sdk_package_name': 'sources;android-28',
-                'cipd_yaml': 'third_party/android_sdk/cipd/sources/android-28.yaml'
-            },
-            {
                 'sdk_package_name': 'sources;android-29',
                 'cipd_yaml': 'third_party/android_sdk/cipd/sources/android-29.yaml'
             },
-            {
-                'sdk_package_name': 'sources;android-30',
-                'cipd_yaml': 'third_party/android_sdk/cipd/sources/android-30.yaml'
-            },
-            {
-                'sdk_package_name': 'system-images;android-23;google_apis;x86',
-                'cipd_yaml': 'third_party/android_sdk/cipd/system_images/android-23/google_apis/x86.yaml'
-            },
-            # Missing due to http://b/155847875.
+            # Not yet available as R is not released to AOSP.
             #{
-            #    'sdk_package_name': 'system-images;android-28;google_apis;x86',
-            #    'cipd_yaml': 'third_party/android_sdk/cipd/system_images/android-28/google_apis/x86.yaml'
+            #    'sdk_package_name': 'sources;android-30',
+            #    'cipd_yaml': 'third_party/android_sdk/cipd/sources/android-30.yaml'
             #},
-            {
-                'sdk_package_name': 'system-images;android-28;google_apis_playstore;x86',
-                'cipd_yaml': 'third_party/android_sdk/cipd/system_images/android-28/google_apis_playstore/x86.yaml'
-            },
             {
                 'sdk_package_name': 'system-images;android-29;google_apis;x86',
                 'cipd_yaml': 'third_party/android_sdk/cipd/system_images/android-29/google_apis/x86.yaml'

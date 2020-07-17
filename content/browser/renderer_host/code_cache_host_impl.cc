@@ -67,13 +67,11 @@ base::Optional<GURL> GetSecondaryKeyForCodeCache(const GURL& resource_url,
   if (process_lock.is_empty())
     return GURL::EmptyGURL();
 
-  // Case 2: Don't use invalid lock_url as a key.
-  if (!process_lock.lock_url().is_valid())
-    return base::nullopt;
-
   // Case 2: Don't cache the code corresponding to opaque origins. The same
   // origin checks should always fail for opaque origins but the serialized
   // value of opaque origins does not ensure this.
+  // NOTE: HasOpaqueOrigin() will return true if the ProcessLock lock url is
+  // invalid, leading to a return value of base::nullopt.
   if (process_lock.HasOpaqueOrigin())
     return base::nullopt;
 

@@ -162,50 +162,6 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest, Screen) {
       base::BindLambdaForTesting(check_screen_width));
 }
 
-class OutgoingVisualPropertiesIPCWatcher {
- public:
-  OutgoingVisualPropertiesIPCWatcher(
-      RenderProcessHostImpl* rph,
-      FrameTreeNode* root,
-      base::RepeatingCallback<void(const blink::VisualProperties&)> callback)
-      : rph_(rph), root_(root), callback_(std::move(callback)) {
-    rph_->SetIpcSendWatcherForTesting(
-        base::BindRepeating(&OutgoingVisualPropertiesIPCWatcher::OnMessage,
-                            base::Unretained(this)));
-  }
-  ~OutgoingVisualPropertiesIPCWatcher() {
-    rph_->SetIpcSendWatcherForTesting(base::NullCallback());
-  }
-
- private:
-  bool IsMessageForFrameTreeWidget(int routing_id, FrameTreeNode* node) {
-    auto* render_widget_host =
-        node->current_frame_host()->GetRenderWidgetHost();
-    if (routing_id == render_widget_host->GetRoutingID())
-      return true;
-    for (size_t i = 0; i < node->child_count(); ++i) {
-      if (IsMessageForFrameTreeWidget(routing_id, node->child_at(i)))
-        return true;
-    }
-    return false;
-  }
-  void OnMessage(const IPC::Message& message) {
-    if (!IsMessageForFrameTreeWidget(message.routing_id(), root_))
-      return;
-    IPC_BEGIN_MESSAGE_MAP(OutgoingVisualPropertiesIPCWatcher, message)
-      IPC_MESSAGE_HANDLER(WidgetMsg_UpdateVisualProperties, ProcessMessage)
-    IPC_END_MESSAGE_MAP()
-  }
-
-  void ProcessMessage(const blink::VisualProperties& props) {
-    callback_.Run(props);
-  }
-
-  RenderProcessHostImpl* const rph_;
-  FrameTreeNode* const root_;
-  base::RepeatingCallback<void(const blink::VisualProperties&)> callback_;
-};
-
 // Auto-resize is only implemented for Ash and GuestViews. So we need to inject
 // an implementation that actually resizes the top level widget.
 class AutoResizeWebContentsDelegate : public WebContentsDelegate {
@@ -247,17 +203,16 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
 
   // Watch processes for a.com and c.com, as we will throw away b.com when we
   // navigate it below.
-  auto* root_rph = static_cast<RenderProcessHostImpl*>(
-      root->current_frame_host()->GetProcess());
-  auto* child_rph = static_cast<RenderProcessHostImpl*>(
-      root->child_at(1)->current_frame_host()->GetProcess());
-  ASSERT_NE(root_rph, child_rph);
+  auto* root_rwh = root->current_frame_host()->GetRenderWidgetHost();
+  auto* child_rwh =
+      root->child_at(1)->current_frame_host()->GetRenderWidgetHost();
+  ASSERT_NE(root_rwh->GetProcess(), child_rwh->GetProcess());
 
-  auto* nested_root_rph = static_cast<RenderProcessHostImpl*>(
-      nested_root->current_frame_host()->GetProcess());
-  auto* nested_child_rph = static_cast<RenderProcessHostImpl*>(
-      nested_root->child_at(1)->current_frame_host()->GetProcess());
-  ASSERT_NE(nested_root_rph, nested_child_rph);
+  auto* nested_root_rwh =
+      nested_root->current_frame_host()->GetRenderWidgetHost();
+  auto* nested_child_rwh =
+      nested_root->child_at(1)->current_frame_host()->GetRenderWidgetHost();
+  ASSERT_NE(nested_root_rwh->GetProcess(), nested_child_rwh->GetProcess());
 
   const gfx::Size initial_size = root_view->GetVisibleViewportSize();
   const gfx::Size nested_initial_size =
@@ -272,52 +227,35 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
   // This property is not directly visible in the renderer, so we can only
   // check that the value is sent to the appropriate RenderWidget.
   {
-    base::RunLoop loop;
-
-    gfx::Size child_visible_viewport_size;
-    OutgoingVisualPropertiesIPCWatcher child_watcher(
-        child_rph, root,
-        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
-          child_visible_viewport_size = props.visible_viewport_size;
-
-          if (child_visible_viewport_size == initial_size)
-            loop.Quit();
-        }));
-
     GURL cross_site_url(
         embedded_test_server()->GetURL("c.com", "/title2.html"));
     NavigateFrameToURL(root->child_at(0), cross_site_url);
 
     // Wait to see the size sent to the child RenderWidget.
-    loop.Run();
-
-    // The child widget was also informed of the same size.
-    EXPECT_EQ(initial_size, child_visible_viewport_size);
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          child_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->visible_viewport_size == initial_size)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
   }
 
   // Same check as above but for a nested WebContents.
   {
-    base::RunLoop loop;
-
-    gfx::Size child_visible_viewport_size;
-    OutgoingVisualPropertiesIPCWatcher child_watcher(
-        nested_child_rph, nested_root,
-        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
-          child_visible_viewport_size = props.visible_viewport_size;
-
-          if (child_visible_viewport_size == nested_initial_size)
-            loop.Quit();
-        }));
-
     GURL cross_site_url(
         embedded_test_server()->GetURL("c.com", "/title2.html"));
     NavigateFrameToURL(nested_root->child_at(0), cross_site_url);
 
     // Wait to see the size sent to the child RenderWidget.
-    loop.Run();
-
-    // The child widget was also informed of the same size.
-    EXPECT_EQ(nested_initial_size, child_visible_viewport_size);
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          nested_child_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties &&
+          properties->visible_viewport_size == nested_initial_size)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
   }
 
 // This part of the test does not work well on Android, for a few reasons:
@@ -333,36 +271,26 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
   // Resize the top level widget to cause its |visible_viewport_size| to be
   // changed. The change should propagate down to the child RenderWidget.
   {
-    base::RunLoop loop;
-
     const gfx::Size resize_to(initial_size.width() - 10,
                               initial_size.height() - 10);
-
-    gfx::Size root_visible_viewport_size;
-    gfx::Size child_visible_viewport_size;
-    OutgoingVisualPropertiesIPCWatcher root_watcher(
-        root_rph, root,
-        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
-          root_visible_viewport_size = props.visible_viewport_size;
-        }));
-    OutgoingVisualPropertiesIPCWatcher child_watcher(
-        child_rph, root,
-        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
-          child_visible_viewport_size = props.visible_viewport_size;
-
-          if (child_visible_viewport_size == resize_to)
-            loop.Quit();
-        }));
 
     root_view->SetSize(resize_to);
 
     // Wait to see both RenderWidgets receive the message.
-    loop.Run();
-
-    // The top level widget was resized.
-    EXPECT_EQ(resize_to, root_visible_viewport_size);
-    // The child widget was also informed of the same size.
-    EXPECT_EQ(resize_to, child_visible_viewport_size);
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          root_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->visible_viewport_size == resize_to)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          child_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->visible_viewport_size == resize_to)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
   }
 
   // Same check as above but resizing the nested WebContents' main frame
@@ -370,26 +298,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
   // Resize the top level widget to cause its |visible_viewport_size| to be
   // changed. The change should propagate down to the child RenderWidget.
   {
-    base::RunLoop loop;
-
     const gfx::Size resize_to(nested_initial_size.width() - 10,
                               nested_initial_size.height() - 10);
-
-    gfx::Size root_visible_viewport_size;
-    gfx::Size child_visible_viewport_size;
-    OutgoingVisualPropertiesIPCWatcher root_watcher(
-        nested_root_rph, nested_root,
-        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
-          root_visible_viewport_size = props.visible_viewport_size;
-        }));
-    OutgoingVisualPropertiesIPCWatcher child_watcher(
-        nested_child_rph, nested_root,
-        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
-          child_visible_viewport_size = props.visible_viewport_size;
-
-          if (child_visible_viewport_size == resize_to)
-            loop.Quit();
-        }));
 
     EXPECT_TRUE(ExecJs(
         root->current_frame_host(),
@@ -398,12 +308,20 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
                   resize_to.width(), resize_to.height())));
 
     // Wait to see both RenderWidgets receive the message.
-    loop.Run();
-
-    // The top level widget was resized.
-    EXPECT_EQ(resize_to, root_visible_viewport_size);
-    // The child widget was also informed of the same size.
-    EXPECT_EQ(resize_to, child_visible_viewport_size);
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          nested_root_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->visible_viewport_size == resize_to)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          nested_child_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->visible_viewport_size == resize_to)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
   }
 
   // Informs the top-level frame it can auto-resize. It will shrink down to its
@@ -418,24 +336,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
   // This property is not directly visible in the renderer, so we can only
   // check that the value is sent to both RenderWidgets.
   {
-    base::RunLoop loop;
-
     const gfx::Size auto_resize_to(105, 100);
-    gfx::Size root_visible_viewport_size;
-    gfx::Size child_visible_viewport_size;
-    OutgoingVisualPropertiesIPCWatcher root_watcher(
-        root_rph, root,
-        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
-          root_visible_viewport_size = props.visible_viewport_size;
-        }));
-    OutgoingVisualPropertiesIPCWatcher child_watcher(
-        child_rph, root,
-        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
-          child_visible_viewport_size = props.visible_viewport_size;
-
-          if (child_visible_viewport_size == auto_resize_to)
-            loop.Quit();
-        }));
 
     // Replace the WebContentsDelegate so that we can use the auto-resize
     // changes to adjust the size of the top widget.
@@ -447,12 +348,20 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
 
     // Wait for the renderer side to resize itself and the RenderWidget
     // waterfall to pass the new |visible_viewport_size| down.
-    loop.Run();
-
-    // The top level widget was resized to match the auto-resized renderer.
-    EXPECT_EQ(auto_resize_to, root_visible_viewport_size);
-    // The child widget was also informed of the same size.
-    EXPECT_EQ(auto_resize_to, child_visible_viewport_size);
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          root_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->visible_viewport_size == auto_resize_to)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          child_rwh->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties && properties->visible_viewport_size == auto_resize_to)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
 
     shell()->web_contents()->SetDelegate(old_delegate);
   }
@@ -613,12 +522,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
   RenderWidgetHostViewBase* root_view = root_widget->GetView();
   // Out-of-process child frame.
   FrameTreeNode* oopchild = root->child_at(0);
-  auto* oopchild_rph = static_cast<RenderProcessHostImpl*>(
-      oopchild->current_frame_host()->GetProcess());
   // Out-of-process descendant frame (child of the first oop-iframe).
   FrameTreeNode* oopdescendant = oopchild->child_at(0);
-  auto* oopdescendant_rph = static_cast<RenderProcessHostImpl*>(
-      oopdescendant->current_frame_host()->GetProcess());
 
   const gfx::Size root_view_size = root_view->GetVisibleViewportSize();
   const int kDisplayFeatureLength = 10;
@@ -634,58 +539,36 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
       emulated_display_feature.offset, root_view_size.height());
 
   {
-    base::RunLoop loop;
-
     // Watch for visual properties changes, first to the child oop-iframe, then
     // to the descendant (at which point we're done and can validate the
     // values).
-    std::vector<gfx::Rect> oopchild_root_window_segments;
-    OutgoingVisualPropertiesIPCWatcher oopchild_watcher(
-        oopchild_rph, root,
-        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
-          oopchild_root_window_segments = props.root_widget_window_segments;
-        }));
-
-    std::vector<gfx::Rect> oopdescendant_root_window_segments;
-    OutgoingVisualPropertiesIPCWatcher oopdescendant_watcher(
-        oopdescendant_rph, root,
-        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
-          oopdescendant_root_window_segments =
-              props.root_widget_window_segments;
-          if (oopdescendant_root_window_segments == expected_segments)
-            loop.Quit();
-        }));
 
     root_view->SetDisplayFeatureForTesting(emulated_display_feature);
     root_widget->SynchronizeVisualProperties();
 
-    loop.Run();
-
-    // The child widgets must be informed of the changed window segments.
-    EXPECT_THAT(oopchild_root_window_segments,
-                ::testing::ContainerEq(expected_segments));
-    EXPECT_THAT(oopdescendant_root_window_segments,
-                ::testing::ContainerEq(expected_segments));
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          oopchild->current_frame_host()
+              ->GetRenderWidgetHost()
+              ->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties &&
+          properties->root_widget_window_segments == expected_segments)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          oopdescendant->current_frame_host()
+              ->GetRenderWidgetHost()
+              ->GetLastVisualPropertiesSentToRendererForTesting();
+      if (properties &&
+          properties->root_widget_window_segments == expected_segments)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
   }
 
   {
-    base::RunLoop loop;
-    std::vector<gfx::Rect> new_frame_root_window_segments;
-    OutgoingVisualPropertiesIPCWatcher oopdescendant_watcher(
-        oopdescendant_rph, root,
-        base::BindLambdaForTesting([&](const blink::VisualProperties& props) {
-          new_frame_root_window_segments = props.root_widget_window_segments;
-          // This check is needed, since we'll get an IPC originating from
-          // RenderWidgetHostImpl immediately after the frame is added with the
-          // incorrect value (the segments are cascaded from the parent renderer
-          // when the frame is added in that process). So we need to wait for
-          // the outgoing VisualProperties triggered from the parent renderer
-          // and comes in via the CrossProcessFrameConnector, which can happen
-          // after NavigateFrameToURL completes.
-          if (new_frame_root_window_segments == expected_segments)
-            loop.Quit();
-        }));
-
     // Creating a new local frame root (navigating a.com to c.com) should also
     // propagate the property to the new local frame root. Note that we're
     // re-using the existing RenderProcessHost from c.com (aka
@@ -693,10 +576,23 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
     GURL new_frame_url(embedded_test_server()->GetURL("c.com", "/title2.html"));
     NavigateFrameToURL(root->child_at(1), new_frame_url);
 
-    loop.Run();
-
-    EXPECT_THAT(new_frame_root_window_segments,
-                ::testing::ContainerEq(expected_segments));
+    while (true) {
+      base::Optional<blink::VisualProperties> properties =
+          oopdescendant->current_frame_host()
+              ->GetRenderWidgetHost()
+              ->GetLastVisualPropertiesSentToRendererForTesting();
+      // This check is needed, since we'll get an IPC originating from
+      // RenderWidgetHostImpl immediately after the frame is added with the
+      // incorrect value (the segments are cascaded from the parent renderer
+      // when the frame is added in that process). So we need to wait for
+      // the outgoing VisualProperties triggered from the parent renderer
+      // and comes in via the CrossProcessFrameConnector, which can happen
+      // after NavigateFrameToURL completes.
+      if (properties &&
+          properties->root_widget_window_segments == expected_segments)
+        break;
+      base::RunLoop().RunUntilIdle();
+    }
   }
 }
 

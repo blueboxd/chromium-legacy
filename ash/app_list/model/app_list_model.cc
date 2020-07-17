@@ -16,12 +16,10 @@ namespace ash {
 
 AppListModel::AppListModel()
     : top_level_item_list_(std::make_unique<AppListItemList>()) {
-  top_level_item_list_->AddObserver(this);
+  item_list_scoped_observer_.Add(top_level_item_list_.get());
 }
 
-AppListModel::~AppListModel() {
-  top_level_item_list_->RemoveObserver(this);
-}
+AppListModel::~AppListModel() = default;
 
 void AppListModel::AddObserver(AppListModelObserver* observer) {
   observers_.AddObserver(observer);
@@ -258,6 +256,10 @@ void AppListModel::DeleteItem(const std::string& id) {
         << "Invalid call to DeleteItem for item with children: " << id;
     for (auto& observer : observers_)
       observer.OnAppListItemWillBeDeleted(item);
+    if (item->GetItemType() == AppListFolderItem::kItemType) {
+      item_list_scoped_observer_.Remove(
+          static_cast<AppListFolderItem*>(item)->item_list());
+    }
     top_level_item_list_->DeleteItem(id);
     for (auto& observer : observers_)
       observer.OnAppListItemDeleted(id);
@@ -335,6 +337,10 @@ AppListFolderItem* AppListModel::FindOrCreateFolderItem(
 AppListItem* AppListModel::AddItemToItemListAndNotify(
     std::unique_ptr<AppListItem> item_ptr) {
   DCHECK(!item_ptr->IsInFolder());
+  if (item_ptr->GetItemType() == AppListFolderItem::kItemType) {
+    item_list_scoped_observer_.Add(
+        static_cast<AppListFolderItem*>(item_ptr.get())->item_list());
+  }
   AppListItem* item = top_level_item_list_->AddItem(std::move(item_ptr));
   for (auto& observer : observers_)
     observer.OnAppListItemAdded(item);

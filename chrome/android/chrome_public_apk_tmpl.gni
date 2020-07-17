@@ -320,7 +320,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
         proguard_configs = []
       }
       proguard_configs += [
-        "//chrome/android/java/proguard.flags",
+        "//chrome/android/proguard/main.flags",
         "//base/android/proguard/chromium_apk.flags",
         "//base/android/proguard/chromium_code.flags",
       ]

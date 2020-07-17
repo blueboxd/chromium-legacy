@@ -175,10 +175,23 @@ void DrmThreadProxy::AddDrmDeviceReceiver(
   DCHECK(drm_thread_.task_runner()) << "DrmThreadProxy::AddDrmDeviceReceiver "
                                        "drm_thread_ task runner missing";
 
-  drm_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DrmThread::AddDrmDeviceReceiver,
-                     base::Unretained(&drm_thread_), std::move(receiver)));
+  if (drm_thread_.task_runner()->BelongsToCurrentThread()) {
+    drm_thread_.AddDrmDeviceReceiver(std::move(receiver));
+  } else {
+    drm_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&DrmThread::AddDrmDeviceReceiver,
+                       base::Unretained(&drm_thread_), std::move(receiver)));
+  }
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+DrmThreadProxy::GetDrmThreadTaskRunner() {
+  return drm_thread_.task_runner();
+}
+
+bool DrmThreadProxy::WaitUntilDrmThreadStarted() {
+  return drm_thread_.WaitUntilThreadStarted();
 }
 
 }  // namespace ui

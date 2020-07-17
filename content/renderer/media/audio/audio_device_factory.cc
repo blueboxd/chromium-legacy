@@ -56,11 +56,11 @@ base::TimeDelta GetDefaultAuthTimeout() {
 }
 
 scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
-    int render_frame_id,
+    const base::UnguessableToken& frame_token,
     const media::AudioSinkParameters& params,
     base::TimeDelta auth_timeout) {
   auto device = base::MakeRefCounted<media::AudioOutputDevice>(
-      AudioOutputIPCFactory::get()->CreateAudioOutputIPC(render_frame_id),
+      AudioOutputIPCFactory::get()->CreateAudioOutputIPC(frame_token),
       AudioOutputIPCFactory::get()->io_task_runner(), params, auth_timeout);
   device->RequestDeviceAuthorization();
   return device;
@@ -75,14 +75,14 @@ bool IsMixable(blink::WebAudioDeviceSourceType source_type) {
 
 scoped_refptr<media::SwitchableAudioRendererSink> NewMixableSink(
     blink::WebAudioDeviceSourceType source_type,
-    int render_frame_id,
+    const base::UnguessableToken& frame_token,
     const media::AudioSinkParameters& params) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread) << "RenderThreadImpl is not instantiated, or "
                         << "GetOutputDeviceInfo() is called on a wrong thread ";
   DCHECK(!params.processing_id.has_value());
   return render_thread->GetAudioRendererMixerManager()->CreateInput(
-      render_frame_id, params.session_id, params.device_id,
+      frame_token, params.session_id, params.device_id,
       AudioDeviceFactory::GetSourceLatencyType(source_type));
 }
 
@@ -110,22 +110,22 @@ media::AudioLatency::LatencyType AudioDeviceFactory::GetSourceLatencyType(
 
 scoped_refptr<media::AudioRendererSink>
 AudioDeviceFactory::NewAudioRendererMixerSink(
-    int render_frame_id,
+    const base::UnguessableToken& frame_token,
     const media::AudioSinkParameters& params) {
   // AudioRendererMixer sinks are always used asynchronously and thus can
   // operate without a timeout value.
-  return NewFinalAudioRendererSink(render_frame_id, params, base::TimeDelta());
+  return NewFinalAudioRendererSink(frame_token, params, base::TimeDelta());
 }
 
 // static
 scoped_refptr<media::AudioRendererSink>
 AudioDeviceFactory::NewAudioRendererSink(
     blink::WebAudioDeviceSourceType source_type,
-    int render_frame_id,
+    const base::UnguessableToken& frame_token,
     const media::AudioSinkParameters& params) {
   if (factory_) {
     scoped_refptr<media::AudioRendererSink> device =
-        factory_->CreateAudioRendererSink(source_type, render_frame_id, params);
+        factory_->CreateAudioRendererSink(source_type, frame_token, params);
     if (device)
       return device;
   }
@@ -135,11 +135,11 @@ AudioDeviceFactory::NewAudioRendererSink(
   DCHECK(!(params.processing_id.has_value() && IsMixable(source_type)));
 
   if (IsMixable(source_type))
-    return NewMixableSink(source_type, render_frame_id, params);
+    return NewMixableSink(source_type, frame_token, params);
 
   UMA_HISTOGRAM_BOOLEAN("Media.Audio.Render.SinkCache.UsedForSinkCreation",
                         false);
-  return NewFinalAudioRendererSink(render_frame_id, params,
+  return NewFinalAudioRendererSink(frame_token, params,
                                    GetDefaultAuthTimeout());
 }
 
@@ -147,18 +147,18 @@ AudioDeviceFactory::NewAudioRendererSink(
 scoped_refptr<media::SwitchableAudioRendererSink>
 AudioDeviceFactory::NewSwitchableAudioRendererSink(
     blink::WebAudioDeviceSourceType source_type,
-    int render_frame_id,
+    const base::UnguessableToken& frame_token,
     const media::AudioSinkParameters& params) {
   if (factory_) {
     scoped_refptr<media::SwitchableAudioRendererSink> sink =
-        factory_->CreateSwitchableAudioRendererSink(source_type,
-                                                    render_frame_id, params);
+        factory_->CreateSwitchableAudioRendererSink(source_type, frame_token,
+                                                    params);
     if (sink)
       return sink;
   }
 
   if (IsMixable(source_type))
-    return NewMixableSink(source_type, render_frame_id, params);
+    return NewMixableSink(source_type, frame_token, params);
 
   // AudioOutputDevice is not RestartableAudioRendererSink, so we can't return
   // anything for those who wants to create an unmixable sink.
@@ -169,25 +169,25 @@ AudioDeviceFactory::NewSwitchableAudioRendererSink(
 // static
 scoped_refptr<media::AudioCapturerSource>
 AudioDeviceFactory::NewAudioCapturerSource(
-    int render_frame_id,
+    const base::UnguessableToken& frame_token,
     const media::AudioSourceParameters& params) {
   if (factory_) {
     // We don't pass on |session_id|, as this branch is only used for tests.
     scoped_refptr<media::AudioCapturerSource> source =
-        factory_->CreateAudioCapturerSource(render_frame_id, params);
+        factory_->CreateAudioCapturerSource(frame_token, params);
     if (source)
       return source;
   }
 
   return base::MakeRefCounted<media::AudioInputDevice>(
-      AudioInputIPCFactory::get()->CreateAudioInputIPC(render_frame_id, params),
+      AudioInputIPCFactory::get()->CreateAudioInputIPC(frame_token, params),
       media::AudioInputDevice::Purpose::kUserInput,
       media::AudioInputDevice::DeadStreamDetection::kEnabled);
 }
 
 // static
 media::OutputDeviceInfo AudioDeviceFactory::GetOutputDeviceInfo(
-    int render_frame_id,
+    const base::UnguessableToken& frame_token,
     const media::AudioSinkParameters& params) {
   DCHECK(RenderThreadImpl::current())
       << "RenderThreadImpl is not instantiated, or "
@@ -204,8 +204,7 @@ media::OutputDeviceInfo AudioDeviceFactory::GetOutputDeviceInfo(
       base::BindRepeating(&AudioDeviceFactory::NewAudioRendererSink,
                           blink::WebAudioDeviceSourceType::kNone),
       kDeleteTimeout);
-  return cache->GetSinkInfo(render_frame_id, params.session_id,
-                            params.device_id);
+  return cache->GetSinkInfo(frame_token, params.session_id, params.device_id);
 }
 
 AudioDeviceFactory::AudioDeviceFactory() {
@@ -220,18 +219,18 @@ AudioDeviceFactory::~AudioDeviceFactory() {
 // static
 scoped_refptr<media::AudioRendererSink>
 AudioDeviceFactory::NewFinalAudioRendererSink(
-    int render_frame_id,
+    const base::UnguessableToken& frame_token,
     const media::AudioSinkParameters& params,
     base::TimeDelta auth_timeout) {
   if (factory_) {
     scoped_refptr<media::AudioRendererSink> sink =
-        factory_->CreateFinalAudioRendererSink(render_frame_id, params,
+        factory_->CreateFinalAudioRendererSink(frame_token, params,
                                                auth_timeout);
     if (sink)
       return sink;
   }
 
-  return NewOutputDevice(render_frame_id, params, auth_timeout);
+  return NewOutputDevice(frame_token, params, auth_timeout);
 }
 
 }  // namespace content

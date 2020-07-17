@@ -211,7 +211,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
             return sPromoStateForTests;
         }
 
-        if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
+        if (!AndroidSyncSettings.get().doesMasterSyncSettingAllowChromeSync()) {
             return PromoState.PROMO_NONE;
         }
 

@@ -83,6 +83,9 @@ class DrmThreadProxy {
   void AddDrmDeviceReceiver(
       mojo::PendingReceiver<ozone::mojom::DrmDevice> receiver);
 
+  bool WaitUntilDrmThreadStarted();
+  scoped_refptr<base::SingleThreadTaskRunner> GetDrmThreadTaskRunner();
+
  private:
   DrmThread drm_thread_;
 

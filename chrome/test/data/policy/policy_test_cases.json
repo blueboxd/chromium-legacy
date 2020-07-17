@@ -5199,6 +5199,8 @@
 
   "ReportDeviceVpdInfo": {},
 
+  "ReportDeviceSystemInfo": {},
+
   "ReportUploadFrequency": {},
 
   "DeviceAllowNewUsers": {},

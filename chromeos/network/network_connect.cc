@@ -213,8 +213,8 @@ void NetworkConnectImpl::CallConnectToNetwork(const std::string& network_id,
       network->path(),
       base::BindOnce(&NetworkConnectImpl::OnConnectSucceeded,
                      weak_factory_.GetWeakPtr(), network_id),
-      base::Bind(&NetworkConnectImpl::OnConnectFailed,
-                 weak_factory_.GetWeakPtr(), network_id),
+      base::BindOnce(&NetworkConnectImpl::OnConnectFailed,
+                     weak_factory_.GetWeakPtr(), network_id),
       check_error_state, ConnectCallbackMode::ON_COMPLETED);
 }
 
@@ -252,10 +252,10 @@ void NetworkConnectImpl::CallCreateConfiguration(
       ->network_configuration_handler()
       ->CreateShillConfiguration(
           *shill_properties,
-          base::Bind(&NetworkConnectImpl::OnConfigureSucceeded,
-                     weak_factory_.GetWeakPtr(), connect_on_configure),
-          base::Bind(&NetworkConnectImpl::OnConfigureFailed,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&NetworkConnectImpl::OnConfigureSucceeded,
+                         weak_factory_.GetWeakPtr(), connect_on_configure),
+          base::BindOnce(&NetworkConnectImpl::OnConfigureFailed,
+                         weak_factory_.GetWeakPtr()));
 }
 
 void NetworkConnectImpl::SetPropertiesFailed(
@@ -300,10 +300,11 @@ void NetworkConnectImpl::ClearPropertiesAndConnect(
   const bool check_error_state = false;
   NetworkHandler::Get()->network_configuration_handler()->ClearShillProperties(
       network->path(), properties_to_clear,
-      base::Bind(&NetworkConnectImpl::CallConnectToNetwork,
-                 weak_factory_.GetWeakPtr(), network_id, check_error_state),
-      base::Bind(&NetworkConnectImpl::SetPropertiesFailed,
-                 weak_factory_.GetWeakPtr(), "ClearProperties", network_id));
+      base::BindOnce(&NetworkConnectImpl::CallConnectToNetwork,
+                     weak_factory_.GetWeakPtr(), network_id, check_error_state),
+      base::BindOnce(&NetworkConnectImpl::SetPropertiesFailed,
+                     weak_factory_.GetWeakPtr(), "ClearProperties",
+                     network_id));
 }
 
 void NetworkConnectImpl::ConfigureSetProfileSucceeded(
@@ -319,10 +320,11 @@ void NetworkConnectImpl::ConfigureSetProfileSucceeded(
   }
   NetworkHandler::Get()->network_configuration_handler()->SetShillProperties(
       network->path(), *properties_to_set,
-      base::Bind(&NetworkConnectImpl::ClearPropertiesAndConnect,
-                 weak_factory_.GetWeakPtr(), network_id, properties_to_clear),
-      base::Bind(&NetworkConnectImpl::SetPropertiesFailed,
-                 weak_factory_.GetWeakPtr(), "SetProperties", network_id));
+      base::BindOnce(&NetworkConnectImpl::ClearPropertiesAndConnect,
+                     weak_factory_.GetWeakPtr(), network_id,
+                     properties_to_clear),
+      base::BindOnce(&NetworkConnectImpl::SetPropertiesFailed,
+                     weak_factory_.GetWeakPtr(), "SetProperties", network_id));
 }
 
 // Public methods
@@ -359,7 +361,8 @@ void NetworkConnectImpl::DisconnectFromNetworkId(
   if (!network)
     return;
   NetworkHandler::Get()->network_connection_handler()->DisconnectNetwork(
-      network->path(), base::DoNothing(), base::Bind(&IgnoreDisconnectError));
+      network->path(), base::DoNothing(),
+      base::BindOnce(&IgnoreDisconnectError));
 }
 
 void NetworkConnectImpl::SetTechnologyEnabled(
@@ -463,12 +466,12 @@ void NetworkConnectImpl::ConfigureNetworkIdAndConnect(
   }
   NetworkHandler::Get()->network_configuration_handler()->SetNetworkProfile(
       network->path(), profile_path,
-      base::Bind(&NetworkConnectImpl::ConfigureSetProfileSucceeded,
-                 weak_factory_.GetWeakPtr(), network_id,
-                 base::Passed(&properties_to_set)),
-      base::Bind(&NetworkConnectImpl::SetPropertiesFailed,
-                 weak_factory_.GetWeakPtr(), "SetProfile: " + profile_path,
-                 network_id));
+      base::BindOnce(&NetworkConnectImpl::ConfigureSetProfileSucceeded,
+                     weak_factory_.GetWeakPtr(), network_id,
+                     base::Passed(&properties_to_set)),
+      base::BindOnce(&NetworkConnectImpl::SetPropertiesFailed,
+                     weak_factory_.GetWeakPtr(), "SetProfile: " + profile_path,
+                     network_id));
 }
 
 void NetworkConnectImpl::CreateConfigurationAndConnect(

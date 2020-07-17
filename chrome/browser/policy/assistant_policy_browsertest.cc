@@ -28,8 +28,8 @@ IN_PROC_BROWSER_TEST_F(AssistantPolicyTest, AssistantContextEnabled) {
   // Verifies that the Assistant context can be forced to always disabled.
   PolicyMap policies;
   policies.Set(key::kVoiceInteractionContextEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->IsManagedPreference(
       chromeos::assistant::prefs::kAssistantContextEnabled));
@@ -41,8 +41,8 @@ IN_PROC_BROWSER_TEST_F(AssistantPolicyTest, AssistantContextEnabled) {
 
   // Verifies that the Assistant context can be forced to always enabled.
   policies.Set(key::kVoiceInteractionContextEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(true),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->IsManagedPreference(
       chromeos::assistant::prefs::kAssistantContextEnabled));
@@ -67,8 +67,8 @@ IN_PROC_BROWSER_TEST_F(AssistantPolicyTest, AssistantHotwordEnabled) {
   // Verifies that the Assistant hotword can be forced to always disabled.
   PolicyMap policies;
   policies.Set(key::kVoiceInteractionHotwordEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->IsManagedPreference(
       chromeos::assistant::prefs::kAssistantHotwordEnabled));
@@ -80,8 +80,8 @@ IN_PROC_BROWSER_TEST_F(AssistantPolicyTest, AssistantHotwordEnabled) {
 
   // Verifies that the Assistant hotword can be forced to always enabled.
   policies.Set(key::kVoiceInteractionHotwordEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(true),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->IsManagedPreference(
       chromeos::assistant::prefs::kAssistantHotwordEnabled));
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(AssistantPolicyTest, AssistantQuickAnswersEnabled) {
   PolicyMap policies;
   policies.Set(key::kVoiceInteractionQuickAnswersEnabled,
                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               base::Value(false), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->IsManagedPreference(
       chromeos::assistant::prefs::kAssistantQuickAnswersEnabled));
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(AssistantPolicyTest, AssistantQuickAnswersEnabled) {
   // Verifies that the Quick Answers setting can be forced to always enabled.
   policies.Set(key::kVoiceInteractionQuickAnswersEnabled,
                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
+               base::Value(true), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->IsManagedPreference(
       chromeos::assistant::prefs::kAssistantQuickAnswersEnabled));

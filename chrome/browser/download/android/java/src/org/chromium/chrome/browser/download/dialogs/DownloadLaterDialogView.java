@@ -14,9 +14,9 @@ import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -33,7 +33,7 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
 /**
  * The custom view in the download later dialog.
  */
-public class DownloadLaterDialogView extends LinearLayout implements OnCheckedChangeListener {
+public class DownloadLaterDialogView extends ScrollView implements OnCheckedChangeListener {
     private Controller mController;
 
     private RadioButtonWithDescription mDownloadNow;

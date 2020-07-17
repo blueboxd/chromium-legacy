@@ -19,7 +19,9 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -41,8 +43,9 @@ class TestAmbientURLLoaderImpl : public AmbientURLLoader {
     auto data = std::make_unique<std::string>();
     *data = "test";
     // Pretend to respond asynchronously.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), std::move(data)));
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(data)),
+        base::TimeDelta::FromMilliseconds(1));
   }
 };
 

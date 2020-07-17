@@ -535,7 +535,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
       test_utils::ReadTestDictionary("policy/policy_vpn_ui.json");
   managed_network_configuration_handler_->SetProperties(
       network_state->path(), *ui_config, base::DoNothing(),
-      base::Bind(&ErrorCallback));
+      base::BindOnce(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
 
   std::string service_path =
@@ -569,7 +569,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
       test_utils::ReadTestDictionary("policy/policy_vpn_ipsec_ui.json");
   managed_network_configuration_handler_->SetProperties(
       network_state->path(), *ui_config, base::DoNothing(),
-      base::Bind(&ErrorCallback));
+      base::BindOnce(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
 
   // Get shill service properties after the update.

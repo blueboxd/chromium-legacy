@@ -27,7 +27,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkActivationHandler {
   //  kErrorShillError if a DBus or Shill error occurred.
   virtual void CompleteActivation(
       const std::string& service_path,
-      const base::Closure& success_callback,
+      base::OnceClosure success_callback,
       network_handler::ErrorCallback error_callback) = 0;
 
  protected:

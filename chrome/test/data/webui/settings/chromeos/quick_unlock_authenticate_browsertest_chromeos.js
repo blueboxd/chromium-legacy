@@ -207,6 +207,7 @@ cr.define('settings_people_page_quick_unlock', function() {
   function registerLockScreenTests() {
     suite('lock-screen', function() {
       const ENABLE_LOCK_SCREEN_PREF = 'settings.enable_screen_lock';
+      const ENABLE_PIN_AUTOSUBMIT_PREF = 'pin_unlock_autosubmit_enabled';
 
       let fakeSettings = null;
       let passwordRadioButton = null;
@@ -260,6 +261,12 @@ cr.define('settings_people_page_quick_unlock', function() {
         return isVisible(setupPinButton);
       }
 
+      function isEnablePinAutosubmitToggleVisible() {
+        Polymer.dom.flush();
+        const autosubmitToggle = testElement.$$('#enablePinAutoSubmit');
+        return autosubmitToggle && isVisible(autosubmitToggle);
+      }
+
       setup(function() {
         PolymerTest.clearBody();
 
@@ -276,6 +283,11 @@ cr.define('settings_people_page_quick_unlock', function() {
             key: 'ash.message_center.lock_screen_mode',
             type: chrome.settingsPrivate.PrefType.STRING,
             value: 'hide'
+          },
+          {
+            key: ENABLE_PIN_AUTOSUBMIT_PREF,
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false
           }
         ];
         fakeSettings = new settings.FakeSettingsPrivate(fakePrefs);
@@ -444,6 +456,87 @@ cr.define('settings_people_page_quick_unlock', function() {
             1,
             fakeUma.getHistogramValue(
                 settings.LockScreenProgress.CHOOSE_PIN_OR_PASSWORD));
+      });
+
+      test('TappingEnableAutoSubmitPinOpensDialog', function() {
+        testElement.authToken = quickUnlockPrivateApi.getFakeToken();
+        // No PIN is set yet.
+        assertFalse(testElement.hasPin);
+        testElement.hasPin = true;
+        // Must be visible when there is a PIN set.
+        assertTrue(isEnablePinAutosubmitToggleVisible());
+
+        getFromElement('#enablePinAutoSubmit').click();
+        Polymer.dom.flush();
+        const autosubmitDialog = getFromElement('#pinAutosubmitDialog');
+        assertTrue(autosubmitDialog.$$('#dialog').open);
+
+        // Cancel button closes the dialog.
+        autosubmitDialog.$$('#cancelButton').click();
+        assertFalse(autosubmitDialog.$$('#dialog').open);
+      });
+    });
+  }
+
+  function registerAutosubmitDialogTests() {
+    suite('autosubmit-dialog', function() {
+      let confirmButton = null;
+      let cancelButton = null;
+      let pinKeyboard = null;
+      let wrongPinDiv = null;
+
+      setup(function() {
+        PolymerTest.clearBody();
+        quickUnlockPrivateApi = new settings.FakeQuickUnlockPrivate();
+
+        // Create auto submit dialog.
+        testElement = document.createElement('settings-pin-autosubmit-dialog');
+        testElement.quickUnlockPrivate = quickUnlockPrivateApi;
+        testElement.authToken = quickUnlockPrivateApi.getFakeToken();
+        document.body.appendChild(testElement);
+        Polymer.dom.flush();
+
+        // Prepare the quick unlock private API.
+        quickUnlockPrivateApi.credentials[0] = '123456';
+        assertFalse(quickUnlockPrivateApi.pinAutosubmitEnabled);
+
+        // Get the elements.
+        pinKeyboard = getFromElement('#pinKeyboard');
+        wrongPinDiv = getFromElement('#invalidPinError');
+        cancelButton = getFromElement('#cancelButton');
+        confirmButton = getFromElement('#confirmButton');
+
+        assertTrue(isVisible(cancelButton));
+        assertTrue(isVisible(confirmButton));
+      });
+
+      test('WrongPinShowsError', function() {
+        assertFalse(isVisible(wrongPinDiv));
+        pinKeyboard.value = '1234';
+        assertFalse(confirmButton.disabled);
+        confirmButton.click();
+        assertFalse(quickUnlockPrivateApi.pinAutosubmitEnabled);
+        assertTrue(isVisible(wrongPinDiv));
+        assertTrue(confirmButton.disabled);
+      });
+
+      test('RightPinActivatesAutosubmit', function() {
+        pinKeyboard.value = '123456';
+        assertFalse(confirmButton.disabled);
+        confirmButton.click();
+        assertTrue(quickUnlockPrivateApi.pinAutosubmitEnabled);
+      });
+
+      // Tests that the dialog fires an event to invalidate the auth token
+      // to trigger a password prompt.
+      test('FireInvalidateTokenRequestWhenPinAuthNotPossible', async () => {
+        // Simulate too many wrong PIN attempts.
+        quickUnlockPrivateApi.pinAuthenticationPossible = false;
+        pinKeyboard.value = '1234';
+        const invalidateTokenEvent = test_util.eventToPromise(
+            'invalidate-auth-token-requested', testElement);
+        confirmButton.click();
+        await invalidateTokenEvent;
       });
     });
   }
@@ -734,6 +827,7 @@ cr.define('settings_people_page_quick_unlock', function() {
   return {
     registerAuthenticateTests: registerAuthenticateTests,
     registerLockScreenTests: registerLockScreenTests,
+    registerAutosubmitDialogTests: registerAutosubmitDialogTests,
     registerSetupPinDialogTests: registerSetupPinDialogTests
   };
 });

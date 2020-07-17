@@ -283,7 +283,7 @@ double StringConstraintFitnessDistance(const WebString& value,
 }
 
 MediaStreamSource::Capabilities ComputeCapabilitiesForVideoSource(
-    const WebString& device_id,
+    const String& device_id,
     const media::VideoCaptureFormats& formats,
     media::VideoFacingMode facing_mode,
     bool is_device_capture,
@@ -293,7 +293,7 @@ MediaStreamSource::Capabilities ComputeCapabilitiesForVideoSource(
   if (is_device_capture) {
     capabilities.facing_mode = ToPlatformFacingMode(facing_mode);
     if (group_id)
-      capabilities.group_id = WebString::FromUTF8(*group_id);
+      capabilities.group_id = String::FromUTF8(*group_id);
   }
   if (!formats.empty()) {
     int max_width = 1;

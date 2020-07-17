@@ -6,6 +6,7 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/test/assistant_ash_test_base.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/main_stage/assistant_onboarding_suggestion_view.h"
 #include "ash/assistant/ui/main_stage/suggestion_chip_view.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/run_loop.h"
@@ -375,6 +376,47 @@ TEST_F(AssistantPageViewTest, FocusShouldRemainInAssistantViewWhenPressingTab) {
     num_views++;
     ASSERT_LT(num_views, kMaxIterations);
   } while (focused_view != initial_focused_view);
+}
+
+TEST_F(AssistantPageViewTest,
+       FocusShouldCycleThroughOnboardingSuggestionsWhenPressingTab) {
+  constexpr int kMaxIterations = 100;
+
+  // Enable the |kAssistantBetterOnboarding| feature and change onboarding mode
+  // to force suggestion generation. We have to force suggestion generation in
+  // this way since the feature wasn't enabled prior to controller creation.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+  SetOnboardingMode(AssistantOnboardingMode::kEducation);
+
+  // Show Assistant UI and verify onboarding suggestions exist.
+  ShowAssistantUi();
+  auto onboarding_suggestions = GetOnboardingSuggestionViews();
+  ASSERT_FALSE(onboarding_suggestions.empty());
+
+  // Cache the first focused view.
+  auto* first_focused_view = GetFocusedView();
+
+  // Advance focus to the first onboarding suggestion.
+  int num_iterations = 0;
+  while (GetFocusedView() != onboarding_suggestions.at(0)) {
+    PressKeyAndWait(ui::VKEY_TAB);
+    ASSERT_LE(++num_iterations, kMaxIterations);  // Sanity check.
+  }
+
+  // Verify we can cycle through them.
+  for (size_t i = 0; i < onboarding_suggestions.size(); ++i) {
+    ASSERT_EQ(GetFocusedView(), onboarding_suggestions.at(i));
+    PressKeyAndWait(ui::VKEY_TAB);
+  }
+
+  // Confirm that we eventually get back to our first focused view.
+  num_iterations = 0;
+  while (GetFocusedView() != first_focused_view) {
+    PressKeyAndWait(ui::VKEY_TAB);
+    ASSERT_LE(++num_iterations, kMaxIterations);  // Sanity check.
+  }
 }
 
 TEST_F(AssistantPageViewTest, ShouldFocusMicWhenOpeningWithHotword) {

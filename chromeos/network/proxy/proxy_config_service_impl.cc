@@ -59,7 +59,7 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(
           io_task_runner),
       profile_prefs_(profile_prefs),
       local_state_prefs_(local_state_prefs) {
-  const base::Closure proxy_change_callback = base::Bind(
+  const base::RepeatingClosure proxy_change_callback = base::BindRepeating(
       &ProxyConfigServiceImpl::OnProxyPrefChanged, base::Unretained(this));
 
   if (profile_prefs) {

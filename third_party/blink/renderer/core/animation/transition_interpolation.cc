@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/animation/interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/interpolation_type.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -48,7 +49,7 @@ TransitionInterpolation::CurrentNonInterpolableValue() const {
 void TransitionInterpolation::Apply(StyleResolverState& state) const {
   CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry(),
                                state.GetDocument());
-  CSSInterpolationEnvironment environment(map, state, nullptr);
+  CSSInterpolationEnvironment environment(map, state, nullptr, nullptr);
   type_.Apply(CurrentInterpolableValue(), CurrentNonInterpolableValue(),
               environment);
 }

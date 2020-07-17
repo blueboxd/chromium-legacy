@@ -229,66 +229,10 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
     bool IsUsableAfterApplyInheritedOnly(const ComputedStyle&) const;
   };
 
-  // These flags indicate whether an apply pass for a given CSSPropertyPriority
-  // and isImportant is required.
-  class NeedsApplyPass {
-   public:
-    bool Get(CSSPropertyPriority priority, bool is_important) const {
-      return flags_[GetIndex(priority, is_important)];
-    }
-    void Set(CSSPropertyPriority priority, bool is_important) {
-      flags_[GetIndex(priority, is_important)] = true;
-    }
-
-   private:
-    static size_t GetIndex(CSSPropertyPriority priority, bool is_important) {
-      DCHECK(priority >= 0 && priority < kPropertyPriorityCount);
-      return priority * 2 + is_important;
-    }
-    bool flags_[kPropertyPriorityCount * 2] = {0};
-  };
-
-  enum class ForcedColorFilter { kEnabled, kDisabled };
-
-  enum ShouldUpdateNeedsApplyPass {
-    kCheckNeedsApplyPass = false,
-    kUpdateNeedsApplyPass = true,
-  };
-
   CacheSuccess ApplyMatchedCache(StyleResolverState&, const MatchResult&);
   void MaybeAddToMatchedPropertiesCache(StyleResolverState&,
                                         const CacheSuccess&,
                                         const MatchResult&);
-
-  void ApplyCustomProperties(StyleResolverState&,
-                             const MatchResult&,
-                             const CacheSuccess&,
-                             NeedsApplyPass&);
-  void ApplyMatchedAnimationProperties(StyleResolverState&,
-                                       const MatchResult&,
-                                       const CacheSuccess&,
-                                       NeedsApplyPass&);
-  void ApplyMatchedHighPriorityProperties(StyleResolverState&,
-                                          const MatchResult&,
-                                          const CacheSuccess&,
-                                          bool& apply_inherited_only,
-                                          NeedsApplyPass&);
-  void ApplyMatchedLowPriorityProperties(StyleResolverState&,
-                                         const MatchResult&,
-                                         const CacheSuccess&,
-                                         bool& apply_inherited_only,
-                                         NeedsApplyPass&);
-  void ApplyMatchedProperties(StyleResolverState&, const MatchResult&);
-  template <CSSPropertyPriority priority>
-  void ApplyForcedColors(StyleResolverState& state,
-                         const MatchResult& match_result,
-                         bool apply_inherited_only,
-                         NeedsApplyPass& needs_apply_pass);
-  template <CSSPropertyPriority priority>
-  void ApplyUaForcedColors(StyleResolverState& state,
-                           const MatchResult& match_result,
-                           bool apply_inherited_only,
-                           NeedsApplyPass& needs_apply_pass);
 
   void CascadeAndApplyMatchedProperties(StyleResolverState&,
                                         StyleCascade& cascade);
@@ -299,36 +243,6 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
                                        StyleCascade* cascade = nullptr);
 
   void ApplyCallbackSelectors(StyleResolverState&);
-
-  template <CSSPropertyPriority priority, ShouldUpdateNeedsApplyPass>
-  void ApplyMatchedProperties(
-      StyleResolverState&,
-      const MatchedPropertiesRange&,
-      bool important,
-      bool inherited_only,
-      NeedsApplyPass&,
-      ForcedColorFilter forced_colors = ForcedColorFilter::kDisabled);
-  template <CSSPropertyPriority priority, ShouldUpdateNeedsApplyPass>
-  void ApplyProperties(
-      StyleResolverState&,
-      const CSSPropertyValueSet* properties,
-      bool is_important,
-      bool inherited_only,
-      NeedsApplyPass&,
-      ValidPropertyFilter,
-      unsigned apply_mask,
-      ForcedColorFilter forced_colors = ForcedColorFilter::kDisabled);
-  template <CSSPropertyPriority priority>
-  void ApplyAnimatedStandardProperties(StyleResolverState&,
-                                       const ActiveInterpolationsMap&);
-  template <CSSPropertyPriority priority>
-  void ApplyAllProperty(StyleResolverState&,
-                        const CSSValue&,
-                        bool inherited_only,
-                        ValidPropertyFilter,
-                        unsigned apply_mask);
-
-  void ApplyCascadedColorValue(StyleResolverState&);
 
   bool PseudoStyleForElementInternal(Element&,
                                      const PseudoElementStyleRequest&,

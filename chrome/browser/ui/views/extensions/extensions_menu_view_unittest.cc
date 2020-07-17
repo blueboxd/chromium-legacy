@@ -105,6 +105,8 @@ class ExtensionsMenuViewUnitTest : public TestWithBrowserView {
   ExtensionsMenuItemView* GetOnlyMenuItem();
 
   void ClickPinButton(ExtensionsMenuItemView* menu_item) const;
+  void ClickContextMenuButton(ExtensionsMenuItemView* menu_item) const;
+  void ClickButton(views::Button* button) const;
 
   std::vector<ToolbarActionView*> GetPinnedExtensionViews();
 
@@ -174,15 +176,23 @@ ExtensionsMenuItemView* ExtensionsMenuViewUnitTest::GetOnlyMenuItem() {
 
 void ExtensionsMenuViewUnitTest::ClickPinButton(
     ExtensionsMenuItemView* menu_item) const {
-  views::ImageButton* pin_button = menu_item->pin_button_for_testing();
+  ClickButton(menu_item->pin_button_for_testing());
+}
+
+void ExtensionsMenuViewUnitTest::ClickContextMenuButton(
+    ExtensionsMenuItemView* menu_item) const {
+  ClickButton(menu_item->context_menu_button_for_testing());
+}
+
+void ExtensionsMenuViewUnitTest::ClickButton(views::Button* button) const {
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, gfx::Point(1, 1),
                              gfx::Point(), ui::EventTimeForNow(),
                              ui::EF_LEFT_MOUSE_BUTTON, 0);
-  pin_button->OnMousePressed(press_event);
+  button->OnMousePressed(press_event);
   ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, gfx::Point(1, 1),
                                gfx::Point(), ui::EventTimeForNow(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
-  pin_button->OnMouseReleased(release_event);
+  button->OnMouseReleased(release_event);
 }
 
 std::vector<ToolbarActionView*>
@@ -516,6 +526,20 @@ TEST_F(ExtensionsMenuViewUnitTest, PinButtonUserAction) {
   EXPECT_EQ(1, user_action_tester.GetActionCount(kPinButtonUserAction));
   ClickPinButton(menu_item);  // Unpin.
   EXPECT_EQ(2, user_action_tester.GetActionCount(kPinButtonUserAction));
+}
+
+TEST_F(ExtensionsMenuViewUnitTest, ContextMenuButtonUserAction) {
+  base::UserActionTester user_action_tester;
+  AddSimpleExtension("Test Extension");
+
+  ExtensionsMenuItemView* menu_item = GetOnlyMenuItem();
+  ASSERT_TRUE(menu_item);
+
+  constexpr char kContextMenuButtonUserAction[] =
+      "Extensions.Toolbar.MoreActionsButtonPressedFromMenu";
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kContextMenuButtonUserAction));
+  ClickContextMenuButton(menu_item);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kContextMenuButtonUserAction));
 }
 
 // TODO(crbug.com/984654): When supported, add a test to verify the

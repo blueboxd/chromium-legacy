@@ -1,0 +1,79 @@
+<link rel="import" href="../../../html/polymer.html">
+
+<link rel="import" href="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.html">
+<link rel="import" href="chrome://resources/mojo/chromeos/services/network_health/public/mojom/network_diagnostics.mojom.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
+<link rel="import" href="../../../cr_elements/cr_button/cr_button.html">
+<link rel="import" href="../../../html/i18n_behavior.html">
+
+<dom-module id="network-diagnostics">
+  <template>
+    <style>
+      .routine-group {
+        display: inline-flex;
+        flex-wrap: wrap;
+      }
+
+      .routine-container {
+        border: 2px solid rgb(150, 150, 150);
+        height: 50px;
+        margin: 10px;
+        padding: 5px;
+        width: 400px;
+      }
+
+      .run-btn {
+        background-color: white;
+      }
+
+      .routine-name {
+        font-size: 1rem;
+        font-weight: bold;
+      }
+
+      .routine-content {
+        display: flex;
+      }
+
+      .routine-result {
+        flex: 1;
+      }
+
+      .result-passed {
+        background-color: rgb(217, 234, 211);
+      }
+
+      .result-error {
+        background-color: rgb(244, 204, 204);
+      }
+
+      .result-not-run {
+        background-color: rgb(255, 242, 204);
+      }
+    </style>
+    <div>
+      <cr-button class="action-button" on-click="onRunAllRoutinesClick_">
+        [[i18n('NetworkDiagnosticsRunAll')]]
+      </cr-button>
+    </div>
+    <div class="routine-group">
+      <template is="dom-repeat" items="[[routines_]]" as="routine">
+        <div class="routine-container">
+          <div class="routine-name">[[i18n(routine.name)]]</div>
+          <div class="routine-content">
+            <span class="routine-result">[[routine.resultMsg]]</span>
+
+            <template is="dom-if" if="[[routine.running]]">
+              <paper-spinner-lite active></paper-spinner-lite>
+            </template>
+
+            <cr-button class="run-btn" hidden="[[routine.running]]" on-click="onRunRoutineClick_">
+              [[i18n('NetworkDiagnosticsRun')]]
+            </cr-button>
+          </div>
+        </div>
+      </template>
+    </div>
+  </template>
+  <script src="network_diagnostics.js"></script>
+</dom-module>

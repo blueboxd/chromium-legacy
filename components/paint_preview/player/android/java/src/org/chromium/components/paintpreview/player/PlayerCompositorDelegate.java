@@ -9,6 +9,7 @@ import android.graphics.Rect;
 
 import org.chromium.base.Callback;
 import org.chromium.base.UnguessableToken;
+import org.chromium.url.GURL;
 
 /**
  * Used for communicating with the Paint Preview delegate for requesting new bitmaps and forwarding
@@ -32,8 +33,9 @@ public interface PlayerCompositorDelegate {
      * @param frameGuid The GUID of the frame.
      * @param x The x coordinate of the click event, relative to the frame.
      * @param y The y coordinate of the click event, relative to the frame.
+     * @return The URL that was clicked on. Null if there are no URLs.
      */
-    void onClick(UnguessableToken frameGuid, int x, int y);
+    GURL onClick(UnguessableToken frameGuid, int x, int y);
 
     /**
      * Sets whether to compress the directory when closing the player.

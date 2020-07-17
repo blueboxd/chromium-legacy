@@ -23,7 +23,6 @@
 #include "chrome/browser/nearby_sharing/proto/device_rpc.pb.h"
 #include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
-#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -242,8 +241,7 @@ TEST_F(NearbyShareClientImplTest, UpdateDeviceSuccess) {
       base::BindOnce(
           &SaveResultConstRef<nearbyshare::proto::UpdateDeviceResponse>,
           &result_proto),
-      base::BindOnce(&NotCalled<NearbyShareRequestError>),
-      PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
+      base::BindOnce(&NotCalled<NearbyShareRequestError>));
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           kAccessToken, base::Time::Max());
@@ -302,8 +300,7 @@ TEST_F(NearbyShareClientImplTest, UpdateDeviceFailure) {
       request,
       base::BindOnce(
           &NotCalledConstRef<nearbyshare::proto::UpdateDeviceResponse>),
-      base::BindOnce(&SaveResult<NearbyShareRequestError>, &error),
-      PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
+      base::BindOnce(&SaveResult<NearbyShareRequestError>, &error));
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           kAccessToken, base::Time::Max());
@@ -329,8 +326,7 @@ TEST_F(NearbyShareClientImplTest, CheckContactsReachabilitySuccess) {
       base::BindOnce(&SaveResultConstRef<
                          nearbyshare::proto::CheckContactsReachabilityResponse>,
                      &result_proto),
-      base::BindOnce(&NotCalled<NearbyShareRequestError>),
-      PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
+      base::BindOnce(&NotCalled<NearbyShareRequestError>));
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           kAccessToken, base::Time::Max());
@@ -374,8 +370,7 @@ TEST_F(NearbyShareClientImplTest, CheckContactsReachabilityFailure) {
       request_proto,
       base::BindOnce(&NotCalledConstRef<
                      nearbyshare::proto::CheckContactsReachabilityResponse>),
-      base::BindOnce(&SaveResult<NearbyShareRequestError>, &error),
-      PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
+      base::BindOnce(&SaveResult<NearbyShareRequestError>, &error));
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           kAccessToken, base::Time::Max());
@@ -401,8 +396,7 @@ TEST_F(NearbyShareClientImplTest, ListContactPeopleSuccess) {
       base::BindOnce(
           &SaveResultConstRef<nearbyshare::proto::ListContactPeopleResponse>,
           &result_proto),
-      base::BindOnce(&NotCalled<NearbyShareRequestError>),
-      PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
+      base::BindOnce(&NotCalled<NearbyShareRequestError>));
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           kAccessToken, base::Time::Max());
@@ -460,8 +454,7 @@ TEST_F(NearbyShareClientImplTest, ListPublicCertificatesSuccess) {
       base::BindOnce(&SaveResultConstRef<
                          nearbyshare::proto::ListPublicCertificatesResponse>,
                      &result_proto),
-      base::BindOnce(&NotCalled<NearbyShareRequestError>),
-      PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
+      base::BindOnce(&NotCalled<NearbyShareRequestError>));
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           kAccessToken, base::Time::Max());
@@ -534,8 +527,7 @@ TEST_F(NearbyShareClientImplTest, FetchAccessTokenFailure) {
       nearbyshare::proto::UpdateDeviceRequest(),
       base::BindOnce(
           &NotCalledConstRef<nearbyshare::proto::UpdateDeviceResponse>),
-      base::BindOnce(&SaveResult<NearbyShareRequestError>, &error),
-      PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
+      base::BindOnce(&SaveResult<NearbyShareRequestError>, &error));
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
           GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
@@ -552,8 +544,7 @@ TEST_F(NearbyShareClientImplTest, ParseResponseProtoFailure) {
       request_proto,
       base::BindOnce(
           &NotCalledConstRef<nearbyshare::proto::UpdateDeviceResponse>),
-      base::BindOnce(&SaveResult<NearbyShareRequestError>, &error),
-      PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
+      base::BindOnce(&SaveResult<NearbyShareRequestError>, &error));
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           kAccessToken, base::Time::Max());
@@ -579,8 +570,7 @@ TEST_F(NearbyShareClientImplTest, MakeSecondRequestBeforeFirstRequestSucceeds) {
       base::BindOnce(
           &SaveResultConstRef<nearbyshare::proto::UpdateDeviceResponse>,
           &result_proto),
-      base::BindOnce(&NotCalled<NearbyShareRequestError>),
-      PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
+      base::BindOnce(&NotCalled<NearbyShareRequestError>));
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           kAccessToken, base::Time::Max());
@@ -598,8 +588,7 @@ TEST_F(NearbyShareClientImplTest, MakeSecondRequestBeforeFirstRequestSucceeds) {
         nearbyshare::proto::CheckContactsReachabilityRequest(),
         base::BindOnce(&NotCalledConstRef<
                        nearbyshare::proto::CheckContactsReachabilityResponse>),
-        base::BindOnce(&SaveResult<NearbyShareRequestError>, &error),
-        PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS));
+        base::BindOnce(&SaveResult<NearbyShareRequestError>, &error)));
   }
 
   // Complete first request.
@@ -624,8 +613,7 @@ TEST_F(NearbyShareClientImplTest, MakeSecondRequestAfterFirstRequestSucceeds) {
         base::BindOnce(
             &SaveResultConstRef<nearbyshare::proto::UpdateDeviceResponse>,
             &result_proto),
-        base::BindOnce(&NotCalled<NearbyShareRequestError>),
-        PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
+        base::BindOnce(&NotCalled<NearbyShareRequestError>));
     identity_test_environment_
         .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
             kAccessToken, base::Time::Max());
@@ -649,8 +637,7 @@ TEST_F(NearbyShareClientImplTest, MakeSecondRequestAfterFirstRequestSucceeds) {
         nearbyshare::proto::CheckContactsReachabilityRequest(),
         base::BindOnce(&NotCalledConstRef<
                        nearbyshare::proto::CheckContactsReachabilityResponse>),
-        base::BindOnce(&SaveResult<NearbyShareRequestError>, &error),
-        PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS));
+        base::BindOnce(&SaveResult<NearbyShareRequestError>, &error)));
   }
 }
 
@@ -666,8 +653,7 @@ TEST_F(NearbyShareClientImplTest, GetAccessTokenUsed) {
       base::BindOnce(
           &SaveResultConstRef<nearbyshare::proto::UpdateDeviceResponse>,
           &result_proto),
-      base::BindOnce(&NotCalled<NearbyShareRequestError>),
-      PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
+      base::BindOnce(&NotCalled<NearbyShareRequestError>));
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           kAccessToken, base::Time::Max());

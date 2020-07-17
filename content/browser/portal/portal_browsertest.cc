@@ -1894,6 +1894,68 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
             activated_observer.result());
 }
 
+namespace {
+void CrashContents(WebContentsImpl* contents) {
+#if defined(OS_WIN)
+  // TODO(mcnee): |CrashTab| on windows makes it look like the process
+  // terminated normally. For now we crash it properly here.
+  RenderProcessHost* rph = contents->GetMainFrame()->GetProcess();
+  RenderProcessHostWatcher watcher(
+      rph, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  EXPECT_TRUE(rph->Shutdown(RESULT_CODE_KILLED));
+  watcher.Wait();
+  EXPECT_FALSE(watcher.did_exit_normally());
+#else
+  CrashTab(contents);
+#endif
+  EXPECT_TRUE(contents->IsCrashed());
+}
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, RejectActivationOfCrashedPages) {
+  GURL main_url(embedded_test_server()->GetURL("portal.test", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  GURL portal_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  Portal* portal = CreatePortalToUrl(web_contents_impl, portal_url);
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+  CrashContents(portal_contents);
+
+  PortalActivatedObserver activated_observer(portal);
+  EXPECT_TRUE(
+      ExecJs(main_frame, "document.querySelector('portal').activate();"));
+  EXPECT_EQ(blink::mojom::PortalActivateResult::kRejectedDueToErrorInPortal,
+            activated_observer.WaitForActivateResult());
+}
+
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivatePreviouslyCrashedPortal) {
+  GURL main_url(embedded_test_server()->GetURL("portal.test", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  GURL portal_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  Portal* portal = CreatePortalToUrl(web_contents_impl, portal_url);
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+  CrashContents(portal_contents);
+
+  TestNavigationObserver navigation_observer(portal_contents);
+  EXPECT_TRUE(ExecJs(
+      main_frame,
+      JsReplace("document.querySelector('portal').src = $1;", portal_url)));
+  navigation_observer.Wait();
+
+  PortalActivatedObserver activated_observer(portal);
+  EXPECT_TRUE(
+      ExecJs(main_frame, "document.querySelector('portal').activate();"));
+  EXPECT_EQ(blink::mojom::PortalActivateResult::kPredecessorWillUnload,
+            activated_observer.WaitForActivateResult());
+}
+
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest, CallCreateProxyAndAttachPortalTwice) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));

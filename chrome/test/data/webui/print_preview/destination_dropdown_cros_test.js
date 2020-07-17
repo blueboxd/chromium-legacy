@@ -19,7 +19,6 @@ destination_dropdown_cros_test.suiteName =
 /** @enum {string} */
 destination_dropdown_cros_test.TestNames = {
   CorrectListItems: 'correct list items',
-  ClickRemovesHighlight: 'click removes highlight',
   ClickCloses: 'click closes dropdown',
   TabCloses: 'tab closes dropdown',
   HighlightedAfterUpDown: 'highlighted after keyboard press up and down',
@@ -86,7 +85,7 @@ suite(destination_dropdown_cros_test.suiteName, function() {
 
   /** @return {?Element} */
   function getHighlightedElement() {
-    return dropdown.$$('[highlighted_]');
+    return dropdown.$$('.highlighted');
   }
 
   /** @return {string} */
@@ -132,20 +131,6 @@ suite(destination_dropdown_cros_test.suiteName, function() {
         assertEquals('One', itemList[0].textContent.trim());
         assertEquals('Two', itemList[1].textContent.trim());
         assertEquals('Three', itemList[2].textContent.trim());
-      });
-
-  test(
-      assert(destination_dropdown_cros_test.TestNames.ClickRemovesHighlight),
-      function() {
-        const destinationOne = createDestination('One', DestinationOrigin.CROS);
-        setItemList([destinationOne]);
-        dropdown.value = destinationOne;
-
-        getList()[0].toggleAttribute('highlighted_', true);
-        assertTrue(getList()[0].hasAttribute('highlighted_'));
-
-        getList()[0].click();
-        assertFalse(getList()[0].hasAttribute('highlighted_'));
       });
 
   test(

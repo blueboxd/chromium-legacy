@@ -964,6 +964,8 @@ static_library("browser") {
     "page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h",
     "page_load_metrics/observers/ad_metrics/frame_data.cc",
     "page_load_metrics/observers/ad_metrics/frame_data.h",
+    "page_load_metrics/observers/ad_metrics/page_ad_density_tracker.cc",
+    "page_load_metrics/observers/ad_metrics/page_ad_density_tracker.h",
     "page_load_metrics/observers/amp_page_load_metrics_observer.cc",
     "page_load_metrics/observers/amp_page_load_metrics_observer.h",
     "page_load_metrics/observers/data_saver_site_breakdown_metrics_observer.cc",
@@ -3290,16 +3292,6 @@ static_library("browser") {
       "metrics/tab_stats_tracker.h",
       "metrics/tab_stats_tracker_delegate.h",
       "nearby_sharing/attachment.h",
-      "nearby_sharing/client/nearby_share_api_call_flow.h",
-      "nearby_sharing/client/nearby_share_api_call_flow_impl.cc",
-      "nearby_sharing/client/nearby_share_api_call_flow_impl.h",
-      "nearby_sharing/client/nearby_share_client.h",
-      "nearby_sharing/client/nearby_share_client_impl.cc",
-      "nearby_sharing/client/nearby_share_client_impl.h",
-      "nearby_sharing/client/nearby_share_request_error.cc",
-      "nearby_sharing/client/nearby_share_request_error.h",
-      "nearby_sharing/client/nearby_share_switches.cc",
-      "nearby_sharing/client/nearby_share_switches.h",
       "nearby_sharing/fast_initiation_manager.cc",
       "nearby_sharing/fast_initiation_manager.h",
       "nearby_sharing/file_attachment.cc",
@@ -3740,6 +3732,7 @@ static_library("browser") {
       "//chrome/app/vector_icons",
       "//chrome/browser/media/kaleidoscope/mojom",
       "//chrome/browser/nearby_sharing/certificates",
+      "//chrome/browser/nearby_sharing/client",
       "//chrome/browser/nearby_sharing/instantmessaging/proto",
       "//chrome/browser/nearby_sharing/logging",
       "//chrome/browser/nearby_sharing/logging:util",
@@ -4819,10 +4812,7 @@ static_library("browser") {
     ]
 
     if (is_android) {
-      deps += [
-        "//components/paint_preview/browser/android",
-        "//components/paint_preview/player/android",
-      ]
+      deps += [ "//components/paint_preview/player/android" ]
     }
   }
 

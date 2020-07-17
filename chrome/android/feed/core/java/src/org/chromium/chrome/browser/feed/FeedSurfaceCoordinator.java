@@ -73,6 +73,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     private final View mNtpHeader;
     private final boolean mShowDarkBackground;
     private final boolean mIsPlaceholderShown;
+    private final boolean mV2Enabled;
     private final FeedSurfaceDelegate mDelegate;
     private final int mDefaultMargin;
     private final int mWideMargin;
@@ -216,6 +217,8 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         mSectionHeaderView = sectionHeaderView;
         mShowDarkBackground = showDarkBackground;
         mIsPlaceholderShown = isPlaceholderShown;
+        mV2Enabled = FeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2);
         mDelegate = delegate;
         mPageNavigationDelegate = pageNavigationDelegate;
         mBottomSheetController = bottomSheetController;
@@ -223,9 +226,12 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         mActionOptions = actionOptions;
 
         Resources resources = mActivity.getResources();
-        mDefaultMargin =
-                resources.getDimensionPixelSize(R.dimen.content_suggestions_card_modern_margin);
-        mWideMargin = resources.getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
+        mDefaultMargin = resources.getDimensionPixelSize(mV2Enabled
+                        ? R.dimen.content_suggestions_card_modern_margin_v2
+                        : R.dimen.content_suggestions_card_modern_margin);
+        mWideMargin = resources.getDimensionPixelSize(mV2Enabled
+                        ? R.dimen.ntp_wide_card_lateral_margins_v2
+                        : R.dimen.ntp_wide_card_lateral_margins);
 
         mRootView = new RootView(mActivity);
         mRootView.setPadding(0, resources.getDimensionPixelOffset(R.dimen.tab_strip_height), 0, 0);
@@ -308,9 +314,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
             mScrollViewResizer = null;
         }
 
-        boolean v2Enabled = FeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2);
-        if (v2Enabled) {
+        if (mV2Enabled) {
             mStream = new FeedStream(mActivity, mShowDarkBackground, mSnackbarManager,
                     mPageNavigationDelegate, mBottomSheetController);
         } else {
@@ -352,7 +356,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
             mStream.setHeaderViews(Arrays.asList(new NonDismissibleHeader(mSectionHeaderView)));
         }
 
-        if (!v2Enabled) {
+        if (!mV2Enabled) {
             mStream.addScrollListener(new FeedLoggingBridge.ScrollEventReporter(
                     FeedProcessScopeFactory.getFeedLoggingBridge()));
         }

@@ -57,8 +57,8 @@ import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoUtils.HomepagePr
 import org.chromium.chrome.browser.partnercustomizations.BasePartnerBrowserCustomizationIntegrationTestRule;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
@@ -75,6 +75,7 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -293,7 +294,8 @@ public class HomepagePromoTest {
     public void testToggleFeed_WithHomepage() {
         // Test to toggle NTP when feed is hidden.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setBoolean(Pref.ARTICLES_LIST_VISIBLE, false);
+            UserPrefs.get(Profile.getLastUsedRegularProfile())
+                    .setBoolean(Pref.ARTICLES_LIST_VISIBLE, false);
         });
         launchNewTabPage();
 

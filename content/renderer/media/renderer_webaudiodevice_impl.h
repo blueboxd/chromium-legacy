@@ -72,12 +72,12 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
  protected:
   // Callback to get output device params (for tests).
   using OutputDeviceParamsCallback = base::OnceCallback<media::AudioParameters(
-      int frame_id,
+      const base::UnguessableToken& frame_token,
       const base::UnguessableToken& session_id,
       const std::string& device_id)>;
 
-  // Callback get render frame ID for current context (for tests).
-  using RenderFrameIdCallback = base::OnceCallback<int()>;
+  // Callback get render frame token for current context (for tests).
+  using RenderFrameTokenCallback = base::OnceCallback<base::UnguessableToken()>;
 
   RendererWebAudioDeviceImpl(media::ChannelLayout layout,
                              int channels,
@@ -85,7 +85,7 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
                              blink::WebAudioDevice::RenderCallback* callback,
                              const base::UnguessableToken& session_id,
                              OutputDeviceParamsCallback device_params_cb,
-                             RenderFrameIdCallback render_frame_id_cb);
+                             RenderFrameTokenCallback render_frame_token_cb);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> GetSuspenderTaskRunner();
@@ -110,8 +110,8 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
   // Used to suspend |sink_| usage when silence has been detected for too long.
   std::unique_ptr<media::SilentSinkSuspender> webaudio_suspender_;
 
-  // Render frame routing ID for the current context.
-  int frame_id_;
+  // Render frame token for the current context.
+  base::UnguessableToken frame_token_;
 
   // Allow unit tests to set a custom TaskRunner for |webaudio_suspender_|.
   scoped_refptr<base::SingleThreadTaskRunner> suspender_task_runner_;

@@ -1247,7 +1247,7 @@ int ImportNetworksForUser(const user_manager::User* user,
               NetworkTypePattern::Ethernet());
       if (ethernet) {
         config_handler->SetShillProperties(ethernet->path(), *shill_dict,
-                                           base::Closure(),
+                                           base::OnceClosure(),
                                            network_handler::ErrorCallback());
       } else {
         ethernet_not_found = true;

@@ -75,10 +75,6 @@ class ContextualSearchPolicy {
         mSearchPanel = panel;
     }
 
-    // TODO(donnd): Consider adding a test-only constructor that uses dependency injection of a
-    // preference manager and PrefServiceBridge.  Currently this is not possible because the
-    // PrefServiceBridge is final.
-
     /**
      * @return The number of additional times to show the promo on tap, 0 if it should not be shown,
      *         or a negative value if the counter has been disabled or the user has accepted
@@ -489,7 +485,6 @@ class ContextualSearchPolicy {
      *         on enabling or disabling the feature.
      */
     boolean isUserUndecided() {
-        // TODO(donnd) use dependency injection for the PrefServiceBridge instead!
         if (mDidOverrideDecidedStateForTesting) return !mDecidedStateForTesting;
 
         return ContextualSearchManager.isContextualSearchUninitialized();

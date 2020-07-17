@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/web/web_frame.h"
 
 namespace content {
 
@@ -22,7 +23,7 @@ FuchsiaAudioDeviceFactory::~FuchsiaAudioDeviceFactory() = default;
 
 scoped_refptr<media::AudioRendererSink>
 FuchsiaAudioDeviceFactory::CreateFinalAudioRendererSink(
-    int render_frame_id,
+    const base::UnguessableToken& frame_token,
     const media::AudioSinkParameters& params,
     base::TimeDelta auth_timeout) {
   // Return nullptr to fallback to the default renderer implementation.
@@ -32,7 +33,7 @@ FuchsiaAudioDeviceFactory::CreateFinalAudioRendererSink(
 scoped_refptr<media::AudioRendererSink>
 FuchsiaAudioDeviceFactory::CreateAudioRendererSink(
     blink::WebAudioDeviceSourceType source_type,
-    int render_frame_id,
+    const base::UnguessableToken& frame_token,
     const media::AudioSinkParameters& params) {
   // Return nullptr to fallback to the default renderer implementation.
   return nullptr;
@@ -41,7 +42,7 @@ FuchsiaAudioDeviceFactory::CreateAudioRendererSink(
 scoped_refptr<media::SwitchableAudioRendererSink>
 FuchsiaAudioDeviceFactory::CreateSwitchableAudioRendererSink(
     blink::WebAudioDeviceSourceType source_type,
-    int render_frame_id,
+    const base::UnguessableToken& frame_token,
     const media::AudioSinkParameters& params) {
   // Return nullptr to fallback to the default renderer implementation.
   return nullptr;
@@ -49,8 +50,13 @@ FuchsiaAudioDeviceFactory::CreateSwitchableAudioRendererSink(
 
 scoped_refptr<media::AudioCapturerSource>
 FuchsiaAudioDeviceFactory::CreateAudioCapturerSource(
-    int render_frame_id,
+    const base::UnguessableToken& frame_token,
     const media::AudioSourceParameters& params) {
+  blink::WebFrame* web_frame = blink::WebFrame::FromFrameToken(frame_token);
+  if (!web_frame)
+    return nullptr;
+
+  int render_frame_id = RenderFrame::GetRoutingIdForWebFrame(web_frame);
   auto* render_frame = RenderFrame::FromRoutingID(render_frame_id);
   if (!render_frame)
     return nullptr;

@@ -2682,6 +2682,8 @@ enum WebFeature {
   kNativeFileSystemDragAndDrop = 3346,
   kRTCAdaptivePtime = 3347,
   kHTMLMetaElementReferrerPolicyMultipleTokensAffectingRequest = 3348,
+  kNavigationTimingL2 = 3349,
+  kResourceTiming = 3350,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

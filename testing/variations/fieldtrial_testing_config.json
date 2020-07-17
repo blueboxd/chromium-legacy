@@ -1285,12 +1285,12 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled12_v1",
+                    "name": "Enabled10_v3",
                     "params": {
-                        "min": "12"
+                        "max_shared_ops": "10"
                     },
                     "enable_features": [
-                        "BrowserThreadPoolAdjustment",
+                        "CacheStorageParallelOps",
                         "CacheStorageSequence"
                     ]
                 }

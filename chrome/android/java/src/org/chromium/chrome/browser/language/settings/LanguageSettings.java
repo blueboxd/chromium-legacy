@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
@@ -92,7 +93,8 @@ public class LanguageSettings
         startActivityForResult(intent, REQUEST_CODE_ADD_LANGUAGES);
     }
 
-    private PrefService getPrefService() {
+    @VisibleForTesting
+    static PrefService getPrefService() {
         return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 }

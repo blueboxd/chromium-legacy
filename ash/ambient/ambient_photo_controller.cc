@@ -40,6 +40,8 @@ namespace ash {
 
 namespace {
 
+// TODO(b/161357364): refactor utility functions and constants
+
 // Topic related numbers.
 
 // The number of requests to fetch topics.
@@ -103,7 +105,6 @@ base::TaskTraits GetTaskTraits() {
           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
 }
 
-// TODO: Move to ambient_util.
 void WriteFile(const base::FilePath& path, const std::string& data) {
   if (!base::PathExists(GetRootPath()) &&
       !base::CreateDirectory(GetRootPath())) {
@@ -227,7 +228,7 @@ AmbientPhotoController::AmbientPhotoController()
 AmbientPhotoController::~AmbientPhotoController() = default;
 
 void AmbientPhotoController::StartScreenUpdate() {
-  root_path_ = GetRootPath().Append(FILE_PATH_LITERAL(base::GenerateGUID()));
+  photo_path_ = GetRootPath().Append(FILE_PATH_LITERAL(base::GenerateGUID()));
   task_runner_->PostTaskAndReply(
       FROM_HERE, base::BindOnce(&DeletePathRecursively, GetRootPath()),
       base::BindOnce(&AmbientPhotoController::FetchTopics,
@@ -242,7 +243,8 @@ void AmbientPhotoController::StopScreenUpdate() {
   weak_factory_.InvalidateWeakPtrs();
 
   task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(&DeletePathRecursively, root_path_));
+                         base::BindOnce(&DeletePathRecursively, photo_path_));
+  photo_path_.clear();
 }
 
 void AmbientPhotoController::OnTopicsChanged() {
@@ -320,7 +322,7 @@ void AmbientPhotoController::TryReadPhotoRawData() {
   const AmbientModeTopic& topic = GetNextTopic();
   const std::string& image_url = topic.portrait_image_url.value_or(topic.url);
 
-  base::FilePath path = root_path_.Append(ToPhotoFileName(image_url));
+  base::FilePath path = photo_path_.Append(ToPhotoFileName(image_url));
   task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(
@@ -367,7 +369,7 @@ void AmbientPhotoController::OnPhotoRawDataAvailable(
     return;
   }
 
-  const base::FilePath path = root_path_.Append(ToPhotoFileName(image_url));
+  const base::FilePath path = photo_path_.Append(ToPhotoFileName(image_url));
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(

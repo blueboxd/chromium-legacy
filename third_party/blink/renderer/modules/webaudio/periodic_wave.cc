@@ -208,11 +208,12 @@ void PeriodicWave::WaveDataForFundamentalFrequency(
   // Negative frequencies are allowed, in which case we alias to the positive
   // frequency.  SSE2 doesn't have an fabs instruction, so just remove the sign
   // bit of the float numbers, effecitvely taking the absolute value.
-  const __m128 frequency = _mm_and_ps(_mm_loadu_ps(fundamental_frequency),
-                                      _mm_set1_epi32(0x7fffffff));
+  const __m128 frequency =
+      _mm_and_ps(_mm_loadu_ps(fundamental_frequency),
+                 reinterpret_cast<__m128>(_mm_set1_epi32(0x7fffffff)));
 
   // pos = 0xffffffff if freq > 0; otherwise 0
-  const __m128i pos = _mm_cmpgt_ps(frequency, _mm_set1_ps(0));
+  const __m128 pos = _mm_cmpgt_ps(frequency, _mm_set1_ps(0));
 
   // Calculate the pitch range.
   __m128 v_ratio =

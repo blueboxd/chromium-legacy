@@ -24,6 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/focus/focus_manager.h"
@@ -140,6 +141,37 @@ void AutofillPopupBaseView::DoHide() {
   } else {
     delete this;
   }
+}
+
+void AutofillPopupBaseView::VisibilityChanged(View* starting_from,
+                                              bool is_visible) {
+  if (!is_visible) {
+    if (is_ax_menu_start_event_fired_) {
+      // Fire menu end event.
+      // The menu start event is delayed until the user
+      // navigates into the menu, otherwise some screen readers will ignore
+      // any focus events outside of the menu, including a focus event on
+      // the form control itself.
+      NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd, true);
+      GetViewAccessibility().EndPopupFocusOverride();
+    }
+    is_ax_menu_start_event_fired_ = false;
+  }
+}
+
+void AutofillPopupBaseView::NotifyAXSelection(View* selected_view) {
+  DCHECK(selected_view);
+  if (!is_ax_menu_start_event_fired_) {
+    // Fire the menu start event once, right before the first item is selected.
+    // By firing these and the matching kMenuEnd events, we are telling screen
+    // readers that the focus is only changing temporarily, and the screen
+    // reader will restore the focus back to the appropriate textfield when the
+    // menu closes.
+    NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
+    is_ax_menu_start_event_fired_ = true;
+  }
+  selected_view->GetViewAccessibility().SetPopupFocusOverride();
+  selected_view->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 }
 
 void AutofillPopupBaseView::OnWidgetBoundsChanged(views::Widget* widget,

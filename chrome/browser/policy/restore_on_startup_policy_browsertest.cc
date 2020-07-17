@@ -85,25 +85,20 @@ class RestoreOnStartupPolicyTest : public PolicyTest,
       expected_urls_.push_back(GURL(url));
     }
     PolicyMap policies;
-    policies.Set(
-        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD,
-        base::WrapUnique(new base::Value(SessionStartupPref::kPrefValueURLs)),
-        nullptr);
+    policies.Set(key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::Value(SessionStartupPref::kPrefValueURLs), nullptr);
     policies.Set(key::kRestoreOnStartupURLs, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, urls.CreateDeepCopy(),
-                 nullptr);
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, urls.Clone(), nullptr);
     provider_.UpdateChromePolicy(policies);
   }
 
   void NTP() {
     // Verifies that policy can set the startup page to the NTP.
     PolicyMap policies;
-    policies.Set(
-        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD,
-        base::WrapUnique(new base::Value(SessionStartupPref::kPrefValueNewTab)),
-        nullptr);
+    policies.Set(key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::Value(SessionStartupPref::kPrefValueNewTab), nullptr);
     provider_.UpdateChromePolicy(policies);
     expected_urls_.push_back(GURL(chrome::kChromeUINewTabURL));
   }
@@ -111,11 +106,9 @@ class RestoreOnStartupPolicyTest : public PolicyTest,
   void Last() {
     // Verifies that policy can set the startup pages to the last session.
     PolicyMap policies;
-    policies.Set(
-        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD,
-        base::WrapUnique(new base::Value(SessionStartupPref::kPrefValueLast)),
-        nullptr);
+    policies.Set(key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::Value(SessionStartupPref::kPrefValueLast), nullptr);
     provider_.UpdateChromePolicy(policies);
     // This should restore the tabs opened at PRE_RunTest below.
     for (const auto* url : kRestoredURLs)
@@ -125,14 +118,12 @@ class RestoreOnStartupPolicyTest : public PolicyTest,
   void Blocked() {
     // Verifies that URLs are blocked during session restore.
     PolicyMap policies;
-    policies.Set(
-        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD,
-        std::make_unique<base::Value>(SessionStartupPref::kPrefValueLast),
-        nullptr);
-    auto urls = std::make_unique<base::Value>(base::Value::Type::LIST);
+    policies.Set(key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::Value(SessionStartupPref::kPrefValueLast), nullptr);
+    base::Value urls(base::Value::Type::LIST);
     for (const auto* url_string : kRestoredURLs)
-      urls->Append(url_string);
+      urls.Append(url_string);
     policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, std::move(urls), nullptr);
     provider_.UpdateChromePolicy(policies);

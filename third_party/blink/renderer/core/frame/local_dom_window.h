@@ -110,6 +110,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   LocalFrame* GetFrame() const { return To<LocalFrame>(DOMWindow::GetFrame()); }
 
+  void Initialize();
+  void ClearForReuse() { document_ = nullptr; }
+
   // Bind Content Security Policy to this window. This will cause the
   // CSP to resolve the 'self' attribute and all policies will then be
   // applied to this document.

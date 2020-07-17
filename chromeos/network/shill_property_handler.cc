@@ -52,11 +52,10 @@ namespace internal {
 // OnPropertyChanged is called.
 class ShillPropertyObserver : public ShillPropertyChangedObserver {
  public:
-  typedef base::Callback<void(ManagedState::ManagedType type,
-                              const std::string& service,
-                              const std::string& name,
-                              const base::Value& value)>
-      Handler;
+  using Handler = base::RepeatingCallback<void(ManagedState::ManagedType type,
+                                               const std::string& service,
+                                               const std::string& name,
+                                               const base::Value& value)>;
 
   ShillPropertyObserver(ManagedState::ManagedType type,
                         const std::string& path,
@@ -434,8 +433,8 @@ void ShillPropertyHandler::UpdateObserved(ManagedState::ManagedType type,
       // Create an observer for future updates.
       observer = std::make_unique<ShillPropertyObserver>(
           type, path,
-          base::Bind(&ShillPropertyHandler::PropertyChangedCallback,
-                     AsWeakPtr()));
+          base::BindRepeating(&ShillPropertyHandler::PropertyChangedCallback,
+                              AsWeakPtr()));
     }
     auto result =
         new_observed.insert(std::make_pair(path, std::move(observer)));

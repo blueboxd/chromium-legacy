@@ -108,7 +108,8 @@ id<GREYMatcher> NavigationBarEditButton() {
 }
 
 // Tests that clearing a nickname is allowed.
-- (void)testEmptyNickname {
+// Disabled due to: crbug.com/1106766
+- (void)DISABLED_testEmptyNickname {
   [[EarlGrey selectElementWithMatcher:NicknameTextField()]
       performAction:grey_typeText(@"To be removed")];
 

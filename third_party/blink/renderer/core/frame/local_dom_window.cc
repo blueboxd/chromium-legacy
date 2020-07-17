@@ -248,6 +248,12 @@ void LocalDOMWindow::BindContentSecurityPolicy() {
       GetContentSecurityPolicyDelegate());
 }
 
+void LocalDOMWindow::Initialize() {
+  GetAgent()->AttachContext(this);
+  if (auto* agent_metrics = GetFrame()->GetPage()->GetAgentMetricsCollector())
+    agent_metrics->DidAttachWindow(*this);
+}
+
 void LocalDOMWindow::AcceptLanguagesChanged() {
   if (navigator_)
     navigator_->SetLanguagesDirty();
@@ -666,26 +672,12 @@ bool LocalDOMWindow::HasInsecureContextInAncestors() {
 
 Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
   DCHECK_EQ(init.GetFrame(), GetFrame());
-  DCHECK(!document_ || !document_->IsActive());
-
-  bool is_first_document = !document_;
-
-  // Explicitly null document_ here so that it is always null when Document's
-  // constructor is running. This ensures that no code running from the
-  // constructor obeserves a situation where dom_window_->document() is a
-  // a different Document.
-  document_ = nullptr;
+  DCHECK(!document_);
   document_ = init.CreateDocument();
   document_->Initialize();
 
   if (!GetFrame())
     return document_;
-
-  if (is_first_document) {
-    GetAgent()->AttachContext(this);
-    if (auto* agent_metrics = GetFrame()->GetPage()->GetAgentMetricsCollector())
-      agent_metrics->DidAttachWindow(*this);
-  }
 
   GetFrame()->GetScriptController().UpdateDocument();
   document_->GetViewportData().UpdateViewportDescription();

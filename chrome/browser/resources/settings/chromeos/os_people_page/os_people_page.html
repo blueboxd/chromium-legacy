@@ -183,7 +183,8 @@
             associated-control="[[$$('#lock-screen-subpage-trigger')]]">
           <settings-lock-screen id="lock-screen" set-modes="[[setModes_]]"
               prefs="{{prefs}}" auth-token="[[authToken_]]"
-              on-password-requested="onPasswordRequested_">
+              on-password-requested="onPasswordRequested_"
+              on-invalidate-auth-token-requested="onInvalidateTokenRequested_">
           </settings-lock-screen>
         </settings-subpage>
       </template>
@@ -227,6 +228,7 @@
 
     <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>
       <settings-lock-screen-password-prompt-dialog
+          id="passwordDialog"
           on-close="onPasswordPromptDialogClose_"
           on-auth-token-obtained="onAuthTokenObtained_">
       </settings-lock-screen-password-prompt-dialog>

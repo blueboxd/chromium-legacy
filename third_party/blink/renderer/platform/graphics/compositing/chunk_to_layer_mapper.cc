@@ -9,13 +9,10 @@
 
 namespace blink {
 
-ChunkToLayerMapper::ChunkToLayerMapper(
-    const PropertyTreeState& layer_state,
-    const gfx::Vector2dF& layer_offset,
-    const FloatSize& visual_rect_subpixel_offset)
+ChunkToLayerMapper::ChunkToLayerMapper(const PropertyTreeState& layer_state,
+                                       const gfx::Vector2dF& layer_offset)
     : layer_state_(layer_state),
       layer_offset_(layer_offset),
-      visual_rect_subpixel_offset_(visual_rect_subpixel_offset),
       chunk_state_(layer_state_),
       translation_2d_or_matrix_(
           FloatSize(-layer_offset.x(), -layer_offset.y())) {}
@@ -86,7 +83,6 @@ IntRect ChunkToLayerMapper::MapVisualRect(const IntRect& rect) const {
   IntRect result;
   if (!mapped_rect.IsEmpty()) {
     InflateForRasterEffectOutset(mapped_rect);
-    AdjustVisualRectBySubpixelOffset(mapped_rect);
     result = EnclosingIntRect(mapped_rect);
   }
 #if DCHECK_IS_ON()
@@ -113,18 +109,7 @@ IntRect ChunkToLayerMapper::MapUsingGeometryMapper(const IntRect& rect) const {
 
   visual_rect.Rect().Move(-layer_offset_.x(), -layer_offset_.y());
   InflateForRasterEffectOutset(visual_rect.Rect());
-  AdjustVisualRectBySubpixelOffset(visual_rect.Rect());
   return EnclosingIntRect(visual_rect.Rect());
-}
-
-void ChunkToLayerMapper::AdjustVisualRectBySubpixelOffset(
-    FloatRect& rect) const {
-  // Add back the layer's subpixel accumulation that was excluded from the
-  // visual rect by
-  // PaintInvalidator::ExcludeCompositedLayerSubpixelAccumulation().
-  // The condition below should be kept consistent with that function.
-  if (&chunk_state_.Transform() == &layer_state_.Transform())
-    rect.Move(visual_rect_subpixel_offset_);
 }
 
 void ChunkToLayerMapper::InflateForRasterEffectOutset(FloatRect& rect) const {

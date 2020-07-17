@@ -21256,6 +21256,7 @@ Called by update_document_policy_enum.py.-->
   <int value="738" label="ExtensionInstallAllowlist"/>
   <int value="739" label="ShowFullUrlsInAddressBar"/>
   <int value="740" label="ExtensionInstallBlocklist"/>
+  <int value="741" label="ReportDeviceSystemInfo"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -28505,6 +28506,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3347" label="RTCAdaptivePtime"/>
   <int value="3348"
       label="HTMLMetaElementReferrerPolicyMultipleTokensAffectingRequest"/>
+  <int value="3349" label="NavigationTimingL2"/>
+  <int value="3350" label="ResourceTiming"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -53244,12 +53247,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="Opened automatically / Auto-signin toast"/>
   <int value="7" label="Opened manually / Offering a password to update"/>
   <int value="8" label="Opened automatically / Offering a password to update"/>
-  <int value="9"
+  <int value="9" label="Opened manually / Confirming generated password saved"/>
+  <int value="10"
       label="Opened automatically / Offering to save unsynced passwords
              locally"/>
-  <int value="10"
-      label="Opened automatically / Notification about compromised passwords"/>
   <int value="11"
+      label="Opened automatically / Notification about compromised passwords"/>
+  <int value="12"
       label="Opened automatically / Offering to move profile password to
              account store"/>
 </enum>
@@ -54399,9 +54403,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Clicked 'Nope'"/>
   <int value="3" label="Clicked 'Never'"/>
   <int value="4" label="Clicked 'Manage passwords'"/>
-  <int value="5" label="Clicked 'Done'"/>
+  <int value="5" label="Clicked 'Done' (obsolete)"/>
   <int value="6" label="Clicked 'Unblacklist' (obsolete)"/>
-  <int value="7" label="Clicked 'OK'"/>
+  <int value="7" label="Clicked 'OK' (obsolete)"/>
   <int value="8" label="Clicked on a credential (obsolete)"/>
   <int value="9" label="Auto-signin toast timeout"/>
   <int value="10" label="Auto-signin toast clicked (obsolete)"/>
@@ -62550,6 +62554,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="5" label="Sent for blocked embedder"/>
   <int value="6" label="Throttled for too many undrawn frames"/>
   <int value="7" label="Sent by default"/>
+  <int value="8" label="Throttled by client request"/>
 </enum>
 
 <enum name="SendPasswordFormToBrowserProcess">

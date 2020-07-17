@@ -802,6 +802,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return blink_widget_host_receiver_;
   }
 
+  // Returns the visual properties that were last sent to the renderer.
+  base::Optional<blink::VisualProperties>
+  GetLastVisualPropertiesSentToRendererForTesting();
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to

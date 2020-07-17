@@ -26,7 +26,7 @@ class ProxiedPoliciesPropagatedWatcher;
 
 class CloudPolicyStore;
 class ConfigurationPolicyProvider;
-class ExtensionPolicyMigrator;
+class PolicyMigrator;
 class PolicyService;
 class PolicyServiceImpl;
 class SchemaRegistry;
@@ -114,7 +114,7 @@ class ProfilePolicyConnector final {
   // [2] i.e. g_browser_process->local_state()
   std::unique_ptr<PolicyService> CreatePolicyServiceWithInitializationThrottled(
       const std::vector<ConfigurationPolicyProvider*>& policy_providers,
-      std::vector<std::unique_ptr<ExtensionPolicyMigrator>> migrators,
+      std::vector<std::unique_ptr<PolicyMigrator>> migrators,
       ConfigurationPolicyProvider* user_policy_delegate);
 
   // Called when primary user policies that are proxied to the device-wide

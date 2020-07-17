@@ -195,7 +195,7 @@ void PasswordGenerationPopupViewViews::UpdateBoundsAndRedrawPopup() {
 
 void PasswordGenerationPopupViewViews::PasswordSelectionUpdated() {
   if (controller_->password_selected())
-    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+    NotifyAXSelection(this);
 
   password_view_->UpdateBackground(controller_->password_selected()
                                        ? GetSelectedBackgroundColor()

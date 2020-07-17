@@ -698,19 +698,11 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
       std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
 
-  auto* ua_context = MakeGarbageCollected<CSSParserContext>(
-      kUASheetMode, SecureContextMode::kInsecureContext);
-  const CSSValue* internal_light_dark = CSSParser::ParseSingleValue(
-      CSSPropertyID::kColor, "-internal-light-dark(black, white)", ua_context);
-
   ColorSchemeHelper color_scheme_helper(dummy_page_holder_->GetDocument());
   color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
   StyleResolverState state(dummy_page_holder_->GetDocument(),
                            *dummy_page_holder_->GetDocument().documentElement(),
                            initial, initial);
-
-  StyleResolver& resolver =
-      dummy_page_holder_->GetDocument().GetStyleResolver();
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   state.SetStyle(style);
@@ -721,51 +713,27 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
   CSSValueList* light_value = CSSValueList::CreateSpaceSeparated();
   light_value->Append(*CSSIdentifierValue::Create(CSSValueID::kLight));
 
-  {
-    ScopedCSSCascadeForTest scoped_cascade_enabled(false);
+  auto* color_declaration = ParseDeclarationBlock(
+      "color:-internal-light-dark(black, white)", CSSParserMode::kUASheetMode);
+  auto* dark_declaration = ParseDeclarationBlock("color-scheme:dark");
+  auto* light_declaration = ParseDeclarationBlock("color-scheme:light");
 
-    To<Longhand>(GetCSSPropertyColor()).ApplyValue(state, *internal_light_dark);
-    To<Longhand>(GetCSSPropertyColorScheme()).ApplyValue(state, *dark_value);
-    resolver.ApplyCascadedColorValue(state);
-    EXPECT_EQ(Color::kWhite,
-              style->VisitedDependentColor(GetCSSPropertyColor()));
+  StyleCascade cascade1(state);
+  cascade1.MutableMatchResult().AddMatchedProperties(color_declaration);
+  cascade1.MutableMatchResult().AddMatchedProperties(dark_declaration);
+  cascade1.Apply();
+  EXPECT_EQ(Color::kWhite, style->VisitedDependentColor(GetCSSPropertyColor()));
 
-    To<Longhand>(GetCSSPropertyColor()).ApplyValue(state, *internal_light_dark);
-    To<Longhand>(GetCSSPropertyColorScheme()).ApplyValue(state, *light_value);
-    resolver.ApplyCascadedColorValue(state);
-    EXPECT_EQ(Color::kBlack,
-              style->VisitedDependentColor(GetCSSPropertyColor()));
-  }
-
-  {
-    ScopedCSSCascadeForTest scoped_cascade_enabled(true);
-
-    auto* color_declaration =
-        ParseDeclarationBlock("color:-internal-light-dark(black, white)",
-                              CSSParserMode::kUASheetMode);
-    auto* dark_declaration = ParseDeclarationBlock("color-scheme:dark");
-    auto* light_declaration = ParseDeclarationBlock("color-scheme:light");
-
-    StyleCascade cascade1(state);
-    cascade1.MutableMatchResult().AddMatchedProperties(color_declaration);
-    cascade1.MutableMatchResult().AddMatchedProperties(dark_declaration);
-    cascade1.Apply();
-    EXPECT_EQ(Color::kWhite,
-              style->VisitedDependentColor(GetCSSPropertyColor()));
-
-    StyleCascade cascade2(state);
-    cascade2.MutableMatchResult().AddMatchedProperties(color_declaration);
-    cascade2.MutableMatchResult().AddMatchedProperties(light_declaration);
-    cascade2.Apply();
-    EXPECT_EQ(Color::kBlack,
-              style->VisitedDependentColor(GetCSSPropertyColor()));
-  }
+  StyleCascade cascade2(state);
+  cascade2.MutableMatchResult().AddMatchedProperties(color_declaration);
+  cascade2.MutableMatchResult().AddMatchedProperties(light_declaration);
+  cascade2.Apply();
+  EXPECT_EQ(Color::kBlack, style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
 TEST(ComputedStyleTest, ApplyInternalLightDarkBackgroundImage) {
   using css_test_helpers::ParseDeclarationBlock;
 
-  ScopedCSSCascadeForTest scoped_cascade_enabled(true);
   ScopedCSSColorSchemeForTest scoped_property_enabled(true);
   ScopedCSSColorSchemeUARenderingForTest scoped_ua_enabled(true);
 

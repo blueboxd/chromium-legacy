@@ -38,7 +38,14 @@ interface PlayerFrameViewDelegate {
      * @param x X coordinate of the point clicked.
      * @param y Y coordinate of the point clicked.
      */
-    void onClick(int x, int y);
+    void onTap(int x, int y);
+
+    /**
+     * Called when a long press gesture is performed.
+     * @param x X coordinate of the point clicked.
+     * @param y Y coordinate of the point clicked.
+     */
+    void onLongPress(int x, int y);
 
     /**
      * Called when a fling gesture is performed.

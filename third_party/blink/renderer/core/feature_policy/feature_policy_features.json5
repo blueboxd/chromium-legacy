@@ -23,6 +23,14 @@
     // which gets parsed from the header or the allow attribute.
     feature_policy_name: {
     },
+
+    // feature_default: Default allowlist state for feature. This corresponds
+    // to enum class |FeaturePolicyFeatureDefault| in
+    // public/common/feature_policy/feature_policy_features.h
+    feature_default: {
+      default: "EnableForSelf",
+      valid_values: ["DisableForAll", "EnableForAll", "EnableForSelf"]
+    }
   },
 
   data: [
@@ -76,6 +84,7 @@
     {
       name: "ClientHintUA",
       feature_policy_name: "ch-ua",
+      feature_default: "EnableForAll",
       depends_on: ["FeaturePolicyForClientHints"],
     },
     {
@@ -96,6 +105,7 @@
     {
       name: "ClientHintUAMobile",
       feature_policy_name: "ch-ua-mobile",
+      feature_default: "EnableForAll",
       depends_on: ["FeaturePolicyForClientHints"],
     },
     {
@@ -139,15 +149,18 @@
     {
       name: "DocumentDomain",
       feature_policy_name: "document-domain",
+      feature_default: "EnableForAll",
     },
     {
       name: "DocumentWrite",
       feature_policy_name: "document-write",
+      feature_default: "EnableForAll",
       depends_on: ["ExperimentalProductivityFeatures"],
     },
     {
       name: "Downloads",
       feature_policy_name: "downloads",
+      feature_default: "EnableForAll",
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
@@ -157,21 +170,25 @@
     {
       name: "ExecutionWhileOutOfViewport",
       feature_policy_name: "execution-while-out-of-viewport",
+      feature_default: "EnableForAll",
       depends_on: ["FreezeFramesOnVisibility"],
     },
     {
       name: "ExecutionWhileNotRendered",
       feature_policy_name: "execution-while-not-rendered",
+      feature_default: "EnableForAll",
       depends_on: ["FreezeFramesOnVisibility"],
     },
     {
       name: "FocusWithoutUserActivation",
       feature_policy_name: "focus-without-user-activation",
+      feature_default: "EnableForAll",
       depends_on: ["BlockingFocusWithoutUserActivation"],
     },
     {
       name: "FormSubmission",
       feature_policy_name: "forms",
+      feature_default: "EnableForAll",
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
@@ -216,11 +233,13 @@
     {
       name: "Modals",
       feature_policy_name: "modals",
+      feature_default: "EnableForAll",
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
       name: "OrientationLock",
       feature_policy_name: "orientation-lock",
+      feature_default: "EnableForAll",
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
@@ -231,21 +250,25 @@
     {
       name: "PictureInPicture",
       feature_policy_name: "picture-in-picture",
+      feature_default: "EnableForAll",
       depends_on: ["PictureInPictureAPI"],
     },
     {
       name: "PointerLock",
       feature_policy_name: "pointer-lock",
+      feature_default: "EnableForAll",
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
       name: "Popups",
       feature_policy_name: "popups",
+      feature_default: "EnableForAll",
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
       name: "Presentation",
       feature_policy_name: "presentation",
+      feature_default: "EnableForAll",
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
@@ -261,6 +284,7 @@
     {
       name: "Script",
       feature_policy_name: "scripts",
+      feature_default: "EnableForAll",
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
@@ -270,21 +294,25 @@
     },
     {
       name: "StorageAccessAPI",
+      feature_default: "EnableForAll",
       feature_policy_name: "storage-access-api",
       depends_on: ["StorageAccessAPI"],
     },
     {
       name: "SyncScript",
       feature_policy_name: "sync-script",
+      feature_default: "EnableForAll",
       depends_on: ["ExperimentalProductivityFeatures"],
     },
     {
       name: "SyncXHR",
+      feature_default: "EnableForAll",
       feature_policy_name: "sync-xhr",
     },
     {
       name: "TopNavigation",
       feature_policy_name: "top-navigation",
+      feature_default: "EnableForAll",
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
@@ -300,6 +328,7 @@
     {
       name: "VerticalScroll",
       feature_policy_name: "vertical-scroll",
+      feature_default: "EnableForAll",
       depends_on: ["ExperimentalProductivityFeatures"],
     },
     {

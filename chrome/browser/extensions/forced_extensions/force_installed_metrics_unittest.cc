@@ -106,6 +106,8 @@ constexpr char kManifestNoUpdatesInfo[] =
     "Extensions.ForceInstalledFailureNoUpdatesInfo";
 constexpr char kExtensionManifestInvalidAppStatusError[] =
     "Extensions.ForceInstalledFailureManifestInvalidAppStatusError";
+constexpr char kManifestDownloadTimeStats[] =
+    "Extensions.ForceInstalledTime.DownloadingStartTo.ManifestDownloadComplete";
 }  // namespace
 
 namespace extensions {
@@ -185,6 +187,19 @@ class ForceInstalledMetricsTest : public testing::Test,
     policy::PolicyMap map;
     policy_provider_.UpdateChromePolicy(std::move(map));
     base::RunLoop().RunUntilIdle();
+  }
+
+  // Report downloading manifest stage for both the extensions.
+  void ReportDownloadingManifestStage() {
+    auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+    install_stage_tracker_->ReportDownloadingStage(
+        kExtensionId1,
+        ExtensionDownloaderDelegate::Stage::DOWNLOADING_MANIFEST);
+    tracker_->OnExtensionLoaded(profile_, ext1.get());
+    auto ext2 = ExtensionBuilder(kExtensionName2).SetID(kExtensionId2).Build();
+    install_stage_tracker_->ReportDownloadingStage(
+        kExtensionId2,
+        ExtensionDownloaderDelegate::Stage::DOWNLOADING_MANIFEST);
   }
 
   // ForceInstalledTracker::Observer overrides:
@@ -299,6 +314,19 @@ TEST_F(ForceInstalledMetricsTest, ExtensionsInstallationTimedOut) {
   histogram_tester_.ExpectUniqueSample(
       kTotalCountStats,
       prefs_->GetManagedPref(pref_names::kInstallForceList)->DictSize(), 1);
+}
+
+TEST_F(ForceInstalledMetricsTest, ExtensionsManifestDownloadTime) {
+  SetupForceList();
+  ReportDownloadingManifestStage();
+  install_stage_tracker_->ReportDownloadingStage(
+      kExtensionId1, ExtensionDownloaderDelegate::Stage::MANIFEST_LOADED);
+  install_stage_tracker_->ReportFailure(
+      kExtensionId2, InstallStageTracker::FailureReason::MANIFEST_INVALID);
+  // ForceInstalledMetrics shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectTotalCount(kManifestDownloadTimeStats, 1);
 }
 
 // Reporting disable reason for the force installed extensions which are

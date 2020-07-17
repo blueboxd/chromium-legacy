@@ -258,17 +258,13 @@ void CaretDisplayItemClient::PaintCaret(
   PhysicalRect drawing_rect = local_rect_;
   drawing_rect.Move(paint_offset);
 
-  DrawingRecorder recorder(context, *this, display_item_type);
+  DrawingRecorder recorder(context, *this, display_item_type, visual_rect_);
   IntRect paint_rect = PixelSnappedIntRect(drawing_rect);
   context.FillRect(paint_rect, color_, DarkModeFilter::ElementRole::kText);
 }
 
 String CaretDisplayItemClient::DebugName() const {
   return "Caret";
-}
-
-IntRect CaretDisplayItemClient::VisualRect() const {
-  return visual_rect_;
 }
 
 }  // namespace blink

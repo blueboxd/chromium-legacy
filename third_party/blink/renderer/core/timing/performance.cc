@@ -241,6 +241,7 @@ PerformanceEntryVector Performance::getEntriesByTypeInternal(
   PerformanceEntryVector entries;
   switch (type) {
     case PerformanceEntry::kResource:
+      UseCounter::Count(GetExecutionContext(), WebFeature::kResourceTiming);
       for (const auto& resource : resource_timing_buffer_)
         entries.push_back(resource);
       break;
@@ -263,6 +264,7 @@ PerformanceEntryVector Performance::getEntriesByTypeInternal(
         entries.push_back(first_input_timing_);
       break;
     case PerformanceEntry::kNavigation:
+      UseCounter::Count(GetExecutionContext(), WebFeature::kNavigationTimingL2);
       if (!navigation_timing_)
         navigation_timing_ = CreateNavigationTimingInstance();
       if (navigation_timing_)

@@ -114,6 +114,7 @@ class EventClientImpl;
 class EventRewriterControllerImpl;
 class EventTransformationHandler;
 class FocusCycler;
+class FrameThrottlingController;
 class HighContrastController;
 class HighlighterController;
 class HomeScreenController;
@@ -531,6 +532,10 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   PrefService* local_state() { return local_state_; }
 
+  FrameThrottlingController* frame_throttling_controller() {
+    return frame_throttling_controller_.get();
+  }
+
   // Force the shelf to query for it's current visibility state.
   // TODO(jamescook): Move to Shelf.
   void UpdateShelfVisibility();
@@ -810,6 +815,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Enables spoken feedback accessibility based on a press and hold of both
   // volume keys.
   std::unique_ptr<KeyAccessibilityEnabler> key_accessibility_enabler_;
+
+  std::unique_ptr<FrameThrottlingController> frame_throttling_controller_;
 
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_test_ = false;

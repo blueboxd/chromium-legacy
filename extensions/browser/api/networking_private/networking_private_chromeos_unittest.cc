@@ -301,17 +301,17 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
 
   void OnNetworkProperties(const std::string& expected_path,
                            base::Optional<base::Value>* result,
-                           const base::Closure& callback,
+                           base::OnceClosure callback,
                            const std::string& service_path,
                            base::Optional<base::Value> properties) {
     if (!properties) {
       ADD_FAILURE() << "Error calling shill client.";
-      callback.Run();
+      std::move(callback).Run();
       return;
     }
     EXPECT_EQ(expected_path, service_path);
     *result = std::move(properties);
-    callback.Run();
+    std::move(callback).Run();
   }
 
   std::unique_ptr<base::DictionaryValue> GetNetworkUiData(

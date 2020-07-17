@@ -51,52 +51,51 @@ class NetworkingPrivateServiceClient
   void GetManagedProperties(const std::string& guid,
                             PropertiesCallback callback) override;
   void GetState(const std::string& guid,
-                const DictionaryCallback& success_callback,
-                const FailureCallback& failure_callback) override;
+                DictionaryCallback success_callback,
+                FailureCallback failure_callback) override;
   void SetProperties(const std::string& guid,
                      std::unique_ptr<base::DictionaryValue> properties_dict,
                      bool allow_set_shared_config,
-                     const VoidCallback& success_callback,
-                     const FailureCallback& failure_callback) override;
+                     VoidCallback success_callback,
+                     FailureCallback failure_callback) override;
   void CreateNetwork(bool shared,
                      std::unique_ptr<base::DictionaryValue> properties_dict,
-                     const StringCallback& success_callback,
-                     const FailureCallback& failure_callback) override;
+                     StringCallback success_callback,
+                     FailureCallback failure_callback) override;
   void ForgetNetwork(const std::string& guid,
                      bool allow_forget_shared_config,
-                     const VoidCallback& success_callback,
-                     const FailureCallback& failure_callback) override;
+                     VoidCallback success_callback,
+                     FailureCallback failure_callback) override;
   void GetNetworks(const std::string& network_type,
                    bool configured_only,
                    bool visible_only,
                    int limit,
-                   const NetworkListCallback& success_callback,
-                   const FailureCallback& failure_callback) override;
+                   NetworkListCallback success_callback,
+                   FailureCallback failure_callback) override;
   void StartConnect(const std::string& guid,
-                    const VoidCallback& success_callback,
-                    const FailureCallback& failure_callback) override;
+                    VoidCallback success_callback,
+                    FailureCallback failure_callback) override;
   void StartDisconnect(const std::string& guid,
-                       const VoidCallback& success_callback,
-                       const FailureCallback& failure_callback) override;
+                       VoidCallback success_callback,
+                       FailureCallback failure_callback) override;
   void GetCaptivePortalStatus(const std::string& guid,
-                              const StringCallback& success_callback,
-                              const FailureCallback& failure_callback) override;
+                              StringCallback success_callback,
+                              FailureCallback failure_callback) override;
   void UnlockCellularSim(const std::string& guid,
                          const std::string& pin,
                          const std::string& puk,
-                         const VoidCallback& success_callback,
-                         const FailureCallback& failure_callback) override;
+                         VoidCallback success_callback,
+                         FailureCallback failure_callback) override;
   void SetCellularSimState(const std::string& guid,
                            bool require_pin,
                            const std::string& current_pin,
                            const std::string& new_pin,
-                           const VoidCallback& success_callback,
-                           const FailureCallback& failure_callback) override;
-  void SelectCellularMobileNetwork(
-      const std::string& guid,
-      const std::string& network_id,
-      const VoidCallback& success_callback,
-      const FailureCallback& failure_callback) override;
+                           VoidCallback success_callback,
+                           FailureCallback failure_callback) override;
+  void SelectCellularMobileNetwork(const std::string& guid,
+                                   const std::string& network_id,
+                                   VoidCallback success_callback,
+                                   FailureCallback failure_callback) override;
   std::unique_ptr<base::ListValue> GetEnabledNetworkTypes() override;
   std::unique_ptr<DeviceStateList> GetDeviceStateList() override;
   std::unique_ptr<base::DictionaryValue> GetGlobalPolicy() override;

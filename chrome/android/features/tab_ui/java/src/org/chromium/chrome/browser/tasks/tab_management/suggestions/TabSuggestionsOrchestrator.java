@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestion.TabSuggestionAction;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -254,23 +255,35 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
             Log.e(TAG, "TabSuggestionFeedback is null");
             return;
         }
+
+        String suffix = "";
+        switch (tabSuggestionFeedback.tabSuggestion.getAction()) {
+            case TabSuggestionAction.CLOSE:
+                suffix = "Closing";
+                break;
+            case TabSuggestionAction.GROUP:
+                suffix = "Grouping";
+                break;
+            default:
+                assert false : "Unknown TabSuggestion action";
+        }
+
         // Record TabSuggestionFeedback for testing purposes
         mTabSuggestionFeedback = tabSuggestionFeedback;
 
-        if (tabSuggestionFeedback.tabSuggestionResponse
-                == TabSuggestionFeedback.TabSuggestionResponse.NOT_CONSIDERED) {
-            RecordUserAction.record("TabsSuggestions.Close.SuggestionsReview.Dismissed");
-            recordDismissalBackoff();
-            return;
-        } else {
-            RecordUserAction.record("TabsSuggestions.Close.SuggestionsReview.Accepted");
-            if (tabSuggestionFeedback.tabSuggestionResponse
-                    == TabSuggestionFeedback.TabSuggestionResponse.ACCEPTED) {
-                RecordUserAction.record("TabsSuggestions.Close.Accepted");
-            } else {
-                RecordUserAction.record("TabsSuggestions.Close.Dismissed");
+        switch (tabSuggestionFeedback.tabSuggestionResponse) {
+            case TabSuggestionFeedback.TabSuggestionResponse.NOT_CONSIDERED:
+                RecordUserAction.record("TabsSuggestions.NotConsidered." + suffix);
+                recordDismissalBackoff();
                 return;
-            }
+            case TabSuggestionFeedback.TabSuggestionResponse.ACCEPTED:
+                RecordUserAction.record("TabsSuggestions.Considered.Accepted." + suffix);
+                break;
+            case TabSuggestionFeedback.TabSuggestionResponse.DISMISSED:
+                RecordUserAction.record("TabsSuggestions.Considered.Dismissed." + suffix);
+                return;
+            default:
+                assert false : "Unknown TabSuggestionResponse";
         }
 
         Set<Integer> suggestedTabIds = new HashSet<>();
@@ -289,8 +302,8 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
         }
         int numChanged = tabSuggestionFeedback.tabSuggestion.getTabsInfo().size()
                 - numSelectFromSuggestion + numSelectOutsideSuggestion;
-        // This was previously TabsSuggestions.Close.NumSuggestionsChanged
+        // This was previously TabsSuggestions.Close.NumSuggestionsChanged.
         RecordHistogram.recordCount100Histogram(
-                "Tabs.Suggestions.Close.NumSuggestionsChanged", numChanged);
+                "Tabs.Suggestions.NumSuggestionsChanged." + suffix, numChanged);
     }
 }

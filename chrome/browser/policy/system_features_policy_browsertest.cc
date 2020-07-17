@@ -39,9 +39,8 @@ class SystemFeaturesPolicyTest : public PolicyTest {
 
 IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableCameraBeforeInstall) {
   PolicyMap policies;
-  std::unique_ptr<base::Value> system_features =
-      std::make_unique<base::Value>(base::Value::Type::LIST);
-  system_features->Append(kCameraFeature);
+  base::Value system_features(base::Value::Type::LIST);
+  system_features.Append(kCameraFeature);
   policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::move(system_features), nullptr);
@@ -73,8 +72,7 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableCameraBeforeInstall) {
       });
 
   policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(), nullptr);
   UpdateProviderPolicy(policies);
 
   ASSERT_TRUE(
@@ -99,9 +97,8 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableCameraAfterInstall) {
   base::RunLoop().RunUntilIdle();
 
   PolicyMap policies;
-  std::unique_ptr<base::Value> system_features =
-      std::make_unique<base::Value>(base::Value::Type::LIST);
-  system_features->Append(kCameraFeature);
+  base::Value system_features(base::Value::Type::LIST);
+  system_features.Append(kCameraFeature);
   policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::move(system_features), nullptr);
@@ -124,8 +121,7 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableCameraAfterInstall) {
       });
 
   policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(), nullptr);
   UpdateProviderPolicy(policies);
 
   ASSERT_TRUE(
@@ -142,9 +138,8 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableCameraAfterInstall) {
 
 IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, RedirectChromeSettingsURL) {
   PolicyMap policies;
-  std::unique_ptr<base::Value> system_features =
-      std::make_unique<base::Value>(base::Value::Type::LIST);
-  system_features->Append(kBrowserSettingsFeature);
+  base::Value system_features(base::Value::Type::LIST);
+  system_features.Append(kBrowserSettingsFeature);
   policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::move(system_features), nullptr);
@@ -155,8 +150,7 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, RedirectChromeSettingsURL) {
             GetWebUITitle(settings_url));
 
   policies.Set(key::kSystemFeaturesDisableList, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(), nullptr);
   UpdateProviderPolicy(policies);
 
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_SETTINGS_SETTINGS),

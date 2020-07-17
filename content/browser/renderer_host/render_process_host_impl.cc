@@ -3160,9 +3160,6 @@ bool RenderProcessHostImpl::IsProcessLockedForTesting() {
 void RenderProcessHostImpl::NotifyRendererIfLockedToSite() {
   ProcessLock process_lock =
       ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(GetID());
-  if (!process_lock.lock_url().is_valid())
-    return;
-
   if (!process_lock.IsASiteOrOrigin())
     return;
 

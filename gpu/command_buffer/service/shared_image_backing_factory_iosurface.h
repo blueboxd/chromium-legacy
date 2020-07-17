@@ -8,44 +8,20 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
-#include "gpu/command_buffer/service/shared_image_backing_factory.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/gpu_gles2_export.h"
-#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 
-namespace gfx {
-class Size;
-class ColorSpace;
-}  // namespace gfx
-
 namespace gpu {
-class GpuDriverBugWorkarounds;
-struct GpuFeatureInfo;
-struct Mailbox;
 
-// Implementation of SharedImageBackingFactory that produce IOSurface backed
-// SharedImages. This is meant to be used on macOS only.
-class GPU_GLES2_EXPORT SharedImageBackingFactoryIOSurface
-    : public SharedImageBackingFactory {
+// Helper functions used used by SharedImageRepresentationGLImage to do
+// IOSurface-specific sharing.
+class GPU_GLES2_EXPORT SharedImageBackingFactoryIOSurface {
  public:
-  SharedImageBackingFactoryIOSurface(const GpuDriverBugWorkarounds& workarounds,
-                                     const GpuFeatureInfo& gpu_feature_info,
-                                     bool use_gl);
-  ~SharedImageBackingFactoryIOSurface() override;
-
-  // Helper functions used used by SharedImageRepresentationGLImage to do
-  // IOSurface-specific sharing.
   static sk_sp<SkPromiseImageTexture> ProduceSkiaPromiseTextureMetal(
       SharedImageBacking* backing,
       scoped_refptr<SharedContextState> context_state,
-      scoped_refptr<gl::GLImage> image);
-  static std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
-      SharedImageManager* manager,
-      SharedImageBacking* backing,
-      MemoryTypeTracker* tracker,
       scoped_refptr<gl::GLImage> image);
   static std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
       SharedImageManager* manager,
@@ -56,42 +32,6 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryIOSurface
   static bool InitializePixels(SharedImageBacking* backing,
                                scoped_refptr<gl::GLImage> image,
                                const uint8_t* pixel_data);
-
-  // SharedImageBackingFactory implementation.
-  std::unique_ptr<SharedImageBacking> CreateSharedImage(
-      const Mailbox& mailbox,
-      viz::ResourceFormat requested_format,
-      SurfaceHandle surface_handle,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      uint32_t usage,
-      bool is_thread_safe) override;
-  std::unique_ptr<SharedImageBacking> CreateSharedImage(
-      const Mailbox& mailbox,
-      viz::ResourceFormat format,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      uint32_t usage,
-      base::span<const uint8_t> pixel_data) override;
-  std::unique_ptr<SharedImageBacking> CreateSharedImage(
-      const Mailbox& mailbox,
-      int client_id,
-      gfx::GpuMemoryBufferHandle handle,
-      gfx::BufferFormat format,
-      SurfaceHandle surface_handle,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      uint32_t usage) override;
-  bool CanImportGpuMemoryBuffer(
-      gfx::GpuMemoryBufferType memory_buffer_type) override;
-
- private:
-  void CollectGLFormatInfo(const GpuDriverBugWorkarounds& workarounds,
-                           const GpuFeatureInfo& gpu_feature_info);
-  bool format_supported_by_gl_[viz::RESOURCE_FORMAT_MAX + 1];
-  bool use_gl_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(SharedImageBackingFactoryIOSurface);
 };
 
 }  // namespace gpu

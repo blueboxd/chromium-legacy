@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/accelerators.h"
+#include "ash/public/cpp/test/app_list_test_api.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -67,6 +71,17 @@ class OemAppPositionTest : public chromeos::LoginManagerTest {
   DISALLOW_COPY_AND_ASSIGN(OemAppPositionTest);
 };
 
+class AppPositionReorderingTest : public extensions::ExtensionBrowserTest {
+ public:
+  AppPositionReorderingTest() = default;
+  ~AppPositionReorderingTest() override = default;
+  AppPositionReorderingTest(const AppPositionReorderingTest& other) = delete;
+  AppPositionReorderingTest& operator=(const AppPositionReorderingTest& other) =
+      delete;
+
+ protected:
+  ash::AppListTestApi app_list_test_api_;
+};
 // Tests that an Oem app and its folder are created with valid positions after
 // sign-in.
 IN_PROC_BROWSER_TEST_F(OemAppPositionTest, ValidOemAppPosition) {
@@ -96,4 +111,74 @@ IN_PROC_BROWSER_TEST_F(OemAppPositionTest, ValidOemAppPosition) {
       model_updater->FindItem(ash::kOemFolderId);
   ASSERT_TRUE(oem_folder);
   EXPECT_TRUE(oem_folder->position().IsValid());
+}
+
+IN_PROC_BROWSER_TEST_F(AppPositionReorderingTest,
+                       PRE_ReorderAppPositionInFolder) {
+  AppListClientImpl* client = AppListClientImpl::GetInstance();
+  ASSERT_TRUE(client);
+  client->UpdateProfile();
+
+  // Ensure async callbacks are run.
+  base::RunLoop().RunUntilIdle();
+
+  const std::string app1_id =
+      LoadExtension(test_data_dir_.AppendASCII("app1"))->id();
+  ASSERT_FALSE(app1_id.empty());
+  const std::string app2_id =
+      LoadExtension(test_data_dir_.AppendASCII("app2"))->id();
+  ASSERT_FALSE(app2_id.empty());
+  const std::string app4_id =
+      LoadExtension(test_data_dir_.AppendASCII("app4"))->id();
+  ASSERT_FALSE(app4_id.empty());
+
+  // Create the app list view and show the apps grid.
+  ash::AcceleratorController::Get()->PerformActionIfEnabled(
+      ash::TOGGLE_APP_LIST_FULLSCREEN, {});
+
+  // Create a folder with app1, app2 and app4 in order.
+  const std::string folder_id =
+      app_list_test_api_.CreateFolderWithApps({app1_id, app2_id, app4_id});
+
+  std::vector<std::string> original_id_list{app1_id, app2_id, app4_id};
+  ASSERT_EQ(app_list_test_api_.GetAppIdsInFolder(folder_id), original_id_list);
+
+  // Change an app position in the folder.
+  app_list_test_api_.MoveItemToPosition(app1_id, 2);
+
+  std::vector<std::string> reordered_id_list{app2_id, app4_id, app1_id};
+  EXPECT_EQ(app_list_test_api_.GetAppIdsInFolder(folder_id), reordered_id_list);
+}
+
+// Tests if the app position changed in a folder persist after the system
+// restart.
+IN_PROC_BROWSER_TEST_F(AppPositionReorderingTest, ReorderAppPositionInFolder) {
+  AppListClientImpl* client = AppListClientImpl::GetInstance();
+  ASSERT_TRUE(client);
+  client->UpdateProfile();
+
+  // Ensure async callbacks are run.
+  base::RunLoop().RunUntilIdle();
+
+  const std::string app1_id =
+      GetExtensionByPath(extension_registry()->enabled_extensions(),
+                         test_data_dir_.AppendASCII("app1"))
+          ->id();
+  const std::string app2_id =
+      GetExtensionByPath(extension_registry()->enabled_extensions(),
+                         test_data_dir_.AppendASCII("app2"))
+          ->id();
+  const std::string app4_id =
+      GetExtensionByPath(extension_registry()->enabled_extensions(),
+                         test_data_dir_.AppendASCII("app4"))
+          ->id();
+
+  std::string folder_id = app_list_test_api_.GetFolderId(app1_id);
+  // Check if the three apps are still in the same folder.
+  ASSERT_FALSE(folder_id.empty());
+  ASSERT_EQ(app_list_test_api_.GetFolderId(app2_id), folder_id);
+  ASSERT_EQ(app_list_test_api_.GetFolderId(app4_id), folder_id);
+
+  std::vector<std::string> reordered_id_list{app2_id, app4_id, app1_id};
+  EXPECT_EQ(app_list_test_api_.GetAppIdsInFolder(folder_id), reordered_id_list);
 }

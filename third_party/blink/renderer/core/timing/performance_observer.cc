@@ -204,6 +204,9 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kLargestContentfulPaintExplicitlyRequested);
   }
+  if (filter_options_ & PerformanceEntry::kResource) {
+    UseCounter::Count(GetExecutionContext(), WebFeature::kResourceTiming);
+  }
   if (is_registered_)
     performance_->UpdatePerformanceObserverFilterOptions();
   else

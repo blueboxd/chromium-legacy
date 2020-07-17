@@ -62,7 +62,7 @@ void BrowserSwitcherPolicyMigrator::Migrate(policy::PolicyBundle* bundle) {
   }
   extension_map.Set("browser_switcher_enabled", entry->DeepCopy());
 
-  using Migration = policy::ExtensionPolicyMigrator::Migration;
+  using Migration = policy::PolicyMigrator::Migration;
   const Migration migrations[] = {
       Migration("alternative_browser_path",
                 policy::key::kAlternativeBrowserPath),

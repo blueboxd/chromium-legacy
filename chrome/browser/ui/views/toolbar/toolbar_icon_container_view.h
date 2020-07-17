@@ -74,12 +74,14 @@ class ToolbarIconContainerView : public views::View,
 
  private:
   friend class ToolbarAccountIconContainerViewBrowserTest;
+  class WidgetRestoreObserver;
 
   // views::View:
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   gfx::Insets GetInsets() const override;
   const char* GetClassName() const override;
+  void AddedToWidget() override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -107,6 +109,9 @@ class ToolbarIconContainerView : public views::View,
 
   // Fade-in/out animation for the highlight border.
   gfx::SlideAnimation highlight_animation_{this};
+
+  // Tracks when the widget is restored and resets the layout.
+  std::unique_ptr<WidgetRestoreObserver> restore_observer_;
 
   base::ObserverList<Observer> observers_;
 };

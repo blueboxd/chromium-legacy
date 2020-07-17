@@ -11,10 +11,10 @@ namespace chromeos {
 
 FakeNetworkActivationHandler::ActivationParams::ActivationParams(
     const std::string& service_path,
-    const base::Closure& success_callback,
+    base::OnceClosure success_callback,
     network_handler::ErrorCallback error_callback)
     : service_path_(service_path),
-      success_callback_(success_callback),
+      success_callback_(std::move(success_callback)),
       error_callback_(std::move(error_callback)) {}
 
 FakeNetworkActivationHandler::ActivationParams::ActivationParams(
@@ -22,9 +22,8 @@ FakeNetworkActivationHandler::ActivationParams::ActivationParams(
 
 FakeNetworkActivationHandler::ActivationParams::~ActivationParams() = default;
 
-void FakeNetworkActivationHandler::ActivationParams::InvokeSuccessCallback()
-    const {
-  success_callback_.Run();
+void FakeNetworkActivationHandler::ActivationParams::InvokeSuccessCallback() {
+  std::move(success_callback_).Run();
 }
 
 void FakeNetworkActivationHandler::ActivationParams::InvokeErrorCallback(
@@ -39,10 +38,10 @@ FakeNetworkActivationHandler::~FakeNetworkActivationHandler() = default;
 
 void FakeNetworkActivationHandler::CompleteActivation(
     const std::string& service_path,
-    const base::Closure& success_callback,
+    base::OnceClosure success_callback,
     network_handler::ErrorCallback error_callback) {
-  complete_activation_calls_.emplace_back(service_path, success_callback,
-                                          std::move(error_callback));
+  complete_activation_calls_.emplace_back(
+      service_path, std::move(success_callback), std::move(error_callback));
 }
 
 }  // namespace chromeos

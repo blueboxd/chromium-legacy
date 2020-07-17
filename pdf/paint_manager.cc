@@ -13,14 +13,11 @@
 #include "base/check_op.h"
 #include "pdf/paint_ready_rect.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 
 namespace chrome_pdf {
 
-PaintManager::PaintManager(pp::Instance* instance, Client* client)
-    : instance_(instance), client_(client) {
-  DCHECK(instance_);
+PaintManager::PaintManager(Client* client) : client_(client) {
   DCHECK(client_);
 
   // Set the callback object outside of the initializer list to avoid a
@@ -184,8 +181,7 @@ void PaintManager::DoPaint() {
     // we only resize by a small amount.
     pp::Size new_size = GetNewContextSize(graphics_.size(), pending_size_);
     if (graphics_.size() != new_size) {
-      graphics_ =
-          pp::Graphics2D(instance_, new_size, /*is_always_opaque=*/true);
+      graphics_ = client_->CreatePaintGraphics(new_size);
       graphics_need_to_be_bound_ = true;
 
       // Since we're binding a new one, all of the callbacks have been canceled.
@@ -258,7 +254,7 @@ void PaintManager::DoPaint() {
   first_paint_ = false;
 
   if (graphics_need_to_be_bound_) {
-    instance_->BindGraphics(graphics_);
+    client_->BindPaintGraphics(graphics_);
     graphics_need_to_be_bound_ = false;
   }
 }

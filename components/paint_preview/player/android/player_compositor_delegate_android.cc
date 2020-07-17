@@ -249,7 +249,7 @@ void PlayerCompositorDelegateAndroid::OnBitmapCallback(
   }
 }
 
-void PlayerCompositorDelegateAndroid::OnClick(
+ScopedJavaLocalRef<jstring> PlayerCompositorDelegateAndroid::OnClick(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_frame_guid,
     jint j_x,
@@ -259,13 +259,11 @@ void PlayerCompositorDelegateAndroid::OnClick(
           env, j_frame_guid),
       gfx::Rect(static_cast<int>(j_x), static_cast<int>(j_y), 1U, 1U));
   if (res.empty())
-    return;
+    return base::android::ConvertUTF8ToJavaString(env, "");
   base::UmaHistogramBoolean("Browser.PaintPreview.Player.LinkClicked", true);
   // TODO(crbug/1061435): Resolve cases where there are multiple links.
   // For now just return the first in the list.
-  Java_PlayerCompositorDelegateImpl_onLinkClicked(
-      env, java_ref_,
-      base::android::ConvertUTF8ToJavaString(env, res[0]->spec()));
+  return base::android::ConvertUTF8ToJavaString(env, res[0]->spec());
 }
 
 void PlayerCompositorDelegateAndroid::SetCompressOnClose(

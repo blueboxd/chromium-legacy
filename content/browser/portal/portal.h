@@ -105,6 +105,7 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   WebContents* GetResponsibleWebContents(WebContents* web_contents) override;
   void NavigationStateChanged(WebContents* source,
                               InvalidateTypes changed_flags) override;
+  bool ShouldFocusPageAfterCrash() override;
   void CanDownload(const GURL& url,
                    const std::string& request_method,
                    base::OnceCallback<void(bool)> callback) override;

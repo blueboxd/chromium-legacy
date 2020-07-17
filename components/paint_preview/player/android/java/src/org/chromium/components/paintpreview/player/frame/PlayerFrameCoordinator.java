@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.UnguessableToken;
 import org.chromium.components.paintpreview.player.OverscrollHandler;
 import org.chromium.components.paintpreview.player.PlayerCompositorDelegate;
+import org.chromium.components.paintpreview.player.PlayerGestureListener;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -32,14 +33,13 @@ public class PlayerFrameCoordinator {
     public PlayerFrameCoordinator(Context context, PlayerCompositorDelegate compositorDelegate,
             UnguessableToken frameGuid, int contentWidth, int contentHeight, int initialScrollX,
             int initialScrollY, boolean canDetectZoom,
-            @Nullable OverscrollHandler overscrollHandler,
-            @Nullable Runnable userInteractionCallback) {
+            @Nullable OverscrollHandler overscrollHandler, PlayerGestureListener gestureHandler) {
         PropertyModel model = new PropertyModel.Builder(PlayerFrameProperties.ALL_KEYS).build();
         OverScroller scroller = new OverScroller(context);
         scroller.setFriction(ViewConfiguration.getScrollFriction() / 2);
         mMediator = new PlayerFrameMediator(model, compositorDelegate, new PlayerFrameViewport(),
-                scroller, userInteractionCallback, frameGuid, contentWidth, contentHeight,
-                initialScrollX, initialScrollY);
+                scroller, gestureHandler, frameGuid, contentWidth, contentHeight, initialScrollX,
+                initialScrollY);
         mView = new PlayerFrameView(context, canDetectZoom, mMediator);
         if (overscrollHandler != null) {
             mMediator.setOverscrollHandler(overscrollHandler);

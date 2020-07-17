@@ -200,6 +200,8 @@ viz_component("common") {
     "quads/largest_draw_quad.h",
     "quads/picture_draw_quad.cc",
     "quads/picture_draw_quad.h",
+    "quads/quad_list.cc",
+    "quads/quad_list.h",
     "quads/render_pass.cc",
     "quads/render_pass.h",
     "quads/render_pass_draw_quad.cc",

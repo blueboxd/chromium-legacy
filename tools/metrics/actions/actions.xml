@@ -6266,6 +6266,47 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Extensions.ContextMenu.Hosts.LearnMoreClicked">
+  <owner>tjudkins@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user clicked the &quot;Learn more about site access&quot; option in the
+    runtime host permissions section of an extension's context menu. This is
+    recorded for both keyboard and mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.ContextMenu.Hosts.OnAllSitesClicked">
+  <owner>tjudkins@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user clicked the &quot;On all sites&quot; option in the runtime host
+    permissions section of an extension's context menu. This is recorded for
+    both keyboard and mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.ContextMenu.Hosts.OnClickClicked">
+  <owner>tjudkins@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user clicked the &quot;When you click the extension&quot; option in the
+    runtime host permissions section of an extension's context menu. This is
+    recorded for both keyboard and mouse activations.
+  </description>
+</action>
+
+<action name="Extensions.ContextMenu.Hosts.OnSiteClicked">
+  <owner>tjudkins@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user clicked the &quot;On {site}&quot; option in the runtime host
+    permissions section of an extension's context menu, where &quot;{site}&quot;
+    is the domain of the current page. This is recorded for both keyboard and
+    mouse activations.
+  </description>
+</action>
+
 <action name="Extensions.ExtensionDisabled">
   <owner>archanasimha@chromium.org</owner>
   <description>
@@ -6349,6 +6390,15 @@ should be able to be added at any place in this file.
   <description>
     The user opened the Extensions Menu in the toolbar. This is recorded for
     both keyboard and mouse activation.
+  </description>
+</action>
+
+<action name="Extensions.Toolbar.MoreActionsButtonPressedFromMenu">
+  <owner>tjudkins@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user activated the more actions button for an extension in the
+    Extensions Menu. This is recorded for both keyboard and mouse activation.
   </description>
 </action>
 
@@ -18356,12 +18406,31 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="PaintPreview.Player.LongPress">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <description>
+    Records when the user long presses on the paint preview player.
+  </description>
+</action>
+
 <action name="PaintPreview.Player.Scrolled">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <description>
     Records when the user scrolls the paint preview player.
+  </description>
+</action>
+
+<action name="PaintPreview.Player.UnconsumedTap">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <description>
+    Records when the user taps on an area in the paint preview player that is
+    not a link.
   </description>
 </action>
 
@@ -24561,6 +24630,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabsSuggestions.Close.Accepted">
+  <obsolete>
+    This is renamed to TabSuggestions.Considered.Accepted.Closing on 07/2020.
+  </obsolete>
   <owner>yusufo@chromium.org</owner>
   <owner>davidjm@chromium.org</owner>
   <description>
@@ -24570,6 +24642,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabsSuggestions.Close.Dismissed">
+  <obsolete>
+    This is renamed to TabSuggestions.Considered.Dismissed.Closing on 07/2020.
+  </obsolete>
   <owner>yusufo@chromium.org</owner>
   <owner>davidjm@chromium.org</owner>
   <description>
@@ -24579,6 +24654,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabsSuggestions.Close.SuggestionsReview.Accepted">
+  <obsolete>This is removed as 07/2020.</obsolete>
   <owner>yusufo@chromium.org</owner>
   <owner>davidjm@chromium.org</owner>
   <description>
@@ -24588,11 +24664,44 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabsSuggestions.Close.SuggestionsReview.Dismissed">
+  <obsolete>
+    This is renamed to TabsSuggestions.NotConsidered.Closing on 07/2020.
+  </obsolete>
   <owner>yusufo@chromium.org</owner>
   <owner>davidjm@chromium.org</owner>
   <description>
     The tab close suggestions were not considered at all by the user by
     dismissing the snackbar indicating tab suggestions are available.
+  </description>
+</action>
+
+<action name="TabsSuggestions.Considered.Accepted">
+  <owner>yusufo@chromium.org</owner>
+  <owner>davidjm@chromium.org</owner>
+  <owner>meiliang@chromium.org</owner>
+  <description>
+    The tab suggestions were considered and accepted by the user (with some
+    possible editing).
+  </description>
+</action>
+
+<action name="TabsSuggestions.Considered.Dismissed">
+  <owner>yusufo@chromium.org</owner>
+  <owner>davidjm@chromium.org</owner>
+  <owner>meiliang@chromiu.org</owner>
+  <description>
+    The tab suggestions were considered and dismissed by the user (with some
+    possible editing).
+  </description>
+</action>
+
+<action name="TabsSuggestions.NotConsidered">
+  <owner>yusufo@chromium.org</owner>
+  <owner>davidjm@chromium.org</owner>
+  <owner>meiliang@chromium.org</owner>
+  <description>
+    The tab suggestions were not considered at all by the user by dismissing the
+    tab suggestion card indicating tab suggestions are available.
   </description>
 </action>
 
@@ -26302,6 +26411,16 @@ should be able to be added at any place in this file.
       label="Users named a tab group by clicking the title text field in tab
              grid dialog and modifying."/>
   <affected-action name="TabGridDialog"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="Closing"
+      label="Users took action on the closing tabs suggestion."/>
+  <suffix name="Grouping"
+      label="Users took action on the grouping tabs suggestion."/>
+  <affected-action name="TabsSuggestions.Considered.Accepted"/>
+  <affected-action name="TabsSuggestions.Considered.Dismissed"/>
+  <affected-action name="TabsSuggestions.NotConsidered"/>
 </action-suffix>
 
 </actions>

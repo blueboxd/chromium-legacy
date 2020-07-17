@@ -462,6 +462,11 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
         NO;
   }
 
+  // Trigger UI teardown on iOS 12.
+  if (!IsSceneStartupSupported()) {
+    self.mainSceneState.activationLevel = SceneActivationLevelUnattached;
+  }
+
   [_startupInformation stopChromeMain];
 }
 

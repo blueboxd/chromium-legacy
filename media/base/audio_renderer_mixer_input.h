@@ -22,6 +22,7 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "base/unguessable_token.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_renderer_sink.h"
@@ -36,7 +37,7 @@ class MEDIA_EXPORT AudioRendererMixerInput
       public AudioConverter::InputCallback {
  public:
   AudioRendererMixerInput(AudioRendererMixerPool* mixer_pool,
-                          int owner_id,
+                          const base::UnguessableToken& owner_token,
                           const std::string& device_id,
                           AudioLatency::LatencyType latency);
 
@@ -105,7 +106,7 @@ class MEDIA_EXPORT AudioRendererMixerInput
   // AudioParameters received during Initialize().
   AudioParameters params_;
 
-  const int owner_id_;
+  const base::UnguessableToken owner_token_;
   std::string device_id_;  // ID of hardware device to use
   const AudioLatency::LatencyType latency_;
 

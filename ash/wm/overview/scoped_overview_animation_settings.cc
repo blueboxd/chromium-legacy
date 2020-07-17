@@ -42,11 +42,6 @@ constexpr base::TimeDelta kHomeLauncherTransition =
 constexpr base::TimeDelta kHomeLauncherSlideTransition =
     base::TimeDelta::FromMilliseconds(250);
 
-// Time it takes for the overview highlight to move to the next target. The same
-// time is used for fading the no recent items label.
-constexpr base::TimeDelta kOverviewHighlightTransition =
-    base::TimeDelta::FromMilliseconds(250);
-
 // Time duration of the show animation of the drop target.
 constexpr base::TimeDelta kDropTargetFade =
     base::TimeDelta::FromMilliseconds(250);
@@ -83,8 +78,7 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
     case OVERVIEW_ANIMATION_DROP_TARGET_FADE:
       return kDropTargetFade;
     case OVERVIEW_ANIMATION_NO_RECENTS_FADE:
-    case OVERVIEW_ANIMATION_FRAME_HEADER_CLIP:
-      return kOverviewHighlightTransition;
+      return kTransition;
     case OVERVIEW_ANIMATION_OPACITY_ON_WINDOW_DRAG:
       return kFadeInOnWindowDrag;
   }
@@ -167,7 +161,6 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       }
       break;
     case OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER:
-    case OVERVIEW_ANIMATION_FRAME_HEADER_CLIP:
       animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);

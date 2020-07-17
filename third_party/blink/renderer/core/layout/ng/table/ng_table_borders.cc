@@ -193,13 +193,12 @@ NGBoxStrut NGTableBorders::CellBorder(wtf_size_t row,
       cell_style);
 }
 
-NGBoxStrut NGTableBorders::CellPadding(wtf_size_t row,
-                                       wtf_size_t column,
-                                       const ComputedStyle& cell_style) const {
+// As we are determining the intrinsic size of the table at this stage,
+// %-padding resolves against an indefinite size.
+NGBoxStrut NGTableBorders::CellPaddingForMeasure(
+    const ComputedStyle& cell_style) const {
   if (!cell_style.MayHavePadding())
     return NGBoxStrut();
-  // TODO(atotic) Need to add PercentageResolutionSize to resolve padding
-  // correctly.
   return ComputePadding(
       NGConstraintSpaceBuilder(writing_direction_.GetWritingMode(),
                                writing_direction_.GetWritingMode(),

@@ -100,13 +100,6 @@ class PaintControllerPaintTestBase : public RenderingTest {
     return RootPaintController().num_cached_new_items_;
   }
 
-  const DisplayItemClient& CaretDisplayItemClientForTesting() const {
-    return GetDocument()
-        .GetFrame()
-        ->Selection()
-        .CaretDisplayItemClientForTesting();
-  }
-
   void InvalidateAll(PaintController& paint_controller) {
     paint_controller.InvalidateAllForTesting();
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {

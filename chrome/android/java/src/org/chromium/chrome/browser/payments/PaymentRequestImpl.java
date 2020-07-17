@@ -324,8 +324,6 @@ public class PaymentRequestImpl
     private final String mMerchantName;
     @Nullable
     private final byte[][] mCertificateChain;
-    private final AddressEditor mAddressEditor;
-    private final CardEditor mCardEditor;
     private final JourneyLogger mJourneyLogger;
     private final boolean mIsOffTheRecord;
 
@@ -379,19 +377,13 @@ public class PaymentRequestImpl
     private String mId;
     private Map<String, PaymentMethodData> mMethodData;
     private int mShippingType;
-    private SectionInformation mShippingAddressesSection;
-    private ContactDetailsSection mContactSection;
     private boolean mIsFinishedQueryingPaymentApps;
-    private AutofillPaymentAppCreator mAutofillPaymentAppCreator;
     private List<PaymentApp> mPendingApps = new ArrayList<>();
-    private SectionInformation mPaymentMethodsSection;
     private final PaymentUIsManager mPaymentUIsManager;
     private MinimalUICoordinator mMinimalUi;
     private Callback<PaymentInformation> mPaymentInformationCallback;
     private PaymentApp mInvokedPaymentApp;
     private PaymentHandlerCoordinator mPaymentHandlerUi;
-    private boolean mMerchantSupportsAutofillCards;
-    private boolean mUserCanAddCreditCard;
     private boolean mHideServerAutofillCards;
     private ContactEditor mContactEditor;
     private boolean mHasRecordedAbortReason;
@@ -499,12 +491,12 @@ public class PaymentRequestImpl
         mIsOffTheRecord = mDelegate.isOffTheRecord(ChromeActivity.fromWebContents(mWebContents));
 
         // Do not persist changes on disk in OffTheRecord mode.
-        mAddressEditor = new AddressEditor(
+        AddressEditor addressEditor = new AddressEditor(
                 AddressEditor.Purpose.PAYMENT_REQUEST, /*saveToDisk=*/!mIsOffTheRecord);
         // PaymentRequest card editor does not show the organization name in the dropdown with the
         // billing address labels.
-        mCardEditor = new CardEditor(
-                mWebContents, mAddressEditor, /*includeOrgLabel=*/false, sObserverForTest);
+        CardEditor cardEditor = new CardEditor(
+                mWebContents, addressEditor, /*includeOrgLabel=*/false, sObserverForTest);
 
         mJourneyLogger = new JourneyLogger(mIsOffTheRecord, mWebContents);
         mCurrencyFormatterMap = new HashMap<>();
@@ -512,7 +504,7 @@ public class PaymentRequestImpl
         mSkipUiForNonUrlPaymentMethodIdentifiers = mDelegate.skipUiForBasicCard();
 
         if (sObserverForTest != null) sObserverForTest.onPaymentRequestCreated(this);
-        mPaymentUIsManager = new PaymentUIsManager();
+        mPaymentUIsManager = new PaymentUIsManager(addressEditor, cardEditor);
         mPaymentAppComparator = new PaymentAppComparator(/*paramsProvider=*/this);
     }
 
@@ -581,7 +573,8 @@ public class PaymentRequestImpl
         boolean googlePayBridgeActivated = googlePayBridgeEligible
                 && SkipToGPayHelper.canActivateExperiment(mWebContents, methodData);
 
-        mMethodData = getValidatedMethodData(methodData, googlePayBridgeActivated, mCardEditor);
+        mMethodData = getValidatedMethodData(
+                methodData, googlePayBridgeActivated, mPaymentUIsManager.getCardEditor());
         if (mMethodData == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA);
@@ -616,13 +609,14 @@ public class PaymentRequestImpl
         mId = details.id;
 
         // Checks whether the merchant supports autofill cards before show is called.
-        mMerchantSupportsAutofillCards =
+        boolean merchantSupportsAutofillCards =
                 AutofillPaymentAppFactory.merchantSupportsBasicCard(mMethodData);
         // If in strict mode, don't give user an option to add an autofill card during the checkout
         // to avoid the "unhappy" basic-card flow.
-        mUserCanAddCreditCard = mMerchantSupportsAutofillCards
+        mPaymentUIsManager.setCanUserAddCreditCard(merchantSupportsAutofillCards
                 && !PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
-                        PaymentFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT);
+                        PaymentFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT));
+        mPaymentUIsManager.setMerchantSupportsAutofillCards(merchantSupportsAutofillCards);
 
         if (mRequestShipping || mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
             mAutofillProfiles = Collections.unmodifiableList(
@@ -665,8 +659,8 @@ public class PaymentRequestImpl
         // Log the various types of payment methods that were requested by the merchant.
         boolean requestedMethodGoogle = false;
         // Not to record requestedMethodBasicCard because JourneyLogger ignore the case where the
-        // specified networks are unsupported. mMerchantSupportsAutofillCards better
-        // captures this group of interest than requestedMethodBasicCard.
+        // specified networks are unsupported. mPaymentUIsManager.isMerchantSupportsAutofillCards()
+        // better captures this group of interest than requestedMethodBasicCard.
         boolean requestedMethodOther = false;
         mURLPaymentMethodIdentifiersSupported = false;
         for (String methodName : mMethodData.keySet()) {
@@ -678,7 +672,7 @@ public class PaymentRequestImpl
                     break;
                 case MethodStrings.BASIC_CARD:
                     // Not to record requestedMethodBasicCard because
-                    // mMerchantSupportsAutofillCards is used instead.
+                    // mPaymentUIsManager.isMerchantSupportsAutofillCards() is used instead.
                     break;
                 default:
                     // "Other" includes https url, http url(when certifate check is bypassed) and
@@ -691,8 +685,8 @@ public class PaymentRequestImpl
             }
         }
         mJourneyLogger.setRequestedPaymentMethodTypes(
-                /*requestedBasicCard=*/mMerchantSupportsAutofillCards, requestedMethodGoogle,
-                requestedMethodOther);
+                /*requestedBasicCard=*/mPaymentUIsManager.merchantSupportsAutofillCards(),
+                requestedMethodGoogle, requestedMethodOther);
     }
 
     /**
@@ -704,8 +698,9 @@ public class PaymentRequestImpl
         assert mIsFinishedQueryingPaymentApps;
         assert mIsCurrentPaymentRequestShowing;
 
-        assert mPaymentMethodsSection != null;
-        PaymentApp selectedApp = (PaymentApp) mPaymentMethodsSection.getSelectedItem();
+        assert mPaymentUIsManager.getPaymentMethodsSection() != null;
+        PaymentApp selectedApp =
+                (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem();
 
         // If there is only a single payment app which can provide all merchant requested
         // information, we can safely go directly to the payment app instead of showing Payment
@@ -717,7 +712,7 @@ public class PaymentRequestImpl
                 // the payment request UI, thus can't be skipped.
                 && (mURLPaymentMethodIdentifiersSupported
                         || mSkipUiForNonUrlPaymentMethodIdentifiers)
-                && mPaymentMethodsSection.getSize() >= 1
+                && mPaymentUIsManager.getPaymentMethodsSection().getSize() >= 1
                 && onlySingleAppCanProvideAllRequiredInformation()
                 // Skip to payment app only if it can be pre-selected.
                 && selectedApp != null
@@ -731,17 +726,18 @@ public class PaymentRequestImpl
      * information including shipping address and payer's contact information whenever needed.
      */
     private boolean onlySingleAppCanProvideAllRequiredInformation() {
-        assert mPaymentMethodsSection != null;
+        assert mPaymentUIsManager.getPaymentMethodsSection() != null;
 
         if (!mRequestShipping && !mRequestPayerName && !mRequestPayerPhone && !mRequestPayerEmail) {
-            return mPaymentMethodsSection.getSize() == 1
-                    && !((PaymentApp) mPaymentMethodsSection.getItem(0)).isAutofillInstrument();
+            return mPaymentUIsManager.getPaymentMethodsSection().getSize() == 1
+                    && !((PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getItem(0))
+                                .isAutofillInstrument();
         }
 
         boolean anAppCanProvideAllInfo = false;
-        int sectionSize = mPaymentMethodsSection.getSize();
+        int sectionSize = mPaymentUIsManager.getPaymentMethodsSection().getSize();
         for (int i = 0; i < sectionSize; i++) {
-            PaymentApp app = (PaymentApp) mPaymentMethodsSection.getItem(i);
+            PaymentApp app = (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getItem(i);
             if ((!mRequestShipping || app.handlesShippingAddress())
                     && (!mRequestPayerName || app.handlesPayerName())
                     && (!mRequestPayerPhone || app.handlesPayerPhone())
@@ -762,7 +758,7 @@ public class PaymentRequestImpl
         // shipping and contact sections (when requested by merchant) are populated depending on
         // whether or not the selected payment app (if such exists) can provide the required
         // information.
-        assert mPaymentMethodsSection != null;
+        assert mPaymentUIsManager.getPaymentMethodsSection() != null;
 
         assert activity != null;
 
@@ -798,13 +794,13 @@ public class PaymentRequestImpl
         }
 
         if (shouldShowContactSection()) {
-            mContactSection = new ContactDetailsSection(
-                    activity, mAutofillProfiles, mContactEditor, mJourneyLogger);
+            mPaymentUIsManager.setContactSection(new ContactDetailsSection(
+                    activity, mAutofillProfiles, mContactEditor, mJourneyLogger));
         }
 
         mPaymentUIsManager.setPaymentRequestUI(new PaymentRequestUI(activity, this,
-                mMerchantSupportsAutofillCards, !PaymentPreferencesUtil.isPaymentCompleteOnce(),
-                mMerchantName, mTopLevelOrigin,
+                mPaymentUIsManager.merchantSupportsAutofillCards(),
+                !PaymentPreferencesUtil.isPaymentCompleteOnce(), mMerchantName, mTopLevelOrigin,
                 SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
                 new ShippingStrings(mShippingType),
                 mPaymentUIsManager.getPaymentUisShowStateReconciler(),
@@ -834,8 +830,10 @@ public class PaymentRequestImpl
                     this);
         }
 
-        mAddressEditor.setEditorDialog(mPaymentUIsManager.getPaymentRequestUI().getEditorDialog());
-        mCardEditor.setEditorDialog(mPaymentUIsManager.getPaymentRequestUI().getCardEditorDialog());
+        mPaymentUIsManager.getAddressEditor().setEditorDialog(
+                mPaymentUIsManager.getPaymentRequestUI().getEditorDialog());
+        mPaymentUIsManager.getCardEditor().setEditorDialog(
+                mPaymentUIsManager.getPaymentRequestUI().getCardEditorDialog());
         if (mContactEditor != null) {
             mContactEditor.setEditorDialog(
                     mPaymentUIsManager.getPaymentRequestUI().getEditorDialog());
@@ -850,7 +848,7 @@ public class PaymentRequestImpl
 
         for (int i = 0; i < unmodifiableProfiles.size(); i++) {
             AutofillProfile profile = unmodifiableProfiles.get(i);
-            mAddressEditor.addPhoneNumberIfValid(profile.getPhoneNumber());
+            mPaymentUIsManager.getAddressEditor().addPhoneNumberIfValid(profile.getPhoneNumber());
 
             // Only suggest addresses that have a street address.
             if (!TextUtils.isEmpty(profile.getStreetAddress())) {
@@ -905,8 +903,9 @@ public class PaymentRequestImpl
                     "PaymentRequest.MissingShippingFields", missingFields);
         }
 
-        mShippingAddressesSection = new SectionInformation(
-                PaymentRequestUI.DataType.SHIPPING_ADDRESSES, firstCompleteAddressIndex, addresses);
+        mPaymentUIsManager.setShippingAddressesSection(
+                new SectionInformation(PaymentRequestUI.DataType.SHIPPING_ADDRESSES,
+                        firstCompleteAddressIndex, addresses));
     }
 
     // Implement ComponentPaymentRequestDelegate:
@@ -956,7 +955,8 @@ public class PaymentRequestImpl
         if (mIsFinishedQueryingPaymentApps) {
             // Send AppListReady signal when all apps are created and request.show() is called.
             if (mNativeObserverForTest != null) {
-                mNativeObserverForTest.onAppListReady(mPaymentMethodsSection.getItems(), mRawTotal);
+                mNativeObserverForTest.onAppListReady(
+                        mPaymentUIsManager.getPaymentMethodsSection().getItems(), mRawTotal);
             }
             // Calculate skip ui and build ui only after all payment apps are ready and
             // request.show() is called.
@@ -992,7 +992,7 @@ public class PaymentRequestImpl
         if ((mShouldSkipShowingPaymentRequestUi || mSkipToGPayHelper != null)
                 && mIsFinishedQueryingPaymentApps && mIsCurrentPaymentRequestShowing
                 && !mWaitForUpdatedDetails) {
-            assert !mPaymentMethodsSection.isEmpty();
+            assert !mPaymentUIsManager.getPaymentMethodsSection().isEmpty();
             assert mPaymentUIsManager.getPaymentRequestUI() != null;
 
             if (isMinimalUiApplicable()) {
@@ -1000,8 +1000,9 @@ public class PaymentRequestImpl
                 return;
             }
 
-            assert !mPaymentMethodsSection.isEmpty();
-            PaymentApp selectedApp = (PaymentApp) mPaymentMethodsSection.getSelectedItem();
+            assert !mPaymentUIsManager.getPaymentMethodsSection().isEmpty();
+            PaymentApp selectedApp =
+                    (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem();
             dimBackgroundIfNotBottomSheetPaymentHandler(selectedApp);
             mDidRecordShowEvent = true;
             mJourneyLogger.setEventOccurred(Event.SKIPPED_SHOW);
@@ -1018,12 +1019,13 @@ public class PaymentRequestImpl
 
     /** @return Whether the minimal UI should be shown. */
     private boolean isMinimalUiApplicable() {
-        if (!mIsUserGestureShow || mPaymentMethodsSection == null
-                || mPaymentMethodsSection.getSize() != 1) {
+        if (!mIsUserGestureShow || mPaymentUIsManager.getPaymentMethodsSection() == null
+                || mPaymentUIsManager.getPaymentMethodsSection().getSize() != 1) {
             return false;
         }
 
-        PaymentApp app = (PaymentApp) mPaymentMethodsSection.getSelectedItem();
+        PaymentApp app =
+                (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem();
         if (app == null || !app.isReadyForMinimalUI() || TextUtils.isEmpty(app.accountBalance())) {
             return false;
         }
@@ -1042,7 +1044,7 @@ public class PaymentRequestImpl
         mMinimalUi = new MinimalUICoordinator();
         if (mMinimalUi.show(chromeActivity,
                     BottomSheetControllerProvider.from(chromeActivity.getWindowAndroid()),
-                    (PaymentApp) mPaymentMethodsSection.getSelectedItem(),
+                    (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem(),
                     mCurrencyFormatterMap.get(mRawTotal.amount.currency),
                     mUiShoppingCart.getTotal(), this::onMinimalUIReady, this::onMinimalUiConfirmed,
                     this::onMinimalUiDismissed)) {
@@ -1369,10 +1371,11 @@ public class PaymentRequestImpl
 
         if (shouldShowShippingSection()
                 && (mUiShippingOptions.isEmpty() || !TextUtils.isEmpty(details.error))
-                && mShippingAddressesSection.getSelectedItem() != null) {
-            mShippingAddressesSection.getSelectedItem().setInvalid();
-            mShippingAddressesSection.setSelectedItemIndex(SectionInformation.INVALID_SELECTION);
-            mShippingAddressesSection.setErrorMessage(details.error);
+                && mPaymentUIsManager.getShippingAddressesSection().getSelectedItem() != null) {
+            mPaymentUIsManager.getShippingAddressesSection().getSelectedItem().setInvalid();
+            mPaymentUIsManager.getShippingAddressesSection().setSelectedItemIndex(
+                    SectionInformation.INVALID_SELECTION);
+            mPaymentUIsManager.getShippingAddressesSection().setErrorMessage(details.error);
         }
 
         enableUserInterfaceAfterPaymentRequestUpdateEvent();
@@ -1447,7 +1450,8 @@ public class PaymentRequestImpl
     }
 
     private void enableUserInterfaceAfterPaymentRequestUpdateEvent() {
-        if (mPaymentInformationCallback != null && mPaymentMethodsSection != null) {
+        if (mPaymentInformationCallback != null
+                && mPaymentUIsManager.getPaymentMethodsSection() != null) {
             providePaymentInformation();
         } else {
             mPaymentUIsManager.getPaymentRequestUI().updateOrderSummarySection(mUiShoppingCart);
@@ -1533,10 +1537,10 @@ public class PaymentRequestImpl
     private void updateAppModifiedTotals() {
         if (!PaymentFeatureList.isEnabled(PaymentFeatureList.WEB_PAYMENTS_MODIFIERS)) return;
         if (mModifiers == null) return;
-        if (mPaymentMethodsSection == null) return;
+        if (mPaymentUIsManager.getPaymentMethodsSection() == null) return;
 
-        for (int i = 0; i < mPaymentMethodsSection.getSize(); i++) {
-            PaymentApp app = (PaymentApp) mPaymentMethodsSection.getItem(i);
+        for (int i = 0; i < mPaymentUIsManager.getPaymentMethodsSection().getSize(); i++) {
+            PaymentApp app = (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getItem(i);
             PaymentDetailsModifier modifier = getModifier(app);
             app.setModifiedTotal(modifier == null || modifier.total == null
                             ? null
@@ -1544,7 +1548,8 @@ public class PaymentRequestImpl
                                       .format(modifier.total.amount.value));
         }
 
-        updateOrderSummary((PaymentApp) mPaymentMethodsSection.getSelectedItem());
+        updateOrderSummary(
+                (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem());
     }
 
     /** Sets the modifier for the order summary based on the given app, if any. */
@@ -1713,11 +1718,13 @@ public class PaymentRequestImpl
     private void providePaymentInformation() {
         // Do not display service worker payment apps summary in single line so as to display its
         // origin completely.
-        mPaymentMethodsSection.setDisplaySelectedItemSummaryInSingleLineInNormalMode(
-                getSelectedPaymentAppType() != PaymentAppType.SERVICE_WORKER_APP);
-        mPaymentInformationCallback.onResult(
-                new PaymentInformation(mUiShoppingCart, mShippingAddressesSection,
-                        mUiShippingOptions, mContactSection, mPaymentMethodsSection));
+        mPaymentUIsManager.getPaymentMethodsSection()
+                .setDisplaySelectedItemSummaryInSingleLineInNormalMode(
+                        getSelectedPaymentAppType() != PaymentAppType.SERVICE_WORKER_APP);
+        mPaymentInformationCallback.onResult(new PaymentInformation(mUiShoppingCart,
+                mPaymentUIsManager.getShippingAddressesSection(), mUiShippingOptions,
+                mPaymentUIsManager.getContactSection(),
+                mPaymentUIsManager.getPaymentMethodsSection()));
         mPaymentInformationCallback = null;
 
         if (!mDidRecordShowEvent) {
@@ -1745,16 +1752,16 @@ public class PaymentRequestImpl
         SectionInformation result = null;
         switch (optionType) {
             case PaymentRequestUI.DataType.SHIPPING_ADDRESSES:
-                result = mShippingAddressesSection;
+                result = mPaymentUIsManager.getShippingAddressesSection();
                 break;
             case PaymentRequestUI.DataType.SHIPPING_OPTIONS:
                 result = mUiShippingOptions;
                 break;
             case PaymentRequestUI.DataType.CONTACT_DETAILS:
-                result = mContactSection;
+                result = mPaymentUIsManager.getContactSection();
                 break;
             case PaymentRequestUI.DataType.PAYMENT_METHODS:
-                result = mPaymentMethodsSection;
+                result = mPaymentUIsManager.getPaymentMethodsSection();
                 break;
             default:
                 assert false;
@@ -1773,7 +1780,7 @@ public class PaymentRequestImpl
             mJourneyLogger.incrementSelectionChanges(Section.SHIPPING_ADDRESS);
             AutofillAddress address = (AutofillAddress) option;
             if (address.isComplete()) {
-                mShippingAddressesSection.setSelectedItem(option);
+                mPaymentUIsManager.getShippingAddressesSection().setSelectedItem(option);
                 startShippingAddressChangeNormalization(address);
             } else {
                 editAddress(address);
@@ -1791,7 +1798,7 @@ public class PaymentRequestImpl
             mJourneyLogger.incrementSelectionChanges(Section.CONTACT_INFO);
             AutofillContact contact = (AutofillContact) option;
             if (contact.isComplete()) {
-                mContactSection.setSelectedItem(option);
+                mPaymentUIsManager.getContactSection().setSelectedItem(option);
                 if (!mWasRetryCalled) return PaymentRequestUI.SelectionResult.NONE;
                 dispatchPayerDetailChangeEventIfNeeded(contact.toPayerDetail());
             } else {
@@ -1801,20 +1808,23 @@ public class PaymentRequestImpl
             mPaymentInformationCallback = callback;
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.DataType.PAYMENT_METHODS) {
-            if (shouldShowShippingSection() && mShippingAddressesSection == null) {
+            if (shouldShowShippingSection()
+                    && mPaymentUIsManager.getShippingAddressesSection() == null) {
                 ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
                 assert activity != null;
                 createShippingSection(activity, mAutofillProfiles);
             }
-            if (shouldShowContactSection() && mContactSection == null) {
+            if (shouldShowContactSection() && mPaymentUIsManager.getContactSection() == null) {
                 ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
                 assert activity != null;
-                mContactSection = new ContactDetailsSection(
-                        activity, mAutofillProfiles, mContactEditor, mJourneyLogger);
+                mPaymentUIsManager.setContactSection(new ContactDetailsSection(
+                        activity, mAutofillProfiles, mContactEditor, mJourneyLogger));
             }
             mPaymentUIsManager.getPaymentRequestUI().selectedPaymentMethodUpdated(
-                    new PaymentInformation(mUiShoppingCart, mShippingAddressesSection,
-                            mUiShippingOptions, mContactSection, mPaymentMethodsSection));
+                    new PaymentInformation(mUiShoppingCart,
+                            mPaymentUIsManager.getShippingAddressesSection(), mUiShippingOptions,
+                            mPaymentUIsManager.getContactSection(),
+                            mPaymentUIsManager.getPaymentMethodsSection()));
             PaymentApp paymentApp = (PaymentApp) option;
             if (paymentApp instanceof AutofillPaymentInstrument) {
                 AutofillPaymentInstrument card = (AutofillPaymentInstrument) paymentApp;
@@ -1828,7 +1838,7 @@ public class PaymentRequestImpl
             mJourneyLogger.incrementSelectionChanges(Section.PAYMENT_METHOD);
 
             updateOrderSummary(paymentApp);
-            mPaymentMethodsSection.setSelectedItem(option);
+            mPaymentUIsManager.getPaymentMethodsSection().setSelectedItem(option);
         }
 
         return PaymentRequestUI.SelectionResult.NONE;
@@ -1888,17 +1898,18 @@ public class PaymentRequestImpl
     public boolean shouldShowShippingSection() {
         if (!mRequestShipping) return false;
 
-        if (mPaymentMethodsSection == null) return true;
+        if (mPaymentUIsManager.getPaymentMethodsSection() == null) return true;
 
-        PaymentApp selectedApp = (PaymentApp) mPaymentMethodsSection.getSelectedItem();
+        PaymentApp selectedApp =
+                (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem();
         return selectedApp == null || !selectedApp.handlesShippingAddress();
     }
 
     @Override
     public boolean shouldShowContactSection() {
-        PaymentApp selectedApp = (mPaymentMethodsSection == null)
+        PaymentApp selectedApp = (mPaymentUIsManager.getPaymentMethodsSection() == null)
                 ? null
-                : (PaymentApp) mPaymentMethodsSection.getSelectedItem();
+                : (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem();
         if (mRequestPayerName && (selectedApp == null || !selectedApp.handlesPayerName())) {
             return true;
         }
@@ -1917,40 +1928,45 @@ public class PaymentRequestImpl
             // Log the edit of a shipping address.
             mJourneyLogger.incrementSelectionEdits(Section.SHIPPING_ADDRESS);
         }
-        mAddressEditor.edit(toEdit, new Callback<AutofillAddress>() {
+        mPaymentUIsManager.getAddressEditor().edit(toEdit, new Callback<AutofillAddress>() {
             @Override
             public void onResult(AutofillAddress editedAddress) {
                 if (mPaymentUIsManager.getPaymentRequestUI() == null) return;
 
                 if (editedAddress != null) {
-                    mAddressEditor.setAddressErrors(null);
+                    mPaymentUIsManager.getAddressEditor().setAddressErrors(null);
 
                     // Sets or updates the shipping address label.
                     editedAddress.setShippingAddressLabelWithCountry();
 
-                    mCardEditor.updateBillingAddressIfComplete(editedAddress);
+                    mPaymentUIsManager.getCardEditor().updateBillingAddressIfComplete(
+                            editedAddress);
 
                     // A partial or complete address came back from the editor (could have been from
                     // adding/editing or cancelling out of the edit flow).
                     if (!editedAddress.isComplete()) {
                         // If the address is not complete, unselect it (editor can return incomplete
                         // information when cancelled).
-                        mShippingAddressesSection.setSelectedItemIndex(
+                        mPaymentUIsManager.getShippingAddressesSection().setSelectedItemIndex(
                                 SectionInformation.NO_SELECTION);
                         providePaymentInformation();
                     } else {
                         if (toEdit == null) {
                             // Address is complete and user was in the "Add flow": add an item to
                             // the list.
-                            mShippingAddressesSection.addAndSelectItem(editedAddress);
+                            mPaymentUIsManager.getShippingAddressesSection().addAndSelectItem(
+                                    editedAddress);
                         }
 
-                        if (mContactSection != null) {
-                            // Update |mContactSection| with the new/edited address, which will
-                            // update an existing item or add a new one to the end of the list.
-                            mContactSection.addOrUpdateWithAutofillAddress(editedAddress);
+                        if (mPaymentUIsManager.getContactSection() != null) {
+                            // Update |mPaymentUIsManager.getContactSection()| with the new/edited
+                            // address, which will update an existing item or add a new one to the
+                            // end of the list.
+                            mPaymentUIsManager.getContactSection().addOrUpdateWithAutofillAddress(
+                                    editedAddress);
                             mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                                    PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection);
+                                    PaymentRequestUI.DataType.CONTACT_DETAILS,
+                                    mPaymentUIsManager.getContactSection());
                         }
 
                         startShippingAddressChangeNormalization(editedAddress);
@@ -1982,11 +1998,12 @@ public class PaymentRequestImpl
                     if (!editedContact.isComplete()) {
                         // If the contact is not complete according to the requirements of the flow,
                         // unselect it (editor can return incomplete information when cancelled).
-                        mContactSection.setSelectedItemIndex(SectionInformation.NO_SELECTION);
+                        mPaymentUIsManager.getContactSection().setSelectedItemIndex(
+                                SectionInformation.NO_SELECTION);
                     } else if (toEdit == null) {
                         // Contact is complete and we were in the "Add flow": add an item to the
                         // list.
-                        mContactSection.addAndSelectItem(editedContact);
+                        mPaymentUIsManager.getContactSection().addAndSelectItem(editedContact);
                     } else {
                         dispatchPayerDetailChangeEventIfNeeded(editedContact.toPayerDetail());
                     }
@@ -1997,7 +2014,8 @@ public class PaymentRequestImpl
                 // action to take (if a contact was selected in the UI, it will stay selected).
 
                 mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                        PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection);
+                        PaymentRequestUI.DataType.CONTACT_DETAILS,
+                        mPaymentUIsManager.getContactSection());
 
                 if (!mRetryQueue.isEmpty()) mHandler.post(mRetryQueue.remove());
             }
@@ -2009,7 +2027,7 @@ public class PaymentRequestImpl
             // Log the edit of a credit card.
             mJourneyLogger.incrementSelectionEdits(Section.PAYMENT_METHOD);
         }
-        mCardEditor.edit(toEdit, new Callback<AutofillPaymentInstrument>() {
+        mPaymentUIsManager.getCardEditor().edit(toEdit, new Callback<AutofillPaymentInstrument>() {
             @Override
             public void onResult(AutofillPaymentInstrument editedCard) {
                 if (mPaymentUIsManager.getPaymentRequestUI() == null) return;
@@ -2020,11 +2038,11 @@ public class PaymentRequestImpl
                     if (!editedCard.isComplete()) {
                         // If the card is not complete, unselect it (editor can return incomplete
                         // information when cancelled).
-                        mPaymentMethodsSection.setSelectedItemIndex(
+                        mPaymentUIsManager.getPaymentMethodsSection().setSelectedItemIndex(
                                 SectionInformation.NO_SELECTION);
                     } else if (toEdit == null) {
                         // Card is complete and we were in the "Add flow": add an item to the list.
-                        mPaymentMethodsSection.addAndSelectItem(editedCard);
+                        mPaymentUIsManager.getPaymentMethodsSection().addAndSelectItem(editedCard);
                     }
                     // If card is complete and (toEdit != null), no action needed: the card was
                     // already selected in the UI.
@@ -2035,7 +2053,8 @@ public class PaymentRequestImpl
 
                 updateAppModifiedTotals();
                 mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                        PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
+                        PaymentRequestUI.DataType.PAYMENT_METHODS,
+                        mPaymentUIsManager.getPaymentMethodsSection());
             }
         });
     }
@@ -2053,8 +2072,10 @@ public class PaymentRequestImpl
     }
 
     private @PaymentAppType int getSelectedPaymentAppType() {
-        return mPaymentMethodsSection != null && mPaymentMethodsSection.getSelectedItem() != null
-                ? ((PaymentApp) mPaymentMethodsSection.getSelectedItem()).getPaymentAppType()
+        return mPaymentUIsManager.getPaymentMethodsSection() != null
+                        && mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem() != null
+                ? ((PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem())
+                          .getPaymentAppType()
                 : PaymentAppType.UNDEFINED;
     }
 
@@ -2063,8 +2084,9 @@ public class PaymentRequestImpl
             EditableOption selectedShippingOption, EditableOption selectedPaymentMethod) {
         mInvokedPaymentApp = (PaymentApp) selectedPaymentMethod;
 
-        EditableOption selectedContact =
-                mContactSection != null ? mContactSection.getSelectedItem() : null;
+        EditableOption selectedContact = mPaymentUIsManager.getContactSection() != null
+                ? mPaymentUIsManager.getContactSection().getSelectedItem()
+                : null;
         mPaymentResponseHelper = new PaymentResponseHelper(selectedShippingAddress,
                 selectedShippingOption, selectedContact, mInvokedPaymentApp, mPaymentOptions,
                 mSkipToGPayHelper != null, this);
@@ -2220,7 +2242,8 @@ public class PaymentRequestImpl
         }
 
         /** Update records of the used payment app for sorting payment apps next time. */
-        EditableOption selectedPaymentMethod = mPaymentMethodsSection.getSelectedItem();
+        EditableOption selectedPaymentMethod =
+                mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem();
         PaymentPreferencesUtil.increasePaymentAppUseCount(selectedPaymentMethod.getIdentifier());
         PaymentPreferencesUtil.setPaymentAppLastUseDate(
                 selectedPaymentMethod.getIdentifier(), System.currentTimeMillis());
@@ -2257,13 +2280,16 @@ public class PaymentRequestImpl
         mWasRetryCalled = true;
 
         // Remove all payment apps except the selected one.
-        assert mPaymentMethodsSection != null;
-        PaymentApp selectedApp = (PaymentApp) mPaymentMethodsSection.getSelectedItem();
+        assert mPaymentUIsManager.getPaymentMethodsSection() != null;
+        PaymentApp selectedApp =
+                (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem();
         assert selectedApp != null;
-        mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.DataType.PAYMENT_METHODS,
-                /* selection = */ 0, new ArrayList<>(Arrays.asList(selectedApp)));
+        mPaymentUIsManager.setPaymentMethodsSection(
+                new SectionInformation(PaymentRequestUI.DataType.PAYMENT_METHODS,
+                        /* selection = */ 0, new ArrayList<>(Arrays.asList(selectedApp))));
         mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
+                PaymentRequestUI.DataType.PAYMENT_METHODS,
+                mPaymentUIsManager.getPaymentMethodsSection());
         mPaymentUIsManager.getPaymentRequestUI().disableAddingNewCardsDuringRetry();
 
         // Go back to the payment sheet
@@ -2279,9 +2305,10 @@ public class PaymentRequestImpl
 
         if (shouldShowShippingSection() && hasShippingAddressError(errors.shippingAddress)) {
             mRetryQueue.add(() -> {
-                mAddressEditor.setAddressErrors(errors.shippingAddress);
+                mPaymentUIsManager.getAddressEditor().setAddressErrors(errors.shippingAddress);
                 AutofillAddress selectedAddress =
-                        (AutofillAddress) mShippingAddressesSection.getSelectedItem();
+                        (AutofillAddress) mPaymentUIsManager.getShippingAddressesSection()
+                                .getSelectedItem();
                 editAddress(selectedAddress);
             });
         }
@@ -2290,7 +2317,7 @@ public class PaymentRequestImpl
             mRetryQueue.add(() -> {
                 mContactEditor.setPayerErrors(errors.payer);
                 AutofillContact selectedContact =
-                        (AutofillContact) mContactSection.getSelectedItem();
+                        (AutofillContact) mPaymentUIsManager.getContactSection().getSelectedItem();
                 editContact(selectedContact);
             });
         }
@@ -2330,18 +2357,20 @@ public class PaymentRequestImpl
         if (getClient() == null) return;
 
         address.setShippingAddressLabelWithCountry();
-        mCardEditor.updateBillingAddressIfComplete(address);
+        mPaymentUIsManager.getCardEditor().updateBillingAddressIfComplete(address);
 
-        if (mShippingAddressesSection != null) {
-            mShippingAddressesSection.addAndSelectOrUpdateItem(address);
+        if (mPaymentUIsManager.getShippingAddressesSection() != null) {
+            mPaymentUIsManager.getShippingAddressesSection().addAndSelectOrUpdateItem(address);
             mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                    PaymentRequestUI.DataType.SHIPPING_ADDRESSES, mShippingAddressesSection);
+                    PaymentRequestUI.DataType.SHIPPING_ADDRESSES,
+                    mPaymentUIsManager.getShippingAddressesSection());
         }
 
-        if (mContactSection != null) {
-            mContactSection.addOrUpdateWithAutofillAddress(address);
+        if (mPaymentUIsManager.getContactSection() != null) {
+            mPaymentUIsManager.getContactSection().addOrUpdateWithAutofillAddress(address);
             mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                    PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection);
+                    PaymentRequestUI.DataType.CONTACT_DETAILS,
+                    mPaymentUIsManager.getContactSection());
         }
     }
 
@@ -2349,47 +2378,54 @@ public class PaymentRequestImpl
     public void onAddressDeleted(String guid) {
         if (getClient() == null) return;
 
-        // TODO: Delete the address from mShippingAddressesSection and mContactSection. Note that we
-        // only displayed SUGGESTIONS_LIMIT addresses, so we may want to add back previously
-        // ignored addresses.
+        // TODO: Delete the address from mPaymentUIsManager.getShippingAddressesSection() and
+        // mPaymentUIsManager.getContactSection(). Note that we only displayed SUGGESTIONS_LIMIT
+        // addresses, so we may want to add back previously ignored addresses.
     }
 
     @Override
     public void onCreditCardUpdated(CreditCard card) {
-        if (getClient() == null || !mMerchantSupportsAutofillCards || mPaymentMethodsSection == null
-                || mAutofillPaymentAppCreator == null) {
+        if (getClient() == null || !mPaymentUIsManager.merchantSupportsAutofillCards()
+                || mPaymentUIsManager.getPaymentMethodsSection() == null
+                || mPaymentUIsManager.getAutofillPaymentAppCreator() == null) {
             return;
         }
 
-        PaymentApp updatedAutofillCard = mAutofillPaymentAppCreator.createPaymentAppForCard(card);
+        PaymentApp updatedAutofillCard =
+                mPaymentUIsManager.getAutofillPaymentAppCreator().createPaymentAppForCard(card);
 
         // Can be null when the card added through settings does not match the requested card
         // network or is invalid, because autofill settings do not perform the same level of
         // validation as Basic Card implementation in Chrome.
         if (updatedAutofillCard == null) return;
 
-        mPaymentMethodsSection.addAndSelectOrUpdateItem(updatedAutofillCard);
+        mPaymentUIsManager.getPaymentMethodsSection().addAndSelectOrUpdateItem(updatedAutofillCard);
 
         updateAppModifiedTotals();
 
         if (mPaymentUIsManager.getPaymentRequestUI() != null) {
             mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                    PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
+                    PaymentRequestUI.DataType.PAYMENT_METHODS,
+                    mPaymentUIsManager.getPaymentMethodsSection());
         }
     }
 
     @Override
     public void onCreditCardDeleted(String guid) {
         if (getClient() == null) return;
-        if (!mMerchantSupportsAutofillCards || mPaymentMethodsSection == null) return;
+        if (!mPaymentUIsManager.merchantSupportsAutofillCards()
+                || mPaymentUIsManager.getPaymentMethodsSection() == null) {
+            return;
+        }
 
-        mPaymentMethodsSection.removeAndUnselectItem(guid);
+        mPaymentUIsManager.getPaymentMethodsSection().removeAndUnselectItem(guid);
 
         updateAppModifiedTotals();
 
         if (mPaymentUIsManager.getPaymentRequestUI() != null) {
             mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                    PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
+                    PaymentRequestUI.DataType.PAYMENT_METHODS,
+                    mPaymentUIsManager.getPaymentMethodsSection());
         }
     }
 
@@ -2570,7 +2606,7 @@ public class PaymentRequestImpl
     // PaymentAppFactoryParams implementation.
     @Override
     public boolean getMayCrawl() {
-        return !mUserCanAddCreditCard
+        return !mPaymentUIsManager.canUserAddCreditCard()
                 || PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
                         PaymentFeatureList.WEB_PAYMENTS_ALWAYS_ALLOW_JUST_IN_TIME_PAYMENT_APP);
     }
@@ -2622,7 +2658,7 @@ public class PaymentRequestImpl
     // PaymentAppFactoryDelegate implementation.
     @Override
     public void onAutofillPaymentAppCreatorAvailable(AutofillPaymentAppCreator creator) {
-        mAutofillPaymentAppCreator = creator;
+        mPaymentUIsManager.setAutofillPaymentAppCreator(creator);
     }
 
     // PaymentAppFactoryDelegate implementation.
@@ -2712,8 +2748,9 @@ public class PaymentRequestImpl
         }
 
         // The list of payment apps is ready to display.
-        mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.DataType.PAYMENT_METHODS,
-                selection, new ArrayList<>(mPendingApps));
+        mPaymentUIsManager.setPaymentMethodsSection(
+                new SectionInformation(PaymentRequestUI.DataType.PAYMENT_METHODS, selection,
+                        new ArrayList<>(mPendingApps)));
 
         // Record the number suggested payment methods and whether at least one of them was
         // complete.
@@ -2722,7 +2759,7 @@ public class PaymentRequestImpl
 
         int missingFields = 0;
         if (mPendingApps.isEmpty()) {
-            if (mMerchantSupportsAutofillCards) {
+            if (mPaymentUIsManager.merchantSupportsAutofillCards()) {
                 // Record all fields if basic-card is supported but no card exists.
                 missingFields = AutofillPaymentInstrument.CompletionStatus.CREDIT_CARD_EXPIRED
                         | AutofillPaymentInstrument.CompletionStatus.CREDIT_CARD_NO_CARDHOLDER
@@ -2746,7 +2783,8 @@ public class PaymentRequestImpl
         if (mIsCurrentPaymentRequestShowing) {
             // Send AppListReady signal when all apps are created and request.show() is called.
             if (mNativeObserverForTest != null) {
-                mNativeObserverForTest.onAppListReady(mPaymentMethodsSection.getItems(), mRawTotal);
+                mNativeObserverForTest.onAppListReady(
+                        mPaymentUIsManager.getPaymentMethodsSection().getItems(), mRawTotal);
             }
             // Calculate skip ui and build ui only after all payment apps are ready and
             // request.show() is called.
@@ -2768,9 +2806,11 @@ public class PaymentRequestImpl
         if (!mIsFinishedQueryingPaymentApps || !mIsCurrentPaymentRequestShowing) return false;
 
         boolean havePaymentApps = !mPendingApps.isEmpty()
-                || (mPaymentMethodsSection != null && !mPaymentMethodsSection.isEmpty());
+                || (mPaymentUIsManager.getPaymentMethodsSection() != null
+                        && !mPaymentUIsManager.getPaymentMethodsSection().isEmpty());
 
-        if (!mCanMakePayment || (!havePaymentApps && !mMerchantSupportsAutofillCards)) {
+        if (!mCanMakePayment
+                || (!havePaymentApps && !mPaymentUIsManager.merchantSupportsAutofillCards())) {
             // All factories have responded, but none of them have apps. It's possible to add credit
             // cards, but the merchant does not support them either. The payment request must be
             // rejected.
@@ -2847,7 +2887,8 @@ public class PaymentRequestImpl
         }
 
         // If the payment method was an Autofill credit card with an identifier, record its use.
-        PaymentApp selectedPaymentMethod = (PaymentApp) mPaymentMethodsSection.getSelectedItem();
+        PaymentApp selectedPaymentMethod =
+                (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem();
         if (selectedPaymentMethod != null
                 && selectedPaymentMethod.getPaymentAppType() == PaymentAppType.AUTOFILL
                 && !selectedPaymentMethod.getIdentifier().isEmpty()) {
@@ -2907,10 +2948,11 @@ public class PaymentRequestImpl
     public void onFocusChanged(@PaymentRequestUI.DataType int dataType, boolean willFocus) {
         assert dataType == PaymentRequestUI.DataType.SHIPPING_ADDRESSES;
 
-        if (mShippingAddressesSection.getSelectedItem() == null) return;
+        if (mPaymentUIsManager.getShippingAddressesSection().getSelectedItem() == null) return;
 
         AutofillAddress selectedAddress =
-                (AutofillAddress) mShippingAddressesSection.getSelectedItem();
+                (AutofillAddress) mPaymentUIsManager.getShippingAddressesSection()
+                        .getSelectedItem();
 
         // The label should only include the country if the view is focused.
         if (willFocus) {
@@ -2920,7 +2962,8 @@ public class PaymentRequestImpl
         }
 
         mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                PaymentRequestUI.DataType.SHIPPING_ADDRESSES, mShippingAddressesSection);
+                PaymentRequestUI.DataType.SHIPPING_ADDRESSES,
+                mPaymentUIsManager.getShippingAddressesSection());
     }
 
     @Override
@@ -2999,12 +3042,12 @@ public class PaymentRequestImpl
         setShowingPaymentRequest(null);
         mIsCurrentPaymentRequestShowing = false;
 
-        if (mPaymentMethodsSection != null) {
-            for (int i = 0; i < mPaymentMethodsSection.getSize(); i++) {
-                EditableOption option = mPaymentMethodsSection.getItem(i);
+        if (mPaymentUIsManager.getPaymentMethodsSection() != null) {
+            for (int i = 0; i < mPaymentUIsManager.getPaymentMethodsSection().getSize(); i++) {
+                EditableOption option = mPaymentUIsManager.getPaymentMethodsSection().getItem(i);
                 ((PaymentApp) option).dismissInstrument();
             }
-            mPaymentMethodsSection = null;
+            mPaymentUIsManager.setPaymentMethodsSection(null);
         }
 
         if (mObservedTabModelSelector != null) {

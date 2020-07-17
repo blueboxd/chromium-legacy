@@ -190,6 +190,12 @@ const std::map<int, std::string> CreateChromeosMojoResourceIdToAliasMap() {
       {IDR_NETWORK_HEALTH_MOJOM_LITE_JS,
        "mojo/chromeos/services/network_health/public/mojom/"
        "network_health.mojom-lite.js"},
+      {IDR_NETWORK_DIAGNOSTICS_MOJOM_HTML,
+       "mojo/chromeos/services/network_health/public/mojom/"
+       "network_diagnostics.mojom.html"},
+      {IDR_NETWORK_DIAGNOSTICS_MOJOM_LITE_JS,
+       "mojo/chromeos/services/network_health/public/mojom/"
+       "network_diagnostics.mojom-lite.js"},
   };
 }
 #endif  // !defined(OS_CHROMEOS)

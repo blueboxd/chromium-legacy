@@ -157,7 +157,8 @@ NetworkingPrivateGetPropertiesFunction::Run() {
   GetDelegate(browser_context())
       ->GetProperties(
           params->network_guid,
-          base::Bind(&NetworkingPrivateGetPropertiesFunction::Result, this));
+          base::BindOnce(&NetworkingPrivateGetPropertiesFunction::Result,
+                         this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -192,8 +193,8 @@ NetworkingPrivateGetManagedPropertiesFunction::Run() {
   GetDelegate(browser_context())
       ->GetManagedProperties(
           params->network_guid,
-          base::Bind(&NetworkingPrivateGetManagedPropertiesFunction::Result,
-                     this));
+          base::BindOnce(&NetworkingPrivateGetManagedPropertiesFunction::Result,
+                         this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -224,9 +225,10 @@ ExtensionFunction::ResponseAction NetworkingPrivateGetStateFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   GetDelegate(browser_context())
-      ->GetState(params->network_guid,
-                 base::Bind(&NetworkingPrivateGetStateFunction::Success, this),
-                 base::Bind(&NetworkingPrivateGetStateFunction::Failure, this));
+      ->GetState(
+          params->network_guid,
+          base::BindOnce(&NetworkingPrivateGetStateFunction::Success, this),
+          base::BindOnce(&NetworkingPrivateGetStateFunction::Failure, this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -270,8 +272,10 @@ NetworkingPrivateSetPropertiesFunction::Run() {
       ->SetProperties(
           params->network_guid, std::move(properties_dict),
           CanChangeSharedConfig(extension(), source_context_type()),
-          base::Bind(&NetworkingPrivateSetPropertiesFunction::Success, this),
-          base::Bind(&NetworkingPrivateSetPropertiesFunction::Failure, this));
+          base::BindOnce(&NetworkingPrivateSetPropertiesFunction::Success,
+                         this),
+          base::BindOnce(&NetworkingPrivateSetPropertiesFunction::Failure,
+                         this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -316,8 +320,10 @@ NetworkingPrivateCreateNetworkFunction::Run() {
   GetDelegate(browser_context())
       ->CreateNetwork(
           params->shared, std::move(properties_dict),
-          base::Bind(&NetworkingPrivateCreateNetworkFunction::Success, this),
-          base::Bind(&NetworkingPrivateCreateNetworkFunction::Failure, this));
+          base::BindOnce(&NetworkingPrivateCreateNetworkFunction::Success,
+                         this),
+          base::BindOnce(&NetworkingPrivateCreateNetworkFunction::Failure,
+                         this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -349,8 +355,10 @@ NetworkingPrivateForgetNetworkFunction::Run() {
       ->ForgetNetwork(
           params->network_guid,
           CanChangeSharedConfig(extension(), source_context_type()),
-          base::Bind(&NetworkingPrivateForgetNetworkFunction::Success, this),
-          base::Bind(&NetworkingPrivateForgetNetworkFunction::Failure, this));
+          base::BindOnce(&NetworkingPrivateForgetNetworkFunction::Success,
+                         this),
+          base::BindOnce(&NetworkingPrivateForgetNetworkFunction::Failure,
+                         this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -387,8 +395,8 @@ ExtensionFunction::ResponseAction NetworkingPrivateGetNetworksFunction::Run() {
   GetDelegate(browser_context())
       ->GetNetworks(
           network_type, configured_only, visible_only, limit,
-          base::Bind(&NetworkingPrivateGetNetworksFunction::Success, this),
-          base::Bind(&NetworkingPrivateGetNetworksFunction::Failure, this));
+          base::BindOnce(&NetworkingPrivateGetNetworksFunction::Success, this),
+          base::BindOnce(&NetworkingPrivateGetNetworksFunction::Failure, this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -432,10 +440,10 @@ NetworkingPrivateGetVisibleNetworksFunction::Run() {
   GetDelegate(browser_context())
       ->GetNetworks(
           network_type, configured_only, visible_only, kDefaultNetworkListLimit,
-          base::Bind(&NetworkingPrivateGetVisibleNetworksFunction::Success,
-                     this),
-          base::Bind(&NetworkingPrivateGetVisibleNetworksFunction::Failure,
-                     this));
+          base::BindOnce(&NetworkingPrivateGetVisibleNetworksFunction::Success,
+                         this),
+          base::BindOnce(&NetworkingPrivateGetVisibleNetworksFunction::Failure,
+                         this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -587,9 +595,9 @@ ExtensionFunction::ResponseAction NetworkingPrivateStartConnectFunction::Run() {
   GetDelegate(browser_context())
       ->StartConnect(
           params->network_guid,
-          base::Bind(&NetworkingPrivateStartConnectFunction::Success, this),
-          base::Bind(&NetworkingPrivateStartConnectFunction::Failure, this,
-                     params->network_guid));
+          base::BindOnce(&NetworkingPrivateStartConnectFunction::Success, this),
+          base::BindOnce(&NetworkingPrivateStartConnectFunction::Failure, this,
+                         params->network_guid));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -621,8 +629,10 @@ NetworkingPrivateStartDisconnectFunction::Run() {
   GetDelegate(browser_context())
       ->StartDisconnect(
           params->network_guid,
-          base::Bind(&NetworkingPrivateStartDisconnectFunction::Success, this),
-          base::Bind(&NetworkingPrivateStartDisconnectFunction::Failure, this));
+          base::BindOnce(&NetworkingPrivateStartDisconnectFunction::Success,
+                         this),
+          base::BindOnce(&NetworkingPrivateStartDisconnectFunction::Failure,
+                         this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -659,8 +669,10 @@ NetworkingPrivateStartActivateFunction::Run() {
   GetDelegate(browser_context())
       ->StartActivate(
           params->network_guid, params->carrier ? *params->carrier : "",
-          base::Bind(&NetworkingPrivateStartActivateFunction::Success, this),
-          base::Bind(&NetworkingPrivateStartActivateFunction::Failure, this));
+          base::BindOnce(&NetworkingPrivateStartActivateFunction::Success,
+                         this),
+          base::BindOnce(&NetworkingPrivateStartActivateFunction::Failure,
+                         this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -704,8 +716,10 @@ NetworkingPrivateVerifyDestinationFunction::Run() {
 
   delegate->VerifyDestination(
       AsCastCredentials(params->properties),
-      base::Bind(&NetworkingPrivateVerifyDestinationFunction::Success, this),
-      base::Bind(&NetworkingPrivateVerifyDestinationFunction::Failure, this));
+      base::BindOnce(&NetworkingPrivateVerifyDestinationFunction::Success,
+                     this),
+      base::BindOnce(&NetworkingPrivateVerifyDestinationFunction::Failure,
+                     this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -750,9 +764,10 @@ NetworkingPrivateVerifyAndEncryptDataFunction::Run() {
 
   delegate->VerifyAndEncryptData(
       params->data, AsCastCredentials(params->properties),
-      base::Bind(&NetworkingPrivateVerifyAndEncryptDataFunction::Success, this),
-      base::Bind(&NetworkingPrivateVerifyAndEncryptDataFunction::Failure,
-                 this));
+      base::BindOnce(&NetworkingPrivateVerifyAndEncryptDataFunction::Success,
+                     this),
+      base::BindOnce(&NetworkingPrivateVerifyAndEncryptDataFunction::Failure,
+                     this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -810,10 +825,10 @@ NetworkingPrivateGetCaptivePortalStatusFunction::Run() {
   GetDelegate(browser_context())
       ->GetCaptivePortalStatus(
           params->network_guid,
-          base::Bind(&NetworkingPrivateGetCaptivePortalStatusFunction::Success,
-                     this),
-          base::Bind(&NetworkingPrivateGetCaptivePortalStatusFunction::Failure,
-                     this));
+          base::BindOnce(
+              &NetworkingPrivateGetCaptivePortalStatusFunction::Success, this),
+          base::BindOnce(
+              &NetworkingPrivateGetCaptivePortalStatusFunction::Failure, this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -851,10 +866,10 @@ NetworkingPrivateUnlockCellularSimFunction::Run() {
   GetDelegate(browser_context())
       ->UnlockCellularSim(
           params->network_guid, params->pin, params->puk ? *params->puk : "",
-          base::Bind(&NetworkingPrivateUnlockCellularSimFunction::Success,
-                     this),
-          base::Bind(&NetworkingPrivateUnlockCellularSimFunction::Failure,
-                     this));
+          base::BindOnce(&NetworkingPrivateUnlockCellularSimFunction::Success,
+                         this),
+          base::BindOnce(&NetworkingPrivateUnlockCellularSimFunction::Failure,
+                         this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -892,10 +907,10 @@ NetworkingPrivateSetCellularSimStateFunction::Run() {
           params->network_guid, params->sim_state.require_pin,
           params->sim_state.current_pin,
           params->sim_state.new_pin ? *params->sim_state.new_pin : "",
-          base::Bind(&NetworkingPrivateSetCellularSimStateFunction::Success,
-                     this),
-          base::Bind(&NetworkingPrivateSetCellularSimStateFunction::Failure,
-                     this));
+          base::BindOnce(&NetworkingPrivateSetCellularSimStateFunction::Success,
+                         this),
+          base::BindOnce(&NetworkingPrivateSetCellularSimStateFunction::Failure,
+                         this));
   // Success() or Failure() might have been called synchronously at this point.
   // In that case this function has already called Respond(). Return
   // AlreadyResponded() in that case.
@@ -931,10 +946,10 @@ NetworkingPrivateSelectCellularMobileNetworkFunction::Run() {
   GetDelegate(browser_context())
       ->SelectCellularMobileNetwork(
           params->network_guid, params->network_id,
-          base::Bind(
+          base::BindOnce(
               &NetworkingPrivateSelectCellularMobileNetworkFunction::Success,
               this),
-          base::Bind(
+          base::BindOnce(
               &NetworkingPrivateSelectCellularMobileNetworkFunction::Failure,
               this));
   // Success() or Failure() might have been called synchronously at this point.

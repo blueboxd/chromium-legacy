@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/print_management/mojom/printing_manager.mojom.h"
 #include "chromeos/components/print_management/url_constants.h"
+#include "chromeos/components/web_applications/manifest_request_filter.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/grit/chromeos_print_management_resources.h"
 #include "chromeos/grit/chromeos_print_management_resources_map.h"
@@ -115,6 +116,9 @@ PrintManagementUI::PrintManagementUI(
                                IDR_PRINTING_MANAGER_MOJO_LITE_JS);
 
   AddPrintManagementStrings(html_source.get());
+  web_app::SetManifestRequestFilter(html_source.get(),
+                                    IDR_PRINT_MANAGEMENT_MANIFEST,
+                                    IDS_PRINT_MANAGEMENT_APP_NAME);
 
   if (base::FeatureList::IsEnabled(chromeos::features::kScanningUI)) {
     html_source->AddResourcePath("scanning_page.js", IDR_SCANNING_PAGE_JS);

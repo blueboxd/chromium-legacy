@@ -19,8 +19,9 @@ import org.junit.runner.RunWith;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.policy.test.annotations.Policies;
@@ -42,8 +43,8 @@ public class SettingsActivityTest {
                 () -> { ChromeBrowserInitializer.getInstance().handleSynchronousStartup(); });
 
         CriteriaHelper.pollUiThread(() -> {
-            return PrefServiceBridge.getInstance().isManagedPreference(
-                    Pref.CREDENTIALS_ENABLE_SERVICE);
+            return UserPrefs.get(Profile.getLastUsedRegularProfile())
+                    .isManagedPreference(Pref.CREDENTIALS_ENABLE_SERVICE);
         });
 
         mSettingsActivityTestRule.startSettingsActivity();

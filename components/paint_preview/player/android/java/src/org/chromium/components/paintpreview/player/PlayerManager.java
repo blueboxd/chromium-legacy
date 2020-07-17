@@ -35,9 +35,9 @@ public class PlayerManager {
     private PlayerFrameCoordinator mRootFrameCoordinator;
     private FrameLayout mHostView;
     private Runnable mViewReadyCallback;
-    private Runnable mUserInteractionCallback;
     private static final String sInitEvent = "paint_preview PlayerManager init";
     private PlayerSwipeRefreshHandler mPlayerSwipeRefreshHandler;
+    private PlayerGestureListener mPlayerGestureListener;
     private boolean mIgnoreInitialScrollOffset;
 
     /**
@@ -65,16 +65,17 @@ public class PlayerManager {
         TraceEvent.startAsync(sInitEvent, hashCode());
         mContext = context;
         mDelegate = new PlayerCompositorDelegateImpl(nativePaintPreviewServiceProvider, url,
-                directoryKey, this::onCompositorReady, linkClickHandler, compositorErrorCallback);
+                directoryKey, this::onCompositorReady, compositorErrorCallback);
         mHostView = new FrameLayout(mContext);
         if (refreshCallback != null) {
             mPlayerSwipeRefreshHandler = new PlayerSwipeRefreshHandler(mContext, refreshCallback);
         }
+        mPlayerGestureListener =
+                new PlayerGestureListener(linkClickHandler, userInteractionCallback);
         mHostView.setLayoutParams(
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mHostView.setBackgroundColor(backgroundColor);
         mViewReadyCallback = viewReadyCallback;
-        mUserInteractionCallback = userInteractionCallback;
         mIgnoreInitialScrollOffset = ignoreInitialScrollOffset;
     }
 
@@ -93,7 +94,7 @@ public class PlayerManager {
         mRootFrameCoordinator = new PlayerFrameCoordinator(mContext, mDelegate, rootFrame.getGuid(),
                 rootFrame.getContentWidth(), rootFrame.getContentHeight(),
                 rootFrame.getInitialScrollX(), rootFrame.getInitialScrollY(), true,
-                mPlayerSwipeRefreshHandler, mUserInteractionCallback);
+                mPlayerSwipeRefreshHandler, mPlayerGestureListener);
         buildSubFrameCoordinators(mRootFrameCoordinator, rootFrame);
         mHostView.addView(mRootFrameCoordinator.getView(),
                 new FrameLayout.LayoutParams(
@@ -162,7 +163,7 @@ public class PlayerManager {
             PlayerFrameCoordinator childCoordinator = new PlayerFrameCoordinator(mContext,
                     mDelegate, childFrame.getGuid(), childFrame.getContentWidth(),
                     childFrame.getContentHeight(), childFrame.getInitialScrollX(),
-                    childFrame.getInitialScrollY(), false, null, mUserInteractionCallback);
+                    childFrame.getInitialScrollY(), false, null, mPlayerGestureListener);
             buildSubFrameCoordinators(childCoordinator, childFrame);
             frameCoordinator.addSubFrame(childCoordinator, frame.getSubFrameClips()[i]);
         }

@@ -1455,4 +1455,54 @@ TEST_F(CompositorFrameSinkSupportTest, ThrottleUnresponsiveClient) {
 
   support->SetNeedsBeginFrame(false);
 }
+
+// Verifies that when CompositorFrameSinkSupport has its |begin_frame_interval_|
+// set, any BeginFrame would be sent only after this interval has passed from
+// the time when the last BeginFrame was sent.
+TEST_F(CompositorFrameSinkSupportTest, BeginFrameInterval) {
+  FakeExternalBeginFrameSource begin_frame_source(0.f, false);
+
+  testing::NiceMock<MockCompositorFrameSinkClient> mock_client;
+  auto support = std::make_unique<CompositorFrameSinkSupport>(
+      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, /*is_root=*/true);
+  SurfaceId id(kAnotherArbitraryFrameSinkId, local_surface_id_);
+  support->SetBeginFrameSource(&begin_frame_source);
+  support->SetNeedsBeginFrame(true);
+  constexpr uint8_t fps = 5;
+  constexpr base::TimeDelta throttled_interval =
+      base::TimeDelta::FromSeconds(1) / fps;
+  support->ThrottleBeginFrame(throttled_interval);
+
+  constexpr base::TimeDelta interval = BeginFrameArgs::DefaultInterval();
+  base::TimeTicks frame_time;
+  uint64_t sequence_number = 1;
+  int sent_frames = 0;
+  BeginFrameArgs args;
+
+  const base::TimeTicks end_time = frame_time + base::TimeDelta::FromSeconds(2);
+
+  base::TimeTicks next_expected_begin_frame = frame_time;
+  while (frame_time < end_time) {
+    args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,
+                                          sequence_number++, frame_time);
+    if (frame_time < next_expected_begin_frame) {
+      EXPECT_CALL(mock_client, OnBeginFrame(args, _)).Times(0);
+    } else {
+      EXPECT_CALL(mock_client, OnBeginFrame(args, _)).WillOnce([&]() {
+        support->SubmitCompositorFrame(local_surface_id_,
+                                       MakeDefaultCompositorFrame());
+        GetSurfaceForId(id)->MarkAsDrawn();
+        ++sent_frames;
+      });
+      next_expected_begin_frame = throttled_interval + frame_time;
+    }
+    begin_frame_source.TestOnBeginFrame(args);
+    testing::Mock::VerifyAndClearExpectations(&mock_client);
+
+    frame_time += interval;
+  }
+  // In total 10 frames should have been sent (5fps x 2 seconds).
+  EXPECT_EQ(sent_frames, 10);
+  support->SetNeedsBeginFrame(false);
+}
 }  // namespace viz

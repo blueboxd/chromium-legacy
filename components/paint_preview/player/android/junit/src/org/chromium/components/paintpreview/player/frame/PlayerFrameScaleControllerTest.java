@@ -20,6 +20,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /**
@@ -36,8 +37,7 @@ public class PlayerFrameScaleControllerTest {
     private PlayerFrameScaleController mScaleController;
     @Mock
     private PlayerFrameMediatorDelegate mMediatorDelegateMock;
-    private boolean mHasUserInteraction;
-    private Runnable mUserInteractionCallback;
+    private boolean mDidScale;
 
     private class MatrixMatcher implements ArgumentMatcher<Matrix> {
         private Matrix mLeft;
@@ -55,13 +55,13 @@ public class PlayerFrameScaleControllerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mHasUserInteraction = false;
-        mUserInteractionCallback = () -> mHasUserInteraction = true;
+        mDidScale = false;
+        Callback<Boolean> mScaleListener = (Boolean didFinish) -> mDidScale = true;
         mViewport = new PlayerFrameViewport();
         mBitmapScaleMatrix = new Matrix();
         mScaleController =
                 new PlayerFrameScaleController(mViewport, new Size(CONTENT_WIDTH, CONTENT_HEIGHT),
-                        mBitmapScaleMatrix, mMediatorDelegateMock, mUserInteractionCallback);
+                        mBitmapScaleMatrix, mMediatorDelegateMock, mScaleListener);
         mScaleController.calculateInitialScaleFactor(CONTENT_WIDTH);
         mViewport.setScale(mScaleController.getInitialScaleFactor());
         mViewport.setSize(100, 100);
@@ -114,7 +114,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(expectedBitmapMatrix, mBitmapScaleMatrix);
         inOrder.verify(mMediatorDelegateMock)
                 .setBitmapScaleMatrix(argThat(new MatrixMatcher(expectedBitmapMatrix)), eq(2f));
-        Assert.assertTrue(mHasUserInteraction);
+        Assert.assertTrue(mDidScale);
 
         Assert.assertTrue(mScaleController.scaleFinished(1f, 0, 0));
         Assert.assertEquals(2f, mViewport.getScale(), TOLERANCE);
@@ -137,7 +137,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(expectedBitmapMatrix, mBitmapScaleMatrix);
         inOrder.verify(mMediatorDelegateMock)
                 .setBitmapScaleMatrix(argThat(new MatrixMatcher(expectedBitmapMatrix)), eq(1f));
-        Assert.assertTrue(mHasUserInteraction);
+        Assert.assertTrue(mDidScale);
 
         Assert.assertTrue(mScaleController.scaleFinished(1f, 0, 0));
         Assert.assertEquals(1f, mViewport.getScale(), TOLERANCE);
@@ -166,7 +166,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(expectedBitmapMatrix, mBitmapScaleMatrix);
         inOrder.verify(mMediatorDelegateMock)
                 .setBitmapScaleMatrix(argThat(new MatrixMatcher(expectedBitmapMatrix)), eq(2f));
-        Assert.assertTrue(mHasUserInteraction);
+        Assert.assertTrue(mDidScale);
 
         Assert.assertTrue(mScaleController.scaleFinished(1f, 0, 0));
         Assert.assertEquals(2f, mViewport.getScale(), TOLERANCE);
@@ -190,7 +190,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(expectedBitmapMatrix, mBitmapScaleMatrix);
         inOrder.verify(mMediatorDelegateMock)
                 .setBitmapScaleMatrix(argThat(new MatrixMatcher(expectedBitmapMatrix)), eq(1.5f));
-        Assert.assertTrue(mHasUserInteraction);
+        Assert.assertTrue(mDidScale);
 
         Assert.assertTrue(mScaleController.scaleFinished(1f, 0, 0));
         Assert.assertEquals(1.5f, mViewport.getScale(), TOLERANCE);
@@ -219,7 +219,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(expectedBitmapMatrix, mBitmapScaleMatrix);
         inOrder.verify(mMediatorDelegateMock)
                 .setBitmapScaleMatrix(argThat(new MatrixMatcher(expectedBitmapMatrix)), eq(1.5f));
-        Assert.assertTrue(mHasUserInteraction);
+        Assert.assertTrue(mDidScale);
 
         Assert.assertTrue(mScaleController.scaleFinished(1f, 0, 0));
         Assert.assertEquals(1.5f, mViewport.getScale(), TOLERANCE);
@@ -256,7 +256,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(expectedBitmapMatrix, mBitmapScaleMatrix);
         inOrder.verify(mMediatorDelegateMock)
                 .setBitmapScaleMatrix(argThat(new MatrixMatcher(expectedBitmapMatrix)), eq(1.125f));
-        Assert.assertTrue(mHasUserInteraction);
+        Assert.assertTrue(mDidScale);
 
         Assert.assertTrue(mScaleController.scaleFinished(1f, 0, 0));
         Assert.assertEquals(1.125f, mViewport.getScale(), TOLERANCE);
@@ -286,7 +286,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(expectedBitmapMatrix, mBitmapScaleMatrix);
         inOrder.verify(mMediatorDelegateMock)
                 .setBitmapScaleMatrix(argThat(new MatrixMatcher(expectedBitmapMatrix)), eq(2f));
-        Assert.assertTrue(mHasUserInteraction);
+        Assert.assertTrue(mDidScale);
 
         Assert.assertTrue(mScaleController.scaleFinished(1f, 0, 0));
         Assert.assertEquals(2f, mViewport.getScale(), TOLERANCE);
@@ -310,7 +310,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(expectedBitmapMatrix, mBitmapScaleMatrix);
         inOrder.verify(mMediatorDelegateMock)
                 .setBitmapScaleMatrix(argThat(new MatrixMatcher(expectedBitmapMatrix)), eq(1.5f));
-        Assert.assertTrue(mHasUserInteraction);
+        Assert.assertTrue(mDidScale);
 
         Assert.assertTrue(mScaleController.scaleFinished(1f, 0, 0));
         Assert.assertEquals(1.5f, mViewport.getScale(), TOLERANCE);

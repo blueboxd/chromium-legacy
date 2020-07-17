@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/context_menu_controller.h"
@@ -44,7 +45,6 @@ class DownloadShelfContextMenuView;
 namespace gfx {
 class Image;
 class ImageSkia;
-class SlideAnimation;
 }
 
 namespace views {
@@ -134,65 +134,19 @@ class DownloadItemView : public views::View,
   // Sets the current mode to |mode| and updates UI appropriately.
   void UpdateMode(Mode mode);
 
+  // Updates the file path, and if necessary, begins loading the file icon in
+  // various sizes. This may eventually result in a callback to
+  // OnFileIconLoaded().
+  void UpdateFilePath();
+
   // Updates the visibility, text, size, etc. of all labels.
   void UpdateLabels();
 
   // Updates the visible and enabled state of all buttons.
   void UpdateButtons();
 
-  void OpenDownload();
-
-  // Submits the downloaded file to the safebrowsing download feedback service.
-  // Returns whether submission was successful. Applies |download_command|, if
-  // submission fails.
-  bool SubmitDownloadToFeedbackService(
-      DownloadCommands::Command download_command);
-
-  void DrawIcon(gfx::Canvas* canvas);
-  void LoadIcon();
-
-  // Update the button colors based on the current theme.
-  void UpdateColorsFromTheme();
-
-  void UpdateDropdownButton();
-
-  // Shows the context menu at the specified location. |point| is in the view's
-  // coordinate system.
-  void ShowContextMenuImpl(const gfx::Rect& rect,
-                           ui::MenuSourceType source_type);
-
-  // Sets the state and triggers a repaint.
-  void SetDropdownState(State new_state);
-
-  // Returns the current warning icon (should only be called when the view is
-  // actually showing a warning).
-  gfx::ImageSkia GetWarningIcon();
-
-  // Sets |size| with the size of the Save and Discard buttons (they have the
-  // same size).
-  gfx::Size GetButtonSize() const;
-
-  // Returns either:
-  //   * 200, if |label| can fit in one line given at most 200 DIP width.
-  //   * The minimum width needed to display |label| on two lines.
-  int GetLabelWidth(const views::StyledLabel& label) const;
-
-  // Reenables the item after it has been disabled when a user clicked it to
-  // open the downloaded file.
-  void Reenable();
-
-  // Releases drop down button after showing a context menu.
-  void ReleaseDropdown();
-
-  // Timer callback for handling animations
-  void StartDownloadProgress();
-  void StopDownloadProgress();
-
-  // Update the accessible name to reflect the current state of the control,
-  // so that screenreaders can access the filename, status text, and
-  // dangerous download warning message (if any). The name will be presented
-  // when the download item receives focus.
-  void UpdateAccessibleName();
+  // Updates the accessible alert and timers for normal mode.
+  void UpdateAccessibleAlertAndTimersForNormalMode();
 
   // Update accessible status text.
   // If |is_last_update| is false, then a timer is used to notify screen readers
@@ -208,7 +162,9 @@ class DownloadItemView : public views::View,
   // reader to speak the current alert immediately.
   void AnnounceAccessibleAlert();
 
-  void OnExtractIconComplete(IconLoader::IconSize icon_size, gfx::Image icon);
+  // Sets |file_icon_| to |icon|. Called when the icon manager has loaded the
+  // normal-size icon for the current file path.
+  void OnFileIconLoaded(IconLoader::IconSize icon_size, gfx::Image icon);
 
   // Paint the common download animation progress foreground and background. If
   // |percent_done| < 0, the total size is indeterminate.
@@ -218,30 +174,47 @@ class DownloadItemView : public views::View,
                              const base::TimeDelta& indeterminate_progress_time,
                              int percent_done) const;
 
-  // Show/Hide/Reset |animation| based on the state transition specified by
-  // |from| and |to|.
-  void AnimateStateTransition(State from,
-                              State to,
-                              gfx::SlideAnimation* animation);
-
-  // Callback for |progress_timer_|.
-  void ProgressTimerFired();
+  // When not in normal mode, returns the current help/warning/error icon.
+  gfx::ImageSkia GetWarningIcon();
 
   // Returns the text and style to use for the status label.
   std::pair<base::string16, int> GetStatusTextAndStyle() const;
+
+  // Returns the size of any button visible next to the label (all visible
+  // buttons are given the same size).
+  gfx::Size GetButtonSize() const;
 
   // Returns the file name to report to user. It might be elided to fit into
   // the text width.
   base::string16 ElidedFilename();
 
+  // Returns either:
+  //   * 200, if |label| can fit in one line given at most 200 DIP width.
+  //   * The minimum width needed to display |label| on two lines.
+  int GetLabelWidth(const views::StyledLabel& label) const;
+
+  // Sets the state and triggers a repaint.
+  void SetDropdownState(State new_state);
+
+  // Sets |dropdown_button_| to have the correct image for the current state.
+  void UpdateDropdownButton();
+
+  // Shows the context menu at the specified location. |point| is in the view's
+  // coordinate system.
+  void ShowContextMenuImpl(const gfx::Rect& rect,
+                           ui::MenuSourceType source_type);
+
   // Opens a file while async scanning is still pending.
   void OpenDownloadDuringAsyncScanning();
 
+  // Submits the downloaded file to the safebrowsing download feedback service.
+  // Applies |download_command| if submission succeeds. Returns whether
+  // submission was successful.
+  bool SubmitDownloadToFeedbackService(
+      DownloadCommands::Command download_command);
+
   // Returns the height/width of the warning icon, in dp.
   static int GetWarningIconSize();
-
-  // Returns the height/width of the error icon, in dp.
-  static int GetErrorIconSize();
 
   // Starts deep scanning for this download item.
   void ConfirmDeepScanning();
@@ -270,14 +243,6 @@ class DownloadItemView : public views::View,
   // Mode of the download item view.
   Mode mode_;
 
-  // When download progress last began animating (pausing and resuming will
-  // update this). Used for downloads of unknown size.
-  base::TimeTicks progress_start_time_;
-
-  // Keeps the amount of time spent already animating. Used to keep track of
-  // total active time for downloads of unknown size.
-  base::TimeDelta previous_progress_elapsed_;
-
   // Whether we are dragging the download button.
   bool dragging_;
 
@@ -290,12 +255,6 @@ class DownloadItemView : public views::View,
   // A model class to control the status text we display.
   DownloadUIModel::DownloadUIModelPtr model_;
 
-  // Animation for download complete.
-  std::unique_ptr<gfx::SlideAnimation> complete_animation_;
-
-  // Progress animation
-  base::RepeatingTimer progress_timer_;
-
   // The "open download" button. This button is visually transparent and fills
   // the entire bounds of the DownloadItemView, to make the DownloadItemView
   // itself seem to be clickable while not requiring DownloadItemView itself to
@@ -303,6 +262,8 @@ class DownloadItemView : public views::View,
   // children in macOS Accessibility, and to avoid reimplementing much of the
   // button logic in DownloadItemView.
   views::Button* open_button_;
+
+  gfx::ImageSkia file_icon_;
 
   views::Label* file_name_label_;
   views::Label* status_label_;
@@ -324,6 +285,17 @@ class DownloadItemView : public views::View,
   // The currently running download context menu.
   std::unique_ptr<DownloadShelfContextMenuView> context_menu_;
 
+  base::RepeatingTimer indeterminate_progress_timer_;
+
+  // The start of the most recent active period of downloading a file of
+  // indeterminate size.
+  base::TimeTicks indeterminate_progress_start_time_;
+
+  // The total active time downloading a file of indeterminate size.
+  base::TimeDelta indeterminate_progress_time_elapsed_;
+
+  gfx::SlideAnimation complete_animation_{this};
+
   // The name of this view as reported to assistive technology.
   base::string16 accessible_name_;
 
@@ -338,16 +310,12 @@ class DownloadItemView : public views::View,
   // Force the reading of the current alert text the next time it updates.
   bool announce_accessible_alert_soon_;
 
-  // The icon loaded in the download shelf is based on the file path of the
-  // item.  Store the path used, so that we can detect a change in the path
-  // and reload the icon.
-  base::FilePath last_download_item_path_;
+  // |file_icon_| is based on the path of the downloaded item.  Store the path
+  // used, so that we can detect a change in the path and reload the icon.
+  base::FilePath file_path_;
 
   // Deep scanning modal dialog confirming choice to "open now".
   TabModalConfirmDialog* open_now_modal_dialog_;
-
-  // Icon for the download.
-  gfx::ImageSkia icon_;
 
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.

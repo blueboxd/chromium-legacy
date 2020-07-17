@@ -380,36 +380,41 @@ GpuCommandBufferTestEGL::GpuCommandBufferTestEGL() : gl_reinitialized_(false) {}
 
 GpuCommandBufferTestEGL::~GpuCommandBufferTestEGL() {}
 
-bool GpuCommandBufferTestEGL::InitializeEGLGLES2(int width, int height) {
-  if (gl::GetGLImplementation() !=
-      gl::GLImplementation::kGLImplementationEGLGLES2) {
-    const auto impls = gl::init::GetAllowedGLImplementations();
-    if (!base::Contains(impls,
-                        gl::GLImplementation::kGLImplementationEGLGLES2)) {
-      LOG(INFO) << "Skip test, implementation EGLGLES2 is not available";
-      return false;
-    }
-
+bool GpuCommandBufferTestEGL::InitializeEGL(int width, int height) {
+  gl::GLImplementation current_impl = gl::GetGLImplementation();
+  if (!(current_impl == gl::kGLImplementationEGLGLES2 ||
+        current_impl == gl::kGLImplementationEGLANGLE)) {
     gpu::GPUInfo gpu_info;
     gpu::CollectContextGraphicsInfo(&gpu_info);
+    gpu::CollectBasicGraphicsInfo(base::CommandLine::ForCurrentProcess(),
+                                  &gpu_info);
     // See crbug.com/822716, the ATI proprietary driver has eglGetProcAddress
     // but eglInitialize crashes with x11.
     if (gpu_info.gl_vendor.find("ATI Technologies Inc.") != std::string::npos) {
       LOG(INFO) << "Skip test, ATI proprietary driver crashes with egl/x11";
       return false;
     }
+    // The native EGL driver is not supported with the passthrough command
+    // decoder, in that case use ANGLE
+    const gl::GLImplementation new_impl =
+        (gpu_info.passthrough_cmd_decoder ? gl::kGLImplementationEGLANGLE
+                                          : gl::kGLImplementationEGLGLES2);
+    const auto allowed_impls = gl::init::GetAllowedGLImplementations();
+    if (!base::Contains(allowed_impls, new_impl)) {
+      LOG(INFO) << "Skip test, no EGL implementation is available";
+      return false;
+    }
 
     gl_reinitialized_ = true;
     gl::init::ShutdownGL(false /* due_to_fallback */);
-    if (!GLTestHelper::InitializeGL(
-            gl::GLImplementation::kGLImplementationEGLGLES2)) {
-      LOG(INFO) << "Skip test, failed to initialize EGLGLES2";
+    if (!GLTestHelper::InitializeGL(new_impl)) {
+      LOG(INFO) << "Skip test, failed to initialize EGL";
       return false;
     }
   }
-
-  DCHECK_EQ(gl::GLImplementation::kGLImplementationEGLGLES2,
-            gl::GetGLImplementation());
+  current_impl = gl::GetGLImplementation();
+  DCHECK(current_impl == gl::kGLImplementationEGLGLES2 ||
+         current_impl == gl::kGLImplementationEGLANGLE);
 
   // Make the GL context current now to get all extensions.
   GLManager::Options options;

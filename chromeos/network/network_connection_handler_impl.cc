@@ -619,10 +619,11 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     NET_LOG(EVENT) << "Configuring Network: " << NetworkPathId(service_path);
     configuration_handler_->SetShillProperties(
         service_path, config_properties,
-        base::Bind(&NetworkConnectionHandlerImpl::CallShillConnect, AsWeakPtr(),
-                   service_path),
-        base::Bind(&NetworkConnectionHandlerImpl::HandleConfigurationFailure,
-                   AsWeakPtr(), service_path));
+        base::BindOnce(&NetworkConnectionHandlerImpl::CallShillConnect,
+                       AsWeakPtr(), service_path),
+        base::BindOnce(
+            &NetworkConnectionHandlerImpl::HandleConfigurationFailure,
+            AsWeakPtr(), service_path));
     return;
   }
 

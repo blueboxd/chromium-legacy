@@ -118,9 +118,12 @@ bool IsSettingReadOnly(const std::string& pref_name) {
   // System timezone is never directly changeable by the user.
   if (pref_name == chromeos::kSystemTimezone)
     return chromeos::system::PerUserTimezoneEnabled();
-  // enable_screen_lock must be changed through the quickUnlockPrivate API.
-  if (pref_name == ash::prefs::kEnableAutoScreenLock)
+  // enable_screen_lock and pin_unlock_autosubmit_enabled
+  // must be changed through the quickUnlockPrivate API.
+  if (pref_name == ash::prefs::kEnableAutoScreenLock ||
+      pref_name == prefs::kPinUnlockAutosubmitEnabled) {
     return true;
+  }
 #endif
 #if defined(OS_WIN)
   // Don't allow user to change sw_reporter preferences.
@@ -399,6 +402,9 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   // kEnableAutoScreenLock is read-only.
   (*s_whitelist)[ash::prefs::kEnableAutoScreenLock] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  // kPinUnlockAutosubmitEnabled is read-only.
+  (*s_whitelist)[prefs::kPinUnlockAutosubmitEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kMessageCenterLockScreenMode] =
       settings_api::PrefType::PREF_TYPE_STRING;

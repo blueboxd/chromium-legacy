@@ -376,19 +376,10 @@ Still reading?
     <ignore regexp="android_webview/test/shell/res/raw/resource_file.html"/>
     <ignore regexp="android_webview/test/shell/res/raw/resource_icon.png"/>
     <ignore regexp="android_webview/tools/automated_ui_tests/java/res/layout/"/>
-    <!-- TODO(crbug.com/1017190): Remove the following 11 suppressions once we lint entire app rather
-         than each individual target -->
-    <ignore regexp="components/browser_ui/strings/android/browser_ui_strings_grd"/>
-    <ignore regexp="chrome/browser/download/android/java/res"/>
-    <ignore regexp="The resource `R.drawable.ic_file_download_36dp` appears to be unused"/>
-    <ignore regexp="The resource `R.drawable.ic_play_arrow_white_24dp` appears to be unused"/>
-    <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd"/>
-    <ignore regexp="The resource `R.drawable.*_expand_.*` appears to be unused"/>
-    <ignore regexp="The resource `R.drawable.btn_close` appears to be unused"/>
-    <ignore regexp="The resource `R.drawable.ic_more_vert_24dp_on_dark_bg` appears to be unused"/>
-    <ignore regexp="The resource `R.layout.permission_dialog` appears to be unused"/>
-    <ignore regexp="components/browser_ui/styles/android/java/res"/>
-    <ignore regexp="components/permissions/android/res/drawable"/>
+    <!-- 3: WebView uses some //components/browser_ui resources, but not all (crbug.com/1099842). -->
+    <ignore regexp="components/browser_ui/styles/"/>
+    <ignore regexp="components/browser_ui/widget/"/>
+    <ignore regexp="webview_.*__lint.*components/browser_ui/strings/android/browser_ui_strings_grd"/>
     <!-- 1 resource used by android tv to generate resources.zip file -->
     <ignore regexp="chromecast/internal/shell/browser/android/java/res/drawable-hdpi/ic_settings_cast.png"/>
     <!-- 1 string used by Android's policies system, pulled from app directly -->
@@ -407,7 +398,7 @@ Still reading?
     <ignore regexp="components/page_info/android/java/res/drawable-hdpi/pageinfo_*"/>
     <!--TODO(crbug.com/1052375): Remove this suppression once PermissionParamsListBuilder moves to components.-->
     <ignore regexp="The resource `R.string.page_info_permission_ads_subtitle` appears to be unused"/>
-    <!--TODO(crbug.com/1069186): The following 12 are found when we switched to linting the entire app. -->
+    <!--TODO(crbug.com/1069186): The following 14 are found when we switched to linting the entire app. -->
     <ignore regexp="The resource `R.string.download_manager_ui_documents` appears to be unused"/>
     <ignore regexp="The resource `R.string.download_manager_offline_home` appears to be unused"/>
     <ignore regexp="The resource `R.string.ntp_learn_more_about_suggested_content` appears to be unused"/>
@@ -425,6 +416,8 @@ Still reading?
     <ignore regexp="The resource `R.plurals.public_notification_text` appears to be unused"/>
     <ignore regexp="The resource `R.mipmap.app_shortcut_icon` appears to be unused"/>
     <ignore regexp="The resource `R.mipmap.app_single_page_icon` appears to be unused"/>
+    <ignore regexp="The resource `R.string.app_banner_install` appears to be unused"/>
+    <ignore regexp="The resource `R.string.iph_download_indicator_text` appears to be unused"/>
     <!-- 1: Some strings in components_strings_grd are not used in other targets. -->
     <ignore regexp="webview_.*__lint.*components_strings_grd"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->

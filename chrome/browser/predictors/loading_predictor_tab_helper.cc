@@ -14,6 +14,8 @@
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/predictors_enums.h"
 #include "chrome/browser/predictors/predictors_features.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/proto/hints.pb.h"
@@ -67,6 +69,16 @@ net::RequestPriority GetRequestPriority(
 }
 
 bool IsHandledNavigation(content::NavigationHandle* navigation_handle) {
+  content::WebContents* web_contents = navigation_handle->GetWebContents();
+
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
+  if (prerender_manager &&
+      prerender_manager->IsWebContentsPrerendering(web_contents, nullptr)) {
+    return false;
+  }
+
   return navigation_handle->IsInMainFrame() &&
          !navigation_handle->IsSameDocument() &&
          navigation_handle->GetURL().SchemeIsHTTPOrHTTPS();

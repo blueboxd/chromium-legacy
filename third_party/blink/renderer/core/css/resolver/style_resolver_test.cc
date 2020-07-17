@@ -148,24 +148,6 @@ TEST_F(StyleResolverTest, BaseReusableIfFontRelativeUnitsAbsent) {
   EXPECT_TRUE(StyleResolver::CanReuseBaseComputedStyle(state));
 }
 
-TEST_F(StyleResolverTest, NoCrashWhenAnimatingWithoutCascade) {
-  ScopedCSSCascadeForTest scoped_cascade(false);
-
-  GetDocument().documentElement()->setInnerHTML(R"HTML(
-    <style>
-      @keyframes test {
-        from { width: 10px; }
-        to { width: 20px; }
-      }
-      div {
-        animation: test 1s;
-      }
-    </style>
-    <div id="div">Test</div>
-  )HTML");
-  UpdateAllLifecyclePhasesForTest();
-}
-
 TEST_F(StyleResolverTest, AnimationNotMaskedByImportant) {
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.omnibox;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
-import android.os.Build;
 import android.support.test.filters.SmallTest;
 import android.text.SpannableStringBuilder;
 import android.view.ViewStructure;
@@ -22,7 +21,6 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -49,7 +47,6 @@ public class UrlBarUnitTest {
 
     @Test
     @SmallTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     @Feature("Omnibox")
     public void testAutofillStructureReceivesFullURL() {
         mUrlBar.setTextForAutofillServices("https://www.google.com");

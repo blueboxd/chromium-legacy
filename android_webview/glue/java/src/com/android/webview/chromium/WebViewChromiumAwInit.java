@@ -51,7 +51,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.base.task.PostTask;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.ResourceBundle;
 
@@ -457,7 +457,7 @@ public class WebViewChromiumAwInit {
     // Log extra information, for debugging purposes. Do the work asynchronously to avoid blocking
     // startup.
     private static void logCommandLineAndActiveTrials() {
-        PostTask.postTask(UiThreadTaskTraits.BEST_EFFORT, () -> {
+        PostTask.postTask(TaskTraits.BEST_EFFORT, () -> {
             // TODO(ntfschr): CommandLine can change at any time. For simplicity, only log it
             // once during startup.
             AwContentsStatics.logCommandLineForDebugging();

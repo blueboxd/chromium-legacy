@@ -13,7 +13,9 @@ import androidx.test.filters.SmallTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
@@ -21,7 +23,11 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.chrome.test.util.browser.Features.JUnitProcessor;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChromeSigninController;
@@ -36,6 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Tests for AndroidSyncSettings.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@DisableFeatures(ChromeFeatureList.DECOUPLE_SYNC_FROM_ANDROID_MASTER_SYNC)
 public class AndroidSyncSettingsTest {
     private static class CountingMockSyncContentResolverDelegate
             extends MockSyncContentResolverDelegate {
@@ -99,6 +106,9 @@ public class AndroidSyncSettingsTest {
             mReceivedNotification = true;
         }
     }
+
+    @Rule
+    public TestRule mProcessorRule = new JUnitProcessor();
 
     private AndroidSyncSettings mAndroidSyncSettings;
     private CountingMockSyncContentResolverDelegate mSyncContentResolverDelegate;
@@ -207,12 +217,13 @@ public class AndroidSyncSettingsTest {
     public void testToggleMasterSyncFromSettings() throws InterruptedException {
         mSyncContentResolverDelegate.setMasterSyncAutomatically(true);
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
-        Assert.assertTrue("master sync should be set", mAndroidSyncSettings.isMasterSyncEnabled());
+        Assert.assertTrue("master sync should be set",
+                mAndroidSyncSettings.doesMasterSyncSettingAllowChromeSync());
 
         mSyncContentResolverDelegate.setMasterSyncAutomatically(false);
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
-        Assert.assertFalse(
-                "master sync should be unset", mAndroidSyncSettings.isMasterSyncEnabled());
+        Assert.assertFalse("master sync should be unset",
+                mAndroidSyncSettings.doesMasterSyncSettingAllowChromeSync());
     }
 
     @Test
@@ -251,8 +262,8 @@ public class AndroidSyncSettingsTest {
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
         Assert.assertFalse(
                 "sync should be disabled due to master sync", mAndroidSyncSettings.isSyncEnabled());
-        Assert.assertFalse(
-                "master sync should be disabled", mAndroidSyncSettings.isMasterSyncEnabled());
+        Assert.assertFalse("master sync should be disabled",
+                mAndroidSyncSettings.doesMasterSyncSettingAllowChromeSync());
         Assert.assertTrue(
                 "sync should be set for chrome app", mAndroidSyncSettings.isChromeSyncEnabled());
     }
@@ -324,7 +335,7 @@ public class AndroidSyncSettingsTest {
                 mSyncContentResolverDelegate.mGetSyncAutomaticallyCalls.get();
 
         // Do a bunch of reads.
-        mAndroidSyncSettings.isMasterSyncEnabled();
+        mAndroidSyncSettings.doesMasterSyncSettingAllowChromeSync();
         mAndroidSyncSettings.isSyncEnabled();
         mAndroidSyncSettings.isChromeSyncEnabled();
 
@@ -338,7 +349,7 @@ public class AndroidSyncSettingsTest {
 
         // Do a bunch of reads for alternate account.
         updateAccount(mAlternateAccount);
-        mAndroidSyncSettings.isMasterSyncEnabled();
+        mAndroidSyncSettings.doesMasterSyncSettingAllowChromeSync();
         mAndroidSyncSettings.isSyncEnabled();
         mAndroidSyncSettings.isChromeSyncEnabled();
 
@@ -440,5 +451,24 @@ public class AndroidSyncSettingsTest {
         Assert.assertEquals(1, mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority));
         // Should still be enabled.
         Assert.assertTrue(mSyncContentResolverDelegate.getSyncAutomatically(mAccount, mAuthority));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    @EnableFeatures(ChromeFeatureList.DECOUPLE_SYNC_FROM_ANDROID_MASTER_SYNC)
+    public void testSyncStateDoesNotDependOnMasterSync() throws InterruptedException {
+        mSyncContentResolverDelegate.setSyncAutomatically(mAccount, mAuthority, true);
+        mSyncContentResolverDelegate.setMasterSyncAutomatically(false);
+        mSyncContentResolverDelegate.waitForLastNotificationCompleted();
+        Assert.assertTrue(mAndroidSyncSettings.isChromeSyncEnabled());
+        Assert.assertTrue(mAndroidSyncSettings.doesMasterSyncSettingAllowChromeSync());
+        Assert.assertTrue(mAndroidSyncSettings.isSyncEnabled());
+
+        mSyncContentResolverDelegate.setSyncAutomatically(mAccount, mAuthority, false);
+        mSyncContentResolverDelegate.waitForLastNotificationCompleted();
+        Assert.assertFalse(mAndroidSyncSettings.isChromeSyncEnabled());
+        Assert.assertTrue(mAndroidSyncSettings.doesMasterSyncSettingAllowChromeSync());
+        Assert.assertFalse(mAndroidSyncSettings.isSyncEnabled());
     }
 }

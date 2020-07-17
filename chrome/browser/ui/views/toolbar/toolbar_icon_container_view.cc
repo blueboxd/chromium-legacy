@@ -17,10 +17,55 @@
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/view_observer.h"
 
 // static
 const char ToolbarIconContainerView::kToolbarIconContainerViewClassName[] =
     "ToolbarIconContainerView";
+
+// Watches for widget restore (or first show) and resets the animation so icons
+// don't spuriously "animate in" when a window is shown or restored. See
+// crbug.com/1106506 for more details.
+//
+// There is currently no signal that is consistent across platforms and
+// accessible from the View hierarchy that can tell us if, e.g., a window has
+// been restored from a minimized state. While we could theoretically plumb
+// state changes through from NativeWidget, we can observe the specific set of
+// cases we want by observing the size of the window.
+//
+// We *cannot* observe the size of the widget itself, as at least on Windows,
+// minimizing a window does not set the widget to 0x0, but rather a small,
+// Windows 3.1-esque tile (~160x28) and moves it to [-32000, -32000], so far off
+// the screen it can't appear on any monitor.
+//
+// What we can observe is the widget's root view, which is (a) always present
+// after the toolbar has been added to its widget and through its entire
+// lifetime, and (b) is actually set to zero size when the window is zero size
+// or minimized on Windows.
+class ToolbarIconContainerView::WidgetRestoreObserver
+    : public views::ViewObserver {
+ public:
+  explicit WidgetRestoreObserver(
+      ToolbarIconContainerView* toolbar_icon_container_view)
+      : toolbar_icon_container_view_(toolbar_icon_container_view) {
+    scoped_observer_.Add(
+        toolbar_icon_container_view->GetWidget()->GetRootView());
+  }
+
+  void OnViewBoundsChanged(views::View* observed_view) override {
+    const bool is_collapsed = observed_view->bounds().IsEmpty();
+    if (is_collapsed != was_collapsed_) {
+      was_collapsed_ = is_collapsed;
+      if (!is_collapsed)
+        toolbar_icon_container_view_->animating_layout_manager()->ResetLayout();
+    }
+  }
+
+ private:
+  bool was_collapsed_ = true;
+  ToolbarIconContainerView* const toolbar_icon_container_view_;
+  ScopedObserver<views::View, views::ViewObserver> scoped_observer_{this};
+};
 
 ToolbarIconContainerView::ToolbarIconContainerView(bool uses_highlight)
     : uses_highlight_(uses_highlight) {
@@ -126,6 +171,12 @@ gfx::Insets ToolbarIconContainerView::GetInsets() const {
 
 const char* ToolbarIconContainerView::GetClassName() const {
   return kToolbarIconContainerViewClassName;
+}
+
+void ToolbarIconContainerView::AddedToWidget() {
+  // Add an observer to reset the animation if the browser window is restored,
+  // preventing spurious animation. (See crbug.com/1106506)
+  restore_observer_ = std::make_unique<WidgetRestoreObserver>(this);
 }
 
 void ToolbarIconContainerView::AnimationProgressed(

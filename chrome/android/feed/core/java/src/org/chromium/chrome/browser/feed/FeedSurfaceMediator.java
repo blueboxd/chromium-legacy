@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoVariationManager
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
@@ -290,8 +289,7 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
     private boolean createSignInPromoIfNeeded() {
         if (!SignInPromo.shouldCreatePromo()) return false;
         if (mSignInPromo == null) {
-            boolean suggestionsVisible =
-                    PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
+            boolean suggestionsVisible = getPrefService().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
 
             mSignInPromo = new FeedSignInPromo(mSigninManager);
             mSignInPromo.setCanShowPersonalizedSuggestions(suggestionsVisible);

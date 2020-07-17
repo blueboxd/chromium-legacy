@@ -25,6 +25,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "url/gurl.h"
 
@@ -156,7 +157,7 @@ TEST_F(ClipboardProviderTest, MatchesImage) {
 
   gfx::Image test_image = gfx::test::CreateImage(/*height=*/10, /*width=*/10);
   scoped_refptr<base::RefCountedMemory> image_bytes =
-      provider_->EncodeClipboardImage(test_image);
+      provider_->EncodeClipboardImage(*test_image.ToImageSkia());
   ASSERT_TRUE(image_bytes);
   provider_->ConstructImageMatchCallback(CreateAutocompleteInput(true),
                                          &template_url_service, clipboard_age,

@@ -131,6 +131,10 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
   void HandlePageAccessCommand(int command_id,
                                const Extension* extension) const;
 
+  // Logs a user action when an option is selected in the page access section of
+  // the context menu.
+  void LogPageAccessAction(int command_id) const;
+
   // Gets the extension we are displaying the menu for. Returns NULL if the
   // extension has been uninstalled and no longer exists.
   const Extension* GetExtension() const;

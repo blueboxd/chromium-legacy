@@ -129,8 +129,24 @@ Polymer({
       readOnly: true,
     },
 
+    /**
+     * True if quick unlock settings should be displayed on this machine.
+     * @private
+     */
+    quickUnlockPinAutosubmitFeatureEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean(
+            'quickUnlockPinAutosubmitFeatureEnabled');
+      },
+      readOnly: true,
+    },
+
     /** @private */
     showSetupPinDialog_: Boolean,
+
+    /** @private */
+    showPinAutosubmitDialog_: Boolean,
   },
 
   /** @private {?settings.FingerprintBrowserProxy} */
@@ -160,6 +176,7 @@ Polymer({
 
     if (this.requestPasswordIfApplicable_()) {
       this.showSetupPinDialog_ = false;
+      this.showPinAutosubmitDialog_ = false;
     }
   },
 
@@ -175,6 +192,31 @@ Polymer({
       return;
     }
     this.setLockScreenEnabled(this.authToken.token, target.checked);
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onPinAutosubmitChange_(event) {
+    const target = /** @type {!SettingsToggleButtonElement} */ (event.target);
+    if (!this.authToken) {
+      console.error('PIN autosubmit setting changed with expired token.');
+      target.checked = !target.checked;
+      return;
+    }
+
+    // Read-only preference. Changes will be reflected directly on the toggle.
+    const autosubmitEnabled = target.checked;
+    target.resetToPrefValue();
+
+    if (autosubmitEnabled) {
+      this.showPinAutosubmitDialog_ = true;
+    } else {
+      // Call quick unlock to disable the auto-submit option.
+      this.quickUnlockPrivate.setPinAutosubmitEnabled(
+          this.authToken.token, '' /* PIN */, false /*enabled*/, function() {});
+    }
   },
 
   /**
@@ -220,6 +262,7 @@ Polymer({
   onSetModesChanged_() {
     if (this.requestPasswordIfApplicable_()) {
       this.showSetupPinDialog_ = false;
+      this.showPinAutosubmitDialog_ = false;
       return;
     }
 
@@ -243,6 +286,12 @@ Polymer({
   onSetupPinDialogClose_() {
     this.showSetupPinDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.$$('#setupPinButton')));
+  },
+
+  /** @private */
+  onPinAutosubmitDialogClose_() {
+    this.showPinAutosubmitDialog_ = false;
+    cr.ui.focusWithoutInk(assert(this.$$('#enablePinAutoSubmit')));
   },
 
   /**

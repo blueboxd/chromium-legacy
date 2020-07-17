@@ -37,7 +37,9 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.UnguessableToken;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.paintpreview.player.PlayerCompositorDelegate;
+import org.chromium.components.paintpreview.player.PlayerGestureListener;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,7 +61,7 @@ public class PlayerFrameMediatorTest {
     private TestPlayerCompositorDelegate mCompositorDelegate;
     private OverScroller mScroller;
     private boolean mHasUserInteraction;
-    private Runnable mUserInteractionCallback;
+    private PlayerGestureListener mGestureListener;
     private PlayerFrameViewport mViewport;
     private PlayerFrameMediator mMediator;
     private PlayerFrameBitmapStateController mBitmapStateController;
@@ -179,8 +181,9 @@ public class PlayerFrameMediatorTest {
         }
 
         @Override
-        public void onClick(UnguessableToken frameGuid, int x, int y) {
+        public GURL onClick(UnguessableToken frameGuid, int x, int y) {
             mClickedPoints.add(new ClickedPoint(frameGuid, x, y));
+            return null;
         }
     }
 
@@ -203,10 +206,10 @@ public class PlayerFrameMediatorTest {
         mModel = new PropertyModel.Builder(PlayerFrameProperties.ALL_KEYS).build();
         mCompositorDelegate = new TestPlayerCompositorDelegate();
         mScroller = new OverScroller(ContextUtils.getApplicationContext());
-        mUserInteractionCallback = () -> mHasUserInteraction = true;
+        mGestureListener = new PlayerGestureListener(null, () -> mHasUserInteraction = true);
         mViewport = new PlayerFrameViewport();
         mMediator = new PlayerFrameMediator(mModel, mCompositorDelegate, mViewport, mScroller,
-                mUserInteractionCallback, mFrameGuid, CONTENT_WIDTH, CONTENT_HEIGHT, 0, 0);
+                mGestureListener, mFrameGuid, CONTENT_WIDTH, CONTENT_HEIGHT, 0, 0);
         mBitmapStateController = mMediator.getBitmapStateControllerForTest();
     }
 
@@ -700,19 +703,19 @@ public class PlayerFrameMediatorTest {
         List<ClickedPoint> expectedClickedPoints = new ArrayList<>();
 
         // No scrolling has happened yet.
-        mMediator.onClick(15, 26);
+        mMediator.onTap(15, 26);
         expectedClickedPoints.add(new ClickedPoint(mFrameGuid, 15, 26));
         Assert.assertEquals(expectedClickedPoints, mCompositorDelegate.mClickedPoints);
 
         // Scroll, and then click. The call to {@link PlayerFrameMediator} must account for the
         // scroll offset.
         mMediator.scrollBy(90, 100);
-        mMediator.onClick(70, 50);
+        mMediator.onTap(70, 50);
         expectedClickedPoints.add(new ClickedPoint(mFrameGuid, 160, 150));
         Assert.assertEquals(expectedClickedPoints, mCompositorDelegate.mClickedPoints);
 
         mMediator.scrollBy(-40, -60);
-        mMediator.onClick(30, 80);
+        mMediator.onTap(30, 80);
         expectedClickedPoints.add(new ClickedPoint(mFrameGuid, 80, 120));
         Assert.assertEquals(expectedClickedPoints, mCompositorDelegate.mClickedPoints);
     }

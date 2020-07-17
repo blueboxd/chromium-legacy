@@ -35,20 +35,12 @@ class GpuOESEGLImageTest : public testing::Test,
                            public gpu::GpuCommandBufferTestEGL {
  protected:
   void SetUp() override {
-    // TODO(jonahr): Test setup fails on Linux with ANGLE/passthrough
-    // (crbug.com/1099766)
-    gpu::GPUTestBotConfig bot_config;
-    if (bot_config.LoadCurrentConfig(nullptr) &&
-        bot_config.Matches("linux passthrough")) {
-      return;
-    }
-
-    egl_gles2_initialized_ = InitializeEGLGLES2(kImageWidth, kImageHeight);
+    egl_initialized_ = InitializeEGL(kImageWidth, kImageHeight);
   }
 
   void TearDown() override { RestoreGLDefault(); }
 
-  bool egl_gles2_initialized_;
+  bool egl_initialized_{false};
 };
 
 #if defined(OS_LINUX)
@@ -86,7 +78,7 @@ SHADER(
 // texture and verifies that the colors match with the pixels uploaded into
 // the initial GL texture.
 TEST_F(GpuOESEGLImageTest, EGLImageToTexture) {
-  SKIP_TEST_IF(!egl_gles2_initialized_);
+  SKIP_TEST_IF(!egl_initialized_);
 
   // This extension is required for creating an EGLImage from a GL texture.
   SKIP_TEST_IF(!HasEGLExtension("EGL_KHR_image_base"));

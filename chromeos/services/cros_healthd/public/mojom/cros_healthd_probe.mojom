@@ -24,7 +24,6 @@ enum CpuArchitectureEnum {
 enum ProbeCategoryEnum {
   kBattery,
   kNonRemovableBlockDevices,
-  kCachedVpdData,
   kCpu,
   kTimezone,
   kMemory,
@@ -32,6 +31,7 @@ enum ProbeCategoryEnum {
   kFan,
   kStatefulPartition,
   kBluetooth,
+  kSystem,
 };
 
 // An enumeration of the different categories of errors that can occur when
@@ -147,21 +147,6 @@ struct NonRemovableBlockDeviceInfo {
   // Time spent discarding since last boot. Discarding is writing to clear
   // blocks which are no longer in use. Supported on kernels 4.18+.
   UInt64Value? discard_time_seconds_since_last_boot;
-};
-
-// Cached VPD probe result. Can either be populated with the CachedVpdInfo or an
-// error retrieving the information.
-union CachedVpdResult {
-  // Valid CachedVpdInfo.
-  CachedVpdInfo vpd_info;
-  // The error that occurred attempting to retrieve the CachedVpdInfo.
-  ProbeError error;
-};
-
-// Cached VPD read from sysfs.
-struct CachedVpdInfo {
-  // Contents of /sys/firmware/vpd/ro/sku_number, if the device supports it.
-  string? sku_number;
 };
 
 // CPU probe result. Can either be populated with the CpuInfo or an error
@@ -326,6 +311,41 @@ struct BluetoothAdapterInfo {
   uint32 num_connected_devices;
 };
 
+// System probe result. Can either be populated with the SystemInfo or an error
+// retrieving the information.
+union SystemResult {
+  // Valid SystemInfo.
+  SystemInfo system_info;
+  // The error that occurred attempting to retrieve SystemInfo.
+  ProbeError error;
+};
+
+// System Information.
+struct SystemInfo {
+  // The date the device was first activated.
+  // Format: YYYY-WW.
+  string? first_power_date;
+  // The date the device was manufactured (finalized in factory).
+  // Format: YYYY-MM-DD.
+  string? manufacture_date;
+  // The product SKU number.
+  string? product_sku_number;
+  // Contents of CrosConfig in /arc/build-properties/marketing-name.
+  string marketing_name;
+  // The BIOS version.
+  string? bios_version;
+  // The product name of the motherboard.
+  string? board_name;
+  // The version of the motherboard.
+  string? board_version;
+  // The chassis type of the device. The values reported by chassis type are
+  // mapped in
+  // www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.0.0.pdf.
+  UInt64Value? chassis_type;
+  // The product name (model) of the system.
+  string? product_name;
+};
+
 // A collection of all the device's telemetry information that cros_healthd is
 // capable of reporting. Note that every field in TelemetryInfo is nullable, and
 // the response for a particular ProbeTelemetryInfo request will only contain
@@ -341,9 +361,6 @@ struct TelemetryInfo {
   // present when kNonRemovableBlockDevices was included in the categories input
   // to ProbeTelemetryInfo.
   NonRemovableBlockDeviceResult? block_device_result;
-  // Only present when kCachedVpdData was included in the categories input to
-  // ProbeTelemetryInfo.
-  CachedVpdResult? vpd_result;
   // Information about each of the device's CPUs. Only present when kCpu was
   // included in the categories input to ProbeTelemetryInfo.
   CpuResult? cpu_result;
@@ -366,4 +383,7 @@ struct TelemetryInfo {
   // Information about the device's Bluetooth adapters and devices. Only present
   // when kBluetooth was included in the categories input to ProbeTelemetryInfo.
   BluetoothResult? bluetooth_result;
+  // Information about the system from various sources. Only present when
+  // kSystem was included in the categories input to ProbeTelemetryInfo.
+  SystemResult? system_result;
 };

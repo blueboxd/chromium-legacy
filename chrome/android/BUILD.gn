@@ -1217,6 +1217,7 @@ if (enable_vr || enable_arcore) {
     "//chrome/android/features/vr:java",
     "//chrome/browser/flags:java",
     "//chrome/browser/tab:java",
+    "//chrome/browser/tabmodel:java",
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/util:java",
     "//chrome/test/android:chrome_java_test_support",
@@ -2253,7 +2254,7 @@ template("chrome_test_apk_tmpl") {
     }
     if (!is_java_debug) {
       proguard_enabled = true
-      proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
+      proguard_configs = [ "//chrome/android/proguard/apk_for_test.flags" ]
     }
 
     # TODO(crbug.com/993340): Update test goldens with webp versions of images.
@@ -2305,7 +2306,7 @@ template("monochrome_test_apk_tmpl") {
         proguard_configs = []
       }
       proguard_enabled = true
-      proguard_configs += [ "//chrome/android/java/apk_for_test.flags" ]
+      proguard_configs += [ "//chrome/android/proguard/apk_for_test.flags" ]
     }
   }
 }

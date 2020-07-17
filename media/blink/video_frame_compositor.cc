@@ -33,13 +33,13 @@ VideoFrameCompositor::VideoFrameCompositor(
       background_rendering_timer_(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kBackgroundRenderingTimeoutMs),
-          base::Bind(&VideoFrameCompositor::BackgroundRender,
-                     base::Unretained(this))),
+          base::BindRepeating(&VideoFrameCompositor::BackgroundRender,
+                              base::Unretained(this))),
       force_begin_frames_timer_(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kForceBeginFramesTimeoutMs),
-          base::Bind(&VideoFrameCompositor::StopForceBeginFrames,
-                     base::Unretained(this))),
+          base::BindRepeating(&VideoFrameCompositor::StopForceBeginFrames,
+                              base::Unretained(this))),
       submitter_(std::move(submitter)) {
   if (submitter_) {
     task_runner_->PostTask(

@@ -276,8 +276,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   RasterInvalidator& EnsureRasterInvalidator();
   void SetNeedsDisplayInRect(const IntRect&);
 
-  FloatSize VisualRectSubpixelOffset() const;
-
   GraphicsLayerClient& client_;
 
   // Offset from the owning layoutObject

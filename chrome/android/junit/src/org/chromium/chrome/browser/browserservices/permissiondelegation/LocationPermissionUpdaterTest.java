@@ -29,6 +29,7 @@ import org.robolectric.shadows.ShadowPackageManager;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -47,9 +48,13 @@ public class LocationPermissionUpdaterTest {
     private static final Origin ORIGIN = Origin.create("https://www.website.com");
     private static final String PACKAGE_NAME = "com.package.name";
     private static final String OTHER_PACKAGE_NAME = "com.other.package.name";
+    private static final long CALLBACK = 12;
 
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
+
+    @Rule
+    public JniMocker mocker = new JniMocker();
 
     @Mock
     public TrustedWebActivityPermissionManager mPermissionManager;
@@ -57,6 +62,9 @@ public class LocationPermissionUpdaterTest {
     public TrustedWebActivityClient mTrustedWebActivityClient;
     @Mock
     public TrustedWebActivityUmaRecorder mUmaRecorder;
+
+    @Mock
+    private InstalledWebappBridge.Natives mNativeMock;
 
     private LocationPermissionUpdater mLocationPermissionUpdater;
     private ShadowPackageManager mShadowPackageManager;
@@ -66,6 +74,8 @@ public class LocationPermissionUpdaterTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+
+        mocker.mock(InstalledWebappBridgeJni.TEST_HOOKS, mNativeMock);
 
         PackageManager pm = RuntimeEnvironment.application.getPackageManager();
         mShadowPackageManager = shadowOf(pm);
@@ -80,7 +90,7 @@ public class LocationPermissionUpdaterTest {
         installTrustedWebActivityService(ORIGIN, PACKAGE_NAME);
         setLocationEnabledForClient(false);
 
-        mLocationPermissionUpdater.checkPermission(ORIGIN, 0 /*callback*/);
+        mLocationPermissionUpdater.checkPermission(ORIGIN, CALLBACK);
 
         verifyPermissionUpdated(false);
     }
@@ -91,7 +101,7 @@ public class LocationPermissionUpdaterTest {
         installTrustedWebActivityService(ORIGIN, PACKAGE_NAME);
         setLocationEnabledForClient(true);
 
-        mLocationPermissionUpdater.checkPermission(ORIGIN, 0 /*callback*/);
+        mLocationPermissionUpdater.checkPermission(ORIGIN, CALLBACK);
 
         verifyPermissionUpdated(true);
     }
@@ -101,11 +111,11 @@ public class LocationPermissionUpdaterTest {
     public void updatesPermission_onSubsequentCalls() {
         installTrustedWebActivityService(ORIGIN, PACKAGE_NAME);
         setLocationEnabledForClient(true);
-        mLocationPermissionUpdater.checkPermission(ORIGIN, 0 /*callback*/);
+        mLocationPermissionUpdater.checkPermission(ORIGIN, CALLBACK);
         verifyPermissionUpdated(true);
 
         setLocationEnabledForClient(false);
-        mLocationPermissionUpdater.checkPermission(ORIGIN, 0 /*callback*/);
+        mLocationPermissionUpdater.checkPermission(ORIGIN, CALLBACK);
         verifyPermissionUpdated(false);
     }
 
@@ -114,13 +124,13 @@ public class LocationPermissionUpdaterTest {
     public void updatesPermission_onNewClient() {
         installTrustedWebActivityService(ORIGIN, PACKAGE_NAME);
         setLocationEnabledForClient(true);
-        mLocationPermissionUpdater.checkPermission(ORIGIN, 0 /*callback*/);
+        mLocationPermissionUpdater.checkPermission(ORIGIN, CALLBACK);
         verifyPermissionUpdated(true);
 
         installBrowsableIntentHandler(ORIGIN, OTHER_PACKAGE_NAME);
         installTrustedWebActivityService(ORIGIN, OTHER_PACKAGE_NAME);
         setLocationEnabledForClient(false);
-        mLocationPermissionUpdater.checkPermission(ORIGIN, 0 /*callback*/);
+        mLocationPermissionUpdater.checkPermission(ORIGIN, CALLBACK);
         verifyPermissionUpdated(OTHER_PACKAGE_NAME, false);
     }
 
@@ -130,7 +140,7 @@ public class LocationPermissionUpdaterTest {
         installTrustedWebActivityService(ORIGIN, PACKAGE_NAME);
         setLocationEnabledForClient(true);
 
-        mLocationPermissionUpdater.checkPermission(ORIGIN, 0 /*callback*/);
+        mLocationPermissionUpdater.checkPermission(ORIGIN, CALLBACK);
 
         uninstallTrustedWebActivityService(ORIGIN);
         mLocationPermissionUpdater.onClientAppUninstalled(ORIGIN);
@@ -182,6 +192,7 @@ public class LocationPermissionUpdaterTest {
         verify(mPermissionManager)
                 .updatePermission(eq(ORIGIN), eq(packageName), eq(ContentSettingsType.GEOLOCATION),
                         eq(enabled));
+        verify(mNativeMock).notifyPermissionResult(eq(CALLBACK), eq(enabled));
     }
 
     private void verifyPermissionReset() {
@@ -192,5 +203,22 @@ public class LocationPermissionUpdaterTest {
     private void verifyPermissionNotReset() {
         verify(mPermissionManager, never())
                 .resetStoredPermission(eq(ORIGIN), eq(ContentSettingsType.GEOLOCATION));
+    }
+
+    @Test
+    @Feature("TrustedWebActivity")
+    public void updatesPermissionOnlyOnce_incorrectReturnsFromTwaService() {
+        doAnswer(invocation -> {
+            TrustedWebActivityClient.PermissionCheckCallback callback = invocation.getArgument(1);
+            // PermissionCheckCallback is invoked twice with different result.
+            callback.onPermissionCheck(new ComponentName(PACKAGE_NAME, "FakeClass"), false);
+            callback.onPermissionCheck(new ComponentName(PACKAGE_NAME, "FakeClass"), true);
+            return true;
+        })
+                .when(mTrustedWebActivityClient)
+                .checkLocationPermission(eq(ORIGIN), any());
+
+        mLocationPermissionUpdater.checkPermission(ORIGIN, CALLBACK);
+        verifyPermissionUpdated(PACKAGE_NAME, false);
     }
 }

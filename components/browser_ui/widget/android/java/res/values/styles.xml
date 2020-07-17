@@ -3,13 +3,12 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Card styles -->
     <style name="Card">
         <item name="android:background">@drawable/hairline_border_card_background</item>
     </style>
-    <!-- TODO(crbug.com/1017190): Remove the UnusedResources workaround. -->
-    <style name="CardTransparentForDark" tools:ignore="UnusedResources">
+    <style name="CardTransparentForDark">
         <item name="android:background">@drawable/hairline_border_card_dark_transparent_bg</item>
     </style>
 

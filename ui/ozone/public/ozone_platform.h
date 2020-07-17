@@ -226,7 +226,10 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   bool initialized_gpu_ = false;
   bool prearly_initialized_ = false;
 
-  bool single_process_ = false;
+  // This value is checked on multiple threads. Declaring it volatile makes
+  // modifications to |single_process_| visible by other threads. Mutex is not
+  // needed since it's set before other threads are started.
+  volatile bool single_process_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatform);
 };

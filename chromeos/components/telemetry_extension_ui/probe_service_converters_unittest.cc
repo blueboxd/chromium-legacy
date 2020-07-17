@@ -40,7 +40,7 @@ TEST(ProbeServiceConvertors, ConvertCategoryVector) {
       ElementsAre(
           cros_healthd::mojom::ProbeCategoryEnum::kBattery,
           cros_healthd::mojom::ProbeCategoryEnum::kNonRemovableBlockDevices,
-          cros_healthd::mojom::ProbeCategoryEnum::kCachedVpdData,
+          cros_healthd::mojom::ProbeCategoryEnum::kSystem,
           cros_healthd::mojom::ProbeCategoryEnum::kCpu,
           cros_healthd::mojom::ProbeCategoryEnum::kTimezone,
           cros_healthd::mojom::ProbeCategoryEnum::kMemory,
@@ -244,8 +244,8 @@ TEST(ProbeServiceConvertors, NonRemovableBlockDeviceResultPtrError) {
 TEST(ProbeServiceConvertors, CachedVpdInfoPtr) {
   constexpr char kSkuNumber[] = "sku-1";
 
-  auto input = cros_healthd::mojom::CachedVpdInfo::New();
-  input->sku_number = kSkuNumber;
+  auto input = cros_healthd::mojom::SystemInfo::New();
+  input->product_sku_number = kSkuNumber;
 
   EXPECT_EQ(ConvertPtr(std::move(input)),
             health::mojom::CachedVpdInfo::New(kSkuNumber));
@@ -253,14 +253,14 @@ TEST(ProbeServiceConvertors, CachedVpdInfoPtr) {
 
 TEST(ProbeServiceConvertors, CachedVpdResultPtrInfo) {
   const auto output =
-      ConvertPtr(cros_healthd::mojom::CachedVpdResult::NewVpdInfo(nullptr));
+      ConvertPtr(cros_healthd::mojom::SystemResult::NewSystemInfo(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_vpd_info());
 }
 
 TEST(ProbeServiceConvertors, CachedVpdResultPtrError) {
   const auto output =
-      ConvertPtr(cros_healthd::mojom::CachedVpdResult::NewError(nullptr));
+      ConvertPtr(cros_healthd::mojom::SystemResult::NewError(nullptr));
   ASSERT_TRUE(output);
   EXPECT_TRUE(output->is_error());
 }
@@ -636,7 +636,7 @@ TEST(ProbeServiceConvertors, TelemetryInfoPtrWithNotNullFields) {
     input->battery_result = cros_healthd::mojom::BatteryResult::New();
     input->block_device_result =
         cros_healthd::mojom::NonRemovableBlockDeviceResult::New();
-    input->vpd_result = cros_healthd::mojom::CachedVpdResult::New();
+    input->system_result = cros_healthd::mojom::SystemResult::New();
     input->cpu_result = cros_healthd::mojom::CpuResult::New();
     input->timezone_result = cros_healthd::mojom::TimezoneResult::New();
     input->memory_result = cros_healthd::mojom::MemoryResult::New();

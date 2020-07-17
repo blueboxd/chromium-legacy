@@ -12,6 +12,9 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_column.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -60,6 +63,25 @@ void AppendNodeToString(NGLayoutInputNode node,
 
 }  // namespace
 
+bool NGLayoutInputNode::IsEmptyTableSection() const {
+  return box_->IsTableSection() && To<LayoutNGTableSection>(box_)->IsEmpty();
+}
+
+wtf_size_t NGLayoutInputNode::TableColumnSpan() const {
+  DCHECK(IsTableCol() || IsTableColgroup());
+  return To<LayoutNGTableColumn>(box_)->Span();
+}
+
+wtf_size_t NGLayoutInputNode::TableCellColspan() const {
+  DCHECK(box_->IsTableCell());
+  return To<LayoutNGTableCell>(box_)->ColSpan();
+}
+
+wtf_size_t NGLayoutInputNode::TableCellRowspan() const {
+  DCHECK(box_->IsTableCell());
+  return To<LayoutNGTableCell>(box_)->ComputedRowSpan();
+}
+
 MinMaxSizesResult NGLayoutInputNode::ComputeMinMaxSizes(
     WritingMode writing_mode,
     const MinMaxSizesInput& input,
@@ -87,7 +109,7 @@ void NGLayoutInputNode::IntrinsicSize(
     *computed_block_size = LayoutUnit(legacy_sizing_info.size.Height());
 }
 
-NGLayoutInputNode NGLayoutInputNode::NextSibling() {
+NGLayoutInputNode NGLayoutInputNode::NextSibling() const {
   auto* inline_node = DynamicTo<NGInlineNode>(this);
   return inline_node ? inline_node->NextSibling()
                      : To<NGBlockNode>(*this).NextSibling();

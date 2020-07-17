@@ -19,18 +19,14 @@
 #include "components/permissions/permission_result.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/api/notifications.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_event_histogram_value.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
-#include "extensions/browser/info_map.h"
 #endif
 
 using message_center::NotifierId;
@@ -187,13 +183,5 @@ void NotifierStateTracker::FirePermissionLevelChangedEvent(
       std::move(args)));
 
   event_router->DispatchEventToExtension(notifier_id.id, std::move(event));
-
-  // Tell the IO thread that this extension's permission for notifications
-  // has changed.
-  extensions::InfoMap* extension_info_map =
-      extensions::ExtensionSystem::Get(profile_)->info_map();
-  content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&extensions::InfoMap::SetNotificationsDisabled,
-                                extension_info_map, notifier_id.id, !enabled));
 }
 #endif

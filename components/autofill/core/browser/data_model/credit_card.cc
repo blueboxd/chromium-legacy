@@ -283,6 +283,28 @@ const char* CreditCard::GetCardNetwork(const base::string16& number) {
   return kGenericCard;
 }
 
+// static
+bool CreditCard::IsNicknameValid(const base::string16& nickname) {
+  // Must not exceed max length.
+  if (nickname.size() > kMaxNicknameLength)
+    return false;
+
+  // Must not contain newlines, tabs, or carriage returns.
+  if (nickname.find('\n') != base::string16::npos ||
+      nickname.find('\r') != base::string16::npos ||
+      nickname.find('\t') != base::string16::npos) {
+    return false;
+  }
+
+  // Must not contain digits.
+  for (base::char16 c : nickname) {
+    if (base::IsAsciiDigit(c))
+      return false;
+  }
+
+  return true;
+}
+
 void CreditCard::SetNetworkForMaskedCard(base::StringPiece network) {
   DCHECK_EQ(MASKED_SERVER_CARD, record_type());
   network_ = network.as_string();
@@ -765,7 +787,7 @@ const std::pair<base::string16, base::string16> CreditCard::LabelPieces()
     // Otherwise, return cardholder name only.
     if (base::FeatureList::IsEnabled(
             features::kAutofillEnableCardNicknameManagement) &&
-        HasValidNickname()) {
+        HasNonEmptyValidNickname()) {
       return std::make_pair(nickname_, base::string16());
     }
     return std::make_pair(name_on_card_, base::string16());
@@ -828,7 +850,7 @@ base::string16 CreditCard::CardIdentifierStringForAutofillDisplay(
     base::string16 customized_nickname) const {
   if (base::FeatureList::IsEnabled(
           features::kAutofillEnableSurfacingServerCardNickname) &&
-      (HasValidNickname() || !customized_nickname.empty())) {
+      (HasNonEmptyValidNickname() || !customized_nickname.empty())) {
     return NicknameAndLastFourDigits(customized_nickname);
   }
   // Return a Google-specific string for Google-issued cards.
@@ -892,25 +914,12 @@ bool CreditCard::HasNameOnCard() const {
   return !name_on_card_.empty();
 }
 
-bool CreditCard::HasValidNickname() const {
+bool CreditCard::HasNonEmptyValidNickname() const {
   // Valid nickname must not be empty.
   if (nickname_.empty())
     return false;
-  // Must not exceed max length.
-  if (nickname_.size() > kMaxNicknameLength)
-    return false;
-  // Must not contain newlines, tabs, or carriage returns.
-  if (nickname_.find('\n') != base::string16::npos ||
-      nickname_.find('\r') != base::string16::npos ||
-      nickname_.find('\t') != base::string16::npos) {
-    return false;
-  }
-  // Must not contain digits.
-  for (base::char16 c : nickname_) {
-    if (base::IsAsciiDigit(c))
-      return false;
-  }
-  return true;
+
+  return CreditCard::IsNicknameValid(nickname_);
 }
 
 base::string16 CreditCard::NicknameAndLastFourDigitsForTesting() const {
@@ -969,8 +978,9 @@ base::string16 CreditCard::NetworkForFill() const {
 
 base::string16 CreditCard::NicknameAndLastFourDigits(
     base::string16 customized_nickname) const {
-  // Should call HasValidNickname() to check valid nickname before calling this.
-  DCHECK(HasValidNickname() || !customized_nickname.empty());
+  // Should call HasNonEmptyValidNickname() to check valid nickname before
+  // calling this.
+  DCHECK(HasNonEmptyValidNickname() || !customized_nickname.empty());
   const base::string16 digits = LastFourDigits();
   // If digits are empty, return nickname.
   if (digits.empty())

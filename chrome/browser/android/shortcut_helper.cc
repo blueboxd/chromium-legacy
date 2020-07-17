@@ -143,9 +143,7 @@ void AddShortcutWithSkBitmap(content::WebContents* web_contents,
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (!icon_bitmap.drawsNothing())
     java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
-  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-  Java_ShortcutHelper_addShortcut(env, tab ? tab->GetJavaObject() : nullptr,
-                                  java_id, java_url, java_user_title,
+  Java_ShortcutHelper_addShortcut(env, java_id, java_url, java_user_title,
                                   java_bitmap, is_icon_maskable, info.source,
                                   java_best_primary_icon_url);
 }

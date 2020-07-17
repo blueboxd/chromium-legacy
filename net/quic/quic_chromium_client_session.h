@@ -55,7 +55,6 @@ namespace net {
 class CertVerifyResult;
 class DatagramClientSocket;
 class NetLog;
-class NetworkIsolationKey;
 class QuicCryptoClientStreamFactory;
 class QuicServerInfo;
 class QuicStreamFactory;
@@ -615,14 +614,13 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // than the number of round-trips needed for the handshake.
   int GetNumSentClientHellos() const;
 
-  // Returns true if |hostname| may be pooled onto this session.  If this
-  // is a secure QUIC session, then |hostname| must match the certificate
-  // presented during the handshake.
+  // Returns true if |hostname| may be pooled onto this session.
+  // |other_session_key| specifies the seession key associated with |hostname|
+  // (its own hostname and port fields are ignored). If this is a secure QUIC
+  // session, then |hostname| must match the certificate presented during the
+  // handshake.
   bool CanPool(const std::string& hostname,
-               PrivacyMode privacy_mode,
-               const SocketTag& socket_tag,
-               const NetworkIsolationKey& network_isolation_key,
-               bool disable_secure_dns) const;
+               const QuicSessionKey& other_session_key) const;
 
   const quic::QuicServerId& server_id() const {
     return session_key_.server_id();

@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1647391597548383849">Mengakses kamera Anda</translation>
 <translation id="1660204651932907780">Mengizinkan situs memutar suara (direkomendasikan)</translation>
+<translation id="1677097821151855053">Cookie dan data situs lainnya digunakan untuk mengingat Anda, misalnya untuk login atau personalisasi iklan. Untuk mengelola cookie semua situs, lihat <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Hapus data situs?</translation>
 <translation id="169515064810179024">Memblokir situs agar tidak mengakses sensor gerakan</translation>
 <translation id="1717218214683051432">Sensor gerakan</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Izinkan cookie untuk situs tertentu.</translation>
 <translation id="4046123991198612571">Lagu berikutnya</translation>
 <translation id="4165986682804962316">Setelan situs</translation>
+<translation id="4200726100658658164">Buka Setelan Lokasi</translation>
 <translation id="4226663524361240545">Notifikasi dapat membuat perangkat bergetar</translation>
 <translation id="4242533952199664413">Buka setelan</translation>
 <translation id="4259722352634471385">Navigasi diblokir: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Semua situs</translation>
 <translation id="6320088164292336938">Getar</translation>
 <translation id="6388207532828177975">Hapus &amp; setel ulang</translation>
+<translation id="6423924377271166037">Hapus cookie</translation>
 <translation id="6439114592976064011">Blokir situs agar tidak menggunakan perangkat dan data virtual reality Anda</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6527303717912515753">Bagikan</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Cari mundur</translation>
 <translation id="8444433999583714703">Untuk mengizinkan <ph name="APP_NAME" /> mengakses lokasi Anda, aktifkan juga lokasi di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Cabut izin perangkat</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie sedang digunakan}other{# cookie sedang digunakan}}</translation>
 <translation id="8463851957836045671">Situs ini cepat</translation>
 <translation id="851751545965956758">Blokir situs agar tidak terhubung ke perangkat</translation>
 <translation id="857943718398505171">Diizinkan (disarankan)</translation>

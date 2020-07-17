@@ -308,6 +308,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      net::features::kCookiesWithoutSameSiteMustBeSecure, kEnableOnly},
     {wf::EnablePointerLockOptions, features::kPointerLockOptions, kEnableOnly},
     {wf::EnableDocumentPolicy, features::kDocumentPolicy, kUseFeatureState},
+    {wf::EnableDocumentPolicyNegotiation, features::kDocumentPolicyNegotiation,
+     kUseFeatureState},
     {wf::EnableScrollUnification, features::kScrollUnification,
      kUseFeatureState},
     {wf::EnableNeverSlowMode, features::kNeverSlowMode, kUseFeatureState},

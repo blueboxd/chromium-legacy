@@ -262,15 +262,7 @@ crbug.com/1007229 external/wpt/intersection-observer/same-origin-grand-child-ifr
 
 # not implemented yet
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/block-aspect-ratio-020.tentative.html [ Failure ]
-
-# abspos is not implemented yet for aspect-ratio
-crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-003.tentative.html [ Failure ]
-crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-005.tentative.html [ Failure ]
-crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-006.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-008.tentative.html [ Failure ]
-
-# It is not clear if this test is correct. https://github.com/w3c/csswg-drafts/issues/5151
-crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-004.tentative.html [ Failure ]
 
 # Incorrect blending with foreignObject and svg descendants.
 crbug.com/1102803 external/wpt/svg/extensibility/foreignObject/isolation-with-svg.html [ Failure ]
@@ -1455,7 +1447,6 @@ crbug.com/1053725 [ Mac ] virtual/web-components-v0-disabled/fast/dom/title-text
 
 # Needs triage:
 crbug.com/1053725 [ Mac ] fast/css/button-height.html [ Skip ]
-crbug.com/1104697 fast/css/css2-system-color.html [ Pass Failure ]
 crbug.com/1053725 [ Mac ] fast/css-grid-layout/preferred-width-computed-after-layout.html [ Skip ]
 crbug.com/1053725 [ Mac ] fast/css/text-overflow-ellipsis-button.html [ Skip ]
 crbug.com/1053725 [ Mac ] editing/selection/replaced-boundaries-3.html [ Skip ]
@@ -6861,7 +6852,7 @@ crbug.com/1104910 [ Mac ] external/wpt/webaudio/the-audio-api/the-oscillatornode
 crbug.com/1105957 fast/dom/cssTarget-crash.html [ Pass Timeout ]
 crbug.com/1104910 fast/peerconnection/RTCPeerConnection-reload-interesting-usage.html [ Pass Failure ]
 crbug.com/1104910 [ Win ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Pass Failure ]
-crbug.com/1104910 [ Mac10.15 ] editing/selection/selection-background.html [ Pass Failure ]
+crbug.com/1104910 [ Mac ] editing/selection/selection-background.html [ Pass Failure ]
 crbug.com/1104910 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/unsafe-url/worker-classic.http.html [ Pass Failure ]
 crbug.com/1104910 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/unset/worker-module.http.html [ Pass Failure ]
 
@@ -6869,6 +6860,7 @@ crbug.com/1104910 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-
 
 crbug.com/1105270 [ Mac10.15 ] fast/events/open-window-from-another-frame.html [ Pass Timeout ]
 crbug.com/1105271 [ Mac ] virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.html [ Pass Failure ]
+crbug.com/1105271 [ Mac ] scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.html [ Pass Failure ]
 crbug.com/1105274 http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout Failure ]
 crbug.com/1105275 [ Mac ] fast/dom/Window/window-onFocus.html [ Pass Failure ]
 

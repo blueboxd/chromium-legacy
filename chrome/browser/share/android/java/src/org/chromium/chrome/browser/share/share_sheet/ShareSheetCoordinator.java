@@ -15,7 +15,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
@@ -41,7 +40,6 @@ public class ShareSheetCoordinator
     private final BottomSheetController mBottomSheetController;
     private final Supplier<Tab> mTabProvider;
     private final ShareSheetPropertyModelBuilder mPropertyModelBuilder;
-    private final PrefServiceBridge mPrefServiceBridge;
     private final Callback<Tab> mPrintTabCallback;
     private long mShareStartTime;
     private boolean mExcludeFirstParty;
@@ -55,17 +53,13 @@ public class ShareSheetCoordinator
      * @param controller The {@link BottomSheetController} for the current activity.
      * @param tabProvider Supplier for the current activity tab.
      * @param modelBuilder The {@link ShareSheetPropertyModelBuilder} for the share sheet.
-     * @param prefServiceBridge The {@link PrefServiceBridge} singleton. This provides preferences
-     * for the Chrome-provided property models.
      */
     // TODO(crbug/1022172): Should be package-protected once modularization is complete.
     public ShareSheetCoordinator(BottomSheetController controller, Supplier<Tab> tabProvider,
-            ShareSheetPropertyModelBuilder modelBuilder, PrefServiceBridge prefServiceBridge,
-            Callback<Tab> printTab) {
+            ShareSheetPropertyModelBuilder modelBuilder, Callback<Tab> printTab) {
         mBottomSheetController = controller;
         mTabProvider = tabProvider;
         mPropertyModelBuilder = modelBuilder;
-        mPrefServiceBridge = prefServiceBridge;
         mPrintTabCallback = printTab;
         mBottomSheetObserver = new EmptyBottomSheetObserver() {
             @Override
@@ -138,8 +132,8 @@ public class ShareSheetCoordinator
         }
         ChromeProvidedSharingOptionsProvider chromeProvidedSharingOptionsProvider =
                 new ChromeProvidedSharingOptionsProvider(activity, mTabProvider,
-                        mBottomSheetController, mBottomSheet, mPrefServiceBridge, shareParams,
-                        chromeShareExtras, mPrintTabCallback, mShareStartTime, this);
+                        mBottomSheetController, mBottomSheet, shareParams, chromeShareExtras,
+                        mPrintTabCallback, mShareStartTime, this);
 
         return chromeProvidedSharingOptionsProvider.getPropertyModels(contentTypes);
     }

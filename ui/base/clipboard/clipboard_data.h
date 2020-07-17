@@ -33,6 +33,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardData {
  public:
   ClipboardData();
   explicit ClipboardData(const ClipboardData&);
+  ClipboardData(ClipboardData&&);
   ClipboardData& operator=(const ClipboardData&) = delete;
   ~ClipboardData();
 

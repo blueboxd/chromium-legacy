@@ -35,6 +35,8 @@ class TextInput_Dev;
 
 namespace chrome_pdf {
 
+struct PaintReadyRect;
+
 class OutOfProcessInstance : public pp::Instance,
                              public pp::Find_Private,
                              public pp::Printing_Dev,
@@ -59,7 +61,7 @@ class OutOfProcessInstance : public pp::Instance,
 
   // pp::PaintManager::Client implementation.
   void OnPaint(const std::vector<pp::Rect>& paint_rects,
-               std::vector<PaintManager::ReadyRect>* ready,
+               std::vector<PaintReadyRect>* ready,
                std::vector<pp::Rect>* pending) override;
 
   // pp::Printing_Dev implementation.

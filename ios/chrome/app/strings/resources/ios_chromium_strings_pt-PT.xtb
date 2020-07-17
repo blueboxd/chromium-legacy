@@ -3,7 +3,7 @@
 <translationbundle lang="pt-PT">
 <translation id="102360288709523007">Ajude a melhorar o Chromium ao enviar estatísticas de utilização e relatórios de falhas à Google.</translation>
 <translation id="1185134272377778587">Acerca do Chromium</translation>
-<translation id="1257458525759135959">Para guardar imagens, toque nas Definições para permitir que o Chromium adicione as suas fotos.</translation>
+<translation id="1257458525759135959">Para guardar imagens, toque em Definições para permitir que o Chromium adicione as suas fotos.</translation>
 <translation id="1472013873724362412">A sua conta não funciona no Chromium. Contacte o gestor do domínio ou utilize uma Conta Google normal para iniciar sessão.</translation>
 <translation id="1507010443238049608">Ajudar a melhorar as funcionalidades e o desempenho do Chromium</translation>
 <translation id="1617663976202781617">Dados da sincronização do Chromium</translation>
@@ -20,6 +20,8 @@
 <translation id="2730884209570016437">O Chromium não pode utilizar a câmara porque está a ser utilizada por outra aplicação</translation>
 <translation id="2915596697727466327">O Chromium utiliza o Face ID para assegurar o acesso autorizado às suas palavras-passe.</translation>
 <translation id="3256316712990552818">Copiado para o Chromium</translation>
+<translation id="3344973607274501920">O Chromium não conseguiu verificar as suas palavras-passe. Experimente verificar a sua ligação à Internet.</translation>
+<translation id="3639997914391704523">O Chromium pode verificar as suas palavras-passe quando inicia sessão com a sua Conta Google.</translation>
 <translation id="3805899903892079518">O Chromium não tem acesso aos seus vídeos ou fotos. Ative o acesso nas Definições do iOS &gt; Privacidade &gt; Fotos.</translation>
 <translation id="4555020257205549924">Se esta funcionalidade estiver ativada, o Chromium oferecer-se-á para traduzir páginas escritas noutros idiomas com o Google Tradutor. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Ative o leitor do Chromium</translation>
@@ -27,6 +29,7 @@
 <translation id="4999538639245140991">Uma vez que está a terminar sessão numa conta gerida por <ph name="SIGNOUT_MANAGED_DOMAIN" />, os seus dados do Chromium serão eliminados deste dispositivo. Contudo, permanecem na sua Conta Google.</translation>
 <translation id="5521125884468363740">Para ver os seus separadores onde quer que esteja a utilizar o Chromium, inicie sessão e ative a sincronização.</translation>
 <translation id="5573014823074921752">Sugestão para o Chromium: para obter mais opções de separadores, toque sem soltar no botão Mostrar separadores na barra de ferramentas, que se encontra na parte superior ou inferior do ecrã.</translation>
+<translation id="5700709190537129682">O Chromium não consegue verificar as suas palavras-passe.</translation>
 <translation id="5777187867430702742">Página do Chromium</translation>
 <translation id="5862307444128926510">Bem-vindo ao Chromium</translation>
 <translation id="5945387852661427312">Está a iniciar sessão com uma conta gerida por <ph name="DOMAIN" /> e a conceder ao respetivo gestor o controlo dos seus dados do Chromium. Os dados ficarão permanentemente associados a esta conta. Terminar sessão no Chromium elimina os seus dados deste dispositivo, embora permaneçam armazenados na Conta Google.</translation>
@@ -34,6 +37,7 @@
 <translation id="6268381023930128611">Pretende terminar sessão no Chromium?</translation>
 <translation id="6424492062988593837">O Chromium ficou ainda melhor! Está disponível uma nova versão.</translation>
 <translation id="6604711459180487467">Obtenha uma melhor experiência no Chromium com base na sua localização.</translation>
+<translation id="6820823224820483452">O Chromium não conseguiu verificar todas as palavras-passe. Tente novamente amanhã.</translation>
 <translation id="7099326575020694068">O Chromium não pode utilizar a câmara no modo Vista dividida</translation>
 <translation id="7208566199746267865">O Chromium poupa o seu tempo ao trazer as suas contas para a Web. Pode adicionar ou remover contas nas Definições.</translation>
 <translation id="7269362888766543920">Alguns suplementos provocam falhas no sistema do Chromium. Tente desinstalá-los.</translation>
@@ -42,6 +46,7 @@
 <translation id="7400689562045506105">Utilizar o Chromium em todas as plataformas</translation>
 <translation id="7674213385180944843">Abra Definições &gt; Privacidade &gt; Câmara &gt; Chromium e ative a câmara.</translation>
 <translation id="7746854981345936341">Sugestão para o Chromium: alguns botões encontram-se agora na parte inferior do ecrã, como Voltar, Avançar e Pesquisar.</translation>
+<translation id="7798909783578470546">O Chromium não conseguiu verificar todas as palavras-passe. Tente novamente.</translation>
 <translation id="786327964234957808">Está a mudar a sincronização de contas de <ph name="USER_EMAIL1" /> para <ph name="USER_EMAIL2" />. Os seus dados do Chromium existentes são geridos por <ph name="DOMAIN" />. Esta ação eliminará os dados deste dispositivo, mas os dados permanecerão em <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Comece a utilizar o leitor do Chromium</translation>
 <translation id="8013573822802650211">Para ver os seus separadores onde quer que esteja a utilizar o Chromium, inicie sessão em todos os seus dispositivos.</translation>
@@ -51,5 +56,6 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Os autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="8776843108004031667">Esta conta e quaisquer dados não guardados serão removidos do Chromium.</translation>
 <translation id="9022552996538154597">Iniciar sessão no Chromium</translation>
+<translation id="921174536258924340">O Chromium não conseguiu verificar todas as palavras-passe. Tente novamente amanhã ou <ph name="BEGIN_LINK" />verifique as palavras-passe na sua Conta Google<ph name="END_LINK" />.</translation>
 <translation id="985602178874221306">Os Autores do Chromium</translation>
 </translationbundle>

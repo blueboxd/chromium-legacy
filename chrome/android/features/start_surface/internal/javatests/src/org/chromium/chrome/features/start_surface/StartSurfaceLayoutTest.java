@@ -11,9 +11,11 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
+import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
 import static androidx.test.espresso.matcher.ViewMatchers.Visibility.GONE;
 import static androidx.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
@@ -53,6 +55,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.uiautomator.UiDevice;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -1667,6 +1670,57 @@ public class StartSurfaceLayoutTest {
         onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
                 .check(TabCountAssertion.havingTabCount(2));
         onViewWaiting(withText("2 tabs grouped"));
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    public void testTabGroupManualSelection_DisabledForSingleTab() {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Group option should be disabled when there is only one single tab.
+        // We are using UiDevice to finish the click here since there seems to be more than one menu
+        // button in the view hierarchy, and we couldn't locate it using espresso approach. Also,
+        // performClick() won't work as the logic that handles menu button lies in onTouchListener.
+        View menuButton =
+                cta.findViewById(R.id.tab_switcher_toolbar).findViewById(R.id.menu_button);
+        int[] location = new int[2];
+        menuButton.getLocationOnScreen(location);
+        UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+                .click(location[0], location[1]);
+        onView(withText("Group tabs"))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .check(matches(not(isEnabled())));
+
+        // Group option should be enabled when there is more than one single tab.
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+        UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+                .click(location[0], location[1]);
+        onView(withText("Group tabs"))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .check(matches(isEnabled()));
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    public void testTabGroupManualSelection_SystemBackDismiss() {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        TabSelectionEditorTestingRobot robot = new TabSelectionEditorTestingRobot();
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
+                .check(TabCountAssertion.havingTabCount(2));
+        enterTabGroupManualSelection(cta);
+        robot.resultRobot.verifyTabSelectionEditorIsVisible();
+
+        // Pressing system back should dismiss the selection editor.
+        Espresso.pressBack();
+        robot.resultRobot.verifyTabSelectionEditorIsHidden();
     }
 
     @Test

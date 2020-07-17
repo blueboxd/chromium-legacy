@@ -5,6 +5,8 @@
 package org.chromium.ui.base;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import android.net.Uri;
 import android.webkit.MimeTypeMap;
@@ -16,8 +18,11 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowMimeTypeMap;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PathUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -152,5 +157,42 @@ public class SelectFileDialogTest {
                 "///storage/emulated/0/DCIM/Camera/IMG_0.jpg");
         assertEquals(task.mFilePaths[1].toString(),
                 "///storage/emulated/0/DCIM/Camera/IMG_1.jpg");
+    }
+
+    @Test
+    public void testFilePathSelected() {
+        SelectFileDialog selectFileDialog = new SelectFileDialog(0);
+        PathUtils.setPrivateDataDirectorySuffix("test");
+        String dataDir = PathUtils.getDataDirectory();
+        SelectFileDialog.FilePathSelectedTask task = selectFileDialog.new FilePathSelectedTask(
+                ContextUtils.getApplicationContext(), dataDir, null);
+        assertFalse(task.doInBackground());
+
+        task = selectFileDialog.new FilePathSelectedTask(
+                ContextUtils.getApplicationContext(), dataDir + "/tmp/xyz.jpg", null);
+        assertFalse(task.doInBackground());
+
+        task = selectFileDialog.new FilePathSelectedTask(
+                ContextUtils.getApplicationContext(), dataDir + "/../xyz.jpg", null);
+        assertTrue(task.doInBackground());
+
+        task = selectFileDialog.new FilePathSelectedTask(
+                ContextUtils.getApplicationContext(), dataDir + "/tmp/../xyz.jpg", null);
+        assertFalse(task.doInBackground());
+
+        task = selectFileDialog.new FilePathSelectedTask(
+                ContextUtils.getApplicationContext(), "/data/local/tmp.jpg", null);
+        assertTrue(task.doInBackground());
+
+        Path path = new File(dataDir).toPath();
+        String parent = path.getParent().toString();
+        String lastComponent = path.getName(path.getNameCount() - 1).toString();
+        task = selectFileDialog.new FilePathSelectedTask(ContextUtils.getApplicationContext(),
+                parent + "/./" + lastComponent + "/xyz.jpg", null);
+        assertFalse(task.doInBackground());
+
+        task = selectFileDialog.new FilePathSelectedTask(ContextUtils.getApplicationContext(),
+                dataDir + "/../" + lastComponent + "/xyz.jpg", null);
+        assertFalse(task.doInBackground());
     }
 }

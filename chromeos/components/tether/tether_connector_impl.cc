@@ -73,7 +73,7 @@ TetherConnectorImpl::~TetherConnectorImpl() {
 void TetherConnectorImpl::ConnectToNetwork(
     const std::string& tether_network_guid,
     base::OnceClosure success_callback,
-    const network_handler::StringResultCallback& error_callback) {
+    StringErrorCallback error_callback) {
   DCHECK(!tether_network_guid.empty());
   DCHECK(!success_callback.is_null());
   DCHECK(!error_callback.is_null());
@@ -104,7 +104,7 @@ void TetherConnectorImpl::ConnectToNetwork(
 
   device_id_pending_connection_ = device_id;
   success_callback_ = std::move(success_callback);
-  error_callback_ = error_callback;
+  error_callback_ = std::move(error_callback);
   active_host_->SetActiveHostConnecting(device_id, tether_network_guid);
 
   tether_host_fetcher_->FetchTetherHost(
@@ -276,7 +276,7 @@ void TetherConnectorImpl::SetConnectionFailed(
   notification_presenter_->RemoveSetupRequiredNotification();
 
   // Save a copy of the callback before resetting it below.
-  network_handler::StringResultCallback error_callback = error_callback_;
+  StringErrorCallback error_callback = std::move(error_callback_);
 
   std::string failed_connection_device_id = device_id_pending_connection_;
   device_id_pending_connection_.clear();
@@ -284,7 +284,7 @@ void TetherConnectorImpl::SetConnectionFailed(
   success_callback_.Reset();
   error_callback_.Reset();
 
-  error_callback.Run(error_name);
+  std::move(error_callback).Run(error_name);
   active_host_->SetActiveHostDisconnected();
 
   host_connection_metrics_logger_->RecordConnectionToHostResult(

@@ -46,6 +46,7 @@
 <translation id="115926840831309955">Preverite CVC in poskusite znova ali posodobite datum poteka veljavnosti</translation>
 <translation id="1161325031994447685">znova vzpostaviti povezavo z omrežjem Wi-Fi</translation>
 <translation id="1165039591588034296">Napaka</translation>
+<translation id="1165174597379888365">Stran je obiskana</translation>
 <translation id="1175364870820465910">&amp;Natisni ...</translation>
 <translation id="1175875016430184367">Trojno spenjanje na desni</translation>
 <translation id="1178581264944972037">Prekini</translation>
@@ -267,6 +268,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="2001146170449793414">{COUNT,plural, =1{in še 1}one{in še #}two{in še #}few{in še #}other{in še #}}</translation>
 <translation id="2003709556000175978">Ponastavite geslo</translation>
 <translation id="2003775180883135320">Četverno luknjanje zgoraj</translation>
+<translation id="202072848677994234">Obrazec je poslan prek povezave, ki ni varna. Samodejno izpolnjevanje je onemogočeno.</translation>
 <translation id="2025115093177348061">Razširjena resničnost</translation>
 <translation id="2025186561304664664">Strežnik proxy je nastavljen na samodejno konfiguriranje.</translation>
 <translation id="2030481566774242610">Ali ste mislili <ph name="LINK" />?</translation>
@@ -335,6 +337,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="2289385804009217824">Obrezovanje</translation>
 <translation id="2292556288342944218">Internetni dostop je blokiran</translation>
 <translation id="2293443924986248631">Ko je to omogočeno, vam spletna mesta ne morejo slediti po spletu na podlagi piškotkov. Funkcije na nekaterih spletnih mestih morda ne bodo delovale.</translation>
+<translation id="2295290966866883927">URL-ji obiskanih strani so poslani v oblak Google Cloud ali drugim ponudnikom v analizo. Lahko so na primer pregledani zaradi zaznavanja spletnih mest, ki niso varna.</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2300306941146563769">Ni naloženo</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
@@ -426,7 +429,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="2705137772291741111">Shranjena (predpomnjena) kopija tega spletnega mesta je bila neberljiva.</translation>
 <translation id="2709516037105925701">Samodejno izpolnjevanje</translation>
 <translation id="2713444072780614174">Bela</translation>
-<translation id="2720342946869265578">V bližini</translation>
 <translation id="2721148159707890343">Zahteva je uspela</translation>
 <translation id="272451190272506600">Dotaknite se tipala, če želite plačati</translation>
 <translation id="2728127805433021124">Strežnikovo potrdilo je podpisano s šibkim podpisnim algoritmom.</translation>
@@ -723,7 +725,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="3990250421422698716">Zamik v načinu dela »jog«</translation>
 <translation id="3996311196211510766">Spletno mesto <ph name="ORIGIN" /> je zahtevalo, da izvorni pravilnik
     velja za vse njegove zahteve, vendar tega pravilnika trenutno ni mogoče uveljaviti.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 spletna stran v bližini}one{# spletna stran v bližini}two{# spletni strani v bližini}few{# spletne strani v bližini}other{# spletnih strani v bližini}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Dokument PDF, ki vsebuje {COUNT} stran}one{Dokument PDF, ki vsebuje {COUNT} stran}two{Dokument PDF, ki vsebuje {COUNT} strani}few{Dokument PDF, ki vsebuje {COUNT} strani}other{Dokument PDF, ki vsebuje {COUNT} strani}}</translation>
 <translation id="4030383055268325496">&amp;Razveljavi dodajanje</translation>
 <translation id="4032320456957708163">Brskalnik upravlja domena <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -941,7 +942,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Shrani ...</translation>
 <translation id="4913987521957242411">Luknjanje zgoraj levo</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{in še 1 spletna stran}one{in še # spletna stran}two{in še # spletni strani}few{in še # spletne strani}other{in še # spletnih strani}}</translation>
 <translation id="4923459931733593730">Plačilo</translation>
 <translation id="4926049483395192435">Vrednost mora biti določena.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> sporoča:</translation>
@@ -1333,7 +1333,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="6518133107902771759">Preveri</translation>
 <translation id="6521745193039995384">Nedejavno</translation>
 <translation id="6529602333819889595">&amp;Uveljavi izbris</translation>
-<translation id="6534179046333460208">Predlogi za Fizični splet</translation>
 <translation id="6545864417968258051">Iskanje naprav Bluetooth</translation>
 <translation id="6547208576736763147">Dvojno luknjanje na levi</translation>
 <translation id="6554795675067793129">Vaš račun upravlja <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1855,7 +1854,6 @@ Dodatne podrobnosti:
 <translation id="8790007591277257123">&amp;Uveljavi izbris</translation>
 <translation id="8792621596287649091">Izgubite lahko dostop do računa za <ph name="ORG_NAME" /> ali postanete žrtev kraje identitete. Chromium priporoča, da spremenite geslo.</translation>
 <translation id="8793655568873652685">Domena <ph name="ENROLLMENT_DOMAIN" /> je v brskalniku omogočila priključke Chrome Enterprise Connectors. Ti priključki imajo dostop do nekaterih vaših podatkov.</translation>
-<translation id="8800988563907321413">Tu so prikazani predlogi v bližini</translation>
 <translation id="8805819170075074995">Vnos na seznamu »<ph name="LANGUAGE_ID" />«: vnos je prezrt, ker je vključen tudi v pravilnik SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Obrezovanje po vsaki strani</translation>
 <translation id="8820817407110198400">Zaznamki</translation>

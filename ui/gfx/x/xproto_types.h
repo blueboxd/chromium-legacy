@@ -5,7 +5,6 @@
 #ifndef UI_GFX_X_XPROTO_TYPES_H_
 #define UI_GFX_X_XPROTO_TYPES_H_
 
-#include <X11/Xlib-xcb.h>
 #include <xcb/xcb.h>
 #include <xcb/xcbext.h>
 

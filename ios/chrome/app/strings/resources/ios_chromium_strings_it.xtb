@@ -20,6 +20,8 @@
 <translation id="2730884209570016437">Chromium non può utilizzare la videocamera perché è attualmente utilizzata da un'altra applicazione</translation>
 <translation id="2915596697727466327">Chromium utilizza Face ID per garantire accesso autorizzato alle tue password.</translation>
 <translation id="3256316712990552818">Copiata in Chromium</translation>
+<translation id="3344973607274501920">Chromium non ha potuto controllare le tue password. Prova a controllare la connessione a Internet.</translation>
+<translation id="3639997914391704523">Chromium può controllare le tue password quando accedi con il tuo Account Google.</translation>
 <translation id="3805899903892079518">Chromium non ha accesso alle tue foto o ai tuoi video. Attiva l'accesso in Impostazioni iOS &gt; Privacy &gt; Foto.</translation>
 <translation id="4555020257205549924">Quando questa funzione è attiva, Chromium si offre di tradurre le pagine scritte in altre lingue utilizzando Google Traduttore. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Attiva lo scanner di Chromium</translation>
@@ -27,6 +29,7 @@
 <translation id="4999538639245140991">Dal momento che stai per uscire da un account gestito da <ph name="SIGNOUT_MANAGED_DOMAIN" />, i dati di Chromium verranno eliminati da questo dispositivo, ma rimarranno memorizzati nel tuo Account Google.</translation>
 <translation id="5521125884468363740">Esegui l'accesso su tutti i dispositivi su cui utilizzi Chromium e attiva la sincronizzazione per visualizzare le tue schede</translation>
 <translation id="5573014823074921752">Suggerimento per Chromium. Per vedere più opzioni sulla scheda, tocca e tieni premuto il pulsante Mostra schede della barra degli strumenti, che si trova nella parte inferiore o superiore della schermata.</translation>
+<translation id="5700709190537129682">Chromium non può controllare le tue password</translation>
 <translation id="5777187867430702742">Pagina di Chromium</translation>
 <translation id="5862307444128926510">Benvenuto in Chromium</translation>
 <translation id="5945387852661427312">Stai per eseguire l'accesso con un account gestito da <ph name="DOMAIN" /> e consentire al relativo amministratore di avere il controllo dei tuoi dati di Chromium. I tuoi dati verranno associati definitivamente a questo account. Se esci da Chromium, i dati verranno eliminati da questo dispositivo, ma rimarranno memorizzati nel tuo Account Google.</translation>
@@ -34,6 +37,7 @@
 <translation id="6268381023930128611">Uscire da Chromium?</translation>
 <translation id="6424492062988593837">Chromium è stato migliorato. È disponibile una nuova versione.</translation>
 <translation id="6604711459180487467">Migliora la tua esperienza in Chromium tramite l'accesso alla tua posizione.</translation>
+<translation id="6820823224820483452">Chromium non ha potuto controllare tutte le password. Riprova domani.</translation>
 <translation id="7099326575020694068">Chromium non può utilizzare la videocamera in modalità Visualizzazione divisa</translation>
 <translation id="7208566199746267865">Chromium ti fa risparmiare tempo portando i tuoi account sul Web. Puoi aggiungere o rimuovere account nelle impostazioni.</translation>
 <translation id="7269362888766543920">Alcuni componenti aggiuntivi provocano l'arresto anomalo di Chromium. Prova a disinstallarli.</translation>
@@ -42,6 +46,7 @@
 <translation id="7400689562045506105">Utilizza Chromium ovunque</translation>
 <translation id="7674213385180944843">Apri impostazioni &gt; Privacy &gt; Fotocamera &gt; Chromium e attiva la fotocamera.</translation>
 <translation id="7746854981345936341">Suggerimento per Chromium. Alcuni pulsanti si trovano ora nella parte inferiore della schermata, ad esempio Indietro, Avanti e Cerca.</translation>
+<translation id="7798909783578470546">Chromium non ha potuto controllare tutte le password. Riprova.</translation>
 <translation id="786327964234957808">Stai cambiando account di sincronizzazione, passando dall'account <ph name="USER_EMAIL1" /> all'account <ph name="USER_EMAIL2" />. I dati di Chromium esistenti sono gestiti da <ph name="DOMAIN" />. I dati verranno cancellati dal dispositivo, ma rimarranno memorizzati nell'account <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Inizia a usare lo scanner di Chromium</translation>
 <translation id="8013573822802650211">Esegui l'accesso su tutti i dispositivi su cui utilizzi Chromium per visualizzare le tue schede</translation>
@@ -51,5 +56,6 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Tutti i diritti riservati.</translation>
 <translation id="8776843108004031667">Questo account e gli eventuali dati non salvati verranno rimossi da Chromium.</translation>
 <translation id="9022552996538154597">Accedi a Chromium</translation>
+<translation id="921174536258924340">Chromium non ha potuto controllare tutte le password. Riprova domani oppure <ph name="BEGIN_LINK" />controlla le password nel tuo Account Google<ph name="END_LINK" />.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 </translationbundle>

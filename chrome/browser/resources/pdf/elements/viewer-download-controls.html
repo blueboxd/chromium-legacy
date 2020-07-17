@@ -1,4 +1,9 @@
-<style include="pdf-shared"></style>
+<style include="pdf-shared">
+  cr-action-menu::part(dialog) {
+    position: fixed;
+    top: 48px;
+  }
+</style>
 <cr-icon-button id="download" iron-icon="cr:file-download"
     on-click="onDownloadClick_" aria-label$="$i18n{tooltipDownload}"
     aria-haspopup$="[[downloadHasPopup_]]"

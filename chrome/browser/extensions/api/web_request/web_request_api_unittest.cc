@@ -26,6 +26,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -959,14 +960,18 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
 // extension modifying the same request header.
 TEST(ExtensionWebRequestHelpersTest,
      TestMergeOnBeforeSendHeadersResponses_DeclarativeNetRequest) {
+  using RequestHeaderType =
+      extension_web_request_api_helpers::RequestHeaderType;
+  base::HistogramTester histogram_tester;
+
   DNRRequestAction action_1 =
       CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
   action_1.request_headers_to_modify = {
       DNRRequestAction::HeaderInfo(
-          "key1", api::declarative_net_request::HEADER_OPERATION_SET,
+          "referer", api::declarative_net_request::HEADER_OPERATION_SET,
           "dnr_action_1"),
       DNRRequestAction::HeaderInfo(
-          "key2", api::declarative_net_request::HEADER_OPERATION_SET,
+          "cookie", api::declarative_net_request::HEADER_OPERATION_SET,
           "dnr_action_1"),
       DNRRequestAction::HeaderInfo(
           "key3", api::declarative_net_request::HEADER_OPERATION_REMOVE,
@@ -976,10 +981,10 @@ TEST(ExtensionWebRequestHelpersTest,
       CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
   action_2.request_headers_to_modify = {
       DNRRequestAction::HeaderInfo(
-          "key1", api::declarative_net_request::HEADER_OPERATION_REMOVE,
+          "referer", api::declarative_net_request::HEADER_OPERATION_REMOVE,
           base::nullopt),
       DNRRequestAction::HeaderInfo(
-          "key2", api::declarative_net_request::HEADER_OPERATION_SET,
+          "cookie", api::declarative_net_request::HEADER_OPERATION_SET,
           "dnr_action_2"),
       DNRRequestAction::HeaderInfo(
           "key3", api::declarative_net_request::HEADER_OPERATION_SET,
@@ -992,6 +997,7 @@ TEST(ExtensionWebRequestHelpersTest,
   info.dnr_actions->push_back(std::move(action_2));
 
   net::HttpRequestHeaders base_headers;
+  base_headers.SetHeader("referer", "original");
   base_headers.SetHeader("key3", "value 3");
   helpers::IgnoredActions ignored_actions;
   std::string header_value;
@@ -1006,16 +1012,27 @@ TEST(ExtensionWebRequestHelpersTest,
       info, deltas, &base_headers, &ignored_actions, &ignore1, &ignore2,
       &request_headers_modified, &matched_dnr_actions);
   // Header set by a prior action cannot be removed by a subsequent action.
-  ASSERT_TRUE(base_headers.GetHeader("key1", &header_value));
+  ASSERT_TRUE(base_headers.GetHeader("referer", &header_value));
   EXPECT_EQ("dnr_action_1", header_value);
 
   // Header set by a prior action cannot be set to a different value by a
   // subsequent action.
-  ASSERT_TRUE(base_headers.GetHeader("key2", &header_value));
+  ASSERT_TRUE(base_headers.GetHeader("cookie", &header_value));
   EXPECT_EQ("dnr_action_1", header_value);
 
   // Header removed by a prior action cannot be set by a subsequent action.
   EXPECT_FALSE(base_headers.HasHeader("key3"));
+
+  // Check that the appropriate values are recorded for histograms.
+  histogram_tester.ExpectUniqueSample(
+      "Extensions.DeclarativeNetRequest.RequestHeaderAdded",
+      RequestHeaderType::kCookie, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Extensions.DeclarativeNetRequest.RequestHeaderChanged",
+      RequestHeaderType::kReferer, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Extensions.DeclarativeNetRequest.RequestHeaderRemoved",
+      RequestHeaderType::kOther, 1);
 
   EXPECT_EQ(0u, ignored_actions.size());
   EXPECT_TRUE(request_headers_modified);
@@ -1825,6 +1842,108 @@ TEST(ExtensionWebRequestHelpersTest,
 
   EXPECT_TRUE(preserve_fragment_on_redirect_url.is_empty());
   EXPECT_EQ(0u, ignored_actions.size());
+}
+
+// Test that the appropriate metrics are logged for declarative net request
+// actions which modify response headers.
+TEST(ExtensionWebRequestHelpersTest,
+     TestMergeOnHeadersReceivedResponses_DeclarativeNetRequestMetrics) {
+  using HeaderInfo = DNRRequestAction::HeaderInfo;
+  using ResponseHeaderType =
+      extension_web_request_api_helpers::ResponseHeaderType;
+  base::HistogramTester histogram_tester;
+  const ExtensionId ext_1 = "ext_1";
+
+  DNRRequestAction action_1 =
+      CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
+  action_1.extension_id = ext_1;
+
+  action_1.response_headers_to_modify = {
+      HeaderInfo("connection",
+                 api::declarative_net_request::HEADER_OPERATION_APPEND,
+                 "dnr_action_1"),
+      HeaderInfo("same_ext_key",
+                 api::declarative_net_request::HEADER_OPERATION_SET,
+                 "dnr_action_1"),
+      HeaderInfo("set-cookie",
+                 api::declarative_net_request::HEADER_OPERATION_REMOVE,
+                 base::nullopt),
+      HeaderInfo("warning",
+                 api::declarative_net_request::HEADER_OPERATION_REMOVE,
+                 base::nullopt)};
+
+  DNRRequestAction action_2 =
+      CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
+  action_2.extension_id = ext_1;
+  action_2.response_headers_to_modify = {
+      HeaderInfo("connection",
+                 api::declarative_net_request::HEADER_OPERATION_APPEND,
+                 "dnr_action_2"),
+      HeaderInfo("same_ext_key",
+                 api::declarative_net_request::HEADER_OPERATION_APPEND,
+                 "dnr_action_2")};
+
+  WebRequestInfoInitParams info_params;
+  info_params.url = GURL(kExampleUrl);
+  WebRequestInfo info(std::move(info_params));
+
+  info.dnr_actions = std::vector<DNRRequestAction>();
+  info.dnr_actions->push_back(std::move(action_1));
+  info.dnr_actions->push_back(std::move(action_2));
+
+  helpers::IgnoredActions ignored_actions;
+  std::string header_value;
+  EventResponseDeltas deltas;
+
+  char base_headers_string[] =
+      "HTTP/1.0 200 OK\r\n"
+      "set-cookie: Value1\r\n"
+      "\r\n";
+  auto base_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(base_headers_string));
+
+  bool response_headers_modified;
+  scoped_refptr<net::HttpResponseHeaders> new_headers;
+  GURL preserve_fragment_on_redirect_url;
+  std::vector<const DNRRequestAction*> matched_dnr_actions;
+
+  MergeOnHeadersReceivedResponses(
+      info, deltas, base_headers.get(), &new_headers,
+      &preserve_fragment_on_redirect_url, &ignored_actions,
+      &response_headers_modified, &matched_dnr_actions);
+  EXPECT_TRUE(new_headers.get());
+  EXPECT_TRUE(response_headers_modified);
+
+  size_t iter = 0;
+  std::string name;
+  std::string value;
+  std::multimap<std::string, std::string> actual_headers;
+  while (new_headers->EnumerateHeaderLines(&iter, &name, &value))
+    actual_headers.emplace(name, value);
+
+  std::multimap<std::string, std::string> expected_headers;
+  expected_headers.emplace("connection", "dnr_action_1");
+  expected_headers.emplace("connection", "dnr_action_2");
+  expected_headers.emplace("same_ext_key", "dnr_action_1");
+  expected_headers.emplace("same_ext_key", "dnr_action_2");
+  EXPECT_EQ(expected_headers, actual_headers);
+
+  EXPECT_TRUE(preserve_fragment_on_redirect_url.is_empty());
+  EXPECT_EQ(0u, ignored_actions.size());
+
+  // Multiple appends on the same header should generate only one entry.
+  histogram_tester.ExpectUniqueSample(
+      "Extensions.DeclarativeNetRequest.ResponseHeaderAdded",
+      ResponseHeaderType::kConnection, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Extensions.DeclarativeNetRequest.ResponseHeaderChanged",
+      ResponseHeaderType::kOther, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Extensions.DeclarativeNetRequest.ResponseHeaderRemoved",
+      ResponseHeaderType::kSetCookie, 1);
+
+  // There should be no entry for the "warning" header because it was not
+  // removed.
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnAuthRequiredResponses) {

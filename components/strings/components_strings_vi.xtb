@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="1008557486741366299">Không phải Bây giờ</translation>
+<translation id="100957008357583611">Sử dụng thông tin vị trí của bạn?</translation>
 <translation id="1010200102790553230">Tải trang vào lúc khác</translation>
 <translation id="1015730422737071372">Cung cấp chi tiết bổ sung</translation>
 <translation id="1019413721762100891">Đang tắt</translation>
@@ -425,7 +426,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="2705137772291741111">Không thể đọc được bản sao đã lưu (đã lưu vào bộ nhớ đệm) của trang web này.</translation>
 <translation id="2709516037105925701">Tự động điền</translation>
 <translation id="2713444072780614174">Trắng</translation>
-<translation id="2720342946869265578">Lân cận</translation>
 <translation id="2721148159707890343">Yêu cầu đã thành công</translation>
 <translation id="272451190272506600">Chạm vào cảm biến để thanh toán</translation>
 <translation id="2728127805433021124">Chứng chỉ của máy chủ đã được ký bằng thuật toán chữ ký yếu.</translation>
@@ -722,7 +722,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="3990250421422698716">Bù dịch chuyển</translation>
 <translation id="3996311196211510766">Trang web <ph name="ORIGIN" /> đã yêu cầu phải áp dụng một chính sách nguồn gốc
     cho tất cả yêu cầu gửi tới trang web đó. Tuy nhiên, chính sách này hiện không áp dụng được.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 trang web lân cận}other{# trang web lân cận}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Tài liệu PDF chứa {COUNT} trang}other{Tài liệu PDF chứa {COUNT} trang}}</translation>
 <translation id="4030383055268325496">&amp;Hoàn tác thêm</translation>
 <translation id="4032320456957708163"><ph name="ENROLLMENT_DOMAIN" /> quản lý trình duyệt của bạn</translation>
@@ -940,7 +939,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Lưu...</translation>
 <translation id="4913987521957242411">Đục lỗ trên cùng bên trái</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{và thêm 1 trang web}other{và thêm # trang web}}</translation>
 <translation id="4923459931733593730">Thanh toán</translation>
 <translation id="4926049483395192435">Phải được chỉ định.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> cho biết</translation>
@@ -1181,6 +1179,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="5869405914158311789">Không thể truy cập trang web này</translation>
 <translation id="5869522115854928033">Mật khẩu đã lưu</translation>
 <translation id="5887400589839399685">Đã lưu thẻ</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> yêu cầu bạn sao lưu dữ liệu và trả lại thiết bị này.</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
 <translation id="5895187275912066135">Cấp vào</translation>
 <translation id="5901630391730855834">Vàng</translation>
@@ -1331,7 +1330,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="6518133107902771759">Xác minh</translation>
 <translation id="6521745193039995384">Không hoạt động</translation>
 <translation id="6529602333819889595">&amp;Làm lại xóa</translation>
-<translation id="6534179046333460208">Đề xuất Web trong cuộc sống</translation>
 <translation id="6545864417968258051">Quét tìm Bluetooth</translation>
 <translation id="6547208576736763147">Đục 2 lỗ bên trái</translation>
 <translation id="6554795675067793129">Tài khoản của bạn do <ph name="ENROLLMENT_DOMAIN" /> quản lý.</translation>
@@ -1854,7 +1852,6 @@ Thông tin chi tiết bổ sung:
 <translation id="8790007591277257123">&amp;Làm lại xóa</translation>
 <translation id="8792621596287649091">Bạn có thể mất quyền truy cập vào tài khoản <ph name="ORG_NAME" /> của mình hoặc bị đánh cắp danh tính. Chromium khuyên bạn nên thay đổi mật khẩu ngay bây giờ.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> đã bật Chrome Enterprise Connectors trên trình duyệt bạn dùng. Các trình kết nối này có quyền truy cập vào một số dữ liệu của bạn.</translation>
-<translation id="8800988563907321413">Đề xuất ở gần bạn xuất hiện ở đây</translation>
 <translation id="8805819170075074995">Mục nhập danh sách "<ph name="LANGUAGE_ID" />": Mục nhập bị bỏ qua vì cũng được bao gồm trong chính sách SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Cắt bỏ sau mỗi trang</translation>
 <translation id="8820817407110198400">Dấu trang</translation>

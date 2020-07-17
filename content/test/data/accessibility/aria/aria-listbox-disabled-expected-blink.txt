@@ -1,0 +1,14 @@
+rootWebArea
+++genericContainer ignored
+++++genericContainer ignored
+++++++heading name='Start of test: striped should have selected state'
+++++++++staticText name='Start of test: striped should have selected state'
+++++++++++inlineTextBox name='Start of test: striped should have selected state'
+++++++listBox restriction=disabled
+++++++++listBoxOption name='Orange' restriction=disabled selected=false
+++++++++listBoxOption name='Striped' restriction=disabled selected=true
+++++++++listBoxOption name='Calico' restriction=disabled selected=false
+++++++++listBoxOption name='Black' restriction=disabled selected=false
+++++++paragraph
+++++++++staticText name='End of test'
+++++++++++inlineTextBox name='End of test'

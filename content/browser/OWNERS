@@ -35,10 +35,6 @@ per-file utility_process_sandbox_browsertest.cc=file://sandbox/linux/OWNERS
 # Service sandbox mappings require security review
 per-file service_sandbox_type.h=file://ipc/SECURITY_OWNERS
 
-# Service manifests provided by content require security review
-per-file builtin_service_manifests.*=set noparent
-per-file builtin_service_manifests.*=file://ipc/SECURITY_OWNERS
-
 # BackForwardCache
 per-file back_forward_cache_browsertest.cc=arthursonzogni@chromium.org
 per-file back_forward_cache_browsertest.cc=altimin@chromium.org

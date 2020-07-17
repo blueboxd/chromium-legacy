@@ -232,6 +232,7 @@
 <translation id="1274997165432133392">Kolačići i ostali podaci o web-lokacijama</translation>
 <translation id="1275718070701477396">Odabrano</translation>
 <translation id="1276994519141842946">Nije moguće deinstalirati <ph name="APP_NAME" /></translation>
+<translation id="127946606521051357">Uređaj u blizini dijeli sadržaj</translation>
 <translation id="1280820357415527819">Traženje mobilnih mreža</translation>
 <translation id="1280965841156951489">Uredi datoteke</translation>
 <translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
@@ -1095,7 +1096,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947">Datoteka <ph name="FILE_NAME" /> ne može se sigurno preuzeti</translation>
 <translation id="2340263603246777781">Web-lokacija <ph name="ORIGIN" /> želi se upariti</translation>
-<translation id="2341476639346994688">Pisač se zaustavio</translation>
+<translation id="2341476639346994688">Pisač je zaustavljen</translation>
 <translation id="2342740338116612727">Oznake su dodane</translation>
 <translation id="2343747224442182863">Fokusiraj tu karticu</translation>
 <translation id="2344686470986284227">Pokretanje upravljača virtualnog računala</translation>
@@ -1220,6 +1221,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2489918096470125693">Dodavanje &amp;mape...</translation>
 <translation id="2490481887078769936">Datoteka "<ph name="FILE_NAME" />" uklonjena je s popisa</translation>
 <translation id="249113932447298600">Žao nam je, uređaj <ph name="DEVICE_LABEL" /> trenutačno nije podržan.</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> dijeli <ph name="ATTACHMENTS" /> s vama.</translation>
 <translation id="2492461744635776704">Priprema zahtjeva za potpisivanje certifikata</translation>
 <translation id="249303669840926644">Nije bilo moguće dovršiti registraciju</translation>
 <translation id="2495777824269688114">Otkrijte više značajki ili saznajte odgovore. Odaberite "?" da biste pristupili pomoći.</translation>
@@ -4151,6 +4153,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="6212039847102026977">Prikaži napredna svojstva mreže</translation>
 <translation id="6212168817037875041">Isključi zaslon</translation>
 <translation id="6212752530110374741">Vezu pošalji e-poštom</translation>
+<translation id="6213230117190778270">Primi</translation>
 <translation id="6216696360484424239">Automatska prijava</translation>
 <translation id="6218058416316985984">Uređaj <ph name="DEVICE_TYPE" /> nije povezan s internetom. Povežite se s internetom i pokušajte ponovo.</translation>
 <translation id="6220413761270491930">Pogreška prilikom učitavanja proširenja</translation>
@@ -4278,6 +4281,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="6362853299801475928">&amp;Prijavljivanje problema...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Dodavanje članova obitelji i prijatelja</translation>
+<translation id="6367985768157257101">Primiti putem Dijeljenja s Android uređajima?</translation>
 <translation id="636850387210749493">Prijava poduzeća</translation>
 <translation id="6370021412472292592">Manifest nije učitan.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -6581,9 +6585,11 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Unesite zaporku</translation>
 <translation id="939736085109172342">Nova mapa</translation>
+<translation id="941070664607309480">Kliknite da biste postali vidljivi kako bi mogao dijeliti s vama</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> dijeli Chromeovu karticu i zvuk.</translation>
 <translation id="945522503751344254">Slanje povratnih informacija</translation>
 <translation id="947329552760389097">&amp;Provjeri elemente</translation>
+<translation id="951991426597076286">Odbijam</translation>
 <translation id="952992212772159698">Nije aktivirano</translation>
 <translation id="956500788634395331">Zaštićeni ste od potencijalno štetnih proširenja</translation>
 <translation id="957960681186851048">Ta je web-lokacija pokušala automatski preuzeti više datoteka</translation>

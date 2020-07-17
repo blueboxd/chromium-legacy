@@ -160,6 +160,11 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtNavigationStart(
       previews_data, navigation_handle, is_reload, type, &passed_reasons);
   LogPreviewDecisionMade(eligibility, url, clock_->Now(), type,
                          std::move(passed_reasons), previews_data);
+  if (previews_opt_guide_ &&
+      eligibility == PreviewsEligibilityReason::ALLOWED) {
+    // Kick off model prediction.
+    previews_opt_guide_->StartCheckingIfShouldShowPreview(navigation_handle);
+  }
   return eligibility == PreviewsEligibilityReason::ALLOWED;
 }
 

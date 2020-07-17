@@ -165,11 +165,6 @@ function installTestHandlers() {
   // Turn off error rethrowing for tests so the test runner doesn't mark
   // our error handling tests as failed.
   parentMessagePipe.rethrowErrors = false;
-  // Handler that will always error for helping to test the message pipe
-  // itself.
-  parentMessagePipe.registerHandler('bad-handler', () => {
-    throw Error('This is an error');
-  });
 
   parentMessagePipe.registerHandler('run-test-case', (data) => {
     return runTestCase(/** @type{!TestMessageRunTestCase} */ (data));

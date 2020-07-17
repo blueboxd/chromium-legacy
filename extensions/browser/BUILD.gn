@@ -295,6 +295,8 @@ jumbo_source_set("browser_sources") {
     "policy_check.h",
     "pref_names.cc",
     "pref_names.h",
+    "pref_types.cc",
+    "pref_types.h",
     "preload_check.cc",
     "preload_check.h",
     "preload_check_group.cc",
@@ -747,7 +749,6 @@ source_set("unit_tests") {
   if (is_chromeos) {
     sources += [
       "api/audio/audio_device_id_calculator_unittest.cc",
-      "api/document_scan/document_scan_api_unittest.cc",
       "api/feedback_private/access_rate_limiter_chromeos_unittest.cc",
       "api/feedback_private/feedback_private_api_chromeos_unittest.cc",
       "api/feedback_private/feedback_private_api_unittest_base_chromeos.cc",
@@ -765,7 +766,6 @@ source_set("unit_tests") {
 
     deps += [
       "//chromeos:test_support",
-      "//chromeos/dbus:lorgnette_proto",
       "//chromeos/dbus:test_support",
       "//chromeos/dbus/audio",
       "//chromeos/dbus/media_analytics",

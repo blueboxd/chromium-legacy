@@ -104,6 +104,7 @@
 <translation id="1124772482545689468">User</translation>
 <translation id="1125550662859510761">Mukhang <ph name="WIDTH" /> x <ph name="HEIGHT" /> (Native)</translation>
 <translation id="1126809382673880764">Hindi ka pinoprotektahan laban sa mga mapanganib na website, download, at extension. Magkakaroon ka pa rin ng proteksyon ng Ligtas na Pag-browse, kung available, sa iba pang serbisyo ng Google, tulad ng Gmail at Search.</translation>
+<translation id="112752777279960360">Para mag-set up ng Android phone na gagamitin bilang security key sa computer na ito sa unang pagkakataon, buksan ang Chrome sa iyong telepono at pumunta sa "Mga Setting &gt; Mga Password &gt; Gamitin ang telepono bilang security key." Pagkatapos ay i-tap ang "Magkonekta ng bagong device" at i-scan ang QR code na ito.</translation>
 <translation id="1128109161498068552">Huwag payagan ang anumang mga site na gamitin ang mga eksklusibong mensahe ng system upang i-access ang mga MIDI device</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">I-edit ang search engine</translation>
@@ -509,6 +510,7 @@
 <translation id="1622054403950683339">Kalimutan ang Wi-Fi network</translation>
 <translation id="1623132449929929218">Kasalukuyang hindi available ang mga larawan. Kumonektang muli sa internet para makita ang mga koleksyon ng wallpaper.</translation>
 <translation id="1623723619460186680">Pag-dim sa blue light</translation>
+<translation id="1624012933569991823">Mga Setting</translation>
 <translation id="1627276047960621195">Mga Descriptor ng File</translation>
 <translation id="1627408615528139100">Na-download na</translation>
 <translation id="1628948239858170093">I-scan ang file bago buksan?</translation>
@@ -745,6 +747,7 @@
 <translation id="1887850431809612466">Rebisyon ng hardware</translation>
 <translation id="1888523338879380247">{0,plural, =1{Huling araw para i-update ang device}one{I-update ang device sa loob ng # araw}other{I-update ang device sa loob ng # na araw}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783">Tumatanggap ng <ph name="ATTACHMENTS" /> mula sa <ph name="DEVICE_NAME" /></translation>
 <translation id="189210018541388520">Buksan sa buong screen</translation>
 <translation id="1892341345406963517">Kumusta <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Iba pang mga wika</translation>
@@ -1817,6 +1820,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3253225298092156258">Hindi available</translation>
 <translation id="3253448572569133955">Hindi kilalang account</translation>
 <translation id="3254516606912442756">Na-disable ang awtomatikong pag-detect ng time zone</translation>
+<translation id="3254715652085014625">Buksan ang Chrome sa iyong Android phone, at pumunta sa "Mga Setting &gt; Mga Password &gt; Gamitin ang telepono bilang security key," at sundin ang mga tagubilin doon.</translation>
 <translation id="3255355328033513170">Made-delete ang lahat ng data na na-store ng <ph name="SITE_GROUP_NAME" /> at ng anumang site sa ilalim nito. Kabilang dito ang cookies. Masa-sign out ka sa mga site na ito, pati na rin sa mga nakabukas na tab.</translation>
 <translation id="3259723213051400722">Pakisubukang muli.</translation>
 <translation id="3264544094376351444">Sans-serif font</translation>
@@ -3492,6 +3496,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5390677308841849479">Dark red at orange</translation>
 <translation id="5390743329570580756">Magpadala para sa</translation>
 <translation id="5397794290049113714">Ikaw</translation>
+<translation id="5398497406011404839">Mga nakatagong bookmark</translation>
 <translation id="5398572795982417028">Lampas sa hangganan ang tinukoy na page, ang limitasyon ay <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Na-block ang mga ad</translation>
 <translation id="5402815541704507626">I-download ang update gamit ang mobile data</translation>
@@ -3577,6 +3582,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5496587651328244253">Isaayos</translation>
 <translation id="5497251278400702716">File na ito</translation>
 <translation id="5499313591153584299">Maaaring nakakapinsala ang file na ito para sa iyong computer.</translation>
+<translation id="5499453227627332024">May available na pag-upgrade para sa iyong Linux Container. Puwede ka ring mag-upgrade sa ibang pagkakataon mula sa app na Mga Setting.</translation>
 <translation id="5500709606820808700">Nagpatakbo ng pag-check sa kaligtasan ngayong araw</translation>
 <translation id="5502500733115278303">Nai-import Mula sa Firefox</translation>
 <translation id="5503982651688210506">Patuloy na payagan ang <ph name="HOST" /> na gamitin at galawin ang iyong camera, at gamitin ang mikropono mo</translation>
@@ -4201,6 +4207,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6270770586500173387">Ipadala ang <ph name="BEGIN_LINK1" />impormasyon ng system at app<ph name="END_LINK1" />, at <ph name="BEGIN_LINK2" />mga sukatan<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Nagkaroon ng error (<ph name="ERROR" />) habang dina-download ang plugin</translation>
 <translation id="6273677812470008672">Kalidad</translation>
+<translation id="6273979226236203550">Naka-store ang iyong password sa device na ito at sa Google Account mo. Alin ang gusto mong i-delete?</translation>
 <translation id="6277105963844135994">Nag-timeout ang network</translation>
 <translation id="6277518330158259200">Kumuha ng Screenshot</translation>
 <translation id="6278057325678116358">Gamitin ang GTK+</translation>
@@ -4561,6 +4568,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6758056191028427665">Ipaalam sa amin kung ano ang iyong palagay sa ginagawa namin.</translation>
 <translation id="6759193508432371551">Factory reset</translation>
 <translation id="6762833852331690540">Naka-on</translation>
+<translation id="676560328519657314">Iyong mga paraan ng pagbabayad sa Google Pay</translation>
 <translation id="6767566652486411142">Pumili ng Iba Pang Wika...</translation>
 <translation id="6767639283522617719">Hindi maisama sa domain. Tiyaking tama ang mga setting para sa unit ng organisasyon.</translation>
 <translation id="6769557323306147204">Inirerekomenda ng <ph name="ORGANIZATION_NAME" /> na i-update mo ang device na ito.</translation>
@@ -4733,6 +4741,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6972553992270299730">Hindi mabuksan ng <ph name="ORIGIN" /> ang mga file sa folder na ito dahil naglalaman ito ng mga file ng system</translation>
 <translation id="6972629891077993081">Mga HID device</translation>
 <translation id="6972754398087986839">Magsimula</translation>
+<translation id="6972887130317925583">Napalitan ang nakompromisong password. Suriin ang iyong mga password anumang oras sa <ph name="SETTINGS" />.</translation>
 <translation id="6973611239564315524">May available na pag-upgrade sa Debian 10 (Buster)</translation>
 <translation id="6974609594866392343">Offline na demo mode</translation>
 <translation id="6977381486153291903">Rebisyon ng firmware</translation>
@@ -5592,6 +5601,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Na-edit ang shortcut</translation>
 <translation id="8018313076035239964">Kontrolin kung anong impormasyon ang maaaring gamitin ng mga website at anong content ang maaaring ipakita ng mga ito sa iyo</translation>
+<translation id="8022688469248132790">Suriin ang mga detalye ng error</translation>
 <translation id="8023801379949507775">I-update ang mga extension ngayon</translation>
 <translation id="8026334261755873520">I-clear ang data sa pag-browse</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
@@ -6533,6 +6543,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="9180380851667544951">Maaaring ibahagi ng site ang iyong screen</translation>
 <translation id="9188732951356337132">Magpadala ng data ng paggamit at diagnostic na data. Sa kasalukuyan, ang device na ito ay awtomatikong nagpapadala ng diagnostic na data, data ng device, at data ng paggamit sa app sa Google. Hindi ito gagamitin para tukuyin ang pagkakakilanlan ng iyong anak, at makakatulong ito sa stability ng system at ng app, at sa iba pang pagpapahusay. Makakatulong din ang ilang pinagsama-samang data sa mga app at partner ng Google, gaya ng mga developer ng Android. Kung naka-on ang karagdagang setting ng Aktibidad sa Web at App para sa iyong anak, maaaring ma-save ang data na ito sa kanyang Google Account. <ph name="BEGIN_LINK2" />Matuto Pa<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + paunang nakabahaging key</translation>
+<translation id="9198090666959937775">Gamitin ang iyong Android phone bilang security key</translation>
 <translation id="920045321358709304">Maghanap sa <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Maki-clear ang anumang offline na data</translation>
 <translation id="9201220332032049474">Mga opsyon sa lock ng screen</translation>
@@ -6575,6 +6586,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="942532530371314860">Nagbabahagi ng tab ng Chrome at audio ang <ph name="APP_NAME" />.</translation>
 <translation id="945522503751344254">Magpadala ng feedback...</translation>
 <translation id="947329552760389097">&amp;Siyasatin ang Mga Element</translation>
+<translation id="951991426597076286">Tanggihan</translation>
 <translation id="952992212772159698">Hindi na-activate</translation>
 <translation id="956500788634395331">Protektado ka mula sa mga potensyal na mapaminsalang extension</translation>
 <translation id="957960681186851048">Sinubukan ng site na ito na awtomatikong mag-download ng maraming file</translation>

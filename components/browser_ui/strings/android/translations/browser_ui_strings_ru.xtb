@@ -72,7 +72,7 @@
 <translation id="3115898365077584848">Показать информацию</translation>
 <translation id="3123473560110926937">Заблокировано на некоторых сайтах</translation>
 <translation id="3198916472715691905">В памяти занято: <ph name="STORAGE_AMOUNT" /></translation>
-<translation id="321187648315454507">Чтобы <ph name="APP_NAME" /> отправлял вам уведомления, включите их в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
+<translation id="321187648315454507">Чтобы получать уведомления из приложения "<ph name="APP_NAME" />", включите их в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3277252321222022663">Предоставить сайтам доступ к датчикам (рекомендуется)</translation>
 <translation id="3295602654194328831">Скрыть информацию</translation>
@@ -104,7 +104,7 @@
 <translation id="445467742685312942">Разрешить сайтам воспроизводить защищенный контент</translation>
 <translation id="4468959413250150279">Отключить звуки на определенном сайте.</translation>
 <translation id="4479647676395637221">Запрашивать разрешение на доступ к камере (рекомендуется)</translation>
-<translation id="4534723447064627427">Чтобы <ph name="APP_NAME" /> получил доступ к микрофону, включите его в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
+<translation id="4534723447064627427">Чтобы у приложения "<ph name="APP_NAME" />" был доступ к микрофону, предоставьте разрешение в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="4570913071927164677">Подробнее…</translation>
 <translation id="4645575059429386691">Управляется вашими родителями</translation>
 <translation id="4670064810192446073">Виртуальная реальность</translation>
@@ -231,7 +231,7 @@
 <translation id="8394832520002899662">Нажмите, чтобы вернуться на сайт.</translation>
 <translation id="8425213833346101688">Изменить</translation>
 <translation id="8441146129660941386">Перемотать назад</translation>
-<translation id="8444433999583714703">Чтобы <ph name="APP_NAME" /> получил доступ к данным о местоположении, включите геолокацию в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
+<translation id="8444433999583714703">Чтобы у приложения "<ph name="APP_NAME" />" был доступ к данным о местоположении, включите геолокацию в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Отключить доступ к устройству</translation>
 <translation id="8463851957836045671">Сайт работает быстро</translation>
 <translation id="851751545965956758">Не разрешать сайтам подключаться к устройствам</translation>

@@ -1808,6 +1808,8 @@ static_library("ui") {
       "ash/chrome_screenshot_grabber_test_observer.h",
       "ash/chrome_shell_delegate.cc",
       "ash/chrome_shell_delegate.h",
+      "ash/clipboard_util.cc",
+      "ash/clipboard_util.h",
       "ash/image_downloader_impl.cc",
       "ash/image_downloader_impl.h",
       "ash/ime_controller_client.cc",

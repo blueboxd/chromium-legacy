@@ -62,6 +62,7 @@ void AddPdfViewerStrings(base::Value* dict) {
     {"tooltipDownload", IDS_PDF_TOOLTIP_DOWNLOAD},
     {"tooltipPrint", IDS_PDF_TOOLTIP_PRINT},
     {"tooltipRotateCW", IDS_PDF_TOOLTIP_ROTATE_CW},
+    {"tooltipRotateCCW", IDS_PDF_TOOLTIP_ROTATE_CCW},
 #if defined(OS_CHROMEOS)
     {"tooltipAnnotate", IDS_PDF_ANNOTATION_ANNOTATE},
     {"annotationDocumentTooLarge", IDS_PDF_ANNOTATION_DOCUMENT_TOO_LARGE},

@@ -31,6 +31,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/pref_types.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest.h"
@@ -267,7 +268,8 @@ void ChromeContentVerifierDelegate::VerifyFailed(
                 << "might want to use a ScopedIgnoreContentVerifierForTest "
                 << "instance to prevent this.";
   service->DisableExtension(extension_id, disable_reason::DISABLE_CORRUPTED);
-  ExtensionPrefs::Get(context_)->IncrementCorruptedDisableCount();
+  ExtensionPrefs::Get(context_)->IncrementPref(
+      extensions::kCorruptedDisableCount);
   UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptExtensionBecameDisabled", true);
   UMA_HISTOGRAM_ENUMERATION("Extensions.CorruptExtensionDisabledReason", reason,
                             ContentVerifyJob::FAILURE_REASON_MAX);

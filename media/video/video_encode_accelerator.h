@@ -163,6 +163,7 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
            base::Optional<uint32_t> initial_framerate = base::nullopt,
            base::Optional<uint32_t> gop_length = base::nullopt,
            base::Optional<uint8_t> h264_output_level = base::nullopt,
+           bool is_constrained_h264 = false,
            base::Optional<StorageType> storage_type = base::nullopt,
            ContentType content_type = ContentType::kCamera,
            const std::vector<SpatialLayer>& spatial_layers = {});
@@ -201,6 +202,9 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
     // If this is not given, VideoEncodeAccelerator selects one of proper H.264
     // levels for |input_visible_size| and |initial_framerate|.
     base::Optional<uint8_t> h264_output_level;
+
+    // Indicates baseline profile or constrained baseline profile for H264 only.
+    bool is_constrained_h264;
 
     // The storage type of video frame provided on Encode().
     // If no value is set, VEA doesn't check the storage type of video frame on

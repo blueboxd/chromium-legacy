@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">I preferiti salvati sugli altri dispositivi verranno visualizzati qui.</translation>
 <translation id="1113597929977215864">Mostra in visualizzazione semplificata</translation>
 <translation id="1122278879166832009">Tocca qui per accedere rapidamente alla tua home page ovunque ti trovi</translation>
+<translation id="1126809382673880764">Non ti protegge da estensioni, download e siti web pericolosi. La protezione di Navigazione sicura, se disponibile, sarà ancora attiva in altri servizi Google, come Gmail e la Ricerca.</translation>
 <translation id="1129510026454351943">Dettagli: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download in attesa.}other{# download in attesa.}}</translation>
 <translation id="1145536944570833626">Elimina dati esistenti.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Chiaro</translation>
 <translation id="1810845389119482123">Configurazione iniziale della sincronizzazione non terminata</translation>
 <translation id="1821253160463689938">Utilizza i cookie per memorizzare le tue preferenze, anche se non visiti quelle pagine</translation>
-<translation id="1826516787628120939">Verifica in corso...</translation>
 <translation id="1829244130665387512">Trova nella pagina</translation>
 <translation id="1853692000353488670">Nuova scheda in incognito</translation>
 <translation id="1856325424225101786">Reimpostare la modalità Lite?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Salva password</translation>
 <translation id="1952172573699511566">Se possibile, il testo dei siti web verrà mostrato nella tua lingua preferita.</translation>
 <translation id="1960290143419248813">Gli aggiornamenti di Chrome non sono più supportati per questa versione di Android</translation>
+<translation id="1963976881984600709">Protezione standard</translation>
 <translation id="1966710179511230534">Aggiorna i dati di accesso.</translation>
 <translation id="1974060860693918893">Avanzate</translation>
+<translation id="1984417487208496350">Nessuna protezione (sconsigliata)</translation>
 <translation id="1984705450038014246">Sincronizza i tuoi dati di Chrome</translation>
 <translation id="1986685561493779662">Il nome esiste già</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> pulsante <ph name="LINK_NAME" /></translation>
@@ -392,7 +394,6 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="4183868528246477015">Cerca con Google Lens <ph name="BEGIN_NEW" />Novità<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Apri in un'altra scheda</translation>
 <translation id="4198423547019359126">Nessun percorso di download disponibile</translation>
-<translation id="4202553989407425169">Chrome può controllare se le tue impostazioni ti proteggono tramite:</translation>
 <translation id="4209895695669353772">Per ricevere contenuti suggeriti appositamente per te da Google, attiva la sincronizzazione</translation>
 <translation id="423219824432660969">Cripta i dati sincronizzati con la password Google a partire dal giorno <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Apri le impostazioni</translation>
@@ -459,6 +460,7 @@ Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4749960740855309258">Apri una nuova scheda</translation>
 <translation id="4759238208242260848">Download</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download completato.}other{# download completati.}}</translation>
+<translation id="4766678251456904326">Aggiungi un account al dispositivo</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 download programmato.}other{# download programmati.}}</translation>
 <translation id="478981486571169252">Troverai lo stato di accesso a <ph name="SITE_NAME" />, i dati di navigazione e i dati relativi ai siti in Chrome.</translation>
 <translation id="4802417911091824046">La crittografia della passphrase non include metodi di pagamento e indirizzi di Google Pay.
@@ -490,6 +492,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="4943872375798546930">Nessun risultato</translation>
 <translation id="4961107849584082341">Traduci questa pagina in qualsiasi lingua</translation>
 <translation id="4970824347203572753">Non disponibile nel tuo paese</translation>
+<translation id="4971735654804503942">Sistemi di protezione proattivi e più rapidi da siti web, download ed estensioni pericolose. Ricevi un avviso in caso di violazioni della password. Richiede l'invio dei dati di navigazione a Google.</translation>
 <translation id="497421865427891073">Avanti</translation>
 <translation id="4988210275050210843">Download del file (<ph name="MEGABYTES" />) in corso.</translation>
 <translation id="4988526792673242964">Pagine</translation>
@@ -561,7 +564,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5527082711130173040">Chrome ha bisogno dell'accesso alla posizione per cercare dispositivi. <ph name="BEGIN_LINK1" />Aggiorna le autorizzazioni<ph name="END_LINK1" />. L'accesso alla posizione è <ph name="BEGIN_LINK2" />disattivato su questo dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Chiudi schede in incognito</translation>
 <translation id="5534640966246046842">Sito copiato</translation>
-<translation id="5548606607480005320">Controllo di sicurezza</translation>
 <translation id="5561549206367097665">In attesa della rete…</translation>
 <translation id="55737423895878184">La geolocalizzazione e le notifiche sono consentite</translation>
 <translation id="5578795271662203820">Cerca questa immagine su <ph name="SEARCH_ENGINE" /></translation>
@@ -600,7 +602,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="583281660410589416">Sconosciuto</translation>
 <translation id="5833984609253377421">Condividi link</translation>
 <translation id="5836192821815272682">Download dell'aggiornamento di Chrome…</translation>
-<translation id="584120177693484274">Opzione deselezionata</translation>
 <translation id="5853623416121554550">in pausa</translation>
 <translation id="5854790677617711513">Oltre 30 giorni fa</translation>
 <translation id="5858741533101922242">Chrome non riesce ad attivare l'adattatore Bluetooth</translation>
@@ -736,10 +737,12 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="685850645784703949">Discover di Google - disattivato</translation>
 <translation id="6864459304226931083">Scarica immagine</translation>
 <translation id="6865313869410766144">Dati della compilazione automatica dei moduli</translation>
+<translation id="6882836635272038266">Sistemi di protezione standard da siti web, download ed estensioni che sono noti per essere pericolosi.</translation>
 <translation id="6884306546558072722">Continua a esplorare quando sei offline</translation>
 <translation id="688738109438487280">Aggiungi dati esistenti a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Sblocca per copiare la password</translation>
 <translation id="6896758677409633944">Copia</translation>
+<translation id="6900532703269623216">Protezione avanzata</translation>
 <translation id="6903907808598579934">Attiva la sincronizzazione</translation>
 <translation id="6942665639005891494">Modifica in qualsiasi momento il percorso di download predefinito utilizzando l'opzione del menu Impostazioni</translation>
 <translation id="6945221475159498467">Seleziona</translation>

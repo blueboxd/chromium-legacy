@@ -51,27 +51,26 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
       const std::string& service_path,
       network_handler::PropertiesCallback callback) override;
 
-  void SetProperties(
-      const std::string& service_path,
-      const base::DictionaryValue& user_settings,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
+  void SetProperties(const std::string& service_path,
+                     const base::DictionaryValue& user_settings,
+                     const base::Closure& callback,
+                     network_handler::ErrorCallback error_callback) override;
 
   void CreateConfiguration(
       const std::string& userhash,
       const base::DictionaryValue& properties,
-      const network_handler::ServiceResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) const override;
+      network_handler::ServiceResultCallback callback,
+      network_handler::ErrorCallback error_callback) const override;
 
   void RemoveConfiguration(
       const std::string& service_path,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) const override;
+      network_handler::ErrorCallback error_callback) const override;
 
   void RemoveConfigurationFromCurrentProfile(
       const std::string& service_path,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) const override;
+      network_handler::ErrorCallback error_callback) const override;
 
   void SetPolicy(::onc::ONCSource onc_source,
                  const std::string& userhash,
@@ -198,7 +197,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
       const std::string& service_path,
       std::unique_ptr<base::DictionaryValue> shill_dictionary,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback);
+      network_handler::ErrorCallback error_callback);
 
   // Sets the active proxy values in managed network configurations depending on
   // the source of the configuration. Proxy enforced by user policy

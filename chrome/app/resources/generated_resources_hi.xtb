@@ -104,6 +104,7 @@
 <translation id="1124772482545689468">उपयोगकर्ता</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> जैसा लगता है (मूल)</translation>
 <translation id="1126809382673880764">इस मोड में आपको नुकसान पहुंचाने वाली वेबसाइटों, डाउनलोड, और एक्सटेंशन से सुरक्षा नहीं मिलती. Gmail और Search जैसी दूसरी Google की सेवाओं में, आपको अब भी सुरक्षित ब्राउज़िंग की सुरक्षा मिल सकती है.</translation>
+<translation id="112752777279960360">इस कंप्यूटर पर पहली बार अपने Android फ़ोन को सुरक्षा कुंजी के तौर पर इस्तेमाल करने के लिए, आपको सुरक्षा कुंजी सेट अप करनी होगी. ऐसा करने के लिए, अपने फ़ोन में Chrome खोलें और "सेटिंग &gt; पासवर्ड &gt; फ़ोन को सुरक्षा कुंजी के तौर पर इस्तेमाल करें" पर जाएं. इसके बाद, "नया डिवाइस जोड़ें" पर टैप करें और इस क्यूआर कोड को स्कैन करें.</translation>
 <translation id="1128109161498068552">जब कोई साइट MIDI डिवाइस को एक्सेस करने के लिए सिस्टम के खास संदेशों का इस्तेमाल करना चाहे, तो अनुमति न दें</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">खोज इंजन में बदलाव करें</translation>
@@ -509,6 +510,7 @@
 <translation id="1622054403950683339">सेव किए गए वाई-फ़ाई नेटवर्क को भूल जाएं</translation>
 <translation id="1623132449929929218">इमेज फ़िलहाल उपलब्ध नहीं हैं. वॉलपेपर के संग्रह देखने के लिए कृपया इंटरनेट से फिर से कनेक्ट करें.</translation>
 <translation id="1623723619460186680">नीली रोशनी का कम होना</translation>
+<translation id="1624012933569991823">सेटिंग</translation>
 <translation id="1627276047960621195">फ़ाइल वर्णनकर्ता</translation>
 <translation id="1627408615528139100">पहले से डाउनलोड की हुई है</translation>
 <translation id="1628948239858170093">क्या आप फ़ाइल को खोलने से पहले स्कैन करना चाहते हैं?</translation>
@@ -745,6 +747,7 @@
 <translation id="1887850431809612466">हार्डवेयर पुनरीक्षण</translation>
 <translation id="1888523338879380247">{0,plural, =1{डिवाइस को अपडेट करने का आखिरी दिन}one{# दिन के अंदर डिवाइस को अपडेट करें}other{# दिनों के अंदर डिवाइस को अपडेट करें}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;आईडी: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783"><ph name="DEVICE_NAME" /> से <ph name="ATTACHMENTS" /> मिल रहे हैं</translation>
 <translation id="189210018541388520">पूरी स्‍क्रीन खोलें</translation>
 <translation id="1892341345406963517">नमस्ते <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">अन्य भाषाएं</translation>
@@ -1553,7 +1556,7 @@
 <translation id="2889064240420137087">इनके साथ लिंक खोलें...</translation>
 <translation id="2889925978073739256">सैंडबॉक्स नहीं किए गए प्लग इन अवरोधित करते रहें</translation>
 <translation id="2893168226686371498">सामान्य ब्राउज़र</translation>
-<translation id="2893917546370257247">{COUNT,plural, =1{1 लेख}one{# लेख}other{# लेख}}</translation>
+<translation id="2893917546370257247">{COUNT,plural, =1{1 टेक्स्ट}one{# टेक्स्ट}other{# टेक्स्ट}}</translation>
 <translation id="2894757982205307093">ग्रुप में नया टैब जोड़ें</translation>
 <translation id="289644616180464099">सिम कार्ड लॉक है</translation>
 <translation id="289695669188700754">कुंजी ID: <ph name="KEY_ID" /></translation>
@@ -1817,6 +1820,7 @@
 <translation id="3253225298092156258">उपलब्ध नहीं है</translation>
 <translation id="3253448572569133955">अनजान खाता</translation>
 <translation id="3254516606912442756">समय क्षेत्र की अपने आप पहचान बंद है</translation>
+<translation id="3254715652085014625">अपने Android फ़ोन में Chrome खोलें. इसके बाद, "सेटिंग &gt; पासवर्ड &gt; फ़ोन को सुरक्षा कुंजी के तौर पर इस्तेमाल करें" पर जाएं और स्क्रीन पर दिया गया तरीका अपनाएं.</translation>
 <translation id="3255355328033513170"><ph name="SITE_GROUP_NAME" /> का स्टोर किया हुआ सभी डेटा और इसकी सभी साइट को मिटा दिया जाएगा. इसमें कुकी शामिल हैं. आपको उन साइटों से साइन आउट कर दिया जाएगा, जिनमें खुले हुए टैब भी शामिल हैं.</translation>
 <translation id="3259723213051400722">कृपया फिर से कोशिश करें.</translation>
 <translation id="3264544094376351444">Sans-serif फ़ॉन्ट</translation>
@@ -3491,6 +3495,7 @@
 <translation id="5390677308841849479">गहरा लाल और नारंगी</translation>
 <translation id="5390743329570580756">इसके लिए भेजें</translation>
 <translation id="5397794290049113714">आप</translation>
+<translation id="5398497406011404839">छिपे हुए बुकमार्क</translation>
 <translation id="5398572795982417028">सीमा से बाहर के पेज का संदर्भ, सीमा <ph name="MAXIMUM_PAGE" /> की है</translation>
 <translation id="5398772614898833570">विज्ञापन ब्लॉक हैं</translation>
 <translation id="5402815541704507626">मोबाइल डेटा का इस्तेमाल करके अपडेट को डाउनलोड करें</translation>
@@ -3576,6 +3581,7 @@
 <translation id="5496587651328244253">व्यवस्थित करें</translation>
 <translation id="5497251278400702716">इस फ़ाइल</translation>
 <translation id="5499313591153584299">यह फ़ाइल आपके कंप्‍यूटर के लिए हानिकारक हो सकती है.</translation>
+<translation id="5499453227627332024">आपके Linux कंटेनर का नया वर्शन उपलब्ध है. आप सेटिंग ऐप्लिकेशन में जाकर, इसे बाद में भी अपग्रेड कर सकते हैं.</translation>
 <translation id="5500709606820808700">आज सुरक्षा जांच हुई है</translation>
 <translation id="5502500733115278303">Firefox से आयात किया गया</translation>
 <translation id="5503982651688210506"><ph name="HOST" /> को कैमरे का इस्तेमाल और उसे मूव करते रहने दें. साथ ही, माइक्रोफ़ोन का इस्तेमाल करते रहने दें</translation>
@@ -4200,6 +4206,7 @@
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />सिस्टम और ऐप्लिकेशन की जानकारी<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />मेट्रिक<ph name="END_LINK2" /> भेजें</translation>
 <translation id="6272643420381259437">प्लग इन को डाउनलोड करते समय एक गड़बड़ी (<ph name="ERROR" />) हुई थी</translation>
 <translation id="6273677812470008672">गुणवत्ता</translation>
+<translation id="6273979226236203550">आपका पासवर्ड इस डिवाइस और आपके Google खाते में सेव है. आप इनमें से किसे मिटाना चाहते हैं?</translation>
 <translation id="6277105963844135994">नेटवर्क समय खत्म</translation>
 <translation id="6277518330158259200">स्क्री&amp;नशॉट लें</translation>
 <translation id="6278057325678116358">GTK+ का उपयोग करें</translation>
@@ -4560,6 +4567,7 @@
 <translation id="6758056191028427665">हमें बताएं कि हम कैसा प्रदर्शन कर रहे हैं.</translation>
 <translation id="6759193508432371551">फैक्टरी रीसेट करें</translation>
 <translation id="6762833852331690540">चालू है</translation>
+<translation id="676560328519657314">Google Pay में पैसे चुकाने के तरीके</translation>
 <translation id="6767566652486411142">कोई दूसरी भाषा चुनें...</translation>
 <translation id="6767639283522617719">डोमेन से नहीं जोड़ सकते. पक्का करें कि संगठनात्मक इकाई के लिए सेटिंग सही हैं.</translation>
 <translation id="6769557323306147204"><ph name="ORGANIZATION_NAME" /> का सुझाव है कि आप इस डिवाइस को अपडेट करें.</translation>
@@ -4732,6 +4740,7 @@
 <translation id="6972553992270299730"><ph name="ORIGIN" /> इस फ़ोल्डर में मौजूद फ़ाइलें नहीं खोल सकती, क्योंकि इसमें सिस्टम फ़ाइलें मौजूद हैं</translation>
 <translation id="6972629891077993081">एचआईडी डिवाइस</translation>
 <translation id="6972754398087986839">आरंभ करें</translation>
+<translation id="6972887130317925583">हैक या चोरी हुआ पासवर्ड बदल दिया गया है. आप जब चाहें, <ph name="SETTINGS" /> में जाकर अपने पासवर्ड की जांच कर सकते हैं.</translation>
 <translation id="6973611239564315524">Debian 10 (Buster) के लिए एक अपग्रेड उपलब्ध है</translation>
 <translation id="6974609594866392343">ऑफ़लाइन डेमो मोड</translation>
 <translation id="6977381486153291903">फ़र्मवेयर पुनरीक्षण</translation>
@@ -5590,6 +5599,7 @@
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">शॉर्टकट में बदलाव किया गया</translation>
 <translation id="8018313076035239964">यह नियंत्रित करें कि वेबसाइटें किस जानकारी का उपयोग कर सकती हैं और वे आपको क्या दिखा सकती हैं</translation>
+<translation id="8022688469248132790">गड़बड़ी से जुड़ी जानकारी की समीक्षा करें</translation>
 <translation id="8023801379949507775">एक्सटेंशन अभी अपडेट करें</translation>
 <translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
@@ -6529,6 +6539,7 @@
 <translation id="9180380851667544951">साइट आपकी स्क्रीन शेयर कर सकती है</translation>
 <translation id="9188732951356337132">इस्तेमाल और निदान से जुड़ा डेटा भेजें. यह डिवाइस फ़िलहाल Google को निदान, डिवाइस, और ऐप्लिकेशन के इस्तेमाल से जुड़ा डेटा अपने आप भेज रहा है. इसका इस्तेमाल आपके बच्चे की पहचान करने के लिए नहीं किया जाएगा. यह सिस्टम और ऐप्लिकेशन की स्थिरता और दूसरे सुधारों में मदद करेगा. कुछ एग्रीगेट डेटा Google ऐप्लिकेशन और पार्टनर, जैसे कि Android डेवलपरों की भी मदद करेगा. अगर आपके बच्चे के लिए दूसरी 'वेब और ऐप्लिकेशन गतिविधि' सेटिंग चालू है, तो यह डेटा उसके Google खाते में सेव किया जा सकता है. <ph name="BEGIN_LINK2" />ज़्यादा जानें<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + पूर्व-शेयर कुंजी</translation>
+<translation id="9198090666959937775">अपने Android फ़ोन को सुरक्षा कुंजी के तौर पर इस्तेमाल करें</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> खोजें</translation>
 <translation id="9201023452444595544">ऑफ़लाइन डेटा को मिटा दिया जाएगा</translation>
 <translation id="9201220332032049474">स्क्रीन लॉक विकल्प</translation>
@@ -6571,6 +6582,7 @@
 <translation id="942532530371314860"><ph name="APP_NAME" /> एक Chrome टैब और ऑडियो शेयर कर रहा है.</translation>
 <translation id="945522503751344254">सुझाव भेजें</translation>
 <translation id="947329552760389097">&amp;एलिमेंट जाँचें</translation>
+<translation id="951991426597076286">अस्वीकार करें</translation>
 <translation id="952992212772159698">सक्रिय नहीं किया गया</translation>
 <translation id="956500788634395331">आप ऐसे एक्सटेंशन से सुरक्षित हैं जो शायद नुकसान पहुंचा सकते हैं</translation>
 <translation id="957960681186851048">इस साइट ने अपने आप  कई फ़ाइलें डाउनलोड करने की कोशिश की है</translation>

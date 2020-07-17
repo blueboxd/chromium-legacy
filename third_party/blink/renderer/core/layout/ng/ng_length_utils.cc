@@ -225,8 +225,6 @@ LayoutUnit ResolveBlockLengthInternal(
   }
 }
 
-namespace {
-
 LayoutUnit InlineSizeFromAspectRatio(const NGBoxStrut& border_padding,
                                      const LogicalSize& aspect_ratio,
                                      EBoxSizing box_sizing,
@@ -250,6 +248,8 @@ LayoutUnit BlockSizeFromAspectRatio(const NGBoxStrut& border_padding,
           aspect_ratio.inline_size) +
          border_padding.BlockSum();
 }
+
+namespace {
 
 template <typename MinMaxSizesFunc>
 MinMaxSizesResult ComputeMinAndMaxContentContributionInternal(
@@ -401,18 +401,21 @@ MinMaxSizesResult ComputeMinAndMaxContentContribution(
 
 LayoutUnit ComputeInlineSizeFromAspectRatio(const NGConstraintSpace& space,
                                             const ComputedStyle& style,
-                                            const NGBoxStrut& border_padding) {
-  if (UNLIKELY(style.LogicalAspectRatio() && !style.LogicalHeight().IsAuto())) {
-    // Check if we can get an inline size using the aspect ratio
-    LayoutUnit block_size = ComputeBlockSizeForFragment(
-        space, style, border_padding, kIndefiniteSize, base::nullopt);
-    if (block_size != kIndefiniteSize) {
-      return InlineSizeFromAspectRatio(border_padding,
-                                       *style.LogicalAspectRatio(),
-                                       style.BoxSizing(), block_size);
-    }
+                                            const NGBoxStrut& border_padding,
+                                            LayoutUnit block_size) {
+  if (LIKELY(!style.AspectRatio()))
+    return kIndefiniteSize;
+
+  if (!style.LogicalHeight().IsAuto() && block_size == kIndefiniteSize) {
+    DCHECK(!style.HasOutOfFlowPosition()) << "OOF should pass in a block size";
+    block_size = ComputeBlockSizeForFragment(space, style, border_padding,
+                                             kIndefiniteSize, base::nullopt);
   }
-  return kIndefiniteSize;
+  if (block_size == kIndefiniteSize)
+    return kIndefiniteSize;
+  // Check if we can get an inline size using the aspect ratio.
+  return InlineSizeFromAspectRatio(border_padding, *style.LogicalAspectRatio(),
+                                   style.BoxSizing(), block_size);
 }
 
 LayoutUnit ComputeInlineSizeForFragment(

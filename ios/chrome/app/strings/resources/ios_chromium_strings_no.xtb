@@ -20,6 +20,8 @@
 <translation id="2730884209570016437">Chromium kan ikke bruke kameraet fordi det brukes av en annen app</translation>
 <translation id="2915596697727466327">Chromium bruker Face ID til å sikre at bare godkjente personer får tilgang til passordene dine.</translation>
 <translation id="3256316712990552818">Kopiert til Chromium</translation>
+<translation id="3344973607274501920">Chromium kunne ikke sjekke passordene dine. Se om du er koblet til internett.</translation>
+<translation id="3639997914391704523">Chromium kan sjekke passordene dine når du logger på med Google-kontoen din.</translation>
 <translation id="3805899903892079518">Chromium har ikke tilgang til bildene eller videoene dine. Slå på tilgangen i iOS-innstillingene &gt; Personvern &gt; Bilder.</translation>
 <translation id="4555020257205549924">Når denne funksjonen er slått på, tilbyr Chromium å oversette sider som er skrevet på andre språk, ved hjelp av Google Oversetter. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Slå på Chromium-skanneren</translation>
@@ -27,6 +29,7 @@
 <translation id="4999538639245140991">Fordi du logger av en konto som er administrert av <ph name="SIGNOUT_MANAGED_DOMAIN" />, blir Chromium-dataene dine slettet fra denne enheten, men de blir værende i Google-kontoen din.</translation>
 <translation id="5521125884468363740">For å se fanene dine overalt hvor du bruker Chromium, logg på og slå på synkronisering</translation>
 <translation id="5573014823074921752">Chromium-tips. For flere fanealternativer, trykk og hold inne Vis faner-knappen på verktøylinjen, som du finner nederst eller øverst på skjermen.</translation>
+<translation id="5700709190537129682">Chromium kan ikke sjekke passordene dine</translation>
 <translation id="5777187867430702742">Chromium-side</translation>
 <translation id="5862307444128926510">Velkommen til Chromium</translation>
 <translation id="5945387852661427312">Du logger på med en konto som administreres av <ph name="DOMAIN" />, og du gir dermed administratoren for dette domenet kontroll over Chromium-dataene dine. Dataene dine blir knyttet til denne kontoen permanent. Når du logger av Chromium, slettes dataene dine fra denne enheten, men de er fortsatt lagret i Google-kontoen din.</translation>
@@ -34,6 +37,7 @@
 <translation id="6268381023930128611">Vil du logge av Chromium?</translation>
 <translation id="6424492062988593837">Chromium har blitt enda bedre. En ny versjon er nå tilgjengelig.</translation>
 <translation id="6604711459180487467">Få en bedre Chromium-opplevelse basert på hvor du er.</translation>
+<translation id="6820823224820483452">Chromium kunne ikke sjekke alle passordene. Prøv på nytt i morgen.</translation>
 <translation id="7099326575020694068">Chromium kan ikke bruke kameraet i modus for delt visning</translation>
 <translation id="7208566199746267865">Med Chromium kan du spare tid, siden du får tilgang til kontoene dine på nettet. Du kan legge til eller fjerne kontoer i Innstillinger.</translation>
 <translation id="7269362888766543920">Noen tillegg fører til at Chromium krasjer. Prøv å avinstallere dem.</translation>
@@ -42,6 +46,7 @@
 <translation id="7400689562045506105">Bruk Chromium overalt</translation>
 <translation id="7674213385180944843">Åpne Innstillinger &gt; Personvern &gt; Kamera &gt; Chromium, og slå på kameraet.</translation>
 <translation id="7746854981345936341">Chromium-tips. Noen knapper, slik som Tilbake, Frem og Søk, er nå nederst på skjermen.</translation>
+<translation id="7798909783578470546">Chromium kunne ikke sjekke alle passordene. Prøv på nytt.</translation>
 <translation id="786327964234957808">Du bytter synkroniseringskonto fra <ph name="USER_EMAIL1" /> til <ph name="USER_EMAIL2" />. De eksisterende Chromium-dataene dine administreres av <ph name="DOMAIN" />. Dette fører til at dataene dine slettes fra denne enheten, men de blir værende i <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Begynn å bruke Chromium-skanneren</translation>
 <translation id="8013573822802650211">For å se fanene dine overalt hvor du bruker Chromium, logg på alle enhetene dine</translation>
@@ -51,5 +56,6 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> – The Chromium Authors. Med enerett.</translation>
 <translation id="8776843108004031667">Denne kontoen og eventuelle ulagrede data blir fjernet fra Chromium.</translation>
 <translation id="9022552996538154597">Logg på Chromium</translation>
+<translation id="921174536258924340">Chromium kunne ikke sjekke alle passordene. Prøv på nytt i morgen, eller <ph name="BEGIN_LINK" />sjekk passordene i Google-kontoen din<ph name="END_LINK" />.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 </translationbundle>

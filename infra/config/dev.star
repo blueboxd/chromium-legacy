@@ -29,4 +29,4 @@ lucicfg.config(
     fail_on_warnings = True,
 )
 
-master_only_exec('//dev/main.star')
+master_only_exec('//dev/dev.star')

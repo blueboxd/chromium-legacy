@@ -2570,7 +2570,10 @@
 
     'gpu_skia_renderer_dawn_gtests': {
       'cc_unittests': {
-        'linux_args': ['--no-xvfb'],
+        'linux_args': [
+          '--no-xvfb',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/gpu.linux.skiarenderer_dawn_cc_unittests.filter',
+        ],
       },
       'viz_unittests': {
         'linux_args': [
@@ -3339,8 +3342,7 @@
         'args': [
           '--additional-driver-flag',
           '--disable-site-isolation-trials',
-          '--additional-expectations',
-          'src/third_party/blink/web_tests/FlagExpectations/disable-site-isolation-trials',
+          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/disable-site-isolation-trials',
 
           # layout test failures are retried 3 times when '--test-list' is not
           # passed, but 0 times when '--test-list' is passed. We want to always

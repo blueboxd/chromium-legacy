@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">相機</translation>
 <translation id="1647391597548383849">存取您的相機</translation>
 <translation id="1660204651932907780">允許網站播放音效 (建議)</translation>
+<translation id="1677097821151855053">系統會使用 Cookie 和其他網站資料記住您的身分，例如登入帳戶或個人化廣告。如要管理所有網站的 Cookie，請參閱「<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />」。</translation>
 <translation id="1688867105868176567">要清除網站資料嗎？</translation>
 <translation id="169515064810179024">禁止網站存取動作感應器</translation>
 <translation id="1717218214683051432">動作感應器</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">允許特定網站存取 Cookie。</translation>
 <translation id="4046123991198612571">下一首曲目</translation>
 <translation id="4165986682804962316">網站設定</translation>
+<translation id="4200726100658658164">開啟位置設定</translation>
 <translation id="4226663524361240545">裝置會在收到通知時震動</translation>
 <translation id="4242533952199664413">開啟設定</translation>
 <translation id="4259722352634471385">瀏覽網址被封鎖：<ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">所有網站</translation>
 <translation id="6320088164292336938">震動</translation>
 <translation id="6388207532828177975">清除並重設</translation>
+<translation id="6423924377271166037">清除 Cookie</translation>
 <translation id="6439114592976064011">禁止網站使用您的虛擬實境裝置和資料</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6527303717912515753">分享</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">向後回轉</translation>
 <translation id="8444433999583714703">如要讓 <ph name="APP_NAME" /> 存取您的位置，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟「位置資訊」功能。</translation>
 <translation id="8447861592752582886">撤消裝置權限</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 個 Cookie 正在使用中}other{# 個 Cookie 正在使用中}}</translation>
 <translation id="8463851957836045671">網站快速</translation>
 <translation id="851751545965956758">禁止網站連接裝置</translation>
 <translation id="857943718398505171">允許 (建議)</translation>

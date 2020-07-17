@@ -104,6 +104,7 @@
 <translation id="1124772482545689468">Користувач</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" />x<ph name="HEIGHT" /> (оригінальна)</translation>
 <translation id="1126809382673880764">Не захищає від небезпечних веб-сайтів, завантажень і розширень. Безпечний перегляд усе ще працюватиме в інших сервісах Google (у яких він доступний), як-от Gmail і Пошук.</translation>
+<translation id="112752777279960360">Щоб уперше налаштувати телефон Android як ключ безпеки для цього комп'ютера, відкрийте Chrome на телефоні та відкрийте "Налаштування" &gt; "Паролі" &gt; "Використовувати телефон як ключ безпеки". Тоді натисніть "Підключити новий пристрій" і зіскануйте цей QR-код.</translation>
 <translation id="1128109161498068552">Заборонити всім сайтам використовувати виняткові повідомлення системи, щоб отримувати доступ до пристроїв MIDI</translation>
 <translation id="1128128132059598906">EAP – TTLS</translation>
 <translation id="1128591060186966949">Змінити пошукову систему</translation>
@@ -509,6 +510,7 @@
 <translation id="1622054403950683339">Забути мережу Wi-Fi</translation>
 <translation id="1623132449929929218">Зображення наразі недоступні. Щоб переглянути колекції фонових малюнків, підключіться до Інтернету знову.</translation>
 <translation id="1623723619460186680">Зменшення блакитного світла</translation>
+<translation id="1624012933569991823">налаштуваннях</translation>
 <translation id="1627276047960621195">Опис файлу</translation>
 <translation id="1627408615528139100">Уже завантажено</translation>
 <translation id="1628948239858170093">Cканувати файл, перш ніж відкрити?</translation>
@@ -745,6 +747,7 @@
 <translation id="1887850431809612466">Апаратне забезпечення</translation>
 <translation id="1888523338879380247">{0,plural, =1{Останній день, щоб оновити пристрій}one{Оновіть пристрій упродовж # дня}few{Оновіть пристрій упродовж # днів}many{Оновіть пристрій упродовж # днів}other{Оновіть пристрій упродовж # дня}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;Ідентифікатор: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783">Отримання <ph name="ATTACHMENTS" /> з пристрою <ph name="DEVICE_NAME" /></translation>
 <translation id="189210018541388520">Відкрити на весь екран</translation>
 <translation id="1892341345406963517">Вітаємо, <ph name="PARENT_NAME" />!</translation>
 <translation id="189358972401248634">Інші мови</translation>
@@ -1817,6 +1820,7 @@
 <translation id="3253225298092156258">Недоступно</translation>
 <translation id="3253448572569133955">Невідомий обліковий запис</translation>
 <translation id="3254516606912442756">Автоматичне визначення часового поясу вимкнено</translation>
+<translation id="3254715652085014625">Відкрийте Chrome на телефоні, перейдіть у "Налаштування" &gt; "Паролі" &gt; "Використовувати телефон як ключ безпеки" та дотримуйтеся вказівок.</translation>
 <translation id="3255355328033513170">Усі дані, збережені сайтом <ph name="SITE_GROUP_NAME" /> і сайтами його групи, буде видалено. Це також стосується файлів cookie. Ви вийдете з облікового запису на цих сайтах, зокрема у відкритих вкладках.</translation>
 <translation id="3259723213051400722">Повторіть спробу.</translation>
 <translation id="3264544094376351444">Шрифт Sans-serif</translation>
@@ -3492,6 +3496,7 @@
 <translation id="5390677308841849479">Темно-червоний і оранжевий</translation>
 <translation id="5390743329570580756">Надіслати</translation>
 <translation id="5397794290049113714">Ви</translation>
+<translation id="5398497406011404839">Сховані закладки</translation>
 <translation id="5398572795982417028">Сторінка поза діапазоном, максимальна кількість сторінок: <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Оголошення заблоковано</translation>
 <translation id="5402815541704507626">Завантажити оновлення через мобільний Інтернет</translation>
@@ -3577,6 +3582,7 @@
 <translation id="5496587651328244253">Упорядкувати</translation>
 <translation id="5497251278400702716">Цей файл</translation>
 <translation id="5499313591153584299">Цей файл може зашкодити вашому комп’ютеру.</translation>
+<translation id="5499453227627332024">Доступне оновлення для Linux Container. Ви також можете оновити систему пізніше в додатку Налаштування.</translation>
 <translation id="5500709606820808700">Перевірку безпеки виконано сьогодні</translation>
 <translation id="5502500733115278303">Імпортовано із Firefox</translation>
 <translation id="5503982651688210506">Надалі дозволяти сайту <ph name="HOST" /> використовувати й переміщувати камеру, а також використовувати мікрофон</translation>
@@ -4201,6 +4207,7 @@
 <translation id="6270770586500173387">Надсилати <ph name="BEGIN_LINK1" />інформацію про систему й додатки<ph name="END_LINK1" />, а також <ph name="BEGIN_LINK2" />показники<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Під час завантаження плагіна сталася помилка (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">Якість</translation>
+<translation id="6273979226236203550">Ваш пароль збережено на цьому пристрої та в обліковому записі Google Звідки його видалити?</translation>
 <translation id="6277105963844135994">Час очікування мережі минув</translation>
 <translation id="6277518330158259200">З&amp;робити знімок екрана</translation>
 <translation id="6278057325678116358">Вибрати тему GTK+</translation>
@@ -4561,6 +4568,7 @@
 <translation id="6758056191028427665">Поділіться з нами своїми враженнями.</translation>
 <translation id="6759193508432371551">Відновлення заводських налаштувань</translation>
 <translation id="6762833852331690540">Увімкнено</translation>
+<translation id="676560328519657314">Ваші способи оплати в Google Pay</translation>
 <translation id="6767566652486411142">Вибрати іншу мову…</translation>
 <translation id="6767639283522617719">Не вдається приєднатися до домену. Переконайтеся, що налаштування для організаційного підрозділу правильні.</translation>
 <translation id="6769557323306147204"><ph name="ORGANIZATION_NAME" /> радить оновити цей пристрій.</translation>
@@ -4733,6 +4741,7 @@
 <translation id="6972553992270299730">Сайт <ph name="ORIGIN" /> не може відкривати файли в цій папці, оскільки вона містить системні файли</translation>
 <translation id="6972629891077993081">Пристрої HID</translation>
 <translation id="6972754398087986839">Почати</translation>
+<translation id="6972887130317925583">Зламаний пароль змінено. Ви можете будь-коли перевірити свої паролі в <ph name="SETTINGS" />.</translation>
 <translation id="6973611239564315524">Доступне оновлення Debian 10 (Buster)</translation>
 <translation id="6974609594866392343">Демо-режим офлайн</translation>
 <translation id="6977381486153291903">Мікропрограма</translation>
@@ -5592,6 +5601,7 @@
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Ярлик змінено</translation>
 <translation id="8018313076035239964">Налаштуйте, яку інформацію можуть використовувати веб-сайти та який вміст вони можуть показувати</translation>
+<translation id="8022688469248132790">Переглянути дані про помилку</translation>
 <translation id="8023801379949507775">Оновити розширення зараз</translation>
 <translation id="8026334261755873520">Очистити історію</translation>
 <translation id="8028060951694135607">Відновлення ключів Microsoft</translation>
@@ -6531,6 +6541,7 @@
 <translation id="9180380851667544951">Сайт може показувати ваш екран</translation>
 <translation id="9188732951356337132">Надсилати дані про використання й діагностику. Цей пристрій наразі автоматично надсилає в Google дані про діагностику та використання пристрою і додатків. Ця інформація не використовуватиметься для встановлення особи вашої дитини, а допоможе покращити стабільність системи, додатків тощо. Деякі зведені дані також корисні для додатків і партнерів Google, як-от розробників Android. Якщо ввімкнено додаткову Історію додатків і веб-пошуку, ці дані зберігаються в обліковому записі Google дитини. <ph name="BEGIN_LINK2" />Докладніше<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec + Спільний ключ</translation>
+<translation id="9198090666959937775">Використовуйте свій телефон Android як ключ безпеки</translation>
 <translation id="920045321358709304">Пошук у <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Усі дані, збережені офлайн, буде видалено</translation>
 <translation id="9201220332032049474">Способи блокування екрана</translation>
@@ -6573,6 +6584,7 @@
 <translation id="942532530371314860"><ph name="APP_NAME" /> транслює вкладку Chrome і аудіо.</translation>
 <translation id="945522503751344254">Надіслати відгук</translation>
 <translation id="947329552760389097">&amp;Перевірити елементи</translation>
+<translation id="951991426597076286">Відхилити</translation>
 <translation id="952992212772159698">Не активовано</translation>
 <translation id="956500788634395331">Пристрій захищено від потенційно шкідливих розширень</translation>
 <translation id="957960681186851048">Цей сайт намагався автоматично завантажити декілька файлів</translation>

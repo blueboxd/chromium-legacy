@@ -1608,6 +1608,7 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.multisample_compatibility =
       feature_info_->feature_flags().ext_multisample_compatibility;
   caps.dc_layers = !offscreen_ && surface_->SupportsDCLayers();
+  caps.use_gpu_fences_for_overlay_planes = surface_->SupportsPlaneGpuFences();
   caps.commit_overlay_planes = surface_->SupportsCommitOverlayPlanes();
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
   caps.gpu_vsync = surface_->SupportsGpuVSync();

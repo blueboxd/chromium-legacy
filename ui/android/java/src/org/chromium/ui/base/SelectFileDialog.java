@@ -552,10 +552,10 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
 
         if (ContentResolver.SCHEME_FILE.equals(results.getData().getScheme())) {
             String filePath = results.getData().getPath();
-            // Don't allow files under private data dir to be uploaded.
-            if (!TextUtils.isEmpty(filePath)
-                    && !filePath.startsWith(PathUtils.getDataDirectory())) {
-                onFileSelected(mNativeSelectFileDialog, filePath, "");
+            if (!TextUtils.isEmpty(filePath)) {
+                FilePathSelectedTask task = new FilePathSelectedTask(
+                        ContextUtils.getApplicationContext(), filePath, window);
+                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 return;
             }
         }
@@ -681,6 +681,42 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
             }
         }
         return count;
+    }
+
+    final class FilePathSelectedTask extends AsyncTask<Boolean> {
+        final Context mContext;
+        final String mFilePath;
+        final WindowAndroid mWindow;
+
+        public FilePathSelectedTask(Context context, String filePath, WindowAndroid window) {
+            mContext = context;
+            mFilePath = filePath;
+            mWindow = window;
+        }
+
+        @Override
+        public Boolean doInBackground() {
+            File file = new File(mFilePath);
+            try {
+                // Don't allow files under private data dir to be uploaded.
+                if (!file.getCanonicalPath().startsWith(PathUtils.getDataDirectory())) {
+                    return true;
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Unable to get canonical file path", e);
+            }
+            return false;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (result) {
+                onFileSelected(mNativeSelectFileDialog, mFilePath, "");
+                mWindow.showError(R.string.opening_file_error);
+            } else {
+                onFileNotSelected();
+            }
+        }
     }
 
     class GetDisplayNameTask extends AsyncTask<String[]> {

@@ -301,10 +301,10 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
                        RemoveExtensionWithPendingInjections) {
   // Load up two extensions, each with content scripts.
-  const Extension* extension1 =
+  scoped_refptr<const Extension> extension1 =
       CreateExtension(ALL_HOSTS, CONTENT_SCRIPT, WITHHOLD_PERMISSIONS);
   ASSERT_TRUE(extension1);
-  const Extension* extension2 =
+  scoped_refptr<const Extension> extension2 =
       CreateExtension(ALL_HOSTS, CONTENT_SCRIPT, WITHHOLD_PERMISSIONS);
   ASSERT_TRUE(extension2);
 
@@ -322,8 +322,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
       browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
 
   // Both extensions should have pending requests.
-  EXPECT_TRUE(action_runner->WantsToRun(extension1));
-  EXPECT_TRUE(action_runner->WantsToRun(extension2));
+  EXPECT_TRUE(action_runner->WantsToRun(extension1.get()));
+  EXPECT_TRUE(action_runner->WantsToRun(extension2.get()));
 
   // Unload one of the extensions.
   UnloadExtension(extension2->id());
@@ -332,15 +332,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
 
   // We should have pending requests for extension1, but not the removed
   // extension2.
-  EXPECT_TRUE(action_runner->WantsToRun(extension1));
-  EXPECT_FALSE(action_runner->WantsToRun(extension2));
+  EXPECT_TRUE(action_runner->WantsToRun(extension1.get()));
+  EXPECT_FALSE(action_runner->WantsToRun(extension2.get()));
 
   // We should still be able to run the request for extension1.
   ExtensionTestMessageListener inject_success_listener(
       new ExtensionTestMessageListener(kInjectSucceeded,
                                        false /* won't reply */));
   inject_success_listener.set_extension_id(extension1->id());
-  action_runner->RunAction(extension1, true);
+  action_runner->RunAction(extension1.get(), true);
   EXPECT_TRUE(inject_success_listener.WaitUntilSatisfied());
 }
 

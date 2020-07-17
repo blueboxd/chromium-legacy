@@ -304,7 +304,7 @@ void UkmService::Flush() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (initialize_complete_)
     BuildAndStoreLog();
-  reporting_service_.ukm_log_store()->PersistUnsentLogs();
+  reporting_service_.ukm_log_store()->TrimAndPersistUnsentLogs();
 }
 
 void UkmService::Purge() {

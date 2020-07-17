@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="be">
 <translation id="1008557486741366299">Не зараз</translation>
+<translation id="100957008357583611">Выкарыстоўваць даныя пра ваша месцазнаходжанне?</translation>
 <translation id="1010200102790553230">Загрузіць старонку пазней</translation>
 <translation id="1015730422737071372">Указаць дадатковыя звесткі</translation>
 <translation id="1019413721762100891">выключана</translation>
@@ -425,7 +426,6 @@
 <translation id="2705137772291741111">Не ўдалося прачытаць захаваную (кэшаваную) копію сайта.</translation>
 <translation id="2709516037105925701">Аўтазапаўненне</translation>
 <translation id="2713444072780614174">Белы</translation>
-<translation id="2720342946869265578">Паблізу</translation>
 <translation id="2721148159707890343">Запыт выкананы</translation>
 <translation id="272451190272506600">Каб заплаціць, дакраніцеся да датчыка</translation>
 <translation id="2728127805433021124">Сертыфікат сервера падпісаны з выкарыстаннем ненадзейнага алгарытму.</translation>
@@ -721,7 +721,6 @@
 <translation id="3990250421422698716">Велічыня зруху</translation>
 <translation id="3996311196211510766">Сайт "<ph name="ORIGIN" />" патрабуе, каб на ўсе запыты да яго распаўсюджвалася
     палітыка крыніцы, але гэту палітыку зараз прымяніць нельга.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 вэб-старонка паблізу}one{# вэб-старонка паблізу}few{# вэб-старонкі паблізу}many{# вэб-старонак паблізу}other{# вэб-старонкі паблізу}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Дакумент PDF з {COUNT} старонкай}one{Дакумент PDF з {COUNT} старонкай}few{Дакумент PDF з {COUNT} старонкамі}many{Дакумент PDF з {COUNT} старонкамі}other{Дакумент PDF з {COUNT} старонкі}}</translation>
 <translation id="4030383055268325496">&amp;Адрабіць дадаванне</translation>
 <translation id="4032320456957708163">Браўзер знаходзіцца пад кіраваннем <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -939,7 +938,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Захаваць...</translation>
 <translation id="4913987521957242411">Дзірка зверху злева</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{і яшчэ 1 вэб-старонка}one{і яшчэ # вэб-старонка}few{і яшчэ # вэб-старонкі}many{і яшчэ # вэб-старонак}other{і яшчэ # вэб-старонкі}}</translation>
 <translation id="4923459931733593730">Плацеж</translation>
 <translation id="4926049483395192435">Трэба вызначыць.</translation>
 <translation id="4926159001844873046">Паведамленне на старонцы <ph name="SITE" /></translation>
@@ -1180,6 +1178,7 @@
 <translation id="5869405914158311789">Гэты сайт недаступны</translation>
 <translation id="5869522115854928033">Захаваныя паролі</translation>
 <translation id="5887400589839399685">Картка захавана</translation>
+<translation id="589006512797629854">Вы выкарыстоўваеце дамен "<ph name="ENROLLMENT_DOMAIN" />", які патрабуе ад вас стварыць рэзервовую копію сваіх даных і вярнуць гэту прыладу.</translation>
 <translation id="5895138241574237353">Перазапусціць</translation>
 <translation id="5895187275912066135">Выдадзены</translation>
 <translation id="5901630391730855834">Жоўты</translation>
@@ -1330,7 +1329,6 @@
 <translation id="6518133107902771759">Спраўдзіць</translation>
 <translation id="6521745193039995384">Неактыўная</translation>
 <translation id="6529602333819889595">&amp;Узнавіць выдаленне</translation>
-<translation id="6534179046333460208">Прапановы Інтэрнэту ў рэале</translation>
 <translation id="6545864417968258051">Пошук прылад Bluetooth</translation>
 <translation id="6547208576736763147">Дзве дзіркі злева</translation>
 <translation id="6554795675067793129">Вашым уліковым запісам кіруе дамен <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1853,7 +1851,6 @@
 <translation id="8790007591277257123">&amp;Узнавіць выдаленне</translation>
 <translation id="8792621596287649091">Вы можаце страціць доступ да свайго ўліковага запісу <ph name="ORG_NAME" />, або ў вас могуць скрасці асабістыя даныя. Chromium рэкамендуе змяніць пароль.</translation>
 <translation id="8793655568873652685">Дамен <ph name="ENROLLMENT_DOMAIN" /> уключыў злучальнікі Chrome Enterprise Connectors у вашым браўзеры. У злучальнікаў ёсць доступ да некаторых вашых даных.</translation>
-<translation id="8800988563907321413">Тут з'явяцца прапановы вэб-старонак паблізу</translation>
 <translation id="8805819170075074995">Элемент спіса "<ph name="LANGUAGE_ID" />": запіс ігнаруецца, бо ён уключаны і ў палітыку "SpellcheckLanguage".</translation>
 <translation id="8807160976559152894">Абрэзка пасля кожнай старонкі</translation>
 <translation id="8820817407110198400">Закладкі</translation>

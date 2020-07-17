@@ -120,8 +120,11 @@ static CompositingReasons BackfaceInvisibility3DAncestorReason(
 CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
     const LayoutObject& object) {
   // TODO(wangxianzhu): Don't depend on PaintLayer for CompositeAfterPaint.
-  if (!object.HasLayer())
+  if (!object.HasLayer()) {
+    if (object.IsSVGChild())
+      return DirectReasonsForSVGChildPaintProperties(object);
     return CompositingReason::kNone;
+  }
 
   const ComputedStyle& style = object.StyleRef();
   auto reasons = CompositingReasonsForAnimation(object) |
@@ -177,6 +180,18 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
     reasons |= object.AdditionalCompositingReasons();
 
   return reasons;
+}
+
+CompositingReasons
+CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(
+    const LayoutObject& object) {
+  DCHECK(object.IsSVGChild());
+  if (RuntimeEnabledFeatures::CompositeSVGEnabled()) {
+    const ComputedStyle& style = object.StyleRef();
+    return CompositingReasonsForAnimation(object) |
+           CompositingReasonsForWillChange(style);
+  }
+  return CompositingReason::kNone;
 }
 
 CompositingReasons CompositingReasonFinder::CompositingReasonsFor3DTransform(
@@ -270,8 +285,10 @@ CompositingReasons CompositingReasonFinder::CompositingReasonsForAnimation(
     return reasons;
 
   // Transforms don't apply on non-replaced inline elements.
-  // TODO(crbug.com/666244): Support composited transform animation for SVG.
-  if (object.IsBox() && style.HasCurrentTransformAnimation())
+  bool supports_composited_animations =
+      object.IsBox() ||
+      (RuntimeEnabledFeatures::CompositeSVGEnabled() && object.IsSVGChild());
+  if (supports_composited_animations && style.HasCurrentTransformAnimation())
     reasons |= CompositingReason::kActiveTransformAnimation;
   if (style.HasCurrentOpacityAnimation())
     reasons |= CompositingReason::kActiveOpacityAnimation;

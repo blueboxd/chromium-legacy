@@ -298,7 +298,7 @@ class CORE_EXPORT V8DOMConfiguration final {
   struct MethodConfiguration {
     MethodConfiguration& operator=(const MethodConfiguration&) = delete;
     DISALLOW_NEW();
-    v8::Local<v8::Name> MethodName(v8::Isolate* isolate) const {
+    v8::Local<v8::String> MethodName(v8::Isolate* isolate) const {
       return V8AtomicString(isolate, name);
     }
 

@@ -712,9 +712,8 @@ TEST_F(TopSitesImplTest, CancelingRequestsForTopSites) {
   EXPECT_EQ(0, querier2.number_of_callbacks());
 }
 
-// Tests variations of blacklisting without testing prepopulated page
-// blacklisting.
-TEST_F(TopSitesImplTest, BlacklistingWithoutPrepopulated) {
+// Tests variations of blocked urls.
+TEST_F(TopSitesImplTest, BlockedUrlsWithoutPrepopulated) {
   MostVisitedURLList pages;
   MostVisitedURL url, url1;
   url.url = GURL("http://bbc.com/");
@@ -723,23 +722,23 @@ TEST_F(TopSitesImplTest, BlacklistingWithoutPrepopulated) {
   pages.push_back(url1);
 
   SetTopSites(pages);
-  EXPECT_FALSE(top_sites()->IsBlacklisted(GURL("http://bbc.com/")));
+  EXPECT_FALSE(top_sites()->IsBlocked(GURL("http://bbc.com/")));
 
-  // Blacklist google.com.
-  top_sites()->AddBlacklistedURL(GURL("http://google.com/"));
+  // Block google.com.
+  top_sites()->AddBlockedUrl(GURL("http://google.com/"));
 
-  EXPECT_TRUE(top_sites()->HasBlacklistedItems());
-  EXPECT_TRUE(top_sites()->IsBlacklisted(GURL("http://google.com/")));
-  EXPECT_FALSE(top_sites()->IsBlacklisted(GURL("http://bbc.com/")));
+  EXPECT_TRUE(top_sites()->HasBlockedUrls());
+  EXPECT_TRUE(top_sites()->IsBlocked(GURL("http://google.com/")));
+  EXPECT_FALSE(top_sites()->IsBlocked(GURL("http://bbc.com/")));
 
-  // Make sure the blacklisted site isn't returned in the results.
+  // Make sure the blocked site isn't returned in the results.
   {
     TopSitesQuerier q;
     q.QueryTopSites(top_sites(), true);
     EXPECT_EQ("http://bbc.com/", q.urls()[0].url.spec());
   }
 
-  // Recreate top sites and make sure blacklisted url was correctly read.
+  // Recreate top sites and make sure the blocked url was correctly read.
   RecreateTopSitesAndBlock();
   {
     TopSitesQuerier q;
@@ -747,10 +746,10 @@ TEST_F(TopSitesImplTest, BlacklistingWithoutPrepopulated) {
     EXPECT_EQ("http://bbc.com/", q.urls()[0].url.spec());
   }
 
-  // Mark google as no longer blacklisted.
-  top_sites()->RemoveBlacklistedURL(GURL("http://google.com/"));
-  EXPECT_FALSE(top_sites()->HasBlacklistedItems());
-  EXPECT_FALSE(top_sites()->IsBlacklisted(GURL("http://google.com/")));
+  // Mark google as no longer blocked.
+  top_sites()->RemoveBlockedUrl(GURL("http://google.com/"));
+  EXPECT_FALSE(top_sites()->HasBlockedUrls());
+  EXPECT_FALSE(top_sites()->IsBlocked(GURL("http://google.com/")));
 
   // Make sure google is returned now.
   {
@@ -760,9 +759,9 @@ TEST_F(TopSitesImplTest, BlacklistingWithoutPrepopulated) {
     EXPECT_EQ("http://google.com/", q.urls()[1].url.spec());
   }
 
-  // Remove all blacklisted sites.
-  top_sites()->ClearBlacklistedURLs();
-  EXPECT_FALSE(top_sites()->HasBlacklistedItems());
+  // Remove all blocked urls.
+  top_sites()->ClearBlockedUrls();
+  EXPECT_FALSE(top_sites()->HasBlockedUrls());
 
   {
     TopSitesQuerier q;
@@ -773,10 +772,8 @@ TEST_F(TopSitesImplTest, BlacklistingWithoutPrepopulated) {
   }
 }
 
-// Tests variations of blacklisting including blacklisting prepopulated pages.
-// This test is disable for Android because Android does not have any
-// prepopulated pages.
-TEST_F(TopSitesImplTest, BlacklistingWithPrepopulated) {
+// Tests variations of blocking including blocking prepopulated pages.
+TEST_F(TopSitesImplTest, BlockingPrepopulated) {
   MostVisitedURLList pages;
   MostVisitedURL url, url1;
   url.url = GURL("http://bbc.com/");
@@ -785,20 +782,20 @@ TEST_F(TopSitesImplTest, BlacklistingWithPrepopulated) {
   pages.push_back(url1);
 
   SetTopSites(pages);
-  EXPECT_FALSE(top_sites()->IsBlacklisted(GURL("http://bbc.com/")));
+  EXPECT_FALSE(top_sites()->IsBlocked(GURL("http://bbc.com/")));
 
-  // Blacklist google.com.
-  top_sites()->AddBlacklistedURL(GURL("http://google.com/"));
+  // Block google.com.
+  top_sites()->AddBlockedUrl(GURL("http://google.com/"));
 
   DCHECK_GE(GetPrepopulatedPages().size(), 1u);
   GURL prepopulate_url = GetPrepopulatedPages()[0].most_visited.url;
 
-  EXPECT_TRUE(top_sites()->HasBlacklistedItems());
-  EXPECT_TRUE(top_sites()->IsBlacklisted(GURL("http://google.com/")));
-  EXPECT_FALSE(top_sites()->IsBlacklisted(GURL("http://bbc.com/")));
-  EXPECT_FALSE(top_sites()->IsBlacklisted(prepopulate_url));
+  EXPECT_TRUE(top_sites()->HasBlockedUrls());
+  EXPECT_TRUE(top_sites()->IsBlocked(GURL("http://google.com/")));
+  EXPECT_FALSE(top_sites()->IsBlocked(GURL("http://bbc.com/")));
+  EXPECT_FALSE(top_sites()->IsBlocked(prepopulate_url));
 
-  // Make sure the blacklisted site isn't returned in the results.
+  // Make sure the blocked site isn't returned in the results.
   {
     TopSitesQuerier q;
     q.QueryTopSites(top_sites(), true);
@@ -807,7 +804,7 @@ TEST_F(TopSitesImplTest, BlacklistingWithPrepopulated) {
     ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(q, 1));
   }
 
-  // Recreate top sites and make sure blacklisted url was correctly read.
+  // Recreate top sites and make sure blocked url was correctly read.
   RecreateTopSitesAndBlock();
   {
     TopSitesQuerier q;
@@ -817,11 +814,11 @@ TEST_F(TopSitesImplTest, BlacklistingWithPrepopulated) {
     ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(q, 1));
   }
 
-  // Blacklist one of the prepopulate urls.
-  top_sites()->AddBlacklistedURL(prepopulate_url);
-  EXPECT_TRUE(top_sites()->HasBlacklistedItems());
+  // Block one of the prepopulate urls.
+  top_sites()->AddBlockedUrl(prepopulate_url);
+  EXPECT_TRUE(top_sites()->HasBlockedUrls());
 
-  // Make sure the blacklisted prepopulate url isn't returned.
+  // Make sure the blacked prepopulate url isn't returned.
   {
     TopSitesQuerier q;
     q.QueryTopSites(top_sites(), true);
@@ -831,10 +828,10 @@ TEST_F(TopSitesImplTest, BlacklistingWithPrepopulated) {
       EXPECT_NE(prepopulate_url.spec(), q.urls()[i].url.spec());
   }
 
-  // Mark google as no longer blacklisted.
-  top_sites()->RemoveBlacklistedURL(GURL("http://google.com/"));
-  EXPECT_TRUE(top_sites()->HasBlacklistedItems());
-  EXPECT_FALSE(top_sites()->IsBlacklisted(GURL("http://google.com/")));
+  // Mark google as no longer blocked.
+  top_sites()->RemoveBlockedUrl(GURL("http://google.com/"));
+  EXPECT_TRUE(top_sites()->HasBlockedUrls());
+  EXPECT_FALSE(top_sites()->IsBlocked(GURL("http://google.com/")));
 
   // Make sure google is returned now.
   {
@@ -843,7 +840,7 @@ TEST_F(TopSitesImplTest, BlacklistingWithPrepopulated) {
     ASSERT_EQ(2u + GetPrepopulatedPages().size() - 1, q.urls().size());
     EXPECT_EQ("http://bbc.com/", q.urls()[0].url.spec());
     EXPECT_EQ("http://google.com/", q.urls()[1].url.spec());
-    // Android has only one prepopulated page which has been blacklisted, so
+    // Android has only one prepopulated page which has been blocked, so
     // only 2 urls are returned.
     if (q.urls().size() > 2)
       EXPECT_NE(prepopulate_url.spec(), q.urls()[2].url.spec());
@@ -851,9 +848,9 @@ TEST_F(TopSitesImplTest, BlacklistingWithPrepopulated) {
       EXPECT_EQ(1u, GetPrepopulatedPages().size());
   }
 
-  // Remove all blacklisted sites.
-  top_sites()->ClearBlacklistedURLs();
-  EXPECT_FALSE(top_sites()->HasBlacklistedItems());
+  // Remove all blocked urls.
+  top_sites()->ClearBlockedUrls();
+  EXPECT_FALSE(top_sites()->HasBlockedUrls());
 
   {
     TopSitesQuerier q;

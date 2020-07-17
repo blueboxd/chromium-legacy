@@ -421,7 +421,6 @@
 <translation id="2705137772291741111">Невозможно прочитать копию сайта, сохраненную в кеше.</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
 <translation id="2713444072780614174">Белый</translation>
-<translation id="2720342946869265578">Мое окружение</translation>
 <translation id="2721148159707890343">Запрос выполнен успешно</translation>
 <translation id="272451190272506600">Для оплаты коснитесь сканера отпечатков пальцев</translation>
 <translation id="2728127805433021124">Сертификат сервера подписан с использованием ненадежного алгоритма.</translation>
@@ -714,7 +713,6 @@
 <translation id="3987940399970879459">Менее 1 МБ</translation>
 <translation id="3990250421422698716">Смещение</translation>
 <translation id="3996311196211510766">Сайт <ph name="ORIGIN" />, на который вы переходите, требует применять правило источника ко всем запросам, однако это сейчас невозможно.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 веб-страница поблизости}one{# веб-страница поблизости}few{# веб-страницы поблизости}many{# веб-страниц поблизости}other{# веб-страницы поблизости}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-документ, состоящий из {COUNT} страницы}one{PDF-документ, состоящий из {COUNT} страницы}few{PDF-документ, состоящий из {COUNT} страниц}many{PDF-документ, состоящий из {COUNT} страниц}other{PDF-документ, состоящий из {COUNT} страницы}}</translation>
 <translation id="4030383055268325496">&amp;Отменить добавление</translation>
 <translation id="4032320456957708163">Этим браузером управляет администратор <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -928,7 +926,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> и <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Сохранить</translation>
 <translation id="4913987521957242411">Отверстие в левом верхнем углу</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{и ещё 1 веб-страница}one{и ещё # веб-страница}few{и ещё # веб-страницы}many{и ещё # веб-страниц}other{и ещё # веб-страницы}}</translation>
 <translation id="4923459931733593730">Платеж</translation>
 <translation id="4926049483395192435">Укажите значение.</translation>
 <translation id="4926159001844873046">Подтвердите действие на странице <ph name="SITE" /></translation>
@@ -1319,7 +1316,6 @@
 <translation id="6518133107902771759">Подтвердить</translation>
 <translation id="6521745193039995384">Не выбрано</translation>
 <translation id="6529602333819889595">&amp;Повторить удаление</translation>
-<translation id="6534179046333460208">Интернет вокруг нас: рекомендации</translation>
 <translation id="6545864417968258051">Поиск Bluetooth-устройств</translation>
 <translation id="6547208576736763147">Два отверстия слева</translation>
 <translation id="6554795675067793129">Ваш аккаунт принадлежит домену <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1841,7 +1837,6 @@
 <translation id="8790007591277257123">&amp;Повторить удаление</translation>
 <translation id="8792621596287649091">Кто-то посторонний мог получить доступ к вашим личным данным или аккаунту в домене <ph name="ORG_NAME" />. Рекомендуем немедленно сменить пароль.</translation>
 <translation id="8793655568873652685">Домен <ph name="ENROLLMENT_DOMAIN" /> включил в браузере коннекторы Chrome Enterprise Connectors. У них есть доступ к некоторым вашим данным.</translation>
-<translation id="8800988563907321413">Здесь появятся рекомендации.</translation>
 <translation id="8805819170075074995">Элемент списка "<ph name="LANGUAGE_ID" />": элемент проигнорирован, поскольку он уже включен в правило SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Подрезать после каждой страницы</translation>
 <translation id="8820817407110198400">Закладки</translation>

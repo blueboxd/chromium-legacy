@@ -44,7 +44,7 @@ class ResourceChangeObserver {
         title_pattern_(title_pattern),
         column_specifier_(column_specifier),
         min_column_value_(min_column_value) {
-    task_manager_tester_ = TaskManagerTester::Create(base::Bind(
+    task_manager_tester_ = TaskManagerTester::Create(base::BindRepeating(
         &ResourceChangeObserver::OnResourceChange, base::Unretained(this)));
   }
 

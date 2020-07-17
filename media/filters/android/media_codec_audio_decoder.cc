@@ -17,7 +17,6 @@
 #include "media/base/android/media_codec_util.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/cdm_context.h"
 #include "media/base/status.h"
 #include "media/base/timestamp_constants.h"
 #include "media/formats/ac3/ac3_util.h"
@@ -34,7 +33,6 @@ MediaCodecAudioDecoder::MediaCodecAudioDecoder(
       channel_layout_(CHANNEL_LAYOUT_NONE),
       sample_rate_(0),
       media_crypto_context_(nullptr),
-      cdm_registration_id_(0),
       pool_(new AudioBufferMemoryPool()) {
   DVLOG(1) << __func__;
 }
@@ -44,15 +42,9 @@ MediaCodecAudioDecoder::~MediaCodecAudioDecoder() {
 
   codec_loop_.reset();
 
-  if (media_crypto_context_) {
-    DCHECK(cdm_registration_id_);
-
-    // Cancel previously registered callback (if any).
-    media_crypto_context_->SetMediaCryptoReadyCB(
-        MediaCryptoContext::MediaCryptoReadyCB());
-
-    media_crypto_context_->UnregisterPlayer(cdm_registration_id_);
-  }
+  // Cancel previously registered callback (if any).
+  if (media_crypto_context_)
+    media_crypto_context_->SetMediaCryptoReadyCB(base::NullCallback());
 
   ClearInputQueue(DecodeStatus::ABORTED);
 }
@@ -115,9 +107,7 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
   SetInitialConfiguration();
 
   if (config_.is_encrypted() && !media_crypto_) {
-    media_crypto_context_ =
-        cdm_context ? cdm_context->GetMediaCryptoContext() : nullptr;
-    if (!media_crypto_context_) {
+    if (!cdm_context || !cdm_context->GetMediaCryptoContext()) {
       LOG(ERROR) << "The stream is encrypted but there is no CdmContext or "
                     "MediaCryptoContext is not supported";
       SetState(STATE_ERROR);
@@ -129,7 +119,7 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
     // Postpone initialization after MediaCrypto is available.
     // SetCdm uses init_cb in a method that's already bound to the current loop.
     SetState(STATE_WAITING_FOR_MEDIA_CRYPTO);
-    SetCdm(std::move(init_cb));
+    SetCdm(cdm_context, std::move(init_cb));
     return;
   }
 
@@ -234,29 +224,28 @@ bool MediaCodecAudioDecoder::NeedsBitstreamConversion() const {
   return config_.codec() == kCodecAAC;
 }
 
-void MediaCodecAudioDecoder::SetCdm(InitCB init_cb) {
-  DCHECK(media_crypto_context_);
+void MediaCodecAudioDecoder::SetCdm(CdmContext* cdm_context, InitCB init_cb) {
+  DVLOG(1) << __func__;
+  DCHECK(cdm_context) << "No CDM provided";
+  DCHECK(cdm_context->GetMediaCryptoContext());
 
-  // Register CDM callbacks. The callbacks registered will be posted back to
-  // this thread via BindToCurrentLoop.
+  media_crypto_context_ = cdm_context->GetMediaCryptoContext();
 
-  // Since |this| holds a reference to the |cdm_|, by the time the CDM is
-  // destructed, UnregisterPlayer() must have been called and |this| has been
-  // destructed as well. So the |cdm_unset_cb| will never have a chance to be
-  // called.
-  // TODO(xhwang): Remove |cdm_unset_cb| after it's not used on all platforms.
-  cdm_registration_id_ = media_crypto_context_->RegisterPlayer(
-      media::BindToCurrentLoop(base::Bind(&MediaCodecAudioDecoder::OnKeyAdded,
-                                          weak_factory_.GetWeakPtr())),
-      base::DoNothing());
+  // CdmContext will always post the registered callback back to this thread.
+  event_cb_registration_ = cdm_context->RegisterEventCB(base::BindRepeating(
+      &MediaCodecAudioDecoder::OnCdmContextEvent, weak_factory_.GetWeakPtr()));
 
+  // The callback will be posted back to this thread via BindToCurrentLoop.
   media_crypto_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
       base::BindOnce(&MediaCodecAudioDecoder::OnMediaCryptoReady,
                      weak_factory_.GetWeakPtr(), std::move(init_cb))));
 }
 
-void MediaCodecAudioDecoder::OnKeyAdded() {
+void MediaCodecAudioDecoder::OnCdmContextEvent(CdmContext::Event event) {
   DVLOG(1) << __func__;
+
+  if (event != CdmContext::Event::kHasAdditionalUsableKey)
+    return;
 
   // We don't register |codec_loop_| directly with the DRM bridge, since it's
   // subject to replacement.

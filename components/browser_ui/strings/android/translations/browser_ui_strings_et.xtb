@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Kaamera</translation>
 <translation id="1647391597548383849">Juurdepääs kaamerale</translation>
 <translation id="1660204651932907780">Saitidel lubatakse esitada heli (soovitatav)</translation>
+<translation id="1677097821151855053">Küpsisefaile ja muid saidi andmeid kasutatakse teie meeldejätmiseks, näiteks selleks, et teid sisse logida või reklaame isikupärastada. Kõigi saitide küpsisefailide haldamiseks vaadake jaotist <ph name="BEGIN_LINK" />Seaded<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Kas soovite saidi andmed kustutada?</translation>
 <translation id="169515064810179024">Blokeeri saitide juurdepääs liikumisanduritele</translation>
 <translation id="1717218214683051432">Liikumisandurid</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Lubage konkreetse saidi küpsisefailid.</translation>
 <translation id="4046123991198612571">Järgmine lugu</translation>
 <translation id="4165986682804962316">Saidi seaded</translation>
+<translation id="4200726100658658164">Ava asukohaseaded</translation>
 <translation id="4226663524361240545">Seade võib märguannete korral vibreerida</translation>
 <translation id="4242533952199664413">Ava seaded</translation>
 <translation id="4259722352634471385">Navigeerimine on blokeeritud: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Kõik saidid</translation>
 <translation id="6320088164292336938">Vibreerimine</translation>
 <translation id="6388207532828177975">Kustuta ja lähtesta</translation>
+<translation id="6423924377271166037">Kustuta küpsisefailid</translation>
 <translation id="6439114592976064011">Blokeeri saitidel virtuaalreaalsuse seadme ja andmete kasutamine</translation>
 <translation id="6447842834002726250">Küpsised</translation>
 <translation id="6527303717912515753">Jaga</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Keri tagasi</translation>
 <translation id="8444433999583714703">Selleks et anda rakendusele <ph name="APP_NAME" /> juurdepääs teie asukohale, lülitage funktsioon Asukoht sisse ka <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Seadme loa tühistamine</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 küpsisefail on kasutuses}other{# küpsisefaili on kasutuses}}</translation>
 <translation id="8463851957836045671">Sait on kiire</translation>
 <translation id="851751545965956758">Blokeeri saitidel seadmetega ühenduse loomine</translation>
 <translation id="857943718398505171">Lubatud (soovitatav)</translation>

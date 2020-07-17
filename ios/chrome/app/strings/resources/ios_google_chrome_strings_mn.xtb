@@ -2,15 +2,19 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="mn">
 <translation id="1282031177488366470">Chrome-н онцлог болон гүйцэтгэлийг сайжруулахад туслах</translation>
+<translation id="1479202195792305274">Таныг Google Бүртгэлээрээ нэвтрэх үед Chrome таны нууц үгнүүдийг шалгах боломжтой.</translation>
+<translation id="1647024380514430932">Chrome бүх нууц үгийг шалгаж чадсангүй. Дахин оролдоно уу.</translation>
 <translation id="1682483655351012182">Chrome-н өгөгдлөө синк хийх</translation>
 <translation id="1759842336958782510">Хромэ</translation>
 <translation id="1917964099031477364">Энэ бүртгэл болон хадгалаагүй аливаа өгөгдлийг Chrome болон энэ төхөөрөмж дээрх Google-н бусад аппаас хасна.</translation>
+<translation id="2009224836393115614">Chrome таны нууц үгнүүдийг шалгаж чадсангүй. Интернэт холболтоо шалгаж үзнэ үү.</translation>
 <translation id="2147651015520127414">Энэхүү вэбсайтын сертификатыг <ph name="ISSUER" /> олгосон болохыг Chrome баталж байна.</translation>
 <translation id="2199719347983604670">Chrome синкийн өгөгдөл</translation>
 <translation id="2347208864470321755">Энэ горим асаалттай байгаа үед Google нь Chrome Translate-ыг ашиглан бусад хэл дээр бичигдсэн хуудсуудыг орчуулахыг санал болгоно. <ph name="BEGIN_LINK" />Илүү ихийг мэдэж аваарай<ph name="END_LINK" /></translation>
 <translation id="2574249610672786438">Chrome-г хаанаас ч ашигласан бай табуудаа харахын тулд бүх төхөөрөмж дээрээ нэвтэрнэ үү</translation>
 <translation id="2576431527583832481">Chrome-ийн шинэ хувилбар саяхан гарлаа.</translation>
 <translation id="257708665678654955">Та Google Chrome-г дараагийн удаа энэ сайтаас <ph name="LANGUAGE_NAME" /> хуудсыг орчуулахыг зөвшөөрөх үү?</translation>
+<translation id="2732745070297234559">Chrome бүх нууц үгийг шалгаж чадсангүй. Маргааш дахин оролдоно уу.</translation>
 <translation id="2919738076569633423">Chrome-г ашигласнаар та <ph name="BEGIN_LINK_TOS" />Үйлчилгээний нөхцөлийг<ph name="END_LINK_TOS" /> зөвшөөрч байна.</translation>
 <translation id="3030414234702425231">Та <ph name="SIGNOUT_MANAGED_DOMAIN" />-н удирддаг бүртгэлээс гарч байгаа тул таны Chrome-н өгөгдлийг энэ төхөөрөмжөөс устгана. Таны өгөгдөл таны Google Бүртгэлд хэвээр үлдэнэ.</translation>
 <translation id="3148688391461398285">Өөрийн байршил дээр тулгуурлан Chrome дотор илүү сайн ажиллах туршлага олж аваарай.</translation>
@@ -28,6 +32,7 @@
 <translation id="424864128008805179">Chrome-с гарах уу?</translation>
 <translation id="4249068189593983585">Chrome-н зөвлөгөө. Табын бусад сонголтыг харахын тулд дэлгэцийнхээ доод эсвэл дээд хэсэгт байрлах самбараас Табыг харуулах товчлуурыг удаан дарна уу.</translation>
 <translation id="4523886039239821078">Зарим нэмэлт апп-ууд нь Chrome-ыг эвдрэхэд хүргэдэг. Тиймээс тэдгээрийг утсгана уу:</translation>
+<translation id="4698415050768537821">Chrome бүх нууц үгийг шалгаж чадсангүй. Маргааш дахин оролдох буюу эсхүл <ph name="BEGIN_LINK" />Google Бүртгэлдээ байгаа нууц үгнүүдийг шалгана уу.<ph name="END_LINK" /></translation>
 <translation id="5389212809648216794">Таны камерыг өөр апп ашиглаж байгаа тул үүнийг Google Chrome ашиглах боломжгүй</translation>
 <translation id="5639704535586432836">Тохиргоо &gt; Нууцлал &gt; Камер &gt; Google Chrome-г нээж, камерыг асаана уу.</translation>
 <translation id="5642200033778930880">Google Chrome таны камерыг Хувааж харах горимд ашиглах боломжгүй</translation>
@@ -41,6 +46,7 @@
 <translation id="7165736900384873061">Google Chrome QR скан хийгчийг ашиглах</translation>
 <translation id="7172660552945675509">Зөвлөгөө: <ph name="BEGIN_LINK" />Chrome-г апп-ны мөр рүү зөөнө үү<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome таны нууц үгэнд зөвшөөрөгдсөн хандалт олгохын тулд Нүүрний ID-г ашигладаг.</translation>
+<translation id="7261678641327190792">Chrome таны нууц үгнүүдийг шалгах боломжгүй байна</translation>
 <translation id="7265369419224458312">Таны компьютерт нээлттэй байгаа цонх руу эндээс нэвтэрнэ үү.
 
 Компьютертээ Chrome-г нээж, цэс хэсэгт очоод "Chrome руу нэвтрэх..." гэснийг сонгоно уу.</translation>

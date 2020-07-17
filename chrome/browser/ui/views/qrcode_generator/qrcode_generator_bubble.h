@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "chrome/services/qrcode_generator/public/cpp/qrcode_generator_service.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "url/gurl.h"
 
@@ -66,6 +67,12 @@ class QRCodeGeneratorBubble : public QRCodeGeneratorBubbleView,
   // Updates the central QR code image with a placeholder.
   void DisplayPlaceholderImage();
 
+  // Shows an error message.
+  void DisplayError(mojom::QRCodeGeneratorError error);
+
+  // Shrinks the view and sets it not visible.
+  void ShrinkAndHideDisplay(views::View* view);
+
   // LocationBarBubbleDelegateView:
   View* GetInitiallyFocusedView() override;
   bool ShouldShowCloseButton() const override;
@@ -101,6 +108,8 @@ class QRCodeGeneratorBubble : public QRCodeGeneratorBubbleView,
   views::Textfield* textfield_url_ = nullptr;
   views::LabelButton* download_button_ = nullptr;
   views::TooltipIcon* tooltip_icon_ = nullptr;
+  views::Label* center_error_label_ = nullptr;
+  views::Label* bottom_error_label_ = nullptr;
 
   QRCodeGeneratorBubbleController* controller_;  // weak.
   content::WebContents* web_contents_;           // weak.

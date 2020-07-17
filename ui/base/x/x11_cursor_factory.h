@@ -19,6 +19,7 @@
 
 namespace ui {
 class X11Cursor;
+class XCursorLoader;
 
 // CursorFactoryOzone implementation for X11 cursors.
 class COMPONENT_EXPORT(UI_BASE_X) X11CursorFactory
@@ -48,6 +49,8 @@ class COMPONENT_EXPORT(UI_BASE_X) X11CursorFactory
   void OnCursorThemeSizeChanged(int cursor_theme_size) override;
 
   void ClearThemeCursors();
+
+  std::unique_ptr<XCursorLoader> cursor_loader_;
 
   // Loads/caches default cursor or returns cached version.
   scoped_refptr<X11Cursor> GetDefaultCursorInternal(mojom::CursorType type);

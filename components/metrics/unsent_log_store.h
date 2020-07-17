@@ -65,7 +65,7 @@ class UnsentLogStore : public LogStore {
   void StageNextLog() override;
   void DiscardStagedLog() override;
   void MarkStagedLogAsSent() override;
-  void PersistUnsentLogs() const override;
+  void TrimAndPersistUnsentLogs() override;
   void LoadPersistedUnsentLogs() override;
 
   // Adds a UMA log to the list, |samples_count| is the total number of samples
@@ -95,10 +95,15 @@ class UnsentLogStore : public LogStore {
  private:
   FRIEND_TEST_ALL_PREFIXES(UnsentLogStoreTest, UnsentLogMetadataMetrics);
 
-  // Writes the list to the ListValue.
+  // Keep the most recent logs which are smaller than |max_log_size_|.
+  // We keep at least |min_log_bytes_| and |min_log_count_| of logs before
+  // discarding older logs.
+  void TrimLogs();
+
+  // Writes the list of logs to |list|.
   void WriteLogsToPrefList(base::ListValue* list) const;
 
-  // Reads the list from the ListValue.
+  // Reads the list of logs from |list|.
   void ReadLogsFromPrefList(const base::ListValue& list);
 
   // Writes the unsent log info to the |metadata_pref_name_| preference.
@@ -125,7 +130,7 @@ class UnsentLogStore : public LogStore {
   const char* metadata_pref_name_;
 
   // We will keep at least this |min_log_count_| logs or |min_log_bytes_| bytes
-  // of logs, whichever is greater, when writing to disk.  These apply after
+  // of logs, whichever is greater, when trimming logs.  These apply after
   // skipping logs greater than |max_log_size_|.
   const size_t min_log_count_;
   const size_t min_log_bytes_;
@@ -175,7 +180,7 @@ class UnsentLogStore : public LogStore {
   };
   // A list of all of the stored logs, stored with SHA1 hashes to check for
   // corruption while they are stored in memory.
-  std::vector<LogInfo> list_;
+  std::vector<std::unique_ptr<LogInfo>> list_;
 
   // The index and type of the log staged for upload. If nothing has been
   // staged, the index will be -1.

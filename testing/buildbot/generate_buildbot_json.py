@@ -172,38 +172,6 @@ class JUnitGenerator(BaseGenerator):
     return sorted(tests, key=lambda x: x['test'])
 
 
-class CTSGenerator(BaseGenerator):
-  def __init__(self, bb_gen):
-    super(CTSGenerator, self).__init__(bb_gen)
-
-  def generate(self, waterfall, tester_name, tester_config, input_tests):
-    # These only contain one entry and it's the contents of the input tests'
-    # dictionary, verbatim.
-    cts_tests = []
-    cts_tests.append(input_tests)
-    return cts_tests
-
-  def sort(self, tests):
-    return tests
-
-
-class InstrumentationTestGenerator(BaseGenerator):
-  def __init__(self, bb_gen):
-    super(InstrumentationTestGenerator, self).__init__(bb_gen)
-
-  def generate(self, waterfall, tester_name, tester_config, input_tests):
-    scripts = []
-    for test_name, test_config in sorted(input_tests.iteritems()):
-      test = self.bb_gen.generate_instrumentation_test(
-        waterfall, tester_name, tester_config, test_name, test_config)
-      if test:
-        scripts.append(test)
-    return scripts
-
-  def sort(self, tests):
-    return sorted(tests, cmp=cmp_tests)
-
-
 def check_compound_references(other_test_suites=None,
                               sub_suite=None,
                               suite=None,
@@ -839,21 +807,6 @@ class BBJSONGenerator(object):
     self.substitute_magic_args(result)
     return result
 
-  def generate_instrumentation_test(self, waterfall, tester_name, tester_config,
-                                    test_name, test_config):
-    if not self.should_run_on_tester(waterfall, tester_name, test_name,
-                                     test_config):
-      return None
-    result = copy.deepcopy(test_config)
-    if 'test' in result and result['test'] != test_name:
-      result['name'] = test_name
-    else:
-      result['test'] = test_name
-    result = self.update_and_cleanup_test(
-        result, test_name, tester_name, tester_config, waterfall)
-    self.substitute_magic_args(result)
-    return result
-
   def substitute_gpu_args(self, tester_config, swarming_config, args):
     substitutions = {
       # Any machine in waterfalls.pyl which desires to run GPU tests
@@ -931,14 +884,10 @@ class BBJSONGenerator(object):
     return {
         'android_webview_gpu_telemetry_tests':
             GPUTelemetryTestGenerator(self, is_android_webview=True),
-        'cts_tests':
-            CTSGenerator(self),
         'gpu_telemetry_tests':
             GPUTelemetryTestGenerator(self),
         'gtest_tests':
             GTestGenerator(self),
-        'instrumentation_tests':
-            InstrumentationTestGenerator(self),
         'isolated_scripts':
             IsolatedScriptTestGenerator(self),
         'junit_tests':
@@ -1003,10 +952,7 @@ class BBJSONGenerator(object):
   def resolve_test_id_prefixes(self):
     for suite in self.test_suites['basic_suites'].itervalues():
       for key, test in suite.iteritems():
-        if not isinstance(test, dict):
-          # Some test definitions are just strings, such as CTS.
-          # Skip them.
-          continue
+        assert isinstance(test, dict)
 
         # This assumes the recipe logic which prefers 'test' to 'isolate_name'
         # https://source.chromium.org/chromium/chromium/tools/build/+/master:scripts/slave/recipe_modules/chromium_tests/generators.py;l=89;drc=14c062ba0eb418d3c4623dde41a753241b9df06b
@@ -1586,11 +1532,7 @@ class BBJSONGenerator(object):
         continue
 
       for test in suite.values():
-        if not isinstance(test, dict):
-          # Some test suites have top level keys, which currently can't be
-          # swarming mixin entries. Ignore them
-          continue
-
+        assert isinstance(test, dict)
         seen_mixins = seen_mixins.union(test.get('mixins', set()))
 
     missing_mixins = set(self.mixins.keys()) - seen_mixins

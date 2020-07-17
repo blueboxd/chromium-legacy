@@ -72,7 +72,7 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
   // TODO(kochi): once this algorithm is named in the spec, rename the method
   // name.
   Element* AdjustedElement(const Element&) const;
-  Element* getElementById(const AtomicString&) const;
+  Element* getElementById(const StringView&) const;
   const HeapVector<Member<Element>>& GetAllElementsById(
       const AtomicString&) const;
   bool HasElementWithId(const AtomicString& id) const;

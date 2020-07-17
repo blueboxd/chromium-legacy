@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">آپ کے دیگر آلات پر محفوظ کردہ بُک مارکس یہاں ظاہر ہوں گے۔</translation>
 <translation id="1113597929977215864">سادہ منظر دکھائیں</translation>
 <translation id="1122278879166832009">کسی بھی جگہ سے اپنے ہوم پیج تک تیزی سے رسائی حاصل کرنے کے لیے یہاں تھپتھپائیں</translation>
+<translation id="1126809382673880764">‏خطرناک ویب سائٹس، ڈاؤن لوڈز اور ایکسٹینشنز سے آپ کی حفاظت نہیں کرتی ہے۔ آپ کو اب بھی Gmail اور تلاش جیسی Google کی دیگر سروسز میں جہاں بھی دستیاب ہوگا محفوظ براؤزنگ کا تحفظ ملے گا۔</translation>
 <translation id="1129510026454351943">تفصیلات: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 ڈاؤن لوڈ زير التوا ہے۔}other{# ڈاؤن لوڈز زير التوا ہیں۔}}</translation>
 <translation id="1145536944570833626">موجودہ ڈیٹا کو حذف کریں۔</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">روشنی</translation>
 <translation id="1810845389119482123">مطابقت پذیر بنانے کا ابتدائی سیٹ اپ مکمل نہیں ہوا</translation>
 <translation id="1821253160463689938">چاہے آپ وہ صفحات ملاحظہ نہ کریں، تب بھی آپ کی ترجیحات یاد رکھنے کے لیے کوکیز استعمال کرتی ہے</translation>
-<translation id="1826516787628120939">چیک کیا جا رہا ہے</translation>
 <translation id="1829244130665387512">صفحہ پر تلاش کریں</translation>
 <translation id="1853692000353488670">نیا پوشیدگی ٹیب</translation>
 <translation id="1856325424225101786">لائٹ موڈ ری سیٹ کریں؟</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">پاس ورڈز محفوظ کریں</translation>
 <translation id="1952172573699511566">جب ممکن ہوگا، تو ویب سائٹس آپ کی پسندیدہ زبان میں متن دکھائیں گی۔</translation>
 <translation id="1960290143419248813">‏Chrome اپ ڈیٹس Android کے اس ورژن کیلئے مزید تعاون یافتہ نہیں ہیں</translation>
+<translation id="1963976881984600709">معیاری تحفظ</translation>
 <translation id="1966710179511230534">براہ کرم اپنے سائن ان کی تفصیلات اپ ڈیٹ کریں۔</translation>
 <translation id="1974060860693918893">جدید ترین</translation>
+<translation id="1984417487208496350">کوئی تحفظ نہیں (تجویز نہیں کی جاتی ہے)</translation>
 <translation id="1984705450038014246">‏اپنے Chrome ڈیٹا کو مطابقت پذیر بنائیں</translation>
 <translation id="1986685561493779662">نام پہلے سے موجود ہے</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> بٹن</translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">‏Google لینز سے تلاش کریں <ph name="BEGIN_NEW" />نیا<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">نئے ٹیب میں کھولیں</translation>
 <translation id="4198423547019359126">ڈاؤن لوڈ کیلئے کوئی مقام دستیاب نہیں ہے</translation>
-<translation id="4202553989407425169">‏Chrome چیک کر سکتا ہے کہ آیا آپ کی ترتیبات درج ذیل سے آپ کی حفاظت کر رہی ہیں:</translation>
 <translation id="4209895695669353772">‏Google کی جانب سے تجویز کردہ ذاتی نوعیت کا مواد حاصل کرنے کیلئے، سِنک کو آن کریں</translation>
 <translation id="423219824432660969">‏<ph name="TIME" /> تک Google پاس ورڈ کے ساتھ مطابقت پذیر کردہ ڈیٹا کی مرموزکاری کریں</translation>
 <translation id="4242533952199664413">ترتیبات کھولیں</translation>
@@ -490,6 +491,7 @@
 <translation id="4943872375798546930">کوئی نتائج نہیں ہیں</translation>
 <translation id="4961107849584082341">اس صفحہ کا کسی بھی زبان میں ترجمہ کریں</translation>
 <translation id="4970824347203572753">آپ کے مقام پر دستیاب نہیں ہے</translation>
+<translation id="4971735654804503942">‏ویب سائٹس، ڈاؤن لوڈز اور ایکسٹینشنز سے تیز، فعال حفاظت۔ پاس ورڈز کی خلاف ورزیوں کے بارے میں آپ کو متنبہ کرتا ہے۔ براؤزنگ ڈیٹا کو Google کے پاس بھیجے جانے کی ضرورت ہوتی ہے۔</translation>
 <translation id="497421865427891073">آگے جائیں</translation>
 <translation id="4988210275050210843">فائل (<ph name="MEGABYTES" />) ڈاؤن لوڈ ہو رہی ہے۔</translation>
 <translation id="4988526792673242964">صفحات</translation>
@@ -561,7 +563,6 @@
 <translation id="5527082711130173040">‏Chrome کو آلات اسکین کرنے کیلئے مقام تک رسائی کی ضرورت ہے۔ <ph name="BEGIN_LINK1" />اجازتوں کو اپ ڈیٹ کریں<ph name="END_LINK1" />۔ مقام تک رسائی بھی <ph name="BEGIN_LINK2" />اس آلہ کیلئے آف<ph name="END_LINK2" /> ہے۔</translation>
 <translation id="5530766185686772672">پوشیدگی ٹیبز بند کریں</translation>
 <translation id="5534640966246046842">سائٹ کاپی ہو گئی</translation>
-<translation id="5548606607480005320">سیفٹی چیک</translation>
 <translation id="5561549206367097665">نیٹ ورک کا منتظر…</translation>
 <translation id="55737423895878184">مقام اور اطلاعات کی اجازت ہے</translation>
 <translation id="5578795271662203820">اس تصویر کیلئے <ph name="SEARCH_ENGINE" /> تلاش کریں</translation>
@@ -600,7 +601,6 @@
 <translation id="583281660410589416">نامعلوم</translation>
 <translation id="5833984609253377421">لنک کا اشتراک کریں</translation>
 <translation id="5836192821815272682">‏Chrome اپ ڈیٹ ڈاؤن لوڈ ہو رہا ہے…</translation>
-<translation id="584120177693484274">غیر نشان زد کردہ</translation>
 <translation id="5853623416121554550">موقوف ہو گیا</translation>
 <translation id="5854790677617711513">30 دن سے زیادہ پرانا</translation>
 <translation id="5858741533101922242">‏Chrome بلوٹوتھ اڈاپٹر آن کرنے سے قاصر ہے</translation>
@@ -736,10 +736,12 @@
 <translation id="685850645784703949">‏Discover منجانب Google - آف</translation>
 <translation id="6864459304226931083">تصویر ڈاؤن لوڈ کریں</translation>
 <translation id="6865313869410766144">آٹو فل فارم ڈیٹا</translation>
+<translation id="6882836635272038266">خطرناک مانی جانے والی ویب سائٹس، ڈاؤن لوڈز اور ایکسٹینشنز سے معیاری حفاظت۔</translation>
 <translation id="6884306546558072722">آف لائن دریافت کرتے رہیں</translation>
 <translation id="688738109438487280"><ph name="TO_ACCOUNT" /> میں موجودہ ڈیٹا شامل کریں۔</translation>
 <translation id="6891726759199484455">اپنا پاس ورڈ کاپی کرنے کیلئے غیر مقفل کریں</translation>
 <translation id="6896758677409633944">کاپی کریں</translation>
+<translation id="6900532703269623216">بہتر کردہ حفاظت</translation>
 <translation id="6903907808598579934">مطابقت پذیری آن کریں</translation>
 <translation id="6942665639005891494">ترتیبات کا مینو اختیار استعمال کر کے ڈاؤن لوڈ کا ڈیفالٹ مقام کسی بھی وقت تبدیل کریں</translation>
 <translation id="6945221475159498467">منتخب کریں</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="kk">
 <translation id="1008557486741366299">Қазір емес</translation>
+<translation id="100957008357583611">Геодерегіңізді пайдалану керек пе?</translation>
 <translation id="1010200102790553230">Бетті кейінірек жүктеу</translation>
 <translation id="1015730422737071372">Қосымша мәліметтер беру</translation>
 <translation id="1019413721762100891">Өшірулі</translation>
@@ -425,7 +426,6 @@
 <translation id="2705137772291741111">Бұл тораптың сақталған (кэштелген) көшірмесі оқылмайтын күйде болды.</translation>
 <translation id="2709516037105925701">Автотолтыру</translation>
 <translation id="2713444072780614174">Ақ</translation>
-<translation id="2720342946869265578">Nearby</translation>
 <translation id="2721148159707890343">Сұрау сәтті жіберілді</translation>
 <translation id="272451190272506600">Төлеу үшін датчикті түртіңіз.</translation>
 <translation id="2728127805433021124">Сервер сертификаты әлсіз қолтаңба алгоритмін пайдалану арқылы қол қойылған.</translation>
@@ -721,7 +721,6 @@
 <translation id="3990250421422698716">Бірқалыпты ығысу</translation>
 <translation id="3996311196211510766"><ph name="ORIGIN" /> сайты өзінің барлық сұрауына түпнұсқа саясатын
     қолдануын талап етті, бірақ бұл саясатты дәл қазір қолдану мүмкін емес.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{Маңайдағы құрылғылардан 1 веббет анықталды}other{Маңайдағы құрылғылардан # веббет анықталды}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} беттік PDF құжаты}other{{COUNT} беттік PDF құжаты}}</translation>
 <translation id="4030383055268325496">&amp;Қосу әрекетін кері қайтару</translation>
 <translation id="4032320456957708163">Браузерді <ph name="ENROLLMENT_DOMAIN" /> басқарады</translation>
@@ -939,7 +938,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Сақтау...</translation>
 <translation id="4913987521957242411">Жоғарғы сол жақты тесу</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{және тағы 1 веббет}other{және тағы # веббет}}</translation>
 <translation id="4923459931733593730">Төлем</translation>
 <translation id="4926049483395192435">Көрсетілуі керек.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> сайтындағы сұрау</translation>
@@ -1180,6 +1178,7 @@
 <translation id="5869405914158311789">Бұл сайтқа кіру мүмкін емес</translation>
 <translation id="5869522115854928033">Сақталған құпия сөздер</translation>
 <translation id="5887400589839399685">Карта сақталды</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> сайты деректердің сақтық көшірмесін жасап, осы құрылғыны қайтаруыңызды талап етеді.</translation>
 <translation id="5895138241574237353">Қайта іске қосу</translation>
 <translation id="5895187275912066135">Шығарылған күні</translation>
 <translation id="5901630391730855834">Сары</translation>
@@ -1330,7 +1329,6 @@
 <translation id="6518133107902771759">Растау</translation>
 <translation id="6521745193039995384">Қосылмаған</translation>
 <translation id="6529602333819889595">Жоюды &amp;қайталау</translation>
-<translation id="6534179046333460208">Physical Web ұсыныстары</translation>
 <translation id="6545864417968258051">Bluetooth құрылғыларын іздеу</translation>
 <translation id="6547208576736763147">Сол жағын екі рет тесу</translation>
 <translation id="6554795675067793129">Есептік жазбаңызды <ph name="ENROLLMENT_DOMAIN" /> басқарады.</translation>
@@ -1852,7 +1850,6 @@
 <translation id="8790007591277257123">&amp;Жоюды қайталау</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> есептік жазбаңызға кіру мүмкіндігін жоғалтып алуыңыз немесе жеке мәліметтеріңізді беріп қоюыңыз мүмкін. Chromium құпия сөзіңізді дереу өзгертуге кеңес береді.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> сіздің браузеріңізде Chrome Enterprise Connectors функциясын қосып қойды. Бұл коннекторлар кейбір деректеріңізді пайдалануы мүмкін.</translation>
-<translation id="8800988563907321413">Бұл жерде Nearby ұсыныстары көрсетіледі</translation>
 <translation id="8805819170075074995">"<ph name="LANGUAGE_ID" />" тізім жазбасы: жазба еленбейді, себебі ол SpellcheckLanguage саясатына енгізілген.</translation>
 <translation id="8807160976559152894">Әр беттен кейін кесу</translation>
 <translation id="8820817407110198400">Бетбелгілер</translation>

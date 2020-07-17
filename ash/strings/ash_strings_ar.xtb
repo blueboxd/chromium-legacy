@@ -98,6 +98,7 @@
 <translation id="1995660704900986789">إيقاف التشغيل</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">كتابة رسالة</translation>
+<translation id="2018630726571919839">أريد سماع نكتة</translation>
 <translation id="2050339315714019657">رأسي</translation>
 <translation id="2067602449040652523">سطوع لوحة المفاتيح</translation>
 <translation id="209965399369889474">لا يتوفّر اتصال بالشبكة</translation>
@@ -125,6 +126,7 @@
 <translation id="2354174487190027830">تفعيل <ph name="NAME" /></translation>
 <translation id="2359808026110333948">متابعة</translation>
 <translation id="2365393535144473978">سيؤدي تفعيل ميزة بيانات الجوّال إلى تفعيل البلوتوث.</translation>
+<translation id="2369165858548251131">"مرحبًا" باللغة الصينية</translation>
 <translation id="2390318262976603432">إعدادات اللغة</translation>
 <translation id="2391579633712104609">180 درجة</translation>
 <translation id="2412593942846481727">هناك تحديث جديد</translation>
@@ -142,6 +144,7 @@
 <translation id="256712445991462162">المكبِّر الذي تم إرساؤه</translation>
 <translation id="2575685495496069081">تمّ إيقاف الدخول المتعدّد</translation>
 <translation id="2582112259361606227">إعادة التشغيل للتحديث</translation>
+<translation id="2595239820337756193">5 كيلومتر بالميل</translation>
 <translation id="2617342710774726426">‏تم قفل شريحة SIM</translation>
 <translation id="2621713457727696555">مؤمّنة</translation>
 <translation id="2653659639078652383">إرسال</translation>
@@ -195,6 +198,7 @@
 <translation id="3154351730702813399">قد يراقب مشرف الجهاز نشاط التصفح.</translation>
 <translation id="3181441307743005334">قد تستغرق إعادة التشغيل بعض الوقت</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{تم الاتصال بجهاز واحد}zero{تم الاتصال بـ # جهاز}two{تم الاتصال بجهازين (#)}few{تم الاتصال بـ # أجهزة}many{تم الاتصال بـ # جهازًا}other{تم الاتصال بـ # جهاز}}</translation>
+<translation id="320207200541803018">إعداد الموقّت</translation>
 <translation id="3203405173652969239">تم تفعيل ميزة "الوصول عبر مفتاح التحويل".</translation>
 <translation id="3207953481422525583">إعدادات المستخدم</translation>
 <translation id="3217205077783620295">تم تفعيل الصوت، وسيؤدي التبديل إلى كتم الصوت</translation>
@@ -207,6 +211,7 @@
 <translation id="3308453408813785101">سيظل بإمكان <ph name="USER_EMAIL_ADDRESS" /> تسجيل الدخول لاحقًا.</translation>
 <translation id="3321628682574733415">رمز أحد الوالدين غير صحيح</translation>
 <translation id="332587331255250389">يُرجى استبدال البطارية</translation>
+<translation id="334252345105450327">التقاط لقطة شاشة</translation>
 <translation id="3351879221545518001">أنت حاليًا تبث محتوى الشاشة.</translation>
 <translation id="3364721542077212959">أدوات قلم الشاشة</translation>
 <translation id="3368922792935385530">متصل</translation>
@@ -239,6 +244,7 @@
 <translation id="3631369015426612114">السماح بالإشعارات من المصادر التالية</translation>
 <translation id="3638400994746983214">تبديل شاشة الخصوصية <ph name="STATE_TEXT" /></translation>
 <translation id="366222428570480733">المستخدِم المُدار <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="3702846122927433391">تعداد السكان في نيجيريا</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">التقاط منطقة</translation>
 <translation id="371370241367527062">الميكروفون الأمامي</translation>
@@ -520,6 +526,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">سيتم الرجوع إلى درجة الدقة القديمة في غضون <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">تم نقل القائمة إلى أعلى يمين الشاشة.</translation>
+<translation id="7189412385142492784">كم يبعد كوكب الزهرة؟</translation>
 <translation id="7246071203293827765">‏<ph name="UPDATE_TEXT" />. يجب إعادة تشغيل جهاز Chromebook لتطبيق التحديث. قد يستغرق هذا الإجراء مدة تصل إلى دقيقة واحدة.</translation>
 <translation id="7256634071279256947">الميكروفون الخلفي</translation>
 <translation id="726276584504105859">السحب هنا لاستخدام وضع تقسيم الشاشة</translation>
@@ -646,6 +653,7 @@
 <translation id="8649101189709089199">الاختيار والاستماع</translation>
 <translation id="8652175077544655965">غلق الإعدادات</translation>
 <translation id="8653151467777939995">عرض إعدادات الإشعارات. تم تفعيل الإشعارات</translation>
+<translation id="8660331759611631213">الجذر التربيعي للعدد 71</translation>
 <translation id="8663756353922886599">حالة الاتصال <ph name="CONNECTION_STATUS" />، قوة الإشارة <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">عرض قائمة الشبكات. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270 درجة</translation>

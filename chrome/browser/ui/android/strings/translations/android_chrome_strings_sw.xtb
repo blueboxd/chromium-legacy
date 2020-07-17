@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Alamisho zilizohifadhiwa katika vifaa vyako vingine zitaonekana hapa.</translation>
 <translation id="1113597929977215864">Onyesha mwonekano rahisi</translation>
 <translation id="1122278879166832009">Gusa hapa ili ufikie ukurasa wako wa kwanza ukiwa kwenye programu yoyote</translation>
+<translation id="1126809382673880764">Haikulindi dhidi ya tovuti, viendelezi na faili hatari zinazopakuliwa. Bado utapata ulinzi wa kipengele cha Kuvinjari Salama, kinapopatikana, katika huduma nyingine za Google kama vile Gmail na Tafuta na Google.</translation>
 <translation id="1129510026454351943">Maelezo: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Inasubiri kupakua faili 1.}other{Inasubiri kupakua faili #.}}</translation>
 <translation id="1145536944570833626">Futa data iliyopo.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Mwangaza</translation>
 <translation id="1810845389119482123">Haijakamilisha Kuweka mipangilio ya mwanzo ya usawazishaji</translation>
 <translation id="1821253160463689938">Hutumia vidakuzi kukumbuka mapendeleo yako, hata usipotembelea kurasa hizo</translation>
-<translation id="1826516787628120939">Inakagua</translation>
 <translation id="1829244130665387512">Tafuta katika ukurasa</translation>
 <translation id="1853692000353488670">Kichupo fiche kipya</translation>
 <translation id="1856325424225101786">Je, ungependa kubadilisha mipangilio ya Hali nyepesi?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Hifadhi manenosiri</translation>
 <translation id="1952172573699511566">Tovuti zitaonyesha maandishi katika lugha unayopendelea, panapowezekana.</translation>
 <translation id="1960290143419248813">Masasisho ya Chrome hayatumiki tena kwa toleo hili la Android</translation>
+<translation id="1963976881984600709">Ulinzi wa kawaida</translation>
 <translation id="1966710179511230534">Tafadhali sasisha maelezo yako ya kuingia katika akaunti.</translation>
 <translation id="1974060860693918893">Mipangilio ya kina</translation>
+<translation id="1984417487208496350">Hamna ulinzi (haipendekezwi)</translation>
 <translation id="1984705450038014246">Sawazisha data yako kwenye Chrome</translation>
 <translation id="1986685561493779662">Jina tayari lipo</translation>
 <translation id="1987739130650180037">Kitufe cha <ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
@@ -358,6 +360,7 @@ Gusa na ushikilie neno lolote ili utafute. Ili uchuje utafutaji wako, chagua man
 <translation id="3892148308691398805">Nakili maandishi</translation>
 <translation id="3894427358181296146">Ongeza folda</translation>
 <translation id="3895926599014793903">Lazimisha kuwasha ukuzaji</translation>
+<translation id="3909763690984331376">Angalizo la usalama <ph name="BEGIN_NEW" />Mpya<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Inatafuta maudhui bora zaidi kwenye wavuti…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Unganisha data yangu</translation>
@@ -392,7 +395,6 @@ Gusa na ushikilie neno lolote ili utafute. Ili uchuje utafutaji wako, chagua man
 <translation id="4183868528246477015">Tafuta na Lenzi ya Google <ph name="BEGIN_NEW" />Mpya<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Fungua katika kichupo kipya</translation>
 <translation id="4198423547019359126">Hakuna maeneno ya upakuaji</translation>
-<translation id="4202553989407425169">Chrome inaweza kuangalia iwapo mipangilio yako inakulinda dhidi ya:</translation>
 <translation id="4209895695669353772">Washa kipengele cha usawazishaji ili Google ikupendekezee maudhui yanayokufaa</translation>
 <translation id="423219824432660969">Simba data iliyosawazishwa kwa njia fiche ukitumia nenosiri la Google lililokuwepo <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Fungua mipangilio</translation>
@@ -459,6 +461,7 @@ Huenda akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vi
 <translation id="4749960740855309258">Fungua kichupo kipya</translation>
 <translation id="4759238208242260848">Vipakuliwa</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Imemaliza kupakua faili 1.}other{Imemaliza kupakua faili #.}}</translation>
+<translation id="4766678251456904326">Weka akaunti kwenye kifaa</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{Faili moja imeratibiwa kupakuliwa.}other{Faili # zimeratibiwa kupakuliwa.}}</translation>
 <translation id="478981486571169252">Utaona hali yako ya kuingia katika akaunti ya <ph name="SITE_NAME" />, data ya kuvinjari na data ya tovuti katika Chrome.</translation>
 <translation id="4802417911091824046">Usimbaji fiche kwa kutumia kauli ya siri haujumuishi njia za kulipa na anwani kutoka Google Pay.
@@ -490,6 +493,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="4943872375798546930">Hakuna matokeo yoyote yaliyopatikana</translation>
 <translation id="4961107849584082341">Tafsiri ukurasa huu katika lugha yoyote</translation>
 <translation id="4970824347203572753">Hakipatikani mahali ulipo</translation>
+<translation id="4971735654804503942">Ulinzi wa haraka na wa mapema dhidi ya tovuti, vipakuliwa na viendelezi hatari. Hukuonya kuhusu matukio ya ufichuzi haramu wa manenosiri yako. Inahitaji data ya kuvinjari itumwe kwa Google.</translation>
 <translation id="497421865427891073">Nenda mbele</translation>
 <translation id="4988210275050210843">Inapakua faili (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Kurasa</translation>
@@ -561,7 +565,6 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5527082711130173040">Chrome inahitaji idhini ya kufikia mahali ili itafute vifaa. <ph name="BEGIN_LINK1" />Badilisha ruhusa<ph name="END_LINK1" />. Kipengele cha idhini ya kufikia mahali pia <ph name="BEGIN_LINK2" />kimezimwa kwenye kifaa hiki<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Funga vichupo fiche</translation>
 <translation id="5534640966246046842">Tovuti imenakiliwa</translation>
-<translation id="5548606607480005320">Angalizo la usalama</translation>
 <translation id="5561549206367097665">Inasubiri intaneti…</translation>
 <translation id="55737423895878184">Vipengele vya mahali na arifa vinaruhusiwa</translation>
 <translation id="5578795271662203820">Tafuta picha hii kwenye <ph name="SEARCH_ENGINE" /></translation>
@@ -579,6 +582,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5686790454216892815">Jina la faili ni ndefu mno</translation>
 <translation id="5694049548840660018">Rudi kwenye ukurasa wa kwanza kwa urahisi</translation>
 <translation id="569536719314091526">Tafsiri ukurasa huu katika lugha yoyote kutoka kitufe cha Chaguo zaidi</translation>
+<translation id="5696597120588531049">Chrome inaweza kukusaidia ulinde akaunti yako dhidi ya ufichuzi haramu wa data, tovuti ambazo si salama na zaidi</translation>
 <translation id="5697688514913266141">Faili yako itahifadhiwa kwenye <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Badilisha<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Nenda Kwenye Kichupo</translation>
 <translation id="572328651809341494">Vichupo vya hivi majuzi</translation>
@@ -600,7 +604,6 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="583281660410589416">Haijulikani</translation>
 <translation id="5833984609253377421">Shiriki kiungo</translation>
 <translation id="5836192821815272682">Inapakua Sasisho la Chrome…</translation>
-<translation id="584120177693484274">Hujachagua</translation>
 <translation id="5853623416121554550">imesitishwa</translation>
 <translation id="5854790677617711513">Iliyohifadhiwa kwa zaidi ya siku 30</translation>
 <translation id="5858741533101922242">Chrome imeshindwa kuwasha adapta ya Bluetooth</translation>
@@ -713,6 +716,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6656545060687952787">Chrome inahitaji idhini ya kufikia mahali ili ichanganue vifaa. <ph name="BEGIN_LINK" />Ruhusa za sasisho<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Nenosiri</translation>
 <translation id="6659594942844771486">Kichupo</translation>
+<translation id="6663079968236414793">Unganisha kwenye maandishi</translation>
 <translation id="666573598175432848">Toleo jipya la Chrome linaptikana. Gusa kipengee hiki ili uende kwenye Duka la Google Play.</translation>
 <translation id="666731172850799929">Fungua katika <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Ilani ya Faragha ya Chrome</translation>
@@ -736,10 +740,12 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="685850645784703949">Dokezo kutoka Google - imezimwa</translation>
 <translation id="6864459304226931083">Pakua picha</translation>
 <translation id="6865313869410766144">Data ya fomu ya Kujaza Kiotomatiki</translation>
+<translation id="6882836635272038266">Ulinzi wa kawaida dhidi ya tovuti, vipakuliwa na viendelezi vinavyojulikana kuwa hatari.</translation>
 <translation id="6884306546558072722">Endelea kupitia ukiwa nje ya mtandao</translation>
 <translation id="688738109438487280">Ongeza data iliyopo kwenye <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Fungua ili unakili nenosiri lako</translation>
 <translation id="6896758677409633944">Nakili</translation>
+<translation id="6900532703269623216">Ulinzi ulioboreshwa</translation>
 <translation id="6903907808598579934">Washa kipengele cha kusawazisha</translation>
 <translation id="6942665639005891494">Badilisha sehemu chaguomsingi ya kupakua wakati wowote ukitumia chaguo la menyu ya Mipangilio</translation>
 <translation id="6945221475159498467">Chagua</translation>

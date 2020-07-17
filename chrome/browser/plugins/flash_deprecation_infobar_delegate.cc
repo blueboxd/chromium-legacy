@@ -62,7 +62,7 @@ bool FlashDeprecationInfoBarDelegate::ShouldDisplayFlashDeprecation(
   // informative in that case.
   const base::Time last_dismissal =
       profile->GetPrefs()->GetTime(prefs::kPluginsDeprecationInfobarLastShown);
-  return (base::Time::Now() - last_dismissal) > base::TimeDelta::FromDays(14);
+  return (base::Time::Now() - last_dismissal) > base::TimeDelta::FromDays(3);
 }
 
 FlashDeprecationInfoBarDelegate::FlashDeprecationInfoBarDelegate(

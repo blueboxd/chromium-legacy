@@ -507,8 +507,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     @Override
     public void downloadLink(String url) {
         RequestCoordinatorBridge.getForProfile(Profile.getLastUsedRegularProfile())
-                .savePageLater(url, OfflinePageBridge.SUGGESTED_ARTICLES_NAMESPACE,
-                        true /* user requested*/);
+                .savePageLater(
+                        url, OfflinePageBridge.NTP_SUGGESTIONS_NAMESPACE, true /* user requested*/);
     }
 
     @Override

@@ -1492,12 +1492,12 @@ constexpr auto transform(Range1&& range1,
 // predicate and any projection.
 //
 // Reference: https://wg21.link/alg.replace#:~:text=ranges::replace(I
-template <typename FordwardIterator,
+template <typename ForwardIterator,
           typename T,
           typename Proj = identity,
-          typename = internal::iterator_category_t<FordwardIterator>>
-constexpr auto replace(FordwardIterator first,
-                       FordwardIterator last,
+          typename = internal::iterator_category_t<ForwardIterator>>
+constexpr auto replace(ForwardIterator first,
+                       ForwardIterator last,
                        const T& old_value,
                        const T& new_value,
                        Proj proj = {}) {
@@ -1550,13 +1550,13 @@ constexpr auto replace(Range&& range,
 // predicate and any projection.
 //
 // Reference: https://wg21.link/alg.replace#:~:text=ranges::replace_if(I
-template <typename FordwardIterator,
+template <typename ForwardIterator,
           typename Predicate,
           typename T,
           typename Proj = identity,
-          typename = internal::iterator_category_t<FordwardIterator>>
-constexpr auto replace_if(FordwardIterator first,
-                          FordwardIterator last,
+          typename = internal::iterator_category_t<ForwardIterator>>
+constexpr auto replace_if(ForwardIterator first,
+                          ForwardIterator last,
                           Predicate pred,
                           const T& new_value,
                           Proj proj = {}) {
@@ -1862,12 +1862,362 @@ constexpr auto generate_n(OutputIterator first, Size n, Generator gen) {
 // [alg.remove] Remove
 // Reference: https://wg21.link/alg.remove
 
-// TODO(crbug.com/1071094): Implement.
+// Let `E(i)` be `bool(invoke(proj, *i) == value)`.
+//
+// Effects: Eliminates all the elements referred to by iterator `i` in the range
+// `[first, last)` for which `E(i)` holds.
+//
+// Returns: The end of the resulting range.
+//
+// Remarks: Stable.
+//
+// Complexity: Exactly `last - first` applications of the corresponding
+// predicate and any projection.
+//
+// Reference: https://wg21.link/alg.remove#:~:text=ranges::remove(I
+template <typename ForwardIterator,
+          typename T,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<ForwardIterator>>
+constexpr auto remove(ForwardIterator first,
+                      ForwardIterator last,
+                      const T& value,
+                      Proj proj = {}) {
+  // Note: In order to be able to apply `proj` to each element in [first, last)
+  // we are dispatching to std::remove_if instead of std::remove.
+  return std::remove_if(first, last, [&proj, &value](auto&& lhs) {
+    return invoke(proj, std::forward<decltype(lhs)>(lhs)) == value;
+  });
+}
+
+// Let `E(i)` be `bool(invoke(proj, *i) == value)`.
+//
+// Effects: Eliminates all the elements referred to by iterator `i` in `range`
+// for which `E(i)` holds.
+//
+// Returns: The end of the resulting range.
+//
+// Remarks: Stable.
+//
+// Complexity: Exactly `size(range)` applications of the corresponding predicate
+// and any projection.
+//
+// Reference: https://wg21.link/alg.remove#:~:text=ranges::remove(R
+template <typename Range,
+          typename T,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
+constexpr auto remove(Range&& range, const T& value, Proj proj = {}) {
+  return ranges::remove(ranges::begin(range), ranges::end(range), value,
+                        std::move(proj));
+}
+
+// Let `E(i)` be `bool(invoke(pred, invoke(proj, *i)))`.
+//
+// Effects: Eliminates all the elements referred to by iterator `i` in the range
+// `[first, last)` for which `E(i)` holds.
+//
+// Returns: The end of the resulting range.
+//
+// Remarks: Stable.
+//
+// Complexity: Exactly `last - first` applications of the corresponding
+// predicate and any projection.
+//
+// Reference: https://wg21.link/alg.remove#:~:text=ranges::remove_if(I
+template <typename ForwardIterator,
+          typename Predicate,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<ForwardIterator>>
+constexpr auto remove_if(ForwardIterator first,
+                         ForwardIterator last,
+                         Predicate pred,
+                         Proj proj = {}) {
+  return std::remove_if(first, last,
+                        internal::ProjectedUnaryPredicate(pred, proj));
+}
+
+// Let `E(i)` be `bool(invoke(pred, invoke(proj, *i)))`.
+//
+// Effects: Eliminates all the elements referred to by iterator `i` in `range`.
+//
+// Returns: The end of the resulting range.
+//
+// Remarks: Stable.
+//
+// Complexity: Exactly `size(range)` applications of the corresponding predicate
+// and any projection.
+//
+// Reference: https://wg21.link/alg.remove#:~:text=ranges::remove_if(R
+template <typename Range,
+          typename Predicate,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>>
+constexpr auto remove_if(Range&& range, Predicate pred, Proj proj = {}) {
+  return ranges::remove_if(ranges::begin(range), ranges::end(range),
+                           std::move(pred), std::move(proj));
+}
+
+// Let `E(i)` be `bool(invoke(proj, *i) == value)`.
+//
+// Let `N` be the number of elements in `[first, last)` for which `E(i)` is
+// false.
+//
+// Mandates: `*first` is writable to `result`.
+//
+// Preconditions: The ranges `[first, last)` and `[result, result + (last -
+// first))` do not overlap.
+//
+// Effects: Copies all the elements referred to by the iterator `i` in the range
+// `[first, last)` for which `E(i)` is false.
+//
+// Returns: `result + N`.
+//
+// Complexity: Exactly `last - first` applications of the corresponding
+// predicate and any projection.
+//
+// Remarks: Stable.
+//
+// Reference: https://wg21.link/alg.remove#:~:text=ranges::remove_copy(I
+template <typename InputIterator,
+          typename OutputIterator,
+          typename T,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto remove_copy(InputIterator first,
+                           InputIterator last,
+                           OutputIterator result,
+                           const T& value,
+                           Proj proj = {}) {
+  // Note: In order to be able to apply `proj` to each element in [first, last)
+  // we are dispatching to std::remove_copy_if instead of std::remove_copy.
+  return std::remove_copy_if(first, last, result, [&proj, &value](auto&& lhs) {
+    return invoke(proj, std::forward<decltype(lhs)>(lhs)) == value;
+  });
+}
+
+// Let `E(i)` be `bool(invoke(proj, *i) == value)`.
+//
+// Let `N` be the number of elements in `range` for which `E(i)` is false.
+//
+// Mandates: `*begin(range)` is writable to `result`.
+//
+// Preconditions: The ranges `range` and `[result, result + size(range))` do not
+// overlap.
+//
+// Effects: Copies all the elements referred to by the iterator `i` in `range`
+//  for which `E(i)` is false.
+//
+// Returns: `result + N`.
+//
+// Complexity: Exactly `size(range)` applications of the corresponding
+// predicate and any projection.
+//
+// Remarks: Stable.
+//
+// Reference: https://wg21.link/alg.remove#:~:text=ranges::remove_copy(R
+template <typename Range,
+          typename OutputIterator,
+          typename T,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto remove_copy(Range&& range,
+                           OutputIterator result,
+                           const T& value,
+                           Proj proj = {}) {
+  return ranges::remove_copy(ranges::begin(range), ranges::end(range), result,
+                             value, std::move(proj));
+}
+
+// Let `E(i)` be `bool(invoke(pred, invoke(proj, *i)))`.
+//
+// Let `N` be the number of elements in `[first, last)` for which `E(i)` is
+// false.
+//
+// Mandates: `*first` is writable to `result`.
+//
+// Preconditions: The ranges `[first, last)` and `[result, result + (last -
+// first))` do not overlap.
+//
+// Effects: Copies all the elements referred to by the iterator `i` in the range
+// `[first, last)` for which `E(i)` is false.
+//
+// Returns: `result + N`.
+//
+// Complexity: Exactly `last - first` applications of the corresponding
+// predicate and any projection.
+//
+// Remarks: Stable.
+//
+// Reference: https://wg21.link/alg.remove#:~:text=ranges::remove_copy_if(I
+template <typename InputIterator,
+          typename OutputIterator,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto remove_copy_if(InputIterator first,
+                              InputIterator last,
+                              OutputIterator result,
+                              Pred pred,
+                              Proj proj = {}) {
+  return std::remove_copy_if(first, last, result,
+                             internal::ProjectedUnaryPredicate(pred, proj));
+}
+
+// Let `E(i)` be `bool(invoke(pred, invoke(proj, *i)))`.
+//
+// Let `N` be the number of elements in `range` for which `E(i)` is false.
+//
+// Mandates: `*begin(range)` is writable to `result`.
+//
+// Preconditions: The ranges `range` and `[result, result + size(range))` do not
+// overlap.
+//
+// Effects: Copies all the elements referred to by the iterator `i` in `range`
+//  for which `E(i)` is false.
+//
+// Returns: `result + N`.
+//
+// Complexity: Exactly `size(range)` applications of the corresponding
+// predicate and any projection.
+//
+// Remarks: Stable.
+//
+// Reference: https://wg21.link/alg.remove#:~:text=ranges::remove_copy(R
+template <typename Range,
+          typename OutputIterator,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto remove_copy_if(Range&& range,
+                              OutputIterator result,
+                              Pred pred,
+                              Proj proj = {}) {
+  return ranges::remove_copy_if(ranges::begin(range), ranges::end(range),
+                                result, std::move(pred), std::move(proj));
+}
 
 // [alg.unique] Unique
 // Reference: https://wg21.link/alg.unique
 
-// TODO(crbug.com/1071094): Implement.
+// Let `E(i)` be `bool(invoke(comp, invoke(proj, *(i - 1)), invoke(proj, *i)))`.
+//
+// Effects: For a nonempty range, eliminates all but the first element from
+// every consecutive group of equivalent elements referred to by the iterator
+// `i` in the range `[first + 1, last)` for which `E(i)` is true.
+//
+// Returns: The end of the resulting range.
+//
+// Complexity: For nonempty ranges, exactly `(last - first) - 1` applications of
+// the corresponding predicate and no more than twice as many applications of
+// any projection.
+//
+// Reference: https://wg21.link/alg.unique#:~:text=ranges::unique(I
+template <typename ForwardIterator,
+          typename Comp = ranges::equal_to,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<ForwardIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<ForwardIterator, Proj>,
+                                       projected<ForwardIterator, Proj>>>
+constexpr auto unique(ForwardIterator first,
+                      ForwardIterator last,
+                      Comp comp = {},
+                      Proj proj = {}) {
+  return std::unique(first, last,
+                     internal::ProjectedBinaryPredicate(comp, proj, proj));
+}
+
+// Let `E(i)` be `bool(invoke(comp, invoke(proj, *(i - 1)), invoke(proj, *i)))`.
+//
+// Effects: For a nonempty range, eliminates all but the first element from
+// every consecutive group of equivalent elements referred to by the iterator
+// `i` in the range `[begin(range) + 1, end(range))` for which `E(i)` is true.
+//
+// Returns: The end of the resulting range.
+//
+// Complexity: For nonempty ranges, exactly `size(range) - 1` applications of
+// the corresponding predicate and no more than twice as many applications of
+// any projection.
+//
+// Reference: https://wg21.link/alg.unique#:~:text=ranges::unique(R
+template <typename Range,
+          typename Comp = ranges::equal_to,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range>, Proj>,
+                                       projected<iterator_t<Range>, Proj>>>
+constexpr auto unique(Range&& range, Comp comp = {}, Proj proj = {}) {
+  return ranges::unique(ranges::begin(range), ranges::end(range),
+                        std::move(comp), std::move(proj));
+}
+
+// Let `E(i)` be `bool(invoke(comp, invoke(proj, *i), invoke(proj, *(i - 1))))`.
+//
+// Mandates: `*first` is writable to `result`.
+//
+// Preconditions: The ranges `[first, last)` and
+// `[result, result + (last - first))` do not overlap.
+//
+// Effects: Copies only the first element from every consecutive group of equal
+// elements referred to by the iterator `i` in the range `[first, last)` for
+// which `E(i)` holds.
+//
+// Returns: `result + N`.
+//
+// Complexity: Exactly `last - first - 1` applications of the corresponding
+// predicate and no more than twice as many applications of any projection.
+//
+// Reference: https://wg21.link/alg.unique#:~:text=ranges::unique_copy(I
+template <typename ForwardIterator,
+          typename OutputIterator,
+          typename Comp = ranges::equal_to,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<ForwardIterator>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto unique_copy(ForwardIterator first,
+                           ForwardIterator last,
+                           OutputIterator result,
+                           Comp comp = {},
+                           Proj proj = {}) {
+  return std::unique_copy(first, last, result,
+                          internal::ProjectedBinaryPredicate(comp, proj, proj));
+}
+
+// Let `E(i)` be `bool(invoke(comp, invoke(proj, *i), invoke(proj, *(i - 1))))`.
+//
+// Mandates: `*begin(range)` is writable to `result`.
+//
+// Preconditions: The ranges `range` and `[result, result + size(range))` do not
+// overlap.
+//
+// Effects: Copies only the first element from every consecutive group of equal
+// elements referred to by the iterator `i` in `range` for which `E(i)` holds.
+//
+// Returns: `result + N`.
+//
+// Complexity: Exactly `size(range) - 1` applications of the corresponding
+// predicate and no more than twice as many applications of any projection.
+//
+// Reference: https://wg21.link/alg.unique#:~:text=ranges::unique_copy(R
+template <typename Range,
+          typename OutputIterator,
+          typename Comp = ranges::equal_to,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto unique_copy(Range&& range,
+                           OutputIterator result,
+                           Comp comp = {},
+                           Proj proj = {}) {
+  return ranges::unique_copy(ranges::begin(range), ranges::end(range), result,
+                             std::move(comp), std::move(proj));
+}
 
 // [alg.reverse] Reverse
 // Reference: https://wg21.link/alg.reverse

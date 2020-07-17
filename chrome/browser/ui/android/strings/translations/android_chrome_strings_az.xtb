@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Digər cihazlarınızda yadda saxlanmış əlfəcinlər burada görünəcək.</translation>
 <translation id="1113597929977215864">Sadə görüntüyə baxın</translation>
 <translation id="1122278879166832009">İstənilən yerdən əsas səhifəyə cəld giriş imkanı əldə etmək üçün bura toxunun</translation>
+<translation id="1126809382673880764">Sizi təhlükəli veb sayt, endirmə və artırmalardan qorumur. Hələ də Gmail və Axtarış kimi digər Google xidmətlərində mümkün olduğu qədər Təhlükəsiz Baxış qoruması əldə edəcəksiniz.</translation>
 <translation id="1129510026454351943">Detallar: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 endirmə gözlənilir.}other{# endirmə gözlənilir.}}</translation>
 <translation id="1145536944570833626">Mövcud datanı silin.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Yüngül</translation>
 <translation id="1810845389119482123">İlkin sinxronizasiya ayarlanması tamamlanmayıb</translation>
 <translation id="1821253160463689938">Həmin səhifələrə daxil olmasanız belə, tərcihlərinizi yadda saxlamaq üçün kukilərdən istifadə edilir</translation>
-<translation id="1826516787628120939">Yoxlanılır...</translation>
 <translation id="1829244130665387512">Səhifədə tapın</translation>
 <translation id="1853692000353488670">Yeni gizli panel</translation>
 <translation id="1856325424225101786">Layt rejimi sıfırlansın?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Parolları yadda saxlayın</translation>
 <translation id="1952172573699511566">Mümkün olduqda veb səhifələr tərcih etdiyiniz dildə mətn göstərəcək.</translation>
 <translation id="1960290143419248813">Chrome güncəlləmələri artıq bu Android versiyasında dəstəklənmir</translation>
+<translation id="1963976881984600709">Standart qoruma</translation>
 <translation id="1966710179511230534">Hesaba giriş detallarınızı güncəlləşdirin.</translation>
 <translation id="1974060860693918893">Qabaqcıl</translation>
+<translation id="1984417487208496350">Qoruma yoxdur (tövsiyə edilmir)</translation>
 <translation id="1984705450038014246">Chrome datasını sinxronizasiya edin</translation>
 <translation id="1986685561493779662">Adı artıq mövcuddur</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> düyməsi</translation>
@@ -392,7 +394,6 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="4183868528246477015">Google Linza ilə axtarın <ph name="BEGIN_NEW" />Yeni<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Yeni tabda açın</translation>
 <translation id="4198423547019359126">Əlçatan endirmə məkanı yoxdur</translation>
-<translation id="4202553989407425169">Chrome ayarların sizi aşağıdakılardan qoruyub-qorumadığını yoxlaya bilər:</translation>
 <translation id="4209895695669353772">Google tərəfindən təklif olunan fərdiləşdirilmiş kontenti əldə etmək üçün sinxronizasiyanı aktiv edin</translation>
 <translation id="423219824432660969"><ph name="TIME" /> tarixindən başlayaraq sinxronizasiya edilmiş datanı Google parolu ilə şifrələyin</translation>
 <translation id="4242533952199664413">Ayarları açın</translation>
@@ -459,6 +460,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="4749960740855309258">Yeni panel açın</translation>
 <translation id="4759238208242260848">Endirmələr</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 endirmə tamamlandı.}other{# endirmə tamamlandı.}}</translation>
+<translation id="4766678251456904326">Cihaza hesab əlavə edin</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 endirmə planlanıb.}other{# endirmə planlanıb.}}</translation>
 <translation id="478981486571169252">Chrome'da <ph name="SITE_NAME" /> giriş statusu, baxış datası və sayt datanızı görəcəksiniz.</translation>
 <translation id="4802417911091824046">Google Pay'dəki ödəniş metodları və ünvanlar parol şifrələməsinə daxil deyil.
@@ -490,6 +492,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="4943872375798546930">Nəticə yoxdur</translation>
 <translation id="4961107849584082341">Bu səhifəni istədiyiniz dilə tərcümə edin</translation>
 <translation id="4970824347203572753">Ərazinizdə əlçatan deyil</translation>
+<translation id="4971735654804503942">Təhlükəli veb saytlar, endirmələr və artırmalara qarşı daha sürətli, fəal qoruma. Sizə parol aşkarlanmaları barədə xəbərdarlıq edir. Baxış datasının Google'a göndərilməsini tələb edir.</translation>
 <translation id="497421865427891073">İrəli</translation>
 <translation id="4988210275050210843">Fayl (<ph name="MEGABYTES" />) endirilir</translation>
 <translation id="4988526792673242964">Səhifələr</translation>
@@ -561,7 +564,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5527082711130173040">Chrome cihazları skan etmək üçün məkana giriş tələb edir. <ph name="BEGIN_LINK1" />İcazələri yeniləyin<ph name="END_LINK1" />. Məkana giriş həm də <ph name="BEGIN_LINK2" />bu cihaz üçün söndürülüb<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Gizli panelləri bağlayın</translation>
 <translation id="5534640966246046842">Sayt kopyalandı</translation>
-<translation id="5548606607480005320">Təhlükəsizlik yoxlanışı</translation>
 <translation id="5561549206367097665">Şəbəkə gözlənilir…</translation>
 <translation id="55737423895878184">Məkan və bildirişlər aktivdir</translation>
 <translation id="5578795271662203820">Bu şəkil üçün <ph name="SEARCH_ENGINE" /> axtarın</translation>
@@ -600,7 +602,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="583281660410589416">Naməlum</translation>
 <translation id="5833984609253377421">Linki paylaşın</translation>
 <translation id="5836192821815272682">Chrome Güncəlləməsi Endirilir…</translation>
-<translation id="584120177693484274">Seçim ləğv olundu</translation>
 <translation id="5853623416121554550">dayandırıldı</translation>
 <translation id="5854790677617711513">30 gündən çox</translation>
 <translation id="5858741533101922242">Chrome Bluetooth adapterini aktivləşdirə bilmir</translation>
@@ -734,10 +735,12 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="685850645784703949">Google Təkliflər - deaktivdir</translation>
 <translation id="6864459304226931083">Şəkli endirin</translation>
 <translation id="6865313869410766144">Avtomatik data doldurması</translation>
+<translation id="6882836635272038266">Təhlükəli hesab edilən veb saytlar, endirmələr və artırmalara qarşı standart qoruma.</translation>
 <translation id="6884306546558072722">Oflayn şəkildə araşdırmağa davam edin</translation>
 <translation id="688738109438487280">Mövcud datanı <ph name="TO_ACCOUNT" /> hesabına əlavə edin.</translation>
 <translation id="6891726759199484455">Parolu kopyalamaq üçün kiliddən çıxarın</translation>
 <translation id="6896758677409633944">Kopyalayın</translation>
+<translation id="6900532703269623216">Təkmil qoruma</translation>
 <translation id="6903907808598579934">Sinxronizasiyanı akitv edin</translation>
 <translation id="6942665639005891494">Ayarlarda menyu seçimi ilə istənilən zaman defolt endirmə məkanını dəyişin</translation>
 <translation id="6945221475159498467">Seçin</translation>

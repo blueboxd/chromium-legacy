@@ -8,6 +8,20 @@ namespace display {
 
 DisplayConfigurationParams::DisplayConfigurationParams() = default;
 DisplayConfigurationParams::DisplayConfigurationParams(
+    DisplayConfigurationParams& other)
+    : id(other.id), origin(other.origin) {
+  if (other.mode)
+    mode = other.mode->get()->Clone();
+}
+
+DisplayConfigurationParams::DisplayConfigurationParams(
+    DisplayConfigurationParams&& other)
+    : id(other.id), origin(other.origin) {
+  if (other.mode)
+    mode = other.mode->get()->Clone();
+}
+
+DisplayConfigurationParams::DisplayConfigurationParams(
     int64_t id,
     const gfx::Point& origin,
     const display::DisplayMode* pmode)

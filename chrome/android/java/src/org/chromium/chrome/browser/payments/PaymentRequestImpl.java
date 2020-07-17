@@ -133,7 +133,8 @@ public class PaymentRequestImpl
                    PaymentApp.InstrumentDetailsCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver,
                    NormalizedAddressRequestDelegate, SettingsAutofillAndPaymentsObserver.Observer,
-                   PaymentDetailsConverter.MethodChecker, PaymentHandlerUiObserver {
+                   PaymentDetailsConverter.MethodChecker, PaymentHandlerUiObserver,
+                   PaymentAppComparator.ParamsProvider {
     /**
      * A delegate to ask questions about the system, that allows tests to inject behaviour without
      * having to modify the entire system. This partially mirrors a similar C++
@@ -262,7 +263,7 @@ public class PaymentRequestImpl
     private static final String TAG = "PaymentRequest";
     // Reverse order of the comparator to sort in descending order of completeness scores.
     private static final Comparator<Completable> COMPLETENESS_COMPARATOR =
-            (a, b) -> (compareCompletablesByCompleteness(b, a));
+            (a, b) -> (PaymentAppComparator.compareCompletablesByCompleteness(b, a));
 
     private ComponentPaymentRequestImpl mComponentPaymentRequestImpl;
 
@@ -272,62 +273,7 @@ public class PaymentRequestImpl
     private boolean mRequestPayerPhone;
     private boolean mRequestPayerEmail;
 
-    /**
-     * Sorts the payment apps by several rules:
-     * Rule 1: Non-autofill before autofill.
-     * Rule 2: Complete apps before incomplete apps.
-     * Rule 3: When shipping address is requested, apps which will handle shipping address before
-     * others.
-     * Rule 4: When payer's contact information is requested, apps which will handle more required
-     * contact fields (name, email, phone) come before others.
-     * Rule 5: Preselectable apps before non-preselectable apps.
-     * Rule 6: Frequently and recently used apps before rarely and non-recently used apps.
-     */
-    private final Comparator<PaymentApp> mPaymentAppComparator = (a, b) -> {
-        // Non-autofill apps first.
-        int autofill = (a.isAutofillInstrument() ? 1 : 0) - (b.isAutofillInstrument() ? 1 : 0);
-        if (autofill != 0) return autofill;
-
-        // Complete cards before cards with missing information.
-        int completeness = compareCompletablesByCompleteness(b, a);
-        if (completeness != 0) return completeness;
-
-        // Payment apps which handle shipping address before others.
-        if (mRequestShipping) {
-            int canHandleShipping =
-                    (b.handlesShippingAddress() ? 1 : 0) - (a.handlesShippingAddress() ? 1 : 0);
-            if (canHandleShipping != 0) return canHandleShipping;
-        }
-
-        // Payment apps which handle more contact information fields come first.
-        int aSupportedContactDelegationsNum = 0;
-        int bSupportedContactDelegationsNum = 0;
-        if (mRequestPayerName) {
-            if (a.handlesPayerName()) aSupportedContactDelegationsNum++;
-            if (b.handlesPayerName()) bSupportedContactDelegationsNum++;
-        }
-        if (mRequestPayerEmail) {
-            if (a.handlesPayerEmail()) aSupportedContactDelegationsNum++;
-            if (b.handlesPayerEmail()) bSupportedContactDelegationsNum++;
-        }
-        if (mRequestPayerPhone) {
-            if (a.handlesPayerPhone()) aSupportedContactDelegationsNum++;
-            if (b.handlesPayerPhone()) bSupportedContactDelegationsNum++;
-        }
-        if (bSupportedContactDelegationsNum != aSupportedContactDelegationsNum) {
-            return bSupportedContactDelegationsNum - aSupportedContactDelegationsNum > 0 ? 1 : -1;
-        }
-
-        // Preselectable apps before non-preselectable apps.
-        // Note that this only affects service worker payment apps' apps for now
-        // since autofill cards have already been sorted by preselect after sorting by completeness.
-        // And the other payment apps can always be preselected.
-        int canPreselect = (b.canPreselect() ? 1 : 0) - (a.canPreselect() ? 1 : 0);
-        if (canPreselect != 0) return canPreselect;
-
-        // More frequently and recently used apps first.
-        return compareAppsByFrecency(b, a);
-    };
+    private final Comparator<PaymentApp> mPaymentAppComparator;
 
     private static PaymentRequestServiceObserverForTest sObserverForTest;
     private static boolean sIsLocalCanMakePaymentQueryQuotaEnforcedForTest;
@@ -567,6 +513,7 @@ public class PaymentRequestImpl
 
         if (sObserverForTest != null) sObserverForTest.onPaymentRequestCreated(this);
         mPaymentUIsManager = new PaymentUIsManager();
+        mPaymentAppComparator = new PaymentAppComparator(/*paramsProvider=*/this);
     }
 
     // Implement ComponentPaymentRequestDelegate:
@@ -1293,6 +1240,30 @@ public class PaymentRequestImpl
         if (mMinimalUi == null) return false;
         mMinimalUi.dismissForTest();
         return true;
+    }
+
+    // Implement PaymentAppComparator.ParamsProvider:
+    @Override
+    public boolean requestShipping() {
+        return mRequestShipping;
+    }
+
+    // Implement PaymentAppComparator.ParamsProvider:
+    @Override
+    public boolean requestPayerName() {
+        return mRequestPayerName;
+    }
+
+    // Implement PaymentAppComparator.ParamsProvider:
+    @Override
+    public boolean requestPayerEmail() {
+        return mRequestPayerEmail;
+    }
+
+    // Implement PaymentAppComparator.ParamsProvider:
+    @Override
+    public boolean requestPayerPhone() {
+        return mRequestPayerPhone;
     }
 
     /**
@@ -3122,40 +3093,6 @@ public class PaymentRequestImpl
     @VisibleForTesting
     /* package */ void setSkipUIForNonURLPaymentMethodIdentifiersForTest() {
         mSkipUiForNonUrlPaymentMethodIdentifiers = true;
-    }
-
-    /**
-     * Compares two payment apps by frecency.
-     * Return negative value if a has strictly lower frecency score than b.
-     * Return zero if a and b have the same frecency score.
-     * Return positive value if a has strictly higher frecency score than b.
-     */
-    private static int compareAppsByFrecency(PaymentApp a, PaymentApp b) {
-        int aCount = PaymentPreferencesUtil.getPaymentAppUseCount(a.getIdentifier());
-        int bCount = PaymentPreferencesUtil.getPaymentAppUseCount(b.getIdentifier());
-        long aDate = PaymentPreferencesUtil.getPaymentAppLastUseDate(a.getIdentifier());
-        long bDate = PaymentPreferencesUtil.getPaymentAppLastUseDate(a.getIdentifier());
-
-        return Double.compare(getFrecencyScore(aCount, aDate), getFrecencyScore(bCount, bDate));
-    }
-
-    /**
-     * Compares two Completable by completeness score.
-     * Return negative value if a has strictly lower completeness score than b.
-     * Return zero if a and b have the same completeness score.
-     * Return positive value if a has strictly higher completeness score than b.
-     */
-    private static int compareCompletablesByCompleteness(Completable a, Completable b) {
-        return Integer.compare(a.getCompletenessScore(), b.getCompletenessScore());
-    }
-
-    /**
-     * The frecency score is calculated according to use count and last use date. The formula is
-     * the same as the one used in GetFrecencyScore in autofill_data_model.cc.
-     */
-    private static final double getFrecencyScore(int count, long date) {
-        long currentTime = System.currentTimeMillis();
-        return -Math.log((currentTime - date) / (24 * 60 * 60 * 1000) + 2) / Math.log(count + 2);
     }
 
     @Nullable

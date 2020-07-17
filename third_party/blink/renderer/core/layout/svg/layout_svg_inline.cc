@@ -127,6 +127,9 @@ void LayoutSVGInline::StyleDidChange(StyleDifference diff,
   if (diff.NeedsFullLayout())
     SetNeedsBoundariesUpdate();
 
+  if (diff.CompositingReasonsChanged())
+    SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
+
   LayoutInline::StyleDidChange(diff, old_style);
   SVGResources::UpdateClipPathFilterMask(To<SVGElement>(*GetNode()), old_style,
                                          StyleRef());
@@ -147,6 +150,22 @@ void LayoutSVGInline::RemoveChild(LayoutObject* child) {
   LayoutSVGText::NotifySubtreeStructureChanged(
       this, layout_invalidation_reason::kChildChanged);
   LayoutInline::RemoveChild(child);
+}
+
+void LayoutSVGInline::InsertedIntoTree() {
+  LayoutInline::InsertedIntoTree();
+  if (CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(*this) !=
+      CompositingReason::kNone) {
+    SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
+  }
+}
+
+void LayoutSVGInline::WillBeRemovedFromTree() {
+  LayoutInline::WillBeRemovedFromTree();
+  if (CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(*this) !=
+      CompositingReason::kNone) {
+    SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
+  }
 }
 
 }  // namespace blink

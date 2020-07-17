@@ -237,10 +237,11 @@ void RemoteFrameView::Paint(GraphicsContext& context,
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       GetFrame().GetCcLayer()) {
-    auto offset = GetLayoutEmbeddedContent()->ReplacedContentRect().offset;
+    auto offset = RoundedIntPoint(
+        GetLayoutEmbeddedContent()->ReplacedContentRect().offset);
     RecordForeignLayer(context, *GetFrame().OwnerLayoutObject(),
                        DisplayItem::kForeignLayerRemoteFrame,
-                       GetFrame().GetCcLayer(), FloatPoint(offset));
+                       GetFrame().GetCcLayer(), offset);
   }
 }
 

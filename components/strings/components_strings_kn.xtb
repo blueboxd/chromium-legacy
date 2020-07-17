@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
 <translation id="1008557486741366299">ಈಗಲೇ ಅಲ್ಲ</translation>
+<translation id="100957008357583611">ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಬಳಸುವುದೇ?</translation>
 <translation id="1010200102790553230">ಪುಟವನ್ನು ನಂತರ ಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="1015730422737071372">ಹೆಚ್ಚುವರಿ ವಿವರಗಳನ್ನು ಒದಗಿಸಿ</translation>
 <translation id="1019413721762100891">ಆಫ್</translation>
@@ -45,6 +46,7 @@
 <translation id="115926840831309955">ನಿಮ್ಮ CVC ಯನ್ನು ಪರಿಶೀಲಿಸಿ, ಪುನಃ ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ಅವಧಿ ಮುಗಿಯುವ ದಿನಾಂಕವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ</translation>
 <translation id="1161325031994447685">ವೈ-ಫೈಗೆ ಮರುಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="1165039591588034296">ದೋಷ</translation>
+<translation id="1165174597379888365">ಪುಟಕ್ಕೆ ಭೇಟಿ ನೀಡಲಾಗಿದೆ</translation>
 <translation id="1175364870820465910">&amp;ಮುದ್ರಿಸಿ...</translation>
 <translation id="1175875016430184367">ಬಲಭಾಗದಲ್ಲಿ ಮೂರು ಸ್ಟೇಪಲ್ ಹಾಕಿ</translation>
 <translation id="1178581264944972037">ವಿರಾಮ</translation>
@@ -264,6 +266,7 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{ಮತ್ತು 1 ಇನ್ನಷ್ಟು}one{ಮತ್ತು # ಇನ್ನಷ್ಟು}other{ಮತ್ತು # ಇನ್ನಷ್ಟು}}</translation>
 <translation id="2003709556000175978">ಇದೀಗ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಮರುಹೊಂದಿಸಿ</translation>
 <translation id="2003775180883135320">ಮೇಲ್ಭಾಗದಲ್ಲಿ ನಾಲ್ಕು ತೂತುಗಳನ್ನು ಮಾಡಿ</translation>
+<translation id="202072848677994234">ಸುರಕ್ಷಿತವಲ್ಲದ ಕನೆಕ್ಷನ್‌ನ ಮೂಲಕ ಈ ಫಾರ್ಮ್ ಅನ್ನು ಸಲ್ಲಿಸಲಾಗಿದೆ. ಸ್ವಯಂಚಾಲಿತ ಭರ್ತಿಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="2025115093177348061">ಆಗ್‌ಮೆಂಟೆಡ್ ರಿಯಾಲಿಟಿ</translation>
 <translation id="2025186561304664664">ಪ್ರಾಕ್ಸಿಯನ್ನು ಸ್ವಯಂ ಕಾನ್ಫಿಗರ್ ಆಗಿ ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="2030481566774242610">ನಿಮ್ಮ ಮಾತಿನ ಅರ್ಥ <ph name="LINK" />?</translation>
@@ -332,6 +335,7 @@
 <translation id="2289385804009217824">ಟ್ರಿಮ್ ಮಾಡಿ</translation>
 <translation id="2292556288342944218">ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಪ್ರವೇಶ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="2293443924986248631">ಆನ್ ಮಾಡಿದಾಗ, ನಿಮ್ಮನ್ನು ವೆಬ್‌ನಾದ್ಯಂತ ಟ್ರ್ಯಾಕ್ ಮಾಡುವ ಕುಕೀಗಳನ್ನು ಬಳಸಲು ಸೈಟ್‌ಗಳಿಗೆ ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ. ಕೆಲವು ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿನ ವೈಶಿಷ್ಟ್ಯಗಳು ಕಾರ್ಯನಿರ್ವಹಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಬಹುದು.</translation>
+<translation id="2295290966866883927">ನೀವು ಭೇಟಿ ನೀಡುವ ಪುಟಗಳ URL ಗಳನ್ನು ವಿಶ್ಲೇಷಣೆ ಮಾಡಲು, ಅವುಗಳನ್ನು Google ಕ್ಲೌಡ್ ಅಥವಾ ಥರ್ಡ್ ಪಾರ್ಟಿಗಳಿಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ. ಉದಾಹರಣೆಗೆ, ಸುರಕ್ಷಿತವಲ್ಲದ ವೆಬ್‌ಸೈಟ್‌ಗಳನ್ನು ಪತ್ತೆಹಚ್ಚಲು ಅವುಗಳನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಬಹುದು.</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2300306941146563769">ಅಪ್‌ಲೋಡ್ ಮಾಡಿಲ್ಲ</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
@@ -423,7 +427,6 @@
 <translation id="2705137772291741111">ಈ ಸೈಟ್‌ನ ಉಳಿಸಿದ (ಸಂಗ್ರಹವಾಗಿರುವ) ನಕಲನ್ನು ಓದಲಾಗುತ್ತಿಲ್ಲ.</translation>
 <translation id="2709516037105925701">ಸ್ವಯಂತುಂಬುವಿಕೆ</translation>
 <translation id="2713444072780614174">ಬಿಳಿ</translation>
-<translation id="2720342946869265578">ಸಮೀಪ ಸಾಧನ</translation>
 <translation id="2721148159707890343">ವಿನಂತಿಯನ್ನು ಯಶಸ್ವಿಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="272451190272506600">ಪಾವತಿಸಲು ಸೆನ್ಸರ್ ಅನ್ನು ಸ್ಪರ್ಶಿಸಿ</translation>
 <translation id="2728127805433021124">ಕ್ಷೀಣವಾದ ಸಹಿ ಅಲ್ಗಾರಿದಮ್ ಬಳಸಿಕೊಂಡು ಸರ್ವರ್‌ನ ಪ್ರಮಾಣಪತ್ರಕ್ಕೆ ಸಹಿ ಮಾಡಲಾಗಿದೆ.</translation>
@@ -714,7 +717,6 @@
 <translation id="3987940399970879459">1 MB ಗಿಂತ ಕಡಿಮೆ</translation>
 <translation id="3990250421422698716">ಜಾಗ್ ಆಫ್‌ಸೆಟ್</translation>
 <translation id="3996311196211510766"><ph name="ORIGIN" /> ಸೈಟ್ ತನ್ನ ಎಲ್ಲಾ ವಿನಂತಿಗಳಿಗೆ ಮೂಲ ಕಾರ್ಯನೀತಿಯೊಂದನ್ನು ಅನ್ವಯಿಸಲು ವಿನಂತಿಸಿದೆ, ಆದರೆ ಈ ಕಾರ್ಯನೀತಿಯನ್ನು ಪ್ರಸ್ತುತವಾಗಿ ಅನ್ವಯಿಸಲು ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{ಹತ್ತಿರದ 1 ವೆಬ್ ಪುಟ}one{ಹತ್ತಿರದ # ವೆಬ್ ಪುಟಗಳು}other{ಹತ್ತಿರದ # ವೆಬ್ ಪುಟಗಳು}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF ಡಾಕ್ಯುಮೆಂಟ್, {COUNT} ಪುಟವನ್ನು ಒಳಗೊಂಡಿದೆ}one{PDF ಡಾಕ್ಯುಮೆಂಟ್, {COUNT} ಪುಟಗಳನ್ನು ಒಳಗೊಂಡಿದೆ}other{PDF ಡಾಕ್ಯುಮೆಂಟ್, {COUNT} ಪುಟಗಳನ್ನು ಒಳಗೊಂಡಿದೆ}}</translation>
 <translation id="4030383055268325496">&amp;ಸೇರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="4032320456957708163">ನಿಮ್ಮ ಬ್ರೌಸರ್ ಅನ್ನು <ph name="ENROLLMENT_DOMAIN" /> ನಿರ್ವಹಿಸುತ್ತಿದೆ</translation>
@@ -928,7 +930,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">ಉಳಿಸಿ...</translation>
 <translation id="4913987521957242411">ಮೇಲಿನ ಎಡಭಾಗದಲ್ಲಿ ತೂತು ಮಾಡಿ</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{ಮತ್ತು 1 ಹೆಚ್ಚಿನ ವೆಬ್ ಪುಟ}one{ಮತ್ತು # ಹೆಚ್ಚಿನ ವೆಬ್ ಪುಟಗಳು}other{ಮತ್ತು # ಹೆಚ್ಚಿನ ವೆಬ್ ಪುಟಗಳು}}</translation>
 <translation id="4923459931733593730">ಪಾವತಿ</translation>
 <translation id="4926049483395192435">ನಿರ್ದಿಷ್ಟಪಡಿಸಬೇಕಾಗಿದೆ.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> ಹೀಗೆ ಹೇಳುತ್ತದೆ</translation>
@@ -1169,6 +1170,7 @@
 <translation id="5869405914158311789">ಈ ಸೈಟ್ ತಲುಪಲಾಗುವುದಿಲ್ಲ</translation>
 <translation id="5869522115854928033">ಉಳಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು</translation>
 <translation id="5887400589839399685">ಕಾರ್ಡ್ ಉಳಿಸಲಾಗಿದೆ</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" />, ನಿಮ್ಮ ಡೇಟಾವನ್ನು ನೀವು ಬ್ಯಾಕಪ್ ಮಾಡಬೇಕೆಂದು ಮತ್ತು ಈ ಸಾಧನವನ್ನು ಹಿಂತಿರುಗಿಸಬೇಕೆಂದು ಬಯಸುತ್ತದೆ.</translation>
 <translation id="5895138241574237353">ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="5895187275912066135">ರಂದು ನೀಡಲಾಗಿದೆ</translation>
 <translation id="5901630391730855834">ಹಳದಿ</translation>
@@ -1318,7 +1320,6 @@
 <translation id="6518133107902771759">ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="6521745193039995384">ಸಕ್ರಿಯವಾಗಿಲ್ಲ</translation>
 <translation id="6529602333819889595">&amp;ಅಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
-<translation id="6534179046333460208">ಭೌತಿಕ ವೆಬ್ ಸಲಹೆಗಳು</translation>
 <translation id="6545864417968258051">ಬ್ಲೂಟೂತ್ ಸ್ಕ್ಯಾನಿಂಗ್</translation>
 <translation id="6547208576736763147">ಎಡಭಾಗದಲ್ಲಿ ಎರಡು ತೂತುಗಳನ್ನು ಮಾಡಿ</translation>
 <translation id="6554795675067793129">ನಿಮ್ಮ ಖಾತೆಯನ್ನು <ph name="ENROLLMENT_DOMAIN" /> ನಿರ್ವಹಿಸುತ್ತಿದೆ.</translation>
@@ -1840,7 +1841,6 @@
 <translation id="8790007591277257123">&amp;ಅಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="8792621596287649091">ನಿಮ್ಮ <ph name="ORG_NAME" /> ಖಾತೆಗೆ ನೀವು ಪ್ರವೇಶವನ್ನು ಕಳೆದುಕೊಳ್ಳಬಹುದು ಅಥವಾ ಗುರುತು ಕಳ್ಳತನಕ್ಕೆ ಒಳಗಾಗಬಹುದು. ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಇದೀಗ ಬದಲಾಯಿಸುವಂತೆ Chromium ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" />, ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ Chrome Enterprise ಕನೆಕ್ಟರ್‌ಗಳನ್ನು ಆನ್ ಮಾಡಿದೆ. ನಿಮ್ಮ ಕೆಲವೊಂದು ಡೇಟಾಕ್ಕೆ ಈ ಕನೆಕ್ಟರ್‌ಗಳು ಪ್ರವೇಶ ಹೊಂದಿರುತ್ತವೆ.</translation>
-<translation id="8800988563907321413">ನಿಮ್ಮ ಸಮೀಪದ ವೆಬ್ ಪುಟದ ಸಲಹೆಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ</translation>
 <translation id="8805819170075074995">ಪಟ್ಟಿ ನಮೂದು "<ph name="LANGUAGE_ID" />": ಈ ನಮೂದನ್ನು SpellcheckLanguage ಕಾರ್ಯನೀತಿಯಲ್ಲಿ ಸಹ ಸೇರಿಸಿರುವ ಕಾರಣ, ಇದನ್ನು ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ.</translation>
 <translation id="8807160976559152894">ಪ್ರತಿ ಪುಟದ ನಂತರ ಟ್ರಿಮ್ ಮಾಡಿ</translation>
 <translation id="8820817407110198400">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>

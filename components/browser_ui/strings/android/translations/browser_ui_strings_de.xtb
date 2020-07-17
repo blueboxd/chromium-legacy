@@ -14,7 +14,7 @@
 <translation id="129382876167171263">Hier werden von Websites gespeicherte Dateien angezeigt</translation>
 <translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Website "<ph name="SITE_NAME" />" hinzugefügt</translation>
-<translation id="1383876407941801731">Suchen</translation>
+<translation id="1383876407941801731">Suchtaste</translation>
 <translation id="1384959399684842514">Download angehalten</translation>
 <translation id="1446450296470737166">Volle Kontr. über MIDI-Ger. erl.</translation>
 <translation id="1509960214886564027">Funktionen auf vielen Websites funktionieren möglicherweise nicht mehr</translation>
@@ -48,7 +48,7 @@
 <translation id="2434158240863470628">Download abgeschlossen <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Standortzugriff</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
-<translation id="2490684707762498678">Verwaltet von <ph name="APP_NAME" /></translation>
+<translation id="2490684707762498678">Über <ph name="APP_NAME" /> verwaltet</translation>
 <translation id="2498359688066513246">Hilfe &amp; Feedback</translation>
 <translation id="2501278716633472235">Zurück</translation>
 <translation id="2537296579376733324">Alle Cookies, nur auf dieser Website</translation>
@@ -239,7 +239,7 @@
 <translation id="8609465669617005112">Nach oben</translation>
 <translation id="8676374126336081632">Eingabe löschen</translation>
 <translation id="8702612070107455751">Alle Offlinedaten werden gelöscht.</translation>
-<translation id="8719283222052720129">Berechtigung für <ph name="APP_NAME" /> in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren</translation>
+<translation id="8719283222052720129">Aktivieren Sie die Berechtigung für <ph name="APP_NAME" /> in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" />.</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8730621377337864115">Fertig</translation>
 <translation id="8737217482364735741">Dadurch werden alle von <ph name="ORIGIN" /> gespeicherten Daten und Cookies gelöscht.</translation>

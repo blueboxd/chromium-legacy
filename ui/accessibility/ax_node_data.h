@@ -213,6 +213,9 @@ struct AX_BASE_EXPORT AXNodeData {
   // clicks.
   bool IsClickable() const;
 
+  // Helper to determine if the object is selectable.
+  bool IsSelectable() const;
+
   // Helper to determine if the data has the ignored state or ignored role.
   bool IsIgnored() const;
 

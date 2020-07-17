@@ -45,7 +45,7 @@ class AccessibilityInfoDataWrapper {
   virtual void PopulateAXRole(ui::AXNodeData* out_data) const = 0;
   virtual void PopulateAXState(ui::AXNodeData* out_data) const = 0;
   virtual void Serialize(ui::AXNodeData* out_data) const = 0;
-  virtual std::string ComputeAXName() const = 0;
+  virtual std::string ComputeAXName(bool do_recursive) const = 0;
   virtual void GetChildren(
       std::vector<AccessibilityInfoDataWrapper*>* children) const = 0;
 

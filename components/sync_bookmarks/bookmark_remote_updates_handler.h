@@ -110,8 +110,10 @@ class BookmarkRemoteUpdatesHandler {
   // from |bookmark_tracker_|.
   void RemoveEntityAndChildrenFromTracker(const bookmarks::BookmarkNode* node);
 
+  // Initiate reupload for the update with |entity_data|. |tracked_entity| must
+  // not be nullptr.
   void ReuploadEntityIfNeeded(
-      const sync_pb::BookmarkSpecifics& specifics,
+      const syncer::EntityData& entity_data,
       const SyncedBookmarkTracker::Entity* tracked_entity);
 
   bookmarks::BookmarkModel* const bookmark_model_;

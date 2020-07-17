@@ -46,8 +46,8 @@ class LogStore {
   // the staged log needs discarded.
   virtual void MarkStagedLogAsSent() = 0;
 
-  // Saves any unsent logs to persistent storage.
-  virtual void PersistUnsentLogs() const = 0;
+  // Trims saved logs and writes to persistent storage.
+  virtual void TrimAndPersistUnsentLogs() = 0;
 
   // Loads unsent logs from persistent storage.
   virtual void LoadPersistedUnsentLogs() = 0;

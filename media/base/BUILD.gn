@@ -240,8 +240,6 @@ jumbo_source_set("base") {
     "pipeline_metadata.h",
     "pipeline_status.cc",
     "pipeline_status.h",
-    "player_tracker.cc",
-    "player_tracker.h",
     "provision_fetcher.h",
     "ranges.cc",
     "ranges.h",

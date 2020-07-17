@@ -3500,9 +3500,7 @@ void LayerTreeHostImpl::QueueImageDecode(int request_id,
                image.GetKeyForFrame(PaintImage::kDefaultFrameIndex).ToString());
   // Optimistically specify the current raster color space, since we assume that
   // it won't change.
-  auto content_color_usage = image.isSRGB()
-                                 ? gfx::ContentColorUsage::kSRGB
-                                 : gfx::ContentColorUsage::kWideColorGamut;
+  auto content_color_usage = image.GetContentColorUsage();
   tile_manager_.decoded_image_tracker().QueueImageDecode(
       image, GetRasterColorSpace(content_color_usage),
       base::BindOnce(&LayerTreeHostImpl::ImageDecodeFinished,

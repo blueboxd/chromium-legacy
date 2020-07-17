@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="1008557486741366299">Ikke nå</translation>
+<translation id="100957008357583611">Kan nettstedet bruke posisjonen din?</translation>
 <translation id="1010200102790553230">Last inn siden senere</translation>
 <translation id="1015730422737071372">Oppgi flere detaljer</translation>
 <translation id="1019413721762100891">Av</translation>
@@ -45,6 +46,7 @@
 <translation id="115926840831309955">Kontrollér CVC-koden og prøv igjen, eller oppdater utløpsdatoen</translation>
 <translation id="1161325031994447685">Koble til Wi-Fi på nytt</translation>
 <translation id="1165039591588034296">Feil</translation>
+<translation id="1165174597379888365">En nettside besøkes</translation>
 <translation id="1175364870820465910">&amp;Skriv ut...</translation>
 <translation id="1175875016430184367">Tre stifter høyre</translation>
 <translation id="1178581264944972037">Stans midlertidig</translation>
@@ -266,6 +268,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2001146170449793414">{COUNT,plural, =1{og 1 til}other{og # til}}</translation>
 <translation id="2003709556000175978">Tilbakestill passordet ditt nå</translation>
 <translation id="2003775180883135320">Fire hull topp</translation>
+<translation id="202072848677994234">Dette skjemaet sendes inn via en usikker tilkobling. Automatisk utfylling er slått av.</translation>
 <translation id="2025115093177348061">Utvidet virkelighet</translation>
 <translation id="2025186561304664664">Mellomtjeneren er innstilt på automatisk konfigurasjon.</translation>
 <translation id="2030481566774242610">Mener du <ph name="LINK" />?</translation>
@@ -334,6 +337,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2289385804009217824">Beskjær</translation>
 <translation id="2292556288342944218">Internett-tilgangen din er blokkert</translation>
 <translation id="2293443924986248631">Når dette er på, kan ikke nettsteder bruke informasjonskapsler som sporer deg på nettet. Det kan hende at funksjoner på enkelte nettsteder slutter å fungere.</translation>
+<translation id="2295290966866883927">Nettadressene til sider du besøker, sendes til Google Cloud eller tredjeparter for analyse. De kan for eksempel bli skannet for å oppdage utrygge nettsteder.</translation>
 <translation id="2297722699537546652">B5 (konvolutt)</translation>
 <translation id="2300306941146563769">Ikke lastet opp</translation>
 <translation id="2310021320168182093">Chou2 (konvolutt)</translation>
@@ -425,7 +429,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2705137772291741111">Den lagrede (bufrede) kopien av dette nettstedet kunne ikke leses.</translation>
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="2713444072780614174">Hvit</translation>
-<translation id="2720342946869265578">Like ved</translation>
 <translation id="2721148159707890343">Forespørselen var vellykket</translation>
 <translation id="272451190272506600">Trykk på sensoren for å betale</translation>
 <translation id="2728127805433021124">Tjenerens sertifikat er signert med en usikker signaturalgoritme.</translation>
@@ -722,7 +725,6 @@ brukere av denne nettleseren.</translation>
 <translation id="3990250421422698716">Støtforskyvning</translation>
 <translation id="3996311196211510766">Nettstedet <ph name="ORIGIN" /> har bedt om at en opphavsregel
     skal gjelde for alle forespørsler som sendes til det, men denne regelen kan ikke tas i bruk akkurat nå.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 Like ved-nettside}other{# Like ved-nettsider}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-dokument som inneholder {COUNT} side}other{PDF-dokument som inneholder {COUNT} sider}}</translation>
 <translation id="4030383055268325496">&amp;Angre tilleggingen</translation>
 <translation id="4032320456957708163">Nettleseren din administreres av <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -940,7 +942,6 @@ brukere av denne nettleseren.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Lagre</translation>
 <translation id="4913987521957242411">Hull oppe til venstre</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{og 1 nettside til}other{og # nettsider til}}</translation>
 <translation id="4923459931733593730">Betaling</translation>
 <translation id="4926049483395192435">Må angis.</translation>
 <translation id="4926159001844873046">På <ph name="SITE" /> står det</translation>
@@ -1181,6 +1182,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5869405914158311789">Dette nettstedet er ikke tilgjengelig</translation>
 <translation id="5869522115854928033">Lagrede passord</translation>
 <translation id="5887400589839399685">Kortet er lagret</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> krever at du sikkerhetskopierer dataene dine og leverer tilbake denne enheten.</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
 <translation id="5895187275912066135">Utstedt</translation>
 <translation id="5901630391730855834">Gul</translation>
@@ -1331,7 +1333,6 @@ brukere av denne nettleseren.</translation>
 <translation id="6518133107902771759">Bekreft</translation>
 <translation id="6521745193039995384">Ikke aktiv</translation>
 <translation id="6529602333819889595">&amp;Slett likevel</translation>
-<translation id="6534179046333460208">Fysisk nett-forslag</translation>
 <translation id="6545864417968258051">Bluetooth-skanning</translation>
 <translation id="6547208576736763147">To hull venstre</translation>
 <translation id="6554795675067793129">Kontoen din administreres av <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1852,7 +1853,6 @@ Mer informasjon:
 <translation id="8790007591277257123">&amp;Slett likevel</translation>
 <translation id="8792621596287649091">Du kan miste tilgangen til <ph name="ORG_NAME" />-kontoen din eller bli utsatt for identitetstyveri. Chromium anbefaler at du endrer passordet ditt nå.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> har slått på Chrome Enterprise Connectors i nettleseren din. Disse koblingene har tilgang til noen av dataene dine.</translation>
-<translation id="8800988563907321413">Forslagene dine om ting like ved vises her</translation>
 <translation id="8805819170075074995">Listeoppføringen «<ph name="LANGUAGE_ID" />»: Oppføringen er ignorert fordi den også er inkludert i regelen SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Beskjær etter hver side</translation>
 <translation id="8820817407110198400">Bokmerker</translation>

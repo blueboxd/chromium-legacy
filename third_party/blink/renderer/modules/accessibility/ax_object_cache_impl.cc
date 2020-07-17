@@ -1151,6 +1151,13 @@ void AXObjectCacheImpl::ProcessDeferredAccessibilityEvents(Document& document) {
   PostNotifications(document);
 }
 
+void AXObjectCacheImpl::EmbeddingTokenChanged(HTMLFrameOwnerElement* element) {
+  if (!element)
+    return;
+
+  MarkElementDirty(element, false);
+}
+
 void AXObjectCacheImpl::ProcessUpdates(Document& document) {
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION(document);
 

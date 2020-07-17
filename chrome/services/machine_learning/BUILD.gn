@@ -1,0 +1,41 @@
+import("//build/config/features.gni")
+
+source_set("machine_learning") {
+  sources = [
+    "decision_tree_predictor.cc",
+    "decision_tree_predictor.h",
+    "machine_learning_service.cc",
+    "machine_learning_service.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome:strings",
+    "//mojo/public/cpp/bindings",
+  ]
+
+  public_deps = [
+    "//chrome/services/machine_learning/public/cpp",
+    "//chrome/services/machine_learning/public/mojom",
+    "//mojo/public/mojom/base",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "decision_tree_predictor_unittest.cc",
+    "machine_learning_service_unittest.cc",
+    "public/cpp/decision_tree_model_unittest.cc",
+  ]
+
+  deps = [
+    ":machine_learning",
+    "//base",
+    "//base/test:test_support",
+    "//chrome/services/machine_learning/public/cpp:cpp",
+    "//chrome/services/machine_learning/public/cpp:test_support",
+    "//testing/gtest",
+  ]
+}

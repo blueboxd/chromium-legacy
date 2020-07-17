@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="1005230401424685968">YYYY</translation>
-<translation id="1013952917065545813">אפשר לחזור לפה כדי לפתוח כרטיסיות שסגרת בעבר</translation>
+<translation id="1013952917065545813">אפשר לחזור לפה כדי לפתוח כרטיסיות שסגרת לאחרונה</translation>
 <translation id="1016495303386450659">הפריט עודכן</translation>
 <translation id="1044891598689252897">אתרים יפעלו כרגיל</translation>
 <translation id="1047726139967079566">הוסף דף זה לסימניות...</translation>
@@ -32,7 +32,7 @@
 <translation id="1272079795634619415">הפסק</translation>
 <translation id="1283524564873030414">מ-24 השעות האחרונות</translation>
 <translation id="1285320974508926690">איני רוצה לקבל תרגום של אתר זה</translation>
-<translation id="1321993286294231467">קרתה שגיאה בעת שמירת התמונה.</translation>
+<translation id="1321993286294231467">קרתה שגיאה בשמירת התמונה.</translation>
 <translation id="1323735185997015385">מחק</translation>
 <translation id="132683371494960526">הקש פעמיים כדי לשנות את תיקיית האב.</translation>
 <translation id="1340643665687018190">סגור את התפריט</translation>

@@ -32,7 +32,7 @@ class TaskManagerTester {
   // |on_resource_change|, if not a null callback, will be invoked when the
   // underlying model changes.
   static std::unique_ptr<TaskManagerTester> Create(
-      const base::Closure& on_resource_change);
+      const base::RepeatingClosure& on_resource_change);
 
   // Get the number of rows currently in the task manager.
   int GetRowCount();
@@ -59,7 +59,7 @@ class TaskManagerTester {
   void GetRowsGroupRange(int row, int* out_start, int* out_length);
 
  private:
-  explicit TaskManagerTester(const base::Closure& on_resource_change);
+  explicit TaskManagerTester(const base::RepeatingClosure& on_resource_change);
 
   TaskManagerInterface* task_manager();
 

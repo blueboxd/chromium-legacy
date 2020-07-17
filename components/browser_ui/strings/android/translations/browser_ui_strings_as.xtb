@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">কেমেৰা</translation>
 <translation id="1647391597548383849">আপোনাৰ কেমেৰাৰ এক্সেছ</translation>
 <translation id="1660204651932907780">ছাইটবোৰক ধ্বনি প্লে’ কৰিবলৈ অনুমতি দিয়ক (চুপাৰিছ কৰা)</translation>
+<translation id="1677097821151855053">কুকিসমূহ আৰু ছাইটৰ অন্য ডেটা আপোনাক মনত ৰাখিবলৈ ব্যৱহাৰ কৰা হয়, উদাহৰণস্বৰূপে, আপোনাক ছাইন ইন কৰাবলৈ অথবা বিজ্ঞাপনসমূহ ব্যক্তিগতকৰণ কৰিবলৈ। সকলো ছাইটৰ বাবে কুকিসমূহ পৰিচালনা কৰিবলৈ <ph name="BEGIN_LINK" />ছেটিংসমূহ<ph name="END_LINK" /> চাওক।</translation>
 <translation id="1688867105868176567">ছাইটৰ ডেটা মচিবনে?</translation>
 <translation id="169515064810179024">ছাইটসমূহে ম'শ্বন ছেন্সৰসমূহ এক্সেছ কৰাটো অৱৰোধ কৰক</translation>
 <translation id="1717218214683051432">ম'শ্বন ছেন্সৰসমূহ</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">কোনো নিৰ্দিষ্ট ছাইটৰ বাবে কুকিসমূহক অনুমতি দিয়ক।</translation>
 <translation id="4046123991198612571">পৰৱৰ্তী ট্ৰেক</translation>
 <translation id="4165986682804962316">ছাইটৰ ছেটিংসমূহ</translation>
+<translation id="4200726100658658164">অৱস্থানৰ ছেটিংসমূহ খোলক</translation>
 <translation id="4226663524361240545">জাননীয়ে ডিভাইচটো কম্পন কৰিব পাৰে</translation>
 <translation id="4242533952199664413">ছেটিংসমূহ খোলক</translation>
 <translation id="4259722352634471385">নেভিগে’শ্বন অৱৰোধ কৰা আছে: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">সকলো ছাইট</translation>
 <translation id="6320088164292336938">কম্পন</translation>
 <translation id="6388207532828177975">মচক আৰু ৰিছেট কৰক</translation>
+<translation id="6423924377271166037">কুকিসমূহ মচক</translation>
 <translation id="6439114592976064011">ছাইটসমূহে আপোনাৰ ভাৰ্চুৱেল ৰিয়েলিটি ডিভাইচ আৰু ডেটা এক্সেছ কৰাটো অৱৰোধ কৰক</translation>
 <translation id="6447842834002726250">কুকীসমূহ</translation>
 <translation id="6527303717912515753">শ্বেয়াৰ কৰক</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">পিছলৈ ছীক কৰক</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" />ক আপোনাৰ অৱস্থান এক্সেছ কৰিবলৈ দিবলৈ <ph name="BEGIN_LINK" />Android ছেটিংসমূহ<ph name="END_LINK" />তো অৱস্থান অন কৰক।</translation>
 <translation id="8447861592752582886">ডিভাইচৰ অনুমতি প্ৰত্যাহাৰ কৰক</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{১ টা কুকি ব্যৱহাৰ হৈ আছে}one{# টা কুকি ব্যৱহাৰ হৈ আছে}other{# টা কুকি ব্যৱহাৰ হৈ আছে}}</translation>
 <translation id="8463851957836045671">ছাইটটো দ্ৰুত</translation>
 <translation id="851751545965956758">ডিভাইচৰ সৈতে সংযোগ কৰাৰ পৰা ছাইটসমূহক অৱৰোধ কৰক</translation>
 <translation id="857943718398505171">অনুমোদিত (চুপাৰিছ কৰা)</translation>

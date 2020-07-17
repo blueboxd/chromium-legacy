@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="1008557486741366299">اکنون نه</translation>
+<translation id="100957008357583611">از مکان شما استفاده شود؟</translation>
 <translation id="1010200102790553230">بار کردن صفحه در فرصتی دیگر</translation>
 <translation id="1015730422737071372">جزئیات بیشتری ارائه دهید</translation>
 <translation id="1019413721762100891">خاموش</translation>
@@ -425,7 +426,6 @@
 <translation id="2705137772291741111">کپی ذخیره‌شده (ذخیره موقت‌شده) این سایت قابل خواندن نبود.</translation>
 <translation id="2709516037105925701">تکمیل خودکار</translation>
 <translation id="2713444072780614174">سفید</translation>
-<translation id="2720342946869265578">اطراف</translation>
 <translation id="2721148159707890343">درخواست با موفقیت انجام شد</translation>
 <translation id="272451190272506600">برای پرداخت، حسگر را لمس کنید</translation>
 <translation id="2728127805433021124">گواهی سرور با استفاده از یک الگوریتم امضای ضعیف امضا شده است.</translation>
@@ -720,7 +720,6 @@
 <translation id="3990250421422698716">‏آفست Z شکل</translation>
 <translation id="3996311196211510766">سایت <ph name="ORIGIN" /> درخواست کرده است خط‌مشی مبدأ
     برای همه درخواست‌هایی به سمت آن می‌رود اعمال شود، اما این خط‌مشی درحال‌حاضر نمی‌تواند اعمال شود.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{ ۱ صفحه وب در این نزدیکی است}one{ # صفحه وب در این نزدیکی است}other{ # صفحه وب در این نزدیکی است}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{‏سند PDF {COUNT} صفحه دارد}one{‏سند PDF {COUNT} صفحه دارد}other{‏سند PDF {COUNT} صفحه دارد}}</translation>
 <translation id="4030383055268325496">&amp;واگرد افزودن</translation>
 <translation id="4032320456957708163">مرورگرتان توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود</translation>
@@ -938,7 +937,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />،‏ <ph name="TYPE_2" />،‏ <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">ذخیره...</translation>
 <translation id="4913987521957242411">سوراخ سمت راست بالا</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{ و ۱ صفحه وب دیگر}one{ و # صفحه وب دیگر}other{ و # صفحه وب دیگر}}</translation>
 <translation id="4923459931733593730">پرداخت</translation>
 <translation id="4926049483395192435">باید مشخص شود.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> می‌گوید</translation>
@@ -1179,6 +1177,7 @@
 <translation id="5869405914158311789">دسترسی به این سایت امکان‌پذیر نیست</translation>
 <translation id="5869522115854928033">گذرواژه‌های ذخیره‌شده</translation>
 <translation id="5887400589839399685">کارت ذخیره‌ شد</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> لازم می‌داند که از داده‌هایتان پشتیبان‌گیری کنید و این دستگاه را برگردانید.</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
 <translation id="5895187275912066135">تاریخ صدور</translation>
 <translation id="5901630391730855834">زرد</translation>
@@ -1329,7 +1328,6 @@
 <translation id="6518133107902771759">تأیید</translation>
 <translation id="6521745193039995384">غیرفعال</translation>
 <translation id="6529602333819889595">&amp;انجام مجدد حذف</translation>
-<translation id="6534179046333460208">پیشنهادهای «وب فیزیکی»</translation>
 <translation id="6545864417968258051">اسکن کردن بلوتوث</translation>
 <translation id="6547208576736763147">دو سوراخ در چپ</translation>
 <translation id="6554795675067793129">حساب شما توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود.</translation>
@@ -1851,7 +1849,6 @@
 <translation id="8790007591277257123">&amp;انجام مجدد حذف</translation>
 <translation id="8792621596287649091">‏ممکن است دسترسی به حساب <ph name="ORG_NAME" /> را از دست بدهید یا به سرقت هویت دچار شوید. Chromium توصیه می‌کند هم‌اکنون گذرواژه‌تان را تغییر دهید.</translation>
 <translation id="8793655568873652685">‏<ph name="ENROLLMENT_DOMAIN" /> «رابط‌های Chrome Enterprise» را در مرورگرتان روشن کرده است. این رابط‌ها به برخی از داده‌هایتان دسترسی دارند.</translation>
-<translation id="8800988563907321413">پیشنهادات اطراف شما در اینجا نشان داده می‌شوند</translation>
 <translation id="8805819170075074995">‏ورودی فهرست «<ph name="LANGUAGE_ID" />»: ورودی نادیده گرفته شد زیرا در خط‌مشی SpellcheckLanguage نیز لحاظ شده است.</translation>
 <translation id="8807160976559152894">برش دادن بعد از چاپ هر صفحه</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>

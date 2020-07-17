@@ -9,10 +9,10 @@
 #include <queue>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
-#include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 #include "components/enterprise/browser/reporting/browser_report_generator.h"
 #include "components/enterprise/browser/reporting/report_request_definition.h"
 #include "components/enterprise/browser/reporting/report_request_queue_generator.h"
@@ -20,13 +20,28 @@
 
 namespace enterprise_reporting {
 
+class ReportingDelegateFactoryDesktop;
+
 class ReportGenerator {
  public:
   using ReportRequest = definition::ReportRequest;
   using ReportRequests = std::queue<std::unique_ptr<ReportRequest>>;
   using ReportCallback = base::OnceCallback<void(ReportRequests)>;
 
-  ReportGenerator();
+  class Delegate {
+   public:
+    Delegate() = default;
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
+    virtual ~Delegate() = default;
+
+    // Collect the Android application information installed on primary profile,
+    // and set it to |basic_request_|. Only implemented for Chrome OS. The
+    // fields are empty on other platforms.
+    virtual void SetAndroidAppInfos(ReportRequest* basic_request) = 0;
+  };
+
+  explicit ReportGenerator(ReportingDelegateFactoryDesktop* delegate_factory);
   virtual ~ReportGenerator();
 
   // Asynchronously generates a queue of report requests, providing them to
@@ -57,12 +72,6 @@ class ReportGenerator {
   // on other platforms.
   virtual std::string GetSerialNumber();
 
-#if defined(OS_CHROMEOS)
-  // Collect the Android application information installed on primary profile,
-  // and set it to |basic_request_|.
-  virtual void SetAndroidAppInfos(ReportRequest* basic_request);
-#endif
-
  private:
   void OnBrowserReportReady(
       bool with_profiles,
@@ -70,10 +79,7 @@ class ReportGenerator {
       std::unique_ptr<ReportRequest> basic_request,
       std::unique_ptr<enterprise_management::BrowserReport> browser_report);
 
-  // TODO(crbug.com/1092442): Move the delegate factory ownership to
-  // ChromeBrowserCloudManagementController's delegate after CBCMController has
-  // been moved to components.
-  ReportingDelegateFactoryDesktop delegate_factory_;
+  std::unique_ptr<Delegate> delegate_;
 
   ReportRequestQueueGenerator report_request_queue_generator_;
   BrowserReportGenerator browser_report_generator_;

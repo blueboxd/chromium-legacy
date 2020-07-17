@@ -243,15 +243,23 @@ void AppServiceContextMenu::OnGetMenuModel(
     index = 1;
   }
 
+  // The special rule to ensure that FilesManager's first menu item is "New
+  // window".
+  const bool build_extension_menu_before_default =
+      (app_type_ == apps::mojom::AppType::kExtension &&
+       app_id() == extension_misc::kFilesManagerAppId);
+
+  if (build_extension_menu_before_default)
+    BuildExtensionAppShortcutsMenu(menu_model.get());
+
   // Create default items.
   if (app_id() != extension_misc::kChromeAppId &&
       app_type_ != apps::mojom::AppType::kUnknown) {
     app_list::AppContextMenu::BuildMenu(menu_model.get());
   }
 
-  if (app_type_ == apps::mojom::AppType::kExtension) {
+  if (!build_extension_menu_before_default)
     BuildExtensionAppShortcutsMenu(menu_model.get());
-  }
 
   app_shortcut_items_ = std::make_unique<arc::ArcAppShortcutItems>();
   for (size_t i = index; i < menu_items->items.size(); i++) {

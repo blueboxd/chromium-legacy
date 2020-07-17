@@ -384,3 +384,15 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_bbr2_improve_adjust_network_parameters,
     false)
+
+// If true, try to coalesce packet of higher space with retransmissions to
+// mitigate RTT inflations.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_coalesced_packet_of_higher_space,
+          false)
+
+// If true, record the received min_ack_delay in transport parameters to QUIC
+// config.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_record_received_min_ack_delay,
+          false)

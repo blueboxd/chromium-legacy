@@ -39,8 +39,10 @@
 <translation id="428217921675623177">ከ90 ቀናት በላይ ዕድሜ ያላቸው የህትመት ሥራዎች ይወገዳሉ</translation>
 <translation id="4429881212383817840">የKerberos ቲኬት ጊዜው በቅርቡ ያበቃል</translation>
 <translation id="445059817448385655">የቀድሞው የይለፍ ቃል</translation>
+<translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />፣ <ph name="PRINTER_NAME" />፣ <ph name="CREATION_TIME" />፣ <ph name="PRINTED_PAGE_NUMBER" /> ከ<ph name="TOTAL_PAGE_NUMBER" /> ዉስጥ የሕትመት ሥራን ለመሰረዝ እባክዎ ያስገቡ።</translation>
 <translation id="467510802200863975">የይለፍ ቃላትዎ አይዛመዱም</translation>
 <translation id="4731797938093519117">የወላጅ መዳረሻ</translation>
+<translation id="4808449224298348341">የተሰረዘ የሕትመት ሥራ <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">ወዲያውኑ አዲስ ይምረጡ</translation>
 <translation id="4932733599132424254">ቀን</translation>
 <translation id="5212543919916444558">እኔ ላግዝ የምችልበት ምንም ነገር በእርስዎ ማያ ገጽ ላይ አላገኘሁም።
@@ -69,6 +71,7 @@
 <translation id="808894953321890993">የይለፍ ቃል ለውጥ</translation>
 <translation id="8208861521865154048">ጥቅማጥቅሞች</translation>
 <translation id="8347227221149377169">የኅትመት ሥራዎች</translation>
+<translation id="8623849191266582420">ይህ <ph name="DEVICE_TYPE" /> በ<ph name="ENROLLMENT_DOMAIN" /> የሚተዳደር ነው። አስተዳዳሪዎች መሣሪያውን ከርቀት ማዋቀር እና መቆጣጠር ይችላሉ።</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> እነኚህን ተጠቃሚ ያስተዳድራል። ቅንብሮችን የተጠቃሚ እንቅስቃሴን በርቀት ሊያስተዳድር እና ሊቆጣጠር ይችላል።</translation>
 <translation id="871560550817059752">አልተሳካም - ቀለም አልቋል</translation>
 <translation id="8747900814994928677">ለውጥን አረጋግጥ</translation>

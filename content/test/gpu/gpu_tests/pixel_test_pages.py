@@ -5,6 +5,7 @@
 # This is more akin to a .pyl/JSON file, so it's expected to be long.
 # pylint: disable=too-many-lines
 
+from gpu_tests import common_browser_args as cba
 from gpu_tests import skia_gold_matching_algorithms as algo
 
 CRASH_TYPE_GPU = 'gpu'
@@ -150,7 +151,7 @@ SCALE_FACTOR_OVERRIDES = {
 class PixelTestPages(object):
   @staticmethod
   def DefaultPages(base_name):
-    sw_compositing_args = ['--disable-gpu-compositing']
+    sw_compositing_args = [cba.DISABLE_GPU_COMPOSITING]
 
     # The optimizer script spat out pretty similar values for most MP4 tests, so
     # combine into a single set of parameters.
@@ -218,7 +219,7 @@ class PixelTestPages(object):
         # Surprisingly stable, does not appear to require inexact matching.
         PixelTestPage('pixel_video_mp4.html',
                       base_name + '_Video_MP4_DXVA',
-                      browser_args=['--disable-features=D3D11VideoDecoder'],
+                      browser_args=[cba.DISABLE_FEATURES_D3D11_VIDEO_DECODER],
                       test_rect=[0, 0, 240, 135]),
         PixelTestPage('pixel_video_mp4_four_colors_aspect_4x3.html',
                       base_name + '_Video_MP4_FourColors_Aspect_4x3',
@@ -255,7 +256,7 @@ class PixelTestPages(object):
                           edge_threshold=20)),
         PixelTestPage('pixel_video_vp9.html',
                       base_name + '_Video_VP9_DXVA',
-                      browser_args=['--disable-features=D3D11VideoDecoder'],
+                      browser_args=[cba.DISABLE_FEATURES_D3D11_VIDEO_DECODER],
                       test_rect=[0, 0, 240, 135],
                       matching_algorithm=algo.SobelMatchingAlgorithm(
                           max_different_pixels=31100,
@@ -349,7 +350,8 @@ class PixelTestPages(object):
   @staticmethod
   def GpuRasterizationPages(base_name):
     browser_args = [
-        '--force-gpu-rasterization', '--disable-software-compositing-fallback'
+        cba.FORCE_GPU_RASTERIZATION,
+        cba.DISABLE_SOFTWARE_COMPOSITING_FALLBACK,
     ]
     return [
         PixelTestPage('pixel_background.html',
@@ -390,14 +392,14 @@ class PixelTestPages(object):
   @staticmethod
   def ExperimentalCanvasFeaturesPages(base_name):
     browser_args = [
-        '--enable-experimental-web-platform-features',
+        cba.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES,
     ]
     accelerated_args = [
-        '--disable-software-compositing-fallback',
+        cba.DISABLE_SOFTWARE_COMPOSITING_FALLBACK,
     ]
     unaccelerated_args = [
-        '--disable-accelerated-2d-canvas',
-        '--disable-gpu-compositing',
+        cba.DISABLE_ACCELERATED_2D_CANVAS,
+        cba.DISABLE_GPU_COMPOSITING,
     ]
 
     return [
@@ -433,12 +435,12 @@ class PixelTestPages(object):
                       base_name + '_OffscreenCanvasWebGLSoftwareCompositing',
                       test_rect=[0, 0, 360, 200],
                       browser_args=browser_args +
-                      ['--disable-gpu-compositing']),
+                      [cba.DISABLE_GPU_COMPOSITING]),
         PixelTestPage(
             'pixel_offscreenCanvas_webgl_commit_worker.html',
             base_name + '_OffscreenCanvasWebGLSoftwareCompositingWorker',
             test_rect=[0, 0, 360, 200],
-            browser_args=browser_args + ['--disable-gpu-compositing']),
+            browser_args=browser_args + [cba.DISABLE_GPU_COMPOSITING]),
         PixelTestPage('pixel_offscreenCanvas_2d_commit_main.html',
                       base_name + '_OffscreenCanvasAccelerated2D',
                       test_rect=[0, 0, 360, 200],
@@ -459,12 +461,12 @@ class PixelTestPages(object):
             'pixel_offscreenCanvas_2d_commit_main.html',
             base_name + '_OffscreenCanvasUnaccelerated2DGPUCompositing',
             test_rect=[0, 0, 360, 200],
-            browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
+            browser_args=browser_args + [cba.DISABLE_ACCELERATED_2D_CANVAS]),
         PixelTestPage(
             'pixel_offscreenCanvas_2d_commit_worker.html',
             base_name + '_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
             test_rect=[0, 0, 360, 200],
-            browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
+            browser_args=browser_args + [cba.DISABLE_ACCELERATED_2D_CANVAS]),
         PixelTestPage('pixel_offscreenCanvas_2d_resize_on_worker.html',
                       base_name + '_OffscreenCanvas2DResizeOnWorker',
                       test_rect=[0, 0, 200, 200],
@@ -485,14 +487,14 @@ class PixelTestPages(object):
             'pixel_canvas_display_srgb.html',
             base_name + '_CanvasDisplaySRGBUnaccelerated2DGPUCompositing',
             test_rect=[0, 0, 140, 140],
-            browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
+            browser_args=browser_args + [cba.DISABLE_ACCELERATED_2D_CANVAS]),
     ]
 
   @staticmethod
   def LowLatencyPages(base_name):
     unaccelerated_args = [
-        '--disable-accelerated-2d-canvas',
-        '--disable-gpu-compositing',
+        cba.DISABLE_ACCELERATED_2D_CANVAS,
+        cba.DISABLE_GPU_COMPOSITING,
     ]
     return [
         PixelTestPage('pixel_canvas_low_latency_2d.html',
@@ -523,7 +525,7 @@ class PixelTestPages(object):
   # Currently this is Windows and Linux.
   @staticmethod
   def SwiftShaderPages(base_name):
-    browser_args = ['--disable-gpu']
+    browser_args = [cba.DISABLE_GPU]
     suffix = "_SwiftShader"
     return [
         PixelTestPage('pixel_canvas2d.html',
@@ -547,7 +549,7 @@ class PixelTestPages(object):
   # Test rendering where GPU process is blocked.
   @staticmethod
   def NoGpuProcessPages(base_name):
-    browser_args = ['--disable-gpu', '--disable-software-rasterizer']
+    browser_args = [cba.DISABLE_GPU, cba.DISABLE_SOFTWARE_RASTERIZER]
     suffix = "_NoGpuProcess"
     return [
         PixelTestPage(
@@ -672,12 +674,14 @@ class PixelTestPages(object):
         '--enable-direct-composition-video-overlays',
         # All bots are connected with a power source, however, we want to to
         # test with the code path that's enabled with battery power.
-        '--disable_vp_scaling=1'
+        cba.DISABLE_VP_SCALING,
     ]
     browser_args_YUY2 = browser_args + [
         '--disable-features=DirectCompositionPreferNV12Overlays'
     ]
-    browser_args_DXVA = browser_args + ['--disable-features=D3D11VideoDecoder']
+    browser_args_DXVA = browser_args + [
+        cba.DISABLE_FEATURES_D3D11_VIDEO_DECODER
+    ]
 
     # Most tests fall roughly into 3 tiers of noisiness.
     # Parameter values were determined using the automated optimization script,

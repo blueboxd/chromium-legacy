@@ -107,14 +107,12 @@ class AppModalDialogController {
   // The title of the dialog.
   const base::string16 title_;
 
-  // // True if CompleteDialog was called.
-  bool completed_;
-
   // False if the dialog should no longer be shown, e.g. because the underlying
   // tab navigated away while the dialog was queued.
   bool valid_;
 
-  // // The toolkit-specific implementation of the app modal dialog box.
+  // The toolkit-specific implementation of the app modal dialog box. When
+  // non-null, |view_| owns |this|.
   AppModalDialogView* view_;
 
   // The WebContents that opened this dialog.

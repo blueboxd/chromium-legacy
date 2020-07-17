@@ -80,6 +80,7 @@ if (is_chromeos) {
   schema_sources_ += [
     "certificate_provider.idl",
     "certificate_provider_internal.idl",
+    "document_scan.idl",
     "echo_private.json",
     "enterprise_device_attributes.idl",
     "enterprise_networking_attributes.idl",

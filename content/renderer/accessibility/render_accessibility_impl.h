@@ -11,8 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/ax_content_node_data.h"
-#include "content/common/ax_content_tree_update.h"
 #include "content/common/content_export.h"
 #include "content/common/render_accessibility.mojom.h"
 #include "content/public/renderer/plugin_ax_tree_source.h"
@@ -23,10 +21,12 @@
 #include "third_party/blink/public/web/web_ax_context.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "ui/accessibility/ax_event.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_serializer.h"
+#include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace base {
@@ -54,7 +54,7 @@ class RenderFrameImpl;
 class RenderAccessibilityManager;
 
 using BlinkAXTreeSerializer =
-    ui::AXTreeSerializer<blink::WebAXObject, AXContentNodeData, ui::AXTreeData>;
+    ui::AXTreeSerializer<blink::WebAXObject, ui::AXNodeData, ui::AXTreeData>;
 
 class AXTreeSnapshotterImpl : public AXTreeSnapshotter {
  public:
@@ -66,11 +66,11 @@ class AXTreeSnapshotterImpl : public AXTreeSnapshotter {
                 size_t max_node_count,
                 ui::AXTreeUpdate* accessibility_tree) override;
 
-  // Same as above, but returns in |accessibility_tree| a AXContentTreeUpdate
+  // Same as above, but returns in |accessibility_tree| a ui::AXTreeUpdate
   // with content-specific metadata, instead of an AXTreeUpdate.
   void SnapshotContentTree(ui::AXMode ax_mode,
                            size_t max_node_count,
-                           AXContentTreeUpdate* accessibility_tree);
+                           ui::AXTreeUpdate* accessibility_tree);
 
  private:
   RenderFrameImpl* render_frame_;
@@ -108,7 +108,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   // Request a one-time snapshot of the accessibility tree without
   // enabling accessibility if it wasn't already enabled.
   static void SnapshotAccessibilityTree(RenderFrameImpl* render_frame,
-                                        AXContentTreeUpdate* response,
+                                        ui::AXTreeUpdate* response,
                                         ui::AXMode ax_mode);
 
   RenderAccessibilityImpl(
@@ -198,7 +198,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   void OnLoadInlineTextBoxes(const ui::AXActionTarget* target);
   void OnGetImageData(const ui::AXActionTarget* target,
                       const gfx::Size& max_size);
-  void AddPluginTreeToUpdate(AXContentTreeUpdate* update,
+  void AddPluginTreeToUpdate(ui::AXTreeUpdate* update,
                              bool invalidate_plugin_subtree);
 
   // Creates and takes ownership of an instance of the class that automatically
@@ -225,7 +225,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   void ScheduleSendPendingAccessibilityEvents(
       bool scheduling_from_task = false);
   void AddImageAnnotationDebuggingAttributes(
-      const std::vector<AXContentTreeUpdate>& updates);
+      const std::vector<ui::AXTreeUpdate>& updates);
 
   // Returns the document for the active popup if any.
   blink::WebDocument GetPopupDocument();

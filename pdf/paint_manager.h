@@ -14,11 +14,12 @@
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace pp {
-class Graphics2D;
 class Instance;
 class Point;
 class Rect;
 }  // namespace pp
+
+namespace chrome_pdf {
 
 // Custom PaintManager for the PDF plugin.  This is branched from the Pepper
 // version.  The difference is that this supports progressive rendering of dirty
@@ -29,28 +30,6 @@ class Rect;
 // The client's OnPaint
 class PaintManager {
  public:
-  // Like PaintAggregator's version, but allows the plugin to tell us whether
-  // it should be flushed to the screen immediately or when the rest of the
-  // plugin viewport is ready.
-  struct ReadyRect {
-    ReadyRect();
-    ReadyRect(const pp::Rect& r, const pp::ImageData& i, bool f);
-    ReadyRect(const ReadyRect& that);
-
-    operator PaintAggregator::ReadyRect() const {
-      PaintAggregator::ReadyRect rv;
-      rv.offset = offset;
-      rv.rect = rect;
-      rv.image_data = image_data;
-      return rv;
-    }
-
-    pp::Point offset;
-    pp::Rect rect;
-    pp::ImageData image_data;
-    bool flush_now;
-  };
-
   class Client {
    public:
     // Paints the given invalid area of the plugin to the given graphics
@@ -72,7 +51,7 @@ class PaintManager {
     //
     // Calling Invalidate/Scroll is not allowed while inside an OnPaint
     virtual void OnPaint(const std::vector<pp::Rect>& paint_rects,
-                         std::vector<ReadyRect>* ready,
+                         std::vector<PaintReadyRect>* ready,
                          std::vector<pp::Rect>* pending) = 0;
 
    protected:
@@ -88,23 +67,9 @@ class PaintManager {
   // The Client is a non-owning pointer and must remain valid (normally the
   // object implementing the Client interface will own the paint manager).
   //
-  // The is_always_opaque flag will be passed to the device contexts that this
-  // class creates. Set this to true if your plugin always draws an opaque
-  // image to the device. This is used as a hint to the browser that it does
-  // not need to do alpha blending, which speeds up painting. If you generate
-  // non-opqaue pixels or aren't sure, set this to false for more general
-  // blending.
-  //
-  // If you set is_always_opaque, your alpha channel should always be set to
-  // 0xFF or there may be painting artifacts. Being opaque will allow the
-  // browser to do a memcpy rather than a blend to paint the plugin, and this
-  // means your alpha values will get set on the page backing store. If these
-  // values are incorrect, it could mess up future blending. If you aren't
-  // sure, it is always correct to specify that it it not opaque.
-  //
   // You will need to call SetSize before this class will do anything. Normally
   // you do this from the ViewChanged method of your plugin instance.
-  PaintManager(pp::Instance* instance, Client* client, bool is_always_opaque);
+  PaintManager(pp::Instance* instance, Client* client);
   PaintManager(const PaintManager&) = delete;
   PaintManager& operator=(const PaintManager&) = delete;
   ~PaintManager();
@@ -180,8 +145,6 @@ class PaintManager {
   // Non-owning pointer. See the constructor.
   Client* const client_;
 
-  const bool is_always_opaque_;
-
   pp::CompletionCallbackFactory<PaintManager> callback_factory_;
 
   // This graphics device will be is_null() if no graphics has been manually
@@ -214,5 +177,7 @@ class PaintManager {
   // True when the view size just changed and we're waiting for a paint.
   bool view_size_changed_waiting_for_paint_ = false;
 };
+
+}  // namespace chrome_pdf
 
 #endif  // PDF_PAINT_MANAGER_H_

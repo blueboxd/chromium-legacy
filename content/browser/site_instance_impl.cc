@@ -5,6 +5,7 @@
 #include "content/browser/site_instance_impl.h"
 
 #include <string>
+#include <tuple>
 
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
@@ -63,13 +64,22 @@ SiteInfo SiteInfo::CreateForErrorPage() {
 SiteInfo::SiteInfo(const GURL& site_url, const GURL& process_lock_url)
     : site_url_(site_url), process_lock_url_(process_lock_url) {}
 
+// static
+auto SiteInfo::MakeTie(const SiteInfo& site_info) {
+  return std::tie(site_info.site_url_.possibly_invalid_spec(),
+                  site_info.process_lock_url_.possibly_invalid_spec());
+}
+
 bool SiteInfo::operator==(const SiteInfo& other) const {
-  return site_url_ == other.site_url_ &&
-         process_lock_url_ == other.process_lock_url_;
+  return MakeTie(*this) == MakeTie(other);
 }
 
 bool SiteInfo::operator!=(const SiteInfo& other) const {
-  return !(*this == other);
+  return MakeTie(*this) != MakeTie(other);
+}
+
+bool SiteInfo::operator<(const SiteInfo& other) const {
+  return MakeTie(*this) < MakeTie(other);
 }
 
 std::string SiteInfo::GetDebugString() const {
@@ -483,8 +493,8 @@ bool SiteInstanceImpl::HasSite() const {
   return has_site_;
 }
 
-bool SiteInstanceImpl::HasRelatedSiteInstance(const GURL& url) {
-  return browsing_instance_->HasSiteInstance(url);
+bool SiteInstanceImpl::HasRelatedSiteInstance(const SiteInfo& site_info) {
+  return browsing_instance_->HasSiteInstance(site_info);
 }
 
 scoped_refptr<SiteInstance> SiteInstanceImpl::GetRelatedSiteInstance(
@@ -664,7 +674,8 @@ bool SiteInstanceImpl::IsSameSiteWithURL(const GURL& url) {
                GetSiteForURLInternal(GetIsolationContext(), url,
                                      true /* should_use_effective_urls */,
                                      true /* allow_default_site_url */) &&
-           !browsing_instance_->HasSiteInstance(url);
+           !browsing_instance_->HasSiteInstance(
+               ComputeSiteInfo(GetIsolationContext(), url));
   }
 
   return SiteInstanceImpl::IsSameSite(GetIsolationContext(),

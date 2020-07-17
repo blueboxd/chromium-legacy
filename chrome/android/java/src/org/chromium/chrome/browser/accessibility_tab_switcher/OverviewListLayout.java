@@ -58,7 +58,6 @@ public class OverviewListLayout extends Layout
                 adjustForFullscreen();
             }
         };
-        mBrowserControlsStateProvider.addObserver(mBrowserControlsObserver);
     }
 
     @Override
@@ -163,10 +162,14 @@ public class OverviewListLayout extends Layout
         mTabModelWrapper.setStateBasedOnModel();
 
         doneShowing();
+        mBrowserControlsStateProvider.addObserver(mBrowserControlsObserver);
+        adjustForFullscreen();
     }
 
     @Override
     public void startHiding(int nextId, boolean hintAtTabSelection) {
+        mBrowserControlsStateProvider.removeObserver(mBrowserControlsObserver);
+
         super.startHiding(nextId, hintAtTabSelection);
 
         doneHiding();

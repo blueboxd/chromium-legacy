@@ -217,7 +217,7 @@ on this.
 
 There are two ways to run web tests with additional command-line arguments:
 
-* Using `--additional-driver-flag`:
+* Using `--additional-driver-flag` or `--flag-specific`:
 
   ```bash
   third_party/blink/tools/run_web_tests.py --additional-driver-flag=--blocking-repaint
@@ -300,8 +300,15 @@ There are two ways to run web tests with additional command-line arguments:
   with the flags without creating any virtual tests.
 
 For flags whose implementation is still in progress, virtual test suites and
-flag-specific expectations represent two alternative strategies for testing.
-Consider the following when choosing between them:
+flag-specific expectations represent two alternative strategies for testing both
+the enabled code path and not-enabled code path. They are preferred to only
+setting a [runtime enabled feature](../../third_party/blink/renderer/platform/RuntimeEnabledFeatures.md)
+to `status: "test"` if the feature has substantially different code path from
+production because the latter would cause loss of test coverage of the production
+code path.
+
+Consider the following when choosing between virtual test suites and
+flag-specific expectations:
 
 * The
   [waterfall builders](https://dev.chromium.org/developers/testing/chromium-build-infrastructure/tour-of-the-chromium-buildbot)
@@ -309,7 +316,8 @@ Consider the following when choosing between them:
   will run all virtual test suites in addition to the non-virtual tests.
   Conversely, a flag-specific expectations file won't automatically cause the
   bots to test your flag - if you want bot coverage without virtual test suites,
-  you will need to set up a dedicated bot for your flag.
+  you will need to set up a dedicated bot ([example](https://chromium-review.googlesource.com/c/chromium/src/+/1850255))
+  for your flag.
 
 * Due to the above, virtual test suites incur a performance penalty for the
   commit queue and the continuous build infrastructure. This is exacerbated by

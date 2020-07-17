@@ -1150,7 +1150,7 @@ TEST_F(PopulatedAppListTest, ScreenRotationDuringAppsGridItemReparentDrag) {
   EXPECT_EQ(folder->id(), apps_grid_view_->GetItemViewAt(3)->item()->id());
 }
 
-// Tests that app list folder item reparenting drag to another floder.
+// Tests that app list folder item reparenting drag to another folder.
 TEST_F(PopulatedAppListTest, AppsGridItemReparentToFolderDrag) {
   UpdateDisplay("1200x600");
 
@@ -1304,6 +1304,54 @@ TEST_F(PopulatedAppListWithVKEnabledTest,
   // Expect the event to be handled in the grid, and the keyboard to be closed.
   EXPECT_TRUE(tap_between.handled());
   EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
+}
+
+// Tests that a folder item that is dragged to the page flip area and released
+// will discard empty pages in the apps grid. If an empty page is not discarded,
+// the apps grid crashes (See http://crbug.com/1100011).
+TEST_F(PopulatedAppListTest, FolderItemDroppedRemovesBlankPage) {
+  InitializeAppsGrid();
+  app_list_test_model_->CreateAndPopulateFolderWithApps(3);
+  app_list_test_model_->PopulateApps(2);
+  ShowAppListInAppsFullScreen();
+  ASSERT_EQ(1, apps_grid_view_->pagination_model()->total_pages());
+
+  // Tap the folder item to show its contents.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->GestureTapAt(
+      apps_grid_view_->GetItemViewAt(0)->GetBoundsInScreen().CenterPoint());
+  ASSERT_TRUE(AppListIsInFolderView());
+
+  // Start dragging the first item in the active folder.
+  AppListItemView* dragged_view =
+      folder_view()->items_grid_view()->GetItemViewAt(0);
+  event_generator->MoveTouch(dragged_view->GetBoundsInScreen().CenterPoint());
+  event_generator->PressTouch();
+  ASSERT_TRUE(dragged_view->FireTouchDragTimerForTest());
+
+  // Move the pointer over the page flip area in the apps grid. We first fire
+  // the folder item reparent timer. The folder view should be hidden.
+  const gfx::Rect apps_grid_bounds = apps_grid_view_->GetBoundsInScreen();
+  const gfx::Point page_flip_bottom_center =
+      gfx::Point(apps_grid_bounds.width() / 2, apps_grid_bounds.bottom() + 1);
+  event_generator->MoveTouch(page_flip_bottom_center);
+  event_generator->MoveTouchBy(0, 5);
+  EXPECT_TRUE(
+      folder_view()->items_grid_view()->FireFolderItemReparentTimerForTest());
+  EXPECT_FALSE(AppListIsInFolderView());
+
+  // Move again to trigger the page flip timer, fire it and finish the page flip
+  // animation. There should be 2 pages.
+  event_generator->MoveTouchBy(0, -10);
+  EXPECT_TRUE(apps_grid_view_->FirePageFlipTimerForTest());
+  apps_grid_view_->pagination_model()->FinishAnimation();
+  EXPECT_EQ(2, apps_grid_view_->pagination_model()->total_pages());
+
+  // Release the dragged app. The dragged app should be still in the folder. The
+  // newly blank page should be discarded and there should be no crash.
+  event_generator->ReleaseTouch();
+  EXPECT_EQ(1, apps_grid_view_->pagination_model()->total_pages());
+  EXPECT_EQ(dragged_view, folder_view()->items_grid_view()->GetItemViewAt(0));
 }
 
 // Tests that app list hides when focus moves to a normal window.

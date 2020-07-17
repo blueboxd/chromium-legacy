@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">ရွေးချယ်ရန်</translation>
 <translation id="1859234291848436338">လမ်းညွှန်ချက် ရေးနေ</translation>
 <translation id="1860796786778352021">အကြောင်းကြားစာ ပိတ်ရန်</translation>
+<translation id="186476001994626254">ဝဘ် စမတ် ကူးထည့်ရန် အကြောင်းအရာ</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">အားလုံးကို &amp;ရွေးရန်</translation>
@@ -75,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />၊ <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">ဖိုင်တွဲဖွင့်</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{ပြီးခဲ့သည့် ၁ နှစ်}other{ပြီးခဲ့သည့် # နှစ်}}</translation>
+<translation id="2878511608894704031">အားလုံး ဖျက်ရန်</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{၁ရက် အတွင်း}other{#ရက် အတွင်း}}</translation>
 <translation id="2931838996092594335">နှိပ်ပါ</translation>
 <translation id="2981684127883932071">အကြံပြုချက်များကို ဖော်ပြနေသည်</translation>
@@ -172,6 +174,7 @@
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6430678249303439055">ဤအက်ပ်မှ အကြောင်းအကြားချက်များ အားလုံးကို ပိတ်ရန်</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{ပြီးခဲ့သည့် ၁ စက္ကန့်က}other{ပြီးခဲ့သည့် # စက္ကန့်က}}</translation>
+<translation id="6503257047630241175">RTF အကြောင်းအရာ</translation>
 <translation id="6539092367496845964">တစ်ခုခု မှားသွားသည်။ နောက်မှ ထပ်စမ်းကြည့်ပါ။</translation>
 <translation id="654149438358937226">သတိပေးချက်များအားလုံးကို ပိတ်ရန်</translation>
 <translation id="6567071839949112727">ပင်မကို ကလစ်နှိပ်ပါ</translation>

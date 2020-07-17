@@ -74,9 +74,9 @@ bool BytesTransferredKey::operator==(const BytesTransferredKey& other) const {
 }
 
 TaskManagerImpl::TaskManagerImpl()
-    : on_background_data_ready_callback_(
-          base::Bind(&TaskManagerImpl::OnTaskGroupBackgroundCalculationsDone,
-                     base::Unretained(this))),
+    : on_background_data_ready_callback_(base::BindRepeating(
+          &TaskManagerImpl::OnTaskGroupBackgroundCalculationsDone,
+          base::Unretained(this))),
       blocking_pool_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
@@ -602,8 +602,8 @@ void TaskManagerImpl::Refresh() {
       !waiting_for_memory_dump_) {
     // The callback keeps this object alive until the callback is invoked.
     waiting_for_memory_dump_ = true;
-    auto callback = base::Bind(&TaskManagerImpl::OnReceivedMemoryDump,
-                               weak_ptr_factory_.GetWeakPtr());
+    auto callback = base::BindOnce(&TaskManagerImpl::OnReceivedMemoryDump,
+                                   weak_ptr_factory_.GetWeakPtr());
     memory_instrumentation::MemoryInstrumentation::GetInstance()
         ->RequestPrivateMemoryFootprint(base::kNullProcessId,
                                         std::move(callback));

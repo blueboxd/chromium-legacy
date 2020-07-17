@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 #include "third_party/blink/renderer/core/paint/svg_inline_flow_box_painter.h"
 #include "third_party/blink/renderer/core/paint/svg_inline_text_box_painter.h"
+#include "third_party/blink/renderer/core/paint/svg_model_object_painter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
@@ -24,15 +25,13 @@ void SVGRootInlineBoxPainter::Paint(const PaintInfo& paint_info,
   bool has_selection =
       !paint_info.IsPrinting() && svg_root_inline_box_.IsSelected();
 
-  if (has_selection && !DrawingRecorder::UseCachedDrawingIfPossible(
-                           paint_info.context,
-                           *LineLayoutAPIShim::ConstLayoutObjectFrom(
-                               svg_root_inline_box_.GetLineLayoutItem()),
-                           paint_info.phase)) {
-    DrawingRecorder recorder(paint_info.context,
-                             *LineLayoutAPIShim::ConstLayoutObjectFrom(
-                                 svg_root_inline_box_.GetLineLayoutItem()),
-                             paint_info.phase);
+  const auto& layout_object = *LineLayoutAPIShim::ConstLayoutObjectFrom(
+      svg_root_inline_box_.GetLineLayoutItem());
+  if (has_selection &&
+      !DrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, layout_object, paint_info.phase)) {
+    SVGDrawingRecorder recorder(paint_info.context, layout_object,
+                                paint_info.phase);
     for (InlineBox* child = svg_root_inline_box_.FirstChild(); child;
          child = child->NextOnLine()) {
       if (auto* svg_inline_text_box = DynamicTo<SVGInlineTextBox>(child)) {

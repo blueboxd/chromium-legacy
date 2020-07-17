@@ -94,10 +94,10 @@ exec('//recipes.star')
 
 exec('//notifiers.star')
 
-exec('//subprojects/chromium/main.star')
-master_only_exec('//subprojects/findit/main.star')
-master_only_exec('//subprojects/goma/main.star')
-master_only_exec('//subprojects/webrtc/main.star')
+exec('//subprojects/chromium/subproject.star')
+master_only_exec('//subprojects/findit/subproject.star')
+master_only_exec('//subprojects/goma/subproject.star')
+master_only_exec('//subprojects/webrtc/subproject.star')
 
 master_only_exec('//generators/cq-builders-md.star')
 # This should be exec'ed before exec'ing scheduler-noop-jobs.star because

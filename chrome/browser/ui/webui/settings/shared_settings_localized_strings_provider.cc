@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -246,7 +248,15 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
 void AddNearbyShareData(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"nearbyShareTitle", IDS_SETTINGS_NEARBY_SHARE_TITLE},
-  };
+      {"nearbyShareDeviceNameRowTitle",
+       IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_ROW_TITLE},
+      {"nearbyShareDeviceNameDialogTitle",
+       IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_DIALOG_TITLE},
+      {"nearbyShareDeviceNameDialogInputLabel",
+       IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_INPUT_LABEL},
+      {"nearbyShareEditDeviceName", IDS_SETTINGS_NEARBY_SHARE_EDIT_DEVICE_NAME},
+      {"nearbyShareDeviceNameAriaDescription",
+       IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_ARIA_DESCRIPTION}};
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
   html_source->AddBoolean(

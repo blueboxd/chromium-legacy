@@ -49,7 +49,7 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
       layer->SetHitTestable(true);
       RecordForeignLayer(context, layout_html_canvas_,
                          DisplayItem::kForeignLayerCanvas, layer,
-                         FloatPoint(pixel_snapped_rect.Location()));
+                         pixel_snapped_rect.Location());
       return;
     }
   }

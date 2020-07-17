@@ -27,11 +27,10 @@ class ChromeHistoryBackendClient : public history::HistoryBackendClient {
   std::vector<history::URLAndTitle> GetPinnedURLs() override;
   bool IsWebSafe(const GURL& url) override;
 #if defined(OS_ANDROID)
-  void OnHistoryBackendInitialized(
-      history::HistoryBackend* history_backend,
-      history::HistoryDatabase* history_database,
-      history::ThumbnailDatabase* thumbnail_database,
-      const base::FilePath& history_dir) override;
+  void OnHistoryBackendInitialized(history::HistoryBackend* history_backend,
+                                   history::HistoryDatabase* history_database,
+                                   history::FaviconDatabase* favicon_database,
+                                   const base::FilePath& history_dir) override;
   void OnHistoryBackendDestroyed(history::HistoryBackend* history_backend,
                                  const base::FilePath& history_dir) override;
 #endif  // defined(OS_ANDROID)

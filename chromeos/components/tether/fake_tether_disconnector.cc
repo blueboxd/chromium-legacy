@@ -15,7 +15,7 @@ FakeTetherDisconnector::~FakeTetherDisconnector() = default;
 void FakeTetherDisconnector::DisconnectFromNetwork(
     const std::string& tether_network_guid,
     base::OnceClosure success_callback,
-    const network_handler::StringResultCallback& error_callback,
+    StringErrorCallback error_callback,
     const TetherSessionCompletionLogger::SessionCompletionReason&
         session_completion_reason) {
   last_disconnected_tether_network_guid_ = tether_network_guid;
@@ -26,7 +26,7 @@ void FakeTetherDisconnector::DisconnectFromNetwork(
   if (disconnection_error_name_.empty())
     std::move(success_callback).Run();
   else
-    error_callback.Run(disconnection_error_name_);
+    std::move(error_callback).Run(disconnection_error_name_);
 }
 
 }  // namespace tether

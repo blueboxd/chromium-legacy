@@ -999,7 +999,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_DiscardTabsWithMinimizedWindow) {
 #define MAYBE_DiscardTabsWithOccludedWindow \
   DISABLED_DiscardTabsWithOccludedWindow
 #else
-#define MAYBE_DiscardTabsWithOccludedWindow DiscardTabsWithOccludedWindow
+// TODO(https://crbug.com/1106485): The test is flaky on release builds.
+#define MAYBE_DiscardTabsWithOccludedWindow DISABLED_DiscardTabsWithOccludedWindow
 #endif
 IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_DiscardTabsWithOccludedWindow) {
   // Occluded browser.

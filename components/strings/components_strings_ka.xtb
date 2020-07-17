@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ka">
 <translation id="1008557486741366299">ახლა არა</translation>
+<translation id="100957008357583611">გსურთ თქვენი მდებარეობის გამოყენება?</translation>
 <translation id="1010200102790553230">გვერდის მოგვიანებით ჩატვირთვა</translation>
 <translation id="1015730422737071372">მიუთითეთ დამატებითი დეტალები</translation>
 <translation id="1019413721762100891">გამორთული</translation>
@@ -421,7 +422,6 @@
 <translation id="2705137772291741111">ამ საიტის შენახული (ქეშირებული) ასლის წაკითხვა ვერ მოხერხდა.</translation>
 <translation id="2709516037105925701">ავტომატური შევსება</translation>
 <translation id="2713444072780614174">თეთრი</translation>
-<translation id="2720342946869265578">ახლომახლო</translation>
 <translation id="2721148159707890343">მოთხოვნა წარმატებით განხორციელდა</translation>
 <translation id="272451190272506600">გადასახდელად შეეხეთ სენსორს</translation>
 <translation id="2728127805433021124">სერვერის სერტიფიკატი ხელმოწერილია სუსტი ხელმოწერის ალგორითმის გამოყენებით.</translation>
@@ -715,7 +715,6 @@
 <translation id="3987940399970879459">1 მბაიტზე ნაკლები</translation>
 <translation id="3990250421422698716">კიდის წანაცვლება</translation>
 <translation id="3996311196211510766">საიტმა (<ph name="ORIGIN" />) მოითხოვა წყაროს წესების მისადაგება მის მიმართ ყველა მოთხოვნისთვის, თუმცა ამ წესების მისადაგება ამჟამად ვერ ხერხდება.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 ახლომახლო ვებგვერდი}other{# ახლომახლო ვებგვერდი}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF დოკუმენტი, რომელიც შეიცავს {COUNT} გვერდს}other{PDF დოკუმენტი, რომელიც შეიცავს {COUNT} გვერდს}}</translation>
 <translation id="4030383055268325496">დამატების &amp;მოქმედების გაუქმება</translation>
 <translation id="4032320456957708163">თქვენს ბრაუზერს მართავს <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -929,7 +928,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">შენახვა...</translation>
 <translation id="4913987521957242411">ზედა მარცხენა ნაწილის გახვრეტა</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{და 1 სხვა ვებგვერდი}other{და # სხვა ვებგვერდი}}</translation>
 <translation id="4923459931733593730">გადახდა</translation>
 <translation id="4926049483395192435">საჭიროა მიუთითოთ.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> იუწყება:</translation>
@@ -1170,6 +1168,7 @@
 <translation id="5869405914158311789">ეს საიტი მიუწვდომელია</translation>
 <translation id="5869522115854928033">შენახული პაროლები</translation>
 <translation id="5887400589839399685">ბარათი შენახულია</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> ითხოვს თქვენი მონაცემების სარეზერვო ასლების შექმნას და ამ მოწყობილობის დაბრუნებას.</translation>
 <translation id="5895138241574237353">გადატვირთვა</translation>
 <translation id="5895187275912066135">გაცემულია</translation>
 <translation id="5901630391730855834">ყვითელი</translation>
@@ -1320,7 +1319,6 @@
 <translation id="6518133107902771759">გადამოწმება</translation>
 <translation id="6521745193039995384">არ არის აქტიური</translation>
 <translation id="6529602333819889595">წაშლის &amp;გამეორება</translation>
-<translation id="6534179046333460208">ფიზიკური ვების შემოთავაზებები</translation>
 <translation id="6545864417968258051">Bluetooth სკანირება</translation>
 <translation id="6547208576736763147">ორმაგად გახვრეტა მარცხნივ</translation>
 <translation id="6554795675067793129">თქვენს ანგარიშს მართავს <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1842,7 +1840,6 @@
 <translation id="8790007591277257123">წაშლის &amp;გამეორება</translation>
 <translation id="8792621596287649091">თქვენ შეიძლება მოგპარონ პერსონალური მონაცემები, ან დაკარგოთ წვდომა თქვენს <ph name="ORG_NAME" /> ანგარიშზე. Chromium გირჩევთ, ახლავე შეცვალოთ პაროლი.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" />-მა ჩართო Chrome Enterprise Connectors თქვენს ბრაუზერში. აღნიშნულ მაერთებლებს წვდომა აქვს თქვენს გარკვეულ მონაცემებზე.</translation>
-<translation id="8800988563907321413">აქ გამოჩნდება თქვენთვის განკუთვნილი ახლომახლო შემოთავაზებები</translation>
 <translation id="8805819170075074995">სიის ჩანაწერი „<ph name="LANGUAGE_ID" />“: ჩანაწერი იგნორირებულია, ვინაიდან მას შეიცავს „SpellcheckLanguage“ წესებიც.</translation>
 <translation id="8807160976559152894">შემოჭრა თითოეული გვერდის შემდეგ</translation>
 <translation id="8820817407110198400">სანიშნეები</translation>

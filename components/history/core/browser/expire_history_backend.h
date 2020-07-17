@@ -26,10 +26,10 @@ class SequencedTaskRunner;
 
 namespace history {
 
+class FaviconDatabase;
 class HistoryBackendClient;
 class HistoryBackendNotifier;
 class HistoryDatabase;
-class ThumbnailDatabase;
 
 // Encapsulates visit expiration criteria and type of visits to expire.
 class ExpiringVisitsReader {
@@ -65,8 +65,7 @@ class ExpireHistoryBackend {
   ~ExpireHistoryBackend();
 
   // Completes initialization by setting the databases that this class will use.
-  void SetDatabases(HistoryDatabase* main_db,
-                    ThumbnailDatabase* thumb_db);
+  void SetDatabases(HistoryDatabase* main_db, FaviconDatabase* favicon_db);
 
   // Begins periodic expiration of history older than the given threshold. This
   // will continue until the object is deleted.
@@ -98,9 +97,8 @@ class ExpireHistoryBackend {
   // accordingly.
   void ExpireHistoryBeforeForTesting(base::Time end_time);
 
-  // Clears all old on-demand favicons from thumbnail database. Fails silently
-  // (we don't care about favicons so much, so don't want to stop everything if
-  // it fails).
+  // Clears all old on-demand favicons. Fails silently (we don't care about
+  // favicons so much, so don't want to stop everything if it fails).
   void ClearOldOnDemandFaviconsIfPossible(base::Time expiration_threshold);
 
   // Returns the current cut-off time before which we will start expiring stuff.
@@ -149,7 +147,7 @@ class ExpireHistoryBackend {
     // will need to check when the delete operations are complete.
     std::set<favicon_base::FaviconID> affected_favicons;
 
-    // All favicon urls that were actually deleted from the thumbnail db.
+    // All favicon urls that were deleted from the favicon db.
     std::set<GURL> deleted_favicons;
   };
 
@@ -163,7 +161,7 @@ class ExpireHistoryBackend {
                               DeleteEffects* effects);
 
   // Finds or deletes dependency information for the given URL. Information that
-  // is specific to this URL (URL row, thumbnails, etc.) is deleted.
+  // is specific to this URL (URL row, favicons, etc.) is deleted.
   //
   // This does not affect the visits! This is used for expiration as well as
   // deleting from the UI, and they handle visits differently.
@@ -176,7 +174,7 @@ class ExpireHistoryBackend {
   //
   // Assumes the main_db_ is non-NULL.
   //
-  // NOTE: If the url is pinned, we keep the favicons and thumbnails.
+  // NOTE: If the url is pinned, we keep the favicons.
   void DeleteOneURL(const URLRow& url_row,
                     bool is_pinned,
                     DeleteEffects* effects);
@@ -269,7 +267,7 @@ class ExpireHistoryBackend {
 
   // Non-owning pointers to the databases we deal with (MAY BE NULL).
   HistoryDatabase* main_db_;       // Main history database.
-  ThumbnailDatabase* thumb_db_;    // Thumbnails and favicons.
+  FaviconDatabase* favicon_db_;
 
   // The threshold for "old" history where we will automatically delete it.
   base::TimeDelta expiration_threshold_;

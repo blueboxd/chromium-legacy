@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.display_cutout;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.graphics.Rect;
+import android.os.Build;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 
@@ -14,7 +16,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.UserData;
 import org.chromium.base.UserDataHost;
-import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blink.mojom.ViewportFit;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -29,13 +30,7 @@ import org.chromium.ui.base.WindowAndroid;
 /**
  * Controls the display cutout state for the tab.
  */
-@JNINamespace("chrome")
 public class DisplayCutoutController implements InsetObserverView.WindowInsetObserver, UserData {
-    /** These are the property names of the different cutout mode states. */
-    private static final String VIEWPORT_FIT_AUTO = "LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT";
-    private static final String VIEWPORT_FIT_CONTAIN = "LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER";
-    private static final String VIEWPORT_FIT_COVER = "LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES";
-
     private static final Class<DisplayCutoutController> USER_DATA_KEY =
             DisplayCutoutController.class;
 
@@ -188,49 +183,42 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
      *     equivalent value.
      */
     @VisibleForTesting
-    protected String getDisplayCutoutMode() {
+    @TargetApi(Build.VERSION_CODES.P)
+    protected int getDisplayCutoutMode() {
         // If we are not interactable then force the default mode.
-        if (!mTab.isUserInteractable()) return VIEWPORT_FIT_AUTO;
+        if (!mTab.isUserInteractable()) {
+            return LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+        }
 
         switch (mViewportFit) {
             case ViewportFit.CONTAIN:
-                return VIEWPORT_FIT_CONTAIN;
+                return LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER;
             case ViewportFit.COVER_FORCED_BY_USER_AGENT:
             case ViewportFit.COVER:
-                return VIEWPORT_FIT_COVER;
+                return LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
             case ViewportFit.AUTO:
             default:
-                return VIEWPORT_FIT_AUTO;
+                return LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
         }
     }
 
     @VisibleForTesting
-    protected Object getWindowAttributes() {
+    protected LayoutParams getWindowAttributes() {
         return mWindow.getAttributes();
     }
 
     @VisibleForTesting
-    protected void setWindowAttributes(Object attributes) {
-        mWindow.setAttributes((LayoutParams) attributes);
+    protected void setWindowAttributes(LayoutParams attributes) {
+        mWindow.setAttributes(attributes);
     }
 
     /** Updates the layout based on internal state. */
     @VisibleForTesting
     protected void maybeUpdateLayout() {
-        try {
-            Object attributes = getWindowAttributes();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return;
 
-            int layoutValue =
-                    attributes.getClass().getDeclaredField(getDisplayCutoutMode()).getInt(null);
-
-            attributes.getClass()
-                    .getDeclaredField("layoutInDisplayCutoutMode")
-                    .setInt(attributes, layoutValue);
-
-            setWindowAttributes(attributes);
-        } catch (Exception ex) {
-            // API is not available.
-            return;
-        }
+        LayoutParams attributes = getWindowAttributes();
+        attributes.layoutInDisplayCutoutMode = getDisplayCutoutMode();
+        setWindowAttributes(attributes);
     }
 }

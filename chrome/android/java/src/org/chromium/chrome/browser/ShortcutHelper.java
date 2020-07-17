@@ -28,7 +28,6 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.util.Base64;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -42,7 +41,6 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappAuthenticator;
@@ -252,10 +250,9 @@ public class ShortcutHelper {
     /**
      * Adds home screen shortcut which opens in the browser Activity.
      */
-    @SuppressWarnings("unused")
     @CalledByNative
-    public static void addShortcut(@Nullable Tab tab, String id, String url, String userTitle,
-            Bitmap icon, boolean isIconAdaptive, int source, String iconUrl) {
+    public static void addShortcut(String id, String url, String userTitle, Bitmap icon,
+            boolean isIconAdaptive, int source, String iconUrl) {
         Intent shortcutIntent = createShortcutIntent(url);
         shortcutIntent.putExtra(EXTRA_ID, id);
         shortcutIntent.putExtra(EXTRA_SOURCE, source);

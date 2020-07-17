@@ -98,6 +98,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="1995660704900986789">Matikan perangkat</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Ketik pesan</translation>
+<translation id="2018630726571919839">Ceritakan lelucon</translation>
 <translation id="2050339315714019657">Potret</translation>
 <translation id="2067602449040652523">Kecerahan keyboard</translation>
 <translation id="209965399369889474">Tidak terhubung ke jaringan</translation>
@@ -125,6 +126,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="2354174487190027830">Mengaktifkan <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Lanjutkan</translation>
 <translation id="2365393535144473978">Mengaktifkan data seluler akan mengaktifkan Bluetooth.</translation>
+<translation id="2369165858548251131">"Halo" dalam bahasa China</translation>
 <translation id="2390318262976603432">Setelan Lokal</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Update tersedia</translation>
@@ -142,6 +144,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="256712445991462162">kaca pembesar tersemat</translation>
 <translation id="2575685495496069081">Fitur login multipel telah dinonaktifkan</translation>
 <translation id="2582112259361606227">Nyalakan ulang untuk mengupdate</translation>
+<translation id="2595239820337756193">Lima kilometer dalam mil</translation>
 <translation id="2617342710774726426">Kartu SIM terkunci</translation>
 <translation id="2621713457727696555">Aman</translation>
 <translation id="2653659639078652383">Kirim</translation>
@@ -195,6 +198,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="3154351730702813399">Admin perangkat dapat memantau aktivitas akses internet Anda.</translation>
 <translation id="3181441307743005334">Mulai ulang dapat memerlukan waktu beberapa saat</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Tersambung ke satu perangkat}other{Tersambung ke # perangkat}}</translation>
+<translation id="320207200541803018">Setel timer</translation>
 <translation id="3203405173652969239">Tombol Akses diaktifkan</translation>
 <translation id="3207953481422525583">Setelan Pengguna</translation>
 <translation id="3217205077783620295">Volume aktif, mengalihkan tombol akan membisukan audio.</translation>
@@ -207,6 +211,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> tetap dapat login di lain waktu.</translation>
 <translation id="3321628682574733415">Kode induk salah</translation>
 <translation id="332587331255250389">Harap ganti baterai</translation>
+<translation id="334252345105450327">Ambil screenshot</translation>
 <translation id="3351879221545518001">Anda sedang mentransmisi layar.</translation>
 <translation id="3364721542077212959">Alat stilus</translation>
 <translation id="3368922792935385530">Tersambung</translation>
@@ -239,6 +244,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="3631369015426612114">Izinkan notifikasi dari sumber berikut</translation>
 <translation id="3638400994746983214">Alihkan ke layar privasi. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733">Pengguna yang Dikelola <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="3702846122927433391">Populasi di Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Tangkap wilayah</translation>
 <translation id="371370241367527062">Mikrofon depan</translation>
@@ -519,6 +525,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Mengembalikan ke resolusi lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Menu dipindahkan ke pojok kiri atas layar.</translation>
+<translation id="7189412385142492784">Seberapa jauh Venus</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Chromebook ini perlu dimulai ulang untuk menerapkan update. Proses ini dapat memerlukan waktu hingga 1 menit.</translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
 <translation id="726276584504105859">Tarik ke sini untuk menggunakan layar terpisah</translation>
@@ -645,6 +652,7 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="8649101189709089199">Klik untuk Diucapkan</translation>
 <translation id="8652175077544655965">Tutup setelan</translation>
 <translation id="8653151467777939995">Tampilkan setelan notifikasi. Notifikasi aktif.</translation>
+<translation id="8660331759611631213">Akar pangkat dua dari 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Tampilkan daftar jaringan. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

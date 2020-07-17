@@ -63,9 +63,9 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
             paint_state.GetPaintInfo().phase)) {
       SVGModelObjectPainter::RecordHitTestData(layout_svg_shape_,
                                                paint_state.GetPaintInfo());
-      DrawingRecorder recorder(paint_state.GetPaintInfo().context,
-                               layout_svg_shape_,
-                               paint_state.GetPaintInfo().phase);
+      SVGDrawingRecorder recorder(paint_state.GetPaintInfo().context,
+                                  layout_svg_shape_,
+                                  paint_state.GetPaintInfo().phase);
       const SVGComputedStyle& svg_style =
           layout_svg_shape_.StyleRef().SvgStyle();
 

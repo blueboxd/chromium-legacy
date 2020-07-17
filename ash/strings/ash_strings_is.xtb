@@ -98,6 +98,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="1995660704900986789">Slökkva</translation>
 <translation id="2012624427112548395">Ctrl+leitarhnappur+H</translation>
 <translation id="2016340657076538683">Sláðu inn skilaboð</translation>
+<translation id="2018630726571919839">Segðu mér brandara</translation>
 <translation id="2050339315714019657">Skammsnið</translation>
 <translation id="2067602449040652523">Birtustig lyklaborðs</translation>
 <translation id="209965399369889474">Engin nettenging</translation>
@@ -125,6 +126,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="2354174487190027830">Virkjar <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Halda áfram</translation>
 <translation id="2365393535144473978">Ef kveikt er á farsímagögnum verður kveikt á Bluetooth.</translation>
+<translation id="2369165858548251131">„Halló“ á kínversku</translation>
 <translation id="2390318262976603432">Stillingar tungumálskóða</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Uppfærsla í boði</translation>
@@ -142,6 +144,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="256712445991462162">stækkunargler í föstum glugga</translation>
 <translation id="2575685495496069081">Lokað er á margar innskráningar</translation>
 <translation id="2582112259361606227">Endurræstu til að uppfæra</translation>
+<translation id="2595239820337756193">5 km í mílum</translation>
 <translation id="2617342710774726426">SIM-kortið er læst</translation>
 <translation id="2621713457727696555">Læst</translation>
 <translation id="2653659639078652383">Senda</translation>
@@ -195,6 +198,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="3154351730702813399">Stjórnandi tækisins gæti fylgst með vafravirkni þinni.</translation>
 <translation id="3181441307743005334">Endurræsing gæti tekið nokkurn tíma</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Tengdist við tæki}one{Tengdist við # tæki}other{Tengdist við # tæki}}</translation>
+<translation id="320207200541803018">Stilltur teljari</translation>
 <translation id="3203405173652969239">Kveikt á rofaaðgangi</translation>
 <translation id="3207953481422525583">Notandastillingar</translation>
 <translation id="3217205077783620295">Kveikt er á hljóði; slökkt verður á því ef hnappurinn er valinn.</translation>
@@ -207,6 +211,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> getur ennþá skráð sig inn síðar.</translation>
 <translation id="3321628682574733415">Rangur kóði foreldris</translation>
 <translation id="332587331255250389">Skiptu um rafhlöðu</translation>
+<translation id="334252345105450327">Taka skjámynd</translation>
 <translation id="3351879221545518001">Þú ert að senda út skjámynd.</translation>
 <translation id="3364721542077212959">Pennaverkfæri</translation>
 <translation id="3368922792935385530">Tengt</translation>
@@ -239,6 +244,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="3631369015426612114">Leyfa tilkynningar frá eftirfarandi</translation>
 <translation id="3638400994746983214">Kveikja/slökkva á persónuverndarskjá. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Stýrður notandi</translation>
+<translation id="3702846122927433391">Íbúafjöldi í Nígeríu</translation>
 <translation id="3705722231355495246">–</translation>
 <translation id="3712407551474845318">Taka mynd af svæði</translation>
 <translation id="371370241367527062">Fremri hljóðnemi</translation>
@@ -519,6 +525,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="7165278925115064263">Alt+shift+K</translation>
 <translation id="7168224885072002358">Skiptir aftur yfir í fyrri upplausn eftir <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Valmynd færð efst í vinstra horn skjásins.</translation>
+<translation id="7189412385142492784">Hvað er Venus langt í burtu?</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Endurræsa þarf Chromebook til að setja upp uppfærslu. Þetta getur tekið allt að mínútu.</translation>
 <translation id="7256634071279256947">Aftari hljóðnemi</translation>
 <translation id="726276584504105859">Dragðu hingað til að skipta skjánum</translation>
@@ -645,6 +652,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="8649101189709089199">Textaupplestur</translation>
 <translation id="8652175077544655965">Loka stillingum</translation>
 <translation id="8653151467777939995">Sýna tilkynningastillingar. Kveikt er á tilkynningum</translation>
+<translation id="8660331759611631213">Kvaðratrótin af 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, sendistyrkur <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Sýna lista yfir netkerfi. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

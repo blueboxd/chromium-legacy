@@ -40,6 +40,7 @@ class ScopedGoogleUpdateIsMachine {
 class TestConfiguration : public Configuration {
  public:
   explicit TestConfiguration(const wchar_t* command_line) {
+    EXPECT_TRUE(Initialize(::GetModuleHandle(nullptr)));
     EXPECT_TRUE(ParseCommandLine(command_line));
   }
 
@@ -142,6 +143,36 @@ TEST_F(MiniInstallerConfigurationTest, HasInvalidSwitch) {
   EXPECT_FALSE(TestConfiguration(L"spam.exe").has_invalid_switch());
   EXPECT_TRUE(
       TestConfiguration(L"spam.exe --chrome-frame").has_invalid_switch());
+}
+
+TEST_F(MiniInstallerConfigurationTest, DeleteExtractedFilesDefaultTrue) {
+  EXPECT_TRUE(TestConfiguration(L"spam.exe").should_delete_extracted_files());
+}
+
+TEST_F(MiniInstallerConfigurationTest, DeleteExtractedFilesFalse) {
+  ASSERT_EQ(
+      base::win::RegKey(HKEY_CURRENT_USER, kCleanupRegistryKey, KEY_SET_VALUE)
+          .WriteValue(kCleanupRegistryValue, L"0"),
+      ERROR_SUCCESS);
+  EXPECT_FALSE(TestConfiguration(L"spam.exe").should_delete_extracted_files());
+}
+
+TEST_F(MiniInstallerConfigurationTest, DeleteExtractedFilesBogusValues) {
+  ASSERT_EQ(
+      base::win::RegKey(HKEY_CURRENT_USER, kCleanupRegistryKey, KEY_SET_VALUE)
+          .WriteValue(kCleanupRegistryValue, L""),
+      ERROR_SUCCESS);
+  EXPECT_TRUE(TestConfiguration(L"spam.exe").should_delete_extracted_files());
+  ASSERT_EQ(
+      base::win::RegKey(HKEY_CURRENT_USER, kCleanupRegistryKey, KEY_SET_VALUE)
+          .WriteValue(kCleanupRegistryValue, L"1"),
+      ERROR_SUCCESS);
+  EXPECT_TRUE(TestConfiguration(L"spam.exe").should_delete_extracted_files());
+  ASSERT_EQ(
+      base::win::RegKey(HKEY_CURRENT_USER, kCleanupRegistryKey, KEY_SET_VALUE)
+          .WriteValue(kCleanupRegistryValue, L"hello"),
+      ERROR_SUCCESS);
+  EXPECT_TRUE(TestConfiguration(L"spam.exe").should_delete_extracted_files());
 }
 
 }  // namespace mini_installer

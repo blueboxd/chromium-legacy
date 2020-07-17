@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">Introdución de xaponés (para o teclado estadounidense)</translation>
 <translation id="1047956942837015229">Eliminando <ph name="COUNT" /> elementos...</translation>
 <translation id="1049926623896334335">Documento de Word</translation>
+<translation id="1060368002126861100">Para poder abrir ficheiros coa aplicación <ph name="APP_NAME" />, debes movelos ao cartafol de ficheiros de Windows.</translation>
 <translation id="1062407476771304334">Substituír</translation>
 <translation id="1065449928621190041">Teclado francés canadense</translation>
 <translation id="1119069657431255176">Arquivo tar comprimido mediante Bzip2</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">Precaución: Estes ficheiros son temporais e pódense eliminar automaticamente para liberar espazo no disco.  <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Cartafol</translation>
 <translation id="3549797760399244642">Vai a drive.google.com...</translation>
+<translation id="3553048479571901246">Para poder abrir ficheiros coa aplicación <ph name="APP_NAME" />, debes copialos no cartafol de ficheiros de Windows.</translation>
 <translation id="357479282490346887">Lituano</translation>
 <translation id="3583509704582854624">Introdución alfanumérica (para o teclado xaponés)</translation>
 <translation id="3603385196401704894">Francés canadense</translation>

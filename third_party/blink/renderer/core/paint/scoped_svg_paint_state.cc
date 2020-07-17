@@ -72,14 +72,15 @@ static void PaintFilteredContent(GraphicsContext& context,
                                                   DisplayItem::kSVGFilter))
     return;
 
-  DrawingRecorder recorder(context, display_item_client,
-                           DisplayItem::kSVGFilter);
-  sk_sp<PaintFilter> image_filter = filter_data->CreateFilter();
-  context.Save();
-
   // Clip drawing of filtered image to the minimum required paint rect.
   const FloatRect object_bounds = object.StrokeBoundingBox();
   const FloatRect paint_rect = filter_data->MapRect(object_bounds);
+
+  DrawingRecorder recorder(context, display_item_client,
+                           DisplayItem::kSVGFilter,
+                           EnclosingIntRect(paint_rect));
+  sk_sp<PaintFilter> image_filter = filter_data->CreateFilter();
+  context.Save();
   context.ClipRect(paint_rect);
 
   // Use the union of the pre-image and the post-image as the layer bounds.

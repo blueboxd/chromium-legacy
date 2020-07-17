@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="af">
 <translation id="1008557486741366299">Nie nou nie</translation>
+<translation id="100957008357583611">Gebruik jou ligging?</translation>
 <translation id="1010200102790553230">Laai bladsy later</translation>
 <translation id="1015730422737071372">Verskaf bykomende besonderhede</translation>
 <translation id="1019413721762100891">Af</translation>
@@ -425,7 +426,6 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="2705137772291741111">Die gestoorde (gekaste) kopie van hierdie werf was onleesbaar.</translation>
 <translation id="2709516037105925701">Outovul</translation>
 <translation id="2713444072780614174">Wit</translation>
-<translation id="2720342946869265578">Naby</translation>
 <translation id="2721148159707890343">Versoek was suksesvol</translation>
 <translation id="272451190272506600">Raak sensor om te betaal</translation>
 <translation id="2728127805433021124">Bediener se sertifikaat is met 'n swak handtekening-algoritme onderteken.</translation>
@@ -722,7 +722,6 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="3990250421422698716">Gelykskudafwyking</translation>
 <translation id="3996311196211510766">Die werf <ph name="ORIGIN" /> het versoek dat 'n oorsprongbeleid
     op alle versoeke daaraan toegepas word, maar hierdie beleid kan nie op die oomblik toegepas word nie.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 webbladsy in die omtrek}other{# webbladsye in die omtrek}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-dokument met {COUNT} bladsy}other{PDF-dokument met {COUNT} bladsye}}</translation>
 <translation id="4030383055268325496">Ontdoen voeg by</translation>
 <translation id="4032320456957708163">Jou blaaier word bestuur deur <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -940,7 +939,6 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Stoor …</translation>
 <translation id="4913987521957242411">Pons links bo</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{en nog 1 webbladsy}other{en nog # webbladsye}}</translation>
 <translation id="4923459931733593730">Betaling</translation>
 <translation id="4926049483395192435">Moet gespesifiseer word.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> sê</translation>
@@ -1181,6 +1179,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="5869405914158311789">Hierdie werf kan nie bereik word nie</translation>
 <translation id="5869522115854928033">Gestoorde wagwoorde</translation>
 <translation id="5887400589839399685">Kaart is gestoor</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> vereis dat jy jou data rugsteun en hierdie toestel terugstuur.</translation>
 <translation id="5895138241574237353">Herbegin</translation>
 <translation id="5895187275912066135">Uitgereik op</translation>
 <translation id="5901630391730855834">Geel</translation>
@@ -1331,7 +1330,6 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="6518133107902771759">Verifieer</translation>
 <translation id="6521745193039995384">Onaktief</translation>
 <translation id="6529602333819889595">Herdoen uitvee</translation>
-<translation id="6534179046333460208">Voorstelle in fisiese web</translation>
 <translation id="6545864417968258051">Bluetooth-opsporing</translation>
 <translation id="6547208576736763147">Dubbelpons links</translation>
 <translation id="6554795675067793129">Jou rekening word bestuur deur <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1853,7 +1851,6 @@ Bykomende besonderhede:
 <translation id="8790007591277257123">Herdoen uitvee</translation>
 <translation id="8792621596287649091">Jy kan toegang tot jou <ph name="ORG_NAME" />-rekening verloor of identiteitdiefstal ervaar. Chromium beveel aan dat jy jou wagwoord nou verander.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> het Chrome Enterprise Connectors op jou blaaier aangeskakel. Hierdie verbinders het toegang tot van jou data.</translation>
-<translation id="8800988563907321413">Jou nabygeleë voorstelle verskyn hier</translation>
 <translation id="8805819170075074995">Lysinskrywing "<ph name="LANGUAGE_ID" />": Inskrywing word geïgnoreer omdat dit ook by die SpellcheckLanguage-beleid ingesluit word.</translation>
 <translation id="8807160976559152894">Knip ná elke bladsy</translation>
 <translation id="8820817407110198400">Boekmerke</translation>

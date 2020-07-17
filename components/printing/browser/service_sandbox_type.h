@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_PRINTING_BROWSER_SERVICE_SANDBOX_TYPE_H_
 #define COMPONENTS_PRINTING_BROWSER_SERVICE_SANDBOX_TYPE_H_
 
-#include "content/public/browser/sandbox_type.h"
 #include "content/public/browser/service_process_host.h"
+#include "sandbox/policy/sandbox_type.h"
 
 // This file maps service classes to sandbox types.  Services which
 // require a non-utility sandbox can be added here.  See
@@ -20,9 +20,9 @@ class PrintCompositor;
 }  // namespace printing
 
 template <>
-inline content::SandboxType
+inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<printing::mojom::PrintCompositor>() {
-  return content::SandboxType::kPrintCompositor;
+  return sandbox::policy::SandboxType::kPrintCompositor;
 }
 
 #endif  // COMPONENTS_PRINTING_BROWSER_SERVICE_SANDBOX_TYPE_H_

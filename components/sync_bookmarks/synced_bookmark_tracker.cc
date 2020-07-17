@@ -265,6 +265,8 @@ SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
     return nullptr;
   }
 
+  tracker->ReuploadBookmarksOnLoadIfNeeded();
+
   return tracker;
 }
 
@@ -730,11 +732,11 @@ SyncedBookmarkTracker::ReorderUnsyncedEntitiesExceptDeletions(
   return ordered_entities;
 }
 
-bool SyncedBookmarkTracker::ReuploadBookmarksOnLoadIfNeeded() {
+void SyncedBookmarkTracker::ReuploadBookmarksOnLoadIfNeeded() {
   if (bookmarks_full_title_reuploaded_ ||
       !base::FeatureList::IsEnabled(
           switches::kSyncReuploadBookmarkFullTitles)) {
-    return false;
+    return;
   }
   for (const auto& sync_id_and_entity : sync_id_to_entities_map_) {
     const SyncedBookmarkTracker::Entity* entity =
@@ -747,8 +749,7 @@ bool SyncedBookmarkTracker::ReuploadBookmarksOnLoadIfNeeded() {
     }
     IncrementSequenceNumber(entity);
   }
-  SetBookmarksFullTitleReuploaded();
-  return true;
+  bookmarks_full_title_reuploaded_ = true;
 }
 
 void SyncedBookmarkTracker::TraverseAndAppend(

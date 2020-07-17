@@ -30,6 +30,7 @@ run_jsbundler("accessibility_common_copied_files") {
     "closure_shim.js",
     "constants.js",
     "repeated_event_handler.js",
+    "repeated_tree_change_handler.js",
     "tree_walker.js",
   ]
   rewrite_rules = [ rebase_path(".", root_build_dir) + ":" ]
@@ -83,6 +84,10 @@ js_library("repeated_event_handler") {
   externs_list = [ "$externs_path/automation.js" ]
 }
 
+js_library("repeated_tree_change_handler") {
+  externs_list = [ "$externs_path/automation.js" ]
+}
+
 source_set("browser_tests") {
   testonly = true
   assert(enable_extensions)
@@ -114,6 +119,7 @@ js2gtest("accessibility_tests") {
     "array_util_test.js",
     "automation_util_test.js",
     "repeated_event_handler_test.js",
+    "repeated_tree_change_handler_test.js",
     "tree_walker_test.js",
   ]
   gen_include_files = [

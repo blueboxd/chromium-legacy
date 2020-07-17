@@ -24,15 +24,6 @@ class CastCdmContext : public ::media::CdmContext {
   ::media::Decryptor* GetDecryptor() override;
   int GetCdmId() const override;
 
-  // Register a player with this CDM. |new_key_cb| will be called when a new
-  // key is available. |cdm_unset_cb| will be called when the CDM is destroyed.
-  virtual int RegisterPlayer(base::RepeatingClosure new_key_cb,
-                             base::RepeatingClosure cdm_unset_cb) = 0;
-
-  // Unregiester a player with this CDM. |registration_id| should be the id
-  // returned by RegisterPlayer().
-  virtual void UnregisterPlayer(int registration_id) = 0;
-
   // Returns the decryption context needed to decrypt frames encrypted with
   // |key_id|. Returns null if |key_id| is not available.
   virtual std::unique_ptr<DecryptContextImpl> GetDecryptContext(

@@ -98,6 +98,7 @@
 <translation id="1995660704900986789">Вимкнути</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Введіть повідомлення</translation>
+<translation id="2018630726571919839">Розкажи жарт</translation>
 <translation id="2050339315714019657">Портретна</translation>
 <translation id="2067602449040652523">Яскравість клавіатури</translation>
 <translation id="209965399369889474">Немає з’єднання з мережею</translation>
@@ -125,6 +126,7 @@
 <translation id="2354174487190027830">Активація <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Продовжити</translation>
 <translation id="2365393535144473978">Якщо ввімкнути мобільне передавання даних, увімкнеться Bluetooth.</translation>
+<translation id="2369165858548251131">Як сказати "привіт" китайською</translation>
 <translation id="2390318262976603432">Налаштування мовного коду</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Доступне оновлення</translation>
@@ -142,6 +144,7 @@
 <translation id="256712445991462162">закріплену лупу</translation>
 <translation id="2575685495496069081">Паралельний вхід вимкнено</translation>
 <translation id="2582112259361606227">Перезапустіть, щоб оновити</translation>
+<translation id="2595239820337756193">Скільки миль у 5 км</translation>
 <translation id="2617342710774726426">SIM-карту заблоковано</translation>
 <translation id="2621713457727696555">Захищено</translation>
 <translation id="2653659639078652383">Надіслати</translation>
@@ -195,6 +198,7 @@
 <translation id="3154351730702813399">Адміністратор пристрою може відстежувати дані веб-перегляду.</translation>
 <translation id="3181441307743005334">Перезапуск може зайняти якийсь час</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Під’єднано до пристрою}one{Під’єднано до # пристрою}few{Під’єднано до # пристроїв}many{Під’єднано до # пристроїв}other{Під’єднано до # пристрою}}</translation>
+<translation id="320207200541803018">Налаштувати таймер</translation>
 <translation id="3203405173652969239">Кнопковий доступ увімкнено</translation>
 <translation id="3207953481422525583">Налаштування користувача</translation>
 <translation id="3217205077783620295">Звук увімкнено. Його можна вимкнути за допомогою перемикача.</translation>
@@ -207,6 +211,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> усе одно зможе ввійти в обліковий запис.</translation>
 <translation id="3321628682574733415">Неправильний код доступу батьків</translation>
 <translation id="332587331255250389">Замініть акумулятор</translation>
+<translation id="334252345105450327">Зробити знімок екрана</translation>
 <translation id="3351879221545518001">Зараз ви транслюєте екран.</translation>
 <translation id="3364721542077212959">Інструменти стилуса</translation>
 <translation id="3368922792935385530">Підключено</translation>
@@ -239,6 +244,7 @@
 <translation id="3631369015426612114">Дозволити сповіщення з перелічених нижче джерел</translation>
 <translation id="3638400994746983214">Перемикає екран конфіденційності. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> – керований користувач</translation>
+<translation id="3702846122927433391">Яка чисельність населення в Нігерії</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Зробити знімок певної області</translation>
 <translation id="371370241367527062">Мікрофон на передній панелі</translation>
@@ -519,6 +525,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Попередня роздільна здатність повернеться через <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Меню переміщено у верхній лівий кут екрана.</translation>
+<translation id="7189412385142492784">Яка відстань від Землі до Венери</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Щоб оновлення почали діяти, Chromebook потрібно перезапустити. Це може зайняти до 1 хвилини.</translation>
 <translation id="7256634071279256947">Мікрофон на задній панелі</translation>
 <translation id="726276584504105859">Перетягніть сюди, щоб розділити екран</translation>
@@ -645,6 +652,7 @@
 <translation id="8649101189709089199">Читання з екрана</translation>
 <translation id="8652175077544655965">Закрити налаштування</translation>
 <translation id="8653151467777939995">Показати налаштування сповіщень. Сповіщення ввімкнено</translation>
+<translation id="8660331759611631213">Квадратний корінь із 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, рівень сигналу – <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Показати список мереж. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

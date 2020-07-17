@@ -102,7 +102,6 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
     // Deferred runnable to avoid invalidating outside of frame dispatch,
     // in turn avoiding issues with sync barrier insertion.
     private Runnable mInvalidationRunnable;
-    private boolean mHasPendingInvalidate;
 
     private boolean mNeedsUpdateDrawable;
 
@@ -310,6 +309,17 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
     }
 
     private void updatePosition() {
+        // Do not update the position when the handle is hidden, because PopupWindow.update()
+        // will trigger android wm performLayout in the same doFrame(), which is a serious waste
+        // of CPU and easy to cause page jitter when scrolling, the user experience become worse.
+        if (getVisibility() != VISIBLE) {
+            // This does not affect the TextMagnifier feature, because that once the first
+            // MotionEvent is passed to this PopupWindow, if we don't lift finger, the following
+            // MotionEvents are still passed to PopupWindow, so even the PopupWindow isn't moving
+            // follow finger, it still can correctly pass events to EventForwarder. Therefore the
+            // cursor/selection is still correctly adjusted.
+            return;
+        }
         mContainer.update(getContainerPositionX(), getContainerPositionY(),
                 getRight() - getLeft(), getBottom() - getTop());
     }
@@ -448,15 +458,12 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
     }
 
     private void scheduleInvalidate() {
-        if (mInvalidationRunnable == null) {
-            mInvalidationRunnable = () -> {
-                mHasPendingInvalidate = false;
-                doInvalidate();
-            };
-        }
+        if (mInvalidationRunnable != null) return;
 
-        if (mHasPendingInvalidate) return;
-        mHasPendingInvalidate = true;
+        mInvalidationRunnable = () -> {
+            mInvalidationRunnable = null;
+            doInvalidate();
+        };
         postOnAnimation(mInvalidationRunnable);
     }
 

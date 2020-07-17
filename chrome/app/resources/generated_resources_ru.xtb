@@ -78,7 +78,7 @@
 <translation id="1093457606523402488">Доступные сети:</translation>
 <translation id="1094607894174825014">Поступил запрос на чтение или запись с недействительным смещением на устройстве <ph name="DEVICE_NAME" />.</translation>
 <translation id="109647177154844434">Если удалить Parallels Desktop, будет также удален образ системы Windows, в том числе ее приложения, настройки и другие данные. Продолжить?</translation>
-<translation id="1097515232094183876">{COUNT,plural, =1{1 ссылка}one{# ссылка}few{# ссылки}many{# ссылок}other{# ссылки}}</translation>
+<translation id="1097515232094183876">{COUNT,plural, =1{1 ссылки}one{# ссылки}few{# ссылок}many{# ссылок}other{# ссылки}}</translation>
 <translation id="1097658378307015415">Сначала войдите как гость, чтобы активировать работу сети <ph name="NETWORK_ID" /></translation>
 <translation id="1099962274138857708">Изображение скопировано с устройства "<ph name="DEVICE_NAME" />"</translation>
 <translation id="1102187190604780492">Разрешите Ассистенту показывать подсказки, связанные с контентом на экране.</translation>
@@ -419,7 +419,7 @@
 <translation id="151501797353681931">Импортированные из Safari</translation>
 <translation id="1515163294334130951">Запустить</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – хост</translation>
-<translation id="1520689915144573455">{COUNT,plural, =1{1 приложение}one{# приложение}few{# приложения}many{# приложений}other{# приложения}}</translation>
+<translation id="1520689915144573455">{COUNT,plural, =1{1 приложения}one{# приложения}few{# приложений}many{# приложений}other{# приложения}}</translation>
 <translation id="1521442365706402292">Настроить сертификаты</translation>
 <translation id="1521774566618522728">Последние действия: сегодня</translation>
 <translation id="152234381334907219">Сайты, пароли для которых не сохраняются</translation>
@@ -1936,7 +1936,7 @@
 <translation id="3416468988018290825">Всегда показывать URL полностью</translation>
 <translation id="3417836307470882032">24-часовой формат времени</translation>
 <translation id="3420501302812554910">Необходимо сбросить настройки внутреннего электронного ключа</translation>
-<translation id="3421376478111338173">{COUNT,plural, =1{1 изображение}one{# изображение}few{# изображения}many{# изображений}other{# изображения}}</translation>
+<translation id="3421376478111338173">{COUNT,plural, =1{1 изображения}one{# изображения}few{# изображений}many{# изображений}other{# изображения}}</translation>
 <translation id="3421387094817716717">Открытый ключ на эллиптических кривых</translation>
 <translation id="3422291238483866753">Запрашивать для сайтов разрешение на создание 3D-карты места, в котором вы находитесь, и отслеживание положения камеры (рекомендуется)</translation>
 <translation id="3423463006624419153">На устройствах <ph name="PHONE_NAME_1" /> и <ph name="PHONE_NAME_2" />:</translation>
@@ -2392,7 +2392,7 @@
 <translation id="3927787410750478258">Это устройство <ph name="DEVICE_TYPE" /> будет находиться в домене <ph name="DOMAIN" />.</translation>
 <translation id="3927932062596804919">Запретить</translation>
 <translation id="3928570707778085600"><ph name="FILE_OR_FOLDER_NAME" />: сохранить изменения?</translation>
-<translation id="3928659086758780856">Заканчиваются чернила</translation>
+<translation id="3928659086758780856">Заканчиваются чернила.</translation>
 <translation id="3929426037718431833">Расширения, у которых есть право на просмотр и изменение информации на этом сайте</translation>
 <translation id="3930155420525972941">Переместить группу в новое окно</translation>
 <translation id="3930737994424905957">Поиск устройств…</translation>
@@ -2570,7 +2570,7 @@
 <translation id="4142052906269098341">Снимать блокировку <ph name="DEVICE_TYPE" /> с помощью телефона. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="4142518881503042940">Сохраните найденные принтеры в своем профиле или добавьте новый принтер. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">С помощью этой функции вы улучшите качество видео и продлите время работы от батареи. Видео будет воспроизводиться только на экранах с поддержкой Cast.</translation>
-<translation id="4144651632048685784">{COUNT,plural, =1{1 номер телефона}one{# номер телефона}few{# номера телефонов}many{# номеров телефонов}other{# номера телефона}}</translation>
+<translation id="4144651632048685784">{COUNT,plural, =1{1 номера телефона}one{# номера телефона}few{# номеров телефонов}many{# номеров телефонов}other{# номера телефона}}</translation>
 <translation id="4146026355784316281">Всегда открывать в программе просмотра по умолчанию</translation>
 <translation id="4146785383423576110">Сброс настроек и удаление вредоносного ПО</translation>
 <translation id="4147897805161313378">Google Фото</translation>
@@ -3888,7 +3888,7 @@
 <translation id="5889282057229379085">Максимальное количество промежуточных ЦС: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5891688036610113830">Предпочитаемые сети Wi-Fi</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
-<translation id="5895613446346678902"><ph name="ATTACHMENTS" /> отправляется на принтер <ph name="DEVICE_NAME" /></translation>
+<translation id="5895613446346678902">Отправка <ph name="ATTACHMENTS" /> на устройство "<ph name="DEVICE_NAME" />"…</translation>
 <translation id="5900302528761731119">Фотография профиля Google</translation>
 <translation id="5900358982890952556">Обновление Linux (бета)</translation>
 <translation id="5901494423252125310">Дверца принтера открыта</translation>
@@ -4325,7 +4325,7 @@
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" />: воспроизводится аудио</translation>
 <translation id="6442187272350399447">Супер</translation>
 <translation id="6444070574980481588">Установите дату и время</translation>
-<translation id="6444909401984215022"><ph name="WINDOW_TITLE" /> – сканирование устройств Bluetooth включено.</translation>
+<translation id="6444909401984215022">"<ph name="WINDOW_TITLE" />" – сканирование устройств Bluetooth включено</translation>
 <translation id="6445450263907939268">Вы можете восстановить прежние настройки.</translation>
 <translation id="6447842834002726250">Файлы сookie</translation>
 <translation id="6450876761651513209">Изменение настроек конфиденциальности</translation>
@@ -5240,7 +5240,7 @@
 <translation id="7624337243375417909">клавиша Caps Lock не нажата</translation>
 <translation id="7625568159987162309">Посмотреть текущие разрешения и сохраненные данные сайтов</translation>
 <translation id="7628201176665550262">Частота обновления</translation>
-<translation id="7629349498667725376">{COUNT,plural, =1{1 файл}one{# файл}few{# файла}many{# файлов}other{# файла}}</translation>
+<translation id="7629349498667725376">{COUNT,plural, =1{1 файла}one{# файла}few{# файлов}many{# файлов}other{# файла}}</translation>
 <translation id="7629827748548208700">Вкладка: <ph name="TAB_NAME" /></translation>
 <translation id="7631014249255418691">Резервная копия приложений и файлов Linux сохранена.</translation>
 <translation id="7631205654593498032">После подключения устройство <ph name="DEVICE_TYPE" /> сможет:</translation>
@@ -6371,7 +6371,7 @@
 <translation id="8986494364107987395">Автоматически отправлять в Google статистику использования и отчеты о сбоях</translation>
 <translation id="8987927404178983737">Месяц</translation>
 <translation id="8991520179165052608">Сайт может использовать микрофон</translation>
-<translation id="8992117551007229513">{COUNT,plural, =1{1 объект}one{# объект}few{# объекта}many{# объектов}other{# объекта}}</translation>
+<translation id="8992117551007229513">{COUNT,plural, =1{1 объекта}one{# объекта}few{# объектов}many{# объектов}other{# объекта}}</translation>
 <translation id="899384117894244799">Удалить пользователя с ограниченным доступом</translation>
 <translation id="899403249577094719">URL базы сертификатов Netscape</translation>
 <translation id="8995603266996330174">В домене <ph name="DOMAIN" /></translation>
@@ -6439,7 +6439,7 @@
 <translation id="9066773882585798925">Позволяет прослушивать текст с экрана.</translation>
 <translation id="9066782832737749352">Озвучивание текста</translation>
 <translation id="9068849894565669697">Выберите цвет</translation>
-<translation id="9072851933240542161">{COUNT,plural, =1{1 адрес}one{# адрес}few{# адреса}many{# адресов}other{# адреса}}</translation>
+<translation id="9072851933240542161">{COUNT,plural, =1{1 адреса}one{# адреса}few{# адресов}many{# адресов}other{# адреса}}</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9074836595010225693">USB-мышь подключена</translation>
@@ -6570,6 +6570,7 @@
 <translation id="942532530371314860">Приложение "<ph name="APP_NAME" />" предоставило доступ к вкладке Chrome и к аудио.</translation>
 <translation id="945522503751344254">Отправить отзыв</translation>
 <translation id="947329552760389097">&amp;Проверить элементы</translation>
+<translation id="951991426597076286">Отклонить</translation>
 <translation id="952992212772159698">Не активировано</translation>
 <translation id="956500788634395331">Включена защита от потенциально опасных расширений.</translation>
 <translation id="957960681186851048">Этот сайт попытался автоматически скачать несколько файлов</translation>

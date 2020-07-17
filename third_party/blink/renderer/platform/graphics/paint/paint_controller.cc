@@ -757,14 +757,6 @@ void PaintController::CheckUnderInvalidation() {
       old_item_index < current_paint_artifact_->GetDisplayItemList().size()
           ? &current_paint_artifact_->GetDisplayItemList()[old_item_index]
           : nullptr;
-  // TODO(crbug.com/1104064): Temporarily disable visual rect comparison in
-  // under invalidation checking. For now different visual rect happens for
-  // LayoutSVGContainer's mask or clip path display item which doesn't change
-  // and doesn't need repaint while the LayoutSVGContainer's visual rect changes
-  // with descendants. Will remove this when we can compute more accurate visual
-  // rect for these display items.
-  if (old_item)
-    new_item.SetVisualRect(old_item->VisualRect());
 
   if (!old_item || !new_item.Equals(*old_item)) {
     // If we ever skipped reporting any under-invalidations, report the earliest

@@ -427,7 +427,6 @@
 <translation id="2705137772291741111">ఈ సైట్ యొక్క సేవ్ చేయబడిన (కాష్ చేసిన) కాపీ చదవదగినట్లుగా లేదు.</translation>
 <translation id="2709516037105925701">స్వయంపూర్తి</translation>
 <translation id="2713444072780614174">తెలుపు</translation>
-<translation id="2720342946869265578">సమీపం</translation>
 <translation id="2721148159707890343">అభ్యర్థన విజయవంతం అయింది</translation>
 <translation id="272451190272506600">చెల్లించడానికి సెన్సార్‌ను తాకండి</translation>
 <translation id="2728127805433021124">సర్వర్ ప్రమాణపత్రం బలహీన సంతకం అల్గారిథమ్‌ను ఉపయోగించి సంతకం చేయబడింది.</translation>
@@ -722,7 +721,6 @@
 <translation id="3990250421422698716">జోగ్ ఆఫ్‌సెట్</translation>
 <translation id="3996311196211510766"><ph name="ORIGIN" /> సైట్, తనకు చేసే అన్ని రిక్వెస్ట్‌లకు ఆరిజిన్ పాలసీని
     వర్తింపజేయమని అభ్యర్థించింది. కానీ, ప్రస్తుతం ఈ పాలసీని వర్తింపజేయడం సాధ్యపడదు.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 వెబ్ పేజీ సమీపంలో ఉంది}other{# వెబ్ పేజీలు సమీపంలో ఉన్నాయి}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF డాక్యుమెంట్‌‌లో {COUNT} పేజీ ఉంది}other{PDF డాక్యుమెంట్‌‌లో {COUNT} పేజీలు ఉన్నాయి}}</translation>
 <translation id="4030383055268325496">&amp;జోడించడాన్ని రద్దు చేయి</translation>
 <translation id="4032320456957708163">మీ బ్రౌజర్ <ph name="ENROLLMENT_DOMAIN" /> ద్వారా నిర్వహించబడుతోంది</translation>
@@ -940,7 +938,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">సేవ్ చేయి...</translation>
 <translation id="4913987521957242411">ఎడమవైపు ఎగువ భాగంలో రంధ్రాలు</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{మరియు మరో 1 వెబ్ పేజీ}other{మరియు మరో # వెబ్ పేజీలు}}</translation>
 <translation id="4923459931733593730">చెల్లింపు</translation>
 <translation id="4926049483395192435">ఖచ్చితంగా పేర్కొనాలి.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> ఇలా చెబుతోంది</translation>
@@ -1331,7 +1328,6 @@
 <translation id="6518133107902771759">ధృవీకరించు</translation>
 <translation id="6521745193039995384">యాక్టివ్‌గా లేదు</translation>
 <translation id="6529602333819889595">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
-<translation id="6534179046333460208">ప్రత్యక్ష వెబ్ సూచనలు</translation>
 <translation id="6545864417968258051">బ్లూటూత్ స్కానింగ్</translation>
 <translation id="6547208576736763147">ఎడమవైపు రెండు రంధ్రాలు</translation>
 <translation id="6554795675067793129">మీ ఖాతా <ph name="ENROLLMENT_DOMAIN" /> నిర్వహణలో ఉంది.</translation>
@@ -1853,7 +1849,6 @@
 <translation id="8790007591277257123">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
 <translation id="8792621596287649091">మీరు మీ <ph name="ORG_NAME" /> ఖాతాకు యాక్సెస్‌ను కోల్పోవచ్చు. లేదా గుర్తింపు స‌మాచారం చోరీకి గురి కావచ్చు. మీ పాస్‌వర్డ్‌ను ఇప్పుడే రీసెట్ చేయాల్సిందిగా Chromium సిఫార్సు చేస్తోంది.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" />, మీ బ్రౌజర్‌లో Chrome Enterprise కనెక్టర్‌లను ఆన్ చేసింది. ఈ కనెక్టర్‌లకు మీ డేటాలో కొంత డేటాకు యాక్సెస్ ఉంది.</translation>
-<translation id="8800988563907321413">మీ సమీపంలోని సూచనలు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="8805819170075074995">జాబితా నమోదు "<ph name="LANGUAGE_ID" />": నమోదు విస్మరించబడింది, ఎందుకంటే ఇది SpellcheckLanguage విధానంలో కూడా ఉంది.</translation>
 <translation id="8807160976559152894">ప్రతి పేజీ తర్వాత కత్తిరించండి</translation>
 <translation id="8820817407110198400">బుక్‌మార్క్‌లు</translation>

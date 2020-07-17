@@ -25,7 +25,8 @@ class NetworkHealthService {
 
  private:
   NetworkHealth network_health_;
-  network_diagnostics::NetworkDiagnosticsImpl network_diagnostics_;
+  std::unique_ptr<network_diagnostics::NetworkDiagnosticsImpl>
+      network_diagnostics_;
 };
 
 }  // namespace network_health

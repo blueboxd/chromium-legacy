@@ -61,11 +61,11 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   // TopSites implementation.
   void GetMostVisitedURLs(GetMostVisitedURLsCallback callback) override;
   void SyncWithHistory() override;
-  bool HasBlacklistedItems() const override;
-  void AddBlacklistedURL(const GURL& url) override;
-  void RemoveBlacklistedURL(const GURL& url) override;
-  bool IsBlacklisted(const GURL& url) override;
-  void ClearBlacklistedURLs() override;
+  bool HasBlockedUrls() const override;
+  void AddBlockedUrl(const GURL& url) override;
+  void RemoveBlockedUrl(const GURL& url) override;
+  bool IsBlocked(const GURL& url) override;
+  void ClearBlockedUrls() override;
   bool IsFull() override;
   PrepopulatedPageList GetPrepopulatedPages() override;
   bool loaded() const override;
@@ -123,11 +123,11 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   // Adds prepopulated pages to TopSites. Returns true if any pages were added.
   bool AddPrepopulatedPages(MostVisitedURLList* urls) const;
 
-  // Takes |urls|, produces it's copy in |out| after removing blacklisted URLs.
+  // Takes |urls|, produces it's copy in |out| after removing blocked urls.
   // Also ensures we respect the maximum number TopSites URLs.
-  MostVisitedURLList ApplyBlacklist(const MostVisitedURLList& urls);
+  MostVisitedURLList ApplyBlockedUrls(const MostVisitedURLList& urls);
 
-  // Returns an MD5 hash of the URL. Hashing is required for blacklisted URLs.
+  // Returns an MD5 hash of the URL. Hashing is required for blocking urls.
   static std::string GetURLHash(const GURL& url);
 
   // Updates URLs in |cache_| and the db (in the background). The URLs in
@@ -137,8 +137,8 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
                    const CallLocation location);
 
   // Returns the number of most visited results to request from history. This
-  // changes depending upon how many urls have been blacklisted. Should be
-  // called from the UI thread.
+  // changes depending upon how many urls have been blocked. Should be called
+  // from the UI thread.
   int num_results_to_request_from_history() const;
 
   // Invoked when transitioning to LOADED. Notifies any queued up callbacks.
@@ -174,7 +174,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   MostVisitedURLList top_sites_;
 
   // Copy of the top sites data that may be accessed on any thread (assuming
-  // you hold |lock_|). The data in |thread_safe_cache_| has blacklisted urls
+  // you hold |lock_|). The data in |thread_safe_cache_| has blocked urls
   // applied (|top_sites_| does not).
   MostVisitedURLList thread_safe_cache_ GUARDED_BY(lock_);
 
@@ -193,8 +193,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   // URL List of prepopulated page.
   const PrepopulatedPageList prepopulated_pages_;
 
-  // PrefService holding the NTP URL blacklist dictionary. Must outlive
-  // TopSitesImpl.
+  // PrefService holding the set of blocked urls. Must outlive TopSitesImpl.
   PrefService* pref_service_;
 
   // HistoryService that TopSitesImpl can query. May be null, but if defined it

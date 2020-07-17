@@ -39,16 +39,20 @@ void SetProperty(AXNodeInfoData* node, AXBooleanProperty prop, bool value) {
   arc::SetProperty(node->boolean_properties, prop, value);
 }
 
-void SetProperty(AXNodeInfoData* node,
-                 AXStringProperty prop,
-                 const std::string& value) {
-  arc::SetProperty(node->string_properties, prop, value);
+void SetProperty(AXNodeInfoData* node, AXIntProperty prop, int value) {
+  arc::SetProperty(node->int_properties, prop, value);
 }
 
 void SetProperty(AXNodeInfoData* node,
                  AXIntListProperty prop,
                  const std::vector<int>& value) {
   arc::SetProperty(node->int_list_properties, prop, value);
+}
+
+void SetProperty(AXNodeInfoData* node,
+                 AXStringProperty prop,
+                 const std::string& value) {
+  arc::SetProperty(node->string_properties, prop, value);
 }
 
 }  // namespace
@@ -567,6 +571,32 @@ TEST_F(AccessibilityNodeInfoDataWrapperTest, StateDescription) {
   ASSERT_TRUE(
       data.GetStringAttribute(ax::mojom::StringAttribute::kValue, &value));
   EXPECT_EQ("state description", value);
+}
+
+TEST_F(AccessibilityNodeInfoDataWrapperTest, LabeledByLoop) {
+  AXNodeInfoData root;
+  root.id = 1;
+  SetProperty(&root, AXIntProperty::LABELED_BY, 2);
+  AccessibilityNodeInfoDataWrapper wrapper(tree_source(), &root);
+  SetIdToWrapper(&wrapper);
+
+  AXNodeInfoData node2;
+  node2.id = 2;
+  AccessibilityNodeInfoDataWrapper child1_wrapper(tree_source(), &node2);
+  SetIdToWrapper(&child1_wrapper);
+  SetProperty(&node2, AXStringProperty::CONTENT_DESCRIPTION, "node2");
+  SetProperty(&node2, AXIntProperty::LABELED_BY, 1);
+
+  ui::AXNodeData data = CallSerialize(wrapper);
+  std::string name;
+  ASSERT_TRUE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+  EXPECT_EQ("node2", name);
+
+  data = CallSerialize(child1_wrapper);
+  ASSERT_TRUE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+  EXPECT_EQ("node2", name);
 }
 
 }  // namespace arc

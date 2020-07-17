@@ -27,8 +27,7 @@ class CompositorNavigationGlow extends NavigationGlow {
     public CompositorNavigationGlow(ViewGroup parentView, WebContents webContents) {
         super(parentView);
         mNativeNavigationGlow =
-                CompositorNavigationGlowJni.get().init(CompositorNavigationGlow.this,
-                        parentView.getResources().getDisplayMetrics().density, webContents);
+                CompositorNavigationGlowJni.get().init(CompositorNavigationGlow.this, webContents);
     }
 
     @Override
@@ -72,7 +71,7 @@ class CompositorNavigationGlow extends NavigationGlow {
 
     @NativeMethods
     interface Natives {
-        long init(CompositorNavigationGlow caller, float dipScale, WebContents webContents);
+        long init(CompositorNavigationGlow caller, WebContents webContents);
         void prepare(long nativeNavigationGlow, CompositorNavigationGlow caller, float startX,
                 float startY, int width, int height);
         void onOverscroll(long nativeNavigationGlow, CompositorNavigationGlow caller,

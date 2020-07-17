@@ -7,31 +7,23 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 
 #if defined(OS_WIN)
 #include "base/win/wmi.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/enterprise/reporting/android_app_info_generator.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#endif
-
 namespace em = enterprise_management;
 
 namespace enterprise_reporting {
 
-ReportGenerator::ReportGenerator()
-    : report_request_queue_generator_(&delegate_factory_),
-      browser_report_generator_(&delegate_factory_) {}
+ReportGenerator::ReportGenerator(
+    ReportingDelegateFactoryDesktop* delegate_factory)
+    : delegate_(delegate_factory->GetReportGeneratorDelegate()),
+      report_request_queue_generator_(delegate_factory),
+      browser_report_generator_(delegate_factory) {}
 
 ReportGenerator::~ReportGenerator() = default;
 
@@ -49,7 +41,7 @@ void ReportGenerator::CreateBasicRequest(
     bool with_profiles,
     ReportCallback callback) {
 #if defined(OS_CHROMEOS)
-  SetAndroidAppInfos(basic_request.get());
+  delegate_->SetAndroidAppInfos(basic_request.get());
 #else
   basic_request->set_computer_name(this->GetMachineName());
   basic_request->set_os_user_name(GetOSUserName());
@@ -86,38 +78,6 @@ std::string ReportGenerator::GetSerialNumber() {
   return std::string();
 #endif
 }
-
-#if defined(OS_CHROMEOS)
-
-void ReportGenerator::SetAndroidAppInfos(ReportRequest* basic_request) {
-  DCHECK(basic_request);
-  basic_request->clear_android_app_infos();
-
-  // Android application is only supported for primary profile.
-  Profile* primary_profile =
-      g_browser_process->profile_manager()->GetPrimaryUserProfile();
-
-  if (!arc::IsArcPlayStoreEnabledForProfile(primary_profile))
-    return;
-
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(primary_profile);
-
-  if (!prefs) {
-    LOG(ERROR) << base::StringPrintf(
-        "Failed to generate ArcAppListPrefs instance for primary user profile "
-        "(debug name: %s).",
-        primary_profile->GetDebugName().c_str());
-    return;
-  }
-
-  AndroidAppInfoGenerator generator;
-  for (std::string app_id : prefs->GetAppIds()) {
-    basic_request->mutable_android_app_infos()->AddAllocated(
-        generator.Generate(prefs, app_id).release());
-  }
-}
-
-#endif
 
 void ReportGenerator::OnBrowserReportReady(
     bool with_profiles,

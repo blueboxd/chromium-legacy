@@ -177,7 +177,9 @@ void ClipPathClipper::PaintClipPathAsMaskImage(
                                                   DisplayItem::kSVGClip))
     return;
 
-  DrawingRecorder recorder(context, display_item_client, DisplayItem::kSVGClip);
+  DrawingRecorder recorder(
+      context, display_item_client, DisplayItem::kSVGClip,
+      EnclosingIntRect(properties->MaskClip()->UnsnappedClipRect().Rect()));
   context.Save();
   context.Translate(paint_offset.left, paint_offset.top);
 

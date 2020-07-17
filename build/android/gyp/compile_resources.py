@@ -1117,9 +1117,9 @@ def _OnStaleMd5(options):
     logging.debug('Creating R.srcjar')
     resource_utils.CreateRJavaFiles(
         build.srcjar_dir, package_for_library, build.r_txt_path,
-        options.extra_res_packages, options.extra_r_text_files,
-        rjava_build_options, options.srcjar_out, custom_root_package_name,
-        grandparent_custom_package_name, options.extra_main_r_text_files)
+        options.extra_res_packages, rjava_build_options, options.srcjar_out,
+        custom_root_package_name, grandparent_custom_package_name,
+        options.extra_main_r_text_files)
     build_utils.ZipDir(build.srcjar_path, build.srcjar_dir)
 
     # Sanity check that the created resources have the expected package ID.
@@ -1151,9 +1151,8 @@ def main(args):
   if options.only_verify_expectations:
     return
 
-  depfile_deps = (
-      options.dependencies_res_zips + options.extra_main_r_text_files +
-      options.extra_r_text_files + options.include_resources)
+  depfile_deps = (options.dependencies_res_zips +
+                  options.extra_main_r_text_files + options.include_resources)
 
   possible_input_paths = depfile_deps + [
       options.aapt2_path,

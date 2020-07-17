@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Dito lalabas ang mga naka-save na bookmark sa iba mo pang mga device.</translation>
 <translation id="1113597929977215864">Ipakita ang pinasimpleng view</translation>
 <translation id="1122278879166832009">Mag-tap dito para mabilis na i-access ang iyong homepage mula sa kahit saan</translation>
+<translation id="1126809382673880764">Hindi ka pinoprotektahan laban sa mga mapanganib na website, download, at extension. Magkakaroon ka pa rin ng proteksyon ng Ligtas na Pag-browse, kung available, sa iba pang serbisyo ng Google, tulad ng Gmail at Search.</translation>
 <translation id="1129510026454351943">Mga Detalye: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Nakabinbin ang 1 pag-download.}one{Nakabinbin ang # pag-download.}other{Nakabinbin ang # na pag-download.}}</translation>
 <translation id="1145536944570833626">I-delete ang kasalukuyang data.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Maliwanag</translation>
 <translation id="1810845389119482123">Hindi natapos ang paunang pag-set up ng pag-sync</translation>
 <translation id="1821253160463689938">Gumamit ng mga cookie para matandaan ang iyong mga kagustuhan, kahit na hindi mo binibisita ang mga page na iyon</translation>
-<translation id="1826516787628120939">Sinusuri</translation>
 <translation id="1829244130665387512">Hanapin sa page</translation>
 <translation id="1853692000353488670">Bagong tab na incognito</translation>
 <translation id="1856325424225101786">I-reset ang Lite mode?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">I-save ang mga password</translation>
 <translation id="1952172573699511566">Magpapakita ang mga website ng text sa iyong gustong wika, kung posible.</translation>
 <translation id="1960290143419248813">Hindi na sinusuportahan ang mga update sa Chrome para sa bersyong ito ng Android.</translation>
+<translation id="1963976881984600709">Standard protection</translation>
 <translation id="1966710179511230534">Paki-update ang iyong mga detalye sa pag-sign in.</translation>
 <translation id="1974060860693918893">Advanced</translation>
+<translation id="1984417487208496350">Walang proteksyon (hindi inirerekomenda)</translation>
 <translation id="1984705450038014246">I-sync ang iyong data ng Chrome</translation>
 <translation id="1986685561493779662">May ganito nang pangalan</translation>
 <translation id="1987739130650180037">Button ng <ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
@@ -392,7 +394,6 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="4183868528246477015">Hanapin gamit ang Google Lens <ph name="BEGIN_NEW" />Bago<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Buksan sa bagong tab</translation>
 <translation id="4198423547019359126">Walang available na lokasyon ng pag-download</translation>
-<translation id="4202553989407425169">Puwedeng tingnan ng Chrome kung pinoprotektahan ka ng iyong mga setting sa:</translation>
 <translation id="4209895695669353772">Para makakuha ng naka-personalize na content na iminumungkahi ng Google, i-on ang pag-sync</translation>
 <translation id="423219824432660969">I-encrypt ang naka-sync na data gamit ang password sa Google simula noong <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Buksan ang mga setting</translation>
@@ -459,6 +460,7 @@ Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad n
 <translation id="4749960740855309258">Magbukas ng bagong tab</translation>
 <translation id="4759238208242260848">Mga Download </translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Tapos na ang 1 pag-download.}one{Tapos na ang # pag-download.}other{Tapos na ang # na pag-download.}}</translation>
+<translation id="4766678251456904326">Magdagdag ng account sa device</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 download ang nakaiskedyul.}one{# download ang nakaiskedyul.}other{# na download ang nakaiskedyul.}}</translation>
 <translation id="478981486571169252">Makikita mo sa Chrome ang iyong status ng pag-sign in sa <ph name="SITE_NAME" />, data mula sa pag-browse, at data ng site.</translation>
 <translation id="4802417911091824046">Hindi kasama sa pag-encrypt ng passphrase ang mga paraan ng pagbabayad at address mula sa Google Pay.
@@ -490,6 +492,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="4943872375798546930">Walang mga resulta</translation>
 <translation id="4961107849584082341">Isalin ang page na ito sa anumang wika</translation>
 <translation id="4970824347203572753">Hindi available sa iyong lokasyon</translation>
+<translation id="4971735654804503942">Mas mabilis at proactive na proteksyon laban sa mga mapanganib na website, download, at extension. Binibigyan ka ng babala tungkol sa mga paglabag sa password. Kinakailangang magpadala ng data mula sa pag-browse sa Google.</translation>
 <translation id="497421865427891073">Sumulong</translation>
 <translation id="4988210275050210843">Nagda-download ng file (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Mga Page</translation>
@@ -561,7 +564,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5527082711130173040">Kailangan ng Chrome ng access sa lokasyon upang makapag-scan ng mga device. <ph name="BEGIN_LINK1" />I-update ang mga pahintulot<ph name="END_LINK1" />. Ang access sa lokasyon ay <ph name="BEGIN_LINK2" />naka-off din para sa device na ito<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Isara ang mga tab na incognito</translation>
 <translation id="5534640966246046842">Nakopya ang site</translation>
-<translation id="5548606607480005320">Pag-check sa kaligtasan</translation>
 <translation id="5561549206367097665">Naghihintay ng network…</translation>
 <translation id="55737423895878184">Pinapayagan ang lokasyon at mga notification</translation>
 <translation id="5578795271662203820">Hanapin sa <ph name="SEARCH_ENGINE" /> ang larawan</translation>
@@ -600,7 +602,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="583281660410589416">Hindi-alam</translation>
 <translation id="5833984609253377421">Ibahagi ang link</translation>
 <translation id="5836192821815272682">Dina-download ang Update sa Chrome…</translation>
-<translation id="584120177693484274">Naka-uncheck</translation>
 <translation id="5853623416121554550">naka-pause</translation>
 <translation id="5854790677617711513">Mas matagal sa 30 araw</translation>
 <translation id="5858741533101922242">Hindi ma-on ng Chrome ang Bluetooth adapter</translation>
@@ -736,10 +737,12 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="685850645784703949">Discover ng Google - naka-off</translation>
 <translation id="6864459304226931083">I-download ang larawan</translation>
 <translation id="6865313869410766144">Data ng form ng autofill</translation>
+<translation id="6882836635272038266">Karaniwang proteksyon laban sa mga website, download, at extension na kilalang mapanganib.</translation>
 <translation id="6884306546558072722">Patuloy na mag-explore offline</translation>
 <translation id="688738109438487280">Idagdag ang kasalukuyang data sa <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">I-unlock upang kopyahin ang iyong password</translation>
 <translation id="6896758677409633944">Copy</translation>
+<translation id="6900532703269623216">Enhanced protection</translation>
 <translation id="6903907808598579934">I-on ang pag-sync</translation>
 <translation id="6942665639005891494">Baguhin ang default na lokasyon ng pag-download anumang oras gamit ang opsyong menu ng Mga Setting</translation>
 <translation id="6945221475159498467">Pumili</translation>

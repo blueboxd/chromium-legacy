@@ -23,6 +23,7 @@ This script is tested and works fine with the following video sites:
   * http://crosvideo.appspot.com
 """
 
+from gpu_tests import common_browser_args as cba
 from gpu_tests import gpu_integration_test
 from gpu_tests import ipg_utils
 from gpu_tests import path_util
@@ -357,7 +358,7 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def SetUpProcess(cls):
     super(cls, PowerMeasurementIntegrationTest).SetUpProcess()
     path_util.SetupTelemetryPaths()
-    cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
+    cls.CustomizeBrowserArgs([])
     cls.StartBrowser()
     assert cls._url_mode is not None
     if not cls._url_mode:
@@ -369,10 +370,16 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     prefixed_test_func_name = '_RunTest_%s' % test_params.test_func
     getattr(self, prefixed_test_func_name)(test_path, test_params)
 
-  @staticmethod
-  def _AddDefaultArgs(browser_args):
-    # All tests receive the following options.
-    return ['--autoplay-policy=no-user-gesture-required'] + browser_args
+  @classmethod
+  def GenerateBrowserArgs(cls, additional_args):
+    """Adds default arguments to |additional_args|.
+
+    See the parent class' method documentation for additional information.
+    """
+    default_args = super(PowerMeasurementIntegrationTest,
+                         cls).GenerateBrowserArgs(additional_args)
+    default_args.append(cba.AUTOPLAY_POLICY_NO_USER_GESTURE_REQUIRED)
+    return default_args
 
   @staticmethod
   def _MeasurePowerWithIPG(bypass_ipg):
@@ -427,13 +434,11 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _RunTest_Basic(self, test_path, params):
     del test_path  # Unused in this particular test.
 
-    browser_args = PowerMeasurementIntegrationTest._AddDefaultArgs([])
-
     results_sum = {}
     for iteration in range(params.repeat):
       logging.info('')
       logging.info('Iteration #%d', iteration)
-      self.RestartBrowserWithArgs(browser_args)
+      self.RestartBrowserWithArgs([])
 
       results = PowerMeasurementIntegrationTest._MeasurePowerWithIPG(
           params.bypass_ipg)
@@ -446,18 +451,17 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'D3D11VideoDecoder', 'DirectCompositionUseNV12DecodeSwapChain',
         'DirectCompositionUnderlays'
     ]
-    browser_args = PowerMeasurementIntegrationTest._AddDefaultArgs(
-        [  # All bots are connected with a power source, however, we want to to
-            # test with the code path that's enabled with battery power.
-            '--disable_vp_scaling=1',
-            '--disable-features=' + ','.join(disabled_features)
-        ])
 
     results_sum = {}
     for iteration in range(params.repeat):
       logging.info('')
       logging.info('Iteration #%d', iteration)
-      self.RestartBrowserWithArgs(browser_args)
+      self.RestartBrowserWithArgs([
+          # All bots are connected with a power source, however, we want to to
+          # test with the code path that's enabled with battery power.
+          cba.DISABLE_VP_SCALING,
+          '--disable-features=' + ','.join(disabled_features)
+      ])
 
       url = self.UrlOfStaticFilePath(test_path)
       self.tab.Navigate(url, script_to_evaluate_on_commit=_VIDEO_TEST_SCRIPT)

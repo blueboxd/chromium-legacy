@@ -98,6 +98,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="1995660704900986789">Vypnout</translation>
 <translation id="2012624427112548395">Ctrl+Hledat+H</translation>
 <translation id="2016340657076538683">Zadejte zprávu</translation>
+<translation id="2018630726571919839">Řekni mi vtip</translation>
 <translation id="2050339315714019657">Na výšku</translation>
 <translation id="2067602449040652523">Jas klávesnice</translation>
 <translation id="209965399369889474">Nejste připojeni k síti</translation>
@@ -125,6 +126,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="2354174487190027830">Aktivace sítě <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Pokračovat</translation>
 <translation id="2365393535144473978">Zapnutím mobilních dat aktivujete Bluetooth.</translation>
+<translation id="2369165858548251131">„Ahoj“ čínsky</translation>
 <translation id="2390318262976603432">Nastavení národního prostředí</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">K dispozici je aktualizace</translation>
@@ -142,6 +144,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="256712445991462162">zabudovaná lupa</translation>
 <translation id="2575685495496069081">Vícenásobné přihlášení je zakázáno.</translation>
 <translation id="2582112259361606227">Restartovat a aktualizovat</translation>
+<translation id="2595239820337756193">5 km v mílích</translation>
 <translation id="2617342710774726426">SIM karta je uzamčena</translation>
 <translation id="2621713457727696555">Zabezpečeno</translation>
 <translation id="2653659639078652383">Odeslat</translation>
@@ -195,6 +198,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="3154351730702813399">Správce zařízení může sledovat vaši aktivitu při procházení.</translation>
 <translation id="3181441307743005334">Restartování může chvíli trvat</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Připojeno k zařízení}few{Připojeno k # zařízením}many{Připojeno k # zařízení}other{Připojeno k # zařízením}}</translation>
+<translation id="320207200541803018">Nastavit časovač</translation>
 <translation id="3203405173652969239">Je zapnutý přístup pomocí přepínačů</translation>
 <translation id="3207953481422525583">Uživatelská nastavení</translation>
 <translation id="3217205077783620295">Zvuk je zapnutý. Přepnutím ho vypnete.</translation>
@@ -207,6 +211,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> se i nadále bude moci přihlásit.</translation>
 <translation id="3321628682574733415">Nesprávný kód rodiče</translation>
 <translation id="332587331255250389">Vyměňte prosím baterii</translation>
+<translation id="334252345105450327">Pořídit snímek obrazovky</translation>
 <translation id="3351879221545518001">Právě odesíláte obrazovku.</translation>
 <translation id="3364721542077212959">Nástroje pro dotykové pero</translation>
 <translation id="3368922792935385530">Připojeno</translation>
@@ -239,6 +244,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="3631369015426612114">Povolit oznámení z následujících zdrojů</translation>
 <translation id="3638400994746983214">Přepnout obrazovku ochrany soukromí. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> – spravovaný uživatel</translation>
+<translation id="3702846122927433391">Počet obyvatel Nigérie</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Pořídit snímek oblasti</translation>
 <translation id="371370241367527062">Přední mikrofon</translation>
@@ -519,6 +525,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Původní rozlišení bude obnoveno za <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Nabídka byla přesunuta do levého horního rohu obrazovky.</translation>
+<translation id="7189412385142492784">Jak daleko je Venuše</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Kvůli použití aktualizace je třeba Chromebook restartovat. Může to trvat až minutu.</translation>
 <translation id="7256634071279256947">Zadní mikrofon</translation>
 <translation id="726276584504105859">Chcete-li použít rozdělenou obrazovku, přetáhněte okno sem</translation>
@@ -645,6 +652,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="8649101189709089199">Poslech vybraného textu</translation>
 <translation id="8652175077544655965">Zavřít nastavení</translation>
 <translation id="8653151467777939995">Zobrazit nastavení oznámení. Oznámení jsou zapnutá</translation>
+<translation id="8660331759611631213">Druhá odmocnina ze 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Zobrazit seznam sítí. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

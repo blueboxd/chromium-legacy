@@ -161,6 +161,9 @@ std::vector<TilesTestConfig> const kTestCases = {
 #if defined(ENABLE_CC_VULKAN_TESTS)
     {TestRendererType::kSkiaVk, TestRasterType::kOop},
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
+#if defined(ENABLE_CC_DAWN_TESTS)
+    {TestRendererType::kSkiaDawn, TestRasterType::kOop},
+#endif  // defined(ENABLE_CC_DAWN_TESTS)
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -195,6 +198,9 @@ std::vector<TilesTestConfig> const kTestCasesMultiThread = {
     // Vulkan in these tests.
     {TestRendererType::kSkiaVk, TestRasterType::kOop},
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
+#if defined(ENABLE_CC_DAWN_TESTS)
+    {TestRendererType::kSkiaDawn, TestRasterType::kOop},
+#endif  // defined(ENABLE_CC_DAWN_TESTS)
 };
 
 using LayerTreeHostTilesTestPartialInvalidationMultiThread =

@@ -32,7 +32,8 @@ void BuildNotificationData(const base::string16& title,
 }
 
 notifications::ScheduleParams BuildScheduleParams(
-    base::TimeDelta ignore_timeout_duration) {
+    base::TimeDelta ignore_timeout_duration,
+    base::Clock* clock) {
   notifications::ScheduleParams schedule_params;
   // Explicit dismissing, clicking unhelpful button, and not interacting for a
   // while(1 day at first stage, 7 days at second stage) are considered as
@@ -43,9 +44,9 @@ notifications::ScheduleParams BuildScheduleParams(
   schedule_params.impression_mapping.emplace(
       notifications::UserFeedback::kIgnore,
       notifications::ImpressionResult::kNegative);
-  schedule_params.deliver_time_start = base::make_optional(base::Time::Now());
+  schedule_params.deliver_time_start = base::make_optional(clock->Now());
   schedule_params.deliver_time_end =
-      base::make_optional(base::Time::Now() + base::TimeDelta::FromMinutes(1));
+      base::make_optional(clock->Now() + base::TimeDelta::FromMinutes(1));
   schedule_params.ignore_timeout_duration = ignore_timeout_duration;
   return schedule_params;
 }
@@ -54,8 +55,11 @@ notifications::ScheduleParams BuildScheduleParams(
 
 PrefetchNotificationServiceImpl::PrefetchNotificationServiceImpl(
     notifications::NotificationScheduleService* schedule_service,
-    std::unique_ptr<PrefetchNotificationServiceBridge> bridge)
-    : schedule_service_(schedule_service), bridge_(std::move(bridge)) {
+    std::unique_ptr<PrefetchNotificationServiceBridge> bridge,
+    base::Clock* clock)
+    : schedule_service_(schedule_service),
+      bridge_(std::move(bridge)),
+      clock_(clock) {
   DCHECK(schedule_service_);
 }
 
@@ -86,7 +90,7 @@ void PrefetchNotificationServiceImpl::ScheduleInternal(
   BuildNotificationData(title, body, &data);
   auto params = std::make_unique<notifications::NotificationParams>(
       notifications::SchedulerClientType::kPrefetch, std::move(data),
-      BuildScheduleParams(ignore_timeout_duration));
+      BuildScheduleParams(ignore_timeout_duration, clock_));
   params->enable_ihnr_buttons = true;
   schedule_service_->Schedule(std::move(params));
 }

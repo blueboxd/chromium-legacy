@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1647391597548383849">Kameranıza daxil olun</translation>
 <translation id="1660204651932907780">Saytlara səs oxutmaq icazəsi verin (məsləhətli)</translation>
+<translation id="1677097821151855053">Kukilər və digər sayt datası sizin yadda saxlamaq üçün istifadə edilir, məsələn, daxil olmanıza və ya reklamları fərdiləşdirməyə imkan yaradır. Bütün saytlar üçün kukiləri idarə etmək üçün <ph name="BEGIN_LINK" />Ayarlara<ph name="END_LINK" /> baxın.</translation>
 <translation id="1688867105868176567">Sayt datası təmizlənsin?</translation>
 <translation id="169515064810179024">Saytların hərəkət sensorlarına girişini blok edin</translation>
 <translation id="1717218214683051432">Hərəkət sensorları</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Xüsusi sayt üçün kukilərə icazə verin.</translation>
 <translation id="4046123991198612571">Növbəti trek</translation>
 <translation id="4165986682804962316">Sayt ayarları</translation>
+<translation id="4200726100658658164">Məkan Ayarlarını açın</translation>
 <translation id="4226663524361240545">Bildirişlər cihazı titrədə bilər</translation>
 <translation id="4242533952199664413">Ayarları açın</translation>
 <translation id="4259722352634471385">Naviqasiya bloklandı: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Bütün saytlar</translation>
 <translation id="6320088164292336938">Vibrasiya</translation>
 <translation id="6388207532828177975">Təmizləyin və sıfırlayın</translation>
+<translation id="6423924377271166037">Kukiləri silin</translation>
 <translation id="6439114592976064011">Saytların virtual reallıq cihazınızı və datanızı istifadə etməsinin qarşısını alın</translation>
 <translation id="6447842834002726250">Kukilər</translation>
 <translation id="6527303717912515753">Paylaşın</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Geri axtarı</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> tətbiqinə məkanınıza giriş icazəsi vermək üçün <ph name="BEGIN_LINK" />Android Ayarlarında<ph name="END_LINK" /> məkanı da aktiv edin.</translation>
 <translation id="8447861592752582886">Cihaz icazəsini ləğv edin</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 kuki istifadə olunur}other{# kuki istifadə olunur}}</translation>
 <translation id="8463851957836045671">Sayt sürətlidir</translation>
 <translation id="851751545965956758">Saytların cihazlara qoşulmasını blok edin</translation>
 <translation id="857943718398505171">İcazə verilib (tövsiyə olunur)</translation>

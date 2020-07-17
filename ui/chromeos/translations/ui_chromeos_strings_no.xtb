@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">Japansk inndata (for amerikansk tastatur)</translation>
 <translation id="1047956942837015229">Sletter <ph name="COUNT" /> elementer ...</translation>
 <translation id="1049926623896334335">Word-dokument</translation>
+<translation id="1060368002126861100">For å åpne filer med <ph name="APP_NAME" />, flytt dem til mappen for Windows-filer først.</translation>
 <translation id="1062407476771304334">Erstatt</translation>
 <translation id="1065449928621190041">Fransk tastatur (Canada)</translation>
 <translation id="1119069657431255176">Komprimert tar-arkiv for Bzip2</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">Advarsel: Disse filene er midlertidige og kan bli slettet automatisk for å frigjøre diskplass.  <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Mappe</translation>
 <translation id="3549797760399244642">Gå til drive.google.com</translation>
+<translation id="3553048479571901246">For å åpne filer med <ph name="APP_NAME" />, kopiér dem til mappen for Windows-filer først.</translation>
 <translation id="357479282490346887">Litauisk</translation>
 <translation id="3583509704582854624">Alfanumerisk inndata (for japansk tastatur)</translation>
 <translation id="3603385196401704894">Canadisk fransk</translation>

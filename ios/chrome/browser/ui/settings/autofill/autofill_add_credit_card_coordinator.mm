@@ -106,6 +106,13 @@
                 IDS_IOS_ADD_CREDIT_CARD_INVALID_EXPIRATION_DATE_ALERT)];
 }
 
+- (void)creditCardMediatorHasInvalidNickname:
+    (AutofillAddCreditCardMediator*)mediator {
+  [self
+      showAlertWithMessage:l10n_util::GetNSString(
+                               IDS_IOS_ADD_CREDIT_CARD_INVALID_NICKNAME_ALERT)];
+}
+
 - (void)creditCardMediatorShowScanner:(AutofillAddCreditCardMediator*)mediator
     API_AVAILABLE(ios(13.0)) {
   self.creditCardScannerCoordinator = [[CreditCardScannerCoordinator alloc]

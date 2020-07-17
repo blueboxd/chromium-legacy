@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">Избиране</translation>
 <translation id="1859234291848436338">Посока на писане</translation>
 <translation id="1860796786778352021">Затваряне на известието</translation>
+<translation id="186476001994626254">Уеб съдържание с възможност за интелигентно поставяне</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">&amp;Избиране на всички</translation>
@@ -75,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Отваряне на папката</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Преди 1 година}other{Преди # години}}</translation>
+<translation id="2878511608894704031">Изтриване на всички</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{след 1 д}other{след # д}}</translation>
 <translation id="2931838996092594335">кликвам</translation>
 <translation id="2981684127883932071">Показани са предложения</translation>
@@ -172,6 +174,7 @@
 <translation id="6417265370957905582">Google Асистент</translation>
 <translation id="6430678249303439055">Блокиране на всички известия от това приложение</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Преди 1 секунда}other{Преди # секунди}}</translation>
+<translation id="6503257047630241175">Съдържание във формат RTF</translation>
 <translation id="6539092367496845964">Нещо се обърка. Опитайте пак по-късно.</translation>
 <translation id="654149438358937226">Блокиране на всички известия</translation>
 <translation id="6567071839949112727">кликване върху елемента предшественик</translation>

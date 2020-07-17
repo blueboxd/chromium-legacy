@@ -98,7 +98,7 @@ class TestPaintArtifact {
       const TransformPaintPropertyNode* scroll_translation);
 
   TestPaintArtifact& ForeignLayer(scoped_refptr<cc::Layer> layer,
-                                  const FloatPoint& offset);
+                                  const IntPoint& offset);
 
   // Add display item with the specified client in the chunk.
   TestPaintArtifact& RectDrawing(DisplayItemClient&,

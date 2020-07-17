@@ -245,7 +245,7 @@ std::unique_ptr<SyncWebSocket> CreateMockSyncWebSocket(
 
 TEST(CreateChild, MultiLevel) {
   SyncWebSocketFactory factory =
-      base::Bind(&CreateMockSyncWebSocket, SyncWebSocket::kOk);
+      base::BindRepeating(&CreateMockSyncWebSocket, SyncWebSocket::kOk);
   // CreateChild relies on client_ being a DevToolsClientImpl, so no mocking
   std::unique_ptr<DevToolsClientImpl> client_uptr =
       std::make_unique<DevToolsClientImpl>(factory, "http://url", "id");
@@ -266,7 +266,7 @@ TEST(CreateChild, MultiLevel) {
 
 TEST(CreateChild, IsNonBlocking_NoErrors) {
   SyncWebSocketFactory factory =
-      base::Bind(&CreateMockSyncWebSocket, SyncWebSocket::kOk);
+      base::BindRepeating(&CreateMockSyncWebSocket, SyncWebSocket::kOk);
   // CreateChild relies on client_ being a DevToolsClientImpl, so no mocking
   std::unique_ptr<DevToolsClientImpl> client_uptr =
       std::make_unique<DevToolsClientImpl>(factory, "http://url", "id");
@@ -286,7 +286,7 @@ TEST(CreateChild, IsNonBlocking_NoErrors) {
 
 TEST(CreateChild, Load_NoErrors) {
   SyncWebSocketFactory factory =
-      base::Bind(&CreateMockSyncWebSocket, SyncWebSocket::kOk);
+      base::BindRepeating(&CreateMockSyncWebSocket, SyncWebSocket::kOk);
   // CreateChild relies on client_ being a DevToolsClientImpl, so no mocking
   std::unique_ptr<DevToolsClientImpl> client_uptr =
       std::make_unique<DevToolsClientImpl>(factory, "http://url", "id");
@@ -304,7 +304,7 @@ TEST(CreateChild, Load_NoErrors) {
 
 TEST(CreateChild, WaitForPendingNavigations_NoErrors) {
   SyncWebSocketFactory factory =
-      base::Bind(&CreateMockSyncWebSocket, SyncWebSocket::kTimeout);
+      base::BindRepeating(&CreateMockSyncWebSocket, SyncWebSocket::kTimeout);
   // CreateChild relies on client_ being a DevToolsClientImpl, so no mocking
   std::unique_ptr<DevToolsClientImpl> client_uptr =
       std::make_unique<DevToolsClientImpl>(factory, "http://url", "id");
@@ -324,7 +324,7 @@ TEST(CreateChild, WaitForPendingNavigations_NoErrors) {
 
 TEST(CreateChild, IsPendingNavigation_NoErrors) {
   SyncWebSocketFactory factory =
-      base::Bind(&CreateMockSyncWebSocket, SyncWebSocket::kOk);
+      base::BindRepeating(&CreateMockSyncWebSocket, SyncWebSocket::kOk);
   // CreateChild relies on client_ being a DevToolsClientImpl, so no mocking
   std::unique_ptr<DevToolsClientImpl> client_uptr =
       std::make_unique<DevToolsClientImpl>(factory, "http://url", "id");

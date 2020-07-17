@@ -6,13 +6,13 @@
 
 #include <string>
 
-#include "content/common/ax_content_node_data.h"
-#include "content/common/ax_content_tree_update.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_update.h"
 
 namespace {
 
@@ -127,13 +127,10 @@ AomContentAxTree::AomContentAxTree(RenderFrameImpl* render_frame)
     : render_frame_(render_frame) {}
 
 bool AomContentAxTree::ComputeAccessibilityTree() {
-  AXContentTreeUpdate content_tree_update;
+  ui::AXTreeUpdate content_tree_update;
   RenderAccessibilityImpl::SnapshotAccessibilityTree(
       render_frame_, &content_tree_update, ui::kAXModeComplete);
 
-  // Hack to convert between AXContentNodeData to just AXNodeData to preserve
-  // content specific attributes while still being able to use AXTree's
-  // Unserialize method.
   ui::AXTreeUpdate tree_update;
   tree_update.has_tree_data = content_tree_update.has_tree_data;
   ui::AXTreeData* tree_data = &(content_tree_update.tree_data);

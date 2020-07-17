@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Таны бусад төхөөрөмжид хадгалсан хавчуурга энд харагдах болно</translation>
 <translation id="1113597929977215864">Хялбаршуулсан харагдцыг харуулах</translation>
 <translation id="1122278879166832009">Нүүр хуудсандаа хүссэн газраасаа хурдан хандахын тулд энд товшино уу</translation>
+<translation id="1126809382673880764">Таныг аюултай вэб сайт, таталт болон өргөтгөлөөс хамгаалахгүй. Гэхдээ та Аюулгүй үзэх хамгаалалтыг Gmail, Хайлт зэрэг Google-н боломжтой бусад үйлчилгээнд авсан хэвээр байна.</translation>
 <translation id="1129510026454351943">Дэлгэрэнгүй: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 таталт хүлээгдэж байна.}other{# таталт хүлээгдэж байна.}}</translation>
 <translation id="1145536944570833626">Одоо байгаа өгөгдлийг устгана уу.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Гэрэлтүүлэг</translation>
 <translation id="1810845389119482123">Синк хийх эхний тохируулга дуусаагүй байна</translation>
 <translation id="1821253160463689938">Таны сонголтыг таныг тэдгээр хуудсанд зочлоогүй байсан ч санахын тулд күүки ашигладаг</translation>
-<translation id="1826516787628120939">Шалгаж байна</translation>
 <translation id="1829244130665387512">Хуудаснаас хайх</translation>
 <translation id="1853692000353488670">Нууцлал бүхий шинэ цонх</translation>
 <translation id="1856325424225101786">Lite горимыг шинэчлэх үү?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Нууц үг хадгалах</translation>
 <translation id="1952172573699511566">Вэбсайт текстийг таны сонгосон хэлээр (хэрэв тухайн хэл боломжтой бол) харуулна.</translation>
 <translation id="1960290143419248813">Chrome-н шинэчлэлтийг Android-н энэ хувилбарт дэмжихээ больсон байна</translation>
+<translation id="1963976881984600709">Стандарт хамгаалалт</translation>
 <translation id="1966710179511230534">Өөрийнхөө бүртгэлийн дэлгэрэнгүй мэдээллийг шинэчилнэ үү.</translation>
 <translation id="1974060860693918893">Боловсронгуй</translation>
+<translation id="1984417487208496350">Хамгаалалт байхгүй (зөвлөдөггүй)</translation>
 <translation id="1984705450038014246">Chrome-н өгөгдлөө синк хийх</translation>
 <translation id="1986685561493779662">Ижил нэр ашиглалтад байна</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> товчлуур</translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">Google дуран <ph name="BEGIN_NEW" />Шинэ<ph name="END_NEW" />-р хайх</translation>
 <translation id="4195643157523330669">Шинэ таб дээр нээх</translation>
 <translation id="4198423547019359126">Татах боломжтой байршил алга</translation>
-<translation id="4202553989407425169">Chrome нь таны тохиргоо таныг дараахаас хамгаалж байгаа эсэхийг шалгах боломжтой:</translation>
 <translation id="4209895695669353772">Google-с санал болгосон хувийн болгосон агуулгыг авахын тулд синкийг асаана уу</translation>
 <translation id="423219824432660969"><ph name="TIME" />-д синк хийсэн өгөгдлийг Google-н нууц үгээр шифрлэх</translation>
 <translation id="4242533952199664413">Нээлттэй тохиргоо</translation>
@@ -459,6 +460,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="4749960740855309258">Шинэ чихтэй хуудас нээх</translation>
 <translation id="4759238208242260848">Татацууд:</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 таталт дууссан.}other{# таталт дууссан.}}</translation>
+<translation id="4766678251456904326">Төхөөрөмжид бүртгэл нэмэх</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 таталт товлосон.}other{# таталт товлосон.}}</translation>
 <translation id="478981486571169252">Та Chrome-с өөрийн <ph name="SITE_NAME" />-н нэвтрэлтийн төлөв, интернэтээр үзсэн өгөгдөл болон сайтын өгөгдлийг харна.</translation>
 <translation id="4802417911091824046">Нэвтрэх үгийн шифрлэлтэд Google Pay-н төлбөрийн хэрэгслүүд болон хаягуудыг агуулдаггүй.
@@ -489,6 +491,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="4943872375798546930">Илэрц байхгүй байна</translation>
 <translation id="4961107849584082341">Энэ хуудсыг дурын хэл рүү орчуулна уу</translation>
 <translation id="4970824347203572753">Таны байршилд боломжгүй байна</translation>
+<translation id="4971735654804503942">Аюултай вэб сайт, таталт болон өргөтгөлийн эсрэг илүү хурдан, идэвхтэй хамгаалалт. Танд нууц үгний зөрчлийн тухай анхааруулга өгдөг. Хайлтын өгөгдлийг Google-д илгээхийг шаарддаг.</translation>
 <translation id="497421865427891073">Цаашаа явах</translation>
 <translation id="4988210275050210843">Файлыг татаж байна (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Хуудас</translation>
@@ -560,7 +563,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="5527082711130173040">Төхөөрөмжүүд хайхын тулд Chrome-д байршлын хандалт хэрэгтэй. <ph name="BEGIN_LINK1" />Зөвшөөрлийг шинэчлэх<ph name="END_LINK1" />. <ph name="BEGIN_LINK2" />Энэ төхөөрөмжид<ph name="END_LINK2" /> байршлын хандалт унтраалттай байна.</translation>
 <translation id="5530766185686772672">Нууцлал бүхий цонхыг хаах</translation>
 <translation id="5534640966246046842">Сайтыг хуулсан</translation>
-<translation id="5548606607480005320">Аюулгүй байдлын шалгалт</translation>
 <translation id="5561549206367097665">Сүлжээг хүлээж байна...</translation>
 <translation id="55737423895878184">Байршил болон мэдэгдлийг зөвшөөрсөн</translation>
 <translation id="5578795271662203820">Энэ зургийг <ph name="SEARCH_ENGINE" />-ээс хайна уу</translation>
@@ -599,7 +601,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="583281660410589416">Үл мэдэгдэх</translation>
 <translation id="5833984609253377421">Холбоосыг хуваалцах</translation>
 <translation id="5836192821815272682">Chrome-н шинэчлэлтийг татаж байна…</translation>
-<translation id="584120177693484274">Шалгаагүй</translation>
 <translation id="5853623416121554550">түр зогсоосон</translation>
 <translation id="5854790677617711513">30 өдрөөс илүү</translation>
 <translation id="5858741533101922242">Chrome Bluetooth тохируулагчийг асаах боломжгүй байна</translation>
@@ -735,10 +736,12 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="685850645784703949">Discover by Google - унтраалттай байна</translation>
 <translation id="6864459304226931083">Зураг татах</translation>
 <translation id="6865313869410766144">Autofill дээрх мэдээлэл</translation>
+<translation id="6882836635272038266">Аюултай гэж мэдэгдсэн вэб сайт, таталт болон өргөтгөлийн эсрэг стандарт хамгаалалт.</translation>
 <translation id="6884306546558072722">Офлайн судлахаа үргэлжлүүлэх</translation>
 <translation id="688738109438487280">Одоо байгаа өгөгдлийг <ph name="TO_ACCOUNT" />-д нэмнэ үү.</translation>
 <translation id="6891726759199484455">Нууц үгээ хуулахын тулд түгжээг тайлна уу</translation>
 <translation id="6896758677409633944">Хуулах</translation>
+<translation id="6900532703269623216">Сайжруулсан хамгаалалт</translation>
 <translation id="6903907808598579934">Синк хийхийг асаах</translation>
 <translation id="6942665639005891494">Тохиргооны цэсийн сонголтоор таталтын өгөгдмөл байршлыг дурын үед өөрчлөх</translation>
 <translation id="6945221475159498467">Сонгох</translation>

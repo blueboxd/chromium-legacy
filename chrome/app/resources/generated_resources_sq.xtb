@@ -104,6 +104,7 @@
 <translation id="1124772482545689468">Përdoruesi</translation>
 <translation id="1125550662859510761">Duket si <ph name="WIDTH" /> x <ph name="HEIGHT" /> (origjinale)</translation>
 <translation id="1126809382673880764">Nuk të mbron kundër faqeve të internetit, shkarkimeve dhe shtesave të rrezikshme. Do të vazhdosh të marrësh mbrojtje për "Shfletimin e sigurt", aty ku ofrohet, në shërbimet e tjera të Google, si Gmail dhe "Kërko".</translation>
+<translation id="112752777279960360">Për të konfiguruar një telefon Android që të përdoret si çelës sigurie me këtë kompjuter për herë të parë, hap Chrome në telefonin tënd dhe shko te "Cilësimet &gt; Fjalëkalimet &gt; Përdore telefonin si çelës sigurie". Më pas trokit te "Lidh pajisjen e re" dhe skanoje këtë kod QR.</translation>
 <translation id="1128109161498068552">Mos lejo asnjë faqe që të përdorë mesazhet ekskluzive të sistemit për qasjen te pajisjet MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Redakto motorin e kërkimit</translation>
@@ -506,6 +507,7 @@
 <translation id="1622054403950683339">Harroje rrjetin Wi-Fi</translation>
 <translation id="1623132449929929218">Imazhet nuk ofrohen për momentin. Rilidhu me internetin për të parë koleksionet e imazheve të sfondit.</translation>
 <translation id="1623723619460186680">Reduktimi i dritës blu</translation>
+<translation id="1624012933569991823">Cilësimet</translation>
 <translation id="1627276047960621195">Përshkruesit e skedarëve</translation>
 <translation id="1627408615528139100">Është shkarkuar tashmë</translation>
 <translation id="1628948239858170093">Do ta skanosh skedarin përpara se ta hapësh?</translation>
@@ -742,6 +744,7 @@
 <translation id="1887850431809612466">Rishikimi i harduerit</translation>
 <translation id="1888523338879380247">{0,plural, =1{Dita e fundit për të përditësuar pajisjen}other{Përditësoje pajisjen brenda # ditësh}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID-ja: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783">Po merr <ph name="ATTACHMENTS" /> nga <ph name="DEVICE_NAME" /></translation>
 <translation id="189210018541388520">Hap ekranin e plotë</translation>
 <translation id="1892341345406963517">Përshëndetje <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Gjuhë të tjera</translation>
@@ -1814,6 +1817,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3253225298092156258">Nuk ofrohet</translation>
 <translation id="3253448572569133955">Llogari e panjohur</translation>
 <translation id="3254516606912442756">Zbulimi automatik i brezit orar është çaktivizuar</translation>
+<translation id="3254715652085014625">Hap Chrome në telefonin tënd Android dhe shko te "Cilësimet &gt; Fjalëkalimet &gt; Përdore telefonin si çelës sigurie" dhe ndiq udhëzimet atje.</translation>
 <translation id="3255355328033513170">Të gjitha të dhënat e ruajtura nga <ph name="SITE_GROUP_NAME" /> dhe çdo sajt nën të do të fshihen. Kjo përfshin edhe kukit. Do të dalësh nga këto sajte, duke përfshirë skedat e hapura.</translation>
 <translation id="3259723213051400722">Provo përsëri.</translation>
 <translation id="3264544094376351444">Shkrimi sans-serif</translation>
@@ -1952,6 +1956,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3433621910545056227">Gabim! Sistemi dështoi në vendosjen e kyçjes së cilësive të instalimit në kohë të pajisjes.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3434272557872943250">Nëse cilësimi i "Aktivitetit shtesë të uebit dhe të aplikacioneve" është i aktivizuar për fëmijën tënd, këto të dhëna mund të ruhen në "Llogarinë e Google" të fëmijës. Mëso më shumë për këto cilësime dhe se si t'i rregullosh ato te families.google.com.</translation>
+<translation id="3435541101098866721">Shto telefon të ri</translation>
 <translation id="3435688026795609344">"<ph name="EXTENSION_NAME" />" po kërkon kodin tënd <ph name="CODE_TYPE" /></translation>
 <translation id="3435738964857648380">Siguria</translation>
 <translation id="343578350365773421">Nuk ka letër</translation>
@@ -3488,6 +3493,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5390677308841849479">E kuqe e errët dhe portokalli</translation>
 <translation id="5390743329570580756">Dërgo për</translation>
 <translation id="5397794290049113714">Ti</translation>
+<translation id="5398497406011404839">Faqeshëuesit e fshehur</translation>
 <translation id="5398572795982417028">Referenca e faqes jashtë kufijve, kufiri është <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Reklamat janë të bllokuara</translation>
 <translation id="5402815541704507626">Shkarko përditësimin duke përdorur të dhënat celulare</translation>
@@ -3573,6 +3579,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5496587651328244253">Organizo</translation>
 <translation id="5497251278400702716">Ky skedar</translation>
 <translation id="5499313591153584299">Ky skedar mund të jetë i dëmshëm për kompjuterin tënd.</translation>
+<translation id="5499453227627332024">Ofrohet një përditësim për kontejnerin tënd Linux. Mund ta përditësosh gjithashtu më vonë nga aplikacioni "Cilësimet".</translation>
 <translation id="5500709606820808700">Kontrolli i sigurisë u ekzekutua sot</translation>
 <translation id="5502500733115278303">Importuar nga Firefox</translation>
 <translation id="5503982651688210506">Vazhdo të lejosh që <ph name="HOST" /> të përdorë dhe të lëvizë kamerën dhe të përdorë mikrofonin</translation>
@@ -4197,6 +4204,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6270770586500173387">Dërgo <ph name="BEGIN_LINK1" />informacionet e sistemit dhe të aplikacionit<ph name="END_LINK1" />, si dhe <ph name="BEGIN_LINK2" />metrikën<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Ndodhi një gabim (<ph name="ERROR" />) gjatë shkarkimit të përbërësit shtesë.</translation>
 <translation id="6273677812470008672">Cilësia</translation>
+<translation id="6273979226236203550">Fjalëkalimi yt është ruajtur në këtë pajisje dhe në "Llogarinë tënde të Google". Cilin dëshiron të fshish?</translation>
 <translation id="6277105963844135994">Rrjetit i kaloi afati</translation>
 <translation id="6277518330158259200">N&amp;xjirr një pamje të ekranit</translation>
 <translation id="6278057325678116358">Përdor GTK+</translation>
@@ -4557,6 +4565,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6758056191028427665">Na trego se si po ecim.</translation>
 <translation id="6759193508432371551">Rivendosje në gjendje fabrike</translation>
 <translation id="6762833852331690540">Aktiv</translation>
+<translation id="676560328519657314">Metodat e tua të pagesës në Google Pay</translation>
 <translation id="6767566652486411142">Zgjidh një gjuhë tjetër...</translation>
 <translation id="6767639283522617719">Nuk mund t'i bashkohet domenit. Sigurohu që cilësimet të jenë të sakta për njësinë organizative.</translation>
 <translation id="6769557323306147204"><ph name="ORGANIZATION_NAME" /> të rekomandon që ta përditësosh këtë pajisje.</translation>
@@ -4729,6 +4738,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6972553992270299730"><ph name="ORIGIN" /> nuk mund t'i hapë skedarët në këtë dosje sepse ajo përmban skedarë sistemi</translation>
 <translation id="6972629891077993081">Pajisjet HID</translation>
 <translation id="6972754398087986839">Fillo</translation>
+<translation id="6972887130317925583">Fjalëkalimi i komprometuar u ndryshua me sukses. Kontrolloji fjalëkalimet e tua në çdo kohë te <ph name="SETTINGS" />.</translation>
 <translation id="6973611239564315524">Ofrohet një përmirësim në Debian 10 (Buster)</translation>
 <translation id="6974609594866392343">Modaliteti i demonstrimit jashtë linje</translation>
 <translation id="6977381486153291903">Rishikimi i firmuerit</translation>
@@ -5586,6 +5596,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8017176852978888182">Direktoritë e ndara të Linux</translation>
 <translation id="8017679124341497925">Shkurtorja u modifikua</translation>
 <translation id="8018313076035239964">Kontrollo se çfarë informacioni mund të përdorin sajtet e uebit dhe çfarë përmbajtjeje mund të të shfaqin</translation>
+<translation id="8022688469248132790">Rishiko detajet e gabimit</translation>
 <translation id="8023801379949507775">Përditëso shtesat tani</translation>
 <translation id="8026334261755873520">Pastro të dhënat e shfletimit</translation>
 <translation id="8028060951694135607">Rikuperimi i Çelësit të Microsoft</translation>
@@ -6525,6 +6536,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="9180380851667544951">Sajti mund të ndajë ekranin tënd</translation>
 <translation id="9188732951356337132">Dërgo të dhënat e përdorimit dhe të diagnostikimit. Aktualisht kjo pajisje po dërgon automatikisht te Google të dhënat e diagnostikimit dhe të përdorimit të pajisjes dhe të aplikacioneve. Këto nuk do të përdoren për të identifikuar fëmijën tënd dhe do të ndihmojnë për qëndrueshmërinë e sistemit dhe të aplikacioneve dhe për përmirësime të tjera. Disa të dhëna të përmbledhura do të ndihmojnë po ashtu aplikacionet dhe partnerët e Google, si p.sh. zhvilluesit e Android. Nëse cilësimi i "Aktivitetit shtesë të uebit dhe të aplikacioneve" është i aktivizuar për fëmijën tënd, këto të dhëna mund të ruhen në "Llogarinë e Google" të fëmijës. <ph name="BEGIN_LINK2" />Mëso më shumë<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + çelësi i ndarë paraprakisht</translation>
+<translation id="9198090666959937775">Përdore telefonin tënd Android si çelës sigurie</translation>
 <translation id="920045321358709304">Kërko në <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Çdo e dhënë jashtë linje do të fshihet</translation>
 <translation id="9201220332032049474">Opsionet e kyçjes së ekranit</translation>
@@ -6567,6 +6579,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="942532530371314860"><ph name="APP_NAME" /> po ndan një skedë të Chrome dhe audion.</translation>
 <translation id="945522503751344254">Dërgo komente</translation>
 <translation id="947329552760389097">&amp;Inspekto elementet</translation>
+<translation id="951991426597076286">Refuzo</translation>
 <translation id="952992212772159698">Nuk është aktivizuar</translation>
 <translation id="956500788634395331">Je i mbrojtur nga shtesat që mund të jenë të dëmshme</translation>
 <translation id="957960681186851048">Ky sajt u përpoq të shkarkonte automatikisht shumë skedarë</translation>

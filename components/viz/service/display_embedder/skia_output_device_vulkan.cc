@@ -328,10 +328,16 @@ bool SkiaOutputDeviceVulkan::RecreateSwapChain(
 void SkiaOutputDeviceVulkan::OnPostSubBufferFinished(
     std::vector<ui::LatencyInfo> latency_info,
     gfx::SwapResult result) {
-  auto image_index = vulkan_surface_->swap_chain()->current_image_index();
-  FinishSwapBuffers(gfx::SwapCompletionResult(result),
-                    vulkan_surface_->image_size(), std::move(latency_info),
-                    damage_of_images_[image_index]);
+  if (result == gfx::SwapResult::SWAP_ACK) {
+    auto image_index = vulkan_surface_->swap_chain()->current_image_index();
+    FinishSwapBuffers(gfx::SwapCompletionResult(result),
+                      vulkan_surface_->image_size(), std::move(latency_info),
+                      damage_of_images_[image_index]);
+  } else {
+    FinishSwapBuffers(gfx::SwapCompletionResult(result),
+                      vulkan_surface_->image_size(), std::move(latency_info),
+                      gfx::Rect(vulkan_surface_->image_size()));
+  }
 }
 
 SkiaOutputDeviceVulkan::SkSurfaceSizePair::SkSurfaceSizePair() = default;

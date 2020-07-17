@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">таңдау</translation>
 <translation id="1859234291848436338">Жазу бағыты</translation>
 <translation id="1860796786778352021">Хабарландыруды жабу</translation>
+<translation id="186476001994626254">Интернеттегі смарт мазмұн</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Барлығын &amp;таңдау</translation>
@@ -75,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Қалтаны ашу</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 жыл бұрын}other{# жыл бұрын}}</translation>
+<translation id="2878511608894704031">Барлығын жою</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 күнде}other{# күнде}}</translation>
 <translation id="2931838996092594335">басады</translation>
 <translation id="2981684127883932071">Ұсыныстарды көрсету</translation>
@@ -172,6 +174,7 @@
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6430678249303439055">Бұл қолданбадан келетін барлық хабарландыруларды бөгеу</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 секунд бұрын}other{# секунд бұрын}}</translation>
+<translation id="6503257047630241175">RTF мазмұны</translation>
 <translation id="6539092367496845964">Бірдеңе дұрыс болмады. Кейінірек қайталап көріңіз.</translation>
 <translation id="654149438358937226">Барлық хабарландыруларды бөгеу</translation>
 <translation id="6567071839949112727">жоғары деңгейлі элементті басу</translation>

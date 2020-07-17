@@ -10,6 +10,8 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
+#import "ios/chrome/browser/ui/table_view/table_view_constants.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -359,9 +361,11 @@ id<GREYMatcher> SearchIconButton() {
 }
 
 - (void)verifyEmptyBackgroundAppears {
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kBookmarkEmptyStateExplanatoryLabelIdentifier)]
+  id<GREYMatcher> emptyBackground =
+      grey_accessibilityID(base::FeatureList::IsEnabled(kIllustratedEmptyStates)
+                               ? kTableViewIllustratedEmptyViewID
+                               : kBookmarkEmptyStateExplanatoryLabelIdentifier);
+  [[EarlGrey selectElementWithMatcher:emptyBackground]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 

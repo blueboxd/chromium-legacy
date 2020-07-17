@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">বেছে নিন</translation>
 <translation id="1859234291848436338">লিখন নির্দেশনা</translation>
 <translation id="1860796786778352021">বিজ্ঞপ্তি বন্ধ করা হয়েছে</translation>
+<translation id="186476001994626254">ওয়েব স্মার্ট পেস্ট কন্টেন্ট</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;সকল বেছে নিন</translation>
@@ -75,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">ফোল্ডার খুলুন</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{১ বছর আগে}one{# বছর আগে}other{# বছর আগে}}</translation>
+<translation id="2878511608894704031">সব মুছুন</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{১ দিনের মধ্যে}one{# দিনের মধ্যে}other{# দিনের মধ্যে}}</translation>
 <translation id="2931838996092594335">ক্লিক করুন</translation>
 <translation id="2981684127883932071">সাজেশন দেখানো হচ্ছে</translation>
@@ -172,6 +174,7 @@
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6430678249303439055">এই অ্যাপ থেকে সমস্ত বিজ্ঞপ্তি ব্লক করুন</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{১ সেকেন্ড আগে}one{# সেকেন্ড আগে}other{# সেকেন্ড আগে}}</translation>
+<translation id="6503257047630241175">RTF কন্টেন্ট</translation>
 <translation id="6539092367496845964">কোনও সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।</translation>
 <translation id="654149438358937226">সমস্ত বিজ্ঞপ্তি ব্লক করুন</translation>
 <translation id="6567071839949112727">এটি সম্পর্কিত একটি পুরানো আইটেমে ক্লিক করুন</translation>

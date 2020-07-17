@@ -29,6 +29,8 @@ class EnterprisePolicyTestHelper {
   PrefService* GetLocalState();
   // Returns the policy provider attached to |browser_state_|.
   policy::MockConfigurationPolicyProvider* GetPolicyProvider();
+  // Returns the browser policy connector.
+  BrowserPolicyConnectorIOS* GetBrowserPolicyConnector();
 
  private:
   // The enterprise configuration policy provider.

@@ -29,7 +29,7 @@ _NOISE_VALUES_TYPE = models.ObjectNodeType(
 _NOISE_LEVEL_TYPE = models.ObjectNodeType(
     'noise-level',
     extra_newlines=(1, 1, 1),
-    attributes=[('name', unicode, None)],
+    attributes=[('name', str, None)],
     children=[
         models.ChildType('summary', _SUMMARY_TYPE, False),
         models.ChildType('values', _NOISE_VALUES_TYPE, False),
@@ -49,14 +49,14 @@ _PARAMETERS_TYPE = models.ObjectNodeType(
         ('num-cohorts', int, None),
         ('bytes', int, None),
         ('hash-functions', int, None),
-        ('reporting-level', unicode, None),
-        ('noise-level', unicode, None),
+        ('reporting-level', str, None),
+        ('noise-level', str, None),
     ])
 
 _RAPPOR_PARAMETERS_TYPE = models.ObjectNodeType(
     'rappor-parameters',
     extra_newlines=(1, 1, 1),
-    attributes=[('name', unicode, None)],
+    attributes=[('name', str, None)],
     children=[
         models.ChildType('summary', _SUMMARY_TYPE, False),
         models.ChildType('parameters', _PARAMETERS_TYPE, False),
@@ -73,21 +73,21 @@ _RAPPOR_PARAMETERS_TYPES_TYPE = models.ObjectNodeType(
 _STRING_FIELD_TYPE = models.ObjectNodeType(
     'string-field',
     extra_newlines=(1, 1, 0),
-    attributes=[('name', unicode, None)],
+    attributes=[('name', str, None)],
     children=[
         models.ChildType('summary', _SUMMARY_TYPE, False),
     ])
 
 _FLAG_TYPE = models.ObjectNodeType(
     'flag',
-    attributes=[('bit', int, None), ('label', unicode, None)],
+    attributes=[('bit', int, None), ('label', str, None)],
     text_attribute='summary',
     single_line=True)
 
 _FLAGS_FIELD_TYPE = models.ObjectNodeType(
     'flags-field',
     extra_newlines=(1, 1, 0),
-    attributes=[('name', unicode, None), ('noise-level', unicode, None)],
+    attributes=[('name', str, None), ('noise-level', str, None)],
     children=[
         models.ChildType('flags', _FLAG_TYPE, True),
         models.ChildType('summary', _SUMMARY_TYPE, False),
@@ -96,7 +96,7 @@ _FLAGS_FIELD_TYPE = models.ObjectNodeType(
 _UINT64_FIELD_TYPE = models.ObjectNodeType(
     'uint64-field',
     extra_newlines=(1, 1, 0),
-    attributes=[('name', unicode, None), ('noise-level', unicode, None)],
+    attributes=[('name', str, None), ('noise-level', str, None)],
     children=[
         models.ChildType('summary', _SUMMARY_TYPE, False),
     ])
@@ -104,7 +104,7 @@ _UINT64_FIELD_TYPE = models.ObjectNodeType(
 _RAPPOR_METRIC_TYPE = models.ObjectNodeType(
     'rappor-metric',
     extra_newlines=(1, 1, 1),
-    attributes=[('name', unicode, None), ('type', unicode, None)],
+    attributes=[('name', str, None), ('type', str, None)],
     children=[
         models.ChildType('obsolete', _OBSOLETE_TYPE, False),
         models.ChildType('owners', _OWNER_TYPE, True),

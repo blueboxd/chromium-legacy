@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Diğer cihazlarınızda kaydedilmiş yer işaretleri burada görünür.</translation>
 <translation id="1113597929977215864">Basitleştirilmiş görünümü göster</translation>
 <translation id="1122278879166832009">Herhangi bir yerden ana sayfanıza hızlıca erişmek için buraya dokunun</translation>
+<translation id="1126809382673880764">Sizi tehlikeli web siteleri, indirmeler ve uzantılara karşı korumaz. Gmail ve Arama gibi diğer Google hizmetlerinde, mümkün olduğunda Güvenli Tarama korumasından yararlanmaya devam edersiniz.</translation>
 <translation id="1129510026454351943">Ayrıntılar: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 indirme işlemi beklemede.}other{# indirme işlemi beklemede.}}</translation>
 <translation id="1145536944570833626">Mevcut verileri silin.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Açık</translation>
 <translation id="1810845389119482123">İlk senkronizasyon kurulumu tamamlanmadı</translation>
 <translation id="1821253160463689938">Belirtilen sayfaları ziyaret etmiyor olsanız bile tercihlerinizi hatırlamak için çerezler kullanır</translation>
-<translation id="1826516787628120939">Kontrol ediliyor</translation>
 <translation id="1829244130665387512">Sayfada bul</translation>
 <translation id="1853692000353488670">Yeni gizli sekme</translation>
 <translation id="1856325424225101786">Basit mod sıfırlansın mı?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Şifreleri kaydet</translation>
 <translation id="1952172573699511566">Web siteleri, mümkün olduğunda metni tercih ettiğiniz dilde gösterir.</translation>
 <translation id="1960290143419248813">Chrome güncellemeleri Android'in bu sürümü için artık desteklenmiyor</translation>
+<translation id="1963976881984600709">Standart koruma</translation>
 <translation id="1966710179511230534">Lütfen oturum açma ayrıntılarınızı güncelleyin.</translation>
 <translation id="1974060860693918893">Gelişmiş</translation>
+<translation id="1984417487208496350">Koruma yok (önerilmez)</translation>
 <translation id="1984705450038014246">Chrome verilerimi senkronize et</translation>
 <translation id="1986685561493779662">Ad zaten var</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> düğmesi</translation>
@@ -392,7 +394,6 @@ Arama yapmak için herhangi bir kelimeye dokunup basılı tutun. Aramanızı has
 <translation id="4183868528246477015">Google Lens ile ara <ph name="BEGIN_NEW" />Yeni<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Yeni sekmede aç</translation>
 <translation id="4198423547019359126">Kullanılabilir indirme yeri yok</translation>
-<translation id="4202553989407425169">Chrome, ayarlarınızın sizi aşağıdakilerden koruyup korumadığını kontrol edebilir:</translation>
 <translation id="4209895695669353772">Google tarafından önerilen kişiselleştirilmiş içeriği almak için senkronizasyonu açın</translation>
 <translation id="423219824432660969"><ph name="TIME" /> itibarıyla, senkronize edilmiş verileri Google şifresiyle şifrele</translation>
 <translation id="4242533952199664413">Ayarları aç</translation>
@@ -490,6 +491,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="4943872375798546930">Sonuç yok</translation>
 <translation id="4961107849584082341">Bu sayfayı istediğiniz dile çevirin</translation>
 <translation id="4970824347203572753">Bulunduğunuz konumda kullanılamıyor</translation>
+<translation id="4971735654804503942">Tehlikeli web siteleri, indirmeler ve uzantılara karşı daha hızlı, proaktif koruma. Sizi şifre ihlalleri konusunda uyarır. Tarama verilerinin Google'a gönderilmesini gerektirir.</translation>
 <translation id="497421865427891073">İlerle</translation>
 <translation id="4988210275050210843">Dosya indiriliyor (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Sayfalar</translation>
@@ -561,7 +563,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5527082711130173040">Chrome'un cihazları taraması için konum bilgilerine erişmesi gerekiyor. <ph name="BEGIN_LINK1" />İzinleri güncelleyin<ph name="END_LINK1" />. Ayrıca, konum bilgilerine erişim <ph name="BEGIN_LINK2" />bu cihaz için kapalı<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Gizli sekmeleri kapat</translation>
 <translation id="5534640966246046842">Site kopyalandı</translation>
-<translation id="5548606607480005320">Güvenlik kontrolü</translation>
 <translation id="5561549206367097665">Ağ bekleniyor…</translation>
 <translation id="55737423895878184">Konum ve bildirimlere izin veriliyor</translation>
 <translation id="5578795271662203820">Bu resmi, <ph name="SEARCH_ENGINE" /> üzerinde ara</translation>
@@ -600,7 +601,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="583281660410589416">Bilinmiyor</translation>
 <translation id="5833984609253377421">Bağlantıyı paylaş</translation>
 <translation id="5836192821815272682">Chrome Güncellemesi indiriliyor…</translation>
-<translation id="584120177693484274">İşaretlenmedi</translation>
 <translation id="5853623416121554550">duraklatıldı</translation>
 <translation id="5854790677617711513">30 günden daha eski</translation>
 <translation id="5858741533101922242">Chrome, Bluetooth adaptörünü açamıyor</translation>
@@ -736,10 +736,12 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="685850645784703949">Google'dan Keşfet - kapalı</translation>
 <translation id="6864459304226931083">Resmi indir</translation>
 <translation id="6865313869410766144">Form otomatik doldurma verileri</translation>
+<translation id="6882836635272038266">Tehlikeli olduğu bilinen web siteleri, indirmeler ve uzantılara karşı standart koruma.</translation>
 <translation id="6884306546558072722">Çevrimdışıyken de keşfetmeye devam edin</translation>
 <translation id="688738109438487280">Mevcut veriler <ph name="TO_ACCOUNT" /> hesabına eklenir.</translation>
 <translation id="6891726759199484455">Şifrenizi kopyalamak için kilidi açın</translation>
 <translation id="6896758677409633944">Kopyala</translation>
+<translation id="6900532703269623216">Gelişmiş koruma</translation>
 <translation id="6903907808598579934">Senkronizasyonu aç</translation>
 <translation id="6942665639005891494">Dosyaların indirileceği varsayılan konumu istediğiniz zaman Ayarlar menü seçeneğini kullanarak değiştirebilirsiniz</translation>
 <translation id="6945221475159498467">Seç</translation>

@@ -87,7 +87,7 @@ class CONTENT_EXPORT OverscrollControllerAndroid
       std::unique_ptr<ui::OverscrollRefresh> refresh_effect);
 
   // OverscrollGlowClient implementation.
-  std::unique_ptr<ui::EdgeEffectBase> CreateEdgeEffect() override;
+  std::unique_ptr<ui::EdgeEffect> CreateEdgeEffect() override;
 
   void SetNeedsAnimate();
 

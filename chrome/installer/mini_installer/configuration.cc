@@ -6,6 +6,7 @@
 
 #include <shellapi.h>  // NOLINT
 #include <stddef.h>
+#include <stdlib.h>
 #include <windows.h>
 
 #include "build/branding_buildflags.h"
@@ -41,6 +42,7 @@ Configuration::~Configuration() {
 bool Configuration::Initialize(HMODULE module) {
   Clear();
   ReadResources(module);
+  ReadRegistry();
   return ParseCommandLine(::GetCommandLine());
 }
 
@@ -59,6 +61,7 @@ void Configuration::Clear() {
   argument_count_ = 0;
   is_system_level_ = false;
   has_invalid_switch_ = false;
+  should_delete_extracted_files_ = true;
   previous_version_ = nullptr;
 }
 
@@ -121,6 +124,17 @@ void Configuration::ReadResources(HMODULE module) {
     return;
 
   previous_version_ = version_string;
+}
+
+void Configuration::ReadRegistry() {
+  // Extracted files should not be deleted iff the user has manually created a
+  // ChromeInstallerCleanup string value in the registry under
+  // HKCU\Software\[Google|Chromium] and set its value to "0".
+  wchar_t value[2] = {};
+  should_delete_extracted_files_ =
+      !RegKey::ReadSZValue(HKEY_CURRENT_USER, kCleanupRegistryKey,
+                           kCleanupRegistryValue, value, _countof(value)) ||
+      value[0] != L'0';
 }
 
 }  // namespace mini_installer

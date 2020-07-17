@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_supports_parser.h"
 
 #include "third_party/blink/renderer/core/css/parser/css_parser_impl.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_stream.h"
 #include "third_party/blink/renderer/core/css/parser/css_selector_parser.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -49,37 +50,25 @@ bool ConsumeAnyValue(CSSParserTokenRange& range) {
 
 }  // namespace
 
-CSSSupportsParser::Result CSSSupportsParser::SupportsCondition(
-    CSSParserTokenRange range,
-    CSSParserImpl& parser,
-    Mode mode) {
-  range.ConsumeWhitespace();
-  CSSParserTokenRange stored_range = range;
+CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsCondition(
+    CSSParserTokenStream& stream,
+    CSSParserImpl& parser) {
+  stream.ConsumeWhitespace();
   CSSSupportsParser supports_parser(parser);
-  Result result = supports_parser.ConsumeSupportsCondition(range);
-  if (mode != Mode::kForWindowCSS || result != Result::kParseFailure)
-    return result;
-
-  // window.CSS.supports requires to parse as-if it was wrapped in parenthesis.
-  // The only wrapped production that wouldn't have parsed above is
-  // <declaration>.
-  if (stored_range.Peek().GetType() != kIdentToken)
-    return Result::kParseFailure;
-  if (parser.SupportsDeclaration(stored_range))
-    return Result::kSupported;
-  return Result::kUnsupported;
+  return supports_parser.ConsumeSupportsCondition(stream);
 }
 
-bool CSSSupportsParser::AtIdent(CSSParserTokenRange& range, const char* ident) {
-  return range.Peek().GetType() == kIdentToken &&
-         EqualIgnoringASCIICase(range.Peek().Value(), ident);
+bool CSSSupportsParser::AtIdent(const CSSParserToken& token,
+                                const char* ident) {
+  return token.GetType() == kIdentToken &&
+         EqualIgnoringASCIICase(token.Value(), ident);
 }
 
-bool CSSSupportsParser::ConsumeIfIdent(CSSParserTokenRange& range,
+bool CSSSupportsParser::ConsumeIfIdent(CSSParserTokenStream& stream,
                                        const char* ident) {
-  if (!AtIdent(range, ident))
+  if (!AtIdent(stream.Peek(), ident))
     return false;
-  range.ConsumeIncludingWhitespace();
+  stream.ConsumeIncludingWhitespace();
   return true;
 }
 
@@ -87,53 +76,97 @@ bool CSSSupportsParser::ConsumeIfIdent(CSSParserTokenRange& range,
 //                   | <supports-in-parens> [ and <supports-in-parens> ]*
 //                   | <supports-in-parens> [ or <supports-in-parens> ]*
 CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsCondition(
-    CSSParserTokenRange& range) {
+    CSSParserTokenStream& stream) {
   // not <supports-in-parens>
-  if (ConsumeIfIdent(range, "not")) {
-    Result result = !ConsumeSupportsInParens(range);
-    return range.AtEnd() ? result : Result::kParseFailure;
-  }
+  stream.ConsumeWhitespace();
+  if (ConsumeIfIdent(stream, "not"))
+    return !ConsumeSupportsInParens(stream);
 
   // <supports-in-parens> [ and <supports-in-parens> ]*
   // | <supports-in-parens> [ or <supports-in-parens> ]*
-  Result result = ConsumeSupportsInParens(range);
+  Result result = ConsumeSupportsInParens(stream);
 
-  if (AtIdent(range, "and")) {
-    while (ConsumeIfIdent(range, "and"))
-      result = result & ConsumeSupportsInParens(range);
-  } else if (AtIdent(range, "or")) {
-    while (ConsumeIfIdent(range, "or"))
-      result = result | ConsumeSupportsInParens(range);
+  stream.ConsumeWhitespace();
+  if (AtIdent(stream.Peek(), "and")) {
+    stream.ConsumeWhitespace();
+    while (ConsumeIfIdent(stream, "and")) {
+      result = result & ConsumeSupportsInParens(stream);
+      stream.ConsumeWhitespace();
+    }
+  } else if (AtIdent(stream.Peek(), "or")) {
+    stream.ConsumeWhitespace();
+    while (ConsumeIfIdent(stream, "or")) {
+      result = result | ConsumeSupportsInParens(stream);
+      stream.ConsumeWhitespace();
+    }
   }
 
-  return range.AtEnd() ? result : Result::kParseFailure;
+  return result;
+}
+
+bool CSSSupportsParser::IsSupportsInParens(const CSSParserToken& token) {
+  // All three productions for <supports-in-parens> must start with either a
+  // left parenthesis or a function.
+  return token.GetType() == kLeftParenthesisToken ||
+         token.GetType() == kFunctionToken;
+}
+
+bool CSSSupportsParser::IsEnclosedSupportsCondition(
+    const CSSParserToken& first_token,
+    const CSSParserToken& second_token) {
+  return (first_token.GetType() == kLeftParenthesisToken) &&
+         (AtIdent(second_token, "not") ||
+          second_token.GetType() == kLeftParenthesisToken ||
+          second_token.GetType() == kFunctionToken);
+}
+
+bool CSSSupportsParser::IsSupportsSelectorFn(
+    const CSSParserToken& first_token,
+    const CSSParserToken& second_token) {
+  return (first_token.GetType() == kFunctionToken &&
+          first_token.FunctionId() == CSSValueID::kSelector);
+}
+
+bool CSSSupportsParser::IsSupportsDecl(const CSSParserToken& first_token,
+                                       const CSSParserToken& second_token) {
+  return first_token.GetType() == kLeftParenthesisToken &&
+         second_token.GetType() == kIdentToken;
+}
+
+bool CSSSupportsParser::IsSupportsFeature(const CSSParserToken& first_token,
+                                          const CSSParserToken& second_token) {
+  return IsSupportsSelectorFn(first_token, second_token) ||
+         IsSupportsDecl(first_token, second_token);
+}
+
+bool CSSSupportsParser::IsGeneralEnclosed(const CSSParserToken& first_token) {
+  return first_token.GetType() == kLeftParenthesisToken ||
+         first_token.GetType() == kFunctionToken;
 }
 
 // <supports-in-parens> = ( <supports-condition> )
 //                    | <supports-feature>
 //                    | <general-enclosed>
 CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsInParens(
-    CSSParserTokenRange& range) {
-  const CSSParserTokenRange stored_range = range;
+    CSSParserTokenStream& stream) {
+  CSSParserToken first_token = stream.Peek();
+  if (!IsSupportsInParens(first_token))
+    return Result::kParseFailure;
+
+  CSSParserTokenStream::BlockGuard guard(stream);
+  stream.ConsumeWhitespace();
 
   // ( <supports-condition> )
-  if (range.Peek().GetType() == kLeftParenthesisToken) {
-    auto block = range.ConsumeBlock();
-    block.ConsumeWhitespace();
-    range.ConsumeWhitespace();
-    Result result = ConsumeSupportsCondition(block);
-    if (result != Result::kParseFailure)
-      return result;
-    // Parsing failed, so try parsing again as <supports-feature>.
-    range = stored_range;
+  if (IsEnclosedSupportsCondition(first_token, stream.Peek())) {
+    Result result = ConsumeSupportsCondition(stream);
+    return guard.AtEndOfBlock() ? result : Result::kParseFailure;
   }
 
   // <supports-feature>
-  Result result = ConsumeSupportsFeature(range);
-  if (result != Result::kParseFailure)
-    return result;
-  // Parsing failed, try again as <general-enclosed>
-  range = stored_range;
+  if (IsSupportsFeature(first_token, stream.Peek())) {
+    Result result = ConsumeSupportsFeature(first_token, stream);
+    return guard.AtEndOfBlock() ? result : Result::kParseFailure;
+  }
 
   // <general-enclosed>
   //
@@ -142,36 +175,29 @@ CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsInParens(
   // The result kUnknown is supposed to be evaluated at the top level, but
   // we have already shipped the behavior of evaluating it here, and Firefox
   // does the same thing.
-  return EvalUnknown(ConsumeGeneralEnclosed(range));
+  return EvalUnknown(ConsumeGeneralEnclosed(first_token, stream));
 }
 
 // <supports-feature> = <supports-selector-fn> | <supports-decl>
 CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsFeature(
-    CSSParserTokenRange& range) {
-  const CSSParserTokenRange stored_range = range;
-
+    const CSSParserToken& first_token,
+    CSSParserTokenStream& stream) {
   // <supports-selector-fn>
-  Result result = ConsumeSupportsSelectorFn(range);
-  if (result != Result::kParseFailure)
-    return result;
-  range = stored_range;
+  if (IsSupportsSelectorFn(first_token, stream.Peek()))
+    return ConsumeSupportsSelectorFn(first_token, stream);
 
   // <supports-decl>
-  return ConsumeSupportsDecl(range);
+  return ConsumeSupportsDecl(first_token, stream);
 }
 
 // <supports-selector-fn> = selector( <complex-selector> )
 CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsSelectorFn(
-    CSSParserTokenRange& range) {
+    const CSSParserToken& first_token,
+    CSSParserTokenStream& stream) {
   if (!RuntimeEnabledFeatures::CSSSupportsSelectorEnabled())
     return Result::kParseFailure;
-  if (range.Peek().GetType() != kFunctionToken)
-    return Result::kParseFailure;
-  if (range.Peek().FunctionId() != CSSValueID::kSelector)
-    return Result::kParseFailure;
-  auto block = range.ConsumeBlock();
-  block.ConsumeWhitespace();
-  range.ConsumeWhitespace();
+  DCHECK(IsSupportsSelectorFn(first_token, stream.Peek()));
+  auto block = stream.ConsumeUntilPeekedTypeIs<kRightParenthesisToken>();
   if (CSSSelectorParser::SupportsComplexSelector(block, parser_.GetContext()))
     return Result::kSupported;
   return Result::kUnsupported;
@@ -179,14 +205,11 @@ CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsSelectorFn(
 
 // <supports-decl> = ( <declaration> )
 CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsDecl(
-    CSSParserTokenRange& range) {
-  if (range.Peek().GetType() != kLeftParenthesisToken)
+    const CSSParserToken& first_token,
+    CSSParserTokenStream& stream) {
+  if (!IsSupportsDecl(first_token, stream.Peek()))
     return Result::kParseFailure;
-  auto block = range.ConsumeBlock();
-  block.ConsumeWhitespace();
-  range.ConsumeWhitespace();
-  if (block.Peek().GetType() != kIdentToken)
-    return Result::kParseFailure;
+  auto block = stream.ConsumeUntilPeekedTypeIs<kRightParenthesisToken>();
   if (parser_.SupportsDeclaration(block))
     return Result::kSupported;
   return Result::kUnsupported;
@@ -195,16 +218,17 @@ CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsDecl(
 // <general-enclosed> = [ <function-token> <any-value> ) ]
 //                  | ( <ident> <any-value> )
 CSSSupportsParser::Result CSSSupportsParser::ConsumeGeneralEnclosed(
-    CSSParserTokenRange& range) {
-  if (range.Peek().GetType() == kFunctionToken ||
-      range.Peek().GetType() == kLeftParenthesisToken) {
-    auto block = range.ConsumeBlock();
+    const CSSParserToken& first_token,
+    CSSParserTokenStream& stream) {
+  if (IsGeneralEnclosed(first_token)) {
+    auto block = stream.ConsumeUntilPeekedTypeIs<kRightParenthesisToken>();
     // Note that <any-value> matches a sequence of one or more tokens, hence the
     // block-range can't be empty.
     // https://drafts.csswg.org/css-syntax-3/#typedef-any-value
     if (block.AtEnd() || !ConsumeAnyValue(block))
       return Result::kParseFailure;
-    range.ConsumeWhitespace();
+
+    stream.ConsumeWhitespace();
     return Result::kUnknown;
   }
   return Result::kParseFailure;

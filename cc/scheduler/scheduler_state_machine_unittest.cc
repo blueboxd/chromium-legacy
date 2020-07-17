@@ -2239,8 +2239,7 @@ TEST(SchedulerStateMachineTest,
   // Abort the commit, since that is what we expect the main thread to do if the
   // LayerTreeFrameSink was lost due to a synchronous call from the main thread
   // to release the LayerTreeFrameSink.
-  state.BeginMainFrameAborted(
-      CommitEarlyOutReason::ABORTED_LAYER_TREE_FRAME_SINK_LOST);
+  state.BeginMainFrameAborted(CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT);
 
   // The scheduler should begin the LayerTreeFrameSink creation now.
   EXPECT_ACTION_UPDATE_STATE(

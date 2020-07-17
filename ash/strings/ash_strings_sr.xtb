@@ -98,6 +98,7 @@
 <translation id="1995660704900986789">Искључи</translation>
 <translation id="2012624427112548395">Ctrl + тастер за претрагу + H</translation>
 <translation id="2016340657076538683">Унесите поруку</translation>
+<translation id="2018630726571919839">Испричај ми виц.</translation>
 <translation id="2050339315714019657">Вертикално</translation>
 <translation id="2067602449040652523">Осветљеност тастатуре</translation>
 <translation id="209965399369889474">Нисте повезани на мрежу</translation>
@@ -125,6 +126,7 @@
 <translation id="2354174487190027830">Активирање мреже <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Наставите</translation>
 <translation id="2365393535144473978">Ако омогућите мобилне податке, омогућавате Bluetooth.</translation>
+<translation id="2369165858548251131">„Здраво“ на кинеском</translation>
 <translation id="2390318262976603432">Подешавања локалитета</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Доступно је ажурирање</translation>
@@ -142,6 +144,7 @@
 <translation id="256712445991462162">монтирана лупа екрана</translation>
 <translation id="2575685495496069081">Онемогућено је вишеструко пријављивање</translation>
 <translation id="2582112259361606227">Рестартујте да бисте ажурирали</translation>
+<translation id="2595239820337756193">5 km у миљама</translation>
 <translation id="2617342710774726426">SIM картица је закључана</translation>
 <translation id="2621713457727696555">Заштићено</translation>
 <translation id="2653659639078652383">Пошаљи</translation>
@@ -195,6 +198,7 @@
 <translation id="3154351730702813399">Администратор уређаја може да прати активности прегледања.</translation>
 <translation id="3181441307743005334">Рестартовање може да потраје</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Повезани сте са једним уређајем}one{Повезани сте са # уређајем}few{Повезани сте са # уређаја}other{Повезани сте са # уређаја}}</translation>
+<translation id="320207200541803018">Подеси тајмер</translation>
 <translation id="3203405173652969239">Приступ помоћу прекидача је омогућен</translation>
 <translation id="3207953481422525583">Подешавања корисника</translation>
 <translation id="3217205077783620295">Звук је укључен. Можете да га искључите померањем прекидача.</translation>
@@ -207,6 +211,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> ће и даље моћи да се пријави касније.</translation>
 <translation id="3321628682574733415">Нетачан кôд родитеља</translation>
 <translation id="332587331255250389">Замените батерију</translation>
+<translation id="334252345105450327">Направи снимак екрана</translation>
 <translation id="3351879221545518001">Тренутно пребацујете екран.</translation>
 <translation id="3364721542077212959">Алатке за писаљку</translation>
 <translation id="3368922792935385530">Повезан</translation>
@@ -239,6 +244,7 @@
 <translation id="3631369015426612114">Дозволи обавештења из следећих извора</translation>
 <translation id="3638400994746983214">Укључује/искључује екран за приватност. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Корисник којим се управља</translation>
+<translation id="3702846122927433391">Популација Нигерије</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Сними област</translation>
 <translation id="371370241367527062">Предњи микрофон</translation>
@@ -519,6 +525,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Враћање на стару резолуцију за <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Мени је премештен у горњи леви угао екрана.</translation>
+<translation id="7189412385142492784">Колико далеко је Венера</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Овај Chromebook мора да се растартује ради примене ажурирања. Ово може да потраје највише 1 минут.</translation>
 <translation id="7256634071279256947">Задњи микрофон</translation>
 <translation id="726276584504105859">Превуците овде да бисте користили подељени екран</translation>
@@ -645,6 +652,7 @@
 <translation id="8649101189709089199">Изаберите за говор</translation>
 <translation id="8652175077544655965">Затворите подешавања</translation>
 <translation id="8653151467777939995">Прегледајте подешавања обавештења. Обавештења су укључена</translation>
+<translation id="8660331759611631213">Квадратни корен броја 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Прегледајте листу мрежа. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

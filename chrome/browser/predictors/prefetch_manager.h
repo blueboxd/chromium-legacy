@@ -64,6 +64,11 @@ class PrefetchManager {
    public:
     virtual ~Delegate() = default;
 
+    // Called when a prefetch is initiated. |prefetch_url| is the subresource
+    // being prefetched, and |url| is the main frame of the navigation.
+    virtual void PrefetchInitiated(const GURL& url,
+                                   const GURL& prefetch_url) = 0;
+
     // Called when all prefetch jobs for the |stats->url| are finished.
     // Called on the UI thread.
     virtual void PrefetchFinished(std::unique_ptr<PrefetchStats> stats) = 0;

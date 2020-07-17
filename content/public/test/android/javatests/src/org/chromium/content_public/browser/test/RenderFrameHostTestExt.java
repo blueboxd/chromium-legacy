@@ -31,7 +31,13 @@ public class RenderFrameHostTestExt {
         nativeExecuteJavaScript(mNativeRenderFrameHostTestExt, script, callback);
     }
 
+    public void updateVisualState(Callback<Boolean> callback) {
+        nativeUpdateVisualState(mNativeRenderFrameHostTestExt, callback);
+    }
+
     private native long nativeInit(long renderFrameHostAndroidPtr);
     private native void nativeExecuteJavaScript(
             long nativeRenderFrameHostTestExt, String script, Callback<String> callback);
+    private native void nativeUpdateVisualState(
+            long nativeRenderFrameHostTestExt, Callback<Boolean> callback);
 }

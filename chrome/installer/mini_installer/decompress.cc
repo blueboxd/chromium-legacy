@@ -2,16 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <windows.h>  // NOLINT
+#include "chrome/installer/mini_installer/decompress.h"
+
+#include <windows.h>
 
 #include <fcntl.h>  // for _O_* constants
 #include <fdi.h>
 #include <stddef.h>
 #include <stdlib.h>
 
-#include "chrome/installer/mini_installer/decompress.h"
-
 namespace {
+
+// A simple struct to hold data passed to and from FDICopy via its |pvUser|
+// argument.
+struct ExpandContext {
+  // The path to the single destination file.
+  const wchar_t* const dest_path;
+
+  // Set to true if the file was extracted to |dest_path|.
+  bool succeeded;
+};
 
 FNALLOC(Alloc) {
   return ::HeapAlloc(::GetProcessHeap(), 0, cb);
@@ -115,54 +125,50 @@ FNSEEK(Seek) {
 }
 
 FNFDINOTIFY(Notify) {
-  INT_PTR result = 0;
-
   // Since we will only ever be decompressing a single file at a time
   // we take a shortcut and provide a pointer to the wide destination file
   // of the file we want to write.  This way we don't have to bother with
   // utf8/wide conversion and concatenation of directory and file name.
-  const wchar_t* destination = reinterpret_cast<const wchar_t*>(pfdin->pv);
+  ExpandContext& context = *reinterpret_cast<ExpandContext*>(pfdin->pv);
 
   switch (fdint) {
-    case fdintCOPY_FILE: {
-      result = reinterpret_cast<INT_PTR>(
-          ::CreateFileW(destination, GENERIC_WRITE, FILE_SHARE_READ, nullptr,
-                        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr));
-      break;
-    }
+    case fdintCOPY_FILE:
+      // By sheer coincidence, CreateFileW's success/failure results match that
+      // of fdintCOPY_FILE.
+      return reinterpret_cast<INT_PTR>(::CreateFileW(
+          context.dest_path, GENERIC_WRITE, FILE_SHARE_READ, nullptr,
+          CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr));
 
     case fdintCLOSE_FILE_INFO: {
+      // Set the file's creation time and file attributes.
+      FILE_BASIC_INFO info = {};
       FILETIME file_time;
       FILETIME local;
-      // Converts MS-DOS date and time values to a file time
       if (DosDateTimeToFileTime(pfdin->date, pfdin->time, &file_time) &&
           LocalFileTimeToFileTime(&file_time, &local)) {
-        SetFileTime(reinterpret_cast<HANDLE>(pfdin->hf), &local, nullptr,
-                    nullptr);
+        info.CreationTime.u.LowPart = local.dwLowDateTime;
+        info.CreationTime.u.HighPart = local.dwHighDateTime;
       }
+      info.FileAttributes =
+          pfdin->attribs & (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_HIDDEN |
+                            FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_ARCHIVE);
+      ::SetFileInformationByHandle(reinterpret_cast<HANDLE>(pfdin->hf),
+                                   FileBasicInfo, &info, sizeof(info));
 
-      result = !Close(pfdin->hf);
-      pfdin->attribs &= FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_HIDDEN |
-                        FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_ARCHIVE;
-      ::SetFileAttributes(destination, pfdin->attribs);
-      break;
+      ::CloseHandle(reinterpret_cast<HANDLE>(pfdin->hf));
+      context.succeeded = true;
+      return -1;  // Break: the one file was extracted.
     }
 
     case fdintCABINET_INFO:
     case fdintENUMERATE:
-      // OK. continue as normal.
-      result = 0;
-      break;
+      return 0;  // Continue: success.
 
     case fdintPARTIAL_FILE:
     case fdintNEXT_CABINET:
     default:
-      // Error case.
-      result = -1;
-      break;
+      return -1;  // Break: error.
   }
-
-  return result;
 }
 
 // Module handle of cabinet.dll
@@ -250,24 +256,20 @@ bool Expand(const wchar_t* source, const wchar_t* destination) {
   // The directory part is assumed to have a trailing backslash.
   scoped_ptr<char> source_path_utf8(WideToUtf8(source, source_name - source));
 
-  scoped_ptr<char> dest_utf8(WideToUtf8(destination, -1));
-  if (!dest_utf8 || !source_name_utf8 || !source_path_utf8)
+  if (!source_name_utf8 || !source_path_utf8)
     return false;
-
-  bool success = false;
 
   ERF erf = {0};
   HFDI fdi = g_FDICreate(&Alloc, &Free, &Open, &Read, &Write, &Close, &Seek,
                          cpuUNKNOWN, &erf);
-  if (fdi) {
-    if (g_FDICopy(fdi, source_name_utf8, source_path_utf8, 0, &Notify, nullptr,
-                  const_cast<wchar_t*>(destination))) {
-      success = true;
-    }
-    g_FDIDestroy(fdi);
-  }
+  if (!fdi)
+    return false;
 
-  return success;
+  ExpandContext context = {destination, /*succeeded=*/false};
+  g_FDICopy(fdi, source_name_utf8, source_path_utf8, 0, &Notify, nullptr,
+            &context);
+  g_FDIDestroy(fdi);
+  return context.succeeded;
 }
 
 }  // namespace mini_installer

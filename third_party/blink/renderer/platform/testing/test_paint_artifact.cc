@@ -68,7 +68,7 @@ TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
 
 TestPaintArtifact& TestPaintArtifact::ForeignLayer(
     scoped_refptr<cc::Layer> layer,
-    const FloatPoint& offset) {
+    const IntPoint& offset) {
   DEFINE_STATIC_LOCAL(LiteralDebugNameClient, client, ("ForeignLayer"));
   display_item_list_.AllocateAndConstruct<ForeignLayerDisplayItem>(
       client, DisplayItem::kForeignLayerFirst, std::move(layer), offset);

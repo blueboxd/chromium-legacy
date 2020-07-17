@@ -8,7 +8,6 @@ source_set("audio") {
   deps = [
     "//base",
     "//media",
-    "//media/fuchsia/mojom",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media.audio",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
   ]

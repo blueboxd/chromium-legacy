@@ -138,13 +138,13 @@ void MetricsLogStore::MarkStagedLogAsSent() {
     ongoing_log_queue_.MarkStagedLogAsSent();
 }
 
-void MetricsLogStore::PersistUnsentLogs() const {
+void MetricsLogStore::TrimAndPersistUnsentLogs() {
   DCHECK(unsent_logs_loaded_);
   if (!unsent_logs_loaded_)
     return;
 
-  initial_log_queue_.PersistUnsentLogs();
-  ongoing_log_queue_.PersistUnsentLogs();
+  initial_log_queue_.TrimAndPersistUnsentLogs();
+  ongoing_log_queue_.TrimAndPersistUnsentLogs();
 }
 
 }  // namespace metrics

@@ -49,6 +49,22 @@ void LayoutSVGBlock::WillBeDestroyed() {
   LayoutBlockFlow::WillBeDestroyed();
 }
 
+void LayoutSVGBlock::InsertedIntoTree() {
+  LayoutBlockFlow::InsertedIntoTree();
+  if (CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(*this) !=
+      CompositingReason::kNone) {
+    SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
+  }
+}
+
+void LayoutSVGBlock::WillBeRemovedFromTree() {
+  LayoutBlockFlow::WillBeRemovedFromTree();
+  if (CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(*this) !=
+      CompositingReason::kNone) {
+    SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
+  }
+}
+
 void LayoutSVGBlock::UpdateFromStyle() {
   LayoutBlockFlow::UpdateFromStyle();
   SetFloating(false);
@@ -108,6 +124,9 @@ void LayoutSVGBlock::StyleDidChange(StyleDifference diff,
                                     : kDescendantIsolationNeedsUpdate);
     }
   }
+
+  if (diff.CompositingReasonsChanged())
+    SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
 
   LayoutBlock::StyleDidChange(diff, old_style);
   SVGResources::UpdateClipPathFilterMask(*GetElement(), old_style, StyleRef());

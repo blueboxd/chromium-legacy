@@ -2,15 +2,19 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="eu">
 <translation id="1282031177488366470">Lagundu Chrome-ren eginbideak eta funtzionamendua hobetzen</translation>
+<translation id="1479202195792305274">Google-ko kontu batekin saioa hasten baduzu, Chrome-k pasahitzak egiazta ditzake.</translation>
+<translation id="1647024380514430932">Chrome-k ezin izan ditu egiaztatu pasahitz guztiak. Saiatu berriro.</translation>
 <translation id="1682483655351012182">Sinkronizatu Chrome-ko datuak</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1917964099031477364">Kontu hau eta gorde gabeko datuak kendu egingo dira Chromium-etik eta gailuko beste Google-ren aplikazio batzuetatik.</translation>
+<translation id="2009224836393115614">Chrome-k ezin izan ditu egiaztatu pasahitzak. Egiaztatu Internetera konektatuta zaudela.</translation>
 <translation id="2147651015520127414">Webgunearen ziurtagiria <ph name="ISSUER" /> hornitzaileak jaulki duela egiaztatu du Chrome-k.</translation>
 <translation id="2199719347983604670">Chrome-ren sinkronizazioaren datuak</translation>
 <translation id="2347208864470321755">Eginbide hau aktibatzen denean, beste hizkuntzetan dauden orriak Google Translate bidez itzuli nahi dituzun galdetuko dizu Chrome-k. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
 <translation id="2574249610672786438">Chrome erabiltzen duzun gailu guztietan zure fitxak eskura izateko, hasi saioa gailu guztietan</translation>
 <translation id="2576431527583832481">Chrome hobetu egin dugu! Bertsio berria duzu erabilgarri.</translation>
 <translation id="257708665678654955">Webgune honetara zatozen hurrengo aldian Google Chrome-k <ph name="LANGUAGE_NAME" /> hizkuntzan dauden orriak itzultzea eskaintzea nahi duzu?</translation>
+<translation id="2732745070297234559">Chrome-k ezin izan ditu egiaztatu pasahitz guztiak. Saiatu berriro bihar.</translation>
 <translation id="2919738076569633423">Chrome erabiltzen baduzu, onartu egingo dituzu <ph name="BEGIN_LINK_TOS" />Zerbitzu-baldintzak<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231"><ph name="SIGNOUT_MANAGED_DOMAIN" /> domeinuak kudeatutako kontu baten saioa amaituko duzunez, Chrome-n dituzun datuak ezabatu egingo dira gailu honetatik. Hala ere, datu horiek Google-ko kontuan egoten jarraituko dute.</translation>
 <translation id="3148688391461398285">Atera etekin handiagoa Chrome-ri, zure kokapenaren arabera.</translation>
@@ -28,6 +32,7 @@
 <translation id="424864128008805179">Chrome-ko saioa amaitu nahi duzu?</translation>
 <translation id="4249068189593983585">Chrome-ri buruzko aholkua: fitxetako aukera gehiago ikusteko, eduki sakatuta tresna-barrako Erakutsi fitxak botoia. Pantailaren goiko edo beheko aldean aurkituko duzu.</translation>
 <translation id="4523886039239821078">Gehigarri batzuek Chrome huts egitea eragiten dute. Desinstala itzazu.</translation>
+<translation id="4698415050768537821">Chrome-k ezin izan ditu egiaztatu pasahitz guztiak. Saiatu berriro bihar edo <ph name="BEGIN_LINK" />egiaztatu pasahitzak Google-ko kontuan<ph name="END_LINK" />.</translation>
 <translation id="5389212809648216794">Google Chrome-k ezin du erabili kamera, beste aplikazio bat ari delako hura erabiltzen</translation>
 <translation id="5639704535586432836">Ireki Ezarpenak &gt; Pribatutasuna &gt; Kamera &gt; Google Chrome, eta aktibatu kamera.</translation>
 <translation id="5642200033778930880">Google Chrome-k ezin du erabili kamera Ikuspegi zatitua moduan</translation>
@@ -42,8 +47,9 @@
 <translation id="7165736900384873061">Hasi Google Chrome QR eskanerra erabiltzen</translation>
 <translation id="7172660552945675509">Aholkua: <ph name="BEGIN_LINK" />ainguratu Chrome dock-ean<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome-k aurpegi bidezko identifikazioa erabiltzen du pasahitzak baimena dutenek bakarrik atzitzen dituztela ziurtatzeko.</translation>
+<translation id="7261678641327190792">Chrome-k ezin ditu egiaztatu pasahitzak</translation>
 <translation id="7265369419224458312">Joan ordenagailuan irekita dituzun fitxetara, hemendik bertatik. Horretarako, ireki Chrome ordenagailuan, joan menura eta hautatu "Hasi saioa Chrome-n…"</translation>
-<translation id="7272930098487145294">Irudiak gehitzeko, sakatu Ezarpenak eta eman baimena Chrome-ri argazkiak erabiltzeko</translation>
+<translation id="7272930098487145294">Irudiak gordetzeko, sakatu Ezarpenak eta eman argazkiak gehitzeko baimena Chrome-ri</translation>
 <translation id="7400722733683201933">Google Chrome arakatzaileari buruz</translation>
 <translation id="756809126120519699">Garbitu dira Chrome-ko datuak</translation>
 <translation id="7626032353295482388">Ongi etorri Chrome-ra</translation>

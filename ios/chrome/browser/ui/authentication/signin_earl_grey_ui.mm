@@ -239,6 +239,8 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
                                           l10n_util::GetNSString(
                                               IDS_IOS_REMOVE_ACCOUNT_LABEL))]
       performAction:grey_tap()];
+  // Wait until the account is removed.
+  [ChromeEarlGreyUI waitForAppToIdle];
 }
 
 @end

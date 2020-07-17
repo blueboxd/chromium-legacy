@@ -205,10 +205,42 @@ TEST_F(LoadingDataCollectorTest, SimpleNavigation) {
   collector_->RecordFinishNavigation(navigation_id, navigation_id,
                                      /* is_error_page */ false);
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
+  auto* page_request_summary =
+      collector_->inflight_navigations_.begin()->second.get();
   // Ensure that the finish time of the navigation is recorded.
-  EXPECT_NE(
-      collector_->inflight_navigations_.begin()->second->navigation_committed,
-      base::TimeTicks::Max());
+  EXPECT_NE(page_request_summary->navigation_committed, base::TimeTicks::Max());
+
+  // Main frame origin should not be recorded.
+  collector_->RecordPreconnectInitiated(navigation_id,
+                                        navigation_id.main_frame_url);
+
+  collector_->RecordPreconnectInitiated(navigation_id,
+                                        GURL("http://static.google.com"));
+  EXPECT_EQ(1u, page_request_summary->preconnect_origins.size());
+  EXPECT_NE(page_request_summary->preconnect_origins.end(),
+            page_request_summary->preconnect_origins.find(
+                url::Origin::Create(GURL("http://static.google.com"))));
+
+  collector_->RecordPrefetchInitiated(navigation_id,
+                                      GURL("http://google.com/style1.css"));
+  EXPECT_TRUE(page_request_summary->first_prefetch_initiated.has_value());
+
+  base::TimeTicks first_prefetch_initiated =
+      collector_->inflight_navigations_.begin()
+          ->second->first_prefetch_initiated.value();
+  collector_->RecordPrefetchInitiated(navigation_id,
+                                      GURL("http://google.com/style2.css"));
+  // The first prefetch initiated request time should still hold.
+  EXPECT_EQ(first_prefetch_initiated,
+            page_request_summary->first_prefetch_initiated.value());
+
+  EXPECT_EQ(2u, page_request_summary->prefetch_urls.size());
+  EXPECT_NE(page_request_summary->prefetch_urls.end(),
+            page_request_summary->prefetch_urls.find(
+                GURL("http://google.com/style1.css")));
+  EXPECT_NE(page_request_summary->prefetch_urls.end(),
+            page_request_summary->prefetch_urls.find(
+                GURL("http://google.com/style2.css")));
 
   std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfo("http://www.google.com"));
@@ -384,6 +416,25 @@ TEST_F(LoadingDataCollectorTest, RecordResourceLoadComplete) {
   collector_->RecordResourceLoadComplete(navigation_id, *resource3);
 
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
+}
+
+TEST_F(LoadingDataCollectorTest,
+       RecordPreconnectInitiatedNoInflightNavigation) {
+  const SessionID kTabId = SessionID::FromSerializedValue(1);
+  // If there is no inflight navigation, nothing happens.
+  auto navigation_id = CreateNavigationID(kTabId, "http://www.google.com");
+  collector_->RecordPreconnectInitiated(navigation_id,
+                                        GURL("http://google.com/"));
+  EXPECT_TRUE(collector_->inflight_navigations_.empty());
+}
+
+TEST_F(LoadingDataCollectorTest, RecordPrefetchInitiatedNoInflightNavigation) {
+  const SessionID kTabId = SessionID::FromSerializedValue(1);
+  // If there is no inflight navigation, nothing happens.
+  auto navigation_id = CreateNavigationID(kTabId, "http://www.google.com");
+  collector_->RecordPrefetchInitiated(navigation_id,
+                                      GURL("http://google.com/style1.css"));
+  EXPECT_TRUE(collector_->inflight_navigations_.empty());
 }
 
 }  // namespace predictors

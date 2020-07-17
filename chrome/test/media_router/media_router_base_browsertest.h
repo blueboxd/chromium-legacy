@@ -57,7 +57,7 @@ class MediaRouterBaseBrowserTest : public extensions::ExtensionBrowserTest,
   // TODO(leilei): Replace this method with WaitableEvent class.
   bool ConditionalWait(base::TimeDelta timeout,
                        base::TimeDelta interval,
-                       const base::Callback<bool(void)>& callback);
+                       const base::RepeatingCallback<bool(void)>& callback);
 
   // Wait for a specific time.
   void Wait(base::TimeDelta timeout);

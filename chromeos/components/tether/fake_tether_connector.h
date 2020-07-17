@@ -37,10 +37,9 @@ class FakeTetherConnector : public TetherConnector {
   }
 
   // TetherConnector:
-  void ConnectToNetwork(
-      const std::string& tether_network_guid,
-      base::OnceClosure success_callback,
-      const network_handler::StringResultCallback& error_callback) override;
+  void ConnectToNetwork(const std::string& tether_network_guid,
+                        base::OnceClosure success_callback,
+                        StringErrorCallback error_callback) override;
   bool CancelConnectionAttempt(const std::string& tether_network_guid) override;
 
  private:

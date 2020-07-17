@@ -322,6 +322,9 @@
       status: {"Android": "stable"},
     },
     {
+      name: "CompositeSVG",
+    },
+    {
       name: "ComputedAccessibilityInfo",
       status: "experimental",
     },
@@ -661,6 +664,12 @@
       name: "DocumentPolicy",
       origin_trial_feature_name: "DocumentPolicy",
       status: "experimental",
+    },
+    {
+      name: "DocumentPolicyNegotiation",
+      origin_trial_feature_name: "DocumentPolicyNegotiation",
+      status: "experimental",
+      depends_on: ['DocumentPolicy']
     },
     {
       name: "DocumentWrite",

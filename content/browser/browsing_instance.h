@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include <string>
-#include <unordered_map>
 
 #include "base/check_op.h"
 #include "base/gtest_prod_util.h"
@@ -99,8 +98,8 @@ class CONTENT_EXPORT BrowsingInstance final
   const IsolationContext& isolation_context() { return isolation_context_; }
 
   // Returns whether this BrowsingInstance has registered a SiteInstance for
-  // the site of the given URL.
-  bool HasSiteInstance(const GURL& url);
+  // the site of |site_info|.
+  bool HasSiteInstance(const SiteInfo& site_info);
 
   // Get the SiteInstance responsible for rendering the given URL.  Should
   // create a new one if necessary, but should not create more than one
@@ -183,11 +182,10 @@ class CONTENT_EXPORT BrowsingInstance final
   // Note: This should not be used by code outside this class.
   SiteInfo GetSiteInfoForURL(const GURL& url) const;
 
-  // Map of site to SiteInstance, to ensure we only have one SiteInstance per
-  // site.
-  // TODO(wjmaclean): This map will be updated in CL#3 as described in
-  // https://crbug.com/1085275#c2 to use a SiteInfo hashkey as the key string.
-  typedef std::unordered_map<std::string, SiteInstanceImpl*> SiteInstanceMap;
+  // Map of SiteInfo to SiteInstance, to ensure we only have one SiteInstance
+  // per SiteInfo. See https://crbug.com/1085275#c2 for the rationale behind
+  // why SiteInfo is the right class to key this on.
+  typedef std::map<SiteInfo, SiteInstanceImpl*> SiteInstanceMap;
 
   // The next available browser-global BrowsingInstance ID.
   static int next_browsing_instance_id_;
@@ -228,7 +226,7 @@ class CONTENT_EXPORT BrowsingInstance final
 
   // Keeps track of the site URLs that this object mapped to the
   // |default_site_instance_|.
-  // TODO(wjmaclean): convert this to use a SiteInfo hash key instead.
+  // TODO(wjmaclean): Revise this to store SiteInfos instead of GURLs.
   std::set<GURL> site_url_set_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingInstance);

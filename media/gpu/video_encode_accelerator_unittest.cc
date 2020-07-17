@@ -1846,7 +1846,7 @@ void VEAClient::CreateEncoder() {
   const VideoEncodeAccelerator::Config config(
       test_stream_->pixel_format, encoded_visible_size_,
       test_stream_->requested_profile, requested_bitrate_, requested_framerate_,
-      keyframe_period_, test_stream_->requested_level, storage_type);
+      keyframe_period_, test_stream_->requested_level, false, storage_type);
   encoder_ = CreateVideoEncodeAccelerator(config, this, gpu::GpuPreferences());
   if (!encoder_) {
     LOG(ERROR) << "Failed creating a VideoEncodeAccelerator.";

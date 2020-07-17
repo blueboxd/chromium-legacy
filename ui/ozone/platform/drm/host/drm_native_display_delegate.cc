@@ -51,11 +51,9 @@ void DrmNativeDisplayDelegate::GetDisplays(
 }
 
 void DrmNativeDisplayDelegate::Configure(
-    const display::DisplayConfigurationParams& display_config_params,
+    const std::vector<display::DisplayConfigurationParams>& config_requests,
     display::ConfigureCallback callback) {
-  DrmDisplayHost* display =
-      display_manager_->GetDisplay(display_config_params.id);
-  display->Configure(display_config_params, std::move(callback));
+  display_manager_->ConfigureDisplays(config_requests, std::move(callback));
 }
 
 void DrmNativeDisplayDelegate::GetHDCPState(

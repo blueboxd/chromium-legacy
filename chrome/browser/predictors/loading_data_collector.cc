@@ -114,6 +114,23 @@ void PageRequestSummary::UpdateOrAddResource(
   subresource_urls.insert(resource_load_info.final_url);
 }
 
+void PageRequestSummary::AddPreconnectAttempt(const GURL& preconnect_url) {
+  url::Origin preconnect_origin = url::Origin::Create(preconnect_url);
+  if (preconnect_origin == url::Origin::Create(main_frame_url)) {
+    // Do not count preconnect to main frame origin in number of origins
+    // preconnected to.
+    return;
+  }
+  preconnect_origins.insert(preconnect_origin);
+}
+
+void PageRequestSummary::AddPrefetchAttempt(const GURL& prefetch_url) {
+  prefetch_urls.insert(prefetch_url);
+
+  if (!first_prefetch_initiated)
+    first_prefetch_initiated = base::TimeTicks::Now();
+}
+
 void PageRequestSummary::UpdateOrAddToOrigins(
     const url::Origin& origin,
     const blink::mojom::CommonNetworkInfoPtr& network_info) {
@@ -198,6 +215,32 @@ void LoadingDataCollector::RecordResourceLoadComplete(
 
   auto& page_request_summary = *nav_it->second;
   page_request_summary.UpdateOrAddResource(resource_load_info);
+}
+
+void LoadingDataCollector::RecordPreconnectInitiated(
+    const NavigationID& navigation_id,
+    const GURL& preconnect_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  auto nav_it = inflight_navigations_.find(navigation_id);
+  if (nav_it == inflight_navigations_.end())
+    return;
+
+  auto& page_request_summary = *nav_it->second;
+  page_request_summary.AddPreconnectAttempt(preconnect_url);
+}
+
+void LoadingDataCollector::RecordPrefetchInitiated(
+    const NavigationID& navigation_id,
+    const GURL& prefetch_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  auto nav_it = inflight_navigations_.find(navigation_id);
+  if (nav_it == inflight_navigations_.end())
+    return;
+
+  auto& page_request_summary = *nav_it->second;
+  page_request_summary.AddPrefetchAttempt(prefetch_url);
 }
 
 void LoadingDataCollector::RecordMainFrameLoadComplete(

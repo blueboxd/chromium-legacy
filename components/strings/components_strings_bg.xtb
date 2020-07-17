@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="1008557486741366299">Не сега</translation>
+<translation id="100957008357583611">Да се използва ли местоположението ви?</translation>
 <translation id="1010200102790553230">Зареждане на страницата по-късно</translation>
 <translation id="1015730422737071372">Въвеждане на допълнителни подробности</translation>
 <translation id="1019413721762100891">Изключено</translation>
@@ -423,7 +424,6 @@
 <translation id="2705137772291741111">Запазеното (кеширано) копие на този сайт не можа да се прочете.</translation>
 <translation id="2709516037105925701">Автоматично попълване</translation>
 <translation id="2713444072780614174">бяло</translation>
-<translation id="2720342946869265578">В близост</translation>
 <translation id="2721148159707890343">Заявката е успешна</translation>
 <translation id="272451190272506600">Докоснете сензора, за да платите</translation>
 <translation id="2728127805433021124">Сертификатът на сървъра е подписан със слаб алгоритъм.</translation>
@@ -718,7 +718,6 @@
 <translation id="3990250421422698716">Разделно офсетово отпечатване</translation>
 <translation id="3996311196211510766">Сайтът <ph name="ORIGIN" /> изисква за всички заявки към него
 да се прилага правило за източник, но понастоящем то не може да бъде приложено.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 уеб страница в близост}other{# уеб страници в близост}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF документ, съдържащ {COUNT} страница}other{PDF документ, съдържащ {COUNT} страници}}</translation>
 <translation id="4030383055268325496">&amp;Отмяна на добавянето</translation>
 <translation id="4032320456957708163">Браузърът ви се управлява от <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -936,7 +935,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> и <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Запазване...</translation>
 <translation id="4913987521957242411">Перфориране горе вляво</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{и още 1 уеб страница}other{и още # уеб страници}}</translation>
 <translation id="4923459931733593730">Плащане</translation>
 <translation id="4926049483395192435">Трябва да се посочи.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> изпраща съобщение</translation>
@@ -1177,6 +1175,7 @@
 <translation id="5869405914158311789">Няма достъп до този сайт</translation>
 <translation id="5869522115854928033">Запазени пароли</translation>
 <translation id="5887400589839399685">Картата бе запазена</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> изисква да създадете резервно копие на данните си и да върнете това устройство.</translation>
 <translation id="5895138241574237353">Рестартиране</translation>
 <translation id="5895187275912066135">Издаден на</translation>
 <translation id="5901630391730855834">жълто</translation>
@@ -1327,7 +1326,6 @@
 <translation id="6518133107902771759">Потвърждаване</translation>
 <translation id="6521745193039995384">Не е активно</translation>
 <translation id="6529602333819889595">&amp;Възстановяване на изтриването</translation>
-<translation id="6534179046333460208">Предложения от Физическата мрежа</translation>
 <translation id="6545864417968258051">Сканиране за устройства с Bluetooth</translation>
 <translation id="6547208576736763147">Двойно перфориране отляво</translation>
 <translation id="6554795675067793129">Профилът ви се управлява от <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1849,7 +1847,6 @@
 <translation id="8790007591277257123">&amp;Възстановяване на изтриването</translation>
 <translation id="8792621596287649091">Възможно е да загубите достъп до профила си в/ъв <ph name="ORG_NAME" /> или самоличността ви да бъде открадната. Chromium препоръчва да промените паролата си сега.</translation>
 <translation id="8793655568873652685">Домейнът <ph name="ENROLLMENT_DOMAIN" /> е включил Chrome Enterprise Connectors в браузъра ви. Тези конектори имат достъп до някои от данните ви.</translation>
-<translation id="8800988563907321413">Тук ще се показват предложения за неща в близост</translation>
 <translation id="8805819170075074995">Списъчен запис „<ph name="LANGUAGE_ID" />“: Записът е пренебрегнат, защото е включен и в правилото SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Отрязване след всяка страница</translation>
 <translation id="8820817407110198400">Отметки</translation>

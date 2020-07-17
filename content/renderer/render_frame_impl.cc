@@ -50,7 +50,6 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/common/associated_interfaces.mojom.h"
-#include "content/common/ax_content_tree_update.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom.h"
@@ -214,6 +213,7 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
+#include "ui/accessibility/ax_tree_update.h"
 #include "ui/events/base_event_utils.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -2683,7 +2683,7 @@ void RenderFrameImpl::UpdateBrowserControlsState(
 void RenderFrameImpl::SnapshotAccessibilityTree(
     uint32_t ax_mode,
     SnapshotAccessibilityTreeCallback callback) {
-  AXContentTreeUpdate response;
+  ui::AXTreeUpdate response;
   RenderAccessibilityImpl::SnapshotAccessibilityTree(this, &response,
                                                      ui::AXMode(ax_mode));
   std::move(callback).Run(response);

@@ -233,6 +233,7 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1274997165432133392">Cookie fayllari va boshqa sayt ma’lumotlari</translation>
 <translation id="1275718070701477396">Tanlandi</translation>
 <translation id="1276994519141842946"><ph name="APP_NAME" /> oʻrnatilmadi</translation>
+<translation id="127946606521051357">Yaqin-atrofdagi qurilma fayl yubormoqda</translation>
 <translation id="1280820357415527819">Mobil tarmoqlar qidirilmoqda</translation>
 <translation id="1280965841156951489">Fayllarni tahrirlash</translation>
 <translation id="1285320974508926690">Bu sayt hech qachon tarjima qilinmasin</translation>
@@ -1218,6 +1219,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2489918096470125693">&amp;Jild qo‘shish</translation>
 <translation id="2490481887078769936"><ph name="FILE_NAME" /> fayli roʻyxatdan olib tashlandi</translation>
 <translation id="249113932447298600">Kechirasiz, <ph name="DEVICE_LABEL" /> qurilmasi ayni vaqtda qo‘llab-quvvatlanmaydi.</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> sizga <ph name="ATTACHMENTS" /> ulashmoqda</translation>
 <translation id="2492461744635776704">Sertifikatni imzolash talabi tayyorlanmoqda</translation>
 <translation id="249303669840926644">Ro‘yxatdan o‘tish amalini yakunlab bo‘lmadi</translation>
 <translation id="2495777824269688114">Boshqa funksiyalar yoki javoblar uchun “?” ustiga bosing.</translation>
@@ -4149,6 +4151,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6212039847102026977">Qo‘shimcha tarmoq parametrlari</translation>
 <translation id="6212168817037875041">Ekranni o‘chirish</translation>
 <translation id="6212752530110374741">Email Link</translation>
+<translation id="6213230117190778270">Qabul qilish</translation>
 <translation id="6216696360484424239">Avtomatik kirish</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> qurilmasi oflayn. Internetga ulanib, qaytadan urining.</translation>
 <translation id="6220413761270491930">Kengaytmani yuklab olishda xatolik yuz berdi</translation>
@@ -4276,6 +4279,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6362853299801475928">&amp;Muammo haqida xabar qilish</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Oila a’zolaringiz va do‘stlaringizni qo‘shing</translation>
+<translation id="6367985768157257101">Yaqin-atrofdan ulashuv qabul qilinsinmi?</translation>
 <translation id="636850387210749493">Korporativ domen ro‘yxatidan o‘tish</translation>
 <translation id="6370021412472292592">Aniqlovchi faylni yuklab bo‘lmadi.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -6578,9 +6582,11 @@ parollar va boshqa sozlamalaringiz Google hisobingizga sinxronlanadi.</translati
 <translation id="939519157834106403">Tarmoq nomi (SSID)</translation>
 <translation id="939598580284253335">Kodli iborani kiriting</translation>
 <translation id="939736085109172342">Yangi jild</translation>
+<translation id="941070664607309480">Ulashuvni qabul qilish uchun bu yerga bosib, qurilmangizni koʻrsating</translation>
 <translation id="942532530371314860">“<ph name="APP_NAME" />” ilovasi Chrome sahifasi va audioga kirishda ruxsat berdi.</translation>
 <translation id="945522503751344254">Fikr-mulohaza</translation>
 <translation id="947329552760389097">Elementlarni &amp;tekshirish</translation>
+<translation id="951991426597076286">Rad etish</translation>
 <translation id="952992212772159698">Faollashtirilmagan</translation>
 <translation id="956500788634395331">Zararli kengaytmalardan himoyalangansiz</translation>
 <translation id="957960681186851048">Bu sayt bir necha fayllarni avtomatik yuklab olishga urinib ko‘rdi</translation>

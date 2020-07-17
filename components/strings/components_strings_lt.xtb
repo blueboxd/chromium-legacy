@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="1008557486741366299">Ne dabar</translation>
+<translation id="100957008357583611">Naudoti vietovę?</translation>
 <translation id="1010200102790553230">Įkelti puslapį vėliau</translation>
 <translation id="1015730422737071372">Pateikti papildomos išsamios informacijos</translation>
 <translation id="1019413721762100891">Išjungta</translation>
@@ -425,7 +426,6 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="2705137772291741111">Išsaugotos (talpykloje esančios) šios svetainės kopijos negalima skaityti.</translation>
 <translation id="2709516037105925701">Automatinis pildymas</translation>
 <translation id="2713444072780614174">Balta</translation>
-<translation id="2720342946869265578">Netoliese</translation>
 <translation id="2721148159707890343">Užklausa sėkminga</translation>
 <translation id="272451190272506600">Palieskite jutiklį, kad sumokėtumėte</translation>
 <translation id="2728127805433021124">Serverio sertifikatas pasirašytas naudojant nepatikimą parašo algoritmą.</translation>
@@ -723,7 +723,6 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="3990250421422698716">Kopijų atskyrimas</translation>
 <translation id="3996311196211510766">Svetainė <ph name="ORIGIN" /> pateikė užklausą taikyti pradinę politiką
     visoms jos užklausoms, bet šiuo metu šios politikos taikyti negalima.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 tinklalapis netoliese}one{# tinklalapis netoliese}few{# tinklalapiai netoliese}many{# tinklalapio netoliese}other{# tinklalapių netoliese}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF dokumente yra {COUNT} puslapis}one{PDF dokumente yra {COUNT} puslapis}few{PDF dokumente yra {COUNT} puslapiai}many{PDF dokumente yra {COUNT} puslapio}other{PDF dokumente yra {COUNT} puslapių}}</translation>
 <translation id="4030383055268325496">&amp;Anuliuoti pridėjimą</translation>
 <translation id="4032320456957708163">Jūsų naršyklę tvarko <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -941,7 +940,6 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Išsaugoti...</translation>
 <translation id="4913987521957242411">Skylė viršuje kairėje</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{ir dar 1 tinklalapis}one{ir dar # tinklalapis}few{ir dar # tinklalapiai}many{ir dar # tinklalapio}other{ir dar # tinklalapių}}</translation>
 <translation id="4923459931733593730">Mokėjimas</translation>
 <translation id="4926049483395192435">Turi būti nurodyta.</translation>
 <translation id="4926159001844873046">Svetainėje <ph name="SITE" /> nurodyta:</translation>
@@ -1182,6 +1180,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="5869405914158311789">Nepavyksta pasiekti šios svetainės</translation>
 <translation id="5869522115854928033">Išsaugoti slaptažodžiai</translation>
 <translation id="5887400589839399685">Kortelė išsaugota</translation>
+<translation id="589006512797629854">Domenui <ph name="ENROLLMENT_DOMAIN" /> reikia, kad sukurtumėte atsarginę duomenų kopiją ir grąžintumėte įrenginį.</translation>
 <translation id="5895138241574237353">Paleisti iš naujo</translation>
 <translation id="5895187275912066135">Išduota</translation>
 <translation id="5901630391730855834">Geltona</translation>
@@ -1332,7 +1331,6 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="6518133107902771759">Patvirtinti</translation>
 <translation id="6521745193039995384">Neaktyvi</translation>
 <translation id="6529602333819889595">&amp;Ištrinti dar kartą</translation>
-<translation id="6534179046333460208">Fizinio žiniatinklio pasiūlymai</translation>
 <translation id="6545864417968258051">„Bluetooth“ nuskaitymas</translation>
 <translation id="6547208576736763147">Dvi skylės kairėje</translation>
 <translation id="6554795675067793129">Jūsų paskyrą tvarko <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1855,7 +1853,6 @@ Papildoma išsami informacija:
 <translation id="8790007591277257123">&amp;Ištrinti dar kartą</translation>
 <translation id="8792621596287649091">Galite prarasti galimybę pasiekti „<ph name="ORG_NAME" />“ paskyrą arba gali būti pavogta tapatybė. „Chromium“ rekomenduoja pakeisti slaptažodį dabar.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> įjungė „Chrome Enterprise Connectors“ jūsų naršyklėje. Naudojant šias jungtis galima pasiekti kai kuriuos jūsų duomenis.</translation>
-<translation id="8800988563907321413">Netoliese esantys pasiūlymai jums rodomi čia</translation>
 <translation id="8805819170075074995">Sąrašo įrašas „<ph name="LANGUAGE_ID" />“: įrašo nepaisoma, nes jis taip pat įtrauktas į politiką „SpellcheckLanguage“.</translation>
 <translation id="8807160976559152894">Apkarpymas po kiekvieno puslapio</translation>
 <translation id="8820817407110198400">Žymės</translation>

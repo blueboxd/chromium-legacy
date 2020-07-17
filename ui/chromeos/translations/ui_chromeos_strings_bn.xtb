@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">জাপানি ইনপুট (মার্কিন যুক্তরাষ্ট্রের কীবোর্ডের ক্ষেত্রে)</translation>
 <translation id="1047956942837015229"><ph name="COUNT" />টি আইটেম মুছে ফেলা হচ্ছে...</translation>
 <translation id="1049926623896334335">Word document</translation>
+<translation id="1060368002126861100"><ph name="APP_NAME" /> ব্যবহার করে ফাইল খুলতে, সেগুলি প্রথমে Windows ফাইল ফোল্ডারে সরিয়ে রাখুন।</translation>
 <translation id="1062407476771304334">প্রতিস্থাপন করুন</translation>
 <translation id="1065449928621190041">কানাডিয় ফরাসী কীবোর্ড</translation>
 <translation id="1119069657431255176">Bzip2 কম্প্রেসযুক্ত টার আর্কাইভ</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">সতর্কতা: এই ফাইলগুলি অস্থায়ী এবং ডিস্কের জায়গা খালি করতে হয়ত অটোমেটিক মুছে ফেলা হবে।  <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">ফোল্ডার</translation>
 <translation id="3549797760399244642">drive.google.com এ যান...</translation>
+<translation id="3553048479571901246"><ph name="APP_NAME" /> ব্যবহার করে ফাইল খুলতে, সেগুলি প্রথমে Windows ফাইল ফোল্ডারে কপি করে রাখুন।</translation>
 <translation id="357479282490346887">লিথুয়ানিয়ান</translation>
 <translation id="3583509704582854624">বর্ণসাংখ্যিক ইনপুট (জাপানি কীবোর্ডের ক্ষেত্রে)</translation>
 <translation id="3603385196401704894">কানাডীয় ফরাসি</translation>

@@ -11,7 +11,6 @@
 namespace cc {
 
 enum class CommitEarlyOutReason {
-  ABORTED_LAYER_TREE_FRAME_SINK_LOST,
   ABORTED_NOT_VISIBLE,
   ABORTED_DEFERRED_MAIN_FRAME_UPDATE,
   ABORTED_DEFERRED_COMMIT,
@@ -20,8 +19,6 @@ enum class CommitEarlyOutReason {
 
 inline const char* CommitEarlyOutReasonToString(CommitEarlyOutReason reason) {
   switch (reason) {
-    case CommitEarlyOutReason::ABORTED_LAYER_TREE_FRAME_SINK_LOST:
-      return "CommitEarlyOutReason::ABORTED_LAYER_TREE_FRAME_SINK_LOST";
     case CommitEarlyOutReason::ABORTED_NOT_VISIBLE:
       return "CommitEarlyOutReason::ABORTED_NOT_VISIBLE";
     case CommitEarlyOutReason::ABORTED_DEFERRED_MAIN_FRAME_UPDATE:

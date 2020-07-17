@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">निवडा</translation>
 <translation id="1859234291848436338">लिहिण्याची दिशा</translation>
 <translation id="1860796786778352021">सूचना बंद</translation>
+<translation id="186476001994626254">वेब स्‍मार्ट पेस्ट आशय</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;सर्व निवडा</translation>
@@ -75,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">फोल्डर उघडा</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 वर्षापूर्वी}other{# वर्षांपूर्वी}}</translation>
+<translation id="2878511608894704031">सर्व हटवा</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{१दि मध्ये}other{#दि मध्ये}}</translation>
 <translation id="2931838996092594335">क्लिक करा</translation>
 <translation id="2981684127883932071">सूचना दाखवत आहे</translation>
@@ -172,6 +174,7 @@
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6430678249303439055">या अ‍ॅपच्या सर्व सूचना ब्‍लॉक करा</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 सेकंदापूर्वी}other{# सेकंदांपूर्वी}}</translation>
+<translation id="6503257047630241175">RTF आशय</translation>
 <translation id="6539092367496845964">काहीतरी चूक झाली. पुन्हा प्रयत्न करा.</translation>
 <translation id="654149438358937226">सर्व सूचना ब्लॉक करा</translation>
 <translation id="6567071839949112727">पूर्वजवर क्लिक करा</translation>

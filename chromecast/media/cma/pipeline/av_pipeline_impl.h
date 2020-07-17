@@ -22,6 +22,8 @@
 #include "chromecast/media/cma/pipeline/stream_decryptor.h"
 #include "chromecast/public/media/cast_decrypt_config.h"
 #include "chromecast/public/media/stream_id.h"
+#include "media/base/callback_registry.h"
+#include "media/base/cdm_context.h"
 #include "media/base/pipeline_status.h"
 
 namespace media {
@@ -120,11 +122,8 @@ class AvPipelineImpl : CmaBackend::Decoder::Delegate {
   // Pushes one ready buffer to decoder.
   void PushReadyBuffer(scoped_refptr<DecoderBufferBase> buffer);
 
-  // Callbacks:
-  // - when BrowserCdm updated its state.
-  // - when BrowserCdm has been destroyed.
-  void OnCdmStateChanged();
-  void OnCdmDestroyed();
+  // Callbacks when CastCdm updated its state.
+  void OnCdmStateChanged(::media::CdmContext::Event event);
 
   // Callback invoked when a media buffer has been buffered by |frame_provider_|
   // which is a BufferingFrameProvider.
@@ -180,7 +179,9 @@ class AvPipelineImpl : CmaBackend::Decoder::Delegate {
 
   // CdmContext, if available.
   CastCdmContext* cast_cdm_context_;
-  int player_tracker_callback_id_;
+
+  // To keep the CdmContext event callback registered.
+  std::unique_ptr<::media::CallbackRegistration> event_cb_registration_;
 
   // Decryptor to get clear buffers. All the buffers (clear or encrypted) will
   // be pushed to |decryptor_| before being pushed to |decoder_|. |decryptor_|

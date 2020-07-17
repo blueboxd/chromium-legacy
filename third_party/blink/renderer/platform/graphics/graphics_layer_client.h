@@ -76,6 +76,8 @@ class PLATFORM_EXPORT GraphicsLayerClient {
   // painting and hit testing.
   virtual bool IsUnderSVGHiddenContainer() const { return false; }
 
+  virtual bool IsSVGRoot() const { return false; }
+
   virtual bool IsTrackingRasterInvalidations() const { return false; }
 
   virtual void GraphicsLayersDidChange() {}

@@ -107,8 +107,6 @@ export class ViewerDownloadControlsElement extends PolymerElement {
   showDownloadMenu_() {
     this.getDownloadMenu_().showAt(this.$.download, {
       anchorAlignmentX: AnchorAlignment.CENTER,
-      anchorAlignmentY: AnchorAlignment.AFTER_END,
-      noOffset: true,
     });
     // For tests
     this.dispatchEvent(new CustomEvent(

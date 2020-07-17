@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Här visas bokmärken som du har sparat på andra enheter.</translation>
 <translation id="1113597929977215864">Använd förenklad visning</translation>
 <translation id="1122278879166832009">Tryck här för att snabbt komma åt startsidan när som helst</translation>
+<translation id="1126809382673880764">Skyddar inte mot farliga webbplatser, nedladdningar och tillägg. Du behåller skydd med Säker webbsökning, där denna funktion är tillgänglig, i andra tjänster från Google, till exempel Gmail och Sök.</translation>
 <translation id="1129510026454351943">Mer information: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 nedladdning väntar.}other{# nedladdningar väntar.}}</translation>
 <translation id="1145536944570833626">Radera befintlig data.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Ljus</translation>
 <translation id="1810845389119482123">Konfigurationen av synkronisering har inte slutförts</translation>
 <translation id="1821253160463689938">Kommer ihåg med hjälp av cookies vad du brukar välja även om du inte besöker sidorna i fråga</translation>
-<translation id="1826516787628120939">Kontrollerar</translation>
 <translation id="1829244130665387512">Hitta på sida</translation>
 <translation id="1853692000353488670">Ny inkognitoflik</translation>
 <translation id="1856325424225101786">Vill du återställa begränsat läge?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Spara lösenord</translation>
 <translation id="1952172573699511566">När det är möjligt visas text på webbplatser på önskat språk.</translation>
 <translation id="1960290143419248813">Uppdateringar av Chrome stöds inte längre för den här versionen av Android</translation>
+<translation id="1963976881984600709">Standardskydd</translation>
 <translation id="1966710179511230534">Uppdatera dina inloggningsuppgifter.</translation>
 <translation id="1974060860693918893">Avancerat</translation>
+<translation id="1984417487208496350">Inget skydd (rekommenderas inte)</translation>
 <translation id="1984705450038014246">Synkronisera data i Chrome</translation>
 <translation id="1986685561493779662">Namnet finns redan</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> – knapp för <ph name="LINK_NAME" /></translation>
@@ -392,7 +394,6 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="4183868528246477015">Sök med Google Lens <ph name="BEGIN_NEW" />Nyhet<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Öppna i ny flik</translation>
 <translation id="4198423547019359126">Det fins inga tillgängliga nedladdningsplatser</translation>
-<translation id="4202553989407425169">Chrome kan kontrollera om inställningarna skyddar dig från följande:</translation>
 <translation id="4209895695669353772">Aktivera synkronisering om du vill få förslag på anpassat innehåll från Google</translation>
 <translation id="423219824432660969">Kryptera synkroniserad data med Google-lösenordet från <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Öppna Inställningar</translation>
@@ -459,6 +460,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4749960740855309258">Öppna en ny flik</translation>
 <translation id="4759238208242260848">Nedladdningar</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 nedladdning har slutförts.}other{# nedladdningar har slutförts.}}</translation>
+<translation id="4766678251456904326">Lägg till konto på enheten</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 nedladdning har schemalagts.}other{# nedladdningar har schemalagts.}}</translation>
 <translation id="478981486571169252">Du kommer att se din inloggningsstatus, webbdata och webbplatsdata för <ph name="SITE_NAME" /> i Chrome.</translation>
 <translation id="4802417911091824046">Betalningsmetoder och adresser från Google Pay omfattas inte av kryptering med lösenfras.
@@ -490,6 +492,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4943872375798546930">Inga resultat</translation>
 <translation id="4961107849584082341">Översätt den här sidan till vilket språk som helst</translation>
 <translation id="4970824347203572753">Inte tillgängligt i ditt land</translation>
+<translation id="4971735654804503942">Snabbare och förebyggande skydd mot farliga webbplatser, nedladdningar och tillägg. En varning om lösenordsläckor visas. Webbinformation måste skickas till Google.</translation>
 <translation id="497421865427891073">Fortsätt</translation>
 <translation id="4988210275050210843">En fil laddas ned (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Sidor</translation>
@@ -561,7 +564,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5527082711130173040">Chrome behöver tillgång till platsinformation för att kunna söka efter enheter. <ph name="BEGIN_LINK1" />Uppdatera behörigheter<ph name="END_LINK1" />. Platsåtkomst är dessutom <ph name="BEGIN_LINK2" />inaktiverat för enheten<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Stäng inkognitoflikar</translation>
 <translation id="5534640966246046842">Webbplatsen har kopierats</translation>
-<translation id="5548606607480005320">Säkerhetskontroll</translation>
 <translation id="5561549206367097665">Väntar på nätverket …</translation>
 <translation id="55737423895878184">Plats och aviseringar tillåts</translation>
 <translation id="5578795271662203820">Sök på <ph name="SEARCH_ENGINE" /> efter denna bild</translation>
@@ -600,7 +602,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="583281660410589416">Okänd</translation>
 <translation id="5833984609253377421">Dela länk</translation>
 <translation id="5836192821815272682">Uppdatering för Chrome laddas ned …</translation>
-<translation id="584120177693484274">Avmarkerad</translation>
 <translation id="5853623416121554550">pausad</translation>
 <translation id="5854790677617711513">Äldre än 30 dagar</translation>
 <translation id="5858741533101922242">Det gick inte att aktivera Bluetooth-adaptern i Chrome</translation>
@@ -736,10 +737,12 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="685850645784703949">Förslag från Google – av</translation>
 <translation id="6864459304226931083">Ladda ned bild</translation>
 <translation id="6865313869410766144">Formuläruppgifter för Autofyll</translation>
+<translation id="6882836635272038266">Standardskydd mot kända skadliga webbplatser, nedladdningar och tillägg.</translation>
 <translation id="6884306546558072722">Fortsätta utforska offline</translation>
 <translation id="688738109438487280">Lägg till befintlig data i <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Lås upp om du vill kopiera lösenordet</translation>
 <translation id="6896758677409633944">Kopiera</translation>
+<translation id="6900532703269623216">Förbättrat skydd</translation>
 <translation id="6903907808598579934">Aktivera synkronisering</translation>
 <translation id="6942665639005891494">Ändra standardplats för nedladdningar när som helst via alternativet i inställningsmenyn</translation>
 <translation id="6945221475159498467">Välj</translation>

@@ -10,6 +10,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/containers/mru_cache.h"
+#include "base/memory/weak_ptr.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 
 namespace content {
@@ -20,6 +21,7 @@ class GURL;
 
 namespace optimization_guide {
 class OptimizationGuideDecider;
+enum class OptimizationGuideDecision;
 }  // namespace optimization_guide
 
 namespace previews {
@@ -36,6 +38,11 @@ class PreviewsOptimizationGuide {
   PreviewsOptimizationGuide& operator=(const PreviewsOptimizationGuide&) =
       delete;
   virtual ~PreviewsOptimizationGuide();
+
+  // Kicks off the call to |optimization_guide_decider_| for whether a Preview
+  // should be shown for the current conditions.
+  virtual void StartCheckingIfShouldShowPreview(
+      content::NavigationHandle* navigation_handle);
 
   // Returns whether a Preview should be shown for the current conditions.
   virtual bool ShouldShowPreview(content::NavigationHandle* navigation_handle);
@@ -54,6 +61,13 @@ class PreviewsOptimizationGuide {
       std::vector<std::string>* out_resource_patterns_to_block);
 
  private:
+  // Invoked when |optimization_guide_decider_| sends the decision for whether
+  // the page load for the navigation, as expressed by |navigation_id|, is
+  // painful or not.
+  void OnPainfulPageLoadDecision(
+      int64_t navigation_id,
+      optimization_guide::OptimizationGuideDecision decision);
+
   // The Optimization Guide Decider to consult for whether an optimization can
   // be applied. Not owned.
   optimization_guide::OptimizationGuideDecider* optimization_guide_decider_;
@@ -62,9 +76,16 @@ class PreviewsOptimizationGuide {
   // us to avoid making too many calls to |optimization_guide_decider_|.
   base::MRUCache<GURL, std::vector<std::string>> resource_loading_hints_cache_;
 
+  // An in-memory cache of painful page load decisions keyed by the navigation
+  // ID of the navigation handle that the decision was evaluated on.
+  base::MRUCache<int64_t, optimization_guide::OptimizationGuideDecision>
+      painful_page_load_decisions_;
+
   // The optimization types registered with |optimization_guide_decider_|.
   const base::flat_set<optimization_guide::proto::OptimizationType>
       registered_optimization_types_;
+
+  base::WeakPtrFactory<PreviewsOptimizationGuide> weak_ptr_factory_{this};
 };
 
 }  // namespace previews

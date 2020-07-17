@@ -82,7 +82,7 @@ void OpenFileManagerWithInternalActionId(Profile* profile,
 void OpenFileMimeTypeAfterTasksListed(
     Profile* profile,
     const GURL& url,
-    const platform_util::OpenOperationCallback& callback,
+    platform_util::OpenOperationCallback callback,
     std::unique_ptr<std::vector<file_tasks::FullTaskDescriptor>> tasks) {
   // Select a default handler. If a default handler is not available, select
   // the first non-generic file handler.
@@ -101,9 +101,10 @@ void OpenFileMimeTypeAfterTasksListed(
   if (chosen_task != nullptr) {
     if (shell_operations_allowed)
       ExecuteFileTaskForUrl(profile, chosen_task->task_descriptor(), url);
-    callback.Run(platform_util::OPEN_SUCCEEDED);
+    std::move(callback).Run(platform_util::OPEN_SUCCEEDED);
   } else {
-    callback.Run(platform_util::OPEN_FAILED_NO_HANLDER_FOR_FILE_TYPE);
+    std::move(callback).Run(
+        platform_util::OPEN_FAILED_NO_HANLDER_FOR_FILE_TYPE);
   }
 }
 
@@ -111,7 +112,7 @@ void OpenFileMimeTypeAfterTasksListed(
 void OpenFileWithMimeType(Profile* profile,
                           const base::FilePath& path,
                           const GURL& url,
-                          const platform_util::OpenOperationCallback& callback,
+                          platform_util::OpenOperationCallback callback,
                           const std::string& mime_type) {
   std::vector<extensions::EntryInfo> entries;
   entries.emplace_back(path, mime_type, false);
@@ -122,7 +123,7 @@ void OpenFileWithMimeType(Profile* profile,
   file_tasks::FindAllTypesOfTasks(
       profile, entries, file_urls,
       base::BindOnce(&OpenFileMimeTypeAfterTasksListed, profile, url,
-                     callback));
+                     std::move(callback)));
 }
 
 // Opens the file specified by |url| by finding and executing a file task for
@@ -130,24 +131,25 @@ void OpenFileWithMimeType(Profile* profile,
 void OpenFile(Profile* profile,
               const base::FilePath& path,
               const GURL& url,
-              const platform_util::OpenOperationCallback& callback) {
+              platform_util::OpenOperationCallback callback) {
   extensions::app_file_handler_util::GetMimeTypeForLocalPath(
       profile, path,
-      base::BindOnce(&OpenFileWithMimeType, profile, path, url, callback));
+      base::BindOnce(&OpenFileWithMimeType, profile, path, url,
+                     std::move(callback)));
 }
 
 void OpenItemWithMetadata(Profile* profile,
                           const base::FilePath& file_path,
                           const GURL& url,
                           platform_util::OpenItemType expected_type,
-                          const platform_util::OpenOperationCallback& callback,
+                          platform_util::OpenOperationCallback callback,
                           base::File::Error error,
                           const base::File::Info& file_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error != base::File::FILE_OK) {
-    callback.Run(error == base::File::FILE_ERROR_NOT_FOUND
-                     ? platform_util::OPEN_FAILED_PATH_NOT_FOUND
-                     : platform_util::OPEN_FAILED_FILE_ERROR);
+    std::move(callback).Run(error == base::File::FILE_ERROR_NOT_FOUND
+                                ? platform_util::OPEN_FAILED_PATH_NOT_FOUND
+                                : platform_util::OPEN_FAILED_FILE_ERROR);
     return;
   }
 
@@ -155,36 +157,35 @@ void OpenItemWithMetadata(Profile* profile,
   // |file_path| was determined and when it is opened based on the metadata.
   if (expected_type == platform_util::OPEN_FOLDER && file_info.is_directory) {
     OpenFileManagerWithInternalActionId(profile, url, "open");
-    callback.Run(platform_util::OPEN_SUCCEEDED);
+    std::move(callback).Run(platform_util::OPEN_SUCCEEDED);
     return;
   }
 
   if (expected_type == platform_util::OPEN_FILE && !file_info.is_directory) {
-    OpenFile(profile, file_path, url, callback);
+    OpenFile(profile, file_path, url, std::move(callback));
     return;
   }
 
-  callback.Run(platform_util::OPEN_FAILED_INVALID_TYPE);
+  std::move(callback).Run(platform_util::OPEN_FAILED_INVALID_TYPE);
 }
 
-void ShowItemInFolderWithMetadata(
-    Profile* profile,
-    const base::FilePath& file_path,
-    const GURL& url,
-    const platform_util::OpenOperationCallback& callback,
-    base::File::Error error,
-    const base::File::Info& file_info) {
+void ShowItemInFolderWithMetadata(Profile* profile,
+                                  const base::FilePath& file_path,
+                                  const GURL& url,
+                                  platform_util::OpenOperationCallback callback,
+                                  base::File::Error error,
+                                  const base::File::Info& file_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error != base::File::FILE_OK) {
-    callback.Run(error == base::File::FILE_ERROR_NOT_FOUND
-                     ? platform_util::OPEN_FAILED_PATH_NOT_FOUND
-                     : platform_util::OPEN_FAILED_FILE_ERROR);
+    std::move(callback).Run(error == base::File::FILE_ERROR_NOT_FOUND
+                                ? platform_util::OPEN_FAILED_PATH_NOT_FOUND
+                                : platform_util::OPEN_FAILED_FILE_ERROR);
     return;
   }
 
   // This action changes the selection so we do not reuse existing tabs.
   OpenFileManagerWithInternalActionId(profile, url, "select");
-  callback.Run(platform_util::OPEN_SUCCEEDED);
+  std::move(callback).Run(platform_util::OPEN_SUCCEEDED);
 }
 
 }  // namespace
@@ -192,14 +193,14 @@ void ShowItemInFolderWithMetadata(
 void OpenItem(Profile* profile,
               const base::FilePath& file_path,
               platform_util::OpenItemType expected_type,
-              const platform_util::OpenOperationCallback& callback) {
+              platform_util::OpenOperationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // This is unfortunately necessary as file browser handlers operate on URLs.
   GURL url;
   if (!ConvertAbsoluteFilePathToFileSystemUrl(profile, file_path,
                                               kFileManagerAppId, &url)) {
-    callback.Run(platform_util::OPEN_FAILED_PATH_NOT_FOUND);
+    std::move(callback).Run(platform_util::OPEN_FAILED_PATH_NOT_FOUND);
     return;
   }
 
@@ -207,18 +208,18 @@ void OpenItem(Profile* profile,
       GetFileSystemContextForExtensionId(profile, kFileManagerAppId), file_path,
       storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY,
       base::BindOnce(&OpenItemWithMetadata, profile, file_path, url,
-                     expected_type, callback));
+                     expected_type, std::move(callback)));
 }
 
 void ShowItemInFolder(Profile* profile,
                       const base::FilePath& file_path,
-                      const platform_util::OpenOperationCallback& callback) {
+                      platform_util::OpenOperationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GURL url;
   if (!ConvertAbsoluteFilePathToFileSystemUrl(profile, file_path,
                                               kFileManagerAppId, &url)) {
-    callback.Run(platform_util::OPEN_FAILED_PATH_NOT_FOUND);
+    std::move(callback).Run(platform_util::OPEN_FAILED_PATH_NOT_FOUND);
     return;
   }
 
@@ -226,7 +227,7 @@ void ShowItemInFolder(Profile* profile,
       GetFileSystemContextForExtensionId(profile, kFileManagerAppId), file_path,
       storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY,
       base::BindOnce(&ShowItemInFolderWithMetadata, profile, file_path, url,
-                     callback));
+                     std::move(callback)));
 }
 
 void DisableShellOperationsForTesting() {

@@ -67,6 +67,14 @@ bool QuicSessionKey::operator==(const QuicSessionKey& other) const {
          disable_secure_dns_ == other.disable_secure_dns_;
 }
 
+bool QuicSessionKey::CanUseForAliasing(const QuicSessionKey& other) const {
+  return server_id_.privacy_mode_enabled() ==
+             other.server_id_.privacy_mode_enabled() &&
+         socket_tag_ == other.socket_tag_ &&
+         network_isolation_key_ == other.network_isolation_key_ &&
+         disable_secure_dns_ == other.disable_secure_dns_;
+}
+
 size_t QuicSessionKey::EstimateMemoryUsage() const {
   return server_id_.EstimateMemoryUsage();
 }

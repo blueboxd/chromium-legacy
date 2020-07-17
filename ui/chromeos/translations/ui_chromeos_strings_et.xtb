@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">Jaapanikeelne sisend (USA klaviatuuri jaoks)</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> üksuse kustutamine ...</translation>
 <translation id="1049926623896334335">Wordi dokument</translation>
+<translation id="1060368002126861100">Failide avamiseks rakendusega <ph name="APP_NAME" /> teisaldage need esmalt Windowsi failide kausta.</translation>
 <translation id="1062407476771304334">Asenda</translation>
 <translation id="1065449928621190041">Kanada prantsuse klaviatuur</translation>
 <translation id="1119069657431255176">Bzip2 tihendatud TAR-arhiiv</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">Hoiatus. Need on ajutised failid ja võidakse kettaruumi vabastamiseks automaatselt kustutada.  <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Kaust</translation>
 <translation id="3549797760399244642">Ava sait drive.google.com ...</translation>
+<translation id="3553048479571901246">Failide avamiseks rakendusega <ph name="APP_NAME" /> kopeerige need esmalt Windowsi failide kausta.</translation>
 <translation id="357479282490346887">leedu keel</translation>
 <translation id="3583509704582854624">Tähtnumbriline sisend (Jaapani klaviatuuri jaoks)</translation>
 <translation id="3603385196401704894">Kanada prantsuse</translation>

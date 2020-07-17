@@ -29,11 +29,9 @@ class DrmDisplayHost : public GpuThreadObserver {
   ~DrmDisplayHost() override;
 
   display::DisplaySnapshot* snapshot() const { return snapshot_.get(); }
+  bool is_dummy() const { return is_dummy_; }
 
   void UpdateDisplaySnapshot(std::unique_ptr<display::DisplaySnapshot> params);
-  void Configure(
-      const display::DisplayConfigurationParams& display_config_params,
-      display::ConfigureCallback callback);
   void GetHDCPState(display::GetHDCPStateCallback callback);
   void SetHDCPState(display::HDCPState state,
                     display::SetHDCPStateCallback callback);

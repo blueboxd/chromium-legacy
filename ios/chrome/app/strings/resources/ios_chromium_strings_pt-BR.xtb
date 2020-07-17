@@ -20,6 +20,8 @@
 <translation id="2730884209570016437">O Chromium não pode usar a câmera porque ela está sendo usada por outro app</translation>
 <translation id="2915596697727466327">O Chromium usa o Face ID para garantir o acesso autorizado às suas senhas.</translation>
 <translation id="3256316712990552818">Copiado no Chromium</translation>
+<translation id="3344973607274501920">Não foi possível verificar suas senhas com o Chromium. Verifique sua conexão de Internet.</translation>
+<translation id="3639997914391704523">O Chromium pode verificar suas senhas quando você faz login com sua Conta do Google.</translation>
 <translation id="3805899903892079518">O Chromium não têm acesso às suas fotos ou seus vídeos. Permita o acesso em "Configurações do iOS" &gt; "Privacidade" &gt; "Fotos".</translation>
 <translation id="4555020257205549924">Quando este recurso está ativado, o Chromium oferece a tradução de páginas escritas em outros idiomas usando o Google Tradutor. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Ativar o leitor do Chromium</translation>
@@ -27,6 +29,7 @@
 <translation id="4999538639245140991">Como você está saindo de uma conta gerenciada por <ph name="SIGNOUT_MANAGED_DOMAIN" />, os dados do Chromium serão excluídos deste dispositivo, mas permanecerão na sua Conta do Google.</translation>
 <translation id="5521125884468363740">Para ver suas guias em qualquer lugar onde você usar o Chromium, faça login e ative a sincronização</translation>
 <translation id="5573014823074921752">Dica do Chromium. Para ver mais opções de guia, toque no botão "Mostrar guias" na barra de ferramentas localizada na parte superior ou inferior da tela e mantenha-o pressionado.</translation>
+<translation id="5700709190537129682">Não é possível verificar suas senhas com o Chromium</translation>
 <translation id="5777187867430702742">Página do Chromium</translation>
 <translation id="5862307444128926510">Bem-vindo ao Chromium</translation>
 <translation id="5945387852661427312">Você está fazendo login com uma conta gerenciada por <ph name="DOMAIN" /> e dando ao administrador dela o controle sobre seus dados do Chromium, os quais ficarão permanentemente vinculados a essa conta. Se você sair do Chromium, seus dados serão excluídos deste dispositivo, mas permanecerão armazenados na sua Conta do Google.</translation>
@@ -34,6 +37,7 @@
 <translation id="6268381023930128611">Sair do Chromium?</translation>
 <translation id="6424492062988593837">O Chromium ficou ainda melhor! Uma nova versão está disponível.</translation>
 <translation id="6604711459180487467">Tenha uma experiência melhor no Chromium com base na sua localização.</translation>
+<translation id="6820823224820483452">Não foi possível verificar todas as senhas com o Chromium. Tente novamente amanhã.</translation>
 <translation id="7099326575020694068">O Chromium não pode usar a câmera no modo Visualização dividida</translation>
 <translation id="7208566199746267865">O Chromium permite que você otimize seu tempo trazendo suas contas para a Web. É possível adicionar ou remover contas nas configurações.</translation>
 <translation id="7269362888766543920">Alguns complementos causam falhas do Chromium. Tente desinstalá-los.</translation>
@@ -42,6 +46,7 @@
 <translation id="7400689562045506105">Use o Chromium em qualquer lugar</translation>
 <translation id="7674213385180944843">Abra Ajustes &gt; Privacidade &gt; Câmera &gt; Chromium e ative a câmera.</translation>
 <translation id="7746854981345936341">Dica do Chromium. Alguns botões agora estão na parte inferior da tela, como "Voltar", "Avançar" e "Pesquisar".</translation>
+<translation id="7798909783578470546">Não foi possível verificar todas as senhas com o Chromium. Tente novamente.</translation>
 <translation id="786327964234957808">Você está trocando a conta de sincronização de <ph name="USER_EMAIL1" /> para <ph name="USER_EMAIL2" />. Os dados do Chromium são gerenciados por <ph name="DOMAIN" />. Eles serão excluídos deste dispositivo, mas permanecerão no <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Começar a usar o leitor do Chromium</translation>
 <translation id="8013573822802650211">Para ver suas guias em qualquer lugar onde você usar o Chromium, faça login em todos os seus dispositivos</translation>
@@ -51,5 +56,6 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="8776843108004031667">A conta e os dados não salvos serão removidos do Chromium.</translation>
 <translation id="9022552996538154597">Fazer login no Chromium</translation>
+<translation id="921174536258924340">Não foi possível verificar todas as senhas com o Chromium. Tente novamente amanhã ou <ph name="BEGIN_LINK" />verifique-as na sua Conta do Google<ph name="END_LINK" />.</translation>
 <translation id="985602178874221306">Autores do Chromium</translation>
 </translationbundle>

@@ -376,6 +376,7 @@ class RTCVideoEncoder::Impl
       const gfx::Size& input_visible_size,
       uint32_t bitrate,
       media::VideoCodecProfile profile,
+      bool is_constrained_h264,
       const std::vector<media::VideoEncodeAccelerator::Config::SpatialLayer>&
           spatial_layers,
       SignaledValue init_event);
@@ -584,6 +585,7 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
     const gfx::Size& input_visible_size,
     uint32_t bitrate,
     media::VideoCodecProfile profile,
+    bool is_constrained_h264,
     const std::vector<media::VideoEncodeAccelerator::Config::SpatialLayer>&
         spatial_layers,
     SignaledValue init_event) {
@@ -649,7 +651,7 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
   }
   const media::VideoEncodeAccelerator::Config config(
       pixel_format, input_visible_size_, profile, bitrate * 1000, base::nullopt,
-      base::nullopt, base::nullopt, storage_type,
+      base::nullopt, base::nullopt, is_constrained_h264, storage_type,
       video_content_type_ == webrtc::VideoContentType::SCREENSHARE
           ? media::VideoEncodeAccelerator::Config::ContentType::kDisplay
           : media::VideoEncodeAccelerator::Config::ContentType::kCamera,
@@ -1326,8 +1328,10 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
 
 RTCVideoEncoder::RTCVideoEncoder(
     media::VideoCodecProfile profile,
+    bool is_constrained_h264,
     media::GpuVideoAcceleratorFactories* gpu_factories)
     : profile_(profile),
+      is_constrained_h264_(is_constrained_h264),
       gpu_factories_(gpu_factories),
       gpu_task_runner_(gpu_factories->GetTaskRunner()) {
   DVLOG(1) << "RTCVideoEncoder(): profile=" << GetProfileName(profile);
@@ -1373,7 +1377,8 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
           &RTCVideoEncoder::Impl::CreateAndInitializeVEA,
           scoped_refptr<Impl>(impl_),
           gfx::Size(codec_settings->width, codec_settings->height),
-          codec_settings->startBitrate, profile_, spatial_layers,
+          codec_settings->startBitrate, profile_, is_constrained_h264_,
+          spatial_layers,
           SignaledValue(&initialization_waiter, &initialization_retval)));
 
   // webrtc::VideoEncoder expects this call to be synchronous.

@@ -55,6 +55,8 @@ TEST(DownloadPrefsTest, RegisterPrefs) {
   // Download prompt prefs should be registered correctly.
   histogram_tester.ExpectBucketCount("MobileDownload.DownloadPromptStatus",
                                      DownloadPromptStatus::SHOW_INITIAL, 1);
+  histogram_tester.ExpectBucketCount("MobileDownload.DownloadLaterPromptStatus",
+                                     DownloadPromptStatus::SHOW_INITIAL, 1);
   int prompt_status = profile.GetTestingPrefService()->GetInteger(
       prefs::kPromptForDownloadAndroid);
   EXPECT_EQ(prompt_status,
@@ -64,7 +66,7 @@ TEST(DownloadPrefsTest, RegisterPrefs) {
       profile.GetTestingPrefService()->GetInteger(
           prefs::kDownloadLaterPromptStatus);
   EXPECT_EQ(download_later_prompt_status,
-            static_cast<int>(DownloadLaterPromptStatus::SHOW_INITIAL));
+            static_cast<int>(DownloadLaterPromptStatus::kShowInitial));
 #endif  // OS_ANDROID
 }
 

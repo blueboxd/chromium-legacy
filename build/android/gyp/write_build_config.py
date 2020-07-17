@@ -129,10 +129,9 @@ the list of `deps_info['package_name']` entries for all `android_resources`
 dependencies for the current target. Computed automatically by
 `write_build_config.py`.
 
-* `deps_info['extra_r_text_files']`:
-Always empty for `android_resources` types. Otherwise, the list of
-`deps_info['r_text']` entries for all `android_resources` dependencies for
-the current target. Computed automatically.
+* `deps_info['dependency_r_txt_files']`:
+Exists only on dist_aar. It is the list of deps_info['r_text_path'] from
+transitive dependencies. Computed automatically.
 
 
 # `.build_config` target types description:
@@ -174,7 +173,7 @@ Java package name that the R class for this target belongs to.
 Optional. Path to the top-level Android manifest file associated with these
 resources (if not provided, an empty manifest will be used to generate R.txt).
 
-* `deps_info['r_text']`:
+* `deps_info['r_text_path']`:
 Provide the path to the `R.txt` file that describes the resources wrapped by
 this target. Normally this file is generated from the content of the resource
 directories or zip file, but some targets can provide their own `R.txt` file
@@ -182,8 +181,8 @@ if they want.
 
 * `deps_info['srcjar_path']`:
 Path to the `.srcjar` file that contains the auto-generated `R.java` source
-file corresponding to the content of `deps_info['r_text']`. This is *always*
-generated from the content of `deps_info['r_text']` by the
+file corresponding to the content of `deps_info['r_text_path']`. This is
+*always* generated from the content of `deps_info['r_text_path']` by the
 `build/android/gyp/process_resources.py` script.
 
 * `deps_info['static_library_dependent_classpath_configs']`:
@@ -1390,24 +1389,18 @@ def main(argv):
         c['resources_zip'] for c in all_resources_deps if c['resources_zip']
     ]
     extra_package_names = []
-    extra_r_text_files = []
 
     if options.type != 'android_resources':
       extra_package_names = [
           c['package_name'] for c in all_resources_deps if 'package_name' in c
       ]
-      extra_r_text_files = [
-          c['r_text_path'] for c in all_resources_deps if 'r_text_path' in c
-      ]
       # In final types (i.e. apks and modules) that create real R.java files,
-      # they must collect package names and rtxt from java_libraries as well.
+      # they must collect package names from java_libraries as well.
       # https://crbug.com/1073476
       if options.type != 'java_library':
         extra_package_names.extend([
             c['package_name'] for c in all_library_deps if 'package_name' in c
         ])
-        extra_r_text_files.extend(
-            [c['r_text_path'] for c in all_library_deps if 'r_text_path' in c])
 
 
     # For feature modules, remove any resources that already exist in the base
@@ -1421,14 +1414,9 @@ def main(argv):
           c for c in extra_package_names if c not in
           base_module_build_config['deps_info']['extra_package_names']
       ]
-      extra_r_text_files = [
-          c for c in extra_r_text_files if c not in
-          base_module_build_config['deps_info']['extra_r_text_files']
-      ]
 
     config['deps_info']['dependency_zips'] = dependency_zips
     config['deps_info']['extra_package_names'] = extra_package_names
-    config['deps_info']['extra_r_text_files'] = extra_r_text_files
     if options.type == 'android_apk' and options.tested_apk_config:
       config['deps_info']['arsc_package_name'] = (
           tested_apk_config['package_name'])
@@ -1441,6 +1429,14 @@ def main(argv):
       extra_classpath_jars = build_utils.ParseGnList(
           options.extra_classpath_jars)
       deps_info['extra_classpath_jars'] = extra_classpath_jars
+
+  if options.type == 'dist_aar':
+    # dist_aar combines all dependency R.txt files into one for the aar.
+    r_text_files = [
+        c['r_text_path'] for c in all_resources_deps + all_library_deps
+        if 'r_text_path' in c
+    ]
+    deps_info['dependency_r_txt_files'] = r_text_files
 
   if is_java_target:
     # The classpath used to compile this target when annotation processors are
@@ -1619,9 +1615,6 @@ def main(argv):
       # The srcjars containing the generated R.java files are excluded for APK
       # targets the use static libraries, so we add them here to ensure the
       # union of resource IDs are available in the static library APK.
-      for r_text in base_config['extra_r_text_files']:
-        if r_text not in extra_r_text_files:
-          extra_r_text_files.append(r_text)
       for package in base_config['extra_package_names']:
         if package not in extra_package_names:
           extra_package_names.append(package)

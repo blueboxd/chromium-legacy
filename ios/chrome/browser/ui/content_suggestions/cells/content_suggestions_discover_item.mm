@@ -52,14 +52,6 @@
 
 @implementation ContentSuggestionsDiscoverCell
 
-- (instancetype)initWithFrame:(CGRect)frame {
-  self = [super initWithFrame:frame];
-  if (self) {
-    self.contentView.backgroundColor = [UIColor redColor];
-  }
-  return self;
-}
-
 - (void)setDiscoverFeedView:(UIViewController*)discoverFeed {
   _discoverFeed = discoverFeed;
   if (discoverFeed) {

@@ -159,12 +159,12 @@ bool ShillPropertyHandler::IsTechnologyUninitialized(
 void ShillPropertyHandler::SetTechnologyEnabled(
     const std::string& technology,
     bool enabled,
-    const network_handler::ErrorCallback& error_callback) {
+    network_handler::ErrorCallback error_callback) {
   if (enabled) {
     if (prohibited_technologies_.find(technology) !=
         prohibited_technologies_.end()) {
       chromeos::network_handler::RunErrorCallback(
-          error_callback, "", "prohibited_technologies",
+          std::move(error_callback), "", "prohibited_technologies",
           "Ignored: Attempt to enable prohibited network technology " +
               technology);
       return;
@@ -174,7 +174,7 @@ void ShillPropertyHandler::SetTechnologyEnabled(
     shill_manager_->EnableTechnology(
         technology, base::DoNothing(),
         base::BindOnce(&ShillPropertyHandler::EnableTechnologyFailed,
-                       AsWeakPtr(), technology, error_callback));
+                       AsWeakPtr(), technology, std::move(error_callback)));
   } else {
     // Clear locally from enabling lists and add to the disabling list.
     enabling_technologies_.erase(technology);
@@ -182,7 +182,7 @@ void ShillPropertyHandler::SetTechnologyEnabled(
     shill_manager_->DisableTechnology(
         technology, base::DoNothing(),
         base::BindOnce(&ShillPropertyHandler::DisableTechnologyFailed,
-                       AsWeakPtr(), technology, error_callback));
+                       AsWeakPtr(), technology, std::move(error_callback)));
   }
 }
 
@@ -530,25 +530,25 @@ void ShillPropertyHandler::UpdateProhibitedTechnologies(
 
 void ShillPropertyHandler::EnableTechnologyFailed(
     const std::string& technology,
-    const network_handler::ErrorCallback& error_callback,
+    network_handler::ErrorCallback error_callback,
     const std::string& dbus_error_name,
     const std::string& dbus_error_message) {
   enabling_technologies_.erase(technology);
   network_handler::ShillErrorCallbackFunction(
-      "EnableTechnology Failed", technology, error_callback, dbus_error_name,
-      dbus_error_message);
+      "EnableTechnology Failed", technology, std::move(error_callback),
+      dbus_error_name, dbus_error_message);
   listener_->TechnologyListChanged();
 }
 
 void ShillPropertyHandler::DisableTechnologyFailed(
     const std::string& technology,
-    const network_handler::ErrorCallback& error_callback,
+    network_handler::ErrorCallback error_callback,
     const std::string& dbus_error_name,
     const std::string& dbus_error_message) {
   disabling_technologies_.erase(technology);
   network_handler::ShillErrorCallbackFunction(
-      "DisableTechnology Failed", technology, error_callback, dbus_error_name,
-      dbus_error_message);
+      "DisableTechnology Failed", technology, std::move(error_callback),
+      dbus_error_name, dbus_error_message);
   listener_->TechnologyListChanged();
 }
 

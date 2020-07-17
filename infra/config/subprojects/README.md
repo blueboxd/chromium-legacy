@@ -7,6 +7,6 @@ The following subprojects exist:
 * goma - Builders that test the use of goma by chromium builders.
 * webrtc - Builders that test the integration of WebRTC with chromium.
 
-Each subproject contains a main.star that is the entry point for its
+Each subproject contains a subproject.star that is the entry point for its
 configuration, which execs the starlark files that define the LUCI entities for
 the subproject.

@@ -121,6 +121,10 @@ ci.builder(
                 'cipd_yaml': 'third_party/android_sdk/cipd/platforms/android-29.yaml'
             },
             {
+                'sdk_package_name': 'platforms;android-30',
+                'cipd_yaml': 'third_party/android_sdk/cipd/platforms/android-30.yaml'
+            },
+            {
                 'sdk_package_name': 'platform-tools',
                 'cipd_yaml': 'third_party/android_sdk/cipd/platform-tools.yaml'
             },
@@ -131,6 +135,10 @@ ci.builder(
             {
                 'sdk_package_name': 'sources;android-29',
                 'cipd_yaml': 'third_party/android_sdk/cipd/sources/android-29.yaml'
+            },
+            {
+                'sdk_package_name': 'sources;android-30',
+                'cipd_yaml': 'third_party/android_sdk/cipd/sources/android-30.yaml'
             },
             {
                 'sdk_package_name': 'system-images;android-23;google_apis;x86',
@@ -152,6 +160,14 @@ ci.builder(
             {
                 'sdk_package_name': 'system-images;android-29;google_apis_playstore;x86',
                 'cipd_yaml': 'third_party/android_sdk/cipd/system_images/android-29/google_apis_playstore/x86.yaml'
+            },
+            {
+                'sdk_package_name': 'system-images;android-30;google_apis;x86',
+                'cipd_yaml': 'third_party/android_sdk/cipd/system_images/android-30/google_apis/x86.yaml'
+            },
+            {
+                'sdk_package_name': 'system-images;android-30;google_apis_playstore;x86',
+                'cipd_yaml': 'third_party/android_sdk/cipd/system_images/android-30/google_apis_playstore/x86.yaml'
             },
         ],
     },
@@ -1266,9 +1282,7 @@ ci.fuzz_libfuzzer_builder(
         category = 'libfuzz',
         short_name = 'linux-ubsan',
     ),
-    # TODO(https://crbug.com/1106029) Use default timeout once goma outage is
-    # over
-    execution_timeout = 5 * time.hour,
+    execution_timeout = 3 * time.hour + 30 * time.minute,
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 5,
     ),
@@ -2910,16 +2924,16 @@ ci.linux_builder(
     schedule = '0 0,6,12,18 * * *',
     service_account = 'component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com',
     triggered_by = [],
-    extra_notifies = ['metadata-mapping'],
+    notifies = ['metadata-mapping'],
+    tree_closing = False,
 )
 
 ci.linux_builder(
     name = 'metadata-exporter',
     executable = 'recipe:chromium_export_metadata',
-    schedule = '0 0,6,12,18 * * *',
     service_account = 'component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com',
-    triggered_by = [],
-    extra_notifies = ['metadata-mapping'],
+    notifies = ['metadata-mapping'],
+    tree_closing = False,
 )
 
 ci.mac_ios_builder(
@@ -2957,7 +2971,7 @@ ci.memory_builder(
     cores = 32,
     # TODO(https://crbug.com/919430) Remove the larger timeout once compile
     # times have been brought down to reasonable level
-    execution_timeout = time.hour * 9 / 2,  # 4.5 (can't multiply float * duration)
+    execution_timeout = 4 * time.hour + 30 * time.minute,
     tree_closing = False,
 )
 

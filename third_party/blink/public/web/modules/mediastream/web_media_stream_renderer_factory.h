@@ -43,9 +43,6 @@ class BLINK_MODULES_EXPORT WebMediaStreamRendererFactory {
       base::RepeatingCallback<void()> on_render_error_callback) = 0;
 };
 
-BLINK_MODULES_EXPORT std::unique_ptr<WebMediaStreamRendererFactory>
-CreateWebMediaStreamRendererFactory();
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_RENDERER_FACTORY_H_

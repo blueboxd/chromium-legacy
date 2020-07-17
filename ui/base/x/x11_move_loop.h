@@ -11,22 +11,24 @@
 
 namespace ui {
 
+class X11Cursor;
+
 // Runs a nested run loop and grabs the mouse. This is used to implement
 // dragging.
 class X11MoveLoop {
  public:
-  virtual ~X11MoveLoop() {}
+  virtual ~X11MoveLoop() = default;
 
   // Runs the nested run loop. While the mouse is grabbed, use |cursor| as
   // the mouse cursor. Returns true if the move-loop is completed successfully.
   // If the pointer-grab fails, or the move-loop is canceled by the user (e.g.
   // by pressing escape), then returns false.
   virtual bool RunMoveLoop(bool can_grab_pointer,
-                           ::Cursor old_cursor,
-                           ::Cursor new_cursor) = 0;
+                           scoped_refptr<ui::X11Cursor> old_cursor,
+                           scoped_refptr<ui::X11Cursor> new_cursor) = 0;
 
   // Updates the cursor while the move loop is running.
-  virtual void UpdateCursor(::Cursor cursor) = 0;
+  virtual void UpdateCursor(scoped_refptr<ui::X11Cursor> cursor) = 0;
 
   // Ends the move loop that's currently in progress.
   virtual void EndMoveLoop() = 0;

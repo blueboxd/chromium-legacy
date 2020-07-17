@@ -134,6 +134,7 @@ luci.list_view(
         'try/linux_chromium_msan_rel_ng',
         'try/linux_chromium_tsan_rel_ng',
         'try/linux_chromium_ubsan_rel_ng',
+        'try/linux-lacros-rel',
         'try/linux_layout_tests_composite_after_paint',
         'try/linux-layout-tests-edit-ng',
         'try/linux-layout-tests-fragment-item',

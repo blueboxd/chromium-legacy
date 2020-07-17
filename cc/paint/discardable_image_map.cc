@@ -17,6 +17,7 @@
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "third_party/skia/include/utils/SkNoDrawCanvas.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 
@@ -54,9 +55,10 @@ class DiscardableImageGenerator {
     return std::move(paint_worklet_inputs_);
   }
 
-  bool contains_only_srgb_images() const { return contains_only_srgb_images_; }
+  gfx::ContentColorUsage content_color_usage() const {
+    return content_color_usage_;
+  }
   bool contains_hbd_images() const { return contains_hbd_images_; }
-  bool contains_hdr_images() const { return contains_hdr_images_; }
 
  private:
   class ImageGatheringProvider : public ImageProvider {
@@ -243,10 +245,9 @@ class DiscardableImageGenerator {
       paint_worklet_inputs_.push_back(std::make_pair(
           paint_image.paint_worklet_input(), paint_image.stable_id()));
     } else {
-      if (!paint_image.isSRGB())
-        contains_only_srgb_images_ = false;
-      if (paint_image.isHDR())
-        contains_hdr_images_ = true;
+      const auto image_color_usage = paint_image.GetContentColorUsage();
+      content_color_usage_ = std::max(content_color_usage_, image_color_usage);
+
       if (paint_image.is_high_bit_depth())
         contains_hbd_images_ = true;
     }
@@ -308,9 +309,8 @@ class DiscardableImageGenerator {
   base::flat_map<PaintImage::Id, PaintImage::DecodingMode> decoding_mode_map_;
   bool only_gather_animated_images_ = false;
 
-  bool contains_only_srgb_images_ = true;
+  gfx::ContentColorUsage content_color_usage_ = gfx::ContentColorUsage::kSRGB;
   bool contains_hbd_images_ = false;
-  bool contains_hdr_images_ = false;
 };
 
 }  // namespace
@@ -331,9 +331,8 @@ void DiscardableImageMap::Generate(const PaintOpBuffer* paint_op_buffer,
   animated_images_metadata_ = generator.TakeAnimatedImagesMetadata();
   paint_worklet_inputs_ = generator.TakePaintWorkletInputs();
   decoding_mode_map_ = generator.TakeDecodingModeMap();
-  contains_hdr_images_ = generator.contains_hdr_images();
   contains_hbd_images_ = generator.contains_hbd_images();
-  contains_only_srgb_images_ = generator.contains_only_srgb_images();
+  content_color_usage_ = generator.content_color_usage();
   auto images = generator.TakeImages();
   images_rtree_.Build(
       images,

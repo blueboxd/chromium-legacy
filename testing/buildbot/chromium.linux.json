@@ -6841,8 +6841,7 @@
         "args": [
           "--additional-driver-flag",
           "--disable-site-isolation-trials",
-          "--additional-expectations",
-          "src/third_party/blink/web_tests/FlagExpectations/disable-site-isolation-trials",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/disable-site-isolation-trials",
           "--num-retries=3",
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw"
         ],
@@ -10894,8 +10893,7 @@
         "args": [
           "--additional-driver-flag",
           "--disable-site-isolation-trials",
-          "--additional-expectations",
-          "src/third_party/blink/web_tests/FlagExpectations/disable-site-isolation-trials",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/disable-site-isolation-trials",
           "--num-retries=3"
         ],
         "isolate_name": "blink_web_tests",

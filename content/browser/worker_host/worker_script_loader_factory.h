@@ -8,11 +8,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/navigation_subresource_loader_params.h"
-#include "content/public/browser/dedicated_worker_id.h"
 #include "content/public/browser/shared_worker_id.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/mojom/tokens/worker_tokens.mojom.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -50,7 +50,7 @@ class CONTENT_EXPORT WorkerScriptLoaderFactory
   // factories used for non-http(s) URLs, e.g., a chrome-extension:// URL.
   WorkerScriptLoaderFactory(
       int process_id,
-      DedicatedWorkerId dedicated_worker_id,
+      const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
       SharedWorkerId shared_worker_id,
       ServiceWorkerMainResourceHandle* service_worker_handle,
       base::WeakPtr<AppCacheHost> appcache_host,
@@ -75,7 +75,7 @@ class CONTENT_EXPORT WorkerScriptLoaderFactory
 
  private:
   const int process_id_;
-  const DedicatedWorkerId dedicated_worker_id_;
+  const blink::mojom::DedicatedWorkerToken dedicated_worker_token_;
   const SharedWorkerId shared_worker_id_;
   base::WeakPtr<ServiceWorkerMainResourceHandle> service_worker_handle_;
   base::WeakPtr<AppCacheHost> appcache_host_;

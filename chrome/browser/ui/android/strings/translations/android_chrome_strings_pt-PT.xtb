@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Os marcadores guardados nos seus outros dispositivos são apresentados aqui.</translation>
 <translation id="1113597929977215864">Mostrar vista simplificada</translation>
 <translation id="1122278879166832009">Toque aqui para aceder rapidamente à página inicial a partir de qualquer ponto.</translation>
+<translation id="1126809382673880764">Não protege contra transferências, extensões ou Websites perigosos. Continuará a obter a proteção da Navegação segura, quando disponível, noutros Serviços Google, como o Gmail e a Pesquisa.</translation>
 <translation id="1129510026454351943">Detalhes: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 transferência pendente.}other{# transferências pendentes.}}</translation>
 <translation id="1145536944570833626">Eliminar dados existentes.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1810845389119482123">A configuração da sincronização inicial não está concluída</translation>
 <translation id="1821253160463689938">Utiliza cookies para memorizar as suas preferências, mesmo que não visite essas páginas.</translation>
-<translation id="1826516787628120939">A verificar</translation>
 <translation id="1829244130665387512">Localizar na página</translation>
 <translation id="1853692000353488670">Novo separador anónimo</translation>
 <translation id="1856325424225101786">Pretende repor o Modo Lite?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Guardar palavras-passe</translation>
 <translation id="1952172573699511566">Quando possível, os Websites apresentam o texto no seu idioma preferido.</translation>
 <translation id="1960290143419248813">As atualizações do Chrome já não são suportadas para esta versão do Android.</translation>
+<translation id="1963976881984600709">Proteção padrão</translation>
 <translation id="1966710179511230534">Atualize os detalhes de início de sessão.</translation>
 <translation id="1974060860693918893">Avançadas</translation>
+<translation id="1984417487208496350">Sem proteção (não recomendado)</translation>
 <translation id="1984705450038014246">Sincronizar dados do Chrome</translation>
 <translation id="1986685561493779662">O nome já existe</translation>
 <translation id="1987739130650180037">Botão <ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
@@ -358,6 +360,7 @@ Toque sem soltar em qualquer palavra para pesquisar. Para refinar a sua pesquisa
 <translation id="3892148308691398805">Copiar texto</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
 <translation id="3895926599014793903">Forçar ativação do zoom</translation>
+<translation id="3909763690984331376">Verificação de segurança <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">A procurar o melhor da Web…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Combinar os meus dados</translation>
@@ -392,7 +395,6 @@ Toque sem soltar em qualquer palavra para pesquisar. Para refinar a sua pesquisa
 <translation id="4183868528246477015">Pesquisar com Google Lens <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Abrir num novo separador</translation>
 <translation id="4198423547019359126">Não existem localizações de transferência disponíveis.</translation>
-<translation id="4202553989407425169">O Chrome consegue verificar se as suas definições estão a oferecer-lhe proteção contra:</translation>
 <translation id="4209895695669353772">Para obter conteúdo personalizado sugerido pelo Google, ative a sincronização.</translation>
 <translation id="423219824432660969">Encriptar dados sincronizados com a palavra-passe do Google a partir de <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Abrir definições</translation>
@@ -459,6 +461,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="4749960740855309258">Abrir um novo separador</translation>
 <translation id="4759238208242260848">Transferências</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 transferência concluída.}other{# transferências concluídas.}}</translation>
+<translation id="4766678251456904326">Adicionar conta ao dispositivo</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 transferência programada.}other{# transferências programadas.}}</translation>
 <translation id="478981486571169252">Pode ver o seu estado de início de sessão em <ph name="SITE_NAME" />, os dados de navegação e dados do site no Chrome.</translation>
 <translation id="4802417911091824046">A encriptação da frase de acesso não inclui métodos de pagamento nem endereços do Google Pay.
@@ -490,6 +493,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="4943872375798546930">Nenhum resultado</translation>
 <translation id="4961107849584082341">Traduzir esta página para qualquer idioma</translation>
 <translation id="4970824347203572753">Não disponível na sua localização</translation>
+<translation id="4971735654804503942">Proteção proativa mais rápida contra transferências, extensões e Webistes perigosos. Envia-lhe avisos sobre violações de palavras-passe. Requer o envio de dados de navegação para a Google.</translation>
 <translation id="497421865427891073">Avançar</translation>
 <translation id="4988210275050210843">A transferir ficheiro (<ph name="MEGABYTES" />)…</translation>
 <translation id="4988526792673242964">Páginas </translation>
@@ -561,7 +565,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5527082711130173040">O Chrome precisa de acesso à localização para procurar dispositivos. <ph name="BEGIN_LINK1" />Atualize as autorizações<ph name="END_LINK1" />. O acesso à localização também está <ph name="BEGIN_LINK2" />desativado para este dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Fechar sep. de naveg. anón.</translation>
 <translation id="5534640966246046842">Site copiado</translation>
-<translation id="5548606607480005320">Verificação de segurança</translation>
 <translation id="5561549206367097665">A aguardar pela rede...</translation>
 <translation id="55737423895878184">A localização e as notificações são permitidas.</translation>
 <translation id="5578795271662203820">Pesquisar a imagem no <ph name="SEARCH_ENGINE" /></translation>
@@ -579,6 +582,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5686790454216892815">O nome do ficheiro é demasiado longo</translation>
 <translation id="5694049548840660018">Volte ao início facilmente</translation>
 <translation id="569536719314091526">Traduzir esta página para qualquer idioma a partir do botão Mais opções</translation>
+<translation id="5696597120588531049">O Chrome pode ajudar a proteger contra violações de dados, Websites inseguros e muito mais.</translation>
 <translation id="5697688514913266141">O ficheiro será guardado em <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Edite-o<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Mudar para o separador</translation>
 <translation id="572328651809341494">Separadores recentes</translation>
@@ -600,7 +604,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="583281660410589416">Desconhecido</translation>
 <translation id="5833984609253377421">Partilhar link</translation>
 <translation id="5836192821815272682">A transferir a atualização do Chrome…</translation>
-<translation id="584120177693484274">Desselecionado</translation>
 <translation id="5853623416121554550">em pausa</translation>
 <translation id="5854790677617711513">Com mais de 30 dias</translation>
 <translation id="5858741533101922242">O Chrome não consegue ativar o adaptador Bluetooth</translation>
@@ -713,6 +716,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6656545060687952787">O Chrome necessita de acesso à localização para procurar dispositivos. <ph name="BEGIN_LINK" />Atualizar autorizações<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Palavra-passe</translation>
 <translation id="6659594942844771486">Separador</translation>
+<translation id="6663079968236414793">Criar link para texto</translation>
 <translation id="666573598175432848">Está disponível uma versão mais recente do Chrome. Toque neste elemento para aceder à Play Store.</translation>
 <translation id="666731172850799929">Abrir no <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Aviso de privacidade do Chrome</translation>
@@ -736,10 +740,12 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="685850645784703949">Discover da Google – desativado</translation>
 <translation id="6864459304226931083">Transferir imagem</translation>
 <translation id="6865313869410766144">Dados de formulário de Preenchimento automático</translation>
+<translation id="6882836635272038266">Proteção padrão contra Websites, transferências e extensões identificados como perigosos.</translation>
 <translation id="6884306546558072722">Continue a explorar offline</translation>
 <translation id="688738109438487280">Adicionar dados existentes a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Desbloqueie para copiar a palavra-passe.</translation>
 <translation id="6896758677409633944">Copiar</translation>
+<translation id="6900532703269623216">Proteção melhorada</translation>
 <translation id="6903907808598579934">Ativar sincronização</translation>
 <translation id="6942665639005891494">Altere a localização de transferência predefinida em qualquer altura ao utilizar a opção do menu Definições.</translation>
 <translation id="6945221475159498467">Selecionar</translation>

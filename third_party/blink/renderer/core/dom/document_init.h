@@ -100,11 +100,10 @@ class CORE_EXPORT DocumentInit final {
     return imports_controller_;
   }
 
-  bool HasSecurityContext() const { return TreeRootDocumentLoader(); }
   bool IsSrcdocDocument() const;
   bool ShouldSetURL() const;
 
-  DocumentInit& WithDocumentLoader(DocumentLoader*);
+  DocumentInit& WithDocumentLoader(DocumentLoader*, Document* owner_document);
   LocalFrame* GetFrame() const;
   UseCounter* GetUseCounter() const;
 
@@ -122,7 +121,6 @@ class CORE_EXPORT DocumentInit final {
   Type GetType() const { return type_; }
   const String& GetMimeType() const { return mime_type_; }
   bool IsForExternalHandler() const { return is_for_external_handler_; }
-  Color GetPluginBackgroundColor() const { return plugin_background_color_; }
 
   // Used when creating Documents not attached to a window.
   DocumentInit& WithExecutionContext(ExecutionContext*);
@@ -132,9 +130,6 @@ class CORE_EXPORT DocumentInit final {
   const KURL& Url() const { return url_; }
 
   const KURL& GetCookieUrl() const;
-
-  // Specifies the Document to inherit security configurations from.
-  DocumentInit& WithOwnerDocument(Document*);
 
   DocumentInit& WithSrcdocDocument(bool is_srcdoc_document);
 
@@ -189,7 +184,6 @@ class CORE_EXPORT DocumentInit final {
   KURL web_bundle_claimed_url_;
 
   bool is_for_external_handler_ = false;
-  Color plugin_background_color_;
 
 #if DCHECK_IS_ON()
   bool for_test_ = false;

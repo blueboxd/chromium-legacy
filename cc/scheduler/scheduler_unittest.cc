@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/auto_reset.h"
@@ -3662,7 +3663,7 @@ TEST_F(SchedulerTest, NoLayerTreeFrameSinkCreationWhileCommitPending) {
   client_->Reset();
   scheduler_->NotifyBeginMainFrameStarted(task_runner_->NowTicks());
   scheduler_->BeginMainFrameAborted(
-      CommitEarlyOutReason::ABORTED_LAYER_TREE_FRAME_SINK_LOST);
+      CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT);
   EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation");
 }
 

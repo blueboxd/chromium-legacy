@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.display_cutout;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 
 import org.hamcrest.Matchers;
@@ -26,13 +28,14 @@ import java.lang.annotation.Target;
 /**
  * Custom test rule for simulating a {@link WebappActivity} with a Display Cutout.
  */
+@TargetApi(Build.VERSION_CODES.P)
 public class WebappDisplayCutoutTestRule extends DisplayCutoutTestRule<WebappActivity> {
     /** Test data for the test webapp. */
     private static final String WEBAPP_ID = "webapp_id";
     private static final String WEBAPP_NAME = "webapp name";
     private static final String WEBAPP_SHORT_NAME = "webapp short name";
 
-    /** The maximum waiting time to start {@link WebActivity0} in ms. */
+    /** The maximum waiting time to start {@link WebActivity} in ms. */
     private static final long STARTUP_TIMEOUT = 10000L;
 
     /**

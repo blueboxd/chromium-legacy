@@ -61,4 +61,14 @@ void RenderFrameHostTestExt::ExecuteJavaScript(
   render_frame_host_->ExecuteJavaScriptForTests(script, std::move(callback));
 }
 
+void RenderFrameHostTestExt::UpdateVisualState(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jcallback) {
+  auto result_callback = base::BindOnce(
+      &base::android::RunBooleanCallbackAndroid,
+      base::android::ScopedJavaGlobalRef<jobject>(env, jcallback));
+  render_frame_host_->InsertVisualStateCallback(std::move(result_callback));
+}
+
 }  // namespace content

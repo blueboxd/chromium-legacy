@@ -430,6 +430,9 @@ ReadbackTestConfig const kTestConfigs[] = {
 #if defined(ENABLE_CC_VULKAN_TESTS)
     ReadbackTestConfig{TestRendererType::kSkiaVk, TestReadBackType::kBitmap},
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
+#if defined(ENABLE_CC_DAWN_TESTS)
+    ReadbackTestConfig{TestRendererType::kSkiaDawn, TestReadBackType::kBitmap},
+#endif  // defined(ENABLE_CC_DAWN_TESTS)
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -453,6 +456,9 @@ ReadbackTestConfig const kMaybeVulkanTestConfigs[] = {
     !defined(MEMORY_SANITIZER)
     ReadbackTestConfig{TestRendererType::kSkiaVk, TestReadBackType::kBitmap},
 #endif
+#if defined(ENABLE_CC_DAWN_TESTS)
+    ReadbackTestConfig{TestRendererType::kSkiaDawn, TestReadBackType::kBitmap},
+#endif  // defined(ENABLE_CC_DAWN_TESTS)
 };
 
 INSTANTIATE_TEST_SUITE_P(All,

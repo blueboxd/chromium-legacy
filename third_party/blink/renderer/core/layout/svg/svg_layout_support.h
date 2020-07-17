@@ -164,6 +164,8 @@ class CORE_EXPORT SVGLayoutSupport {
   static LayoutObject* FindClosestLayoutSVGText(const LayoutObject*,
                                                 const FloatPoint&);
 
+  static void NotifySVGRootOfChangedCompositingReasons(const LayoutObject*);
+
  private:
   static void UpdateObjectBoundingBox(FloatRect& object_bounding_box,
                                       bool& object_bounding_box_valid,

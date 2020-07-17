@@ -741,6 +741,12 @@ bool OmniboxFieldTrial::RichAutocompletionAutocompleteTitles() {
       false);
 }
 
+size_t OmniboxFieldTrial::RichAutocompletionAutocompleteTitlesMinChar() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kRichAutocompletion,
+      kRichAutocompletionAutocompleteTitlesMinCharParam, 0);
+}
+
 bool OmniboxFieldTrial::RichAutocompletionTwoLineOmnibox() {
   return base::GetFieldTrialParamByFeatureAsBool(
       omnibox::kRichAutocompletion, kRichAutocompletionTwoLineOmniboxParam,
@@ -754,8 +760,14 @@ bool OmniboxFieldTrial::RichAutocompletionShowTitles() {
 
 bool OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefix() {
   return base::GetFieldTrialParamByFeatureAsBool(
-      omnibox::kRichAutocompletion, kRichAutocompletionAutocompleteNonPrefix,
-      false);
+      omnibox::kRichAutocompletion,
+      kRichAutocompletionAutocompleteNonPrefixParam, false);
+}
+
+size_t OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefixMinChar() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kRichAutocompletion,
+      kRichAutocompletionAutocompleteNonPrefixMinCharParam, 0);
 }
 
 bool OmniboxFieldTrial::IsOnDeviceHeadSuggestEnabledForIncognito() {
@@ -932,12 +944,18 @@ int OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 100;
 
 const char OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesParam[] =
     "RichAutocompletionAutocompleteTitles";
+const char
+    OmniboxFieldTrial::kRichAutocompletionAutocompleteTitlesMinCharParam[] =
+        "RichAutocompletionAutocompleteTitlesMinChar";
 const char OmniboxFieldTrial::kRichAutocompletionTwoLineOmniboxParam[] =
     "RichAutocompletionTwoLineOmnibox";
 const char OmniboxFieldTrial::kRichAutocompletionShowTitlesParam[] =
     "RichAutocompletionShowTitles";
-const char OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefix[] =
+const char OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixParam[] =
     "RichAutocompletionAutocompleteNonPrefix";
+const char
+    OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixMinCharParam[] =
+        "RichAutocompletionAutocompleteNonPrefixMinChar";
 
 const char OmniboxFieldTrial::kImageSearchSuggestionThumbnail[] =
     "ImageSearchSuggestionThumbnail";

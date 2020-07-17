@@ -819,7 +819,6 @@ class QuicNetworkTransactionTest
     hanging_data->set_connect_data(hanging_connect);
     hanging_data_.push_back(std::move(hanging_data));
     socket_factory_.AddSocketDataProvider(hanging_data_.back().get());
-    socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
   }
 
   void SetUpTestForRetryConnectionOnAlternateNetwork() {

@@ -207,6 +207,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_ADD_CREDIT_CARD_INVALID_EXPIRATION_DATE_ALERT" desc="The title of the alert view displaying invalid expiration date when a user enters invalid expiration date for the new credit card to save. [iOS only]">
           Invalid Expiration Date
       </message>
+      <message name="IDS_IOS_ADD_CREDIT_CARD_INVALID_NICKNAME_ALERT" desc="The title of the alert view displaying invalid nickname when a user enters an invalid nickname for the new credit card to save. [iOS only]">
+          Invalid Card Nickname
+      </message>
       <message name="IDS_IOS_ADVANCED_SIGNIN_SETTINGS_CANCEL_SYNC_ALERT_BACK_BUTTON" desc="Alert button title to ask if the user really wants to cancel sign-in and sync. This button would let the user return to the sync settings, and let them choose again.">
         Continue Setup
       </message>
@@ -297,6 +300,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR" desc="The placeholder text for credit card expiration year in the payments card unmask dialog. [Length: 4em] [iOS only]">
         YY
       </message>
+      <message name="IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_NICKNAME" desc="The placeholder text for credit card nickname in the payments card unmask dialog. [iOS only]">
+        Nickname
+      </message>
       <message name="IDS_IOS_AUTOFILL_EDIT_ADDRESS" desc="Title for the view in Settings for editing an Autofill profile address. [Length: 20em] [iOS only]">
         Edit Address
       </message>
@@ -311,6 +317,9 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_AUTOFILL_EXP_YEAR" desc="Title of the field representing the expiration year of a credit card. [Length: 15em] [iOS only]">
         Expiration Year
+      </message>
+      <message name="IDS_IOS_AUTOFILL_NICKNAME" desc="Title of the field representing the user defined nickname of a credit card. [Length: 15em] [iOS only]">
+        Card Nickname
       </message>
       <message name="IDS_IOS_AUTOFILL_CARDHOLDER_NAME" desc="Tile of the field representing the cardholder name of a credit card. [Length: 15em] [iOS only]">
         Cardholder Name

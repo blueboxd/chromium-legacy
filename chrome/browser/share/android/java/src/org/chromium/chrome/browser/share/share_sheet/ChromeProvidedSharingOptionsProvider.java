@@ -19,7 +19,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.qrcode.QrCodeCoordinator;
@@ -31,6 +31,7 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.Shee
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.share.ShareParams;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.Toast;
 
@@ -49,7 +50,6 @@ class ChromeProvidedSharingOptionsProvider {
     private final Supplier<Tab> mTabProvider;
     private final BottomSheetController mBottomSheetController;
     private final ShareSheetBottomSheetContent mBottomSheetContent;
-    private final PrefServiceBridge mPrefServiceBridge;
     private final ShareParams mShareParams;
     private final Callback<Tab> mPrintTabCallback;
     private final long mShareStartTime;
@@ -66,8 +66,6 @@ class ChromeProvidedSharingOptionsProvider {
      * @param bottomSheetController The {@link BottomSheetController} for the current activity.
      * @param bottomSheetContent The {@link ShareSheetBottomSheetContent} for the current
      * activity.
-     * @param prefServiceBridge The {@link PrefServiceBridge} singleton. This provides printing
-     * preferences.
      * @param shareParams The {@link ShareParams} for the current share.
      * @param chromeShareExtras The {@link ChromeShareExtras} for the current share.
      * @param printTab A {@link Callback} that will print a given Tab.
@@ -77,14 +75,13 @@ class ChromeProvidedSharingOptionsProvider {
      */
     ChromeProvidedSharingOptionsProvider(Activity activity, Supplier<Tab> tabProvider,
             BottomSheetController bottomSheetController,
-            ShareSheetBottomSheetContent bottomSheetContent, PrefServiceBridge prefServiceBridge,
-            ShareParams shareParams, ChromeShareExtras chromeShareExtras, Callback<Tab> printTab,
-            long shareStartTime, ChromeOptionShareCallback chromeOptionShareCallback) {
+            ShareSheetBottomSheetContent bottomSheetContent, ShareParams shareParams,
+            ChromeShareExtras chromeShareExtras, Callback<Tab> printTab, long shareStartTime,
+            ChromeOptionShareCallback chromeOptionShareCallback) {
         mActivity = activity;
         mTabProvider = tabProvider;
         mBottomSheetController = bottomSheetController;
         mBottomSheetContent = bottomSheetContent;
-        mPrefServiceBridge = prefServiceBridge;
         mShareParams = shareParams;
         mPrintTabCallback = printTab;
         mShareStartTime = shareStartTime;
@@ -152,7 +149,8 @@ class ChromeProvidedSharingOptionsProvider {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_QRCODE)) {
             mOrderedFirstPartyOptions.add(createQrCodeFirstPartyOption());
         }
-        if (mPrefServiceBridge.getBoolean(Pref.PRINTING_ENABLED)) {
+        if (UserPrefs.get(Profile.fromWebContents(mTabProvider.get().getWebContents()))
+                        .getBoolean(Pref.PRINTING_ENABLED)) {
             mOrderedFirstPartyOptions.add(createPrintingFirstPartyOption());
         }
     }

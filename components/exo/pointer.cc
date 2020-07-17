@@ -24,6 +24,7 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/cursor_size.h"
 #include "ui/base/cursor/cursor_util.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
@@ -39,10 +40,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/window_util.h"
 #include "chromeos/constants/chromeos_features.h"
-#endif
-
-#if defined(USE_OZONE)
-#include "ui/base/cursor/cursor_factory.h"
 #endif
 
 namespace exo {
@@ -685,24 +682,15 @@ void Pointer::UpdateCursor() {
                                               &bitmap, &hotspot);
 
     ui::PlatformCursor platform_cursor;
-#if defined(USE_OZONE)
     // TODO(reveman): Add interface for creating cursors from GpuMemoryBuffers
     // and use that here instead of the current bitmap API.
     // https://crbug.com/686600
     platform_cursor =
         ui::CursorFactory::GetInstance()->CreateImageCursor(bitmap, hotspot);
-#elif defined(USE_X11)
-    XcursorImage* image = ui::SkBitmapToXcursorImage(&bitmap, hotspot);
-    platform_cursor = ui::CreateReffedCustomXCursor(image);
-#endif
     cursor_.SetPlatformCursor(platform_cursor);
     cursor_.set_custom_bitmap(bitmap);
     cursor_.set_custom_hotspot(hotspot);
-#if defined(USE_OZONE)
     ui::CursorFactory::GetInstance()->UnrefImageCursor(platform_cursor);
-#elif defined(USE_X11)
-    ui::UnrefCustomXCursor(platform_cursor);
-#endif
   }
 
   // If there is a focused surface, update its widget as the views framework

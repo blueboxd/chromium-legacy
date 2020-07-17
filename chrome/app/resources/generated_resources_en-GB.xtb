@@ -232,6 +232,7 @@
 <translation id="1274997165432133392">Cookies and other site data</translation>
 <translation id="1275718070701477396">Selected</translation>
 <translation id="1276994519141842946">Couldn't uninstall <ph name="APP_NAME" /></translation>
+<translation id="127946606521051357">Device nearby is sharing</translation>
 <translation id="1280820357415527819">Searching for mobile networks</translation>
 <translation id="1280965841156951489">Edit files</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
@@ -1220,6 +1221,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2489918096470125693">Add &amp;Folder...</translation>
 <translation id="2490481887078769936">Removed '<ph name="FILE_NAME" />' from list</translation>
 <translation id="249113932447298600">Sorry, the device <ph name="DEVICE_LABEL" /> is not supported at this time.</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> is sharing <ph name="ATTACHMENTS" /> with you.</translation>
 <translation id="2492461744635776704">Preparing certificate signing request</translation>
 <translation id="249303669840926644">Could not complete registration</translation>
 <translation id="2495777824269688114">Discover more features or get answers. Select '?' for help.</translation>
@@ -4151,6 +4153,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6212039847102026977">Show advanced network properties</translation>
 <translation id="6212168817037875041">Turn off display</translation>
 <translation id="6212752530110374741">Email Link</translation>
+<translation id="6213230117190778270">Receive</translation>
 <translation id="6216696360484424239">Sign in automatically</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> is offline. Connect to the Internet and try again.</translation>
 <translation id="6220413761270491930">Error Loading Extension</translation>
@@ -4278,6 +4281,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6362853299801475928">&amp;Report an issue...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Add family and friends</translation>
+<translation id="6367985768157257101">Receive with Nearby Share?</translation>
 <translation id="636850387210749493">Enterprise enrolment</translation>
 <translation id="6370021412472292592">Could not load manifest.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -6581,9 +6585,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Enter passphrase</translation>
 <translation id="939736085109172342">New folder</translation>
+<translation id="941070664607309480">Click to become visible so that it can share with you</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> is sharing a Chrome tab and audio.</translation>
 <translation id="945522503751344254">Send feedback</translation>
 <translation id="947329552760389097">&amp;Inspect Elements</translation>
+<translation id="951991426597076286">Decline</translation>
 <translation id="952992212772159698">Not activated</translation>
 <translation id="956500788634395331">You're protected from potentially harmful extensions</translation>
 <translation id="957960681186851048">This site attempted to download multiple files automatically</translation>

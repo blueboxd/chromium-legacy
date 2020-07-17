@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Obeleživači sačuvani na drugim uređajima će se prikazati ovde.</translation>
 <translation id="1113597929977215864">Prikaži pojednostavljeni prikaz</translation>
 <translation id="1122278879166832009">Dodirnite ovde da biste brzo pristupali početnoj stranici sa bilo kog mesta</translation>
+<translation id="1126809382673880764">Ne štiti vas od opasnih veb-sajtova, preuzimanja i dodataka. U drugim Google uslugama, kao što su Gmail i Pretraga, i dalje ćete imati zaštitu pomoću Bezbednog pregledanja kada je dostupna.</translation>
 <translation id="1129510026454351943">Detalji: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 preuzimanje na čekanju.}one{# preuzimanje na čekanju.}few{# preuzimanja na čekanju.}other{# preuzimanja na čekanju.}}</translation>
 <translation id="1145536944570833626">Izbrišite postojeće podatke</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Svetla</translation>
 <translation id="1810845389119482123">Početno podešavanje sinhronizacije nije završeno</translation>
 <translation id="1821253160463689938">Koristi kolačiće da bi se zapamtila podešavanja, čak i kada ne posećujete te stranice</translation>
-<translation id="1826516787628120939">Provera</translation>
 <translation id="1829244130665387512">Pronađi na stranici</translation>
 <translation id="1853692000353488670">Nova kartica bez arhiviranja</translation>
 <translation id="1856325424225101786">Želite li da resetujete Lite režim?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Sačuvaj lozinke</translation>
 <translation id="1952172573699511566">Veb-sajtovi će prikazivati tekst na željenom jeziku kada je to moguće.</translation>
 <translation id="1960290143419248813">Chrome ažuriranja više nisu podržana za ovu verziju Android-a</translation>
+<translation id="1963976881984600709">Standardna zaštita</translation>
 <translation id="1966710179511230534">Ažurirajte podatke za prijavljivanje.</translation>
 <translation id="1974060860693918893">Napredne opcije</translation>
+<translation id="1984417487208496350">Bez zaštite (ne preporučuje se)</translation>
 <translation id="1984705450038014246">Sinhronizujte Chrome podatke</translation>
 <translation id="1986685561493779662">Naziv već postoji</translation>
 <translation id="1987739130650180037">Dugme <ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
@@ -358,6 +360,7 @@ Dodirnite i zadržite bilo koju reč za pretragu. Da biste precizirali pretragu,
 <translation id="3892148308691398805">Kopiraj tekst</translation>
 <translation id="3894427358181296146">Dodajte direktorijum</translation>
 <translation id="3895926599014793903">Prinudno omogući zumiranje</translation>
+<translation id="3909763690984331376">Bezbednosna provera <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Traže se najbolji podaci sa veba…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Kombinuj podatke</translation>
@@ -392,7 +395,6 @@ Dodirnite i zadržite bilo koju reč za pretragu. Da biste precizirali pretragu,
 <translation id="4183868528246477015">Traži uz Google objektiv <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Otvori na novoj kartici</translation>
 <translation id="4198423547019359126">Nema dostupnih lokacija za preuzimanja</translation>
-<translation id="4202553989407425169">Chrome može da proveri da li vas podešavanja štite pomoću funkcija:</translation>
 <translation id="4209895695669353772">Da biste dobijali personalizovani sadržaj koji predlaže Google, uključite sinhronizaciju</translation>
 <translation id="423219824432660969">Šifrujte sinhronizovane podatke pomoću Google lozinke od <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Otvori podešavanja</translation>
@@ -459,6 +461,7 @@ Google nalog možda ima druge oblike istorije pregledanja, poput pretraga i akti
 <translation id="4749960740855309258">Otvorite novu karticu</translation>
 <translation id="4759238208242260848">Preuzimanja</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 preuzimanje je dovršeno.}one{# preuzimanje je dovršeno.}few{# preuzimanja su dovršena.}other{# preuzimanja je dovršeno.}}</translation>
+<translation id="4766678251456904326">Dodajte nalog na uređaj</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{Zakazano je 1 preuzimanje.}one{Zakazano je # preuzimanje.}few{Zakazana su # preuzimanja.}other{Zakazano je # preuzimanja.}}</translation>
 <translation id="478981486571169252">Videćete status prijave na <ph name="SITE_NAME" />, podatke pregledanja i podatke o sajtu u Chrome-u.</translation>
 <translation id="4802417911091824046">Šifrovanje pomoću pristupne fraze ne obuhvata načine plaćanja i adrese iz Google Pay-a.
@@ -490,6 +493,7 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="4943872375798546930">Nema rezultata</translation>
 <translation id="4961107849584082341">Prevedite ovu stranicu na bilo koji jezik</translation>
 <translation id="4970824347203572753">Nije dostupno na vašoj lokaciji</translation>
+<translation id="4971735654804503942">Brža proaktivna zaštita od opasnih veb-sajtova, preuzimanja i dodataka. Upozorava vas o otkrivanju lozinki. Zahteva slanje podataka pregledanja Google-u.</translation>
 <translation id="497421865427891073">Kretanje unapred</translation>
 <translation id="4988210275050210843">Preuzima se datoteka (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Stranice</translation>
@@ -561,7 +565,6 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="5527082711130173040">Chrome-u je potreban pristup lokaciji da bi tražio uređaje. <ph name="BEGIN_LINK1" />Ažurirajte dozvole<ph name="END_LINK1" />. Pristup lokaciji je takođe <ph name="BEGIN_LINK2" />isključen za ovaj uređaj<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Zatvori kartice bez arhiv.</translation>
 <translation id="5534640966246046842">Sajt je kopiran</translation>
-<translation id="5548606607480005320">Bezbednosna provera</translation>
 <translation id="5561549206367097665">Čeka se mreža...</translation>
 <translation id="55737423895878184">Lokacija i obaveštenja su dozvoljeni</translation>
 <translation id="5578795271662203820">Potraži ovu sliku na <ph name="SEARCH_ENGINE" />-u</translation>
@@ -579,6 +582,7 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="5686790454216892815">Ime datoteke je predugačko</translation>
 <translation id="5694049548840660018">Jednostavno se vratite na početnu stranicu</translation>
 <translation id="569536719314091526">Prevedite ovu stranicu na bilo koji jezik pomoću dugmeta Još opcija</translation>
+<translation id="5696597120588531049">Chrome može da vas štiti od upada u podatke, nebezbednih veb-lokacija i drugo</translation>
 <translation id="5697688514913266141">Datoteka će se sačuvati u direktorijumu <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Izmeni<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Pređi na karticu</translation>
 <translation id="572328651809341494">Nedavno korišćene kartice</translation>
@@ -600,7 +604,6 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="583281660410589416">Nepoznato</translation>
 <translation id="5833984609253377421">Deli link</translation>
 <translation id="5836192821815272682">Preuzima se ažuriranje za Chrome…</translation>
-<translation id="584120177693484274">Oznaka je uklonjena</translation>
 <translation id="5853623416121554550">pauzirano</translation>
 <translation id="5854790677617711513">Starije od 30 dana</translation>
 <translation id="5858741533101922242">Chrome ne može da uključi Bluetooth adapter</translation>
@@ -713,6 +716,7 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="6656545060687952787">Chrome-u je potreban pristup lokaciji za skeniranje uređaja. <ph name="BEGIN_LINK" />Ažurirajte dozvole<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Lozinka</translation>
 <translation id="6659594942844771486">Kartica</translation>
+<translation id="6663079968236414793">Link do teksta</translation>
 <translation id="666573598175432848">Dostupna je novija verzija Chrome-a. Dodirnite ovaj element da biste otišli u Play prodavnicu.</translation>
 <translation id="666731172850799929">Otvori u <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome obaveštenje o privatnosti</translation>
@@ -736,10 +740,12 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="685850645784703949">Google Discover – isključeno</translation>
 <translation id="6864459304226931083">Preuzmi sliku</translation>
 <translation id="6865313869410766144">Podaci Automatskog popunjavanja za obrasce</translation>
+<translation id="6882836635272038266">Standardna zaštita od veb-sajtova, preuzimanja i dodataka za koje se zna da su štetni.</translation>
 <translation id="6884306546558072722">Nastavite sa oflajn istraživanjem</translation>
 <translation id="688738109438487280">Dodavanje postojećih podataka na <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Otključajte da biste kopirali lozinku</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
+<translation id="6900532703269623216">Napredna zaštita</translation>
 <translation id="6903907808598579934">Uključi sinhronizaciju</translation>
 <translation id="6942665639005891494">Promenite podrazumevanu lokaciju za preuzimanje u bilo kom trenutku pomoći opcije u meniju Podešavanja</translation>
 <translation id="6945221475159498467">Izaberi</translation>

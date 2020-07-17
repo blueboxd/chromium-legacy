@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="1008557486741366299">Mitte praegu</translation>
+<translation id="100957008357583611">Kas kasutada teie asukohta?</translation>
 <translation id="1010200102790553230">Laadi leht hiljem</translation>
 <translation id="1015730422737071372">Esitage lisateavet</translation>
 <translation id="1019413721762100891">Väljas</translation>
@@ -424,7 +425,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2705137772291741111">Selle saidi (vahemällu) salvestatud koopia oli loetamatu.</translation>
 <translation id="2709516037105925701">Automaatne täitmine</translation>
 <translation id="2713444072780614174">Valge</translation>
-<translation id="2720342946869265578">Läheduses</translation>
 <translation id="2721148159707890343">Taotlus õnnestus</translation>
 <translation id="272451190272506600">Maksmiseks puudutage andurit</translation>
 <translation id="2728127805433021124">Serveri sertifikaat on allkirjastatud nõrga allkirjaalgoritmiga.</translation>
@@ -721,7 +721,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="3990250421422698716">Astme nihe</translation>
 <translation id="3996311196211510766">Sait <ph name="ORIGIN" /> nõuab, et lähtekohareeglit
     kohaldataks kõigi taotluste puhul, kuid reeglit ei saa praegu rakendada.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{Läheduses on 1 veebileht}other{Läheduses on # veebilehte}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-dokument sisaldab {COUNT} lehte}other{PDF-dokument sisaldab {COUNT} lehte}}</translation>
 <translation id="4030383055268325496">&amp;Võta lisamine tagasi</translation>
 <translation id="4032320456957708163">Teie brauserit haldab <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -939,7 +938,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Salvesta …</translation>
 <translation id="4913987521957242411">Auk vasakul ülal</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{ja veel 1 veebileht}other{ja veel # veebilehte}}</translation>
 <translation id="4923459931733593730">Makse</translation>
 <translation id="4926049483395192435">Tuleb määrata.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> ütleb</translation>
@@ -1180,6 +1178,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="5869405914158311789">Selle saidiga ei saa ühendust</translation>
 <translation id="5869522115854928033">Salvestatud paroolid</translation>
 <translation id="5887400589839399685">Kaart on salvestatud</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> nõuab, et varundaksite oma andmed ja tagastaksite selle seadme.</translation>
 <translation id="5895138241574237353">Taaskäivitamine</translation>
 <translation id="5895187275912066135">Väljastamiskuupäev</translation>
 <translation id="5901630391730855834">Kollane</translation>
@@ -1330,7 +1329,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="6518133107902771759">Kinnita</translation>
 <translation id="6521745193039995384">Pole aktiivne</translation>
 <translation id="6529602333819889595">&amp;Kustuta uuesti</translation>
-<translation id="6534179046333460208">Füüsilise veebi soovitused</translation>
 <translation id="6545864417968258051">Bluetoothi otsimine</translation>
 <translation id="6547208576736763147">Kaks auku vasakul</translation>
 <translation id="6554795675067793129">Teie kontot haldab <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1852,7 +1850,6 @@ Lisateave:
 <translation id="8790007591277257123">&amp;Kustuta uuesti</translation>
 <translation id="8792621596287649091">Võite kaotada juurdepääsu oma teenuse <ph name="ORG_NAME" /> kontole või teie identiteet võidakse varastada. Chromium soovitab teil kohe oma parooli muuta.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> lülitas teie brauseris sisse teenuse Chrome Enterprise Connectors. Nendel liidestel on juurdepääs osadele teie andmetele.</translation>
-<translation id="8800988563907321413">Teie lähedalasuvad soovitused kuvatakse siin</translation>
 <translation id="8805819170075074995">Loendikirje „<ph name="LANGUAGE_ID" />”: kirjet eiratakse, kuna seda hõlmab ka reegel SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Kärbi pärast iga lehte</translation>
 <translation id="8820817407110198400">Järjehoidjad</translation>

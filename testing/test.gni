@@ -367,31 +367,35 @@ template("test") {
         deps = []
       }
 
-      if (is_win) {
-        # Initializing CFG data during process creation is a significant
-        # bottleneck for large test binaries, and CFG is not needed for tests,
-        # so disable it. See https://crbug.com/950923 for details.
-        configs -= [ "//build/config/win:cfi_linker" ]
-      }
       testonly = true
-      deps += [
-        # Give tests the default manifest on Windows (a no-op elsewhere).
-        "//build/win:default_exe_manifest",
-      ]
     }
   } else if (chromeos_is_browser_only) {
     _runtime_deps_file = "$root_out_dir/${target_name}.runtime_deps"
     _executable = target_name
     _gen_runner_target = "${target_name}__runner"
 
+    if (defined(invoker.use_xvfb)) {
+      _use_xvfb = invoker.use_xvfb
+    } else {
+      _use_xvfb = false
+    }
+
     generate_wrapper(_gen_runner_target) {
       testonly = true
       wrapper_script = "$root_build_dir/bin/run_" + _executable
-      executable = "//build/lacros/test_runner.py"
+
+      if (_use_xvfb) {
+        executable = "//testing/xvfb.py"
+      } else {
+        executable = "//testing/test_env.py"
+      }
+
       executable_args = [
+        "@WrappedPath(../../build/lacros/test_runner.py)",
         "@WrappedPath(./${_executable})",
         "--test-launcher-bot-mode",
       ]
+
       if (is_asan) {
         executable_args += [ "--asan=true" ]
       }

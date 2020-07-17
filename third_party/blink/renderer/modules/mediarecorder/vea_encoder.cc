@@ -307,9 +307,10 @@ void VEAEncoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size,
     pixel_format = media::PIXEL_FORMAT_NV12;
     storage_type = media::VideoEncodeAccelerator::Config::StorageType::kDmabuf;
   }
+
   const media::VideoEncodeAccelerator::Config config(
       pixel_format, input_visible_size_, codec_, bits_per_second_,
-      base::nullopt, base::nullopt, base::nullopt, storage_type,
+      base::nullopt, base::nullopt, base::nullopt, false, storage_type,
       media::VideoEncodeAccelerator::Config::ContentType::kCamera);
   if (!video_encoder_ || !video_encoder_->Initialize(config, this))
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);

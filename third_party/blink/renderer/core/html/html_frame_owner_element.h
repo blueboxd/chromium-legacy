@@ -131,6 +131,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   void SetEmbeddingToken(const base::UnguessableToken& token);
   const base::Optional<base::UnguessableToken>& GetEmbeddingToken() const;
 
+  // Element overrides:
   bool IsAdRelated() const override;
 
   void Trace(Visitor*) const override;

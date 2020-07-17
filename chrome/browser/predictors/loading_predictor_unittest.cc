@@ -207,26 +207,34 @@ TEST_F(LoadingPredictorTest, TestMainFrameResponseClearsNavigations) {
   const SessionID tab_id = SessionID::FromSerializedValue(12);
   const auto& active_navigations = predictor_->active_navigations_;
   const auto& active_hints = predictor_->active_hints_;
+  const auto& active_urls_to_navigations =
+      predictor_->active_urls_to_navigations_;
 
   auto navigation_id = CreateNavigationID(tab_id, url);
 
   predictor_->OnNavigationStarted(navigation_id);
   EXPECT_NE(active_navigations.find(navigation_id), active_navigations.end());
   EXPECT_FALSE(active_hints.empty());
+  EXPECT_NE(active_urls_to_navigations.find(GURL(url)),
+            active_urls_to_navigations.end());
 
   predictor_->OnNavigationFinished(navigation_id, navigation_id, false);
   EXPECT_TRUE(active_navigations.empty());
   EXPECT_TRUE(active_hints.empty());
+  EXPECT_TRUE(active_urls_to_navigations.empty());
 
   // With redirects.
   predictor_->OnNavigationStarted(navigation_id);
   EXPECT_NE(active_navigations.find(navigation_id), active_navigations.end());
   EXPECT_FALSE(active_hints.empty());
+  EXPECT_NE(active_urls_to_navigations.find(GURL(url)),
+            active_urls_to_navigations.end());
 
   auto new_navigation_id = CreateNavigationID(tab_id, redirected);
   predictor_->OnNavigationFinished(navigation_id, new_navigation_id, false);
   EXPECT_TRUE(active_navigations.empty());
   EXPECT_TRUE(active_hints.empty());
+  EXPECT_TRUE(active_urls_to_navigations.empty());
 }
 
 TEST_F(LoadingPredictorTest, TestMainFrameRequestDoesntCancelExternalHint) {

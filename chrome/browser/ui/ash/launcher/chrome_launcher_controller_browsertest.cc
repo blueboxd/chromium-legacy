@@ -47,12 +47,14 @@
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
+#include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
+#include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
@@ -101,6 +103,7 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/switches.h"
@@ -1285,6 +1288,68 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchApp) {
   LaunchAppAndFlushMojoCallsForAppService(id, ash::LAUNCH_FROM_UNKNOWN, 0,
                                           display::kInvalidDisplayId);
   EXPECT_EQ(++tab_count, tab_strip->count());
+}
+
+// The Browsertest verifying FilesManager's features.
+class FilesManagerExtensionTest : public LauncherPlatformAppBrowserTest {
+ public:
+  void SetUpOnMainThread() override {
+    LauncherPlatformAppBrowserTest::SetUpOnMainThread();
+    CHECK(profile());
+
+    file_manager::test::AddDefaultComponentExtensionsOnMainThread(profile());
+  }
+};
+
+// Verifies that FilesManager's first shelf context menu item is "New window"
+// (see https://crbug.com/1102781).
+IN_PROC_BROWSER_TEST_F(FilesManagerExtensionTest, VerifyFirstItem) {
+  const auto* extension =
+      extensions::ExtensionRegistryFactory::GetForBrowserContext(profile())
+          ->GetExtensionById(extension_misc::kFilesManagerAppId,
+                             extensions::ExtensionRegistry::ENABLED);
+  EXPECT_TRUE(extension);
+
+  // Hacky way to configure FileManager's "New window" menu option.
+  const std::string top_level_item_label("New window");
+  {
+    extensions::MenuItem::Type type = extensions::MenuItem::NORMAL;
+
+    // |contexts| must contain MenuItem::LAUNCHER. Otherwise the menu item will
+    // be ignored by AppServiceShelfContextMenu.
+    extensions::MenuItem::ContextList contexts(extensions::MenuItem::LAUNCHER);
+
+    extensions::MenuItem::Id id(
+        /*incognite=*/false,
+        extensions::MenuItem::ExtensionKey(extension->id()));
+    std::unique_ptr<extensions::MenuItem> top_item =
+        std::make_unique<extensions::MenuItem>(
+            id, top_level_item_label, /*checked=*/false, /*visible=*/true,
+            /*enabled=*/true, type, contexts);
+    extensions::MenuManager::Get(profile())->AddContextItem(
+        extension, std::move(top_item));
+    apps::AppServiceProxyFactory::GetForProfile(profile())
+        ->FlushMojoCallsForTesting();
+  }
+
+  CreateAppShortcutLauncherItem(ash::ShelfID(extension->id()));
+
+  const int item_count = shelf_model()->item_count();
+  ash::ShelfItem item = shelf_model()->items()[item_count - 1];
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  auto menu = ShelfContextMenu::Create(controller_, &item, display_id);
+
+  // Fetch |extension|'s shelf context menu model and verify that the top level
+  // menu item should be the first one.
+  base::RunLoop run_loop;
+  menu->GetMenuModel(base::BindLambdaForTesting(
+      [&](std::unique_ptr<ui::SimpleMenuModel> menu_model) {
+        EXPECT_EQ(base::ASCIIToUTF16(top_level_item_label),
+                  menu_model->GetLabelAt(0));
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
 }
 
 // Launching an app from the shelf when not in Demo Mode should not record app

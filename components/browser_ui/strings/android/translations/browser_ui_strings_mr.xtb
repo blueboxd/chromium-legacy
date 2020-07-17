@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">कॅमेरा</translation>
 <translation id="1647391597548383849">तुमचा कॅमेरा ॲक्सेस करा</translation>
 <translation id="1660204651932907780">साइटना ध्वनी प्ले करण्याची परवानगी द्या (शिफारस केलेले)</translation>
+<translation id="1677097821151855053">कुकी आणि इतर साइट डेटा तुम्हाला लक्षात ठेवण्यासाठी वापरला जातो, उदाहरणार्थ, तुम्हाला साइन इन करण्यासाठी किंवा जाहिराती पर्सनलाइझ करण्यासाठी. सर्व साइटसाठी कुकी व्यवस्थापित करण्याकरिता <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> पहा.</translation>
 <translation id="1688867105868176567">साइट डेटा साफ करायचा?</translation>
 <translation id="169515064810179024">साइटना मोशन सेन्सर ॲक्सेसपासून ब्लॉक करा</translation>
 <translation id="1717218214683051432">मोशन सेन्सर</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">विशिष्ट साइटसाठी कुकीना अनुमती द्या.</translation>
 <translation id="4046123991198612571">पुढील ट्रॅक</translation>
 <translation id="4165986682804962316">साइट सेटिंग्ज</translation>
+<translation id="4200726100658658164">स्थान सेटिंग्ज उघडा</translation>
 <translation id="4226663524361240545">सूचनांमुळे डिव्हाइसचे कंपन होऊ शकते</translation>
 <translation id="4242533952199664413">सेटिंग्ज उघडा</translation>
 <translation id="4259722352634471385">नेव्हिगेशन अवरोधित केले आहे: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">सर्व साइट</translation>
 <translation id="6320088164292336938">कंपन</translation>
 <translation id="6388207532828177975">साफ आणि रीसेट करा</translation>
+<translation id="6423924377271166037">कुकी साफ करा</translation>
 <translation id="6439114592976064011">साइटना तुमचे आभासी वास्तविकता डिव्हाइस आणि डेटा वापरण्यापासून ब्लॉक करा</translation>
 <translation id="6447842834002726250">कुकीज</translation>
 <translation id="6527303717912515753">शेअर करा</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">मागे शोधा</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> ला तुमचे स्थान अ‍ॅक्सेस करू देण्यासाठी, <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्येदेखील स्थान सुरू करा.</translation>
 <translation id="8447861592752582886">डिव्हाइस परवानगी रद्द करा</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{एक कुकी वापरात आहे}other{# कुकी वापरात आहेत}}</translation>
 <translation id="8463851957836045671">साइट जलद आहे</translation>
 <translation id="851751545965956758">डिव्हाइसेसशी कनेक्ट करण्यापासून साइटना ब्लॉक करा</translation>
 <translation id="857943718398505171">अनुमती दिली (शिफारस केलेले)</translation>

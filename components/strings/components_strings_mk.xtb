@@ -46,6 +46,7 @@
 <translation id="115926840831309955">Проверете го вашиот CVC и обидете се повторно или ажурирајте го рокот на важност</translation>
 <translation id="1161325031994447685">Повторно да се поврзете на Wi-Fi</translation>
 <translation id="1165039591588034296">Грешка</translation>
+<translation id="1165174597379888365">Посетена е страница</translation>
 <translation id="1175364870820465910">&amp;Печати...</translation>
 <translation id="1175875016430184367">Тројно спојување десно</translation>
 <translation id="1178581264944972037">Пауза</translation>
@@ -267,6 +268,7 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{и уште 1}one{и уште #}other{и уште #}}</translation>
 <translation id="2003709556000175978">Ресетирајте ја вашата лозинка сега</translation>
 <translation id="2003775180883135320">Четири дупки горе</translation>
+<translation id="202072848677994234">Формуларов е испратен преку небезбедна врска. Автоматското пополнување е оневозможено.</translation>
 <translation id="2025115093177348061">Проширена реалност</translation>
 <translation id="2025186561304664664">Проксито е поставено на автоматско конфигурирање.</translation>
 <translation id="2030481566774242610">Дали мислевте на <ph name="LINK" />?</translation>
@@ -335,6 +337,7 @@
 <translation id="2289385804009217824">Кратење</translation>
 <translation id="2292556288342944218">Вашиот пристап на интернет е блокиран</translation>
 <translation id="2293443924986248631">Кога е вклучено, сајтовите не може да користат колачиња што ве следат на интернет. Функциите на некои сајтови може да не функционираат.</translation>
+<translation id="2295290966866883927">URL-адресите од страниците што ги посетувате се испраќаат до Google Cloud или трети страни за анализа. На пример, можеби ќе се скенираат за да се откријат небезбедни веб-сајтови.</translation>
 <translation id="2297722699537546652">B5 (плик)</translation>
 <translation id="2300306941146563769">Не е прикачен</translation>
 <translation id="2310021320168182093">Chou 2 (плик)</translation>
@@ -426,7 +429,6 @@
 <translation id="2705137772291741111">Зачуваната (кеширана) копија на сајтот беше нечитлива.</translation>
 <translation id="2709516037105925701">Автоматско пополнување</translation>
 <translation id="2713444072780614174">Бела</translation>
-<translation id="2720342946869265578">Во близина</translation>
 <translation id="2721148159707890343">Барањето е успешно</translation>
 <translation id="272451190272506600">Допрете го сензорот за да платите</translation>
 <translation id="2728127805433021124">Сертификатот на серверот е потпишан со слаб алгоритам за потпишување.</translation>
@@ -723,7 +725,6 @@
 <translation id="3990250421422698716">Офсет превиткување</translation>
 <translation id="3996311196211510766">Сајтот <ph name="ORIGIN" /> побарал да се применува правило за потекло
      за сите барања до него, но ова правило не може да се примени во моментов.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 веб-страница во близина}one{# веб-страница во близина}other{# веб-страници во близина}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-документ со {COUNT} страница}one{PDF-документ со {COUNT} страница}other{PDF-документ со {COUNT} страници}}</translation>
 <translation id="4030383055268325496">&amp;Врати додавање</translation>
 <translation id="4032320456957708163">Прелистувачот е управуван од <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -941,7 +942,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Зачувај…</translation>
 <translation id="4913987521957242411">Дупка горе лево</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{и уште 1 веб-страница}one{и уште # веб-страница}other{и уште # веб-страници}}</translation>
 <translation id="4923459931733593730">Плаќање</translation>
 <translation id="4926049483395192435">Мора да се назначи.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> вели</translation>
@@ -1333,7 +1333,6 @@
 <translation id="6518133107902771759">Потврди</translation>
 <translation id="6521745193039995384">Неактивна</translation>
 <translation id="6529602333819889595">&amp;Повтори бришење</translation>
-<translation id="6534179046333460208">Предлози на Опипливата мрежа</translation>
 <translation id="6545864417968258051">Скенирање за Bluetooth</translation>
 <translation id="6547208576736763147">Две дупки лево</translation>
 <translation id="6554795675067793129">Со сметката управува <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1855,7 +1854,6 @@
 <translation id="8790007591277257123">&amp;Повтори бришење</translation>
 <translation id="8792621596287649091">Може да го изгубите пристапот до вашата сметка на <ph name="ORG_NAME" /> или да ви го украдат идентитетот. Chromium препорачува да ја смените лозинката веднаш.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> вклучил Chrome Enterprise Connectors на вашиот прелистувач. Овие конектори имаат пристап до дел од вашите податоци.</translation>
-<translation id="8800988563907321413">Предлозите за работи во близина ќе се појавуваат тука</translation>
 <translation id="8805819170075074995">Запис во список „<ph name="LANGUAGE_ID" />“: записот е игнориран бидејќи е вклучен и во правилото SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Кратење по секоја страница</translation>
 <translation id="8820817407110198400">Обележувачи</translation>

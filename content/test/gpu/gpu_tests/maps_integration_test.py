@@ -6,6 +6,7 @@ import json
 import os
 import sys
 
+from gpu_tests import common_browser_args as cba
 from gpu_tests import color_profile_manager
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
@@ -43,10 +44,10 @@ class MapsIntegrationTest(
     color_profile_manager.ForceUntilExitSRGB(
         options.dont_restore_color_profile_after_test)
     super(MapsIntegrationTest, cls).SetUpProcess()
-    browser_args = [
-        '--force-color-profile=srgb', '--ensure-forced-color-profile'
-    ]
-    cls.CustomizeBrowserArgs(browser_args)
+    cls.CustomizeBrowserArgs([
+        cba.FORCE_COLOR_PROFILE_SRGB,
+        cba.ENSURE_FORCED_COLOR_PROFILE,
+    ])
     cloud_storage.GetIfChanged(
         os.path.join(_MAPS_PERF_TEST_PATH, 'load_dataset'),
         cloud_storage.PUBLIC_BUCKET)

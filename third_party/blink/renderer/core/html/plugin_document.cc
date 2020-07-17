@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -182,14 +183,14 @@ WebPluginContainerImpl* PluginDocumentParser::GetPluginView() const {
 
 PluginDocument::PluginDocument(const DocumentInit& initializer)
     : HTMLDocument(initializer, kPluginDocumentClass),
-      background_color_(initializer.GetPluginBackgroundColor()) {
+      background_color_(
+          GetFrame()->GetPluginData()->PluginBackgroundColorForMimeType(
+              initializer.GetMimeType())) {
   SetCompatibilityMode(kQuirksMode);
   LockCompatibilityMode();
-  if (GetExecutionContext()) {
-    GetExecutionContext()->GetScheduler()->RegisterStickyFeature(
-        SchedulingPolicy::Feature::kContainsPlugins,
-        {SchedulingPolicy::RecordMetricsForBackForwardCache()});
-  }
+  GetExecutionContext()->GetScheduler()->RegisterStickyFeature(
+      SchedulingPolicy::Feature::kContainsPlugins,
+      {SchedulingPolicy::RecordMetricsForBackForwardCache()});
 }
 
 DocumentParser* PluginDocument::CreateParser() {

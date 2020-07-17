@@ -237,6 +237,11 @@
     "channel": "stable",
     "extension_types": ["extension", "platform_app"]
   },
+  "documentScan": {
+    "channel": "stable",
+    "extension_types": ["extension", "platform_app"],
+    "platforms": ["chromeos"]
+  },
   "downloads": {
     "channel": "stable",
     "extension_types": ["extension"]

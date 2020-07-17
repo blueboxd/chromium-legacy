@@ -135,8 +135,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   CreateThrottlesForNavigation(
       content::NavigationHandle* navigation_handle) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
-  base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
-      base::StringPiece name) override;
   bool BindAssociatedReceiverFromFrame(
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,

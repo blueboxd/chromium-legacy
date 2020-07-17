@@ -90,6 +90,10 @@ class CompositingTest : public PaintTestConfigurations, public testing::Test {
         DocumentUpdateReason::kTest);
   }
 
+  cc::PropertyTrees* GetPropertyTrees() {
+    return LayerTreeHost()->property_trees();
+  }
+
  private:
   PaintArtifactCompositor* paint_artifact_compositor() {
     return GetLocalFrameView()->GetPaintArtifactCompositor();
@@ -221,6 +225,70 @@ TEST_P(CompositingTest, WillChangeTransformHint) {
   UpdateAllLifecyclePhases();
   auto* layer = CcLayerByDOMElementId("willChange");
   EXPECT_TRUE(layer->has_will_change_transform_hint());
+}
+
+TEST_P(CompositingTest, WillChangeTransformHintInSVG) {
+  ScopedCompositeSVGForTest enable_feature(true);
+  InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
+    <!doctype html>
+    <style>
+      #willChange {
+        width: 100px;
+        height: 100px;
+        will-change: transform;
+      }
+    </style>
+    <svg width="200" height="200">
+      <rect id="willChange" fill="blue"></rect>
+    </svg>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  auto* layer = CcLayerByDOMElementId("willChange");
+  EXPECT_TRUE(layer->has_will_change_transform_hint());
+}
+
+TEST_P(CompositingTest, PaintPropertiesWhenCompositingSVG) {
+  ScopedCompositeSVGForTest enable_feature(true);
+  InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
+    <!doctype html>
+    <style>
+      #ancestor {
+        opacity: 0.9;
+      }
+      #svg {
+        opacity: 0.8;
+      }
+      #rect {
+        width: 100px;
+        height: 100px;
+        will-change: transform;
+        opacity: 0.7;
+      }
+    </style>
+    <div id="ancestor">
+      <svg id="svg" width="200" height="200">
+        <rect width="10" height="10" fill="red"></rect>
+        <rect id="rect" fill="blue" stroke-width="1" stroke="black"></rect>
+      </svg>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  auto* ancestor = CcLayerByDOMElementId("ancestor");
+  auto* ancestor_effect_node =
+      GetPropertyTrees()->effect_tree.Node(ancestor->effect_tree_index());
+  EXPECT_EQ(ancestor_effect_node->opacity, 0.9f);
+
+  auto* svg_root = CcLayerByDOMElementId("svg");
+  auto* svg_root_effect_node =
+      GetPropertyTrees()->effect_tree.Node(svg_root->effect_tree_index());
+  EXPECT_EQ(svg_root_effect_node->opacity, 0.8f);
+  EXPECT_EQ(svg_root_effect_node->parent_id, ancestor_effect_node->id);
+
+  auto* rect = CcLayerByDOMElementId("rect");
+  auto* rect_effect_node =
+      GetPropertyTrees()->effect_tree.Node(rect->effect_tree_index());
+  EXPECT_EQ(rect_effect_node->opacity, 0.7f);
+  EXPECT_EQ(rect_effect_node->parent_id, svg_root_effect_node->id);
 }
 
 TEST_P(CompositingTest, BackgroundColorInScrollingContentsLayer) {
@@ -631,6 +699,47 @@ TEST_P(CompositingSimTest, DirectTransformPropertyUpdate) {
   // Modifying the transform in a simple way allowed for a direct update.
   outer_element->setAttribute(html_names::kStyleAttr,
                               "transform: translate(30px, 20px) scale(5, 5)");
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(transform_node->transform_changed);
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+
+  // After a frame the |transform_changed| value should be reset.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(transform_node->transform_changed);
+}
+
+TEST_P(CompositingSimTest, DirectSVGTransformPropertyUpdate) {
+  ScopedCompositeSVGForTest enable_feature(true);
+  InitializeWithHTML(R"HTML(
+    <!doctype html>
+    <style>
+      #willChange {
+        width: 100px;
+        height: 100px;
+        will-change: transform;
+        transform: translate(10px, 10px);
+      }
+    </style>
+    <svg width="200" height="200">
+      <rect id="willChange" fill="blue"></rect>
+    </svg>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* will_change_layer = CcLayerByDOMElementId("willChange");
+  auto transform_tree_index = will_change_layer->transform_tree_index();
+  auto* transform_node =
+      GetPropertyTrees()->transform_tree.Node(transform_tree_index);
+
+  // Initially, transform should be unchanged.
+  EXPECT_FALSE(transform_node->transform_changed);
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+
+  // Modifying the transform in a simple way allowed for a direct update.
+  auto* will_change_element = GetElementById("willChange");
+  will_change_element->setAttribute(html_names::kStyleAttr,
+                                    "transform: translate(30px, 20px)");
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(transform_node->transform_changed);
   EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());

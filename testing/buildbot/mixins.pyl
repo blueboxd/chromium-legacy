@@ -207,6 +207,13 @@
       'service_account': 'chromium-tester@chops-service-accounts.iam.gserviceaccount.com',
     },
   },
+  'chromium-tests-ios14': {
+    'swarming': {
+      'dimensions': {
+        'pool': 'chromium.tests.ios14',
+      },
+    },
+  },
   # TODO(crbug.com/1057152): Add this mixin unconditionally for all CrOS device
   # tests.
   'cros_device_flash': {
@@ -496,7 +503,7 @@
     'swarming': {
       'dimensions': {
         'gpu': '8086:0a2e',
-        'os': 'Mac-10.14.6',
+        'os': 'Mac-10.14.6|Mac-10.15.5',
       },
     },
   },
@@ -808,9 +815,9 @@
   'win10_nvidia_quadro_p400_experimental': {
     'swarming': {
       'dimensions': {
-        'gpu': '10de:1cb3-26.21.14.3102',
-        'os': 'Windows-10',
-        'pool': 'chromium.tests.gpu',
+        'gpu': '10de:1cb3-27.21.14.5148',
+        'os': 'Windows-10-18363',
+        'pool': 'chromium.tests.gpu.experimental',
       },
     },
   },

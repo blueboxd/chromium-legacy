@@ -30,6 +30,7 @@ class AshDBusServices {
   std::unique_ptr<chromeos::CrosDBusService> gesture_properties_service_;
   std::unique_ptr<chromeos::CrosDBusService> liveness_service_;
   std::unique_ptr<chromeos::CrosDBusService> url_handler_service_;
+  std::unique_ptr<chromeos::CrosDBusService> user_authentication_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AshDBusServices);
 };

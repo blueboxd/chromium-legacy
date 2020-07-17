@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="is">
 <translation id="1008557486741366299">Ekki núna</translation>
+<translation id="100957008357583611">Viltu nota staðsetninguna þína?</translation>
 <translation id="1010200102790553230">Hlaða síðu seinna</translation>
 <translation id="1015730422737071372">Veita frekari upplýsingar</translation>
 <translation id="1019413721762100891">Slökkt</translation>
@@ -426,7 +427,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="2705137772291741111">Ekki var hægt að lesa vistuð afrit (í skyndiminni) af þessu vefsvæði.</translation>
 <translation id="2709516037105925701">Sjálfvirk útfylling</translation>
 <translation id="2713444072780614174">Hvítur</translation>
-<translation id="2720342946869265578">Nálægt</translation>
 <translation id="2721148159707890343">Beiðni tókst</translation>
 <translation id="272451190272506600">Snertu skynjarann til að greiða</translation>
 <translation id="2728127805433021124">Vottorð þjónsins er undirritað með ótraustu undirritunarreikniriti.</translation>
@@ -723,7 +723,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="3990250421422698716">Jöfnuð offsetprentun</translation>
 <translation id="3996311196211510766">Vefsvæðið <ph name="ORIGIN" /> hefur beðið um að upprunaregla
     gildi fyrir allar beiðnir þess, en ekki er hægt að nota þessa reglu eins og er.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 vefsvæði nálægt}one{# vefsvæði nálægt}other{# vefsvæði nálægt}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-skjal með {COUNT} síðu}one{PDF-skjal með {COUNT} síðu}other{PDF-skjal með {COUNT} síðum}}</translation>
 <translation id="4030383055268325496">Aft&amp;urkalla viðbót</translation>
 <translation id="4032320456957708163"><ph name="ENROLLMENT_DOMAIN" /> hefur umsjón með vafranum þínum</translation>
@@ -941,7 +940,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Vista...</translation>
 <translation id="4913987521957242411">Hefti efst vinstra megin</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{og 1 vefsvæði í viðbót}one{og # vefsvæði í viðbót}other{og # vefsvæði í viðbót}}</translation>
 <translation id="4923459931733593730">Greiðslumáti</translation>
 <translation id="4926049483395192435">Verður að tilgreina.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> segir</translation>
@@ -1182,6 +1180,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="5869405914158311789">Ekki næst í vefsvæðið</translation>
 <translation id="5869522115854928033">Vistuð aðgangsorð</translation>
 <translation id="5887400589839399685">Kort vistað</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> krefst að þú takir afrit af gögnunum þínum og skilir þessu tæki.</translation>
 <translation id="5895138241574237353">Endurræsa</translation>
 <translation id="5895187275912066135">Gefið út</translation>
 <translation id="5901630391730855834">Gulur</translation>
@@ -1332,7 +1331,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="6518133107902771759">Staðfesta</translation>
 <translation id="6521745193039995384">Ekki virk</translation>
 <translation id="6529602333819889595">Endu&amp;rtaka eyðingu</translation>
-<translation id="6534179046333460208">Tillögur fyrir efnislega vefinn</translation>
 <translation id="6545864417968258051">Bluetooth-leit</translation>
 <translation id="6547208576736763147">Tvö göt vinstra megin</translation>
 <translation id="6554795675067793129">Reikningnum þínum er stjórnað af <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1854,7 +1852,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="8790007591277257123">Endu&amp;rtaka eyðingu</translation>
 <translation id="8792621596287649091">Þú gætir glatað aðganginum að <ph name="ORG_NAME" /> reikningnum þínum eða orðið fyrir auðkennisstuldi. Chromium mælir með því að þú skiptir um aðgangsorð núna.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> kveikti á Chrome Enterprise Connectors í vafranum. Þessi tengi hafa aðgang að sumum af gögnunum þínum.</translation>
-<translation id="8800988563907321413">Nálægar tillögur birtast hér</translation>
 <translation id="8805819170075074995">Listafærslan „<ph name="LANGUAGE_ID" />“: Færslan er hunsuð því hún kemur einnig fram í reglunni „SpellcheckLanguage“.</translation>
 <translation id="8807160976559152894">Klippa eftir hverja síðu</translation>
 <translation id="8820817407110198400">Bókamerki</translation>

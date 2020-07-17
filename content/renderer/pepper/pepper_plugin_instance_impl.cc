@@ -1956,18 +1956,22 @@ void PepperPluginInstanceImpl::PrintPage(int page_number,
 #if BUILDFLAG(ENABLE_PRINTING)
   DCHECK(plugin_print_interface_);
 
-  // |canvas| should always have an associated metafile.
-  auto* metafile = canvas->GetPrintingMetafile();
-  DCHECK(metafile);
+  // When compositing to PDF output, the |canvas| metafile is not the
+  // document metafile, and cannot be used for getting the final PDF.
+  if (current_print_settings_.format != PP_PRINTOUTPUTFORMAT_PDF) {
+    // |canvas| should always have an associated metafile.
+    auto* metafile = canvas->GetPrintingMetafile();
+    DCHECK(metafile);
 
-  // |ranges_| should be empty IFF |metafile_| is not set.
-  DCHECK_EQ(ranges_.empty(), !metafile_);
-  if (metafile_) {
-    // The metafile should be the same across all calls for a given print job.
-    DCHECK_EQ(metafile_, metafile);
-  } else {
-    // Store |metafile| on the first call.
-    metafile_ = metafile;
+    // |ranges_| should be empty IFF |metafile_| is not set.
+    DCHECK_EQ(ranges_.empty(), !metafile_);
+    if (metafile_) {
+      // The metafile should be the same across all calls for a given print job.
+      DCHECK_EQ(metafile_, metafile);
+    } else {
+      // Store |metafile| on the first call.
+      metafile_ = metafile;
+    }
   }
 
   PP_PrintPageNumberRange_Dev page_range = {page_number, page_number};
@@ -1984,8 +1988,7 @@ void PepperPluginInstanceImpl::PrintEnd() {
     PP_Resource print_output = plugin_print_interface_->PrintPages(
         pp_instance(), ranges_.data(), ranges_.size());
     if (print_output) {
-      if (current_print_settings_.format == PP_PRINTOUTPUTFORMAT_PDF ||
-          current_print_settings_.format == PP_PRINTOUTPUTFORMAT_RASTER) {
+      if (current_print_settings_.format == PP_PRINTOUTPUTFORMAT_RASTER) {
         PrintPDFOutput(print_output, metafile_);
       }
 

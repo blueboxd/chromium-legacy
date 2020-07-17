@@ -110,21 +110,22 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandler {
 
   class COMPONENT_EXPORT(CHROMEOS_NETWORK) TetherDelegate {
    public:
+    using StringErrorCallback =
+        base::OnceCallback<void(const std::string& string_result)>;
+
     // Connects to the Tether network with GUID |tether_network_guid|. On
     // success, invokes |success_callback|, and on failure, invokes
     // |error_callback|, passing the relevant error code declared above.
-    virtual void ConnectToNetwork(
-        const std::string& tether_network_guid,
-        base::OnceClosure success_callback,
-        const network_handler::StringResultCallback& error_callback) = 0;
+    virtual void ConnectToNetwork(const std::string& tether_network_guid,
+                                  base::OnceClosure success_callback,
+                                  StringErrorCallback error_callback) = 0;
 
     // Disconnects from the Tether network with GUID |tether_network_guid|. On
     // success, invokes |success_callback|, and on failure, invokes
     // |error_callback|, passing the relevant error code declared above.
-    virtual void DisconnectFromNetwork(
-        const std::string& tether_network_guid,
-        base::OnceClosure success_callback,
-        const network_handler::StringResultCallback& error_callback) = 0;
+    virtual void DisconnectFromNetwork(const std::string& tether_network_guid,
+                                       base::OnceClosure success_callback,
+                                       StringErrorCallback error_callback) = 0;
 
    protected:
     virtual ~TetherDelegate() {}
@@ -153,12 +154,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandler {
   //   completes. Note: This also prevents |error_callback| from being called
   //   if the connection request is successfully sent but the network does not
   //   connect.
-  virtual void ConnectToNetwork(
-      const std::string& service_path,
-      base::OnceClosure success_callback,
-      const network_handler::ErrorCallback& error_callback,
-      bool check_error_state,
-      ConnectCallbackMode mode) = 0;
+  virtual void ConnectToNetwork(const std::string& service_path,
+                                base::OnceClosure success_callback,
+                                network_handler::ErrorCallback error_callback,
+                                bool check_error_state,
+                                ConnectCallbackMode mode) = 0;
 
   // DisconnectNetwork() will send a Disconnect request to Shill.
   // On success, |success_callback| will be called.
@@ -170,7 +170,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandler {
   virtual void DisconnectNetwork(
       const std::string& service_path,
       base::OnceClosure success_callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+      network_handler::ErrorCallback error_callback) = 0;
 
   virtual void Init(NetworkStateHandler* network_state_handler,
                     NetworkConfigurationHandler* network_configuration_handler,
@@ -193,22 +193,21 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandler {
 
   // Notify caller and observers that the connect request failed.
   // |error_name| will be one of the kError* messages defined above.
-  void InvokeConnectErrorCallback(
-      const std::string& service_path,
-      const network_handler::ErrorCallback& error_callback,
-      const std::string& error_name);
+  void InvokeConnectErrorCallback(const std::string& service_path,
+                                  network_handler::ErrorCallback error_callback,
+                                  const std::string& error_name);
 
   // Initiates a connection to a Tether network.
   void InitiateTetherNetworkConnection(
       const std::string& tether_network_guid,
       base::OnceClosure success_callback,
-      const network_handler::ErrorCallback& error_callback);
+      network_handler::ErrorCallback error_callback);
 
   // Initiates a disconnection from a Tether network.
   void InitiateTetherNetworkDisconnection(
       const std::string& tether_network_guid,
       base::OnceClosure success_callback,
-      const network_handler::ErrorCallback& error_callback);
+      network_handler::ErrorCallback error_callback);
 
   base::ObserverList<NetworkConnectionObserver, true>::Unchecked observers_;
 

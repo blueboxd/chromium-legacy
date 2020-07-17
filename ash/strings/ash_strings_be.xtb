@@ -98,6 +98,7 @@
 <translation id="1995660704900986789">Выключыць</translation>
 <translation id="2012624427112548395">Ctrl+Пошук+H</translation>
 <translation id="2016340657076538683">Напішыце паведамленне</translation>
+<translation id="2018630726571919839">Раскажы мне жарт</translation>
 <translation id="2050339315714019657">Кніжная</translation>
 <translation id="2067602449040652523">Яркасць клавіятуры</translation>
 <translation id="209965399369889474">Няма падключэння да сеткі</translation>
@@ -125,6 +126,7 @@
 <translation id="2354174487190027830">Ідзе актывацыя сеткі <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Працягнуць</translation>
 <translation id="2365393535144473978">Пры ўключэнні мабільнай перадачы даных таксама ўключыцца Bluetooth.</translation>
+<translation id="2369165858548251131">"Вітаю" па-кітайску</translation>
 <translation id="2390318262976603432">Рэгіянальныя налады</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Ёсць абнаўленне</translation>
@@ -142,6 +144,7 @@
 <translation id="256712445991462162">прыстыкаваная лупа</translation>
 <translation id="2575685495496069081">Уваход у некалькі ўліковых запісаў забаронены</translation>
 <translation id="2582112259361606227">Перазапусціць і абнавіць</translation>
+<translation id="2595239820337756193">5 кіламетраў у мілях</translation>
 <translation id="2617342710774726426">SIM-карта заблакіравана</translation>
 <translation id="2621713457727696555">Абаронена</translation>
 <translation id="2653659639078652383">Адправіць</translation>
@@ -195,6 +198,7 @@
 <translation id="3154351730702813399">Адміністратар прылады можа сачыць за вашымі дзеяннямі ў браўзеры.</translation>
 <translation id="3181441307743005334">Перазапуск можа заняць некаторы час</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Падключана да прылады}one{Падключана да # прылады}few{Падключана да # прылад}many{Падключана да # прылад}other{Падключана да # прылады}}</translation>
+<translation id="320207200541803018">Задаць таймер</translation>
 <translation id="3203405173652969239">Доступ праз пераключальнікі ўключаны</translation>
 <translation id="3207953481422525583">Налады карыстальніка</translation>
 <translation id="3217205077783620295">Гук уключаны, выключыць яго можна з дапамогай гэтага пераключальніка.</translation>
@@ -207,6 +211,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> зможа ўвайсці пазней.</translation>
 <translation id="3321628682574733415">Няправільны бацькоўскі код</translation>
 <translation id="332587331255250389">Замяніце акумулятар</translation>
+<translation id="334252345105450327">Зрабіць здымак экрана</translation>
 <translation id="3351879221545518001">Вы трансліруеце экран.</translation>
 <translation id="3364721542077212959">Інструменты стыла</translation>
 <translation id="3368922792935385530">Падключана</translation>
@@ -239,6 +244,7 @@
 <translation id="3631369015426612114">Дазволіць апавяшчэнні з наступных крыніц</translation>
 <translation id="3638400994746983214">Уключыць або выключыць экран прыватнасці. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" />, карыстальнік пад кіраваннем</translation>
+<translation id="3702846122927433391">Насельніцтва Нігерыі</translation>
 <translation id="3705722231355495246">–</translation>
 <translation id="3712407551474845318">Вобласць здымкі</translation>
 <translation id="371370241367527062">Пярэдні мікрафон</translation>
@@ -519,6 +525,7 @@
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Вяртанне да старой раздзяляльнасці праз <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Меню перамешчана ў левы верхні вугал экрана.</translation>
+<translation id="7189412385142492784">Якая адлегласць да Венеры</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Для ўсталявання абнаўлення патрабуецца перазапуск Chromebook. Гэта можа заняць да 1 хвіліны.</translation>
 <translation id="7256634071279256947">Задні мікрафон</translation>
 <translation id="726276584504105859">Каб перайсці ў рэжым падзеленага экрана, перацягніце акно сюды</translation>
@@ -645,6 +652,7 @@
 <translation id="8649101189709089199">Чытаць уголас</translation>
 <translation id="8652175077544655965">Закрыць налады</translation>
 <translation id="8653151467777939995">Паказаць налады апавяшчэнняў. Апавяшчэнні ўключаны</translation>
+<translation id="8660331759611631213">Квадратны корань з 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Паказаць спіс сетак. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

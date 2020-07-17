@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">தேர்ந்தெடு</translation>
 <translation id="1859234291848436338">எழுதும் திசை</translation>
 <translation id="1860796786778352021">அறிவிப்பை மூடு</translation>
+<translation id="186476001994626254">இணைய ஸ்மார்ட் ஒட்டுதல் உள்ளடக்கம்</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">அ&amp;னைத்தையும் தேர்ந்தெடு</translation>
@@ -75,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">கோப்புறையைத் திற</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 ஆண்டுக்கு முன்}other{# ஆண்டுகளுக்கு முன்}}</translation>
+<translation id="2878511608894704031">அனைத்தையும் நீக்கு</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{இன்னும் 1நா}other{இன்னும் #நா}}</translation>
 <translation id="2931838996092594335">கிளிக் செய்க</translation>
 <translation id="2981684127883932071">பரிந்துரைகளைக் காட்டுகிறது</translation>
@@ -172,6 +174,7 @@
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6430678249303439055">இந்தப் பயன்பாட்டிலிருந்து எல்லா அறிவிப்புகளையும் தடு</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 வினாடிக்கு முன்பு}other{# வினாடிகளுக்கு முன்பு}}</translation>
+<translation id="6503257047630241175">RTF உள்ளடக்கம்</translation>
 <translation id="6539092367496845964">ஏதோ தவறாகிவிட்டது. பிறகு முயலவும்.</translation>
 <translation id="654149438358937226">எல்லா அறிவிப்புகளையும் தடு</translation>
 <translation id="6567071839949112727">ஆன்செஸ்டரைக் கிளிக் செய்</translation>

@@ -473,7 +473,7 @@ AccessibilityGrabbedState AXLayoutObject::IsGrabbed() const {
 }
 
 AccessibilitySelectedState AXLayoutObject::IsSelected() const {
-  if (!GetLayoutObject() || !GetNode() || !CanSetSelectedAttribute())
+  if (!GetLayoutObject() || !GetNode() || !IsSubWidget())
     return kSelectedStateUndefined;
 
   // The aria-selected attribute overrides automatic behaviors.

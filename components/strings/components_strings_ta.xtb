@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
 <translation id="1008557486741366299">இப்போது இல்லை </translation>
+<translation id="100957008357583611">உங்கள் இருப்பிடத்தைப் பயன்படுத்தவா?</translation>
 <translation id="1010200102790553230">பக்கத்தைப் பின்னர் ஏற்று</translation>
 <translation id="1015730422737071372">கூடுதல் விவரங்களை வழங்கவும்</translation>
 <translation id="1019413721762100891">முடக்கப்பட்டுள்ளது</translation>
@@ -425,7 +426,6 @@
 <translation id="2705137772291741111">இந்தத் தளத்தின் சேமிக்கப்பட்ட (தற்காலிகச் சேமிப்பு) நகலைப் படிக்க முடியவில்லை.</translation>
 <translation id="2709516037105925701">தானாகநிரப்பு</translation>
 <translation id="2713444072780614174">வெள்ளை</translation>
-<translation id="2720342946869265578">அருகிலுள்ளவை</translation>
 <translation id="2721148159707890343">கோரிக்கை வெற்றியடைந்தது</translation>
 <translation id="272451190272506600">பேமெண்ட் செய்ய சென்சாரைத் தொடவும்</translation>
 <translation id="2728127805433021124">சேவையகச் சான்றிதழ் ஒரு வலுவற்ற கையொப்ப அல்காரிதமைப் பயன்படுத்தி கையொப்பமிடப்பட்டுள்ளது.</translation>
@@ -716,7 +716,6 @@
 <translation id="3990250421422698716">ஜாக் ஆஃப்செட்</translation>
 <translation id="3996311196211510766"><ph name="ORIGIN" /> தளம், அதற்கான அனைத்துக் கோரிக்கைகளுக்கும் 
     அசல் கொள்கையைப் பயன்படுத்த வேண்டுமெனக் கோரிக்கை விடுத்துள்ளது, ஆனால் தற்சமயம் அதைச் செய்ய முடியாது.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{அருகில் ஒரு இணையப் பக்கம் உள்ளது}other{அருகில் # இணையப் பக்கங்கள் உள்ளன}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} பக்கத்தைக் கொண்ட PDF ஆவணம்}other{{COUNT} பக்கங்களைக் கொண்ட PDF ஆவணம்}}</translation>
 <translation id="4030383055268325496">&amp;சேர்த்தலைச் செயல்தவிர்</translation>
 <translation id="4032320456957708163">உங்கள் உலாவியை <ph name="ENROLLMENT_DOMAIN" /> நிர்வகிக்கிறது</translation>
@@ -934,7 +933,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">சேமி...</translation>
 <translation id="4913987521957242411">பஞ்ச் டாப் லெஃப்ட்</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{மேலும் ஒரு இணையப் பக்கம்}other{மேலும் # இணையப் பக்கங்கள்}}</translation>
 <translation id="4923459931733593730">கட்டண முறை</translation>
 <translation id="4926049483395192435">கட்டாயம் குறிப்பிட வேண்டும்.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> தெரிவிப்பது:</translation>
@@ -1175,6 +1173,7 @@
 <translation id="5869405914158311789">இந்தத் தளத்தை அணுக முடியவில்லை</translation>
 <translation id="5869522115854928033">சேமிக்கப்பட்ட கடவுச்சொற்கள்</translation>
 <translation id="5887400589839399685">கார்டு சேமிக்கப்பட்டது</translation>
+<translation id="589006512797629854">உங்கள் தரவைக் காப்புப் பிரதி எடுத்துவிட்டு இந்தச் சாதனத்தைத் திருப்பியளிக்குமாறு <ph name="ENROLLMENT_DOMAIN" /> கோருகிறது.</translation>
 <translation id="5895138241574237353">மறுதொடக்கம்</translation>
 <translation id="5895187275912066135">வழங்கப்பட்டது</translation>
 <translation id="5901630391730855834">மஞ்சள்</translation>
@@ -1324,7 +1323,6 @@
 <translation id="6518133107902771759">சரிபார்</translation>
 <translation id="6521745193039995384">செயலில் இல்லை</translation>
 <translation id="6529602333819889595">&amp;நீக்குதலை மீண்டும் செய்</translation>
-<translation id="6534179046333460208">இயல்நிலை இணையப் பரிந்துரைகள்</translation>
 <translation id="6545864417968258051">புளூடூத் ஸ்கேனிங்</translation>
 <translation id="6547208576736763147">டூயல் பஞ்ச் லெஃப்ட்</translation>
 <translation id="6554795675067793129">உங்கள் கணக்கை நிர்வகிப்பது: <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1846,7 +1844,6 @@
 <translation id="8790007591277257123">&amp;நீக்குதலை மீண்டும் செய்</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> கணக்கிற்கான அணுகலை நீங்கள் இழக்கக்கூடும் அல்லது அடையாளத் திருட்டை எதிர்கொள்ளக்கூடும். இப்போதே உங்கள் கடவுச்சொல்லை மாற்றும்படி Chromium பரிந்துரைக்கிறது.</translation>
 <translation id="8793655568873652685">உங்கள் உலாவியில் Chrome Enterprise Connectorsஸை <ph name="ENROLLMENT_DOMAIN" /> இயக்கியுள்ளது. இந்தக் கனெக்டர்களால் உங்களின் தரவு சிலவற்றை அணுக முடியும்.</translation>
-<translation id="8800988563907321413">உங்கள் அருகிலுள்ளவற்றுக்கான பரிந்துரைகள் இங்கே தோன்றும்</translation>
 <translation id="8805819170075074995">பட்டியல் உள்ளீடு "<ph name="LANGUAGE_ID" />": உள்ளீடானது SpellcheckLanguage கொள்கையிலும் சேர்க்கப்பட்டிருப்பதால் புறக்கணிக்கப்பட்டது.</translation>
 <translation id="8807160976559152894">டிரிம் ஆஃப்டர் ஈச் பேஜ்</translation>
 <translation id="8820817407110198400">புக்மார்க்குகள்</translation>

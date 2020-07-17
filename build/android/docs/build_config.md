@@ -67,7 +67,6 @@ This will end up generating the following JSON file under
       "resource_zips/ui/android/ui_strings_grd.resources.zip"
     ],
     "extra_package_names": [],
-    "extra_r_text_files": []
   }
 }
 ```
@@ -130,7 +129,6 @@ python ../../build/android/gyp/process_resources.py \
     --aapt-path ../../third_party/android_sdk/public/build-tools/29.0.2/aapt \
     --dependencies-res-zips=@FileArg\(gen/ui/android/ui_java_resources.build_config:resources:dependency_zips\) \
     --extra-res-packages=@FileArg\(gen/ui/android/ui_java_resources.build_config:resources:extra_package_names\) \
-    --extra-r-text-files=@FileArg\(gen/ui/android/ui_java_resources.build_config:resources:extra_r_text_files\) \
     --resource-dirs=\[\"../../ui/android/java/res\"\] \
     --debuggable \
     --resource-zip-out resource_zips/ui/android/ui_java_resources.resources.zip \

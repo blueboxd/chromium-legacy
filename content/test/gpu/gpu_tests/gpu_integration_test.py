@@ -10,6 +10,7 @@ from telemetry.testing import serially_executed_browser_test_case
 from telemetry.util import screenshot
 from typ import json_results
 
+from gpu_tests import common_browser_args as cba
 from gpu_tests import gpu_helper
 
 _START_BROWSER_RETRIES = 3
@@ -67,14 +68,72 @@ class GpuIntegrationTest(
         help='Disables uploads of logs to cloud storage')
 
   @classmethod
-  def CustomizeBrowserArgs(cls, browser_args):
-    """Customizes the browser's command line arguments.
+  def GenerateBrowserArgs(cls, additional_args):
+    """Generates the browser args to use for the next browser startup.
+
+    Child classes are expected to override this and add any additional default
+    arguments that make sense for that particular class in addition to
+    the args returned by the parent's implementation.
+
+    Args:
+      additional_args: A list of strings containing any additional, non-default
+          args to use for the next browser startup.
+
+    Returns:
+      A list of strings containing all the browser arguments to use for the next
+      browser startup.
+    """
+    default_args = [
+        '--disable-metal-test-shaders',
+    ]
+    return default_args + additional_args
+
+  @classmethod
+  def CustomizeBrowserArgs(cls, additional_args=None):
+    """Customizes the browser's command line arguments for the next startup.
 
     NOTE that redefining this method in subclasses will NOT do what
     you expect! Do not attempt to redefine this method!
+
+    Args:
+      additional_args: A list of strings containing any additional, non-default
+          args to use for the next browser startup. See the child class'
+          GenerateBrowserArgs implementation for default arguments.
     """
-    if not browser_args:
-      browser_args = []
+    cls._SetBrowserArgsForNextStartup(
+        cls._GenerateAndSanitizeBrowserArgs(additional_args))
+
+  @classmethod
+  def _GenerateAndSanitizeBrowserArgs(cls, additional_args=None):
+    """Generates browser arguments and sanitizes invalid arguments.
+
+    Args:
+      additional_args: A list of strings containing any additional, non-default
+          args to use for the next browser startup. See the child class'
+          GenerateBrowserArgs implementation for default arguments.
+
+    Returns:
+      A list of strings containing all the browser arguments to use for the
+      next browser startup with invalid arguments removed.
+    """
+    additional_args = additional_args or []
+    browser_args = cls.GenerateBrowserArgs(additional_args)
+    if cba.DISABLE_GPU in browser_args:
+      # Some platforms require GPU process, so browser fails to launch with
+      # --disable-gpu mode, therefore, even test expectations fail to evaluate.
+      os_name = cls.browser.platform.GetOSName()
+      if os_name == 'android' or os_name == 'chromeos':
+        browser_args.remove(cba.DISABLE_GPU)
+    return browser_args
+
+  @classmethod
+  def _SetBrowserArgsForNextStartup(cls, browser_args):
+    """Sets the browser arguments to use for the next browser startup.
+
+    Args:
+      browser_args: A list of strings containing the browser arguments to use
+          for the next browser startup.
+    """
     cls._finder_options = cls.GetOriginalFinderOptions().Copy()
     browser_options = cls._finder_options.browser_options
 
@@ -88,25 +147,33 @@ class GpuIntegrationTest(
     cls.SetBrowserOptions(cls._finder_options)
 
   @classmethod
-  def RestartBrowserIfNecessaryWithArgs(cls, browser_args, force_restart=False):
-    if not browser_args:
-      browser_args = []
-    elif '--disable-gpu' in browser_args:
-      # Some platforms require GPU process, so browser fails to launch with
-      # --disable-gpu mode, therefore, even test expectations fail to evaluate.
-      browser_args = list(browser_args)
-      os_name = cls.browser.platform.GetOSName()
-      if os_name == 'android' or os_name == 'chromeos':
-        browser_args.remove('--disable-gpu')
-    if force_restart or set(browser_args) != cls._last_launched_browser_args:
-      logging.info('Restarting browser with arguments: ' + str(browser_args))
+  def RestartBrowserIfNecessaryWithArgs(cls,
+                                        additional_args=None,
+                                        force_restart=False):
+    """Restarts the browser if it is determined to be necessary.
+
+    A restart is necessary if restarting would cause the browser to run with
+    different arguments or if it is explicitly forced.
+
+    Args:
+      additional_args: A list of strings containing any additional, non-default
+          args to use for the next browser startup. See the child class'
+          GenerateBrowserArgs implementation for default arguments.
+      force_restart: True to force the browser to restart even if restarting
+          the browser would not change any browser arguments.
+    """
+    new_browser_args = cls._GenerateAndSanitizeBrowserArgs(additional_args)
+    if force_restart or set(
+        new_browser_args) != cls._last_launched_browser_args:
+      logging.info('Restarting browser with arguments: ' +
+                   str(new_browser_args))
       cls.StopBrowser()
-      cls.CustomizeBrowserArgs(browser_args)
+      cls._SetBrowserArgsForNextStartup(new_browser_args)
       cls.StartBrowser()
 
   @classmethod
-  def RestartBrowserWithArgs(cls, browser_args):
-    cls.RestartBrowserIfNecessaryWithArgs(browser_args, force_restart=True)
+  def RestartBrowserWithArgs(cls, additional_args=None):
+    cls.RestartBrowserIfNecessaryWithArgs(additional_args, force_restart=True)
 
   # The following is the rest of the framework for the GPU integration tests.
 

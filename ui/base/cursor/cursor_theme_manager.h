@@ -26,6 +26,9 @@ class CursorThemeManager {
 
   void RemoveObserver(CursorThemeManagerObserver* observer);
 
+  virtual std::string GetCursorThemeName() = 0;
+  virtual int GetCursorThemeSize() = 0;
+
  protected:
   CursorThemeManager();
 
@@ -33,9 +36,6 @@ class CursorThemeManager {
   cursor_theme_observers() {
     return cursor_theme_observers_;
   }
-
-  virtual std::string GetCursorThemeName() = 0;
-  virtual int GetCursorThemeSize() = 0;
 
  private:
   base::ObserverList<CursorThemeManagerObserver> cursor_theme_observers_;

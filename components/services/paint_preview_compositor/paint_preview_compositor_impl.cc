@@ -120,6 +120,9 @@ void PaintPreviewCompositorImpl::BeginComposite(
   auto response = mojom::PaintPreviewBeginCompositeResponse::New();
   auto mapping = request->proto.Map();
   if (!mapping.IsValid()) {
+    DVLOG(1) << "Failed to map proto in shared memory.";
+    // Cannot send a null token over mojo. This will be ignored downstream.
+    response->root_frame_guid = base::UnguessableToken::Create();
     std::move(callback).Run(
         mojom::PaintPreviewCompositor::Status::kDeserializingFailure,
         std::move(response));
@@ -130,10 +133,23 @@ void PaintPreviewCompositorImpl::BeginComposite(
   bool ok = paint_preview.ParseFromArray(mapping.memory(), mapping.size());
   if (!ok) {
     DVLOG(1) << "Failed to parse proto.";
+    // Cannot send a null token over mojo. This will be ignored downstream.
+    response->root_frame_guid = base::UnguessableToken::Create();
     std::move(callback).Run(
         mojom::PaintPreviewCompositor::Status::kDeserializingFailure,
         std::move(response));
     return;
+  }
+  response->root_frame_guid = base::UnguessableToken::Deserialize(
+      paint_preview.root_frame().embedding_token_high(),
+      paint_preview.root_frame().embedding_token_low());
+  if (response->root_frame_guid.is_empty()) {
+    DVLOG(1) << "No valid root frame guid";
+    // Cannot send a null token over mojo. This will be ignored downstream.
+    response->root_frame_guid = base::UnguessableToken::Create();
+    std::move(callback).Run(
+        mojom::PaintPreviewCompositor::Status::kDeserializingFailure,
+        std::move(response));
   }
   auto frames = DeserializeAllFrames(&request->file_map);
 
@@ -145,9 +161,6 @@ void PaintPreviewCompositorImpl::BeginComposite(
         std::move(response));
     return;
   }
-  response->root_frame_guid = base::UnguessableToken::Deserialize(
-      paint_preview.root_frame().embedding_token_high(),
-      paint_preview.root_frame().embedding_token_low());
 
   // Adding subframes is optional.
   for (const auto& subframe_proto : paint_preview.subframes())

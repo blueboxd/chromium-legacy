@@ -2,15 +2,19 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="1282031177488366470">‏עזרה בשיפור התכונות והביצועים של Chrome</translation>
+<translation id="1479202195792305274">‏Chrome יכול לבדוק את הסיסמאות כשנכנסים באמצעות חשבון Google.</translation>
+<translation id="1647024380514430932">‏Chrome לא הצליח לבדוק את כל הסיסמאות. יש לנסות שוב.</translation>
 <translation id="1682483655351012182">‏סנכרון נתוני Chrome שלך</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1917964099031477364">‏החשבון הזה וכל הנתונים שלא נשמרו יוסרו מ-Chrome ומאפליקציות אחרות של Google במכשיר הזה.</translation>
+<translation id="2009224836393115614">‏Chrome לא הצליח לבדוק את הסיסמאות שלך. יש לבדוק את החיבור לאינטרנט.</translation>
 <translation id="2147651015520127414">‏Chrome אימת ש-<ph name="ISSUER" /> הנפיק את האישור של אתר זה.</translation>
 <translation id="2199719347983604670">‏נתונים מסנכרון Chrome</translation>
 <translation id="2347208864470321755">‏כשהתכונה הזו פועלת, Chrome יציע לתרגם דפים שנכתבו בשפות אחרות באמצעות Google Translate‏. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="2574249610672786438">‏כדי לראות את הכרטיסיות שלך מכל מקום שבו פתחת את Chrome יש להיכנס לחשבון בכל המכשירים</translation>
 <translation id="2576431527583832481">‏‫Chrome ממשיך להשתפר! קיימת גירסה חדשה.</translation>
 <translation id="257708665678654955">‏האם ברצונך ש-Google Chrome יציע בפעם הבאה לתרגם דפים ב-<ph name="LANGUAGE_NAME" /> מאתר זה?</translation>
+<translation id="2732745070297234559">‏Chrome לא הצליח לבדוק את כל הסיסמאות. אפשר לנסות שוב מחר.</translation>
 <translation id="2919738076569633423">‏השימוש ב-Chrome מהווה הסכמה ל<ph name="BEGIN_LINK_TOS" />תנאים ולהגבלות<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">‏יציאה מחשבון שמנוהל על ידי <ph name="SIGNOUT_MANAGED_DOMAIN" /> תגרום למחיקת נתוני Chrome שלך מהמכשיר הזה. הנתונים האלה יישארו בחשבון Google שלך.</translation>
 <translation id="3148688391461398285">‏תיהנה מחוויה משופרת ב-Chrome בהתבסס על המיקום שלך.</translation>
@@ -28,6 +32,7 @@
 <translation id="424864128008805179">‏האם לצאת מ-Chrome?</translation>
 <translation id="4249068189593983585">‏טיפ למשתמשי Chrome: כדי לקבל אפשרויות נוספות של כרטיסיות, יש ללחוץ לחיצה ארוכה על הלחצן 'הצגת כרטיסיות' בסרגל הכלים, שנמצא בחלק התחתון או העליון של המסך.</translation>
 <translation id="4523886039239821078">‏תוספים מסוימים גורמים ל-Chrome לקרוס. הסר את ההתקנה שלהם:</translation>
+<translation id="4698415050768537821">‏Chrome לא הצליח לבדוק את כל הסיסמאות. אפשר לנסות שוב מחר או <ph name="BEGIN_LINK" />לבדוק את הסיסמאות בחשבון Google.<ph name="END_LINK" /></translation>
 <translation id="5389212809648216794">‏Google Chrome לא יכול להשתמש במצלמה כי אפליקציה אחרת משתמשת בה</translation>
 <translation id="5639704535586432836">‏עבור אל 'הגדרות' &gt; 'פרטיות' &gt; 'מצלמה' &gt; Google Chrome והפעל את המצלמה.</translation>
 <translation id="5642200033778930880">‏Google Chrome אינו יכול להשתמש במצלמה במצב תצוגה מפוצלת</translation>
@@ -42,6 +47,7 @@
 <translation id="7165736900384873061">‏התחלת השימוש בסורק ה-QR של Google Chrome</translation>
 <translation id="7172660552945675509">‏טיפ: <ph name="BEGIN_LINK" />העבר את Chrome לשורת המשימות<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">‏Chrome משתמש ב-Face ID כדי להבטיח גישה מאושרת לסיסמאות שלך.</translation>
+<translation id="7261678641327190792">‏Chrome לא יכול לבדוק את הסיסמאות שלך</translation>
 <translation id="7265369419224458312">‏גש מכאן ישירות לכרטיסיות שפתחת במחשב. פתח את Chrome במחשב, עבור אל התפריט ובחר באפשרות 'היכנס אל Chrome...'</translation>
 <translation id="7272930098487145294">‏כדי לשמור תמונות צריך להקיש על 'הגדרות' על מנת לאפשר ל-Chrome להוסיף תמונות לגלריה שלך</translation>
 <translation id="7400722733683201933">‏אודות Google Chrome</translation>

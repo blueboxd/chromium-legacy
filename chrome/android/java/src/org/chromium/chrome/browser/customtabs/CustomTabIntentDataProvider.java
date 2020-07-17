@@ -172,6 +172,8 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     private final @ActivityType int mActivityType;
     @Nullable
     private final Integer mNavigationBarColor;
+    @Nullable
+    private final Integer mNavigationBarDividerColor;
     private final boolean mIsIncognito;
     @Nullable
     private final List<String> mTrustedWebActivityAdditionalOrigins;
@@ -277,6 +279,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         mNavigationBarColor = params.navigationBarColor == null
                 ? null
                 : ColorUtils.getOpaqueColor(params.navigationBarColor);
+        mNavigationBarDividerColor = params.navigationBarDividerColor;
         mInitialBackgroundColor = retrieveInitialBackgroundColor(intent);
 
         mEnableUrlBarHiding = IntentUtils.safeGetBooleanExtra(
@@ -612,6 +615,12 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @Nullable
     public Integer getNavigationBarColor() {
         return mNavigationBarColor;
+    }
+
+    @Override
+    @Nullable
+    public Integer getNavigationBarDividerColor() {
+        return mNavigationBarDividerColor;
     }
 
     @Override

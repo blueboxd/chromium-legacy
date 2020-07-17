@@ -27,6 +27,7 @@ import org.chromium.android_webview.AwLocaleConfig;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwProxyController;
 import org.chromium.android_webview.AwServiceWorkerController;
+import org.chromium.android_webview.AwThreadUtils;
 import org.chromium.android_webview.AwTracingController;
 import org.chromium.android_webview.HttpAuthDatabase;
 import org.chromium.android_webview.ProductConfig;
@@ -283,7 +284,7 @@ public class WebViewChromiumAwInit {
 
         // We must post to the UI thread to cover the case that the user has invoked Chromium
         // startup by using the (thread-safe) CookieManager rather than creating a WebView.
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+        AwThreadUtils.postToUiThreadLooper(new Runnable() {
             @Override
             public void run() {
                 synchronized (mLock) {

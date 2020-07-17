@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "ui/display/types/display_configuration_params.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_types_export.h"
@@ -24,7 +25,8 @@ struct DisplayConfigurationParams;
 
 using GetDisplaysCallback =
     base::OnceCallback<void(const std::vector<DisplaySnapshot*>&)>;
-using ConfigureCallback = base::OnceCallback<void(bool)>;
+using ConfigureCallback =
+    base::OnceCallback<void(const base::flat_map<int64_t, bool>&)>;
 using GetHDCPStateCallback = base::OnceCallback<void(bool, HDCPState)>;
 using SetHDCPStateCallback = base::OnceCallback<void(bool)>;
 using DisplayControlCallback = base::OnceCallback<void(bool)>;
@@ -56,7 +58,7 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   // represents disabling the display. The callback will return the status of
   // the operation.
   virtual void Configure(
-      const display::DisplayConfigurationParams& display_config_params,
+      const std::vector<display::DisplayConfigurationParams>& config_requests,
       ConfigureCallback callback) = 0;
 
   // Gets HDCP state of output.

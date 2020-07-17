@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="az">
 <translation id="1008557486741366299">İndi yox</translation>
+<translation id="100957008357583611">Məkanınızdan istifadə edilsin?</translation>
 <translation id="1010200102790553230">Səhifəni sonra yükləyin</translation>
 <translation id="1015730422737071372">Əlavə detallar ilə təmin edin</translation>
 <translation id="1019413721762100891">Deaktiv</translation>
@@ -425,7 +426,6 @@
 <translation id="2705137772291741111">Bu saytın yadda saxlanılmış nüsxəsi (keşlənmiş) oxunmadı.</translation>
 <translation id="2709516037105925701">Avtomatik doldurma</translation>
 <translation id="2713444072780614174">Ağ</translation>
-<translation id="2720342946869265578">Yaxınlıqda</translation>
 <translation id="2721148159707890343">Sorğu uğurlu oldu</translation>
 <translation id="272451190272506600">Ödəniş etmək üçün sensora toxunun</translation>
 <translation id="2728127805433021124">Server sertifikatı zəif imza alqoritmi istifadə olunaraq daxil edildi.</translation>
@@ -718,7 +718,6 @@
 <translation id="3990250421422698716">Kənarını bükün</translation>
 <translation id="3996311196211510766"><ph name="ORIGIN" /> saytı ona yönləndirilən
     bütün sorğulara mənbə siyasətin tətbiq edilməsini tələb edib, lakin bu siyasət hazırda tətbiq edilə bilmir.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 veb səhifəsi yaxınlıqdadır}other{# veb səhifəsi yaxınlıqdadır}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} səhifədən ibarət PDF sənədi}other{{COUNT} səhifədən ibarət PDF sənədi}}</translation>
 <translation id="4030383055268325496">Əlavəni geri qaytarın</translation>
 <translation id="4032320456957708163">Brauzer <ph name="ENROLLMENT_DOMAIN" /> tərəfindən idarə edilir</translation>
@@ -935,7 +934,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Yadda saxlayın...</translation>
 <translation id="4913987521957242411">Yuxarı soldan deşik açın</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{və daha 1 veb səhifə}other{və daha # veb səhifə}}</translation>
 <translation id="4923459931733593730">Ödəniş</translation>
 <translation id="4926049483395192435">Göstərilməlidir.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> deyir:</translation>
@@ -1176,6 +1174,7 @@
 <translation id="5869405914158311789">Bu sayta qoşulmaq olmur</translation>
 <translation id="5869522115854928033">Saxlanılmış parollar</translation>
 <translation id="5887400589839399685">Kart yadda saxlanıldı</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> datanızı yedəkləmənizi və bu cihazı qaytarmanızı tələb edir.</translation>
 <translation id="5895138241574237353">Yenidən başladın</translation>
 <translation id="5895187275912066135">Buraxılış Tarixi</translation>
 <translation id="5901630391730855834">Sarı</translation>
@@ -1326,7 +1325,6 @@
 <translation id="6518133107902771759">Doğrulayın</translation>
 <translation id="6521745193039995384">Aktiv deyil</translation>
 <translation id="6529602333819889595">Silinməni yenidən edin</translation>
-<translation id="6534179046333460208">Fiziki Veb təklifləri</translation>
 <translation id="6545864417968258051">Bluetooth skanı</translation>
 <translation id="6547208576736763147">Soldan qoşa deşik açın</translation>
 <translation id="6554795675067793129">Hesabınızı <ph name="ENROLLMENT_DOMAIN" /> idarə edir.</translation>
@@ -1848,7 +1846,6 @@
 <translation id="8790007591277257123">Silinməni yenidən edin</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> hesabına girişi itirə və ya kimlik oğurluğu ilə üzləşə bilərsiniz. Chrome parollarınızı indi dəyişməyi məsləhət görür.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> brauzerinizdə Chrome Enterprise Connectors funksiyasını aktiv edib. Bu birləşdiricilərin verilənlərinizdən bəzilərinə giriş imkanı var.</translation>
-<translation id="8800988563907321413">Yaxınlıqdakı təkliflər burada görünür</translation>
 <translation id="8805819170075074995">Siyahı daxiletməsi "<ph name="LANGUAGE_ID" />": Daxiletmə SpellcheckLanguage siyasətində də əlavə edildiyinə görə qəbul edilmədi.</translation>
 <translation id="8807160976559152894">Hər səhifədən sonra kəsin</translation>
 <translation id="8820817407110198400">Əlfəcinlər</translation>

@@ -122,7 +122,7 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
   if (request_context == mojom::blink::RequestContextType::FAVICON) {
     // To prevent cache tainting, the cross-origin favicon requests have to
     // by-pass the service workers. This should ideally not happen. But Chrome’s
-    // ThumbnailDatabase is using the icon URL as a key of the "favicons" table.
+    // FaviconDatabase is using the icon URL as a key of the "favicons" table.
     // So if we don't set the skip flag here, malicious service workers can
     // override the favicon image of any origins.
     if (!frame->DomWindow()->GetSecurityOrigin()->CanAccess(

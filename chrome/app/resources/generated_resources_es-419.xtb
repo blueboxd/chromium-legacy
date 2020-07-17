@@ -1550,7 +1550,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2889064240420137087">Abrir el vínculo con...</translation>
 <translation id="2889925978073739256">Seguir bloqueando los complementos no incluidos en la zona de pruebas</translation>
 <translation id="2893168226686371498">Navegador predeterminado</translation>
-<translation id="2893917546370257247">{COUNT,plural, =1{texto}other{# textos}}</translation>
+<translation id="2893917546370257247">{COUNT,plural, =1{1 texto}other{# textos}}</translation>
 <translation id="2894757982205307093">Nueva pestaña en el grupo</translation>
 <translation id="289644616180464099">La tarjeta SIM está bloqueada</translation>
 <translation id="289695669188700754">ID de clave: <ph name="KEY_ID" /></translation>
@@ -3887,7 +3887,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5889282057229379085">Cantidad máxima de certificados intermedios: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5891688036610113830">Redes Wi-Fi preferidas</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
-<translation id="5895613446346678902">Enviando <ph name="ATTACHMENTS" /> a <ph name="DEVICE_NAME" />…</translation>
+<translation id="5895613446346678902">Enviando <ph name="ATTACHMENTS" /> a <ph name="DEVICE_NAME" /></translation>
 <translation id="5900302528761731119">Foto de perfil de Google</translation>
 <translation id="5900358982890952556">Actualizar Linux (Beta)</translation>
 <translation id="5901494423252125310">La tapa de la impresora está abierta</translation>
@@ -4324,7 +4324,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" />: Reproducción de audio</translation>
 <translation id="6442187272350399447">Impresionante</translation>
 <translation id="6444070574980481588">Establecer fecha y hora</translation>
-<translation id="6444909401984215022"><ph name="WINDOW_TITLE" /> (buscando dispositivos Bluetooth)</translation>
+<translation id="6444909401984215022"><ph name="WINDOW_TITLE" /> (búsqueda de Bluetooth activa)</translation>
 <translation id="6445450263907939268">Si no querías realizar estos cambios, puedes restablecer la configuración previa.</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6450876761651513209">Cambiar la configuración relacionada con la privacidad</translation>
@@ -4826,7 +4826,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7081952801286122383">Estás en modo de navegación incógnito</translation>
 <translation id="708278670402572152">Desactiva la conexión para habilitar el análisis</translation>
 <translation id="7085389578340536476">¿Permitir que Chrome grabe audio?</translation>
-<translation id="7086672505018440886">Incluye los elementos de registro de Chrome en el archivo.</translation>
+<translation id="7086672505018440886">Incluye los archivos de registro de Chrome en el archivo.</translation>
 <translation id="7088434364990739311">Error al iniciar la verificación de actualizaciones (código de error <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver: Abre y crea archivos ZIP en la app de Archivos.</translation>
 <translation id="7088674813905715446">El administrador estableció el estado de desaprovisionamiento para este dispositivo. Para poder utilizarlo en el registro, el administrador debe actualizar el estado del dispositivo a pendiente.</translation>
@@ -6173,7 +6173,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8756143264090841047">Borrar DLC</translation>
 <translation id="8756969031206844760">¿Quieres actualizar la contraseña?</translation>
 <translation id="8757090071857742562">No se puede transmitir el escritorio. Verifica si confirmaste el aviso para comenzar a compartir la pantalla.</translation>
-<translation id="8757203080302669031">Esta pestaña analiza de forma activa los dispositivos Bluetooth.</translation>
+<translation id="8757203080302669031">Esta pestaña está buscando dispositivos Bluetooth de forma activa.</translation>
 <translation id="8757803915342932642">Dispositivo en Google Cloud Devices</translation>
 <translation id="8758418656925882523">Habilitar el dictado (escritura por voz)</translation>
 <translation id="8759408218731716181">No se puede configurar el acceso múltiple.</translation>
@@ -6570,6 +6570,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="942532530371314860"><ph name="APP_NAME" /> comparte una pestaña de Chrome y audio.</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>
 <translation id="947329552760389097">Analizar elementos</translation>
+<translation id="951991426597076286">Rechazar</translation>
 <translation id="952992212772159698">No activado</translation>
 <translation id="956500788634395331">Cuentas con protección contra extensiones potencialmente dañinas</translation>
 <translation id="957960681186851048">Este sitio intentó descargar varios archivos automáticamente</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="1008557486741366299">Niet nu</translation>
+<translation id="100957008357583611">Je locatie gebruiken?</translation>
 <translation id="1010200102790553230">Pagina later laden</translation>
 <translation id="1015730422737071372">Aanvullende gegevens verzenden</translation>
 <translation id="1019413721762100891">Uit</translation>
@@ -422,7 +423,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2705137772291741111">De in het cachegeheugen opgeslagen versie van deze site is niet bereikbaar.</translation>
 <translation id="2709516037105925701">Automatisch aanvullen</translation>
 <translation id="2713444072780614174">Wit</translation>
-<translation id="2720342946869265578">In de buurt</translation>
 <translation id="2721148159707890343">Verzoek geslaagd</translation>
 <translation id="272451190272506600">Raak de sensor aan om te betalen</translation>
 <translation id="2728127805433021124">Het certificaat van de server is ondertekend met een zwak ondertekeningsalgoritme.</translation>
@@ -712,7 +712,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="3990250421422698716">Sorteren</translation>
 <translation id="3996311196211510766">De site <ph name="ORIGIN" /> heeft gevraagd een herkomstbeleid
     toe te passen op alle verzoeken aan de site, maar dit beleid kan momenteel niet worden toegepast.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 webpagina in de buurt}other{# webpagina's in de buurt}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Pdf-document met {COUNT} pagina}other{Pdf-document met {COUNT} pagina's}}</translation>
 <translation id="4030383055268325496">&amp;Toevoegen ongedaan maken</translation>
 <translation id="4032320456957708163">Je browser wordt beheerd door <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -930,7 +929,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Opslaan…</translation>
 <translation id="4913987521957242411">Perforatie linksboven</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{en nog 1 webpagina}other{en nog # webpagina's}}</translation>
 <translation id="4923459931733593730">Betaling</translation>
 <translation id="4926049483395192435">Moet worden opgegeven.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> meldt het volgende</translation>
@@ -1171,6 +1169,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="5869405914158311789">Deze site is niet bereikbaar</translation>
 <translation id="5869522115854928033">Opgeslagen wachtwoorden</translation>
 <translation id="5887400589839399685">Pas opgeslagen</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> vereist dat je een back-up van je gegevens maakt en dit apparaat terugstuurt.</translation>
 <translation id="5895138241574237353">Opnieuw starten</translation>
 <translation id="5895187275912066135">Verleend op</translation>
 <translation id="5901630391730855834">Geel</translation>
@@ -1320,7 +1319,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="6518133107902771759">Controleren</translation>
 <translation id="6521745193039995384">Niet actief</translation>
 <translation id="6529602333819889595">&amp;Opnieuw verwijderen</translation>
-<translation id="6534179046333460208">Fysieke web-suggesties</translation>
 <translation id="6545864417968258051">Bluetooth-scannen</translation>
 <translation id="6547208576736763147">Twee perforaties links</translation>
 <translation id="6554795675067793129">Je account wordt beheerd door <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1842,7 +1840,6 @@ Aanvullende informatie:
 <translation id="8790007591277257123">&amp;Opnieuw verwijderen</translation>
 <translation id="8792621596287649091">Je kunt de toegang tot je account van <ph name="ORG_NAME" /> kwijtraken of slachtoffer worden van identiteitsdiefstal. Chromium raadt je aan je wachtwoord nu te wijzigen.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> heeft Chrome Enterprise Connectors voor je browser ingeschakeld. Deze connectors hebben toegang tot sommige van je gegevens.</translation>
-<translation id="8800988563907321413">Je suggesties voor in de buurt worden hier weergegeven</translation>
 <translation id="8805819170075074995">Lijstitem '<ph name="LANGUAGE_ID" />': Item is genegeerd omdat dit ook is opgenomen in het beleid SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Bijsnijden na elke pagina</translation>
 <translation id="8820817407110198400">Bookmarks</translation>

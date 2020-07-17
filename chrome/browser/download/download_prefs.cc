@@ -198,8 +198,12 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   prompt_for_download_.Init(prefs::kPromptForDownload, prefs);
 #if defined(OS_ANDROID)
   prompt_for_download_android_.Init(prefs::kPromptForDownloadAndroid, prefs);
+  RecordDownloadPromptStatus(
+      static_cast<DownloadPromptStatus>(*prompt_for_download_android_));
   if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
     prompt_for_download_later_.Init(prefs::kDownloadLaterPromptStatus, prefs);
+    RecordDownloadLaterPromptStatus(
+        static_cast<DownloadLaterPromptStatus>(*prompt_for_download_later_));
   }
 
   // If |kDownloadsLocationChange| is not enabled, always uses the default
@@ -311,14 +315,13 @@ void DownloadPrefs::RegisterProfilePrefs(
   if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
     registry->RegisterIntegerPref(
         prefs::kDownloadLaterPromptStatus,
-        static_cast<int>(DownloadLaterPromptStatus::SHOW_INITIAL),
+        static_cast<int>(DownloadLaterPromptStatus::kShowInitial),
         user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   }
 
   registry->RegisterBooleanPref(
       prefs::kShowMissingSdCardErrorAndroid,
       base::FeatureList::IsEnabled(features::kDownloadsLocationChange));
-  RecordDownloadPromptStatus(download_prompt_status);
 #endif
 }
 
@@ -402,7 +405,7 @@ bool DownloadPrefs::PromptDownloadLater() const {
 #ifdef OS_ANDROID
   if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
     return *prompt_for_download_later_ !=
-           static_cast<int>(DownloadLaterPromptStatus::DONT_SHOW);
+           static_cast<int>(DownloadLaterPromptStatus::kDontShow);
   }
 #endif
 

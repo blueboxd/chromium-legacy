@@ -279,6 +279,15 @@ void AppServiceShelfContextMenu::OnGetMenuModel(
     index = 1;
   }
 
+  // The special rule to ensure that FilesManager's first menu item is "New
+  // window".
+  const bool build_extension_menu_before_pin =
+      (app_type_ == apps::mojom::AppType::kExtension &&
+       item().id.app_id == extension_misc::kFilesManagerAppId);
+
+  if (build_extension_menu_before_pin)
+    BuildExtensionAppShortcutsMenu(menu_model.get());
+
   if (ShouldAddPinMenu())
     AddPinMenu(menu_model.get());
 
@@ -310,7 +319,7 @@ void AppServiceShelfContextMenu::OnGetMenuModel(
     return;
   }
 
-  if (app_type_ == apps::mojom::AppType::kExtension)
+  if (!build_extension_menu_before_pin)
     BuildExtensionAppShortcutsMenu(menu_model.get());
 
   // When Crostini generates shelf id with the prefix "crostini:", AppService

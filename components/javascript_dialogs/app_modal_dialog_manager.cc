@@ -278,15 +278,11 @@ bool AppModalDialogManager::HandleJavaScriptDialog(
 void AppModalDialogManager::CancelDialogs(content::WebContents* web_contents,
                                           bool reset_state) {
   AppModalDialogQueue* queue = AppModalDialogQueue::GetInstance();
-  AppModalDialogController* active_dialog = queue->active_dialog();
   for (auto* dialog : *queue) {
-    // Invalidating the active dialog might trigger showing a not-yet
-    // invalidated dialog, so invalidate the active dialog last.
-    if (dialog == active_dialog)
-      continue;
     if (dialog->web_contents() == web_contents)
       dialog->Invalidate();
   }
+  AppModalDialogController* active_dialog = queue->active_dialog();
   if (active_dialog && active_dialog->web_contents() == web_contents)
     active_dialog->Invalidate();
 

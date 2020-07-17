@@ -148,9 +148,28 @@ void LayoutSVGModelObject::StyleDidChange(StyleDifference diff,
       SetNeedsPaintPropertyUpdate();
   }
 
+  if (diff.CompositingReasonsChanged())
+    SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
+
   LayoutObject::StyleDidChange(diff, old_style);
   SVGResources::UpdateClipPathFilterMask(*GetElement(), old_style, StyleRef());
   SVGResourcesCache::ClientStyleChanged(*this, diff, StyleRef());
+}
+
+void LayoutSVGModelObject::InsertedIntoTree() {
+  LayoutObject::InsertedIntoTree();
+  if (CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(*this) !=
+      CompositingReason::kNone) {
+    SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
+  }
+}
+
+void LayoutSVGModelObject::WillBeRemovedFromTree() {
+  LayoutObject::WillBeRemovedFromTree();
+  if (CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(*this) !=
+      CompositingReason::kNone) {
+    SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
+  }
 }
 
 }  // namespace blink

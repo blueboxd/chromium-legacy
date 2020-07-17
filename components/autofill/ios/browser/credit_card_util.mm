@@ -25,6 +25,10 @@ NSString* GetCreditCardIdentifierString(const CreditCard& credit_card) {
       credit_card.CardIdentifierStringForAutofillDisplay());
 }
 
+NSString* GetCreditCardNicknameString(const CreditCard& credit_card) {
+  return base::SysUTF16ToNSString(credit_card.nickname());
+}
+
 NSDateComponents* GetCreditCardExpirationDate(const CreditCard& credit_card) {
   NSDateComponents* expiration_date = [[NSDateComponents alloc] init];
   expiration_date.year = credit_card.expiration_year();

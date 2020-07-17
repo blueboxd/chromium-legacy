@@ -80,6 +80,15 @@ class PeriodicWave final : public ScriptWrappable {
                                        float*& higher_wave_data,
                                        float& table_interpolation_factor);
 
+  // Like the above, except we compute accept 4 frequencies at a time and return
+  // 4 lower/higher wave data tables and the 4 corresponding table interpolation
+  // factors.  Intended for use with the OscillatorNode for faster a-rate
+  // processing.
+  void WaveDataForFundamentalFrequency(const float fundamental_frequency[4],
+                                       float* lower_wave_data[4],
+                                       float* higher_wave_data[4],
+                                       float table_interpolation_factor[4]);
+
   // Returns the scalar multiplier to the oscillator frequency to calculate wave
   // buffer phase increment.
   float RateScale() const { return rate_scale_; }

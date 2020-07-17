@@ -242,8 +242,10 @@ FYI_BUILDERS = {
 # issues, please contact johnchen@chromium.org.
 BUILDERS = {
     'android-builder-perf': {
-        'additional_compile_targets':
-        ['microdump_stackwalk', 'angle_perftests', 'chrome_apk'],
+        'additional_compile_targets': [
+            'microdump_stackwalk', 'angle_perftests', 'chrome_apk',
+            'system_webview_google_apk'
+        ],
         'tests': [
             {
                 'name': 'resource_sizes_monochrome_minimal_apks',
@@ -289,8 +291,10 @@ BUILDERS = {
         False,
     },
     'android_arm64-builder-perf': {
-        'additional_compile_targets':
-        ['microdump_stackwalk', 'angle_perftests', 'chrome_apk'],
+        'additional_compile_targets': [
+            'microdump_stackwalk', 'angle_perftests', 'chrome_apk',
+            'system_webview_google_apk'
+        ],
         'tests': [
             {
                 'name': 'resource_sizes_monochrome_minimal_apks',

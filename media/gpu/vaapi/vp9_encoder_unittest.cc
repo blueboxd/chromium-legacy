@@ -44,6 +44,7 @@ VideoEncodeAccelerator::Config kDefaultVideoEncodeAcceleratorConfig(
     VideoEncodeAccelerator::kDefaultFramerate,
     base::nullopt /* gop_length */,
     base::nullopt /* h264 output level*/,
+    false /* is_constrained_h264 */,
     VideoEncodeAccelerator::Config::StorageType::kShmem);
 
 constexpr std::array<bool, kVp9NumRefsPerFrame> kRefFramesUsedForKeyFrame = {

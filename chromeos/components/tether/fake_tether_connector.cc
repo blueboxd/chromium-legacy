@@ -15,13 +15,13 @@ FakeTetherConnector::~FakeTetherConnector() = default;
 void FakeTetherConnector::ConnectToNetwork(
     const std::string& tether_network_guid,
     base::OnceClosure success_callback,
-    const network_handler::StringResultCallback& error_callback) {
+    StringErrorCallback error_callback) {
   last_connected_tether_network_guid_ = tether_network_guid;
 
   if (connection_error_name_.empty())
     std::move(success_callback).Run();
   else
-    error_callback.Run(connection_error_name_);
+    std::move(error_callback).Run(connection_error_name_);
 }
 
 bool FakeTetherConnector::CancelConnectionAttempt(

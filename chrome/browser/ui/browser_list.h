@@ -29,7 +29,7 @@ class BrowserList {
  public:
   using BrowserSet = base::flat_set<Browser*>;
   using BrowserVector = std::vector<Browser*>;
-  using CloseCallback = base::Callback<void(const base::FilePath&)>;
+  using CloseCallback = base::RepeatingCallback<void(const base::FilePath&)>;
   using const_iterator = BrowserVector::const_iterator;
   using const_reverse_iterator = BrowserVector::const_reverse_iterator;
 

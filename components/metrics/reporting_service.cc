@@ -198,7 +198,7 @@ void ReportingService::OnLogUploadComplete(int response_code,
 
       log_store()->DiscardStagedLog();
       // Store the updated list to disk now that the removed log is uploaded.
-      log_store()->PersistUnsentLogs();
+      log_store()->TrimAndPersistUnsentLogs();
     }
   }
 

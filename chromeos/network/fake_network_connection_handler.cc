@@ -11,22 +11,22 @@ namespace chromeos {
 FakeNetworkConnectionHandler::ConnectionParams::ConnectionParams(
     const std::string& service_path,
     base::OnceClosure success_callback,
-    const network_handler::ErrorCallback& error_callback,
+    network_handler::ErrorCallback error_callback,
     bool check_error_state,
     ConnectCallbackMode connect_callback_mode)
     : service_path_(service_path),
       success_callback_(std::move(success_callback)),
-      error_callback_(error_callback),
+      error_callback_(std::move(error_callback)),
       check_error_state_(check_error_state),
       connect_callback_mode_(connect_callback_mode) {}
 
 FakeNetworkConnectionHandler::ConnectionParams::ConnectionParams(
     const std::string& service_path,
     base::OnceClosure success_callback,
-    const network_handler::ErrorCallback& error_callback)
+    network_handler::ErrorCallback error_callback)
     : service_path_(service_path),
       success_callback_(std::move(success_callback)),
-      error_callback_(error_callback) {}
+      error_callback_(std::move(error_callback)) {}
 
 FakeNetworkConnectionHandler::ConnectionParams::ConnectionParams(
     ConnectionParams&&) = default;
@@ -39,8 +39,8 @@ void FakeNetworkConnectionHandler::ConnectionParams::InvokeSuccessCallback() {
 
 void FakeNetworkConnectionHandler::ConnectionParams::InvokeErrorCallback(
     const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) const {
-  error_callback_.Run(error_name, std::move(error_data));
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  std::move(error_callback_).Run(error_name, std::move(error_data));
 }
 
 FakeNetworkConnectionHandler::FakeNetworkConnectionHandler() = default;
@@ -50,20 +50,20 @@ FakeNetworkConnectionHandler::~FakeNetworkConnectionHandler() = default;
 void FakeNetworkConnectionHandler::ConnectToNetwork(
     const std::string& service_path,
     base::OnceClosure success_callback,
-    const network_handler::ErrorCallback& error_callback,
+    network_handler::ErrorCallback error_callback,
     bool check_error_state,
     ConnectCallbackMode connect_callback_mode) {
   connect_calls_.emplace_back(service_path, std::move(success_callback),
-                              error_callback, check_error_state,
+                              std::move(error_callback), check_error_state,
                               connect_callback_mode);
 }
 
 void FakeNetworkConnectionHandler::DisconnectNetwork(
     const std::string& service_path,
     base::OnceClosure success_callback,
-    const network_handler::ErrorCallback& error_callback) {
+    network_handler::ErrorCallback error_callback) {
   disconnect_calls_.emplace_back(service_path, std::move(success_callback),
-                                 error_callback);
+                                 std::move(error_callback));
 }
 
 void FakeNetworkConnectionHandler::Init(

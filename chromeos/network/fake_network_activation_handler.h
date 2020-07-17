@@ -27,17 +27,16 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkActivationHandler
    public:
     ActivationParams(const std::string& service_path,
                      const base::Closure& success_callback,
-                     const network_handler::ErrorCallback& error_callback);
+                     network_handler::ErrorCallback error_callback);
 
-    ActivationParams(const ActivationParams& other);
+    ActivationParams(ActivationParams&& other);
     ~ActivationParams();
 
     const std::string& service_path() const { return service_path_; }
 
     void InvokeSuccessCallback() const;
-    void InvokeErrorCallback(
-        const std::string& error_name,
-        std::unique_ptr<base::DictionaryValue> error_data) const;
+    void InvokeErrorCallback(const std::string& error_name,
+                             std::unique_ptr<base::DictionaryValue> error_data);
 
    private:
     std::string service_path_;
@@ -45,7 +44,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkActivationHandler
     network_handler::ErrorCallback error_callback_;
   };
 
-  const std::vector<ActivationParams>& complete_activation_calls() const {
+  std::vector<ActivationParams>& complete_activation_calls() {
     return complete_activation_calls_;
   }
 
@@ -54,7 +53,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkActivationHandler
   void CompleteActivation(
       const std::string& service_path,
       const base::Closure& success_callback,
-      const network_handler::ErrorCallback& error_callback) override;
+      network_handler::ErrorCallback error_callback) override;
 
   std::vector<ActivationParams> complete_activation_calls_;
 

@@ -422,7 +422,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="2705137772291741111">Bu sitenin kaydedilen (önbelleğe alınan) kopyası okunamadı.</translation>
 <translation id="2709516037105925701">Otomatik doldurma</translation>
 <translation id="2713444072780614174">Beyaz</translation>
-<translation id="2720342946869265578">Etrafımda</translation>
 <translation id="2721148159707890343">İstek başarılı oldu</translation>
 <translation id="272451190272506600">Ödeme için sensöre dokunun</translation>
 <translation id="2728127805433021124">Sunucunun sertifikası, zayıf bir imza algoritması kullanılarak imzalanmış.</translation>
@@ -716,7 +715,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="3987940399970879459">1 MB'tan az</translation>
 <translation id="3990250421422698716">Jog ofset</translation>
 <translation id="3996311196211510766"><ph name="ORIGIN" /> sitesi, bir kaynak politikasının kendisine gelen tüm talepler için geçerli olmasını istedi, ancak bu politika şu anda uygulanamıyor.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{Yakındaki 1 web sayfası}other{Yakındaki # web sayfası}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} sayfalı PDF dokümanı}other{{COUNT} sayfalı PDF dokümanı}}</translation>
 <translation id="4030383055268325496">Eklemeyi &amp;geri al</translation>
 <translation id="4032320456957708163">Tarayıcınız <ph name="ENROLLMENT_DOMAIN" /> tarafından yönetilmektedir</translation>
@@ -931,7 +929,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Kaydet...</translation>
 <translation id="4913987521957242411">Sol üstte delik</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{ve 1 web sayfası daha}other{ve # web sayfası daha}}</translation>
 <translation id="4923459931733593730">Ödeme</translation>
 <translation id="4926049483395192435">Belirtilmelidir.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> web sitesinin mesajı</translation>
@@ -1322,7 +1319,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="6518133107902771759">Doğrula</translation>
 <translation id="6521745193039995384">Etkin değil</translation>
 <translation id="6529602333819889595">Silmeyi &amp;Yeniden Yap</translation>
-<translation id="6534179046333460208">Fiziksel Web önerileri</translation>
 <translation id="6545864417968258051">Bluetooth taraması</translation>
 <translation id="6547208576736763147">Solda ikili delik</translation>
 <translation id="6554795675067793129">Hesabınız <ph name="ENROLLMENT_DOMAIN" /> tarafından yönetiliyor.</translation>
@@ -1845,7 +1841,6 @@ Ek ayrıntılar:
 <translation id="8790007591277257123">Silmeyi &amp;yeniden yap</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> hesabınıza erişimi kaybedebilir veya kimlik hırsızlığına maruz kalabilirsiniz. Chromium, şifrenizi hemen değiştirmenizi önerir.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" />, tarayıcınızda Chrome Enterprise Connectors'ı etkinleştirdi. Bu bağlayıcıların verilerinizin bir kısmına erişimi vardır.</translation>
-<translation id="8800988563907321413">Yakın çevrenizle ilgili öneriler burada görünür</translation>
 <translation id="8805819170075074995">Liste girişi "<ph name="LANGUAGE_ID" />": Giriş, SpellcheckLanguage politikasında da yer aldığı için yoksayıldı.</translation>
 <translation id="8807160976559152894">Her sayfadan sonra kırp</translation>
 <translation id="8820817407110198400">Favoriler</translation>

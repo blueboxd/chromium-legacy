@@ -352,9 +352,8 @@ config("cfi_linker") {
   # lots of child processes, so this means things are really slow. Disable CFG
   # for now. https://crbug.com/846966
   if (!is_debug && !is_component_build && !is_asan) {
-    # Turn on CFG, except for longjmp because it relies on compiler support
-    # which clang doesn't have yet.
-    ldflags = [ "/guard:cf,nolongjmp" ]
+    # Turn on CFG bitmap generation and CFG load config.
+    ldflags = [ "/guard:cf" ]
   }
 }
 

@@ -91,6 +91,7 @@ android_library("cast_audio_manager_java") {
   deps = [
     "//base:base_java",
     "//chromecast/base:base_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
 }
 
@@ -186,6 +187,7 @@ android_library("cast_shell_java") {
     "//content/public/android:content_java",
     "//media/base/android:media_java",
     "//net/android:net_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_core_core_java",
     "//third_party/android_deps:androidx_localbroadcastmanager_localbroadcastmanager_java",
 

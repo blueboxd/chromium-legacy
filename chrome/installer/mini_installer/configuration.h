@@ -52,10 +52,16 @@ class Configuration {
   // Returns the previous version contained in the image's resource.
   const wchar_t* previous_version() const { return previous_version_; }
 
+  // Returns true if extracted files should be deleted prior to exit.
+  bool should_delete_extracted_files() const {
+    return should_delete_extracted_files_;
+  }
+
  protected:
   void Clear();
   bool ParseCommandLine(const wchar_t* command_line);
   void ReadResources(HMODULE module);
+  void ReadRegistry();
 
   wchar_t** args_;
   const wchar_t* chrome_app_guid_;
@@ -64,6 +70,7 @@ class Configuration {
   Operation operation_;
   bool is_system_level_;
   bool has_invalid_switch_;
+  bool should_delete_extracted_files_;
   const wchar_t* previous_version_;
 
  private:

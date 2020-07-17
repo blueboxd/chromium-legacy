@@ -216,6 +216,10 @@ class FrameData {
     return first_eligible_to_paint_;
   }
 
+  base::Optional<base::TimeDelta> earliest_first_contentful_paint() const {
+    return earliest_first_contentful_paint_;
+  }
+
   size_t bytes() const { return bytes_; }
 
   size_t network_bytes() const { return network_bytes_; }
@@ -259,6 +263,10 @@ class FrameData {
   }
 
   void SetFirstEligibleToPaint(base::Optional<base::TimeDelta> time_stamp);
+
+  // Returns whether a new FCP is set.
+  bool SetEarliestFirstContentfulPaint(
+      base::Optional<base::TimeDelta> time_stamp);
 
   HeavyAdStatus heavy_ad_status() const { return heavy_ad_status_; }
 
@@ -356,6 +364,10 @@ class FrameData {
   // render-throttled and there hasn't been a first paint. Note that this
   // timestamp and the implied throttling status are best-effort.
   base::Optional<base::TimeDelta> first_eligible_to_paint_;
+
+  // The smallest FCP seen for any any frame in this ad frame tree, if a
+  // frame has painted.
+  base::Optional<base::TimeDelta> earliest_first_contentful_paint_;
 
   // Indicates whether or not this frame met the criteria for the heavy ad
   // intervention.

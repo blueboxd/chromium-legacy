@@ -41,6 +41,44 @@
 
 namespace blink {
 
+namespace {
+
+inline bool KeyMatchesId(const StringView& key, const Element& element) {
+  return element.GetIdAttribute() == key;
+}
+
+inline bool KeyMatchesMapName(const StringView& key, const Element& element) {
+  auto* html_map_element = DynamicTo<HTMLMapElement>(element);
+  return html_map_element && html_map_element->GetName() == key;
+}
+
+inline bool KeyMatchesSlotName(const StringView& key, const Element& element) {
+  auto* html_slot_element = DynamicTo<HTMLSlotElement>(element);
+  return html_slot_element && html_slot_element->GetName() == key;
+}
+
+struct StringViewLookupTranslator {
+  static unsigned GetHash(const StringView& buf) {
+    StringImpl* shared_impl = buf.SharedImpl();
+    if (LIKELY(shared_impl))
+      return shared_impl->GetHash();
+
+    if (buf.Is8Bit()) {
+      return StringHasher::ComputeHashAndMaskTop8Bits(buf.Characters8(),
+                                                      buf.length());
+    } else {
+      return StringHasher::ComputeHashAndMaskTop8Bits(buf.Characters16(),
+                                                      buf.length());
+    }
+  }
+
+  static bool Equal(const AtomicString& str, const StringView& buf) {
+    return str == buf;
+  }
+};
+
+}  // namespace
+
 TreeOrderedMap::TreeOrderedMap() = default;
 
 #if DCHECK_IS_ON()
@@ -55,21 +93,6 @@ TreeOrderedMap::RemoveScope::~RemoveScope() {
   g_remove_scope_level--;
 }
 #endif
-
-inline bool KeyMatchesId(const AtomicString& key, const Element& element) {
-  return element.GetIdAttribute() == key;
-}
-
-inline bool KeyMatchesMapName(const AtomicString& key, const Element& element) {
-  auto* html_map_element = DynamicTo<HTMLMapElement>(element);
-  return html_map_element && html_map_element->GetName() == key;
-}
-
-inline bool KeyMatchesSlotName(const AtomicString& key,
-                               const Element& element) {
-  auto* html_slot_element = DynamicTo<HTMLSlotElement>(element);
-  return html_slot_element && html_slot_element->GetName() == key;
-}
 
 void TreeOrderedMap::Add(const AtomicString& key, Element& element) {
   DCHECK(key);
@@ -86,10 +109,10 @@ void TreeOrderedMap::Add(const AtomicString& key, Element& element) {
   entry->ordered_list.clear();
 }
 
-void TreeOrderedMap::Remove(const AtomicString& key, Element& element) {
-  DCHECK(key);
+void TreeOrderedMap::Remove(const StringView& key, Element& element) {
+  DCHECK(!key.IsNull());
 
-  Map::iterator it = map_.find(key);
+  Map::iterator it = map_.Find<StringViewLookupTranslator>(key);
   if (it == map_.end())
     return;
 
@@ -110,15 +133,17 @@ void TreeOrderedMap::Remove(const AtomicString& key, Element& element) {
   }
 }
 
-template <bool keyMatches(const AtomicString&, const Element&)>
-inline Element* TreeOrderedMap::Get(const AtomicString& key,
+template <bool keyMatches(const StringView&, const Element&)>
+inline Element* TreeOrderedMap::Get(const StringView& key,
                                     const TreeScope& scope) const {
-  DCHECK(key);
+  DCHECK(!key.IsNull());
 
-  MapEntry* entry = map_.at(key);
-  if (!entry)
+  Map::iterator it = map_.Find<StringViewLookupTranslator>(key);
+  if (it == map_.end())
     return nullptr;
 
+  MapEntry* entry = it->value;
+  DCHECK(entry);
   DCHECK(entry->count);
   if (entry->element)
     return entry->element;
@@ -141,19 +166,19 @@ inline Element* TreeOrderedMap::Get(const AtomicString& key,
   return nullptr;
 }
 
-Element* TreeOrderedMap::GetElementById(const AtomicString& key,
+Element* TreeOrderedMap::GetElementById(const StringView& key,
                                         const TreeScope& scope) const {
   return Get<KeyMatchesId>(key, scope);
 }
 
 const HeapVector<Member<Element>>& TreeOrderedMap::GetAllElementsById(
-    const AtomicString& key,
+    const StringView& key,
     const TreeScope& scope) const {
-  DCHECK(key);
+  DCHECK(!key.IsNull());
   DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<Element>>>, empty_vector,
                       (MakeGarbageCollected<HeapVector<Member<Element>>>()));
 
-  Map::iterator it = map_.find(key);
+  Map::iterator it = map_.Find<StringViewLookupTranslator>(key);
   if (it == map_.end())
     return *empty_vector;
 
@@ -179,13 +204,13 @@ const HeapVector<Member<Element>>& TreeOrderedMap::GetAllElementsById(
   return entry->ordered_list;
 }
 
-Element* TreeOrderedMap::GetElementByMapName(const AtomicString& key,
+Element* TreeOrderedMap::GetElementByMapName(const StringView& key,
                                              const TreeScope& scope) const {
   return Get<KeyMatchesMapName>(key, scope);
 }
 
 // TODO(hayato): Template get<> by return type.
-HTMLSlotElement* TreeOrderedMap::GetSlotByName(const AtomicString& key,
+HTMLSlotElement* TreeOrderedMap::GetSlotByName(const StringView& key,
                                                const TreeScope& scope) const {
   if (Element* slot = Get<KeyMatchesSlotName>(key, scope))
     return To<HTMLSlotElement>(slot);
@@ -193,10 +218,13 @@ HTMLSlotElement* TreeOrderedMap::GetSlotByName(const AtomicString& key,
 }
 
 Element* TreeOrderedMap::GetCachedFirstElementWithoutAccessingNodeTree(
-    const AtomicString& key) {
-  MapEntry* entry = map_.at(key);
-  if (!entry)
+    const StringView& key) {
+  Map::iterator it = map_.Find<StringViewLookupTranslator>(key);
+  if (it == map_.end())
     return nullptr;
+
+  MapEntry* entry = it->value;
+  DCHECK(entry);
   DCHECK(entry->count);
   return entry->element;
 }

@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Aquí aparecen los marcadores que hayas guardado en otros dispositivos.</translation>
 <translation id="1113597929977215864">Mostrar vista simplificada</translation>
 <translation id="1122278879166832009">Toca aquí para acceder rápidamente a tu página principal desde cualquier lugar</translation>
+<translation id="1126809382673880764">No te protege frente a descargas, extensiones ni sitios web peligrosos. Seguirás disfrutando de protección con la función Navegación Segura, si está disponible, en otros servicios de Google, como Gmail y la Búsqueda.</translation>
 <translation id="1129510026454351943">Detalles: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Hay 1 descarga pendiente.}other{Hay # descargas pendientes.}}</translation>
 <translation id="1145536944570833626">Elimina los datos actuales.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1810845389119482123">La configuración de sincronización inicial no ha terminado</translation>
 <translation id="1821253160463689938">Usa cookies para recordar tus preferencias aunque no visites esas páginas</translation>
-<translation id="1826516787628120939">Comprobando</translation>
 <translation id="1829244130665387512">Buscar en la página</translation>
 <translation id="1853692000353488670">Nueva pestaña de incógnito</translation>
 <translation id="1856325424225101786">¿Restablecer el modo básico?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Guardar contraseñas</translation>
 <translation id="1952172573699511566">Si es posible, los sitios web muestran texto en tu idioma preferido.</translation>
 <translation id="1960290143419248813">Ya no se admiten actualizaciones de Chrome en esta versión de Android.</translation>
+<translation id="1963976881984600709">Protección estándar</translation>
 <translation id="1966710179511230534">Actualiza tus datos de inicio de sesión.</translation>
 <translation id="1974060860693918893">Configuración avanzada</translation>
+<translation id="1984417487208496350">Sin protección (no recomendado)</translation>
 <translation id="1984705450038014246">Sincronizar tus datos de Chrome</translation>
 <translation id="1986685561493779662">El nombre ya existe</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> Botón <ph name="LINK_NAME" /></translation>
@@ -392,7 +394,6 @@ Mantén pulsada cualquier palabra para buscarla. Para acotar la búsqueda, selec
 <translation id="4183868528246477015">Buscar con Google Lens <ph name="BEGIN_NEW" />Nuevo<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
 <translation id="4198423547019359126">No hay ubicaciones de descarga disponibles</translation>
-<translation id="4202553989407425169">Chrome puede comprobar si tu configuración te protege de amenazas:</translation>
 <translation id="4209895695669353772">Activa la sincronización para obtener contenido personalizado sugerido por Google</translation>
 <translation id="423219824432660969">Cifrar los datos sincronizados con la contraseña de Google desde el <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Abrir Configuración</translation>
@@ -490,6 +491,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="4943872375798546930">Sin resultados</translation>
 <translation id="4961107849584082341">Traduce esta página a cualquier idioma</translation>
 <translation id="4970824347203572753">No está disponible en tu ubicación</translation>
+<translation id="4971735654804503942">Protección más rápida y proactiva frente a descargas, extensiones y sitios web peligrosos. Te advierte sobre robos de contraseñas. Necesita enviar datos de navegación a Google.</translation>
 <translation id="497421865427891073">Avanzar</translation>
 <translation id="4988210275050210843">Descargando archivo (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Páginas</translation>
@@ -561,7 +563,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5527082711130173040">Chrome necesita acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK1" />Actualizar permisos<ph name="END_LINK1" />. El acceso a la ubicación también está <ph name="BEGIN_LINK2" />desactivado en este dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Cerrar pestañas de incógnito</translation>
 <translation id="5534640966246046842">Se ha copiado el sitio web</translation>
-<translation id="5548606607480005320">Comprobación de seguridad</translation>
 <translation id="5561549206367097665">Esperando red…</translation>
 <translation id="55737423895878184">Las notificaciones y la ubicación están permitidas</translation>
 <translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
@@ -600,7 +601,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="583281660410589416">Desconocido</translation>
 <translation id="5833984609253377421">Compartir enlace</translation>
 <translation id="5836192821815272682">Descargando actualización de Chrome…</translation>
-<translation id="584120177693484274">Sin comprobar</translation>
 <translation id="5853623416121554550">en pausa</translation>
 <translation id="5854790677617711513">Más de 30 días</translation>
 <translation id="5858741533101922242">Chrome no ha podido activar el adaptador Bluetooth</translation>
@@ -736,10 +736,12 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="685850645784703949">Discover de Google: desactivado</translation>
 <translation id="6864459304226931083">Descargar imagen</translation>
 <translation id="6865313869410766144">Datos de Autocompletar formulario</translation>
+<translation id="6882836635272038266">Protección estándar frente a descargas, extensiones y sitios web que son peligrosos.</translation>
 <translation id="6884306546558072722">Sigue explorando sin conexión</translation>
 <translation id="688738109438487280">Añade los datos actuales a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Desbloquea la pantalla para copiar tu contraseña</translation>
 <translation id="6896758677409633944">Copiar</translation>
+<translation id="6900532703269623216">Protección mejorada</translation>
 <translation id="6903907808598579934">Activar sincronización</translation>
 <translation id="6942665639005891494">Cambia la ubicación predeterminada de las descargas en cualquier momento con la opción del menú Configuración</translation>
 <translation id="6945221475159498467">Seleccionar</translation>

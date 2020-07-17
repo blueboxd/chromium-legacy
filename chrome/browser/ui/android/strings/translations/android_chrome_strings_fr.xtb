@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Les favoris enregistrés sur vos autres appareils s'affichent ici.</translation>
 <translation id="1113597929977215864">Afficher la vue simplifiée</translation>
 <translation id="1122278879166832009">Appuyez ici pour accéder rapidement à la page d'accueil depuis n'importe où</translation>
+<translation id="1126809382673880764">Ce mode ne vous protège pas contre les téléchargements, les extensions et les sites Web dangereux. Le cas échéant, vous bénéficierez toujours de la protection offerte par la navigation sécurisée dans d'autres services Google, tels que Gmail et la recherche.</translation>
 <translation id="1129510026454351943">Détails°: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 téléchargement en attente.}one{# téléchargement en attente.}other{# téléchargements en attente.}}</translation>
 <translation id="1145536944570833626">Supprimer les données existantes.</translation>
@@ -75,7 +76,7 @@
 <translation id="1569387923882100876">Appareil connecté</translation>
 <translation id="1571304935088121812">Copier le nom d'utilisateur</translation>
 <translation id="1612196535745283361">Chrome doit avoir accès aux données de localisation pour rechercher des appareils. Cette fonctionnalité est <ph name="BEGIN_LINK" />désactivée pour cet appareil<ph name="END_LINK" />.</translation>
-<translation id="1620510694547887537">Appareil photo</translation>
+<translation id="1620510694547887537">Caméra</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Supprimer 1 élément sélectionné}one{Supprimer # élément sélectionné}other{Supprimer # éléments sélectionnés}}</translation>
 <translation id="1641113438599504367">Navigation sécurisée</translation>
 <translation id="164269334534774161">Vous regardez une copie hors connexion de cette page depuis le <ph name="CREATION_TIME" />.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Clair</translation>
 <translation id="1810845389119482123">Configuration de la synchronisation initiale non terminée</translation>
 <translation id="1821253160463689938">Utilise des cookies pour mémoriser vos préférences, même si vous n'accédez pas à ces pages</translation>
-<translation id="1826516787628120939">Vérification en cours…</translation>
 <translation id="1829244130665387512">Rechercher sur la page</translation>
 <translation id="1853692000353488670">Nouvel onglet de navigation privée</translation>
 <translation id="1856325424225101786">Réinitialiser le mode simplifié ?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Enregistrer les mots de passe</translation>
 <translation id="1952172573699511566">Les sites Web s'afficheront dans votre langue préférée lorsque ce sera possible.</translation>
 <translation id="1960290143419248813">Les mises à jour de Chrome ne sont plus disponibles avec cette version d'Android</translation>
+<translation id="1963976881984600709">Protection standard</translation>
 <translation id="1966710179511230534">Veuillez mettre à jour vos informations de connexion.</translation>
 <translation id="1974060860693918893">Paramètres avancés</translation>
+<translation id="1984417487208496350">Aucune protection (non recommandé)</translation>
 <translation id="1984705450038014246">Synchroniser vos données Chrome</translation>
 <translation id="1986685561493779662">Nom déjà attribué</translation>
 <translation id="1987739130650180037">Bouton <ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
@@ -392,7 +394,6 @@ Appuyez sur n'importe quel mot pour effectuer une recherche. Pour affiner la rec
 <translation id="4183868528246477015">Utiliser Google Lens <ph name="BEGIN_NEW" />Nouveau<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Ouvrir dans un nouvel onglet</translation>
 <translation id="4198423547019359126">Aucun emplacement de téléchargements disponible</translation>
-<translation id="4202553989407425169">Chrome peut vérifier si vos paramètres vous protègent avec les éléments suivants :</translation>
 <translation id="4209895695669353772">Activez la synchronisation pour obtenir des suggestions de contenu personnalisées de la part de Google</translation>
 <translation id="423219824432660969">Chiffrer les données synchronisées avec le mot de passe Google à la date suivante : <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Ouvrir les paramètres</translation>
@@ -490,6 +491,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4943872375798546930">Aucun résultat</translation>
 <translation id="4961107849584082341">Traduire cette page dans n'importe quelle langue</translation>
 <translation id="4970824347203572753">Fonctionnalité non disponible dans votre pays</translation>
+<translation id="4971735654804503942">Ce mode offre une protection proactive et plus rapide contre les téléchargements, les extensions et les sites Web dangereux. Il vous permet d'être averti en cas de piratage de mots de passe et nécessite d'envoyer les données de navigation à Google.</translation>
 <translation id="497421865427891073">Avancer</translation>
 <translation id="4988210275050210843">Téléchargement du fichier (<ph name="MEGABYTES" />)…</translation>
 <translation id="4988526792673242964">Pages</translation>
@@ -561,7 +563,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5527082711130173040">Chrome doit avoir accès aux données de localisation pour rechercher des appareils. <ph name="BEGIN_LINK1" />Modifiez les autorisations.<ph name="END_LINK1" /> De plus, l'accès aux données de localisation est <ph name="BEGIN_LINK2" />désactivé pour cet appareil<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Fermer onglets navig. privée</translation>
 <translation id="5534640966246046842">Site copié</translation>
-<translation id="5548606607480005320">Contrôle de sécurité</translation>
 <translation id="5561549206367097665">En attente de connexion au réseau…</translation>
 <translation id="55737423895878184">La localisation et les notifications sont autorisées</translation>
 <translation id="5578795271662203820">Rechercher l'image sur <ph name="SEARCH_ENGINE" /></translation>
@@ -600,7 +601,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="583281660410589416">Inconnu</translation>
 <translation id="5833984609253377421">Partager le lien</translation>
 <translation id="5836192821815272682">Téléchargement de la mise à jour de Chrome…</translation>
-<translation id="584120177693484274">Non vérifié</translation>
 <translation id="5853623416121554550">suspendu</translation>
 <translation id="5854790677617711513">Datant de plus de 30 jours</translation>
 <translation id="5858741533101922242">Impossible d'activer l'adaptateur Bluetooth dans Chrome</translation>
@@ -736,10 +736,12 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="685850645784703949">Discover de Google : désactivé</translation>
 <translation id="6864459304226931083">Télécharger l'image</translation>
 <translation id="6865313869410766144">Données de saisie automatique</translation>
+<translation id="6882836635272038266">Ce mode offre une protection standard contre les téléchargements, les extensions et les sites Web connus pour être dangereux.</translation>
 <translation id="6884306546558072722">Continuer d'explorer hors connexion</translation>
 <translation id="688738109438487280">Ajoutez les données existantes au compte <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Déverrouillez pour copier votre mot de passe</translation>
 <translation id="6896758677409633944">Copier</translation>
+<translation id="6900532703269623216">Protection renforcée</translation>
 <translation id="6903907808598579934">Activer la synchronisation</translation>
 <translation id="6942665639005891494">Modifier à tout moment l'emplacement de téléchargement par défaut à l'aide de l'option de menu "Paramètres"</translation>
 <translation id="6945221475159498467">Sélectionner</translation>

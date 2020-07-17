@@ -278,6 +278,11 @@ struct StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
     return input.h264_output_level.has_value();
   }
 
+  static bool is_constrained_h264(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.is_constrained_h264;
+  }
+
   static media::VideoEncodeAccelerator::Config::StorageType storage_type(
       const media::VideoEncodeAccelerator::Config& input) {
     return input.storage_type.value_or(

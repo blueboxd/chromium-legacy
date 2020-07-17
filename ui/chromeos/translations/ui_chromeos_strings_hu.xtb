@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">Japán bevitel (amerikai billentyűzethez)</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> elem törlése...</translation>
 <translation id="1049926623896334335">Word-dokumentum</translation>
+<translation id="1060368002126861100">Fájlok <ph name="APP_NAME" /> alkalmazással való megnyitásához először helyezze át őket a Windows-fájlok mappába.</translation>
 <translation id="1062407476771304334">Csere</translation>
 <translation id="1065449928621190041">Kanadai francia billentyűzet</translation>
 <translation id="1119069657431255176">Bzip2 tömörített tar-archívum</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">Figyelem: Ezek ideiglenes fájlok, és automatikusan törlésre kerülnek azért, hogy tárhely szabaduljon fel.  <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="3527085408025491307">Mappa</translation>
 <translation id="3549797760399244642">Ugrás ide: drive.google.com...</translation>
+<translation id="3553048479571901246">Fájlok <ph name="APP_NAME" /> alkalmazással való megnyitásához először másolja be őket a Windows-fájlok mappába.</translation>
 <translation id="357479282490346887">litván</translation>
 <translation id="3583509704582854624">Alfanumerikus bevitel (japán billentyűzethez)</translation>
 <translation id="3603385196401704894">kanadai francia</translation>

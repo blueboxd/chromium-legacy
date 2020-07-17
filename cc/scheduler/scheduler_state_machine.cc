@@ -1437,7 +1437,6 @@ void SchedulerStateMachine::BeginMainFrameAborted(CommitEarlyOutReason reason) {
   main_thread_missed_last_deadline_ = false;
 
   switch (reason) {
-    case CommitEarlyOutReason::ABORTED_LAYER_TREE_FRAME_SINK_LOST:
     case CommitEarlyOutReason::ABORTED_NOT_VISIBLE:
     case CommitEarlyOutReason::ABORTED_DEFERRED_MAIN_FRAME_UPDATE:
     case CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT:

@@ -173,7 +173,7 @@ class TaskManagerImpl : public TaskManagerInterface,
   // background thread has completed.
   void OnTaskGroupBackgroundCalculationsDone();
 
-  const base::Closure on_background_data_ready_callback_;
+  const base::RepeatingClosure on_background_data_ready_callback_;
 
   // Map TaskGroups by the IDs of the processes they represent.
   PidToTaskGroupMap task_groups_by_proc_id_;

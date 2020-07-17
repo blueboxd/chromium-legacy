@@ -80,7 +80,7 @@ def Interpolate(value, substitutions):
     substitution.
   """
   if isinstance(value, dict):
-      return {k: Interpolate(v, substitutions) for k, v in value.iteritems()}
+    return {k: Interpolate(v, substitutions) for k, v in value.iteritems()}
   if isinstance(value, list):
     return [Interpolate(v, substitutions) for v in value]
   if isinstance(value, str):
@@ -170,6 +170,10 @@ class MergeAction(Action):
         '-f', '--format', required=True, choices=('xml1', 'binary1', 'json'),
         help='format of the plist file to generate')
     parser.add_argument(
+        '-x',
+        '--xcode-version',
+        help='version of Xcode, ignored (can be used to force rebuild)')
+    parser.add_argument(
           'path', nargs="+",
           help='path to plist files to merge')
 
@@ -201,6 +205,10 @@ class SubstituteAction(Action):
     parser.add_argument(
         '-f', '--format', required=True, choices=('xml1', 'binary1', 'json'),
         help='format of the plist file to generate')
+    parser.add_argument(
+        '-x',
+        '--xcode-version',
+        help='version of Xcode, ignored (can be used to force rebuild)')
 
   @staticmethod
   def _Execute(args):

@@ -19,7 +19,6 @@ extern "C" {
 #include <X11/X.h>
 #include <X11/XKBlib.h>
 #include <X11/Xatom.h>
-#include <X11/Xcursor/Xcursor.h>
 #include <X11/Xlib-xcb.h>
 #include <X11/Xregion.h>
 #include <X11/Xutil.h>

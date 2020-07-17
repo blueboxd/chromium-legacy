@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">ກ້ອງ​ຖ່າຍ​ຮູບ</translation>
 <translation id="1647391597548383849">ເຂົ້າ​ຫາ​ກ້ອງ​ຖ່າຍ​ຮູບ​ຂອງ​ທ່ານ</translation>
 <translation id="1660204651932907780">ອະນຸຍາດໃຫ້ເວັບໄຊຫຼິ້ນສຽງ (ແນະນຳ)</translation>
+<translation id="1677097821151855053">ຄຸກກີ້ ແລະ ຂໍ້ມູນເວັບໄຊອື່ນໆຖືກໃຊ້ເພື່ອຈື່ທ່ານ, ຕົວຢ່າງ: ນຳທ່ານເຂົ້າສູ່ລະບົບ ຫຼື ເພື່ອປັບແຕ່ງໂຄສະນາເປັນແບບສ່ວນຕົວ. ເພື່ອຈັດການຄຸກກີ້ສຳລັບເວັບໄຊທັງໝົດ, ກະລຸນາເບິ່ງ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">ລຶບລ້າງຂໍ້ມູນເວັບໄຊບໍ?</translation>
 <translation id="169515064810179024">ບລັອກເວັບໄຊບໍ່ໃຫ້ເຂົ້າເຖິງເຊັນເຊີກວດຈັບການເຄື່ອນໄຫວ</translation>
 <translation id="1717218214683051432">ເຊັນກວດຈັບການເຄື່ອນໄຫວ</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">ອະນຸຍາດຄຸກກີ້ສຳລັບເວັບໄຊສະເພາະ.</translation>
 <translation id="4046123991198612571">ເພງຕໍ່ໄປ</translation>
 <translation id="4165986682804962316">ການຕັ້ງຄ່າເວັບໄຊທ໌</translation>
+<translation id="4200726100658658164">ເປີດການຕັ້ງຄ່າສະຖານທີ່</translation>
 <translation id="4226663524361240545">ການແຈ້ງເຕືອນອາດຈະເຮັດໃຫ້ອຸປະກອນສັ່ນ</translation>
 <translation id="4242533952199664413">ເປີດ​ການ​ຕັ້ງ​ຄ່າ</translation>
 <translation id="4259722352634471385">ການນໍາທາງຖືກບລັອກໄວ້: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">ທຸກ​ເວັບ​ໄຊ​ທ໌</translation>
 <translation id="6320088164292336938">ສັ່ນ</translation>
 <translation id="6388207532828177975">ລຶບ ແລະ​ຕັ້ງ​ຄ່າ​ຄືນ​ໃໝ່</translation>
+<translation id="6423924377271166037">ລ້າງຄຸກກີ້</translation>
 <translation id="6439114592976064011">ບລັອກບໍ່ໃຫ້ເວັບໄຊໃຊ້ອຸປະກອນ ແລະ ຂໍ້ມູນເວີຊົວ ຣິອາລິຕີຂອງທ່ານ</translation>
 <translation id="6447842834002726250">ຄຸກກີ້</translation>
 <translation id="6527303717912515753">ແຊຣ໌</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">ເລື່ອນກັບຫຼັງ</translation>
 <translation id="8444433999583714703">ເພື່ອອະນຸຍາດໃຫ້ <ph name="APP_NAME" /> ເຂົ້າເຖິງສະຖານທີ່ຂອງທ່ານ, ກະລຸນາເປີດສະຖານທີ່ໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ Android<ph name="END_LINK" /> ນຳ.</translation>
 <translation id="8447861592752582886">ຖອນການອະນຸຍາດອຸປະກອນ</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{ມີການນຳໃຊ້ຄຸກກີ້ 1 ລາຍການ}other{ມີການນຳໃຊ້ຄຸກກີ້ # ລາຍການ}}</translation>
 <translation id="8463851957836045671">ເວັບໄຊໄວດີ</translation>
 <translation id="851751545965956758">ບລັອກບໍ່ໃຫ້ເວັບໄຊເຊື່ອມຕໍ່ກັບອຸປະກອນ</translation>
 <translation id="857943718398505171">ອະ​ນຸ​ຍາດ​ແລ້ວ (ແນະ​ນຳ​ໃຫ້)</translation>

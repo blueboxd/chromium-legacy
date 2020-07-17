@@ -17,6 +17,14 @@
     margin: 0 6px;
   }
 
+  #title {
+    font-size: 0.87rem;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   #actionMenuTrigger {
     margin-inline-end: 6px;
   }
@@ -24,6 +32,8 @@
   #start {
     align-items: center;
     display: flex;
+    overflow: hidden;
+    padding-inline-end: 20px;
   }
 
   #start,
@@ -105,7 +115,7 @@
   <div id="start">
     <cr-icon-button id="menuButton" iron-icon="pdf:open-book">
     </cr-icon-button>
-    <span>[[docTitle]]</span>
+    <span id="title">[[docTitle]]</span>
   </div>
   <div id="center">
     <viewer-page-selector doc-length="[[docLength]]" page-no="[[pageNo]]">
@@ -125,7 +135,10 @@
                                         fittingType_)]]"
         on-click="onFitToButtonClick_">
     </cr-icon-button>
-    <cr-icon-button iron-icon="pdf:rotate-left"></cr-icon-button>
+    <cr-icon-button iron-icon="pdf:rotate-left"
+        disabled="[[annotationMode]]" aria-label$="$i18n{tooltipRotateCCW}"
+        title="$i18n{tooltipRotateCCW}" on-click="onRotateClick_">
+    </cr-icon-button>
   </div>
   <div id="end">
   <if expr="chromeos">

@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Aquí aparecerán os marcadores que gardases noutros dispositivos.</translation>
 <translation id="1113597929977215864">Mostrar vista simplificada</translation>
 <translation id="1122278879166832009">Toca aquí para acceder rapidamente á túa páxina de inicio desde calquera lugar</translation>
+<translation id="1126809382673880764">Non te protexe contra sitios web, descargas e extensións perigosos. Continuarás dispoñendo da protección da función Navegación segura, sempre que estea dispoñible, noutros servizos de Google (como Gmail e a Busca).</translation>
 <translation id="1129510026454351943">Detalles: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 descarga pendente.}other{# descargas pendentes.}}</translation>
 <translation id="1145536944570833626">Elimina os datos existentes.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1810845389119482123">Non se completou a configuración de sincronización inicial</translation>
 <translation id="1821253160463689938">Utiliza cookies para lembrar as túas preferencias, mesmo se non visitas esas páxinas</translation>
-<translation id="1826516787628120939">Comprobando</translation>
 <translation id="1829244130665387512">Buscar na páxina</translation>
 <translation id="1853692000353488670">Pestana nova de incógnito</translation>
 <translation id="1856325424225101786">Queres restablecer o modo básico?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Gardar contrasinais</translation>
 <translation id="1952172573699511566">Os sitios web mostrarán o texto no teu idioma preferido, sempre que sexa posible.</translation>
 <translation id="1960290143419248813">As actualizacións de Chrome xa non son compatibles con esta versión de Android</translation>
+<translation id="1963976881984600709">Protección estándar</translation>
 <translation id="1966710179511230534">Actualiza a túa información de inicio de sesión.</translation>
 <translation id="1974060860693918893">Configuración avanzada</translation>
+<translation id="1984417487208496350">Sen protección (non recomendado)</translation>
 <translation id="1984705450038014246">Sincronizar os teus datos de Chrome</translation>
 <translation id="1986685561493779662">O nome xa existe</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> (botón <ph name="LINK_NAME" />)</translation>
@@ -358,6 +360,7 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="3892148308691398805">Copiar texto</translation>
 <translation id="3894427358181296146">Engadir cartafol</translation>
 <translation id="3895926599014793903">Forzar a activación do zoom</translation>
+<translation id="3909763690984331376">Comprobación de seguranza <ph name="BEGIN_NEW" />Nova<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Buscando o mellor contido da Web…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Combinar os meus datos</translation>
@@ -392,7 +395,6 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="4183868528246477015">Buscar con Google Lens <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Abrir en pestana nova</translation>
 <translation id="4198423547019359126">Non hai localizacións de descarga dispoñibles</translation>
-<translation id="4202553989407425169">Chrome pode comprobar se a túa configuración te está protexendo mediante os seguintes elementos:</translation>
 <translation id="4209895695669353772">Para recibir contido personalizado suxerido por Google, activa a sincronización</translation>
 <translation id="423219824432660969">Encriptar os datos sincronizados co contrasinal de Google a partir do <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Abrir configuración</translation>
@@ -459,6 +461,7 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="4749960740855309258">Abrir unha nova pestana</translation>
 <translation id="4759238208242260848">Descargas</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 descarga completada.}other{# descargas completadas.}}</translation>
+<translation id="4766678251456904326">Engadir conta ao dispositivo</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{Hai 1 descarga programada.}other{Hai # descargas programadas.}}</translation>
 <translation id="478981486571169252">Poderás ver o teu estado de inicio de sesión en <ph name="SITE_NAME" />, os teus datos de navegación e os datos do sitio en Chrome.</translation>
 <translation id="4802417911091824046">A encriptación mediante frase de acceso non inclúe métodos de pago nin enderezos de Google Pay.
@@ -490,6 +493,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="4943872375798546930">Non hai resultados</translation>
 <translation id="4961107849584082341">Traduce esta páxina a calquera idioma</translation>
 <translation id="4970824347203572753">Non está dispoñible na túa localización</translation>
+<translation id="4971735654804503942">Unha protección máis rápida e proactiva contra sitios web, descargas e extensións perigosos. Móstrache unha advertencia en caso de violacións da seguranza do contrasinal. Para utilizar este modo débenselle enviar a Google os datos de navegación.</translation>
 <translation id="497421865427891073">Avanzar</translation>
 <translation id="4988210275050210843">Descargando ficheiro (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Páxinas</translation>
@@ -561,7 +565,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5527082711130173040">Chrome necesita acceder á localización para buscar dispositivos. <ph name="BEGIN_LINK1" />Actualizar permisos<ph name="END_LINK1" />. O acceso á localización deste dispositivo está <ph name="BEGIN_LINK2" />desactivado<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Pechar pestanas incógnito</translation>
 <translation id="5534640966246046842">Copiouse o sitio</translation>
-<translation id="5548606607480005320">Revisión de seguranza</translation>
 <translation id="5561549206367097665">Esperando unha rede…</translation>
 <translation id="55737423895878184">Permítese consultar a localización e mostrar notificacións</translation>
 <translation id="5578795271662203820">Busca esta imaxe en <ph name="SEARCH_ENGINE" /></translation>
@@ -579,6 +582,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5686790454216892815">O nome do ficheiro é demasiado longo</translation>
 <translation id="5694049548840660018">Volver ao inicio facilmente</translation>
 <translation id="569536719314091526">Traduce esta páxina a calquera idioma desde o botón Máis opcións</translation>
+<translation id="5696597120588531049">Chrome pode protexerte contra violacións da seguranza dos datos, sitios web que non son seguros e moito máis</translation>
 <translation id="5697688514913266141">O teu ficheiro gardarase en <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Editar<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Cambiar á pestana</translation>
 <translation id="572328651809341494">Pestanas recentes</translation>
@@ -600,7 +604,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="583281660410589416">Descoñecido</translation>
 <translation id="5833984609253377421">Compartir ligazón</translation>
 <translation id="5836192821815272682">Descargando actualización de Chrome…</translation>
-<translation id="584120177693484274">Opción desmarcada</translation>
 <translation id="5853623416121554550">en pausa</translation>
 <translation id="5854790677617711513">Con máis de 30 días</translation>
 <translation id="5858741533101922242">Chrome non é capaz de activar o adaptador de Bluetooth</translation>
@@ -713,6 +716,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6656545060687952787">Chrome precisa acceder á localización para analizar dispositivos. <ph name="BEGIN_LINK" />Actualizar permisos<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Contrasinal</translation>
 <translation id="6659594942844771486">Pestana</translation>
+<translation id="6663079968236414793">Obter ligazón ao texto</translation>
 <translation id="666573598175432848">Hai unha versión de Chrome máis nova dispoñible. Toca este elemento para ir a Play Store.</translation>
 <translation id="666731172850799929">Abrir en <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Aviso de privacidade de Chrome</translation>
@@ -736,10 +740,12 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="685850645784703949">Discover (de Google): desactivado</translation>
 <translation id="6864459304226931083">Descargar imaxe</translation>
 <translation id="6865313869410766144">Autocompletar datos do formulario</translation>
+<translation id="6882836635272038266">Protección estándar contra os sitios web, as descargas e as extensións que se consideren perigosos.</translation>
 <translation id="6884306546558072722">Continuar explorando contido sen conexión</translation>
 <translation id="688738109438487280">Engade os datos existentes a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Desbloquea a pantalla para copiar o teu contrasinal</translation>
 <translation id="6896758677409633944">Copiar</translation>
+<translation id="6900532703269623216">Protección mellorada</translation>
 <translation id="6903907808598579934">Activar sincronización</translation>
 <translation id="6942665639005891494">Cambia a localización de descarga predeterminada en calquera momento usando a opción do menú Configuración</translation>
 <translation id="6945221475159498467">Seleccionar</translation>

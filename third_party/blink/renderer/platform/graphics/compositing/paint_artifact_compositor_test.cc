@@ -184,7 +184,7 @@ class PaintArtifactCompositorTest : public testing::Test,
     layer->SetElementId(scroll_node->GetCompositorElementId());
     layer->SetHitTestable(true);
     artifact.Chunk(scroll_translation, clip, effect)
-        .ForeignLayer(layer, FloatPoint(rect.Location()));
+        .ForeignLayer(layer, rect.Location());
   }
 
   // Returns the |num|th scrollable layer. In CompositeAfterPaint, this will be
@@ -975,7 +975,7 @@ TEST_P(PaintArtifactCompositorTest, ForeignLayerPassesThrough) {
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kWhite);
-  test_artifact.Chunk().ForeignLayer(layer, FloatPoint(50, 60));
+  test_artifact.Chunk().ForeignLayer(layer, IntPoint(50, 60));
   test_artifact.Chunk().RectDrawing(IntRect(0, 0, 100, 100), Color::kGray);
 
   auto artifact = test_artifact.Build();

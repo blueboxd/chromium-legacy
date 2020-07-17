@@ -22,6 +22,7 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/sync/engine/engine_util.h"
+#include "components/sync/model/entity_data.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync_bookmarks/switches.h"
 #include "ui/gfx/favicon_size.h"
@@ -186,8 +187,16 @@ std::string FullTitleToLegacyCanonicalizedTitle(const std::string& node_title) {
   return specifics_title;
 }
 
-bool IsFullTitleReuploadNeeded(const sync_pb::BookmarkSpecifics& specifics) {
-  if (specifics.has_full_title()) {
+bool IsBookmarkEntityReuploadNeeded(
+    const syncer::EntityData& remote_entity_data) {
+  DCHECK(remote_entity_data.server_defined_unique_tag.empty());
+  // Do not initiate a reupload for a remote deletion.
+  if (remote_entity_data.is_deleted()) {
+    return false;
+  }
+  DCHECK(remote_entity_data.specifics.has_bookmark());
+  if (remote_entity_data.specifics.bookmark().has_full_title() &&
+      !remote_entity_data.is_bookmark_guid_in_specifics_preprocessed) {
     return false;
   }
   return base::FeatureList::IsEnabled(

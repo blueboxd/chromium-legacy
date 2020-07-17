@@ -72,6 +72,12 @@ struct EntityData {
   // Indicate whether this is a folder or not. Relevant only for bookmarks.
   bool is_folder = false;
 
+  // Indicate whether bookmark GUID was missing in the original specifics during
+  // GetUpdates. If the GUID in specifics was evaluated by
+  // AdaptGuidForBookmark(), this field will be set to true. Relevant only for
+  // bookmarks.
+  bool is_bookmark_guid_in_specifics_preprocessed = false;
+
   // Unique position of an entity among its siblings. This is supposed to be
   // set only for datatypes that support positioning (e.g. Bookmarks).
   sync_pb::UniquePosition unique_position;

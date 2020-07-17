@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1647391597548383849">Камераңызға кіру</translation>
 <translation id="1660204651932907780">Сайттарда дыбыстың шығуына рұқсат ету (ұсынылады)</translation>
+<translation id="1677097821151855053">Cookie файлдары мен сайттың басқа деректері сізді есте сақтап қалу (мысалы, есептік жазбаңызға кіру процесін жеңілдету немесе жарнамаларды сізге бейімдеу) үшін қолданылады. Барлық сайт үшін cookie файлдарын басқару үшін <ph name="BEGIN_LINK" />Параметрлер<ph name="END_LINK" /> бөлімін қараңыз.</translation>
 <translation id="1688867105868176567">Сайт деректері өшірілсін бе?</translation>
 <translation id="169515064810179024">Сайттардың қозғалыс датчиктерін пайдалануына тыйым салу</translation>
 <translation id="1717218214683051432">Қозғалыс датчиктері</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Белгілі бір сайт үшін cookie файлдарына рұқсат беріңіз.</translation>
 <translation id="4046123991198612571">Келесі аудиотрек</translation>
 <translation id="4165986682804962316">Сайт параметрлері</translation>
+<translation id="4200726100658658164">Орналасу параметрлерін ашу</translation>
 <translation id="4226663524361240545">Хабарландыру келіп түскенде, құрылғы дірілдейді</translation>
 <translation id="4242533952199664413">Параметрлерді ашу</translation>
 <translation id="4259722352634471385">Навигация тыйылған: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Барлық сайттар</translation>
 <translation id="6320088164292336938">Діріл</translation>
 <translation id="6388207532828177975">Тазарту және қалпына келтіру</translation>
+<translation id="6423924377271166037">Cookie файлдарын өшіру</translation>
 <translation id="6439114592976064011">Сайттардың виртуалды шындық құрылғыңызды және деректеріңізді пайдалануына тыйым салу</translation>
 <translation id="6447842834002726250">Cookie файлдары</translation>
 <translation id="6527303717912515753">Бөлісу</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Артқа</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> браузері геодерегіңізді пайдалануы үшін, <ph name="BEGIN_LINK" />Android параметрлерінде<ph name="END_LINK" /> оны да қосыңыз.</translation>
 <translation id="8447861592752582886">Құрылғыға кіру рұқсатының күшін жою</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie файлы қолданылып жатыр}other{# cookie файлы қолданылып жатыр}}</translation>
 <translation id="8463851957836045671">Бұл сайт жылдам.</translation>
 <translation id="851751545965956758">Сайттардың құрылғыға жалғануына тыйым салу</translation>
 <translation id="857943718398505171">Рұқсат етілген (ең дұрысы)</translation>

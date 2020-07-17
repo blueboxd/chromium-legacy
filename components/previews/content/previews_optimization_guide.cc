@@ -40,6 +40,10 @@ bool ShouldApplyPreviewWithDecision(
 // The default max size of the cache holding resource loading hints by URL.
 size_t kDefaultMaxResourceLoadingHintsCacheSize = 10;
 
+// The max size of the cache holding painful page load decisions by the
+// navigation ID of the navigation handle.
+size_t kDefaultPainfulPageLoadDecisionsCacheSize = 10;
+
 // Returns base::nullopt if |previews_type| can't be converted.
 base::Optional<optimization_guide::proto::OptimizationType>
 ConvertPreviewsTypeToOptimizationType(PreviewsType previews_type) {
@@ -100,6 +104,7 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
     optimization_guide::OptimizationGuideDecider* optimization_guide_decider)
     : optimization_guide_decider_(optimization_guide_decider),
       resource_loading_hints_cache_(kDefaultMaxResourceLoadingHintsCacheSize),
+      painful_page_load_decisions_(kDefaultPainfulPageLoadDecisionsCacheSize),
       registered_optimization_types_(GetOptimizationTypesToRegister()) {
   DCHECK(optimization_guide_decider_);
 
@@ -113,17 +118,50 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
 
 PreviewsOptimizationGuide::~PreviewsOptimizationGuide() = default;
 
+void PreviewsOptimizationGuide::StartCheckingIfShouldShowPreview(
+    content::NavigationHandle* navigation_handle) {
+  if (params::OverrideShouldShowPreviewCheck()) {
+    // We are not going to use the decision from |optimization_guide_decider_|,
+    // so just return.
+    return;
+  }
+
+  if (painful_page_load_decisions_.Get(navigation_handle->GetNavigationId()) !=
+      painful_page_load_decisions_.end()) {
+    // We have either already evaluated the model or have kicked off a model
+    // evaluation, so just return.
+    return;
+  }
+
+  painful_page_load_decisions_.Put(
+      navigation_handle->GetNavigationId(),
+      optimization_guide::OptimizationGuideDecision::kUnknown);
+  optimization_guide_decider_->ShouldTargetNavigationAsync(
+      navigation_handle,
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+      /*client_model_features=*/{},
+      base::BindOnce(&PreviewsOptimizationGuide::OnPainfulPageLoadDecision,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     navigation_handle->GetNavigationId()));
+}
+
+void PreviewsOptimizationGuide::OnPainfulPageLoadDecision(
+    int64_t navigation_id,
+    optimization_guide::OptimizationGuideDecision decision) {
+  painful_page_load_decisions_.Put(navigation_id, decision);
+}
+
 bool PreviewsOptimizationGuide::ShouldShowPreview(
     content::NavigationHandle* navigation_handle) {
   // See if we should override the optimization guide and always show a preview.
   if (params::OverrideShouldShowPreviewCheck())
     return true;
 
-  optimization_guide::OptimizationGuideDecision decision =
-      optimization_guide_decider_->ShouldTargetNavigation(
-          navigation_handle,
-          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
-  return decision == optimization_guide::OptimizationGuideDecision::kTrue;
+  auto ppd_iter =
+      painful_page_load_decisions_.Get(navigation_handle->GetNavigationId());
+  return ppd_iter != painful_page_load_decisions_.end() &&
+         ppd_iter->second ==
+             optimization_guide::OptimizationGuideDecision::kTrue;
 }
 
 bool PreviewsOptimizationGuide::CanApplyPreview(

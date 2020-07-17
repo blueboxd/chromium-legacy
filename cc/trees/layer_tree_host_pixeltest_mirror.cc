@@ -25,12 +25,14 @@ class LayerTreeHostMirrorPixelTest
 };
 
 const TestRendererType kRendererTypes[] = {
-    TestRendererType::kGL,
-    TestRendererType::kSkiaGL,
+    TestRendererType::kGL,       TestRendererType::kSkiaGL,
     TestRendererType::kSoftware,
 #if defined(ENABLE_CC_VULKAN_TESTS)
     TestRendererType::kSkiaVk,
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
+#if defined(ENABLE_CC_DAWN_TESTS)
+    TestRendererType::kSkiaDawn,
+#endif  // defined(ENABLE_CC_DAWN_TESTS)
 };
 
 INSTANTIATE_TEST_SUITE_P(All,

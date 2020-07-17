@@ -10,8 +10,14 @@
 
 #include "ash/ash_export.h"
 #include "base/component_export.h"
+#include "base/memory/weak_ptr.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_data.h"
 #include "ui/base/clipboard/clipboard_observer.h"
+
+namespace ui {
+class ClipboardData;
+}
 
 namespace ash {
 
@@ -49,6 +55,11 @@ class ASH_EXPORT ClipboardHistory : public ui::ClipboardObserver {
   void OnClipboardDataChanged() override;
 
  private:
+  // Adds |data| to |history_with_duplicates|.
+  void CommitData(ui::ClipboardData data);
+  // Callback to read a bitmap from the Cliboard.
+  void OnRecievePNGFromClipboard(ui::ClipboardData data,
+                                 const SkBitmap& bitmap);
   void PauseClipboardHistory();
   void UnPauseClipboardHistory();
 
@@ -57,6 +68,8 @@ class ASH_EXPORT ClipboardHistory : public ui::ClipboardObserver {
   // History of the most recent things copied. Duplicates are kept to keep the
   // most recent ordering.
   std::deque<ui::ClipboardData> history_with_duplicates_;
+
+  base::WeakPtrFactory<ClipboardHistory> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

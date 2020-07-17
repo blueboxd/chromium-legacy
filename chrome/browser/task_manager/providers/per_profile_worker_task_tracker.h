@@ -10,12 +10,12 @@
 #include "base/containers/flat_map.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/task_manager/providers/task.h"
-#include "content/public/browser/dedicated_worker_id.h"
 #include "content/public/browser/dedicated_worker_service.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/shared_worker_id.h"
 #include "content/public/browser/shared_worker_service.h"
+#include "third_party/blink/public/mojom/tokens/worker_tokens.mojom.h"
 
 class Profile;
 
@@ -43,14 +43,14 @@ class PerProfileWorkerTaskTracker
 
   // content::DedicatedWorkerService::Observer:
   void OnWorkerCreated(
-      content::DedicatedWorkerId dedicated_worker_id,
+      const blink::mojom::DedicatedWorkerToken& worker_token,
       int worker_process_id,
       content::GlobalFrameRoutingId ancestor_render_frame_host_id) override;
   void OnBeforeWorkerDestroyed(
-      content::DedicatedWorkerId dedicated_worker_id,
+      const blink::mojom::DedicatedWorkerToken& worker_token,
       content::GlobalFrameRoutingId ancestor_render_frame_host_id) override;
   void OnFinalResponseURLDetermined(
-      content::DedicatedWorkerId dedicated_worker_id,
+      const blink::mojom::DedicatedWorkerToken& worker_token,
       const GURL& url) override;
 
   // content::SharedWorkerService::Observer:
@@ -115,7 +115,8 @@ class PerProfileWorkerTaskTracker
                  content::DedicatedWorkerService::Observer>
       scoped_dedicated_worker_service_observer_{this};
 
-  base::flat_map<content::DedicatedWorkerId, std::unique_ptr<WorkerTask>>
+  base::flat_map<blink::mojom::DedicatedWorkerToken,
+                 std::unique_ptr<WorkerTask>>
       dedicated_worker_tasks_;
 
   // For shared workers:

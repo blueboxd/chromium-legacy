@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -692,7 +693,7 @@ gfx::Rect XWindow::GetOuterBounds() const {
 void XWindow::GrabPointer() {
   // If the pointer is already in |xwindow_|, we will not get a crossing event
   // with a mode of NotifyGrab, so we must record the grab state manually.
-  has_pointer_grab_ |= !ui::GrabPointer(xwindow_, true, x11::None);
+  has_pointer_grab_ |= !ui::GrabPointer(xwindow_, true, nullptr);
 }
 
 void XWindow::ReleasePointerGrab() {
@@ -732,9 +733,11 @@ void XWindow::StackXWindowAtTop() {
   RaiseWindow(xwindow_);
 }
 
-void XWindow::SetCursor(::Cursor cursor) {
+void XWindow::SetCursor(scoped_refptr<X11Cursor> cursor) {
   last_cursor_ = cursor;
-  DefineCursor(xwindow_, static_cast<x11::Cursor>(cursor));
+  on_cursor_loaded_.Reset(base::BindOnce(DefineCursor, xwindow_));
+  if (cursor)
+    cursor->OnCursorLoaded(on_cursor_loaded_.callback());
 }
 
 bool XWindow::SetTitle(base::string16 title) {
@@ -1449,7 +1452,7 @@ void XWindow::SetOverrideRedirect(bool override_redirect) {
   if (remap) {
     Map();
     if (has_pointer_grab_)
-      ChangeActivePointerGrabCursor(x11::None);
+      ChangeActivePointerGrabCursor(nullptr);
   }
 }
 

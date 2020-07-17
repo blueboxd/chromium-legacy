@@ -48,7 +48,7 @@ void RecursiveMutex::Lock() EXCLUSIVE_LOCK_FUNCTION() {
 
 void RecursiveMutex::Unlock() UNLOCK_FUNCTION() {
   base::AutoLock al(bookkeeping_lock_);
-  CHECK_GT(num_acquisitions_, 0u);
+  DCHECK_GT(num_acquisitions_, 0u);
   DCHECK_EQ(base::PlatformThread::CurrentId(), owning_thread_id_);
   real_lock_.AssertAcquired();
 

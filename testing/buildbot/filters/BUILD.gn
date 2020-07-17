@@ -19,7 +19,10 @@
 source_set("cc_unittests_filters") {
   testonly = true
 
-  data = [ "//testing/buildbot/filters/android.emulator.cc_unittests.filter" ]
+  data = [
+    "//testing/buildbot/filters/android.emulator.cc_unittests.filter",
+    "//testing/buildbot/filters/gpu.linux.skiarenderer_dawn_cc_unittests.filter",
+  ]
 }
 
 source_set("blink_web_tests_filter") {

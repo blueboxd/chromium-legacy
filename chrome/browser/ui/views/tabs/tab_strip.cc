@@ -704,17 +704,18 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
     // Move the dragged tabs to their ideal bounds.
     tab_strip_->UpdateIdealBounds();
 
-    // Sets the bounds of the dragged tabs.
-    for (size_t i = 0; i < views.size(); ++i) {
-      // Non-tabs, such as TabGroupHeaders, may also be dragging. Ignore these,
-      // since they are positioned independently.
-      if (views[i]->GetTabSlotViewType() != TabSlotView::ViewType::kTab)
-        continue;
-
-      int tab_data_index = GetIndexOf(views[i]);
-      DCHECK_NE(TabStripModel::kNoTab, tab_data_index);
-      views[i]->SetBoundsRect(ideal_bounds(tab_data_index));
+    // Sets the bounds of the dragged tab slots.
+    for (TabSlotView* view : views) {
+      if (view->GetTabSlotViewType() ==
+          TabSlotView::ViewType::kTabGroupHeader) {
+        view->SetBoundsRect(ideal_bounds(view->group().value()));
+      } else {
+        int tab_data_index = GetIndexOf(view);
+        DCHECK_NE(TabStripModel::kNoTab, tab_data_index);
+        view->SetBoundsRect(ideal_bounds(tab_data_index));
+      }
     }
+
     tab_strip_->SetTabSlotVisibility();
     tab_strip_->SchedulePaint();
   }

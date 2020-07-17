@@ -36,6 +36,7 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kDeclarativeContent, "declarativeContent"},
     {APIPermission::kDesktopCapture, "desktopCapture"},
     {APIPermission::kDesktopCapturePrivate, "desktopCapturePrivate"},
+    {APIPermission::kDocumentScan, "documentScan"},
     {APIPermission::kDownloads, "downloads"},
     {APIPermission::kDownloadsOpen, "downloads.open"},
     {APIPermission::kDownloadsShelf, "downloads.shelf"},

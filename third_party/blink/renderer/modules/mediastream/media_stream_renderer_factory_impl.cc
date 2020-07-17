@@ -47,11 +47,6 @@ void SendLogMessage(const WTF::String& message) {
 
 }  // namespace
 
-std::unique_ptr<WebMediaStreamRendererFactory>
-CreateWebMediaStreamRendererFactory() {
-  return std::make_unique<MediaStreamRendererFactoryImpl>();
-}
-
 MediaStreamRendererFactoryImpl::MediaStreamRendererFactoryImpl() {}
 
 MediaStreamRendererFactoryImpl::~MediaStreamRendererFactoryImpl() {}

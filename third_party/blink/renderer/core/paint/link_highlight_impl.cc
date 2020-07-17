@@ -318,14 +318,14 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
     auto& link_highlight_fragment = fragments_[index];
     link_highlight_fragment.SetColor(color);
 
-    auto bounding_rect = new_path.BoundingRect();
-    new_path.Translate(-ToFloatSize(bounding_rect.Location()));
+    auto bounding_rect = EnclosingIntRect(new_path.BoundingRect());
+    new_path.Translate(-FloatSize(ToIntSize(bounding_rect.Location())));
 
     auto* layer = link_highlight_fragment.Layer();
     DCHECK(layer);
     if (link_highlight_fragment.GetPath() != new_path) {
       link_highlight_fragment.SetPath(new_path);
-      layer->SetBounds(gfx::Size(EnclosingIntRect(bounding_rect).Size()));
+      layer->SetBounds(gfx::Size(bounding_rect.Size()));
       layer->SetNeedsDisplay();
     }
 

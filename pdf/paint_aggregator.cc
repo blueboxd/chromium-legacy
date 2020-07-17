@@ -11,6 +11,8 @@
 
 #include "base/check.h"
 
+namespace chrome_pdf {
+
 namespace {
 
 bool IsNegative(int32_t num) {
@@ -116,14 +118,14 @@ PaintAggregator::PaintUpdate PaintAggregator::GetPendingUpdate() {
 }
 
 void PaintAggregator::SetIntermediateResults(
-    const std::vector<ReadyRect>& ready,
+    const std::vector<PaintReadyRect>& ready,
     const std::vector<pp::Rect>& pending) {
   update_.ready_rects.insert(update_.ready_rects.end(), ready.begin(),
                              ready.end());
   update_.paint_rects = pending;
 }
 
-std::vector<PaintAggregator::ReadyRect> PaintAggregator::GetReadyRects() const {
+std::vector<PaintReadyRect> PaintAggregator::GetReadyRects() const {
   return update_.ready_rects;
 }
 
@@ -285,3 +287,5 @@ void PaintAggregator::InvalidateRectInternal(const pp::Rect& rect_old,
     InvalidateRectInternal(ScrollPaintRect(rect, update_.scroll_delta), false);
   }
 }
+
+}  // namespace chrome_pdf

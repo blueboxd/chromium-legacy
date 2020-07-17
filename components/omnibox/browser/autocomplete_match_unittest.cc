@@ -570,7 +570,25 @@ TEST(AutocompleteMatchTest, TryRichAutocompletion) {
          "x_mid_x_secondary", false);
   }
 
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        omnibox::kRichAutocompletion,
+        {
+            {"RichAutocompletionAutocompleteTitles", "true"},
+            {"RichAutocompletionTwoLineOmnibox", "true"},
+            {"RichAutocompletionShowTitles", "true"},
+            {"RichAutocompletionAutocompleteNonPrefix", "true"},
+            {"RichAutocompletionAutocompleteTitlesMinChar", "2"},
+            {"RichAutocompletionAutocompleteNonPrefixMinChar", "2"},
+        });
+
+    // Don't autocomplete title and non-prefix if input is less than limits.
+    test(6, "x", false, "y_mid_x_primary", "x_mid_x_secondary", false, "", "",
+         "x_mid_x_secondary", false);
+  }
+
   // Don't autocomplete if IsRichAutocompletionEnabled is disabled
-  test(6, "x", false, "x_mid_x_primary", "x_mid_x_secondary", false, "", "", "",
+  test(7, "x", false, "x_mid_x_primary", "x_mid_x_secondary", false, "", "", "",
        false);
 }

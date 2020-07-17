@@ -2086,6 +2086,7 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
     }
     drag_view_ = nullptr;
   }
+  UpdatePaging();
   ClearDragState();
   AnimateToIdealBounds(released_drag_view);
   if (!folder_delegate_)
@@ -2701,7 +2702,6 @@ void AppsGridView::ReparentItemForReorder(AppListItemView* item_view,
 
   item_list_->AddObserver(this);
   model_->AddObserver(this);
-  UpdatePaging();
 }
 
 bool AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
@@ -2785,7 +2785,6 @@ bool AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
   bounds_animator_->SetAnimationDelegate(
       drag_view_, std::unique_ptr<gfx::AnimationDelegate>(
                       new ItemRemoveAnimationDelegate(drag_view_)));
-  UpdatePaging();
 
   RecordAppMovingTypeMetrics(kMoveIntoAnotherFolder);
   return true;

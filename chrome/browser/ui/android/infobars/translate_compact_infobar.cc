@@ -212,6 +212,11 @@ translate::TranslateInfoBarDelegate* TranslateCompactInfoBar::GetDelegate() {
 void TranslateCompactInfoBar::OnTranslateStepChanged(
     translate::TranslateStep step,
     translate::TranslateErrors::Type error_type) {
+  // TODO(crbug/1093320): intended to mitigate a crash where
+  // the java infobar is gone. If this works, look into root cause.
+  if (!HasSetJavaInfoBar())
+    return;  // No connected Java infobar
+
   if (!owner())
     return;  // We're closing; don't call anything.
 

@@ -11,11 +11,14 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace chromeos {
+class DebugDaemonClient;
+
 namespace network_diagnostics {
 
 class NetworkDiagnosticsImpl : public mojom::NetworkDiagnosticsRoutines {
  public:
-  NetworkDiagnosticsImpl();
+  explicit NetworkDiagnosticsImpl(
+      chromeos::DebugDaemonClient* debug_daemon_client);
   NetworkDiagnosticsImpl(const NetworkDiagnosticsImpl&) = delete;
   NetworkDiagnosticsImpl& operator=(const NetworkDiagnosticsImpl&) = delete;
   ~NetworkDiagnosticsImpl() override;
@@ -38,6 +41,8 @@ class NetworkDiagnosticsImpl : public mojom::NetworkDiagnosticsRoutines {
 
  private:
   mojo::ReceiverSet<mojom::NetworkDiagnosticsRoutines> receivers_;
+  // An unowned pointer to the DebugDaemonClient instance.
+  chromeos::DebugDaemonClient* debug_daemon_client_;
   base::WeakPtrFactory<NetworkDiagnosticsImpl> weak_factory_{this};
 };
 

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/renderer_client.h"
 #include "media/filters/decrypting_demuxer_stream.h"
@@ -78,17 +79,12 @@ constexpr size_t kNumBuffers = 16;
 
 FuchsiaAudioRenderer::FuchsiaAudioRenderer(
     MediaLog* media_log,
-    mojo::PendingRemote<media::mojom::FuchsiaMediaResourceProvider>
-        pending_media_resource_provider)
-    : media_log_(media_log) {
+    fidl::InterfaceHandle<fuchsia::media::AudioConsumer> audio_consumer_handle)
+    : media_log_(media_log),
+      audio_consumer_handle_(std::move(audio_consumer_handle)) {
   DETACH_FROM_THREAD(thread_checker_);
-
-  mojo::Remote<media::mojom::FuchsiaMediaResourceProvider>
-      media_resource_provider;
-  media_resource_provider.Bind(std::move(pending_media_resource_provider));
-  media_resource_provider->CreateAudioConsumer(
-      audio_consumer_handle_.NewRequest());
 }
+
 
 FuchsiaAudioRenderer::~FuchsiaAudioRenderer() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

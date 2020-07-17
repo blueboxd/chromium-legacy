@@ -22,7 +22,6 @@ struct ExtensionHostMsg_DOMAction_Params;
 
 namespace extensions {
 class ActivityLog;
-class InfoMap;
 struct Message;
 }
 
@@ -87,8 +86,6 @@ class ChromeExtensionMessageFilter : public content::BrowserMessageFilter,
   // The ActivityLog associated with the given profile. Also only safe to
   // access on the UI thread, and may be null.
   extensions::ActivityLog* activity_log_;
-
-  scoped_refptr<extensions::InfoMap> extension_info_map_;
 
   ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
 

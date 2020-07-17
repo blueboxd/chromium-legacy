@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">Japanese Input (per tastiera USA)</translation>
 <translation id="1047956942837015229">Eliminazione di <ph name="COUNT" /> elementi...</translation>
 <translation id="1049926623896334335">Documento di Word</translation>
+<translation id="1060368002126861100">Per aprire file con l'app <ph name="APP_NAME" />, devi prima spostarli nella cartella File di Windows.</translation>
 <translation id="1062407476771304334">Sostituisci</translation>
 <translation id="1065449928621190041">Tastiera francese canadese</translation>
 <translation id="1119069657431255176">Archivio tar compresso con bzip2</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">Attenzione: questi file sono temporanei e potrebbero essere eliminati automaticamente per liberare spazio su disco.  <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Cartella</translation>
 <translation id="3549797760399244642">Vai all'indirizzo drive.google.com...</translation>
+<translation id="3553048479571901246">Per aprire file con l'app <ph name="APP_NAME" />, devi prima copiarli nella cartella File di Windows.</translation>
 <translation id="357479282490346887">Lituano</translation>
 <translation id="3583509704582854624">Input alfanumerico (per tastiera giapponese)</translation>
 <translation id="3603385196401704894">Francese canadese</translation>

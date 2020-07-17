@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hy">
 <translation id="1008557486741366299">Հիմա չէ</translation>
+<translation id="100957008357583611">Օգտագործե՞լ ձեր տեղադրության տվյալները</translation>
 <translation id="1010200102790553230">Էջը բեռնել ավելի ուշ</translation>
 <translation id="1015730422737071372">Տրամադրել լրացուցիչ տեղեկություններ</translation>
 <translation id="1019413721762100891">Անջատ</translation>
@@ -425,7 +426,6 @@
 <translation id="2705137772291741111">Այս կայքի պահված (քեշավորված) պատճենն անընթեռնելի էր:</translation>
 <translation id="2709516037105925701">Ինքնալցում</translation>
 <translation id="2713444072780614174">Սպիտակ</translation>
-<translation id="2720342946869265578">Համացանցը մեր շուրջ</translation>
 <translation id="2721148159707890343">Հարցումը հաջողվեց</translation>
 <translation id="272451190272506600">Վճարելու համար հպեք սենսորին</translation>
 <translation id="2728127805433021124">Սերվերի վկայագիրը ստորագրված է ստորագրության թույլ ալգորիթմով:</translation>
@@ -722,7 +722,6 @@
 <translation id="3990250421422698716">Աստիճանական տեղաշարժ</translation>
 <translation id="3996311196211510766"><ph name="ORIGIN" /> կայքը պահանջում է, որ սկզբնական կանոնը
     կիրառվի իր բոլոր հարցումների նկատմամբ, բայց այս կանոնն այժմ հնարավոր չէ կիրառել։</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 վեբ էջ մոտակայքում}one{# web pages nearby}other{# վեբ էջ մոտակայքում}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT}-էջանոց PDF փաստաթուղթ}one{{COUNT}-էջանոց PDF փաստաթուղթ}other{{COUNT}-էջանոց PDF փաստաթուղթ}}</translation>
 <translation id="4030383055268325496">&amp;Հետարկել հավելումը</translation>
 <translation id="4032320456957708163">Ձեր դիտարկիչը կառավարվում է <ph name="ENROLLMENT_DOMAIN" /> կայքի կողմից</translation>
@@ -940,7 +939,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Պահել…</translation>
 <translation id="4913987521957242411">Անցք վերևի ձախ կողմում</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{ու ևս 1 վեբ էջ}one{and # more web pages}other{ու ևս # վեբ էջ}}</translation>
 <translation id="4923459931733593730">Վճարում</translation>
 <translation id="4926049483395192435">Նշեք արժեքը:</translation>
 <translation id="4926159001844873046">Հաղորդագրություն <ph name="SITE" /> կայքից</translation>
@@ -1181,6 +1179,7 @@
 <translation id="5869405914158311789">Կայքն անհասանելի է</translation>
 <translation id="5869522115854928033">Պահված գաղտնաբառեր</translation>
 <translation id="5887400589839399685">Քարտը պահվեց</translation>
+<translation id="589006512797629854">Տիրույթի (<ph name="ENROLLMENT_DOMAIN" />) կանոնների համաձայն՝ դուք պետք է պահուստավորեք ձեր տվյալները և վերադարձնեք այս սարքը։</translation>
 <translation id="5895138241574237353">Վերագործարկել</translation>
 <translation id="5895187275912066135">Թողարկված է՝</translation>
 <translation id="5901630391730855834">Դեղին</translation>
@@ -1331,7 +1330,6 @@
 <translation id="6518133107902771759">Ստուգել</translation>
 <translation id="6521745193039995384">Ակտիվ չէ</translation>
 <translation id="6529602333819889595">&amp;Վերարկել ջնջումը</translation>
-<translation id="6534179046333460208">«Համացանցը մեր շուրջ» ծառայության առաջարկներ</translation>
 <translation id="6545864417968258051">Bluetooth սարքերի որոնում</translation>
 <translation id="6547208576736763147">Երկու անցք ձախ կողմում</translation>
 <translation id="6554795675067793129">Ձեր հաշիվը պատկանում է <ph name="ENROLLMENT_DOMAIN" /> տիրույթին:</translation>
@@ -1853,7 +1851,6 @@
 <translation id="8790007591277257123">&amp;Վերարկել ջնջումը</translation>
 <translation id="8792621596287649091">Հնարավոր է՝ չկարողանաք օգտագործել <ph name="ORG_NAME" /> հաշիվը, կամ ինչ-որ մեկը կարող է գողանալ ձեր անձնական տվյալները։ Խորհուրդ ենք տալիս փոխել գաղտնաբառը։</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> կայքը միացրել է Chrome Enterprise Connectors-ը ձեր դիտարկիչում։ Այս միակցիչներին հասանելի են ձեզ պատկանող որոշ տվյալներ։</translation>
-<translation id="8800988563907321413">Առաջարկները կցուցադրվեն այստեղ</translation>
 <translation id="8805819170075074995">«<ph name="LANGUAGE_ID" />» ցանկի տարր․ անտեսված է, քանի որ այն արդեն ներառված է SpellcheckLanguage կանոնում։</translation>
 <translation id="8807160976559152894">Կտրել յուրաքանչյուր էջից հետո</translation>
 <translation id="8820817407110198400">Էջանիշներ</translation>

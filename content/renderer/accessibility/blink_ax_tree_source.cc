@@ -44,6 +44,7 @@
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -75,7 +76,7 @@ const int kMinImageAnnotationHeight = 16;
 
 void AddIntListAttributeFromWebObjects(ax::mojom::IntListAttribute attr,
                                        const WebVector<WebAXObject>& objects,
-                                       AXContentNodeData* dst) {
+                                       ui::AXNodeData* dst) {
   std::vector<int32_t> ids;
   for (size_t i = 0; i < objects.size(); i++)
     ids.push_back(objects[i].AxID());
@@ -83,16 +84,16 @@ void AddIntListAttributeFromWebObjects(ax::mojom::IntListAttribute attr,
     dst->AddIntListAttribute(attr, ids);
 }
 
-class AXContentNodeDataSparseAttributeAdapter
+class AXNodeDataSparseAttributeAdapter
     : public blink::WebAXSparseAttributeClient {
  public:
-  AXContentNodeDataSparseAttributeAdapter(AXContentNodeData* dst) : dst_(dst) {
+  explicit AXNodeDataSparseAttributeAdapter(ui::AXNodeData* dst) : dst_(dst) {
     DCHECK(dst_);
   }
-  ~AXContentNodeDataSparseAttributeAdapter() override {}
+  ~AXNodeDataSparseAttributeAdapter() override = default;
 
  private:
-  AXContentNodeData* dst_;
+  ui::AXNodeData* dst_;
 
   void AddBoolAttribute(blink::WebAXBoolAttribute attribute,
                         bool value) override {
@@ -540,7 +541,7 @@ std::string BlinkAXTreeSource::GetDebugString(blink::WebAXObject node) const {
 }
 
 void BlinkAXTreeSource::SerializeNode(WebAXObject src,
-                                      AXContentNodeData* dst) const {
+                                      ui::AXNodeData* dst) const {
 #if DCHECK_IS_ON()
   // Never causes a document lifecycle change during serialization,
   // because the assumption is that layout is in a safe, stable state.
@@ -646,7 +647,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
 
 void BlinkAXTreeSource::SerializeBoundingBoxAttributes(
     WebAXObject src,
-    AXContentNodeData* dst) const {
+    ui::AXNodeData* dst) const {
   WebAXObject offset_container;
   WebFloatRect bounds_in_container;
   SkMatrix44 container_transform;
@@ -680,7 +681,7 @@ void BlinkAXTreeSource::SerializeBoundingBoxAttributes(
 }
 
 void BlinkAXTreeSource::SerializePDFAttributes(WebAXObject src,
-                                               AXContentNodeData* dst) const {
+                                               ui::AXNodeData* dst) const {
   // The DOMNodeID from Blink. Currently only populated when using
   // the accessibility tree for PDF exporting. Warning, this is totally
   // unrelated to the accessibility node ID, or the ID attribute for an
@@ -690,16 +691,15 @@ void BlinkAXTreeSource::SerializePDFAttributes(WebAXObject src,
     dst->AddIntAttribute(ax::mojom::IntAttribute::kDOMNodeId, dom_node_id);
 }
 
-void BlinkAXTreeSource::SerializeSparseAttributes(
-    WebAXObject src,
-    AXContentNodeData* dst) const {
-  AXContentNodeDataSparseAttributeAdapter sparse_attribute_adapter(dst);
+void BlinkAXTreeSource::SerializeSparseAttributes(WebAXObject src,
+                                                  ui::AXNodeData* dst) const {
+  AXNodeDataSparseAttributeAdapter sparse_attribute_adapter(dst);
   src.GetSparseAXAttributes(sparse_attribute_adapter);
 }
 
 void BlinkAXTreeSource::SerializeNameAndDescriptionAttributes(
     WebAXObject src,
-    AXContentNodeData* dst) const {
+    ui::AXNodeData* dst) const {
   ax::mojom::NameFrom name_from;
   blink::WebVector<WebAXObject> name_objects;
   blink::WebString web_name = src.GetName(name_from, name_objects);
@@ -743,7 +743,7 @@ void BlinkAXTreeSource::SerializeNameAndDescriptionAttributes(
 }
 
 void BlinkAXTreeSource::SerializeValueAttributes(WebAXObject src,
-                                                 AXContentNodeData* dst) const {
+                                                 ui::AXNodeData* dst) const {
   if (src.ValueDescription().length()) {
     TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kValue,
                                   src.ValueDescription().Utf8());
@@ -754,7 +754,7 @@ void BlinkAXTreeSource::SerializeValueAttributes(WebAXObject src,
 }
 
 void BlinkAXTreeSource::SerializeStateAttributes(WebAXObject src,
-                                                 AXContentNodeData* dst) const {
+                                                 ui::AXNodeData* dst) const {
   switch (src.Restriction()) {
     case blink::kWebAXRestrictionReadOnly:
       dst->SetRestriction(ax::mojom::Restriction::kReadOnly);
@@ -774,7 +774,7 @@ void BlinkAXTreeSource::SerializeStateAttributes(WebAXObject src,
 }
 
 void BlinkAXTreeSource::SerializeStyleAttributes(WebAXObject src,
-                                                 AXContentNodeData* dst) const {
+                                                 ui::AXNodeData* dst) const {
   // Text attributes.
   if (src.BackgroundColor())
     dst->AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
@@ -844,7 +844,7 @@ void BlinkAXTreeSource::SerializeStyleAttributes(WebAXObject src,
 
 void BlinkAXTreeSource::SerializeInlineTextBoxAttributes(
     WebAXObject src,
-    AXContentNodeData* dst) const {
+    ui::AXNodeData* dst) const {
   DCHECK_EQ(ax::mojom::Role::kInlineTextBox, dst->role);
 
   WebVector<int> src_character_offsets;
@@ -861,9 +861,8 @@ void BlinkAXTreeSource::SerializeInlineTextBoxAttributes(
                            src_word_ends.ReleaseVector());
 }
 
-void BlinkAXTreeSource::SerializeMarkerAttributes(
-    WebAXObject src,
-    AXContentNodeData* dst) const {
+void BlinkAXTreeSource::SerializeMarkerAttributes(WebAXObject src,
+                                                  ui::AXNodeData* dst) const {
   // Spelling, grammar and other document markers.
   WebVector<ax::mojom::MarkerType> src_marker_types;
   WebVector<int> src_marker_starts;
@@ -895,7 +894,7 @@ void BlinkAXTreeSource::SerializeMarkerAttributes(
 
 void BlinkAXTreeSource::SerializeLiveRegionAttributes(
     WebAXObject src,
-    AXContentNodeData* dst) const {
+    ui::AXNodeData* dst) const {
   DCHECK(src.IsInLiveRegion());
 
   dst->AddBoolAttribute(ax::mojom::BoolAttribute::kLiveAtomic,
@@ -925,7 +924,7 @@ void BlinkAXTreeSource::SerializeLiveRegionAttributes(
 }
 
 void BlinkAXTreeSource::SerializeListAttributes(WebAXObject src,
-                                                AXContentNodeData* dst) const {
+                                                ui::AXNodeData* dst) const {
   if (src.SetSize())
     dst->AddIntAttribute(ax::mojom::IntAttribute::kSetSize, src.SetSize());
 
@@ -934,7 +933,7 @@ void BlinkAXTreeSource::SerializeListAttributes(WebAXObject src,
 }
 
 void BlinkAXTreeSource::SerializeTableAttributes(WebAXObject src,
-                                                 AXContentNodeData* dst) const {
+                                                 ui::AXNodeData* dst) const {
   const bool is_table_like_role = ui::IsTableLike(dst->role);
   if (is_table_like_role) {
     int aria_colcount = src.AriaColumnCount();
@@ -990,9 +989,8 @@ void BlinkAXTreeSource::SerializeTableAttributes(WebAXObject src,
   }
 }
 
-void BlinkAXTreeSource::SerializeScrollAttributes(
-    WebAXObject src,
-    AXContentNodeData* dst) const {
+void BlinkAXTreeSource::SerializeScrollAttributes(WebAXObject src,
+                                                  ui::AXNodeData* dst) const {
   // Only mark as scrollable if user has actual scrollbars to use.
   dst->AddBoolAttribute(ax::mojom::BoolAttribute::kScrollable,
                         src.IsUserScrollable());
@@ -1017,7 +1015,7 @@ void BlinkAXTreeSource::SerializeScrollAttributes(
 
 void BlinkAXTreeSource::SerializeChooserPopupAttributes(
     WebAXObject src,
-    AXContentNodeData* dst) const {
+    ui::AXNodeData* dst) const {
   WebAXObject chooser_popup = src.ChooserPopup();
   if (!chooser_popup.IsNull()) {
     int32_t chooser_popup_id = chooser_popup.AxID();
@@ -1031,7 +1029,7 @@ void BlinkAXTreeSource::SerializeChooserPopupAttributes(
 
 void BlinkAXTreeSource::SerializeOtherScreenReaderAttributes(
     WebAXObject src,
-    AXContentNodeData* dst) const {
+    ui::AXNodeData* dst) const {
   if (dst->role == ax::mojom::Role::kColorWell)
     dst->AddIntAttribute(ax::mojom::IntAttribute::kColorValue,
                          src.ColorValue());
@@ -1209,7 +1207,7 @@ void BlinkAXTreeSource::SerializeOtherScreenReaderAttributes(
 
 void BlinkAXTreeSource::SerializeEditableTextAttributes(
     WebAXObject src,
-    AXContentNodeData* dst) const {
+    ui::AXNodeData* dst) const {
   DCHECK(src.IsEditable());
 
   if (src.IsEditableRoot())
@@ -1228,10 +1226,9 @@ void BlinkAXTreeSource::SerializeEditableTextAttributes(
   }
 }
 
-void BlinkAXTreeSource::SerializeElementAttributes(
-    WebAXObject src,
-    WebElement element,
-    AXContentNodeData* dst) const {
+void BlinkAXTreeSource::SerializeElementAttributes(WebAXObject src,
+                                                   WebElement element,
+                                                   ui::AXNodeData* dst) const {
   if (element.HasAttribute("class")) {
     TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kClassName,
                                   element.GetAttribute("class").Utf8());
@@ -1253,14 +1250,18 @@ void BlinkAXTreeSource::SerializeElementAttributes(
   // be used instead. For example, the fallback content may be rendered if
   // there was an error loading an <object>. In that case, only expose the
   // children. A node should not have both children and a child tree.
-  WebFrame* frame = WebFrame::FromFrameOwnerElement(element);
-  if (frame && !src.ChildCount())
-    dst->child_routing_id = RenderFrame::GetRoutingIdForWebFrame(frame);
+  base::Optional<base::UnguessableToken> child_embedding_token =
+      element.GetEmbeddingToken();
+
+  if (child_embedding_token && !src.ChildCount()) {
+    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kChildTreeId,
+                                  child_embedding_token->ToString());
+  }
 }
 
 void BlinkAXTreeSource::SerializeHTMLAttributes(WebAXObject src,
                                                 WebElement element,
-                                                AXContentNodeData* dst) const {
+                                                ui::AXNodeData* dst) const {
   // TODO(ctguil): The tagName in WebKit is lower cased but
   // HTMLElement::nodeName calls localNameUpper. Consider adding
   // a WebElement method that returns the original lower cased tagName.
@@ -1304,7 +1305,7 @@ WebAXObject BlinkAXTreeSource::ComputeRoot() const {
 }
 
 void BlinkAXTreeSource::TruncateAndAddStringAttribute(
-    AXContentNodeData* dst,
+    ui::AXNodeData* dst,
     ax::mojom::StringAttribute attribute,
     const std::string& value,
     uint32_t max_len) const {
@@ -1318,7 +1319,7 @@ void BlinkAXTreeSource::TruncateAndAddStringAttribute(
 }
 
 void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject& src,
-                                            AXContentNodeData* dst) const {
+                                            ui::AXNodeData* dst) const {
   if (!base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels))
     return;
 

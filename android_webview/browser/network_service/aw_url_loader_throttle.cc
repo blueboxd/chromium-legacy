@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_request_headers.h"
 
 namespace android_webview {
@@ -17,16 +18,16 @@ namespace {
 
 // These values are logged to UMA. Entries should not be renumbered and
 // numeric values should never be reused. Please keep in sync with
-// "WebViewExtraHeaders" in src/tools/metrics/histograms/enums.xml.
-enum class ExtraHeaders {
-  kAddedInStartRequest = 0,
-  kKeptOnSameOriginRedirect = 1,
-  kRemovedOnCrossOriginRedirect = 2,
-  kMaxValue = kRemovedOnCrossOriginRedirect
+// "WebViewExtraHeadersRedirect" in src/tools/metrics/histograms/enums.xml.
+enum class ExtraHeadersRedirect {
+  kSameOrigin = 0,
+  kSameDomain = 1,
+  kCrossDomain = 2,
+  kMaxValue = kCrossDomain
 };
 
-void RecordExtraHeadersUMA(ExtraHeaders value) {
-  UMA_HISTOGRAM_ENUMERATION("Android.WebView.ExtraHeaders", value);
+void RecordExtraHeadersRedirectUMA(ExtraHeadersRedirect value) {
+  UMA_HISTOGRAM_ENUMERATION("Android.WebView.ExtraHeadersRedirect", value);
 }
 
 }  // namespace
@@ -41,7 +42,6 @@ void AwURLLoaderThrottle::WillStartRequest(network::ResourceRequest* request,
   AddExtraHeadersIfNeeded(request->url, &request->headers);
   if (!added_headers_.empty()) {
     original_origin_ = url::Origin::Create(request->url);
-    RecordExtraHeadersUMA(ExtraHeaders::kAddedInStartRequest);
   }
 }
 
@@ -54,29 +54,39 @@ void AwURLLoaderThrottle::WillRedirectRequest(
     net::HttpRequestHeaders* modified_cors_exempt_request_headers) {
   bool same_origin_only = base::FeatureList::IsEnabled(
       features::kWebViewExtraHeadersSameOriginOnly);
+  bool same_domain_only = base::FeatureList::IsEnabled(
+      features::kWebViewExtraHeadersSameDomainOnly);
 
   if (!added_headers_.empty()) {
-    if (original_origin_.CanBeDerivedFrom(redirect_info->new_url)) {
-      RecordExtraHeadersUMA(ExtraHeaders::kKeptOnSameOriginRedirect);
+    bool is_same_origin =
+        original_origin_.CanBeDerivedFrom(redirect_info->new_url);
+    bool is_same_domain = net::registry_controlled_domains::SameDomainOrHost(
+        redirect_info->new_url, original_origin_,
+        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+
+    if (is_same_origin) {
+      RecordExtraHeadersRedirectUMA(ExtraHeadersRedirect::kSameOrigin);
+    } else if (is_same_domain) {
+      RecordExtraHeadersRedirectUMA(ExtraHeadersRedirect::kSameDomain);
     } else {
-      // Cross-origin redirect. Remove the headers we added if the feature is
-      // enabled. added_headers_ is still cleared either way so that the metrics
-      // will reflect what would have happened if the feature was enabled.
-      if (same_origin_only) {
-        to_be_removed_request_headers->insert(
-            to_be_removed_request_headers->end(),
-            std::make_move_iterator(added_headers_.begin()),
-            std::make_move_iterator(added_headers_.end()));
-      }
+      RecordExtraHeadersRedirectUMA(ExtraHeadersRedirect::kCrossDomain);
+    }
+
+    if ((same_origin_only && !is_same_origin) ||
+        (same_domain_only && !is_same_domain)) {
+      // The headers we added must be removed.
+      to_be_removed_request_headers->insert(
+          to_be_removed_request_headers->end(),
+          std::make_move_iterator(added_headers_.begin()),
+          std::make_move_iterator(added_headers_.end()));
       added_headers_.clear();
-      RecordExtraHeadersUMA(ExtraHeaders::kRemovedOnCrossOriginRedirect);
     }
   }
 
-  if (!same_origin_only) {
+  if (!same_origin_only && !same_domain_only) {
     // The original behaviour added more headers if the redirect target had
     // previously been loaded with extra headers; this is weird/surprising, so
-    // it's skipped when the feature is enabled.
+    // it's skipped when either feature is enabled.
     AddExtraHeadersIfNeeded(redirect_info->new_url, modified_request_headers);
   }
 }

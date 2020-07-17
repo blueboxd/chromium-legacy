@@ -9,9 +9,9 @@
 #include "content/public/browser/web_contents.h"
 
 namespace {
-// The caption bubble contains 2 lines of text in its normal size and 4 lines
-// in its expanded size, so the maximum number of lines before truncating is 5.
-constexpr int kMaxLines = 5;
+// The caption bubble contains 2 lines of text in its normal size and 8 lines
+// in its expanded size, so the maximum number of lines before truncating is 9.
+constexpr int kMaxLines = 9;
 }  // namespace
 
 namespace captions {
@@ -29,8 +29,8 @@ void CaptionBubbleModel::SetObserver(CaptionBubble* observer) {
     return;
   observer_ = observer;
   if (observer_) {
-    observer_->OnTextChange();
-    observer_->OnErrorChange();
+    observer_->OnTextChanged();
+    observer_->OnErrorChanged();
   }
 }
 
@@ -38,27 +38,27 @@ void CaptionBubbleModel::RemoveObserver() {
   observer_ = nullptr;
 }
 
-void CaptionBubbleModel::OnTextChange() {
+void CaptionBubbleModel::OnTextChanged() {
   if (observer_)
-    observer_->OnTextChange();
+    observer_->OnTextChanged();
 }
 
 void CaptionBubbleModel::SetPartialText(const std::string& partial_text) {
   partial_text_ = partial_text;
-  OnTextChange();
+  OnTextChanged();
 }
 
 void CaptionBubbleModel::Close() {
   final_text_.clear();
   partial_text_.clear();
   is_closed_ = true;
-  OnTextChange();
+  OnTextChanged();
 }
 
 void CaptionBubbleModel::SetHasError(bool has_error) {
   has_error_ = has_error;
   if (observer_)
-    observer_->OnErrorChange();
+    observer_->OnErrorChanged();
 }
 
 void CaptionBubbleModel::DidFinishNavigation(
@@ -71,7 +71,7 @@ void CaptionBubbleModel::DidFinishNavigation(
   partial_text_.clear();
   is_closed_ = false;
   has_error_ = false;
-  OnTextChange();
+  OnTextChanged();
 }
 
 void CaptionBubbleModel::CommitPartialText() {
@@ -100,7 +100,7 @@ void CaptionBubbleModel::CommitPartialText() {
     const size_t truncate_index =
         observer_->GetTextIndexOfLineInLabel(num_lines - kMaxLines);
     final_text_.erase(0, truncate_index);
-    OnTextChange();
+    OnTextChanged();
   }
 }
 

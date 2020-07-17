@@ -23,18 +23,20 @@ bool shell_operations_allowed = true;
 
 void VerifyAndOpenItemOnBlockingThread(const base::FilePath& path,
                                        OpenItemType type,
-                                       const OpenOperationCallback& callback) {
+                                       OpenOperationCallback callback) {
   base::File target_item(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!base::PathExists(path)) {
     if (!callback.is_null())
       content::GetUIThreadTaskRunner({})->PostTask(
-          FROM_HERE, base::BindOnce(callback, OPEN_FAILED_PATH_NOT_FOUND));
+          FROM_HERE,
+          base::BindOnce(std::move(callback), OPEN_FAILED_PATH_NOT_FOUND));
     return;
   }
   if (base::DirectoryExists(path) != (type == OPEN_FOLDER)) {
     if (!callback.is_null())
       content::GetUIThreadTaskRunner({})->PostTask(
-          FROM_HERE, base::BindOnce(callback, OPEN_FAILED_INVALID_TYPE));
+          FROM_HERE,
+          base::BindOnce(std::move(callback), OPEN_FAILED_INVALID_TYPE));
     return;
   }
 
@@ -42,7 +44,7 @@ void VerifyAndOpenItemOnBlockingThread(const base::FilePath& path,
     internal::PlatformOpenVerifiedItem(path, type);
   if (!callback.is_null())
     content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(callback, OPEN_SUCCEEDED));
+        FROM_HERE, base::BindOnce(std::move(callback), OPEN_SUCCEEDED));
 }
 
 }  // namespace
@@ -58,7 +60,7 @@ void DisableShellOperationsForTesting() {
 void OpenItem(Profile* profile,
               const base::FilePath& full_path,
               OpenItemType item_type,
-              const OpenOperationCallback& callback) {
+              OpenOperationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TaskPriority::USER_BLOCKING because this is usually opened as a result of a
   // user action (e.g. open-downloaded-file or show-item-in-folder).
@@ -70,7 +72,7 @@ void OpenItem(Profile* profile,
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&VerifyAndOpenItemOnBlockingThread, full_path, item_type,
-                     callback));
+                     std::move(callback)));
 }
 
 bool IsBrowserLockedFullscreen(const Browser* browser) {

@@ -407,19 +407,6 @@ function assertMatch(string, regex, opt_message = undefined) {
 }
 
 /**
- * Use to match error stack traces.
- * @param {string} stackTrace the stacktrace
- * @param {!Array<string>} regexLines a list of escaped regex compatible
- *     strings, used to compare with the stacktrace.
- * @param {string=} opt_message logged if the assertion fails
- */
-function assertMatchErrorStack(
-    stackTrace, regexLines, opt_message = undefined) {
-  const regex = `(.|\\n)*${regexLines.join('(.|\\n)*')}(.|\\n)*`;
-  assertMatch(stackTrace, regex, opt_message);
-}
-
-/**
  * Returns the files loaded in the most recent call to `loadFiles()`.
  * @return {!Promise<?Array<!mediaApp.AbstractFile>>}
  */

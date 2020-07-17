@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Muilla laitteilla tallentamasi kirjanmerkit näytetään täällä.</translation>
 <translation id="1113597929977215864">Näytä yksinkertaistettu näkymä</translation>
 <translation id="1122278879166832009">Napauta tästä, niin pääset nopeasti etusivulle mistä vain</translation>
+<translation id="1126809382673880764">Ei suojaa sinua vaarallisilta sivustoilta, latauksilta ja laajennuksilta. Voit silti käyttää Selaussuojaa muissa Googlen palveluissa, joissa se on saatavilla, kuten Gmailissa ja Haussa.</translation>
 <translation id="1129510026454351943">Tiedot: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 lataus odottaa}other{# latausta odottaa}}</translation>
 <translation id="1145536944570833626">Poistaa olemassa olevat tiedot.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Vaalea</translation>
 <translation id="1810845389119482123">Synkronoinnin alkumääritys ei valmis</translation>
 <translation id="1821253160463689938">Käyttää evästeitä asetustesi muistamiseen, vaikka et kävisi kyseisillä sivuilla</translation>
-<translation id="1826516787628120939">Tarkistetaan</translation>
 <translation id="1829244130665387512">Haku sivulta</translation>
 <translation id="1853692000353488670">Uusi incognito-välilehti</translation>
 <translation id="1856325424225101786">Palautetaanko yksinkertaistettu tila?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Salasanojen tallentaminen</translation>
 <translation id="1952172573699511566">Verkkosivustot näyttävät tekstin valitsemallasi kielellä, kun se on mahdollista.</translation>
 <translation id="1960290143419248813">Chrome-päivityksiä ei enää tueta tässä Android-versiossa.</translation>
+<translation id="1963976881984600709">Perustason suojaus</translation>
 <translation id="1966710179511230534">Päivitä kirjautumistietosi.</translation>
 <translation id="1974060860693918893">Lisäasetukset</translation>
+<translation id="1984417487208496350">Ei suojausta (ei suositella)</translation>
 <translation id="1984705450038014246">Chrome-datan synkronointi</translation>
 <translation id="1986685561493779662">Nimi on jo käytössä</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" />-painike</translation>
@@ -392,7 +394,6 @@ Hae sanaa koskettamalla sitä pitkään. Jos haluat tarkentaa hakuasi, valitse e
 <translation id="4183868528246477015">Hae Google Lensillä <ph name="BEGIN_NEW" />Uusi<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Avaa uudelle välilehdelle</translation>
 <translation id="4198423547019359126">Tallennussijainteja ei ole saatavilla</translation>
-<translation id="4202553989407425169">Chrome voi tarkistaa, suojaavatko asetuksesi sinua:</translation>
 <translation id="4209895695669353772">Ota synkronointi käyttöön, niin näet Googlen suosittelemaa yksilöllistä sisältöä</translation>
 <translation id="423219824432660969">Salaa synkronoitu data Google-salasanalla (<ph name="TIME" />)</translation>
 <translation id="4242533952199664413">Avaa asetukset</translation>
@@ -459,6 +460,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="4749960740855309258">Uuden välilehden avaaminen</translation>
 <translation id="4759238208242260848">Lataukset</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 lataus on valmis}other{# latausta on valmiina}}</translation>
+<translation id="4766678251456904326">Lisää tili laitteelle</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 lataus ajoitettu}other{# latausta ajoitettu}}</translation>
 <translation id="478981486571169252">Näet kirjautumisen tilan, selausdatan ja sivustodatan (<ph name="SITE_NAME" />) Chromessa.</translation>
 <translation id="4802417911091824046">Google Payn maksutapoja tai osoitteita ei salata tunnuslauseella.
@@ -490,6 +492,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="4943872375798546930">Ei tuloksia</translation>
 <translation id="4961107849584082341">Käännä sivu mille tahansa kielelle</translation>
 <translation id="4970824347203572753">Ei käytettävissä sijainnissasi</translation>
+<translation id="4971735654804503942">Nopeampi, proaktiivinen suojaus vaarallisia sivustoja, latauksia ja laajennuksia vastaan. Varoittaa sinua salasanarikkomuksista. Edellyttää selaustietojen lähettämistä Googlelle.</translation>
 <translation id="497421865427891073">Siirry eteenpäin</translation>
 <translation id="4988210275050210843">Ladataan tiedostoa (<ph name="MEGABYTES" />)</translation>
 <translation id="4988526792673242964">Sivut</translation>
@@ -561,7 +564,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5527082711130173040">Chrome tarvitsee sijaintitietoja hakeakseen laitteita. <ph name="BEGIN_LINK1" />Päivitä käyttöoikeudet<ph name="END_LINK1" />. Sijaintitiedot on lisäksi <ph name="BEGIN_LINK2" />poistettu käytöstä tällä laitteella<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Sulje incognito-välilehdet</translation>
 <translation id="5534640966246046842">Sivusto kopioitu</translation>
-<translation id="5548606607480005320">Turvatarkistus</translation>
 <translation id="5561549206367097665">Odotetaan verkkoyhteyttä…</translation>
 <translation id="55737423895878184">Sijainti ja ilmoitukset sallitaan</translation>
 <translation id="5578795271662203820">Etsi tätä kuvaa palvelusta <ph name="SEARCH_ENGINE" /></translation>
@@ -600,7 +602,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="583281660410589416">Tuntematon</translation>
 <translation id="5833984609253377421">Jaa linkki</translation>
 <translation id="5836192821815272682">Ladataan Chrome-päivitystä…</translation>
-<translation id="584120177693484274">Tarkistamaton</translation>
 <translation id="5853623416121554550">keskeytetty</translation>
 <translation id="5854790677617711513">Yli 30 päivää vanhat</translation>
 <translation id="5858741533101922242">Chrome ei voi ottaa käyttöön Bluetooth-sovitinta.</translation>
@@ -736,10 +737,12 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="685850645784703949">Google Discover – pois päältä</translation>
 <translation id="6864459304226931083">Lataa kuva</translation>
 <translation id="6865313869410766144">Automaattisesti täydennetyt lomaketiedot</translation>
+<translation id="6882836635272038266">Perustason suojaus vaaralliseksi tiedettyjä sivustoja, latauksia ja laajennuksia vastaan.</translation>
 <translation id="6884306546558072722">Jatka offline-sisällön tutkimista</translation>
 <translation id="688738109438487280">Lisää olemassa olevat tiedot tilille <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Avaa lukitus kopioidaksesi salasanan</translation>
 <translation id="6896758677409633944">Kopioi</translation>
+<translation id="6900532703269623216">Parannettu suojaus</translation>
 <translation id="6903907808598579934">Ota synkronointi käyttöön</translation>
 <translation id="6942665639005891494">Muuta oletuslataussijaintia milloin tahansa Asetukset-valikon kautta</translation>
 <translation id="6945221475159498467">Valitse</translation>

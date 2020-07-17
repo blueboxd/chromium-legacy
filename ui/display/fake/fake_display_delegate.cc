@@ -130,34 +130,36 @@ void FakeDisplayDelegate::GetDisplays(GetDisplaysCallback callback) {
 }
 
 void FakeDisplayDelegate::Configure(
-    const display::DisplayConfigurationParams& display_config_params,
+    const std::vector<display::DisplayConfigurationParams>& config_requests,
     ConfigureCallback callback) {
-  bool configure_success = false;
+  base::flat_map<int64_t, bool> statuses;
+  for (const auto& config : config_requests) {
+    bool configure_success = false;
 
-  if (display_config_params.mode.has_value()) {
-    // Find display snapshot of display ID.
-    auto snapshot = find_if(
-        displays_.begin(), displays_.end(),
-        [&display_config_params](std::unique_ptr<DisplaySnapshot>& snapshot) {
-          return snapshot->display_id() == display_config_params.id;
-        });
-    if (snapshot != displays_.end()) {
-      // Check that config mode is appropriate for the display snapshot.
-      for (const auto& existing_mode : snapshot->get()->modes()) {
-        if (AreModesEqual(*existing_mode.get(),
-                          *display_config_params.mode.value().get())) {
-          configure_success = true;
-          break;
+    if (config.mode.has_value()) {
+      // Find display snapshot of display ID.
+      auto snapshot =
+          find_if(displays_.begin(), displays_.end(),
+                  [&config](std::unique_ptr<DisplaySnapshot>& snapshot) {
+                    return snapshot->display_id() == config.id;
+                  });
+      if (snapshot != displays_.end()) {
+        // Check that config mode is appropriate for the display snapshot.
+        for (const auto& existing_mode : snapshot->get()->modes()) {
+          if (AreModesEqual(*existing_mode.get(), *config.mode.value().get())) {
+            configure_success = true;
+            break;
+          }
         }
       }
+    } else {
+      // This is a request to turn off the display.
+      configure_success = true;
     }
-  } else {
-    // This is a request to turn off the display.
-    configure_success = true;
+    statuses.insert(std::make_pair(config.id, configure_success));
   }
 
-  configure_callbacks_.push(
-      base::BindOnce(std::move(callback), configure_success));
+  configure_callbacks_.push(base::BindOnce(std::move(callback), statuses));
 
   // Start the timer if it's not already running. If there are multiple queued
   // configuration requests then ConfigureDone() will handle starting the

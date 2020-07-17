@@ -332,7 +332,7 @@ void ChromeDownloadManagerDelegateTest::SetUp() {
   if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
     pref_service_->SetInteger(
         prefs::kDownloadLaterPromptStatus,
-        static_cast<int>(DownloadLaterPromptStatus::DONT_SHOW));
+        static_cast<int>(DownloadLaterPromptStatus::kDontShow));
   }
 #endif
 }

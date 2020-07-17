@@ -2800,8 +2800,7 @@ static void CollectDrawableLayersForLayerListRecursively(
       [&](const GraphicsLayer* layer, cc::Layer* contents_layer) {
         RecordForeignLayer(
             context, *layer, DisplayItem::kForeignLayerContentsWrapper,
-            contents_layer,
-            FloatPoint(layer->GetContentsOffsetFromTransformNode()),
+            contents_layer, layer->GetContentsOffsetFromTransformNode(),
             &layer->GetContentsPropertyTreeState());
       });
 }

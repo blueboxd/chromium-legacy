@@ -22,6 +22,12 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /** @private {boolean} */
+    showDeviceNameDialog_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /**
@@ -36,6 +42,24 @@ Polymer({
   },
 
   /**
+   * @private
+   */
+  onDeviceNameTap_() {
+    if (this.showDeviceNameDialog_) {
+      return;
+    }
+    this.showDeviceNameDialog_ = true;
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onDeviceNameDialogClose_(event) {
+    this.showDeviceNameDialog_ = false;
+  },
+
+  /**
    * @param {boolean} state boolean state that determines which string to show
    * @param {string} onstr string to show when state is true
    * @param {string} offstr string to show when state is false
@@ -44,5 +68,14 @@ Polymer({
    */
   getOnOffString_(state, onstr, offstr) {
     return state ? onstr : offstr;
+  },
+
+  /**
+   * @param {string} name name of device
+   * @return {string} localized string
+   * @private
+   */
+  getEditNameButtonAriaDescription_(name) {
+    return this.i18n('nearbyShareDeviceNameAriaDescription', name);
   },
 });

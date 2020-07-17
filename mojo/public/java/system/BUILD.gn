@@ -72,6 +72,7 @@ android_library("test_support_java") {
   sources = [ "javatests/src/org/chromium/mojo/MojoTestRule.java" ]
   deps = [
     "//base:base_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/junit",
   ]
 }

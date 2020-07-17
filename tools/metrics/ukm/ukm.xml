@@ -5221,6 +5221,23 @@ be describing additional metrics about the same event.
     Predictor. This event will be recorded once per page load on
     DocumentOnLoadCompletedInMainFrame().
   </summary>
+  <metric name="CorrectSubresourceOriginPreconnectsInitiated">
+    <summary>
+      The number of subresource origin preconnects that were initiated by the
+      Loading Predictor for the navigation and were actually used by the page
+      load, excluding the main frame URL's origin. If more than 100 subresource
+      origins were preconnected to and were actually used by the page load, this
+      will be capped at 100.
+    </summary>
+  </metric>
+  <metric name="CorrectSubresourcePrefetchesInitiated">
+    <summary>
+      The number of subresource prefetches that were initiated by the Loading
+      Predictor for the navigation and were actually used by the page load. If
+      more than 100 subresources were prefetched and were actually used by the
+      page load, this will be capped at 100.
+    </summary>
+  </metric>
   <metric name="LocalPredictionCorrectlyPredictedOrigins">
     <summary>
       The number of subresource origins that were correctly predicted by the
@@ -5237,6 +5254,12 @@ be describing additional metrics about the same event.
       database and does not necessarily mean that the prediction was used. If
       more than 100 subresource origins were predicted, this will be capped at
       100.
+    </summary>
+  </metric>
+  <metric name="NavigationStartToFirstSubresourcePrefetchInitiated">
+    <summary>
+      The time (in milliseconds) that elapsed between navigation start and the
+      first subresource prefetch that was initiated based on these predictions.
     </summary>
   </metric>
   <metric name="NavigationStartToNavigationCommit">
@@ -5291,6 +5314,21 @@ be describing additional metrics about the same event.
       This will be recorded if the Optimization Guide was consulted for the page
       load and the Optimization Guide had a prediction for it. If more than 100
       subresources were predicted, this will be capped at 100.
+    </summary>
+  </metric>
+  <metric name="SubresourceOriginPreconnectsInitiated">
+    <summary>
+      The number of subresource origins that were initiated by the Loading
+      Predictor and were preconnected to, excluding the main frame URL's origin.
+      If more than 100 subresource origins were preconnected to, this will be
+      capped at 100.
+    </summary>
+  </metric>
+  <metric name="SubresourcePrefetchesInitiated">
+    <summary>
+      The number of subresource prefetches that were initiated by the Loading
+      Predictor for the navigation. If more than 100 subresources were
+      prefetched, this will be capped at 100.
     </summary>
   </metric>
 </event>

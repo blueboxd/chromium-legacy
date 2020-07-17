@@ -26,7 +26,6 @@ def _CreateRJava(resource_zips, package_name, srcjar_out, rtxt_out):
                                     package_name,
                                     rtxt_out,
                                     extra_res_packages=[],
-                                    extra_r_txt_files=[],
                                     rjava_build_options=rjava_build_options,
                                     srcjar_out=srcjar_out)
     build_utils.ZipDir(srcjar_out, build.srcjar_dir)

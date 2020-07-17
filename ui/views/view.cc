@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/feature_list.h"
+#include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/notreached.h"
 #include "base/scoped_observer.h"
@@ -341,7 +342,7 @@ void View::SetBoundsRect(const gfx::Rect& bounds) {
     // In RTL mode, if our width has changed, our children's mirrored bounds
     // will have changed. Update the child's layer bounds, or if it is not a
     // layer, the bounds of any layers inside the child.
-    if (base::i18n::IsRTL() && bounds_.width() != prev.width()) {
+    if (GetMirrored() && bounds_.width() != prev.width()) {
       for (View* child : children_) {
         child->UpdateChildLayerBounds(
             LayerOffsetData(layer()->device_scale_factor(),
@@ -586,7 +587,7 @@ gfx::Transform View::GetTransform() const {
   gfx::ScrollOffset scroll_offset = layer()->CurrentScrollOffset();
   // Offsets for layer-based scrolling are never negative, but the horizontal
   // scroll direction is reversed in RTL via canvas flipping.
-  transform.Translate((base::i18n::IsRTL() ? 1 : -1) * scroll_offset.x(),
+  transform.Translate((GetMirrored() ? 1 : -1) * scroll_offset.x(),
                       -scroll_offset.y());
   return transform;
 }
@@ -734,7 +735,7 @@ int View::GetMirroredX() const {
 }
 
 int View::GetMirroredXForRect(const gfx::Rect& rect) const {
-  return base::i18n::IsRTL() ? (width() - rect.x() - rect.width()) : rect.x();
+  return GetMirrored() ? (width() - rect.x() - rect.width()) : rect.x();
 }
 
 gfx::Rect View::GetMirroredRect(const gfx::Rect& rect) const {
@@ -744,11 +745,11 @@ gfx::Rect View::GetMirroredRect(const gfx::Rect& rect) const {
 }
 
 int View::GetMirroredXInView(int x) const {
-  return base::i18n::IsRTL() ? width() - x : x;
+  return GetMirrored() ? width() - x : x;
 }
 
 int View::GetMirroredXWithWidthInView(int x, int w) const {
-  return base::i18n::IsRTL() ? width() - x - w : x;
+  return GetMirrored() ? width() - x - w : x;
 }
 
 // Layout ----------------------------------------------------------------------
@@ -1143,6 +1144,10 @@ void View::SetNativeThemeForTesting(ui::NativeTheme* theme) {
 
 void View::EnableCanvasFlippingForRTLUI(bool enable) {
   flip_canvas_on_paint_for_rtl_ui_ = enable;
+}
+
+bool View::GetMirrored() const {
+  return is_mirrored_.value_or(base::i18n::IsRTL());
 }
 
 // Input -----------------------------------------------------------------------
@@ -3006,6 +3011,7 @@ ADD_PROPERTY_METADATA(View, int, Group)
 ADD_PROPERTY_METADATA(View, int, ID)
 ADD_READONLY_PROPERTY_METADATA(View, gfx::Size, MaximumSize)
 ADD_READONLY_PROPERTY_METADATA(View, gfx::Size, MinimumSize)
+ADD_PROPERTY_METADATA(View, bool, Mirrored)
 ADD_PROPERTY_METADATA(View, bool, Visible)
 END_METADATA()
 

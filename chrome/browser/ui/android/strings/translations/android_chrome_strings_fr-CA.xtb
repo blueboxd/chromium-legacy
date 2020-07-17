@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Les favoris enregistrés sur vos autres appareils s'afficheront ici.</translation>
 <translation id="1113597929977215864">Afficher l'affichage simplifié</translation>
 <translation id="1122278879166832009">Touchez ici pour accéder rapidement à votre page d'accueil à partir de n'importe où</translation>
+<translation id="1126809382673880764">Ce mode ne vous protège pas contre les téléchargements, les extensions ni les sites Web dangereux. Vous profitez toujours de la protection de navigation sécurisée, lorsqu'elle est offerte, dans d'autres services Google, comme Gmail et la recherche.</translation>
 <translation id="1129510026454351943">Détails : <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 téléchargement en attente.}one{# téléchargement en attente.}other{# téléchargements en attente.}}</translation>
 <translation id="1145536944570833626">Supprimer toutes les données existantes.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Clair</translation>
 <translation id="1810845389119482123">La configuration de la synchro. initiale n'est pas terminée</translation>
 <translation id="1821253160463689938">Utilise des témoins pour mémoriser vos préférences, même si vous ne consultez pas ces pages</translation>
-<translation id="1826516787628120939">Vérification en cours…</translation>
 <translation id="1829244130665387512">Rechercher sur la page</translation>
 <translation id="1853692000353488670">Nouvel onglet de navigation privée</translation>
 <translation id="1856325424225101786">Réinitialiser le mode simplifié?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Enregistrer les mots de passe</translation>
 <translation id="1952172573699511566">Les sites Web affichent du texte dans votre langue préférée lorsque cela est possible.</translation>
 <translation id="1960290143419248813">Les mises à jour Chrome ne sont plus prises en charge pour cette version d'Android</translation>
+<translation id="1963976881984600709">Protection standard</translation>
 <translation id="1966710179511230534">Veuillez mettre à jour votre information de connexion.</translation>
 <translation id="1974060860693918893">Options avancées</translation>
+<translation id="1984417487208496350">Aucune protection (non recommandé)</translation>
 <translation id="1984705450038014246">Synchroniser vos données Chrome</translation>
 <translation id="1986685561493779662">Ce nom existe déjà</translation>
 <translation id="1987739130650180037">Bouton <ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
@@ -392,7 +394,6 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="4183868528246477015"><ph name="BEGIN_NEW" />Nouv.<ph name="END_NEW" /> Rech. avec Lentille Google</translation>
 <translation id="4195643157523330669">Ouvrir dans un nouvel onglet</translation>
 <translation id="4198423547019359126">Aucun dossier de téléchargement n'est disponible</translation>
-<translation id="4202553989407425169">Chrome peut vérifier si vos paramètres vous protègent des éléments suivants :</translation>
 <translation id="4209895695669353772">Pour obtenir du contenu personnalisé suggéré par Google, activez la synchronisation</translation>
 <translation id="423219824432660969">Chiffrer les données synchronisées avec le mot de passe Google à compter du <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Ouvrir les paramètres</translation>
@@ -459,6 +460,7 @@ D'autres formes d'historique de navigation, telles que les recherches et l'activ
 <translation id="4749960740855309258">Ouvrir un nouvel onglet</translation>
 <translation id="4759238208242260848">Téléchargements</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 téléchargement terminé.}one{# téléchargement terminé.}other{# téléchargements terminés.}}</translation>
+<translation id="4766678251456904326">Ajouter un compte à l'appareil</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 téléchargement programmé.}one{# téléchargement programmé.}other{# téléchargements programmés.}}</translation>
 <translation id="478981486571169252">Vous verrez votre état de connexion à <ph name="SITE_NAME" />, vos données de navigation et vos données de site dans Chrome.</translation>
 <translation id="4802417911091824046">Le chiffrement par phrase de passe ne couvre pas les modes de paiement ni les adresses de Google Pay.
@@ -490,6 +492,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4943872375798546930">Aucun résultat</translation>
 <translation id="4961107849584082341">Traduire cette page vers n'importe quelle langue</translation>
 <translation id="4970824347203572753">Cette fonctionnalité n'est pas offerte dans votre région</translation>
+<translation id="4971735654804503942">Ce mode offre une protection proactive et plus rapide contre les téléchargements, les extensions et les sites Web dangereux. Il vous permet d'être averti en cas de piratage de mots de passe. Pour ce faire, les données de navigation doivent être envoyées à Google.</translation>
 <translation id="497421865427891073">Avancer</translation>
 <translation id="4988210275050210843">Téléchargement du fichier (<ph name="MEGABYTES" />) en cours…</translation>
 <translation id="4988526792673242964">Pages</translation>
@@ -561,7 +564,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5527082711130173040">Google Chrome nécessite l'accès à votre position pour rechercher des appareils. <ph name="BEGIN_LINK1" />Mettre à jour les autorisations<ph name="END_LINK1" />. L'accès à la position est également <ph name="BEGIN_LINK2" />désactivé pour cet appareil<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Fermer les onglets de navigation privée</translation>
 <translation id="5534640966246046842">Site copié</translation>
-<translation id="5548606607480005320">Vérification de sécurité</translation>
 <translation id="5561549206367097665">En attente du réseau…</translation>
 <translation id="55737423895878184">La position et les notifications sont autorisées</translation>
 <translation id="5578795271662203820">Rechercher cette image avec <ph name="SEARCH_ENGINE" /></translation>
@@ -600,7 +602,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="583281660410589416">Inconnu</translation>
 <translation id="5833984609253377421">Partager le lien</translation>
 <translation id="5836192821815272682">Téléchargement de la mise à jour de Chrome en cours…</translation>
-<translation id="584120177693484274">Non coché</translation>
 <translation id="5853623416121554550">interrompu</translation>
 <translation id="5854790677617711513">Datant de plus de 30 jours</translation>
 <translation id="5858741533101922242">Chrome n'est pas en mesure d'activer l'adaptateur Bluetooth</translation>
@@ -736,10 +737,12 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="685850645784703949">Découvertes par Google (désactivé)</translation>
 <translation id="6864459304226931083">Télécharger l'image</translation>
 <translation id="6865313869410766144">Données de remplissage automatique de formulaires</translation>
+<translation id="6882836635272038266">Protection standard contre les sites Web, les téléchargements et les extensions qui sont réputés être dangereux.</translation>
 <translation id="6884306546558072722">Continuer d'explorer hors ligne</translation>
 <translation id="688738109438487280">Ajouter les données existantes à <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Déverrouillez pour copier votre mot de passe</translation>
 <translation id="6896758677409633944">Copier</translation>
+<translation id="6900532703269623216">Protection renforcée</translation>
 <translation id="6903907808598579934">Activer la synchronisation</translation>
 <translation id="6942665639005891494">Vous pouvez changer le dossier de téléchargement par défaut en tout temps grâce à l'option de menu Paramètres.</translation>
 <translation id="6945221475159498467">Sélectionner</translation>

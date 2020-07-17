@@ -27,19 +27,20 @@ class EditableTextNode extends NodeWrapper {
       actions.splice(selectIndex, 1);
     }
 
-    actions.push(SwitchAccessMenuAction.KEYBOARD);
-    actions.push(SwitchAccessMenuAction.DICTATION);
+    actions.unshift(
+        SwitchAccessMenuAction.KEYBOARD, SwitchAccessMenuAction.DICTATION);
 
     if (SwitchAccess.instance.improvedTextInputEnabled()) {
-      actions.push(SwitchAccessMenuAction.MOVE_CURSOR);
-      actions.push(SwitchAccessMenuAction.JUMP_TO_BEGINNING_OF_TEXT);
-      actions.push(SwitchAccessMenuAction.JUMP_TO_END_OF_TEXT);
-      actions.push(SwitchAccessMenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT);
-      actions.push(SwitchAccessMenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT);
-      actions.push(SwitchAccessMenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT);
-      actions.push(SwitchAccessMenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT);
-      actions.push(SwitchAccessMenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT);
-      actions.push(SwitchAccessMenuAction.MOVE_UP_ONE_LINE_OF_TEXT);
+      actions.push(
+          SwitchAccessMenuAction.MOVE_CURSOR,
+          SwitchAccessMenuAction.JUMP_TO_BEGINNING_OF_TEXT,
+          SwitchAccessMenuAction.JUMP_TO_END_OF_TEXT,
+          SwitchAccessMenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT,
+          SwitchAccessMenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT,
+          SwitchAccessMenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT,
+          SwitchAccessMenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT,
+          SwitchAccessMenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT,
+          SwitchAccessMenuAction.MOVE_UP_ONE_LINE_OF_TEXT);
 
       actions.push(SwitchAccessMenuAction.START_TEXT_SELECTION);
       if (TextNavigationManager.currentlySelecting()) {
@@ -47,8 +48,7 @@ class EditableTextNode extends NodeWrapper {
       }
 
       if (TextNavigationManager.selectionExists) {
-        actions.push(SwitchAccessMenuAction.CUT);
-        actions.push(SwitchAccessMenuAction.COPY);
+        actions.push(SwitchAccessMenuAction.CUT, SwitchAccessMenuAction.COPY);
       }
       if (TextNavigationManager.clipboardHasData) {
         actions.push(SwitchAccessMenuAction.PASTE);

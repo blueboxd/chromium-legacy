@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="1008557486741366299">ليس الآن</translation>
+<translation id="100957008357583611">هل تريد استخدام موقعك الجغرافي؟</translation>
 <translation id="1010200102790553230">تحميل الصفحة لاحقًا</translation>
 <translation id="1015730422737071372">تقديم تفاصيل إضافية</translation>
 <translation id="1019413721762100891">غير مفعّل</translation>
@@ -425,7 +426,6 @@
 <translation id="2705137772291741111">تعذر قراءة النسخة المحفوظة (المخزنة في ذاكرة التخزين المؤقت) للموقع الإلكتروني هذا.</translation>
 <translation id="2709516037105925701">الملء التلقائي</translation>
 <translation id="2713444072780614174">أبيض</translation>
-<translation id="2720342946869265578">المجاورة</translation>
 <translation id="2721148159707890343">تم إرسال الطلب بنجاح</translation>
 <translation id="272451190272506600">المس المستشعر لإجراء الدفع</translation>
 <translation id="2728127805433021124">شهادة الخادم موقّعة باستخدام خوارزمية توقيع ضعيفة.</translation>
@@ -722,7 +722,6 @@
 <translation id="3990250421422698716">ترتيب النسخ مع الفصل بينها</translation>
 <translation id="3996311196211510766">لقد طلب الموقع الإلكتروني <ph name="ORIGIN" /> تطبيق سياسة المصدر
     على جميع الطلبات المقدَّمة إليه، ولكن يتعذّر تطبيق هذه السياسة حاليًا.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{صفحة ويب واحدة مجاورة}zero{# صفحات ويب مجاورة}two{صفحتا ويب (#) مجاورتان}few{# صفحات ويب مجاورة}many{# صفحة ويب مجاورة}other{# صفحة ويب مجاورة}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{‏مستند PDF يتألف من صفحة واحدة ({COUNT})}zero{‏مستند PDF يتألف من {COUNT} صفحة}two{‏مستند PDF يتألف من صفحتين ({COUNT})}few{‏مستند PDF يتألف من {COUNT} صفحات}many{‏مستند PDF يتألف من {COUNT} صفحة}other{‏مستند PDF يتألف من {COUNT} صفحة}}</translation>
 <translation id="4030383055268325496">تراجع عن الإ&amp;ضافة</translation>
 <translation id="4032320456957708163">إدارة متصفِّحك من خلال <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -940,7 +939,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />، <ph name="TYPE_2" />، <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">حفظ...</translation>
 <translation id="4913987521957242411">عمل ثقب أعلى اليسار</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{وصفحة ويب واحدة إضافية}zero{و# صفحة ويب إضافية}two{وصفحتا ويب (#) إضافيتان}few{و# صفحات ويب إضافية}many{و# صفحة ويب إضافية}other{و# صفحة ويب إضافية}}</translation>
 <translation id="4923459931733593730">الدفع</translation>
 <translation id="4926049483395192435">يجب تحديدها.</translation>
 <translation id="4926159001844873046">يعرض موقع <ph name="SITE" /></translation>
@@ -1181,6 +1179,7 @@
 <translation id="5869405914158311789">لا يمكن الوصول إلى الموقع الإلكتروني هذا</translation>
 <translation id="5869522115854928033">كلمات المرور المحفوظة</translation>
 <translation id="5887400589839399685">تم حفظ البطاقة</translation>
+<translation id="589006512797629854">يطلُب <ph name="ENROLLMENT_DOMAIN" /> منك الاحتفاظ بنسخة احتياطية من بياناتك وإرجاع هذا الجهاز.</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
 <translation id="5895187275912066135">تاريخ الإصدار</translation>
 <translation id="5901630391730855834">أصفر</translation>
@@ -1331,7 +1330,6 @@
 <translation id="6518133107902771759">تحقق</translation>
 <translation id="6521745193039995384">غير مفعلة</translation>
 <translation id="6529602333819889595">إعادة الح&amp;ذف</translation>
-<translation id="6534179046333460208">اقتراحات الشبكة المادية</translation>
 <translation id="6545864417968258051">البحث عن بلوتوث</translation>
 <translation id="6547208576736763147">عمل ثقبَين يسارًا</translation>
 <translation id="6554795675067793129">يدير <ph name="ENROLLMENT_DOMAIN" /> حسابك.</translation>
@@ -1854,7 +1852,6 @@
 <translation id="8790007591277257123">إعادة الح&amp;ذف</translation>
 <translation id="8792621596287649091">‏قد تفقد إمكانية الوصول إلى حسابك على <ph name="ORG_NAME" /> أو تتعرض لسرقة هويتك. لذا يوصي Chromium بتغيير كلمة مرورك الآن.</translation>
 <translation id="8793655568873652685">‏تم تفعيل "وصلات Chrome Enterprise" على متصفّحك من قِبل <ph name="ENROLLMENT_DOMAIN" />. لدى هذه الوصلات إذن بالوصول إلى بعض بياناتك.</translation>
-<translation id="8800988563907321413">تظهر اقتراحاتك "المجاورة" هنا</translation>
 <translation id="8805819170075074995">‏إدخال في القائمة "<ph name="LANGUAGE_ID" />": تم تجاهل الإدخال لأنه مضمّن في سياسة SpellcheckLanguage أيضًا.</translation>
 <translation id="8807160976559152894">القطع بعد كل صفحة</translation>
 <translation id="8820817407110198400">الإشارات المرجعية</translation>

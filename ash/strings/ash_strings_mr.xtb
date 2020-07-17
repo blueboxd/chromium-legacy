@@ -98,6 +98,7 @@
 <translation id="1995660704900986789">बंद करा</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">मेसेज टाइप करा</translation>
+<translation id="2018630726571919839">मला एक विनोद सांगा</translation>
 <translation id="2050339315714019657">पोर्ट्रेट</translation>
 <translation id="2067602449040652523">कीबोर्डची चमक</translation>
 <translation id="209965399369889474">नेटवर्कशी कनेक्ट केलेले नाही</translation>
@@ -125,6 +126,7 @@
 <translation id="2354174487190027830"><ph name="NAME" /> सक्रिय करत आहे</translation>
 <translation id="2359808026110333948">सुरू ठेवा</translation>
 <translation id="2365393535144473978">मोबाइल डेटा सुरू केल्याने ब्लूटूथ सुरू होईल.</translation>
+<translation id="2369165858548251131">चिनी भाषेत "हॅलो"</translation>
 <translation id="2390318262976603432">लोकॅल सेटिंग्ज</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">अपडेट उपलब्ध आहे</translation>
@@ -142,6 +144,7 @@
 <translation id="256712445991462162">डॉक केलेले मॅग्निफायर</translation>
 <translation id="2575685495496069081">एकाहून अधिक साइन इन बंद करण्यात आले आहे</translation>
 <translation id="2582112259361606227">अपडेट करण्यासाठी रीस्टार्ट करा</translation>
+<translation id="2595239820337756193">५००० मैल</translation>
 <translation id="2617342710774726426">सिम कार्ड लॉक केले आहे</translation>
 <translation id="2621713457727696555">सुरक्षित</translation>
 <translation id="2653659639078652383">सबमिट करा</translation>
@@ -195,6 +198,7 @@
 <translation id="3154351730702813399">डिव्हाइस प्रशासक कदाचित आपल्या ब्राउझिंग क्रियाकलापाचे परीक्षण करू शकतो.</translation>
 <translation id="3181441307743005334">रीस्टार्टला थोडा वेळ लागू शकतो</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{डिव्हाइसशी कनेक्ट केले}other{# डिव्हाइसशी कनेक्ट केले}}</translation>
+<translation id="320207200541803018">टायमर सेट करा</translation>
 <translation id="3203405173652969239">स्विच अ‍ॅक्सेस सुरू केले</translation>
 <translation id="3207953481422525583">वापरकर्ता सेटिंग्ज</translation>
 <translation id="3217205077783620295">व्हॉल्यूम सुरू आहे, टॉगल केल्याने ऑडिओ म्यूट होईल.</translation>
@@ -207,6 +211,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> नंतरही साइन इन करू शकतो.</translation>
 <translation id="3321628682574733415">चुकीचा पालक कोड</translation>
 <translation id="332587331255250389">कृपया बॅटरी बदला</translation>
+<translation id="334252345105450327">स्क्रीनशॉट घ्या</translation>
 <translation id="3351879221545518001">तुम्ही सध्या स्क्रीन कास्ट करत आहात.</translation>
 <translation id="3364721542077212959">स्टायलस टूल</translation>
 <translation id="3368922792935385530">कनेक्ट केले</translation>
@@ -239,6 +244,7 @@
 <translation id="3631369015426612114">यांना सूचना पाठवू द्या</translation>
 <translation id="3638400994746983214">गोपनीयता स्क्रीन टॉगल करा. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> व्यवस्थापित वापरकर्ता</translation>
+<translation id="3702846122927433391">नायजेरियामधील लोकसंख्या</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">विभाग कॅप्‍चर करा</translation>
 <translation id="371370241367527062">समोरील मायक्रोफोन</translation>
@@ -519,6 +525,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> मध्ये जुन्या रिझोल्युशनवर परत करत आहे</translation>
 <translation id="7188494361780961876">मेनू स्क्रीनच्या वरच्या डाव्या कोपर्‍यात हलवला.</translation>
+<translation id="7189412385142492784">शुक्र किती दूर आहे</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. अपडेट लागू करण्यासाठी तुम्ही हे Chromebook रीस्टार्ट करणे आवश्यक आहे. याला सुमारे एक मिनिट लागू शकते.</translation>
 <translation id="7256634071279256947">मागील मायक्रोफोन</translation>
 <translation id="726276584504105859">विभाजित स्क्रीन वापरण्यासाठी येथे ड्रॅग करा</translation>
@@ -645,6 +652,7 @@
 <translation id="8649101189709089199">बोलण्यासाठी निवडा</translation>
 <translation id="8652175077544655965">सेटिंग्ज बंद करा</translation>
 <translation id="8653151467777939995">सूचना सेटिंग्ज दाखवा. सूचना सुरू आहेत</translation>
+<translation id="8660331759611631213">७१ चे वर्गमूळ</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">नेटवर्क सूची दाखवा. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

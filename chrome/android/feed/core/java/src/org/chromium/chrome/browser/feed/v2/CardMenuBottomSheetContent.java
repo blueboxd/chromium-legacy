@@ -62,7 +62,7 @@ public class CardMenuBottomSheetContent implements BottomSheetContent {
 
     @Override
     public boolean handleBackPress() {
-        return true;
+        return false;
     }
 
     @Override

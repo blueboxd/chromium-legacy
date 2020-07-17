@@ -20,6 +20,8 @@
 <translation id="2730884209570016437">Chromium tidak dapat menggunakan kamera karena sedang digunakan aplikasi lain</translation>
 <translation id="2915596697727466327">Chromium menggunakan Face ID untuk memastikan akses terotorisasi ke sandi Anda.</translation>
 <translation id="3256316712990552818">Disalin ke Chromium</translation>
+<translation id="3344973607274501920">Chromium tidak dapat memeriksa sandi Anda. Coba periksa koneksi internet Anda.</translation>
+<translation id="3639997914391704523">Chromium dapat memeriksa sandi saat Anda login dengan Akun Google.</translation>
 <translation id="3805899903892079518">Chromium tidak memiliki akses ke foto atau video Anda. Izinkan akses di iOS Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="4555020257205549924">Saat fitur ini diaktifkan, Chromium akan menawarkan untuk menerjemahkan halaman yang ditulis dalam bahasa lain menggunakan Google Terjemahan. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Aktifkan pemindai Chromium</translation>
@@ -27,6 +29,7 @@
 <translation id="4999538639245140991">Karena Anda logout dari akun yang dikelola oleh <ph name="SIGNOUT_MANAGED_DOMAIN" />, data Chromium Anda akan dihapus dari perangkat ini. Data Anda akan tetap tersedia di Akun Google Anda.</translation>
 <translation id="5521125884468363740">Untuk melihat tab Chromium Anda dari perangkat lain, login dan aktifkan sinkronisasi</translation>
 <translation id="5573014823074921752">Tips Chromium. Untuk opsi tab lainnya, sentuh lama tombol Tampilkan Tab di toolbar, yang terdapat di bagian bawah atau atas layar.</translation>
+<translation id="5700709190537129682">Chromium tidak dapat memeriksa sandi Anda</translation>
 <translation id="5777187867430702742">Halaman Chromium</translation>
 <translation id="5862307444128926510">Selamat Datang di Chromium</translation>
 <translation id="5945387852661427312">Anda masuk dengan akun yang dikelola oleh <ph name="DOMAIN" /> dan memberikan kontrol data Chromium kepada administrator. Data Anda akan terikat dengan akun ini secara permanen. Bila Anda keluar dari Chromium, data akan dihapus dari perangkat ini, namun tetap disimpan di Akun Google.</translation>
@@ -34,6 +37,7 @@
 <translation id="6268381023930128611">Keluar dari Chromium?</translation>
 <translation id="6424492062988593837">Chromium jadi semakin baik! Versi baru telah tersedia.</translation>
 <translation id="6604711459180487467">Dapatkan pengalaman yang lebih baik di Chromium berdasarkan lokasi Anda.</translation>
+<translation id="6820823224820483452">Chromium tidak dapat memeriksa semua sandi. Coba lagi besok.</translation>
 <translation id="7099326575020694068">Chromium tidak dapat menggunakan kamera dalam mode Layar Terpisah</translation>
 <translation id="7208566199746267865">Chromium menghemat waktu Anda dengan membawa akun ke web. Anda dapat menambahkan atau menghapus akun di Setelan.</translation>
 <translation id="7269362888766543920">Beberapa add-on telah menyebabkan Chromium berhenti bekerja. Harap coba uninstal.</translation>
@@ -42,6 +46,7 @@
 <translation id="7400689562045506105">Gunakan Chromium di Mana Saja</translation>
 <translation id="7674213385180944843">Buka Setelan &gt; Privasi &gt; Kamera &gt; Chromium, lalu aktifkan kamera.</translation>
 <translation id="7746854981345936341">Tips Chromium. Beberapa tombol sekarang terdapat di bagian bawah layar, seperti Kembali, Teruskan, dan Telusuri.</translation>
+<translation id="7798909783578470546">Chromium tidak dapat memeriksa semua sandi. Coba lagi.</translation>
 <translation id="786327964234957808">Anda berganti akun sinkronisasi dari <ph name="USER_EMAIL1" /> ke <ph name="USER_EMAIL2" />. Data Chromium Anda yang sudah ada dikelola oleh <ph name="DOMAIN" />. Tindakan ini akan menghapus data dari perangkat, namun data Anda akan tetap tersedia di <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Mulai menggunakan pemindai Chromium</translation>
 <translation id="8013573822802650211">Untuk melihat tab Chromium Anda dari perangkat lain, login ke semua perangkat Anda</translation>
@@ -51,5 +56,6 @@
 <translation id="8586442755830160949">Hak Cipta <ph name="YEAR" /> Pengarang Chromium. Semua hak dilindungi undang-undang.</translation>
 <translation id="8776843108004031667">Akun ini dan semua data yang tidak disimpan akan dihapus dari Chromium.</translation>
 <translation id="9022552996538154597">Login ke Chromium</translation>
+<translation id="921174536258924340">Chromium tidak dapat memeriksa semua sandi. Coba lagi besok atau <ph name="BEGIN_LINK" />periksa sandi di Akun Google Anda<ph name="END_LINK" />.</translation>
 <translation id="985602178874221306">Pengarang Chromium</translation>
 </translationbundle>

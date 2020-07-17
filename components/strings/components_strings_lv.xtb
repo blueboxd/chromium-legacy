@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="1008557486741366299">Vēlāk</translation>
+<translation id="100957008357583611">Vai izmantot jūsu atrašanās vietas datus?</translation>
 <translation id="1010200102790553230">Ielādēt lapu vēlāk</translation>
 <translation id="1015730422737071372">Sniegt papildu informāciju</translation>
 <translation id="1019413721762100891">Izsl.</translation>
@@ -425,7 +426,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="2705137772291741111">Nevar nolasīt šīs vietnes saglabāto (kešatmiņā ievietoto) kopiju.</translation>
 <translation id="2709516037105925701">Automātiskā aizpilde</translation>
 <translation id="2713444072780614174">Balta</translation>
-<translation id="2720342946869265578">Tuvumā</translation>
 <translation id="2721148159707890343">Pieprasījums bija veiksmīgs.</translation>
 <translation id="272451190272506600">Pieskarieties sensoram, lai samaksātu.</translation>
 <translation id="2728127805433021124">Servera sertifikāts ir parakstīts, izmantojot vāju paraksta algoritmu.</translation>
@@ -719,7 +719,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="3990250421422698716">Ofseta izlīdzināšana</translation>
 <translation id="3996311196211510766">Vietne <ph name="ORIGIN" /> ir pieprasījusi, lai izcelsmes politika attiektos uz visu
     tās pieprasījumu, taču šobrīd šo politiku nevar piemērot.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{Tuvumā ir 1 tīmekļa lapa}zero{Tuvumā ir # tīmekļa lapas}one{Tuvumā ir # tīmekļa lapa}other{Tuvumā ir # tīmekļa lapas}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF dokumentā ir {COUNT} lapa}zero{PDF dokumentā ir {COUNT} lapas}one{PDF dokumentā ir {COUNT} lapa}other{PDF dokumentā ir {COUNT} lapas}}</translation>
 <translation id="4030383055268325496">&amp;Atsaukt pievienošanu</translation>
 <translation id="4032320456957708163">Jūsu pārlūku pārvalda <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -937,7 +936,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Saglabāt...</translation>
 <translation id="4913987521957242411">Caurums augšējā kreisajā malā</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{un vēl 1 tīmekļa lapa}zero{un vēl # tīmekļa lapas}one{un vēl # tīmekļa lapa}other{un vēl # tīmekļa lapas}}</translation>
 <translation id="4923459931733593730">Maksājums</translation>
 <translation id="4926049483395192435">Jābūt norādītai.</translation>
 <translation id="4926159001844873046">Vietnē <ph name="SITE" /> ir rakstīts</translation>
@@ -1178,6 +1176,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="5869405914158311789">Šī vietne nav sasniedzama</translation>
 <translation id="5869522115854928033">Saglabātās paroles</translation>
 <translation id="5887400589839399685">Kartīte ir saglabāta</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> pieprasa, lai jūs dublētu datus un atdotu šo ierīci atpakaļ.</translation>
 <translation id="5895138241574237353">Restartēt</translation>
 <translation id="5895187275912066135">Izsniegšanas datums</translation>
 <translation id="5901630391730855834">Dzeltena</translation>
@@ -1328,7 +1327,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="6518133107902771759">Verificēt</translation>
 <translation id="6521745193039995384">Nav aktīva</translation>
 <translation id="6529602333819889595">&amp;Dzēšanas atsaukuma atcelšana</translation>
-<translation id="6534179046333460208">Fiziskā tīmekļa ieteikumi</translation>
 <translation id="6545864417968258051">Bluetooth meklēšana</translation>
 <translation id="6547208576736763147">Divi caurumi kreisajā pusē</translation>
 <translation id="6554795675067793129">Jūsu kontu pārvalda <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1851,7 +1849,6 @@ Papildu informācija:
 <translation id="8790007591277257123">&amp;Atcelt dzēšanas atsaukšanu</translation>
 <translation id="8792621596287649091">Varat zaudēt piekļuvi savam <ph name="ORG_NAME" /> kontam, vai jūsu identitāte var tikt nozagta. Chromium iesaka nekavējoties nomainīt paroli.</translation>
 <translation id="8793655568873652685">Domēns <ph name="ENROLLMENT_DOMAIN" /> ir iespējojis savienotājus Chrome Enterprise Connectors jūsu pārlūkā. Šie savienotāji var piekļūt daļai jūsu datu.</translation>
-<translation id="8800988563907321413">Šeit tiks parādīti funkcijas Tuvumā ieteikumi</translation>
 <translation id="8805819170075074995">Saraksta ieraksts “<ph name="LANGUAGE_ID" />”: ieraksts tiek ignorēts, jo tas ir iekļauts arī SpellcheckLanguage politikā.</translation>
 <translation id="8807160976559152894">Apgriešana pēc katras lapas</translation>
 <translation id="8820817407110198400">Grāmatzīmes</translation>

@@ -406,14 +406,6 @@ TEST_P(EXTBlendFuncExtendedES3DrawTest, ES3Getters) {
   if (!IsApplicable())
     return;
 
-  // TODO(jonahr): Test fails on Linux NVIDIA with ANGLE/passthrough
-  // (crbug.com/1099763)
-  gpu::GPUTestBotConfig bot_config;
-  if (bot_config.LoadCurrentConfig(nullptr) &&
-      (bot_config.Matches("linux nvidia passthrough"))) {
-    return;
-  }
-
   // clang-format off
   static const char* kFragColorShader =
       "#version 300 es\n"

@@ -11,7 +11,6 @@
 #include <limits>
 #include <map>
 #include <set>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -344,21 +343,21 @@ std::vector<RenderProcessHostCreationObserver*>& GetAllCreationObservers() {
 // site in process-per-site mode.  Each map is specific to a BrowserContext.
 class SiteProcessMap : public base::SupportsUserData::Data {
  public:
-  typedef std::unordered_map<std::string, RenderProcessHost*> SiteToProcessMap;
-  SiteProcessMap() {}
+  typedef std::map<SiteInfo, RenderProcessHost*> SiteToProcessMap;
+  SiteProcessMap() = default;
 
-  void RegisterProcess(const std::string& site, RenderProcessHost* process) {
+  void RegisterProcess(const SiteInfo& site_info, RenderProcessHost* process) {
     // There could already exist a site to process mapping due to races between
     // two WebContents with blank SiteInstances. If that occurs, keeping the
     // existing entry and not overwriting it is a predictable behavior that is
     // safe.
-    auto i = map_.find(site);
+    auto i = map_.find(site_info);
     if (i == map_.end())
-      map_[site] = process;
+      map_[site_info] = process;
   }
 
-  RenderProcessHost* FindProcess(const std::string& site) {
-    auto i = map_.find(site);
+  RenderProcessHost* FindProcess(const SiteInfo& site_info) {
+    auto i = map_.find(site_info);
     if (i != map_.end())
       return i->second;
     return nullptr;
@@ -367,13 +366,13 @@ class SiteProcessMap : public base::SupportsUserData::Data {
   void RemoveProcess(RenderProcessHost* host) {
     // Find all instances of this process in the map, then separately remove
     // them.
-    std::set<std::string> sites;
+    std::set<SiteInfo> site_info_set;
     for (SiteToProcessMap::const_iterator i = map_.begin(); i != map_.end();
          ++i) {
       if (i->second == host)
-        sites.insert(i->first);
+        site_info_set.insert(i->first);
     }
-    for (auto i = sites.begin(); i != sites.end(); ++i) {
+    for (auto i = site_info_set.begin(); i != site_info_set.end(); ++i) {
       auto iter = map_.find(*i);
       if (iter != map_.end()) {
         DCHECK_EQ(iter->second, host);
@@ -797,7 +796,7 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
 
   void IncrementSiteProcessCount(const SiteInfo& site_info,
                                  int render_process_host_id) {
-    std::map<ProcessID, Count>& counts_per_process = map_[site_info.site_url()];
+    std::map<ProcessID, Count>& counts_per_process = map_[site_info];
     ++counts_per_process[render_process_host_id];
 
 #ifndef NDEBUG
@@ -811,7 +810,7 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
 
   void DecrementSiteProcessCount(const SiteInfo& site_info,
                                  int render_process_host_id) {
-    auto result = map_.find(site_info.site_url());
+    auto result = map_.find(site_info);
     DCHECK(result != map_.end());
     std::map<ProcessID, Count>& counts_per_process = result->second;
 
@@ -822,14 +821,14 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
       counts_per_process.erase(render_process_host_id);
 
     if (counts_per_process.empty())
-      map_.erase(site_info.site_url());
+      map_.erase(site_info);
   }
 
   void FindRenderProcessesForSiteInstance(
       SiteInstanceImpl* site_instance,
       std::set<RenderProcessHost*>* foreground_processes,
       std::set<RenderProcessHost*>* background_processes) {
-    auto result = map_.find(site_instance->GetSiteInfo().site_url());
+    auto result = map_.find(site_instance->GetSiteInfo());
     if (result == map_.end())
       return;
 
@@ -876,8 +875,8 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
       // only have a site URL here.  For now, this mismatch is ok since
       // ShouldAssignSiteForURL() only cares about schemes in practice, but
       // this should be cleaned up.
-      if (!SiteInstanceImpl::ShouldAssignSiteForURL(iter.first) &&
-          !iter.first.IsAboutBlank() &&
+      if (!SiteInstanceImpl::ShouldAssignSiteForURL(iter.first.site_url()) &&
+          !iter.first.site_url().IsAboutBlank() &&
           base::Contains(iter.second, host->GetID()))
         return true;
     }
@@ -909,8 +908,8 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
 
   using ProcessID = int;
   using Count = int;
-  // TODO(wjmaclean): Convert the key from GURL to a SiteInfo hashkey.
-  using CountPerProcessPerSiteMap = std::map<GURL, std::map<ProcessID, Count>>;
+  using CountPerProcessPerSiteMap =
+      std::map<SiteInfo, std::map<ProcessID, Count>>;
   CountPerProcessPerSiteMap map_;
 };
 
@@ -1029,16 +1028,15 @@ class UnmatchedServiceWorkerProcessTracker
 
  private:
   using ProcessID = int;
-  // TODO(wjmaclean): Convert the pair to use SiteInfo hashkey instead of GURL.
-  using SiteProcessIDPair = std::pair<GURL, ProcessID>;
+  using SiteProcessIDPair = std::pair<SiteInfo, ProcessID>;
   using SiteProcessIDPairSet = std::set<SiteProcessIDPair>;
 
   void RegisterProcessForSite(RenderProcessHost* host,
                               SiteInstanceImpl* site_instance) {
     if (!HasProcess(host))
       host->AddObserver(this);
-    site_process_set_.insert(SiteProcessIDPair(
-        site_instance->GetSiteInfo().site_url(), host->GetID()));
+    site_process_set_.insert(
+        SiteProcessIDPair(site_instance->GetSiteInfo(), host->GetID()));
   }
 
   RenderProcessHost* TakeFreshestProcessForSite(
@@ -1079,13 +1077,13 @@ class UnmatchedServiceWorkerProcessTracker
       // default SiteInstance. This allows the default SiteInstance to reuse a
       // service worker process for any site that has been associated with it.
       for (const auto& site_process_pair : reversed_site_process_set) {
-        if (site_instance->IsSiteInDefaultSiteInstance(site_process_pair.first))
+        if (site_instance->IsSiteInDefaultSiteInstance(
+                site_process_pair.first.site_url()))
           return site_process_pair;
       }
     } else {
-      const GURL site_url(site_instance->GetSiteInfo().site_url());
       for (const auto& site_process_pair : reversed_site_process_set) {
-        if (site_process_pair.first == site_url)
+        if (site_process_pair.first == site_instance->GetSiteInfo())
           return site_process_pair;
       }
     }
@@ -4329,9 +4327,8 @@ RenderProcessHost* RenderProcessHostImpl::GetSoleProcessHostForSite(
 
   // See if we have an existing process with appropriate bindings for this
   // site. If not, the caller should create a new process and register it.
-  // Note that IsSuitableHost expects a site URL rather than the full |url|.
-  const GURL& site_url = site_info.site_url();
-  RenderProcessHost* host = map->FindProcess(site_url.possibly_invalid_spec());
+  // Note that IsSuitableHost expects a SiteInfo rather than the full |url|.
+  RenderProcessHost* host = map->FindProcess(site_info);
   if (host && (!host->MayReuseHost() ||
                !IsSuitableHost(host, isolation_context, site_info, is_guest))) {
     // The registered process does not have an appropriate set of bindings for
@@ -4359,10 +4356,8 @@ void RenderProcessHostImpl::RegisterSoleProcessHostForSite(
   // use process-per-site mode.  We cannot check whether the process has
   // appropriate bindings here, because the bindings have not yet been
   // granted.
-  std::string site =
-      site_instance->GetSiteInfo().site_url().possibly_invalid_spec();
-  if (!site.empty())
-    map->RegisterProcess(site, process);
+  if (!site_instance->GetSiteInfo().is_empty())
+    map->RegisterProcess(site_instance->GetSiteInfo(), process);
 }
 
 // static

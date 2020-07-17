@@ -65,8 +65,8 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   bool GpuRemoveGraphicsDevice(const base::FilePath& path) override;
 
   // Services needed by DrmDisplayHost
-  void GpuConfigureNativeDisplay(
-      const display::DisplayConfigurationParams& display_config_params,
+  void GpuConfigureNativeDisplays(
+      const std::vector<display::DisplayConfigurationParams>& config_requests,
       display::ConfigureCallback callback) override;
   bool GpuGetHDCPState(int64_t display_id) override;
   bool GpuSetHDCPState(int64_t display_id, display::HDCPState state) override;

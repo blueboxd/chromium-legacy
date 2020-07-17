@@ -44,8 +44,8 @@ class GpuThreadAdapter {
   virtual bool GpuRemoveGraphicsDevice(const base::FilePath& path) = 0;
 
   // Services needed by DrmDisplayHost
-  virtual void GpuConfigureNativeDisplay(
-      const display::DisplayConfigurationParams& display_config_params,
+  virtual void GpuConfigureNativeDisplays(
+      const std::vector<display::DisplayConfigurationParams>& config_requests,
       display::ConfigureCallback callback) = 0;
   virtual bool GpuGetHDCPState(int64_t display_id) = 0;
   virtual bool GpuSetHDCPState(int64_t display_id,

@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import android.app.Activity;
 import android.support.test.filters.SmallTest;
 import android.view.Window;
+import android.view.WindowManager.LayoutParams;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -72,6 +73,7 @@ public class DisplayCutoutControllerTest {
         // Mock dependency on InsetObserverView.
 
         when(mChromeActivity.getWindow()).thenReturn(mWindow);
+        when(mWindow.getAttributes()).thenReturn(new LayoutParams());
         when(mTab.getWindowAndroid()).thenReturn(mWindowAndroid);
         when(mWindowAndroid.getActivity()).thenReturn(mActivityRef);
         when(mChromeActivity.getInsetObserverView()).thenReturn(mInsetObserver);
@@ -103,7 +105,7 @@ public class DisplayCutoutControllerTest {
         when(mTab.isUserInteractable()).thenReturn(true);
 
         mDisplayCutoutController.setViewportFit(ViewportFit.AUTO);
-        Assert.assertEquals("LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT",
+        Assert.assertEquals(LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT,
                 mDisplayCutoutController.getDisplayCutoutMode());
     }
 
@@ -113,7 +115,7 @@ public class DisplayCutoutControllerTest {
         when(mTab.isUserInteractable()).thenReturn(true);
 
         mDisplayCutoutController.setViewportFit(ViewportFit.COVER);
-        Assert.assertEquals("LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES",
+        Assert.assertEquals(LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES,
                 mDisplayCutoutController.getDisplayCutoutMode());
     }
 
@@ -123,7 +125,7 @@ public class DisplayCutoutControllerTest {
         when(mTab.isUserInteractable()).thenReturn(true);
 
         mDisplayCutoutController.setViewportFit(ViewportFit.COVER_FORCED_BY_USER_AGENT);
-        Assert.assertEquals("LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES",
+        Assert.assertEquals(LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES,
                 mDisplayCutoutController.getDisplayCutoutMode());
     }
 
@@ -133,7 +135,7 @@ public class DisplayCutoutControllerTest {
         when(mTab.isUserInteractable()).thenReturn(true);
 
         mDisplayCutoutController.setViewportFit(ViewportFit.CONTAIN);
-        Assert.assertEquals("LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER",
+        Assert.assertEquals(LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER,
                 mDisplayCutoutController.getDisplayCutoutMode());
     }
 
@@ -141,7 +143,7 @@ public class DisplayCutoutControllerTest {
     @SmallTest
     public void testCutoutModeWhenAutoAndNotInteractable() {
         mDisplayCutoutController.setViewportFit(ViewportFit.AUTO);
-        Assert.assertEquals("LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT",
+        Assert.assertEquals(LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT,
                 mDisplayCutoutController.getDisplayCutoutMode());
     }
 
@@ -149,7 +151,7 @@ public class DisplayCutoutControllerTest {
     @SmallTest
     public void testCutoutModeWhenCoverAndNotInteractable() {
         mDisplayCutoutController.setViewportFit(ViewportFit.COVER);
-        Assert.assertEquals("LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT",
+        Assert.assertEquals(LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT,
                 mDisplayCutoutController.getDisplayCutoutMode());
     }
 
@@ -157,7 +159,7 @@ public class DisplayCutoutControllerTest {
     @SmallTest
     public void testCutoutModeWhenCoverForcedAndNotInteractable() {
         mDisplayCutoutController.setViewportFit(ViewportFit.COVER_FORCED_BY_USER_AGENT);
-        Assert.assertEquals("LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT",
+        Assert.assertEquals(LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT,
                 mDisplayCutoutController.getDisplayCutoutMode());
     }
 
@@ -165,7 +167,7 @@ public class DisplayCutoutControllerTest {
     @SmallTest
     public void testCutoutModeWhenContainAndNotInteractable() {
         mDisplayCutoutController.setViewportFit(ViewportFit.CONTAIN);
-        Assert.assertEquals("LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT",
+        Assert.assertEquals(LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT,
                 mDisplayCutoutController.getDisplayCutoutMode());
     }
 

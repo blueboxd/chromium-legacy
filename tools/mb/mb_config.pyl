@@ -1997,19 +1997,19 @@
     ],
 
     'libfuzzer_asan_debug_bot': [
-      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus', 'mojo_fuzzer',
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
     ],
 
     'libfuzzer_asan_debug_bot_v8_arm64': [
-      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'v8_simulate_arm64', 'disable_seed_corpus', 'mojo_fuzzer',
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'v8_simulate_arm64', 'disable_seed_corpus',
     ],
 
     'libfuzzer_asan_debug_bot_x86': [
-      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86', 'x86_host',  'disable_seed_corpus', 'mojo_fuzzer',
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86', 'x86_host',  'disable_seed_corpus',
     ],
 
     'libfuzzer_asan_debug_bot_x86_v8_arm': [
-      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm',  'disable_seed_corpus', 'mojo_fuzzer',
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm',  'disable_seed_corpus',
     ],
 
     'libfuzzer_chromeos_asan_release_bot': [

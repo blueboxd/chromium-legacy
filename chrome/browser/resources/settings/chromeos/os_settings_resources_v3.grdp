@@ -257,6 +257,11 @@
            use_base_dir="false"
            compress="false"
            type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_DIALOG_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/nearby_share_page/nearby_share_device_name_dialog.m.js"
+           use_base_dir="false"
+           compress="false"
+           type="BINDATA" />
   <include name="IDR_OS_SETTINGS_ROUTER_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/router.m.js"
            use_base_dir="false"

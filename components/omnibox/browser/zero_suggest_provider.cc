@@ -518,12 +518,9 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
 
   MatchMap map;
 
-  // Add all the SuggestResults to the map, re-classifying based on the
-  // permanent text as we go. This is to make ZeroSuggest results formatted in
-  // a congruent way with as-you-type search suggestions.
+  // Add all the SuggestResults to the map. We display all ZeroSuggest search
+  // suggestions as unbolded.
   for (size_t i = 0; i < results_.suggest_results.size(); ++i) {
-    results_.suggest_results[i].ClassifyMatchContents(true, permanent_text_);
-
     AddMatchToMap(results_.suggest_results[i], std::string(), i, false, false,
                   &map);
   }

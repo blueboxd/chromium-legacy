@@ -292,9 +292,10 @@ Process LaunchProcess(const std::vector<std::string>& argv,
                       &argv_cstr[0], new_environ);
 
     if (has_mach_ports_for_rendezvous) {
-      auto* rendezvous = MachPortRendezvousServer::GetInstance();
       if (rv == 0) {
-        rendezvous->RegisterPortsForPid(pid, options.mach_ports_for_rendezvous);
+        MachPortRendezvousServer::GetInstance()->GetLock().AssertAcquired();
+        MachPortRendezvousServer::GetInstance()->RegisterPortsForPid(
+            pid, options.mach_ports_for_rendezvous);
       } else {
         // Because |options| is const-ref, the collection has to be copied here.
         // The caller expects to relinquish ownership of any strong rights if

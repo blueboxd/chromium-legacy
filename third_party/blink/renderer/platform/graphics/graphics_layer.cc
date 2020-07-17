@@ -72,6 +72,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       contents_visible_(true),
       hit_testable_(false),
       needs_check_raster_invalidation_(false),
+      should_create_layers_after_paint_(false),
       painting_phase_(kGraphicsLayerPaintAllWithOverflowClip),
       parent_(nullptr),
       raster_invalidation_function_(
@@ -301,6 +302,7 @@ bool GraphicsLayer::Paint() {
 
   if (PaintWithoutCommit()) {
     GetPaintController().CommitNewDisplayItems();
+    UpdateShouldCreateLayersAfterPaint();
     UpdateSafeOpaqueBackgroundColor();
   } else if (!needs_check_raster_invalidation_) {
     return false;
@@ -315,23 +317,25 @@ bool GraphicsLayer::Paint() {
 
   DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
   // Generate raster invalidations for SPv1.
-  IntRect layer_bounds(layer_state_->offset, IntSize(Size()));
-  EnsureRasterInvalidator().Generate(
-      raster_invalidation_function_,
-      GetPaintController().GetPaintArtifactShared(), layer_bounds,
-      layer_state_->state.Unalias(), VisualRectSubpixelOffset(), this);
+  if (!ShouldCreateLayersAfterPaint()) {
+    IntRect layer_bounds(layer_state_->offset, IntSize(Size()));
+    EnsureRasterInvalidator().Generate(
+        raster_invalidation_function_,
+        GetPaintController().GetPaintArtifactShared(), layer_bounds,
+        layer_state_->state.Unalias(), VisualRectSubpixelOffset(), this);
 
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
-      PaintsContentOrHitTest()) {
-    auto& tracking = EnsureRasterInvalidator().EnsureTracking();
-    tracking.CheckUnderInvalidations(DebugName(), CapturePaintRecord(),
-                                     InterestRect());
-    if (auto record = tracking.UnderInvalidationRecord()) {
-      // Add the under-invalidation overlay onto the painted result.
-      GetPaintController().AppendDebugDrawingAfterCommit(std::move(record),
-                                                         layer_state_->state);
-      // Ensure the compositor will raster the under-invalidation overlay.
-      CcLayer()->SetNeedsDisplay();
+    if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
+        PaintsContentOrHitTest()) {
+      auto& tracking = EnsureRasterInvalidator().EnsureTracking();
+      tracking.CheckUnderInvalidations(DebugName(), CapturePaintRecord(),
+                                       InterestRect());
+      if (auto record = tracking.UnderInvalidationRecord()) {
+        // Add the under-invalidation overlay onto the painted result.
+        GetPaintController().AppendDebugDrawingAfterCommit(std::move(record),
+                                                           layer_state_->state);
+        // Ensure the compositor will raster the under-invalidation overlay.
+        CcLayer()->SetNeedsDisplay();
+      }
     }
   }
 
@@ -345,6 +349,31 @@ void GraphicsLayer::UpdateSafeOpaqueBackgroundColor() {
   CcLayer()->SetSafeOpaqueBackgroundColor(
       GetPaintController().GetPaintArtifact().SafeOpaqueBackgroundColor(
           GetPaintController().GetPaintArtifact().PaintChunks()));
+}
+
+void GraphicsLayer::UpdateShouldCreateLayersAfterPaint() {
+  should_create_layers_after_paint_ = false;
+  if (!RuntimeEnabledFeatures::CompositeSVGEnabled())
+    return;
+  if (!PaintsContentOrHitTest())
+    return;
+  // Only layerize content under SVG for now. This requires that the SVG root
+  // has a GraphicsLayer.
+  if (!client_.IsSVGRoot())
+    return;
+  const PaintChunkSubset paint_chunks =
+      PaintChunkSubset(GetPaintController().PaintChunks());
+  for (const auto& paint_chunk : paint_chunks) {
+    const auto& chunk_state = paint_chunk.properties;
+    if (chunk_state.GetPropertyTreeState() == GetPropertyTreeState())
+      continue;
+    // TODO(pdr): Check for direct compositing reasons along the chain from
+    // this state to the layer state.
+    if (chunk_state.HasDirectCompositingReasons()) {
+      should_create_layers_after_paint_ = true;
+      return;
+    }
+  }
 }
 
 bool GraphicsLayer::PaintWithoutCommitForTesting(

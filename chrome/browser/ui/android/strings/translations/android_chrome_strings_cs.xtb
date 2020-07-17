@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Zde se objeví záložky, které jste si uložili v ostatních zařízeních.</translation>
 <translation id="1113597929977215864">Zapnout zjednodušené zobrazení</translation>
 <translation id="1122278879166832009">Klepnutím sem kdykoliv odkudkoliv rychle otevřete svou domovskou stránku</translation>
+<translation id="1126809382673880764">Nebudete chráněni před nebezpečnými weby, soubory ke stažení a rozšířeními. V jiných službách Google, v nichž je ochrana pomocí Bezpečného prohlížení k dispozici (např. Gmail a Vyhledávání), ji budete mít i nadále.</translation>
 <translation id="1129510026454351943">Podrobnosti: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 nevyřízené stahování.}few{# nevyřízená stahování.}many{# nevyřízeného stahování.}other{# nevyřízených stahování.}}</translation>
 <translation id="1145536944570833626">Smazat existující data.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Světlé</translation>
 <translation id="1810845389119482123">Počáteční nastavení synchronizace nebylo dokončeno</translation>
 <translation id="1821253160463689938">Používá soubory cookie k uložení vašeho nastavení i v případě, že stránky nenavštívíte</translation>
-<translation id="1826516787628120939">Probíhá kontrola</translation>
 <translation id="1829244130665387512">Najít na stránce</translation>
 <translation id="1853692000353488670">Nová anonymní karta</translation>
 <translation id="1856325424225101786">Resetovat zjednodušený režim?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Ukládání hesel</translation>
 <translation id="1952172573699511566">Pokud to bude možné, budou weby zobrazovat text ve vašem preferovaném jazyce.</translation>
 <translation id="1960290143419248813">V této verzi platformy Android již aktualizace prohlížeče Chrome nejsou podporovány</translation>
+<translation id="1963976881984600709">Standardní ochrana</translation>
 <translation id="1966710179511230534">Aktualizujte prosím své přihlašovací údaje.</translation>
 <translation id="1974060860693918893">Rozšířená nastavení</translation>
+<translation id="1984417487208496350">Bez ochrany (nedoporučujeme)</translation>
 <translation id="1984705450038014246">Synchronizovat data prohlížeče Chrome</translation>
 <translation id="1986685561493779662">Název již existuje</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> tlačítko <ph name="LINK_NAME" /></translation>
@@ -358,6 +360,7 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="3892148308691398805">Kopírovat text</translation>
 <translation id="3894427358181296146">Přidat složku</translation>
 <translation id="3895926599014793903">Vynutit aktivaci přiblížení</translation>
+<translation id="3909763690984331376">Bezpečnostní kontrola <ph name="BEGIN_NEW" />Novinka<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Hledáme to nejlepší z webu…</translation>
 <translation id="3927692899758076493">Bezpatková</translation>
 <translation id="3928666092801078803">Sloučit má data</translation>
@@ -392,7 +395,6 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="4183868528246477015">Hledat pomocí Google Lens <ph name="BEGIN_NEW" />Nové<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Otevřít na nové kartě</translation>
 <translation id="4198423547019359126">Nejsou k dispozici žádná umístění stažených souborů</translation>
-<translation id="4202553989407425169">Chrome může zkontrolovat nastavení funkcí, které vás mají chránit.</translation>
 <translation id="4209895695669353772">Chcete-li od Googlu získat personalizované návrhy obsahu, zapněte synchronizaci</translation>
 <translation id="423219824432660969">Zašifrovat synchronizovaná data pomocí hesla Google z <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Otevřít Nastavení</translation>
@@ -459,6 +461,7 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="4749960740855309258">Otevření nové karty</translation>
 <translation id="4759238208242260848">Stažené soubory</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Stažení 1 souboru bylo dokončeno.}few{Stažení # souborů bylo dokončeno.}many{Stažení # souboru bylo dokončeno.}other{Stažení # souborů bylo dokončeno.}}</translation>
+<translation id="4766678251456904326">Přidat účet do zařízení</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{Je naplánováno 1 stažení.}few{Jsou naplánována # stažení.}many{Je naplánováno # stažení.}other{Je naplánováno # stažení.}}</translation>
 <translation id="478981486571169252">Uvidíte stav přihlášení, údaje o prohlížení a data webu <ph name="SITE_NAME" /> v Chromu.</translation>
 <translation id="4802417911091824046">Šifrování pomocí heslové fráze se nevztahuje na platební metody a adresy ze služby Google Pay.
@@ -490,6 +493,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="4943872375798546930">Žádné výsledky</translation>
 <translation id="4961107849584082341">Nechte si tuto stránku přeložit do libovolného jazyka</translation>
 <translation id="4970824347203572753">Ve vaší lokalitě není k dispozici</translation>
+<translation id="4971735654804503942">Rychlejší, proaktivní ochrana před nebezpečnými weby, soubory ke stažení a rozšířeními. Upozorňuje vás na úniky hesel. Vyžaduje odesílání údajů o prohlížení do Googlu.</translation>
 <translation id="497421865427891073">Vpřed</translation>
 <translation id="4988210275050210843">Stahování souboru (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Stránky</translation>
@@ -561,7 +565,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5527082711130173040">K vyhledání zařízení potřebuje Chrome přístup k informacím o poloze. <ph name="BEGIN_LINK1" />Aktualizujte oprávnění<ph name="END_LINK1" />. V tomto zařízení je také <ph name="BEGIN_LINK2" />vypnut přístup k poloze<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Zavřít anonymní karty</translation>
 <translation id="5534640966246046842">Web byl zkopírován</translation>
-<translation id="5548606607480005320">Bezpečnostní kontrola</translation>
 <translation id="5561549206367097665">Čekání na síť…</translation>
 <translation id="55737423895878184">Určování polohy a oznámení jsou povoleny</translation>
 <translation id="5578795271662203820">Hledat obrázek pomocí <ph name="SEARCH_ENGINE" /></translation>
@@ -579,6 +582,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5686790454216892815">Název souboru je příliš dlouhý</translation>
 <translation id="5694049548840660018">Snadno se vraťte na domovskou stránku</translation>
 <translation id="569536719314091526">Pomocí tlačítka Další možnosti můžete tuto stránku přeložit do libovolného jazyka.</translation>
+<translation id="5696597120588531049">Chrome vás pomáhá chránit před porušeními zabezpečení údajů, nebezpečnými weby a dalšími hrozbami</translation>
 <translation id="5697688514913266141">Soubor bude uložen do složky <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Upravit<ph name="END_LINK2" /></translation>
 <translation id="570347048394355941">Přepnout na kartu</translation>
 <translation id="572328651809341494">Nedávno použité karty</translation>
@@ -600,7 +604,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="583281660410589416">Neznámé</translation>
 <translation id="5833984609253377421">Sdílet odkaz</translation>
 <translation id="5836192821815272682">Stahování aktualizace Chromu…</translation>
-<translation id="584120177693484274">Nezkontrolováno</translation>
 <translation id="5853623416121554550">pozastaveno</translation>
 <translation id="5854790677617711513">Starší než 30 dnů</translation>
 <translation id="5858741533101922242">Chrome nemůže zapnout adaptér Bluetooth</translation>
@@ -713,6 +716,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6656545060687952787">K vyhledání zařízení Chrome potřebuje přístup k informacím o poloze. <ph name="BEGIN_LINK" />Aktualizovat oprávnění<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Heslo</translation>
 <translation id="6659594942844771486">Karta</translation>
+<translation id="6663079968236414793">Odkaz na text</translation>
 <translation id="666573598175432848">K dispozici je nová verze prohlížeče Chrome. Klepnutím na tento prvek přejdete do Obchodu Play.</translation>
 <translation id="666731172850799929">Otevřít v aplikaci <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Ochrana soukromí v Chromu</translation>
@@ -736,10 +740,12 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="685850645784703949">Kanál Objevit od Googlu – vypnuto</translation>
 <translation id="6864459304226931083">Stáhnout obrázek</translation>
 <translation id="6865313869410766144">Automatické vyplňování formulářů</translation>
+<translation id="6882836635272038266">Standardní ochrana před weby, soubory ke stažení a rozšířeními, o nichž je známo, že jsou nebezpečné.</translation>
 <translation id="6884306546558072722">Pokračujte v objevování i offline</translation>
 <translation id="688738109438487280">Přidat existující data do účtu <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Chcete-li zkopírovat heslo, odemkněte zařízení</translation>
 <translation id="6896758677409633944">Kopírovat</translation>
+<translation id="6900532703269623216">Vylepšená ochrana</translation>
 <translation id="6903907808598579934">Zapnout synchronizaci</translation>
 <translation id="6942665639005891494">Výchozí umístění pro stažené soubory můžete kdykoliv změnit pomocí možnosti v nabídce Nastavení.</translation>
 <translation id="6945221475159498467">Vybrat</translation>

@@ -450,6 +450,7 @@ target(link_target_type, "renderer") {
       "//media/fuchsia/audio",
       "//media/fuchsia/cdm/client",
       "//media/fuchsia/mojom",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]
   }
 

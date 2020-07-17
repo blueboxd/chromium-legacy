@@ -33,6 +33,7 @@
 #include "components/page_load_metrics/browser/observers/page_load_metrics_observer_tester.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
+#include "components/page_load_metrics/common/page_load_metrics_util.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/common/load_policy.h"
@@ -64,6 +65,7 @@ using content::NavigationSimulator;
 using content::RenderFrameHost;
 using content::RenderFrameHostTester;
 using content::TestNavigationThrottle;
+using page_load_metrics::OptionalMin;
 
 namespace {
 
@@ -113,6 +115,36 @@ const int kMaxHeavyAdNetworkBytes =
     heavy_ad_thresholds::kMaxNetworkBytes +
     AdsPageLoadMetricsObserver::HeavyAdThresholdNoiseProvider::
         kMaxNetworkThresholdNoiseBytes;
+
+// Calls PopulateRequiredTimingFields with |first_eligible_to_paint| and
+// |first_contentful_paint| fields temporarily nullified.
+void PopulateRequiredTimingFieldsExceptFEtPAndFCP(
+    page_load_metrics::mojom::PageLoadTiming* inout_timing) {
+  // Save FEtP and FCP values in temp variables and then reset the fields.
+  auto first_eligible_to_paint =
+      inout_timing->paint_timing->first_eligible_to_paint;
+  inout_timing->paint_timing->first_eligible_to_paint.reset();
+
+  auto first_contentful_paint =
+      inout_timing->paint_timing->first_contentful_paint;
+  inout_timing->paint_timing->first_contentful_paint.reset();
+
+  // Populate required fields that don't depend on FEtP or FCP.
+  PopulateRequiredTimingFields(inout_timing);
+
+  // Reinstate REtP and FCP values.
+  inout_timing->paint_timing->first_eligible_to_paint = first_eligible_to_paint;
+  inout_timing->paint_timing->first_contentful_paint = first_contentful_paint;
+
+  // Populate |first_paint| field if needed.
+  if ((inout_timing->paint_timing->first_image_paint ||
+       inout_timing->paint_timing->first_contentful_paint) &&
+      !inout_timing->paint_timing->first_paint) {
+    inout_timing->paint_timing->first_paint =
+        OptionalMin(inout_timing->paint_timing->first_image_paint,
+                    inout_timing->paint_timing->first_contentful_paint);
+  }
+}
 
 // Asynchronously cancels the navigation at WillProcessResponse. Before
 // cancelling, simulates loading a main frame resource.
@@ -555,7 +587,7 @@ class AdsPageLoadMetricsObserverTest
     if (first_contentful_paint.has_value())
       timing_.paint_timing->first_contentful_paint =
           first_contentful_paint.value();
-    PopulateRequiredTimingFields(&timing_);
+    PopulateRequiredTimingFieldsExceptFEtPAndFCP(&timing_);
     tester()->SimulateTimingUpdate(timing_, frame);
   }
 
@@ -2032,7 +2064,55 @@ TEST_F(AdsPageLoadMetricsObserverTest, CreativeOriginStatusWithThrottling) {
        {false, false} /* throttled */,
        0 /* creative_index */,
        false /* should_paint */,
-       OriginStatusWithThrottling::kUnknownAndUnthrottled}};
+       OriginStatusWithThrottling::kUnknownAndUnthrottled},
+      {"http://a.com",
+       {"http://a.com/disallowed.html", "http://b.com"},
+       {false, true} /* throttled */,
+       0 /* creative_index */,
+       false /* should_paint */,
+       OriginStatusWithThrottling::kUnknownAndThrottled},
+      {"http://a.com",
+       {"http://b.com/disallowed.html", "http://b.com"},
+       {true, true} /* throttled */,
+       0 /* creative_index */,
+       false /* should_paint */,
+       OriginStatusWithThrottling::kUnknownAndThrottled},
+      {"http://a.com",
+       {"http://a.com/disallowed.html", "http://b.com"},
+       {false, true} /* throttled */,
+       1 /* creative_index */,
+       false /* should_paint */,
+       OriginStatusWithThrottling::kUnknownAndUnthrottled},
+      {"http://a.com",
+       {"http://a.com/disallowed.html", "http://b.com"},
+       {true, true} /* throttled */,
+       1 /* creative_index */,
+       false /* should_paint */,
+       OriginStatusWithThrottling::kUnknownAndThrottled},
+      {"http://a.com",
+       {"http://a.com/disallowed.html", "http://b.com"},
+       {true, false} /* throttled */,
+       1 /* creative_index */,
+       false /* should_paint */,
+       OriginStatusWithThrottling::kUnknownAndThrottled},
+      {"http://a.com",
+       {"http://b.com/disallowed.html", "http://b.com"},
+       {true, false} /* throttled */,
+       1 /* creative_index */,
+       false /* should_paint */,
+       OriginStatusWithThrottling::kUnknownAndThrottled},
+      {"http://a.com",
+       {"http://b.com/disallowed.html", "http://a.com"},
+       {true, false} /* throttled */,
+       1 /* creative_index */,
+       true /* should_paint */,
+       OriginStatusWithThrottling::kSameAndUnthrottled},
+      {"http://a.com",
+       {"http://a.com/disallowed.html", "http://b.com"},
+       {true, false} /* throttled */,
+       1 /* creative_index */,
+       true /* should_paint */,
+       OriginStatusWithThrottling::kCrossAndUnthrottled}};
 
   for (const auto& creative_origin_test : test_cases) {
     TestCreativeOriginStatusWithThrottling(creative_origin_test);

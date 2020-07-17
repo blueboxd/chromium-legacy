@@ -29,12 +29,6 @@
 namespace chromecast {
 namespace media {
 
-namespace {
-
-const int kNoCallbackId = -1;
-
-}  // namespace
-
 AvPipelineImpl::AvPipelineImpl(CmaBackend::Decoder* decoder,
                                const AvPipelineClient& client)
     : bytes_decoded_since_last_update_(0),
@@ -46,7 +40,6 @@ AvPipelineImpl::AvPipelineImpl(CmaBackend::Decoder* decoder,
       enable_feeding_(false),
       pending_read_(false),
       cast_cdm_context_(nullptr),
-      player_tracker_callback_id_(kNoCallbackId),
       weak_factory_(this),
       decrypt_weak_factory_(this) {
   DCHECK(decoder_);
@@ -57,9 +50,6 @@ AvPipelineImpl::AvPipelineImpl(CmaBackend::Decoder* decoder,
 
 AvPipelineImpl::~AvPipelineImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (cast_cdm_context_ && player_tracker_callback_id_ != kNoCallbackId)
-    cast_cdm_context_->UnregisterPlayer(player_tracker_callback_id_);
 }
 
 void AvPipelineImpl::SetCodedFrameProvider(
@@ -165,16 +155,12 @@ void AvPipelineImpl::SetCdm(CastCdmContext* cast_cdm_context) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(cast_cdm_context);
 
-  if (cast_cdm_context_ && player_tracker_callback_id_ != kNoCallbackId)
-    cast_cdm_context_->UnregisterPlayer(player_tracker_callback_id_);
-
   cast_cdm_context_ = cast_cdm_context;
-  player_tracker_callback_id_ = cast_cdm_context_->RegisterPlayer(
-      base::Bind(&AvPipelineImpl::OnCdmStateChanged, weak_this_),
-      base::Bind(&AvPipelineImpl::OnCdmDestroyed, weak_this_));
+  event_cb_registration_ = cast_cdm_context_->RegisterEventCB(
+      base::BindRepeating(&AvPipelineImpl::OnCdmStateChanged, weak_this_));
 
   // We could be waiting for CDM to provide key (see b/29564232).
-  OnCdmStateChanged();
+  OnCdmStateChanged(::media::CdmContext::Event::kHasAdditionalUsableKey);
 }
 
 void AvPipelineImpl::FetchBuffer() {
@@ -358,8 +344,11 @@ void AvPipelineImpl::OnVideoResolutionChanged(const Size& size) {
   // Ignored here; VideoPipelineImpl overrides this method.
 }
 
-void AvPipelineImpl::OnCdmStateChanged() {
+void AvPipelineImpl::OnCdmStateChanged(::media::CdmContext::Event event) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (event != ::media::CdmContext::Event::kHasAdditionalUsableKey)
+    return;
 
   // Update the buffering state if needed.
   if (buffering_state_.get())
@@ -368,11 +357,6 @@ void AvPipelineImpl::OnCdmStateChanged() {
   // Process the pending buffer in case the CDM now has the frame key id.
   if (pending_buffer_)
     ProcessPendingBuffer();
-}
-
-void AvPipelineImpl::OnCdmDestroyed() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  cast_cdm_context_ = NULL;
 }
 
 void AvPipelineImpl::OnDataBuffered(

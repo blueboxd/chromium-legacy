@@ -135,12 +135,11 @@ void CSSFontFaceSrcValue::RestoreCachedResourceIfNeeded(
   DCHECK(context);
   DCHECK(context->Fetcher());
 
-  const String resource_url = context->CompleteURL(absolute_resource_);
+  const KURL url = context->CompleteURL(absolute_resource_);
   DCHECK_EQ(should_check_content_security_policy_,
             fetched_->GetResource()->Options().content_security_policy_option);
   context->Fetcher()->EmulateLoadStartedForInspector(
-      fetched_->GetResource(), KURL(resource_url),
-      mojom::RequestContextType::FONT,
+      fetched_->GetResource(), url, mojom::RequestContextType::FONT,
       network::mojom::RequestDestination::kFont,
       fetch_initiator_type_names::kCSS);
 }

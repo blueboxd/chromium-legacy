@@ -94,7 +94,16 @@ class StackString {
   // the reserved char for the terminator.
   size_t capacity() const { return kCapacity; }
 
-  wchar_t* get() { return buffer_; }
+  const wchar_t* get() const { return buffer_; }
+
+  wchar_t* get() {
+    return const_cast<wchar_t*>(
+        const_cast<const StackString<kCapacity>*>(this)->get());
+  }
+
+  void assign(const StackString<kCapacity>& str) {
+    SafeStrCopy(buffer_, kCapacity, str.get());
+  }
 
   bool assign(const wchar_t* str) {
     return SafeStrCopy(buffer_, kCapacity, str);
@@ -107,6 +116,8 @@ class StackString {
   void clear() { buffer_[0] = L'\0'; }
 
   size_t length() const { return SafeStrLen(buffer_, kCapacity); }
+
+  bool empty() const { return length() == 0; }
 
   // Does a case insensitive search for a substring.
   const wchar_t* findi(const wchar_t* find) const {

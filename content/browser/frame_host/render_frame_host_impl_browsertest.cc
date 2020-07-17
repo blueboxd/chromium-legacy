@@ -23,7 +23,6 @@
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/navigation_request.h"
-#include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -1715,7 +1714,6 @@ IN_PROC_BROWSER_TEST_F(
       }));
 
   // Start the same-process navigation.
-  test::ScopedInterfaceFilterBypass filter_bypass;
   ASSERT_TRUE(NavigateToURL(shell(), second_url));
   EXPECT_EQ(main_rfh, shell()->web_contents()->GetMainFrame());
   EXPECT_EQ(second_url, injector.url_of_last_commit());
@@ -1752,7 +1750,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // this test; then trigger a navigation.
   {
     ScopedFakeInterfaceBrokerRequestInjector injector(shell()->web_contents());
-    test::ScopedInterfaceFilterBypass filter_bypass;
     injector.set_fake_receiver_for_next_commit(
         std::move(interface_broker_receiver));
 

@@ -605,7 +605,7 @@ void BookmarkModelMerger::MergeSubtree(
       remote_node.response_version(), remote_update_entity.creation_time,
       remote_update_entity.unique_position, remote_update_entity.specifics);
   if (!local_subtree_root->is_permanent_node() &&
-      IsFullTitleReuploadNeeded(remote_update_entity.specifics.bookmark())) {
+      IsBookmarkEntityReuploadNeeded(remote_update_entity)) {
     bookmark_tracker_->IncrementSequenceNumber(entity);
     ++valid_updates_without_full_title_;
   }
@@ -758,7 +758,7 @@ void BookmarkModelMerger::ProcessRemoteCreation(
       bookmark_node, remote_update_entity.id, remote_node.response_version(),
       remote_update_entity.creation_time, remote_update_entity.unique_position,
       specifics);
-  if (IsFullTitleReuploadNeeded(specifics.bookmark())) {
+  if (IsBookmarkEntityReuploadNeeded(remote_node.entity())) {
     bookmark_tracker_->IncrementSequenceNumber(entity);
     ++valid_updates_without_full_title_;
   }

@@ -54,12 +54,3 @@ per-file chrome_exe_main_mac.cc=mark@chromium.org
 
 per-file main_dll_loader_win.cc=brucedawson@chromium.org
 per-file main_dll_loader_win.cc=wfh@chromium.org
-
-per-file builtin_service_manifests.cc=set noparent
-per-file builtin_service_manifests.cc=file://ipc/SECURITY_OWNERS
-per-file builtin_service_manifests.h=set noparent
-per-file builtin_service_manifests.h=file://ipc/SECURITY_OWNERS
-per-file chrome_content_browser_overlay_manifest.cc=set noparent
-per-file chrome_content_browser_overlay_manifest.cc=file://ipc/SECURITY_OWNERS
-per-file chrome_content_browser_overlay_manifest.h=set noparent
-per-file chrome_content_browser_overlay_manifest.h=file://ipc/SECURITY_OWNERS

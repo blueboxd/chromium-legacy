@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="eu">
 <translation id="1008557486741366299">Ez une honetan</translation>
+<translation id="100957008357583611">Kokapena erabili nahi duzu?</translation>
 <translation id="1010200102790553230">Kargatu orria geroago</translation>
 <translation id="1015730422737071372">Eman xehetasun gehiago</translation>
 <translation id="1019413721762100891">Desaktibatuta</translation>
@@ -421,7 +422,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="2705137772291741111">Ezin izan da irakurri cachean gordetako webgune honen kopia.</translation>
 <translation id="2709516037105925701">Betetze automatikoa</translation>
 <translation id="2713444072780614174">Zuria</translation>
-<translation id="2720342946869265578">Ingurukoak</translation>
 <translation id="2721148159707890343">Eskaera behar bezala egin da</translation>
 <translation id="272451190272506600">Ordaintzeko, sakatu sentsorea</translation>
 <translation id="2728127805433021124">Zerbitzariaren ziurtagiria segurua ez den sinadura-algoritmo batekin dago sinatuta.</translation>
@@ -711,7 +711,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="3987940399970879459">1 MB baino gutxiago</translation>
 <translation id="3990250421422698716">Tolestura-marjina</translation>
 <translation id="3996311196211510766"><ph name="ORIGIN" /> webguneak hartarako eskaera guztiei jatorri-gidalerro bat aplikatzeko eskatu du, baina ezin da aplikatu gidalerroa une honetan.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 web-orri dago inguruan}other{# web-orri daude inguruan}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} orri daukan PDF dokumentua}other{{COUNT} orri dauzkan PDF dokumentua}}</translation>
 <translation id="4030383055268325496">&amp;Desegin gehitzea</translation>
 <translation id="4032320456957708163"><ph name="ENROLLMENT_DOMAIN" /> da arakatzailearen kudeatzailea</translation>
@@ -925,7 +924,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Gorde…</translation>
 <translation id="4913987521957242411">Zulo bat goian, ezkerretara</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{eta beste web-orri bat}other{eta beste # web-orri}}</translation>
 <translation id="4923459931733593730">Ordainketa</translation>
 <translation id="4926049483395192435">Nahitaez zehaztu behar da.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> webguneak hau dio:</translation>
@@ -1166,6 +1164,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="5869405914158311789">Ezin gara konektatu webgunera</translation>
 <translation id="5869522115854928033">Gordetako pasahitzak</translation>
 <translation id="5887400589839399685">Gorde da txartela</translation>
+<translation id="589006512797629854">Datuen babeskopia egiteko eta gailua hari itzultzeko eskatzen du <ph name="ENROLLMENT_DOMAIN" /> domeinuak.</translation>
 <translation id="5895138241574237353">Berrabiarazi</translation>
 <translation id="5895187275912066135">Jaulkitze-data</translation>
 <translation id="5901630391730855834">Horia</translation>
@@ -1315,7 +1314,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="6518133107902771759">Egiaztatu</translation>
 <translation id="6521745193039995384">Ez dago aktibo</translation>
 <translation id="6529602333819889595">&amp;Berregin ezabatzea</translation>
-<translation id="6534179046333460208">Web fisikoaren iradokizunak</translation>
 <translation id="6545864417968258051">Bluetooth bidezko gailuen bilaketa</translation>
 <translation id="6547208576736763147">Bi zulo ezkerrean</translation>
 <translation id="6554795675067793129"><ph name="ENROLLMENT_DOMAIN" /> domeinuak kudeatzen du zure kontua.</translation>
@@ -1837,7 +1835,6 @@ Xehetasun gehiago:
 <translation id="8790007591277257123">&amp;Berregin ezabatzea</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> konturako sarbidea gal zenezake, edo kontua lapur liezazukete. Pasahitza aldatzea gomendatzen dizu Chromium-ek.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> domeinuak Chrome Enterprise zerbitzuaren konektoreak gaitu ditu arakatzailean. Konektore horiek zure datu batzuetarako sarbidea dute.</translation>
-<translation id="8800988563907321413">Hemen agertuko dira inguruko orrien iradokizunak</translation>
 <translation id="8805819170075074995">"<ph name="LANGUAGE_ID" />" zerrenda-sarrera: sarrerari ez ikusi egin zaio, SpellcheckLanguage gidalerroan ere agertzen delako.</translation>
 <translation id="8807160976559152894">Moztu orri bakoitzaren amaieran</translation>
 <translation id="8820817407110198400">Laster-markak</translation>

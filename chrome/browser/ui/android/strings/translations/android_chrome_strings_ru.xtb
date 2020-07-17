@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Здесь появятся закладки, сохраненные на других устройствах.</translation>
 <translation id="1113597929977215864">Упрощенный просмотр</translation>
 <translation id="1122278879166832009">Чтобы открыть стартовую страницу, нажмите на этот значок.</translation>
+<translation id="1126809382673880764">Не защищает вас от сайтов, расширений и скачанных файлов, которые могут представлять опасность. Безопасный просмотр по-прежнему будет работать в других сервисах Google, например в Gmail и Поиске.</translation>
 <translation id="1129510026454351943">Сведения об ошибке: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Ожидание скачивания 1 файла…}one{Ожидание скачивания # файла…}few{Ожидание скачивания # файлов…}many{Ожидание скачивания # файлов…}other{Ожидание скачивания # файла…}}</translation>
 <translation id="1145536944570833626">Удалить сохраненные данные.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Светлый</translation>
 <translation id="1810845389119482123">Синхронизация не настроена</translation>
 <translation id="1821253160463689938">Использовать файлы cookie, чтобы запомнить ваши предпочтения, даже если вы не открываете эти страницы</translation>
-<translation id="1826516787628120939">Проверка</translation>
 <translation id="1829244130665387512">Найти на странице</translation>
 <translation id="1853692000353488670">Новая вкладка инкогнито</translation>
 <translation id="1856325424225101786">Сбросить упрощенный режим?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Сохранение паролей</translation>
 <translation id="1952172573699511566">Когда это возможно, текст на сайтах будет отображаться на выбранном вами языке.</translation>
 <translation id="1960290143419248813">Невозможно обновить Chrome в текущей версии Android.</translation>
+<translation id="1963976881984600709">Стандартная защита</translation>
 <translation id="1966710179511230534">Обновите учетные данные</translation>
 <translation id="1974060860693918893">Дополнительные</translation>
+<translation id="1984417487208496350">Защита отключена (не рекомендуется)</translation>
 <translation id="1984705450038014246">Синхронизировать данные Chrome</translation>
 <translation id="1986685561493779662">Это имя уже используется.</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">Найти через Google Объектив <ph name="BEGIN_NEW" />Новинка<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
 <translation id="4198423547019359126">Нет доступных мест для скачивания</translation>
-<translation id="4202553989407425169">Chrome может проверять, обеспечивают ли заданные вами настройки защиту от следующих факторов:</translation>
 <translation id="4209895695669353772">Чтобы мы могли рекомендовать вам интересный контент, включите синхронизацию.</translation>
 <translation id="423219824432660969">Шифровать синхронизированные данные, используя пароль аккаунта Google от <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Открыть настройки</translation>
@@ -490,6 +491,7 @@
 <translation id="4943872375798546930">Нет результатов</translation>
 <translation id="4961107849584082341">Эту страницу можно перевести на любой язык</translation>
 <translation id="4970824347203572753">Функция недоступна в вашей стране.</translation>
+<translation id="4971735654804503942">Более быстрая и эффективная защита от опасных сайтов, расширений и скачанных файлов. Предупреждает об утечках паролей. Требуется отправка данных о работе в браузере в Google.</translation>
 <translation id="497421865427891073">Вперед</translation>
 <translation id="4988210275050210843">Скачивание файла (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Страницы</translation>
@@ -561,7 +563,6 @@
 <translation id="5527082711130173040">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK2" />Включите доступ<ph name="END_LINK2" /> и <ph name="BEGIN_LINK1" />обновите разрешения<ph name="END_LINK1" />.</translation>
 <translation id="5530766185686772672">Закрыть вкладки инкогнито</translation>
 <translation id="5534640966246046842">Адрес сайта скопирован</translation>
-<translation id="5548606607480005320">Проверка безопасности</translation>
 <translation id="5561549206367097665">Поиск сети…</translation>
 <translation id="55737423895878184">Может определять местоположение и отправлять уведомления</translation>
 <translation id="5578795271662203820">Найти это изображение в <ph name="SEARCH_ENGINE" /></translation>
@@ -600,7 +601,6 @@
 <translation id="583281660410589416">Неизвестно</translation>
 <translation id="5833984609253377421">Отправить ссылку</translation>
 <translation id="5836192821815272682">Скачивание обновлений для Chrome…</translation>
-<translation id="584120177693484274">Не выбрано</translation>
 <translation id="5853623416121554550">пауза</translation>
 <translation id="5854790677617711513">Сохраненные более 30 дней назад</translation>
 <translation id="5858741533101922242">Не удалось включить адаптер Bluetooth</translation>
@@ -736,10 +736,12 @@
 <translation id="685850645784703949">Рекомендации от Google отключены</translation>
 <translation id="6864459304226931083">Скачать изображение</translation>
 <translation id="6865313869410766144">Данные для автозаполнения</translation>
+<translation id="6882836635272038266">Стандартная защита от опасных сайтов, расширений и скачанных файлов.</translation>
 <translation id="6884306546558072722">Доступ к контенту в офлайн-режиме</translation>
 <translation id="688738109438487280">Объединить сохраненные данные с данными пользователя <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Чтобы скопировать пароль, разблокируйте экран</translation>
 <translation id="6896758677409633944">Копировать</translation>
+<translation id="6900532703269623216">Улучшенная защита</translation>
 <translation id="6903907808598579934">Включить</translation>
 <translation id="6942665639005891494">Вы можете в любой момент изменить расположение скачиваемых файлов по умолчанию, воспользовавшись меню "Настройки".</translation>
 <translation id="6945221475159498467">Выбрать</translation>

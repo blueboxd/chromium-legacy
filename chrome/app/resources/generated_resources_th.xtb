@@ -104,6 +104,7 @@
 <translation id="1124772482545689468">ผู้ใช้</translation>
 <translation id="1125550662859510761">ดูเหมือน <ph name="WIDTH" /> x <ph name="HEIGHT" /> (ค่าดั้งเดิม)</translation>
 <translation id="1126809382673880764">ไม่ปกป้องคุณจากเว็บไซต์ การดาวน์โหลด และส่วนขยายที่เป็นอันตราย คุณจะยังคงได้รับการปกป้องจาก Google Safe Browsing ในบริการอื่นๆ ของ Google ที่มีฟีเจอร์นี้ เช่น Gmail และ Search</translation>
+<translation id="112752777279960360">หากต้องการตั้งค่าโทรศัพท์ Android ให้ใช้เป็นคีย์ความปลอดภัยกับคอมพิวเตอร์เครื่องนี้เป็นครั้งแรก ให้เปิด Chrome ในโทรศัพท์แล้วไปที่ "การตั้งค่า &gt; รหัสผ่าน &gt; ใช้โทรศัพท์เป็นคีย์ความปลอดภัย" จากนั้นแตะ "เชื่อมต่ออุปกรณ์ใหม่" และสแกนคิวอาร์โค้ดนี้</translation>
 <translation id="1128109161498068552">ไม่อนุญาตให้ไซต์ใดๆ ใช้ข้อความเฉพาะของระบบในการเข้าถึงอุปกรณ์ MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">แก้ไขเครื่องมือค้นหา</translation>
@@ -509,6 +510,7 @@
 <translation id="1622054403950683339">ไม่ต้องจำเครือข่าย Wi-Fi</translation>
 <translation id="1623132449929929218">ขณะนี้รูปภาพยังไม่พร้อมให้ใช้งาน โปรดเชื่อมต่ออินเทอร์เน็ตอีกครั้งเพื่อดูคอลเล็กชันวอลเปเปอร์</translation>
 <translation id="1623723619460186680">การลดแสงสีฟ้า</translation>
+<translation id="1624012933569991823">การตั้งค่า</translation>
 <translation id="1627276047960621195">ตัวอธิบายไฟล์</translation>
 <translation id="1627408615528139100">ดาวน์โหลดแล้ว</translation>
 <translation id="1628948239858170093">สแกนไฟล์ก่อนเปิดไหม</translation>
@@ -745,6 +747,7 @@
 <translation id="1887850431809612466">การแก้ไขฮาร์ดแวร์</translation>
 <translation id="1888523338879380247">{0,plural, =1{วันสุดท้ายของการอัปเดตอุปกรณ์}other{อัปเดตอุปกรณ์ภายใน # วัน}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;รหัส: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783">กำลังรับ <ph name="ATTACHMENTS" /> จาก <ph name="DEVICE_NAME" /></translation>
 <translation id="189210018541388520">เปิดการแสดงแบบเต็มหน้าจอ</translation>
 <translation id="1892341345406963517">สวัสดี <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">ภาษาอื่นๆ</translation>
@@ -1817,6 +1820,7 @@
 <translation id="3253225298092156258">ไม่มีข้อมูล</translation>
 <translation id="3253448572569133955">บัญชีที่ไม่รู้จัก</translation>
 <translation id="3254516606912442756">การตรวจหาเขตเวลาอัตโนมัติปิดอยู่</translation>
+<translation id="3254715652085014625">เปิด Chrome ในโทรศัพท์ Android และไปที่ "การตั้งค่า &gt; รหัสผ่าน &gt; ใช้โทรศัพท์เป็นคีย์ความปลอดภัย" แล้วทำตามวิธีการที่ระบุไว้ที่นั่น</translation>
 <translation id="3255355328033513170">ระบบจะลบข้อมูลทั้งหมดที่ <ph name="SITE_GROUP_NAME" /> จัดเก็บไว้และเว็บไซต์ในกลุ่มนี้ คุกกี้จะถูกลบออกไปด้วย คุณจะออกจากระบบเว็บไซต์เหล่านี้ รวมถึงแท็บที่เปิดอยู่</translation>
 <translation id="3259723213051400722">โปรดลองอีกครั้ง</translation>
 <translation id="3264544094376351444">แบบอักษร Sans-Serif</translation>
@@ -3492,6 +3496,7 @@
 <translation id="5390677308841849479">สีแดงเข้มและสีส้ม</translation>
 <translation id="5390743329570580756">ส่งสำหรับ</translation>
 <translation id="5397794290049113714">คุณ</translation>
+<translation id="5398497406011404839">บุ๊กมาร์กที่ซ่อนอยู่</translation>
 <translation id="5398572795982417028">การอ้างอิงหน้าอยู่นอกขอบเขต จำกัดไว้ที่ <ph name="MAXIMUM_PAGE" /> หน้า</translation>
 <translation id="5398772614898833570">บล็อกโฆษณา</translation>
 <translation id="5402815541704507626">ดาวน์โหลดอัปเดตโดยใช้อินเทอร์เน็ตมือถือ</translation>
@@ -3577,6 +3582,7 @@
 <translation id="5496587651328244253">จัดระเบียบ</translation>
 <translation id="5497251278400702716">ไฟล์นี้</translation>
 <translation id="5499313591153584299">ไฟล์นี้อาจเป็นอันตรายต่อคอมพิวเตอร์</translation>
+<translation id="5499453227627332024">มีการอัปเกรดพร้อมให้ดำเนินการกับคอนเทนเนอร์ Linux คุณอัปเกรดในภายหลังจากแอปการตั้งค่าก็ได้</translation>
 <translation id="5500709606820808700">เรียกใช้การตรวจสอบความปลอดภัยในวันนี้</translation>
 <translation id="5502500733115278303">นำเข้าจาก Firefox</translation>
 <translation id="5503982651688210506">อนุญาตให้ <ph name="HOST" /> ใช้และเคลื่อนย้ายกล้อง รวมถึงใช้ไมโครโฟนของคุณต่อไป</translation>
@@ -4201,6 +4207,7 @@
 <translation id="6270770586500173387">ส่ง<ph name="BEGIN_LINK1" />ข้อมูลระบบและแอป<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />เมตริก<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">เกิดข้อผิดพลาด (<ph name="ERROR" />) ขณะดาวน์โหลดปลั๊กอิน</translation>
 <translation id="6273677812470008672">คุณภาพ</translation>
+<translation id="6273979226236203550">รหัสผ่านจัดเก็บอยู่ในอุปกรณ์นี้และบัญชี Google คุณต้องการลบรหัสผ่านรายการใด</translation>
 <translation id="6277105963844135994">ระยะหมดเวลาของเครือข่าย</translation>
 <translation id="6277518330158259200">จับ&amp;ภาพหน้าจอ</translation>
 <translation id="6278057325678116358">ใช้ GTK+</translation>
@@ -4561,6 +4568,7 @@
 <translation id="6758056191028427665">แจ้งให้เราทราบถึงความพึงพอใจ</translation>
 <translation id="6759193508432371551">รีเซ็ตเป็นค่าเริ่มต้นจากโรงงาน</translation>
 <translation id="6762833852331690540">เปิด</translation>
+<translation id="676560328519657314">วิธีการชำระเงินของคุณใน Google Pay</translation>
 <translation id="6767566652486411142">เลือกภาษาอื่น...</translation>
 <translation id="6767639283522617719">เข้าร่วมโดเมนไม่ได้ ตรวจสอบว่าการตั้งค่าสำหรับหน่วยขององค์กรถูกต้อง</translation>
 <translation id="6769557323306147204"><ph name="ORGANIZATION_NAME" /> แนะนำให้คุณอัปเดตอุปกรณ์นี้</translation>
@@ -4733,6 +4741,7 @@
 <translation id="6972553992270299730"><ph name="ORIGIN" /> เปิดไฟล์ในโฟลเดอร์นี้ไม่ได้เพราะมีไฟล์ระบบอยู่</translation>
 <translation id="6972629891077993081">อุปกรณ์ HID</translation>
 <translation id="6972754398087986839">เริ่มต้นใช้งาน</translation>
+<translation id="6972887130317925583">เปลี่ยนรหัสผ่านที่ถูกละเมิดเรียบร้อยแล้ว ตรวจสอบรหัสผ่านได้ทุกเมื่อใน<ph name="SETTINGS" /></translation>
 <translation id="6973611239564315524">มีการอัปเกรดเป็น Debian 10 (Buster) พร้อมใช้งาน</translation>
 <translation id="6974609594866392343">โหมดสาธิตแบบออฟไลน์</translation>
 <translation id="6977381486153291903">การแก้ไขเฟิร์มแวร์</translation>
@@ -5592,6 +5601,7 @@
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">แก้ไขทางลัดแล้ว</translation>
 <translation id="8018313076035239964">ควบคุมว่าจะให้เว็บไซต์ใช้ข้อมูลใดได้บ้าง และสามารถแสดงเนื้อหาใดให้กับคุณ</translation>
+<translation id="8022688469248132790">ตรวจสอบรายละเอียดข้อผิดพลาด</translation>
 <translation id="8023801379949507775">อัปเดตส่วนขยายทันที</translation>
 <translation id="8026334261755873520">ล้างข้อมูลการท่องเว็บ</translation>
 <translation id="8028060951694135607">การกู้คืนคีย์ของ Microsoft</translation>
@@ -6531,6 +6541,7 @@
 <translation id="9180380851667544951">เว็บไซต์แชร์หน้าจอของคุณได้</translation>
 <translation id="9188732951356337132">ส่งข้อมูลการใช้งานและการวินิจฉัย ปัจจุบันอุปกรณ์นี้ส่งข้อมูลการวินิจฉัย อุปกรณ์ และการใช้งานแอปไปยัง Google โดยอัตโนมัติ โดยจะไม่มีการใช้ข้อมูลนี้ในการระบุชื่อบุตรหลานของคุณ และจะช่วยปรับปรุงความเสถียรของแอปและระบบ และอื่นๆ ข้อมูลที่รวบรวมมาบางส่วนจะมีประโยชน์ต่อแอปและพาร์ทเนอร์ของ Google ด้วย เช่น นักพัฒนาซอฟต์แวร์ Android หากเปิดการตั้งค่ากิจกรรมเพิ่มเติมบนเว็บและแอปสำหรับบุตรหลาน ระบบอาจบันทึกข้อมูลนี้ไว้ในบัญชี Google ของบุตรหลาน <ph name="BEGIN_LINK2" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + คีย์ที่แชร์ล่วงหน้า</translation>
+<translation id="9198090666959937775">ใช้โทรศัพท์ Android เป็นคีย์ความปลอดภัย</translation>
 <translation id="920045321358709304">ค้นหา <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">ระบบจะล้างข้อมูลออฟไลน์ทั้งหมด</translation>
 <translation id="9201220332032049474">ตัวเลือกการล็อกหน้าจอ</translation>
@@ -6573,6 +6584,7 @@
 <translation id="942532530371314860"><ph name="APP_NAME" /> กำลังแชร์แท็บและเสียงใน Chrome</translation>
 <translation id="945522503751344254">ส่งความคิดเห็น</translation>
 <translation id="947329552760389097">&amp;ตรวจสอบองค์ประกอบ</translation>
+<translation id="951991426597076286">ปฏิเสธ</translation>
 <translation id="952992212772159698">ไม่ได้เปิดการใช้งาน</translation>
 <translation id="956500788634395331">คุณได้รับการปกป้องจากส่วนขยายที่อาจเป็นอันตราย</translation>
 <translation id="957960681186851048">เว็บไซต์นี้พยายามดาวน์โหลดไฟล์หลายไฟล์โดยอัตโนมัติ</translation>

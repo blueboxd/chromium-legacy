@@ -17,7 +17,6 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/common/ax_content_tree_update.h"
 #include "content/common/frame_messages.h"
 #include "content/common/render_accessibility.mojom-test-utils.h"
 #include "content/common/render_accessibility.mojom.h"
@@ -56,6 +55,7 @@
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_update.h"
 #include "ui/accessibility/null_ax_action_target.h"
 #include "ui/native_theme/native_theme_features.h"
 
@@ -172,16 +172,15 @@ class RenderAccessibilityHostInterceptor
                    content::mojom::RenderAccessibilityHost>(std::move(handle)));
   }
 
-  void HandleAXEvents(
-      const std::vector<::content::AXContentTreeUpdate>& updates,
-      const std::vector<::ui::AXEvent>& events,
-      int32_t reset_token,
-      HandleAXEventsCallback callback) override {
+  void HandleAXEvents(const std::vector<::ui::AXTreeUpdate>& updates,
+                      const std::vector<::ui::AXEvent>& events,
+                      int32_t reset_token,
+                      HandleAXEventsCallback callback) override {
     handled_updates_ = updates;
     std::move(callback).Run();
   }
 
-  AXContentTreeUpdate& last_update() {
+  ui::AXTreeUpdate& last_update() {
     CHECK_GE(handled_updates_.size(), 1U);
     return handled_updates_.back();
   }
@@ -196,7 +195,7 @@ class RenderAccessibilityHostInterceptor
   mojo::AssociatedRemote<content::mojom::RenderAccessibilityHost>
       local_frame_host_remote_;
 
-  std::vector<::content::AXContentTreeUpdate> handled_updates_;
+  std::vector<::ui::AXTreeUpdate> handled_updates_;
 };
 
 class RenderAccessibilityTestRenderFrame : public TestRenderFrame {
@@ -222,7 +221,7 @@ class RenderAccessibilityTestRenderFrame : public TestRenderFrame {
     return associated_interface_provider;
   }
 
-  AXContentTreeUpdate& LastUpdate() {
+  ui::AXTreeUpdate& LastUpdate() {
     return render_accessibility_host_->last_update();
   }
 
@@ -350,7 +349,7 @@ class RenderAccessibilityImplTest : public RenderViewTest {
     frame()->GetRenderAccessibilityManager()->SetMode(mode.mode());
   }
 
-  AXContentTreeUpdate GetLastAccUpdate() {
+  ui::AXTreeUpdate GetLastAccUpdate() {
     return static_cast<RenderAccessibilityTestRenderFrame*>(frame())
         ->LastUpdate();
   }
@@ -361,7 +360,7 @@ class RenderAccessibilityImplTest : public RenderViewTest {
   }
 
   int CountAccessibilityNodesSentToBrowser() {
-    AXContentTreeUpdate update = GetLastAccUpdate();
+    ui::AXTreeUpdate update = GetLastAccUpdate();
     return update.nodes.size();
   }
 
@@ -412,7 +411,7 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
   EXPECT_EQ(1, CountAccessibilityNodesSentToBrowser());
   {
     // Make sure it's the root object that was updated.
-    AXContentTreeUpdate update = GetLastAccUpdate();
+    ui::AXTreeUpdate update = GetLastAccUpdate();
     EXPECT_EQ(root_obj.AxID(), update.nodes[0].id);
   }
 
@@ -533,7 +532,7 @@ TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {
   GetRenderAccessibilityImpl()->HandleAXEvent(
       ui::AXEvent(node_a.AxID(), ax::mojom::Event::kChildrenChanged));
   SendPendingAccessibilityEvents();
-  AXContentTreeUpdate update = GetLastAccUpdate();
+  ui::AXTreeUpdate update = GetLastAccUpdate();
   ASSERT_EQ(2U, update.nodes.size());
 
   // Since ignored nodes are included in the ax tree with State::kIgnored set,
@@ -581,7 +580,7 @@ TEST_F(RenderAccessibilityImplTest, ShowAccessibilityObject) {
   GetRenderAccessibilityImpl()->HandleAXEvent(
       ui::AXEvent(node_a.AxID(), ax::mojom::Event::kChildrenChanged));
   SendPendingAccessibilityEvents();
-  AXContentTreeUpdate update = GetLastAccUpdate();
+  ui::AXTreeUpdate update = GetLastAccUpdate();
 
   // Since ignored nodes are included in the ax tree with State::kIgnored set,
   // "C" is NOT reparented, only the changed nodes are re-serialized.
@@ -1039,7 +1038,7 @@ class TimeDelayBlinkAXTreeSource : public BlinkAXTreeSource {
   }
 
   void SerializeNode(blink::WebAXObject node,
-                     AXContentNodeData* out_data) const override {
+                     ui::AXNodeData* out_data) const override {
     BlinkAXTreeSource::SerializeNode(node, out_data);
     if (time_delay_ms_) {
       task_environment_->FastForwardBy(

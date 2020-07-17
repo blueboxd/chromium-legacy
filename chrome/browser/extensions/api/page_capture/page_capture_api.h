@@ -24,6 +24,10 @@ class WebContents;
 
 namespace extensions {
 
+#if defined(OS_CHROMEOS)
+class PermissionIDSet;
+#endif
+
 class PageCaptureSaveAsMHTMLFunction : public ExtensionFunction {
  public:
   PageCaptureSaveAsMHTMLFunction();

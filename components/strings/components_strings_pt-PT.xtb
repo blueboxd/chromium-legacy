@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
 <translation id="1008557486741366299">Agora não</translation>
+<translation id="100957008357583611">Pretende utilizar a sua localização?</translation>
 <translation id="1010200102790553230">Carregar a página mais tarde</translation>
 <translation id="1015730422737071372">Forneça mais detalhes</translation>
 <translation id="1019413721762100891">Desativado</translation>
@@ -45,6 +46,7 @@
 <translation id="115926840831309955">Verifique o Código de Segurança/CVC e tente novamente ou atualize a data de validade.</translation>
 <translation id="1161325031994447685">Ligar novamente à rede Wi-Fi</translation>
 <translation id="1165039591588034296">Erro</translation>
+<translation id="1165174597379888365">A página é visitada</translation>
 <translation id="1175364870820465910">Im&amp;primir...</translation>
 <translation id="1175875016430184367">Agrafo triplo à direita</translation>
 <translation id="1178581264944972037">Pausa</translation>
@@ -266,6 +268,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="2001146170449793414">{COUNT,plural, =1{e mais 1}other{e mais #}}</translation>
 <translation id="2003709556000175978">Repor a palavra-passe agora</translation>
 <translation id="2003775180883135320">Perfuração quádrupla na parte superior</translation>
+<translation id="202072848677994234">Este formulário é enviado através de uma ligação insegura. O preenchimento automático está desativado.</translation>
 <translation id="2025115093177348061">Realidade aumentada</translation>
 <translation id="2025186561304664664">O proxy está definido para configuração automática.</translation>
 <translation id="2030481566774242610">Será que quis dizer <ph name="LINK" />?</translation>
@@ -334,6 +337,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="2289385804009217824">Cortar</translation>
 <translation id="2292556288342944218">O acesso à Internet está bloqueado</translation>
 <translation id="2293443924986248631">Quando ativados, os sites não podem utilizar cookies que monitorizam o utilizador na Web. As funcionalidades em alguns sites podem falhar.</translation>
+<translation id="2295290966866883927">Os URLs das páginas que visita são enviados para o Google Cloud ou terceiros para análise. Por exemplo, poderão ser analisados para a deteção de Websites inseguros.</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2300306941146563769">Não carregado</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
@@ -425,7 +429,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="2705137772291741111">A cópia guardada (em cache) deste site era ilegível.</translation>
 <translation id="2709516037105925701">Preenchimento automático</translation>
 <translation id="2713444072780614174">Branco</translation>
-<translation id="2720342946869265578">Próximo</translation>
 <translation id="2721148159707890343">Pedido com êxito</translation>
 <translation id="272451190272506600">Toque no sensor para pagar.</translation>
 <translation id="2728127805433021124">O certificado do servidor foi assinado utilizando um algoritmo de assinatura fraco.</translation>
@@ -722,7 +725,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="3990250421422698716">Separar conjuntos</translation>
 <translation id="3996311196211510766">O site <ph name="ORIGIN" /> solicitou que seja aplicada uma política de origem
     a todos os pedidos, mas, de momento, não é possível aplicar essa política.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 página Web próxima}other{# páginas Web próximas}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Documento PDF com {COUNT} página}other{Documento PDF com {COUNT} páginas}}</translation>
 <translation id="4030383055268325496">&amp;Anular adição</translation>
 <translation id="4032320456957708163">O navegador é gerido por <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -940,7 +942,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Guardar…</translation>
 <translation id="4913987521957242411">Perfurar na parte superior esquerda</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{e mais 1 página Web}other{e mais # páginas Web}}</translation>
 <translation id="4923459931733593730">Pagamento</translation>
 <translation id="4926049483395192435">Tem de ser especificado.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> diz</translation>
@@ -1181,6 +1182,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5869405914158311789">Não é possível aceder a este site</translation>
 <translation id="5869522115854928033">Palavras-passe guardadas</translation>
 <translation id="5887400589839399685">Cartão guardado</translation>
+<translation id="589006512797629854">O domínio <ph name="ENROLLMENT_DOMAIN" /> necessita que faça uma cópia de segurança dos seus dados e devolva este dispositivo.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5895187275912066135">Emitido em</translation>
 <translation id="5901630391730855834">Amarelo</translation>
@@ -1331,7 +1333,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="6518133107902771759">Verificar</translation>
 <translation id="6521745193039995384">Não ativa</translation>
 <translation id="6529602333819889595">&amp;Refazer eliminação</translation>
-<translation id="6534179046333460208">Sugestões da Web física</translation>
 <translation id="6545864417968258051">Procura de Bluetooth</translation>
 <translation id="6547208576736763147">Perfuração dupla à esquerda</translation>
 <translation id="6554795675067793129">A sua conta é gerida pelo domínio <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1853,7 +1854,6 @@ Detalhes adicionais:
 <translation id="8790007591277257123">&amp;Refazer eliminação</translation>
 <translation id="8792621596287649091">Pode perder o acesso à sua conta do serviço <ph name="ORG_NAME" /> ou ser vítima de roubo de identidade. O Chromium recomenda a alteração da palavra-passe agora.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> ativou os Chrome Enterprise Connectors no navegador. Estes conetores têm acesso a alguns dos seus dados.</translation>
-<translation id="8800988563907321413">As sugestões próximas aparecem aqui</translation>
 <translation id="8805819170075074995">Entrada da lista "<ph name="LANGUAGE_ID" />": a entrada foi ignorada porque também está incluída na política SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Cortar no fim de cada página</translation>
 <translation id="8820817407110198400">Marcadores</translation>

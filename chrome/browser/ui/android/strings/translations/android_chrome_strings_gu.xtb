@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">તમારા અન્ય ઉપકરણો પર સાચવેલા બુકમાર્ક્સ અહીં દેખાશે.</translation>
 <translation id="1113597929977215864">સરળ દૃશ્ય બતાવો</translation>
 <translation id="1122278879166832009">તમારા હોમપેજને કોઈપણ જગ્યાએથી ઝડપથી ઍક્સેસ કરવા માટે અહીં ટૅપ કરો</translation>
+<translation id="1126809382673880764">જોખમકારક વેબસાઇટ, ડાઉનલોડ અને એક્સ્ટેંશન સામે તમારું રક્ષણ કરતું નથી. Gmail અને Search જેવી Googleની અન્ય સેવાઓમાં, જ્યાં ઉપલબ્ધ હોય, ત્યાં તમને હજી પણ Safe Browsing સંરક્ષણ મળશે.</translation>
 <translation id="1129510026454351943">વિગતો: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 ડાઉનલોડ બાકી.}one{# ડાઉનલોડ બાકી.}other{# ડાઉનલોડ બાકી.}}</translation>
 <translation id="1145536944570833626">અસ્તિત્વમાંના ડેટાને ડિલીટ કરો.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">આછું</translation>
 <translation id="1810845389119482123">સિંકનું પ્રારંભિક સેટઅપ પૂર્ણ થયું નથી</translation>
 <translation id="1821253160463689938">તમારી પસંદગીઓ યાદ રાખવા માટે કુકીનો ઉપયોગ કરે છે, પછી ભલે તમે તે પેજની મુલાકાત ન પણ લો</translation>
-<translation id="1826516787628120939">તપાસી રહ્યાં છે</translation>
 <translation id="1829244130665387512">આ પૃષ્ઠમાં શોધો</translation>
 <translation id="1853692000353488670">નવી છુપી ટેબ</translation>
 <translation id="1856325424225101786">લાઇટ મોડને રીસેટ કરીએ?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">પાસવર્ડ સાચવો</translation>
 <translation id="1952172573699511566">જ્યારે શક્ય હશે, ત્યારે વેબસાઇટ તમારી પસંદગીની ભાષામાં ટેક્સ્ટ બતાવશે.</translation>
 <translation id="1960290143419248813">Androidના આ વર્ઝન માટે Chrome અપડેટ હવે સમર્થિત નથી</translation>
+<translation id="1963976881984600709">માનક સંરક્ષણ</translation>
 <translation id="1966710179511230534">કૃપા કરીને તમારી સાઇન-ઇન વિગતો અપડેટ કરો.</translation>
 <translation id="1974060860693918893">વિગતવાર</translation>
+<translation id="1984417487208496350">કોઈ સંરક્ષણ નથી (સુઝાવ આપતા નથી)</translation>
 <translation id="1984705450038014246">તમારા Chromeના ડેટાને સિંક કરો</translation>
 <translation id="1986685561493779662">નામ પહેલેથી જ અસ્તિત્વમાં છે</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> બટન</translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">Google લેન્સ વડે શોધો <ph name="BEGIN_NEW" />નવું<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">નવા ટૅબમાં ખોલો</translation>
 <translation id="4198423547019359126">કોઈ ડાઉનલોડ સ્થાનો ઉપલબ્ધ નથી</translation>
-<translation id="4202553989407425169">Chrome તે ચેક કરી શકે છે કે તમારા સેટિંગ આની સામે તમારી સુરક્ષા કરે છે કે નહીં:</translation>
 <translation id="4209895695669353772">Google દ્વારા સૂચવેલ વ્યક્તિગત કરેલ કન્ટેન્ટ મેળવવા માટે, સિંક કરવાનું ચાલુ કરો</translation>
 <translation id="423219824432660969"><ph name="TIME" /> પ્રમાણે Google પાસવર્ડ વડે સિંક કરેલા ડેટાને એન્ક્રિપ્ટ કરો</translation>
 <translation id="4242533952199664413">સેટિંગ્સ ખોલો</translation>
@@ -490,6 +491,7 @@
 <translation id="4943872375798546930">પરિણામો નથી</translation>
 <translation id="4961107849584082341">આ પેજનો અનુવાદ કોઈપણ ભાષામાં કરો</translation>
 <translation id="4970824347203572753">તમારા સ્થાનમાં ઉપલબ્ધ નથી</translation>
+<translation id="4971735654804503942">જોખમકારક વેબસાઇટ, ડાઉનલોડ અને એક્સ્ટેંશન સામે વધુ ઝડપી તેમજ સક્રિય સંરક્ષણ. તમને પાસવર્ડ ઉલ્લંઘનો વિશે ચેતવણી આપે છે. Googleને બ્રાઉઝિંગ ડેટા મોકલવાનું જરૂરી છે.</translation>
 <translation id="497421865427891073">આગળ જાઓ</translation>
 <translation id="4988210275050210843">(<ph name="MEGABYTES" />)ની ફાઇલ ડાઉનલોડ કરી રહ્યાં છીએ.</translation>
 <translation id="4988526792673242964">પૃષ્ઠો</translation>
@@ -561,7 +563,6 @@
 <translation id="5527082711130173040">ઉપકરણો માટે સ્કેન કરવા Chrome ને સ્થાન ઍક્સેસની જરૂર છે. <ph name="BEGIN_LINK1" />પરવાનગીઓ અપડેટ કરો<ph name="END_LINK1" />. સ્થાન ઍક્સેસ પણ <ph name="BEGIN_LINK2" />આ ઉપકરણ માટે બંધ કરેલ છે<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">છુપા ટેબ્સ બંધ કરો</translation>
 <translation id="5534640966246046842">સાઇટ કૉપિ કરી</translation>
-<translation id="5548606607480005320">સલામતી માટે તપાસ</translation>
 <translation id="5561549206367097665">નેટવર્કની રાહ જોઈ રહ્યાં છે…</translation>
 <translation id="55737423895878184">સ્થાન અને નોટિફિકેશનોની મંજૂરી છે</translation>
 <translation id="5578795271662203820">આ છબી માટે <ph name="SEARCH_ENGINE" /> માં શોધો</translation>
@@ -600,7 +601,6 @@
 <translation id="583281660410589416">અજ્ઞાત</translation>
 <translation id="5833984609253377421">લિંક શેર કરો</translation>
 <translation id="5836192821815272682">Chrome અપડેટ ડાઉનલોડ કરી રહ્યાં છીએ…</translation>
-<translation id="584120177693484274">અનચેક કરેલું</translation>
 <translation id="5853623416121554550">થોભાવેલ</translation>
 <translation id="5854790677617711513">30 દિવસ કરતા જૂનો</translation>
 <translation id="5858741533101922242">Chrome, Bluetooth એડેપ્ટરને ચાલુ કરવામાં અસમર્થ છે</translation>
@@ -736,10 +736,12 @@
 <translation id="685850645784703949">Googleનું Discover - બંધ</translation>
 <translation id="6864459304226931083">છબી ડાઉનલોડ કરો</translation>
 <translation id="6865313869410766144">સ્વતઃભરણ ફોર્મ ડેટા</translation>
+<translation id="6882836635272038266">જોખમકારક જણાતી હોય એવી વેબસાઇટ, ડાઉનલોડ અને એક્સ્ટેંશન સામે માનક સંરક્ષણ.</translation>
 <translation id="6884306546558072722">ઑફલાઇન શોધખોળ કરવાનું ચાલુ રાખો</translation>
 <translation id="688738109438487280">અસ્તિત્વમાંના ડેટાને <ph name="TO_ACCOUNT" /> માં ઉમેરો.</translation>
 <translation id="6891726759199484455">તમારો પાસવર્ડ કૉપિ કરવા માટે અનલૉક કરો</translation>
 <translation id="6896758677409633944">કૉપિ કરો</translation>
+<translation id="6900532703269623216">વધારેલું સંરક્ષણ</translation>
 <translation id="6903907808598579934">સમન્વયન ચાલુ કરો</translation>
 <translation id="6942665639005891494">સેટિંગ મેનૂ વિકલ્પનો ઉપયોગ કરીને ડિફૉલ્ટ ડાઉનલોડ સ્થાનને કોઈપણ સમયે બદલો</translation>
 <translation id="6945221475159498467">પસંદ કરો</translation>

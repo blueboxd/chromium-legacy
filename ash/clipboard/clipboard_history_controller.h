@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace ui {
@@ -53,6 +54,8 @@ class ClipboardHistoryController {
   std::unique_ptr<ui::SimpleMenuModel::Delegate> menu_delegate_;
   // The items we show in the contextual menu. Saved so we can paste them later.
   std::vector<ui::ClipboardData> clipboard_items_;
+
+  base::WeakPtrFactory<ClipboardHistoryController> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

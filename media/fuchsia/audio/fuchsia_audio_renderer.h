@@ -9,13 +9,11 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/buffering_state.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/time_source.h"
-#include "media/fuchsia/mojom/fuchsia_media_resource_provider.mojom.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
 
@@ -27,10 +25,9 @@ class MediaLog;
 // sends encoded stream directly to AudioConsumer provided by the platform.
 class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
  public:
-  FuchsiaAudioRenderer(
-      MediaLog* media_log,
-      mojo::PendingRemote<media::mojom::FuchsiaMediaResourceProvider>
-          media_resource_provider);
+  FuchsiaAudioRenderer(MediaLog* media_log,
+                       fidl::InterfaceHandle<fuchsia::media::AudioConsumer>
+                           audio_consumer_handle);
   ~FuchsiaAudioRenderer() final;
 
   // AudioRenderer implementation.

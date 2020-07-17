@@ -30,15 +30,24 @@ SVGMaskPainter::~SVGMaskPainter() {
   // properties are ready.
   if (!properties || !properties->Mask())
     return;
+
+  DCHECK(properties->MaskClip());
+  PropertyTreeStateOrAlias property_tree_state(
+      properties->Mask()->LocalTransformSpace(), *properties->MaskClip(),
+      *properties->Mask());
   ScopedPaintChunkProperties scoped_paint_chunk_properties(
-      context_.GetPaintController(), *properties->Mask(), display_item_client_,
+      context_.GetPaintController(), property_tree_state, display_item_client_,
       DisplayItem::kSVGMask);
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           context_, display_item_client_, DisplayItem::kSVGMask))
     return;
+
+  FloatRect visual_rect = properties->MaskClip()->UnsnappedClipRect().Rect();
+  visual_rect.Intersect(layout_object_.VisualRectInLocalSVGCoordinates());
   DrawingRecorder recorder(context_, display_item_client_,
-                           DisplayItem::kSVGMask);
+                           DisplayItem::kSVGMask,
+                           EnclosingIntRect(visual_rect));
 
   const SVGComputedStyle& svg_style = layout_object_.StyleRef().SvgStyle();
   auto* masker =

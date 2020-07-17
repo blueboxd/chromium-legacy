@@ -50,6 +50,7 @@ VideoEncodeAccelerator::Config::Config(
     base::Optional<uint32_t> initial_framerate,
     base::Optional<uint32_t> gop_length,
     base::Optional<uint8_t> h264_output_level,
+    bool is_constrained_h264,
     base::Optional<StorageType> storage_type,
     ContentType content_type,
     const std::vector<SpatialLayer>& spatial_layers)
@@ -61,6 +62,7 @@ VideoEncodeAccelerator::Config::Config(
           VideoEncodeAccelerator::kDefaultFramerate)),
       gop_length(gop_length),
       h264_output_level(h264_output_level),
+      is_constrained_h264(is_constrained_h264),
       storage_type(storage_type),
       content_type(content_type),
       spatial_layers(spatial_layers) {}
@@ -81,10 +83,13 @@ std::string VideoEncodeAccelerator::Config::AsHumanReadableString() const {
   if (gop_length)
     str += base::StringPrintf(", gop_length: %u", gop_length.value());
 
-  if (h264_output_level &&
-      VideoCodecProfileToVideoCodec(output_profile) == kCodecH264) {
-    str += base::StringPrintf(", h264_output_level: %u",
-                              h264_output_level.value());
+  if (VideoCodecProfileToVideoCodec(output_profile) == kCodecH264) {
+    if (h264_output_level) {
+      str += base::StringPrintf(", h264_output_level: %u",
+                                h264_output_level.value());
+    }
+
+    str += base::StringPrintf(", is_constrained_h264: %u", is_constrained_h264);
   }
 
   if (spatial_layers.empty())

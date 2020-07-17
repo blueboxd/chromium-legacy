@@ -8,6 +8,7 @@ import random
 import sys
 
 from gpu_tests import color_profile_manager
+from gpu_tests import common_browser_args as cba
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
 
@@ -60,18 +61,26 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     color_profile_manager.ForceUntilExitSRGB(
         options.dont_restore_color_profile_after_test)
     super(cls, ScreenshotSyncIntegrationTest).SetUpProcess()
-    cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
+    cls.CustomizeBrowserArgs([])
     cls.StartBrowser()
     cls.SetStaticServerDirs([data_path])
 
-  @staticmethod
-  def _AddDefaultArgs(browser_args):
-    # --test-type=gpu is used to suppress the "Google API Keys are
-    # missing" infobar, which causes flakiness in tests.
-    return [
-        '--force-color-profile=srgb', '--ensure-forced-color-profile',
-        '--test-type=gpu'
-    ] + browser_args
+  @classmethod
+  def GenerateBrowserArgs(cls, additional_args):
+    """Adds default arguments to |additional_args|.
+
+    See the parent class' method documentation for additional information.
+    """
+    default_args = super(ScreenshotSyncIntegrationTest,
+                         cls).GenerateBrowserArgs(additional_args)
+    default_args.extend([
+        cba.FORCE_COLOR_PROFILE_SRGB,
+        cba.ENSURE_FORCED_COLOR_PROFILE,
+        # --test-type=gpu is used to suppress the "Google API Keys are
+        # missing" infobar, which causes flakiness in tests.
+        cba.TEST_TYPE_GPU,
+    ])
+    return default_args
 
   @classmethod
   def GenerateGpuTests(cls, options):
@@ -81,9 +90,9 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     yield ('ScreenshotSync_SWRasterWithDivs', 'screenshot_sync_divs.html',
            ('--disable-gpu-rasterization'))
     yield ('ScreenshotSync_GPURasterWithCanvas', 'screenshot_sync_canvas.html',
-           ('--force-gpu-rasterization'))
+           (cba.FORCE_GPU_RASTERIZATION))
     yield ('ScreenshotSync_GPURasterWithDivs', 'screenshot_sync_divs.html',
-           ('--force-gpu-rasterization'))
+           (cba.FORCE_GPU_RASTERIZATION))
 
   def _Navigate(self, test_path):
     url = self.UrlOfStaticFilePath(test_path)
@@ -133,7 +142,7 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   def RunActualGpuTest(self, test_path, *args):
     browser_arg = args[0]
-    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([browser_arg]))
+    self.RestartBrowserIfNecessaryWithArgs([browser_arg])
     self._Navigate(test_path)
     repetitions = 20
     for _ in range(0, repetitions):

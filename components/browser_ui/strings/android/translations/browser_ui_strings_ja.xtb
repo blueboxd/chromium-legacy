@@ -40,7 +40,7 @@
 <translation id="2148716181193084225">今日</translation>
 <translation id="2182457891543959921">サイトに周囲の 3D マップの作成またはカメラ位置の追跡を許可する前に確認します（推奨）</translation>
 <translation id="2212565012507486665">Cookie を許可</translation>
-<translation id="2228071138934252756"><ph name="APP_NAME" /> にカメラへのアクセスを許可するには、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />でもカメラをオンにしてください。</translation>
+<translation id="2228071138934252756"><ph name="APP_NAME" /> にカメラへのアクセスを許可するには、<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でもカメラをオンにしてください。</translation>
 <translation id="2289270750774289114">サイトから近くにある Bluetooth デバイスの検出を求められたときに確認する（推奨）</translation>
 <translation id="2315043854645842844">オペレーティング システムでサポートされていないため、クライアント側で証明書を選択することはできません。</translation>
 <translation id="2359808026110333948">続行</translation>
@@ -72,7 +72,7 @@
 <translation id="3115898365077584848">情報を表示</translation>
 <translation id="3123473560110926937">一部のサイトでブロックされています</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> の保存データ</translation>
-<translation id="321187648315454507"><ph name="APP_NAME" /> に通知の送信を許可するには、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />でも通知をオンにしてください。</translation>
+<translation id="321187648315454507"><ph name="APP_NAME" /> に通知の送信を許可するには、<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でも通知をオンにしてください。</translation>
 <translation id="3227137524299004712">マイク</translation>
 <translation id="3277252321222022663">サイトによるセンサーへのアクセスを許可する（推奨）</translation>
 <translation id="3295602654194328831">情報を表示しない</translation>
@@ -104,7 +104,7 @@
 <translation id="445467742685312942">保護されたコンテンツの再生をサイトに許可する</translation>
 <translation id="4468959413250150279">特定のサイトの音声をミュートします。</translation>
 <translation id="4479647676395637221">サイトにカメラの使用を許可する前に確認する（推奨）</translation>
-<translation id="4534723447064627427"><ph name="APP_NAME" /> にマイクへのアクセスを許可するには、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />でもマイクをオンにしてください。</translation>
+<translation id="4534723447064627427"><ph name="APP_NAME" /> にマイクへのアクセスを許可するには、<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でもマイクをオンにしてください。</translation>
 <translation id="4570913071927164677">詳細</translation>
 <translation id="4645575059429386691">保護者により管理されています</translation>
 <translation id="4670064810192446073">バーチャル リアリティ（VR）</translation>
@@ -231,7 +231,7 @@
 <translation id="8394832520002899662">タップしてサイトに戻る</translation>
 <translation id="8425213833346101688">変更</translation>
 <translation id="8441146129660941386">後方にシーク再生</translation>
-<translation id="8444433999583714703"><ph name="APP_NAME" /> に現在地へのアクセスを許可するには、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />でも位置情報をオンにしてください。</translation>
+<translation id="8444433999583714703"><ph name="APP_NAME" /> に現在地へのアクセスを許可するには、<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でも位置情報をオンにしてください。</translation>
 <translation id="8447861592752582886">デバイスの許可を取り消します</translation>
 <translation id="8463851957836045671">サイトは高速です</translation>
 <translation id="851751545965956758">サイトからデバイスへの接続をブロックする</translation>

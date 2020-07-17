@@ -1,24 +1,61 @@
-# WPR Reocrd/Replay Tests
+# WPR Record/Replay Tests
 
-WPR Reocrd/Replay tests are tests that utilize WPR as a backend to simulate a
+WPR Record/Replay tests are tests that utilize WPR to simulate a
 real backend api service point. When executing a WPR test, there is a Chrome proxy
 session being set up. Inside this Chrome proxy session, there are
 webpagereplay server (aka WPR server), tsProxy server, android forwarder binary,
 and the wiring of these component to each other. A system diagram is available
-[here](https://docs.google.com/document/d/1b6jVuhAuIWh-QRm9brDRfsiBP-eAfuGyDudU1HzkcP8/edit).
+[here](https://docs.google.com/document/d/1xk2ZNGFSQZ8gjc5fCFSck4-WUQehU6GmetMlP-GXYRc/edit)
 
 For a typical WPR Record/Replay test, there are two exeuction modes:
 1. Record mode
 2. Replay mode.
 
+## Update your gclient config
+
+You need to add the following lines to your .gclient checkout.
+
+*  "checkout_src_internal": True,
+*  "checkout_mobile_internal": True,
+
+Here is an example.
+
+```
+solutions = [
+  {
+    "url": "https://chromium.googlesource.com/chromium/src.git",
+    "managed": False,
+    "name": "src",
+    "custom_deps": {},
+    "custom_vars": {
+      "checkout_src_internal": True,
+      "checkout_mobile_internal": True,
+    },
+  },
+]
+target_os = ['android']
+```
+
 ## Mark tests as WPR Record/Replay tests
 
-To mark a test WPR Reocrd/Replay test, there are two annotations to mark on the test method:
+To mark a test WPR Record/Replay test, there are two annotations to mark on the test method:
 1. Features annotation should have 'WPRRecordReplayTest'
 2. WPRArchiveDirectory that has a path points to the wpr archive folder, with
    name typically wpr_tests. It can not be a file.
 
-Here is an [exmaple](https://paste.googleplex.com/6475117775290368).
+Here is an example.
+
+```
+    @Test
+    @MediumTest
+    @Feature({"FeedNewTabPage", "WPRRecordReplayTest", "RenderTest"})
+    @WPRArchiveConfigFilePath("chrome/android/feed/core/javatests/src/org/chromium/chrome/"
+            + "browser/feed/network_fetch/test_data.json")
+    public void
+    launchNTP_withMultipleFeedCardsRendered() throws IOException, InterruptedException {
+    ...
+    }
+```
 
 ## WPR Test file
 

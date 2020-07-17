@@ -749,7 +749,10 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
 
   SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
   SetReadyState(WebMediaPlayer::kReadyStateHaveNothing);
-  media_log_->AddEvent<MediaLogEvent::kLoad>(url.GetString().Utf8());
+
+  // Do a truncation to kMaxUrlLength+1 at most; we can add ellipsis later.
+  media_log_->AddEvent<MediaLogEvent::kLoad>(
+      url.GetString().Substring(0, kMaxUrlLength + 1).Utf8());
   load_start_time_ = base::TimeTicks::Now();
 
   // If we're adapting, then restart the smoothness experiment.

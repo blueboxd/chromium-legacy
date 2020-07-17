@@ -421,7 +421,6 @@
 <translation id="2705137772291741111">このサイトの保存（キャッシュ）されたコピーを読み取れませんでした。</translation>
 <translation id="2709516037105925701">自動入力</translation>
 <translation id="2713444072780614174">白</translation>
-<translation id="2720342946869265578">周辺</translation>
 <translation id="2721148159707890343">リクエストを正常に送信しました</translation>
 <translation id="272451190272506600">センサーをタップして支払います</translation>
 <translation id="2728127805433021124">サーバーの証明書は脆弱な署名アルゴリズムを使用して署名されています。</translation>
@@ -715,7 +714,6 @@
 <translation id="3987940399970879459">1 MB 未満</translation>
 <translation id="3990250421422698716">ジョグ オフセット</translation>
 <translation id="3996311196211510766">サイト <ph name="ORIGIN" /> では、サイトへのすべてのリクエストにオリジン ポリシーの適用を求めていますが、このポリシーは現在適用することができません。</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 件の近くのウェブページ}other{# 件の近くのウェブページ}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} ページの PDF ドキュメント}other{{COUNT} ページの PDF ドキュメント}}</translation>
 <translation id="4030383055268325496">追加の取り消し（&amp;U）</translation>
 <translation id="4032320456957708163">ご使用のブラウザは <ph name="ENROLLMENT_DOMAIN" /> によって管理されています</translation>
@@ -929,7 +927,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">保存...</translation>
 <translation id="4913987521957242411">パンチ（左上）</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{他 1 件のウェブページ}other{他 # 件のウェブページ}}</translation>
 <translation id="4923459931733593730">お支払い</translation>
 <translation id="4926049483395192435">指定する必要があります。</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> の内容</translation>
@@ -1320,7 +1317,6 @@
 <translation id="6518133107902771759">確認</translation>
 <translation id="6521745193039995384">無効</translation>
 <translation id="6529602333819889595">削除のやり直し（&amp;R）</translation>
-<translation id="6534179046333460208">フィジカル ウェブからの URL</translation>
 <translation id="6545864417968258051">Bluetooth のスキャン</translation>
 <translation id="6547208576736763147">2 穴パンチ（左）</translation>
 <translation id="6554795675067793129">あなたのアカウントは <ph name="ENROLLMENT_DOMAIN" /> によって管理されています。</translation>
@@ -1843,7 +1839,6 @@
 <translation id="8790007591277257123">削除のやり直し（&amp;R）</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> アカウントにアクセスできなくなったり、個人情報が盗まれたりする可能性があります。今すぐパスワードを変更することをおすすめします。</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> により、お使いのブラウザで Chrome Enterprise Connectors が有効化されています。これらのコネクタには、一部のユーザーデータへのアクセスが許可されます。</translation>
-<translation id="8800988563907321413">周辺のおすすめの場所がここに表示されます</translation>
 <translation id="8805819170075074995">リスト項目「<ph name="LANGUAGE_ID" />」: SpellcheckLanguage ポリシーにも含まれているため、この項目は無視されます。</translation>
 <translation id="8807160976559152894">トリミング（ページ単位）</translation>
 <translation id="8820817407110198400">ブックマーク</translation>

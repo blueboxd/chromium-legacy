@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -837,6 +838,28 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kBookmarkHomeTableViewIdentifier)]
       assertWithMatcher:grey_nil()];
+}
+
+- (void)testFolderEmptyState {
+  [BookmarkEarlGrey setupStandardBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
+
+  // Enter Folder 1.1 (which is empty)
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
+      performAction:grey_tap()];
+
+  // Empty TableView background should be visible
+  [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
+  id<GREYInteraction> searchBar =
+      [EarlGrey selectElementWithMatcher:grey_accessibilityTrait(
+                                             UIAccessibilityTraitSearchField)];
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
+    // With the illustrated background, the search bar should not be visible
+    [searchBar assertWithMatcher:grey_nil()];
+  } else {
+    [searchBar assertWithMatcher:grey_notNil()];
+  }
 }
 
 // TODO(crbug.com/695749): Add egtests for:

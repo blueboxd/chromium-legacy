@@ -21,7 +21,7 @@ namespace content {
 
 WorkerScriptLoader::WorkerScriptLoader(
     int process_id,
-    DedicatedWorkerId dedicated_worker_id,
+    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
     SharedWorkerId shared_worker_id,
     int32_t routing_id,
     int32_t request_id,
@@ -51,8 +51,8 @@ WorkerScriptLoader::WorkerScriptLoader(
   }
   auto service_worker_interceptor =
       ServiceWorkerMainResourceLoaderInterceptor::CreateForWorker(
-          resource_request_, process_id, dedicated_worker_id, shared_worker_id,
-          service_worker_handle_);
+          resource_request_, process_id, dedicated_worker_token,
+          shared_worker_id, service_worker_handle_);
 
   if (service_worker_interceptor)
     interceptors_.push_back(std::move(service_worker_interceptor));

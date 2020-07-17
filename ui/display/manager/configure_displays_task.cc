@@ -73,6 +73,15 @@ int ComputeDisplayResolutionEnum(const DisplayMode* mode) {
   return width_idx * base::size(kDisplayResolutionSamples) + height_idx + 1;
 }
 
+std::__wrap_iter<const DisplayConfigureRequest*> GetRequestForDisplayId(
+    int64_t display_id,
+    const std::vector<DisplayConfigureRequest>& requests) {
+  return find_if(requests.begin(), requests.end(),
+                 [display_id](const DisplayConfigureRequest& request) {
+                   return request.display->display_id() == display_id;
+                 });
+}
+
 }  // namespace
 
 DisplayConfigureRequest::DisplayConfigureRequest(DisplaySnapshot* display,
@@ -110,32 +119,40 @@ void ConfigureDisplaysTask::Run() {
   {
     base::AutoReset<bool> recursivity_guard(&is_configuring_, true);
     while (!pending_request_indexes_.empty()) {
-      size_t index = pending_request_indexes_.front();
-      DisplayConfigureRequest* request = &requests_[index];
-      pending_request_indexes_.pop();
-      const bool internal =
-          request->display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL;
-      base::UmaHistogramExactLinear(
-          internal ? "ConfigureDisplays.Internal.Modeset.Resolution"
-                   : "ConfigureDisplays.External.Modeset.Resolution",
-          ComputeDisplayResolutionEnum(request->mode),
-          base::size(kDisplayResolutionSamples) *
-                  base::size(kDisplayResolutionSamples) +
-              2);
+      // Loop over all the current requests, then it will loop again making sure
+      // no new requests were added and are pending.
+      std::vector<display::DisplayConfigurationParams> config_requests;
+      for (size_t i = 0; i < pending_request_indexes_.size(); ++i) {
+        size_t index = pending_request_indexes_.front();
+        DisplayConfigureRequest* request = &requests_[index];
+        pending_request_indexes_.pop();
 
-      base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
-          internal ? "ConfigureDisplays.Internal.Modeset.RefreshRate"
-                   : "ConfigureDisplays.External.Modeset.RefreshRate",
-          1, 240, 18, base::HistogramBase::kUmaTargetedHistogramFlag);
-      histogram->Add(request->mode ? std::round(request->mode->refresh_rate())
-                                   : 0);
+        const bool internal =
+            request->display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL;
+        base::UmaHistogramExactLinear(
+            internal ? "ConfigureDisplays.Internal.Modeset.Resolution"
+                     : "ConfigureDisplays.External.Modeset.Resolution",
+            ComputeDisplayResolutionEnum(request->mode),
+            base::size(kDisplayResolutionSamples) *
+                    base::size(kDisplayResolutionSamples) +
+                2);
+        base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
+            internal ? "ConfigureDisplays.Internal.Modeset.RefreshRate"
+                     : "ConfigureDisplays.External.Modeset.RefreshRate",
+            1, 240, 18, base::HistogramBase::kUmaTargetedHistogramFlag);
+        histogram->Add(request->mode ? std::round(request->mode->refresh_rate())
+                                     : 0);
 
-      display::DisplayConfigurationParams display_config_params(
-          request->display->display_id(), request->origin, request->mode);
-      delegate_->Configure(
-          display_config_params,
-          base::BindOnce(&ConfigureDisplaysTask::OnConfigured,
-                         weak_ptr_factory_.GetWeakPtr(), index));
+        display::DisplayConfigurationParams display_config_params(
+            request->display->display_id(), request->origin, request->mode);
+        config_requests.push_back(std::move(display_config_params));
+      }
+      if (!config_requests.empty()) {
+        delegate_->Configure(
+            config_requests,
+            base::BindOnce(&ConfigureDisplaysTask::OnConfigured,
+                           weak_ptr_factory_.GetWeakPtr()));
+      }
     }
   }
 
@@ -156,44 +173,83 @@ void ConfigureDisplaysTask::OnDisplaySnapshotsInvalidated() {
   Run();
 }
 
-void ConfigureDisplaysTask::OnConfigured(size_t index, bool success) {
-  DisplayConfigureRequest* request = &requests_[index];
-  VLOG(2) << "Configured status=" << success
-          << " display=" << request->display->display_id()
-          << " origin=" << request->origin.ToString()
-          << " mode=" << (request->mode ? request->mode->ToString() : "null");
+void ConfigureDisplaysTask::OnConfigured(
+    const base::flat_map<int64_t, bool>& statuses) {
+  bool config_success = true;
 
-  const bool internal =
-      request->display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL;
-  base::UmaHistogramBoolean(
-      internal ? "ConfigureDisplays.Internal.Modeset.AttemptSucceeded"
-               : "ConfigureDisplays.External.Modeset.AttemptSucceeded",
-      success);
+  // Check if all displays are successfully configured.
+  for (const auto& status : statuses) {
+    int64_t display_id = status.first;
+    bool display_success = status.second;
+    config_success &= display_success;
 
-  if (!success) {
-    request->mode = FindNextMode(*request->display, request->mode);
-    if (request->mode) {
-      pending_request_indexes_.push(index);
+    auto request = GetRequestForDisplayId(display_id, requests_);
+    DCHECK(request != requests_.end());
+
+    VLOG(2) << "Configured status=" << display_success
+            << " display=" << request->display->display_id()
+            << " origin=" << request->origin.ToString()
+            << " mode=" << (request->mode ? request->mode->ToString() : "null");
+
+    bool internal =
+        request->display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL;
+    base::UmaHistogramBoolean(
+        internal ? "ConfigureDisplays.Internal.Modeset.AttemptSucceeded"
+                 : "ConfigureDisplays.External.Modeset.AttemptSucceeded",
+        display_success);
+  }
+
+  if (config_success) {
+    for (const auto& status : statuses) {
+      auto request = GetRequestForDisplayId(status.first, requests_);
+      request->display->set_current_mode(request->mode);
+      request->display->set_origin(request->origin);
+    }
+  } else {
+    bool should_reconfigure = false;
+    // For the failing config, check if there is another mode to be requested.
+    // If there is one, attempt to reconfigure everything again.
+    for (const auto& status : statuses) {
+      int64_t display_id = status.first;
+      bool display_success = status.second;
+      if (!display_success) {
+        const DisplayConfigureRequest* request =
+            GetRequestForDisplayId(display_id, requests_).base();
+        const_cast<DisplayConfigureRequest*>(request)->mode =
+            FindNextMode(*request->display, request->mode);
+        should_reconfigure = !!request->mode;
+      }
+    }
+    // When reconfiguring, reconfigure all displays, not only the failing ones
+    // as they could potentially depend on each other.
+    if (should_reconfigure) {
+      for (const auto& status : statuses) {
+        auto const_iterator = GetRequestForDisplayId(status.first, requests_);
+        auto request = requests_.erase(const_iterator, const_iterator);
+        size_t index = std::distance(requests_.begin(), request);
+        pending_request_indexes_.push(index);
+      }
       if (task_status_ == SUCCESS)
         task_status_ = PARTIAL_SUCCESS;
-
       Run();
       return;
     }
-  } else {
-    request->display->set_current_mode(request->mode);
-    request->display->set_origin(request->origin);
   }
 
-  num_displays_configured_++;
+  // If no reconfigurations are happening, update the final state.
+  for (const auto& status : statuses) {
+    auto request = GetRequestForDisplayId(status.first, requests_);
+    bool internal =
+        request->display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL;
+    base::UmaHistogramBoolean(
+        internal ? "ConfigureDisplays.Internal.Modeset.FinalStatus"
+                 : "ConfigureDisplays.External.Modeset.FinalStatus",
+        config_success);
+  }
 
-  base::UmaHistogramBoolean(
-      internal ? "ConfigureDisplays.Internal.Modeset.FinalStatus"
-               : "ConfigureDisplays.External.Modeset.FinalStatus",
-      success);
-  if (!success)
+  num_displays_configured_ += statuses.size();
+  if (!config_success)
     task_status_ = ERROR;
-
   Run();
 }
 

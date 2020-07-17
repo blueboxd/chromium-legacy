@@ -44,7 +44,7 @@ enum OpenItemType {
 };
 
 // Callback used with OpenFile and OpenFolder.
-typedef base::Callback<void(OpenOperationResult)> OpenOperationCallback;
+typedef base::OnceCallback<void(OpenOperationResult)> OpenOperationCallback;
 
 // Opens the item specified by |full_path|, which is expected to be the type
 // indicated by |item_type| in the desktop's default manner.
@@ -61,7 +61,7 @@ typedef base::Callback<void(OpenOperationResult)> OpenOperationCallback;
 void OpenItem(Profile* profile,
               const base::FilePath& full_path,
               OpenItemType item_type,
-              const OpenOperationCallback& callback);
+              OpenOperationCallback callback);
 
 // Opens the folder containing the item specified by |full_path| in the
 // desktop's default manner. If possible, the item will be selected. The

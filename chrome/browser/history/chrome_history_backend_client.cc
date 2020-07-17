@@ -74,15 +74,15 @@ bool ChromeHistoryBackendClient::IsWebSafe(const GURL& url) {
 void ChromeHistoryBackendClient::OnHistoryBackendInitialized(
     history::HistoryBackend* history_backend,
     history::HistoryDatabase* history_database,
-    history::ThumbnailDatabase* thumbnail_database,
+    history::FaviconDatabase* favicon_database,
     const base::FilePath& history_dir) {
   DCHECK(history_backend);
-  if (thumbnail_database) {
+  if (favicon_database) {
     history_backend->SetUserData(
         history::AndroidProviderBackend::GetUserDataKey(),
         std::make_unique<history::AndroidProviderBackend>(
             history_dir.Append(kAndroidCacheFilename), history_database,
-            thumbnail_database, this, history_backend));
+            favicon_database, this, history_backend));
   }
 }
 

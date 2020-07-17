@@ -36,13 +36,13 @@ namespace util {
 void OpenItem(Profile* profile,
               const base::FilePath& file_path,
               platform_util::OpenItemType item_type,
-              const platform_util::OpenOperationCallback& callback);
+              platform_util::OpenOperationCallback callback);
 
 // Opens the file manager for the folder containing the item specified by
 // |file_path|, with the item selected.
 void ShowItemInFolder(Profile* profile,
                       const base::FilePath& file_path,
-                      const platform_util::OpenOperationCallback& callback);
+                      platform_util::OpenOperationCallback callback);
 
 // Change the behavior of the above functions to do everything except launch any
 // extensions including a file browser.

@@ -18,6 +18,7 @@ struct ThrottleConfig;
 
 namespace offline_pages {
 namespace prefetch {
+
 // Service to manage offline prefetch notifications via
 // notifications::NotificationScheduleService.
 class PrefetchNotificationService : public KeyedService {
@@ -39,10 +40,8 @@ class PrefetchNotificationService : public KeyedService {
 
  protected:
   PrefetchNotificationService() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PrefetchNotificationService);
 };
+
 }  // namespace prefetch
 }  // namespace offline_pages
 

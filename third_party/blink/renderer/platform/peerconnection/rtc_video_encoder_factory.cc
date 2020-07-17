@@ -83,7 +83,7 @@ base::Optional<webrtc::SdpVideoFormat> VEAToWebRTCFormat(
         h264_profile = webrtc::H264::kProfileConstrainedBaseline;
 #else
         h264_profile = webrtc::H264::kProfileBaseline;
-#endif
+#endif  // defined(OS_ANDROID)
         break;
       case media::H264PROFILE_MAIN:
         h264_profile = webrtc::H264::kProfileMain;
@@ -168,7 +168,25 @@ SupportedFormats GetSupportedFormatsInternal(
       supported_formats.sdp_formats.push_back(std::move(*format));
     }
   }
+
+  cricket::AddH264ConstrainedBaselineProfileToSupportedFormats(
+      &supported_formats.sdp_formats);
   return supported_formats;
+}
+
+bool IsConstrainedH264(const webrtc::SdpVideoFormat& format) {
+  bool is_constrained_h264 = false;
+
+  if (format.name == cricket::kH264CodecName) {
+    const absl::optional<webrtc::H264::ProfileLevelId> profile_level_id =
+        webrtc::H264::ParseSdpProfileLevelId(format.parameters);
+    if (profile_level_id && profile_level_id->profile ==
+                                webrtc::H264::kProfileConstrainedBaseline) {
+      is_constrained_h264 = true;
+    }
+  }
+
+  return is_constrained_h264;
 }
 
 }  // anonymous namespace
@@ -183,19 +201,22 @@ std::unique_ptr<webrtc::VideoEncoder>
 RTCVideoEncoderFactory::CreateVideoEncoder(
     const webrtc::SdpVideoFormat& format) {
   std::unique_ptr<webrtc::VideoEncoder> encoder;
+  bool is_constrained_h264 = IsConstrainedH264(format);
   auto supported_formats = GetSupportedFormatsInternal(gpu_factories_);
   if (!supported_formats.unknown) {
     for (size_t i = 0; i < supported_formats.sdp_formats.size(); ++i) {
       if (IsSameFormat(format, supported_formats.sdp_formats[i])) {
         encoder = std::make_unique<RTCVideoEncoder>(
-            supported_formats.profiles[i], gpu_factories_);
+            supported_formats.profiles[i], is_constrained_h264, gpu_factories_);
         break;
       }
     }
   } else {
     auto profile = WebRTCFormatToCodecProfile(format);
-    if (profile)
-      encoder = std::make_unique<RTCVideoEncoder>(*profile, gpu_factories_);
+    if (profile) {
+      encoder = std::make_unique<RTCVideoEncoder>(*profile, is_constrained_h264,
+                                                  gpu_factories_);
+    }
   }
   return encoder;
 }

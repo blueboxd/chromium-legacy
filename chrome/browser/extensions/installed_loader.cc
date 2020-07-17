@@ -34,6 +34,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/pref_types.h"
 #include "extensions/browser/ui_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -671,8 +672,9 @@ void InstalledLoader::RecordExtensionsMetrics() {
     base::UmaHistogramCounts100("Extensions.FileAccessNotAllowed",
                                 file_access_not_allowed_count);
   }
-  base::UmaHistogramCounts100("Extensions.CorruptExtensionTotalDisables",
-                              extension_prefs_->GetCorruptedDisableCount());
+  base::UmaHistogramCounts100(
+      "Extensions.CorruptExtensionTotalDisables",
+      extension_prefs_->GetPrefAsInteger(kCorruptedDisableCount));
   base::UmaHistogramCounts100("Extensions.EventlessEventPages",
                               eventless_event_pages_count);
   base::UmaHistogramCounts100("Extensions.LoadOffStoreItems",

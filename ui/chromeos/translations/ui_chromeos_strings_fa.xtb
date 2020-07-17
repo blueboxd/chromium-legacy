@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">ورودی ژاپنی (برای صفحه‌کلید ایالات متحده)</translation>
 <translation id="1047956942837015229">در حال حذف <ph name="COUNT" /> مورد...</translation>
 <translation id="1049926623896334335">‏سند Word </translation>
+<translation id="1060368002126861100">‏برای باز کردن فایل‌ها با <ph name="APP_NAME" />، ابتدا آن‌ها را به پوشه فایل‌های Windows منتقل کنید.</translation>
 <translation id="1062407476771304334">جایگزینی</translation>
 <translation id="1065449928621190041">صفحه‌کلید کانادایی فرانسوی</translation>
 <translation id="1119069657431255176">‏بایگانی نوار فشرده Bzip2</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">احتیاط: این فایل‌ها موقتی هستند و ممکن است برای آزادسازی فضای دیسک به‌طور خودکار حذف شوند.  <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">پوشه</translation>
 <translation id="3549797760399244642">‏رفتن به drive.google.com…</translation>
+<translation id="3553048479571901246">‏برای باز کردن فایل‌ها با <ph name="APP_NAME" />، ابتدا آن‌ها را در پوشه فایل‌های Windows کپی کنید.</translation>
 <translation id="357479282490346887">لیتوانیایی</translation>
 <translation id="3583509704582854624">ورودی حرفی عددی (برای صفحه‌کلید ژاپنی)</translation>
 <translation id="3603385196401704894">فرانسوی کانادا</translation>

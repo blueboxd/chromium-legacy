@@ -5,12 +5,17 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_CAPTION_BUBBLE_H_
 #define CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_CAPTION_BUBBLE_H_
 
+#include <memory>
 #include <string>
 
 #include "chrome/browser/ui/views/accessibility/caption_bubble_model.h"
 #include "ui/native_theme/caption_style.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
+
+namespace gfx {
+struct VectorIcon;
+}
 
 namespace views {
 class Label;
@@ -82,7 +87,7 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void AddedToWidget() override;
 
-  // Views::ButtonListener:
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
@@ -91,20 +96,29 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
 
   // Called by CaptionBubbleModel to notify this object that the model's text
   // has changed. Sets the text of the caption bubble to the model's text.
-  void OnTextChange();
+  void OnTextChanged();
 
   // Called by CaptionBubbleModel to notify this object that the model's error
   // state has changed. Makes the caption bubble display an error message if
   // the model has an error, otherwise displays the latest text.
-  void OnErrorChange();
+  void OnErrorChanged();
+
+  // Called when the caption bubble expanded state has changed. Changes the
+  // number of lines displayed.
+  void OnIsExpandedChanged();
 
   void UpdateBubbleAndWaitTextVisibility();
   // The caption bubble manages its own visibility based on whether there's
   // space for it to be shown, and if it has an error or text to display.
   void UpdateBubbleVisibility();
   double GetTextScaleFactor();
+  int GetNumLinesVisible();
   void UpdateTextSize();
   void UpdateContentSize();
+  void Redraw();
+  std::unique_ptr<views::ImageButton> BuildImageButton(
+      const gfx::VectorIcon& icon,
+      const int tooltip_text_id);
 
   // Unowned. Owned by views hierarchy.
   views::Label* label_;
@@ -113,6 +127,8 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   views::ImageView* error_icon_;
   views::View* error_message_;
   views::ImageButton* close_button_;
+  views::ImageButton* expand_button_;
+  views::ImageButton* collapse_button_;
   CaptionBubbleFrameView* frame_;
   views::View* content_container_;
 
@@ -134,6 +150,9 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
 
   // A reference to the BrowserView holding this bubble. Unowned.
   BrowserView* browser_view_;
+
+  // Whether the caption bubble is expanded to show more lines of text.
+  bool is_expanded_ = false;
 };
 
 }  // namespace captions

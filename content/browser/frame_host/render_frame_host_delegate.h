@@ -250,6 +250,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Get the accessibility mode for the WebContents that owns this frame.
   virtual ui::AXMode GetAccessibilityMode();
 
+  // Called whenever the AXTreeID for the topmost RenderFrameHost has changed.
+  virtual void AXTreeIDForMainFrameHasChanged() {}
+
   // Called when accessibility events or location changes are received
   // from a render frame, when the accessibility mode has the
   // ui::AXMode::kWebContents flag set.

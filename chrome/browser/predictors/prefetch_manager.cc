@@ -191,6 +191,7 @@ blink::mojom::ResourceType GetResourceType(
   }
   return blink::mojom::ResourceType::kSubResource;
 }
+
 void PrefetchManager::PrefetchUrl(
     std::unique_ptr<PrefetchJob> job,
     scoped_refptr<network::SharedURLLoaderFactory> factory) {
@@ -253,6 +254,8 @@ void PrefetchManager::PrefetchUrl(
           network::mojom::kURLLoadOptionNone, &request, client.get(),
           kPrefetchTrafficAnnotation, base::ThreadTaskRunnerHandle::Get(),
           /*cors_exempt_header_list=*/base::nullopt);
+
+  delegate_->PrefetchInitiated(info.url, job->url);
 
   // The idea of prefetching is for the network service to put the response in
   // the http cache. So from the prefetching layer, nothing needs to be done

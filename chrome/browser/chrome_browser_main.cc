@@ -865,8 +865,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   // Android's first run is done in Java instead of native.
 #if !defined(OS_ANDROID)
-  process_singleton_.reset(new ChromeProcessSingleton(
-      user_data_dir_, base::Bind(&ProcessSingletonNotificationCallback)));
+  process_singleton_ = std::make_unique<ChromeProcessSingleton>(
+      user_data_dir_,
+      base::BindRepeating(&ProcessSingletonNotificationCallback));
 
   // Cache first run state early.
   first_run::IsChromeFirstRun();
@@ -1317,8 +1318,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     base::StringToInt(try_chrome, &try_chrome_int);
     TryChromeDialog::Result answer = TryChromeDialog::Show(
         try_chrome_int,
-        base::Bind(&ChromeProcessSingleton::SetModalDialogNotificationHandler,
-                   base::Unretained(process_singleton_.get())));
+        base::BindRepeating(
+            &ChromeProcessSingleton::SetModalDialogNotificationHandler,
+            base::Unretained(process_singleton_.get())));
     switch (answer) {
       case TryChromeDialog::NOT_NOW:
         return chrome::RESULT_CODE_NORMAL_EXIT_CANCEL;

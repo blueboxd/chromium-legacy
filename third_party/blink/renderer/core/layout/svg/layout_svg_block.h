@@ -58,6 +58,9 @@ class LayoutSVGBlock : public LayoutBlockFlow {
 
  protected:
   void WillBeDestroyed() override;
+  void InsertedIntoTree() override;
+  void WillBeRemovedFromTree() override;
+
   bool MapToVisualRectInAncestorSpaceInternal(
       const LayoutBoxModelObject* ancestor,
       TransformState&,

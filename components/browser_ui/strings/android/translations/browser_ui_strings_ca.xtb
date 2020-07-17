@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Càmera</translation>
 <translation id="1647391597548383849">Accés a la càmera</translation>
 <translation id="1660204651932907780">Permet que els llocs web reprodueixin so (opció recomanada)</translation>
+<translation id="1677097821151855053">Les galetes i altres dades dels llocs web s'utilitzen per recordar-te amb finalitats com ara iniciar la teva sessió o personalitzar anuncis. Per gestionar les galetes de tots els llocs web, consulta <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Vols esborrar les dades del lloc web?</translation>
 <translation id="169515064810179024">Impedeix que els llocs web accedeixin als sensors de moviment</translation>
 <translation id="1717218214683051432">Sensors de moviment</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Permet les galetes d'un lloc web concret.</translation>
 <translation id="4046123991198612571">Pista següent</translation>
 <translation id="4165986682804962316">Configuració del lloc web</translation>
+<translation id="4200726100658658164">Obre la configuració d'ubicació</translation>
 <translation id="4226663524361240545">És possible que les notificacions facin vibrar el dispositiu</translation>
 <translation id="4242533952199664413">Obre la configuració</translation>
 <translation id="4259722352634471385">S'ha bloquejat la navegació: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Tots els llocs web</translation>
 <translation id="6320088164292336938">Vibració</translation>
 <translation id="6388207532828177975">Esborra i restableix</translation>
+<translation id="6423924377271166037">Esborra les galetes</translation>
 <translation id="6439114592976064011">Impedeix que els llocs web utilitzin les teves dades i el teu dispositiu de realitat virtual</translation>
 <translation id="6447842834002726250">Galetes</translation>
 <translation id="6527303717912515753">Comparteix</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Retrocedeix</translation>
 <translation id="8444433999583714703">Perquè <ph name="APP_NAME" /> pugui accedir a la teva ubicació, també has d'activar-la a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Revoca el permís d'accés al dispositiu</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 galeta en ús}other{# galetes en ús}}</translation>
 <translation id="8463851957836045671">El lloc web és ràpid</translation>
 <translation id="851751545965956758">Impedeix que els llocs web es connectin a dispositius</translation>
 <translation id="857943718398505171">Permès (opció recomanada)</translation>

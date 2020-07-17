@@ -123,7 +123,8 @@ class NodeWrapper extends SAChildNode {
     super.onFocus();
     this.locationChangedHandler_ = new RepeatedEventHandler(
         this.baseNode_, chrome.automation.EventType.LOCATION_CHANGED,
-        () => FocusRingManager.setFocusedNode(this), true /* exact_match */);
+        () => FocusRingManager.setFocusedNode(this),
+        {exactMatch: true, allAncestors: true});
   }
 
   /** @override */

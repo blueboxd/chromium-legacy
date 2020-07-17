@@ -133,6 +133,11 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallMetrics) {
   PageRequestSummary summary =
       CreatePageRequestSummary(main_frame_url, main_frame_url, resources, now);
   summary.navigation_committed = now + base::TimeDelta::FromMilliseconds(3);
+  summary.preconnect_origins = {
+      url::Origin::Create(GURL(gen(1))),
+      url::Origin::Create(GURL(gen(2))),
+      url::Origin::Create(GURL(gen(3))),
+  };
 
   stats_collector_->RecordPageRequestSummary(summary, base::nullopt);
 
@@ -164,6 +169,16 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallMetrics) {
       entry,
       ukm::builders::LoadingPredictor::kNavigationStartToNavigationCommitName,
       3);
+  ukm_recorder_->ExpectEntryMetric(
+      entry,
+      ukm::builders::LoadingPredictor::
+          kSubresourceOriginPreconnectsInitiatedName,
+      3);
+  ukm_recorder_->ExpectEntryMetric(
+      entry,
+      ukm::builders::LoadingPredictor::
+          kCorrectSubresourceOriginPreconnectsInitiatedName,
+      1);
   // Make sure optimization guide metrics are not recorded.
   EXPECT_FALSE(ukm_recorder_->EntryHasMetric(
       entry, ukm::builders::LoadingPredictor::
@@ -181,10 +196,21 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallMetrics) {
       entry,
       ukm::builders::LoadingPredictor::
           kOptimizationGuidePredictionCorrectlyPredictedSubresourcesName));
+  // Make sure prefetch metrics are not recorded since no prefetches were
+  // initiated.
+  EXPECT_FALSE(ukm_recorder_->EntryHasMetric(
+      entry, ukm::builders::LoadingPredictor::
+                 kNavigationStartToFirstSubresourcePrefetchInitiatedName));
+  EXPECT_FALSE(ukm_recorder_->EntryHasMetric(
+      entry,
+      ukm::builders::LoadingPredictor::kSubresourcePrefetchesInitiatedName));
+  EXPECT_FALSE(ukm_recorder_->EntryHasMetric(
+      entry, ukm::builders::LoadingPredictor::
+                 kCorrectSubresourcePrefetchesInitiatedName));
 }
 
 TEST_F(LoadingStatsCollectorTest,
-       TestPreconnectPrecisionRecallMetricsWithOptimizationGuide) {
+       TestPrecisionRecallMetricsWithOptimizationGuide) {
   const std::string main_frame_url = "http://google.com/?query=cats";
   auto gen = [](int index) {
     return base::StringPrintf("http://cdn%d.google.com/script.js", index);
@@ -224,6 +250,12 @@ TEST_F(LoadingStatsCollectorTest,
       gen(100), network::mojom::RequestDestination::kScript));
   PageRequestSummary summary =
       CreatePageRequestSummary(main_frame_url, main_frame_url, resources, now);
+  summary.prefetch_urls = {
+      GURL(gen(1)),
+      GURL(gen(2)),
+      GURL(gen(3)),
+  };
+  summary.first_prefetch_initiated = now + base::TimeDelta::FromMilliseconds(1);
 
   stats_collector_->RecordPageRequestSummary(summary,
                                              optimization_guide_prediction);
@@ -245,6 +277,19 @@ TEST_F(LoadingStatsCollectorTest,
       ukm::builders::LoadingPredictor::kEntryName);
   EXPECT_EQ(1u, entries.size());
   auto* entry = entries[0];
+  ukm_recorder_->ExpectEntryMetric(
+      entry,
+      ukm::builders::LoadingPredictor::kSubresourcePrefetchesInitiatedName, 3);
+  ukm_recorder_->ExpectEntryMetric(
+      entry,
+      ukm::builders::LoadingPredictor::
+          kCorrectSubresourcePrefetchesInitiatedName,
+      1);
+  ukm_recorder_->ExpectEntryMetric(
+      entry,
+      ukm::builders::LoadingPredictor::
+          kNavigationStartToFirstSubresourcePrefetchInitiatedName,
+      1);
   ukm_recorder_->ExpectEntryMetric(
       entry,
       ukm::builders::LoadingPredictor::kOptimizationGuidePredictionDecisionName,
@@ -281,6 +326,14 @@ TEST_F(LoadingStatsCollectorTest,
   EXPECT_FALSE(ukm_recorder_->EntryHasMetric(
       entry, ukm::builders::LoadingPredictor::
                  kLocalPredictionCorrectlyPredictedOriginsName));
+  // Make sure preconnect metrics are not recorded since no preconnects were
+  // initiated.
+  EXPECT_FALSE(ukm_recorder_->EntryHasMetric(
+      entry, ukm::builders::LoadingPredictor::
+                 kSubresourceOriginPreconnectsInitiatedName));
+  EXPECT_FALSE(ukm_recorder_->EntryHasMetric(
+      entry, ukm::builders::LoadingPredictor::
+                 kCorrectSubresourceOriginPreconnectsInitiatedName));
 }
 
 TEST_F(LoadingStatsCollectorTest, TestRedirectStatusNoRedirect) {

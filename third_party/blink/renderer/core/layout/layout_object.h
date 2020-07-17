@@ -716,7 +716,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   bool IsProgress() const { return IsOfType(kLayoutObjectProgress); }
   bool IsQuote() const { return IsOfType(kLayoutObjectQuote); }
-  bool IsLayoutButton() const { return IsOfType(kLayoutObjectLayoutButton); }
+  bool IsButtonOrNGButton() const {
+    return IsOfType(kLayoutObjectLayoutButton) ||
+           IsOfType(kLayoutObjectNGButton);
+  }
   bool IsLayoutNGButton() const { return IsOfType(kLayoutObjectNGButton); }
   bool IsLayoutNGCustom() const {
     return IsOfType(kLayoutObjectLayoutNGCustom);
@@ -1293,7 +1296,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            SpannerPlaceholder();
   }
 
-  // We include isLayoutButton() in this check, because buttons are
+  // We include IsButtonOrNGButton() in this check, because buttons are
   // implemented using flex box but should still support things like
   // first-line, first-letter and text-overflow.
   // The flex box and grid specs require that flex box and grid do not
@@ -1304,7 +1307,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // instead of flex box. crbug.com/226252.
   bool BehavesLikeBlockContainer() const {
     return (IsLayoutBlockFlow() && StyleRef().IsDisplayBlockContainer()) ||
-           IsLayoutButton();
+           IsButtonOrNGButton();
   }
 
   // May be optionally passed to container() and various other similar methods

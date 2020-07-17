@@ -28,7 +28,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkActivationHandlerImpl
   void CompleteActivation(
       const std::string& service_path,
       const base::Closure& success_callback,
-      const network_handler::ErrorCallback& error_callback) override;
+      network_handler::ErrorCallback error_callback) override;
 
  private:
   friend class NetworkHandler;

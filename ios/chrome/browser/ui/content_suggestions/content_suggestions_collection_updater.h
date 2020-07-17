@@ -80,6 +80,9 @@ addSuggestionsToModel:
 // header containing the fake omnibox and the logo.
 - (BOOL)isHeaderSection:(NSInteger)section;
 
+// Returns whether |section| contains the Discover feed.
+- (BOOL)isDiscoverSection:(NSInteger)section;
+
 // Returns whether |section| is one of the section containing ContentSuggestions
 // items.
 - (BOOL)isContentSuggestionsSection:(NSInteger)section;

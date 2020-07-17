@@ -42,6 +42,7 @@ class AbstractInlineTextBox;
 class AccessibleNode;
 class HTMLCanvasElement;
 class HTMLOptionElement;
+class HTMLFrameOwnerElement;
 class HTMLSelectElement;
 class IntPoint;
 class LayoutRect;
@@ -120,6 +121,10 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   // Changes to virtual Accessibility Object Model nodes.
   virtual void HandleAttributeChanged(const QualifiedName& attr_name,
                                       AccessibleNode*) = 0;
+
+  // Called when a HTMLFrameOwnerElement (such as an iframe element) changes the
+  // embedding token of its child frame.
+  virtual void EmbeddingTokenChanged(HTMLFrameOwnerElement*) = 0;
 
   virtual void SetCanvasObjectBounds(HTMLCanvasElement*,
                                      Element*,

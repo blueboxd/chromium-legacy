@@ -44,8 +44,6 @@
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_impl.h"
-#include "content/common/ax_content_node_data.h"
-#include "content/common/ax_content_tree_update.h"
 #include "content/common/buildflags.h"
 #include "content/common/content_export.h"
 #include "content/common/dom_automation_controller.mojom.h"
@@ -136,10 +134,11 @@
 #include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/accessibility/ax_action_handler.h"
+#include "ui/accessibility/ax_action_handler_base.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_update.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -244,7 +243,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public blink::mojom::LocalFrameHost,
       public network::CSPContext,
       public blink::mojom::LocalMainFrameHost,
-      public ui::AXActionHandler,
+      public ui::AXActionHandlerBase,
       public network::mojom::CookieAccessObserver {
  public:
   using AXTreeSnapshotCallback =
@@ -1963,7 +1962,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 #endif
 
   // mojom::RenderAccessibilityHost:
-  void HandleAXEvents(const std::vector<AXContentTreeUpdate>& updates,
+  void HandleAXEvents(const std::vector<ui::AXTreeUpdate>& updates,
                       const std::vector<ui::AXEvent>& events,
                       int32_t reset_token,
                       HandleAXEventsCallback callback) override;
@@ -2055,15 +2054,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns true if the ExecuteJavaScript() API can be used on this host.
   bool CanExecuteJavaScript();
 
-  // Map a routing ID from a frame in the same frame tree to a globally
-  // unique AXTreeID.
-  ui::AXTreeID RoutingIDToAXTreeID(int routing_id);
-
-  // Convert the content-layer-specific AXContentNodeData to a general-purpose
-  // AXNodeData structure.
-  void AXContentNodeDataToAXNodeData(const AXContentNodeData& src,
-                                     ui::AXNodeData* dst);
-
   // Returns the AXTreeID of the parent when the current frame is a child frame
   // (i.e. not a main frame) or when it's an embedded browser plugin guest, or
   // ui::AXTreeIDUnknown() otherwise.
@@ -2091,7 +2081,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |callback| passed will be invoked after the renderer has responded with a
   // standalone snapshot of the accessibility tree as |snapshot|.
   void RequestAXTreeSnapshotCallback(AXTreeSnapshotCallback callback,
-                                     const AXContentTreeUpdate& snapshot);
+                                     const ui::AXTreeUpdate& snapshot);
 
   // Callback that will be called as a response to the call to the method
   // blink::mojom::LocalFrame::GetSavableResourceLinks(). The |reply| passed

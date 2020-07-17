@@ -92,9 +92,9 @@ class TaskManagerBrowserTest : public extensions::ExtensionBrowserTest {
     // Show the task manager. This populates the model, and helps with debugging
     // (you see the task manager).
     chrome::ShowTaskManager(browser());
-    model_ = task_manager::TaskManagerTester::Create(
-        base::Bind(&TaskManagerBrowserTest::TaskManagerTableModelSanityCheck,
-                   base::Unretained(this)));
+    model_ = task_manager::TaskManagerTester::Create(base::BindRepeating(
+        &TaskManagerBrowserTest::TaskManagerTableModelSanityCheck,
+        base::Unretained(this)));
   }
 
   void HideTaskManager() {

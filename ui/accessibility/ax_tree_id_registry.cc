@@ -50,7 +50,7 @@ AXTreeID AXTreeIDRegistry::GetOrCreateAXTreeID(AXActionHandlerBase* handler) {
       return it.first;
   }
   AXTreeID new_id = AXTreeID::CreateNewAXTreeID();
-  id_to_action_handler_[new_id] = handler;
+  SetAXTreeID(new_id, handler);
   return new_id;
 }
 

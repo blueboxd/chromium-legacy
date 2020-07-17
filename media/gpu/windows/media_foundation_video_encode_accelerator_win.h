@@ -71,7 +71,8 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   bool ActivateAsyncEncoder(IMFActivate** pp_activate, uint32_t activate_count);
 
   // Initializes and allocates memory for input and output parameters.
-  bool InitializeInputOutputParameters(VideoCodecProfile output_profile);
+  bool InitializeInputOutputParameters(VideoCodecProfile output_profile,
+                                       bool is_constrained_h264);
 
   // Initializes encoder parameters for real-time use.
   bool SetEncoderModes();

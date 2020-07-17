@@ -1087,7 +1087,7 @@ void VisualViewport::Paint(GraphicsContext& context) const {
                         ("Inner Viewport Scroll Layer"));
     RecordForeignLayer(context, debug_name_client,
                        DisplayItem::kForeignLayerViewportScroll, scroll_layer_,
-                       FloatPoint(), &state);
+                       IntPoint(), &state);
   }
 
   if (scrollbar_layer_horizontal_) {
@@ -1098,7 +1098,7 @@ void VisualViewport::Paint(GraphicsContext& context) const {
     RecordForeignLayer(
         context, debug_name_client, DisplayItem::kForeignLayerViewportScrollbar,
         scrollbar_layer_horizontal_,
-        FloatPoint(0, size_.Height() - ScrollbarThickness()), &state);
+        IntPoint(0, size_.Height() - ScrollbarThickness()), &state);
   }
 
   if (scrollbar_layer_vertical_) {
@@ -1109,7 +1109,7 @@ void VisualViewport::Paint(GraphicsContext& context) const {
     RecordForeignLayer(
         context, debug_name_client, DisplayItem::kForeignLayerViewportScrollbar,
         scrollbar_layer_vertical_,
-        FloatPoint(size_.Width() - ScrollbarThickness(), 0), &state);
+        IntPoint(size_.Width() - ScrollbarThickness(), 0), &state);
   }
 }
 

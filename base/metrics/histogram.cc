@@ -1071,12 +1071,11 @@ ScaledLinearHistogram::ScaledLinearHistogram(const std::string& name,
                                              uint32_t bucket_count,
                                              int32_t scale,
                                              int32_t flags)
-    : histogram_(static_cast<LinearHistogram*>(
-          LinearHistogram::FactoryGet(name,
-                                      minimum,
-                                      maximum,
-                                      bucket_count,
-                                      flags))),
+    : histogram_(LinearHistogram::FactoryGet(name,
+                                             minimum,
+                                             maximum,
+                                             bucket_count,
+                                             flags)),
       scale_(scale) {
   DCHECK(histogram_);
   DCHECK_LT(1, scale);
@@ -1084,20 +1083,31 @@ ScaledLinearHistogram::ScaledLinearHistogram(const std::string& name,
   CHECK_EQ(static_cast<Sample>(bucket_count), maximum - minimum + 2)
       << " ScaledLinearHistogram requires buckets of size 1";
 
-  remainders_.resize(histogram_->bucket_count(), 0);
+  // Normally, |histogram_| should have type LINEAR_HISTOGRAM or be
+  // inherited from it. However, if it's expired, it will be DUMMY_HISTOGRAM.
+  if (histogram_->GetHistogramType() == DUMMY_HISTOGRAM)
+    return;
+
+  DCHECK_EQ(histogram_->GetHistogramType(), LINEAR_HISTOGRAM);
+  LinearHistogram* histogram = static_cast<LinearHistogram*>(histogram_);
+  remainders_.resize(histogram->bucket_count(), 0);
 }
 
 ScaledLinearHistogram::~ScaledLinearHistogram() = default;
 
 void ScaledLinearHistogram::AddScaledCount(Sample value, int count) {
+  if (histogram_->GetHistogramType() == DUMMY_HISTOGRAM)
+    return;
   if (count == 0)
     return;
   if (count < 0) {
     NOTREACHED();
     return;
   }
-  const int32_t max_value =
-      static_cast<int32_t>(histogram_->bucket_count() - 1);
+
+  DCHECK_EQ(histogram_->GetHistogramType(), LINEAR_HISTOGRAM);
+  LinearHistogram* histogram = static_cast<LinearHistogram*>(histogram_);
+  const int32_t max_value = static_cast<int32_t>(histogram->bucket_count() - 1);
   if (value > max_value)
     value = max_value;
   if (value < 0)
@@ -1123,7 +1133,7 @@ void ScaledLinearHistogram::AddScaledCount(Sample value, int count) {
   }
 
   if (scaled_count > 0)
-    histogram_->AddCount(value, scaled_count);
+    histogram->AddCount(value, scaled_count);
 }
 
 //------------------------------------------------------------------------------

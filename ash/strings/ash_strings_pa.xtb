@@ -98,6 +98,7 @@
 <translation id="1995660704900986789">ਪਾਵਰ ਬੰਦ ਕਰੋ</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">ਕੋਈ ਸੁਨੇਹਾ ਟਾਈਪ ਕਰੋ</translation>
+<translation id="2018630726571919839">ਮੈਨੂੰ ਕੋਈ ਚੁਟਕਲਾ ਸੁਣਾਓ</translation>
 <translation id="2050339315714019657">ਪੋਰਟਰੇਟ</translation>
 <translation id="2067602449040652523">ਕੀ-ਬੋਰਡ ਚਮਕ</translation>
 <translation id="209965399369889474">ਨੈੱਟਵਰਕ ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ</translation>
@@ -125,6 +126,7 @@
 <translation id="2354174487190027830"><ph name="NAME" /> ਨੂੰ ਐਕਟੀਵੇਟ ਕਰ ਰਿਹਾ ਹੈ</translation>
 <translation id="2359808026110333948">ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="2365393535144473978">ਮੋਬਾਈਲ ਡਾਟਾ ਚਾਲੂ ਕਰਨ ਨਾਲ ਬਲੂਟੁੱਥ ਵੀ ਚਾਲੂ ਹੋ ਜਾਵੇਗਾ।</translation>
+<translation id="2369165858548251131">ਚੀਨੀ ਭਾਸ਼ਾ ਵਿੱਚ "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ"</translation>
 <translation id="2390318262976603432">ਲੋਕੇਲ ਸੈਟਿੰਗਾਂ</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">ਅੱਪਡੇਟ ਉਪਲਬਧ ਹੈ</translation>
@@ -142,6 +144,7 @@
 <translation id="256712445991462162">ਡੌਕ ਕੀਤਾ ਵਿਸਤਾਰਕ</translation>
 <translation id="2575685495496069081">ਬਹੁ-ਗਿਣਤੀ ਸਾਈਨ-ਇਨ ਬੰਦ ਕੀਤਾ ਗਿਆ ਹੈ</translation>
 <translation id="2582112259361606227">ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਮੁੜ-ਸ਼ੁਰੂ ਕਰੋ</translation>
+<translation id="2595239820337756193">5 ਕਿ.ਮੀ. ਵਿੱਚ ਮੀਲ</translation>
 <translation id="2617342710774726426">ਸਿਮ ਕਾਰਡ ਲੌਕ ਕੀਤਾ ਹੋਇਆ ਹੈ</translation>
 <translation id="2621713457727696555">ਸੁਰੱਖਿਅਤ</translation>
 <translation id="2653659639078652383">ਪ੍ਰਸਤੁਤ ਕਰੋ</translation>
@@ -195,6 +198,7 @@
 <translation id="3154351730702813399">ਡੀਵਾਈਸ ਪ੍ਰਸ਼ਾਸਕ ਤੁਹਾਡੀ ਬ੍ਰਾਊਜ਼ਿੰਗ ਸਰਗਰਮੀ ਦੀ ਨਿਗਰਾਨੀ ਕਰ ਸਕਦਾ ਹੈ।</translation>
 <translation id="3181441307743005334">ਮੁੜ-ਸ਼ੁਰੂ ਕਰਨ ਵਿੱਚ ਕੁਝ ਸਮਾਂ ਲੱਗ ਸਕਦਾ ਹੈ</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{ਇੱਕ ਡੀਵਾਈਸ ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ}one{# ਡੀਵਾਈਸ ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ}other{# ਡੀਵਾਈਸਾਂ ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ}}</translation>
+<translation id="320207200541803018">ਟਾਈਮਰ ਸੈੱਟ ਕਰੋ</translation>
 <translation id="3203405173652969239">ਸਵਿੱਚ ਪਹੁੰਚ ਚਾਲੂ ਹੈ</translation>
 <translation id="3207953481422525583">ਵਰਤੋਂਕਾਰ ਸੈਟਿੰਗਾਂ</translation>
 <translation id="3217205077783620295">ਅਵਾਜ਼ ਚਾਲੂ ਹੈ, ਟੌਗਲ ਕਰਨ 'ਤੇ ਆਡੀਓ ਮਿਊਟ ਹੋ ਜਾਵੇਗਾ।</translation>
@@ -207,6 +211,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> ਹਾਲੇ ਵੀ ਬਾਅਦ ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕਰ ਸਕਦੇ ਹਨ।</translation>
 <translation id="3321628682574733415">ਮਾਂ-ਪਿਓ ਵਾਲਾ ਕੋਡ ਗਲਤ ਹੈ</translation>
 <translation id="332587331255250389">ਕਿਰਪਾ ਕਰਕੇ ਬੈਟਰੀ ਬਦਲੋ</translation>
+<translation id="334252345105450327">ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ</translation>
 <translation id="3351879221545518001">ਤੁਸੀਂ ਇਸ ਵੇਲੇ ਸਕ੍ਰੀਨ ਕਾਸਟ ਕਰ ਰਹੇ ਹੋ।</translation>
 <translation id="3364721542077212959">ਸਟਾਈਲਸ ਟੂਲ</translation>
 <translation id="3368922792935385530">ਕਨੈਕਟ ਕੀਤਾ</translation>
@@ -239,6 +244,7 @@
 <translation id="3631369015426612114">ਇਹਨਾਂ ਤੋਂ ਸੂਚਨਾਵਾਂ ਦਿਖਾਉਣ ਦਿਓ</translation>
 <translation id="3638400994746983214">ਪਰਦੇਦਾਰੀ ਸਕ੍ਰੀਨ ਨੂੰ ਟੌਗਲ ਕਰੋ। <ph name="STATE_TEXT" />।</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> ਪ੍ਰਬੰਧਿਤ ਵਰਤੋਂਕਾਰ</translation>
+<translation id="3702846122927433391">ਨਾਈਜੀਰੀਆ ਦੀ ਜਨਸੰਖਿਆ</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">ਖੇਤਰ ਕੈਪਚਰ ਕਰੋ</translation>
 <translation id="371370241367527062">ਮੂਹਰਲਾ ਮਾਈਕ੍ਰੋਫ਼ੋਨ</translation>
@@ -519,6 +525,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">ਪੁਰਾਣੇ ਰੈਜ਼ੋਲਿਊਸ਼ਨ ਨੂੰ <ph name="TIMEOUT_SECONDS" /> ਵਿੱਚ ਵਾਪਸ ਲਿਆ ਰਿਹਾ ਹੈ</translation>
 <translation id="7188494361780961876">ਮੀਨੂ ਨੂੰ ਸਕ੍ਰੀਨ ਦੇ ਉੱਪਰਲੇ ਖੱਬੇ ਕੋਨੇ ਵਿੱਚ ਲਿਜਾਇਆ ਗਿਆ।</translation>
+<translation id="7189412385142492784">ਸ਼ੁੱਕਰ ਗ੍ਰਹਿ ਕਿੰਨੀ ਦੂਰ ਹੈ</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />। ਇਸ Chromebook ਨੂੰ ਅੱਪਡੇਟ ਲਾਗੂ ਕਰਨ ਲਈ ਮੁੜ-ਸ਼ੁਰੂ ਹੋਣ ਦੀ ਲੋੜ ਹੈ। ਇਸ ਵਿੱਚ 1 ਮਿੰਟ ਲੱਗ ਸਕਦਾ ਹੈ।</translation>
 <translation id="7256634071279256947">ਪਿਛਲਾ ਮਾਈਕ੍ਰੋਫ਼ੋਨ</translation>
 <translation id="726276584504105859">ਸਪਲਿਟ ਸਕ੍ਰੀਨ ਦੀ ਵਰਤੋਂ ਕਰਨ ਲਈ ਇੱਥੇ ਘਸੀਟੋ</translation>
@@ -645,6 +652,7 @@
 <translation id="8649101189709089199">ਚੁਣੋ ਅਤੇ ਸੁਣੋ</translation>
 <translation id="8652175077544655965">ਸੈਟਿੰਗਾਂ ਬੰਦ ਕਰੋ</translation>
 <translation id="8653151467777939995">ਸੂਚਨਾ ਸੈਟਿੰਗਾਂ ਦਿਖਾਓ। ਸੂਚਨਾਵਾਂ ਚਾਲੂ ਹਨ</translation>
+<translation id="8660331759611631213">71 ਦਾ ਵਰਗ ਮੂਲ</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">ਨੈੱਟਵਰਕ ਸੂਚੀ ਦਿਖਾਓ। <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

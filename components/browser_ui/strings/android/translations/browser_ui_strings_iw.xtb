@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">מצלמה</translation>
 <translation id="1647391597548383849">גישה אל המצלמה שלך</translation>
 <translation id="1660204651932907780">מתן הרשאה לאתרים להשמיע צלילים (מומלץ)</translation>
+<translation id="1677097821151855053">‏קובצי cookie ונתונים אחרים מאתרים משמשים כדי לזכור את הפרטים שלך, למשל כדי להכניס אותך לחשבון או להציג מודעות בהתאמה אישית. אפשר לנהל את קובצי ה-cookie מכל האתרים דרך ה<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">למחוק את נתוני האתר?</translation>
 <translation id="169515064810179024">חסימת הגישה של אתרים אל חיישני תנועה</translation>
 <translation id="1717218214683051432">חיישני תנועה</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">‏אישור קובצי Cookie של אתר מסוים.</translation>
 <translation id="4046123991198612571">הרצועה הבאה</translation>
 <translation id="4165986682804962316">הגדרות לאתרים</translation>
+<translation id="4200726100658658164">פתיחת הגדרות המיקום</translation>
 <translation id="4226663524361240545">רטט של המכשיר אפשרי כשמתקבלת הודעה</translation>
 <translation id="4242533952199664413">פתח את 'הגדרות'</translation>
 <translation id="4259722352634471385">הניווט חסום: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">כל האתרים</translation>
 <translation id="6320088164292336938">רטט</translation>
 <translation id="6388207532828177975">ניקוי ואיפוס</translation>
+<translation id="6423924377271166037">‏ניקוי קובצי cookie</translation>
 <translation id="6439114592976064011">תיחסם האפשרות של אתרים להשתמש במכשיר המציאות המדומה ובנתוני המציאות המדומה</translation>
 <translation id="6447842834002726250">‏קובצי Cookie</translation>
 <translation id="6527303717912515753">שיתוף</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">הרץ לאחור</translation>
 <translation id="8444433999583714703">‏כדי לאפשר ל-<ph name="APP_NAME" /> לגשת אל המיקום, צריך להפעיל את המיקום גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">שלול הרשאות מכשיר</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{‏קובץ cookie אחד נמצא בשימוש}two{‏# קובצי cookie נמצאים בשימוש}many{‏# קובצי cookie נמצאים בשימוש}other{‏# קובצי cookie נמצאים בשימוש}}</translation>
 <translation id="8463851957836045671">האתר הזה מהיר</translation>
 <translation id="851751545965956758">חסימת התחברות של אתרים אל התקנים</translation>
 <translation id="857943718398505171">מותרת (מומלץ)</translation>

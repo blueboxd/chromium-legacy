@@ -6,6 +6,8 @@
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator+subclassing.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -16,6 +18,7 @@
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_positioner.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_positioner.h"
@@ -313,6 +316,7 @@
 }
 
 - (void)dismissInfobarModal:(id)infobarModal {
+  base::RecordAction(base::UserMetricsAction(kInfobarModalCancelButtonTapped));
   [self dismissInfobarModalAnimated:YES];
 }
 

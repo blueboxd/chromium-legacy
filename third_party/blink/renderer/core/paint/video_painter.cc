@@ -75,7 +75,7 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
       layer->SetHitTestable(true);
       RecordForeignLayer(context, layout_video_,
                          DisplayItem::kForeignLayerVideo, layer,
-                         FloatPoint(snapped_replaced_rect.Location()));
+                         snapped_replaced_rect.Location());
       return;
     }
   }

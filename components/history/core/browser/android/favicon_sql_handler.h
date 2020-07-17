@@ -10,12 +10,12 @@
 
 namespace history {
 
-class ThumbnailDatabase;
+class FaviconDatabase;
 
 // The SQL handler implementation for icon_mapping and favicon table.
 class FaviconSQLHandler : public SQLHandler {
  public:
-  explicit FaviconSQLHandler(ThumbnailDatabase* thumbnail_db);
+  explicit FaviconSQLHandler(FaviconDatabase* favicon_db);
   ~FaviconSQLHandler() override;
 
   // SQLHandler overrides:
@@ -29,7 +29,7 @@ class FaviconSQLHandler : public SQLHandler {
   // true if all unused favicons are deleted.
   bool DeleteUnusedFavicon(const std::vector<favicon_base::FaviconID>& ids);
 
-  ThumbnailDatabase* thumbnail_db_;
+  FaviconDatabase* favicon_db_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconSQLHandler);
 };

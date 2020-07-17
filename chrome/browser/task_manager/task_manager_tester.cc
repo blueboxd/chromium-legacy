@@ -24,7 +24,7 @@ class ScopedInterceptTableModelObserver : public ui::TableModelObserver {
   ScopedInterceptTableModelObserver(
       ui::TableModel* model_to_intercept,
       ui::TableModelObserver* real_table_model_observer,
-      const base::Closure& callback)
+      const base::RepeatingClosure& callback)
       : model_to_intercept_(model_to_intercept),
         real_table_model_observer_(real_table_model_observer),
         callback_(callback) {
@@ -56,7 +56,7 @@ class ScopedInterceptTableModelObserver : public ui::TableModelObserver {
  private:
   ui::TableModel* model_to_intercept_;
   ui::TableModelObserver* real_table_model_observer_;
-  base::Closure callback_;
+  base::RepeatingClosure callback_;
 };
 
 namespace {
@@ -68,7 +68,8 @@ TaskManagerTableModel* GetRealModel() {
 
 }  // namespace
 
-TaskManagerTester::TaskManagerTester(const base::Closure& on_resource_change)
+TaskManagerTester::TaskManagerTester(
+    const base::RepeatingClosure& on_resource_change)
     : model_(GetRealModel()) {
   // Eavesdrop the model->view conversation, since the model only supports
   // single observation.
@@ -188,7 +189,7 @@ TaskManagerInterface* TaskManagerTester::task_manager() {
 
 // static
 std::unique_ptr<TaskManagerTester> TaskManagerTester::Create(
-    const base::Closure& callback) {
+    const base::RepeatingClosure& callback) {
   return base::WrapUnique(new TaskManagerTester(callback));
 }
 

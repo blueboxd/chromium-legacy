@@ -21,6 +21,7 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_range.h"
+#include "components/viz/service/display/render_pass_id_remapper.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/overlay_transform.h"
@@ -92,13 +93,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   struct ChildSurfaceInfo;
   struct RenderPassMapEntry;
 
-  struct RenderPassInfo {
-    // This is the id the pass is mapped to.
-    int id;
-    // This is true if the pass was used in the last aggregated frame.
-    bool in_use = true;
-  };
-
   // Helper function that gets a list of render passes and returns a map from
   // render pass ids to render passes.
   static base::flat_map<RenderPassId, RenderPassMapEntry> GenerateRenderPassMap(
@@ -108,9 +102,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   ClipData CalculateClipRect(const ClipData& surface_clip,
                              const ClipData& quad_clip,
                              const gfx::Transform& target_transform);
-
-  RenderPassId RemapPassId(RenderPassId surface_local_pass_id,
-                           const SurfaceId& surface_id);
 
   void HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                          float parent_device_scale_factor,
@@ -322,13 +313,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   SurfaceManager* manager_;
   DisplayResourceProvider* provider_;
 
-  // Every Surface has its own RenderPass ID namespace. This structure maps
-  // each source (SurfaceId, RenderPass id) to a unified ID namespace that's
-  // used in the aggregated frame. An entry is removed from the map if it's not
-  // used for one output frame.
-  base::flat_map<std::pair<SurfaceId, RenderPassId>, RenderPassInfo>
-      render_pass_allocator_map_;
-  RenderPassId next_render_pass_id_;
   const bool aggregate_only_damaged_;
   bool output_is_secure_;
 
@@ -450,6 +434,10 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // a surface contains delegated ink metadata on its frame, and it is cleared
   // after it is placed on the final aggregated frame during aggregation.
   std::unique_ptr<DelegatedInkMetadata> delegated_ink_metadata_;
+
+  // A helper class used to remap render pass IDs from the surface namespace to
+  // a common space, to avoid collisions.
+  RenderPassIdRemapper pass_id_remapper_;
 
   base::WeakPtrFactory<SurfaceAggregator> weak_factory_{this};
 

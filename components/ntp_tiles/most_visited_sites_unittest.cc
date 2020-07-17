@@ -186,11 +186,11 @@ class MockTopSites : public TopSites {
   }
   MOCK_METHOD1(GetMostVisitedURLs_, void(GetMostVisitedURLsCallback& callback));
   MOCK_METHOD0(SyncWithHistory, void());
-  MOCK_CONST_METHOD0(HasBlacklistedItems, bool());
-  MOCK_METHOD1(AddBlacklistedURL, void(const GURL& url));
-  MOCK_METHOD1(RemoveBlacklistedURL, void(const GURL& url));
-  MOCK_METHOD1(IsBlacklisted, bool(const GURL& url));
-  MOCK_METHOD0(ClearBlacklistedURLs, void());
+  MOCK_CONST_METHOD0(HasBlockedUrls, bool());
+  MOCK_METHOD1(AddBlockedUrl, void(const GURL& url));
+  MOCK_METHOD1(RemoveBlockedUrl, void(const GURL& url));
+  MOCK_METHOD1(IsBlocked, bool(const GURL& url));
+  MOCK_METHOD0(ClearBlockedUrls, void());
   MOCK_METHOD0(StartQueryForMostVisited, base::CancelableTaskTracker::TaskId());
   MOCK_METHOD1(IsKnownURL, bool(const GURL& url));
   MOCK_CONST_METHOD1(GetCanonicalURLString,
@@ -495,9 +495,8 @@ class MostVisitedSitesTest
       loop.Run();
       EXPECT_TRUE(save_success);
 
-      // With PopularSites enabled, blacklist is exercised.
-      EXPECT_CALL(*mock_top_sites_, IsBlacklisted(_))
-          .WillRepeatedly(Return(false));
+      // With PopularSites enabled, blocked urls is exercised.
+      EXPECT_CALL(*mock_top_sites_, IsBlocked(_)).WillRepeatedly(Return(false));
       // Mock icon cacher never replies, and we also don't verify whether the
       // code uses it correctly.
       EXPECT_CALL(*icon_cacher, StartFetchPopularSites(_, _, _))
@@ -524,10 +523,9 @@ class MostVisitedSitesTest
         Mock::VerifyAndClearExpectations(mock_top_sites_.get()) &&
         Mock::VerifyAndClearExpectations(&mock_suggestions_service_) &&
         Mock::VerifyAndClearExpectations(&mock_observer_);
-    // For convenience, restore the expectations for IsBlacklisted().
+    // For convenience, restore the expectations for IsBlocked().
     if (IsPopularSitesFeatureEnabled()) {
-      EXPECT_CALL(*mock_top_sites_, IsBlacklisted(_))
-          .WillRepeatedly(Return(false));
+      EXPECT_CALL(*mock_top_sites_, IsBlocked(_)).WillRepeatedly(Return(false));
     }
     return success;
   }
@@ -598,7 +596,7 @@ TEST_P(MostVisitedSitesTest, ShouldIncludeTileForHomepage) {
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs_(_))
       .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
   EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomepageUrl))))
+  EXPECT_CALL(*mock_top_sites_, IsBlocked(Eq(GURL(kHomepageUrl))))
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(mock_observer_, OnURLsAvailable(FirstPersonalizedTileIs(
@@ -634,7 +632,7 @@ TEST_P(MostVisitedSitesTest, ShouldIncludeHomeTileWithUrlBeforeQueryingName) {
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs_(_))
       .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
   EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomepageUrl))))
+  EXPECT_CALL(*mock_top_sites_, IsBlocked(Eq(GURL(kHomepageUrl))))
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
   {
@@ -664,7 +662,7 @@ TEST_P(MostVisitedSitesTest, ShouldUpdateHomepageTileWhenRefreshHomepageTile) {
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs_(_))
       .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
   EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomepageUrl))))
+  EXPECT_CALL(*mock_top_sites_, IsBlocked(Eq(GURL(kHomepageUrl))))
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(mock_observer_, OnURLsAvailable(FirstPersonalizedTileIs(
@@ -693,7 +691,7 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfNoTileRequested) {
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs_(_))
       .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
   EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomepageUrl))))
+  EXPECT_CALL(*mock_top_sites_, IsBlocked(Eq(GURL(kHomepageUrl))))
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(
@@ -712,7 +710,7 @@ TEST_P(MostVisitedSitesTest, ShouldReturnHomepageIfOneTileRequested) {
       .WillRepeatedly(InvokeCallbackArgument<0>(
           (MostVisitedURLList{MakeMostVisitedURL("Site 1", "http://site1/")})));
   EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomepageUrl))))
+  EXPECT_CALL(*mock_top_sites_, IsBlocked(Eq(GURL(kHomepageUrl))))
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(
@@ -738,7 +736,7 @@ TEST_P(MostVisitedSitesTest, ShouldHaveHomepageFirstInListWhenFull) {
           MakeMostVisitedURL("Site 5", "http://site5/"),
       })));
   EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomepageUrl))))
+  EXPECT_CALL(*mock_top_sites_, IsBlocked(Eq(GURL(kHomepageUrl))))
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
   std::map<SectionType, NTPTilesVector> sections;
@@ -767,7 +765,7 @@ TEST_P(MostVisitedSitesTest, ShouldHaveHomepageFirstInListWhenNotFull) {
           MakeMostVisitedURL("Site 5", "http://site5/"),
       })));
   EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomepageUrl))))
+  EXPECT_CALL(*mock_top_sites_, IsBlocked(Eq(GURL(kHomepageUrl))))
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
   std::map<SectionType, NTPTilesVector> sections;
@@ -792,7 +790,7 @@ TEST_P(MostVisitedSitesTest, ShouldDeduplicateHomepageWithTopSites) {
           (MostVisitedURLList{MakeMostVisitedURL("Site 1", "http://site1/"),
                               MakeMostVisitedURL("", kHomepageUrl)})));
   EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomepageUrl))))
+  EXPECT_CALL(*mock_top_sites_, IsBlocked(Eq(GURL(kHomepageUrl))))
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(
@@ -814,7 +812,7 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfThereIsNone) {
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs_(_))
       .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
   EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomepageUrl))))
+  EXPECT_CALL(*mock_top_sites_, IsBlocked(Eq(GURL(kHomepageUrl))))
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(mock_observer_,
@@ -836,7 +834,7 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfEmptyUrl) {
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs_(_))
       .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
   EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(kEmptyHomepageUrl)))
+  EXPECT_CALL(*mock_top_sites_, IsBlocked(Eq(kEmptyHomepageUrl)))
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(mock_observer_,
@@ -855,11 +853,11 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomepageIfBlacklisted) {
       .WillRepeatedly(InvokeCallbackArgument<0>(
           (MostVisitedURLList{MakeMostVisitedURL("", kHomepageUrl)})));
   EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomepageUrl))))
+  EXPECT_CALL(*mock_top_sites_, IsBlocked(Eq(GURL(kHomepageUrl))))
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
 
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomepageUrl))))
+  EXPECT_CALL(*mock_top_sites_, IsBlocked(Eq(GURL(kHomepageUrl))))
       .Times(AtLeast(1))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(mock_observer_,
@@ -882,7 +880,7 @@ TEST_P(MostVisitedSitesTest, ShouldPinHomepageAgainIfBlacklistingUndone) {
       .WillOnce(InvokeCallbackArgument<0>(
           (MostVisitedURLList{MakeMostVisitedURL("", kHomepageUrl)})));
   EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomepageUrl))))
+  EXPECT_CALL(*mock_top_sites_, IsBlocked(Eq(GURL(kHomepageUrl))))
       .Times(AtLeast(1))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(mock_observer_,
@@ -899,7 +897,7 @@ TEST_P(MostVisitedSitesTest, ShouldPinHomepageAgainIfBlacklistingUndone) {
   DisableRemoteSuggestions();
   EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs_(_))
       .WillOnce(InvokeCallbackArgument<0>(MostVisitedURLList{}));
-  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomepageUrl))))
+  EXPECT_CALL(*mock_top_sites_, IsBlocked(Eq(GURL(kHomepageUrl))))
       .Times(AtLeast(1))
       .WillRepeatedly(Return(false));
   EXPECT_CALL(
@@ -978,13 +976,12 @@ TEST_P(MostVisitedSitesTest, RemovesPersonalSiteIfExploreSitesTilePresent) {
 }
 
 TEST_P(MostVisitedSitesTest, ShouldInformSuggestionSourcesWhenBlacklisting) {
-  EXPECT_CALL(*mock_top_sites_, AddBlacklistedURL(Eq(GURL(kHomepageUrl))))
-      .Times(1);
+  EXPECT_CALL(*mock_top_sites_, AddBlockedUrl(Eq(GURL(kHomepageUrl)))).Times(1);
   EXPECT_CALL(mock_suggestions_service_, BlacklistURL(Eq(GURL(kHomepageUrl))))
       .Times(AnyNumber());
   most_visited_sites_->AddOrRemoveBlacklistedUrl(GURL(kHomepageUrl),
                                                  /*add_url=*/true);
-  EXPECT_CALL(*mock_top_sites_, RemoveBlacklistedURL(Eq(GURL(kHomepageUrl))))
+  EXPECT_CALL(*mock_top_sites_, RemoveBlockedUrl(Eq(GURL(kHomepageUrl))))
       .Times(1);
   EXPECT_CALL(mock_suggestions_service_,
               UndoBlacklistURL(Eq(GURL(kHomepageUrl))))
@@ -1077,8 +1074,7 @@ TEST_P(MostVisitedSitesTest, ShouldHandleTopSitesCacheHit) {
       .WillOnce(InvokeCallbackArgument<0>(
           MostVisitedURLList{MakeMostVisitedURL("Site 2", "http://site2/")}));
   if (IsPopularSitesFeatureEnabled()) {
-    EXPECT_CALL(*mock_top_sites_, IsBlacklisted(_))
-        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_top_sites_, IsBlocked(_)).WillRepeatedly(Return(false));
   }
   EXPECT_CALL(mock_observer_, OnURLsAvailable(_));
   mock_top_sites_->NotifyTopSitesChanged(

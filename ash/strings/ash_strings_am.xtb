@@ -98,6 +98,7 @@
 <translation id="1995660704900986789">ኃይል አጥፋ</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">መልዕክት ይተይቡ</translation>
+<translation id="2018630726571919839">ቀልድ ንገረኝ</translation>
 <translation id="2050339315714019657">በቁመት</translation>
 <translation id="2067602449040652523">የቁልፍ ሰሌዳ ብሩህነት</translation>
 <translation id="209965399369889474">ከአውታረ መረብ ጋር አልተገናኘም</translation>
@@ -125,6 +126,7 @@
 <translation id="2354174487190027830"><ph name="NAME" />ን በማግበር ላይ</translation>
 <translation id="2359808026110333948">ቀጥል</translation>
 <translation id="2365393535144473978">የተንቀሳቃሽ ስልክ ውሂብን ማንቃት ብሉቱዝን ያነቃል።</translation>
+<translation id="2369165858548251131">«Hello» በቻይንኛ</translation>
 <translation id="2390318262976603432">የቋንቋ ቅንብሮች</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">ዝማኔ ይገኛል</translation>
@@ -142,6 +144,7 @@
 <translation id="256712445991462162">የተተከለው ማጉያ</translation>
 <translation id="2575685495496069081">በበርካታ መለያ መግባት ነቅቷል</translation>
 <translation id="2582112259361606227">ለማዘመን ዳግም ያስነሱ</translation>
+<translation id="2595239820337756193">5 ሺሕ በማይሎች</translation>
 <translation id="2617342710774726426">ሲም ካርድ ተዘግቷል</translation>
 <translation id="2621713457727696555">ደህንነቱ ተጠብቋል</translation>
 <translation id="2653659639078652383">አስገባ</translation>
@@ -195,6 +198,7 @@
 <translation id="3154351730702813399">የመሣሪያው አስተዳዳሪ የአሰሳ እንቅስቃሴዎን ሊከታተል ይችላል።</translation>
 <translation id="3181441307743005334">ዳግም ማስነሳት ትንሽ ጊዜ ሊወስድ ይችላል</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{ከአንድ መሣሪያ ጋር ተገናኝቷል}one{ከ# መሣሪያዎች ጋር ተገናኝቷል}other{ከ# መሣሪያዎች ጋር ተገናኝቷል}}</translation>
+<translation id="320207200541803018">ሰዓት ቆጣሪ አዘጋጅ</translation>
 <translation id="3203405173652969239">የመዳረሻ መቀየሪያ ነቅቷል</translation>
 <translation id="3207953481422525583">የተጠቃሚ ቅንብሮች</translation>
 <translation id="3217205077783620295">ድምፅ መጠን በርቷል፣ መቀያየር ኦዲዮን ድምፀ ከል ያደርገዋል።</translation>
@@ -207,6 +211,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> አሁንም በኋላ በመለያ መግባት ይችላሉ።</translation>
 <translation id="3321628682574733415">ትክክል ያልሆነ የወላጅ ኮድ</translation>
 <translation id="332587331255250389">እባክዎ ባትሪውን ይተኩት</translation>
+<translation id="334252345105450327">ቅጽበታዊ ገጽ እይታ ያንሱ</translation>
 <translation id="3351879221545518001">አሁን ላይ ማያ ገጽን cast እያደረጉ ነው።</translation>
 <translation id="3364721542077212959">የስቲለስ መሣሪያዎች</translation>
 <translation id="3368922792935385530">ተያይዟል</translation>
@@ -239,6 +244,7 @@
 <translation id="3631369015426612114">ማሳወቂያዎች ከሚከተሉት እንዲመጡ ፍቀድ፦</translation>
 <translation id="3638400994746983214">የግላዊነት ማያ ገጽን ቀያይር። <ph name="STATE_TEXT" />።</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> የሚተዳደር ተጠቃሚ</translation>
+<translation id="3702846122927433391">ናይጄሪያ ውስጥ የሕዝብ ብዛት</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">ክልልን አንሳ</translation>
 <translation id="371370241367527062">የፊት ማይክሮፎን</translation>
@@ -518,6 +524,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">በ<ph name="TIMEOUT_SECONDS" /> ውስጥ ወደ ቀድሞው ጥራት በመመለስ ላይ</translation>
 <translation id="7188494361780961876">ምናሌ ወደ የማያ ገጹ የላይኛው ግራ ጥግ ተወስዷል።</translation>
+<translation id="7189412385142492784">ቬኑስ ምን ያህል ይርቃል</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />። ይህ Chromebook አንድ ዝማኔን ለመተግበር ዳግም መነሳት አለበት። ይህ እስከ 1 ደቂቃ ድረስ ሊወስድ ይችላል</translation>
 <translation id="7256634071279256947">የኋላ ማይክሮፎን</translation>
 <translation id="726276584504105859">የተከፈለ ማያ ገጽን ለመጠቀም ወደዚህ ይጎትቱ</translation>
@@ -644,6 +651,7 @@
 <translation id="8649101189709089199">ለመናገር-ይምረጡ</translation>
 <translation id="8652175077544655965">ቅንብሮችን ዝጋ</translation>
 <translation id="8653151467777939995">የማሳወቂያ ቅንብሮችን አሳይ። ማሳወቂያዎች በርተዋል</translation>
+<translation id="8660331759611631213">የ71 ካሬ ሥር</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">የአውታረ መረብ ዝርዝርን አሳይ። <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

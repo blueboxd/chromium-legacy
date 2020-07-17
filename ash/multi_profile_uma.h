@@ -16,21 +16,11 @@ namespace ash {
 class ASH_EXPORT MultiProfileUMA {
  public:
   // Used for UMA metrics. Do not reorder.
-  enum SigninUserAction {
-    SIGNIN_USER_BY_TRAY = 0,
-    SIGNIN_USER_BY_BROWSER_FRAME,  // Deprecated.
-    NUM_SIGNIN_USER_ACTIONS
-  };
-
-  // Used for UMA metrics. Do not reorder.
   enum SwitchActiveUserAction {
     SWITCH_ACTIVE_USER_BY_TRAY = 0,
     SWITCH_ACTIVE_USER_BY_ACCELERATOR,
     NUM_SWITCH_ACTIVE_USER_ACTIONS
   };
-
-  // Record signing in a new user and what UI path was taken.
-  static void RecordSigninUser(SigninUserAction action);
 
   // Record switching the active user and what UI path was taken.
   static void RecordSwitchActiveUser(SwitchActiveUserAction action);

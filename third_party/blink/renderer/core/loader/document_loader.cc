@@ -1740,10 +1740,9 @@ void DocumentLoader::CommitNavigation() {
   WillCommitNavigation();
 
   DocumentInit init = DocumentInit::Create()
-                          .WithDocumentLoader(this)
+                          .WithDocumentLoader(this, owner_document)
                           .WithURL(Url())
                           .WithTypeFrom(MimeType())
-                          .WithOwnerDocument(owner_document)
                           .WithSrcdocDocument(loading_srcdoc_)
                           .WithSandboxFlags(sandbox_flags)
                           .WithNewRegistrationContext()

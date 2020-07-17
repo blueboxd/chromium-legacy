@@ -104,6 +104,7 @@
 <translation id="1124772482545689468">Käyttäjä</translation>
 <translation id="1125550662859510761">Näyttää olevan <ph name="WIDTH" /> x <ph name="HEIGHT" /> (natiivi)</translation>
 <translation id="1126809382673880764">Ei suojaa sinua vaarallisilta sivustoilta, latauksilta ja laajennuksilta. Voit silti käyttää Selaussuojaa muissa Googlen palveluissa, joissa se on saatavilla, kuten Gmailissa ja Haussa.</translation>
+<translation id="112752777279960360">Jos haluat tehdä Android-puhelimesta tämän tietokoneen suojausavaimen, sinun pitää ensin avata puhelimellasi Chrome ja valita Asetukset &gt; Salasanat &gt; Käytä puhelinta suojausavaimena. Valitse sitten "Yhdistä uusi laite" ja skannaa tämä QR-koodi.</translation>
 <translation id="1128109161498068552">Älä anna sivustojen käyttää MIDI-laitteita järjestelmän omien viestien avulla</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Muokkaa hakukonetta</translation>
@@ -509,6 +510,7 @@
 <translation id="1622054403950683339">Unohda Wi-Fi-verkko</translation>
 <translation id="1623132449929929218">Kuvia ei ole tällä hetkellä saatavilla. Muodosta internetyhteys uudelleen nähdäksesi taustakuvakokoelmat.</translation>
 <translation id="1623723619460186680">Sinisen valon vähennys</translation>
+<translation id="1624012933569991823">asetuksista</translation>
 <translation id="1627276047960621195">Tiedostokuvaajat</translation>
 <translation id="1627408615528139100">Ladattu aiemmin</translation>
 <translation id="1628948239858170093">Tarkistetaanko tiedosto ennen avaamista?</translation>
@@ -745,6 +747,7 @@
 <translation id="1887850431809612466">Laitteistoversio</translation>
 <translation id="1888523338879380247">{0,plural, =1{Viimeinen päivä laitteen päivittämiseen}other{Päivitä laite # vuorokauden kuluessa}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;Tunnus:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783">Laitteelta <ph name="DEVICE_NAME" /> vastaanotetaan <ph name="ATTACHMENTS" /></translation>
 <translation id="189210018541388520">Avaa koko näytössä</translation>
 <translation id="1892341345406963517">Hei <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Muut kielet</translation>
@@ -1817,6 +1820,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="3253225298092156258">Ei saatavilla</translation>
 <translation id="3253448572569133955">Tuntematon tili</translation>
 <translation id="3254516606912442756">Automaattinen aikavyöhykkeen tunnistus poistettu käytöstä</translation>
+<translation id="3254715652085014625">Avaa Android-puhelimellasi Chrome ja valitse Asetukset &gt; Salasanat &gt; Käytä puhelinta suojausavaimena, ja seuraa annettuja ohjeita.</translation>
 <translation id="3255355328033513170">Tämä poistaa kaiken datan, jonka <ph name="SITE_GROUP_NAME" /> ja sen alisivustot tallensivat. Tämä sisältää evästeet. Sinut kirjataan ulos näiltä sivustoilta, myös avoimilla välilehdillä.</translation>
 <translation id="3259723213051400722">Yritä uudelleen.</translation>
 <translation id="3264544094376351444">Sans-Serif-fontti</translation>
@@ -3408,7 +3412,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5283677936944177147">Hups! Järjestelmä ei voinut määrittää tämän laitteen mallia tai sarjanumeroa.</translation>
 <translation id="5284445933715251131">Jatka latausta</translation>
 <translation id="5285635972691565180">Näyttö <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">Tulostusalue on täynnä</translation>
+<translation id="5286094561505658635">Tulostuslokero on täynnä</translation>
 <translation id="5286194356314741248">Etsitään</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">Tilisi</translation>
@@ -3489,6 +3493,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5390677308841849479">Tummanpunainen ja oranssi</translation>
 <translation id="5390743329570580756">Lähetä:</translation>
 <translation id="5397794290049113714">Sinä</translation>
+<translation id="5398497406011404839">Piilotetut kirjanmerkit</translation>
 <translation id="5398572795982417028">Sivuviittaus on rajojen ulkopuolella. Raja on <ph name="MAXIMUM_PAGE" />.</translation>
 <translation id="5398772614898833570">Mainokset estetty</translation>
 <translation id="5402815541704507626">Lataa päivitys mobiilidatan kautta</translation>
@@ -3574,6 +3579,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5496587651328244253">Järjestä</translation>
 <translation id="5497251278400702716">Tämä tiedosto</translation>
 <translation id="5499313591153584299">Tämä tiedosto voi olla haitallinen tietokoneellesi.</translation>
+<translation id="5499453227627332024">Linux-säiliöösi on saatavilla päivitys. Voit myös päivittää myöhemmin Asetukset-sovelluksesta.</translation>
 <translation id="5500709606820808700">Turvatarkistus tehtiin tänään</translation>
 <translation id="5502500733115278303">Tuotu Firefoxista</translation>
 <translation id="5503982651688210506">Hyväksy edelleen, että <ph name="HOST" /> voi käyttää ja liikuttaa kameraasi ja käyttää mikrofoniasi</translation>
@@ -3623,7 +3629,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5553089923092577885">Varmenteen käytäntökytkennät</translation>
 <translation id="5554489410841842733">Tämä kuvake näytetään, kun laajennus voi toimia nykyisellä sivulla.</translation>
 <translation id="5554720593229208774">Sähköpostivarmenteen myöntäjä</translation>
-<translation id="5554931805291741487">Tulostusalue on melkein täynnä</translation>
+<translation id="5554931805291741487">Tulostuslokero on melkein täynnä</translation>
 <translation id="5556459405103347317">Lataa uudelleen</translation>
 <translation id="5557991081552967863">Pidä Wi-Fi päällä lepotilassa</translation>
 <translation id="5558125320634132440">Sivusto on estetty, koska sillä voi olla aikuisille suunnattua sisältöä</translation>
@@ -4200,6 +4206,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6270770586500173387">Lähetä <ph name="BEGIN_LINK1" />järjestelmä- ja sovellustietoja<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />tilastoja<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Virhe (<ph name="ERROR" />) ladattaessa laajennusta</translation>
 <translation id="6273677812470008672">Laatu</translation>
+<translation id="6273979226236203550">Salasanasi säilytetään tällä laitteella ja Google-tililläsi. Kumman haluat poistaa?</translation>
 <translation id="6277105963844135994">Verkon aikakatkaisu</translation>
 <translation id="6277518330158259200">Ot&amp;a kuvakaappaus</translation>
 <translation id="6278057325678116358">Ota käyttöön GTK+</translation>
@@ -4560,6 +4567,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6758056191028427665">Kerro mielipiteesi</translation>
 <translation id="6759193508432371551">Tehdasasetusten palauttaminen</translation>
 <translation id="6762833852331690540">Päällä</translation>
+<translation id="676560328519657314">Maksutapasi Google Payssa</translation>
 <translation id="6767566652486411142">Valitse toinen kieli…</translation>
 <translation id="6767639283522617719">Verkkotunnukseen liittyminen ei onnistu. Varmista, että organisaatioyksikön asetukset on määritetty oikein.</translation>
 <translation id="6769557323306147204"><ph name="ORGANIZATION_NAME" /> suosittelee päivittämään tämän laitteen.</translation>
@@ -4732,6 +4740,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6972553992270299730"><ph name="ORIGIN" /> ei saa avata tämän kansion tiedostoja, koska se sisältää järjestelmätiedostoja</translation>
 <translation id="6972629891077993081">HID-laitteet</translation>
 <translation id="6972754398087986839">Aloitusopas</translation>
+<translation id="6972887130317925583">Vaarantunut salasana vaihdettu onnistuneesti. Tarkista salasanasi koska tahansa <ph name="SETTINGS" />.</translation>
 <translation id="6973611239564315524">Päivitys Debian 10:een (Buster) saatavilla</translation>
 <translation id="6974609594866392343">Offline-esittelytila</translation>
 <translation id="6977381486153291903">Laiteohjelmiston versio</translation>
@@ -5590,6 +5599,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Pikanäppäintä muokattu</translation>
 <translation id="8018313076035239964">Hallitse sitä, mitä tietoja verkkosivustot voivat käyttää ja mitä sisältöä ne voivat näyttää sinulle.</translation>
+<translation id="8022688469248132790">Näytä virheen tiedot</translation>
 <translation id="8023801379949507775">Päivitä laajennukset nyt</translation>
 <translation id="8026334261755873520">Poista selaustiedot</translation>
 <translation id="8028060951694135607">Microsoftin avaimen palautus</translation>
@@ -6529,6 +6539,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="9180380851667544951">Sivusto voi jakaa näyttösi</translation>
 <translation id="9188732951356337132">Lähetä käyttö- ja diagnostiikkadataa. Laite lähettää tällä hetkellä diagnostiikkadataa sekä laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Dataa ei käytetä lapsesi henkilöllisyyden selvittämiseen – sen avulla parannetaan esimerkiksi järjestelmän ja sovellusten vakautta. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, kuten Android-kehittäjille. Jos muun verkko- ja sovellustoiminnan asetus on lapsella käytössä, tätä dataa voidaan tallentaa hänen Google-tililleen. <ph name="BEGIN_LINK2" />Lue lisää<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + esijaettu avain</translation>
+<translation id="9198090666959937775">Käytä Android-puhelinta suojausavaimena</translation>
 <translation id="920045321358709304">Hae hakukoneella <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Kaikki offline-data poistetaan</translation>
 <translation id="9201220332032049474">Näytön lukitusvaihtoehdot</translation>
@@ -6571,6 +6582,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="942532530371314860"><ph name="APP_NAME" /> jakaa Chrome-välilehden ja ääntä.</translation>
 <translation id="945522503751344254">Lähetä palautetta</translation>
 <translation id="947329552760389097">Tutk&amp;i elementtejä</translation>
+<translation id="951991426597076286">Hylkää</translation>
 <translation id="952992212772159698">Ei aktivoitu</translation>
 <translation id="956500788634395331">Sinut on suojattu mahdollisesti haitallisilta laajennuksilta</translation>
 <translation id="957960681186851048">Tämä sivusto yrittää ladata useita tiedostoja automaattisesti</translation>

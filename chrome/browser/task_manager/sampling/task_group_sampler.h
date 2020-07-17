@@ -29,13 +29,13 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
  public:
   // Below are the types of callbacks that are invoked on the UI thread upon
   // completion of corresponding refresh tasks on the worker thread.
-  using OnCpuRefreshCallback = base::Callback<void(double)>;
-  using OnSwappedMemRefreshCallback = base::Callback<void(int64_t)>;
-  using OnIdleWakeupsCallback = base::Callback<void(int)>;
+  using OnCpuRefreshCallback = base::RepeatingCallback<void(double)>;
+  using OnSwappedMemRefreshCallback = base::RepeatingCallback<void(int64_t)>;
+  using OnIdleWakeupsCallback = base::RepeatingCallback<void(int)>;
 #if defined(OS_LINUX) || defined(OS_MACOSX)
-  using OnOpenFdCountCallback = base::Callback<void(int)>;
+  using OnOpenFdCountCallback = base::RepeatingCallback<void(int)>;
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX)
-  using OnProcessPriorityCallback = base::Callback<void(bool)>;
+  using OnProcessPriorityCallback = base::RepeatingCallback<void(bool)>;
 
   TaskGroupSampler(
       base::Process process,

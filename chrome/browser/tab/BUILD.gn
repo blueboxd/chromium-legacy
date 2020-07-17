@@ -17,19 +17,26 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/tab/TabHidingType.java",
     "java/src/org/chromium/chrome/browser/tab/TabLifecycle.java",
     "java/src/org/chromium/chrome/browser/tab/TabObserver.java",
+    "java/src/org/chromium/chrome/browser/tab/TabState.java",
     "java/src/org/chromium/chrome/browser/tab/TabViewManager.java",
     "java/src/org/chromium/chrome/browser/tab/TabViewProvider.java",
     "java/src/org/chromium/chrome/browser/tab/TabWebContentsDelegateAndroid.java",
+    "java/src/org/chromium/chrome/browser/tab/WebContentsState.java",
+    "java/src/org/chromium/chrome/browser/tab/WebContentsStateBridge.java",
   ]
 
   # TabSelectionType, TabLaunchType
   srcjar_deps = [ "//chrome/browser/ui:tab_model_enums_java" ]
 
   deps = [
+    ":jni_headers",
     "//base:base_java",
+    "//base:jni_java",
     "//chrome/browser/contextmenu:java",
+    "//chrome/browser/profiles/android:java",
     "//chrome/browser/ui/android/native_page:java",
     "//components/browser_ui/util/android:java",
+    "//components/embedder_support/android:browser_context_java",
     "//components/embedder_support/android:content_view_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/external_intents/android:java",
@@ -37,5 +44,27 @@ android_library("java") {
     "//components/navigation_interception/android:navigation_interception_java",
     "//content/public/android:content_java",
     "//ui/android:ui_full_java",
+  ]
+
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+}
+
+generate_jni("jni_headers") {
+  sources =
+      [ "java/src/org/chromium/chrome/browser/tab/WebContentsStateBridge.java" ]
+}
+
+source_set("android_internal") {
+  sources = [
+    "web_contents_state.cc",
+    "web_contents_state.h",
+  ]
+
+  deps = [
+    ":jni_headers",
+    "//base",
+    "//components/embedder_support/android:browser_context",
+    "//components/sessions",
+    "//content/public/browser",
   ]
 }

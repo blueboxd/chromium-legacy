@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
 <translation id="1008557486741366299">Si Sasa</translation>
+<translation id="100957008357583611">Ungependa kutumia data ya mahali uliko?</translation>
 <translation id="1010200102790553230">Pakia ukurasa baadaye</translation>
 <translation id="1015730422737071372">Toa maelezo ya ziada</translation>
 <translation id="1019413721762100891">Imezimwa</translation>
@@ -45,6 +46,7 @@
 <translation id="115926840831309955">Angalia CVC yako kisha ujaribu tena au badilisha tarehe ya mwisho wa matumizi</translation>
 <translation id="1161325031994447685">Kuunganisha tena kwenye Wi-Fi</translation>
 <translation id="1165039591588034296">Hitilafu</translation>
+<translation id="1165174597379888365">Ukurasa unatembelewa</translation>
 <translation id="1175364870820465910">&amp;Chapisha...</translation>
 <translation id="1175875016430184367">Bana mara tatu kulia</translation>
 <translation id="1178581264944972037">Sitisha</translation>
@@ -265,6 +267,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="2001146170449793414">{COUNT,plural, =1{na nyingine 1}other{na nyingine #}}</translation>
 <translation id="2003709556000175978">Badilisha nenosiri lako sasa</translation>
 <translation id="2003775180883135320">Toboa mara nne juu</translation>
+<translation id="202072848677994234">Fomu hii inatumwa kupitia muunganisho ambao si salama. Kipengele cha kujaza kiotomatiki kimezimwa.</translation>
 <translation id="2025115093177348061">Uhalisia ulioboreshwa</translation>
 <translation id="2025186561304664664">Proksi imewekwa katika usanidi otomatiki.</translation>
 <translation id="2030481566774242610">Je, ulimaanisha <ph name="LINK" />?</translation>
@@ -333,6 +336,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="2289385804009217824">Punguza</translation>
 <translation id="2292556288342944218">Ufikiaji wako wa intaneti umezuiwa</translation>
 <translation id="2293443924986248631">Ikiwashwa, tovuti haziwezi kutumia vidakuzi vinavyokufuatilia kwenye wavuti. Huenda vipengele kwenye baadhi ya tovuti vikakosa kufanya kazi.</translation>
+<translation id="2295290966866883927">URL za kurasa unazotembelea hutumwa kwa Wingu la Google au mifumo mingine ili kuchanganuliwa. Kwa mfano, zinaweza kuchanganuliwa ili kubaini tovuti ambazo si salama.</translation>
 <translation id="2297722699537546652">B5 (Bahasha)</translation>
 <translation id="2300306941146563769">Haikupakiwa</translation>
 <translation id="2310021320168182093">Chou2 (Bahasha)</translation>
@@ -424,7 +428,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="2705137772291741111">Nakala iliyohifadhiwa (iliyowekwa katika akiba) ya tovuti hii haikusomeka.</translation>
 <translation id="2709516037105925701">Kujaza Kiotomatiki</translation>
 <translation id="2713444072780614174">Nyeupe</translation>
-<translation id="2720342946869265578">Uhamishaji wa Karibu</translation>
 <translation id="2721148159707890343">Ombi limefanikiwa</translation>
 <translation id="272451190272506600">Gusa kitambuzi ili ulipe</translation>
 <translation id="2728127805433021124">Cheti cha seva kimetiwa sahihi kwa kutumia algoriti dhaifu ya sahihi.</translation>
@@ -721,7 +724,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="3990250421422698716">Kunja kuwa katika muundo wa Z</translation>
 <translation id="3996311196211510766">Tovuti ya <ph name="ORIGIN" /> inataka sera ya asili
     itumike kwenye maombi yote inayopokea, lakini sera hii haiwezi kutumika kwa sasa.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{ukurasa 1 wa wavuti ulio karibu}other{kurasa # za wavuti zilizo karibu}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Hati ya PDF iliyo na ukurasa {COUNT}}other{Hati ya PDF iliyo na kurasa {COUNT}}}</translation>
 <translation id="4030383055268325496">Tendua kuongeza</translation>
 <translation id="4032320456957708163">Kivinjari chako kinadhibitiwa na <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -939,7 +941,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Hifadhi...</translation>
 <translation id="4913987521957242411">Toboa juu kushoto</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{na ukurasa 1 zaidi wa wavuti}other{na kurasa # zaidi za wavuti}}</translation>
 <translation id="4923459931733593730">Malipo</translation>
 <translation id="4926049483395192435">Sharti ibainishwe.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> inasema</translation>
@@ -1180,6 +1181,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="5869405914158311789">Imeshindwa kufungua tovuti hii</translation>
 <translation id="5869522115854928033">Manenosiri yaliyohifadhiwa</translation>
 <translation id="5887400589839399685">Kadi imehifadhiwa</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> inahitaji uhifadhi nakala ya data yako na urejeshe kifaa hiki.</translation>
 <translation id="5895138241574237353">Zzima na uwashe</translation>
 <translation id="5895187275912066135">Kilitolewa</translation>
 <translation id="5901630391730855834">Manjano</translation>
@@ -1330,7 +1332,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="6518133107902771759">Thibitisha</translation>
 <translation id="6521745193039995384">Haitumiki</translation>
 <translation id="6529602333819889595">Rudia Kufuta</translation>
-<translation id="6534179046333460208">Mapendekezo ya Wavuti kila Mahali</translation>
 <translation id="6545864417968258051">Kutafuta Bluetooth</translation>
 <translation id="6547208576736763147">Toboa mara mbili kushoto</translation>
 <translation id="6554795675067793129">Akaunti yako inadhibitiwa na <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1849,7 +1850,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="8790007591277257123">Rudia kufuta</translation>
 <translation id="8792621596287649091">Unaweza kupoteza uwezo wa kufikia Akaunti yako ya <ph name="ORG_NAME" /> au kuibiwa utambulisho. Chromium inapendekeza ubadilishe nenosiri lako la sasa.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> amewasha Viunganishi vya Chrome Enterprise kwenye kivinjari chako. Viunganishi hivi vina uwezo wa kufikia baadhi ya data yako.</translation>
-<translation id="8800988563907321413">Mapendekezo ya maudhui ya uhamishaji wa karibu yataonekana hapa</translation>
 <translation id="8805819170075074995">Hoja orodha "<ph name="LANGUAGE_ID" />": Hoja imekataliwa kwa sababu pia imejumuishwa katika sera ya SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Punguza baada ya kila ukurasa</translation>
 <translation id="8820817407110198400">Alamisho</translation>

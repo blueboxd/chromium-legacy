@@ -77,7 +77,8 @@ constexpr base::TimeDelta kDelayForUpdates = base::TimeDelta::FromMinutes(60);
 
 // Key for preference listing the URLs that should not be shown as most visited
 // tiles.
-const char kMostVisitedURLsBlacklist[] = "ntp.most_visited_blacklist";
+// TODO(sky): rename actual value to 'most_visited_blocked_urls.'
+const char kBlockedUrlsPrefsKey[] = "ntp.most_visited_blacklist";
 
 }  // namespace
 
@@ -141,53 +142,53 @@ void TopSitesImpl::SyncWithHistory() {
     StartQueryForMostVisited();
 }
 
-bool TopSitesImpl::HasBlacklistedItems() const {
-  const base::DictionaryValue* blacklist =
-      pref_service_->GetDictionary(kMostVisitedURLsBlacklist);
-  return blacklist && !blacklist->empty();
+bool TopSitesImpl::HasBlockedUrls() const {
+  const base::DictionaryValue* blocked_urls =
+      pref_service_->GetDictionary(kBlockedUrlsPrefsKey);
+  return blocked_urls && !blocked_urls->empty();
 }
 
-void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
+void TopSitesImpl::AddBlockedUrl(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto dummy = std::make_unique<base::Value>();
   {
-    DictionaryPrefUpdate update(pref_service_, kMostVisitedURLsBlacklist);
-    base::DictionaryValue* blacklist = update.Get();
-    blacklist->SetWithoutPathExpansion(GetURLHash(url), std::move(dummy));
+    DictionaryPrefUpdate update(pref_service_, kBlockedUrlsPrefsKey);
+    base::DictionaryValue* blocked_urls = update.Get();
+    blocked_urls->SetWithoutPathExpansion(GetURLHash(url), std::move(dummy));
   }
 
   ResetThreadSafeCache();
-  NotifyTopSitesChanged(TopSitesObserver::ChangeReason::BLACKLIST);
+  NotifyTopSitesChanged(TopSitesObserver::ChangeReason::BLOCKED_URLS);
 }
 
-void TopSitesImpl::RemoveBlacklistedURL(const GURL& url) {
+void TopSitesImpl::RemoveBlockedUrl(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
   {
-    DictionaryPrefUpdate update(pref_service_, kMostVisitedURLsBlacklist);
-    base::DictionaryValue* blacklist = update.Get();
-    blacklist->RemoveKey(GetURLHash(url));
+    DictionaryPrefUpdate update(pref_service_, kBlockedUrlsPrefsKey);
+    base::DictionaryValue* blocked_urls = update.Get();
+    blocked_urls->RemoveKey(GetURLHash(url));
   }
   ResetThreadSafeCache();
-  NotifyTopSitesChanged(TopSitesObserver::ChangeReason::BLACKLIST);
+  NotifyTopSitesChanged(TopSitesObserver::ChangeReason::BLOCKED_URLS);
 }
 
-bool TopSitesImpl::IsBlacklisted(const GURL& url) {
+bool TopSitesImpl::IsBlocked(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const base::DictionaryValue* blacklist =
-      pref_service_->GetDictionary(kMostVisitedURLsBlacklist);
-  return blacklist && blacklist->HasKey(GetURLHash(url));
+  const base::DictionaryValue* blocked_urls =
+      pref_service_->GetDictionary(kBlockedUrlsPrefsKey);
+  return blocked_urls && blocked_urls->HasKey(GetURLHash(url));
 }
 
-void TopSitesImpl::ClearBlacklistedURLs() {
+void TopSitesImpl::ClearBlockedUrls() {
   DCHECK(thread_checker_.CalledOnValidThread());
   {
-    DictionaryPrefUpdate update(pref_service_, kMostVisitedURLsBlacklist);
-    base::DictionaryValue* blacklist = update.Get();
-    blacklist->Clear();
+    DictionaryPrefUpdate update(pref_service_, kBlockedUrlsPrefsKey);
+    base::DictionaryValue* blocked_urls = update.Get();
+    blocked_urls->Clear();
   }
   ResetThreadSafeCache();
-  NotifyTopSitesChanged(TopSitesObserver::ChangeReason::BLACKLIST);
+  NotifyTopSitesChanged(TopSitesObserver::ChangeReason::BLOCKED_URLS);
 }
 
 bool TopSitesImpl::IsFull() {
@@ -224,7 +225,7 @@ void TopSitesImpl::ShutdownOnUIThread() {
 
 // static
 void TopSitesImpl::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(kMostVisitedURLsBlacklist);
+  registry->RegisterDictionaryPref(kBlockedUrlsPrefsKey);
 }
 
 TopSitesImpl::~TopSitesImpl() = default;
@@ -297,18 +298,18 @@ bool TopSitesImpl::AddPrepopulatedPages(MostVisitedURLList* urls) const {
   return added;
 }
 
-MostVisitedURLList TopSitesImpl::ApplyBlacklist(
+MostVisitedURLList TopSitesImpl::ApplyBlockedUrls(
     const MostVisitedURLList& urls) {
-  // Log the number of times ApplyBlacklist is called so we can compute the
-  // average number of blacklisted items per user.
-  const base::DictionaryValue* blacklist =
-      pref_service_->GetDictionary(kMostVisitedURLsBlacklist);
+  // Log the number of times ApplyBlockedUrls is called so we can compute the
+  // average number of blocked urls per user.
+  const base::DictionaryValue* blocked_urls =
+      pref_service_->GetDictionary(kBlockedUrlsPrefsKey);
   UMA_HISTOGRAM_BOOLEAN("TopSites.NumberOfApplyBlacklist", true);
   UMA_HISTOGRAM_COUNTS_100("TopSites.NumberOfBlacklistedItems",
-      (blacklist ? blacklist->size() : 0));
+                           (blocked_urls ? blocked_urls->size() : 0));
   MostVisitedURLList result;
   for (const auto& url : urls) {
-    if (IsBlacklisted(url.url))
+    if (IsBlocked(url.url))
       continue;
     if (result.size() >= kTopSitesNumber)
       break;
@@ -319,8 +320,8 @@ MostVisitedURLList TopSitesImpl::ApplyBlacklist(
 
 // static
 std::string TopSitesImpl::GetURLHash(const GURL& url) {
-  // We don't use canonical URLs here to be able to blacklist only one of
-  // the two 'duplicate' sites, e.g. 'gmail.com' and 'mail.google.com'.
+  // We don't use canonical URLs here to be able to block only one of the two
+  // 'duplicate' sites, e.g. 'gmail.com' and 'mail.google.com'.
   return base::MD5String(url.spec());
 }
 
@@ -375,9 +376,9 @@ void TopSitesImpl::SetTopSites(MostVisitedURLList top_sites,
 int TopSitesImpl::num_results_to_request_from_history() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const base::DictionaryValue* blacklist =
-      pref_service_->GetDictionary(kMostVisitedURLsBlacklist);
-  return kTopSitesNumber + (blacklist ? blacklist->size() : 0);
+  const base::DictionaryValue* blocked_urls =
+      pref_service_->GetDictionary(kBlockedUrlsPrefsKey);
+  return kTopSitesNumber + (blocked_urls ? blocked_urls->size() : 0);
 }
 
 void TopSitesImpl::MoveStateToLoaded() {
@@ -411,7 +412,7 @@ void TopSitesImpl::MoveStateToLoaded() {
 
 void TopSitesImpl::ResetThreadSafeCache() {
   base::AutoLock lock(lock_);
-  thread_safe_cache_ = ApplyBlacklist(top_sites_);
+  thread_safe_cache_ = ApplyBlockedUrls(top_sites_);
 }
 
 void TopSitesImpl::ScheduleUpdateTimer() {

@@ -13,6 +13,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -137,7 +138,8 @@ class ReportGeneratorTest : public ::testing::Test {
   using ReportRequest = definition::ReportRequest;
 
   ReportGeneratorTest()
-      : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+      : generator_(&delegate_factory_),
+        profile_manager_(TestingBrowserProcess::GetGlobal()) {}
   ~ReportGeneratorTest() override = default;
 
   void SetUp() override {
@@ -277,6 +279,7 @@ class ReportGeneratorTest : public ::testing::Test {
         .AsUTF8Unsafe();
   }
 
+  ReportingDelegateFactoryDesktop delegate_factory_;
   ReportGenerator generator_;
 
   content::BrowserTaskEnvironment task_environment_;

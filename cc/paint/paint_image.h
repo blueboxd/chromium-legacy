@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "third_party/skia/include/core/SkYUVASizeInfo.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -268,8 +269,8 @@ class CC_PAINT_EXPORT PaintImage {
   SkColorSpace* color_space() const {
     return paint_worklet_input_ ? nullptr : GetSkImageInfo().colorSpace();
   }
-  bool isSRGB() const;
-  bool isHDR() const;
+
+  gfx::ContentColorUsage GetContentColorUsage() const;
 
   // Returns whether this image will be decoded and rendered from YUV data
   // and fills out plane size info, plane index info, and the matrix for

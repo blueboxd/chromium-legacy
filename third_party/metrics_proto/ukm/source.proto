@@ -18,6 +18,7 @@ enum SourceType {
   WEBAPK_ID = 4;
   PAYMENT_APP_ID = 5;
   DESKTOP_WEB_APP_ID = 6;
+  WORKER_ID = 7;
 }
 
 // Source contains data related to a top-level navigation.

@@ -3116,20 +3116,18 @@ void MenuController::SetNextHotTrackedView(
 }
 
 void MenuController::SetHotTrackedButton(Button* hot_button) {
-  if (hot_button == hot_button_) {
-    // Hot-tracked state may change outside of the MenuController. Correct it.
-    if (hot_button && !hot_button->IsHotTracked()) {
-      hot_button->SetHotTracked(true);
-      hot_button->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
-    }
-    return;
-  }
-  if (hot_button_)
+  // If we're providing a new hot-tracked button, first remove the existing one.
+  if (hot_button_ && hot_button_ != hot_button) {
     hot_button_->SetHotTracked(false);
+    hot_button_->GetViewAccessibility().EndPopupFocusOverride();
+  }
+
+  // Then set the new one.
   hot_button_ = hot_button;
-  if (hot_button) {
-    hot_button->SetHotTracked(true);
-    hot_button->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  if (hot_button_ && !hot_button_->IsHotTracked()) {
+    hot_button_->GetViewAccessibility().SetPopupFocusOverride();
+    hot_button_->SetHotTracked(true);
+    hot_button_->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   }
 }
 

@@ -84,7 +84,6 @@
 #include "weblayer/browser/user_agent.h"
 #include "weblayer/browser/web_contents_view_delegate_impl.h"
 #include "weblayer/browser/weblayer_browser_interface_binders.h"
-#include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
 #include "weblayer/browser/weblayer_security_blocking_page_factory.h"
 #include "weblayer/browser/weblayer_speech_recognition_manager_delegate.h"
 #include "weblayer/common/features.h"
@@ -277,13 +276,6 @@ ContentBrowserClientImpl::GetDevToolsManagerDelegate() {
 #else
   return new content::DevToolsManagerDelegate();
 #endif
-}
-
-base::Optional<service_manager::Manifest>
-ContentBrowserClientImpl::GetServiceManifestOverlay(base::StringPiece name) {
-  if (name == content::mojom::kBrowserServiceName)
-    return GetWebLayerContentBrowserOverlayManifest();
-  return base::nullopt;
 }
 
 void ContentBrowserClientImpl::LogWebFeatureForCurrentPage(

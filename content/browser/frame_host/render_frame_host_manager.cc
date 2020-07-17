@@ -1691,7 +1691,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
             current_instance_impl->GetBrowserContext(), dest_site_info) &&
         RenderProcessHostImpl::GetSoleProcessHostForURL(
             current_instance_impl->GetIsolationContext(), dest_url);
-    if (current_instance_impl->HasRelatedSiteInstance(dest_url) ||
+    if (current_instance_impl->HasRelatedSiteInstance(dest_site_info) ||
         use_process_per_site) {
       return SiteInstanceDescriptor(dest_url, SiteInstanceRelation::RELATED);
     }

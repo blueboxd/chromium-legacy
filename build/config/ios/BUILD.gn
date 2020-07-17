@@ -169,6 +169,8 @@ action("xctest_runner_without_arm64e") {
     rebase_path(outputs[0], root_build_dir),
     "--input",
     rebase_path(sources[0], root_build_dir),
+    "--xcode-version",
+    xcode_version,
   ]
 
   if (ios_use_goma_rbe) {

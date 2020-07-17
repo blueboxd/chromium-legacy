@@ -79,20 +79,6 @@ void BindWebTestHelper(
   MojoWebTestHelper::Create(std::move(receiver));
 }
 
-const service_manager::Manifest& GetWebTestContentBrowserOverlayManifest() {
-  static base::NoDestructor<service_manager::Manifest> manifest{
-      service_manager::ManifestBuilder()
-          .ExposeCapability(
-              "renderer",
-              service_manager::Manifest::InterfaceList<
-                  mojom::MojoWebTestHelper, mojom::FakeBluetoothChooser,
-                  mojom::FakeBluetoothChooserFactory,
-                  mojom::WebTestBluetoothFakeAdapterSetter,
-                  bluetooth::mojom::FakeBluetooth>())
-          .Build()};
-  return *manifest;
-}
-
 // An OverlayWindow that returns the last given video natural size as the
 // window's bounds.
 class BoundsMatchVideoSizeOverlayWindow : public OverlayWindow {
@@ -246,14 +232,6 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
       &WebTestContentBrowserClient::BindWebTestClient,
       render_process_host->GetID(),
       BrowserContext::GetDefaultStoragePartition(browser_context())));
-}
-
-base::Optional<service_manager::Manifest>
-WebTestContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
-  if (name == content::mojom::kBrowserServiceName)
-    return GetWebTestContentBrowserOverlayManifest();
-
-  return base::nullopt;
 }
 
 void WebTestContentBrowserClient::BindPermissionAutomation(

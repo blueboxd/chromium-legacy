@@ -1783,7 +1783,7 @@ if (enable_java_templates) {
         "--output",
         rebase_path(invoker.output, root_build_dir),
         "--dependencies-res-zips=@FileArg($_rebased_build_config:deps_info:dependency_zips)",
-        "--r-text-files=@FileArg($_rebased_build_config:deps_info:extra_r_text_files)",
+        "--r-text-files=@FileArg($_rebased_build_config:deps_info:dependency_r_txt_files)",
         "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
       ]
       if (_direct_deps_only) {

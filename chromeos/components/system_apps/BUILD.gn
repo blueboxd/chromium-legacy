@@ -3,5 +3,11 @@
 # found in the LICENSE file.
 
 group("closure_compile") {
+  testonly = true
   deps = [ "public/js:closure_compile" ]
+}
+
+group("browser_tests") {
+  testonly = true
+  deps = [ "public/js:browser_tests_js" ]
 }

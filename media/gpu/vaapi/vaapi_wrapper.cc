@@ -496,6 +496,34 @@ VAStatus VADisplayState::Deinitialize() {
   return va_res;
 }
 
+// Returns all the VAProfiles that the driver lists as supported, regardless of
+// what Chrome supports or not.
+std::vector<VAProfile> GetSupportedVAProfiles(const base::Lock* va_lock,
+                                              VADisplay va_display) {
+  va_lock->AssertAcquired();
+
+  // Query the driver for supported profiles.
+  const int max_va_profiles = vaMaxNumProfiles(va_display);
+  std::vector<VAProfile> va_profiles(
+      base::checked_cast<size_t>(max_va_profiles));
+
+  int num_va_profiles;
+  const VAStatus va_res =
+      vaQueryConfigProfiles(va_display, &va_profiles[0], &num_va_profiles);
+  if (va_res != VA_STATUS_SUCCESS) {
+    LOG(ERROR) << "vaQueryConfigProfiles failed: " << vaErrorStr(va_res);
+    return {};
+  }
+  if (num_va_profiles < 0 || num_va_profiles > max_va_profiles) {
+    LOG(ERROR) << "vaQueryConfigProfiles returned: " << num_va_profiles
+               << " profiles";
+    return {};
+  }
+
+  va_profiles.resize(base::checked_cast<size_t>(num_va_profiles));
+  return va_profiles;
+}
+
 // Queries the driver for the supported entrypoints for |va_profile|, then
 // returns those allowed for |mode|.
 std::vector<VAEntrypoint> GetEntryPointsForProfile(const base::Lock* va_lock,
@@ -543,12 +571,12 @@ std::vector<VAEntrypoint> GetEntryPointsForProfile(const base::Lock* va_lock,
   return entrypoints;
 }
 
-static bool GetRequiredAttribs(const base::Lock* va_lock,
-                               VADisplay va_display,
-                               VaapiWrapper::CodecMode mode,
-                               VAProfile profile,
-                               VAEntrypoint entrypoint,
-                               std::vector<VAConfigAttrib>* required_attribs) {
+bool GetRequiredAttribs(const base::Lock* va_lock,
+                        VADisplay va_display,
+                        VaapiWrapper::CodecMode mode,
+                        VAProfile profile,
+                        VAEntrypoint entrypoint,
+                        std::vector<VAConfigAttrib>* required_attribs) {
   va_lock->AssertAcquired();
 
   // Choose a suitable VAConfigAttribRTFormat for every |mode|. For video
@@ -595,6 +623,37 @@ static bool GetRequiredAttribs(const base::Lock* va_lock,
   return true;
 }
 
+// Returns true if |va_profile| for |entrypoint| with |required_attribs| is
+// supported.
+bool AreAttribsSupported(const base::Lock* va_lock,
+                         VADisplay va_display,
+                         VAProfile va_profile,
+                         VAEntrypoint entrypoint,
+                         const std::vector<VAConfigAttrib>& required_attribs) {
+  va_lock->AssertAcquired();
+  // Query the driver for required attributes.
+  std::vector<VAConfigAttrib> attribs = required_attribs;
+  for (size_t i = 0; i < required_attribs.size(); ++i)
+    attribs[i].value = 0;
+
+  VAStatus va_res = vaGetConfigAttributes(va_display, va_profile, entrypoint,
+                                          &attribs[0], attribs.size());
+  if (va_res != VA_STATUS_SUCCESS) {
+    LOG(ERROR) << "vaGetConfigAttributes failed error: " << vaErrorStr(va_res);
+    return false;
+  }
+  for (size_t i = 0; i < required_attribs.size(); ++i) {
+    if (attribs[i].type != required_attribs[i].type ||
+        (attribs[i].value & required_attribs[i].value) !=
+            required_attribs[i].value) {
+      DVLOG(1) << "Unsupported value " << required_attribs[i].value
+               << " for attribute type " << required_attribs[i].type;
+      return false;
+    }
+  }
+  return true;
+}
+
 // This class encapsulates reading and giving access to the list of supported
 // ProfileInfo entries, in a singleton way.
 class VASupportedProfiles {
@@ -629,20 +688,8 @@ class VASupportedProfiles {
   VASupportedProfiles();
   ~VASupportedProfiles() = default;
 
-  std::vector<VAProfile> GetSupportedVAProfiles(const base::Lock* va_lock,
-                                                VADisplay va_display);
-
   // Fills in |supported_profiles_|.
   void FillSupportedProfileInfos(base::Lock* va_lock, VADisplay va_display);
-
-  // Returns true if |va_profile| for |entrypoint| with |required_attribs| is
-  // supported.
-  bool AreAttribsSupported_Locked(
-      const base::Lock* va_lock,
-      VADisplay va_display,
-      VAProfile va_profile,
-      VAEntrypoint entrypoint,
-      const std::vector<VAConfigAttrib>& required_attribs) const;
 
   // Fills |profile_info| for |va_profile| and |entrypoint| with
   // |required_attribs|. If the return value is true, the operation was
@@ -742,9 +789,10 @@ void VASupportedProfiles::FillSupportedProfileInfos(base::Lock* va_lock,
                                 entrypoint, &required_attribs)) {
           continue;
         }
-        if (!AreAttribsSupported_Locked(va_lock, va_display, va_profile,
-                                        entrypoint, required_attribs))
+        if (!AreAttribsSupported(va_lock, va_display, va_profile, entrypoint,
+                                 required_attribs)) {
           continue;
+        }
         ProfileInfo profile_info{};
         if (!FillProfileInfo_Locked(va_lock, va_display, va_profile, entrypoint,
                                     required_attribs, &profile_info)) {
@@ -758,62 +806,6 @@ void VASupportedProfiles::FillSupportedProfileInfos(base::Lock* va_lock,
     }
     supported_profiles_[static_cast<int>(mode)] = supported_profile_infos;
   }
-}
-
-std::vector<VAProfile> VASupportedProfiles::GetSupportedVAProfiles(
-    const base::Lock* va_lock,
-    VADisplay va_display) {
-  va_lock->AssertAcquired();
-
-  // Query the driver for supported profiles.
-  const int max_va_profiles = vaMaxNumProfiles(va_display);
-  std::vector<VAProfile> va_profiles(
-      base::checked_cast<size_t>(max_va_profiles));
-
-  int num_va_profiles;
-  const VAStatus va_res =
-      vaQueryConfigProfiles(va_display, &va_profiles[0], &num_va_profiles);
-  if (va_res != VA_STATUS_SUCCESS) {
-    LOG(ERROR) << "vaQueryConfigProfiles failed, VA error: "
-               << vaErrorStr(va_res);
-    return {};
-  }
-  if (num_va_profiles < 0 || num_va_profiles > max_va_profiles) {
-    LOG(ERROR) << "vaQueryConfigProfiles returned: " << num_va_profiles
-               << " profiles";
-    return {};
-  }
-
-  va_profiles.resize(base::checked_cast<size_t>(num_va_profiles));
-  return va_profiles;
-}
-
-bool VASupportedProfiles::AreAttribsSupported_Locked(
-    const base::Lock* va_lock,
-    VADisplay va_display,
-    VAProfile va_profile,
-    VAEntrypoint entrypoint,
-    const std::vector<VAConfigAttrib>& required_attribs) const {
-  va_lock->AssertAcquired();
-  // Query the driver for required attributes.
-  std::vector<VAConfigAttrib> attribs = required_attribs;
-  for (size_t i = 0; i < required_attribs.size(); ++i)
-    attribs[i].value = 0;
-
-  VAStatus va_res = vaGetConfigAttributes(va_display, va_profile, entrypoint,
-                                          &attribs[0], attribs.size());
-  VA_SUCCESS_OR_RETURN(va_res, "vaGetConfigAttributes", false);
-
-  for (size_t i = 0; i < required_attribs.size(); ++i) {
-    if (attribs[i].type != required_attribs[i].type ||
-        (attribs[i].value & required_attribs[i].value) !=
-            required_attribs[i].value) {
-      DVLOG(1) << "Unsupported value " << required_attribs[i].value
-               << " for attribute type " << required_attribs[i].type;
-      return false;
-    }
-  }
-  return true;
 }
 
 bool VASupportedProfiles::FillProfileInfo_Locked(

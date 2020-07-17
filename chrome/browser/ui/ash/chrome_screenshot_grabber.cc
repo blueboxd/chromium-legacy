@@ -36,6 +36,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber_test_observer.h"
+#include "chrome/browser/ui/ash/clipboard_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -44,8 +45,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
-#include "ui/base/clipboard/clipboard.h"
-#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -59,62 +58,12 @@ const char kNotifierScreenshot[] = "ash.screenshot";
 
 const char kNotificationOriginUrl[] = "chrome://screenshot";
 
-const char kImageClipboardFormatPrefix[] = "<img src='data:image/png;base64,";
-const char kImageClipboardFormatSuffix[] = "'>";
-
 // User is waiting for the screenshot-taken notification, hence USER_VISIBLE.
 constexpr base::TaskTraits kBlockingTaskTraits = {
     base::MayBlock(), base::TaskPriority::USER_VISIBLE,
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
 ChromeScreenshotGrabber* g_chrome_screenshot_grabber_instance = nullptr;
-
-void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data,
-                               const SkBitmap& decoded_image) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  std::string encoded;
-  base::Base64Encode(png_data->data(), &encoded);
-  {
-    ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
-
-    // Send both HTML and and Image formats to clipboard. HTML format is needed
-    // by ARC, while Image is needed by Hangout.
-    std::string html(kImageClipboardFormatPrefix);
-    html += encoded;
-    html += kImageClipboardFormatSuffix;
-    scw.WriteHTML(base::UTF8ToUTF16(html), std::string());
-    scw.WriteImage(decoded_image);
-  }
-  base::RecordAction(base::UserMetricsAction("Screenshot_CopyClipboard"));
-}
-
-void DecodeFileAndCopyToClipboard(
-    scoped_refptr<base::RefCountedString> png_data) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // Decode the image in sandboxed process because |png_data| comes from
-  // external storage.
-  data_decoder::DecodeImageIsolated(
-      std::vector<uint8_t>(png_data->data().begin(), png_data->data().end()),
-      data_decoder::mojom::ImageCodec::DEFAULT, false,
-      data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
-      base::BindOnce(&CopyScreenshotToClipboard, png_data));
-}
-
-void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::WILL_BLOCK);
-  scoped_refptr<base::RefCountedString> png_data(new base::RefCountedString());
-  if (!base::ReadFileToString(screenshot_path, &(png_data->data()))) {
-    LOG(ERROR) << "Failed to read the screenshot file: "
-               << screenshot_path.value();
-    return;
-  }
-
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&DecodeFileAndCopyToClipboard, png_data));
-}
 
 // Delegate for a notification. This class has two roles: to implement callback
 // methods for notification, and to provide an identity of the associated
@@ -151,7 +100,9 @@ class ScreenshotGrabberNotificationDelegate
         // screenshot file and copy it to the clipboard.
         base::ThreadPool::PostTask(
             FROM_HERE, kBlockingTaskTraits,
-            base::BindOnce(&ReadFileAndCopyToClipboardLocal, screenshot_path_));
+            base::BindOnce(&clipboard_util::ReadFileAndCopyToClipboardLocal,
+                           screenshot_path_));
+        base::RecordAction(base::UserMetricsAction("Screenshot_CopyClipboard"));
         break;
       }
       case BUTTON_ANNOTATE: {

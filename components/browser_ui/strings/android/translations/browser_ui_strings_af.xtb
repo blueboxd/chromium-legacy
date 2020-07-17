@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1647391597548383849">Toegang tot jou kamera</translation>
 <translation id="1660204651932907780">Laat werwe toe om klank te speel (aanbeveel)</translation>
+<translation id="1677097821151855053">Webkoekies en ander werfdata word gebruik om jou te onthou, byvoorbeeld om jou aan te meld of om advertensies te personaliseer. Sien <ph name="BEGIN_LINK" />Instellings<ph name="END_LINK" /> om webkoekies vir alle werwe te bestuur.</translation>
 <translation id="1688867105868176567">Vee werfdata uit?</translation>
 <translation id="169515064810179024">Blokkeer werwe om toegang tot bewegingsensors te kry</translation>
 <translation id="1717218214683051432">Bewegingsensors</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Laat webkoekies vir 'n spesifieke werf toe.</translation>
 <translation id="4046123991198612571">Volgende snit</translation>
 <translation id="4165986682804962316">Werfinstellings</translation>
+<translation id="4200726100658658164">Maak ligginginstellings oop</translation>
 <translation id="4226663524361240545">Kennisgewings kan die toestel laat vibreer</translation>
 <translation id="4242533952199664413">Maak instellings oop</translation>
 <translation id="4259722352634471385">Navigasie is geblokkeer: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Alle werwe</translation>
 <translation id="6320088164292336938">Vibreer</translation>
 <translation id="6388207532828177975">Vee uit en stel terug</translation>
+<translation id="6423924377271166037">Vee webkoekies uit</translation>
 <translation id="6439114592976064011">Keer werwe om jou virtuelerealiteittoestel en -data te gebruik</translation>
 <translation id="6447842834002726250">Webkoekies</translation>
 <translation id="6527303717912515753">Deel</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Soek agtertoe</translation>
 <translation id="8444433999583714703">Om <ph name="APP_NAME" /> toegang tot jou ligging te gee, moet jy ligging ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
 <translation id="8447861592752582886">Herroep toesteltoestemming</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 webkoekie word tans gebruik}other{# webkoekies word tans gebruik}}</translation>
 <translation id="8463851957836045671">Werf is vinnig</translation>
 <translation id="851751545965956758">Keer dat werwe aan toestelle koppel</translation>
 <translation id="857943718398505171">Toegelaat (aanbeveel)</translation>

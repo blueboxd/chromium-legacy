@@ -425,7 +425,6 @@
 <translation id="2705137772291741111">यस साइटको सुरक्षित गरिएको (क्यास गरिएको) प्रतिलिपि पढ्न मिल्दैनथ्यो</translation>
 <translation id="2709516037105925701">स्वत:भर्नुहोस्</translation>
 <translation id="2713444072780614174">सेतो</translation>
-<translation id="2720342946869265578">नजिकै</translation>
 <translation id="2721148159707890343">अनुरोध सफल भयो</translation>
 <translation id="272451190272506600">भुक्तानी गर्न सेन्सरमा छुनुहोस्</translation>
 <translation id="2728127805433021124">सर्भरको प्रमाणपत्र एक कमजोर हस्ताक्षर अल्गोरिदम प्रयोग गर्दै हस्ताक्षर गरिएको छ।</translation>
@@ -719,7 +718,6 @@
 <translation id="3990250421422698716">जग अफसेट</translation>
 <translation id="3996311196211510766">यो साइट <ph name="ORIGIN" /> ले यसलाई गरिने सबै अनुरोधहरूमा मूल नीति
     लागू गर्न अनुरोध गरेको छ। तर अहिले यो नीति लागू गर्न सकिँदैन।</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{नजिकमा १ वेब पृष्ठ छ}other{नजिकमा # वेब पृष्ठहरू छन्}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} पृष्ठ भएको PDF कागजात}other{{COUNT} पृष्ठहरू भएको PDF कागजात}}</translation>
 <translation id="4030383055268325496">थप्ने कार्यलाई &amp;पूर्ववत गर्नुहोस्</translation>
 <translation id="4032320456957708163"><ph name="ENROLLMENT_DOMAIN" /> ले तपाईंको ब्राउजरको व्यवस्थापन गर्छ</translation>
@@ -936,7 +934,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">सुरक्षित गर्नुहोस्...</translation>
 <translation id="4913987521957242411">सिरानको बायाँपट्टि प्वाल</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{र थप एक वेब पृष्ठ}other{र थप # वेब पृष्ठहरू}}</translation>
 <translation id="4923459931733593730">भुक्तानी</translation>
 <translation id="4926049483395192435">निर्दिष्ट हुनु पर्छ।</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> यसो भन्छ</translation>
@@ -1327,7 +1324,6 @@
 <translation id="6518133107902771759">रुजू गर्नुहोस्</translation>
 <translation id="6521745193039995384">सक्रिय छैन</translation>
 <translation id="6529602333819889595">मेटाउने कार्य &amp;पुन: गर्नुहोस्</translation>
-<translation id="6534179046333460208">वास्तविक वेब सम्बन्धी सुझावहरू</translation>
 <translation id="6545864417968258051">ब्लुटुथ स्क्यान गर्दै</translation>
 <translation id="6547208576736763147">बायाँपट्टि दुई प्वाल</translation>
 <translation id="6554795675067793129">तपाईंको खाता <ph name="ENROLLMENT_DOMAIN" /> द्वारा व्यवस्थापन गरिएको छ।</translation>
@@ -1849,7 +1845,6 @@
 <translation id="8790007591277257123">मेटाउने कार्य &amp;पुन: गर्नुहोस्</translation>
 <translation id="8792621596287649091">तपाईंले आफ्नो <ph name="ORG_NAME" /> खातामाथिको पहुँच गुमाउन सक्नुहुन्छ वा तपाईंको पहिचान चोरी हुन सक्छ। Chromium तपाईंलाई आफ्नो पासवर्ड अहिले नै परिवर्तन गर्न सिफारिस गर्छ।</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> ले तपाईंको ब्राउजरमा Chrome Enterprise Connectors अन गरेको छ। यी कनेक्टरले तपाईंका केही डेटा प्रयोग गर्न सक्छन्।</translation>
-<translation id="8800988563907321413">तपाईंका नजिकैका सुझावहरू यहाँ देखा पर्छन्</translation>
 <translation id="8805819170075074995">सूचीको प्रविष्टि "<ph name="LANGUAGE_ID" />": प्रविष्टिलाई SpellcheckLanguage नीतिमा पनि समावेश गरिएका कारण यसलाई बेवास्ता गरियो।</translation>
 <translation id="8807160976559152894">हरेक पृष्ठपछि छाँटकाँट गर्नुहोस्</translation>
 <translation id="8820817407110198400">बुकमार्कहरू</translation>

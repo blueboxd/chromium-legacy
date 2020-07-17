@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1647391597548383849">Kameran käyttöoikeus</translation>
 <translation id="1660204651932907780">Salli sivustojen toistaa ääniä (suositus)</translation>
+<translation id="1677097821151855053">Evästeillä ja muulla sivustodatalla tunnistetaan sinut, jotta voit esimerkiksi kirjautua sisään tai nähdä personoituja mainoksia. Jos haluat ylläpitää kaikkien sivustojen evästeitä, siirry <ph name="BEGIN_LINK" />Asetuksiin<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Tyhjennetäänkö sivustotiedot?</translation>
 <translation id="169515064810179024">Estä sivustoja käyttämästä liiketunnistimien lukemia</translation>
 <translation id="1717218214683051432">Liiketunnistimet</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Salli evästeet tietyllä sivustolla.</translation>
 <translation id="4046123991198612571">Seuraava kappale</translation>
 <translation id="4165986682804962316">Sivustoasetukset</translation>
+<translation id="4200726100658658164">Avaa sijaintiasetukset</translation>
 <translation id="4226663524361240545">Laite voi väristä ilmoitusten yhteydessä.</translation>
 <translation id="4242533952199664413">Avaa asetukset</translation>
 <translation id="4259722352634471385">Kohde on estetty: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Kaikki sivustot</translation>
 <translation id="6320088164292336938">Värinä</translation>
 <translation id="6388207532828177975">Tyhjennä ja nollaa</translation>
+<translation id="6423924377271166037">Poista evästeet</translation>
 <translation id="6439114592976064011">Estä sivustoja käyttämästä virtuaalitodellisuuslaitteitasi ja ‑dataasi</translation>
 <translation id="6447842834002726250">Evästeet</translation>
 <translation id="6527303717912515753">Jaa</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Kelaa taaksepäin</translation>
 <translation id="8444433999583714703">Ota sijaintitiedot käyttöön myös <ph name="BEGIN_LINK" />Androidin asetuksista<ph name="END_LINK" />, jotta <ph name="APP_NAME" /> saa pääsyn sijaintiisi.</translation>
 <translation id="8447861592752582886">Peruuta laitteen käyttöoikeus</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 eväste käytössä}other{# evästettä käytössä}}</translation>
 <translation id="8463851957836045671">Sivusto on nopea</translation>
 <translation id="851751545965956758">Estä sivustoja yhdistämästä laitteisiin</translation>
 <translation id="857943718398505171">Sallittu (suositus)</translation>

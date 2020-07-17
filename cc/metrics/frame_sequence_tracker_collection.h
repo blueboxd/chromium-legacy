@@ -6,6 +6,8 @@
 #define CC_METRICS_FRAME_SEQUENCE_TRACKER_COLLECTION_H_
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/optional.h"
@@ -139,6 +141,15 @@ class CC_EXPORT FrameSequenceTrackerCollection {
       FrameSequenceMetrics::ThroughputData throughput_data);
 
   const bool is_single_threaded_;
+  // The reporter takes throughput data and connect to UkmManager to report it.
+  // Note: this has to be before the frame_trackers_. The reason is that a
+  // FrameSequenceTracker owners a FrameSequenceMetrics, so the destructor of
+  // the former calls the destructor of the later. FrameSequenceMetrics's
+  // destructor calls its ReportMetrics() which requires
+  // |throughput_ukm_reporter_| to be alive. So putting it before
+  // |frame_trackers_| to ensure that it is destroyed after the tracker.
+  std::unique_ptr<ThroughputUkmReporter> throughput_ukm_reporter_;
+
   // The callsite can use the type to manipulate the tracker.
   base::flat_map<
       std::pair<FrameSequenceTrackerType, FrameSequenceMetrics::ThreadType>,
@@ -153,9 +164,6 @@ class CC_EXPORT FrameSequenceTrackerCollection {
   std::vector<std::unique_ptr<FrameSequenceTracker>> removal_trackers_;
   CompositorFrameReportingController* const
       compositor_frame_reporting_controller_;
-
-  // The reporter takes throughput data and connect to UkmManager to report it.
-  std::unique_ptr<ThroughputUkmReporter> throughput_ukm_reporter_;
 
   base::flat_map<
       std::pair<FrameSequenceTrackerType, FrameSequenceMetrics::ThreadType>,

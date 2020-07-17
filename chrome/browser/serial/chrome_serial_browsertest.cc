@@ -53,7 +53,7 @@ class SerialTest : public InProcessBrowserTest {
 };
 
 // TODO(crbug/1069695): Flaky on linux-chromeos-chrome.
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
 #define MAYBE_NavigateWithChooserCrossOrigin \
   DISABLED_NavigateWithChooserCrossOrigin
 #else

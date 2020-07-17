@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="1008557486741366299">Не зараз</translation>
+<translation id="100957008357583611">Використовувати геодані?</translation>
 <translation id="1010200102790553230">Завантажити сторінку пізніше</translation>
 <translation id="1015730422737071372">Надати додаткову інформацію</translation>
 <translation id="1019413721762100891">Вимкнено</translation>
@@ -425,7 +426,6 @@
 <translation id="2705137772291741111">Не вдається прочитати збережену (кешовану) копію цього сайту.</translation>
 <translation id="2709516037105925701">Автозаповнення</translation>
 <translation id="2713444072780614174">Білий</translation>
-<translation id="2720342946869265578">Поблизу</translation>
 <translation id="2721148159707890343">Запит надіслано</translation>
 <translation id="272451190272506600">Щоб оплатити, торкніться датчика</translation>
 <translation id="2728127805433021124">Сертифікат сервера підписано з використанням слабкого алгоритму підпису.</translation>
@@ -720,7 +720,6 @@
 <translation id="3990250421422698716">Поступове зміщення</translation>
 <translation id="3996311196211510766">Сайт <ph name="ORIGIN" /> просить, щоб правило джерела
     застосовувалося до всіх його запитів, однак наразі це неможливо.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 веб-сторінка поруч}one{# веб-сторінка поруч}few{# веб-сторінки поруч}many{# веб-сторінок поруч}other{# веб-сторінки поруч}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Документ PDF містить {COUNT} сторінку}one{Документ PDF містить {COUNT} сторінку}few{Документ PDF містить {COUNT} сторінки}many{Документ PDF містить {COUNT} сторінок}other{Документ PDF містить {COUNT} сторінки}}</translation>
 <translation id="4030383055268325496">&amp;Відмінити додавання</translation>
 <translation id="4032320456957708163">Вашим веб-переглядачем керує домен <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -938,7 +937,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Зберегти…</translation>
 <translation id="4913987521957242411">Пробити отвір угорі ліворуч</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{і ще 1 веб-сторінка}one{і ще # веб-сторінка}few{і ще # веб-сторінки}many{і ще # веб-сторінок}other{і ще # веб-сторінки}}</translation>
 <translation id="4923459931733593730">Оплата</translation>
 <translation id="4926049483395192435">Потрібно вказати.</translation>
 <translation id="4926159001844873046">Повідомлення з <ph name="SITE" /></translation>
@@ -1179,6 +1177,7 @@
 <translation id="5869405914158311789">Немає зв’язку із сайтом</translation>
 <translation id="5869522115854928033">Збережені паролі</translation>
 <translation id="5887400589839399685">Картку збережено</translation>
+<translation id="589006512797629854">Домен <ph name="ENROLLMENT_DOMAIN" /> вимагає, щоб ви створили резервну копію своїх даних і повернули пристрій.</translation>
 <translation id="5895138241574237353">Перезапустити</translation>
 <translation id="5895187275912066135">Дата видачі</translation>
 <translation id="5901630391730855834">Жовтий</translation>
@@ -1329,7 +1328,6 @@
 <translation id="6518133107902771759">Підтвердити</translation>
 <translation id="6521745193039995384">Неактивне</translation>
 <translation id="6529602333819889595">&amp;Повторити видалення</translation>
-<translation id="6534179046333460208">Пропозиції сервісу "Інтернет навколо нас"</translation>
 <translation id="6545864417968258051">Пошук пристроїв Bluetooth</translation>
 <translation id="6547208576736763147">Пробити два отвори ліворуч</translation>
 <translation id="6554795675067793129">Вашим обліковим записом керує <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1852,7 +1850,6 @@
 <translation id="8790007591277257123">&amp;Повторити видалення</translation>
 <translation id="8792621596287649091">Ви можете втратити доступ до облікового запису, який вам надає <ph name="ORG_NAME" />, або хтось може викрасти вашу особисту інформацію. Chromium радить змінити пароль.</translation>
 <translation id="8793655568873652685">Домен <ph name="ENROLLMENT_DOMAIN" /> увімкнув Chrome Enterprise Connectors у веб-переглядачі. Ці конектори мають доступ до деяких ваших даних.</translation>
-<translation id="8800988563907321413">Тут відображатимуться пропозиції</translation>
 <translation id="8805819170075074995">Елемент списку <ph name="LANGUAGE_ID" />: елемент ігнорується, оскільки його також включено в правило SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Обрізати після кожної сторінки</translation>
 <translation id="8820817407110198400">Закладки</translation>

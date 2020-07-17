@@ -20,6 +20,8 @@
 <translation id="2730884209570016437">Chromium nu poate folosi camera foto, deoarece este folosită de o altă aplicație</translation>
 <translation id="2915596697727466327">Chromium folosește Face ID pentru a asigura accesul autorizat la parolele tale.</translation>
 <translation id="3256316712990552818">Copiat în Chromium</translation>
+<translation id="3344973607274501920">Chromium nu a putut verifica parolele. Verifică-ți conexiunea la internet.</translation>
+<translation id="3639997914391704523">Chromium poate să îți verifice parolele atunci când te conectezi folosind Contul Google.</translation>
 <translation id="3805899903892079518">Chromium nu are acces la fotografii și videoclipuri. Activează accesul din Setări iOS &gt; Confidențialitate &gt; Fotografii.</translation>
 <translation id="4555020257205549924">Când această funcție este activată, Chromium se va oferi să traducă paginile scrise în alte limbi utilizând Google Traducere. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Activează scanerul din Chromium</translation>
@@ -27,6 +29,7 @@
 <translation id="4999538639245140991">Deoarece te deconectezi de la un cont gestionat de <ph name="SIGNOUT_MANAGED_DOMAIN" />, datele tale Chromium de pe acest dispozitiv vor fi șterse. Datele tale vor rămâne în Contul Google.</translation>
 <translation id="5521125884468363740">Pentru a vedea toate filele tale deschise în Chromium, conectează-te și activează sincronizarea</translation>
 <translation id="5573014823074921752">Sfat pentru Chromium: pentru mai multe opțiuni de file, atinge lung butonul Afișează filele din bara de instrumente, care se află în partea de sus sau de jos a ecranului.</translation>
+<translation id="5700709190537129682">Chromium nu îți poate verifica parolele</translation>
 <translation id="5777187867430702742">Pagină Chromium</translation>
 <translation id="5862307444128926510">Bun venit la Chromium</translation>
 <translation id="5945387852661427312">Te conectezi cu un cont gestionat de <ph name="DOMAIN" /> și acorzi administratorului acestuia controlul asupra datelor Chromium. Datele vor fi asociate definitiv acestui cont. Dacă te deconectezi de la Chromium, datele vor fi șterse de pe acest dispozitiv, dar vor rămâne stocate în Contul Google.</translation>
@@ -34,6 +37,7 @@
 <translation id="6268381023930128611">Te deconectezi de la Chromium?</translation>
 <translation id="6424492062988593837">Chromium a devenit și mai bun! Este disponibilă o nouă versiune.</translation>
 <translation id="6604711459180487467">Beneficiază de o experiență mai bună în Chromium pe baza locației.</translation>
+<translation id="6820823224820483452">Chromium nu a putut verifica toate parolele. Încearcă din nou mâine.</translation>
 <translation id="7099326575020694068">Chromium nu poate folosi camera foto în modul Vizualizare împărțită</translation>
 <translation id="7208566199746267865">Folosind Chromium, economisești timp, deoarece te conectează la conturi și pe web. Poți să adaugi sau să elimini conturi din Setări.</translation>
 <translation id="7269362888766543920">Unele suplimente blochează Chromium. Încearcă să le dezinstalezi.</translation>
@@ -42,6 +46,7 @@
 <translation id="7400689562045506105">Folosește Chromium pretutindeni</translation>
 <translation id="7674213385180944843">Deschide Setări &gt; Confidențialitate &gt; Cameră foto &gt; Chromium și activează camera foto.</translation>
 <translation id="7746854981345936341">Sfat pentru Chromium: unele butoane se află acum în partea de jos a ecranului, cum ar fi Înapoi, Înainte și Caută.</translation>
+<translation id="7798909783578470546">Chromium nu a putut verifica toate parolele. Încearcă din nou.</translation>
 <translation id="786327964234957808">Comuți contul pentru sincronizare de la <ph name="USER_EMAIL1" /> la <ph name="USER_EMAIL2" />. Datele Chromium existente sunt gestionate de <ph name="DOMAIN" />. Astfel, datele vor fi șterse de pe acest dispozitiv, dar vor rămâne în <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Începe să folosești scanerul din Chromium</translation>
 <translation id="8013573822802650211">Conectează-te pe toate dispozitivele ca să vezi toate filele tale deschise în Chromium</translation>
@@ -51,5 +56,6 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Toate drepturile rezervate.</translation>
 <translation id="8776843108004031667">Acest cont și toate datele nesalvate vor fi eliminate din Chromium.</translation>
 <translation id="9022552996538154597">Conectați-vă la Chromium</translation>
+<translation id="921174536258924340">Chromium nu a putut verifica toate parolele. Încearcă din nou mâine sau <ph name="BEGIN_LINK" />verifică parolele din Contul Google<ph name="END_LINK" />.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 </translationbundle>

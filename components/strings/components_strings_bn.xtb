@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="1008557486741366299">এখনই নয়</translation>
+<translation id="100957008357583611">আপনার লোকেশন ব্যবহার করতে চান?</translation>
 <translation id="1010200102790553230">পৃষ্ঠা পরে দেখার জন্য লোড করে রাখুন</translation>
 <translation id="1015730422737071372">অতিরিক্ত বিবরণ দিন</translation>
 <translation id="1019413721762100891">বন্ধ করা আছে</translation>
@@ -426,7 +427,6 @@
 <translation id="2705137772291741111">এই সাইটের সেভ করা (ক্যাশে করা) কপি পড়া যাবে না।</translation>
 <translation id="2709516037105925701">স্বয়ংপূরণ</translation>
 <translation id="2713444072780614174">সাদা</translation>
-<translation id="2720342946869265578">আশেপাশে</translation>
 <translation id="2721148159707890343">অনুরোধ সফল হয়েছে</translation>
 <translation id="272451190272506600">পেমেন্ট করতে সেন্সর টাচ করুন</translation>
 <translation id="2728127805433021124">একটি দুর্বল স্বাক্ষর অ্যালগোরিদম ব্যবহার করে সার্ভারের সার্টিফিকেটে সাইন করা হয়েছে৷</translation>
@@ -723,7 +723,6 @@
 <translation id="3990250421422698716">জগ অফসেট</translation>
 <translation id="3996311196211510766"><ph name="ORIGIN" /> সাইট থেকে অনুরোধ করা হয়েছে যে এতে করা সমস্ত অনুরোধের ক্ষেত্রে
     একটি 'অরিজিন নীতি' প্রয়োগ করা হোক, কিন্তু বর্তমানে এই নীতি কার্যকর করা যাচ্ছে না।</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{আশেপাশের ১টি ওয়েবপৃষ্ঠা}one{আশেপাশের #টি ওয়েবপৃষ্ঠা}other{আশেপাশের #টি ওয়েবপৃষ্ঠা}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{পিডিএফ ডকুমেন্টে {COUNT}টি পৃষ্ঠা আছে}one{পিডিএফ ডকুমেন্টে {COUNT}টি পৃষ্ঠা আছে}other{পিডিএফ ডকুমেন্টে {COUNT}টি পৃষ্ঠা আছে}}</translation>
 <translation id="4030383055268325496">&amp;যোগ করাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="4032320456957708163"><ph name="ENROLLMENT_DOMAIN" /> আপনার ব্রাউজার ম্যানেজ করে</translation>
@@ -941,7 +940,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">সেভ করুন...</translation>
 <translation id="4913987521957242411">উপরের বাঁদিকে পাঞ্চ</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{এবং আরও ১টি ওয়েব পৃষ্ঠা}one{এবং আরও #টি ওয়েব পৃষ্ঠা}other{এবং আরও #টি ওয়েব পৃষ্ঠা}}</translation>
 <translation id="4923459931733593730">অর্থপ্রদান</translation>
 <translation id="4926049483395192435">নির্দিষ্ট করা উচিত৷</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> এ এটি দেখানো হচ্ছে</translation>
@@ -1182,6 +1180,7 @@
 <translation id="5869405914158311789">এই সাইটটিতে পৌছানো যাচ্ছে না</translation>
 <translation id="5869522115854928033">সংরক্ষিত পাসওয়ার্ড</translation>
 <translation id="5887400589839399685">কার্ড সেভ করা হয়েছে</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> থেকে আপনার নিজের ডেটার ব্যাক-আপ নিয়ে এই ডিভাইসটি ফেরত দিতে বলা হয়েছে।</translation>
 <translation id="5895138241574237353">পুনর্সূচনা</translation>
 <translation id="5895187275912066135">এই তারিখে ইস্যু করা</translation>
 <translation id="5901630391730855834">হলুদ</translation>
@@ -1331,7 +1330,6 @@
 <translation id="6518133107902771759">যাচাই করুন</translation>
 <translation id="6521745193039995384">অ্যাক্টিভ নয়</translation>
 <translation id="6529602333819889595">&amp;মুছে ফেলাকে আবার করুন</translation>
-<translation id="6534179046333460208">বাস্তবিক ওয়েব প্রস্তাবনাগুলি</translation>
 <translation id="6545864417968258051">ব্লুটুথ স্ক্যানিং</translation>
 <translation id="6547208576736763147">বাঁদিকে ডুয়াল পাঞ্চ</translation>
 <translation id="6554795675067793129">আপনার অ্যাকাউন্ট <ph name="ENROLLMENT_DOMAIN" /> ম্যানেজ করে।</translation>
@@ -1853,7 +1851,6 @@
 <translation id="8790007591277257123">&amp;মুছে ফেলাকে আবার করুন</translation>
 <translation id="8792621596287649091">আপনি নিজের <ph name="ORG_NAME" /> অ্যাকাউন্টের অ্যাক্সেস হারাতে পারেন অথবা আপনার পরিচয় চুরি হয়ে যেতে পারে। Chromium এখনই আপনার পাসওয়ার্ড পরিবর্তন করার আর্জি জানাচ্ছে।</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> আপনার ব্রাউজারে Chrome Enterprise কানেক্টর চালু করেছে। এই কানেক্টর আপনার কিছু ডেটা অ্যাক্সেস করতে পারবে।</translation>
-<translation id="8800988563907321413">আপনার জন্য আশেপাশের প্রস্তাবনাগুলি এখানে দেখা যাবে</translation>
 <translation id="8805819170075074995">তালিকার এন্ট্রি "<ph name="LANGUAGE_ID" />": এন্ট্রিটি SpellcheckLanguage নীতিতেও অন্তর্ভুক্ত থাকার জন্য এটি অগ্রাহ্য করা হয়েছে।</translation>
 <translation id="8807160976559152894">প্রতিটি পৃষ্ঠার পর ট্রিম করুন</translation>
 <translation id="8820817407110198400">বুকমার্কস</translation>

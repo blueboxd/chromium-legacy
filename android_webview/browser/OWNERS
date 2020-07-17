@@ -1,7 +1,3 @@
-per-file aw_content_browser_overlay_manifest.h=set noparent
-per-file aw_content_browser_overlay_manifest.h=file://ipc/SECURITY_OWNERS
-per-file aw_content_browser_overlay_manifest.cc=set noparent
-per-file aw_content_browser_overlay_manifest.cc=file://ipc/SECURITY_OWNERS
 per-file aw_content_browser_receiver_bindings.cc=set noparent
 per-file aw_content_browser_receiver_bindings.cc=file://ipc/SECURITY_OWNERS
 

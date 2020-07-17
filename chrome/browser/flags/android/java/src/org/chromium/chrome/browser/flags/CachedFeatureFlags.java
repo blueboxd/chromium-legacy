@@ -64,6 +64,7 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.START_SURFACE_ANDROID, false);
             put(ChromeFeatureList.PAINT_PREVIEW_DEMO, false);
             put(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP, false);
+            put(ChromeFeatureList.PREFETCH_NOTIFICATION_SCHEDULING_INTEGRATION, false);
             put(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, false);
             put(ChromeFeatureList.TAB_GROUPS_ANDROID, false);
             put(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID, false);

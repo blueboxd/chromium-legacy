@@ -44,6 +44,8 @@ struct PageRequestSummary {
   ~PageRequestSummary();
   void UpdateOrAddResource(
       const blink::mojom::ResourceLoadInfo& resource_load_info);
+  void AddPreconnectAttempt(const GURL& preconnect_url);
+  void AddPrefetchAttempt(const GURL& prefetch_url);
 
   ukm::SourceId ukm_source_id;
   GURL main_frame_url;
@@ -56,8 +58,18 @@ struct PageRequestSummary {
   // is kept per navigation, but the summary is updated several times.
   std::map<url::Origin, OriginRequestSummary> origins;
 
+  // Set of origins for which preconnects were initiated.
+  base::flat_set<url::Origin> preconnect_origins;
+
   // Set of seen resource URLs.
   base::flat_set<GURL> subresource_urls;
+
+  // Set of resource URLs for which prefetches were initiated.
+  base::flat_set<GURL> prefetch_urls;
+
+  // The time for which the first resource prefetch was initiated for the
+  // navigation.
+  base::Optional<base::TimeTicks> first_prefetch_initiated;
 
  private:
   void UpdateOrAddToOrigins(
@@ -85,6 +97,13 @@ class LoadingDataCollector {
   virtual void RecordResourceLoadComplete(
       const NavigationID& navigation_id,
       const blink::mojom::ResourceLoadInfo& resource_load_info);
+
+  // Called when a preconnect is initiated for the navigation.
+  virtual void RecordPreconnectInitiated(const NavigationID& navigation_id,
+                                         const GURL& preconnect_url);
+  // Called when a prefetch is initiated for the navigation.
+  virtual void RecordPrefetchInitiated(const NavigationID& navigation_id,
+                                       const GURL& prefetch_url);
 
   // Called when the main frame of a page completes loading. We treat this point
   // as the "completion" of the navigation. The resources requested by the page
@@ -119,6 +138,10 @@ class LoadingDataCollector {
   FRIEND_TEST_ALL_PREFIXES(LoadingDataCollectorTest, ManyNavigations);
   FRIEND_TEST_ALL_PREFIXES(LoadingDataCollectorTest,
                            RecordResourceLoadComplete);
+  FRIEND_TEST_ALL_PREFIXES(LoadingDataCollectorTest,
+                           RecordPreconnectInitiatedNoInflightNavigation);
+  FRIEND_TEST_ALL_PREFIXES(LoadingDataCollectorTest,
+                           RecordPrefetchInitiatedNoInflightNavigation);
 
   static void SetAllowPortInUrlsForTesting(bool state);
 

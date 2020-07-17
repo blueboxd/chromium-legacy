@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/optional.h"
-#include "content/common/ax_content_node_data.h"
+#include "content/common/content_export.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "ui/accessibility/ax_mode.h"
@@ -40,7 +40,7 @@ class ScopedFreezeBlinkAXTreeSource {
 
 class CONTENT_EXPORT BlinkAXTreeSource
     : public ui::
-          AXTreeSource<blink::WebAXObject, AXContentNodeData, ui::AXTreeData> {
+          AXTreeSource<blink::WebAXObject, ui::AXNodeData, ui::AXTreeData> {
  public:
   BlinkAXTreeSource(RenderFrameImpl* render_frame, ui::AXMode mode);
   ~BlinkAXTreeSource() override;
@@ -101,7 +101,7 @@ class CONTENT_EXPORT BlinkAXTreeSource
       std::vector<blink::WebAXObject>* out_children) const override;
   blink::WebAXObject GetParent(blink::WebAXObject node) const override;
   void SerializeNode(blink::WebAXObject node,
-                     AXContentNodeData* out_data) const override;
+                     ui::AXNodeData* out_data) const override;
   bool IsIgnored(blink::WebAXObject node) const override;
   bool IsValid(blink::WebAXObject node) const override;
   bool IsEqual(blink::WebAXObject node1,
@@ -126,43 +126,43 @@ class CONTENT_EXPORT BlinkAXTreeSource
   }
 
   void SerializeBoundingBoxAttributes(blink::WebAXObject src,
-                                      AXContentNodeData* dst) const;
+                                      ui::AXNodeData* dst) const;
   void SerializePDFAttributes(blink::WebAXObject src,
-                              AXContentNodeData* dst) const;
+                              ui::AXNodeData* dst) const;
   void SerializeSparseAttributes(blink::WebAXObject src,
-                                 AXContentNodeData* dst) const;
+                                 ui::AXNodeData* dst) const;
   void SerializeNameAndDescriptionAttributes(blink::WebAXObject src,
-                                             AXContentNodeData* dst) const;
+                                             ui::AXNodeData* dst) const;
   void SerializeValueAttributes(blink::WebAXObject src,
-                                AXContentNodeData* dst) const;
+                                ui::AXNodeData* dst) const;
   void SerializeStateAttributes(blink::WebAXObject src,
-                                AXContentNodeData* dst) const;
+                                ui::AXNodeData* dst) const;
   void SerializeStyleAttributes(blink::WebAXObject src,
-                                AXContentNodeData* dst) const;
+                                ui::AXNodeData* dst) const;
   void SerializeInlineTextBoxAttributes(blink::WebAXObject src,
-                                        AXContentNodeData* dst) const;
+                                        ui::AXNodeData* dst) const;
   void SerializeMarkerAttributes(blink::WebAXObject src,
-                                 AXContentNodeData* dst) const;
+                                 ui::AXNodeData* dst) const;
   void SerializeLiveRegionAttributes(blink::WebAXObject src,
-                                     AXContentNodeData* dst) const;
+                                     ui::AXNodeData* dst) const;
   void SerializeListAttributes(blink::WebAXObject src,
-                               AXContentNodeData* dst) const;
+                               ui::AXNodeData* dst) const;
   void SerializeTableAttributes(blink::WebAXObject src,
-                                AXContentNodeData* dst) const;
+                                ui::AXNodeData* dst) const;
   void SerializeScrollAttributes(blink::WebAXObject src,
-                                 AXContentNodeData* dst) const;
+                                 ui::AXNodeData* dst) const;
   void SerializeChooserPopupAttributes(blink::WebAXObject src,
-                                       AXContentNodeData* dst) const;
+                                       ui::AXNodeData* dst) const;
   void SerializeOtherScreenReaderAttributes(blink::WebAXObject src,
-                                            AXContentNodeData* dst) const;
+                                            ui::AXNodeData* dst) const;
   void SerializeEditableTextAttributes(blink::WebAXObject src,
-                                       AXContentNodeData* dst) const;
+                                       ui::AXNodeData* dst) const;
   void SerializeElementAttributes(blink::WebAXObject src,
                                   blink::WebElement element,
-                                  AXContentNodeData* dst) const;
+                                  ui::AXNodeData* dst) const;
   void SerializeHTMLAttributes(blink::WebAXObject src,
                                blink::WebElement element,
-                               AXContentNodeData* dst) const;
+                               ui::AXNodeData* dst) const;
 
   blink::WebAXObject ComputeRoot() const;
 
@@ -172,13 +172,12 @@ class CONTENT_EXPORT BlinkAXTreeSource
   // Length of War and Peace (http://www.gutenberg.org/files/2600/2600-0.txt).
   static const uint32_t kMaxStaticTextLength = 3227574;
   void TruncateAndAddStringAttribute(
-      AXContentNodeData* dst,
+      ui::AXNodeData* dst,
       ax::mojom::StringAttribute attribute,
       const std::string& value,
       uint32_t max_len = kMaxStringAttributeLength) const;
 
-  void AddImageAnnotations(blink::WebAXObject& src,
-                           AXContentNodeData* dst) const;
+  void AddImageAnnotations(blink::WebAXObject& src, ui::AXNodeData* dst) const;
 
   RenderFrameImpl* render_frame_;
 

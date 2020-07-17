@@ -42,15 +42,15 @@ class COMPONENT_EXPORT(UI_BASE_X) X11WholeScreenMoveLoop
 
   // X11MoveLoop:
   bool RunMoveLoop(bool can_grab_pointer,
-                   ::Cursor old_cursor,
-                   ::Cursor new_cursor) override;
-  void UpdateCursor(::Cursor cursor) override;
+                   scoped_refptr<ui::X11Cursor> old_cursor,
+                   scoped_refptr<ui::X11Cursor> new_cursor) override;
+  void UpdateCursor(scoped_refptr<ui::X11Cursor> cursor) override;
   void EndMoveLoop() override;
 
  private:
   // Grabs the pointer, setting the mouse cursor to |cursor|. Returns true if
   // successful.
-  bool GrabPointer(::Cursor cursor);
+  bool GrabPointer(scoped_refptr<X11Cursor> cursor);
 
   void GrabEscKey();
 
@@ -70,7 +70,7 @@ class COMPONENT_EXPORT(UI_BASE_X) X11WholeScreenMoveLoop
 
   // Cursor in use prior to the move loop starting. Restored when the move loop
   // quits.
-  ::Cursor initial_cursor_;
+  scoped_refptr<X11Cursor> initial_cursor_ = nullptr;
 
   // An invisible InputOnly window. Keyboard grab and sometimes mouse grab
   // are set on this window.

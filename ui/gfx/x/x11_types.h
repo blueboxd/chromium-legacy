@@ -13,7 +13,6 @@
 #include "ui/gfx/x/connection.h"
 
 typedef unsigned long VisualID;
-typedef struct _XcursorImage XcursorImage;
 typedef union _XEvent XEvent;
 typedef struct _XImage XImage;
 typedef struct _XGC* GC;

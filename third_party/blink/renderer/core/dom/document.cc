@@ -670,8 +670,7 @@ Document* Document::Create(Document& document) {
   Document* new_document = MakeGarbageCollected<Document>(
       DocumentInit::Create()
           .WithExecutionContext(document.GetExecutionContext())
-          .WithURL(BlankURL())
-          .WithOwnerDocument(&document));
+          .WithURL(BlankURL()));
   new_document->SetContextFeatures(document.GetContextFeatures());
   return new_document;
 }
@@ -694,6 +693,8 @@ Document::Document(const DocumentInit& initializer,
       context_features_(ContextFeatures::DefaultSwitch()),
       http_refresh_scheduler_(MakeGarbageCollected<HttpRefreshScheduler>(this)),
       well_formed_(false),
+      cookie_url_(dom_window_ ? initializer.GetCookieUrl()
+                              : KURL(g_empty_string)),
       printing_(kNotPrinting),
       is_painting_preview_(false),
       compatibility_mode_(kNoQuirksMode),
@@ -839,9 +840,6 @@ Document::Document(const DocumentInit& initializer,
     web_bundle_claimed_url_ = initializer.GetWebBundleClaimedUrl();
     SetBaseURLOverride(initializer.GetWebBundleClaimedUrl());
   }
-
-  cookie_url_ = initializer.HasSecurityContext() ? initializer.GetCookieUrl()
-                                                 : KURL(g_empty_string);
 
   is_vertical_scroll_enforced_ =
       GetFrame() && !GetFrame()->IsMainFrame() &&
@@ -4897,7 +4895,6 @@ Node* Document::Clone(Document& factory, CloneChildrenFlag flag) const {
 Document* Document::CloneDocumentWithoutChildren() const {
   DocumentInit init = DocumentInit::Create()
                           .WithExecutionContext(execution_context_.Get())
-                          .WithOwnerDocument(const_cast<Document*>(this))
                           .WithURL(Url());
   if (IsA<XMLDocument>(this)) {
     if (IsXHTMLDocument())

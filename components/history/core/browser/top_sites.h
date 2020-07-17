@@ -58,23 +58,23 @@ class TopSites : public RefcountedKeyedService {
   // nothing. Should be called from the UI thread.
   virtual void SyncWithHistory() = 0;
 
-  // Blacklisted URLs
+  // Blocked Urls.
 
-  // Returns true if there is at least one item in the blacklist.
-  virtual bool HasBlacklistedItems() const = 0;
+  // Returns true if there is at least one blocked url.
+  virtual bool HasBlockedUrls() const = 0;
 
-  // Add a URL to the blacklist. Should be called from the UI thread.
-  virtual void AddBlacklistedURL(const GURL& url) = 0;
+  // Add a URL to the set of urls that will not be shown. Should be called from
+  // the UI thread.
+  virtual void AddBlockedUrl(const GURL& url) = 0;
 
-  // Removes a URL from the blacklist. Should be called from the UI thread.
-  virtual void RemoveBlacklistedURL(const GURL& url) = 0;
+  // Removes a previously blocked url. Should be called from the UI thread.
+  virtual void RemoveBlockedUrl(const GURL& url) = 0;
 
-  // Returns true if the URL is blacklisted. Should be called from the UI
-  // thread.
-  virtual bool IsBlacklisted(const GURL& url) = 0;
+  // Returns true if the URL is blocked. Should be called from the UI thread.
+  virtual bool IsBlocked(const GURL& url) = 0;
 
-  // Clear the blacklist. Should be called from the UI thread.
-  virtual void ClearBlacklistedURLs() = 0;
+  // Removes all blocked urls. Should be called from the UI thread.
+  virtual void ClearBlockedUrls() = 0;
 
   // Returns true if the top sites list is full (i.e. we already have the
   // maximum number of top sites).  This function also returns false if TopSites

@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">نشانک‌های ذخیره‌شده در سایر دستگاه‌های شما در اینجا نشان داده می‌شوند.</translation>
 <translation id="1113597929977215864">نمایش نمای ساده‌شده</translation>
 <translation id="1122278879166832009">برای دسترسی سریع به صفحه اصلی از هرجایی، اینجا ضربه بزنید</translation>
+<translation id="1126809382673880764">‏دربرابر وب‌سایت‌ها، بارگیری‌ها، و افزونه‌های خطرناک از شما محافظت نمی‌کند. درصورت وجود، همچنان ویژگی حفاظتی «مرور ایمن» را در سرویس‌های دیگر Google مثل Gmail و «جستجو» دریافت می‌کنید.</translation>
 <translation id="1129510026454351943">جزئیات: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{۱ بارگیری در انتظار است.}one{# بارگیری در انتظار است.}other{# بارگیری در انتظار است.}}</translation>
 <translation id="1145536944570833626">حذف داده‌های موجود.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">روشن</translation>
 <translation id="1810845389119482123">همگام‌سازی اولیه کامل نشد</translation>
 <translation id="1821253160463689938">از کوکی‌ها برای به خاطر سپردن تنظیمات برگزیده‌تان استفاده می‌کند، حتی اگر از آن صفحه‌ها بازدید نکنید</translation>
-<translation id="1826516787628120939">در حال بررسی</translation>
 <translation id="1829244130665387512">یافتن در صفحه</translation>
 <translation id="1853692000353488670">برگه جدید ناشناس</translation>
 <translation id="1856325424225101786">«حالت ساده» بازنشانی شود؟</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">ذخیره گذرواژه‌ها</translation>
 <translation id="1952172573699511566">درصورت امکان، وب‌سایت‌ها نوشتار را به زبان ترجیحی شما نمایش می‌دهند.</translation>
 <translation id="1960290143419248813">‏به‌روزرسانی‌های Chrome دیگر در این نسخه Android پشتیبانی نمی‌شوند</translation>
+<translation id="1963976881984600709">محافظت استاندارد</translation>
 <translation id="1966710179511230534">لطفاً جزئیات ورود به سیستم را به‌روز کنید.</translation>
 <translation id="1974060860693918893">پیشرفته</translation>
+<translation id="1984417487208496350">بدون محافظت (توصیه نمی‌شود)</translation>
 <translation id="1984705450038014246">‏همگام‌سازی داده‌های Chrome</translation>
 <translation id="1986685561493779662">نام ازقبل وجود دارد</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> دکمه <ph name="LINK_NAME" /></translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">‏جستجو با «لنز Google» <ph name="BEGIN_NEW" />جدید<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">باز کردن در برگهٔ جدید</translation>
 <translation id="4198423547019359126">مکانی برای بارگیری دردسترس نیست</translation>
-<translation id="4202553989407425169">‏Chrome می‌تواند بررسی کند که تنظیماتتان شما را دربرابر این موارد محافظت می‌کند یا نه:</translation>
 <translation id="4209895695669353772">‏برای اینکه Google محتوای شخصی‌شده به شما پیشنهاد دهد، همگام‌سازی را روشن کنید</translation>
 <translation id="423219824432660969">‏رمزگذاری داده‌های همگام‌سازی‌شده با گذرواژه Google از <ph name="TIME" /></translation>
 <translation id="4242533952199664413">باز کردن تنظیمات</translation>
@@ -459,6 +460,7 @@
 <translation id="4749960740855309258">باز کردن برگه جدید</translation>
 <translation id="4759238208242260848">بارگیری‌ها</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{۱ بارگیری کامل شد.}one{# بارگیری کامل شد.}other{# بارگیری کامل شد.}}</translation>
+<translation id="4766678251456904326">افزودن حساب به دستگاه</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{۱ بارگیری زمان‌بندی شد.}one{# بارگیری زمان‌بندی شد.}other{# بارگیری زمان‌بندی شد.}}</translation>
 <translation id="478981486571169252">‏وضعیت ورود به سیستم <ph name="SITE_NAME" />، داده‌های محصول مرور، و داده‌های سایت را در Chrome خواهید دید</translation>
 <translation id="4802417911091824046">‏رمزگذاری عبارت ورود شامل روش‌های پرداخت و نشانی‌های موجود در Google Pay نمی‌شود.
@@ -490,6 +492,7 @@
 <translation id="4943872375798546930">نتیجه‌ای پیدا نشد</translation>
 <translation id="4961107849584082341">ترجمه این صفحه به زبان‌های دیگر</translation>
 <translation id="4970824347203572753">در مکان شما دردسترس نیست</translation>
+<translation id="4971735654804503942">‏محافظت سریع‌تر و پیشگیرانه دربرابر وب‌سایت‌ها، بارگیری‌ها، و افزونه‌های خطرناک. لورفتن گذرواژه را به شما هشدار می‌دهد. عملکرد این ویژگی متکی بر ارسال داده‌های مرور به Google‌ است.</translation>
 <translation id="497421865427891073">جلو رفتن</translation>
 <translation id="4988210275050210843">درحال بارگیری فایل (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">صفحات</translation>
@@ -561,7 +564,6 @@
 <translation id="5527082711130173040">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. <ph name="BEGIN_LINK1" />به‌روزرسانی مجوزها<ph name="END_LINK1" /> . دسترسی به مکان نیز <ph name="BEGIN_LINK2" />برای این دستگاه خاموش است<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">بستن برگه‌های ناشناس</translation>
 <translation id="5534640966246046842">سایت کپی شد</translation>
-<translation id="5548606607480005320">بررسی ایمنی</translation>
 <translation id="5561549206367097665">در انتظار شبکه…</translation>
 <translation id="55737423895878184">مکان و اعلان‌ها مجاز هستند</translation>
 <translation id="5578795271662203820">جستجوی <ph name="SEARCH_ENGINE" /> برای این تصویر</translation>
@@ -600,7 +602,6 @@
 <translation id="583281660410589416">ناشناس</translation>
 <translation id="5833984609253377421">اشتراک‌گذاری پیوند</translation>
 <translation id="5836192821815272682">‏درحال بارگیری به‌روزرسانی Chrome…</translation>
-<translation id="584120177693484274">بررسی‌نشده</translation>
 <translation id="5853623416121554550">مکث</translation>
 <translation id="5854790677617711513">قدیمی‌تر از ۳۰ روز</translation>
 <translation id="5858741533101922242">‏Chrome قادر به روشن کردن آداپتور بلوتوث نیست</translation>
@@ -736,10 +737,12 @@
 <translation id="685850645784703949">‏«یافته‌ها» از Google - خاموش</translation>
 <translation id="6864459304226931083">بارگیری تصویر</translation>
 <translation id="6865313869410766144">تکمیل خودکار داده‌های فرم</translation>
+<translation id="6882836635272038266">محافظت استاندارد دربرابر وب‌سایت‌ها، بارگیری‌ها، و افزونه‌هایی که خطرناک بودنشان مشخص شده است.</translation>
 <translation id="6884306546558072722">به‌صورت آفلاین به کاوش ادامه دهید</translation>
 <translation id="688738109438487280">افزودن داده‌های موجود به <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">برای کپی کردن گذرواژه‌تان، قفل صفحه را باز کنید</translation>
 <translation id="6896758677409633944">کپی</translation>
+<translation id="6900532703269623216">محافظت بهبودیافته</translation>
 <translation id="6903907808598579934">روشن کردن همگام‌سازی</translation>
 <translation id="6942665639005891494">هرزمان بخواهید می‌توانید با استفاده از منوی «تنظیمات»، محل پیش‌فرض بارگیری را تغییر دهید</translation>
 <translation id="6945221475159498467">انتخاب</translation>

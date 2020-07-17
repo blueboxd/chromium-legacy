@@ -98,6 +98,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="1995660704900986789">Lülita välja</translation>
 <translation id="2012624427112548395">Ctrl + otsinguklahv + H</translation>
 <translation id="2016340657076538683">Sisestage sõnum</translation>
+<translation id="2018630726571919839">Räägi mõni nali</translation>
 <translation id="2050339315714019657">Vertikaalpaigutus</translation>
 <translation id="2067602449040652523">Klaviatuuri eredus</translation>
 <translation id="209965399369889474">Pole võrguga ühendatud</translation>
@@ -125,6 +126,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="2354174487190027830">Võrgu <ph name="NAME" /> aktiveerimine</translation>
 <translation id="2359808026110333948">Jätka</translation>
 <translation id="2365393535144473978">Mobiilse andmeside lubamisel lubatakse Bluetooth.</translation>
+<translation id="2369165858548251131">„Tere” hiina keeles</translation>
 <translation id="2390318262976603432">Lokaadi seaded</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Värskendus on saadaval</translation>
@@ -142,6 +144,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="256712445991462162">dokitud luup</translation>
 <translation id="2575685495496069081">Mitmele kontole sisselogimine on keelatud</translation>
 <translation id="2582112259361606227">Taaskäivitage värskendamiseks</translation>
+<translation id="2595239820337756193">5 km miilides</translation>
 <translation id="2617342710774726426">SIM-kaart on lukustatud</translation>
 <translation id="2621713457727696555">Kaitstud</translation>
 <translation id="2653659639078652383">Esita</translation>
@@ -195,6 +198,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="3154351730702813399">Seadme administraator võib jälgida teie sirvimistegevust.</translation>
 <translation id="3181441307743005334">Taaskäivitamine võib pisut aega võtta</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Ühendatud ühe seadmega}other{Ühendatud # seadmega}}</translation>
+<translation id="320207200541803018">Määra taimer</translation>
 <translation id="3203405173652969239">Lülitiga juurdepääs on lubatud</translation>
 <translation id="3207953481422525583">Kasutaja seaded</translation>
 <translation id="3217205077783620295">Helitugevus on sees, vahetamisel heli vaigistatakse.</translation>
@@ -207,6 +211,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> saab siiski hiljem sisse logida.</translation>
 <translation id="3321628682574733415">Vanema kood on vale</translation>
 <translation id="332587331255250389">Vahetage akut</translation>
+<translation id="334252345105450327">Jäädvusta ekraanipilt</translation>
 <translation id="3351879221545518001">Kannate praegu oma ekraani üle.</translation>
 <translation id="3364721542077212959">Elektronpliiatsi tööriistad</translation>
 <translation id="3368922792935385530">Ühendatud</translation>
@@ -239,6 +244,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="3631369015426612114">Luba märguanded järgmistest kohtadest</translation>
 <translation id="3638400994746983214">Privaatsuskuvale lülitamine. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733">Kontoga <ph name="USER_EMAIL_ADDRESS" /> hallatav kasutaja</translation>
+<translation id="3702846122927433391">Nigeeria rahvaarv</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Jäädvusta piirkond</translation>
 <translation id="371370241367527062">Eesmine mikrofon</translation>
@@ -520,6 +526,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="7165278925115064263">Alt + Tõstuklahv + K</translation>
 <translation id="7168224885072002358">Ekraan ennistatakse vanale eraldusvõimele <ph name="TIMEOUT_SECONDS" /> pärast</translation>
 <translation id="7188494361780961876">Menüü teisaldati ekraanikuva vasakusse ülanurka.</translation>
+<translation id="7189412385142492784">Kui kaugel on Veenus</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. See Chromebook tuleb värskenduse rakendamiseks taaskäivitada. Selleks võib kuluda kuni 1 minut.</translation>
 <translation id="7256634071279256947">Tagumine mikrofon</translation>
 <translation id="726276584504105859">Jagatud ekraani kasutamiseks lohistage siia</translation>
@@ -646,6 +653,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8649101189709089199">Vali ja kuula</translation>
 <translation id="8652175077544655965">Sulgege seaded</translation>
 <translation id="8653151467777939995">Kuvab märguandeseaded. Märguanded on sisse lülitatud</translation>
+<translation id="8660331759611631213">Ruutjuur 71-st</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, signaalitugevus <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Kuvab võrkude loendi. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

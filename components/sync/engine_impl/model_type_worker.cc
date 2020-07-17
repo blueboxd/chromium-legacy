@@ -292,7 +292,8 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     AdaptUniquePositionForBookmark(update_entity, &data);
     AdaptTitleForBookmark(update_entity, &data.specifics,
                           specifics_were_encrypted);
-    AdaptGuidForBookmark(update_entity, &data.specifics);
+    data.is_bookmark_guid_in_specifics_preprocessed =
+        AdaptGuidForBookmark(update_entity, &data.specifics);
   } else if (model_type == AUTOFILL_WALLET_DATA) {
     AdaptClientTagForWalletData(&data);
   }

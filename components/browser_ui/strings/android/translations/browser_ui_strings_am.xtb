@@ -21,10 +21,12 @@
 <translation id="1620510694547887537">ካሜራ</translation>
 <translation id="1647391597548383849">ካሜራዎን ይድረሱ</translation>
 <translation id="1660204651932907780">ጣቢያዎች ድምጽን እንዲያጫውቱ ፍቀድ (የሚመከር)</translation>
+<translation id="1677097821151855053">ኩኪዎች እና ሌላ የጣቢያ ውሂብ እርስዎን ለማስታወስ ያገለግላሉ፣ ለምሳሌ እርስዎን ለማስገባት ወይም ማስታወቂያዎችን ግላዊ ለማድረግ። ለሁሉም ጣቢያዎች ኩኪዎችን ለማቀናበር፣ <ph name="BEGIN_LINK" />ቅንብሮችን<ph name="END_LINK" /> ይመልከቱ።</translation>
 <translation id="1688867105868176567">የጣቢያ ውሂብ ይጸዳ?</translation>
 <translation id="169515064810179024">ጣቢያዎች የእንቅስቃሴ ዳሳሾችን እንዳይደርሱ ያግዱ</translation>
 <translation id="1717218214683051432">የእንቅስቃሴ ዳሳሾች</translation>
 <translation id="1743802530341753419">ጣቢያዎች ከአንድ መሣሪያ ጋር እንዲገናኙ ከመፍቀድ በፊት ጠይቅ (የሚመከር)</translation>
+<translation id="1818308510395330587"><ph name="APP_NAME" /> ኤአር እንዲጠቀም ለማስቻል፣ በ <ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ካሜራን በተጨማሪ ያብሩ።</translation>
 <translation id="1887786770086287077">የአካባቢ መዳረሻ ለዚህ መሣሪያ ጠፍቷል። በ<ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ያብሩት።</translation>
 <translation id="1919345977826869612">ማስታወቂያዎች</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -39,6 +41,7 @@
 <translation id="2148716181193084225">ዛሬ</translation>
 <translation id="2182457891543959921">ጣቢያዎች የዙሪያዎ የ3ል ካርታ እንዲፈጥሩ ወይም የካሜራ ቦታን እንዲከታተል ከመፍቀድ በፊት ጠይቅ (የሚመከር)</translation>
 <translation id="2212565012507486665">ኩኪዎችን ፍቀድ</translation>
+<translation id="2228071138934252756">የእርስዎን ካሜራ <ph name="APP_NAME" /> እንዲደርስበት ለማድረግ፣ በ <ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ካሜራን በተጨማሪ ያብሩ።</translation>
 <translation id="2289270750774289114">አንድ ጣቢያ በአቅራቢያ ያሉ ብሉቱዝ መሣሪያዎችን ፈልጎ ለማግኘት ሲፈልግ ጠይቅ (የሚመከር)</translation>
 <translation id="2315043854645842844">የደንበኛ ወገን ዕውቅና ማረጋገጫ ምርጫ በስርዓተ-ክወናው አይደገፍም።</translation>
 <translation id="2359808026110333948">ቀጥል</translation>
@@ -70,6 +73,7 @@
 <translation id="3115898365077584848">መረጃ አሳይ</translation>
 <translation id="3123473560110926937">በአንዳንድ ጣቢያዎች ላይ ታግዷል</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> የተከማቸ ውሂብ</translation>
+<translation id="321187648315454507"><ph name="APP_NAME" /> ማሳወቂያዎችን እንዲልክልዎት ለማድረግ፣ በተጨማሪ በ <ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ማሳወቂያዎችን ያብሩ።</translation>
 <translation id="3227137524299004712">ማይክሮፎን</translation>
 <translation id="3277252321222022663">ጣቢያዎች ዳሳሾችን እንዲደርሱ ይፍቀዱላቸው (የሚመከር)</translation>
 <translation id="3295602654194328831">መረጃ ደብቅ</translation>
@@ -91,6 +95,7 @@
 <translation id="4008040567710660924">የተወሰነ ጣቢያ ኩኪዎችን ፍቀድ።</translation>
 <translation id="4046123991198612571">ቀጣይ ትራክ</translation>
 <translation id="4165986682804962316">የጣቢያ ቅንብሮች</translation>
+<translation id="4200726100658658164">የአካባቢ ቅንብሮችን ክፈት</translation>
 <translation id="4226663524361240545">ማሳወቂያዎች መሣሪያውን እንዲነዝር ሊያደርጉት ይችላሉ</translation>
 <translation id="4242533952199664413">ቅንብሮችን ክፈት</translation>
 <translation id="4259722352634471385">ዳሰሳ ታግዷል፦ <ph name="URL" /></translation>
@@ -101,6 +106,7 @@
 <translation id="445467742685312942">ጣቢያዎች የተጠበቀ ይዘትን እንዲያጫውት ይፍቀዱ</translation>
 <translation id="4468959413250150279">በአንድ የተወሰነ ጣቢያ ላይ ድምጸ-ከል አድርግ።</translation>
 <translation id="4479647676395637221">ጣቢያዎች ካሜራዎን እንዲጠቀሙ ከመፍቀድዎ በፊት ይጠይቅ (የሚመከር)</translation>
+<translation id="4534723447064627427"><ph name="APP_NAME" /> የእርስዎን ማይክራፎን እንዲደርስ ለማድረግ፣ በ <ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ማይክራፎንን በተጨማሪ ያብሩ።</translation>
 <translation id="4570913071927164677">ዝርዝሮች</translation>
 <translation id="4645575059429386691">በእርስዎ ወላጅ የሚቀናበር</translation>
 <translation id="4670064810192446073">ምናባዊ እውነታ</translation>
@@ -156,6 +162,7 @@
 <translation id="6295158916970320988">ሁሉም ጣቢያዎች</translation>
 <translation id="6320088164292336938">ንዘር</translation>
 <translation id="6388207532828177975">አጽዳ እና ዳግም አስጀምር</translation>
+<translation id="6423924377271166037">ኩኪዎችን አጽዳ</translation>
 <translation id="6439114592976064011">ጣቢያዎች የእርስዎን የምናባዊ እውነታ መሣሪያ እና ውሂብ እንዳይጠቀሙ ያግዷቸው</translation>
 <translation id="6447842834002726250">ኩኪዎች</translation>
 <translation id="6527303717912515753">አጋራ</translation>
@@ -227,13 +234,16 @@
 <translation id="8394832520002899662">ወደ ጣቢያው ለመመለስ መታ ያድርጉ</translation>
 <translation id="8425213833346101688">ለውጥ</translation>
 <translation id="8441146129660941386">ወደኋላ ፈልግ</translation>
+<translation id="8444433999583714703"><ph name="APP_NAME" /> የእርስዎን መገኛ አካባቢ እንዲደርስበት ለማድረግ፣ በተጨማሪ በ <ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ መገኛ አካባቢን ያብሩ።</translation>
 <translation id="8447861592752582886">የመሣሪያ ፈቃድ ሻር</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{በጥቅም ላይ ያለ 1 ኩኪ}one{# ጥቅም ላይ የዋሉ ኩኪዎች}other{# ጥቅም ላይ የዋሉ ኩኪዎች}}</translation>
 <translation id="8463851957836045671">ጣቢያ ፈጣን ነው</translation>
 <translation id="851751545965956758">ጣቢያዎች ከመሣሪያዎች ጋር እንዳይገናኙ አግድ</translation>
 <translation id="857943718398505171">ተፈቅዷል (የሚመከር)</translation>
 <translation id="8609465669617005112">ወደላይ አውጣ</translation>
 <translation id="8676374126336081632">ግቤቱን አጽዳ</translation>
 <translation id="8702612070107455751">ማንኛውም የመስመር ውጭ ውሂብ ይጸዳል።</translation>
+<translation id="8719283222052720129">ለ <ph name="APP_NAME" /> በ <ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ፈቃድን ያብሩ።</translation>
 <translation id="8725066075913043281">እንደገና ይሞክሩ</translation>
 <translation id="8730621377337864115">ተከናውኗል</translation>
 <translation id="8737217482364735741">ይህ በ<ph name="ORIGIN" /> የተከማቹ ሁሉንም ውሂብ እና ኩኪዎች ያጠፋል።</translation>
@@ -249,6 +259,7 @@
 <translation id="8959122750345127698">ዳሰሳ ሊደረስበት አይችልም፦ <ph name="URL" /></translation>
 <translation id="9019902583201351841">በእርስዎ ወላጆች የሚቀናበር</translation>
 <translation id="9074739597929991885">ብሉቱዝ</translation>
+<translation id="913657688200966289">ለ <ph name="APP_NAME" /> በ <ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ፈቃዶችን ያብሩ።</translation>
 <translation id="945632385593298557">የእርስዎን ማይክሮፎን ይድረሱ</translation>
 <translation id="965817943346481315">ጣቢያው ረባሽ ወይም አሳሳች ማስታወቂያዎችን የሚያሳይ ከሆነ ማገድ (የሚመከር)</translation>
 </translationbundle>

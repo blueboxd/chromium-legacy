@@ -167,6 +167,10 @@ const base::Feature kDesktopCaptureChangeSource{
 const base::Feature kDocumentPolicy{"DocumentPolicy",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable document policy negotiation mechanism.
+const base::Feature kDocumentPolicyNegotiation{
+    "DocumentPolicyNegotiation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables new canvas 2d api features. Enabled either with either
 // enable-experimental-canvas-features or new-canvas-2d-api runtime flags
 const base::Feature kEnableNewCanvas2DAPI{"EnableNewCanvas2DAPI",

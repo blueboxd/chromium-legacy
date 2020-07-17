@@ -113,8 +113,8 @@ AXTreeSnapshotterImpl::~AXTreeSnapshotterImpl() = default;
 void AXTreeSnapshotterImpl::Snapshot(ui::AXMode ax_mode,
                                      size_t max_node_count,
                                      ui::AXTreeUpdate* response) {
-  // Get a snapshot of the accessibility tree as an AXContentNodeData.
-  AXContentTreeUpdate content_tree;
+  // Get a snapshot of the accessibility tree as an AXNodeData.
+  ui::AXTreeUpdate content_tree;
   SnapshotContentTree(ax_mode, max_node_count, &content_tree);
 
   // As a sanity check, node_id_to_clear and event_from should be uninitialized
@@ -130,14 +130,12 @@ void AXTreeSnapshotterImpl::Snapshot(ui::AXMode ax_mode,
   response->nodes.resize(content_tree.nodes.size());
   response->node_id_to_clear = content_tree.node_id_to_clear;
   response->event_from = content_tree.event_from;
-  // AXNodeData is a superclass of AXContentNodeData, so we can convert
-  // just by assigning.
   response->nodes.assign(content_tree.nodes.begin(), content_tree.nodes.end());
 }
 
 void AXTreeSnapshotterImpl::SnapshotContentTree(ui::AXMode ax_mode,
                                                 size_t max_node_count,
-                                                AXContentTreeUpdate* response) {
+                                                ui::AXTreeUpdate* response) {
   WebAXObject root = context_->Root();
   if (!root.UpdateLayoutAndCheckValidity())
     return;
@@ -146,7 +144,7 @@ void AXTreeSnapshotterImpl::SnapshotContentTree(ui::AXMode ax_mode,
   tree_source.SetRoot(root);
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source);
 
-  // The serializer returns an AXContentTreeUpdate, which can store a complete
+  // The serializer returns an ui::AXTreeUpdate, which can store a complete
   // or a partial accessibility tree. AXTreeSerializer is stateful, but the
   // first time you serialize from a brand-new tree you're guaranteed to get a
   // complete tree.
@@ -159,19 +157,19 @@ void AXTreeSnapshotterImpl::SnapshotContentTree(ui::AXMode ax_mode,
   // It's possible for the page to fail to serialize the first time due to
   // aria-owns rearranging the page while it's being scanned. Try a second
   // time.
-  *response = AXContentTreeUpdate();
+  *response = ui::AXTreeUpdate();
   if (serializer.SerializeChanges(root, response))
     return;
 
   // It failed again. Clear the response object because it might have errors.
-  *response = AXContentTreeUpdate();
+  *response = ui::AXTreeUpdate();
   LOG(WARNING) << "Unable to serialize accessibility tree.";
 }
 
 // static
 void RenderAccessibilityImpl::SnapshotAccessibilityTree(
     RenderFrameImpl* render_frame,
-    AXContentTreeUpdate* response,
+    ui::AXTreeUpdate* response,
     ui::AXMode ax_mode) {
   TRACE_EVENT0("accessibility",
                "RenderAccessibilityImpl::SnapshotAccessibilityTree");
@@ -341,10 +339,10 @@ void RenderAccessibilityImpl::HitTest(
   }
 
   // If the result was in the same frame, return the result.
-  AXContentNodeData data;
+  ui::AXNodeData data;
   ScopedFreezeBlinkAXTreeSource freeze(tree_source_.get());
   tree_source_->SerializeNode(ax_object, &data);
-  if (data.child_routing_id == MSG_ROUTING_NONE) {
+  if (!data.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
     // Optionally fire an event, if requested to. This is a good fit for
     // features like touch exploration on Android, Chrome OS, and
     // possibly other platforms - if the user explore a particular point,
@@ -765,7 +763,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   pending_events_.clear();
 
   // The serialized list of updates and events to send to the browser.
-  std::vector<AXContentTreeUpdate> updates;
+  std::vector<ui::AXTreeUpdate> updates;
   std::vector<ui::AXEvent> events;
 
   // Keep track of nodes in the tree that need to be updated.
@@ -909,7 +907,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     if (already_serialized_ids.find(obj.AxID()) != already_serialized_ids.end())
       continue;
 
-    AXContentTreeUpdate update;
+    ui::AXTreeUpdate update;
     update.event_from = dirty_objects[i].event_from;
     update.event_intents = dirty_objects[i].event_intents;
     // If there's a plugin, force the tree data to be generated in every
@@ -1094,7 +1092,7 @@ void RenderAccessibilityImpl::OnDestruct() {
 }
 
 void RenderAccessibilityImpl::AddPluginTreeToUpdate(
-    AXContentTreeUpdate* update,
+    ui::AXTreeUpdate* update,
     bool invalidate_plugin_subtree) {
   const WebDocument& document = GetMainDocument();
   if (invalidate_plugin_subtree)
@@ -1111,9 +1109,6 @@ void RenderAccessibilityImpl::AddPluginTreeToUpdate(
       ui::AXTreeUpdate plugin_update;
       plugin_serializer_->SerializeChanges(root, &plugin_update);
 
-      // We have to copy the updated nodes using a loop because we're
-      // converting from a generic ui::AXNodeData to a vector of its
-      // content-specific subclass AXContentNodeData.
       size_t old_count = update->nodes.size();
       size_t new_count = plugin_update.nodes.size();
       update->nodes.resize(old_count + new_count);
@@ -1229,7 +1224,7 @@ void RenderAccessibilityImpl::Scroll(const ui::AXActionTarget* target,
 }
 
 void RenderAccessibilityImpl::AddImageAnnotationDebuggingAttributes(
-    const std::vector<AXContentTreeUpdate>& updates) {
+    const std::vector<ui::AXTreeUpdate>& updates) {
   DCHECK(image_annotation_debugging_);
 
   for (auto& update : updates) {

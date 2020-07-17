@@ -1089,7 +1089,7 @@
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2340239562261172947">无法安全地下载“<ph name="FILE_NAME" />”</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> 希望与以下所选设备配对：</translation>
-<translation id="2341476639346994688">打印机已停止</translation>
+<translation id="2341476639346994688">打印机已停止运行</translation>
 <translation id="2342740338116612727">书签已添加</translation>
 <translation id="2343747224442182863">聚焦此标签页</translation>
 <translation id="2344686470986284227">正在启动虚拟机控制器</translation>
@@ -2621,7 +2621,7 @@
 <translation id="4242145785130247982">有多个客户端证书不受支持</translation>
 <translation id="4242533952199664413">打开“设置”</translation>
 <translation id="4242577469625748426">无法在设备上安装策略设置：<ph name="VALIDATION_ERROR" />。</translation>
-<translation id="4243504193894350135">打印机已暂停</translation>
+<translation id="4243504193894350135">打印机已暂停运行</translation>
 <translation id="4244238649050961491">查找更多触控笔应用</translation>
 <translation id="424726838611654458">始终用Adobe Reader打开</translation>
 <translation id="4247901771970415646">无法同步到“<ph name="USERNAME" />”</translation>
@@ -3406,7 +3406,7 @@
 <translation id="5283677936944177147">糟糕！系统未能确定设备型号或序列号。</translation>
 <translation id="5284445933715251131">继续下载</translation>
 <translation id="5285635972691565180">显示屏 <ph name="DISPLAY_ID" /></translation>
-<translation id="5286094561505658635">输出区域已满</translation>
+<translation id="5286094561505658635">出纸盘已满</translation>
 <translation id="5286194356314741248">正在扫描</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5287425679749926365">您的帐号</translation>
@@ -3621,7 +3621,7 @@
 <translation id="5553089923092577885">证书政策映射</translation>
 <translation id="5554489410841842733">如果该扩展程序可以在当前网页上运行，则会显示此图标。</translation>
 <translation id="5554720593229208774">电子邮件证书授权中心</translation>
-<translation id="5554931805291741487">输出区域快满了</translation>
+<translation id="5554931805291741487">出纸盘快满了</translation>
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5557991081552967863">休眠期间保持 Wi-Fi 连接</translation>
 <translation id="5558125320634132440">此网站已被屏蔽，因为它可能含有少儿不宜的内容</translation>
@@ -6567,6 +6567,7 @@
 <translation id="942532530371314860"><ph name="APP_NAME" /> 正在共享 Chrome 标签页和音频。</translation>
 <translation id="945522503751344254">发送反馈</translation>
 <translation id="947329552760389097">检查元素(&amp;I)</translation>
+<translation id="951991426597076286">拒绝</translation>
 <translation id="952992212772159698">未激活</translation>
 <translation id="956500788634395331">系统会保护您免受可能有害的扩展程序的威胁</translation>
 <translation id="957960681186851048">此网站试图自动下载多个文件</translation>

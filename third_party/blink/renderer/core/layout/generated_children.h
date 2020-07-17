@@ -24,7 +24,7 @@ static bool CanHaveGeneratedChildren(const LayoutObject& layout_object) {
   // Input elements can't have generated children, but button elements can.
   // We'll write the code assuming any other button types that might emerge in
   // the future can also have children.
-  if (layout_object.IsLayoutButton())
+  if (layout_object.IsButtonOrNGButton())
     return !IsA<HTMLInputElement>(*layout_object.GetNode());
 
   return layout_object.CanHaveChildren();

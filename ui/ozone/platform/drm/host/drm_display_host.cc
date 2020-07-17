@@ -35,18 +35,6 @@ void DrmDisplayHost::UpdateDisplaySnapshot(
   snapshot_ = std::move(params);
 }
 
-void DrmDisplayHost::Configure(
-    const display::DisplayConfigurationParams& display_config_params,
-    display::ConfigureCallback callback) {
-  if (is_dummy_) {
-    std::move(callback).Run(true);
-    return;
-  }
-
-  sender_->GpuConfigureNativeDisplay(display_config_params,
-                                     std::move(callback));
-}
-
 void DrmDisplayHost::GetHDCPState(display::GetHDCPStateCallback callback) {
   get_hdcp_callback_ = std::move(callback);
   if (!sender_->GpuGetHDCPState(snapshot_->display_id()))

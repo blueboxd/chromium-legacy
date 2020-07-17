@@ -205,14 +205,20 @@ cr.define('cr.ui', () => {
      * @param {cr.ui.Menu} subMenu The child (sub) menu to be positioned.
      */
     positionSubMenu_(item, subMenu) {
+      const style = subMenu.style;
+
+      if (util.isFilesNg()) {
+        style.marginTop = '0';  // crbug.com/1066727
+      }
+
       // The sub-menu needs to sit aligned to the top and side of
       // the menu-item passed in. It also needs to fit inside the viewport
       const itemRect = item.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
       const childRect = subMenu.getBoundingClientRect();
-      const style = subMenu.style;
       const maxShift = itemRect.width / 2;
+
       // See if it fits on the right, if not position on the left
       // if there's more room on the left.
       style.left = style.right = style.top = style.bottom = 'auto';

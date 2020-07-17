@@ -117,7 +117,8 @@ DocumentLoader* DocumentInit::TreeRootDocumentLoader() const {
   return nullptr;
 }
 
-DocumentInit& DocumentInit::WithDocumentLoader(DocumentLoader* loader) {
+DocumentInit& DocumentInit::WithDocumentLoader(DocumentLoader* loader,
+                                               Document* owner_document) {
   DCHECK(!document_loader_);
   DCHECK(!execution_context_);
   DCHECK(!imports_controller_);
@@ -127,6 +128,7 @@ DocumentInit& DocumentInit::WithDocumentLoader(DocumentLoader* loader) {
   DCHECK(loader);
   document_loader_ = loader;
   parent_document_ = ParentDocument(document_loader_);
+  owner_document_ = owner_document;
   return *this;
 }
 
@@ -220,11 +222,6 @@ DocumentInit& DocumentInit::WithTypeFrom(const String& mime_type) {
   mime_type_ = mime_type;
   type_ = ComputeDocumentType(GetFrame(), Url(), mime_type_,
                               &is_for_external_handler_);
-  if (type_ == Type::kPlugin) {
-    plugin_background_color_ =
-        GetPluginData(GetFrame(), Url())
-            ->PluginBackgroundColorForMimeType(mime_type_);
-  }
   return *this;
 }
 
@@ -247,12 +244,6 @@ DocumentInit& DocumentInit::WithURL(const KURL& url) {
 
 const KURL& DocumentInit::GetCookieUrl() const {
   return owner_document_ ? owner_document_->CookieURL() : url_;
-}
-
-DocumentInit& DocumentInit::WithOwnerDocument(Document* owner_document) {
-  DCHECK(!owner_document_);
-  owner_document_ = owner_document;
-  return *this;
 }
 
 DocumentInit& DocumentInit::WithSrcdocDocument(bool is_srcdoc_document) {

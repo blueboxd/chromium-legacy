@@ -2,15 +2,19 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ky">
 <translation id="1282031177488366470">Chrome'дун функцияларын жана өндүрүмдүүлүгүн өркүндөтүүгө жардам бериңиз</translation>
+<translation id="1479202195792305274">Google аккаунтуңуз менен киргенде Chrome сырсөздөрүңүздү текшерет.</translation>
+<translation id="1647024380514430932">Chrome бардык сырсөздөрдү текшерген жок. Кайталоо.</translation>
 <translation id="1682483655351012182">Chrome дайындарын шайкештирүү</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1917964099031477364">Бул аккаунт жана башка сакталбаган маалымат Chrome'дон жана ушул түзмөктөгү башка Google колдонмолорунан өчүрүлөт.</translation>
+<translation id="2009224836393115614">Chrome сырсөздөрүңүздү текшерген жок. Интернет байланышын текшерип көрүңүз.</translation>
 <translation id="2147651015520127414">Chrome <ph name="ISSUER" /> бул вебсайт тастыктамасын басып чыгарганын ырастады.</translation>
 <translation id="2199719347983604670">Chrome Шайкештирүүнүн дайындары</translation>
 <translation id="2347208864470321755">Ушул мүмкүнчүлүк иштетилгенде, Chrome Google Котормо кызматы аркылуу башка тилдерде жазылган беттерди которууну сунуштайт. <ph name="BEGIN_LINK" />Көбүрөөк билүү<ph name="END_LINK" /></translation>
 <translation id="2574249610672786438">Chrome колдонулган түзмөктөрдүн баарындагы өтмөктөрүңүздү көрүү үчүн бардык түзмөктөрдөн аккаунтуңузга кириңиз</translation>
 <translation id="2576431527583832481">Chrome жаңы эле жакшыртылды! Эми жаңы нускасы бар.</translation>
 <translation id="257708665678654955">Кийинки жолу Google Chrome ушул сайттагы <ph name="LANGUAGE_NAME" /> тилиндеги барактарды которууну сунуштасынбы?</translation>
+<translation id="2732745070297234559">Chrome бардык сырсөздөрдү текшерген жок. Эртең кайталап көрүңүз.</translation>
 <translation id="2919738076569633423">Chrome'ду колдонуу менен, <ph name="BEGIN_LINK_TOS" />Тейлөө шарттарына<ph name="END_LINK_TOS" /> макулдугуңузду билдиресиз.</translation>
 <translation id="3030414234702425231">Сиз <ph name="SIGNOUT_MANAGED_DOMAIN" /> домениндеги аккаунтуңуздан чыгып жатканыңызга байланыштуу, Chrome'догу дайын-даректериңиз бул түзмөктөн өчүрүлөт. Бирок дайын-даректериңиз Google аккаунтуңузда сакталып калат.</translation>
 <translation id="3148688391461398285">Chrome'ду жайгашкан жериңизге ылайык пайдаланыңыз.</translation>
@@ -28,6 +32,7 @@
 <translation id="424864128008805179">Chrome каттоо эсебинен чыгасызбы?</translation>
 <translation id="4249068189593983585">Chrome'дон кеңеш. Өтмөктөгү башка параметрлерди көрүү үчүн Өтмөктөрдү көрсөтүү баскычын коё бербей басып туруңуз. Баскыч экраныңыздын төмөн же жогору жагындагы куралдар тилкесинде жайгашкан.</translation>
 <translation id="4523886039239821078">Айрым көмөкчү жөндөөлөрдөн улам Chrome бузулуп калды. Аларды орнотуудан чыгарыңыз.</translation>
+<translation id="4698415050768537821">Chrome бардык сырсөздөрдү текшерген жок. Эртең кайра аракет кылыңыз же <ph name="BEGIN_LINK" />Google аккаунтуңуздагы сырсөздөрдү текшериңиз<ph name="END_LINK" /></translation>
 <translation id="5389212809648216794">Google Chrome камераңызды иштете албайт, себеби аны башка колдонмо пайдаланып жатат</translation>
 <translation id="5639704535586432836">Жөндөөлөр &gt; Купуялык &gt; Камера &gt; Google Chrome'ду ачып туруп, камераны иштетиңиз.</translation>
 <translation id="5642200033778930880">Экранды бөлүп көрсөтүү режиминде Google Chrome камераны иштете албайт</translation>
@@ -41,6 +46,7 @@
 <translation id="7165736900384873061">Google Chrome'дун QR сканнерин колдонуу</translation>
 <translation id="7172660552945675509">Кеңеш: <ph name="BEGIN_LINK" />Chrome'ду док бекетиңизге көчүрүңүз<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Сырсөздөрүңүзгө уруксатсыз кирүүгө жол бербөө үчүн, Chrome кызматы Face ID функциясын колдонот.</translation>
+<translation id="7261678641327190792">Chrome сырсөздөрүңүздү текшере албай жатат</translation>
 <translation id="7265369419224458312">Компьютериңизде ачылган өтмөктөрүңүзгө ушул жерден кириңиз. Жөн гана компьютериңизден Chrome'ду ачып, менюга өтүп, "Chrome'го кирүү…" дегенди тандаңыз.</translation>
 <translation id="7272930098487145294">Сүрөттөрдү сактоо үчүн, Жөндөөлөрдү таптап, Chrome'го сүрөттөрүңүздү кошууга уруксат бериңиз.</translation>
 <translation id="7400722733683201933">Google Chrome жөнүндө</translation>

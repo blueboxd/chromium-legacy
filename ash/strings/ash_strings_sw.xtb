@@ -98,6 +98,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="1995660704900986789">Zima</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Andika ujumbe</translation>
+<translation id="2018630726571919839">Nipe kichekesho</translation>
 <translation id="2050339315714019657">Wima</translation>
 <translation id="2067602449040652523">Ung'avu wa kibodi</translation>
 <translation id="209965399369889474">Haijaunganishwa kwenye mtandao</translation>
@@ -125,6 +126,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="2354174487190027830">Inaanza kutumia <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Endelea</translation>
 <translation id="2365393535144473978">Kuwasha data ya mtandao wa simu kutawasha Bluetooth.</translation>
+<translation id="2369165858548251131">"Hujambo" kwa Kichina</translation>
 <translation id="2390318262976603432">Mipangilio ya Lugha</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Sasisho linapatikana</translation>
@@ -142,6 +144,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="256712445991462162">kikuzaji kilichoambatishwa</translation>
 <translation id="2575685495496069081">Umezima uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja</translation>
 <translation id="2582112259361606227">Zima kisha uwashe ili usasishe</translation>
+<translation id="2595239820337756193">Maili elfu tano</translation>
 <translation id="2617342710774726426">SIM kadi imefungwa</translation>
 <translation id="2621713457727696555">Umelindwa</translation>
 <translation id="2653659639078652383">Wasilisha</translation>
@@ -195,6 +198,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="3154351730702813399">Msimamizi wa kifaa anaweza kufuatilia shughuli zako za kuvinjari.</translation>
 <translation id="3181441307743005334">Shughuli ya kuzima kisha uwashe inaweza kuchukua muda</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Imeunganishwa kwenye kifaa kimoja}other{Imeunganishwa kwenye vifaa #}}</translation>
+<translation id="320207200541803018">Weka kipima muda</translation>
 <translation id="3203405173652969239">Kipengele cha Kufikia Kupitia Swichi kimewashwa</translation>
 <translation id="3207953481422525583">Mipangilio ya Mtumiaji</translation>
 <translation id="3217205077783620295">Umewasha sauti, Ukigeuza swichi utazima sauti.</translation>
@@ -207,6 +211,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> bado anaweza kuingia katika akaunti baadaye.</translation>
 <translation id="3321628682574733415">Msimbo wa mzazi si sahihi</translation>
 <translation id="332587331255250389">Tafadhali badilisha betri</translation>
+<translation id="334252345105450327">Piga picha ya skrini</translation>
 <translation id="3351879221545518001">Kwa sasa unatuma skrini.</translation>
 <translation id="3364721542077212959">Zana za stylus</translation>
 <translation id="3368922792935385530">Umeunganishwa</translation>
@@ -239,6 +244,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="3631369015426612114">Ruhusu arifa kutoka vyanzo hivi</translation>
 <translation id="3638400994746983214">Weka skrini ya faragha. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Mtumiaji anayesimamiwa</translation>
+<translation id="3702846122927433391">Idadi ya watu nchini Naijeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Piga eneo picha</translation>
 <translation id="371370241367527062">Maikrofoni ya mbele</translation>
@@ -519,6 +525,7 @@ Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Inarejesha katika ubora wa zamani baada ya <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Menyu imehamishiwa kwenye kona ya juu kushoto mwa skrini.</translation>
+<translation id="7189412385142492784">Sayari ya Zuhura iko umbali gani</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Ili utumie sasisho, unahitaji kuzima kisha uwashe Chromebook hii. Hatua hii inaweza kuchukua hadi dakika moja.</translation>
 <translation id="7256634071279256947">Maikrofoni ya nyuma</translation>
 <translation id="726276584504105859">Buruta hapa ili utumie skrini iliyogawanywa</translation>
@@ -646,6 +653,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8649101189709089199">Chagua ili Izungumze</translation>
 <translation id="8652175077544655965">Funga mipangilio</translation>
 <translation id="8653151467777939995">Onyesha mipangilio ya arifa. Umewasha arifa</translation>
+<translation id="8660331759611631213">Kipeo cha pili cha 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Onyesha orodha ya mitandao. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

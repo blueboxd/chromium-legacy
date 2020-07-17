@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
 <translation id="1005230401424685968">ዓዓዓዓ</translation>
+<translation id="1013952917065545813">በቅርብ ጊዜ የዘጓቸውን ትሮች መልሰው ለመክፈት ወደዚህ ተመልሰው መምጣት ይችላሉ</translation>
 <translation id="1016495303386450659">ንጥል ተዘምኗል</translation>
 <translation id="1044891598689252897">ጣቢያዎች እንደተለመደው ሆነው ይሠራሉ</translation>
 <translation id="1047726139967079566">ለእዚህ ገጽ ዕልባት አዘጋጅ…</translation>
@@ -31,6 +32,7 @@
 <translation id="1272079795634619415">አቁም</translation>
 <translation id="1283524564873030414">ባለፉት 24 ሰዓቶች</translation>
 <translation id="1285320974508926690">ይህን ጣቢያ በጭራሽ አትተርጉም</translation>
+<translation id="1321993286294231467">ምስልን በማስቀመጥ ላይ ስሕተት።</translation>
 <translation id="1323735185997015385">ሰርዝ</translation>
 <translation id="132683371494960526">የቀድሞ አቃፊውን ለመለወጥ ሁለቴ መታ ያድርጉ።</translation>
 <translation id="1340643665687018190">ምናሌን ዝጋ</translation>
@@ -469,6 +471,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6561262006871132942">አጉላ</translation>
 <translation id="6585618849026997638">ዕልባት በማከል ለእርስዎ አስፈላጊ ወደ ሆነ ገጽ መመለስ ይችላሉ</translation>
 <translation id="6610002944194042868">የትርጉም አማራጮች</translation>
+<translation id="6620279676667515405">ይቅር</translation>
 <translation id="6624219055418309072">ማንነት በማያሳውቅ ሁነታ ላይ አግድ</translation>
 <translation id="6628106477656132239">ልክ ያልሆነ የአገልግሎት ማብቂያ ቀን</translation>
 <translation id="6638511529934826365">ጽሑፍን አጉላ…</translation>

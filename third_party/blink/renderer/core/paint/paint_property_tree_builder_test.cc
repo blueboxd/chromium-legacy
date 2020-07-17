@@ -5613,12 +5613,6 @@ TEST_P(PaintPropertyTreeBuilderTest, IframeDoesNotRequireCompositedScrolling) {
       DocScrollTranslation(&ChildDocument())->HasDirectCompositingReasons());
 }
 
-TEST_P(PaintPropertyTreeBuilderTest,
-       NoTransformPropertyForWillChangeWithoutLayer) {
-  SetBodyInnerHTML("<svg id='target' style='will-change: left'></svg>");
-  EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Transform());
-}
-
 TEST_P(PaintPropertyTreeBuilderTest, OmitOverflowClip) {
   SetBodyInnerHTML(R"HTML(
     <style>

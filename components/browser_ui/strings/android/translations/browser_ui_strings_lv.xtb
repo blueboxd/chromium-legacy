@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1647391597548383849">Piekļuve kamerai</translation>
 <translation id="1660204651932907780">Atļaut vietnēm atskaņot skaņu (ieteicams)</translation>
+<translation id="1677097821151855053">Sīkfaili un citi vietnes dati tiek izmantoti, lai saglabātu jūsu datus un tos izmantotu, piemēram, kad pierakstāties, vai reklāmu personalizēšanai. Lai pārvaldītu visu vietņu sīkfailus, pārejiet uz sadaļu <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Vai notīrīt vietnes datus?</translation>
 <translation id="169515064810179024">Bloķēt vietņu piekļuvi kustību sensoriem</translation>
 <translation id="1717218214683051432">Kustību sensori</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Atļaut sīkfailus konkrētai vietnei.</translation>
 <translation id="4046123991198612571">Nākamais ieraksts</translation>
 <translation id="4165986682804962316">Vietnes iestatījumi</translation>
+<translation id="4200726100658658164">Atvērt atrašanās vietu iestatījumus</translation>
 <translation id="4226663524361240545">Saņemot paziņojumu, ierīce var vibrēt.</translation>
 <translation id="4242533952199664413">Atvērt iestatījumus</translation>
 <translation id="4259722352634471385">Navigācija ir bloķēta: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Visas vietnes</translation>
 <translation id="6320088164292336938">Vibrācija</translation>
 <translation id="6388207532828177975">Notīrīt un atiestatīt</translation>
+<translation id="6423924377271166037">Notīrīt sīkfailus</translation>
 <translation id="6439114592976064011">Neļaut vietnēm izmantot jūsu virtuālās realitātes ierīci un datus</translation>
 <translation id="6447842834002726250">Sīkfaili</translation>
 <translation id="6527303717912515753">Kopīgot</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Pārtīt atpakaļ</translation>
 <translation id="8444433999583714703">Lai atļautu lietotnei <ph name="APP_NAME" /> piekļūt jūsu atrašanās vietas datiem, ieslēdziet atrašanās vietas noteikšanu arī <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Atsaukt ierīces atļauju</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Tiek izmantots viens sīkfails}zero{Tiek izmantoti # sīkfaili}one{Tiek izmantots # sīkfails}other{Tiek izmantoti # sīkfaili}}</translation>
 <translation id="8463851957836045671">Ātra vietnes darbība</translation>
 <translation id="851751545965956758">Neļaut vietnēm izveidot savienojumu ar ierīci</translation>
 <translation id="857943718398505171">Atļauta (ieteicams)</translation>

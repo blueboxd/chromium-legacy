@@ -1015,6 +1015,57 @@ const FeatureEntry::FeatureVariation kOmniboxRichAutocompletionVariations[] = {
         nullptr,
     }};
 
+const FeatureEntry::FeatureVariation
+    kOmniboxRichAutocompletionMinCharVariations[] = {
+        {
+            "Title 0 / Non Prefix 0",
+            (FeatureEntry::FeatureParam[]){
+                {"RichAutocompletionAutocompleteTitlesMinChar", "0"},
+                {"RichAutocompletionAutocompleteNonPrefixMinChar", "0"}},
+            2,
+            nullptr,
+        },
+        {
+            "Title 0 / Non Prefix 3",
+            (FeatureEntry::FeatureParam[]){
+                {"RichAutocompletionAutocompleteTitlesMinChar", "0"},
+                {"RichAutocompletionAutocompleteNonPrefixMinChar", "3"}},
+            2,
+            nullptr,
+        },
+        {
+            "Title 0 / Non Prefix 5",
+            (FeatureEntry::FeatureParam[]){
+                {"RichAutocompletionAutocompleteTitlesMinChar", "0"},
+                {"RichAutocompletionAutocompleteNonPrefixMinChar", "5"}},
+            2,
+            nullptr,
+        },
+        {
+            "Title 3 / Non Prefix 3",
+            (FeatureEntry::FeatureParam[]){
+                {"RichAutocompletionAutocompleteTitlesMinChar", "3"},
+                {"RichAutocompletionAutocompleteNonPrefixMinChar", "3"}},
+            2,
+            nullptr,
+        },
+        {
+            "Title 3 / Non Prefix 5",
+            (FeatureEntry::FeatureParam[]){
+                {"RichAutocompletionAutocompleteTitlesMinChar", "3"},
+                {"RichAutocompletionAutocompleteNonPrefixMinChar", "5"}},
+            2,
+            nullptr,
+        },
+        {
+            "Title 5 / Non Prefix 5",
+            (FeatureEntry::FeatureParam[]){
+                {"RichAutocompletionAutocompleteTitlesMinChar", "5"},
+                {"RichAutocompletionAutocompleteNonPrefixMinChar", "5"}},
+            2,
+            nullptr,
+        }};
+
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamSERP[] = {
@@ -3537,6 +3588,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kRichAutocompletion,
                                     kOmniboxRichAutocompletionVariations,
                                     "OmniboxBundledExperimentV1")},
+    {"omnibox-rich-autocompletion-min-char",
+     flag_descriptions::kOmniboxRichAutocompletionMinCharName,
+     flag_descriptions::kOmniboxRichAutocompletionMinCharDescription,
+     kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kRichAutocompletion,
+                                    kOmniboxRichAutocompletionMinCharVariations,
+                                    "OmniboxBundledExperimentV1")},
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
     {"enable-speculative-service-worker-start-on-query-input",
@@ -5888,8 +5946,18 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEditPasswordsInDesktopSettingsName,
      flag_descriptions::kEditPasswordsInDesktopSettingsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(
-         password_manager::features::kEditPasswordsInDesktopSettings)}
+         password_manager::features::kEditPasswordsInDesktopSettings)},
 #endif  // !defined(OS_ANDROID)
+
+    {"mixed-forms-disable-autofill",
+     flag_descriptions::kMixedFormsDisableAutofillName,
+     flag_descriptions::kMixedFormsDisableAutofillDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillPreventMixedFormsFilling)},
+
+    {"mixed-forms-interstitial", flag_descriptions::kMixedFormsInterstitialName,
+     flag_descriptions::kMixedFormsInterstitialDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         security_interstitials::kInsecureFormSubmissionInterstitial)}
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

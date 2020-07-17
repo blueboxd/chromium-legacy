@@ -25,9 +25,7 @@ const int kBufferSize = 100 * 1024 * 1024;  // 100 MB
 TestHttpServer::TestHttpServer()
     : thread_("ServerThread"),
       all_closed_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                        base::WaitableEvent::InitialState::SIGNALED),
-      request_action_(kAccept),
-      message_action_(kEchoMessage) {}
+                        base::WaitableEvent::InitialState::SIGNALED) {}
 
 TestHttpServer::~TestHttpServer() {
 }
@@ -74,9 +72,9 @@ void TestHttpServer::SetMessageAction(WebSocketMessageAction action) {
   message_action_ = action;
 }
 
-void TestHttpServer::SetMessageCallback(const base::Closure& callback) {
+void TestHttpServer::SetMessageCallback(base::OnceClosure callback) {
   base::AutoLock lock(action_lock_);
-  message_callback_ = callback;
+  message_callback_ = std::move(callback);
 }
 
 GURL TestHttpServer::web_socket_url() const {
@@ -116,14 +114,12 @@ void TestHttpServer::OnWebSocketRequest(
 
 void TestHttpServer::OnWebSocketMessage(int connection_id, std::string data) {
   WebSocketMessageAction action;
-  base::Closure callback;
   {
     base::AutoLock lock(action_lock_);
     action = message_action_;
-    callback = std::move(message_callback_);
   }
-  if (!callback.is_null())
-    callback.Run();
+  if (!message_callback_.is_null())
+    std::move(message_callback_).Run();
   switch (action) {
     case kEchoMessage:
       server_->SendOverWebSocket(connection_id, data,

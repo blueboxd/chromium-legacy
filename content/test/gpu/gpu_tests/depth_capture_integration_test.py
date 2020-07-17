@@ -5,6 +5,7 @@
 import os
 import sys
 
+from gpu_tests import common_browser_args as cba
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
 
@@ -73,12 +74,12 @@ class DepthCaptureIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def SetUpProcess(cls):
     super(DepthCaptureIntegrationTest, cls).SetUpProcess()
     cls.CustomizeBrowserArgs([
-        '--disable-domain-blocking-for-3d-apis',
+        cba.DISABLE_DOMAIN_BLOCKING_FOR_3D_APIS,
         '--enable-es3-apis',
         '--use-fake-ui-for-media-stream',
         '--use-fake-device-for-media-stream=device-count=2',
         # Required for about:gpucrash handling from Telemetry.
-        '--enable-gpu-benchmarking'
+        cba.ENABLE_GPU_BENCHMARKING,
     ])
     cls.StartBrowser()
     cls.SetStaticServerDirs([data_path])

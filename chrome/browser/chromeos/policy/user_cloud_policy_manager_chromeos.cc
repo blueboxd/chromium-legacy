@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
 #include "chrome/browser/enterprise/reporting/report_generator.h"
 #include "chrome/browser/enterprise/reporting/report_scheduler.h"
+#include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -777,8 +778,13 @@ void UserCloudPolicyManagerChromeOS::StartReportSchedulerIfReady(
     return;
   }
 
+  // TODO(crbug.com/1102047): Split up Chrome OS reporting code into its own
+  // delegates, then use the Chrome OS delegate factory here.
+  enterprise_reporting::ReportingDelegateFactoryDesktop delegate_factory;
   report_scheduler_ = std::make_unique<enterprise_reporting::ReportScheduler>(
-      client(), std::make_unique<enterprise_reporting::ReportGenerator>(),
+      client(),
+      std::make_unique<enterprise_reporting::ReportGenerator>(
+          &delegate_factory),
       profile_);
 
   report_scheduler_->OnDMTokenUpdated();

@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Обележувачите зачувани на другите уреди ќе се појават тука.</translation>
 <translation id="1113597929977215864">Прикажи поедноставен приказ</translation>
 <translation id="1122278879166832009">Допрете тука за да пристапите брзо до вашата почетна страница од секаде</translation>
+<translation id="1126809382673880764">Не ве заштитува од опасни веб-сајтови, преземања и екстензии. Сѐ уште ќе имате заштита со „Безбедно прелистување“, каде што е достапно, во другите услуги на Google, како Gmail и „Пребарување“.</translation>
 <translation id="1129510026454351943">Детали: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 преземање чека на ред.}one{# преземање чека на ред.}other{# преземања чекаат на ред.}}</translation>
 <translation id="1145536944570833626">Избришете ги постоечките податоци.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Светла</translation>
 <translation id="1810845389119482123">Првичното поставување на синхронизацијата не е завршено</translation>
 <translation id="1821253160463689938">Користи колачиња за да ги запамети вашите поставки, дури и ако не ги посетувате тие страници</translation>
-<translation id="1826516787628120939">Се проверува</translation>
 <translation id="1829244130665387512">Најди на страница</translation>
 <translation id="1853692000353488670">Нова картичка „Инкогнито“</translation>
 <translation id="1856325424225101786">Дали да се ресетира „Лесниот режим“?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Зачувај лозинки</translation>
 <translation id="1952172573699511566">Кога е можно, веб-сајтовите ќе прикажуваат текст на вашиот претпочитан јазик.</translation>
 <translation id="1960290143419248813">Ажурирањата на Chrome веќе не се поддржани за оваа верзија на Android</translation>
+<translation id="1963976881984600709">Стандардна заштита</translation>
 <translation id="1966710179511230534">Ажурирајте ги информациите за пријавување.</translation>
 <translation id="1974060860693918893">Напредни</translation>
+<translation id="1984417487208496350">Нема заштита (не се препорачува)</translation>
 <translation id="1984705450038014246">Синхронизирајте ги податоците од Chrome</translation>
 <translation id="1986685561493779662">Името веќе постои</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> копче</translation>
@@ -358,6 +360,7 @@
 <translation id="3892148308691398805">Копирај текст</translation>
 <translation id="3894427358181296146">Додај папка</translation>
 <translation id="3895926599014793903">Присилно овозможи зумирање</translation>
+<translation id="3909763690984331376">Безбедносна проверка <ph name="BEGIN_NEW" />Нова<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Го наоѓаме најдоброто на интернет…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Комбинирај ги моите податоци</translation>
@@ -392,7 +395,6 @@
 <translation id="4183868528246477015">Пребарувајте со Google Lens <ph name="BEGIN_NEW" />Ново<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Отвори во нова картичка</translation>
 <translation id="4198423547019359126">Нема достапни локации за преземање</translation>
-<translation id="4202553989407425169">Chrome може да провери дали поставките ве заштитуваат од:</translation>
 <translation id="4209895695669353772">За да добивате персонализирани содржини предложени од Google, вклучете ја синхронизацијата</translation>
 <translation id="423219824432660969">Шифрирај ги синхронизираните податоци со лозинка на Google од <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Отвори ги поставките</translation>
@@ -491,6 +493,7 @@
 <translation id="4943872375798546930">Нема резултати</translation>
 <translation id="4961107849584082341">Преведете ја страницава на кој било јазик</translation>
 <translation id="4970824347203572753">Не е достапно во вашата локација</translation>
+<translation id="4971735654804503942">Побрза и проактивна заштита од опасни веб-сајтови, преземања и екстензии. Ве предупредува за упади во лозинките. Бара да се испраќаат податоци од прелистувањето до Google.</translation>
 <translation id="497421865427891073">Оди напред</translation>
 <translation id="4988210275050210843">Се презема датотека (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Страници</translation>
@@ -562,7 +565,6 @@
 <translation id="5527082711130173040">На Chrome му треба пристап до локацијата за да скенира уреди. <ph name="BEGIN_LINK1" />Ажурирајте ги дозволите<ph name="END_LINK1" />. Пристапот до локацијата е исто така <ph name="BEGIN_LINK2" />исклучен за овој уред<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Затвори инкогнито-картички</translation>
 <translation id="5534640966246046842">Сајтот е копиран</translation>
-<translation id="5548606607480005320">Безбедносна проверка</translation>
 <translation id="5561549206367097665">Се чека мрежа…</translation>
 <translation id="55737423895878184">Локацијата и известувањата се дозволени</translation>
 <translation id="5578795271662203820">Пребарај во <ph name="SEARCH_ENGINE" /> за сликава</translation>
@@ -580,6 +582,7 @@
 <translation id="5686790454216892815">Името на датотеката е предолго</translation>
 <translation id="5694049548840660018">Вратете се дома лесно</translation>
 <translation id="569536719314091526">Преведете ја страницава на кој било јазик со копчето „Повеќе опции“</translation>
+<translation id="5696597120588531049">Chrome може да ве штити од упад во податоците, небезбедни веб-сајтови и друго</translation>
 <translation id="5697688514913266141">Датотеката ќе се зачува во <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Измени<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Префрли се на картичката</translation>
 <translation id="572328651809341494">Неодамнешни картички</translation>
@@ -601,7 +604,6 @@
 <translation id="583281660410589416">Непознат</translation>
 <translation id="5833984609253377421">Сподели го линкот</translation>
 <translation id="5836192821815272682">Се презема ажурирање на Chrome…</translation>
-<translation id="584120177693484274">Отштиклирано</translation>
 <translation id="5853623416121554550">паузирано</translation>
 <translation id="5854790677617711513">Постари од 30 дена</translation>
 <translation id="5858741533101922242">Chrome не може да го вклучи Bluetooth адаптерот</translation>
@@ -714,6 +716,7 @@
 <translation id="6656545060687952787">На Chrome му треба пристап до локацијата за да скенира уреди. <ph name="BEGIN_LINK" />Ажурирајте ги дозволите<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="6659594942844771486">Картичка</translation>
+<translation id="6663079968236414793">Линк до текстот</translation>
 <translation id="666573598175432848">Достапна е понова верзија на Chrome. Допрете го елементов за да одите во Play Store.</translation>
 <translation id="666731172850799929">Отвори во <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Известување за приватност на Chrome</translation>
@@ -737,10 +740,12 @@
 <translation id="685850645784703949">Discover од Google - исклучена</translation>
 <translation id="6864459304226931083">Преземи слика</translation>
 <translation id="6865313869410766144">Автоматско пополнување податоци во формулар</translation>
+<translation id="6882836635272038266">Стандардна заштита од веб-сајтови, преземања и екстензии за коишто се знае дека се опасни.</translation>
 <translation id="6884306546558072722">Продолжете да истражувате офлајн</translation>
 <translation id="688738109438487280">Додајте ги постоечките податоци во <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Отклучете за да ја копирате лозинката</translation>
 <translation id="6896758677409633944">Копирај</translation>
+<translation id="6900532703269623216">Подобрена заштита</translation>
 <translation id="6903907808598579934">Вклучи синхронизирање</translation>
 <translation id="6942665639005891494">Променете ја стандардната локација за преземање во секое време со помош на опцијата „Поставки“ од менито</translation>
 <translation id="6945221475159498467">Избери</translation>

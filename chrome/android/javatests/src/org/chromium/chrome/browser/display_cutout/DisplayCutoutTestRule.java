@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.display_cutout;
 
+import android.annotation.TargetApi;
 import android.graphics.Rect;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
+import android.view.WindowManager.LayoutParams;
 
 import org.hamcrest.Matchers;
 import org.json.JSONException;
@@ -14,7 +17,6 @@ import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
@@ -37,6 +39,7 @@ import java.util.concurrent.TimeoutException;
  *
  * @param <T> The type of {@link ChromeActivity} to use for the test.
  */
+@TargetApi(Build.VERSION_CODES.P)
 public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActivityTestRule<T> {
     /** These are the two test safe areas with and without the test cutout. */
     public static final Rect TEST_SAFE_AREA_WITH_CUTOUT = new Rect(10, 20, 30, 40);
@@ -51,26 +54,9 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
     public static final String VIEWPORT_FIT_CONTAIN = "contain";
     public static final String VIEWPORT_FIT_COVER = "cover";
 
-    /** This simulates the Android P+ {@link LayoutParams}. */
-    public static final class LayoutParamsApi28 {
-        @UsedByReflection("Display Cutout Controller")
-        public static final int LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT = 0;
-
-        @UsedByReflection("Display Cutout Controller")
-        public static final int LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER = 1;
-
-        @UsedByReflection("Display Cutout Controller")
-        public static final int LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES = 2;
-
-        // This tells the Android system whether to extend into the display cutout area.
-        @UsedByReflection("Display Cutout Controller")
-        public int layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
-    }
-
     /** This class has polyfills for Android P+ system apis. */
     private static final class TestDisplayCutoutController extends DisplayCutoutController {
         private boolean mDeviceHasCutout = true;
-        private LayoutParamsApi28 mLayoutParams = new LayoutParamsApi28();
         private float mDipScale = 1;
 
         TestDisplayCutoutController(Tab tab) {
@@ -78,17 +64,12 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
         }
 
         @Override
-        protected Object getWindowAttributes() {
-            return mLayoutParams;
-        }
-
-        @Override
-        protected void setWindowAttributes(Object attributes) {
-            mLayoutParams = (LayoutParamsApi28) attributes;
+        protected void setWindowAttributes(LayoutParams attributes) {
+            super.setWindowAttributes(attributes);
 
             // Apply insets based on new layout mode.
             if (getLayoutInDisplayCutoutMode()
-                            == LayoutParamsApi28.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                            == LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
                     && mDeviceHasCutout) {
                 onSafeAreaChanged(TEST_SAFE_AREA_WITH_CUTOUT);
             } else {
@@ -97,7 +78,7 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
         }
 
         public int getLayoutInDisplayCutoutMode() {
-            return mLayoutParams.layoutInDisplayCutoutMode;
+            return getWindowAttributes().layoutInDisplayCutoutMode;
         }
 
         @Override

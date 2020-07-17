@@ -104,6 +104,7 @@
 <translation id="1124772482545689468">ਵਰਤੋਂਕਾਰ</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> ਵਰਗਾ ਲੱਗਦਾ ਹੈ (ਮੂਲ)</translation>
 <translation id="1126809382673880764">ਤੁਹਾਨੂੰ ਖਤਰਨਾਕ ਵੈੱਬਸਾਈਟਾਂ, ਡਾਊਨਲੋਡਾਂ ਅਤੇ ਐਕਸਟੈਂਸ਼ਨਾਂ ਤੋਂ ਸੁਰੱਖਿਅਤ ਨਹੀਂ ਰੱਖਿਆ ਜਾਂਦਾ। ਹੋਰ Google ਸੇਵਾਵਾਂ ਜਿਵੇਂ ਕਿ Gmail ਅਤੇ Search ਵਿੱਚ ਜਿੱਥੇ ਵੀ ਉਪਲਬਧ ਹੋਵੇ ਤੁਹਾਨੂੰ ਫਿਰ ਵੀ ਸੁਰੱਖਿਅਤ ਬ੍ਰਾਊਜ਼ਿੰਗ ਸੁਰੱਖਿਆ ਪ੍ਰਾਪਤ ਹੋਵੇਗੀ।</translation>
+<translation id="112752777279960360">ਇਸ ਕੰਪਿਊਟਰ 'ਤੇ ਪਹਿਲੀ ਵਾਰ Android ਫ਼ੋਨ ਨੂੰ ਇੱਕ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਵਜੋਂ ਵਰਤੇ ਜਾਣ ਦਾ ਸੈੱਟਅੱਪ ਕਰਨ ਲਈ, ਆਪਣੇ ਫ਼ੋਨ 'ਤੇ Chrome ਖੋਲ੍ਹੋ, ਅਤੇ "ਸੈਟਿੰਗਾਂ &gt; ਪਾਸਵਰਡ &gt; ਫ਼ੋਨ ਨੂੰ ਇੱਕ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਵਜੋਂ ਵਰਤੋ" 'ਤੇ ਜਾਓ। ਫਿਰ "ਨਵਾਂ ਡੀਵਾਈਸ ਕਨੈਕਟ ਕਰੋ" 'ਤੇ ਟੈਪ ਕਰੋ ਅਤੇ ਇਸ QR ਕੋਡ ਨੂੰ ਸਕੈਨ ਕਰੋ।</translation>
 <translation id="1128109161498068552">ਕਿਸੇ ਵੀ ਸਾਈਟ ਨੂੰ MIDI ਡਿਵਾਈਸਾਂ ਤੇ ਪਹੁੰਚਣ ਲਈ ਸਿਸਟਮ ਐਕਸਕਲੂਸਿਵ ਸੁਨੇਹੇ ਵਰਤਣ ਦੀ ਆਗਿਆ ਨਾ ਦਿਓ</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">ਖੋਜ ਇੰਜਣ ਦਾ ਸੰਪਾਦਨ ਕਰੋ</translation>
@@ -509,6 +510,7 @@
 <translation id="1622054403950683339">ਵਾਈ-ਫਾਈ ਨੈੱਟਵਰਕ ਛੱਡੋ</translation>
 <translation id="1623132449929929218">ਚਿੱਤਰ ਇਸ ਵੇਲੇ ਉਪਲਬਧ ਨਹੀਂ ਹਨ। ਵਾਲਪੇਪਰ ਸੰਗ੍ਰਹਿ ਦੇਖਣ ਲਈ ਕਿਰਪਾ ਕਰਕੇ ਇੰਟਰਨੈੱਟ ਨਾਲ ਮੁੜ-ਕਨੈਕਟ ਕਰੋ।</translation>
 <translation id="1623723619460186680">ਨੀਲੀ ਲਾਈਟ ਘਟਾਉਣਾ</translation>
+<translation id="1624012933569991823">ਸੈਟਿੰਗਾਂ</translation>
 <translation id="1627276047960621195">ਫ਼ਾਈਲ ਵਰਣਨਕਰਤਾ</translation>
 <translation id="1627408615528139100">ਪਹਿਲਾਂ ਤੋਂ ਡਾਊਨਲੋਡ ਕੀਤੀ ਗਈ</translation>
 <translation id="1628948239858170093">ਕੀ ਖੋਲ੍ਹਣ ਤੋਂ ਪਹਿਲਾਂ ਫ਼ਾਈਲ ਨੂੰ ਸਕੈਨ ਕਰਨਾ ਹੈ?</translation>
@@ -745,6 +747,7 @@
 <translation id="1887850431809612466">ਹਾਰਡਵੇਅਰ ਸੰਸ਼ੋਧਨ</translation>
 <translation id="1888523338879380247">{0,plural, =1{ਡੀਵਾਈਸ ਨੂੰ ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਆਖਰੀ ਦਿਨ}one{ਡੀਵਾਈਸ ਨੂੰ # ਦਿਨ ਦੇ ਅੰਦਰ ਅੱਪਡੇਟ ਕਰੋ}other{ਡੀਵਾਈਸ ਨੂੰ # ਦਿਨਾਂ ਦੇ ਅੰਦਰ ਅੱਪਡੇਟ ਕਰੋ}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;ਆਈ ਡੀ: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783"><ph name="DEVICE_NAME" /> ਤੋਂ <ph name="ATTACHMENTS" /> ਪ੍ਰਾਪਤ ਕੀਤੀਆਂ ਜਾ ਰਹੀਆਂ ਹਨ</translation>
 <translation id="189210018541388520">ਪੂਰੀ ਸਕ੍ਰੀਨ ਖੋਲ੍ਹੋ</translation>
 <translation id="1892341345406963517">ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">ਹੋਰ ਭਾਸ਼ਾਵਾਂ</translation>
@@ -1815,6 +1818,7 @@
 <translation id="3253225298092156258">ਉਪਲਬਧ ਨਹੀਂ</translation>
 <translation id="3253448572569133955">ਅਗਿਆਤ ਖਾਤਾ</translation>
 <translation id="3254516606912442756">ਸਵੈਚਲਿਤ ਸਮਾਂ ਜ਼ੋਨ ਪਛਾਣ ਨੂੰ ਬੰਦ ਕਰੋ</translation>
+<translation id="3254715652085014625">ਆਪਣੇ Android ਫ਼ੋਨ 'ਤੇ Chrome ਖੋਲ੍ਹੋ, ਅਤੇ "ਸੈਟਿੰਗਾਂ &gt; ਪਾਸਵਰਡ &gt; ਫ਼ੋਨ ਨੂੰ ਇੱਕ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਵਜੋਂ ਵਰਤੋ" 'ਤੇ ਜਾਓ ਅਤੇ ਉੱਥੇ ਦਿੱਤੀਆਂ ਹਿਦਾਇਤਾਂ ਦੀ ਪਾਲਣਾ ਕਰੋ।</translation>
 <translation id="3255355328033513170"><ph name="SITE_GROUP_NAME" /> ਅਤੇ ਇਸਦੇ ਅਧੀਨ ਕਿਸੇ ਵੀ ਸਾਈਟ ਵੱਲੋਂ ਸਟੋਰ ਕੀਤਾ ਸਾਰਾ ਡਾਟਾ ਮਿਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ। ਇਸ ਵਿੱਚ ਕੁਕੀਜ਼ ਸ਼ਾਮਲ ਹਨ। ਖੁੱਲ੍ਹੀਆਂ ਟੈਬਾਂ ਸਮੇਤ, ਤੁਹਾਨੂੰ ਇਹਨਾਂ ਸਾਈਟਾਂ ਤੋਂ ਸਾਈਨ-ਆਊਟ ਕਰ ਦਿੱਤਾ ਜਾਵੇਗਾ।</translation>
 <translation id="3259723213051400722">ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="3264544094376351444">Sans-serif ਫੌਂਟ</translation>
@@ -1953,6 +1957,7 @@
 <translation id="3433621910545056227">ਓਹੋ! ਸਿਸਟਮ ਡੀਵਾਈਸ ਸਥਾਪਨਾ-ਸਮਾਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਲਾਕ ਨੂੰ ਸਥਾਪਤ ਕਰਨ ਵਿੱਚ ਅਸਫਲ ਰਿਹਾ।</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3434272557872943250">ਜੇ ਤੁਹਾਡੇ ਬੱਚੇ ਲਈ ਵਧੀਕ 'ਵੈੱਬ ਅਤੇ ਐਪ ਸਰਗਰਮੀ' ਸੈਟਿੰਗ ਚਾਲੂ ਹੋਵੇ, ਤਾਂ ਇਹ ਡਾਟਾ ਉਹਨਾਂ ਦੇ Google ਖਾਤੇ ਵਿੱਚ ਰੱਖਿਅਤ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ। families.google.com 'ਤੇ ਇਹਨਾਂ ਸੈਟਿੰਗਾਂ ਅਤੇ ਉਹਨਾਂ ਨੂੰ ਵਿਵਸਥਿਤ ਕਰਨ ਦੇ ਤਰੀਕੇ ਬਾਰੇ ਹੋਰ ਜਾਣੋ।</translation>
+<translation id="3435541101098866721">ਨਵਾਂ ਫ਼ੋਨ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="3435688026795609344">"<ph name="EXTENSION_NAME" />" ਵੱਲੋਂ ਤੁਹਾਡੇ <ph name="CODE_TYPE" /> ਦੀ ਬੇਨਤੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
 <translation id="3435738964857648380">ਸੁਰੱਖਿਆ</translation>
 <translation id="343578350365773421">ਕਾਗਜ਼ ਖਤਮ ਹੋਏ</translation>
@@ -2616,7 +2621,7 @@
 <translation id="4220648711404560261">ਕਿਰਿਆਸ਼ੀਲ ਕਰਨ ਦੌਰਾਨ ਗੜਬੜ ਹੋ ਗਈ।</translation>
 <translation id="4222772810963087151">ਬਿਲਡ ਦੇ ਵੇਰਵੇ</translation>
 <translation id="4225397296022057997">ਸਾਰੀਆਂ ਸਾਈਟਾਂ 'ਤੇ</translation>
-<translation id="4231095370974836764">ਆਪਣੀ <ph name="DEVICE_TYPE" /> 'ਤੇ Google Play ਤੋਂ ਐਪਾਂ ਅਤੇ ਗੇਮਾਂ ਸਥਾਪਤ ਕਰੋ। <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" /></translation>
+<translation id="4231095370974836764">ਆਪਣੇ <ph name="DEVICE_TYPE" /> 'ਤੇ Google Play ਤੋਂ ਐਪਾਂ ਅਤੇ ਗੇਮਾਂ ਸਥਾਪਤ ਕਰੋ। <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" /></translation>
 <translation id="4232375817808480934">Kerberos ਦਾ ਸੰਰੂਪਣ ਕਰੋ</translation>
 <translation id="4235200303672858594">ਸਮੁੱਚੀ ਸਕ੍ਰੀਨ</translation>
 <translation id="4235965441080806197">ਸਾਈਨ-ਇਨ ਰੱਦ ਕਰੋ</translation>
@@ -3489,6 +3494,7 @@
 <translation id="5390677308841849479">ਗੂੜ੍ਹਾ ਲਾਲ ਅਤੇ ਸੰਤਰੀ</translation>
 <translation id="5390743329570580756">ਮੰਗਵਾਓ</translation>
 <translation id="5397794290049113714">ਤੁਸੀਂ</translation>
+<translation id="5398497406011404839">ਲੁਕੇ ਹੋਏ ਬੁੱਕਮਾਰਕ</translation>
 <translation id="5398572795982417028">ਵਿਵਰਜਿਤ ਪੰਨਾ ਸੰਦਰਭ, ਸੀਮਾ <ph name="MAXIMUM_PAGE" /> ਹੈ</translation>
 <translation id="5398772614898833570">ਵਿਗਿਆਪਨ ਬਲੌਕ ਕੀਤੇ ਗਏ</translation>
 <translation id="5402815541704507626">ਮੋਬਾਈਲ ਡਾਟੇ ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਅੱਪਡੇਟ ਡਾਊਨਲੋਡ ਕਰੋ</translation>
@@ -3574,6 +3580,7 @@
 <translation id="5496587651328244253">ਪ੍ਰਬੰਧ ਕਰੋ</translation>
 <translation id="5497251278400702716">ਇਹ ਫ਼ਾਈਲ</translation>
 <translation id="5499313591153584299">ਇਹ ਫ਼ਾਈਲ ਤੁਹਾਡੇ ਕੰਪਿਊਟਰ 'ਤੇ ਹਾਨੀਕਾਰਕ ਹੋ ਸਕਦੀ ਹੈ।</translation>
+<translation id="5499453227627332024">ਤੁਹਾਡੇ Linux ਕੰਟੇਨਰ ਲਈ ਅੱਪਗ੍ਰੇਡ ਉਪਲਬਧ ਹੈ। ਤੁਸੀਂ ਸੈਟਿੰਗਾਂ ਐਪ ਵਿੱਚ ਜਾ ਕੇ ਇਸਨੂੰ ਬਾਅਦ ਵਿੱਚ ਵੀ ਅੱਪਗ੍ਰੇਡ ਕਰ ਸਕਦੇ ਹੋ।</translation>
 <translation id="5500709606820808700">ਸੁਰੱਖਿਆ ਜਾਂਚ ਅੱਜ ਚਲਾਈ ਗਈ</translation>
 <translation id="5502500733115278303">Firefox ਤੋਂ ਆਯਾਤ ਕੀਤਾ</translation>
 <translation id="5503982651688210506"><ph name="HOST" /> ਨੂੰ ਆਪਣਾ ਕੈਮਰਾ ਵਰਤਣ ਅਤੇ ਹਿਲਾਉਣ ਅਤੇ ਆਪਣਾ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਵਰਤਣ ਦੀ ਇਜਾਜ਼ਤ ਦੇਣੀ ਜਾਰੀ ਰੱਖੋ</translation>
@@ -4198,6 +4205,7 @@
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />ਸਿਸਟਮ ਅਤੇ ਐਪ ਜਾਣਕਾਰੀ<ph name="END_LINK1" />, ਅਤੇ <ph name="BEGIN_LINK2" />ਮਾਪਕ<ph name="END_LINK2" /> ਭੇਜੋ</translation>
 <translation id="6272643420381259437">ਪਲੱਗਇਨ ਡਾਊਨਲੋਡ ਕਰਨ ਦੌਰਾਨ ਇੱਕ ਗੜਬੜ (<ph name="ERROR" />) ਹੋਈ ਸੀ</translation>
 <translation id="6273677812470008672">ਕੁਆਲਿਟੀ</translation>
+<translation id="6273979226236203550">ਤੁਹਾਡਾ ਪਾਸਵਰਡ ਇਸ ਡੀਵਾਈਸ ਅਤੇ ਤੁਹਾਡੇ Google ਖਾਤੇ ਵਿੱਚ ਸਟੋਰ ਕੀਤਾ ਗਿਆ ਹੈ। ਤੁਸੀਂ ਕਿਸ ਨੂੰ ਮਿਟਾਉਣਾ ਚਾਹੁੰਦੇ ਹੋ?</translation>
 <translation id="6277105963844135994">ਨੈੱਟਵਰਕ ਸਮਾਂ ਸਮਾਪਤ</translation>
 <translation id="6277518330158259200">ਸਕ੍ਰੀਨਸ਼ਾਟ ਲ&amp;ਵੋ</translation>
 <translation id="6278057325678116358">GTK+ ਵਰਤੋ</translation>
@@ -4558,6 +4566,7 @@
 <translation id="6758056191028427665">ਸਾਨੂੰ ਦੱਸੋ ਕਿ ਸਾਡਾ ਪ੍ਰਦਰਸ਼ਨ ਕਿਹੋ ਜਿਹਾ ਹੈ।</translation>
 <translation id="6759193508432371551">ਫੈਕਟਰੀ ਰੀਸੈਟ</translation>
 <translation id="6762833852331690540">ਚਾਲੂ</translation>
+<translation id="676560328519657314">Google Pay ਵਿੱਚ ਤੁਹਾਡੀਆਂ ਭੁਗਤਾਨ ਵਿਧੀਆਂ</translation>
 <translation id="6767566652486411142">ਕੋਈ ਹੋਰ ਭਾਸ਼ਾ ਚੁਣੋ...</translation>
 <translation id="6767639283522617719">ਡੋਮੇਨ ਸ਼ਾਮਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ। ਪੱਕਾ ਕਰੋ ਕਿ ਸੰਸਥਾਗਤ ਇਕਾਈ ਲਈ ਸੈਟਿੰਗਾਂ ਸਹੀ ਹਨ।</translation>
 <translation id="6769557323306147204"><ph name="ORGANIZATION_NAME" /> ਵੱਲੋਂ ਤੁਹਾਨੂੰ ਇਸ ਡੀਵਾਈਸ ਨੂੰ ਅੱਪਡੇਟ ਕਰਨ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।</translation>
@@ -4730,6 +4739,7 @@
 <translation id="6972553992270299730"><ph name="ORIGIN" /> ਸਾਈਟ ਇਸ ਫੋਲਡਰ ਵਿਚਲੀਆਂ ਫ਼ਾਈਲਾਂ ਨੂੰ ਖੋਲ੍ਹ ਨਹੀਂ ਸਕਦੀ ਕਿਉਂਕਿ ਇਸ ਵਿੱਚ ਸਿਸਟਮ ਫ਼ਾਈਲਾਂ ਹਨ</translation>
 <translation id="6972629891077993081">HID ਡੀਵਾਈਸ</translation>
 <translation id="6972754398087986839">ਸ਼ੁਰੂ ਕੀਤਾ</translation>
+<translation id="6972887130317925583">ਛੇੜਛਾੜ ਵਾਲਾ ਪਾਸਵਰਡ ਸਫਲਤਾਪੂਰਕ ਬਦਲਿਆ ਗਿਆ। ਕਿਸੇ ਵੀ ਵੇਲੇ <ph name="SETTINGS" /> ਵਿੱਚ ਜਾ ਕੇ ਆਪਣੇ ਪਾਸਵਰਡ ਦੀ ਜਾਂਚ ਕਰੋ।</translation>
 <translation id="6973611239564315524">Debian 10 (Buster) ਦਾ ਅੱਪਡੇਟ ਉਪਲਬਧ ਹੈ</translation>
 <translation id="6974609594866392343">ਆਫ਼ਲਾਈਨ ਡੈਮੋ ਮੋਡ</translation>
 <translation id="6977381486153291903">ਫਰਮਵੇਅਰ ਸੁਧਾਈ</translation>
@@ -5587,6 +5597,7 @@
 <translation id="8017176852978888182">Linux ਸਾਂਝੀਆਂ ਕੀਤੀਆਂ ਡਾਇਰੈਕਟਰੀਆਂ</translation>
 <translation id="8017679124341497925">ਸ਼ਾਰਟਕੱਟ ਦਾ ਸੰਪਾਦਨ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="8018313076035239964">ਵੈੱਬਸਾਈਟਾਂ ਵੱਲੋਂ ਵਰਤੀ ਜਾ ਸਕਣ ਵਾਲੀ ਜਾਣਕਾਰੀ ਅਤੇ ਉਹਨਾਂ ਵੱਲੋਂ ਤੁਹਾਨੂੰ ਦਿਖਾਈ ਜਾ ਸਕਣ ਵਾਲੀ ਸਮੱਗਰੀ ਨੂੰ ਕੰਟਰੋਲ ਕਰੋ</translation>
+<translation id="8022688469248132790">ਗੜਬੜ ਵੇਰਵਿਆਂ ਦੀ ਸਮੀਖਿਆ ਕਰੋ</translation>
 <translation id="8023801379949507775">ਹੁਣ ਐਕਸਟੈਂਸ਼ਨਾਂ ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ</translation>
 <translation id="8026334261755873520">ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟਾ ਹਟਾਓ</translation>
 <translation id="8028060951694135607">Microsoft ਕੁੰਜੀ ਰਿਕਵਰੀ</translation>
@@ -6525,6 +6536,7 @@
 <translation id="9180380851667544951">ਸਾਈਟ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰ ਸਕਦੀ ਹੈ</translation>
 <translation id="9188732951356337132">ਵਰਤੋਂ ਅਤੇ ਤਸ਼ਖੀਸ ਡਾਟਾ ਭੇਜੋ। ਇਹ ਡੀਵਾਈਸ ਇਸ ਵੇਲੇ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਤਸ਼ਖੀਸ, ਡੀਵਾਈਸ ਅਤੇ ਐਪ ਵਰਤੋਂ ਡਾਟਾ Google ਨੂੰ ਭੇਜ ਰਿਹਾ ਹੈ। ਇਸਦੀ ਵਰਤੋਂ ਤੁਹਾਡੇ ਬੱਚੇ ਦੀ ਪਛਾਣ ਕਰਨ ਲਈ ਨਹੀਂ ਕੀਤੀ ਜਾਵੇਗੀ ਅਤੇ ਸਿਸਟਮ ਅਤੇ ਐਪ ਸਥਿਰਤਾ ਅਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਵਿੱਚ ਮਦਦ ਮਿਲੇਗੀ। ਕੁਝ ਏਕੀਕ੍ਰਿਤ ਜਾਣਕਾਰੀ Google ਐਪਾਂ ਅਤੇ ਪਾਰਟਨਰਾਂ, ਜਿਵੇਂ ਕਿ Android ਵਿਕਾਸਕਾਰਾਂ, ਦੀ ਵੀ ਮਦਦ ਕਰੇਗੀ। ਜੇ ਤੁਹਾਡੇ ਬੱਚੇ ਲਈ ਵਧੀਕ 'ਵੈੱਬ ਅਤੇ ਐਪ ਸਰਗਰਮੀ' ਸੈਟਿੰਗ ਚਾਲੂ ਹੋਵੇ, ਤਾਂ ਇਹ ਡਾਟਾ ਉਸਦੇ Google ਖਾਤੇ ਵਿੱਚ ਰੱਖਿਅਤ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ। <ph name="BEGIN_LINK2" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + ਪ੍ਰੀ-ਸ਼ੇਅਰਡ ਕੁੰਜੀ</translation>
+<translation id="9198090666959937775">ਆਪਣੇ Android ਫ਼ੋਨ ਨੂੰ ਇੱਕ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਵਜੋਂ ਵਰਤੋ</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> ਖੋਜੋ</translation>
 <translation id="9201023452444595544">ਕਿਸੇ ਵੀ ਆਫ਼ਲਾਈਨ ਡਾਟੇ ਨੂੰ ਕਲੀਅਰ ਕਰ ਦਿੱਤਾ ਜਾਵੇਗਾ</translation>
 <translation id="9201220332032049474">ਸਕ੍ਰੀਨ ਲੌਕ ਵਿਕਲਪ</translation>
@@ -6567,6 +6579,7 @@
 <translation id="942532530371314860"><ph name="APP_NAME" /> Chrome ਟੈਬ ਅਤੇ ਆਡੀਓ ਸਾਂਝੀ ਕਰ ਰਹੀ ਹੈ।</translation>
 <translation id="945522503751344254">ਪ੍ਰਤੀਕਰਮ ਭੇਜੋ</translation>
 <translation id="947329552760389097">&amp;ਅੰਸ਼ਾਂ ਦੀ ਜਾਂਚ ਕਰੋ</translation>
+<translation id="951991426597076286">ਅਸਵੀਕਾਰ ਕਰੋ</translation>
 <translation id="952992212772159698">ਸਕਿਰਿਆ ਨਹੀਂ ਕੀਤਾ</translation>
 <translation id="956500788634395331">ਤੁਸੀਂ ਸੰਭਾਵੀ ਤੌਰ 'ਤੇ ਨੁਕਸਾਨਦੇਹ ਐਕਸਟੈਂਸ਼ਨਾਂ ਤੋਂ ਸੁਰੱਖਿਅਤ ਹੋ</translation>
 <translation id="957960681186851048">ਇਸ ਸਾਈਟ ਨੇ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਇੱਕ ਤੋਂ ਵੱਧ ਫ਼ਾਈਲਾਂ ਡਾਊਨਲੋਡ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕੀਤੀ</translation>

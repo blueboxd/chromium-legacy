@@ -98,6 +98,7 @@
 <translation id="1995660704900986789">បិទ</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">សរសេរ​សារ</translation>
+<translation id="2018630726571919839">និយាយ​រឿងកំប្លែង​ឱ្យខ្ញុំស្ដាប់</translation>
 <translation id="2050339315714019657">បញ្ឈរ</translation>
 <translation id="2067602449040652523">ពន្លឺកា្តរចុច</translation>
 <translation id="209965399369889474">មិនបាន​ភ្ជាប់ទៅ​បណ្ដាញ​ទេ</translation>
@@ -125,6 +126,7 @@
 <translation id="2354174487190027830">កំពុងធ្វើសកម្មភាព <ph name="NAME" /></translation>
 <translation id="2359808026110333948">បន្ត</translation>
 <translation id="2365393535144473978">ការបើកទិន្នន័យ​ទូរសព្ទចល័ត​នឹងបើកប៊្លូធូស។</translation>
+<translation id="2369165858548251131">"សួស្ដី" ជាភាសាចិន</translation>
 <translation id="2390318262976603432">ការកំណត់ភាសា</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">មាន​កំណែថ្មី</translation>
@@ -142,6 +144,7 @@
 <translation id="256712445991462162">កម្មវិធីពង្រីកដែលបានភ្ជាប់</translation>
 <translation id="2575685495496069081">ការចូល​គណនី​ច្រើន​ត្រូវបាន​បិទ</translation>
 <translation id="2582112259361606227">ចាប់ផ្តើមឡើងវិញ​ដើម្បី​ដំឡើង​ជំនាន់</translation>
+<translation id="2595239820337756193">5 ពាន់ម៉ាយល៍</translation>
 <translation id="2617342710774726426">ស៊ីមកាតជាប់សោ</translation>
 <translation id="2621713457727696555">មាន​សុវត្ថិភាព</translation>
 <translation id="2653659639078652383">ដាក់ស្នើ</translation>
@@ -195,6 +198,7 @@
 <translation id="3154351730702813399">អ្នកគ្រប់គ្រងឧបករណ៍នេះអាចនឹងត្រួតពិនិត្យសកម្មភាពរុករករបស់អ្នក។</translation>
 <translation id="3181441307743005334">ការចាប់ផ្ដើម​ឡើងវិញអាច​ចំណាយ​ពេលបន្តិច</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{បាន​ភ្ជាប់​ទៅ​ឧបករណ៍មួយ}other{បាន​ភ្ជាប់​ទៅ​ឧបករណ៍ #}}</translation>
+<translation id="320207200541803018">កំណត់កម្មវិធីកំណត់ម៉ោង</translation>
 <translation id="3203405173652969239">បានបើក​ការប្រើ​ប៊ូតុងចុច</translation>
 <translation id="3207953481422525583">ការ​កំណត់​អ្នកប្រើប្រាស់</translation>
 <translation id="3217205077783620295">កម្រិត​សំឡេង​ត្រូវបានបើក ការបិទ​នឹងបិទសំឡេង។</translation>
@@ -207,6 +211,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> នៅតែអាចចូល​នៅពេល​ក្រោយបាន​ដដែល។</translation>
 <translation id="3321628682574733415">លេខកូដមាតាបិតា​មិនត្រឹមត្រូវទេ</translation>
 <translation id="332587331255250389">សូម​ប្តូរ​ថ្ម</translation>
+<translation id="334252345105450327">ថតអេក្រង់</translation>
 <translation id="3351879221545518001">ឥឡូវនេះ អ្នកកំពុង​បញ្ជូន​អេក្រង់។</translation>
 <translation id="3364721542077212959">ឧបករណ៍ប៊ិច</translation>
 <translation id="3368922792935385530">បានភ្ជាប់</translation>
@@ -239,6 +244,7 @@
 <translation id="3631369015426612114">អនុញ្ញាត​ការជូន​ដំណឹង​ពីបញ្ជី​ខាងក្រោម</translation>
 <translation id="3638400994746983214">បិទ/បើកអេក្រង់ឯកជនភាព។ <ph name="STATE_TEXT" />។</translation>
 <translation id="366222428570480733">អ្នកប្រើប្រាស់​ដែលគ្រប់គ្រង​ដោយ <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="3702846122927433391">ចំនួនប្រជាជននៅប្រទេសនីហ្សេរីយ៉ា</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">ថតផ្នែក</translation>
 <translation id="371370241367527062">មីក្រូហ្វូន​ខាងមុខ</translation>
@@ -519,6 +525,7 @@
 <translation id="7165278925115064263">Alt+ប្ដូរ (Shift)+K</translation>
 <translation id="7168224885072002358">កំពុងត្រលប់ទៅកម្រិតច្បាស់ចាស់នៅក្នុង <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">ម៉ឺនុយ​ត្រូវបានផ្លាស់ទី​ទៅ​ជ្រុងខាងលើ​ផ្នែកខាងឆ្វេង​នៃអេក្រង់​។</translation>
+<translation id="7189412385142492784">តើភពសុក្រមានចម្ងាយប៉ុន្មាន</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />។ Chromebook នេះ​ត្រូវចាប់ផ្ដើមឡើងវិញ ដើម្បី​អនុវត្តកំណែថ្មី។ សកម្មភាពនេះអាចចំណាយពេលរហូតដល់ 1 នាទី។</translation>
 <translation id="7256634071279256947">មីក្រូហ្វូន​ខាងក្រោយ</translation>
 <translation id="726276584504105859">អូសនៅទីនេះដើម្បីប្រើអេក្រង់បំបែក</translation>
@@ -645,6 +652,7 @@
 <translation id="8649101189709089199">ជ្រើសរើស​ដើម្បីអាន</translation>
 <translation id="8652175077544655965">បិទ​ការ​កំណត់</translation>
 <translation id="8653151467777939995">បង្ហាញ​ការកំណត់​ការជូនដំណឹង។ ការជូនដំណឹង​ត្រូវបាន​បើក​</translation>
+<translation id="8660331759611631213">ឬសការ៉េនៃ 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">បង្ហាញ​បញ្ជី​បណ្ដាញ។ <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

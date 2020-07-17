@@ -229,8 +229,10 @@ void PreconnectManager::TryToLaunchPreresolveJobs() {
           job->url, job->network_isolation_key,
           base::BindOnce(&PreconnectManager::OnProxyLookupFinished,
                          weak_factory_.GetWeakPtr(), job_id));
-      if (info)
+      if (info) {
         ++info->inflight_count;
+        delegate_->PreconnectInitiated(info->url, job->url);
+      }
       ++inflight_preresolves_count_;
     } else {
       preresolve_jobs_.Remove(job_id);

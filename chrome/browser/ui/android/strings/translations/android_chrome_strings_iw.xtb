@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">סימניות שנשמרו במכשירים האחרים שלך יופיעו כאן.</translation>
 <translation id="1113597929977215864">צפייה בתצוגה נקייה</translation>
 <translation id="1122278879166832009">אפשר להקיש כאן כדי להיכנס במהירות לדף הבית מכל מקום</translation>
+<translation id="1126809382673880764">‏במצב הזה המערכת לא מגינה עליך מפני אתרים, הורדות ותוספים מסוכנים. גלישה בטוחה עדיין תגן עליך בשירותים אחרים של Google שבהם היא זמינה, כמו Gmail והחיפוש.</translation>
 <translation id="1129510026454351943">פרטים: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{הורדה אחת בהמתנה.}two{# הורדות בהמתנה.}many{# הורדות בהמתנה.}other{# הורדות בהמתנה.}}</translation>
 <translation id="1145536944570833626">מחק נתונים קיימים.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">בהיר</translation>
 <translation id="1810845389119482123">ההגדרה הראשונית של הסנכרון לא הושלמה</translation>
 <translation id="1821253160463689938">‏שימוש בקובצי cookie כדי לשמור את ההעדפות שלך, גם אם לא נכנסת אל הדפים האלה</translation>
-<translation id="1826516787628120939">מתבצעת בדיקה</translation>
 <translation id="1829244130665387512">חיפוש בדף</translation>
 <translation id="1853692000353488670">כרטיסייה חדשה לגלישה בסתר</translation>
 <translation id="1856325424225101786">לאפס את מצב הטעינה המהירה?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">שמירת סיסמאות</translation>
 <translation id="1952172573699511566">אתרים יציגו טקסט בשפה המועדפת שלך, כשזה אפשרי.</translation>
 <translation id="1960290143419248813">‏עדכוני Chrome לא נתמכים יותר בגרסה הזו של Android</translation>
+<translation id="1963976881984600709">הגנה רגילה</translation>
 <translation id="1966710179511230534">יש לעדכן את פרטי הכניסה שלך.</translation>
 <translation id="1974060860693918893">מתקדם</translation>
+<translation id="1984417487208496350">ללא הגנה (לא מומלץ)</translation>
 <translation id="1984705450038014246">‏סנכרון הנתונים מ-Chrome</translation>
 <translation id="1986685561493779662">השם כבר קיים</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> לחצן <ph name="LINK_NAME" /></translation>
@@ -358,6 +360,7 @@
 <translation id="3892148308691398805">העתקת הטקסט</translation>
 <translation id="3894427358181296146">הוספת תיקייה</translation>
 <translation id="3895926599014793903">שינוי הזום בכל מקרה</translation>
+<translation id="3909763690984331376">בדיקת בטיחות <ph name="BEGIN_NEW" />חדש<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">כל הטוב שבאינטרנט…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">שילוב הנתונים שלי</translation>
@@ -392,7 +395,6 @@
 <translation id="4183868528246477015">‏חיפוש בעזרת Google Lens <ph name="BEGIN_NEW" />חדש<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">פתיחה בכרטיסייה חדשה</translation>
 <translation id="4198423547019359126">אין מיקומים זמינים להורדה</translation>
-<translation id="4202553989407425169">‏Chrome יכול לבדוק אם ההגדרות שלך מגנות עליך מפני:</translation>
 <translation id="4209895695669353772">‏כדי לקבל מ-Google הצעות לתוכן מותאם אישית, יש להפעיל את הסנכרון</translation>
 <translation id="423219824432660969">‏הצפנת נתונים מסונכרנים באמצעות סיסמת Google החל מ-<ph name="TIME" /></translation>
 <translation id="4242533952199664413">פתח את 'הגדרות'</translation>
@@ -459,6 +461,7 @@
 <translation id="4749960740855309258">פתח כרטיסייה חדשה</translation>
 <translation id="4759238208242260848">הורדות</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{הורדה אחת הושלמה.}two{# הורדות הושלמו.}many{# הורדות הושלמו.}other{# הורדות הושלמו.}}</translation>
+<translation id="4766678251456904326">הוספת חשבון למכשיר</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{תוזמנה הורדה אחת.}two{תוזמנו # הורדות.}many{תוזמנו # הורדות.}other{תוזמנו # הורדות.}}</translation>
 <translation id="478981486571169252">‏ב-Chrome יוצגו סטטוס הכניסה שלך ל-<ph name="SITE_NAME" />, נתוני הגלישה ונתוני האתר.</translation>
 <translation id="4802417911091824046">‏הצפנה באמצעות ביטוי סיסמה לא כוללת אמצעי תשלום וכתובות מ-Google Pay
@@ -490,6 +493,7 @@
 <translation id="4943872375798546930">אין תוצאות</translation>
 <translation id="4961107849584082341">אפשר לתרגם את הדף הזה לשפה כלשהי</translation>
 <translation id="4970824347203572753">האפשרות לא זמינה במיקום שלך</translation>
+<translation id="4971735654804503942">‏הגנה פרואקטיבית ומהירה יותר מפני אתרים, הורדות ותוספים מסוכנים. המערכת מזהירה אותך בנוגע לחשיפה של סיסמאות. כשמצב ההגנה הזה בשימוש, נתוני גלישה נשלחים אל Google.</translation>
 <translation id="497421865427891073">המשך קדימה</translation>
 <translation id="4988210275050210843">מתבצעת הורדה של קובץ (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">דפים</translation>
@@ -561,7 +565,6 @@
 <translation id="5527082711130173040">‏כדי לבצע סריקה לאיתור מכשירים, Chrome זקוק לגישה לנתוני מיקום. <ph name="BEGIN_LINK1" />עדכן את ההרשאות<ph name="END_LINK1" />. כמו כן, הגישה למיקום <ph name="BEGIN_LINK2" />כבויה במכשיר הזה<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">סגור כרטיסיות גלישה בסתר</translation>
 <translation id="5534640966246046842">האתר הועתק</translation>
-<translation id="5548606607480005320">בדיקת אבטחה</translation>
 <translation id="5561549206367097665">ממתין לרשת…</translation>
 <translation id="55737423895878184">יש הרשאה לגישה אל המיקום ולהצגת הודעות</translation>
 <translation id="5578795271662203820">חפש את התמונה הזו ב-<ph name="SEARCH_ENGINE" /></translation>
@@ -579,6 +582,7 @@
 <translation id="5686790454216892815">שם הקובץ ארוך מדי</translation>
 <translation id="5694049548840660018">חזרה לדף הבית בקלות</translation>
 <translation id="569536719314091526">דרך לחצן האפשרויות הנוספות אפשר לתרגם את הדף הזה לשפה כלשהי</translation>
+<translation id="5696597120588531049">‏Chrome יכול להגן עליך מפני פרצות באבטחת מידע, אתרים לא בטוחים וסכנות נוספות</translation>
 <translation id="5697688514913266141">הקובץ יישמר בספרייה <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />לעריכה<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">מעבר לכרטיסייה</translation>
 <translation id="572328651809341494">כרטיסיות אחרונות</translation>
@@ -600,7 +604,6 @@
 <translation id="583281660410589416">לא ידוע</translation>
 <translation id="5833984609253377421">שיתוף קישור</translation>
 <translation id="5836192821815272682">‏מוריד עדכון של Chrome…</translation>
-<translation id="584120177693484274">לא נבדק</translation>
 <translation id="5853623416121554550">מושהה</translation>
 <translation id="5854790677617711513">לפני יותר מ-30 ימים</translation>
 <translation id="5858741533101922242">‏לא ניתן להפעיל ב-Chrome את מתאם Bluetooth</translation>
@@ -713,6 +716,7 @@
 <translation id="6656545060687952787">‏כדי לבצע סריקה לאיתור מכשירים ב-Chrome, יש צורך בגישה לנתוני מיקום. <ph name="BEGIN_LINK" />עדכן הרשאות<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">סיסמה</translation>
 <translation id="6659594942844771486">כרטיסייה</translation>
+<translation id="6663079968236414793">קישור לטקסט</translation>
 <translation id="666573598175432848">‏קיימת גרסה חדשה של Chrome. אפשר להקיש על הרכיב הזה כדי לעבור לחנות Play.</translation>
 <translation id="666731172850799929">פתח ב-<ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">‏הודעת הפרטיות של Chrome</translation>
@@ -736,10 +740,12 @@
 <translation id="685850645784703949">‏Discover by Google – מושבת</translation>
 <translation id="6864459304226931083">הורד תמונה</translation>
 <translation id="6865313869410766144">נתוני טפסים למילוי אוטומטי</translation>
+<translation id="6882836635272038266">הגנה רגילה מפני אתרים, הורדות ותוספים שידועים כמסוכנים.</translation>
 <translation id="6884306546558072722">המשך גלישה ללא חיבור לאינטרנט</translation>
 <translation id="688738109438487280">הוסף נתונים קיימים אל <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">ביטול הנעילה יאפשר להעתיק את הסיסמה</translation>
 <translation id="6896758677409633944">העתק</translation>
+<translation id="6900532703269623216">הגנה משופרת</translation>
 <translation id="6903907808598579934">הפעל סנכרון</translation>
 <translation id="6942665639005891494">ניתן תמיד לשנות את מיקום ברירת המחדל להורדות דרך האפשרות 'הגדרות' בתפריט</translation>
 <translation id="6945221475159498467">בחירה</translation>

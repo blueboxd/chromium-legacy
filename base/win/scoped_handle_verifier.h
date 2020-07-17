@@ -7,6 +7,7 @@
 
 #include "base/win/windows_types.h"
 
+#include <memory>
 #include <unordered_map>
 
 #include "base/base_export.h"
@@ -26,10 +27,22 @@ struct HandleHash {
 };
 
 struct ScopedHandleVerifierInfo {
+  ScopedHandleVerifierInfo(const void* owner,
+                           const void* pc1,
+                           const void* pc2,
+                           std::unique_ptr<debug::StackTrace> stack,
+                           DWORD thread_id);
+  ~ScopedHandleVerifierInfo();
+
+  ScopedHandleVerifierInfo(const ScopedHandleVerifierInfo&) = delete;
+  ScopedHandleVerifierInfo& operator=(const ScopedHandleVerifierInfo&) = delete;
+  ScopedHandleVerifierInfo(ScopedHandleVerifierInfo&&) noexcept;
+  ScopedHandleVerifierInfo& operator=(ScopedHandleVerifierInfo&&) noexcept;
+
   const void* owner;
   const void* pc1;
   const void* pc2;
-  base::debug::StackTrace stack;
+  std::unique_ptr<debug::StackTrace> stack;
   DWORD thread_id;
 };
 

@@ -128,8 +128,28 @@ void NGContainerFragmentBuilder::PropagateChildData(
   // We only need to report if inflow or floating elements depend on the
   // percentage resolution block-size. OOF-positioned children resolve their
   // percentages against the "final" size of their parent.
-  if (child.DependsOnPercentageBlockSize() && !child.IsOutOfFlowPositioned())
-    has_descendant_that_depends_on_percentage_block_size_ = true;
+  if (!has_descendant_that_depends_on_percentage_block_size_) {
+    if (child.DependsOnPercentageBlockSize() && !child.IsOutOfFlowPositioned())
+      has_descendant_that_depends_on_percentage_block_size_ = true;
+
+    // We may have a child which has the following style:
+    // <div style="position: relative; top: 50%;"></div>
+    // We need to mark this as depending on our %-block-size for the its offset
+    // to be correctly calculated. This is *slightly* too broad as it only
+    // depends on the available block-size, rather than the %-block-size.
+    const auto& child_style = child.Style();
+    if (child.IsCSSBox() && child_style.GetPosition() == EPosition::kRelative) {
+      if (IsHorizontalWritingMode(Style().GetWritingMode())) {
+        if (child_style.Top().IsPercentOrCalc() ||
+            child_style.Bottom().IsPercentOrCalc())
+          has_descendant_that_depends_on_percentage_block_size_ = true;
+      } else {
+        if (child_style.Left().IsPercentOrCalc() ||
+            child_style.Right().IsPercentOrCalc())
+          has_descendant_that_depends_on_percentage_block_size_ = true;
+      }
+    }
+  }
 
   // The |may_have_descendant_above_block_start_| flag is used to determine if
   // a fragment can be re-used when preceding floats are present. This is

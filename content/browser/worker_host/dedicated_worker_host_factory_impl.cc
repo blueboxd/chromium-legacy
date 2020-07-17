@@ -17,6 +17,24 @@
 
 namespace content {
 
+namespace {
+
+// Gets the DedicatedWorkerServiceImpl, returning nullptr if not possible.
+DedicatedWorkerServiceImpl* GetDedicatedWorkerServiceImplForRenderProcessHost(
+    RenderProcessHost* worker_process_host) {
+  if (!worker_process_host || !worker_process_host->IsInitializedAndNotDead()) {
+    // Abort if the worker's process host is gone. This means that the calling
+    // frame or worker is also either destroyed or in the process of being
+    // destroyed.
+    return nullptr;
+  }
+  auto* storage_partition = static_cast<StoragePartitionImpl*>(
+      worker_process_host->GetStoragePartition());
+  return storage_partition->GetDedicatedWorkerService();
+}
+
+}  // namespace
+
 DedicatedWorkerHostFactoryImpl::DedicatedWorkerHostFactoryImpl(
     int worker_process_id,
     base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
@@ -37,6 +55,7 @@ DedicatedWorkerHostFactoryImpl::DedicatedWorkerHostFactoryImpl(
 DedicatedWorkerHostFactoryImpl::~DedicatedWorkerHostFactoryImpl() = default;
 
 void DedicatedWorkerHostFactoryImpl::CreateWorkerHost(
+    blink::mojom::DedicatedWorkerTokenPtr token,
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> broker_receiver,
     base::OnceCallback<void(const network::CrossOriginEmbedderPolicy&)>
         callback) {
@@ -46,36 +65,34 @@ void DedicatedWorkerHostFactoryImpl::CreateWorkerHost(
     return;
   }
 
-  std::move(callback).Run(cross_origin_embedder_policy_);
-
+  // Get the dedicated worker service.
   auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
-  if (!worker_process_host || !worker_process_host->IsInitializedAndNotDead()) {
-    // Abort if the worker's process host is gone. This means that the calling
-    // frame or worker is also either destroyed or in the process of being
-    // destroyed.
+  auto* service =
+      GetDedicatedWorkerServiceImplForRenderProcessHost(worker_process_host);
+  if (!service)
+    return;
+
+  if (service->HasToken(*token)) {
+    mojo::ReportBadMessage("DWH_INVALID_WORKER_TOKEN");
     return;
   }
 
-  auto* storage_partition = static_cast<StoragePartitionImpl*>(
-      worker_process_host->GetStoragePartition());
-
-  // Get the dedicated worker service.
-  DedicatedWorkerServiceImpl* service =
-      storage_partition->GetDedicatedWorkerService();
+  std::move(callback).Run(cross_origin_embedder_policy_);
 
   mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
       coep_reporter;
   coep_reporter_->Clone(coep_reporter.InitWithNewPipeAndPassReceiver());
 
   auto* host = new DedicatedWorkerHost(
-      service, service->GenerateNextDedicatedWorkerId(), worker_process_host,
-      creator_render_frame_host_id_, ancestor_render_frame_host_id_,
-      creator_origin_, cross_origin_embedder_policy_, std::move(coep_reporter));
+      service, *token, worker_process_host, creator_render_frame_host_id_,
+      ancestor_render_frame_host_id_, creator_origin_,
+      cross_origin_embedder_policy_, std::move(coep_reporter));
   host->BindBrowserInterfaceBrokerReceiver(std::move(broker_receiver));
 }
 
 // PlzDedicatedWorker:
 void DedicatedWorkerHostFactoryImpl::CreateWorkerHostAndStartScriptLoad(
+    blink::mojom::DedicatedWorkerTokenPtr token,
     const GURL& script_url,
     network::mojom::CredentialsMode credentials_mode,
     blink::mojom::FetchClientSettingsObjectPtr
@@ -89,32 +106,29 @@ void DedicatedWorkerHostFactoryImpl::CreateWorkerHostAndStartScriptLoad(
     return;
   }
 
-  // TODO(https://crbug.com/1058759): Compare |creator_origin_| to
-  // |script_url|, and report as bad message if that fails.
-
+  // Get the dedicated worker service.
   auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
-  if (!worker_process_host || !worker_process_host->IsInitializedAndNotDead()) {
-    // Abort if the worker's process host is gone. This means that the calling
-    // frame or worker is also either destroyed or in the process of being
-    // destroyed.
+  auto* service =
+      GetDedicatedWorkerServiceImplForRenderProcessHost(worker_process_host);
+  if (!service)
+    return;
+
+  if (service->HasToken(*token)) {
+    mojo::ReportBadMessage("DWH_INVALID_WORKER_TOKEN");
     return;
   }
 
-  auto* storage_partition = static_cast<StoragePartitionImpl*>(
-      worker_process_host->GetStoragePartition());
-
-  // Get the dedicated worker service.
-  DedicatedWorkerServiceImpl* service =
-      storage_partition->GetDedicatedWorkerService();
+  // TODO(https://crbug.com/1058759): Compare |creator_origin_| to
+  // |script_url|, and report as bad message if that fails.
 
   mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
       coep_reporter;
   coep_reporter_->Clone(coep_reporter.InitWithNewPipeAndPassReceiver());
 
   auto* host = new DedicatedWorkerHost(
-      service, service->GenerateNextDedicatedWorkerId(), worker_process_host,
-      creator_render_frame_host_id_, ancestor_render_frame_host_id_,
-      creator_origin_, cross_origin_embedder_policy_, std::move(coep_reporter));
+      service, *token, worker_process_host, creator_render_frame_host_id_,
+      ancestor_render_frame_host_id_, creator_origin_,
+      cross_origin_embedder_policy_, std::move(coep_reporter));
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker;
   host->BindBrowserInterfaceBrokerReceiver(
       broker.InitWithNewPipeAndPassReceiver());

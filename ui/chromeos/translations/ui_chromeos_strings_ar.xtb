@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">الإدخال باللغة اليابانية (للوحة مفاتيح الولايات المتحدة)</translation>
 <translation id="1047956942837015229">جارٍ حذف <ph name="COUNT" /> من العناصر...</translation>
 <translation id="1049926623896334335">‏مستند Word</translation>
+<translation id="1060368002126861100">‏لفتح الملفات باستخدام تطبيق <ph name="APP_NAME" />، يُرجى نقلها أولاً إلى مجلد ملفات نظام التشغيل Windows.</translation>
 <translation id="1062407476771304334">استبدال</translation>
 <translation id="1065449928621190041">لوحة المفاتيح الكندية الفرنسية</translation>
 <translation id="1119069657431255176">‏أرشيف tar مضغوط ببرنامج Bzip2</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">تنبيه: هذه الملفات مؤقتة وقد يتم حذفها تلقائيًا لتوفير مساحة على القرص.  <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">المجلد</translation>
 <translation id="3549797760399244642">‏جارٍالانتقال إلى drive.google.com...</translation>
+<translation id="3553048479571901246">‏لفتح الملفات باستخدام تطبيق <ph name="APP_NAME" />، يُرجى نسخها أولاً إلى مجلد ملفات نظام التشغيل Windows.</translation>
 <translation id="357479282490346887">الليتوانية</translation>
 <translation id="3583509704582854624">الإدخال الأبجدي الرقمي (للوحة المفاتيح اليابانية)</translation>
 <translation id="3603385196401704894">الفرنسية الكندية</translation>

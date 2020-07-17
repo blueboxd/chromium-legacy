@@ -20,6 +20,8 @@
 <translation id="2730884209570016437">Chromium ne peut pas utiliser votre appareil photo, car il est utilisé par une autre application</translation>
 <translation id="2915596697727466327">Chromium utilise Face ID pour assurer un accès autorisé à vos mots de passe.</translation>
 <translation id="3256316712990552818">Copiée dans Chromium</translation>
+<translation id="3344973607274501920">Chromium n'a pas pu vérifier vos mots de passe. Essayez de vérifier votre connexion Internet.</translation>
+<translation id="3639997914391704523">Chromium peut vérifier vos mots de passe lorsque vous vous connectez avec votre compte Google.</translation>
 <translation id="3805899903892079518">Chromium n'a pas accès à vos photos ou vidéos. Activez l'accès dans Réglages iOS &gt; Confidentialité &gt; Photos.</translation>
 <translation id="4555020257205549924">Lorsque cette fonctionnalité est activée, Chromium vous offre de traduire les pages écrites dans d'autres langues à l'aide de Google Traduction. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Activer le lecteur de Chromium</translation>
@@ -27,6 +29,7 @@
 <translation id="4999538639245140991">Puisque vous vous déconnectez d'un compte géré par <ph name="SIGNOUT_MANAGED_DOMAIN" />, vos données Chromium seront supprimées de cet appareil. Toutefois, vos données resteront dans votre compte Google.</translation>
 <translation id="5521125884468363740">Pour voir vos onglets partout où vous utilisez Chromium, connectez-vous et activez la synchronisation</translation>
 <translation id="5573014823074921752">Astuce pour Chromium. Pour afficher plus d'options d'onglets, maintenez le doigt sur le bouton Afficher les onglets dans la barre d'outils, qui se trouve dans le bas ou le haut de votre écran.</translation>
+<translation id="5700709190537129682">Chromium ne peut pas vérifier vos mots de passe</translation>
 <translation id="5777187867430702742">Page Chromium</translation>
 <translation id="5862307444128926510">Bienvenue dans Chromium</translation>
 <translation id="5945387852661427312">Vous vous connectez avec un compte géré par <ph name="DOMAIN" />, et son administrateur pourra contrôler vos données Chromium. Celles-ci seront définitivement liées à votre compte. En vous déconnectant de Chromium, vous supprimerez vos données sur cet appareil, mais celles-ci resteront stockées dans votre compte Google.</translation>
@@ -34,6 +37,7 @@
 <translation id="6268381023930128611">Se déconnecter de Chromium?</translation>
 <translation id="6424492062988593837">Une nouvelle version améliorée de Chromium est maintenant offerte.</translation>
 <translation id="6604711459180487467">Profitez d'une meilleure expérience dans Chromium en fonction de votre emplacement.</translation>
+<translation id="6820823224820483452">Chromium n'a pas pu vérifier tous les mots de passe. Réessayez demain.</translation>
 <translation id="7099326575020694068">Chromium ne peut pas utiliser votre appareil photo en mode Vue partagée</translation>
 <translation id="7208566199746267865">Chromium vous fait gagner du temps en mettant vos comptes sur le Web. Vous pouvez ajouter ou supprimer des comptes dans Paramètres.</translation>
 <translation id="7269362888766543920">Certains modules complémentaires provoquent le plantage de Chromium. Veuillez essayer de les désinstaller.</translation>
@@ -42,6 +46,7 @@
 <translation id="7400689562045506105">Utiliser Chromium partout</translation>
 <translation id="7674213385180944843">Ouvrez Paramètres &gt; Confidentialité &gt; Appareil photo &gt; Chromium et activez l'appareil photo.</translation>
 <translation id="7746854981345936341">Conseil pour Chromium. Certains boutons se trouvent désormais en bas de votre écran, comme Précédent, Suivant et Rechercher.</translation>
+<translation id="7798909783578470546">Chromium n'a pas pu vérifier tous les mots de passe. Réessayez.</translation>
 <translation id="786327964234957808">Vous changez de compte synchronisé pour passer de <ph name="USER_EMAIL1" /> à <ph name="USER_EMAIL2" />. Vos données Chromium actuelles sont gérées par <ph name="DOMAIN" />. Cette opération entraînera la suppression de vos données sur cet appareil, mais celles-ci resteront dans le compte <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Commencer à utiliser le lecteur de Chromium</translation>
 <translation id="8013573822802650211">Pour voir vos onglets partout où vous utilisez Chromium, connectez-vous sur tous vos appareils</translation>
@@ -51,5 +56,6 @@
 <translation id="8586442755830160949">© <ph name="YEAR" /> Les auteurs de Chrome. Tous droits réservés.</translation>
 <translation id="8776843108004031667">Ce compte et toutes les données non enregistrées seront supprimés de Chromium.</translation>
 <translation id="9022552996538154597">Connexion à Chromium</translation>
+<translation id="921174536258924340">Chromium n'a pas pu vérifier tous les mots de passe. Réessayez demain ou <ph name="BEGIN_LINK" />vérifiez les mots de passe dans votre compte Google<ph name="END_LINK" />.</translation>
 <translation id="985602178874221306">Les auteurs de Chrome</translation>
 </translationbundle>

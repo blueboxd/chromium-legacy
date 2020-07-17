@@ -18,10 +18,6 @@ component("android") {
     "display_android_manager.h",
     "edge_effect.cc",
     "edge_effect.h",
-    "edge_effect_base.cc",
-    "edge_effect_base.h",
-    "edge_effect_l.cc",
-    "edge_effect_l.h",
     "event_forwarder.cc",
     "event_forwarder.h",
     "handle_view_resources.cc",
@@ -215,6 +211,7 @@ android_library("ui_utils_java") {
   deps = [
     "//base:base_java",
     "//components/payments/mojom:mojom_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_appcompat_appcompat_java",
     "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
     "//third_party/android_deps:androidx_core_core_java",
@@ -379,6 +376,7 @@ android_library("ui_java_test_support") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/junit",
   ]
@@ -432,8 +430,10 @@ junit_binary("ui_junit_tests") {
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//base/test:test_support_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
     "//third_party/android_deps:androidx_asynclayoutinflater_asynclayoutinflater_java",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/hamcrest:hamcrest_java",
   ]
 }
@@ -498,6 +498,7 @@ android_library("ui_javatests") {
     "//base:base_java_test_support",
     "//base:jni_java",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/junit",
   ]
 }

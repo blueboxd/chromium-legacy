@@ -28,6 +28,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/browser/pref_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_id.h"
@@ -1330,6 +1331,32 @@ TEST_F(ExtensionPrefsSimpleTest, MigrateToNewExternalUninstallBits) {
       prefs.prefs()->IsExternalExtensionUninstalled(external_extension));
   EXPECT_FALSE(
       prefs.prefs()->IsExternalExtensionUninstalled(internal_extension));
+}
+
+// Tests the generic Get/Set functions for profile wide extension prefs.
+TEST_F(ExtensionPrefsSimpleTest, ProfileExtensionPrefsMapTest) {
+  constexpr PrefMap kTestBooleanPref = {"test.boolean", PrefType::kBool,
+                                        PrefScope::kProfile};
+  constexpr PrefMap kTestIntegerPref = {"test.integer", PrefType::kInteger,
+                                        PrefScope::kProfile};
+  constexpr PrefMap kTestStringPref = {"test.string", PrefType::kString,
+                                       PrefScope::kProfile};
+
+  content::BrowserTaskEnvironment task_environment_;
+  TestExtensionPrefs prefs(base::ThreadTaskRunnerHandle::Get());
+
+  auto* registry = prefs.pref_registry().get();
+  registry->RegisterBooleanPref(kTestBooleanPref.name, false);
+  registry->RegisterIntegerPref(kTestIntegerPref.name, 0);
+  registry->RegisterStringPref(kTestStringPref.name, std::string());
+
+  prefs.prefs()->SetBooleanPref(kTestBooleanPref, true);
+  prefs.prefs()->SetIntegerPref(kTestIntegerPref, 1);
+  prefs.prefs()->SetStringPref(kTestStringPref, "foo");
+
+  EXPECT_TRUE(prefs.prefs()->GetPrefAsBoolean(kTestBooleanPref));
+  EXPECT_EQ(prefs.prefs()->GetPrefAsInteger(kTestIntegerPref), 1);
+  EXPECT_EQ(prefs.prefs()->GetPrefAsString(kTestStringPref), "foo");
 }
 
 }  // namespace extensions

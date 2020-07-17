@@ -43,6 +43,9 @@ class AX_EXPORT AXTreeID {
   // automation API.
   static AXTreeID FromString(const std::string& string);
 
+  // Convenience method to unserialize an AXTreeID from an UnguessableToken.
+  static AXTreeID FromToken(const base::UnguessableToken& token);
+
   AXTreeID& operator=(const AXTreeID& other);
 
   std::string ToString() const;

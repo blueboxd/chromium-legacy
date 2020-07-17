@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Տեսախցիկ</translation>
 <translation id="1647391597548383849">Տեսախցիկի օգտագործում</translation>
 <translation id="1660204651932907780">Թույլ տալ կայքերին նվագարկել ձայն (խորհուրդ է տրվում)</translation>
+<translation id="1677097821151855053">Քուքիները և կայքի այլ տվյալներ օգտագործվում են ձեզ հիշելու համար։ Դա անհրաժեշտ է, որպեսզի, օրինակ, դուք կարողանաք հաշիվ մտնել կամ ձեզ անհատականացված գովազդ ցուցադրվի։ Բոլոր կայքերի քուքիները կարող եք կառավարել <ph name="BEGIN_LINK" />Քուքիների կարգավորումներ<ph name="END_LINK" /> բաժնում։</translation>
 <translation id="1688867105868176567">Ջնջե՞լ կայքի տվյալները</translation>
 <translation id="169515064810179024">Արգելել կայքերին օգտագործել շարժման տվիչները</translation>
 <translation id="1717218214683051432">Շարժման տվիչներ</translation>
@@ -72,7 +73,7 @@
 <translation id="3115898365077584848">Ցուցադրել տեղեկությունները</translation>
 <translation id="3123473560110926937">Արգելափակված է որոշ կայքերում</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> պահված տվյալներ</translation>
-<translation id="321187648315454507">Որպեսզի թույլատրեք <ph name="APP_NAME" />-ին ձեզ ծանուցումներ ուղարկել, միացրեք նաև ծանուցումները <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
+<translation id="321187648315454507">Որպեսզի <ph name="APP_NAME" />-ին թույլատրեք ձեզ ծանուցումներ ուղարկել, միացրեք նաև ծանուցումները <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="3227137524299004712">Խոսափող</translation>
 <translation id="3277252321222022663">Թույլ տալ կայքերին օգտագործել տվիչները (խորհուրդ է տրվում)</translation>
 <translation id="3295602654194328831">Թաքցնել տեղեկությունները</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Թույլատրել քուքիները կոնկրետ կայքի համար:</translation>
 <translation id="4046123991198612571">Հաջորդը</translation>
 <translation id="4165986682804962316">Կայքի կարգավորումներ</translation>
+<translation id="4200726100658658164">Բացել տեղադրության կարգավորումները</translation>
 <translation id="4226663524361240545">Ծանուցումների ժամանակ սարքը կթրթռա</translation>
 <translation id="4242533952199664413">Բացել կարգավորումները</translation>
 <translation id="4259722352634471385">Նավարկումն արգելափակված է՝ <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Բոլոր կայքերը</translation>
 <translation id="6320088164292336938">Թրթռոց</translation>
 <translation id="6388207532828177975">Մաքրել և զրոյացնել</translation>
+<translation id="6423924377271166037">Մաքրել քուքիները</translation>
 <translation id="6439114592976064011">Արգելել կայքերին օգտագործել վիրտուալ իրականության ձեր սարքերն ու տվյալները</translation>
 <translation id="6447842834002726250">Cookie ֆայլեր</translation>
 <translation id="6527303717912515753">Կիսվել</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Որոնել դեպի հետ</translation>
 <translation id="8444433999583714703">Որպեսզի ձեր տեղադրությունը հասանելի դառնա <ph name="APP_NAME" />-ին, միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="8447861592752582886">Արգելել սարքի օգտագործումը</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 օգտագործվող քուքի}one{# օգտագործվող քուքի}other{# օգտագործվող քուքի}}</translation>
 <translation id="8463851957836045671">Կայքը բեռնվում է արագ</translation>
 <translation id="851751545965956758">Արգելել կայքերին միանալ սարքերին</translation>
 <translation id="857943718398505171">Թույլատրված է (հանձնարարելի)</translation>

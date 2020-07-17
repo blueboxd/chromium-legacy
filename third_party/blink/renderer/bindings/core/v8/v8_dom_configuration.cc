@@ -534,7 +534,7 @@ void InstallMethodInternal(
   if (!WorldConfigurationApplies(config, world))
     return;
 
-  v8::Local<v8::Name> name = config.MethodName(isolate);
+  v8::Local<v8::String> name = config.MethodName(isolate);
   v8::FunctionCallback callback = config.callback;
   // Promise-returning functions need to return a reject promise when
   // an exception occurs.  This includes a case that the receiver object is not
@@ -565,6 +565,7 @@ void InstallMethodInternal(
     v8::Local<v8::Function> function =
         function_template->GetFunction(isolate->GetCurrentContext())
             .ToLocalChecked();
+    function->SetName(name);
     if (location & V8DOMConfiguration::kOnInstance && !instance.IsEmpty()) {
       instance
           ->DefineOwnProperty(
@@ -594,6 +595,7 @@ void InstallMethodInternal(
     v8::Local<v8::Function> function =
         function_template->GetFunction(isolate->GetCurrentContext())
             .ToLocalChecked();
+    function->SetName(name);
     interface->DefineOwnProperty(isolate->GetCurrentContext(), name, function, static_cast<v8::PropertyAttribute>(config.attribute)).ToChecked();
   }
 }

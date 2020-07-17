@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">他のデバイスに保存されているブックマークがここに表示されます。</translation>
 <translation id="1113597929977215864">簡易表示する</translation>
 <translation id="1122278879166832009">ここをタップすると、どこからでもホームページにアクセスできます</translation>
+<translation id="1126809382673880764">危険なウェブサイト、ダウンロード、拡張機能から保護されていません。セーフ ブラウジングによる保護については、Gmail や Google 検索といった他の Google サービスで利用可能な場合は引き続き保護されます。</translation>
 <translation id="1129510026454351943">詳細: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 件のダウンロードが保留中です。}other{# 件のダウンロードが保留中です。}}</translation>
 <translation id="1145536944570833626">既存のデータを削除します。</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">明</translation>
 <translation id="1810845389119482123">最初の同期設定が終了していません</translation>
 <translation id="1821253160463689938">Cookie を使って設定を保存します（これらのページにアクセスしない場合も Cookie が保持されます）</translation>
-<translation id="1826516787628120939">確認中</translation>
 <translation id="1829244130665387512">ページ内検索</translation>
 <translation id="1853692000353488670">新しいシークレット タブ</translation>
 <translation id="1856325424225101786">ライトモードをリセットしますか？</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">パスワードの保存</translation>
 <translation id="1952172573699511566">可能な場合、設定した言語でウェブサイトのテキストを表示します。</translation>
 <translation id="1960290143419248813">このバージョンの Android では Chrome の更新はサポートされなくなりました</translation>
+<translation id="1963976881984600709">標準保護機能</translation>
 <translation id="1966710179511230534">ログイン情報を更新してください。</translation>
 <translation id="1974060860693918893">詳細設定</translation>
+<translation id="1984417487208496350">保護なし（推奨されません）</translation>
 <translation id="1984705450038014246">Chrome データを同期</translation>
 <translation id="1986685561493779662">この名前はすでに存在しています</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> ボタン</translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">Google レンズで検索<ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">新しいタブで開く</translation>
 <translation id="4198423547019359126">ダウンロードの保存先はありません</translation>
-<translation id="4202553989407425169">次の設定が安全かどうか Chrome がチェックします。</translation>
 <translation id="4209895695669353772">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、同期を有効にします</translation>
 <translation id="423219824432660969"><ph name="TIME" />時点の Google パスワードで同期データを暗号化する</translation>
 <translation id="4242533952199664413">設定を開く</translation>
@@ -490,6 +491,7 @@
 <translation id="4943872375798546930">結果はありません</translation>
 <translation id="4961107849584082341">このページを任意の言語に翻訳できます</translation>
 <translation id="4970824347203572753">お住まいの地域ではご利用になれません</translation>
+<translation id="4971735654804503942">危険なウェブサイト、ダウンロード、拡張機能から予防的な方法で迅速に保護します。パスワードの侵害があった場合は警告します。Google に閲覧データを送信する必要があります。</translation>
 <translation id="497421865427891073">次に進む</translation>
 <translation id="4988210275050210843">ファイルをダウンロードしています（<ph name="MEGABYTES" />）。</translation>
 <translation id="4988526792673242964">ページ</translation>
@@ -561,7 +563,6 @@
 <translation id="5527082711130173040">Chrome ではデバイスをスキャンするために現在地情報にアクセスする必要があります。<ph name="BEGIN_LINK1" />権限を更新<ph name="END_LINK1" />してください。また、現在地情報へのアクセスが<ph name="BEGIN_LINK2" />このデバイスでオフになっています<ph name="END_LINK2" />。</translation>
 <translation id="5530766185686772672">シークレットタブを閉じる</translation>
 <translation id="5534640966246046842">サイトがコピーされました</translation>
-<translation id="5548606607480005320">安全確認</translation>
 <translation id="5561549206367097665">ネットワーク接続を待機しています…</translation>
 <translation id="55737423895878184">位置情報の使用と通知の送信が許可されています</translation>
 <translation id="5578795271662203820">この画像を <ph name="SEARCH_ENGINE" /> で検索</translation>
@@ -600,7 +601,6 @@
 <translation id="583281660410589416">不明</translation>
 <translation id="5833984609253377421">リンクを共有</translation>
 <translation id="5836192821815272682">Chrome のアップデートをダウンロードしています…</translation>
-<translation id="584120177693484274">オフ</translation>
 <translation id="5853623416121554550">一時停止中</translation>
 <translation id="5854790677617711513">30 日以上経過</translation>
 <translation id="5858741533101922242">Chrome から Bluetooth アダプタをオンにできません</translation>
@@ -736,10 +736,12 @@
 <translation id="685850645784703949">Discover by Google - オフ</translation>
 <translation id="6864459304226931083">画像をダウンロード</translation>
 <translation id="6865313869410766144">自動入力フォームのデータ</translation>
+<translation id="6882836635272038266">既知の危険なウェブサイト、ダウンロード、拡張機能から標準的な方法で保護します。</translation>
 <translation id="6884306546558072722">オフラインで閲覧を続ける</translation>
 <translation id="688738109438487280">既存のデータを <ph name="TO_ACCOUNT" /> に追加します。</translation>
 <translation id="6891726759199484455">パスワードをコピーするにはロックを解除してください</translation>
 <translation id="6896758677409633944">コピー</translation>
+<translation id="6900532703269623216">保護強化機能</translation>
 <translation id="6903907808598579934">同期を有効にする</translation>
 <translation id="6942665639005891494">デフォルトのダウンロード保存先は [設定] メニューでいつでも変更できます</translation>
 <translation id="6945221475159498467">選択</translation>

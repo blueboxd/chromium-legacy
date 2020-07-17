@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="1008557486741366299">Nie teraz</translation>
+<translation id="100957008357583611">Użyć lokalizacji?</translation>
 <translation id="1010200102790553230">Wczytaj stronę później</translation>
 <translation id="1015730422737071372">Podaj dodatkowe informacje</translation>
 <translation id="1019413721762100891">wyłączono</translation>
@@ -45,6 +46,7 @@
 <translation id="115926840831309955">Sprawdź kod CVC i spróbuj ponownie lub popraw datę ważności</translation>
 <translation id="1161325031994447685">Ponownie połącz się z Wi-Fi</translation>
 <translation id="1165039591588034296">Błąd</translation>
+<translation id="1165174597379888365">Odwiedzono stronę</translation>
 <translation id="1175364870820465910">&amp;Drukuj...</translation>
 <translation id="1175875016430184367">Trzy zszywki po prawej</translation>
 <translation id="1178581264944972037">Wstrzymaj</translation>
@@ -262,6 +264,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="2001146170449793414">{COUNT,plural, =1{i jeszcze 1}few{i jeszcze #}many{i jeszcze #}other{i jeszcze #}}</translation>
 <translation id="2003709556000175978">Zresetuj teraz swoje hasło</translation>
 <translation id="2003775180883135320">Cztery otwory u góry</translation>
+<translation id="202072848677994234">Ten formularz jest przesyłany przez niezabezpieczone połączenie. Automatyczne wypełnianie zostało wyłączone.</translation>
 <translation id="2025115093177348061">Rzeczywistość rozszerzona</translation>
 <translation id="2025186561304664664">Ustawiono automatyczne konfigurowanie proxy.</translation>
 <translation id="2030481566774242610">Czy chodziło Ci o <ph name="LINK" />?</translation>
@@ -330,6 +333,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="2289385804009217824">Przycięcie</translation>
 <translation id="2292556288342944218">Masz zablokowany dostęp do internetu</translation>
 <translation id="2293443924986248631">Gdy to ustawienie jest włączone, strony internetowe nie mogą używać plików cookie śledzących, co robisz w sieci. Funkcje niektórych witryn mogą nie działać prawidłowo.</translation>
+<translation id="2295290966866883927">Adresy URL odwiedzanych stron są wysyłane do Google Cloud lub innych firm w celu przeanalizowania. Na przykład mogą zostać przeskanowane w poszukiwaniu niebezpiecznych stron.</translation>
 <translation id="2297722699537546652">B5 (koperta)</translation>
 <translation id="2300306941146563769">Nieprzesłany</translation>
 <translation id="2310021320168182093">Chou2 (koperta)</translation>
@@ -421,7 +425,6 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="2705137772291741111">Zapisana w pamięci podręcznej kopia tej strony jest uszkodzona.</translation>
 <translation id="2709516037105925701">Autouzupełnianie</translation>
 <translation id="2713444072780614174">Biały</translation>
-<translation id="2720342946869265578">W pobliżu</translation>
 <translation id="2721148159707890343">Żądanie wykonane pomyślnie</translation>
 <translation id="272451190272506600">Aby zapłacić, dotknij czytnika</translation>
 <translation id="2728127805433021124">Certyfikat serwera został podpisany przy użyciu słabego algorytmu podpisu.</translation>
@@ -717,7 +720,6 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="3987940399970879459">Mniej niż 1 MB</translation>
 <translation id="3990250421422698716">Odsunięcie poszczególnych kopii</translation>
 <translation id="3996311196211510766">Strona <ph name="ORIGIN" /> zażądała, by do wszystkich kierowanych do niej żądań stosować zasadę dotyczącą źródła, ale tej zasady nie można teraz zastosować.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 strona w pobliżu}few{# strony w pobliżu}many{# stron w pobliżu}other{# strony w pobliżu}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Dokument PDF zawierający {COUNT} stronę}few{Dokument PDF zawierający {COUNT} strony}many{Dokument PDF zawierający {COUNT} stron}other{Dokument PDF zawierający {COUNT} strony}}</translation>
 <translation id="4030383055268325496">&amp;Cofnij dodanie</translation>
 <translation id="4032320456957708163">Twoją przeglądarką zarządza <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -931,7 +933,6 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Zapisz...</translation>
 <translation id="4913987521957242411">Otwór w lewym górnym rogu</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{i jeszcze 1 strona}few{i jeszcze # strony}many{i jeszcze # stron}other{i jeszcze # strony}}</translation>
 <translation id="4923459931733593730">Płatność</translation>
 <translation id="4926049483395192435">Musi być określona.</translation>
 <translation id="4926159001844873046">Komunikat ze strony <ph name="SITE" /></translation>
@@ -1172,6 +1173,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="5869405914158311789">Ta witryna jest nieosiągalna</translation>
 <translation id="5869522115854928033">Zapisane hasła</translation>
 <translation id="5887400589839399685">Zapisano kartę</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> wymaga utworzenia kopii zapasowej danych i zwrotu urządzenia.</translation>
 <translation id="5895138241574237353">Uruchom ponownie</translation>
 <translation id="5895187275912066135">Wystawiony dnia</translation>
 <translation id="5901630391730855834">Żółty</translation>
@@ -1322,7 +1324,6 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="6518133107902771759">Zweryfikuj</translation>
 <translation id="6521745193039995384">Nieaktywna</translation>
 <translation id="6529602333819889595">&amp;Ponów usunięcie</translation>
-<translation id="6534179046333460208">Sugestie dotyczące internetu rzeczy</translation>
 <translation id="6545864417968258051">Skanowanie Bluetooth</translation>
 <translation id="6547208576736763147">Dwa otwory po lewej</translation>
 <translation id="6554795675067793129">To konto jest zarządzane przez: <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1844,7 +1845,6 @@ Dodatkowe informacje:
 <translation id="8790007591277257123">&amp;Ponów usunięcie</translation>
 <translation id="8792621596287649091">Możesz stracić dostęp do swojego konta <ph name="ORG_NAME" /> lub paść ofiarą kradzieży tożsamości. Chromium zaleca natychmiastową zmianę hasła.</translation>
 <translation id="8793655568873652685">Strona <ph name="ENROLLMENT_DOMAIN" /> włączyła w przeglądarce oprogramowanie sprzęgające Chrome Enterprise. Może ono mieć dostęp do niektórych Twoich danych.</translation>
-<translation id="8800988563907321413">Tutaj wyświetlają się sugestie witryn w pobliżu</translation>
 <translation id="8805819170075074995">Pozycja na liście „<ph name="LANGUAGE_ID" />”: pozycja została zignorowana, ponieważ występuje też w zasadzie SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Przycięcie po każdej stronie</translation>
 <translation id="8820817407110198400">Zakładki</translation>

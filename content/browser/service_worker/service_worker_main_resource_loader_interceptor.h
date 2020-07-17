@@ -14,13 +14,13 @@
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/dedicated_worker_id.h"
 #include "content/public/browser/shared_worker_id.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
+#include "third_party/blink/public/mojom/tokens/worker_tokens.mojom.h"
 
 namespace content {
 
@@ -49,7 +49,7 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoaderInterceptor final
   static std::unique_ptr<NavigationLoaderInterceptor> CreateForWorker(
       const network::ResourceRequest& resource_request,
       int process_id,
-      DedicatedWorkerId dedicated_worker_id,
+      const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
       SharedWorkerId shared_worker_id,
       base::WeakPtr<ServiceWorkerMainResourceHandle> navigation_handle);
 
@@ -90,7 +90,7 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoaderInterceptor final
       bool are_ancestors_secure,
       int frame_tree_node_id,
       int process_id,
-      DedicatedWorkerId dedicated_worker_id,
+      const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
       SharedWorkerId shared_worker_id);
 
   // Returns true if a ServiceWorkerMainResourceLoaderInterceptor should be
@@ -126,7 +126,7 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoaderInterceptor final
 
   // For web workers:
   const int process_id_;
-  const DedicatedWorkerId dedicated_worker_id_;
+  const blink::mojom::DedicatedWorkerToken dedicated_worker_token_;
   const SharedWorkerId shared_worker_id_;
 
   base::Optional<SubresourceLoaderParams> subresource_loader_params_;

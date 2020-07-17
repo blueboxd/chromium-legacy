@@ -50,7 +50,7 @@
     readonly attribute FeaturePolicy featurePolicy;
 
     // Document Policy
-    [RuntimeEnabled=DocumentPolicy, CEReactions, Reflect] attribute DOMString policy;
+    [RuntimeEnabled=DocumentPolicyNegotiation, CEReactions, Reflect] attribute DOMString policy;
 
     [RuntimeEnabled=LazyFrameLoading, CEReactions, Reflect, ReflectOnly=("lazy", "eager", "auto"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString loading;
 

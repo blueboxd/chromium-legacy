@@ -353,7 +353,6 @@ void XMLHttpRequest::InitResponseDocument() {
   auto* document = To<LocalDOMWindow>(GetExecutionContext())->document();
   DocumentInit init = DocumentInit::Create()
                           .WithExecutionContext(GetExecutionContext())
-                          .WithOwnerDocument(document)
                           .WithURL(response_.ResponseUrl());
   if (is_html)
     response_document_ = MakeGarbageCollected<HTMLDocument>(init);

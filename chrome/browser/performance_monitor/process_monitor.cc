@@ -18,6 +18,7 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_constants.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

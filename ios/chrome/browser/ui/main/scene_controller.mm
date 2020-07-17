@@ -766,11 +766,14 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 // Schedules presentation of the first eligible promo found, if any.
 - (void)scheduleShowPromo {
-  // Don't show promos if first run is shown.  (Note:  This flag is only YES
-  // while the first run UI is visible.  However, as this function is called
-  // immediately after the UI is shown, it's a safe check.)
-  if (self.sceneState.presentingFirstRunUI)
-    return;
+  // Don't show promos if first run is shown in any scene.  (Note:  This flag
+  // is only YES while the first run UI is visible.  However, as this function
+  // is called immediately after the UI is shown, it's a safe check.)
+  for (SceneState* sceneState in self.sceneState.appState.connectedScenes) {
+    if (sceneState.presentingFirstRunUI) {
+      return;
+    }
+  }
   // Don't show promos in Incognito mode.
   if (self.currentInterface == self.incognitoInterface)
     return;

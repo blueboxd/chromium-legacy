@@ -151,48 +151,8 @@ void BrowserAppMenuButton::SetTypeAndSeverity(
     AppMenuIconController::TypeAndSeverity type_and_severity) {
   type_and_severity_ = type_and_severity;
 
-  int message_id;
-  base::string16 text;
-  if (type_and_severity.severity == AppMenuIconController::Severity::NONE) {
-    message_id = IDS_APPMENU_TOOLTIP;
-  } else if (type_and_severity.type ==
-             AppMenuIconController::IconType::UPGRADE_NOTIFICATION) {
-    message_id = IDS_APPMENU_TOOLTIP_UPDATE_AVAILABLE;
-    text = l10n_util::GetStringUTF16(IDS_APP_MENU_BUTTON_UPDATE);
-  } else {
-    message_id = IDS_APPMENU_TOOLTIP_ALERT;
-    text = l10n_util::GetStringUTF16(IDS_APP_MENU_BUTTON_ERROR);
-  }
-
-  base::Optional<SkColor> color;
-  switch (type_and_severity.severity) {
-    case AppMenuIconController::Severity::NONE:
-      break;
-    case AppMenuIconController::Severity::LOW:
-      color = AdjustHighlightColorForContrast(
-          GetThemeProvider(), gfx::kGoogleGreen300, gfx::kGoogleGreen600,
-          gfx::kGoogleGreen050, gfx::kGoogleGreen900);
-
-      break;
-    case AppMenuIconController::Severity::MEDIUM:
-      color = AdjustHighlightColorForContrast(
-          GetThemeProvider(), gfx::kGoogleYellow300, gfx::kGoogleYellow600,
-          gfx::kGoogleYellow050, gfx::kGoogleYellow900);
-
-      break;
-    case AppMenuIconController::Severity::HIGH:
-      color = AdjustHighlightColorForContrast(
-          GetThemeProvider(), gfx::kGoogleRed300, gfx::kGoogleRed600,
-          gfx::kGoogleRed050, gfx::kGoogleRed900);
-
-      break;
-  }
-
-  if (base::FeatureList::IsEnabled(features::kUseTextForUpdateButton))
-    SetHighlight(text, color);
-
-  SetTooltipText(l10n_util::GetStringUTF16(message_id));
   UpdateIcon();
+  UpdateTextAndHighlightColor();
 }
 
 void BrowserAppMenuButton::SetPromoFeature(
@@ -251,6 +211,11 @@ void BrowserAppMenuButton::ShowMenu(int run_types) {
       browser, run_types, alert_reopen_tab_items);
 }
 
+void BrowserAppMenuButton::OnThemeChanged() {
+  UpdateTextAndHighlightColor();
+  AppMenuButton::OnThemeChanged();
+}
+
 void BrowserAppMenuButton::UpdateIcon() {
   bool touch_ui = ui::TouchUiController::Get()->touch_ui();
   if (base::FeatureList::IsEnabled(features::kUseTextForUpdateButton)) {
@@ -268,6 +233,50 @@ void BrowserAppMenuButton::UpdateIcon() {
     SetImage(state, toolbar_view_->app_menu_icon_controller()->GetIconImage(
                         touch_ui, GetForegroundColor(state)));
   }
+}
+
+void BrowserAppMenuButton::UpdateTextAndHighlightColor() {
+  int tooltip_message_id;
+  base::string16 text;
+  if (type_and_severity_.severity == AppMenuIconController::Severity::NONE) {
+    tooltip_message_id = IDS_APPMENU_TOOLTIP;
+  } else if (type_and_severity_.type ==
+             AppMenuIconController::IconType::UPGRADE_NOTIFICATION) {
+    tooltip_message_id = IDS_APPMENU_TOOLTIP_UPDATE_AVAILABLE;
+    text = l10n_util::GetStringUTF16(IDS_APP_MENU_BUTTON_UPDATE);
+  } else {
+    tooltip_message_id = IDS_APPMENU_TOOLTIP_ALERT;
+    text = l10n_util::GetStringUTF16(IDS_APP_MENU_BUTTON_ERROR);
+  }
+
+  base::Optional<SkColor> color;
+  switch (type_and_severity_.severity) {
+    case AppMenuIconController::Severity::NONE:
+      break;
+    case AppMenuIconController::Severity::LOW:
+      color = AdjustHighlightColorForContrast(
+          GetThemeProvider(), gfx::kGoogleGreen300, gfx::kGoogleGreen600,
+          gfx::kGoogleGreen050, gfx::kGoogleGreen900);
+
+      break;
+    case AppMenuIconController::Severity::MEDIUM:
+      color = AdjustHighlightColorForContrast(
+          GetThemeProvider(), gfx::kGoogleYellow300, gfx::kGoogleYellow600,
+          gfx::kGoogleYellow050, gfx::kGoogleYellow900);
+
+      break;
+    case AppMenuIconController::Severity::HIGH:
+      color = AdjustHighlightColorForContrast(
+          GetThemeProvider(), gfx::kGoogleRed300, gfx::kGoogleRed600,
+          gfx::kGoogleRed050, gfx::kGoogleRed900);
+
+      break;
+  }
+
+  SetTooltipText(l10n_util::GetStringUTF16(tooltip_message_id));
+
+  if (base::FeatureList::IsEnabled(features::kUseTextForUpdateButton))
+    SetHighlight(text, color);
 }
 
 const char* BrowserAppMenuButton::GetClassName() const {

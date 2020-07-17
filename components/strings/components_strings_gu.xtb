@@ -425,7 +425,6 @@
 <translation id="2705137772291741111">આ સાઇટની સાચવેલ (કૅશ કરેલ) કૉપિ વાંચવા યોગ્ય ન હતી.</translation>
 <translation id="2709516037105925701">સ્વતઃભરો</translation>
 <translation id="2713444072780614174">શ્વેત</translation>
-<translation id="2720342946869265578">નજીકના</translation>
 <translation id="2721148159707890343">વિનંતી સફળ થઇ</translation>
 <translation id="272451190272506600">ચુકવણી કરવા માટે સેન્સરને સ્પર્શ કરો</translation>
 <translation id="2728127805433021124">સર્વરનું પ્રમાણપત્ર એક નબળા સહી ઍલ્ગોરિધમનો ઉપયોગ કરીને સહીિત કરેલું છે.</translation>
@@ -722,7 +721,6 @@
 <translation id="3990250421422698716">બહાર નીકળેલા ભાગને અંદર દબાવો</translation>
 <translation id="3996311196211510766">આ સાઇટ <ph name="ORIGIN" /> દ્વારા વિનંતી કરવામાં આવી છે કે ઑરિજિન નીતિ તેની
     બધી વિનંતી પર લાગુ થાય છે, પણ હાલમાં આ નીતિ લાગુ કરી શકાતી નથી.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{નજીકમાં 1 વેબ પેજ}one{નજીકમાં # વેબ પેજ}other{નજીકમાં # વેબ પેજ}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} પેજ ધરાવતો PDF દસ્તાવેજ}one{{COUNT} પેજ ધરાવતો PDF દસ્તાવેજ}other{{COUNT} પેજ ધરાવતો PDF દસ્તાવેજ}}</translation>
 <translation id="4030383055268325496">&amp;ઉમેરવું પૂર્વવત્ કરો</translation>
 <translation id="4032320456957708163">તમારું બ્રાઉઝર <ph name="ENROLLMENT_DOMAIN" /> દ્વારા મેનેજ કરવામાં આવે છે</translation>
@@ -940,7 +938,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">સાચવો...</translation>
 <translation id="4913987521957242411">ઉપર ડાબી બાજુએ કાણું પાડો</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{અને 1 વધુ વેબ પૃષ્ઠ}one{અને # વધુ વેબ પૃષ્ઠ}other{અને # વધુ વેબ પૃષ્ઠ}}</translation>
 <translation id="4923459931733593730">ચુકવણી</translation>
 <translation id="4926049483395192435">ઉલ્લેખિત હોવું આવશ્યક છે.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> કહે છે કે</translation>
@@ -1331,7 +1328,6 @@
 <translation id="6518133107902771759">પ્રમાણિત કરો</translation>
 <translation id="6521745193039995384">સક્રિય નથી</translation>
 <translation id="6529602333819889595">&amp;ફરી કરો ડિલીટ કરો</translation>
-<translation id="6534179046333460208">વાસ્તવિક વેબ સૂચનો</translation>
 <translation id="6545864417968258051">બ્લૂટૂથ સ્કૅનિંગ</translation>
 <translation id="6547208576736763147">ડાબી બાજુએ બે ચતુષ્કોણ કાણાં પાડો</translation>
 <translation id="6554795675067793129"><ph name="ENROLLMENT_DOMAIN" /> દ્વારા તમારું એકાઉન્ટ મેનેજ કરવામાં આવે છે.</translation>
@@ -1853,7 +1849,6 @@
 <translation id="8790007591277257123">&amp;ફરી ડિલીટ કરો</translation>
 <translation id="8792621596287649091">તમે તમારા <ph name="ORG_NAME" /> એકાઉન્ટનો ઍક્સેસ ગુમાવી શકો છો અથવા તમને ઓળખ ચોરીનો અનુભવ થઈ શકે છે. Chromium તમને હમણાં જ તમારો પાસવર્ડ બદલવાની ભલામણ કરે છે.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> દ્વારા તમારા બ્રાઉઝર પર Chrome Enterprise Connectors ચાલુ કરવામાં આવ્યું છે. આ કનેક્ટરને તમારા અમુક ડેટાનો ઍક્સેસ છે.</translation>
-<translation id="8800988563907321413">તમારા નજીકના સૂચનો અહીં દેખાય છે</translation>
 <translation id="8805819170075074995">સૂચિ એન્ટ્રી "<ph name="LANGUAGE_ID" />": એન્ટ્રીને અવગણવામાં આવી, કારણ કે તેનો SpellcheckLanguage નીતિમાં પણ સમાવેશ કરવામાં આવ્યો છે.</translation>
 <translation id="8807160976559152894">પ્રત્યેક પેજ પછી ટ્રિમ કરો</translation>
 <translation id="8820817407110198400">બુકમાર્ક્સ</translation>

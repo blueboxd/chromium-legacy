@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -65,7 +66,7 @@ class DISPLAY_MANAGER_EXPORT ConfigureDisplaysTask
   void OnDisplaySnapshotsInvalidated() override;
 
  private:
-  void OnConfigured(size_t index, bool success);
+  void OnConfigured(const base::flat_map<int64_t, bool>& statuses);
 
   NativeDisplayDelegate* delegate_;  // Not owned.
 

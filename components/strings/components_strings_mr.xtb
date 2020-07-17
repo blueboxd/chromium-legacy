@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
 <translation id="1008557486741366299">सध्या नाही</translation>
+<translation id="100957008357583611">तुमचे स्थान वापरायचे का?</translation>
 <translation id="1010200102790553230">पेज नंतर लोड करा</translation>
 <translation id="1015730422737071372">अतिरिक्त तपशील प्रदान करा</translation>
 <translation id="1019413721762100891">बंद करा</translation>
@@ -425,7 +426,6 @@
 <translation id="2705137772291741111">या साइटची सेव्ह (कॅशे   केलेली) केलेली प्रत वाचण्याजोगी नव्हती.</translation>
 <translation id="2709516037105925701">ऑटोफिल</translation>
 <translation id="2713444072780614174">पांढरा</translation>
-<translation id="2720342946869265578">जवळपास</translation>
 <translation id="2721148159707890343">विनंती यशस्वी</translation>
 <translation id="272451190272506600">पैसे देण्यासाठी सेन्सरला स्पर्श करा</translation>
 <translation id="2728127805433021124">एक कमकुवत स्वाक्षरी अल्गोरिदम वापरून सर्व्हरचे सर्टिफिकेट साइन केले आहे.</translation>
@@ -721,7 +721,6 @@
 <translation id="3990250421422698716">जॉग ऑफसेट</translation>
 <translation id="3996311196211510766">साइटने <ph name="ORIGIN" /> विनंती केली आहे की, मूळ धोरण
     त्याच्या सर्व विनंत्यांवर लागू होईल पण हे धोरण सध्या लागू केले जाऊ शकत नाही.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{जवळपास १ वेब पेज}other{जवळपास # वेब पेज}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF दस्तऐवजामध्ये {COUNT} पेज आहे}other{PDF दस्तऐवजामध्ये {COUNT} पेज आहेत}}</translation>
 <translation id="4030383055268325496">&amp;जोडा पूर्ववत करा</translation>
 <translation id="4032320456957708163">तुमचा ब्राउझर <ph name="ENROLLMENT_DOMAIN" /> द्वारे व्यवस्थापित केला आहे</translation>
@@ -939,7 +938,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">सेव्ह करा…</translation>
 <translation id="4913987521957242411">पंच टॉप लेफ्ट</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{आणि 1 आणखी वेब पृष्ठ}other{आणि # आणखी वेब पेज}}</translation>
 <translation id="4923459931733593730">पेमेंट</translation>
 <translation id="4926049483395192435">निर्दिष्‍ट केले जाणे आवश्‍यक आहे.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> चे म्हणणे हे आहे की</translation>
@@ -1180,6 +1178,7 @@
 <translation id="5869405914158311789">या साइटवर पोहचणे शक्य नाही</translation>
 <translation id="5869522115854928033">सेव्ह केलेले पासवर्ड</translation>
 <translation id="5887400589839399685">कार्ड सेव्ह केले</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> साठी तुम्ही तुमच्या डेटाचा बॅकअप घेणे आणि हे डिव्हाइस परत करणे आवश्यक आहे.</translation>
 <translation id="5895138241574237353">रीस्टार्ट करा</translation>
 <translation id="5895187275912066135">रोजी जारी केले</translation>
 <translation id="5901630391730855834">पिवळा</translation>
@@ -1331,7 +1330,6 @@
 <translation id="6518133107902771759">सत्यापित करा</translation>
 <translation id="6521745193039995384">सुरू नाही</translation>
 <translation id="6529602333819889595">&amp;पुन्हा करा हटवा</translation>
-<translation id="6534179046333460208">वास्तविक वेब सूचना</translation>
 <translation id="6545864417968258051">ब्लूटूथ स्कॅन करत आहे</translation>
 <translation id="6547208576736763147">ड्युअल पंच लेफ्ट</translation>
 <translation id="6554795675067793129">तुमचे खाते <ph name="ENROLLMENT_DOMAIN" /> ने व्यवस्थापित केले आहे.</translation>
@@ -1853,7 +1851,6 @@
 <translation id="8790007591277257123">&amp;पुन्हा करा हटवा</translation>
 <translation id="8792621596287649091">तुम्ही तुमच्या Google <ph name="ORG_NAME" /> चा ॲक्सेस गमावू शकता किंवा तुमची संवेदनशील माहिती चोरीला जाऊ शकते. Chromium लगेच तुमचा पासवर्ड बदलण्याची शिफारस करत आहे.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> ने तुमच्या ब्राउझरवर Chrome एंटरप्राइझ कनेक्टर्स सुरू केली आहेत. या कनेक्टरना तुमच्या काही डेटाचा अ‍ॅक्सेस आहे.</translation>
-<translation id="8800988563907321413">आपल्या जवळपासच्या सूचना येथे दिसतात</translation>
 <translation id="8805819170075074995">सूची एंट्री "<ph name="LANGUAGE_ID" />": एंट्री SpellcheckLanguage धोरणामध्येदेखील समाविष्ट असल्यामुळे तिच्याकडे दुर्लक्ष केले गेले आहे.</translation>
 <translation id="8807160976559152894">प्रत्येक पेजनंतर ट्रिम करा</translation>
 <translation id="8820817407110198400">Bookmarks</translation>

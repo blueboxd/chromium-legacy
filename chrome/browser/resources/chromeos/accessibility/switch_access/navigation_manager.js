@@ -244,8 +244,10 @@ class NavigationManager {
    * @private
    */
   onModalDialog_(event) {
-    const menuRoot = ModalDialogRootNode.buildTree(event.target);
-    this.jumpTo_(menuRoot);
+    const modalRoot = ModalDialogRootNode.buildTree(event.target);
+    if (modalRoot.isValidGroup()) {
+      this.jumpTo_(modalRoot);
+    }
   }
 
   /**

@@ -322,7 +322,7 @@ void FrameData::SetFirstEligibleToPaint(
     if (!first_eligible_to_paint_.has_value() ||
         first_eligible_to_paint_.value() > time_stamp.value())
       first_eligible_to_paint_ = time_stamp;
-  } else if (!FirstContentfulPaint().has_value()) {
+  } else if (!earliest_first_contentful_paint_.has_value()) {
     // If a frame in this ad frame tree has already painted, there is no
     // further need to update paint eligibility. But if nothing has
     // painted and a null value is passed into the setter, that means the
@@ -330,6 +330,19 @@ void FrameData::SetFirstEligibleToPaint(
     // value.
     first_eligible_to_paint_.reset();
   }
+}
+
+bool FrameData::SetEarliestFirstContentfulPaint(
+    base::Optional<base::TimeDelta> time_stamp) {
+  if (!time_stamp.has_value())
+    return false;
+
+  if (earliest_first_contentful_paint_.has_value() &&
+      time_stamp.value() >= earliest_first_contentful_paint_.value())
+    return false;
+
+  earliest_first_contentful_paint_ = time_stamp;
+  return true;
 }
 
 void FrameData::UpdateFrameVisibility() {

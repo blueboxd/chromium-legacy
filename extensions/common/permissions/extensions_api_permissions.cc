@@ -57,7 +57,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kDisplaySource, "displaySource"},
     {APIPermission::kDns, "dns"},
-    {APIPermission::kDocumentScan, "documentScan"},
     {APIPermission::kExternallyConnectableAllUrls,
      "externally_connectable.all_urls",
      APIPermissionInfo::kFlagDoesNotRequireManagedSessionFullLoginWarning},

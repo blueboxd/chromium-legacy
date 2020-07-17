@@ -117,10 +117,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   // Asynchronously sets the technology enabled property for |type|. Only
   // NetworkTypePattern::Primitive, ::Mobile and ::Ethernet are supported.
   // Note: Modifies Manager state. Calls |error_callback| on failure.
-  void SetTechnologyEnabled(
-      const NetworkTypePattern& type,
-      bool enabled,
-      const network_handler::ErrorCallback& error_callback);
+  void SetTechnologyEnabled(const NetworkTypePattern& type,
+                            bool enabled,
+                            network_handler::ErrorCallback error_callback);
 
   // Sets the Tether technology state. Because Tether networks do not represent
   // real Shill networks, this value must be set by the Tether component rather

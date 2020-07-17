@@ -104,6 +104,7 @@
 <translation id="1124772482545689468">Օգտատեր</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" />x<ph name="HEIGHT" /> (օրիգինալ)</translation>
 <translation id="1126809382673880764">Չի պաշտպանում վտանգավոր կայքերից, ընդլայնումներից և ներբեռնումներից։ Անվտանգ դիտարկումը նախկինի պես կաշխատի Google-ի այլ ծառայություններում (եթե հասանելի է), օրինակ՝ Gmail-ում կամ Որոնման էջերում։</translation>
+<translation id="112752777279960360">Եթե առաջին անգամ եք կարգավորում Android հեռախոսը՝ որպես անվտանգության բանալի այս համակարգչում օգտագործելու համար, բացեք Chrome-ը հեռախոսում և անցեք «Կարգավորումներ &gt; Գաղտնաբառեր &gt; Օգտագործել հեռախոսը որպես անվտանգության բանալի»։ Ապա հպեք «Միացնել նոր սարքը» և սկանավորեք այս QR կոդը։</translation>
 <translation id="1128109161498068552">Արգելել բոլոր կայքերին օգտագործել MIDI սարքերը՝ համակարգի հաղորդագրությունների միջոցով</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Փոխել որոնման համակարգը</translation>
@@ -509,6 +510,7 @@
 <translation id="1622054403950683339">Հեռացնել Wi-Fi ցանցը</translation>
 <translation id="1623132449929929218">Պատկերներն այժմ անհասանելի են: Պաստառների հավաքածուները տեսնելու համար նորից միացեք համացանցին:</translation>
 <translation id="1623723619460186680">Նվազեցնել կապույտ լույսը</translation>
+<translation id="1624012933569991823">Կարգավորումներ</translation>
 <translation id="1627276047960621195">Ֆայլի նկարագրություն</translation>
 <translation id="1627408615528139100">Ֆայլն արդեն ներբեռնվել է</translation>
 <translation id="1628948239858170093">Բացելուց առաջ ստուգե՞լ ֆայլը</translation>
@@ -745,6 +747,7 @@
 <translation id="1887850431809612466">Սարքի տարբերակը</translation>
 <translation id="1888523338879380247">{0,plural, =1{Այսօր սարքի թարմացման վերջին օրն է}one{Թարմացրեք սարքը # օրվա ընթացքում}other{Թարմացրեք սարքը # օրվա ընթացքում}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID` &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783"><ph name="ATTACHMENTS" />ի ստացում <ph name="DEVICE_NAME" /> սարքից</translation>
 <translation id="189210018541388520">Բացել լիաէկրան ռեժիմում</translation>
 <translation id="1892341345406963517">Ողջույն, <ph name="PARENT_NAME" />:</translation>
 <translation id="189358972401248634">Այլ լեզուներ</translation>
@@ -1817,6 +1820,7 @@
 <translation id="3253225298092156258">Հասանելի չէ</translation>
 <translation id="3253448572569133955">Անհայտ հաշիվ</translation>
 <translation id="3254516606912442756">Ժամային գոտու ավտոմատ որոշումն անջատված է</translation>
+<translation id="3254715652085014625">Բացեք Chrome-ը ձեր Android հեռախոսում և անցեք «Կարգավորումներ &gt; Գաղտնաբառեր &gt; Օգտագործել հեռախոսը որպես անվտանգության բանալի», ապա հետևեք այնտեղ ցուցադրված հուշումներին։</translation>
 <translation id="3255355328033513170"><ph name="SITE_GROUP_NAME" /> կայքերի պահած բոլոր տվյալները կջնջվեն։ Կջնջվեն նաև քուքիները։ Դուք ձեր հաշիվներից դուրս կգաք այդ կայքերում։</translation>
 <translation id="3259723213051400722">Նորից փորձեք:</translation>
 <translation id="3264544094376351444">Sans-serif տառատեսակ</translation>
@@ -1955,6 +1959,7 @@
 <translation id="3433621910545056227">Համակարգին չհաջողվեց կողպել սարքի հատկությունները՝ տեղադրման ժամանակ:</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3434272557872943250">Եթե Վեբ որոնման և հավելվածների լրացուցիչ պատմությունը միացված է, այս տվյալները կպահվեն երեխայի Google հաշվում։ Այս կարգավորումների մասին ավելին իմանալու և դրանք ըստ ձեր հայեցողության փոփոխելու համար անցեք families.google.com էջ։</translation>
+<translation id="3435541101098866721">Նոր հեռախոս ավելացրեք</translation>
 <translation id="3435688026795609344">«<ph name="EXTENSION_NAME" />» ընդլայնումը պահանջում է ձեր <ph name="CODE_TYPE" /> կոդը</translation>
 <translation id="3435738964857648380">Անվտանգություն</translation>
 <translation id="343578350365773421">Թուղթ չկա</translation>
@@ -3494,6 +3499,7 @@
 <translation id="5390677308841849479">Մուգ կարմիր և նարնջագույն</translation>
 <translation id="5390743329570580756">Ուղարկել</translation>
 <translation id="5397794290049113714">Դուք</translation>
+<translation id="5398497406011404839">Թաքցված էջանիշներ</translation>
 <translation id="5398572795982417028">Դուրս է էջի համարակալման սահմաններից, թույլատրելի սահմանաչափն է <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Գովազդն արգելափակված է</translation>
 <translation id="5402815541704507626">Թարմացման ներբեռնում բջջային ինտերնետի միջոցով</translation>
@@ -3579,6 +3585,7 @@
 <translation id="5496587651328244253">Կազմակերպել</translation>
 <translation id="5497251278400702716">Այս ֆայլը</translation>
 <translation id="5499313591153584299">Այս ֆայլը կարող է վնասաբեր լինել ձեր համակարգչի համար:</translation>
+<translation id="5499453227627332024">Լինուքսի կոնտեյների համար հասանելի է նոր տարբերակ։ Դուք նաև կարող եք նորացնել կոնտեյներն ավելի ուշ Կարգավորումներում։</translation>
 <translation id="5500709606820808700">Անվտանգության ստուգումն այսօր է արվել</translation>
 <translation id="5502500733115278303">Firefox-ից ներմուծված</translation>
 <translation id="5503982651688210506">Թույլատրել <ph name="HOST" /> կայքին օգտագործել և տեղաշարժել տեսախցիկը և օգտագործել խոսափողը</translation>
@@ -3892,7 +3899,7 @@
 <translation id="5889282057229379085">Միջանկյալ հավաստագրման կենտրոնների առավելագույն քանակը՝ <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5891688036610113830">Նախընտրած Wi-Fi ցանցեր</translation>
 <translation id="5895138241574237353">Վերագործարկել</translation>
-<translation id="5895613446346678902"><ph name="ATTACHMENTS" /> ուղարկվում է <ph name="DEVICE_NAME" />սարքին</translation>
+<translation id="5895613446346678902"><ph name="ATTACHMENTS" /> ուղարկվում է <ph name="DEVICE_NAME" /> սարքին</translation>
 <translation id="5900302528761731119">Google պրոֆիլի լուսանկար</translation>
 <translation id="5900358982890952556">Լինուքսի (բետա) նորացում</translation>
 <translation id="5901494423252125310">Տպիչի դռնակը բաց է</translation>
@@ -4203,6 +4210,7 @@
 <translation id="6270770586500173387">Ուղարկել <ph name="BEGIN_LINK1" />համակարգի և հավելվածների մասին տեղեկությունները<ph name="END_LINK1" /> և այլ <ph name="BEGIN_LINK2" />ցուցանիշները<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Փլագինը ներբեռնելիս սխալ առաջացավ (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">Որակյալ</translation>
+<translation id="6273979226236203550">Ձեր գաղտնաբառը պահվել է այս սարքում և ձեր Google հաշվում։ Ո՞րն եք ուզում ջնջել։</translation>
 <translation id="6277105963844135994">Ցանցի ժամասպառում</translation>
 <translation id="6277518330158259200">Ստեղ&amp;ծել սքրինշոթ</translation>
 <translation id="6278057325678116358">Օգտագործել GTK+ թեման</translation>
@@ -4563,6 +4571,7 @@
 <translation id="6758056191028427665">Կիսվեք մեզ հետ ձեր տպավորություններով:</translation>
 <translation id="6759193508432371551">Գործարանային կարգավորումների վերականգնում</translation>
 <translation id="6762833852331690540">Միացված է</translation>
+<translation id="676560328519657314">Ձեր վճարման եղանակները Google Pay-ում</translation>
 <translation id="6767566652486411142">Ընտրել մեկ այլ լեզու...</translation>
 <translation id="6767639283522617719">Չհաջողվեց միանալ տիրույթին: Համոզվեք, որ ստորաբաժանման կարգավորումները ճիշտ են:</translation>
 <translation id="6769557323306147204"><ph name="ORGANIZATION_NAME" />-ը խորհուրդ է տալիս թարմացնել այս սարքը</translation>
@@ -4735,6 +4744,7 @@
 <translation id="6972553992270299730"><ph name="ORIGIN" /> կայքը չի բացել այս պանակի ֆայլերը, քանի որ այն պարունակում է համակարգի ֆայլեր:</translation>
 <translation id="6972629891077993081">HID սարքեր</translation>
 <translation id="6972754398087986839">Սկսել աշխատանքը</translation>
+<translation id="6972887130317925583">Կոտրված գաղտնաբառը փոխվեց։ Դուք ցանկացած ժամանակ կարող եք ստուգել ձեր գաղտնաբառերը <ph name="SETTINGS" />-ում։</translation>
 <translation id="6973611239564315524">Հասանելի է Debian 10-ի (Buster) նորացում</translation>
 <translation id="6974609594866392343">Անցանց ցուցադրական ռեժիմ</translation>
 <translation id="6977381486153291903">Ներկառուցված ծրագրակազմի տարբերակը</translation>
@@ -5592,6 +5602,7 @@
 <translation id="8017176852978888182">Լինուքսի ընդհանուր գրացուցակներ</translation>
 <translation id="8017679124341497925">Դյուրանցումը փոխվեց</translation>
 <translation id="8018313076035239964">Վերահսկեք, թե ձեր մասին ինչ տեղեկություններ հասանելի կլինեն կայքերին և ինչ են ցուցադրելու ձեզ կայքերը։</translation>
+<translation id="8022688469248132790">Դիտել սխալի մանրամասները</translation>
 <translation id="8023801379949507775">Թարմացնել ընդլայնումները հիմա</translation>
 <translation id="8026334261755873520">Դիտարկումների տվյալների մաքրում</translation>
 <translation id="8028060951694135607">Microsoft-ի բանալիների վերականգնում</translation>
@@ -6531,6 +6542,7 @@
 <translation id="9180380851667544951">Կայքը կարող է ցուցադրել ձեր սարքի էկրանը այլ մարդկանց</translation>
 <translation id="9188732951356337132">Օգտագործման և ախտորոշման տվյալների ուղարկում Ներկայումս այս սարքը ախտորոշման, սարքի և հավելվածի օգտագործման տվյալներն ավտոմատ ուղարկում է Google-ին: Այս տեղեկությունները չեն օգտագործվի ձեր երեխային նույնականացնելու համար և կօգնեն բարելավել համակարգի ու հավելվածի աշխատանքի կայունությունը: Հավաքված տեղեկությունների մի մասը օգտակար կլինի մեր գործընկերների, օրինակ, Android ծրագրավորողների համար։ Եթե Վեբ որոնման և հավելվածների պատմությունը միացված է, այս տվյալները կպահվեն երեխայի Google հաշվում։ <ph name="BEGIN_LINK2" />Մանրամասն<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + հանրային բանալի</translation>
+<translation id="9198090666959937775">Օգտագործեք ձեր Android հեռախոսը որպես անվտանգության բանալի</translation>
 <translation id="920045321358709304">Որոնել <ph name="SEARCH_ENGINE" />-ում</translation>
 <translation id="9201023452444595544">Անցանց ռեժիմում պահված բոլոր տվյալները կջնջվեն</translation>
 <translation id="9201220332032049474">Էկրանի կողպման տարբերակներ</translation>
@@ -6573,6 +6585,7 @@
 <translation id="942532530371314860"><ph name="APP_NAME" /> հավելվածը կիսվում է Chrome-ի ներդիրով ու ձայնով:</translation>
 <translation id="945522503751344254">Կարծիք հայտնել</translation>
 <translation id="947329552760389097">&amp;Ստուգել տարրերը</translation>
+<translation id="951991426597076286">Մերժել</translation>
 <translation id="952992212772159698">Ակտիվացված չէ</translation>
 <translation id="956500788634395331">Դուք պաշտպանված եք վտանգավոր ընդլայնումներից</translation>
 <translation id="957960681186851048">Այս կայքը փորձում էր ավտոմատ մի քանի ֆայլ ներբեռնել</translation>

@@ -146,6 +146,10 @@ class MODULES_EXPORT AXObjectCacheImpl
   void InlineTextBoxesUpdated(LineLayoutItem) override;
   void ProcessDeferredAccessibilityEvents(Document&) override;
 
+  // Called when a HTMLFrameOwnerElement (such as an iframe element) changes the
+  // embedding token of its child frame.
+  void EmbeddingTokenChanged(HTMLFrameOwnerElement*) override;
+
   // Called when the scroll offset changes.
   void HandleScrollPositionChanged(LocalFrameView*) override;
   void HandleScrollPositionChanged(LayoutObject*) override;

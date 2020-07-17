@@ -62,6 +62,9 @@ class LayoutSVGInline : public LayoutInline {
   void AddChild(LayoutObject* child,
                 LayoutObject* before_child = nullptr) final;
   void RemoveChild(LayoutObject*) final;
+
+  void InsertedIntoTree() override;
+  void WillBeRemovedFromTree() override;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGInline, IsSVGInline());

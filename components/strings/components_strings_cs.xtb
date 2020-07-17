@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
 <translation id="1008557486741366299">Teď ne</translation>
+<translation id="100957008357583611">Použít určování polohy?</translation>
 <translation id="1010200102790553230">Načíst stránku později</translation>
 <translation id="1015730422737071372">Zadejte další podrobnosti</translation>
 <translation id="1019413721762100891">Vypnuto</translation>
@@ -45,6 +46,7 @@
 <translation id="115926840831309955">Zkontrolujte kód CVC a zkuste to znovu nebo aktualizujte datum konce platnosti</translation>
 <translation id="1161325031994447685">Obnovit připojení k síti Wi-Fi</translation>
 <translation id="1165039591588034296">Chyba</translation>
+<translation id="1165174597379888365">Návštěva stránky</translation>
 <translation id="1175364870820465910">Tisk...</translation>
 <translation id="1175875016430184367">Tři sponky vpravo</translation>
 <translation id="1178581264944972037">Pozastavit</translation>
@@ -262,6 +264,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="2001146170449793414">{COUNT,plural, =1{a 1 další}few{a # další}many{a # další}other{a # dalších}}</translation>
 <translation id="2003709556000175978">Resetujte heslo</translation>
 <translation id="2003775180883135320">Čtyři otvory nahoře</translation>
+<translation id="202072848677994234">Formulář je odesílán přes nezabezpečené připojení. Automatické vyplňování je deaktivováno.</translation>
 <translation id="2025115093177348061">Rozšířená realita</translation>
 <translation id="2025186561304664664">Proxy server je nastaven na automatickou konfiguraci.</translation>
 <translation id="2030481566774242610">Měli jste na mysli <ph name="LINK" />?</translation>
@@ -330,6 +333,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="2289385804009217824">Oříznutí</translation>
 <translation id="2292556288342944218">Vaše připojení k internetu je blokováno</translation>
 <translation id="2293443924986248631">Když je tato možnost zapnutá, weby vás na internetu nemohou sledovat pomocí souborů cookie. Některé weby mohou přestat fungovat.</translation>
+<translation id="2295290966866883927">Adresy URL navštívených stránek jsou odesílány k analýze do služby Google Cloud nebo třetím stranám. Mohou například projít kontrolou, zda neodkazují na nebezpečné weby.</translation>
 <translation id="2297722699537546652">B5 (obálka)</translation>
 <translation id="2300306941146563769">Nenahráno</translation>
 <translation id="2310021320168182093">Chou2 (obálka)</translation>
@@ -421,7 +425,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="2705137772291741111">Kopii tohoto webu uloženou v mezipaměti se nepodařilo přečíst.</translation>
 <translation id="2709516037105925701">Automatické vyplňování</translation>
 <translation id="2713444072780614174">Bílá</translation>
-<translation id="2720342946869265578">Nablízku</translation>
 <translation id="2721148159707890343">Požadavek byl úspěšný</translation>
 <translation id="272451190272506600">Dotkněte se senzoru, abyste zaplatili</translation>
 <translation id="2728127805433021124">Certifikát serveru je podepsán slabým algoritmem.</translation>
@@ -711,7 +714,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="3987940399970879459">Méně než 1 MB</translation>
 <translation id="3990250421422698716">Běžící odsazení</translation>
 <translation id="3996311196211510766">Web <ph name="ORIGIN" /> požádal, aby se na všechny na něj odesílané požadavky vztahovaly zásady ohledně původu, ale tyto zásady momentálně nelze použít.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 webová stránka v okolí}few{# webové stránky v okolí}many{# webové stránky v okolí}other{# webových stránek v okolí}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Dokument PDF obsahující {COUNT} stránku}few{Dokument PDF obsahující {COUNT} stránky}many{Dokument PDF obsahující {COUNT} stránky}other{Dokument PDF obsahující {COUNT} stránek}}</translation>
 <translation id="4030383055268325496">&amp;Vrátit přidání zpět</translation>
 <translation id="4032320456957708163">Prohlížeč je spravován doménou <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -925,7 +927,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Uložit...</translation>
 <translation id="4913987521957242411">Děrování vlevo nahoře</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{a 1 další webová stránka}few{a # další webové stránky}many{a # další webové stránky}other{a # dalších webových stránek}}</translation>
 <translation id="4923459931733593730">Platba</translation>
 <translation id="4926049483395192435">Musí být uvedeno</translation>
 <translation id="4926159001844873046">Web <ph name="SITE" /> říká</translation>
@@ -1166,6 +1167,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5869405914158311789">Tento web není dostupný</translation>
 <translation id="5869522115854928033">Uložená hesla</translation>
 <translation id="5887400589839399685">Karta byla uložena</translation>
+<translation id="589006512797629854">Organizace <ph name="ENROLLMENT_DOMAIN" /> vyžaduje, abyste si zálohovali data a zařízení vrátili.</translation>
 <translation id="5895138241574237353">Restartovat</translation>
 <translation id="5895187275912066135">Datum vydání</translation>
 <translation id="5901630391730855834">Žlutá</translation>
@@ -1315,7 +1317,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6518133107902771759">Ověřit</translation>
 <translation id="6521745193039995384">Neaktivní</translation>
 <translation id="6529602333819889595">&amp;Opakovat smazání</translation>
-<translation id="6534179046333460208">Návrhy fyzického webu</translation>
 <translation id="6545864417968258051">Vyhledávání Bluetooth</translation>
 <translation id="6547208576736763147">Dva otvory vlevo</translation>
 <translation id="6554795675067793129">Váš účet je spravován doménou <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1837,7 +1838,6 @@ Další podrobnosti:
 <translation id="8790007591277257123">&amp;Opakovat smazání</translation>
 <translation id="8792621596287649091">Mohli byste ztratit přístup k účtu <ph name="ORG_NAME" /> nebo by mohlo dojít k odcizení vaší identity. Doporučujeme vám okamžitě změnit heslo.</translation>
 <translation id="8793655568873652685">Administrátor organizace <ph name="ENROLLMENT_DOMAIN" /> vám v prohlížeči zapnul konektory Chrome Enterprise Connectors. Tyto konektory mají přístup k některým vašim datům.</translation>
-<translation id="8800988563907321413">Zde se zobrazí návrhy funkce Nablízku</translation>
 <translation id="8805819170075074995">Položka seznamu „<ph name="LANGUAGE_ID" />“: Položka byla ignorována, protože je zahrnuta také v zásadě SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Oříznutí za každou stránkou</translation>
 <translation id="8820817407110198400">Záložky</translation>

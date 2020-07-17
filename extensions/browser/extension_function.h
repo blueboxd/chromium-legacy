@@ -21,7 +21,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_function_histogram_value.h"
-#include "extensions/browser/info_map.h"
+#include "extensions/browser/quota_service.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
@@ -43,7 +43,6 @@ class WebContents;
 
 namespace extensions {
 class ExtensionFunctionDispatcher;
-class QuotaLimitHeuristic;
 }
 
 #ifdef NDEBUG

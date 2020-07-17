@@ -6487,13 +6487,13 @@ Called by update_bad_message_reasons.py.-->
 </enum>
 
 <enum name="BluetoothSocketServiceHash">
+  <obsolete>
+    No longer used by active histograms in M73.
+  </obsolete>
   <summary>
     31-bit hash of the service UUID. Values here are populated from
     https://www.bluetooth.com/specifications/assigned-numbers/service-discovery
   </summary>
-  <obsolete>
-    No longer used by active histograms in M73.
-  </obsolete>
   <int value="27577045"
       label="SIM_Access; 0000112d-0000-1000-8000-00805f9b34fb"/>
   <int value="46048502"
@@ -12547,10 +12547,10 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="CorsCompletionStatus">
-  <summary>The completion status of CorsURLLoader request.</summary>
   <obsolete>
     Removed at 06/2019 with Net.Cors.CompletionStatus histogram.
   </obsolete>
+  <summary>The completion status of CorsURLLoader request.</summary>
   <int value="0"
       label="A request finished successfully when CORS flag was not set"/>
   <int value="1" label="A request failed when CORS flag was not set"/>
@@ -16748,6 +16748,109 @@ Called by update_document_policy_enum.py.-->
   <int value="7" label="UnsizedMedia"/>
 </enum>
 
+<enum name="DocumentScanSaneBackend">
+  <summary>
+    Various SANE backends (effectively scanner drivers) that can be used to scan
+    a document in Chrome OS. These values are defined in the SaneBackend enum in
+    chromeos/src/platform2/lorgnette/enums.h.
+  </summary>
+  <int value="0" label="UnknownBackend"/>
+  <int value="1" label="Abaton"/>
+  <int value="2" label="Agfafocus"/>
+  <int value="3" label="AirscanBrother"/>
+  <int value="4" label="AirscanCanon"/>
+  <int value="5" label="AirscanEpson"/>
+  <int value="6" label="AirscanHp"/>
+  <int value="7" label="AirscanKodak"/>
+  <int value="8" label="AirscanKonicaMinolta"/>
+  <int value="9" label="AirscanKyocera"/>
+  <int value="10" label="AirscanLexmark"/>
+  <int value="11" label="AirscanOther"/>
+  <int value="12" label="AirscanRicoh"/>
+  <int value="13" label="AirscanSamsung"/>
+  <int value="14" label="AirscanXerox"/>
+  <int value="15" label="Apple"/>
+  <int value="16" label="Artec"/>
+  <int value="17" label="ArtecEplus48U"/>
+  <int value="18" label="As6E"/>
+  <int value="19" label="Avision"/>
+  <int value="20" label="Bh"/>
+  <int value="21" label="Canon"/>
+  <int value="22" label="Canon630U"/>
+  <int value="23" label="CanonDr"/>
+  <int value="24" label="Cardscan"/>
+  <int value="25" label="Coolscan"/>
+  <int value="26" label="Coolscan2"/>
+  <int value="27" label="Coolscan3"/>
+  <int value="28" label="Dc210"/>
+  <int value="29" label="Dc240"/>
+  <int value="30" label="Dc25"/>
+  <int value="31" label="Dell1600NNet"/>
+  <int value="32" label="Dmc"/>
+  <int value="33" label="Epjitsu"/>
+  <int value="34" label="Epson"/>
+  <int value="35" label="Epson2"/>
+  <int value="36" label="Escl"/>
+  <int value="37" label="Fujitsu"/>
+  <int value="38" label="Genesys"/>
+  <int value="39" label="Gt68Xx"/>
+  <int value="40" label="Hp"/>
+  <int value="41" label="Hp3500"/>
+  <int value="42" label="Hp3900"/>
+  <int value="43" label="Hp4200"/>
+  <int value="44" label="Hp5400"/>
+  <int value="45" label="Hp5590"/>
+  <int value="46" label="Hpljm1005"/>
+  <int value="47" label="Hs2P"/>
+  <int value="48" label="Ibm"/>
+  <int value="49" label="Kodak"/>
+  <int value="50" label="Kodakaio"/>
+  <int value="51" label="Kvs1025"/>
+  <int value="52" label="Kvs20Xx"/>
+  <int value="53" label="Kvs40Xx"/>
+  <int value="54" label="Leo"/>
+  <int value="55" label="Lexmark"/>
+  <int value="56" label="Ma1509"/>
+  <int value="57" label="Magicolor"/>
+  <int value="58" label="Matsushita"/>
+  <int value="59" label="Microtek"/>
+  <int value="60" label="Microtek2"/>
+  <int value="61" label="Mustek"/>
+  <int value="62" label="MustekUsb"/>
+  <int value="63" label="MustekUsb2"/>
+  <int value="64" label="Nec"/>
+  <int value="65" label="Net"/>
+  <int value="66" label="Niash"/>
+  <int value="67" label="P5"/>
+  <int value="68" label="Pie"/>
+  <int value="69" label="Pixma"/>
+  <int value="70" label="Plustek"/>
+  <int value="71" label="PlustekPp"/>
+  <int value="72" label="Qcam"/>
+  <int value="73" label="Ricoh"/>
+  <int value="74" label="Ricoh2"/>
+  <int value="75" label="Rts8891"/>
+  <int value="76" label="S9036"/>
+  <int value="77" label="Sceptre"/>
+  <int value="78" label="Sharp"/>
+  <int value="79" label="Sm3600"/>
+  <int value="80" label="Sm3840"/>
+  <int value="81" label="Snapscan"/>
+  <int value="82" label="Sp15C"/>
+  <int value="83" label="St400"/>
+  <int value="84" label="Stv680"/>
+  <int value="85" label="Tamarack"/>
+  <int value="86" label="Teco1"/>
+  <int value="87" label="Teco2"/>
+  <int value="88" label="Teco3"/>
+  <int value="89" label="Test"/>
+  <int value="90" label="U12"/>
+  <int value="91" label="Umax"/>
+  <int value="92" label="Umax1220U"/>
+  <int value="93" label="UmaxPp"/>
+  <int value="94" label="XeroxMfp"/>
+</enum>
+
 <enum name="DocumentStateForDeferredLoading">
   <int value="0" label="Created"/>
   <int value="1" label="WouldLoadBecauseVisible"/>
@@ -18145,6 +18248,12 @@ Called by update_document_policy_enum.py.-->
   <int value="0" label="Schedule added"/>
   <int value="1" label="Schedule changed"/>
   <int value="2" label="Schedule removed"/>
+</enum>
+
+<enum name="DownloadLaterPromptStatus">
+  <int value="0" label="Show initial"/>
+  <int value="1" label="Show prompt"/>
+  <int value="2" label="Don't show prompt"/>
 </enum>
 
 <enum name="DownloadLaterUiEvent">
@@ -34078,10 +34187,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="HistoryFaviconsRecoveryEnum">
-  <summary>Error states noted in thumbnail_database.cc recovery code.</summary>
   <obsolete>
     History.FaviconsRecovery no longer tracked as of March 2017.
   </obsolete>
+  <summary>Error states noted in thumbnail_database.cc recovery code.</summary>
   <int value="0" label="RECOVERY_EVENT_RECOVERED">Successful recovery.</int>
   <int value="1" label="RECOVERY_EVENT_FAILED_SCOPER">
     sql::Recovery failed init.
@@ -40064,6 +40173,7 @@ from previous Chrome versions.
   <int value="-1573468162" label="ClientStorageAccessContextAuditing:enabled"/>
   <int value="-1572010356" label="enable-privet-v3"/>
   <int value="-1571841513" label="enable-devtools-experiments"/>
+  <int value="-1568737447" label="InsecureFormSubmissionInterstitial:enabled"/>
   <int value="-1568559155" label="WebSocketHandshakeReuseConnection:enabled"/>
   <int value="-1567727398" label="DesktopPWAsWithoutExtensions:disabled"/>
   <int value="-1564232131"
@@ -41975,6 +42085,7 @@ from previous Chrome versions.
   <int value="492985975" label="use-monitor-color-space"/>
   <int value="493903641" label="disable-appcontainer"/>
   <int value="494733611" label="disable-drop-sync-credential"/>
+  <int value="494939785" label="InsecureFormSubmissionInterstitial:disabled"/>
   <int value="497137719" label="OmniboxVoiceSearchAlwaysVisible:disabled"/>
   <int value="500177932" label="ArcSmartTextSelection:disabled"/>
   <int value="501477022" label="DrawOcclusion:enabled"/>
@@ -42318,6 +42429,7 @@ from previous Chrome versions.
   <int value="871435095" label="EnableAggregatedMlAppRanking:disabled"/>
   <int value="871713352" label="ImprovedLanguageSettings:enabled"/>
   <int value="876879670" label="OfflinePagesInDownloadHomeOpenInCct:enabled"/>
+  <int value="877059804" label="AutofillPreventMixedFormsFilling:disabled"/>
   <int value="878773995" label="ChromeHomeBottomNavLabels:disabled"/>
   <int value="879699575" label="disable-gesture-tap-highlight"/>
   <int value="879992337" label="disable-pull-to-refresh-effect"/>
@@ -43115,6 +43227,7 @@ from previous Chrome versions.
   <int value="1747279677" label="disable-delegated-renderer"/>
   <int value="1748481830" label="AppManagement:enabled"/>
   <int value="1749028785" label="SubresourceRedirect:disabled"/>
+  <int value="1750693293" label="AutofillPreventMixedFormsFilling:enabled"/>
   <int value="1752168018" label="enable-stale-while-revalidate"/>
   <int value="1755024316" label="HostWindowsInAppShimProcess:disabled"/>
   <int value="1758262950"
@@ -47983,13 +48096,13 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="NetFilterType">
+  <obsolete>
+    Now only NetFilterType2 is used.
+  </obsolete>
   <summary>
     Specific content decoding filter. See net::Filter::FilterType for more
     details
   </summary>
-  <obsolete>
-    Now only NetFilterType2 is used.
-  </obsolete>
   <int value="0" label="Brotli"/>
   <int value="1" label="Deflate"/>
   <int value="2" label="GZIP"/>
@@ -62940,10 +63053,10 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
     Failed to open the existing db, deleted it, and created a new empty db.
   </int>
   <int value="2" label="Reopen: Total Fail">
+    Failed to open the database and also failed to delete and start over.
     <obsolete>
       Deprecated 2016/11. Replaced by other &quot;Reopen:&quot; errors.
     </obsolete>
-    Failed to open the database and also failed to delete and start over.
   </int>
   <int value="3" label="Reopen: not found">
     Reopen attempt failed with (not found) after successful database delete.
@@ -73755,9 +73868,18 @@ Called by update_scheduler_enums.py.-->
 </enum>
 
 <enum name="WebViewExtraHeaders">
+  <obsolete>
+    Replaced by WebViewExtraHeadersRedirect 2020-07
+  </obsolete>
   <int value="0" label="Added headers in StartRequest"/>
   <int value="1" label="Kept headers through same-origin redirect"/>
   <int value="2" label="Removed headers on cross-origin redirect"/>
+</enum>
+
+<enum name="WebViewExtraHeadersRedirect">
+  <int value="0" label="Same-origin redirect"/>
+  <int value="1" label="Same-domain (but cross-origin) redirect"/>
+  <int value="2" label="Cross-domain redirect"/>
 </enum>
 
 <enum name="WebViewUrlScheme">

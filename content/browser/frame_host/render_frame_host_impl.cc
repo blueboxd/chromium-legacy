@@ -71,7 +71,6 @@
 #include "content/browser/geolocation/geolocation_service_impl.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/installedapp/installed_app_provider_impl.h"
-#include "content/browser/interface_provider_filtering.h"
 #include "content/browser/loader/file_url_loader_factory.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
@@ -893,10 +892,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(
         frame_tree_node_->frame_tree_node_id());
   }
   ResetFeaturePolicy();
-
-  ui::AXTreeIDRegistry::GetInstance()->SetFrameIDForAXTreeID(
-      ui::AXTreeIDRegistry::FrameID(GetProcess()->GetID(), routing_id_),
-      GetAXTreeID());
 
   // Content-Security-Policy: The CSP source 'self' is usually the origin of the
   // current document, set by SetLastCommittedOrigin(). However, before a new
@@ -4510,9 +4505,7 @@ void RenderFrameHostImpl::BindInterfaceProviderReceiver(
   DCHECK(!document_scoped_interface_provider_receiver_.is_bound());
   DCHECK(interface_provider_receiver.is_valid());
   document_scoped_interface_provider_receiver_.Bind(
-      FilterRendererExposedInterfaces(mojom::kNavigation_FrameSpec,
-                                      GetProcess()->GetID(),
-                                      std::move(interface_provider_receiver)));
+      std::move(interface_provider_receiver));
   document_scoped_interface_provider_receiver_.SetFilter(
       std::make_unique<ActiveURLMessageFilter>(this));
 }
@@ -5100,7 +5093,7 @@ void RenderFrameHostImpl::ResourceLoadComplete(
 }
 
 void RenderFrameHostImpl::HandleAXEvents(
-    const std::vector<AXContentTreeUpdate>& updates,
+    const std::vector<ui::AXTreeUpdate>& updates,
     const std::vector<ui::AXEvent>& events,
     int32_t reset_token,
     HandleAXEventsCallback callback) {
@@ -5130,20 +5123,10 @@ void RenderFrameHostImpl::HandleAXEvents(
 
   details.updates.resize(updates.size());
   for (size_t i = 0; i < updates.size(); ++i) {
-    const AXContentTreeUpdate& src_update = updates[i];
-    ui::AXTreeUpdate* dst_update = &details.updates[i];
-    if (src_update.has_tree_data) {
-      dst_update->has_tree_data = true;
-      ax_tree_data_ = src_update.tree_data;
-      dst_update->tree_data = GetAXTreeData();
-    }
-    dst_update->root_id = src_update.root_id;
-    dst_update->node_id_to_clear = src_update.node_id_to_clear;
-    dst_update->event_from = src_update.event_from;
-    dst_update->event_intents = src_update.event_intents;
-    dst_update->nodes.resize(src_update.nodes.size());
-    for (size_t j = 0; j < src_update.nodes.size(); ++j) {
-      AXContentNodeDataToAXNodeData(src_update.nodes[j], &dst_update->nodes[j]);
+    details.updates[i] = updates[i];
+    if (updates[i].has_tree_data) {
+      ax_tree_data_ = updates[i].tree_data;
+      details.updates[i].tree_data = GetAXTreeData();
     }
   }
 
@@ -6897,36 +6880,6 @@ RenderFrameHost* RenderFrameHost::FromPlaceholderToken(
   return node ? node->current_frame_host() : nullptr;
 }
 
-ui::AXTreeID RenderFrameHostImpl::RoutingIDToAXTreeID(int routing_id) {
-  auto frame_or_proxy =
-      LookupRenderFrameHostOrProxy(GetProcess()->GetID(), routing_id);
-  if (frame_or_proxy.frame)
-    return frame_or_proxy.frame->GetAXTreeID();
-  if (frame_or_proxy.proxy) {
-    return frame_or_proxy.proxy->frame_tree_node()
-        ->current_frame_host()
-        ->GetAXTreeID();
-  }
-  return ui::AXTreeIDUnknown();
-}
-
-void RenderFrameHostImpl::AXContentNodeDataToAXNodeData(
-    const AXContentNodeData& src,
-    ui::AXNodeData* dst) {
-  // Copy the common fields.
-  *dst = src;
-
-  // Map content-specific's |child_routing_id| attribute to a generic attribute
-  // with a global AXTreeID.
-  if (src.child_routing_id != MSG_ROUTING_NONE) {
-    DCHECK_EQ(dst->child_ids.size(), 0U)
-        << "A node should not have both children and a child tree.";
-    dst->string_attributes.push_back(
-        std::make_pair(ax::mojom::StringAttribute::kChildTreeId,
-                       RoutingIDToAXTreeID(src.child_routing_id).ToString()));
-  }
-}
-
 ui::AXTreeID RenderFrameHostImpl::GetParentAXTreeID() {
   if (browser_plugin_embedder_ax_tree_id_ != ui::AXTreeIDUnknown())
     return browser_plugin_embedder_ax_tree_id_;
@@ -7003,12 +6956,12 @@ void RenderFrameHostImpl::AccessibilityHitTestCallback(
 
 void RenderFrameHostImpl::RequestAXTreeSnapshotCallback(
     AXTreeSnapshotCallback callback,
-    const AXContentTreeUpdate& snapshot) {
+    const ui::AXTreeUpdate& snapshot) {
   ui::AXTreeUpdate dst_snapshot;
   dst_snapshot.root_id = snapshot.root_id;
   dst_snapshot.nodes.resize(snapshot.nodes.size());
   for (size_t i = 0; i < snapshot.nodes.size(); ++i)
-    AXContentNodeDataToAXNodeData(snapshot.nodes[i], &dst_snapshot.nodes[i]);
+    dst_snapshot.nodes[i] = snapshot.nodes[i];
 
   if (snapshot.has_tree_data) {
     ax_tree_data_ = snapshot.tree_data;
@@ -9021,26 +8974,56 @@ void RenderFrameHostImpl::CheckSandboxFlags() {
 
 void RenderFrameHostImpl::SetEmbeddingToken(
     const base::UnguessableToken& embedding_token) {
+  // Everything in this method depends on whether the embedding token has
+  // actually changed, including setting the AXTreeID (backed by the token).
+  if (embedding_token_ == embedding_token)
+    return;
   embedding_token_ = embedding_token;
 
-  // We only need to propagate the token to the parent frame if it's
-  // remote. For local parents the propagation occurs within the renderer
-  // process. The token is also present on the main frame for generalization
-  // when the main frame in embedded in another context (e.g. browser UI).
-  // The main frame is not embedded in the context of the frame tree so it
-  // is not propagated here. See RenderFrameHost::GetEmbeddingToken for more
-  // details.
-  if (!IsCrossProcessSubframe())
-    return;
+  // The AXTreeID of a frame is backed by its embedding token, so we need to
+  // update its AXTreeID, as well as the associated mapping in AXTreeIDRegistry.
+  ui::AXTreeID ax_tree_id = ui::AXTreeID::FromToken(embedding_token);
+  SetAXTreeID(ax_tree_id);
+  ui::AXTreeIDRegistry::GetInstance()->SetFrameIDForAXTreeID(
+      ui::AXTreeIDRegistry::FrameID(GetProcess()->GetID(), routing_id_),
+      ax_tree_id);
 
-  // Only non-null tokens are propagated to the parent document. The token is
-  // automatically reset in the parent document when the child document is
-  // navigated cross-origin.
-  RenderFrameProxyHost* proxy_to_parent =
-      frame_tree_node()->render_manager()->GetProxyToParent();
-  DCHECK(proxy_to_parent);
-  proxy_to_parent->GetAssociatedRemoteFrame()->SetEmbeddingToken(
-      embedding_token_.value());
+  // Also important to notify the delegate so that the relevant observers can
+  // adapt to the fact that the AXTreeID has changed for the main frame (e.g.
+  // the WebView needs to update the ID tracking its child accessibility tree).
+  if (is_main_frame())
+    delegate_->AXTreeIDForMainFrameHasChanged();
+
+  // We need to propagate the token to the parent frame if it's either remote or
+  // part of an outer web contents, therefore we need to figure out the right
+  // proxy to send the token to, if there's any.
+  // For local parents the propagation occurs within the renderer process. The
+  // token is also present on the main frame for generalization when the main
+  // frame in embedded in another context (e.g. browser UI). The main frame is
+  // not embedded in the context of the frame tree so it is not propagated here.
+  // See RenderFrameHost::GetEmbeddingToken for more details.
+  RenderFrameProxyHost* target_render_frame_proxy = nullptr;
+
+  // Cross-process subframes should have a remote parent frame.
+  if (IsCrossProcessSubframe()) {
+    // Only non-null tokens are propagated to the parent document. The token is
+    // automatically reset in the parent document when the child document is
+    // navigated cross-origin.
+    target_render_frame_proxy =
+        frame_tree_node()->render_manager()->GetProxyToParent();
+    DCHECK(target_render_frame_proxy);
+  } else if (frame_tree_node()->IsMainFrame()) {
+    // The main frame in an inner web contents could have a delegate in the
+    // outer web contents, so we need to account for that as well.
+    target_render_frame_proxy =
+        frame_tree_node()->render_manager()->GetProxyToOuterDelegate();
+  }
+
+  // Propagate the token to the right process, if a proxy was found.
+  if (target_render_frame_proxy) {
+    target_render_frame_proxy->GetAssociatedRemoteFrame()->SetEmbeddingToken(
+        embedding_token_.value());
+  }
 }
 
 std::ostream& operator<<(std::ostream& o,

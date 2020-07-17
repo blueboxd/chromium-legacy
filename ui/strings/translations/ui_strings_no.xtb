@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">velg</translation>
 <translation id="1859234291848436338">Skriveretning</translation>
 <translation id="1860796786778352021">Lukk varsel</translation>
+<translation id="186476001994626254">Web Smart Paste-innhold</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Marker &amp;alt</translation>
@@ -75,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" /> – <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Åpne mappen</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{for 1 år siden}other{for # år siden}}</translation>
+<translation id="2878511608894704031">Slett alle</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{om 1 d}other{om # d}}</translation>
 <translation id="2931838996092594335">klikk</translation>
 <translation id="2981684127883932071">Viser forslag</translation>
@@ -172,6 +174,7 @@
 <translation id="6417265370957905582">Google Assistent</translation>
 <translation id="6430678249303439055">Blokkér alle varsler fra denne appen</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{for 1 sekund siden}other{for # sekunder siden}}</translation>
+<translation id="6503257047630241175">RTF-innhold</translation>
 <translation id="6539092367496845964">Noe gikk galt. Prøv på nytt senere.</translation>
 <translation id="654149438358937226">Blokkér alle varsler</translation>
 <translation id="6567071839949112727">klikk på et overordnet element</translation>

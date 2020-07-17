@@ -171,6 +171,14 @@ public abstract class BrowserServicesIntentDataProvider {
     }
 
     /**
+     * @return The navigation bar divider color specified in the intent, or null if not specified.
+     */
+    @Nullable
+    public Integer getNavigationBarDividerColor() {
+        return null;
+    }
+
+    /**
      * @return The drawable of the icon of close button shown in the custom tab toolbar.
      */
     @Nullable

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr-Latn">
 <translation id="1008557486741366299">Ne sada</translation>
+<translation id="100957008357583611">Želite li da koristite lokaciju?</translation>
 <translation id="1010200102790553230">Kasnije učitaj stranicu</translation>
 <translation id="1015730422737071372">Navedite dodatne detalje</translation>
 <translation id="1019413721762100891">Isključeno</translation>
@@ -45,6 +46,7 @@
 <translation id="115926840831309955">Proverite CVC i probajte ponovo ili ažurirajte datum isteka</translation>
 <translation id="1161325031994447685">ponovo da se povežete sa Wi-Fi mrežom</translation>
 <translation id="1165039591588034296">Greška</translation>
+<translation id="1165174597379888365">Stranica je posećena</translation>
 <translation id="1175364870820465910">&amp;Odštampaj...</translation>
 <translation id="1175875016430184367">Trostruko spajanje na desnoj strani</translation>
 <translation id="1178581264944972037">Pauziraj</translation>
@@ -266,6 +268,7 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="2001146170449793414">{COUNT,plural, =1{ i još 1}one{i još #}few{i još #}other{i još #}}</translation>
 <translation id="2003709556000175978">Resetujte lozinku</translation>
 <translation id="2003775180883135320">Četvorostruko bušenje na vrhu</translation>
+<translation id="202072848677994234">Ovaj obrazac se šalje preko nebezbedne veze. Automatsko popunjavanje je onemogućeno.</translation>
 <translation id="2025115093177348061">Proširena realnost</translation>
 <translation id="2025186561304664664">Proksi je podešen da bude automatski konfigurisan.</translation>
 <translation id="2030481566774242610">Da li ste mislili <ph name="LINK" />?</translation>
@@ -334,6 +337,7 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="2289385804009217824">Skraćivanje</translation>
 <translation id="2292556288342944218">Pristup internetu je blokiran</translation>
 <translation id="2293443924986248631">Kada je ova opcija uključena, sajtovi ne mogu da koriste kolačiće koji vas prate na vebu. Funkcije na nekim sajtovima mogu da prestanu sa radom.</translation>
+<translation id="2295290966866883927">URL-ovi stranica koje posećujete se šalju u Google Cloud ili trećim stranama na analizu. Na primer, možda će biti skenirani da bi se otkrili nebezbedni veb-sajtovi.</translation>
 <translation id="2297722699537546652">B5 (koverat)</translation>
 <translation id="2300306941146563769">Nije otpremljeno</translation>
 <translation id="2310021320168182093">Chou2 (koverat)</translation>
@@ -425,7 +429,6 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="2705137772291741111">Sačuvana (keširana) kopija ovog sajta nije mogla da se čita.</translation>
 <translation id="2709516037105925701">Automatsko popunjavanje</translation>
 <translation id="2713444072780614174">Bela</translation>
-<translation id="2720342946869265578">U blizini</translation>
 <translation id="2721148159707890343">Zahtev je uspeo</translation>
 <translation id="272451190272506600">Dodirnite senzor da biste platili</translation>
 <translation id="2728127805433021124">Sertifikat servera je potpisan slabim algoritmom.</translation>
@@ -722,7 +725,6 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="3990250421422698716">Protresanje radi poravnanja</translation>
 <translation id="3996311196211510766">Sajt <ph name="ORIGIN" /> je zatražio da se smernice za poreklo
     primene na sve zahteve ka njemu, ali ove smernice trenutno ne mogu da se primene.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 veb-stranica u okolini}one{# veb-stranica u okolini}few{# veb-stranice u okolini}other{# veb-stranica u okolini}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF dokument koji sadrži {COUNT} stranicu}one{PDF dokument koji sadrži {COUNT} stranicu}few{PDF dokument koji sadrži {COUNT} stranice}other{PDF dokument koji sadrži {COUNT} stranica}}</translation>
 <translation id="4030383055268325496">&amp;Opozovi dodavanje</translation>
 <translation id="4032320456957708163">Pregledačem upravlja <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -940,7 +942,6 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Sačuvaj...</translation>
 <translation id="4913987521957242411">Bušenje u gornjem levom uglu</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{i joj 1 veb-stranica}one{i još # veb-stranica}few{i još # veb-stranice}other{i još # veb-stranica}}</translation>
 <translation id="4923459931733593730">Plaćanje</translation>
 <translation id="4926049483395192435">Mora da bude navedeno.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> navodi:</translation>
@@ -1181,6 +1182,7 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="5869405914158311789">Ovaj sajt nije dostupan</translation>
 <translation id="5869522115854928033">Sačuvane lozinke</translation>
 <translation id="5887400589839399685">Kartica je sačuvana</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> zahteva da napravite rezervnu kopiju podataka i da vratite uređaj.</translation>
 <translation id="5895138241574237353">Pokreni ponovo</translation>
 <translation id="5895187275912066135">Izdato</translation>
 <translation id="5901630391730855834">Žuta</translation>
@@ -1330,7 +1332,6 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="6518133107902771759">Verifikuj</translation>
 <translation id="6521745193039995384">Nisu aktivne</translation>
 <translation id="6529602333819889595">&amp;Ponovi brisanje</translation>
-<translation id="6534179046333460208">Predlozi Interneta oko nas</translation>
 <translation id="6545864417968258051">Bluetooth skeniranje</translation>
 <translation id="6547208576736763147">Dvostruko bušenje na levoj strani</translation>
 <translation id="6554795675067793129">Vašim nalogom upravlja <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1853,7 +1854,6 @@ Dodatni detalji:
 <translation id="8790007591277257123">&amp;Ponovi brisanje</translation>
 <translation id="8792621596287649091">Možete da izgubite pristup nalogu za <ph name="ORG_NAME" /> ili bi moglo da dođe do krađe identiteta. Chromium vam preporučuje da odmah promenite lozinku.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> je uključio Chrome Enterprise Connectors u pregledaču. Ovi priključci imaju pristup nekim vašim podacima.</translation>
-<translation id="8800988563907321413">Predlozi u blizini će se prikazivati ovde</translation>
 <translation id="8805819170075074995">Unos na listi „<ph name="LANGUAGE_ID" />“: Unos se zanemaruje jer je obuhvaćen i smernicama SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Skraćivanje posle svake stranice</translation>
 <translation id="8820817407110198400">Obeleživači</translation>

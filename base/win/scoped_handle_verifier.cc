@@ -9,6 +9,7 @@
 #include <stddef.h>
 
 #include <unordered_map>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
@@ -67,8 +68,8 @@ NOINLINE void ReportErrorOnScopedHandleOperation(
 NOINLINE void ReportErrorOnScopedHandleOperation(
     const base::debug::StackTrace& creation_stack,
     const ScopedHandleVerifierInfo& other) {
-  auto other_copy = other;
-  base::debug::Alias(&other_copy);
+  auto other_stack_copy = *other.stack;
+  base::debug::Alias(&other_stack_copy);
   auto creation_stack_copy = creation_stack;
   base::debug::Alias(&creation_stack_copy);
   CHECK(false);
@@ -76,6 +77,25 @@ NOINLINE void ReportErrorOnScopedHandleOperation(
 }
 
 }  // namespace
+
+ScopedHandleVerifierInfo::ScopedHandleVerifierInfo(
+    const void* owner,
+    const void* pc1,
+    const void* pc2,
+    std::unique_ptr<debug::StackTrace> stack,
+    DWORD thread_id)
+    : owner(owner),
+      pc1(pc1),
+      pc2(pc2),
+      stack(std::move(stack)),
+      thread_id(thread_id) {}
+
+ScopedHandleVerifierInfo::~ScopedHandleVerifierInfo() = default;
+
+ScopedHandleVerifierInfo::ScopedHandleVerifierInfo(ScopedHandleVerifierInfo&&) =
+    default;
+ScopedHandleVerifierInfo& ScopedHandleVerifierInfo::operator=(
+    ScopedHandleVerifierInfo&&) = default;
 
 ScopedHandleVerifier::ScopedHandleVerifier(bool enabled)
     : enabled_(enabled), lock_(GetLock()) {}
@@ -202,12 +222,12 @@ NOINLINE void ScopedHandleVerifier::StartTrackingImpl(HANDLE handle,
   DWORD thread_id = GetCurrentThreadId();
 
   // Grab the thread stacktrace before the lock.
-  auto item = std::make_pair(
-      handle, ScopedHandleVerifierInfo{owner, pc1, pc2,
-                                       base::debug::StackTrace(), thread_id});
+  auto stacktrace = std::make_unique<debug::StackTrace>();
 
   AutoNativeLock lock(*lock_);
-  std::pair<HandleMap::iterator, bool> result = map_.insert(item);
+  std::pair<HandleMap::iterator, bool> result = map_.emplace(
+      handle, ScopedHandleVerifierInfo{owner, pc1, pc2, std::move(stacktrace),
+                                       thread_id});
   if (!result.second) {
     // Attempt to start tracking already tracked handle.
     ReportErrorOnScopedHandleOperation(creation_stack_, result.first->second);

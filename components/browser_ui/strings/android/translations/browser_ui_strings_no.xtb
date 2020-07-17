@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1647391597548383849">Tilgang til kameraet ditt</translation>
 <translation id="1660204651932907780">Tillat nettsteder å spille av lyd (anbefales)</translation>
+<translation id="1677097821151855053">Informasjonskapsler og andre nettstedsdata brukes til å huske deg, for eksempel for å logge deg på eller for å vise deg personlig tilpassede annonser. For å administrere informasjonskapsler for alle nettsteder, se <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Vil du fjerne nettstedsdata?</translation>
 <translation id="169515064810179024">Blokkér nettsteder fra å få tilgang til bevegelsessensorer</translation>
 <translation id="1717218214683051432">Bevegelsessensorer</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Tillat informasjonskapsler for et spesifikt nettsted.</translation>
 <translation id="4046123991198612571">Neste spor</translation>
 <translation id="4165986682804962316">Nettstedsinnstillinger</translation>
+<translation id="4200726100658658164">Åpne posisjonsinnstillingene</translation>
 <translation id="4226663524361240545">Varsler kan gjøre at enheten vibrerer</translation>
 <translation id="4242533952199664413">Åpne innstillingene</translation>
 <translation id="4259722352634471385">Nettadressen er blokkert: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Alle nettsteder</translation>
 <translation id="6320088164292336938">Vibrering</translation>
 <translation id="6388207532828177975">Slett alt og tilbakestill</translation>
+<translation id="6423924377271166037">Slett informasjonskapsler</translation>
 <translation id="6439114592976064011">Blokkér nettsteder fra å bruke virtuell virkelighet-enheten din og -dataene dine</translation>
 <translation id="6447842834002726250">Informasjonskapsler</translation>
 <translation id="6527303717912515753">Del</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Spol bakover</translation>
 <translation id="8444433999583714703">For å gi <ph name="APP_NAME" /> tilgang til posisjonen din må du også slå på posisjon i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Opphev tillatelsen til enhetstilgang</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 informasjonskapsel er i bruk}other{# informasjonskapsler er i bruk}}</translation>
 <translation id="8463851957836045671">Nettstedet er raskt</translation>
 <translation id="851751545965956758">Blokkér at nettsteder kobler til enheter</translation>
 <translation id="857943718398505171">Tillatt (anbefales)</translation>

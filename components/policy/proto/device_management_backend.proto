@@ -670,6 +670,19 @@ message PolicyData {
   // Obfuscated customerId the device is enrolled into.
   // Only set for device policy.
   optional string obfuscated_customer_id = 34;
+
+  // The different types of user segments for metrics logging.
+  enum MetricsLogSegment {
+    UNSPECIFIED = 0;
+    K12 = 1;
+    UNIVERSITY = 2;
+    NONPROFIT = 3;
+  }
+
+  // Indicates the segment the user's metrics should be logged under,
+  // UNSPECIFIED if not relevant.
+  // This field should only be set for User Policy response.
+  optional MetricsLogSegment metrics_log_segment = 35;
 }
 
 message ClientActionRequired {

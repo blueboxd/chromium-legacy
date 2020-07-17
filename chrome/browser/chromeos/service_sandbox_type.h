@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_SERVICE_SANDBOX_TYPE_H_
 
 #include "chromeos/constants/chromeos_features.h"
-#include "content/public/browser/sandbox_type.h"
 #include "content/public/browser/service_process_host.h"
+#include "sandbox/policy/sandbox_type.h"
 
 // This file maps service classes to sandbox types.  Services which
 // require a non-utility sandbox can be added here.  See
@@ -23,12 +23,12 @@ class InputEngineManager;
 }  // namespace chromeos
 
 template <>
-inline content::SandboxType
+inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<chromeos::ime::mojom::InputEngineManager>() {
   if (chromeos::features::IsImeSandboxEnabled())
-    return content::SandboxType::kIme;
+    return sandbox::policy::SandboxType::kIme;
 
-  return content::SandboxType::kUtility;
+  return sandbox::policy::SandboxType::kUtility;
 }
 
 // chromeos::tts::mojom::TtsService
@@ -41,9 +41,9 @@ class TtsService;
 }  // namespace chromeos
 
 template <>
-inline content::SandboxType
+inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<chromeos::tts::mojom::TtsService>() {
-  return content::SandboxType::kTts;
+  return sandbox::policy::SandboxType::kTts;
 }
 
 #endif  // CHROME_BROWSER_CHROMEOS_SERVICE_SANDBOX_TYPE_H_

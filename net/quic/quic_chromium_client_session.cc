@@ -1380,20 +1380,10 @@ int QuicChromiumClientSession::GetNumSentClientHellos() const {
 
 bool QuicChromiumClientSession::CanPool(
     const std::string& hostname,
-    PrivacyMode privacy_mode,
-    const SocketTag& socket_tag,
-    const NetworkIsolationKey& network_isolation_key,
-    bool disable_secure_dns) const {
+    const QuicSessionKey& other_session_key) const {
   DCHECK(connection()->connected());
-  if (privacy_mode != session_key_.privacy_mode() ||
-      socket_tag != session_key_.socket_tag() ||
-      (network_isolation_key != session_key_.network_isolation_key() &&
-       base::FeatureList::IsEnabled(
-           features::kPartitionConnectionsByNetworkIsolationKey)) ||
-      disable_secure_dns != session_key_.disable_secure_dns()) {
-    // Privacy mode and socket tag must always match.
+  if (!session_key_.CanUseForAliasing(other_session_key))
     return false;
-  }
   SSLInfo ssl_info;
   if (!GetSSLInfo(&ssl_info) || !ssl_info.cert.get()) {
     NOTREACHED() << "QUIC should always have certificates.";
@@ -1402,7 +1392,7 @@ bool QuicChromiumClientSession::CanPool(
 
   return SpdySession::CanPool(transport_security_state_, ssl_info,
                               *ssl_config_service_, session_key_.host(),
-                              hostname, network_isolation_key);
+                              hostname, session_key_.network_isolation_key());
 }
 
 bool QuicChromiumClientSession::ShouldCreateIncomingStream(
@@ -3223,9 +3213,7 @@ QuicChromiumClientSession::GetCurrentNetwork() const {
 }
 
 bool QuicChromiumClientSession::IsAuthorized(const std::string& hostname) {
-  bool result = CanPool(
-      hostname, session_key_.privacy_mode(), session_key_.socket_tag(),
-      session_key_.network_isolation_key(), session_key_.disable_secure_dns());
+  bool result = CanPool(hostname, session_key_);
   if (result)
     streams_pushed_count_++;
   return result;

@@ -215,12 +215,6 @@ class PLATFORM_EXPORT DisplayItem {
     return static_cast<RasterEffectOutset>(raster_effect_outset_);
   }
 
-  // Visual rect can change without needing invalidation of the client, e.g.
-  // when ancestor clip changes. This is called during under invalidation
-  // checking. TODO(crbug.com/1104064): Remove this when we can compute more
-  // accurate visual rects for such display items.
-  void SetVisualRect(const IntRect& visual_rect) { visual_rect_ = visual_rect; }
-
   Type GetType() const { return static_cast<Type>(type_); }
 
   // Size of this object in memory, used to move it with memcpy.

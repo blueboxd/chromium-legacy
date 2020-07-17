@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Caméra</translation>
 <translation id="1647391597548383849">Accès à votre caméra</translation>
 <translation id="1660204651932907780">Autoriser les sites à faire jouer du son (recommandé)</translation>
+<translation id="1677097821151855053">Les témoins et d'autres données de sites sont utilisés pour se souvenir de vous. Par exemple : pour vous connecter à votre compte ou pour personnaliser les annonces. Pour gérer les témoins pour tous les sites, reportez-vous au menu <ph name="BEGIN_LINK" />Paramètres<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Effacer les données du site?</translation>
 <translation id="169515064810179024">Empêcher les sites d'accéder aux capteurs de mouvement</translation>
 <translation id="1717218214683051432">Capteurs de mouvements</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Autoriser les témoins pour un site en particulier.</translation>
 <translation id="4046123991198612571">Chanson suivante</translation>
 <translation id="4165986682804962316">Paramètres du site</translation>
+<translation id="4200726100658658164">Ouvrir les paramètres de localisation</translation>
 <translation id="4226663524361240545">Les notifications peuvent faire vibrer l'appareil</translation>
 <translation id="4242533952199664413">Ouvrir les paramètres</translation>
 <translation id="4259722352634471385">Navigation bloquée : <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Tous les sites</translation>
 <translation id="6320088164292336938">Vibrer</translation>
 <translation id="6388207532828177975">Effacer et réinitialiser</translation>
+<translation id="6423924377271166037">Effacer les témoins</translation>
 <translation id="6439114592976064011">Empêcher les sites d'utiliser vos appareils et vos données de réalité virtuelle</translation>
 <translation id="6447842834002726250">Témoins</translation>
 <translation id="6527303717912515753">Partager</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Rechercher vers l'arrière</translation>
 <translation id="8444433999583714703">Pour autoriser <ph name="APP_NAME" /> à accéder à votre position, activez aussi la localisation dans les <ph name="BEGIN_LINK" />paramètres d'Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Révoquer l'autorisation de l'appareil</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 témoin en cours d'utilisation}one{# témoin en cours d'utilisation}other{# témoins en cours d'utilisation}}</translation>
 <translation id="8463851957836045671">Le site est rapide</translation>
 <translation id="851751545965956758">Empêcher les sites de se connecter à des appareils</translation>
 <translation id="857943718398505171">Autorisée (recommandé)</translation>

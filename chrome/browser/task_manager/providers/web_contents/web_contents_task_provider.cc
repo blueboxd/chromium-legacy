@@ -76,7 +76,7 @@ class WebContentsEntry : public content::WebContentsObserver {
   void ClearTasksForDescendantsOf(RenderFrameHost* ancestor);
 
   // Calls |on_task| for each task managed by this WebContentsEntry.
-  void ForEachTask(const base::Callback<void(RendererTask*)>& on_task);
+  void ForEachTask(const base::RepeatingCallback<void(RendererTask*)> on_task);
 
   // Walks parents until hitting a process boundary. Returns the highest frame
   // in the same SiteInstance as |render_frame_host|.
@@ -121,7 +121,7 @@ void WebContentsEntry::CreateAllTasks() {
 }
 
 void WebContentsEntry::ClearAllTasks(bool notify_observer) {
-  ForEachTask(base::Bind(
+  ForEachTask(base::BindRepeating(
       [](WebContentsTaskProvider* provider, bool notify_observer,
          content::WebContents* web_contents, RendererTask* task) {
         task->set_termination_status(web_contents->GetCrashedStatus());
@@ -240,7 +240,7 @@ void WebContentsEntry::DidFinishNavigation(
   if (!main_frame_task)
     return;
 
-  ForEachTask(base::Bind([](RendererTask* task) {
+  ForEachTask(base::BindRepeating([](RendererTask* task) {
     // Listening to WebContentsObserver::TitleWasSet() only is not enough in
     // some cases when the the web page doesn't have a title. That's why we
     // update the title here as well.
@@ -255,7 +255,7 @@ void WebContentsEntry::DidFinishNavigation(
 }
 
 void WebContentsEntry::TitleWasSet(content::NavigationEntry* entry) {
-  ForEachTask(base::Bind([](RendererTask* task) {
+  ForEachTask(base::BindRepeating([](RendererTask* task) {
     task->UpdateTitle();
     task->UpdateFavicon();
   }));
@@ -381,7 +381,7 @@ void WebContentsEntry::ClearTasksForDescendantsOf(RenderFrameHost* ancestor) {
 }
 
 void WebContentsEntry::ForEachTask(
-    const base::Callback<void(RendererTask*)>& on_task) {
+    base::RepeatingCallback<void(RendererTask*)> on_task) {
   for (const auto& pair : frames_by_site_instance_) {
     const FramesList& frames_list = pair.second;
     DCHECK(!frames_list.empty());

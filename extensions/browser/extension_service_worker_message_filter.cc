@@ -12,6 +12,7 @@
 #include "extensions/browser/events/event_ack_data.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/common/extension_messages.h"
 

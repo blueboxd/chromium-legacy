@@ -414,7 +414,7 @@ bool Gav1VideoDecoder::MaybeDequeueFrames() {
     }
 
     if (!buffer) {
-      // This is not an error case; no displayable buffer exists or is ready.
+      // This is not an error case; no displayable frame exists or is ready.
       break;
     }
 

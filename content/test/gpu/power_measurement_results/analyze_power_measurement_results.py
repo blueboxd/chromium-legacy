@@ -91,8 +91,8 @@ def ProcessJsonData(jsons,
                     measurement_names=_MEASUREMENTS,
                     per_bot=False,
                     repeat_strategy=RepeatStrategy.COUNT_MINIMUM,
-                    bot_whitelist=[],
-                    bot_blacklist=[]):
+                    bot_allowlist=[],
+                    bot_blocklist=[]):
   min_build = None
   max_build = None
   results = {}
@@ -108,9 +108,9 @@ def ProcessJsonData(jsons,
           max_build = build_number
 
       bot = build['bot']
-      if bot_whitelist and bot not in bot_whitelist:
+      if bot_allowlist and bot not in bot_allowlist:
         continue
-      if bot_blacklist and bot in bot_blacklist:
+      if bot_blocklist and bot in bot_blocklist:
         continue
 
       if bot not in bots:
@@ -214,7 +214,7 @@ def GetOutliers(data, variation_threshold):
   return outliers
 
 
-def FindBuild(jsons, bot_whitelist, test_name, result):
+def FindBuild(jsons, selected_bots, test_name, result):
   for json in jsons:
     builds = json.get('builds', [])
     for build in builds:
@@ -222,7 +222,7 @@ def FindBuild(jsons, bot_whitelist, test_name, result):
       if build_number < 0:
         continue
       bot = build['bot']
-      if bot not in bot_whitelist:
+      if bot not in selected_bots:
         continue
 
       tests = build['tests']

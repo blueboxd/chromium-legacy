@@ -7124,6 +7124,14 @@ the Bookmarks menu.">
           desc="Button text for the QR code generator's download button.">
         Download
       </message>
+      <message name="IDS_BROWSER_SHARING_QR_CODE_DIALOG_ERROR_TOO_LONG"
+          desc="Error message displayed when a URL exceeds the limit for which we can generate a QR code.">
+        Use <ph name="CHARACTER_LIMIT">$1<ex>300</ex></ph> characters or fewer
+      </message>
+      <message name="IDS_BROWSER_SHARING_QR_CODE_DIALOG_ERROR_UNKNOWN"
+          desc="Error message displayed when an unknown error occurs.">
+          Can't create QR code
+      </message>
 
       <!-- Sharing features. -->
       <message name="IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_TEXT_CONTENT_UNKNOWN_DEVICE" desc="Title text displayed in a Remote Copy (for text content) notification when the source device name is unknown.">
@@ -9226,6 +9234,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_LIVE_CAPTION_BUBBLE_CLOSE" desc="Tooltip for the Live Caption close button">
         Turn off Live Caption for now
+      </message>
+      <message name="IDS_LIVE_CAPTION_BUBBLE_EXPAND" desc="Tooltip for the Live Caption expand button">
+        Show more lines
+      </message>
+      <message name="IDS_LIVE_CAPTION_BUBBLE_COLLAPSE" desc="Tooltip for the Live Caption collapse button">
+        Show fewer lines
       </message>
       <message name="IDS_LIVE_CAPTION_BUBBLE_ERROR" desc="Error message for the Live Caption bubble when Live Captions are unavailable.">
         Live Caption is not available right now

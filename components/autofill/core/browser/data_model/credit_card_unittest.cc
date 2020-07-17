@@ -69,12 +69,13 @@ const char* const kValidNicknames[] = {
 };
 
 const char* const kInvalidNicknames[] = {
-    "",                                      /* empty */
     "Nickname length exceeds 25 characters", /* too long */
     "\t\r\n  ",                              /* empty after SetNickname */
     "CVC: 123",                              /* contains digits */
     "1% cashback",                           /* contains digits */
 };
+
+const char* const kEmptyNickname = "";
 
 // Time moves on. Today is yesterday's tomorrow. Tests don't like time moving
 // on, in particular if Credit Card expiration is compared to local time.
@@ -271,7 +272,7 @@ TEST(CreditCardTest, CardIdentifierStringsForAutofillDisplay) {
                           "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
                           "1");
   credit_card1.SetNickname(invalid_nickname);
-  EXPECT_FALSE(credit_card1.HasValidNickname());
+  EXPECT_FALSE(credit_card1.HasNonEmptyValidNickname());
   EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
                         test::ObfuscatedCardDigitsAsUTF8("5100")),
             credit_card1.CardIdentifierStringForAutofillDisplay());
@@ -282,7 +283,7 @@ TEST(CreditCardTest, CardIdentifierStringsForAutofillDisplay) {
                           "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
                           "1");
   credit_card2.SetNickname(valid_nickname);
-  EXPECT_TRUE(credit_card2.HasValidNickname());
+  EXPECT_TRUE(credit_card2.HasNonEmptyValidNickname());
   EXPECT_EQ(
       valid_nickname + UTF8ToUTF16(std::string("  ") +
                                    test::ObfuscatedCardDigitsAsUTF8("5100")),
@@ -298,7 +299,7 @@ TEST(CreditCardTest, CardIdentifierStringsForAutofillDisplay) {
                           "5105 1051 0510 5100" /* Mastercard */, "01", "2020",
                           "1");
   credit_card3.SetNickname(valid_nickname);
-  EXPECT_TRUE(credit_card3.HasValidNickname());
+  EXPECT_TRUE(credit_card3.HasNonEmptyValidNickname());
   EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
                         test::ObfuscatedCardDigitsAsUTF8("5100")),
             credit_card3.CardIdentifierStringForAutofillDisplay());
@@ -1239,7 +1240,7 @@ TEST(CreditCardTest, IsValidCardNumberAndExpiryDate) {
   }
 }
 
-TEST(CreditCardTest, HasValidNickname) {
+TEST(CreditCardTest, HasNonEmptyValidNickname) {
   CreditCard card(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(&card, "John Dillinger", "5105 1051 0510 5100", "01",
                           "2020", "1");
@@ -1247,12 +1248,37 @@ TEST(CreditCardTest, HasValidNickname) {
   for (const char* valid_nickname : kValidNicknames) {
     SCOPED_TRACE(valid_nickname);
     card.SetNickname(UTF8ToUTF16(valid_nickname));
-    EXPECT_TRUE(card.HasValidNickname());
+    EXPECT_TRUE(card.HasNonEmptyValidNickname());
   }
   for (const char* invalid_nickname : kInvalidNicknames) {
     SCOPED_TRACE(invalid_nickname);
     card.SetNickname(UTF8ToUTF16(invalid_nickname));
-    EXPECT_FALSE(card.HasValidNickname());
+    EXPECT_FALSE(card.HasNonEmptyValidNickname());
+  }
+
+  // HasNonEmptyValidNickname should return false if nickname is empty.
+  {
+    SCOPED_TRACE(kEmptyNickname);
+    card.SetNickname(UTF8ToUTF16(kEmptyNickname));
+    EXPECT_FALSE(card.HasNonEmptyValidNickname());
+  }
+}
+
+TEST(CreditCardTest, IsNicknameValid) {
+  for (const char* valid_nickname : kValidNicknames) {
+    SCOPED_TRACE(valid_nickname);
+    EXPECT_TRUE(CreditCard::IsNicknameValid(UTF8ToUTF16(valid_nickname)));
+  }
+
+  // IsNicknameValid should return true if nickname is empty.
+  {
+    SCOPED_TRACE(kEmptyNickname);
+    EXPECT_TRUE(CreditCard::IsNicknameValid(UTF8ToUTF16(kEmptyNickname)));
+  }
+
+  for (const char* invalid_nickname : kInvalidNicknames) {
+    SCOPED_TRACE(invalid_nickname);
+    EXPECT_FALSE(CreditCard::IsNicknameValid(UTF8ToUTF16(invalid_nickname)));
   }
 }
 

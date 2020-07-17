@@ -104,6 +104,7 @@
 <translation id="1124772482545689468">ຜູ້​ໃຊ້</translation>
 <translation id="1125550662859510761">ຄວາມລະອຽດ <ph name="WIDTH" /> x <ph name="HEIGHT" /> (ເດີມ)</translation>
 <translation id="1126809382673880764">ບໍ່ປົກປ້ອງທ່ານຈາກເວັບໄຊ, ການດາວໂຫຼດ ແລະ ສ່ວນຂະຫຍາຍທີ່ເປັນອັນຕະລາຍ. ທ່ານຈະຍັງໄດ້ຮັບການປົກປ້ອງ Safe Browsing, ຢູ່ບ່ອນທີ່ໃຊ້ໄດ້, ຢູ່ໃນການບໍລິການອື່ນຂອງ Google ເຊັ່ນ: Gmail ແລະ ຊອກຫາ.</translation>
+<translation id="112752777279960360">ເພື່ອຕັ້ງຄ່າໂທລະສັບ Android ທີ່ຈະໃຊ້ເປັນກະແຈຄວາມປອດໄພກັບຄອມພິວເຕີນີ້ສຳລັບຄັ້ງທຳອິດ, ກະລຸນາເປີດ Chrome ໃນໂທລະສັບຂອງທ່ານ ແລ້ວໄປທີ່ "ການຕັ້ງຄ່າ &gt; ລະຫັດຜ່ານ &gt; ໃຊ້ໂທລະສັບເປັນກະແຈຄວາມປອດໄພ". ຈາກນັ້ນແຕະ "ເຊື່ອມຕໍ່ອຸປະກອນໃໝ່" ແລ້ວສະແກນລະຫັດ QR ນີ້.</translation>
 <translation id="1128109161498068552">ຢ່າ​ອະ​ນຸ​ຍາດໃຫ້ເວັບໄຊທ໌ໃດໜຶ່ງໃຊ້ຂໍ້ຄວາມສະ​ເພາະລະບົບ ເພື່ອເຂົ້າໃຊ້ອຸປະກອນ MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">ແກ້ໄຂໂປຣແກຣມຊອກຫາ</translation>
@@ -507,6 +508,7 @@
 <translation id="1622054403950683339">ລືມເຄືອຂ່າຍ Wi-Fi</translation>
 <translation id="1623132449929929218">ຮູບພາບບໍ່ສາມາດໃຊ້ໄດ້ໃນຕອນນີ້. ກະລຸນາເຊື່ອມຕໍ່ກັບອິນເຕີເນັດຄືນໃໝ່ເພື່ອເບິ່ງຄໍເລັກຊັນຮູບພື້ນຫຼັງ.</translation>
 <translation id="1623723619460186680">ການຫຼຸດແສງສີຟ້າ</translation>
+<translation id="1624012933569991823">ການຕັ້ງຄ່າ</translation>
 <translation id="1627276047960621195">ຕົວອະທິບາຍໄຟລ໌</translation>
 <translation id="1627408615528139100">ດາວໂຫຼດຮຽບຮ້ອຍແລ້ວ</translation>
 <translation id="1628948239858170093">ສະແກນໄຟລ໌ກ່ອນທີ່ຈະເປີດບໍ?</translation>
@@ -743,6 +745,7 @@
 <translation id="1887850431809612466">ການປັບປຸງແກ້ໄຂຮາດແວ</translation>
 <translation id="1888523338879380247">{0,plural, =1{ມື້ສຸດທ້າຍໃນການອັບເດດອຸປະກອນ}other{ອັບເດດອຸປະກອນພາຍໃນ # ມື້}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783">ກຳລັງຮັບ <ph name="ATTACHMENTS" /> ຈາກ <ph name="DEVICE_NAME" /></translation>
 <translation id="189210018541388520">ເປີດເຕັມໜ້າຈໍ</translation>
 <translation id="1892341345406963517">ສະບາຍດີ <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">​ພາ​ສາ​ອື່ນໆ</translation>
@@ -1815,6 +1818,7 @@
 <translation id="3253225298092156258">ບໍ່ມີຂໍ້ມູນ</translation>
 <translation id="3253448572569133955">ບັນຊີທີ່ບໍ່ຮູ້ຈັກ</translation>
 <translation id="3254516606912442756">ປິດນຳໃຊ້ການກວດຫາເຂດເວລາອັດຕະໂນມັດ</translation>
+<translation id="3254715652085014625">ເປີດ Chrome ໃນໂທລະສັບ Android ຂອງທ່ານ ແລ້ວໄປທີ່ "ການຕັ້ງຄ່າ &gt; ລະຫັດຜ່ານ &gt; ໃຊ້ໂທລະສັບເປັນກະແຈຄວາມປອດໄພ" ແລ້ວປະຕິບັດຕາມຄຳແນະນຳຢູ່ທີ່ນັ້ນ.</translation>
 <translation id="3255355328033513170">ຂໍ້ມູນທັງໝົດທີ່ເກັບໄວ້ໂດຍ <ph name="SITE_GROUP_NAME" /> ແລະ ເວັບໄຊຕ່າງໆພາຍໃຕ້ມັນຈະຖືກລຶບ. ນີ້ຮວມເອົາຄຸກກີ້. ທ່ານຈະຖືກນຳອອກຈາກລະບົບເວັບໄຊເຫຼົ່ານີ້, ຮວມທັງໃນແຖບທີ່ເປີດຢູ່.</translation>
 <translation id="3259723213051400722">ກະລຸນາລອງອີກຄັ້ງ.</translation>
 <translation id="3264544094376351444">ຟອນ Sans-serif</translation>
@@ -1953,6 +1957,7 @@
 <translation id="3433621910545056227">ອຸ້ຍ!  ລະບົບຕັ້ງລັອກລັກສະນະການຕິດຕັ້ງເວລາອຸປະກອນບໍ່ໄດ້.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3434272557872943250">ຖ້າເປີດການຕັ້ງຄ່າການເຄື່ອນໄຫວເວັບ ແລະ ແອັບເພີ່ມເຕີມສໍາລັບລູກຂອງທ່ານ, ລະບົບອາດຈະບັນທຶກຂໍ້ມູນນີ້ໄວ້ໃນບັນຊີ Google ຂອງເຂົາເຈົ້າ. ສຶກສາເພີ່ມເຕີມກ່ຽວກັບການຕັ້ງຄ່າເຫຼົ່ານີ້ ແລະ ວິທີປັບການຕັ້ງຄ່າໄດ້ທີ່ families.google.com.</translation>
+<translation id="3435541101098866721">ເພີ່ມໂທລະສັບໃໝ່</translation>
 <translation id="3435688026795609344">"<ph name="EXTENSION_NAME" />" ກຳລັງຮ້ອງຂໍ <ph name="CODE_TYPE" /> ຂອງທ່ານ</translation>
 <translation id="3435738964857648380">ຄວາມ​ປອດ​ໄພ</translation>
 <translation id="343578350365773421">ເຈ້ຍໝົດ</translation>
@@ -3489,6 +3494,7 @@
 <translation id="5390677308841849479">ສີແດງເຂັ້ມ ແລະ ສີສົ້ມ</translation>
 <translation id="5390743329570580756">ສົ່ງສຳລັບ</translation>
 <translation id="5397794290049113714">ທ່ານ</translation>
+<translation id="5398497406011404839">ບຸກມາກທີ່ເຊື່ອງໄວ້</translation>
 <translation id="5398572795982417028">ເກີນຂອບເຂດການອ້າງອີງໜ້າ, ຂີດຈຳກັດແມ່ນ <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">ບລັອກໂຄສະນາໄວ້ແລ້ວ</translation>
 <translation id="5402815541704507626">ດາວໂຫຼດການອັບເດດໂດຍໃຊ້ຂໍ້ມູນມືຖື</translation>
@@ -3574,6 +3580,7 @@
 <translation id="5496587651328244253">ຈັດຕັ້ງ</translation>
 <translation id="5497251278400702716">ໄຟລ໌ນີ້</translation>
 <translation id="5499313591153584299">ໄຟ​ລ໌​ນີ້​ອາດ​ຈະ​ເປັນ​ອັນ​ຕະ​ລາຍ​ຕໍ່​ຄອມ​ພິວ​ເຕີ​ຂອງ​ທ່ານ.</translation>
+<translation id="5499453227627332024">ມີການອັບເກຣດສຳລັບກ່ອງບັນຈຸ Linux ຂອງທ່ານ. ນອກນັ້ນທ່ານຍັງສາມາດອັບເກຣດໄດ້ໃນພາຍຫຼັງຈາກແອັບການຕັ້ງຄ່າ.</translation>
 <translation id="5500709606820808700">ດຳເນີນການກວດສອບຄວາມປອດໄພໃນມື້ນີ້</translation>
 <translation id="5502500733115278303">ນໍາ​ເຂົ້າ​ມາຈາກ Firefox ແລ້ວ</translation>
 <translation id="5503982651688210506">ສືບຕໍ່ອະນຸຍາດໃຫ້ <ph name="HOST" /> ໃຊ້ ແລະ ຍ້າຍກ້ອງຂອງທ່ານ ແລະ ໃຊ້ໄມໂຄຣໂຟນຂອງທ່ານ</translation>
@@ -4198,6 +4205,7 @@
 <translation id="6270770586500173387">ສົ່ງ <ph name="BEGIN_LINK1" />ຂໍ້ມູນລະບົບ ແລະ ແອັບ<ph name="END_LINK1" />, ແລະ <ph name="BEGIN_LINK2" />ເມຕຣິກ<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">ມີຄວາມຜິດພາດ (<ph name="ERROR" />) ໃນຂະນະທີ່ດາວໂຫຼດປລັກອິນ</translation>
 <translation id="6273677812470008672">ຄຸນນະພາບ</translation>
+<translation id="6273979226236203550">ລະຫັດຜ່ານຂອງທ່ານຖືກເກັບໄວ້ໃນອຸປະກອນນີ້ ແລະ ໃນບັນຊີ Google ຂອງທ່ານ. ທ່ານຕ້ອງການລຶບອັນໃດ?</translation>
 <translation id="6277105963844135994">ການໝົດເວລາເຄືອ​ຂ່າຍ</translation>
 <translation id="6277518330158259200">ຖ່າຍຮູບໜ້າຈໍ</translation>
 <translation id="6278057325678116358">ໃຊ້ GTK+</translation>
@@ -4558,6 +4566,7 @@
 <translation id="6758056191028427665">ໃຫ້ພວກເຮົາຮູ້ວ່າພວກເຮົາກຳລັງເຮັດໄດ້ດີສໍ່າໃດ.</translation>
 <translation id="6759193508432371551">ຕັ້ງຄ່າຄືນເປັນຄ່າໂຮງ​ງານ</translation>
 <translation id="6762833852331690540">ເປີດ</translation>
+<translation id="676560328519657314">ວິທີການຈ່າຍເງິນຂອງທ່ານໃນ Google Pay</translation>
 <translation id="6767566652486411142">ເລືອກພາສາອື່ນ...</translation>
 <translation id="6767639283522617719">ບໍ່ສາມາດເຂົ້າຮ່ວມໂດເມນໄດ້. ກະລຸນາກວດໃຫ້ແນ່ໃຈວ່າການຕັ້ງຄ່າຖືກຕ້ອງແລ້ວສຳລັບໜ່ວຍງານອົງການ.</translation>
 <translation id="6769557323306147204"><ph name="ORGANIZATION_NAME" /> ແນະນຳໃຫ້ທ່ານອັບເດດອຸປະກອນນີ້.</translation>
@@ -4730,6 +4739,7 @@
 <translation id="6972553992270299730"><ph name="ORIGIN" /> ບໍ່ສາມາດເປີດໄຟລ໌ໃນໂຟນເດີນີ້ໄດ້ ເພາະວ່າມັນປະກອບມີໄຟລ໌ລະບົບ</translation>
 <translation id="6972629891077993081">ອຸປະກອນ HID</translation>
 <translation id="6972754398087986839">ເລີ່ມຕົ້ນ</translation>
+<translation id="6972887130317925583">ປ່ຽນລະຫັດຜ່ານທີ່ຖືກລະເມີດສຳເລັດແລ້ວ. ກວດລະຫັດຜ່ານຂອງທ່ານໄດ້ທຸກເວລາໃນ <ph name="SETTINGS" />.</translation>
 <translation id="6973611239564315524">ມີການອັບເກຣດເປັນ Debian 10 (Buster)</translation>
 <translation id="6974609594866392343">ໂໝດສາທິດແບບອອບລາຍ</translation>
 <translation id="6977381486153291903">ການດັດແກ້ເຟີມແວ</translation>
@@ -5587,6 +5597,7 @@
 <translation id="8017176852978888182">ແຟ້ມທີ່ແບ່ງປັນຂອງ Linux</translation>
 <translation id="8017679124341497925">ແກ້ໄຂທາງລັດແລ້ວ</translation>
 <translation id="8018313076035239964">ຄວບຄຸມວ່າເວັບໄຊສາມາດໃຊ້ຂໍ້ມູນໃດແດ່ ແລະ ພວກເຂົາສາມາດສະແດງເນື້ອຫາໃດແດ່ໃຫ້ທ່ານເຫັນໄດ້</translation>
+<translation id="8022688469248132790">ກວດເບິ່ງລາຍລະອຽດຂໍ້ຜິດພາດ</translation>
 <translation id="8023801379949507775">ອັບເດດສ່ວນຂະຫຍາຍດຽວນີ້</translation>
 <translation id="8026334261755873520">ລຶບຂໍ້​ມູນການທ່ອງ​ເນັດ</translation>
 <translation id="8028060951694135607">ການກູ້ຄືນລະຫັດ Microsoft</translation>
@@ -6526,6 +6537,7 @@
 <translation id="9180380851667544951">ເວັບໄຊສາມາດແບ່ງປັນໜ້າຈໍຂອງທ່ານໄດ້</translation>
 <translation id="9188732951356337132">ສົ່ງຂໍ້ມູນການນຳໃຊ້ ແລະ ການວິເຄາະ. ອຸປະກອນນີ້ກຳລັງສົ່ງຂໍ້ມູນການວິເຄາະ, ຂໍ້ມູນອຸປະກອນ ແລະ ການໃຊ້ແອັບໃຫ້ Google ໂດຍອັດຕະໂນມັດໃນຂະນະນີ້. ຂໍ້ມູນນີ້ຈະບໍ່ຖືກໃຊ້ເພື່ອລະບຸຕົວລູກຂອງທ່ານ ແລະ ຈະຊ່ວຍປັບປຸງຄວາມສະຖຽນຂອງລະບົບ ແລະ ແອັບ ແລະ ການປັບປຸງອື່ນໆ. ບາງຂໍ້ມູນແບບຮວມກັນຍັງຈະຊ່ວຍແອັບ ແລະ ຮຸ້ນສ່ວນຂອງ Google ນຳອີກ ເຊັ່ນ: ຜູ້ພັດທະນາ Android. ຖ້າເປີດການຕັ້ງຄ່າການເຄື່ອນໄຫວເວັບ ແລະ ແອັບເພີ່ມເຕີມສໍາລັບລູກຂອງທ່ານ, ລະບົບອາດຈະບັນທຶກຂໍ້ມູນນີ້ໄວ້ໃນບັນຊີ Google ຂອງເຂົາເຈົ້າ. <ph name="BEGIN_LINK2" />ສຶກສາ​ເພີ່ມ​ເຕີມ<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + ປຸ່ມແຊຣ໌ກ່ອນ</translation>
+<translation id="9198090666959937775">ໃຊ້ໂທລະສັບ Android ຂອງທ່ານເປັນກະແຈຄວາມປອດໄພ</translation>
 <translation id="920045321358709304">ຊອກຫາ <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">ລະບົບຈະລຶບລ້າງຂໍ້ມູນອອບລາຍຕ່າງໆ</translation>
 <translation id="9201220332032049474">ຕົວເລືອກການລັອກໜ້າຈໍ</translation>
@@ -6568,6 +6580,7 @@
 <translation id="942532530371314860"><ph name="APP_NAME" /> ກຳລັງແບ່ງປັນແຖບ Chrome ແລະ ສຽງ.</translation>
 <translation id="945522503751344254">ສົ່ງ​ຄໍາ​ຄິດ​​ເຫັນ</translation>
 <translation id="947329552760389097">&amp;ກວດກາອົງປະກອບ</translation>
+<translation id="951991426597076286">ປະຕິເສດ</translation>
 <translation id="952992212772159698">ບໍ່ໄດ້ເປີດໃຊ້ງານ</translation>
 <translation id="956500788634395331">ທ່ານໄດ້ຮັບການປົກປ້ອງຈາກສ່ວນຂະຫຍາຍທີ່ອາດຈະເປັນອັນຕະລາຍ</translation>
 <translation id="957960681186851048">ເວັບໄຊນີ້ໄດ້ພະຍາຍາມດາວໂຫຼດຫຼາຍໄຟລ໌ໂດຍອັດຕະໂນມັດ</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="mn">
 <translation id="1008557486741366299">Боломжгүй байна</translation>
+<translation id="100957008357583611">Байршлаа ашиглах уу?</translation>
 <translation id="1010200102790553230">Хуудсыг дараа ачаалах</translation>
 <translation id="1015730422737071372">Дэлгэрэнгүй мэдээлэл өгөх</translation>
 <translation id="1019413721762100891">Унтраалттай</translation>
@@ -425,7 +426,6 @@
 <translation id="2705137772291741111">Энэ сайтын хадгалсан (нөөцөлсөн) хуулбарыг унших боломжгүй.</translation>
 <translation id="2709516037105925701">Автоматаар бөглөх</translation>
 <translation id="2713444072780614174">Цагаан</translation>
-<translation id="2720342946869265578">Ойролцоох</translation>
 <translation id="2721148159707890343">Хүсэлт амжилттай боллоо.</translation>
 <translation id="272451190272506600">Төлбөр төлөхийн тулд мэдрэгчид хүрнэ үү</translation>
 <translation id="2728127805433021124">Серверийн гэрчилгээнд сул гарын үсгийн алгоритмаар нэвтэрч байна.</translation>
@@ -723,7 +723,6 @@
 <translation id="3990250421422698716">Шилжүүлэн байрлуулах оффсет</translation>
 <translation id="3996311196211510766"><ph name="ORIGIN" /> сайт үндсэн удирдамжийг
     бүх хүсэлтдээ хэрэгжүүлэх хүсэлт тавьсан хэдий ч энэ удирдамжийг одоогоор хэрэгжүүлэх боломжгүй байна.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{ойролцоох 1 вэб хуудас}other{ойролцоох # вэб хуудас}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} хуудастай PDF форматтай документ}other{{COUNT} хуудастай PDF форматтай документ}}</translation>
 <translation id="4030383055268325496">&amp; Нэмэх үйлдлийг буцаах</translation>
 <translation id="4032320456957708163">Таны хөтчийг <ph name="ENROLLMENT_DOMAIN" />-с удирдаж байна</translation>
@@ -941,7 +940,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Хадгалах...</translation>
 <translation id="4913987521957242411">Зүүн дээд буланд нэг нүх цоолох</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{болон 1 вэб хуудас}other{болон бусад # вэб хуудас }}</translation>
 <translation id="4923459931733593730">Төлбөр</translation>
 <translation id="4926049483395192435">Заасан өгсөн байх ёстой.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> хэлэхдээ</translation>
@@ -1182,6 +1180,7 @@
 <translation id="5869405914158311789">Энэ сайтад холбогдох боломжгүй</translation>
 <translation id="5869522115854928033">Хадгалагдсан нууц үг</translation>
 <translation id="5887400589839399685">Картыг хадгалсан</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> таныг өгөгдлөө хуулбарлаж, энэ төхөөрөмж рүү буцахыг шаардаж байна.</translation>
 <translation id="5895138241574237353">Дахин асаах</translation>
 <translation id="5895187275912066135">Гаргасан огноо</translation>
 <translation id="5901630391730855834">Шар</translation>
@@ -1331,7 +1330,6 @@
 <translation id="6518133107902771759">Баталгаажуул</translation>
 <translation id="6521745193039995384">Идэвхгүй</translation>
 <translation id="6529602333819889595">&amp; Устгах үйлдлийг дахин хийх</translation>
-<translation id="6534179046333460208">Бодит зүйлийн вэбийн зөвлөмж</translation>
 <translation id="6545864417968258051">Bluetooth скан хийх</translation>
 <translation id="6547208576736763147">Зүүн ирмэг дагуу хоёр нүх цоолох</translation>
 <translation id="6554795675067793129">Таны бүртгэлийг <ph name="ENROLLMENT_DOMAIN" />-с удирдаж байна.</translation>
@@ -1853,7 +1851,6 @@
 <translation id="8790007591277257123">&amp; Устгах үйлдлийг дахин хийх</translation>
 <translation id="8792621596287649091">Та <ph name="ORG_NAME" /> бүртгэлийнхээ хандах эрх эсвэл нууц үгээ алдаж болзошгүй. Chromium одоо таны нууц үгийг өөрчлөхийг зөвлөж байна.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> нь Chrome Enterprise Connectors-г таны хөтөч дээр асаасан. Эдгээр холбогч нь таны зарим өгөгдөлд хандах эрхтэй.</translation>
-<translation id="8800988563907321413">Таны ойролцоох зөвлөмж энд харагдана</translation>
 <translation id="8805819170075074995">Жагсаалтын оролт "<ph name="LANGUAGE_ID" />": Энэ оролт SpellcheckLanguage удирдамжид мөн адил багтсан тул үүнийг үл хэрэгссэн болно.</translation>
 <translation id="8807160976559152894">Хуудас бүрийн дараа тайрах</translation>
 <translation id="8820817407110198400">Хайлтын жагсаалтууд</translation>

@@ -67,12 +67,12 @@ std::string ToDebugString(::onc::ONCSource source,
 }
 
 void InvokeErrorCallback(const std::string& service_path,
-                         const network_handler::ErrorCallback& error_callback,
+                         network_handler::ErrorCallback error_callback,
                          const std::string& error_name) {
   std::string error_msg = "ManagedConfig Error: " + error_name;
   NET_LOG(ERROR) << error_msg << " For: " << NetworkPathId(service_path);
-  network_handler::RunErrorCallback(error_callback, service_path, error_name,
-                                    error_msg);
+  network_handler::RunErrorCallback(std::move(error_callback), service_path,
+                                    error_name, error_msg);
 }
 
 void LogErrorWithDictAndCallCallback(
@@ -216,12 +216,13 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
     const std::string& service_path,
     const base::DictionaryValue& user_settings,
     const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
+    network_handler::ErrorCallback error_callback) {
   const NetworkState* state =
       network_state_handler_->GetNetworkStateFromServicePath(
           service_path, true /* configured_only */);
   if (!state) {
-    InvokeErrorCallback(service_path, error_callback, kUnknownNetwork);
+    InvokeErrorCallback(service_path, std::move(error_callback),
+                        kUnknownNetwork);
     return;
   }
 
@@ -235,7 +236,8 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
     // TODO(pneubeck): create an initial configuration in this case. As for
     // CreateConfiguration, user settings from older ChromeOS versions have to
     // be determined here.
-    InvokeErrorCallback(service_path, error_callback, kUnconfiguredNetwork);
+    InvokeErrorCallback(service_path, std::move(error_callback),
+                        kUnconfiguredNetwork);
     return;
   }
 
@@ -245,7 +247,8 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
 
   const Policies* policies = GetPoliciesForProfile(*profile);
   if (!policies) {
-    InvokeErrorCallback(service_path, error_callback, kPoliciesNotInitialized);
+    InvokeErrorCallback(service_path, std::move(error_callback),
+                        kPoliciesNotInitialized);
     return;
   }
 
@@ -272,7 +275,8 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
                                         *user_settings_copy,
                                         &validation_result);
   if (validation_result == onc::Validator::INVALID) {
-    InvokeErrorCallback(service_path, error_callback, kInvalidUserSettings);
+    InvokeErrorCallback(service_path, std::move(error_callback),
+                        kInvalidUserSettings);
     return;
   }
   if (validation_result == onc::Validator::VALID_WITH_WARNINGS)
@@ -282,7 +286,8 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
   // 'AllowOnlyPolicyNetworksToAutoconnect' policy is active.
   if (EnablesUnmanagedWifiAutoconnect(validated_user_settings.get()) &&
       AllowOnlyPolicyNetworksToAutoconnect()) {
-    InvokeErrorCallback(service_path, error_callback, kInvalidUserSettings);
+    InvokeErrorCallback(service_path, std::move(error_callback),
+                        kInvalidUserSettings);
     return;
   }
 
@@ -301,7 +306,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
           validated_user_settings.get()));
 
   SetShillProperties(service_path, std::move(shill_dictionary), callback,
-                     error_callback);
+                     std::move(error_callback));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::SetManagedActiveProxyValues(
@@ -326,16 +331,16 @@ void ManagedNetworkConfigurationHandlerImpl::SetShillProperties(
     const std::string& service_path,
     std::unique_ptr<base::DictionaryValue> shill_dictionary,
     const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) {
+    network_handler::ErrorCallback error_callback) {
   network_configuration_handler_->SetShillProperties(
-      service_path, *shill_dictionary, callback, error_callback);
+      service_path, *shill_dictionary, callback, std::move(error_callback));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
     const std::string& userhash,
     const base::DictionaryValue& properties,
-    const network_handler::ServiceResultCallback& callback,
-    const network_handler::ErrorCallback& error_callback) const {
+    network_handler::ServiceResultCallback callback,
+    network_handler::ErrorCallback error_callback) const {
   std::string guid =
       GetStringFromDictionary(properties, ::onc::network_config::kGUID);
   const NetworkState* network_state = nullptr;
@@ -363,7 +368,7 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
                                         properties, &validation_result);
 
   if (validation_result == onc::Validator::INVALID) {
-    InvokeErrorCallback("", error_callback, kInvalidUserSettings);
+    InvokeErrorCallback("", std::move(error_callback), kInvalidUserSettings);
     return;
   }
 
@@ -380,13 +385,15 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
   if (!userhash.empty()) {
     policies = GetPoliciesForUser(userhash);
     if (!policies) {
-      InvokeErrorCallback("", error_callback, kPoliciesNotInitialized);
+      InvokeErrorCallback("", std::move(error_callback),
+                          kPoliciesNotInitialized);
       return;
     }
 
     if (policy_util::FindMatchingPolicy(policies->per_network_config,
                                         *validated_properties)) {
-      InvokeErrorCallback("", error_callback, kNetworkAlreadyConfigured);
+      InvokeErrorCallback("", std::move(error_callback),
+                          kNetworkAlreadyConfigured);
       return;
     }
   }
@@ -394,20 +401,21 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
   // Make user the network is not configured through a device policy.
   policies = GetPoliciesForUser("");
   if (!policies) {
-    InvokeErrorCallback("", error_callback, kPoliciesNotInitialized);
+    InvokeErrorCallback("", std::move(error_callback), kPoliciesNotInitialized);
     return;
   }
 
   if (policy_util::FindMatchingPolicy(policies->per_network_config,
                                       *validated_properties)) {
-    InvokeErrorCallback("", error_callback, kNetworkAlreadyConfigured);
+    InvokeErrorCallback("", std::move(error_callback),
+                        kNetworkAlreadyConfigured);
     return;
   }
 
   const NetworkProfile* profile =
       network_profile_handler_->GetProfileForUserhash(userhash);
   if (!profile) {
-    InvokeErrorCallback("", error_callback, kProfileNotInitialized);
+    InvokeErrorCallback("", std::move(error_callback), kProfileNotInitialized);
     return;
   }
 
@@ -420,7 +428,7 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
     // can be reused.
     if (network_state) {
       if (!MatchesExistingNetworkState(*validated_properties, network_state)) {
-        InvokeErrorCallback(network_state->path(), error_callback,
+        InvokeErrorCallback(network_state->path(), std::move(error_callback),
                             kNetworkAlreadyConfigured);
         return;
       } else if (!network_state->profile_path().empty()) {
@@ -441,24 +449,24 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
                                             validated_properties.get()));
 
   network_configuration_handler_->CreateShillConfiguration(
-      *shill_dictionary, callback, error_callback);
+      *shill_dictionary, std::move(callback), std::move(error_callback));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::RemoveConfiguration(
     const std::string& service_path,
     const base::Closure& callback,
-    const network_handler::ErrorCallback& error_callback) const {
-  network_configuration_handler_->RemoveConfiguration(service_path, callback,
-                                                      error_callback);
+    network_handler::ErrorCallback error_callback) const {
+  network_configuration_handler_->RemoveConfiguration(
+      service_path, callback, std::move(error_callback));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::
     RemoveConfigurationFromCurrentProfile(
         const std::string& service_path,
         const base::Closure& callback,
-        const network_handler::ErrorCallback& error_callback) const {
+        network_handler::ErrorCallback error_callback) const {
   network_configuration_handler_->RemoveConfigurationFromCurrentProfile(
-      service_path, callback, error_callback);
+      service_path, callback, std::move(error_callback));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::SetPolicy(

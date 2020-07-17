@@ -4978,7 +4978,7 @@
       'id': 43,
       'caption': '''Default search provider search URL''',
       'tags': ['website-sharing'],
-      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POLICY_NAME">DefaultSearchProviderSearchURL</ph> specifies the URL of the search engine used during a default search. The URL should include the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, replaced at the query by the user's search terms.
+      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POLICY_NAME">DefaultSearchProviderSearchURL</ph> specifies the URL of the search engine used during a default search. The URL should include the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, replaced in the query by the user's search terms.
 
       You can specify Google's search URL as: <ph name="GOOGLE_SEARCH_URL">'{google:baseURL}search?q={searchTerms}&amp;{google:RLZ}{google:originalQueryForSuggestion}{google:assistedQueryStats}{google:searchFieldtrialParameter}{google:searchClient}{google:sourceId}ie={inputEncoding}'</ph>.''',
     },
@@ -5001,7 +5001,7 @@
       'id': 44,
       'caption': '''Default search provider suggest URL''',
       'tags': [],
-      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POLICY_NAME">DefaultSearchProviderSuggestURL</ph> specifies the URL of the search engine to provide search suggestions. The URL should include the string <ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>, replaced at the query by the user's search terms.
+      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POLICY_NAME">DefaultSearchProviderSuggestURL</ph> specifies the URL of the search engine to provide search suggestions. The URL should include the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, replaced in the query by the user's search terms.
 
       You can specify Google's search URL as: <ph name="GOOGLE_SUGGEST_SEARCH_URL">'{google:baseURL}complete/search?output=chrome&amp;q={searchTerms}'</ph>.''',
     },
@@ -5166,7 +5166,7 @@
       'id': 237,
       'caption': '''Default search provider new tab page URL''',
       'tags': [],
-      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME">DefaultSearchProviderNewTabURL</ph> specifies the URL that a search engine uses to provide a New Tab page.
+      'desc': '''If <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME">DefaultSearchProviderEnabled</ph> is on, then setting <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME">DefaultSearchProviderNewTabURL</ph> specifies the URL of the search engine used to provide a New Tab page.
 
       Leaving <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME">DefaultSearchProviderNewTabURL</ph> unset means no new tab page is provided.''',
     },

@@ -782,6 +782,12 @@ extern const char kMediaRouterCastAllowAllIPsDescription[];
 extern const char kMixBrowserTypeTabsName[];
 extern const char kMixBrowserTypeTabsDescription[];
 
+extern const char kMixedFormsDisableAutofillName[];
+extern const char kMixedFormsDisableAutofillDescription[];
+
+extern const char kMixedFormsInterstitialName[];
+extern const char kMixedFormsInterstitialDescription[];
+
 extern const char kMobileIdentityConsistencyName[];
 extern const char kMobileIdentityConsistencyDescription[];
 
@@ -865,6 +871,8 @@ extern const char kOmniboxLocalEntitySuggestionsDescription[];
 
 extern const char kOmniboxRichAutocompletionName[];
 extern const char kOmniboxRichAutocompletionDescription[];
+extern const char kOmniboxRichAutocompletionMinCharName[];
+extern const char kOmniboxRichAutocompletionMinCharDescription[];
 
 extern const char kOmniboxOnFocusSuggestionsName[];
 extern const char kOmniboxOnFocusSuggestionsDescription[];

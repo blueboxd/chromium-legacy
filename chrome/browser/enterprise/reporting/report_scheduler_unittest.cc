@@ -13,6 +13,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/reporting/prefs.h"
+#include "chrome/browser/enterprise/reporting/report_generator.h"
+#include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/common/chrome_constants.h"
@@ -63,6 +65,9 @@ ACTION_P(ScheduleGeneratorCallback, request_number) {
 
 class MockReportGenerator : public ReportGenerator {
  public:
+  explicit MockReportGenerator(
+      ReportingDelegateFactoryDesktop* delegate_factory)
+      : ReportGenerator(delegate_factory) {}
   void Generate(bool with_profiles, ReportCallback callback) override {
     OnGenerate(with_profiles, callback);
   }
@@ -91,7 +96,8 @@ class ReportSchedulerTest : public ::testing::Test {
     ASSERT_TRUE(profile_manager_.SetUp());
     client_ptr_ = std::make_unique<policy::MockCloudPolicyClient>();
     client_ = client_ptr_.get();
-    generator_ptr_ = std::make_unique<MockReportGenerator>();
+    generator_ptr_ =
+        std::make_unique<MockReportGenerator>(&report_delegate_factory_);
     generator_ = generator_ptr_.get();
     uploader_ptr_ = std::make_unique<MockReportUploader>();
     uploader_ = uploader_ptr_.get();
@@ -180,6 +186,7 @@ class ReportSchedulerTest : public ::testing::Test {
   ScopedTestingLocalState local_state_;
   TestingProfileManager profile_manager_;
 
+  ReportingDelegateFactoryDesktop report_delegate_factory_;
   std::unique_ptr<ReportScheduler> scheduler_;
   policy::MockCloudPolicyClient* client_;
   MockReportGenerator* generator_;

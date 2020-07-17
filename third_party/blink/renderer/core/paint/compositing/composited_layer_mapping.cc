@@ -2115,6 +2115,10 @@ bool CompositedLayerMapping::IsUnderSVGHiddenContainer() const {
   return owning_layer_.IsUnderSVGHiddenContainer();
 }
 
+bool CompositedLayerMapping::IsSVGRoot() const {
+  return GetLayoutObject().IsSVGRoot();
+}
+
 bool CompositedLayerMapping::IsTrackingRasterInvalidations() const {
   return GetLayoutObject().GetFrameView()->IsTrackingRasterInvalidations();
 }

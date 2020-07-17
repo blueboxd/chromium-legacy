@@ -20,6 +20,8 @@
 <translation id="2730884209570016437">Chromium kan je camera niet gebruiken omdat deze wordt gebruikt door een andere app</translation>
 <translation id="2915596697727466327">Chromium gebruikt Face ID om geautoriseerde toegang tot je wachtwoorden mogelijk te maken.</translation>
 <translation id="3256316712990552818">Gekopieerd naar Chromium</translation>
+<translation id="3344973607274501920">Chromium kan je wachtwoorden niet checken. Check de internetverbinding.</translation>
+<translation id="3639997914391704523">Chromium kan je wachtwoorden checken als je inlogt met je Google-account.</translation>
 <translation id="3805899903892079518">Chromium heeft geen toegang tot je foto's of video's. Schakel toegang in via iOS-instellingen &gt; Privacy &gt; Foto's.</translation>
 <translation id="4555020257205549924">Als deze functie is ingeschakeld, biedt Chromium aan pagina's die zijn geschreven in andere talen te vertalen met Google Translate. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Chromium-scanner inschakelen</translation>
@@ -27,6 +29,7 @@
 <translation id="4999538639245140991">Omdat je uitlogt van een account dat wordt beheerd door <ph name="SIGNOUT_MANAGED_DOMAIN" />, worden je Chromium-gegevens van dit apparaat verwijderd. Je gegevens blijven echter wel in je Google-account staan.</translation>
 <translation id="5521125884468363740">Log in en schakel synchroniseren in om je tabbladen te bekijken vanaf elk apparaat waarop je Chromium gebruikt</translation>
 <translation id="5573014823074921752">Chromium-tip. Voor meer tabbladopties tik je op de werkbalk onder- of bovenaan het scherm op de knop 'Tabbladen weergeven' en houd je deze vast.</translation>
+<translation id="5700709190537129682">Chromium kan je wachtwoorden niet checken</translation>
 <translation id="5777187867430702742">Chromium-pagina</translation>
 <translation id="5862307444128926510">Welkom bij Chromium</translation>
 <translation id="5945387852661427312">Je logt in met een account dat wordt beheerd door <ph name="DOMAIN" />, waarmee je de eigenaar beheer geeft over je Chromium-gegevens. Je gegevens worden permanent gekoppeld aan dit account. Als je uitlogt van Chromium, worden je gegevens van dit apparaat verwijderd. Ze blijven echter opgeslagen in je Google-account.</translation>
@@ -34,6 +37,7 @@
 <translation id="6268381023930128611">Uitloggen bij Chromium?</translation>
 <translation id="6424492062988593837">Chromium is nu nog beter! Er is een nieuwe versie beschikbaar.</translation>
 <translation id="6604711459180487467">Een betere ervaring in Chromium op basis van je locatie.</translation>
+<translation id="6820823224820483452">Chromium kan niet alle wachtwoorden checken. Probeer het morgen opnieuw.</translation>
 <translation id="7099326575020694068">Chromium kan je camera niet gebruiken in de modus 'Gesplitste weergave'</translation>
 <translation id="7208566199746267865">Chromium bespaart je tijd door je accounts beschikbaar te maken op internet. Je kunt accounts toevoegen of verwijderen bij Instellingen.</translation>
 <translation id="7269362888766543920">Sommige add-ons kunnen ervoor zorgen dat Chromium crasht. Verwijder deze add-ons.</translation>
@@ -42,6 +46,7 @@
 <translation id="7400689562045506105">Chromium overal gebruiken</translation>
 <translation id="7674213385180944843">Open Instellingen &gt; Privacy &gt; Camera &gt; Chromium en zet de camera aan.</translation>
 <translation id="7746854981345936341">Chromium-tip. Sommige knoppen zoals Terug, Vooruit en Zoeken worden nu onderaan het scherm weergegeven.</translation>
+<translation id="7798909783578470546">Chromium kan niet alle wachtwoorden checken. Probeer het opnieuw.</translation>
 <translation id="786327964234957808">Je wijzigt het synchronisatieaccount van <ph name="USER_EMAIL1" /> in <ph name="USER_EMAIL2" />. Je bestaande Chromium-gegevens worden beheerd door <ph name="DOMAIN" />. Hierdoor worden je gegevens van dit apparaat verwijderd. Je gegevens blijven echter opgeslagen in <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Chromium-scanner gebruiken</translation>
 <translation id="8013573822802650211">Log in op al je apparaten om je tabbladen te bekijken vanaf elk apparaat waarop je Chromium gebruikt</translation>
@@ -51,5 +56,6 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> De auteurs van Chromium. Alle rechten voorbehouden.</translation>
 <translation id="8776843108004031667">Dit account en niet-opgeslagen gegevens worden verwijderd uit Chromium.</translation>
 <translation id="9022552996538154597">Inloggen bij Chromium</translation>
+<translation id="921174536258924340">Chromium kan niet alle wachtwoorden checken. Probeer het morgen opnieuw of <ph name="BEGIN_LINK" />check de wachtwoorden in je Google-account<ph name="END_LINK" />.</translation>
 <translation id="985602178874221306">De auteurs van Chromium</translation>
 </translationbundle>

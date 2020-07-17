@@ -57,6 +57,7 @@
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/browser/view_type_utils.h"
@@ -683,13 +684,6 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceGotProcess(
   ProcessMap::Get(context)->Insert(extension->id(),
                                    site_instance->GetProcess()->GetID(),
                                    site_instance->GetId());
-
-  content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&InfoMap::RegisterExtensionProcess,
-                     ExtensionSystem::Get(context)->info_map(), extension->id(),
-                     site_instance->GetProcess()->GetID(),
-                     site_instance->GetId()));
 }
 
 void ChromeContentBrowserClientExtensionsPart::SiteInstanceDeleting(
@@ -708,13 +702,6 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceDeleting(
   ProcessMap::Get(context)->Remove(extension->id(),
                                    site_instance->GetProcess()->GetID(),
                                    site_instance->GetId());
-
-  content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&InfoMap::UnregisterExtensionProcess,
-                     ExtensionSystem::Get(context)->info_map(), extension->id(),
-                     site_instance->GetProcess()->GetID(),
-                     site_instance->GetId()));
 }
 
 void ChromeContentBrowserClientExtensionsPart::OverrideWebkitPrefs(

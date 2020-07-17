@@ -505,7 +505,7 @@
 <translation id="1617765145568323981">{NUM_FILES,plural, =0{Vérification de ces données par rapport aux règles de sécurité de votre organisation…}=1{Vérification de ce fichier par rapport aux règles de sécurité de votre organisation…}one{Vérification de ce fichier par rapport aux règles de sécurité de votre organisation…}other{Vérification de ces fichiers par rapport aux règles de sécurité de votre organisation…}}</translation>
 <translation id="1618268899808219593">C&amp;entre d'aide</translation>
 <translation id="1620307519959413822">Mot de passe incorrect. Réessayez ou cliquez sur "Mot de passe oublié" pour le réinitialiser.</translation>
-<translation id="1620510694547887537">Appareil photo</translation>
+<translation id="1620510694547887537">Caméra</translation>
 <translation id="1622054403950683339">Supprimer le réseau Wi-Fi</translation>
 <translation id="1623132449929929218">Les images ne sont actuellement pas disponibles. Veuillez vous reconnecter pour afficher les collections de fonds d'écran.</translation>
 <translation id="1623723619460186680">Réduction de la lumière bleue</translation>
@@ -2389,7 +2389,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3923676227229836009">Cette page est autorisée à afficher les fichiers</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3924487862883651986">Il envoie des URL à la navigation sécurisée pour les vérifier. Il transmet également un petit échantillon de pages, de téléchargements, d'informations système et de l'activité des extensions afin d'identifier de nouvelles menaces. De même, pour vous protéger dans l'ensemble des applications Google, il associe temporairement ces données à votre compte Google lorsque vous êtes connecté.</translation>
-<translation id="3925573269917483990">Appareil photo :</translation>
+<translation id="3925573269917483990">Caméra :</translation>
 <translation id="3926002189479431949">Le téléphone Smart Lock a changé</translation>
 <translation id="3927787410750478258">Votre <ph name="DEVICE_TYPE" /> sera géré par <ph name="DOMAIN" />.</translation>
 <translation id="3927932062596804919">Refuser</translation>
@@ -6574,6 +6574,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="942532530371314860"><ph name="APP_NAME" /> partage un onglet Chrome et un contenu audio.</translation>
 <translation id="945522503751344254">Envoyer un commentaire</translation>
 <translation id="947329552760389097">&amp;Examiner les éléments</translation>
+<translation id="951991426597076286">Refuser</translation>
 <translation id="952992212772159698">Désactivé</translation>
 <translation id="956500788634395331">Vous êtes protégé contre les extensions potentiellement dangereuses</translation>
 <translation id="957960681186851048">Une tentative de téléchargement automatique de plusieurs fichiers a été initiée via ce site</translation>

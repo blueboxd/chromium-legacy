@@ -1986,7 +1986,7 @@ external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-p
 external/wpt/pointerevents/pointerevent_touch-action-inherit_child-none_touch-manual.html [ Skip ]
 external/wpt/pointerevents/pointerevent_touch-action-inherit_parent-none_touch-manual.html [ Skip ]
 external/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch-manual.html [ Skip ]
-external/wpt/web-share/share-files-manual.tentative.https.html [ Skip ]
+external/wpt/web-share/share-files-manual.https.html [ Skip ]
 external/wpt/web-share/share-image-manual.tentative.https.html [ Skip ]
 external/wpt/uievents/order-of-events/mouse-events/wheel-basic-manual.html [ Skip ]
 external/wpt/uievents/order-of-events/mouse-events/wheel-scrolling-manual.html [ Skip ]

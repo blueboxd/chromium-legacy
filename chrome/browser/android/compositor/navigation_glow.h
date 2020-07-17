@@ -27,7 +27,7 @@ class NavigationGlow : public ui::OverscrollGlowClient,
                        public ui::WindowAndroidObserver,
                        public ui::ViewAndroidObserver {
  public:
-  explicit NavigationGlow(float dip_scale, content::WebContents* web_contents);
+  explicit NavigationGlow(content::WebContents* web_contents);
   ~NavigationGlow() override;
 
   void Prepare(JNIEnv* env,
@@ -59,9 +59,8 @@ class NavigationGlow : public ui::OverscrollGlowClient,
 
  private:
   // OverscrollGlowClient implementation.
-  std::unique_ptr<ui::EdgeEffectBase> CreateEdgeEffect() override;
+  std::unique_ptr<ui::EdgeEffect> CreateEdgeEffect() override;
 
-  float dip_scale_;
   cc::Layer* layer_ = nullptr;
   ui::WindowAndroid* window_ = nullptr;
   ui::ViewAndroid* view_ = nullptr;

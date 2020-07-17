@@ -171,6 +171,11 @@ class SiteInstanceTest : public testing::Test {
 
   BrowserContext* context() { return &context_; }
 
+  SiteInfo GetSiteInfoForURL(const std::string& url) {
+    return SiteInstanceImpl::ComputeSiteInfo(IsolationContext(&context_),
+                                             GURL(url));
+  }
+
  private:
   BrowserTaskEnvironment task_environment_;
   TestBrowserContext context_;
@@ -631,17 +636,17 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
 
   // Should be able to see that we do have SiteInstances.
   EXPECT_TRUE(browsing_instance->HasSiteInstance(
-      GURL("http://mail.google.com")));
+      GetSiteInfoForURL("http://mail.google.com")));
   EXPECT_TRUE(browsing_instance2->HasSiteInstance(
-      GURL("http://mail.google.com")));
+      GetSiteInfoForURL("http://mail.google.com")));
   EXPECT_TRUE(browsing_instance->HasSiteInstance(
-      GURL("http://mail.yahoo.com")));
+      GetSiteInfoForURL("http://mail.yahoo.com")));
 
   // Should be able to see that we don't have SiteInstances.
   EXPECT_FALSE(browsing_instance->HasSiteInstance(
-      GURL("https://www.google.com")));
+      GetSiteInfoForURL("https://www.google.com")));
   EXPECT_FALSE(browsing_instance2->HasSiteInstance(
-      GURL("http://www.yahoo.com")));
+      GetSiteInfoForURL("http://www.yahoo.com")));
 
   // browsing_instances will be deleted when their SiteInstances are deleted.
   // The processes will be unregistered when the RPH scoped_ptrs go away.
@@ -709,19 +714,19 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
 
   // Should be able to see that we do have SiteInstances.
   EXPECT_TRUE(browsing_instance->HasSiteInstance(
-      GURL("http://mail.google.com")));  // visited before
+      GetSiteInfoForURL("http://mail.google.com")));  // visited before
   EXPECT_TRUE(browsing_instance2->HasSiteInstance(
-      GURL("http://mail.google.com")));  // visited before
+      GetSiteInfoForURL("http://mail.google.com")));  // visited before
   EXPECT_TRUE(browsing_instance->HasSiteInstance(
-      GURL("http://mail.yahoo.com")));  // visited before
+      GetSiteInfoForURL("http://mail.yahoo.com")));  // visited before
 
   // Should be able to see that we don't have SiteInstances.
-  EXPECT_FALSE(browsing_instance2->HasSiteInstance(
-      GURL("http://www.yahoo.com")));  // different BI, same browser context
+  EXPECT_FALSE(browsing_instance2->HasSiteInstance(GetSiteInfoForURL(
+      "http://www.yahoo.com")));  // different BI, same browser context
   EXPECT_FALSE(browsing_instance->HasSiteInstance(
-      GURL("https://www.google.com")));  // not visited before
-  EXPECT_FALSE(browsing_instance3->HasSiteInstance(
-      GURL("http://www.yahoo.com")));  // different BI, different context
+      GetSiteInfoForURL("https://www.google.com")));  // not visited before
+  EXPECT_FALSE(browsing_instance3->HasSiteInstance(GetSiteInfoForURL(
+      "http://www.yahoo.com")));  // different BI, different context
 
   // browsing_instances will be deleted when their SiteInstances are deleted.
   // The processes will be unregistered when the RPH scoped_ptrs go away.

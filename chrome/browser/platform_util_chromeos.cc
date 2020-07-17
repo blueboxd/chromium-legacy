@@ -84,19 +84,19 @@ void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   file_manager::util::ShowItemInFolder(
       profile, full_path,
-      base::Bind(&ShowWarningOnOpenOperationResult, profile, full_path));
+      base::BindOnce(&ShowWarningOnOpenOperationResult, profile, full_path));
 }
 
 void OpenItem(Profile* profile,
               const base::FilePath& full_path,
               OpenItemType item_type,
-              const OpenOperationCallback& callback) {
+              OpenOperationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   file_manager::util::OpenItem(
       profile, full_path, item_type,
-      callback.is_null()
-          ? base::Bind(&ShowWarningOnOpenOperationResult, profile, full_path)
-          : callback);
+      callback.is_null() ? base::BindOnce(&ShowWarningOnOpenOperationResult,
+                                          profile, full_path)
+                         : std::move(callback));
 }
 
 void OpenExternal(Profile* profile, const GURL& url) {

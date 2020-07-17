@@ -68,7 +68,7 @@ TEST(VideoEncodeAcceleratorConfigStructTraitTest, RoundTrip) {
   }
   ::media::VideoEncodeAccelerator::Config input_config(
       ::media::PIXEL_FORMAT_NV12, kBaseSize, ::media::VP9PROFILE_PROFILE0,
-      kBaseBitrateBps, kBaseFramerate, base::nullopt, base::nullopt,
+      kBaseBitrateBps, kBaseFramerate, base::nullopt, base::nullopt, false,
       ::media::VideoEncodeAccelerator::Config::StorageType::kDmabuf,
       ::media::VideoEncodeAccelerator::Config::ContentType::kCamera,
       input_spatial_layers);

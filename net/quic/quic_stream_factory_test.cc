@@ -11384,6 +11384,95 @@ TEST_P(QuicStreamFactoryTest, ServerPushPrivacyModeMismatch) {
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
+TEST_P(QuicStreamFactoryTest, ServerPushNetworkIsolationKeyMismatch) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       // Need to partition connections by NetworkIsolationKey for
+       // QuicSessionAliasKey to include NetworkIsolationKeys.
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockQuicData socket_data1(version_);
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  int packet_num = 1;
+  if (VersionUsesHttp3(version_.transport_version)) {
+    socket_data1.AddWrite(SYNCHRONOUS,
+                          ConstructInitialSettingsPacket(packet_num++));
+  }
+  socket_data1.AddWrite(
+      SYNCHRONOUS,
+      client_maker_.MakeRstPacket(
+          packet_num++, true, GetNthServerInitiatedUnidirectionalStreamId(0),
+          quic::QUIC_STREAM_CANCELLED));
+  socket_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  client_maker_.Reset();
+  MockQuicData socket_data2(version_);
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  if (VersionUsesHttp3(version_.transport_version))
+    socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+  socket_data2.AddSocketDataToFactory(socket_factory_.get());
+
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(
+          host_port_pair_, version_, privacy_mode_, DEFAULT_PRIORITY,
+          SocketTag(), NetworkIsolationKey(), false /* disable_secure_dns */,
+          /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+          failed_on_default_network_callback_, callback_.callback()));
+
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+
+  EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumPushStreamsCreated(factory_.get()));
+
+  string url = "https://www.example.org/";
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+
+  quic::QuicClientPromisedInfo promised(
+      session, GetNthServerInitiatedUnidirectionalStreamId(0), kDefaultUrl);
+
+  quic::QuicClientPushPromiseIndex* index =
+      QuicStreamFactoryPeer::GetPushPromiseIndex(factory_.get());
+
+  (*index->promised_by_url())[kDefaultUrl] = &promised;
+  EXPECT_EQ(index->GetPromised(kDefaultUrl), &promised);
+
+  // Doing the request should not use the push stream, but rather
+  // cancel it because the NetworkIsolationKeys do not match.
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(
+          host_port_pair_, version_, PRIVACY_MODE_DISABLED, DEFAULT_PRIORITY,
+          SocketTag(), NetworkIsolationKey::CreateTransient(),
+          false /* disable_secure_dns */,
+          /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+          failed_on_default_network_callback_, callback_.callback()));
+
+  EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumPushStreamsCreated(factory_.get()));
+  EXPECT_EQ(index->GetPromised(kDefaultUrl), nullptr);
+
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
+  EXPECT_TRUE(stream2.get());
+
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+}
+
 // Pool to existing session with matching quic::QuicServerId
 // even if destination is different.
 TEST_P(QuicStreamFactoryTest, PoolByOrigin) {

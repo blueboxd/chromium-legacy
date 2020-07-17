@@ -5,13 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_MODEL_OBJECT_PAINTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_MODEL_OBJECT_PAINTER_H_
 
-#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_model_object.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
 
 struct PaintInfo;
-class LayoutObject;
-class LayoutSVGModelObject;
 
 class SVGModelObjectPainter {
   STACK_ALLOCATED();
@@ -37,6 +36,39 @@ class SVGModelObjectPainter {
 
  private:
   const LayoutSVGModelObject& layout_svg_model_object_;
+};
+
+// A wrapper of DrawingRecorder for SVG children, providing the default visual
+// rect (see DisplayItem::VisualRect() for definition) for the SVG contents
+// not including outlines. Using a template so that
+// VisualRectInLocalSVGCoordinates() can be called directly instead of through
+// vtable.
+class SVGDrawingRecorder : public DrawingRecorder {
+ public:
+  template <typename LayoutObjectType>
+  SVGDrawingRecorder(GraphicsContext& context,
+                     const LayoutObjectType& object,
+                     DisplayItem::Type type)
+      : DrawingRecorder(
+            context,
+            object,
+            type,
+            EnclosingIntRect(object.VisualRectInLocalSVGCoordinates())) {
+    DCHECK(object.IsSVGChild());
+    // We should not use this for SVG containers which paint effects only,
+    // while VisualRectInLocalSVGCoordinates() contains visual rects from
+    // children which are not painted by the container. We calculate the correct
+    // visual rect when painting effects.
+    DCHECK(!object.IsSVGContainer());
+  }
+
+  template <typename LayoutObjectType>
+  SVGDrawingRecorder(GraphicsContext& context,
+                     const LayoutObjectType& object,
+                     PaintPhase phase)
+      : SVGDrawingRecorder(context,
+                           object,
+                           DisplayItem::PaintPhaseToDrawingType(phase)) {}
 };
 
 }  // namespace blink

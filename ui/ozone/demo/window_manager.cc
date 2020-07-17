@@ -89,10 +89,12 @@ void WindowManager::OnDisplaysAcquired(
 
     display::DisplayConfigurationParams display_config_params(
         display->display_id(), origin, display->native_mode());
+    std::vector<display::DisplayConfigurationParams> config_request;
+    config_request.push_back(std::move(display_config_params));
     delegate_->Configure(
-        display_config_params,
+        config_request,
         base::BindOnce(&WindowManager::OnDisplayConfigured,
-                       base::Unretained(this),
+                       base::Unretained(this), display->display_id(),
                        gfx::Rect(origin, display->native_mode()->size())));
     origin.Offset(display->native_mode()->size().width(), 0);
   }
@@ -106,8 +108,13 @@ void WindowManager::OnDisplaysAcquired(
   }
 }
 
-void WindowManager::OnDisplayConfigured(const gfx::Rect& bounds, bool success) {
-  if (success) {
+void WindowManager::OnDisplayConfigured(
+    const int64_t display_id,
+    const gfx::Rect& bounds,
+    const base::flat_map<int64_t, bool>& statuses) {
+  DCHECK_EQ(statuses.size(), 1UL);
+
+  if (statuses.at(display_id)) {
     std::unique_ptr<DemoWindow> window(
         new DemoWindow(this, renderer_factory_.get(), bounds));
     window->Start();

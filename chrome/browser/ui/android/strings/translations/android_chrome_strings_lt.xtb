@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Čia bus rodomos kituose įrenginiuose išsaugotos žymės.</translation>
 <translation id="1113597929977215864">Rodyti supaprastintą rodinį</translation>
 <translation id="1122278879166832009">Palieskite čia, kad greitai pasiektumėte pagrindinį puslapį iš bet kurios vietos</translation>
+<translation id="1126809382673880764">Neapsaugo jūsų nuo pavojingų svetainių, atsisiuntimų ir plėtinių. Kai yra galimybė, vis tiek gausite saugaus naršymo pranešimus kitose „Google“ paslaugose, pvz., „Gmail“ ir paieškoje.</translation>
 <translation id="1129510026454351943">Išsami informacija: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Laukiama 1 atsisiuntimo.}one{Laukiama # atsisiuntimo.}few{Laukiama # atsisiuntimų.}many{Laukiama # atsisiuntimo.}other{Laukiama # atsisiuntimų.}}</translation>
 <translation id="1145536944570833626">Ištrinti esamus duomenis.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Šviesi</translation>
 <translation id="1810845389119482123">Pradinė sinchronizavimo sąranka nebaigta</translation>
 <translation id="1821253160463689938">Naudojami slapukai, siekiant įsiminti jūsų nuostatas, net jei nesilankote tuose puslapiuose</translation>
-<translation id="1826516787628120939">Tikrinama</translation>
 <translation id="1829244130665387512">Surasti puslapyje</translation>
 <translation id="1853692000353488670">Naujas inkognito skirtukas</translation>
 <translation id="1856325424225101786">Nustatyti supaprastintąjį režimą iš naujo?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Slaptažodžių išsaugojimas</translation>
 <translation id="1952172573699511566">Kai bus įmanoma, svetainėje tekstas bus rodomas pasirinkta kalba.</translation>
 <translation id="1960290143419248813">„Chrome“ naujiniai nebepalaikomi naudojant šios versijos „Android“.</translation>
+<translation id="1963976881984600709">Įprasta apsauga</translation>
 <translation id="1966710179511230534">Atnaujinkite išsamią prisijungimo informaciją.</translation>
 <translation id="1974060860693918893">Išplėstiniai</translation>
+<translation id="1984417487208496350">Apsaugos nėra (nerekomenduojama)</translation>
 <translation id="1984705450038014246">„Chrome“ duomenų sinchronizavimas</translation>
 <translation id="1986685561493779662">Toks pavadinimas jau yra</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> mygtukas</translation>
@@ -392,7 +394,6 @@ Norėdami ieškoti, palieskite ir palaikykite bet kurį žodį. Jei norite patik
 <translation id="4183868528246477015">Ieškoti su „Google Lens“ <ph name="BEGIN_NEW" />Nauja<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Atidaryti naujame skirtuke</translation>
 <translation id="4198423547019359126">Nėra pasiekiamų atsisiuntimo vietų</translation>
-<translation id="4202553989407425169">„Chrome“ gali tikrinti, ar nustatymai saugo jus nuo toliau nurodytų veiksnių.</translation>
 <translation id="4209895695669353772">Jei norite gauti „Google“ siūlomo suasmeninto turinio, įjunkite sinchronizavimą</translation>
 <translation id="423219824432660969">Šifruoti sinchronizuotus duomenis nuo <ph name="TIME" /> taikant „Google“ slaptažodį</translation>
 <translation id="4242533952199664413">Atidaryti nustatymus</translation>
@@ -459,6 +460,7 @@ Adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> gali 
 <translation id="4749960740855309258">Atidaryti naują skirtuką</translation>
 <translation id="4759238208242260848">Atsisiuntimai</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Baigtas 1 atsisiuntimas.}one{Baigtas # atsisiuntimas.}few{Baigti # atsisiuntimai.}many{Baigta # atsisiuntimo.}other{Baigta # atsisiuntimų.}}</translation>
+<translation id="4766678251456904326">Pridėti paskyrą prie įrenginio</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{Suplanuotas vienas atsisiuntimas.}one{Suplanuotas # atsisiuntimas.}few{Suplanuoti # atsisiuntimai.}many{Suplanuota # atsisiuntimo.}other{Suplanuota # atsisiuntimų.}}</translation>
 <translation id="478981486571169252">Matysite <ph name="SITE_NAME" /> prisijungimo būseną, naršymo duomenis ir svetainės duomenis sistemoje „Chrome“.</translation>
 <translation id="4802417911091824046">Slaptafrazės šifruotė neapima mokėjimo metodų ir adresų iš „Google Pay“.
@@ -490,6 +492,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="4943872375798546930">Rezultatų nėra</translation>
 <translation id="4961107849584082341">Išverskite šį puslapį į bet kokią kalbą</translation>
 <translation id="4970824347203572753">Nepasiekiama jūsų vietovėje</translation>
+<translation id="4971735654804503942">Spartesnė, veiksni apsauga nuo pavojingų svetainių, atsisiuntimų ir plėtinių. Įspėjama apie slaptažodžių pažeidimus. Naršymo duomenys turi būti siunčiami į sistemą „Google“.</translation>
 <translation id="497421865427891073">Eiti pirmyn</translation>
 <translation id="4988210275050210843">Atsisiunčiamas failas (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Psl.</translation>
@@ -561,7 +564,6 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5527082711130173040">„Chrome“ reikalinga prieiga prie informacijos apie vietovę, kad galėtų nuskaityti įrenginius. <ph name="BEGIN_LINK1" />Atnaujinkite leidimus<ph name="END_LINK1" />. Be to, galimybė pasiekti informaciją apie vietovę <ph name="BEGIN_LINK2" />išjungta šiame įrenginyje<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Užd. inkognito skirt. lapus</translation>
 <translation id="5534640966246046842">Svetainė nukopijuota</translation>
-<translation id="5548606607480005320">Saugos patikra</translation>
 <translation id="5561549206367097665">Laukiama tinklo…</translation>
 <translation id="55737423895878184">Vieta ir pranešimai leidžiami</translation>
 <translation id="5578795271662203820">Ieškoti „<ph name="SEARCH_ENGINE" />“ šio vaizdo</translation>
@@ -600,7 +602,6 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="583281660410589416">Nežinoma</translation>
 <translation id="5833984609253377421">Bendrinti nuorodą</translation>
 <translation id="5836192821815272682">Atsisiunčiamas „Chrome“ naujinys…</translation>
-<translation id="584120177693484274">Nepažymėta</translation>
 <translation id="5853623416121554550">pristabdyta</translation>
 <translation id="5854790677617711513">Senesni nei 30 dienų</translation>
 <translation id="5858741533101922242">„Chrome“ nepavyksta įjungti „Bluetooth“ adapterio</translation>
@@ -736,10 +737,12 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="685850645784703949">„Google“ funkcija „Discover“ – išjungta</translation>
 <translation id="6864459304226931083">Atsisiųsti vaizdą</translation>
 <translation id="6865313869410766144">Automatinio pildymo formos duomenys</translation>
+<translation id="6882836635272038266">Įprasta apsauga nuo svetainių, atsisiuntimų ir plėtinių, kurie yra žinomi kaip pavojingi.</translation>
 <translation id="6884306546558072722">Tolesnis naršymas neprisijungus</translation>
 <translation id="688738109438487280">Pridėti esamus duomenis prie <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Atrakinkite, kad galėtumėte kopijuoti slaptažodį</translation>
 <translation id="6896758677409633944">Kopijuoti</translation>
+<translation id="6900532703269623216">Sustiprinta apsauga</translation>
 <translation id="6903907808598579934">Įjungti sinchronizavimą</translation>
 <translation id="6942665639005891494">Numatytąją atsisiuntimo vietą galite bet kada pakeisti naudodami nustatymų meniu parinktį</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>

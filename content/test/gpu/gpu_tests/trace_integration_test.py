@@ -5,6 +5,7 @@
 import os
 import sys
 
+from gpu_tests import common_browser_args as cba
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
 from gpu_tests import pixel_test_pages
@@ -173,7 +174,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # The version of this test in the old GPU test harness restarted
     # the browser after each test, so continue to do that to match its
     # behavior.
-    self.RestartBrowserWithArgs(self._AddDefaultArgs(test_params.browser_args))
+    self.RestartBrowserWithArgs(test_params.browser_args)
 
     # Set up tracing.
     config = tracing_config.TracingConfig()
@@ -206,21 +207,26 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def SetUpProcess(cls):
     super(TraceIntegrationTest, cls).SetUpProcess()
     path_util.SetupTelemetryPaths()
-    cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
+    cls.CustomizeBrowserArgs([])
     cls.StartBrowser()
     cls.SetStaticServerDirs(data_paths)
 
-  @staticmethod
-  def _AddDefaultArgs(browser_args):
-    # All tests receive the following options.
-    default_args = [
+  @classmethod
+  def GenerateBrowserArgs(cls, additional_args):
+    """Adds default arguments to |additional_args|.
+
+    See the parent class' method documentation for additional information.
+    """
+    default_args = super(TraceIntegrationTest,
+                         cls).GenerateBrowserArgs(additional_args)
+    default_args.extend([
         '--enable-logging',
-        '--enable-experimental-web-platform-features',
+        cba.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES,
         # All bots are connected with a power source, however, we want to to
         # test with the code path that's enabled with battery power.
-        '--disable_vp_scaling=1'
-    ]
-    return default_args + (browser_args or [])
+        cba.DISABLE_VP_SCALING,
+    ])
+    return default_args
 
   def _GetOverlayBotConfigHelper(self):
     system_info = self.browser.GetSystemInfo()

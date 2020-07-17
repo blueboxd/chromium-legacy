@@ -563,8 +563,9 @@ bool OmniboxPopupModel::TriggerSelectionAction(Selection selection,
 
     case FOCUSED_BUTTON_TAB_SWITCH:
       DCHECK(timestamp != base::TimeTicks());
-      edit_model()->AcceptInput(WindowOpenDisposition::SWITCH_TO_TAB,
-                                timestamp);
+      edit_model()->OpenMatch(match, WindowOpenDisposition::SWITCH_TO_TAB,
+                              GURL(), base::string16(), selected_line(),
+                              timestamp);
       break;
 
     case FOCUSED_BUTTON_PEDAL:

@@ -21,6 +21,7 @@ import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListenerWithScroll;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.RenderFrameHostTestExt;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -90,10 +91,25 @@ public class GestureListenerManagerTest {
         // This needs to wait for first-paint, otherwise scrolling doesn't happen.
         TestCallbackHelperContainer callbackHelperContainer =
                 new TestCallbackHelperContainer(webContents);
-        CallbackHelper done = callbackHelperContainer.getOnFirstVisuallyNonEmptyPaintHelper();
         mActivityTestRule.loadUrl(webContents.getNavigationController(), callbackHelperContainer,
                 new LoadUrlParams(TEST_URL));
-        done.waitForCallback(0);
+        // Wait for both a paint and the page to finish loading. These may come in any order.
+        callbackHelperContainer.getOnFirstVisuallyNonEmptyPaintHelper().waitForCallback(0);
+        callbackHelperContainer.getOnPageFinishedHelper().waitForCallback(0);
+
+        // At this point the page has finished loading and a non-empty paint occurred. This does not
+        // mean the renderer is fully ready to process events (processing events requires layers,
+        // which may not have been created yet). Wait for a visual update, which should ensure the
+        // renderer is ready.
+        CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            new RenderFrameHostTestExt(webContents.getMainFrame())
+                    .updateVisualState((Boolean result) -> {
+                        Assert.assertTrue(result);
+                        callbackHelper.notifyCalled();
+                    });
+        });
+        callbackHelper.waitForFirst();
 
         final GestureStateListenerImpl listener = new GestureStateListenerImpl();
         TestThreadUtils.runOnUiThreadBlocking(() -> {

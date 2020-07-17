@@ -60,9 +60,8 @@ bool BrowsingInstance::IsSiteInDefaultSiteInstance(const GURL& site_url) const {
   return site_url_set_.find(site_url) != site_url_set_.end();
 }
 
-bool BrowsingInstance::HasSiteInstance(const GURL& url) {
-  std::string site = GetSiteInfoForURL(url).site_url().possibly_invalid_spec();
-  return site_instance_map_.find(site) != site_instance_map_.end();
+bool BrowsingInstance::HasSiteInstance(const SiteInfo& site_info) {
+  return site_instance_map_.find(site_info) != site_instance_map_.end();
 }
 
 scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURL(
@@ -117,16 +116,16 @@ bool BrowsingInstance::TrySettingDefaultSiteInstance(
 scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
     const GURL& url,
     bool allow_default_instance) {
-  const GURL site_url = GetSiteInfoForURL(url).site_url();
-  auto i = site_instance_map_.find(site_url.possibly_invalid_spec());
+  const SiteInfo site_info = GetSiteInfoForURL(url);
+  auto i = site_instance_map_.find(site_info);
   if (i != site_instance_map_.end())
     return i->second;
 
   // Check to see if we can use the default SiteInstance for sites that don't
   // need to be isolated in their own process.
   if (allow_default_instance &&
-      SiteInstanceImpl::CanBePlacedInDefaultSiteInstance(isolation_context_,
-                                                         url, site_url)) {
+      SiteInstanceImpl::CanBePlacedInDefaultSiteInstance(
+          isolation_context_, url, site_info.site_url())) {
     DCHECK(!default_process_);
     scoped_refptr<SiteInstanceImpl> site_instance = default_site_instance_;
     if (!site_instance) {
@@ -146,7 +145,7 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
 
     // Add |site_url| to the set so we can keep track of all the sites the
     // the default SiteInstance has been returned for.
-    site_url_set_.insert(site_url);
+    site_url_set_.insert(site_info.site_url());
     return site_instance;
   }
 
@@ -162,17 +161,17 @@ void BrowsingInstance::RegisterSiteInstance(SiteInstanceImpl* site_instance) {
   if (site_instance == default_site_instance_)
     return;
 
-  std::string site = site_instance->GetSiteURL().possibly_invalid_spec();
+  const SiteInfo& site_info = site_instance->GetSiteInfo();
 
   // Only register if we don't have a SiteInstance for this site already.
   // It's possible to have two SiteInstances point to the same site if two
   // tabs are navigated there at the same time.  (We don't call SetSite or
   // register them until DidNavigate.)  If there is a previously existing
   // SiteInstance for this site, we just won't register the new one.
-  auto i = site_instance_map_.find(site);
+  auto i = site_instance_map_.find(site_info);
   if (i == site_instance_map_.end()) {
     // Not previously registered, so register it.
-    site_instance_map_[site] = site_instance;
+    site_instance_map_[site_info] = site_instance;
   }
 }
 
@@ -185,12 +184,10 @@ void BrowsingInstance::UnregisterSiteInstance(SiteInstanceImpl* site_instance) {
     default_site_instance_ = nullptr;
   }
 
-  std::string site = site_instance->GetSiteURL().possibly_invalid_spec();
-
   // Only unregister the SiteInstance if it is the same one that is registered
   // for the site.  (It might have been an unregistered SiteInstance.  See the
   // comments in RegisterSiteInstance.)
-  auto i = site_instance_map_.find(site);
+  auto i = site_instance_map_.find(site_instance->GetSiteInfo());
   if (i != site_instance_map_.end() && i->second == site_instance) {
     // Matches, so erase it.
     site_instance_map_.erase(i);

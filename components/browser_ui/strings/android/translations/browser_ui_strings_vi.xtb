@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Máy ảnh</translation>
 <translation id="1647391597548383849">Truy cập máy ảnh của bạn</translation>
 <translation id="1660204651932907780">Cho phép các trang web phát âm thanh (được đề xuất)</translation>
+<translation id="1677097821151855053">Cookie và dữ liệu trang web khác được dùng để ghi nhớ bạn, chẳng hạn như giúp bạn đăng nhập hoặc cá nhân hóa quảng cáo. Để quản lý cookie cho tất cả trang web, hãy xem phần <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Xóa dữ liệu trang web?</translation>
 <translation id="169515064810179024">Chặn không cho các trang web sử dụng cảm biến chuyển động</translation>
 <translation id="1717218214683051432">Cảm biến chuyển động</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Cho phép cookie của một trang web cụ thể.</translation>
 <translation id="4046123991198612571">Bản nhạc tiếp theo</translation>
 <translation id="4165986682804962316">Cài đặt trang web</translation>
+<translation id="4200726100658658164">Mở phần Cài đặt vị trí</translation>
 <translation id="4226663524361240545">Thông báo có thể làm rung thiết bị</translation>
 <translation id="4242533952199664413">Mở phần cài đặt</translation>
 <translation id="4259722352634471385">Điều hướng bị chặn: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Tất cả các trang web</translation>
 <translation id="6320088164292336938">Rung</translation>
 <translation id="6388207532828177975">Xóa và đặt lại</translation>
+<translation id="6423924377271166037">Xóa cookie</translation>
 <translation id="6439114592976064011">Không cho các trang web sử dụng dữ liệu và thiết bị thực tế ảo của bạn</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6527303717912515753">Chia sẻ</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Tìm kiếm lùi</translation>
 <translation id="8444433999583714703">Để cho phép <ph name="APP_NAME" /> truy cập vào thông tin vị trí của bạn, hãy bật cả dịch vụ vị trí trong phần <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Thu hồi quyền truy cập thiết bị</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie đang được sử dụng}other{# cookie đang được sử dụng}}</translation>
 <translation id="8463851957836045671">Trang web tải nhanh</translation>
 <translation id="851751545965956758">Chặn các trang web kết nối với thiết bị</translation>
 <translation id="857943718398505171">Được phép (được đề xuất)</translation>

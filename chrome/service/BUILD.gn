@@ -63,7 +63,6 @@ static_library("service") {
     "//components/cloud_devices/common",
     "//components/network_session_configurator/browser",
     "//components/printing/common",
-    "//content/public/app:service_manifests",
     "//google_apis",
     "//jingle:notifier",
     "//mojo/public/cpp/platform",

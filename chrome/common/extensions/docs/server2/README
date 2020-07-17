@@ -135,19 +135,16 @@ instance. From within the SSH session, first switch to user "git-processor":
 
   sudo su - git-processor
 
-You can run './update-docs.sh' from the home directory there. This will
+You can run './update-docs-full.sh' from the home directory there. This will
 automatically fetch any new objects from the upstream repository and then
 perform a full update if there are pending changes.
 
 It's almost never necessary to use this tool. For one interesting example,
 consider the case where no new commits are landing in the chrome repository
 but a change was just pushed to one of the GCS providers (like say, the
-chromedocs-multidevice bucker). In this case, you may want to force an update
-of only the content_providers data.
-
-  ./update_docs.sh --data-source=content_providers --force
-
-This will safely do the push for you, ensuring that the automated job
+chromedocs-multidevice bucket). In this case, you may want to force an update
+of only the content_providers data. To do this run the update-docs-cloud.sh
+script. This will safely do the push for you, ensuring that the automated job
 does not collide with your own.
 
 ----------------------
@@ -183,8 +180,9 @@ update files in these docs, follow these steps:
 4) After the next cron job on the compute engine completes, the modifications
    should be live.
 5) In order to expedite 4), a manual datastore update can be performed by
-   running "./update_docs.sh --data-source=content_providers --force" on the VM
-   instance.
+   running "./update-docs-cloud.sh on the VM instance. This only updates the
+   "content_providers" data source without fetching updates for the chromium
+   repository.
 
 Note: these steps shouldn't require a server version bump. If they do, please
 file a bug.

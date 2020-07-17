@@ -116,7 +116,7 @@ class FaviconWaiter : public favicon::FaviconDriverObserver {
 
   favicon::ContentFaviconDriver* driver_;
   GURL target_favicon_url_;
-  base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconWaiter);
 };

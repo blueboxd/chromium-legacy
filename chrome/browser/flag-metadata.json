@@ -2943,6 +2943,16 @@
     "expiry_milestone": 85
   },
   {
+    "name": "mixed-forms-disable-autofill",
+    "owners": [ "carlosil" ],
+    "expiry_milestone": 88
+  },
+  {
+    "name": "mixed-forms-interstitial",
+    "owners": [ "carlosil" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "mobile-google-srp",
     "owners": [ "gambard" ],
     "expiry_milestone": 88
@@ -3234,6 +3244,11 @@
   },
   {
     "name": "omnibox-rich-autocompletion",
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
+    "name": "omnibox-rich-autocompletion-min-char",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
   },

@@ -44,7 +44,8 @@ class ChromeProcessSingleton {
 
   // Receives a callback to be run to close the active modal dialog, or an empty
   // closure if the active dialog is dismissed.
-  void SetModalDialogNotificationHandler(base::Closure notification_handler);
+  void SetModalDialogNotificationHandler(
+      base::RepeatingClosure notification_handler);
 
   // Executes previously queued command-line invocations and allows future
   // invocations to be executed immediately.

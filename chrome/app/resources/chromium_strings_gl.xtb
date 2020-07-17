@@ -106,6 +106,7 @@
 <translation id="5224391634244552924">Non hai contrasinais gardados. Chromium pode comprobar os teus contrasinais cando os gardes.</translation>
 <translation id="5277894862589591112">Para aplicar os cambios, reinicia Chromium</translation>
 <translation id="5358375970380395591">Estás iniciando sesión cunha conta xestionada e concedendo control ao seu administrador sobre o teu perfil de Chromium. Os teus datos de Chromium, como as túas aplicacións, marcadores, historial, contrasinais e outras configuracións ligaranse permanentemente a <ph name="USER_NAME" />. Poderás eliminar estes datos a través do Panel de control das contas de Google, pero non poderás asociar estes datos a outra conta. <ph name="LEARN_MORE" /></translation>
+<translation id="5374145464979633459">Produciuse un erro mentres Chromium comprobaba o software do dispositivo</translation>
 <translation id="5386450000063123300">Actualizando Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Permitir inicio de sesión en Chromium</translation>
 <translation id="5398878173008909840">Hai unha nova versión de Chromium dispoñible.</translation>

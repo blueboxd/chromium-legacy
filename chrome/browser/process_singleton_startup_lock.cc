@@ -18,8 +18,9 @@ ProcessSingletonStartupLock::~ProcessSingletonStartupLock() {
 
 ProcessSingleton::NotificationCallback
 ProcessSingletonStartupLock::AsNotificationCallback() {
-  return base::Bind(&ProcessSingletonStartupLock::NotificationCallbackImpl,
-                    base::Unretained(this));
+  return base::BindRepeating(
+      &ProcessSingletonStartupLock::NotificationCallbackImpl,
+      base::Unretained(this));
 }
 
 void ProcessSingletonStartupLock::Unlock() {

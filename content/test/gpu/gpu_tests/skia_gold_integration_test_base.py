@@ -10,9 +10,10 @@ import shutil
 import sys
 import tempfile
 
+from gpu_tests import color_profile_manager
+from gpu_tests import common_browser_args as cba
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
-from gpu_tests import color_profile_manager
 from gpu_tests.skia_gold import gpu_skia_gold_properties
 from gpu_tests.skia_gold import gpu_skia_gold_session
 from gpu_tests.skia_gold import gpu_skia_gold_session_manager
@@ -79,7 +80,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     color_profile_manager.ForceUntilExitSRGB(
         options.dont_restore_color_profile_after_test)
     super(SkiaGoldIntegrationTestBase, cls).SetUpProcess()
-    cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
+    cls.CustomizeBrowserArgs([])
     cls.StartBrowser()
     cls.SetStaticServerDirs(TEST_DATA_DIRS)
     cls._skia_gold_temp_dir = tempfile.mkdtemp()
@@ -100,20 +101,24 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
               cls._skia_gold_temp_dir, cls.GetSkiaGoldProperties())
     return cls._skia_gold_session_manager
 
-  @staticmethod
-  def _AddDefaultArgs(browser_args):
-    if not browser_args:
-      browser_args = []
+  @classmethod
+  def GenerateBrowserArgs(cls, additional_args):
+    """Adds default arguments to |additional_args|.
+
+    See the parent class' method documentation for additional information.
+    """
+    default_args = super(SkiaGoldIntegrationTestBase,
+                         cls).GenerateBrowserArgs(additional_args)
+    default_args.extend([cba.ENABLE_GPU_BENCHMARKING, cba.TEST_TYPE_GPU])
     force_color_profile_arg = [
-        arg for arg in browser_args if arg.startswith('--force-color-profile=')
+        arg for arg in default_args if arg.startswith('--force-color-profile=')
     ]
     if not force_color_profile_arg:
-      browser_args = browser_args + [
-          '--force-color-profile=srgb',
-          '--ensure-forced-color-profile',
-      ]
-    # All tests receive the following options.
-    return browser_args + ['--enable-gpu-benchmarking', '--test-type=gpu']
+      default_args.extend([
+          cba.FORCE_COLOR_PROFILE_SRGB,
+          cba.ENSURE_FORCED_COLOR_PROFILE,
+      ])
+    return default_args
 
   @classmethod
   def StopBrowser(cls):
@@ -237,7 +242,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       raise Exception('GPU device information was incomplete')
     # TODO(senorblanco): This should probably be checking
     # for the presence of the extensions in system_info.gpu_aux_attributes
-    # in order to check for MSAA, rather than sniffing the blacklist.
+    # in order to check for MSAA, rather than sniffing the blocklist.
     params.msaa = not (('disable_chromium_framebuffer_multisample' in
                         system_info.gpu.driver_bug_workarounds) or
                        ('disable_multisample_render_to_texture' in system_info.

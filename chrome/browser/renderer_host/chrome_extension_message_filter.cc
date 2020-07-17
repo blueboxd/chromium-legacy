@@ -63,9 +63,7 @@ ChromeExtensionMessageFilter::ChromeExtensionMessageFilter(
                            base::size(kExtensionFilteredMessageClasses)),
       render_process_id_(render_process_id),
       profile_(profile),
-      activity_log_(extensions::ActivityLog::GetInstance(profile)),
-      extension_info_map_(
-          extensions::ExtensionSystem::Get(profile)->info_map()) {
+      activity_log_(extensions::ActivityLog::GetInstance(profile)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observed_profiles_.Add(profile);
 }

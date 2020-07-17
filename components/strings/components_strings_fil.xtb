@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="1008557486741366299">Hindi Ngayon</translation>
+<translation id="100957008357583611">Gamitin ang iyong lokasyon?</translation>
 <translation id="1010200102790553230">I-load ang page sa ibang pagkakataon</translation>
 <translation id="1015730422737071372">Magbigay ng mga karagdagang detalye</translation>
 <translation id="1019413721762100891">I-off</translation>
@@ -425,7 +426,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="2705137772291741111">Hindi mabasa ang naka-save (naka-cache) na kopya ng site na ito.</translation>
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="2713444072780614174">Puti</translation>
-<translation id="2720342946869265578">Malapit</translation>
 <translation id="2721148159707890343">Matagumpay ang kahilingan</translation>
 <translation id="272451190272506600">Pindutin ang sensor para magbayad</translation>
 <translation id="2728127805433021124">Nilagdaan ang certificate ng server gamit ang mahinang algorithm ng lagda.</translation>
@@ -722,7 +722,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="3990250421422698716">Jog offset</translation>
 <translation id="3996311196211510766">Hiniling ng site na <ph name="ORIGIN" /> na maglapat ng patakaran ng pinagmulan
     sa lahat ng kahilingan dito, pero hindi pa mailalapat sa ngayon ang patakarang ito.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 web page ang malapit}one{# web page ang malapit}other{# na web page ang malapit}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF na dokumentong naglalaman ng {COUNT} page}one{PDF na dokumentong naglalaman ng {COUNT} page}other{PDF na dokumentong naglalaman ng {COUNT} na page}}</translation>
 <translation id="4030383055268325496">&amp;I-undo ang pagdagdag</translation>
 <translation id="4032320456957708163">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang iyong browser</translation>
@@ -940,7 +939,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">I-save...</translation>
 <translation id="4913987521957242411">Punch top left</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{at 1 pang web page}one{at # pang web page}other{at # pang web page}}</translation>
 <translation id="4923459931733593730">Pagbabayad</translation>
 <translation id="4926049483395192435">Dapat na tukuyin.</translation>
 <translation id="4926159001844873046">Isinasaad ng <ph name="SITE" /> na</translation>
@@ -1181,6 +1179,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="5869405914158311789">Hindi makakonekta sa site na ito</translation>
 <translation id="5869522115854928033">Mga naka-save na password</translation>
 <translation id="5887400589839399685">Na-save ang card</translation>
+<translation id="589006512797629854">Hinihiling sa iyo ng <ph name="ENROLLMENT_DOMAIN" /> na i-back up ang data mo at ibalik ang device na ito.</translation>
 <translation id="5895138241574237353">I-restart</translation>
 <translation id="5895187275912066135">Ibinigay Noong</translation>
 <translation id="5901630391730855834">Dilaw</translation>
@@ -1331,7 +1330,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="6518133107902771759">I-verify</translation>
 <translation id="6521745193039995384">Hindi aktibo</translation>
 <translation id="6529602333819889595">&amp;Gawing Muli ang Pagtanggal</translation>
-<translation id="6534179046333460208">Mga suhestyon sa Pisikal na Web</translation>
 <translation id="6545864417968258051">Pag-scan ng Bluetooth</translation>
 <translation id="6547208576736763147">Dual punch left</translation>
 <translation id="6554795675067793129">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang iyong account.</translation>
@@ -1853,7 +1851,6 @@ Mga karagdagang detalye:
 <translation id="8790007591277257123">&amp;Gawing muli ang pagtanggal</translation>
 <translation id="8792621596287649091">Maaari kang mawalan ng access sa iyong account sa <ph name="ORG_NAME" /> o manakawan ng pagkakakilanlan. Inirerekomenda ng Chromium na palitan ang iyong password ngayon.</translation>
 <translation id="8793655568873652685">Na-on ng <ph name="ENROLLMENT_DOMAIN" /> ang Chrome Enterprise Connectors sa iyong browser. May access ang mga connector na ito sa ilan sa iyong data.</translation>
-<translation id="8800988563907321413">Lalabas dito ang iyong mga suhestyon na malapit</translation>
 <translation id="8805819170075074995">Listahan ng entry na "<ph name="LANGUAGE_ID" />": Binalewala ang entry dahil kasama rin ito sa patakarang SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Paikliin pagkatapos ng bawat page</translation>
 <translation id="8820817407110198400">Mga Bookmark</translation>

@@ -338,6 +338,25 @@ bool AbsoluteNeedsChildBlockSize(const ComputedStyle& style) {
           (style.LogicalTop().IsAuto() || style.LogicalBottom().IsAuto()));
 }
 
+bool IsInlineSizeComputableFromBlockSize(const ComputedStyle& style) {
+  DCHECK(style.HasOutOfFlowPosition());
+  if (!style.AspectRatio())
+    return false;
+  // An explicit block size should take precedence over specified insets.
+  bool have_inline_size =
+      style.LogicalWidth().IsFixed() || style.LogicalWidth().IsPercentOrCalc();
+  bool have_block_size = style.LogicalHeight().IsFixed() ||
+                         style.LogicalHeight().IsPercentOrCalc();
+  if (have_inline_size)
+    return false;
+  if (have_block_size)
+    return true;
+  // If we have block insets but no inline insets, we compute based on the
+  // insets.
+  return !AbsoluteNeedsChildBlockSize(style) &&
+         AbsoluteNeedsChildInlineSize(style);
+}
+
 base::Optional<LayoutUnit> ComputeAbsoluteDialogYPosition(
     const LayoutObject& dialog,
     LayoutUnit height) {
@@ -406,6 +425,9 @@ void ComputeOutOfFlowInlineDimensions(
                                           min_max_sizes, style.LogicalWidth());
   } else if (replaced_size.has_value()) {
     inline_size = replaced_size->inline_size;
+  } else if (IsInlineSizeComputableFromBlockSize(style)) {
+    DCHECK(min_max_sizes.has_value());
+    inline_size = min_max_sizes->min_size;
   }
 
   LayoutUnit min_inline_size = ResolveMinInlineLength(

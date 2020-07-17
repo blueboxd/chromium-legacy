@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Bookmarks die je op andere apparaten hebt opgeslagen, worden hier weergegeven.</translation>
 <translation id="1113597929977215864">Vereenvoudigde weergave tonen</translation>
 <translation id="1122278879166832009">Tik hier om overal snel toegang tot je homepage te krijgen</translation>
+<translation id="1126809382673880764">Beschermt je niet tegen gevaarlijke websites, downloads en extensies. Je wordt voor andere services, zoals Gmail en Zoeken, nog steeds beschermd door Safe Browsing als dat beschikbaar is.</translation>
 <translation id="1129510026454351943">Details: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download in behandeling.}other{# downloads in behandeling.}}</translation>
 <translation id="1145536944570833626">Bestaande gegevens verwijderen.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Licht</translation>
 <translation id="1810845389119482123">Eerste synchronisatieconfiguratie niet voltooid</translation>
 <translation id="1821253160463689938">Maakt gebruik van cookies om je voorkeuren te onthouden, zelfs als je deze pagina's niet bezoekt</translation>
-<translation id="1826516787628120939">Controleren</translation>
 <translation id="1829244130665387512">Zoeken op pagina</translation>
 <translation id="1853692000353488670">Nieuw incognitotabblad</translation>
 <translation id="1856325424225101786">Lite-versie resetten?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Wachtwoorden opslaan</translation>
 <translation id="1952172573699511566">Websites worden indien mogelijk weergegeven in je voorkeurstaal.</translation>
 <translation id="1960290143419248813">Updates van Chrome worden niet meer ondersteund voor deze versie van Android</translation>
+<translation id="1963976881984600709">Standaardbeveiliging</translation>
 <translation id="1966710179511230534">Update je inloggegevens.</translation>
 <translation id="1974060860693918893">Geavanceerd</translation>
+<translation id="1984417487208496350">Geen beveiliging (niet aanbevolen)</translation>
 <translation id="1984705450038014246">Je Chrome-gegevens synchroniseren</translation>
 <translation id="1986685561493779662">Naam bestaat al</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" />-knop</translation>
@@ -392,7 +394,6 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="4183868528246477015">Zoeken met Google Lens <ph name="BEGIN_NEW" />Nieuw<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Openen op nieuw tabblad</translation>
 <translation id="4198423547019359126">Geen beschikbare downloadlocaties</translation>
-<translation id="4202553989407425169">Chrome kan nagaan of je instellingen je beschermen tegen:</translation>
 <translation id="4209895695669353772">Schakel synchronisatie in om suggesties voor gepersonaliseerde content van Google te ontvangen</translation>
 <translation id="423219824432660969">Gesynchroniseerde gegevens versleutelen met Google-wachtwoord vanaf <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Instellingen openen</translation>
@@ -459,6 +460,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4749960740855309258">Een nieuw tabblad openen</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download voltooid.}other{# downloads voltooid.}}</translation>
+<translation id="4766678251456904326">Account toevoegen aan apparaat</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 download gepland.}other{# downloads gepland.}}</translation>
 <translation id="478981486571169252">Je ziet je inlogstatus, browsergegevens en sitegegevens van <ph name="SITE_NAME" /> in Chrome.</translation>
 <translation id="4802417911091824046">Wachtwoordzinversleuteling is niet van toepassing op betaalmethoden en adressen van Google Pay.
@@ -490,6 +492,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4943872375798546930">Geen resultaten</translation>
 <translation id="4961107849584082341">Vertaal deze pagina in een andere taal</translation>
 <translation id="4970824347203572753">Niet beschikbaar op jouw locatie</translation>
+<translation id="4971735654804503942">Snellere, proactieve beveiliging tegen gevaarlijke websites, downloads en extensies. Stuurt een waarschuwing over wachtwoordlekken. Vereist dat browsegegevens naar Google worden verstuurd.</translation>
 <translation id="497421865427891073">Naar voren gaan</translation>
 <translation id="4988210275050210843">Bestand downloaden (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Pagina's</translation>
@@ -561,7 +564,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5527082711130173040">Chrome heeft locatietoegang nodig om naar apparaten te scannen. <ph name="BEGIN_LINK1" />Rechten updaten<ph name="END_LINK1" />. Locatietoegang is ook <ph name="BEGIN_LINK2" />uitgeschakeld voor dit apparaat<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Incognitotabbladen sluiten</translation>
 <translation id="5534640966246046842">Site gekopieerd</translation>
-<translation id="5548606607480005320">Veiligheidscheck</translation>
 <translation id="5561549206367097665">Wachten op netwerk…</translation>
 <translation id="55737423895878184">Locatie en meldingen zijn toegestaan</translation>
 <translation id="5578795271662203820">Zoeken op <ph name="SEARCH_ENGINE" /> naar afbeelding</translation>
@@ -600,7 +602,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="583281660410589416">Onbekend</translation>
 <translation id="5833984609253377421">Link delen</translation>
 <translation id="5836192821815272682">Chrome-update downloaden…</translation>
-<translation id="584120177693484274">Niet aangevinkt</translation>
 <translation id="5853623416121554550">onderbroken</translation>
 <translation id="5854790677617711513">Ouder dan 30 dagen</translation>
 <translation id="5858741533101922242">Chrome kan de Bluetooth-adapter niet inschakelen</translation>
@@ -736,10 +737,12 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="685850645784703949">Discover van Google - uitgeschakeld</translation>
 <translation id="6864459304226931083">Afbeelding downloaden</translation>
 <translation id="6865313869410766144">Formuliergegevens voor Automatisch aanvullen</translation>
+<translation id="6882836635272038266">Standaardbeveiliging tegen websites, downloads en extensies die als gevaarlijk zijn bestempeld.</translation>
 <translation id="6884306546558072722">Offline content ontdekken</translation>
 <translation id="688738109438487280">Bestaande gegevens toevoegen aan <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Ontgrendelen om je wachtwoord te kopiëren</translation>
 <translation id="6896758677409633944">Kopieer</translation>
+<translation id="6900532703269623216">Verbeterde beveiliging</translation>
 <translation id="6903907808598579934">Synchronisatie inschakelen</translation>
 <translation id="6942665639005891494">Je kunt via de menuoptie Instellingen op elk gewenst moment de standaard downloadlocatie wijzigen</translation>
 <translation id="6945221475159498467">Selecteren</translation>

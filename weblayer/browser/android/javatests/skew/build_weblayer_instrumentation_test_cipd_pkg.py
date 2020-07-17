@@ -19,6 +19,7 @@ import os
 import shutil
 import subprocess
 import sys
+import re
 import tempfile
 import zipfile
 
@@ -30,6 +31,8 @@ MB_PATH = os.path.join('tools', 'mb', 'mb.py')
 # Get the config specifying the gn args from the location of this script.
 MB_CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'mb_config.pyl')
+
+CHROMIUM_VERSION_REGEX = r'\d+\.\d+\.\d+\.\d+$'
 
 # CIPD package path.
 # https://chrome-infra-packages.appspot.com/p/chromium/testing/weblayer-x86/+/
@@ -92,6 +95,16 @@ def build_cipd_pkg(input_path, cipd_filename):
   subprocess.check_call(cmd)
 
 
+def get_chromium_version():
+  with open(os.path.join(SRC_DIR, 'chrome', 'VERSION')) as f:
+    version = '.'.join(line[line.index('=') + 1:]
+                       for line in f.read().splitlines())
+  if not re.match(CHROMIUM_VERSION_REGEX, version):
+    raise ValueError("Chromium version, '%s', is not in proper format" %
+                     version)
+  return version
+
+
 def main():
   parser = argparse.ArgumentParser(
       description='Package weblayer instrumentation tests for CIPD.')
@@ -99,8 +112,9 @@ def main():
       '--cipd_out',
       required=True,
       help="Output filename for resulting .cipd file.")
-  args = parser.parse_args()
 
+  args = parser.parse_args()
+  chromium_version = get_chromium_version()
   with tempfile.TemporaryDirectory() as tmp_dir, \
        temporarily_chdir_to_src([args.cipd_out]) as cipd_out_src_rel_paths:
     # Create zip archive of test target.
@@ -118,8 +132,9 @@ def main():
     build_cipd_pkg(extracted, tmp_cipd_filename)
     shutil.move(tmp_cipd_filename, cipd_out_src_rel_paths[0])
 
-    print(('Use "cipd pkg-register %s -verbose -tag \'version:<branch>\'" ' +
-           'to upload package to the cipd server.') % args.cipd_out)
+    print(('Use "cipd pkg-register %s -verbose -tag \'version:%s\'" ' +
+           'to upload package to the cipd server.') %
+          (args.cipd_out, chromium_version))
     print('Use "cipd set-ref chromium/testing/weblayer-x86 --version ' +
           '<CIPD instance version> -ref m<milestone>" to update the ref.')
     print('The CIPD instance version can be found on the "Instance" line ' +

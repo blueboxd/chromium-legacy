@@ -13,6 +13,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
+#include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"

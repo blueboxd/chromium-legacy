@@ -21,11 +21,12 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1647391597548383849">Atzitu kamera</translation>
 <translation id="1660204651932907780">Baimendu webguneei soinua erreproduzitzea (gomendatua)</translation>
+<translation id="1677097821151855053">Cookieak eta webguneko beste datu batzuk zu gogoratzeko erabiltzen dira; adibidez, saioa hasteko edo iragarkiak pertsonalizatzeko. Webgune guztietako cookieak kudeatzeko, ikusi <ph name="BEGIN_LINK" />"Cookieen ezarpenak"<ph name="END_LINK" /> atala.</translation>
 <translation id="1688867105868176567">Webguneko datuak garbitu nahi dituzu?</translation>
 <translation id="169515064810179024">Ez utzi webguneei mugimendu-sentsoreak atzitzen</translation>
 <translation id="1717218214683051432">Mugimendu-sentsoreak</translation>
 <translation id="1743802530341753419">Webguneei gailu batera konektatzeko baimena eman aurretik, eskatu onespena (gomendatua)</translation>
-<translation id="1818308510395330587"><ph name="APP_NAME" /> aplikazioari errealitate areagotua erabiltzeko baimena emateko, aktibatu kamera atzitzeko baimena <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
+<translation id="1818308510395330587"><ph name="APP_NAME" /> aplikazioari errealitate areagotua erabiltzeko baimena emateko, kamera atzitzeko baimena aktibatu behar duzu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="1887786770086287077">Kokapenerako sarbidea desaktibatuta dago gailuan. Aktiba ezazu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Iragarkiak</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
@@ -72,7 +73,7 @@
 <translation id="3115898365077584848">Erakutsi informazioa</translation>
 <translation id="3123473560110926937">Webgune batzuetan blokeatu dira iragarkiak</translation>
 <translation id="3198916472715691905">Gordetako datuak: <ph name="STORAGE_AMOUNT" /></translation>
-<translation id="321187648315454507"><ph name="APP_NAME" /> aplikazioari jakinarazpenak bidaltzeko baimena emateko, jakinarazpenak aktibatu behar dituzu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
+<translation id="321187648315454507"><ph name="APP_NAME" /> aplikazioari jakinarazpenak bidaltzeko baimena emateko, jakinarazpenak bidaltzeko baimena aktibatu behar duzu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Mikrofonoa</translation>
 <translation id="3277252321222022663">Eman sentsoreak atzitzeko baimena webguneei (gomendatua)</translation>
 <translation id="3295602654194328831">Ezkutatu informazioa</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Onartu webgune zehatz baten cookieak.</translation>
 <translation id="4046123991198612571">Hurrengo pista</translation>
 <translation id="4165986682804962316">Webgunearen ezarpenak</translation>
+<translation id="4200726100658658164">Ireki kokapen-ezarpenak</translation>
 <translation id="4226663524361240545">Gailua dardararaz dezakete jakinarazpenek</translation>
 <translation id="4242533952199664413">Ireki ezarpenak</translation>
 <translation id="4259722352634471385"><ph name="URL" /> orrira joateko aukera blokeatuta dago</translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Webgune guztiak</translation>
 <translation id="6320088164292336938">Dardara</translation>
 <translation id="6388207532828177975">Garbitu eta berrezarri</translation>
+<translation id="6423924377271166037">Garbitu cookieak</translation>
 <translation id="6439114592976064011">Ez utzi webguneei errealitate birtualeko gailuak eta datuak erabiltzen</translation>
 <translation id="6447842834002726250">Cookieak</translation>
 <translation id="6527303717912515753">Partekatu</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Atzeratu</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> aplikazioari kokapena atzitzeko baimena emateko, kokapena atzitzeko baimena aktibatu behar duzu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Kendu gailua atzitzeko baimena</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Erabiltzen den 1 cookie}other{Erabiltzen diren # cookie}}</translation>
 <translation id="8463851957836045671">Webgunea bizkorra da</translation>
 <translation id="851751545965956758">Ez utzi webguneei gailuekin konektatzen</translation>
 <translation id="857943718398505171">Baimenduta (gomendatua)</translation>

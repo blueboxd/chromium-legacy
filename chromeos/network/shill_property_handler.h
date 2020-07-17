@@ -116,10 +116,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
 
   // Asynchronously sets the enabled state for |technology|.
   // Note: Modifies Manager state. Calls |error_callback| on failure.
-  void SetTechnologyEnabled(
-      const std::string& technology,
-      bool enabled,
-      const network_handler::ErrorCallback& error_callback);
+  void SetTechnologyEnabled(const std::string& technology,
+                            bool enabled,
+                            network_handler::ErrorCallback error_callback);
 
   // Asynchronously sets the prohibited state for every network technology
   // listed in |technologies|. Note: Modifies Manager state.
@@ -190,17 +189,15 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
   void UpdateUninitializedTechnologies(const base::ListValue& technologies);
   void UpdateProhibitedTechnologies(const std::string& technologies);
 
-  void EnableTechnologyFailed(
-      const std::string& technology,
-      const network_handler::ErrorCallback& error_callback,
-      const std::string& dbus_error_name,
-      const std::string& dbus_error_message);
+  void EnableTechnologyFailed(const std::string& technology,
+                              network_handler::ErrorCallback error_callback,
+                              const std::string& dbus_error_name,
+                              const std::string& dbus_error_message);
 
-  void DisableTechnologyFailed(
-      const std::string& technology,
-      const network_handler::ErrorCallback& error_callback,
-      const std::string& dbus_error_name,
-      const std::string& dbus_error_message);
+  void DisableTechnologyFailed(const std::string& technology,
+                               network_handler::ErrorCallback error_callback,
+                               const std::string& dbus_error_name,
+                               const std::string& dbus_error_message);
 
   // Called when Shill returns the properties for a service or device.
   void GetPropertiesCallback(ManagedState::ManagedType type,

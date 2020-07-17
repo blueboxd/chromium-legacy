@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">ਤੁਹਾਡੀਆਂ ਹੋਰ ਡੀਵਾਈਸ 'ਤੇ ਰੱਖਿਅਤ ਕੀਤੇ ਬੁੱਕਮਾਰਕ ਇੱਥੇ ਵਿਖਾਈ ਦੇਣਗੇ।</translation>
 <translation id="1113597929977215864">ਸਰਲੀਕਿਰਤ ਦ੍ਰਿਸ਼ ਦਿਖਾਓ</translation>
 <translation id="1122278879166832009">ਕਿਤੋਂ ਵੀ ਤੇਜ਼ੀ ਨਾਲ ਆਪਣੇ ਹੋਮਪੇਜ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਲਈ ਇੱਥੇ ਟੈਪ ਕਰੋ</translation>
+<translation id="1126809382673880764">ਤੁਹਾਨੂੰ ਖਤਰਨਾਕ ਵੈੱਬਸਾਈਟਾਂ, ਡਾਊਨਲੋਡਾਂ ਅਤੇ ਐਕਸਟੈਂਸ਼ਨਾਂ ਤੋਂ ਸੁਰੱਖਿਅਤ ਨਹੀਂ ਰੱਖਿਆ ਜਾਂਦਾ। ਹੋਰ Google ਸੇਵਾਵਾਂ ਜਿਵੇਂ ਕਿ Gmail ਅਤੇ Search ਵਿੱਚ ਜਿੱਥੇ ਵੀ ਉਪਲਬਧ ਹੋਵੇ ਤੁਹਾਨੂੰ ਫਿਰ ਵੀ ਸੁਰੱਖਿਅਤ ਬ੍ਰਾਊਜ਼ਿੰਗ ਸੁਰੱਖਿਆ ਪ੍ਰਾਪਤ ਹੋਵੇਗੀ।</translation>
 <translation id="1129510026454351943">ਵੇਰਵੇ: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 ਡਾਊਨਲੋਡ ਬਾਕੀ ਹੈ।}one{# ਡਾਊਨਲੋਡ ਬਾਕੀ ਹੈ।}other{# ਡਾਊਨਲੋਡ ਬਾਕੀ ਹਨ।}}</translation>
 <translation id="1145536944570833626">ਮੌਜੂਦਾ ਡਾਟਾ ਮਿਟਾਓ।</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">ਹਲਕਾ</translation>
 <translation id="1810845389119482123">ਸ਼ੁਰੂਆਤੀ ਸਮਕਾਲੀਕਰਨ ਸੈੱਟਅੱਪ ਪੂਰਾ ਨਹੀਂ ਹੋਇਆ</translation>
 <translation id="1821253160463689938">ਤੁਹਾਡੀਆਂ ਤਰਜੀਹਾਂ ਨੂੰ ਯਾਦ ਰੱਖਣ ਲਈ ਕੁਕੀਜ਼ ਦੀ ਵਰਤੋਂ ਕਰਦੀ ਹੈ, ਭਾਵੇਂ ਤੁਸੀਂ ਉਹ ਪੰਨੇ ਨਹੀਂ ਦੇਖਦੇ</translation>
-<translation id="1826516787628120939">ਜਾਂਚ ਕਰ ਰਿਹਾ ਹੈ</translation>
 <translation id="1829244130665387512">ਸਫ਼ੇ ਵਿੱਚ ਲੱਭੋ</translation>
 <translation id="1853692000353488670">ਨਵੀਂ ਇਨਕੋਗਨਿਟੋ ਟੈਬ</translation>
 <translation id="1856325424225101786">ਕੀ ਲਾਈਟ ਮੋਡ ਰੀਸੈੱਟ ਕਰਨਾ ਹੈ?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">ਪਾਸਵਰਡ ਰੱਖਿਅਤ ਕਰੋ</translation>
 <translation id="1952172573699511566">ਜਦੋਂ ਸੰਭਵ ਹੋਵੇ, ਵੈੱਬਸਾਈਟਾਂ ਤੁਹਾਡੀ ਤਰਜੀਹੀ ਭਾਸ਼ਾ ਵਿੱਚ ਲਿਖਤ ਦਿਖਾਉਣਗੀਆਂ।</translation>
 <translation id="1960290143419248813">Chrome ਅੱਪਡੇਟਾਂ ਹੁਣ Android ਦੇ ਇਸ ਵਰਜਨ ਲਈ ਸਮਰਥਿਤ ਨਹੀਂ ਹਨ</translation>
+<translation id="1963976881984600709">ਮਿਆਰੀ ਸੁਰੱਖਿਆ</translation>
 <translation id="1966710179511230534">ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਸਾਈਨ-ਇਨ ਵੇਰਵੇ ਅੱਪਡੇਟ ਕਰੋ।</translation>
 <translation id="1974060860693918893">ਉੱਨਤ</translation>
+<translation id="1984417487208496350">ਕੋਈ ਸੁਰੱਖਿਆ ਨਹੀਂ (ਇਸਦੀ ਸਿਫ਼ਾਰਸ਼ ਨਹੀਂ ਕੀਤੀ ਜਾਂਦੀ)</translation>
 <translation id="1984705450038014246">ਆਪਣੇ Chrome ਡਾਟੇ ਦਾ ਸਮਕਾਲੀਕਰਨ ਕਰੋ</translation>
 <translation id="1986685561493779662">ਨਾਮ ਪਹਿਲਾਂ ਤੋਂ ਮੌਜੂਦ ਹੈ</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> ਬਟਨ</translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">'Google ਲੈਂਜ਼' ਨਾਲ ਖੋਜੋ <ph name="BEGIN_NEW" />ਨਵਾਂ<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">ਨਵੀਂ ਟੈਬ ਵਿੱਚ ਖੋਲ੍ਹੋ</translation>
 <translation id="4198423547019359126">ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਕੋਈ ਟਿਕਾਣਾ ਉਪਲਬਧ ਨਹੀਂ ਹੈ</translation>
-<translation id="4202553989407425169">Chrome ਇਹ ਜਾਂਚ ਕਰ ਸਕਦਾ ਹੈ ਕਿ ਤੁਹਾਡੀਆਂ ਸੈਟਿੰਗਾਂ ਤੁਹਾਨੂੰ ਇਹਨਾਂ ਤੋਂ ਸੁਰੱਖਿਅਤ ਰੱਖਦੀਆਂ ਹਨ ਜਾਂ ਨਹੀਂ:</translation>
 <translation id="4209895695669353772">Google ਵੱਲੋਂ ਸੁਝਾਈ ਵਿਅਕਤੀਗਤ ਬਣਾਈ ਗਈ ਸਮੱਗਰੀ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ, ਸਮਕਾਲੀਕਰਨ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="423219824432660969"><ph name="TIME" /> ਤੱਕ ਸਮਕਾਲੀਕਿਰਤ ਡਾਟੇ ਨੂੰ Google ਪਾਸਵਰਡ ਨਾਲ ਇਨਕ੍ਰਿਪਟ ਕਰੋ</translation>
 <translation id="4242533952199664413">ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ</translation>
@@ -459,6 +460,7 @@
 <translation id="4749960740855309258">ਇੱਕ ਨਵੀਂ ਟੈਬ ਖੋਲ੍ਹੋ</translation>
 <translation id="4759238208242260848">ਡਾਊਨਲੋਡਸ</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ਡਾਊਨਲੋਡ ਪੂਰਾ ਹੋਇਆ।}one{# ਡਾਊਨਲੋਡ ਪੂਰਾ ਹੋਇਆ।}other{# ਡਾਊਨਲੋਡ ਪੂਰੇ ਹੋਏ।}}</translation>
+<translation id="4766678251456904326">ਡੀਵਾਈਸ ਵਿੱਚ ਖਾਤਾ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 ਡਾਊਨਲੋਡ ਨੂੰ ਨਿਯਤ ਕੀਤਾ ਗਿਆ।}one{# ਡਾਊਨਲੋਡ ਨੂੰ ਨਿਯਤ ਕੀਤਾ ਗਿਆ।}other{# ਡਾਊਨਲੋਡਾਂ ਨੂੰ ਨਿਯਤ ਕੀਤਾ ਗਿਆ।}}</translation>
 <translation id="478981486571169252">ਤੁਸੀਂ Chrome ਵਿੱਚ ਆਪਣੀ <ph name="SITE_NAME" /> ਸਾਈਨ-ਇਨ ਸਥਿਤੀ, ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟਾ ਅਤੇ ਸਾਈਟ ਡਾਟਾ ਦੇਖੋਗੇ।</translation>
 <translation id="4802417911091824046">ਪਾਸਫਰੇਜ਼ ਇਨਕ੍ਰਿਪਸ਼ਨ ਵਿੱਚ Google Pay ਦੀਆਂ ਭੁਗਤਾਨ ਵਿਧੀਆਂ ਅਤੇ ਪਤੇ ਸ਼ਾਮਲ ਨਹੀਂ ਹਨ।
@@ -490,6 +492,7 @@
 <translation id="4943872375798546930">ਕੋਈ ਨਤੀਜੇ ਨਹੀਂ</translation>
 <translation id="4961107849584082341">ਇਸ ਪੰਨੇ ਦਾ ਕਿਸੇ ਵੀ ਭਾਸ਼ਾ ਵਿੱਚ ਅਨੁਵਾਦ ਕਰੋ</translation>
 <translation id="4970824347203572753">ਤੁਹਾਡੇ ਟਿਕਾਣੇ ਵਿੱਚ ਉਪਲਬਧ ਨਹੀਂ ਹੈ</translation>
+<translation id="4971735654804503942">ਖਤਰਨਾਕ ਵੈੱਬਸਾਈਟਾਂ, ਡਾਊਨਲੋਡਾਂ ਅਤੇ ਐਕਸਟੈਂਸ਼ਨਾਂ ਤੋਂ ਵਧੇਰੇ ਤੇਜ਼ ਅਤੇ ਚੁਸਤ ਸੁਰੱਖਿਆ। ਤੁਹਾਨੂੰ ਪਾਸਵਰਡ ਉਲੰਘਣਾਵਾਂ ਬਾਰੇ ਚਿਤਾਵਨੀ ਦਿੱਤੀ ਜਾਂਦੀ ਹੈ। ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟਾ Google ਨੂੰ ਭੇਜਣ ਦੀ ਲੋੜ ਪੈਂਦੀ ਹੈ।</translation>
 <translation id="497421865427891073">ਅੱਗੇ ਵੱਲ ਜਾਓ</translation>
 <translation id="4988210275050210843">ਫ਼ਾਈਲ ਡਾਊਨਲੋਡ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ (<ph name="MEGABYTES" />)।</translation>
 <translation id="4988526792673242964">ਸਫ਼ੇ</translation>
@@ -561,7 +564,6 @@
 <translation id="5527082711130173040">Chrome ਨੂੰ ਡੀਵਾਈਸਾਂ ਲਈ ਸਕੈਨ ਕਰਨ ਵਾਸਤੇ ਟਿਕਾਣਾ ਪਹੁੰਚ ਦੀ ਲੋੜ ਹੈ। <ph name="BEGIN_LINK1" />ਇਜਾਜ਼ਤਾਂ ਅੱਪਡੇਟ ਕਰੋ<ph name="END_LINK1" />। ਟਿਕਾਣਾ ਪਹੁੰਚ ਵੀ <ph name="BEGIN_LINK2" />ਇਸ ਡੀਵਾਈਸ ਲਈ ਬੰਦ ਕੀਤੀ ਹੋਈ ਹੈ<ph name="END_LINK2" />।</translation>
 <translation id="5530766185686772672">ਗੁਮਨਾਮ ਟੈਬਸ ਬੰਦ ਕਰੋ</translation>
 <translation id="5534640966246046842">ਸਾਈਟ ਕਾਪੀ ਕੀਤੀ ਗਈ</translation>
-<translation id="5548606607480005320">ਸੁਰੱਖਿਆ ਜਾਂਚ</translation>
 <translation id="5561549206367097665">ਨੈੱਟਵਰਕ ਦੀ ਉਡੀਕ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ…</translation>
 <translation id="55737423895878184">ਟਿਕਾਣਾ ਜਾਣਕਾਰੀ ਅਤੇ ਸੂਚਨਾਵਾਂ ਨੂੰ ਦਿਖਾਇਆ ਜਾਂਦਾ ਹੈ</translation>
 <translation id="5578795271662203820">ਇਸ ਚਿੱਤਰ ਲਈ <ph name="SEARCH_ENGINE" /> ਖੋਜੋ</translation>
@@ -600,7 +602,6 @@
 <translation id="583281660410589416">ਅਗਿਆਤ</translation>
 <translation id="5833984609253377421">ਲਿੰਕ ਸਾਂਝਾ ਕਰੋ</translation>
 <translation id="5836192821815272682">Chrome ਅੱਪਡੇਟ ਡਾਊਨਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…</translation>
-<translation id="584120177693484274">ਨਿਸ਼ਾਨ ਹਟਾਇਆ ਗਿਆ</translation>
 <translation id="5853623416121554550">ਰੋਕਿਆ ਗਿਆ</translation>
 <translation id="5854790677617711513">30 ਦਿਨਾਂ ਤੋਂ ਜ਼ਿਆਦਾ ਪੁਰਾਣਾ</translation>
 <translation id="5858741533101922242">Chrome ਬਲੂਟੁੱਥ ਅਡਾਪਟਰ ਨੂੰ ਚਾਲੂ ਕਰਨ ਵਿੱਚ ਅਸਮਰੱਥ ਹੈ।</translation>
@@ -736,10 +737,12 @@
 <translation id="685850645784703949">Google ਵੱਲੋਂ Discover - ਬੰਦ ਹੈ</translation>
 <translation id="6864459304226931083">ਚਿੱਤਰ ਡਾਊਨਲੋਡ ਕਰੋ</translation>
 <translation id="6865313869410766144">ਆਟੋਫਿਲ ਫ਼ਾਰਮ ਡਾਟਾ</translation>
+<translation id="6882836635272038266">ਉਹਨਾਂ ਵੈੱਬਸਾਈਟਾਂ, ਡਾਊਨਲੋਡਾਂ ਅਤੇ ਐਕਸਟੈਂਸ਼ਨਾਂ ਤੋਂ ਮਿਆਰੀ ਸੁਰੱਖਿਆ ਜੋ ਖਤਰਨਾਕ ਮੰਨੀਆਂ ਜਾਂਦੀਆਂ ਹਨ।</translation>
 <translation id="6884306546558072722">ਆਫ਼ਲਾਈਨ ਪੜਚੋਲ ਕਰਨਾ ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="688738109438487280">ਮੌਜੂਦਾ ਡਾਟੇ ਨੂੰ <ph name="TO_ACCOUNT" /> ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ।</translation>
 <translation id="6891726759199484455">ਆਪਣਾ ਪਾਸਵਰਡ ਕਾਪੀ ਕਰਨ ਲਈ ਅਣਲਾਕ ਕਰੋ</translation>
 <translation id="6896758677409633944">ਕਾਪੀ ਕਰੋ</translation>
+<translation id="6900532703269623216">ਵਿਸਤ੍ਰਿਤ ਸੁਰੱਖਿਆ</translation>
 <translation id="6903907808598579934">ਸਮਕਾਲੀਕਰਨ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="6942665639005891494">ਸੈਟਿੰਗਾਂ ਮੀਨੂ ਵਿਕਲਪ ਦੇ ਨਾਲ ਕਿਸੇ ਵੇਲੇ ਵੀ ਡਾਊਨਲੋਡ ਦਾ ਪੂਰਵ-ਨਿਰਧਾਰਤ ਟਿਕਾਣਾ ਬਦਲੋ</translation>
 <translation id="6945221475159498467">ਚੁਣੋ</translation>

@@ -39,10 +39,16 @@ namespace predictors {
 
 namespace {
 
+using ::testing::UnorderedElementsAreArray;
+
 class FakePrefetchManagerDelegate
     : public PrefetchManager::Delegate,
       public base::SupportsWeakPtr<FakePrefetchManagerDelegate> {
  public:
+  void PrefetchInitiated(const GURL& url, const GURL& prefetch_url) override {
+    prefetched_urls_for_main_frame_url_[url].insert(prefetch_url);
+  }
+
   void PrefetchFinished(std::unique_ptr<PrefetchStats> stats) override {
     finished_urls_.insert(stats->url);
     auto iter = done_callbacks_.find(stats->url);
@@ -62,7 +68,18 @@ class FakePrefetchManagerDelegate
     loop.Run();
   }
 
+  base::flat_set<GURL> GetPrefetchedURLsForURL(const GURL& url) const {
+    auto it = prefetched_urls_for_main_frame_url_.find(url);
+    if (it == prefetched_urls_for_main_frame_url_.end())
+      return {};
+    return it->second;
+  }
+
+  void ClearPrefetchedURLs() { prefetched_urls_for_main_frame_url_ = {}; }
+
  private:
+  base::flat_map<GURL, base::flat_set<GURL>>
+      prefetched_urls_for_main_frame_url_;
   base::flat_set<GURL> finished_urls_;
   base::flat_map<GURL, base::OnceClosure> done_callbacks_;
 };
@@ -145,6 +162,9 @@ TEST_F(PrefetchManagerTest, OneMainFrameUrlOnePrefetch) {
   prefetch_manager_->Start(main_frame_url, {request});
   loop.Run();
 
+  EXPECT_THAT(fake_delegate_->GetPrefetchedURLsForURL(main_frame_url),
+              UnorderedElementsAreArray({subresource_url}));
+
   fake_delegate_->WaitForPrefetchFinished(main_frame_url);
 }
 
@@ -184,13 +204,21 @@ TEST_F(PrefetchManagerTest, OneMainFrameUrlMultiplePrefetch) {
   prefetch_manager_->Start(main_frame_url, std::move(requests));
 
   // Wait for requests up to the inflight limit.
-  for (size_t i = 0; i < responses.size() - 1; i++)
+  std::vector<GURL> prefetched_urls;
+  for (size_t i = 0; i < responses.size() - 1; i++) {
+    prefetched_urls.push_back(test_server.GetURL(paths[i]));
     responses[i]->WaitForRequest();
+  }
+
+  EXPECT_THAT(fake_delegate_->GetPrefetchedURLsForURL(main_frame_url),
+              UnorderedElementsAreArray(prefetched_urls));
 
   // Verify there is a queued job. Pump the run loop just to give the manager a
   // chance to incorrectly start the queued job and fail the expectation.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetQueuedJobsCount(), 1u);
+
+  fake_delegate_->ClearPrefetchedURLs();
 
   // Finish one request.
   responses.front()->Send("hi");
@@ -199,6 +227,9 @@ TEST_F(PrefetchManagerTest, OneMainFrameUrlMultiplePrefetch) {
   // Wait for the queued job to start.
   responses.back()->WaitForRequest();
   EXPECT_EQ(GetQueuedJobsCount(), 0u);
+
+  EXPECT_THAT(fake_delegate_->GetPrefetchedURLsForURL(main_frame_url),
+              UnorderedElementsAreArray({test_server.GetURL(paths.back())}));
 
   // Finish all requests.
   for (size_t i = 1; i < responses.size(); i++) {
@@ -237,13 +268,17 @@ TEST_F(PrefetchManagerTest, MultipleMainFrameUrlMultiplePrefetch) {
   ASSERT_TRUE(test_server_handle);
 
   // The request URLs can only be constructed after the server is started.
-  for (size_t i = 0; i < count; i++) {
+  std::vector<GURL> expected_prefetch_requests_for_main_frame_url;
+  for (size_t i = 0; i < count - 1; i++) {
     GURL url = test_server.GetURL(paths[i]);
     requests.push_back(CreateScriptRequest(url, main_frame_url));
+    expected_prefetch_requests_for_main_frame_url.push_back(url);
   }
-  {
-    GURL url = test_server.GetURL(paths[count]);
+  std::vector<GURL> expected_prefetch_requests_for_main_frame_url2;
+  for (size_t i = count - 1; i < count + 1; i++) {
+    GURL url = test_server.GetURL(paths[i]);
     requests.push_back(CreateScriptRequest(url, main_frame_url2));
+    expected_prefetch_requests_for_main_frame_url2.push_back(url);
   }
 
   // Start the prefetching.
@@ -263,6 +298,15 @@ TEST_F(PrefetchManagerTest, MultipleMainFrameUrlMultiplePrefetch) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetQueuedJobsCount(), 1u);
 
+  EXPECT_THAT(
+      fake_delegate_->GetPrefetchedURLsForURL(main_frame_url),
+      UnorderedElementsAreArray(expected_prefetch_requests_for_main_frame_url));
+  EXPECT_THAT(fake_delegate_->GetPrefetchedURLsForURL(main_frame_url2),
+              UnorderedElementsAreArray(
+                  {expected_prefetch_requests_for_main_frame_url2.front()}));
+
+  fake_delegate_->ClearPrefetchedURLs();
+
   // Finish one request.
   responses.front()->Send("hi");
   responses.front()->Done();
@@ -270,6 +314,13 @@ TEST_F(PrefetchManagerTest, MultipleMainFrameUrlMultiplePrefetch) {
   // Wait for the queued job to start.
   responses.back()->WaitForRequest();
   EXPECT_EQ(GetQueuedJobsCount(), 0u);
+
+  // We don't expect any more requests for |main_frame_url| to be initiated and
+  // we expect the last request for |main_frame_url2| to go out.
+  EXPECT_TRUE(fake_delegate_->GetPrefetchedURLsForURL(main_frame_url).empty());
+  EXPECT_THAT(fake_delegate_->GetPrefetchedURLsForURL(main_frame_url2),
+              UnorderedElementsAreArray(
+                  {expected_prefetch_requests_for_main_frame_url2.back()}));
 
   // Finish all requests.
   for (size_t i = 1; i < responses.size(); i++) {
@@ -321,9 +372,11 @@ TEST_F(PrefetchManagerTest, Stop) {
   ASSERT_TRUE(test_server_handle);
 
   // The request URLs can only be constructed after the server is started.
+  std::vector<GURL> expected_prefetch_requests;
   for (size_t i = 0; i < limit; i++) {
     GURL url = test_server.GetURL(paths[i]);
     requests.push_back(CreateScriptRequest(url, main_frame_url));
+    expected_prefetch_requests.push_back(url);
   }
   // This request should never be seen.
   requests.push_back(CreateScriptRequest(
@@ -352,12 +405,18 @@ TEST_F(PrefetchManagerTest, Stop) {
   }
   fake_delegate_->WaitForPrefetchFinished(main_frame_url);
 
+  EXPECT_THAT(fake_delegate_->GetPrefetchedURLsForURL(main_frame_url),
+              UnorderedElementsAreArray(expected_prefetch_requests));
+
   // The request for URL2 should be requested.
   response2->WaitForRequest();
   response2->Send("hi");
   response2->Done();
 
   fake_delegate_->WaitForPrefetchFinished(main_frame_url2);
+
+  EXPECT_THAT(fake_delegate_->GetPrefetchedURLsForURL(main_frame_url2),
+              UnorderedElementsAreArray({test_server.GetURL(path2)}));
 }
 
 TEST_F(PrefetchManagerTest, StopAndStart) {
@@ -398,9 +457,11 @@ TEST_F(PrefetchManagerTest, StopAndStart) {
   ASSERT_TRUE(test_server_handle);
 
   // The request URLs can only be constructed after the server is started.
+  std::vector<GURL> expected_prefetch_requests;
   for (size_t i = 0; i < limit; i++) {
     GURL url = test_server.GetURL(paths[i]);
     requests.push_back(CreateScriptRequest(url, main_frame_url));
+    expected_prefetch_requests.push_back(url);
   }
   // This request should never be seen.
   requests.push_back(CreateScriptRequest(
@@ -413,9 +474,13 @@ TEST_F(PrefetchManagerTest, StopAndStart) {
   for (auto& response : responses) {
     response->WaitForRequest();
   }
+  EXPECT_THAT(fake_delegate_->GetPrefetchedURLsForURL(main_frame_url),
+              UnorderedElementsAreArray(expected_prefetch_requests));
 
   // Call stop.
   prefetch_manager_->Stop(main_frame_url);
+
+  fake_delegate_->ClearPrefetchedURLs();
 
   // Call start again. These requests will be coalesced
   // with the stopped info, and will just be dropped.
@@ -430,6 +495,9 @@ TEST_F(PrefetchManagerTest, StopAndStart) {
   }
   fake_delegate_->WaitForPrefetchFinished(main_frame_url);
 
+  // We don't expect any additional requests to be started.
+  EXPECT_TRUE(fake_delegate_->GetPrefetchedURLsForURL(main_frame_url).empty());
+
   // Restart requests. These requests will work as normal.
   prefetch_manager_->Start(main_frame_url, requests);
   for (auto& response : responses2) {
@@ -439,6 +507,9 @@ TEST_F(PrefetchManagerTest, StopAndStart) {
   }
 
   fake_delegate_->WaitForPrefetchFinished(main_frame_url);
+
+  // Prefetches should have been initiated with the second start.
+  EXPECT_FALSE(fake_delegate_->GetPrefetchedURLsForURL(main_frame_url).empty());
 }
 
 class HeaderInjectingThrottle : public blink::URLLoaderThrottle {

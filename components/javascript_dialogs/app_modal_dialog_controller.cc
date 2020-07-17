@@ -78,7 +78,6 @@ AppModalDialogController::AppModalDialogController(
     bool is_reload,
     content::JavaScriptDialogManager::DialogClosedCallback callback)
     : title_(title),
-      completed_(false),
       valid_(true),
       view_(nullptr),
       web_contents_(web_contents),
@@ -114,9 +113,13 @@ void AppModalDialogController::CloseModalDialog() {
 }
 
 void AppModalDialogController::CompleteDialog() {
-  if (!completed_) {
-    completed_ = true;
+  // If |view_| is non-null, then |this| is the active dialog and the next one
+  // should be shown. Otherwise, |this| was never shown.
+  if (view_) {
+    view_ = nullptr;
     AppModalDialogQueue::GetInstance()->ShowNextDialog();
+  } else {
+    DCHECK(!valid_);
   }
 }
 

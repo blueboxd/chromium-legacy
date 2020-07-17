@@ -104,6 +104,7 @@
 <translation id="1124772482545689468">Utilizator</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (Nativ)</translation>
 <translation id="1126809382673880764">Nu te protejează împotriva site-urilor, descărcărilor și extensiilor periculoase. Te vei bucura în continuare de protecția oferită de Navigarea sigură, dacă este disponibilă, în alte servicii Google, cum ar fi Gmail și Căutarea.</translation>
+<translation id="112752777279960360">Pentru a configura un telefon Android ca să poată fi folosit ca o cheie de securitate pe acest computer pentru prima dată, deschide Chrome pe telefon și accesează „Setări &gt; Parole &gt; Folosește telefonul ca pe o cheie de securitate”. Apoi atinge „Conectează un nou dispozitiv” și scanează acest cod QR.</translation>
 <translation id="1128109161498068552">Nu permiteți niciunui site să utilizeze mesajele rezervate sistemului pentru a accesa dispozitive MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Editează motorul de căutare</translation>
@@ -509,6 +510,7 @@
 <translation id="1622054403950683339">Elimină rețeaua Wi-Fi</translation>
 <translation id="1623132449929929218">Imaginile sunt momentan indisponibile. Conectează-te din nou la internet ca să vezi colecțiile de imagini de fundal.</translation>
 <translation id="1623723619460186680">Reducerea luminii albastre</translation>
+<translation id="1624012933569991823">Setări</translation>
 <translation id="1627276047960621195">Descriptorii fișierelor</translation>
 <translation id="1627408615528139100">Descărcat deja</translation>
 <translation id="1628948239858170093">Scanezi fișierul înainte să îl deschizi?</translation>
@@ -745,6 +747,7 @@
 <translation id="1887850431809612466">Versiune hardware</translation>
 <translation id="1888523338879380247">{0,plural, =1{Ultima zi de actualizare a dispozitivului}few{Actualizează dispozitivul în cel mult # zile}other{Actualizează dispozitivul în cel mult # de zile}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783">Se primesc <ph name="ATTACHMENTS" /> de la <ph name="DEVICE_NAME" /></translation>
 <translation id="189210018541388520">Deschide ecranul complet</translation>
 <translation id="1892341345406963517">Bună, <ph name="PARENT_NAME" />!</translation>
 <translation id="189358972401248634">Alte limbi</translation>
@@ -1817,6 +1820,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3253225298092156258">Indisponibilă</translation>
 <translation id="3253448572569133955">Cont necunoscut</translation>
 <translation id="3254516606912442756">Detectarea automată a fusului orar este dezactivată</translation>
+<translation id="3254715652085014625">Deschide Chrome pe telefonul Android și accesează „Setări &gt; Parole &gt; Folosește telefonul ca pe o cheie de securitate”, apoi urmează instrucțiunile.</translation>
 <translation id="3255355328033513170">Toate datele stocate de <ph name="SITE_GROUP_NAME" /> și de orice alte site-uri subordonate vor fi șterse. Sunt incluse și cookie-urile. Vei fi deconectat(ă) de pe site-uri, inclusiv din filele deschise.</translation>
 <translation id="3259723213051400722">Încearcă din nou.</translation>
 <translation id="3264544094376351444">Font Sans-Serif</translation>
@@ -3492,6 +3496,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5390677308841849479">Roșu închis și portocaliu</translation>
 <translation id="5390743329570580756">Trimis pentru</translation>
 <translation id="5397794290049113714">Dvs.</translation>
+<translation id="5398497406011404839">Marcaje ascunse</translation>
 <translation id="5398572795982417028">Referința privind pagina este în afara limitelor (limita este <ph name="MAXIMUM_PAGE" />)</translation>
 <translation id="5398772614898833570">Anunțurile au fost blocate</translation>
 <translation id="5402815541704507626">Descarcă actualizarea folosind datele mobile</translation>
@@ -3577,6 +3582,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5496587651328244253">Organizați</translation>
 <translation id="5497251278400702716">Acest fișier</translation>
 <translation id="5499313591153584299">Este posibil ca acest fișier să fie dăunător pentru computer.</translation>
+<translation id="5499453227627332024">Este disponibil un upgrade pentru containerul Linux. Poți să faci upgrade și mai târziu, din aplicația Setări.</translation>
 <translation id="5500709606820808700">Verificarea de siguranță a rulat astăzi</translation>
 <translation id="5502500733115278303">Importate din Firefox</translation>
 <translation id="5503982651688210506">Permite în continuare ca <ph name="HOST" /> să folosească și să miște camera și să folosească microfonul</translation>
@@ -3890,7 +3896,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5889282057229379085">Număr maxim de Autorități de certificare (CA) intermediare: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5891688036610113830">Rețele Wi-Fi preferate</translation>
 <translation id="5895138241574237353">Reîncepe</translation>
-<translation id="5895613446346678902">Se trimite <ph name="ATTACHMENTS" /> la <ph name="DEVICE_NAME" /></translation>
+<translation id="5895613446346678902">Se trimit(e) <ph name="ATTACHMENTS" /> la <ph name="DEVICE_NAME" /></translation>
 <translation id="5900302528761731119">Fotografie de profil Google</translation>
 <translation id="5900358982890952556">Fă upgrade la Linux (Beta)</translation>
 <translation id="5901494423252125310">Capacul imprimantei este deschis</translation>
@@ -4201,6 +4207,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6270770586500173387">Trimite <ph name="BEGIN_LINK1" />informații despre sistem și aplicații<ph name="END_LINK1" /> și <ph name="BEGIN_LINK2" />valori<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">A apărut o eroare (<ph name="ERROR" />) la descărcarea pluginului</translation>
 <translation id="6273677812470008672">Calitate</translation>
+<translation id="6273979226236203550">Parola este stocată pe acest dispozitiv și în Contul tău Google. De unde vrei să o ștergi?</translation>
 <translation id="6277105963844135994">Conectarea la rețea a expirat</translation>
 <translation id="6277518330158259200">F&amp;aceți o captură de ecran</translation>
 <translation id="6278057325678116358">Folosește GTK+</translation>
@@ -4561,6 +4568,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6758056191028427665">Spune-ne cum ne descurcăm.</translation>
 <translation id="6759193508432371551">Resetare la setările din fabrică</translation>
 <translation id="6762833852331690540">Activat</translation>
+<translation id="676560328519657314">Metodele tale de plată din Google Pay</translation>
 <translation id="6767566652486411142">Alege altă limbă...</translation>
 <translation id="6767639283522617719">Dispozitivul nu poate fi asociat domeniului. Asigură-te că setările pentru unitatea organizațională sunt corecte.</translation>
 <translation id="6769557323306147204"><ph name="ORGANIZATION_NAME" /> recomandă să actualizezi acest dispozitiv.</translation>
@@ -4733,6 +4741,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6972553992270299730"><ph name="ORIGIN" /> nu poate deschide fișiere din acest dosar, deoarece conține fișiere de sistem</translation>
 <translation id="6972629891077993081">Dispozitive HID</translation>
 <translation id="6972754398087986839">Începe</translation>
+<translation id="6972887130317925583">Parola compromisă a fost schimbată. Verifică parolele oricând în <ph name="SETTINGS" />.</translation>
 <translation id="6973611239564315524">Este disponibil un upgrade la Debian 10 (Buster)</translation>
 <translation id="6974609594866392343">Modul demo offline</translation>
 <translation id="6977381486153291903">Versiune firmware</translation>
@@ -5592,6 +5601,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Comanda rapidă a fost editată</translation>
 <translation id="8018313076035239964">Stabilește ce informații pot să folosească site-urile și ce conținut pot afișa</translation>
+<translation id="8022688469248132790">Vezi detaliile erorii</translation>
 <translation id="8023801379949507775">Actualizează extensiile acum</translation>
 <translation id="8026334261755873520">Șterge datele de navigare</translation>
 <translation id="8028060951694135607">Recuperare de chei Microsoft</translation>
@@ -6531,6 +6541,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9180380851667544951">Site-ul poate permite accesul la ecranul tău</translation>
 <translation id="9188732951356337132">Trimite date de utilizare și diagnosticare. Momentan, dispozitivul trimite automat date de diagnosticare și de utilizare a dispozitivului și aplicațiilor la Google. Acestea nu vor fi folosite la identificarea copilului și vor ajuta la stabilitatea sistemului, a aplicațiilor și altele. Unele date cumulate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android. Dacă ai activat setarea Activitatea suplimentară de pe web și din aplicații pentru copilul tău, aceste date pot fi salvate în Contul său Google. <ph name="BEGIN_LINK2" />Află mai multe<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec + cheia predistribuită</translation>
+<translation id="9198090666959937775">Folosește telefonul Android ca pe o cheie de securitate</translation>
 <translation id="920045321358709304">Caută pe <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Toate datele offline vor fi șterse</translation>
 <translation id="9201220332032049474">Opțiuni de blocare a ecranului</translation>
@@ -6573,6 +6584,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="942532530371314860"><ph name="APP_NAME" /> trimite conținutul unei file Chrome și conținutul audio.</translation>
 <translation id="945522503751344254">Trimite feedback</translation>
 <translation id="947329552760389097">&amp;Inspectează elementele</translation>
+<translation id="951991426597076286">Refuză</translation>
 <translation id="952992212772159698">Neactivat</translation>
 <translation id="956500788634395331">Beneficiezi de protecție împotriva extensiilor potențial dăunătoare</translation>
 <translation id="957960681186851048">Acest site a încercat să descarce automat mai multe fișiere</translation>

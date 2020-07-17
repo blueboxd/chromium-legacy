@@ -171,14 +171,19 @@ static scoped_refptr<cc::Layer> CcLayerForPaintChunk(
   if (display_item.IsGraphicsLayerWrapper()) {
     const auto& graphics_layer_display_item =
         static_cast<const GraphicsLayerDisplayItem&>(display_item);
-    layer = graphics_layer_display_item.GetGraphicsLayer().CcLayer();
+    const auto& graphics_layer = graphics_layer_display_item.GetGraphicsLayer();
+    if (graphics_layer.ShouldCreateLayersAfterPaint()) {
+      DCHECK(RuntimeEnabledFeatures::CompositeSVGEnabled());
+      return nullptr;
+    }
+    layer = graphics_layer.CcLayer();
     layer_offset = FloatPoint(graphics_layer_display_item.GetGraphicsLayer()
                                   .GetOffsetFromTransformNode());
   } else {
     const auto& foreign_layer_display_item =
         static_cast<const ForeignLayerDisplayItem&>(display_item);
     layer = foreign_layer_display_item.GetLayer();
-    layer_offset = foreign_layer_display_item.Offset();
+    layer_offset = FloatPoint(foreign_layer_display_item.Offset());
   }
   layer->SetOffsetToTransformParent(
       gfx::Vector2dF(layer_offset + pending_layer_offset));
@@ -890,6 +895,28 @@ void PaintArtifactCompositor::LayerizeGroup(
         requires_own_layer = first_display_item.IsForeignLayer() ||
                              first_display_item.IsGraphicsLayerWrapper() ||
                              IsCompositedScrollbar(first_display_item);
+
+        if (first_display_item.IsGraphicsLayerWrapper()) {
+          const GraphicsLayerDisplayItem& graphics_layer_display_item =
+              static_cast<const GraphicsLayerDisplayItem&>(first_display_item);
+          const GraphicsLayer& graphics_layer =
+              graphics_layer_display_item.GetGraphicsLayer();
+          if (graphics_layer.ShouldCreateLayersAfterPaint()) {
+            DCHECK(RuntimeEnabledFeatures::CompositeSVGEnabled());
+            scoped_refptr<const PaintArtifact> sub_paint_artifact =
+                graphics_layer.GetPaintController().GetPaintArtifactShared();
+            Vector<PaintChunk>::const_iterator cursor =
+                sub_paint_artifact->PaintChunks().begin();
+            LayerizeGroup(
+                sub_paint_artifact,
+                graphics_layer.GetPropertyTreeState().Unalias().Effect(),
+                cursor);
+            DCHECK_EQ(sub_paint_artifact->PaintChunks().end(), cursor);
+
+            chunk_it++;
+            continue;
+          }
+        }
       }
       DCHECK(!requires_own_layer || chunk_it->size() <= 1u);
 

@@ -2587,6 +2587,11 @@ ax::mojom::blink::HasPopup AXNodeObject::HasPopup() const {
       RoleValue() == ax::mojom::blink::Role::kTextFieldWithComboBox)
     return ax::mojom::blink::HasPopup::kListbox;
 
+  if (AXObjectCache().GetAutofillState(AXObjectID()) !=
+      WebAXAutofillState::kNoSuggestions) {
+    return ax::mojom::blink::HasPopup::kMenu;
+  }
+
   return AXObject::HasPopup();
 }
 

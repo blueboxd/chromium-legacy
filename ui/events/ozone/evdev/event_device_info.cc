@@ -32,7 +32,21 @@ constexpr struct {
   uint16_t vendor;
   uint16_t product_id;
 } kKeyboardBlocklist[] = {
-  {0x045e, 0x0b05},  // Xbox One Elite Series 2 gamepad
+    {0x03f0, 0xa407},  // HP X4000 Wireless Mouse
+    {0x045e, 0x0745},  // Microsoft Wireless Mobile Mouse 6000
+    {0x045e, 0x0821},  // Microsoft Surface Precision Mouse
+    {0x045e, 0x082a},  // Microsoft Pro IntelliMouse
+    {0x045e, 0x082f},  // Microsoft Bluetooth Mouse
+    {0x045e, 0x0b05},  // Xbox One Elite Series 2 gamepad
+    {0x046d, 0x4069},  // Logitech MX Master 2S (Unifying)
+    {0x046d, 0xb016},  // Logitech M535
+    {0x046d, 0xb019},  // Logitech MX Master 2S (Bluetooth)
+    {0x046d, 0xc093},  // Logitech M500s
+    {0x046d, 0xc534},  // Logitech M185/M187
+    {0x056e, 0x0134},  // Elecom Enelo IR LED Mouse 350
+    {0x056e, 0x0141},  // Elecom EPRIM Blue LED 5 button mouse 228
+    {0x056e, 0x0159},  // Elecom Blue LED Mouse 203
+    {0x1bcf, 0x08a0},  // Kensington Pro Fit Full-size
 };
 
 constexpr struct {

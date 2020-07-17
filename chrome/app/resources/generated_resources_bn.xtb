@@ -104,6 +104,7 @@
 <translation id="1124772482545689468">ব্যবহারকারী</translation>
 <translation id="1125550662859510761">মনে হচ্ছে <ph name="WIDTH" /> x <ph name="HEIGHT" /> (স্থানীয়)</translation>
 <translation id="1126809382673880764">এই মোডে আপনার ডিভাইসের ক্ষতি করতে পারে এমন ওয়েবসাইট, ডাউনলোড অথবা এক্সটেনশন থেকে কোনও সুরক্ষা পাওয়া সম্ভব হয় না। তবে Gmail এবং Search-এর মতো অন্যান্য Google পরিষেবায়, যেখানে উপলভ্য সেখানে আপনি এখনও 'Safe Browsing'-এর সুরক্ষা পাবেন।</translation>
+<translation id="112752777279960360">এই কম্পিউটারে প্রথমবার নিরাপত্তা কী হিসেবে একটি Android ফোন সেট আপ করতে, আপনার ফোনে Chrome খুলে তারপর "সেটিংস &gt; পাসওয়ার্ড &gt; নিরাপত্তা কী হিসেবে ফোন ব্যবহার করুন" বিকল্প বেছে নিন। তারপর "নতুন ডিভাইস কানেক্ট করুন" বিকল্পে ট্যাপ করুন এবং এই QR কোডটি স্ক্যান করুন।</translation>
 <translation id="1128109161498068552">কোনো সাইটকে MIDI ডিভাইসগুলি অ্যাক্সেস করার জন্য সিস্টেমের বিশিষ্ট বার্তাগুলি ব্যবহার করার মঞ্জুরি দেবেন না</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">সার্চ ইঞ্জিন সম্পাদনা করুন</translation>
@@ -509,6 +510,7 @@
 <translation id="1622054403950683339">ওয়াই-ফাই নেটওয়ার্ক মুছুন</translation>
 <translation id="1623132449929929218">ছবিটি বর্তমানে পাওয়া যাচ্ছে না। ওয়ালপেপারের কালেকশনগুলি দেখতে ইন্টারনেটে কানেক্ট করুন।</translation>
 <translation id="1623723619460186680">নীল আলো কমানো</translation>
+<translation id="1624012933569991823">সেটিংস</translation>
 <translation id="1627276047960621195">ফাইল বর্ণনাকারী</translation>
 <translation id="1627408615528139100">আগে থেকেই ডাউনলোড করা আছে</translation>
 <translation id="1628948239858170093">খোলার আগে ফাইল স্ক্যান করতে চান?</translation>
@@ -745,6 +747,7 @@
 <translation id="1887850431809612466">হার্ডওয়্যার পুনর্বিবেচনাগুলি</translation>
 <translation id="1888523338879380247">{0,plural, =1{ডিভাইস আপডেট করার শেষ দিন}one{# দিনের মধ্যে ডিভাইস আপডেট করুন}other{# দিনের মধ্যে ডিভাইস আপডেট করুন}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;আইডি: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783"><ph name="DEVICE_NAME" /> থেকে <ph name="ATTACHMENTS" /> রিসিভ করা হচ্ছে</translation>
 <translation id="189210018541388520">পূর্ণ স্ক্রিন খুলুন</translation>
 <translation id="1892341345406963517">হাই <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">অন্যান্য ভাষা</translation>
@@ -1816,6 +1819,7 @@
 <translation id="3253225298092156258">উপলভ্য নয়</translation>
 <translation id="3253448572569133955">অপরিচিত অ্যাকাউন্ট</translation>
 <translation id="3254516606912442756">টাইম জোন নিজে থেকে শনাক্ত করার বিকল্পটি অক্ষম করা আছে</translation>
+<translation id="3254715652085014625">আপনার Android ফোনে Chrome খুলুন এবং "সেটিংস &gt; পাসওয়ার্ড &gt; নিরাপত্তা কী হিসেবে ফোন ব্যবহার করুন" বিকল্প বেছে নিন এবং এখান থেকে নির্দেশাবলী অনুসরণ করুন।</translation>
 <translation id="3255355328033513170"><ph name="SITE_GROUP_NAME" />-এর দ্বারা কোনও ডেটা স্টোর হয়ে থাকলে এবং সেটির অধীনে কোনও সাইট থাকলে সেগুলি মুছে দেওয়া হবে। এতে কুকি রয়েছে। যেকোনও খোলা ট্যাব সহ এই সমস্ত সাইটগুলি থেকে আপনাকে সাইন-আউট করে দেওয়া হবে।</translation>
 <translation id="3259723213051400722">আবার চেষ্টা করুন।</translation>
 <translation id="3264544094376351444">Sans-Serif হরফ</translation>
@@ -3490,6 +3494,7 @@
 <translation id="5390677308841849479">গাঢ় লাল ও কমলা</translation>
 <translation id="5390743329570580756">এর জন্য পাঠান</translation>
 <translation id="5397794290049113714">আপনি</translation>
+<translation id="5398497406011404839">লুকানো বুকমার্ক</translation>
 <translation id="5398572795982417028">পৃষ্ঠা সীমার বাইরের উল্লেখ, সীমা হলো <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">বিজ্ঞাপন ব্লক করা হয়েছে</translation>
 <translation id="5402815541704507626">মোবাইল ডেটা ব্যবহার করে আপডেটটি ডাউনলোড করুন</translation>
@@ -3575,6 +3580,7 @@
 <translation id="5496587651328244253">সংগঠিত করুন</translation>
 <translation id="5497251278400702716">এই ফাইল</translation>
 <translation id="5499313591153584299">এই ফাইলটি আপনার কম্পিউটারের জন্য ক্ষতিকারক হতে পারে৷</translation>
+<translation id="5499453227627332024">Linux কন্টেনারের আপগ্রেড ভার্সন এখন উপলভ্য। সেটিংস অ্যাপ থেকে পরে এটি আপগ্রেড করে নিতে পারবেন।</translation>
 <translation id="5500709606820808700">আজ নিরাপত্তা সংক্রান্ত পরীক্ষা চালানো হয়েছে</translation>
 <translation id="5502500733115278303">Firefox থেকে আমদানি করা</translation>
 <translation id="5503982651688210506">আপনার ক্যামেরা ব্যবহার করতে এবং সরাতে ও আপনার মাইক্রোফোন ব্যবহার করতে <ph name="HOST" />-কে অনুমতি দেওয়ার বিষয়টি চালিয়ে যান</translation>
@@ -4201,6 +4207,7 @@
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />সিস্টেম ও অ্যাপ্লিকেশান তথ্য<ph name="END_LINK1" />, এবং <ph name="BEGIN_LINK2" />মেট্রিক্স<ph name="END_LINK2" /> পাঠান</translation>
 <translation id="6272643420381259437">প্লাগ-ইনটি ডাউনলোড করার সময় একটি ত্রুটি (<ph name="ERROR" />) ঘটেছে</translation>
 <translation id="6273677812470008672">গুণমান</translation>
+<translation id="6273979226236203550">এই ডিভাইসে এবং আপনার Google অ্যাকাউন্টে পাসওয়ার্ড সেভ করা আছে। আপনি কোনটা মুছে দিতে চান?</translation>
 <translation id="6277105963844135994">নেটওয়ার্কের সময় শেষ হয়েছে</translation>
 <translation id="6277518330158259200">স্ক্রিনশট নিন</translation>
 <translation id="6278057325678116358">GTK+ ব্যবহার করুন</translation>
@@ -4561,6 +4568,7 @@
 <translation id="6758056191028427665">আমাদের পরিষেবা কেমন লাগছে তা জানান।</translation>
 <translation id="6759193508432371551">ফ্যাক্টরি রিসেট</translation>
 <translation id="6762833852331690540">চালু করা আছে</translation>
+<translation id="676560328519657314">Google Pay-তে আপনার পেমেন্টের পদ্ধতি</translation>
 <translation id="6767566652486411142">অন্য ভাষা বেছে নিন...</translation>
 <translation id="6767639283522617719">ডোমেনে যোগ করা যাবে না। প্রতিষ্ঠানের ইউনিটের জন্য সেটিংস সঠিক কিনা ভাল করে দেখে নিন।</translation>
 <translation id="6769557323306147204"><ph name="ORGANIZATION_NAME" /> আপনাকে এই ডিভাইস আপডেট করতে সাজেস্ট করছে।</translation>
@@ -4733,6 +4741,7 @@
 <translation id="6972553992270299730">এই ফোল্ডারে সিস্টেম ফাইল আছে তাই <ph name="ORIGIN" /> ফাইলগুলি খুলতে পারছে না</translation>
 <translation id="6972629891077993081">HID ডিভাইস</translation>
 <translation id="6972754398087986839">শুরু করুন</translation>
+<translation id="6972887130317925583">চুরি হয়ে যাওয়া পাসওয়ার্ড পরিবর্তন করা হয়েছে। <ph name="SETTINGS" /> থেকে যেকোনও সময় আপনার পাসওয়ার্ড চেক করুন।</translation>
 <translation id="6973611239564315524">Debian 10 (Buster) ভার্সনে আপগ্রেড করার সুবিধা পাওয়া যাচ্ছে</translation>
 <translation id="6974609594866392343">অফলাইন ডেমো মোড</translation>
 <translation id="6977381486153291903">ফার্মওয়ের পুনর্বিবেচনাগুলি</translation>
@@ -5591,6 +5600,7 @@
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">শর্টকাট এডিট করা হয়েছে</translation>
 <translation id="8018313076035239964">ওয়েবসাইটগুলি কোন তথ্য ব্যবহার করতে পারবে এবং আপনাকে কোন কোন কন্টেন্ট দেখাতে পারবে তা নিয়ন্ত্রণ করে</translation>
+<translation id="8022688469248132790">সমস্যার বিবরণ পর্যালোচনা করুন</translation>
 <translation id="8023801379949507775">এক্সটেনশগুলি এখনই আপডেট করুন</translation>
 <translation id="8026334261755873520">ব্রাউজ করা ডেটা সাফ করুন</translation>
 <translation id="8028060951694135607">Microsoft মূল পুনরুদ্ধার</translation>
@@ -6529,6 +6539,7 @@
 <translation id="9180380851667544951">সাইটটি আপনার স্ক্রিন শেয়ার করতে পারে</translation>
 <translation id="9188732951356337132">ব্যবহার এবং ডায়াগনস্টিক ডেটা পাঠান। এখন এই ডিভাইসটি নিজে থেকেই Google-এ ডায়াগনিস্টিক, ডিভাইস এবং অ্যাপ ব্যবহারের ডেটা পাঠাচ্ছে। এটি আপনার সন্তানকে শনাক্ত করতে ব্যবহার করা হবে না এবং সিস্টেম ও অ্যাপের স্থিতিশীলতা এবং অন্যান্য উন্নতিতে সাহায্য করবে। ব্যবহারকারীদের কিছু সম্মিলিত ডেটা Google অ্যাপ এবং Android ডেভেলপারদের মতো পার্টনারদের কাজে লাগবে। অতিরিক্ত ওয়েব ও অ্যাপ অ্যাক্টিভিটি সেটিংটি আপনার সন্তানের ডিভাইসের জন্য চালু করা থাকলে, এই ডেটা তাদের Google অ্যাকাউন্টে সেভ করা হতে পারে। <ph name="BEGIN_LINK2" />আরও জানুন<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPসেকে + পূর্বে-শেয়ার করা কী</translation>
+<translation id="9198090666959937775">নিরাপত্তা কী হিসেবে আপনার Android ফোন ব্যবহার করুন</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> এ খুঁজুন</translation>
 <translation id="9201023452444595544">যেকোনও অফলাইন ডেটা মুছে ফেলা যাবে</translation>
 <translation id="9201220332032049474">স্ক্রিন লক-এর বিকল্পগুলি</translation>
@@ -6571,6 +6582,7 @@
 <translation id="942532530371314860"><ph name="APP_NAME" /> একটি Chrome ট্যাব ও অডিও শেয়ার করছে।</translation>
 <translation id="945522503751344254">মতামত জানান</translation>
 <translation id="947329552760389097">&amp;এলিমেন্ট ইন্সপেক্ট করুন</translation>
+<translation id="951991426597076286">প্রত্যাখ্যান</translation>
 <translation id="952992212772159698">সক্রিয় নেই</translation>
 <translation id="956500788634395331">আপনি সম্ভাব্য ক্ষতিকারক এক্সটেনশনগুলি থেকে নিরাপদে আছেন</translation>
 <translation id="957960681186851048">এই সাইটটি নিজে থেকে একাধিক ফাইল ডাউনলোড করার চেষ্টা করেছে</translation>

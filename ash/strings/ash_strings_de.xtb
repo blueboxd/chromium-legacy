@@ -43,7 +43,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1341651618736211726">Überlauf</translation>
 <translation id="1346748346194534595">Rechts</translation>
 <translation id="1351937230027495976">Menü minimieren</translation>
-<translation id="1383876407941801731">Suchen</translation>
+<translation id="1383876407941801731">Suchtaste</translation>
 <translation id="1391102559483454063">An</translation>
 <translation id="1419738280318246476">Wenn Sie die Benachrichtigungsaktion ausführen möchten, entsperren Sie das Gerät</translation>
 <translation id="1420408895951708260">Nachtlicht an/aus. <ph name="STATE_TEXT" /></translation>
@@ -128,7 +128,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="2390318262976603432">Spracheinstellungen</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Update verfügbar</translation>
-<translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ist eine verwaltete Sitzung, die von <ph name="DOMAIN" /> verwaltet wird</translation>
+<translation id="2413728805700750528">"<ph name="DISPLAY_NAME" />" ist eine verwaltete Sitzung, die von <ph name="DOMAIN" /> verwaltet wird</translation>
 <translation id="2427507373259914951">Linksklick</translation>
 <translation id="2429753432712299108">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Bevor Sie akzeptieren, überprüfen Sie, ob folgender Zugangscode auf dem Gerät angezeigt wird: <ph name="PASSKEY" />.</translation>
 <translation id="2435457462613246316">Passwort anzeigen</translation>
@@ -224,7 +224,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="3477079411857374384">Strg + Umschalttaste + Leertaste</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Signalstärke bei <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="3486220673238053218">Definition</translation>
-<translation id="3510164367642747937">Mauszeiger hervorheben</translation>
+<translation id="3510164367642747937">Cursor hervorheben</translation>
 <translation id="3513798432020909783">Konto verwaltet von <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Zurücksetzen auf "<ph name="FROM_LOCALE" />" (Neustart erforderlich)</translation>
 <translation id="3576141592585647168">Zeitzone ändern</translation>
@@ -358,7 +358,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="523505283826916779">Einstellungen für Bedienungshilfen</translation>
 <translation id="5260676007519551770">Desktop 4</translation>
-<translation id="5283198616748585639">1 Min. hinzufügen</translation>
+<translation id="5283198616748585639">1 min hinzufügen</translation>
 <translation id="528468243742722775">Ende</translation>
 <translation id="5286194356314741248">Durchsuchen</translation>
 <translation id="5297704307811127955">Aus</translation>

@@ -79,6 +79,9 @@ TestRendererType const kRendererTypes[] = {
 #if defined(ENABLE_CC_VULKAN_TESTS)
     TestRendererType::kSkiaVk,
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
+#if defined(ENABLE_CC_DAWN_TESTS)
+    TestRendererType::kSkiaDawn,
+#endif  // defined(ENABLE_CC_DAWN_TESTS)
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -180,7 +183,8 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, MAYBE_HugeTransformScale) {
   scale_transform.Scale(scale, scale);
   layer->SetTransform(scale_transform);
 
-  if (renderer_type_ == TestRendererType::kSkiaGL)
+  if (renderer_type_ == TestRendererType::kSkiaGL ||
+      renderer_type_ == TestRendererType::kSkiaDawn)
     pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 
   RunPixelTest(background,

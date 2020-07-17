@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">دوربین</translation>
 <translation id="1647391597548383849">دسترسی به دوربین</translation>
 <translation id="1660204651932907780">به سایت‌ها اجازه داده شود صدا پخش کنند (توصیه می‌شود)</translation>
+<translation id="1677097821151855053">از کوکی‌ها و دیگر داده‌های سایت برای به‌خاطر سپردن شما استفاده می‌شود؛ برای مثال ورود به سیستم یا نمایش آگهی‌های شخصی‌شده. برای مدیریت کردن کوکی‌ها برای همه سایت‌ها، به <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> بروید.</translation>
 <translation id="1688867105868176567">داده‌های سایت پاک شود؟</translation>
 <translation id="169515064810179024">سایت‌ها نمی‌توانند به حسگرهای حرکتی دسترسی داشته باشند</translation>
 <translation id="1717218214683051432">حسگرهای حرکتی</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">کوکی‌ها را برای سایت خاصی مجاز کنید.</translation>
 <translation id="4046123991198612571">آهنگ بعدی</translation>
 <translation id="4165986682804962316">تنظیمات سایت</translation>
+<translation id="4200726100658658164">باز کردن «تنظیمات مکان»</translation>
 <translation id="4226663524361240545">اعلان‌ها ممکن است دستگاه را بلرزانند</translation>
 <translation id="4242533952199664413">باز کردن تنظیمات</translation>
 <translation id="4259722352634471385">پیمایش مسدود شده است: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">همه سایت‌ها</translation>
 <translation id="6320088164292336938">لرزش</translation>
 <translation id="6388207532828177975">پاک کردن و بازنشانی</translation>
+<translation id="6423924377271166037">پاک کردن کوکی‌ها</translation>
 <translation id="6439114592976064011">دسترسی سایت‌ها به دستگاه و داده‌های واقعیت مجازی مسدود شود</translation>
 <translation id="6447842834002726250">کوکی‌ها</translation>
 <translation id="6527303717912515753">اشتراک‌گذاری</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">جستجو به عقب</translation>
 <translation id="8444433999583714703">‏برای اینکه به <ph name="APP_NAME" /> اجازه دهید به مکانتان دسترسی پیدا کند، مکان را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> نیز روشن کنید.</translation>
 <translation id="8447861592752582886">لغو مجوز دستگاه</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{۱ کوکی درحال استفاده است}one{# کوکی درحال استفاده است}other{# کوکی درحال استفاده است}}</translation>
 <translation id="8463851957836045671">سایت سریع است</translation>
 <translation id="851751545965956758">مسدود کردن سایت‌ها برای اتصال به دستگاه‌ها</translation>
 <translation id="857943718398505171">مجاز (توصیه می‌شود)</translation>

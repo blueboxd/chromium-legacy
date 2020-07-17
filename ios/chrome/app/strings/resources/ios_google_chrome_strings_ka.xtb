@@ -2,15 +2,19 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ka">
 <translation id="1282031177488366470">შეუწყვეთ ხელი Chrome-ის ფუნქციებისა და წარმადობის გაუმჯობესებას</translation>
+<translation id="1479202195792305274">პაროლების Chrome-ის მეშვეობით შესამოწმებლად შედით სისტემაში თქვენი Google ანგარიშით.</translation>
+<translation id="1647024380514430932">Chrome-მა ვერ შეამოწმა ყველა პაროლი. ცადეთ ხელახლა.</translation>
 <translation id="1682483655351012182">თქვენი Chrome მონაცემების სინქრონიზაცია</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1917964099031477364">ეს ანგარიში და შეუნახავი მონაცემები ამოიშლება როგორც Chrome-იდან, ისე სხვა Google აპებიდან ამ მოწყობილობაზე.</translation>
+<translation id="2009224836393115614">Chrome-მა ვერ შეამოწმა თქვენი პაროლები. შეამოწმეთ კავშირი ინტერნეტთან.</translation>
 <translation id="2147651015520127414">Chrome-მა დაადასტურა, რომ ამ ვებსაიტის სერტიფიკატის გამცემია <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Chrome-ის სინქრონიზაციის მონაცემები</translation>
 <translation id="2347208864470321755">თუ ეს ფუნქცია ჩართულია, Chrome შემოგთავაზებთ სხვა ენებზე შედგენილი გვერდების თარგმნას Google Translate-ით. <ph name="BEGIN_LINK" />შეიტყვეთ მეტი<ph name="END_LINK" /></translation>
 <translation id="2574249610672786438">იმისთვის, რომ იხილოთ თქვენი ჩანართები ნებისმიერი მოწყობილობიდან, საიდანაც Chrome-ს იყენებთ, შედით სისტემაში ყველა მათგანზე</translation>
 <translation id="2576431527583832481">Chrome გაუმჯობესდა! ხელმისაწვდომია ახალი ვერსია.</translation>
 <translation id="257708665678654955">გსურთ, Google Chrome-მა შემდგომში ამ საიტის <ph name="LANGUAGE_NAME" /> გვერდების თარგმნა შემოგთავაზოთ?</translation>
+<translation id="2732745070297234559">Chrome-მა ვერ შეამოწმა ყველა პაროლი. ცადეთ ხვალ.</translation>
 <translation id="2919738076569633423">Chrome-ის გამოყენებით თქვენ ეთანხმებით <ph name="BEGIN_LINK_TOS" />მომსახურების პირობებს<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">ვინაიდან თქვენ გადიხართ ანგარიშიდან, რომელსაც მართავს <ph name="SIGNOUT_MANAGED_DOMAIN" />, ამ მოწყობილობიდან წაიშლება თქვენი Chrome მონაცემები, თუმცა ისინი შენარჩუნდება თქვენს Google ანგარიშში.</translation>
 <translation id="3148688391461398285">გააუმჯობესეთ Chrome-ის ფუნქციები თქვენი მდებარეობის საფუძველზე.</translation>
@@ -28,6 +32,7 @@
 <translation id="424864128008805179">გსურთ Chrome-იდან გამოსვლა?</translation>
 <translation id="4249068189593983585">Chrome მინიშნება: ჩანართებთან დაკავშირებული სხვა ვარიანტის სანახავად ხანგრძლივად შეეხეთ „ჩანართების ჩვენების“ ღილაკს ხელსაწყოთა ზოლში, რომელიც მდებარეობს ეკრანის ქვედა ან ზედა ნაწილში.</translation>
 <translation id="4523886039239821078">ზოგიერთი დანამატი იწვევს Chrome-ის შეცდომას. წაშალეთ:</translation>
+<translation id="4698415050768537821">Chrome-მა ვერ შეამოწმა ყველა პაროლი. ცადეთ ხვალ ან <ph name="BEGIN_LINK" />შეამოწმეთ პაროლები თქვენი Google ანგარიშიდან<ph name="END_LINK" />.</translation>
 <translation id="5389212809648216794">Google Chrome ვერ ისარგებლებს თქვენი კამერით, რადგან მას სხვა აპლიკაცია იყენებს</translation>
 <translation id="5639704535586432836">გახსენით: პარამეტრები &gt; კონფიდენციალურობა &gt; კამერა &gt; Google Chrome და ჩართეთ კამერა.</translation>
 <translation id="5642200033778930880">Google Chrome თქვენს კამერას გაყოფილი ხედის რეჟიმში ვერ გამოიყენებს</translation>
@@ -42,6 +47,7 @@
 <translation id="7165736900384873061">Google Chrome-ის QR სკანერის გამოყენების დაწყება</translation>
 <translation id="7172660552945675509">მინიშნება: <ph name="BEGIN_LINK" />გადაიტანეთ Chrome თქვენს დოკში<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">თქვენს პაროლებზე ავტორიზებული წვდომის უზრუნველსაყოფად Chrome იყენებს Face ID-ს.</translation>
+<translation id="7261678641327190792">Chrome ვერ ახერხებს თქვენი პაროლების შემოწმებას</translation>
 <translation id="7265369419224458312">იქონიეთ წვდომა თქვენ მიერ კომპიუტერში გახსნილ ჩანართებზე პირდაპირ აქ. უბრალოდ, გახსენით Chrome თქვენს კომპიუტერში, გადადით მენიუზე და აირჩიეთ „Chrome-ში შესვლა…“</translation>
 <translation id="7272930098487145294">სურათების შესანახად შეეხეთ „პარამეტრებს“ და მიეცით საშუალება Chrome-ს, დაამატოს თქვენი ფოტოები</translation>
 <translation id="7400722733683201933">Google Chrome-ის შესახებ</translation>

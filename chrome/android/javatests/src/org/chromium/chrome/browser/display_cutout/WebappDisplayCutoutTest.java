@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.display_cutout;
 
+import android.os.Build;
+import android.view.WindowManager;
+
 import androidx.test.filters.LargeTest;
 
 import org.junit.Rule;
@@ -12,6 +15,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -23,6 +27,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@MinAndroidSdkLevel(Build.VERSION_CODES.P)
 public class WebappDisplayCutoutTest {
     @Rule
     public WebappDisplayCutoutTestRule mTestRule = new WebappDisplayCutoutTestRule();
@@ -39,7 +44,7 @@ public class WebappDisplayCutoutTest {
 
         mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITHOUT_CUTOUT);
         mTestRule.waitForLayoutInDisplayCutoutMode(
-                DisplayCutoutTestRule.LayoutParamsApi28.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT);
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT);
     }
 
     /**
@@ -54,7 +59,7 @@ public class WebappDisplayCutoutTest {
 
         mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITH_CUTOUT);
         mTestRule.waitForLayoutInDisplayCutoutMode(
-                DisplayCutoutTestRule.LayoutParamsApi28.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES);
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES);
     }
 
     /**
@@ -70,7 +75,7 @@ public class WebappDisplayCutoutTest {
 
         mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITHOUT_CUTOUT);
         mTestRule.waitForLayoutInDisplayCutoutMode(
-                DisplayCutoutTestRule.LayoutParamsApi28.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT);
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT);
     }
 
     /**
@@ -86,6 +91,6 @@ public class WebappDisplayCutoutTest {
 
         mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITHOUT_CUTOUT);
         mTestRule.waitForLayoutInDisplayCutoutMode(
-                DisplayCutoutTestRule.LayoutParamsApi28.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT);
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT);
     }
 }

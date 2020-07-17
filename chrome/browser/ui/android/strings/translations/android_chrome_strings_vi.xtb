@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Dấu trang được lưu trên thiết bị khác của bạn sẽ xuất hiện tại đây.</translation>
 <translation id="1113597929977215864">Hiển thị chế độ xem đơn giản</translation>
 <translation id="1122278879166832009">Nhấn vào đây để truy cập nhanh vào trang chủ từ ứng dụng bất kỳ</translation>
+<translation id="1126809382673880764">Không bảo vệ bạn trước các trang web, tệp đã tải xuống và tiện ích nguy hiểm. Bạn sẽ vẫn được bảo vệ bằng tính năng Duyệt web an toàn (nếu có) ở các dịch vụ khác của Google, chẳng hạn như Gmail và Tìm kiếm.</translation>
 <translation id="1129510026454351943">Chi tiết: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 tệp đang chờ tải xuống.}other{# tệp đang chờ tải xuống.}}</translation>
 <translation id="1145536944570833626">Xóa dữ liệu hiện có.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Sáng</translation>
 <translation id="1810845389119482123">Chưa hoàn tất quá trình thiết lập đồng bộ hóa ban đầu</translation>
 <translation id="1821253160463689938">Sử dụng cookie để ghi nhớ tùy chọn của bạn, ngay cả khi bạn không truy cập vào các trang đó</translation>
-<translation id="1826516787628120939">Đang kiểm tra</translation>
 <translation id="1829244130665387512">Tìm trong trang</translation>
 <translation id="1853692000353488670">Tab ẩn danh mới</translation>
 <translation id="1856325424225101786">Đặt lại Chế độ thu gọn?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Lưu mật khẩu</translation>
 <translation id="1952172573699511566">Các trang web sẽ hiển thị văn bản bằng ngôn ngữ ưu tiên của bạn khi có thể.</translation>
 <translation id="1960290143419248813">Các bản cập nhật Chrome không còn được hỗ trợ cho phiên bản Android này</translation>
+<translation id="1963976881984600709">Chế độ bảo vệ thông thường</translation>
 <translation id="1966710179511230534">Vui lòng cập nhật chi tiết đăng nhập của bạn.</translation>
 <translation id="1974060860693918893">Nâng cao</translation>
+<translation id="1984417487208496350">Không được bảo vệ (không khuyến nghị)</translation>
 <translation id="1984705450038014246">Đồng bộ hóa dữ liệu của bạn trên Chrome</translation>
 <translation id="1986685561493779662">Tên đã tồn tại</translation>
 <translation id="1987739130650180037">Nút <ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
@@ -392,7 +394,6 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="4183868528246477015">Tìm bằng Google Ống kính <ph name="BEGIN_NEW" />Mới<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Mở trong thẻ mới</translation>
 <translation id="4198423547019359126">Không có vị trí tải xuống</translation>
-<translation id="4202553989407425169">Chrome có thể kiểm tra xem các tùy chọn cài đặt có đang bảo vệ bạn thông qua:</translation>
 <translation id="4209895695669353772">Để nhận nội dung do Google đề xuất riêng cho bạn, hãy bật tính năng đồng bộ hóa</translation>
 <translation id="423219824432660969">Mã hóa dữ liệu đã đồng bộ hóa bằng mật khẩu Google kể từ <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Mở phần cài đặt</translation>
@@ -459,6 +460,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4749960740855309258">Mở tab mới</translation>
 <translation id="4759238208242260848">Tệp đã tải xuống</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Đã tải xong 1 tệp xuống.}other{Đã tải xong # tệp xuống.}}</translation>
+<translation id="4766678251456904326">Thêm tài khoản vào thiết bị</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{Đã lên lịch 1 quá trình tải xuống.}other{Đã lên lịch # quá trình tải xuống.}}</translation>
 <translation id="478981486571169252">Trong Chrome, bạn sẽ thấy trạng thái đăng nhập, dữ liệu duyệt web và dữ liệu trang web trên <ph name="SITE_NAME" />.</translation>
 <translation id="4802417911091824046">Việc mã hóa cụm mật khẩu không bao gồm địa chỉ và phương thức thanh toán từ Google Pay.
@@ -490,6 +492,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4943872375798546930">Không tìm thấy kết quả nào</translation>
 <translation id="4961107849584082341">Dịch trang này sang ngôn ngữ bất kỳ</translation>
 <translation id="4970824347203572753">Hiện chưa có ở vị trí của bạn</translation>
+<translation id="4971735654804503942">Chủ động và nhanh chóng bảo vệ bạn khỏi các trang web, tệp đã tải xuống và tiện ích nguy hiểm. Cảnh báo bạn những mật khẩu đã bị lộ. Yêu cầu gửi dữ liệu duyệt web cho Google.</translation>
 <translation id="497421865427891073">Đi về phía trước</translation>
 <translation id="4988210275050210843">Đang tải tệp xuống (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Trang</translation>
@@ -561,7 +564,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5527082711130173040">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. <ph name="BEGIN_LINK1" />Cập nhật quyền<ph name="END_LINK1" />. Tính năng truy cập vị trí cũng bị <ph name="BEGIN_LINK2" />tắt cho thiết bị này<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Đóng tab ẩn danh</translation>
 <translation id="5534640966246046842">Đã sao chép trang web</translation>
-<translation id="5548606607480005320">Kiểm tra an toàn</translation>
 <translation id="5561549206367097665">Đang chờ mạng…</translation>
 <translation id="55737423895878184">Cho phép vị trí và thông báo</translation>
 <translation id="5578795271662203820">Tìm ảnh này trên <ph name="SEARCH_ENGINE" /></translation>
@@ -600,7 +602,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="583281660410589416">Không xác định</translation>
 <translation id="5833984609253377421">Chia sẻ liên kết</translation>
 <translation id="5836192821815272682">Đang tải Bản cập nhật Chrome…</translation>
-<translation id="584120177693484274">Đã bỏ đánh dấu</translation>
 <translation id="5853623416121554550">đã tạm dừng</translation>
 <translation id="5854790677617711513">Đã tồn tại hơn 30 ngày</translation>
 <translation id="5858741533101922242">Chrome không thể bật bộ điều hợp Bluetooth</translation>
@@ -736,10 +737,12 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="685850645784703949">Tính năng Khám phá của Google – đang tắt</translation>
 <translation id="6864459304226931083">Tải hình ảnh xuống</translation>
 <translation id="6865313869410766144">Dữ liệu tự động điền vào biểu mẫu</translation>
+<translation id="6882836635272038266">Chế độ bảo vệ thông thường chống lại các trang web, tệp đã tải xuống và tiện ích được xác định là nguy hiểm.</translation>
 <translation id="6884306546558072722">Tiếp tục khám phá khi không có mạng</translation>
 <translation id="688738109438487280">Thêm dữ liệu hiện có vào <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Mở khóa để sao chép mật khẩu của bạn</translation>
 <translation id="6896758677409633944">Sao chép</translation>
+<translation id="6900532703269623216">Chế độ bảo vệ nâng cao</translation>
 <translation id="6903907808598579934">Bật đồng bộ hóa</translation>
 <translation id="6942665639005891494">Thay đổi vị trí tải xuống mặc định bất cứ lúc nào bằng cách sử dụng tùy chọn menu Cài đặt</translation>
 <translation id="6945221475159498467">Chọn</translation>

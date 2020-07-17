@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Басқа құрылғыларда сақталған бетбелгілер осы жерде шығады.</translation>
 <translation id="1113597929977215864">Қарапайым көріністі көрсету</translation>
 <translation id="1122278879166832009">Негізгі бетке кез келген жерден жылдам кіру үшін осы жерді түртіңіз.</translation>
+<translation id="1126809382673880764">Қауіпті веб-сайттардан, жүктеп алынатын файлдардан және кеңейтімдерден қорғамайды. Gmail және Search сияқты басқа Google қызметтерінде "Қауіпсіз шолу" функциясы қорғайтын болады.</translation>
 <translation id="1129510026454351943">Мәліметтер: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 файл жүктеп алынбақ.}other{# файл жүктеп алынбақ.}}</translation>
 <translation id="1145536944570833626">Бар деректерді жойыңыз.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Ашық</translation>
 <translation id="1810845389119482123">Синхронизация параметрлері орнатылмады</translation>
 <translation id="1821253160463689938">Бұл беттерді ашпасаңыз да, cookie файлдарының көмегімен параметрлерді сақтап қалады</translation>
-<translation id="1826516787628120939">Тексеру</translation>
 <translation id="1829244130665387512">Беттен табу</translation>
 <translation id="1853692000353488670">Жаңа жасырын қойынды</translation>
 <translation id="1856325424225101786">Lite режимі бастапқы күйге қайтарылсын ба?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Құпия сөздерді сақтау</translation>
 <translation id="1952172573699511566">Вебсайттар мүмкін болған кезде мәтінді өзіңізге ыңғайлы тілде көрсетеді.</translation>
 <translation id="1960290143419248813">Chrome браузері Android жүйесінің бұл нұсқасында енді жаңартылмайды</translation>
+<translation id="1963976881984600709">Стандартты қорғау</translation>
 <translation id="1966710179511230534">Кіру мәліметтеріңізді жаңартыңыз.</translation>
 <translation id="1974060860693918893">Қосымша</translation>
+<translation id="1984417487208496350">Қорғау режимін өшіру (ұсынылмайды)</translation>
 <translation id="1984705450038014246">Chrome деректеріңізді синхрондау</translation>
 <translation id="1986685561493779662">Атау бұрыннан бар.</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> түймесі</translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">Google Lens арқылы іздеу <ph name="BEGIN_NEW" />Жаңа<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Жаңа қойындыда ашу</translation>
 <translation id="4198423547019359126">Жүктеп алуға пайдалануға болатын орындар жоқ</translation>
-<translation id="4202553989407425169">Chrome браузері параметрлердің келесілерден қорғайтынын тексере алады:</translation>
 <translation id="4209895695669353772">Google ұсынатын жекелендірілген мазмұнды алу үшін синхрондау функциясын қосыңыз</translation>
 <translation id="423219824432660969">Синхрондалған деректерді <ph name="TIME" /> күні сақталған Google құпия сөзімен шифрлау</translation>
 <translation id="4242533952199664413">Параметрлерді ашу</translation>
@@ -459,6 +460,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="4749960740855309258">Жаңа қойынды ашу</translation>
 <translation id="4759238208242260848">Жүктеп алынғандар</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 файл жүктеп алынды.}other{# файл жүктеп алынды.}}</translation>
+<translation id="4766678251456904326">Құрылғыға есептік жазба енгізу</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 жүктеп алу жоспарланды.}other{# жүктеп алу жоспарланды.}}</translation>
 <translation id="478981486571169252"><ph name="SITE_NAME" /> сайтына кіру күйін, браузерді пайдалану деректерін және Chrome-дағы сайт деректерін көресіз.</translation>
 <translation id="4802417911091824046">Google Pay қызметіндегі төлеу әдістері мен мекенжайлар құпия фразамен шифрланбайды.
@@ -490,6 +492,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="4943872375798546930">Нәтижесіз</translation>
 <translation id="4961107849584082341">Осы бетті кез келген тілге аударыңыз</translation>
 <translation id="4970824347203572753">Орналасқан аймағыңызда қолжетімді емес.</translation>
+<translation id="4971735654804503942">Қауіпті веб-сайттардан, жүктеп алынған файлдардан және кеңейтімдерден жылдам әрі белсенді қорғау. Құпия сөздің қолды болғанын хабарлайды. Браузерді пайдалану деректерінің Google-ға жіберілуін талап етеді.</translation>
 <translation id="497421865427891073">Алға өту</translation>
 <translation id="4988210275050210843">Файл (<ph name="MEGABYTES" />) жүктеп алынуда.</translation>
 <translation id="4988526792673242964">Беттер</translation>
@@ -561,7 +564,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5527082711130173040">Құрылғыларды іздеу үшін Chrome жүйесіне орналасу орны деректеріне кіру рұқсаты қажет. <ph name="BEGIN_LINK1" />Рұқсаттарды жаңартыңыз<ph name="END_LINK1" />. Орналасу орны деректеріне кіру рұқсаты <ph name="BEGIN_LINK2" />бұл құрылғы үшін өшірулі<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Жасырын қойындыларды жабу</translation>
 <translation id="5534640966246046842">Сайт көшірілді</translation>
-<translation id="5548606607480005320">Қауіпсіздік шарасы</translation>
 <translation id="5561549206367097665">Желімен байланыс күтілуде…</translation>
 <translation id="55737423895878184">Орынды анықтау қызметіне және хабарландыруларға рұқсат етілген</translation>
 <translation id="5578795271662203820">Бұл кескін үшін <ph name="SEARCH_ENGINE" /> іздеу</translation>
@@ -600,7 +602,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="583281660410589416">Белгісіз</translation>
 <translation id="5833984609253377421">Сілтемені бөлісу</translation>
 <translation id="5836192821815272682">Chrome браузерінің жаңа нұсқасы жүктеп алынуда…</translation>
-<translation id="584120177693484274">Құсбелгі қойылмаған</translation>
 <translation id="5853623416121554550">кідіртілді</translation>
 <translation id="5854790677617711513">30 күннен асқан</translation>
 <translation id="5858741533101922242">Chrome қолданбасы Bluetooth адаптерін қоса алмайды</translation>
@@ -736,10 +737,12 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="685850645784703949">Google ұсынатын Discover – өшірулі</translation>
 <translation id="6864459304226931083">Суретті жүктеп алу</translation>
 <translation id="6865313869410766144">Нысан деректерін автотолтыру</translation>
+<translation id="6882836635272038266">Қауіпті саналатын веб-сайттардан, жүктеп алынған файлдардан және кеңейтімдерден стандартты қорғау.</translation>
 <translation id="6884306546558072722">Офлайн режимде пайдалана беру</translation>
 <translation id="688738109438487280">Бар деректерді <ph name="TO_ACCOUNT" /> есептік жазбасына енгізіңіз.</translation>
 <translation id="6891726759199484455">Құпия сөзді көшіру үшін құлыпты ашыңыз</translation>
 <translation id="6896758677409633944">Көшіру</translation>
+<translation id="6900532703269623216">Жақсартылған қорғау</translation>
 <translation id="6903907808598579934">Синхрондауды қосу</translation>
 <translation id="6942665639005891494">"Параметрлер" мәзірі опциясын пайдаланып, әдепкі жүктеп алу орнын кез келген уақытта өзгертіңіз</translation>
 <translation id="6945221475159498467">Таңдау</translation>

@@ -426,7 +426,6 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="2705137772291741111">Den gemte (cachelagrede) kopi af dette website kunne ikke læses.</translation>
 <translation id="2709516037105925701">AutoFyld</translation>
 <translation id="2713444072780614174">Hvid</translation>
-<translation id="2720342946869265578">Tæt på</translation>
 <translation id="2721148159707890343">Anmodning lykkedes</translation>
 <translation id="272451190272506600">Rør ved sensoren for at betale</translation>
 <translation id="2728127805433021124">Serverens certifikat er signeret ved hjælp af en svag signaturalgoritme.</translation>
@@ -723,7 +722,6 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="3990250421422698716">Langsom offsetkørsel</translation>
 <translation id="3996311196211510766">Websitet <ph name="ORIGIN" /> har anmodet om, at en politik for oprindelse
     skal gælde for alle anmodninger til websitet, men i øjeblikket kan denne politik ikke anvendes.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 webside tæt på}one{# webside tæt på}other{# websider tæt på}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-dokument, der indeholder {COUNT} side}one{PDF-dokument, der indeholder {COUNT} side}other{PDF-dokument, der indeholder {COUNT} sider}}</translation>
 <translation id="4030383055268325496">&amp;Fortryd tilføjelse</translation>
 <translation id="4032320456957708163">Din browser administreres af <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -941,7 +939,6 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Gem...</translation>
 <translation id="4913987521957242411">Hul øverst til venstre</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{og 1 anden webside}one{og # anden webside}other{og # andre websider}}</translation>
 <translation id="4923459931733593730">Betaling</translation>
 <translation id="4926049483395192435">Skal angives.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> siger</translation>
@@ -1333,7 +1330,6 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="6518133107902771759">Bekræft</translation>
 <translation id="6521745193039995384">Ikke aktiv</translation>
 <translation id="6529602333819889595">&amp;Annuller fortryd slet</translation>
-<translation id="6534179046333460208">Forslag til Fysisk web</translation>
 <translation id="6545864417968258051">Bluetooth-scanning</translation>
 <translation id="6547208576736763147">To huller i venstre side</translation>
 <translation id="6554795675067793129">Din konto administreres af <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1856,7 +1852,6 @@ Yderligere oplysninger:
 <translation id="8790007591277257123">&amp;Annuller fortryd sletning</translation>
 <translation id="8792621596287649091">Du kan miste adgangen til din <ph name="ORG_NAME" />-konto eller udsættes for identitetstyveri. Chromium anbefaler, at du skifter din adgangskode nu.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> har aktiveret Chrome Enterprise Connectors i din browser. Disse connectorer har adgang til nogle af dine data.</translation>
-<translation id="8800988563907321413">Her vises de forslag, der er tæt på dig</translation>
 <translation id="8805819170075074995">Listepost "<ph name="LANGUAGE_ID" />": Posten blev ignoreret, fordi den også er inkluderet i politikken SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Beskær efter hver side</translation>
 <translation id="8820817407110198400">Bogmærker</translation>

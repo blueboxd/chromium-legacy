@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">Unos za japanski (za američku tastaturu)</translation>
 <translation id="1047956942837015229">Brisanje stavki (<ph name="COUNT" />)...</translation>
 <translation id="1049926623896334335">Word dokument</translation>
+<translation id="1060368002126861100">Da biste otvarali datoteke pomoću aplikacije <ph name="APP_NAME" />, prvo ih premestite u direktorijum sa Windows datotekama.</translation>
 <translation id="1062407476771304334">Zameni</translation>
 <translation id="1065449928621190041">Jezik tastature: francuski (Kanada)</translation>
 <translation id="1119069657431255176">Bzip2 komprimovana tar arhiva</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">Oprez: Ove datoteke su privremene i mogu da se izbrišu automatski kako bi se oslobodio prostor na disku.  <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Direktorijum</translation>
 <translation id="3549797760399244642">Idi na drive.google.com...</translation>
+<translation id="3553048479571901246">Da biste otvarali datoteke pomoću aplikacije <ph name="APP_NAME" />, prvo ih kopirajte u direktorijum sa Windows datotekama.</translation>
 <translation id="357479282490346887">litvanski</translation>
 <translation id="3583509704582854624">Alfanumerički unos (za japansku tastaturu)</translation>
 <translation id="3603385196401704894">kanadska francuska</translation>

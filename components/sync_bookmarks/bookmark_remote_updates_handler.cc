@@ -264,7 +264,12 @@ void BookmarkRemoteUpdatesHandler::Process(
         tracked_entity->metadata()->server_version() >=
             update->response_version &&
         !local_guid_needs_update) {
-      // Seen this update before; just ignore it.
+      // Seen this update before. This update may be a reflection and may have
+      // missing the final GUID in specifics. Next reupload will populate GUID
+      // in specifics and this codepath will not repeat indefinitely. This logic
+      // is needed for the case when there is only one device and hence the GUID
+      // will not be set by other devices.
+      ReuploadEntityIfNeeded(update_entity, tracked_entity);
       continue;
     }
 
@@ -549,7 +554,7 @@ BookmarkRemoteUpdatesHandler::ProcessCreate(
       bookmark_node, update_entity.id, update.response_version,
       update_entity.creation_time, update_entity.unique_position,
       update_entity.specifics);
-  ReuploadEntityIfNeeded(update_entity.specifics.bookmark(), entity);
+  ReuploadEntityIfNeeded(update_entity, entity);
   return entity;
 }
 
@@ -606,7 +611,7 @@ void BookmarkRemoteUpdatesHandler::ProcessUpdate(
   }
   ApplyRemoteUpdate(update, tracked_entity, new_parent_entity, bookmark_model_,
                     bookmark_tracker_, favicon_service_);
-  ReuploadEntityIfNeeded(update_entity.specifics.bookmark(), tracked_entity);
+  ReuploadEntityIfNeeded(update_entity, tracked_entity);
 }
 
 void BookmarkRemoteUpdatesHandler::ProcessDelete(
@@ -730,7 +735,7 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
     ApplyRemoteUpdate(update, tracked_entity, new_parent_entity,
                       bookmark_model_, bookmark_tracker_, favicon_service_);
   }
-  ReuploadEntityIfNeeded(update_entity.specifics.bookmark(), tracked_entity);
+  ReuploadEntityIfNeeded(update_entity, tracked_entity);
 }
 
 void BookmarkRemoteUpdatesHandler::RemoveEntityAndChildrenFromTracker(
@@ -755,13 +760,18 @@ const bookmarks::BookmarkNode* BookmarkRemoteUpdatesHandler::GetParentNode(
 }
 
 void BookmarkRemoteUpdatesHandler::ReuploadEntityIfNeeded(
-    const sync_pb::BookmarkSpecifics& specifics,
+    const syncer::EntityData& entity_data,
     const SyncedBookmarkTracker::Entity* tracked_entity) {
-  if (!IsFullTitleReuploadNeeded(specifics)) {
-    return;
+  DCHECK(tracked_entity);
+  DCHECK_EQ(tracked_entity->metadata()->server_id(), entity_data.id);
+  // Do not initiate reupload if the local entity is a tombstone or a permanent
+  // node.
+  if (tracked_entity->bookmark_node() &&
+      !tracked_entity->bookmark_node()->is_permanent_node() &&
+      IsBookmarkEntityReuploadNeeded(entity_data)) {
+    bookmark_tracker_->IncrementSequenceNumber(tracked_entity);
+    ++valid_updates_without_full_title_;
   }
-  bookmark_tracker_->IncrementSequenceNumber(tracked_entity);
-  ++valid_updates_without_full_title_;
 }
 
 }  // namespace sync_bookmarks

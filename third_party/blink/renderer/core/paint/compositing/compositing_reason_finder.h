@@ -33,6 +33,9 @@ class CORE_EXPORT CompositingReasonFinder {
   static CompositingReasons DirectReasonsForPaintProperties(
       const LayoutObject&);
 
+  static CompositingReasons DirectReasonsForSVGChildPaintProperties(
+      const LayoutObject&);
+
   static CompositingReasons CompositingReasonsForAnimation(const LayoutObject&);
   static CompositingReasons CompositingReasonsForWillChange(
       const ComputedStyle&);

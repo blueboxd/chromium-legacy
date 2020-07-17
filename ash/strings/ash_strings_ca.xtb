@@ -98,6 +98,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="1995660704900986789">Apaga</translation>
 <translation id="2012624427112548395">Ctrl+Cerca+H</translation>
 <translation id="2016340657076538683">Escriu un missatge</translation>
+<translation id="2018630726571919839">Explica'm un acudit</translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2067602449040652523">Brillantor del teclat</translation>
 <translation id="209965399369889474">No hi ha connexió a la xarxa</translation>
@@ -125,6 +126,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="2354174487190027830">S'està activant <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2365393535144473978">En activar les dades mòbils s'activarà el Bluetooth.</translation>
+<translation id="2369165858548251131">"Hola" en xinès</translation>
 <translation id="2390318262976603432">Configuració regional</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Hi ha una actualització disponible</translation>
@@ -142,6 +144,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="256712445991462162">la lupa acoblada</translation>
 <translation id="2575685495496069081">L'inici de sessió múltiple s'ha desactivat</translation>
 <translation id="2582112259361606227">Reinicia per actualitzar</translation>
+<translation id="2595239820337756193">5 km en milles</translation>
 <translation id="2617342710774726426">La targeta SIM està bloquejada</translation>
 <translation id="2621713457727696555">Protegida</translation>
 <translation id="2653659639078652383">Envia</translation>
@@ -195,6 +198,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="3154351730702813399">És possible que l'administrador del dispositiu supervisi l'activitat de navegació.</translation>
 <translation id="3181441307743005334">Pot tardar una estona a reiniciar-se</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connectat a un dispositiu}other{Connectat a # dispositius}}</translation>
+<translation id="320207200541803018">Inicia el temporitzador</translation>
 <translation id="3203405173652969239">L'accés amb interruptors s'ha activat</translation>
 <translation id="3207953481422525583">Configuració d'usuari</translation>
 <translation id="3217205077783620295">El volum està activat. En commutar-lo, se silenciarà l'àudio.</translation>
@@ -207,6 +211,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> pot iniciar la sessió més tard.</translation>
 <translation id="3321628682574733415">Codi parental incorrecte</translation>
 <translation id="332587331255250389">Canvia la bateria</translation>
+<translation id="334252345105450327">Fes una captura de pantalla</translation>
 <translation id="3351879221545518001">Estàs emetent la pantalla.</translation>
 <translation id="3364721542077212959">Eines del llapis òptic</translation>
 <translation id="3368922792935385530">Connectat</translation>
@@ -239,6 +244,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="3631369015426612114">Permet notificacions de les fonts següents:</translation>
 <translation id="3638400994746983214">Commuta la pantalla de privadesa. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733">Usuari gestionat (<ph name="USER_EMAIL_ADDRESS" />)</translation>
+<translation id="3702846122927433391">Quants habitants té Nigèria?</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Captura una part</translation>
 <translation id="371370241367527062">Micròfon frontal</translation>
@@ -519,6 +525,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">El menú s'ha mogut a l'extrem superior esquerre de la pantalla.</translation>
+<translation id="7189412385142492784">A quina distància es troba Venus?</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Aquest Chromebook s'ha de reiniciar perquè s'apliqui una actualització. Aquest procés pot tardar fins a 1 minut</translation>
 <translation id="7256634071279256947">Micròfon posterior</translation>
 <translation id="726276584504105859">Arrossega-la aquí per utilitzar la pantalla dividida</translation>
@@ -645,6 +652,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="8649101189709089199">Escolta la selecció</translation>
 <translation id="8652175077544655965">Tanca la configuració</translation>
 <translation id="8653151467777939995">Mostra la configuració de notificacions. Les notificacions estan activades.</translation>
+<translation id="8660331759611631213">Arrel quadrada de 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" /> d'intensitat del senyal</translation>
 <translation id="8664753092453405566">Mostra la llista de xarxes. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

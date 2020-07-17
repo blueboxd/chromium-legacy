@@ -30,6 +30,7 @@
 
 #include "third_party/blink/public/web/web_element.h"
 
+#include "base/unguessable_token.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -40,6 +41,7 @@
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
@@ -198,6 +200,13 @@ WebString WebElement::GetComputedValue(const WebString& property_name) {
   auto* computed_style =
       MakeGarbageCollected<CSSComputedStyleDeclaration>(element);
   return computed_style->GetPropertyCSSValue(property_id)->CssText();
+}
+
+base::Optional<base::UnguessableToken> WebElement::GetEmbeddingToken() const {
+  if (auto* owner = DynamicTo<HTMLFrameOwnerElement>(ConstUnwrap<Element>()))
+    return owner->GetEmbeddingToken();
+
+  return base::nullopt;
 }
 
 WebElement::WebElement(Element* elem) : WebNode(elem) {}

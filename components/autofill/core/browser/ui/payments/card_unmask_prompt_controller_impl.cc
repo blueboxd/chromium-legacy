@@ -55,7 +55,7 @@ void CardUnmaskPromptControllerImpl::ShowPrompt(
   unmasking_number_of_attempts_ = 0;
   unmasking_initial_should_store_pan_ = GetStoreLocallyStartState();
   AutofillMetrics::LogUnmaskPromptEvent(AutofillMetrics::UNMASK_PROMPT_SHOWN,
-                                        card_.HasValidNickname());
+                                        card_.HasNonEmptyValidNickname());
 }
 
 void CardUnmaskPromptControllerImpl::OnVerificationResult(
@@ -281,10 +281,10 @@ bool CardUnmaskPromptControllerImpl::AllowsRetry(
 void CardUnmaskPromptControllerImpl::LogOnCloseEvents() {
   AutofillMetrics::UnmaskPromptEvent close_reason_event = GetCloseReasonEvent();
   AutofillMetrics::LogUnmaskPromptEvent(close_reason_event,
-                                        card_.HasValidNickname());
+                                        card_.HasNonEmptyValidNickname());
   AutofillMetrics::LogUnmaskPromptEventDuration(
       AutofillClock::Now() - shown_timestamp_, close_reason_event,
-      card_.HasValidNickname());
+      card_.HasNonEmptyValidNickname());
 
   if (close_reason_event == AutofillMetrics::UNMASK_PROMPT_CLOSED_NO_ATTEMPTS)
     return;
@@ -292,14 +292,15 @@ void CardUnmaskPromptControllerImpl::LogOnCloseEvents() {
   if (close_reason_event ==
       AutofillMetrics::UNMASK_PROMPT_CLOSED_ABANDON_UNMASKING) {
     AutofillMetrics::LogTimeBeforeAbandonUnmasking(
-        AutofillClock::Now() - verify_timestamp_, card_.HasValidNickname());
+        AutofillClock::Now() - verify_timestamp_,
+        card_.HasNonEmptyValidNickname());
   }
 
   bool final_should_store_pan = pending_details_.should_store_pan;
   if (unmasking_result_ == AutofillClient::SUCCESS && final_should_store_pan) {
     AutofillMetrics::LogUnmaskPromptEvent(
         AutofillMetrics::UNMASK_PROMPT_SAVED_CARD_LOCALLY,
-        card_.HasValidNickname());
+        card_.HasNonEmptyValidNickname());
   }
 }
 

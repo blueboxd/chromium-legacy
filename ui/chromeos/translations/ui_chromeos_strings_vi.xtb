@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">Nhập bằng tiếng Nhật (dành cho bàn phím Anh-Mỹ)</translation>
 <translation id="1047956942837015229">Đang xóa <ph name="COUNT" /> mục...</translation>
 <translation id="1049926623896334335">Tài liệu Word</translation>
+<translation id="1060368002126861100">Để mở tệp bằng <ph name="APP_NAME" />, trước tiên, hãy di chuyển các tệp đó đến thư mục tệp Windows.</translation>
 <translation id="1062407476771304334">Thay thế</translation>
 <translation id="1065449928621190041">Bàn phím tiếng Pháp ở Canada</translation>
 <translation id="1119069657431255176">Lưu trữ tar được nén bởi Bzip2</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">Lưu ý: Các tệp này chỉ được lưu trữ tạm thời và có thể tự động bị xóa để giải phóng dung lượng ổ đĩa.  <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Thư mục</translation>
 <translation id="3549797760399244642">Truy cập drive.google.com...</translation>
+<translation id="3553048479571901246">Để mở tệp bằng <ph name="APP_NAME" />, trước tiên, hãy sao chép các tệp đó vào thư mục tệp Windows.</translation>
 <translation id="357479282490346887">Tiếng Lithuania</translation>
 <translation id="3583509704582854624">Nhập bằng chữ và số (dành cho bàn phím tiếng Nhật)</translation>
 <translation id="3603385196401704894">Tiếng Pháp ở Canada</translation>

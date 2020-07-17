@@ -137,6 +137,11 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
   }
 
   /** @private */
+  onRotateClick_() {
+    this.dispatchEvent(new CustomEvent('rotate-left'));
+  }
+
+  /** @private */
   onZoomInClick_() {
     this.dispatchEvent(new CustomEvent('zoom-in'));
   }

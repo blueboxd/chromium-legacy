@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">velja</translation>
 <translation id="1859234291848436338">Ritunarstefna</translation>
 <translation id="1860796786778352021">Loka tilkynningu</translation>
+<translation id="186476001994626254">Snjalllíming efnis fyrir vefinn</translation>
 <translation id="1871244248791675517">Insert</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Velja &amp;allt</translation>
@@ -75,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Opna möppu</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Fyrir einu ári}one{Fyrir # ári}other{Fyrir # árum}}</translation>
+<translation id="2878511608894704031">Eyða öllu</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{eftir einn dag}one{eftir # dag}other{eftir # daga}}</translation>
 <translation id="2931838996092594335">smella</translation>
 <translation id="2981684127883932071">Birtir tillögur</translation>
@@ -172,6 +174,7 @@
 <translation id="6417265370957905582">Google hjálpari</translation>
 <translation id="6430678249303439055">Loka á allar tilkynningar frá þessu forriti</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{fyrir einni sekúndu}one{fyrir # sekúndu}other{fyrir # sekúndum}}</translation>
+<translation id="6503257047630241175">RTF-efni</translation>
 <translation id="6539092367496845964">Eitthvað fór úrskeiðis. Reyndu aftur síðar.</translation>
 <translation id="654149438358937226">Loka á allar tilkynningar</translation>
 <translation id="6567071839949112727">smella á forvera</translation>

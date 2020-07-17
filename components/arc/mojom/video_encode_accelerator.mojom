@@ -28,7 +28,8 @@ enum VideoFrameStorageType {
 };
 
 // The encoder parameter set which matches to
-// media::VideoEncodeAccelerator::Config.
+// media::VideoEncodeAccelerator::Config except |is_constrained_h264| parameter
+// which is a flag for H264 profile.
 //  |input_format| is the pixel format of the input frames.
 //  |input_visible_size| is the resolution of the input frames.
 //  |output_profile| is the codec profile of the encoded output stream.

@@ -20,6 +20,8 @@
 <translation id="2730884209570016437">Chromium nie może użyć aparatu, bo używa go już inna aplikacja</translation>
 <translation id="2915596697727466327">Chromium używa Face ID do autoryzacji dostępu do Twoich haseł.</translation>
 <translation id="3256316712990552818">Skopiowana do Chromium</translation>
+<translation id="3344973607274501920">Przeglądarce Chromium nie udało się sprawdzić Twoich haseł. Sprawdź połączenie z internetem.</translation>
+<translation id="3639997914391704523">Chromium może sprawdzić Twoje hasła, gdy zalogujesz się na swoje konto Google.</translation>
 <translation id="3805899903892079518">Chromium nie ma dostępu do Twoich zdjęć ani filmów. Aby włączyć dostęp w iOS, wybierz Ustawienia &gt; Prywatność &gt; Zdjęcia.</translation>
 <translation id="4555020257205549924">Gdy ta funkcja jest włączona, Chromium oferuje tłumaczenie stron w innych językach przy użyciu Tłumacza Google. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Włącz skaner Chromium</translation>
@@ -27,6 +29,7 @@
 <translation id="4999538639245140991">Wylogowujesz się z konta, którym zarządza <ph name="SIGNOUT_MANAGED_DOMAIN" />. Spowoduje to usunięcie danych Chromium z tego urządzenia, ale pozostaną one na koncie Google.</translation>
 <translation id="5521125884468363740">Aby widzieć swoje karty zawsze, kiedy korzystasz z Chromium, zaloguj się i włącz synchronizację</translation>
 <translation id="5573014823074921752">Wskazówka dla użytkowników Chromium. Aby zobaczyć więcej opcji kart, naciśnij i przytrzymaj przycisk Pokaż karty na pasku narzędzi, który znajduje się na dole lub na górze ekranu.</translation>
+<translation id="5700709190537129682">Chromium nie może sprawdzić Twoich haseł</translation>
 <translation id="5777187867430702742">Strona Chromium</translation>
 <translation id="5862307444128926510">Chromium – witamy!</translation>
 <translation id="5945387852661427312">Logujesz się na konto, którym zarządza <ph name="DOMAIN" />, i przekazujesz jego administratorowi kontrolę nad Twoimi danymi Chromium. Zostaną one trwale przypisane do tego konta. Gdy się wylogujesz, znikną one z tego urządzenia, ale pozostaną zapisane na Twoim koncie Google.</translation>
@@ -34,6 +37,7 @@
 <translation id="6268381023930128611">Wylogować z Chromium?</translation>
 <translation id="6424492062988593837">Chromium jest teraz jeszcze lepsze! Dostępna jest nowa wersja.</translation>
 <translation id="6604711459180487467">Dzięki dostępowi do Twojej lokalizacji Chromium będzie działać lepiej.</translation>
+<translation id="6820823224820483452">Przeglądarce Chromium nie udało się sprawdzić wszystkich haseł. Spróbuj ponownie jutro.</translation>
 <translation id="7099326575020694068">Chromium nie może używać aparatu w trybie widoku dzielonego</translation>
 <translation id="7208566199746267865">Chromium oszczędza Twój czas, zapisując konta w internecie. Konta możesz dodawać i usuwać w Ustawieniach.</translation>
 <translation id="7269362888766543920">Niektóre dodatki mogą powodować awarie Chromium. Spróbuj je odinstalować.</translation>
@@ -42,6 +46,7 @@
 <translation id="7400689562045506105">Korzystaj z Chromium w dowolnym miejscu</translation>
 <translation id="7674213385180944843">Wybierz Ustawienia &gt; Prywatność &gt; Aparat &gt; Chromium i włącz aparat.</translation>
 <translation id="7746854981345936341">Wskazówka dla użytkowników Chromium. Niektóre przyciski (na przykład Wstecz, Dalej i Szukaj) znajdują się teraz na dole ekranu.</translation>
+<translation id="7798909783578470546">Przeglądarce Chromium nie udało się sprawdzić wszystkich haseł. Spróbuj ponownie.</translation>
 <translation id="786327964234957808">Przełączasz synchronizację kont z <ph name="USER_EMAIL1" /> na <ph name="USER_EMAIL2" />. Twoimi istniejącymi danymi Chromium zarządza <ph name="DOMAIN" />. Dane zostaną usunięte z tego urządzenia, ale pozostaną na koncie <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Zacznij używać skanera Chromium</translation>
 <translation id="8013573822802650211">Aby widzieć swoje karty zawsze, kiedy korzystasz z Chromium, zaloguj się na wszystkich urządzeniach</translation>
@@ -51,5 +56,6 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
 <translation id="8776843108004031667">To konto razem z wszelkimi niezapisanymi danymi zostanie usunięte z Chromium.</translation>
 <translation id="9022552996538154597">Zaloguj się w Chromium</translation>
+<translation id="921174536258924340">Przeglądarce Chromium nie udało się sprawdzić wszystkich haseł. Spróbuj ponownie jutro lub <ph name="BEGIN_LINK" />sprawdź hasła na koncie Google<ph name="END_LINK" />.</translation>
 <translation id="985602178874221306">Autorzy Chromium</translation>
 </translationbundle>

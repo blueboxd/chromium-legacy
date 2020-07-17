@@ -104,6 +104,7 @@
 <translation id="1124772482545689468">Utilisateur</translation>
 <translation id="1125550662859510761">Semblable à <ph name="WIDTH" /> x <ph name="HEIGHT" /> (résolution native)</translation>
 <translation id="1126809382673880764">Ce mode ne vous protège pas contre les téléchargements, les extensions ni les sites Web dangereux. Vous profitez toujours de la protection de navigation sécurisée, lorsqu'elle est offerte, dans d'autres services Google, comme Gmail et la recherche.</translation>
+<translation id="112752777279960360">Pour configurer un téléphone Android comme clé de sécurité avec cet ordinateur pour la première fois, ouvrez Chrome sur votre téléphone, puis sélectionnez « Paramètres &gt; Mots de passe &gt; Utiliser le téléphone comme clé de sécurité ». Ensuite, touchez « Connecter un nouvel appareil », puis numérisez ce code QR.</translation>
 <translation id="1128109161498068552">N'autoriser aucun site à utiliser des messages système exclusifs pour accéder à des appareils MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Modifier le moteur de recherche</translation>
@@ -509,6 +510,7 @@
 <translation id="1622054403950683339">Oublier le réseau Wi-Fi</translation>
 <translation id="1623132449929929218">Les images ne sont pas disponibles pour l'instant. Veuillez vous reconnecter à Internet pour afficher les collections de fonds d'écran.</translation>
 <translation id="1623723619460186680">Réduction de la lumière bleue</translation>
+<translation id="1624012933569991823">Paramètres</translation>
 <translation id="1627276047960621195">Descripteurs de fichier</translation>
 <translation id="1627408615528139100">Déjà téléchargé</translation>
 <translation id="1628948239858170093">Analyser le fichier avant l'ouverture?</translation>
@@ -745,6 +747,7 @@
 <translation id="1887850431809612466">Révision du matériel</translation>
 <translation id="1888523338879380247">{0,plural, =1{Dernière journée pour mettre à jour l'appareil}one{Mettre à jour l'appareil d'ici # jour}other{Mettre à jour l'appareil d'ici # jours}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;Identifiant : &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783">En cours de réception de <ph name="ATTACHMENTS" /> de la part de <ph name="DEVICE_NAME" /></translation>
 <translation id="189210018541388520">Ouvrir en mode plein écran.</translation>
 <translation id="1892341345406963517">Bonjour <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Autres langues</translation>
@@ -1818,6 +1821,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3253225298092156258">Non accessible</translation>
 <translation id="3253448572569133955">Compte inconnu</translation>
 <translation id="3254516606912442756">Détection de fuseau horaire automatique désactivée</translation>
+<translation id="3254715652085014625">Ouvrez Chrome sur votre téléphone Android, puis sélectionnez « Paramètres &gt; Mots de passe &gt; Utiliser le téléphone comme clé de sécurité », puis suivez les instructions qui s'affichent.</translation>
 <translation id="3255355328033513170">Toutes les données stockées par le groupe <ph name="SITE_GROUP_NAME" /> et par tout site subordonné seront supprimées. Cela comprend les témoins. Vous serez déconnecté de ces sites, y compris dans les onglets ouverts.</translation>
 <translation id="3259723213051400722">Veuillez réessayer.</translation>
 <translation id="3264544094376351444">Polices sans empattement</translation>
@@ -1956,6 +1960,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3433621910545056227">Oups… Le système n'a pas réussi à établir le verrouillage des attributs du temps d'installation de l'appareil.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="3434272557872943250">Si le paramètre relatif aux autres activités sur le Web et dans les applications est activé pour votre enfant, ces données peuvent être enregistrées dans son compte Google. Pour en savoir plus sur ces paramètres ou pour découvrir comment les ajuster, rendez-vous sur families.google.com.</translation>
+<translation id="3435541101098866721">Ajouter un téléphone</translation>
 <translation id="3435688026795609344">« <ph name="EXTENSION_NAME" /> » demande votre <ph name="CODE_TYPE" /></translation>
 <translation id="3435738964857648380">Sécurité</translation>
 <translation id="343578350365773421">À court de papier</translation>
@@ -3492,6 +3497,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5390677308841849479">Rouge foncé et orange</translation>
 <translation id="5390743329570580756">Envoyer pour</translation>
 <translation id="5397794290049113714">Vous</translation>
+<translation id="5398497406011404839">Favoris masqués</translation>
 <translation id="5398572795982417028">Référence de page hors limite, la limite est de <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Annonces bloquées</translation>
 <translation id="5402815541704507626">Télécharger des mises à jour en utilisant les données cellulaires</translation>
@@ -3577,6 +3583,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5496587651328244253">Organiser</translation>
 <translation id="5497251278400702716">Ce fichier</translation>
 <translation id="5499313591153584299">Ce fichier peut présenter un risque pour votre ordinateur.</translation>
+<translation id="5499453227627332024">Une mise à niveau est offerte pour votre conteneur Linux. Vous pouvez aussi effectuer la mise à niveau plus tard dans l'application Paramètres.</translation>
 <translation id="5500709606820808700">La vérification de sécurité s'est exécutée aujourd'hui</translation>
 <translation id="5502500733115278303">Importés de Firefox</translation>
 <translation id="5503982651688210506">Continuer d'autoriser <ph name="HOST" /> à utiliser et à déplacer votre caméra et à utiliser votre microphone</translation>
@@ -4201,6 +4208,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6270770586500173387">Envoyer <ph name="BEGIN_LINK1" />des données relatives au système et aux applications<ph name="END_LINK1" /> et des <ph name="BEGIN_LINK2" />statistiques<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Une erreur (<ph name="ERROR" />) s'est produite pendant le téléchargement du plugiciel</translation>
 <translation id="6273677812470008672">Qualité</translation>
+<translation id="6273979226236203550">Votre mot de passe est stocké sur cet appareil et dans votre compte Google. Lequel souhaitez-vous supprimer?</translation>
 <translation id="6277105963844135994">Délai d'attente réseau dépassé</translation>
 <translation id="6277518330158259200">Faire une s&amp;aisie d'écran</translation>
 <translation id="6278057325678116358">Utiliser GTK+</translation>
@@ -4561,6 +4569,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6758056191028427665">Donnez-nous votre avis sur nos services.</translation>
 <translation id="6759193508432371551">Rétablir la configuration d'usine</translation>
 <translation id="6762833852331690540">Activé</translation>
+<translation id="676560328519657314">Vos modes de paiement dans Google Pay</translation>
 <translation id="6767566652486411142">Choisir une autre langue…</translation>
 <translation id="6767639283522617719">Impossible d'associer le domaine. Assurez-vous que les paramètres sont corrects pour l'unité organisationnelle.</translation>
 <translation id="6769557323306147204"><ph name="ORGANIZATION_NAME" /> recommande que vous mettiez à jour cet appareil.</translation>
@@ -4733,6 +4742,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6972553992270299730"><ph name="ORIGIN" /> ne peut pas ouvrir les fichiers dans ce dossier, parce qu'il contient des fichiers système</translation>
 <translation id="6972629891077993081">Appareils HID</translation>
 <translation id="6972754398087986839">Démarrer</translation>
+<translation id="6972887130317925583">Le mot de passe compromis a été changé. Vous pouvez vérifier vos mots de passe en tout temps dans le menu <ph name="SETTINGS" />.</translation>
 <translation id="6973611239564315524">Une mise à jour de Debian 10 (Buster) est offerte</translation>
 <translation id="6974609594866392343">Mode de démonstration hors connexion</translation>
 <translation id="6977381486153291903">Version du micrologiciel</translation>
@@ -5591,6 +5601,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8017176852978888182">Répertoires partagés de Linux</translation>
 <translation id="8017679124341497925">Raccourci modifié</translation>
 <translation id="8018313076035239964">Contrôlez les renseignements que les sites Web peuvent utiliser et le contenu qu'ils peuvent vous montrer</translation>
+<translation id="8022688469248132790">Examiner l'erreur</translation>
 <translation id="8023801379949507775">Mettre à jour les extensions maintenant</translation>
 <translation id="8026334261755873520">Effacer les données de navigation</translation>
 <translation id="8028060951694135607">Récupération de clé Microsoft</translation>
@@ -6530,6 +6541,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9180380851667544951">Le site peut partager votre écran</translation>
 <translation id="9188732951356337132">Envoyer les données d'utilisation et de diagnostic. Actuellement, cet appareil envoie automatiquement à Google des données de diagnostic, de l'appareil et d'utilisation des applications. L'envoi de ces données ne sera pas utilisé pour identifier votre enfant, mais pour assurer la stabilité du système et des applications, et pour apporter d'autres améliorations. Certaines données collectées contribueront également à améliorer les applications Google et aideront nos partenaires, comme les concepteurs Android. Si le paramètre relatif aux autres activités sur le Web et dans les applications est activé pour votre enfant, ces données peuvent être enregistrées dans son compte Google. <ph name="BEGIN_LINK2" />En savoir plus<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec + clé prépartagée</translation>
+<translation id="9198090666959937775">Utiliser votre téléphone Android comme clé de sécurité</translation>
 <translation id="920045321358709304">Rechercher <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Toutes les données hors ligne seront effacées</translation>
 <translation id="9201220332032049474">Options de verrouillage de l'écran</translation>
@@ -6572,6 +6584,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="942532530371314860"><ph name="APP_NAME" /> partage un onglet Chrome et le son.</translation>
 <translation id="945522503751344254">Envoyer un commentaire à Google</translation>
 <translation id="947329552760389097">&amp;Inspecter des éléments</translation>
+<translation id="951991426597076286">Refuser</translation>
 <translation id="952992212772159698">Désactivé</translation>
 <translation id="956500788634395331">Vous êtes protégé contre les extensions potentiellement nuisibles</translation>
 <translation id="957960681186851048">Ce site a tenté de télécharger plusieurs fichiers automatiquement</translation>

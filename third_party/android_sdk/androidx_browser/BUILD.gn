@@ -45,6 +45,7 @@ android_library("androidx_browser_java") {
     "//third_party/android_deps:androidx_collection_collection_java",
     "//third_party/android_deps:androidx_concurrent_concurrent_futures_java",
     "//third_party/android_deps:androidx_core_core_java",
+    "//third_party/android_deps:com_google_guava_listenablefuture_java",
   ]
   srcjar_deps = [ ":androidx_browser_service_aidl" ]
   chromium_code = false

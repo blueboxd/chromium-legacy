@@ -39,24 +39,17 @@ class ForeignLayerDisplayItemClient final : public DisplayItemClient {
   scoped_refptr<cc::Layer> layer_;
 };
 
-static IntRect LayerVisualRect(const cc::Layer& layer,
-                               const FloatPoint& offset) {
-  const auto& bounds = layer.bounds();
-  return EnclosingIntRect(
-      FloatRect(offset.X(), offset.Y(), bounds.width(), bounds.height()));
-}
-
 }  // anonymous namespace
 
 ForeignLayerDisplayItem::ForeignLayerDisplayItem(
     const DisplayItemClient& client,
     Type type,
     scoped_refptr<cc::Layer> layer,
-    const FloatPoint& offset)
+    const IntPoint& offset)
     : DisplayItem(*new ForeignLayerDisplayItemClient(client, layer),
                   type,
                   sizeof(*this),
-                  LayerVisualRect(*layer, offset)),
+                  IntRect(offset, IntSize(layer->bounds()))),
       offset_(offset) {
   DCHECK(IsForeignLayerType(type));
   DCHECK(!IsCacheable());
@@ -89,7 +82,7 @@ void RecordForeignLayer(GraphicsContext& context,
                         const DisplayItemClient& client,
                         DisplayItem::Type type,
                         scoped_refptr<cc::Layer> layer,
-                        const FloatPoint& offset,
+                        const IntPoint& offset,
                         const PropertyTreeStateOrAlias* properties) {
   PaintController& paint_controller = context.GetPaintController();
   // This is like ScopedPaintChunkProperties but uses null id because foreign

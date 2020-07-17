@@ -145,6 +145,7 @@
 #include "net/base/url_util.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -1407,6 +1408,11 @@ void WebContentsImpl::SetUserAgentOverride(
 
   if (GetUserAgentOverride() == ua_override)
     return;
+
+  // This is a CHECK because failing this can be security-relevant; see the
+  // comment on net::HttpUtil::IsValidHeaderValue.
+  if (!ua_override.ua_string_override.empty())
+    CHECK(net::HttpUtil::IsValidHeaderValue(ua_override.ua_string_override));
 
   should_override_user_agent_in_new_tabs_ = override_in_new_tabs;
 
@@ -3442,6 +3448,16 @@ bool WebContentsImpl::ShouldIgnoreUnresponsiveRenderer() {
 
 ui::AXMode WebContentsImpl::GetAccessibilityMode() {
   return accessibility_mode_;
+}
+
+void WebContentsImpl::AXTreeIDForMainFrameHasChanged() {
+  RenderWidgetHostViewBase* rwhv =
+      static_cast<RenderWidgetHostViewBase*>(GetRenderWidgetHostView());
+  if (rwhv)
+    rwhv->SetMainFrameAXTreeID(GetMainFrame()->GetAXTreeID());
+
+  for (auto& observer : observers_)
+    observer.AXTreeIDForMainFrameHasChanged();
 }
 
 void WebContentsImpl::AccessibilityEventReceived(

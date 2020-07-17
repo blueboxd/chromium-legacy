@@ -42,28 +42,3 @@ include_rules = [
   "+third_party/crashpad/crashpad",
 ]
 
-specific_include_rules = {
-  "chrome_content_browser_overlay_manifest\.cc": [
-    "+chromeos/services/cellular_setup",
-    "+chromeos/services/device_sync",
-    "+chromeos/services/ime/public",
-    "+chromeos/services/media_perception/public",
-    "+chromeos/services/multidevice_setup",
-    "+chromeos/services/network_config",
-    "+components/autofill/content/common",
-    "+components/chromeos_camera/common",
-    "+components/contextual_search/content/common",
-    "+components/data_reduction_proxy/core/common",
-    "+components/metrics/public",
-    "+components/rappor/public",
-    "+components/services/app_service",
-    "+components/translate/content/common",
-    "+extensions/buildflags",
-    "+extensions/common",
-    "+media/capture/video/chromeos/mojom",
-    "+services/image_annotation/public",
-    "+services/resource_coordinator/public",
-    "+third_party/blink/public/mojom",
-  ],
-}
-

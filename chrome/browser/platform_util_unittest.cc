@@ -185,8 +185,8 @@ class PlatformUtilTest : public PlatformUtilTestBase {
     base::RunLoop run_loop;
     OpenOperationResult result = OPEN_SUCCEEDED;
     OpenOperationCallback callback =
-        base::Bind(&OnOpenOperationDone, run_loop.QuitClosure(), &result);
-    OpenItem(GetProfile(), path, item_type, callback);
+        base::BindOnce(&OnOpenOperationDone, run_loop.QuitClosure(), &result);
+    OpenItem(GetProfile(), path, item_type, std::move(callback));
     run_loop.Run();
     return result;
   }

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="1008557486741366299">ไม่ใช่ตอนนี้</translation>
+<translation id="100957008357583611">ใช้ตำแหน่งของคุณไหม</translation>
 <translation id="1010200102790553230">โหลดหน้าภายหลัง</translation>
 <translation id="1015730422737071372">ให้รายละเอียดเพิ่มเติม</translation>
 <translation id="1019413721762100891">ปิด</translation>
@@ -421,7 +422,6 @@
 <translation id="2705137772291741111">อ่านสำเนาที่บันทึกไว้ (แคช) ของเว็บไซต์นี้ไม่ได้</translation>
 <translation id="2709516037105925701">ป้อนอัตโนมัติ</translation>
 <translation id="2713444072780614174">สีขาว</translation>
-<translation id="2720342946869265578">ใกล้เคียง</translation>
 <translation id="2721148159707890343">คำขอสำเร็จ</translation>
 <translation id="272451190272506600">แตะเซ็นเซอร์เพื่อจ่าย</translation>
 <translation id="2728127805433021124">ใบรับรองของเซิร์ฟเวอร์ถูกเซ็นชื่อด้วยอัลกอริทึมลายเซ็นที่ไม่รัดกุม</translation>
@@ -714,7 +714,6 @@
 <translation id="3987940399970879459">ไม่ถึง 1 MB</translation>
 <translation id="3990250421422698716">การชดเชยพื้นผิวที่ไม่สม่ำเสมอ</translation>
 <translation id="3996311196211510766">เว็บไซต์ <ph name="ORIGIN" /> ขอให้บังคับใช้นโยบายดั้งเดิมกับคำขอทั้งหมดที่ส่งถึงเว็บไซต์ แต่ขณะนี้ใช้นโยบายนี้ไม่ได้</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{มีหน้าเว็บ 1 หน้าใกล้ๆ}other{มีหน้าเว็บ # หน้าใกล้ๆ}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{เอกสาร PDF ที่มี {COUNT} หน้า}other{เอกสาร PDF ที่มี {COUNT} หน้า}}</translation>
 <translation id="4030383055268325496">&amp;เลิกทำการเพิ่ม</translation>
 <translation id="4032320456957708163">เบราว์เซอร์ของคุณจัดการโดย <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -928,7 +927,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> และ <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">บันทึก...</translation>
 <translation id="4913987521957242411">เจาะรูด้านซ้ายบน</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{และหน้าเว็บอีก 1 หน้า}other{และหน้าเว็บอีก # หน้า}}</translation>
 <translation id="4923459931733593730">การชำระเงิน</translation>
 <translation id="4926049483395192435">ต้องระบุ</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> บอกว่า</translation>
@@ -1169,6 +1167,7 @@
 <translation id="5869405914158311789">ไม่สามารถเข้าถึงเว็บไซต์นี้</translation>
 <translation id="5869522115854928033">รหัสผ่านที่บันทึกไว้</translation>
 <translation id="5887400589839399685">บันทึกการ์ดแล้ว</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> กำหนดให้คุณสำรองข้อมูลและส่งคืนอุปกรณ์นี้</translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
 <translation id="5895187275912066135">ออกเมื่อ</translation>
 <translation id="5901630391730855834">สีเหลือง</translation>
@@ -1319,7 +1318,6 @@
 <translation id="6518133107902771759">ยืนยัน</translation>
 <translation id="6521745193039995384">ไม่ได้ใช้งานอยู่</translation>
 <translation id="6529602333819889595">&amp;ทำซ้ำการนำออก</translation>
-<translation id="6534179046333460208">คำแนะนำ Physical Web</translation>
 <translation id="6545864417968258051">การสแกนหาบลูทูธ</translation>
 <translation id="6547208576736763147">เจาะรูด้านซ้าย 2 รู</translation>
 <translation id="6554795675067793129">บัญชีของคุณจัดการโดย <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -1842,7 +1840,6 @@
 <translation id="8790007591277257123">&amp;ทำซ้ำการนำออก</translation>
 <translation id="8792621596287649091">คุณอาจเข้าถึงบัญชี <ph name="ORG_NAME" /> ไม่ได้หรือถูกโจรกรรมข้อมูลประจำตัว Chromium ขอแนะนำให้เปลี่ยนรหัสผ่านตอนนี้เลย</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> ได้เปิดใช้เครื่องมือเชื่อมต่อ Chrome Enterprise ในเบราว์เซอร์ เครื่องมือเชื่อมต่อเหล่านี้เข้าถึงข้อมูลบางอย่างของคุณได้</translation>
-<translation id="8800988563907321413">คำแนะนำในบริเวณใกล้เคียงจะปรากฏที่นี่</translation>
 <translation id="8805819170075074995">รายการ "<ph name="LANGUAGE_ID" />": ระบบไม่สนใจรายการนี้เพราะมีอยู่ในนโยบาย SpellcheckLanguage เช่นกัน</translation>
 <translation id="8807160976559152894">ตัดออกหลังหน้าแต่ละหน้า</translation>
 <translation id="8820817407110198400">บุ๊กมาร์ก</translation>

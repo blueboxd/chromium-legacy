@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Тут відображатимуться закладки, збережені на інших ваших пристроях.</translation>
 <translation id="1113597929977215864">Показати в режимі спрощеного перегляду</translation>
 <translation id="1122278879166832009">Торкніться тут, щоб швидко відкривати головну сторінку на будь-якому пристрої</translation>
+<translation id="1126809382673880764">Не захищає від небезпечних веб-сайтів, завантажень і розширень. Безпечний перегляд усе ще працюватиме в інших сервісах Google (у яких він доступний), як-от Gmail і Пошук.</translation>
 <translation id="1129510026454351943">Деталі. <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Очікується 1 завантаження.}one{Очікується # завантаження.}few{Очікується # завантаження.}many{Очікується # завантажень.}other{Очікується # завантаження.}}</translation>
 <translation id="1145536944570833626">Видалити наявні дані.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Світла</translation>
 <translation id="1810845389119482123">Початкове налаштування синхронізації не завершено</translation>
 <translation id="1821253160463689938">Використовує файли cookie, щоб зберігати налаштування, навіть якщо ви не відвідуєте ці сторінки</translation>
-<translation id="1826516787628120939">Перевірка</translation>
 <translation id="1829244130665387512">Знайти на сторінці</translation>
 <translation id="1853692000353488670">Нова анонімна вкладка</translation>
 <translation id="1856325424225101786">Скинути спрощений режим?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Зберігання паролів</translation>
 <translation id="1952172573699511566">Якщо можливо, текст на веб-сайтах відображатиметься вибраною мовою.</translation>
 <translation id="1960290143419248813">Chrome більше не оновлюється в цій версії Android</translation>
+<translation id="1963976881984600709">Стандартний захист</translation>
 <translation id="1966710179511230534">Оновіть свої дані для входу.</translation>
 <translation id="1974060860693918893">Розширені</translation>
+<translation id="1984417487208496350">Захист вимкнено (не рекомендовано)</translation>
 <translation id="1984705450038014246">Синхронізуйте дані Chrome</translation>
 <translation id="1986685561493779662">Ця назва вже існує</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" />, кнопка <ph name="LINK_NAME" /></translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">Пошук з Об'єктивом <ph name="BEGIN_NEW" />Новинка<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Відкрити в новій вкладці</translation>
 <translation id="4198423547019359126">Немає доступних місць для завантаження</translation>
-<translation id="4202553989407425169">Chrome може перевіряти, чи працюють параметри безпеки нижче.</translation>
 <translation id="4209895695669353772">Щоб отримувати персоналізовані пропозиції від Google, увімкніть синхронізацію</translation>
 <translation id="423219824432660969">Зашифрувати синхронізовані дані за допомогою пароля Google від <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Відкрити налаштування</translation>
@@ -459,6 +460,7 @@
 <translation id="4749960740855309258">Відкрити нову вкладку</translation>
 <translation id="4759238208242260848">Завантаження</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 файл завантажено.}one{# файл завантажено.}few{# файли завантажено.}many{# файлів завантажено.}other{# файлу завантажено.}}</translation>
+<translation id="4766678251456904326">Додати обліковий запис на пристрій</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{Заплановано 1 завантаження.}one{Заплановано # завантаження.}few{Заплановано # завантаження.}many{Заплановано # завантажень.}other{Заплановано # завантаження.}}</translation>
 <translation id="478981486571169252">Ви зможете переглядати статус входу на сайті <ph name="SITE_NAME" />, дані веб-перегляду й сайтів у Chrome.</translation>
 <translation id="4802417911091824046">Парольна фраза не стосується способів оплати й адрес із Google Pay.
@@ -490,6 +492,7 @@
 <translation id="4943872375798546930">Не знайдено жодного результату</translation>
 <translation id="4961107849584082341">Перекладіть цю сторінку будь-якою мовою</translation>
 <translation id="4970824347203572753">Функція недоступна у вашій країні</translation>
+<translation id="4971735654804503942">Швидший активний захист від небезпечних веб-сайтів, завантажень і розширень. Попереджає про розкриття паролів через порушення безпеки даних. Вимагає надсилати в Google дані веб-перегляду.</translation>
 <translation id="497421865427891073">Перейти вперед</translation>
 <translation id="4988210275050210843">Завантажується файл (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Сторінки</translation>
@@ -561,7 +564,6 @@
 <translation id="5527082711130173040">Щоб шукати пристрої, Chrome потрібен доступ до геоданих. <ph name="BEGIN_LINK1" />Оновити дозволи<ph name="END_LINK1" />. Доступ до геоданих також <ph name="BEGIN_LINK2" />вимкнено на цьому пристрої<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Закрити анонімні вкладки</translation>
 <translation id="5534640966246046842">URL-адресу сайту скопійовано</translation>
-<translation id="5548606607480005320">Перевірка безпеки</translation>
 <translation id="5561549206367097665">Очікується мережа…</translation>
 <translation id="55737423895878184">Геодані та сповіщення дозволено</translation>
 <translation id="5578795271662203820">Шукати зображення в <ph name="SEARCH_ENGINE" /></translation>
@@ -600,7 +602,6 @@
 <translation id="583281660410589416">Невідомий</translation>
 <translation id="5833984609253377421">Поділитися посиланням</translation>
 <translation id="5836192821815272682">Завантажується оновлення Chrome…</translation>
-<translation id="584120177693484274">Не перевірено</translation>
 <translation id="5853623416121554550">призупинено</translation>
 <translation id="5854790677617711513">Понад 30 днів тому</translation>
 <translation id="5858741533101922242">Chrome не може ввімкнути адаптер Bluetooth</translation>
@@ -736,10 +737,12 @@
 <translation id="685850645784703949">Рекомендації від Google вимкнено</translation>
 <translation id="6864459304226931083">Завантажити зображення</translation>
 <translation id="6865313869410766144">Дані автозаповнення форм</translation>
+<translation id="6882836635272038266">Стандартний захист від відомих небезпечних веб-сайтів, завантажень і розширень.</translation>
 <translation id="6884306546558072722">Переглядайте контент у режимі офлайн</translation>
 <translation id="688738109438487280">Додати наявні дані в обліковий запис <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Розблокуйте, щоб скопіювати пароль</translation>
 <translation id="6896758677409633944">Копіювати</translation>
+<translation id="6900532703269623216">Покращений захист</translation>
 <translation id="6903907808598579934">Увімкнути синхронізацію</translation>
 <translation id="6942665639005891494">Будь-коли змінюйте папку для завантажень за умовчанням, використовуючи відповідну опцію в меню "Налаштування"</translation>
 <translation id="6945221475159498467">Вибрати</translation>

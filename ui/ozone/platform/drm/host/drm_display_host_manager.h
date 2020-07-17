@@ -51,6 +51,9 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
   void TakeDisplayControl(display::DisplayControlCallback callback);
   void RelinquishDisplayControl(display::DisplayControlCallback callback);
   void UpdateDisplays(display::GetDisplaysCallback callback);
+  void ConfigureDisplays(
+      const std::vector<display::DisplayConfigurationParams>& config_requests,
+      display::ConfigureCallback callback);
 
   // DeviceEventObserver overrides:
   void OnDeviceEvent(const DeviceEvent& event) override;

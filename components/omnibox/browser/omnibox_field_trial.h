@@ -411,9 +411,11 @@ bool IsExperimentalKeywordModeEnabled();
 // Rich autocompletion.
 bool IsRichAutocompletionEnabled();
 bool RichAutocompletionAutocompleteTitles();
+size_t RichAutocompletionAutocompleteTitlesMinChar();
 bool RichAutocompletionTwoLineOmnibox();
 bool RichAutocompletionShowTitles();
 bool RichAutocompletionAutocompleteNonPrefix();
+size_t RichAutocompletionAutocompleteNonPrefixMinChar();
 
 // On Device Head Suggestions feature and its helper functions.
 bool IsOnDeviceHeadSuggestEnabledForIncognito();
@@ -531,9 +533,11 @@ extern int kDefaultMinimumTimeBetweenSuggestQueriesMs;
 
 // Parameter names used for rich autocompletion variations.
 extern const char kRichAutocompletionAutocompleteTitlesParam[];
+extern const char kRichAutocompletionAutocompleteTitlesMinCharParam[];
 extern const char kRichAutocompletionTwoLineOmniboxParam[];
 extern const char kRichAutocompletionShowTitlesParam[];
-extern const char kRichAutocompletionAutocompleteNonPrefix[];
+extern const char kRichAutocompletionAutocompleteNonPrefixParam[];
+extern const char kRichAutocompletionAutocompleteNonPrefixMinCharParam[];
 
 // Parameter names used by image search experiment that shows thumbnail in front
 // of the Omnibox clipboard image search suggestion.

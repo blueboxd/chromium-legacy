@@ -104,6 +104,7 @@
 <translation id="5224391634244552924">Tidak ada sandi yang tersimpan. Chromium dapat memeriksa sandi Anda jika Anda menyimpannya.</translation>
 <translation id="5277894862589591112">Untuk menerapkan perubahan Anda, luncurkan ulang Chromium</translation>
 <translation id="5358375970380395591">Anda masuk dengan akun terkelola dan memberikan administratornya kontrol atas profil Chromium Anda. Data Chromium Anda, seperti aplikasi, bookmark, histori, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME" />. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain. <ph name="LEARN_MORE" /></translation>
+<translation id="5374145464979633459">Terjadi error saat Chromium memeriksa software perangkat</translation>
 <translation id="5386450000063123300">Memperbarui Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Izinkan login Chromium</translation>
 <translation id="5398878173008909840">Tersedia Chromium versi baru.</translation>

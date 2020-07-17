@@ -13,6 +13,8 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
+#import "ios/chrome/browser/ui/table_view/table_view_constants.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -70,6 +72,14 @@ id<GREYMatcher> CancelButton() {
 id<GREYMatcher> OpenInNewIncognitoTabButton() {
   return ButtonWithAccessibilityLabelId(
       IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB);
+}
+// Matcher for the empty TableView background
+id<GREYMatcher> EmptyTableViewBackground() {
+  return grey_accessibilityID(kTableViewEmptyViewID);
+}
+// Matcher for the empty TableView illustrated background
+id<GREYMatcher> EmptyIllustratedTableViewBackground() {
+  return grey_accessibilityID(kTableViewIllustratedEmptyViewID);
 }
 
 }  // namespace
@@ -553,6 +563,42 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
     id<GREYMatcher> exitMatcher =
         grey_accessibilityID(kHistoryNavigationControllerDoneButtonIdentifier);
     [[EarlGrey selectElementWithMatcher:exitMatcher] performAction:grey_tap()];
+}
+
+- (void)testEmptyState {
+  [self loadTestURLs];
+  [self openHistoryPanel];
+
+  // The toolbar should contain the CBD and edit buttons.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          HistoryClearBrowsingDataButton()]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:NavigationEditButton()]
+      assertWithMatcher:grey_notNil()];
+
+  [ChromeEarlGreyUI openAndClearBrowsingDataFromHistory];
+
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
+    // Toolbar should only contain CBD button and the background should contain
+    // the Illustrated empty view
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                            HistoryClearBrowsingDataButton()]
+        assertWithMatcher:grey_notNil()];
+    [[EarlGrey selectElementWithMatcher:NavigationEditButton()]
+        assertWithMatcher:grey_nil()];
+    [[EarlGrey selectElementWithMatcher:EmptyIllustratedTableViewBackground()]
+        assertWithMatcher:grey_notNil()];
+  } else {
+    // The toolbar should still contain the CBD and Edit buttons and the
+    // background should contain the empty view
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                            HistoryClearBrowsingDataButton()]
+        assertWithMatcher:grey_notNil()];
+    [[EarlGrey selectElementWithMatcher:NavigationEditButton()]
+        assertWithMatcher:grey_notNil()];
+    [[EarlGrey selectElementWithMatcher:EmptyTableViewBackground()]
+        assertWithMatcher:grey_notNil()];
+  }
 }
 
 #pragma mark Helper Methods

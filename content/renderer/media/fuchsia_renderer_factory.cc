@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/fuchsia_renderer_factory.h"
 
+#include <fuchsia/media/cpp/fidl.h>
 #include <memory>
 #include <utility>
 
@@ -14,6 +15,9 @@
 #include "media/renderers/video_renderer_impl.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "media/fuchsia/mojom/fuchsia_media_resource_provider.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 
 namespace content {
@@ -57,8 +61,14 @@ std::unique_ptr<media::Renderer> FuchsiaRendererFactory::CreateRenderer(
   interface_broker_->GetInterface(
       media_resource_provider.InitWithNewPipeAndPassReceiver());
 
+  mojo::Remote<media::mojom::FuchsiaMediaResourceProvider>
+      remote_media_resource_provider;
+  remote_media_resource_provider.Bind(std::move(media_resource_provider));
+  fidl::InterfaceHandle<fuchsia::media::AudioConsumer> audio_consumer_handle;
+  remote_media_resource_provider->CreateAudioConsumer(
+      audio_consumer_handle.NewRequest());
   auto audio_renderer = std::make_unique<media::FuchsiaAudioRenderer>(
-      media_log_, std::move(media_resource_provider));
+      media_log_, std::move(audio_consumer_handle));
 
   media::GpuVideoAcceleratorFactories* gpu_factories = nullptr;
   if (get_gpu_factories_cb_)

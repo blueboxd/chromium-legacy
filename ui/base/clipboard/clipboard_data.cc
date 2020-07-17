@@ -22,6 +22,7 @@ ClipboardData::ClipboardData(const ClipboardData& other) {
   markup_data_ = other.markup_data_;
   url_ = other.url_;
   rtf_data_ = other.rtf_data_;
+  bitmap_ = other.bitmap();
   bookmark_title_ = other.bookmark_title_;
   bookmark_url_ = other.bookmark_url_;
   custom_data_format_ = other.custom_data_format_;
@@ -32,6 +33,8 @@ ClipboardData::ClipboardData(const ClipboardData& other) {
 }
 
 ClipboardData::~ClipboardData() = default;
+
+ClipboardData::ClipboardData(ClipboardData&&) = default;
 
 bool ClipboardData::operator==(const ClipboardData& that) const {
   return format_ == that.format() && text_ == that.text() &&

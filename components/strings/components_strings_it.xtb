@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="1008557486741366299">Non adesso</translation>
+<translation id="100957008357583611">Usare la tua posizione?</translation>
 <translation id="1010200102790553230">Carica la pagina più tardi</translation>
 <translation id="1015730422737071372">Fornisci ulteriori dettagli</translation>
 <translation id="1019413721762100891">Off</translation>
@@ -425,7 +426,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="2705137772291741111">La copia del sito salvata (nella cache) era illeggibile.</translation>
 <translation id="2709516037105925701">Compilazione automatica</translation>
 <translation id="2713444072780614174">Bianco</translation>
-<translation id="2720342946869265578">Qui vicino</translation>
 <translation id="2721148159707890343">Richiesta riuscita</translation>
 <translation id="272451190272506600">Tocca il sensore per pagare</translation>
 <translation id="2728127805433021124">Il certificato del server è stato firmato utilizzando un algoritmo di firma debole.</translation>
@@ -719,7 +719,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="3990250421422698716">Offset jog</translation>
 <translation id="3996311196211510766">Il sito <ph name="ORIGIN" /> ha richiesto l'applicazione di un criterio di origine
     a tutte le richieste indirizzate a esso, ma questo criterio al momento non può essere applicato.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{Una pagina web nelle vicinanze}other{# pagine web nelle vicinanze}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Documento PDF contenente {COUNT} pagina}other{Documento PDF contenente {COUNT} pagine}}</translation>
 <translation id="4030383055268325496">&amp;Annulla aggiunta</translation>
 <translation id="4032320456957708163">Il browser in uso è gestito da <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -937,7 +936,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Salva…</translation>
 <translation id="4913987521957242411">Perforatura in alto a sinistra</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{e un'altra pagina web}other{e altre # pagine web}}</translation>
 <translation id="4923459931733593730">Pagamento</translation>
 <translation id="4926049483395192435">Deve essere specificato.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> dice</translation>
@@ -1178,6 +1176,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="5869405914158311789">Impossibile raggiungere il sito</translation>
 <translation id="5869522115854928033">Password salvate</translation>
 <translation id="5887400589839399685">Carta salvata</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> richiede di effettuare il backup dei dati e di restituire il dispositivo.</translation>
 <translation id="5895138241574237353">Riavvia</translation>
 <translation id="5895187275912066135">Emesso in data</translation>
 <translation id="5901630391730855834">Giallo</translation>
@@ -1327,7 +1326,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="6518133107902771759">Verifica</translation>
 <translation id="6521745193039995384">Non attivo</translation>
 <translation id="6529602333819889595">&amp;Ripeti eliminazione</translation>
-<translation id="6534179046333460208">Suggerimenti relativi al Physical Web</translation>
 <translation id="6545864417968258051">Scansione Bluetooth</translation>
 <translation id="6547208576736763147">Perforatura doppia a sinistra</translation>
 <translation id="6554795675067793129">Il tuo account è gestito da <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1849,7 +1847,6 @@ Ulteriori dettagli:
 <translation id="8790007591277257123">&amp;Ripeti eliminazione</translation>
 <translation id="8792621596287649091">Potresti non riuscire più ad accedere al tuo account <ph name="ORG_NAME" /> o subire un furto d'identità. Chromium ti consiglia di cambiare subito la password.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> ha attivato Chrome Enterprise Connectors sul tuo browser. Questi connettori hanno accesso ad alcuni dei tuoi dati.</translation>
-<translation id="8800988563907321413">I suggerimenti Qui vicino vengono visualizzati qui</translation>
 <translation id="8805819170075074995">Voce "<ph name="LANGUAGE_ID" />": voce ignorata perché è inclusa anche nella norma SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Taglia dopo ciascuna pagina</translation>
 <translation id="8820817407110198400">Preferiti</translation>

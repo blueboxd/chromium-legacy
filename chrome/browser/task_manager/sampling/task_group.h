@@ -54,7 +54,7 @@ class TaskGroup {
       base::ProcessHandle proc_handle,
       base::ProcessId proc_id,
       bool is_running_in_vm,
-      const base::Closure& on_background_calculations_done,
+      const base::RepeatingClosure& on_background_calculations_done,
       const scoped_refptr<SharedSampler>& shared_sampler,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_pool_runner);
   ~TaskGroup();
@@ -164,7 +164,7 @@ class TaskGroup {
 
   // This is a callback into the TaskManagerImpl to inform it that the
   // background calculations for this TaskGroup has finished.
-  const base::Closure on_background_calculations_done_;
+  const base::RepeatingClosure on_background_calculations_done_;
 
   scoped_refptr<TaskGroupSampler> worker_thread_sampler_;
 

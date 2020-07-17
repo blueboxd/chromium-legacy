@@ -22,6 +22,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/stack_trace.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
@@ -46,6 +47,8 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/x/x11_cursor.h"
+#include "ui/base/x/x11_cursor_loader.h"
 #include "ui/base/x/x11_menu_list.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
@@ -161,219 +164,6 @@ bool GetWindowManagerName(std::string* wm_name) {
   gfx::X11ErrorTracker err_tracker;
   bool result = GetStringProperty(wm_window, "_NET_WM_NAME", wm_name);
   return !err_tracker.FoundNewError() && result;
-}
-
-unsigned int GetMaxCursorSize() {
-  constexpr unsigned int kQuerySize = std::numeric_limits<uint16_t>::max();
-  auto* connection = x11::Connection::Get();
-  x11::QueryBestSizeRequest request{
-      x11::QueryShapeOf::LargestCursor,
-      static_cast<x11::Window>(GetX11RootWindow()), kQuerySize, kQuerySize};
-  if (auto response = connection->QueryBestSize(request).Sync())
-    return std::min(response->width, response->height);
-  // libXcursor defines MAX_BITMAP_CURSOR_SIZE to 64 in src/xcursorint.h, so use
-  // this as a fallback in case the X server returns zero size, which can happen
-  // on some buggy implementations of XWayland/XMir.
-  return 64;
-}
-
-// A process wide singleton cache for custom X cursors.
-class XCustomCursorCache {
- public:
-  static XCustomCursorCache* GetInstance() {
-    return base::Singleton<XCustomCursorCache>::get();
-  }
-
-  ::Cursor InstallCustomCursor(XcursorImage* image) {
-    XCustomCursor* custom_cursor = new XCustomCursor(image);
-    ::Cursor xcursor = custom_cursor->cursor();
-    cache_[xcursor] = custom_cursor;
-    return xcursor;
-  }
-
-  void Ref(::Cursor cursor) { cache_[cursor]->Ref(); }
-
-  void Unref(::Cursor cursor) {
-    if (cache_[cursor]->Unref())
-      cache_.erase(cursor);
-  }
-
-  void Clear() { cache_.clear(); }
-
-  const XcursorImage* GetXcursorImage(::Cursor cursor) const {
-    return cache_.find(cursor)->second->image();
-  }
-
- private:
-  friend struct base::DefaultSingletonTraits<XCustomCursorCache>;
-
-  class XCustomCursor {
-   public:
-    // This takes ownership of the image.
-    explicit XCustomCursor(XcursorImage* image) : image_(image), ref_(1) {
-      cursor_ = XcursorImageLoadCursor(gfx::GetXDisplay(), image);
-    }
-
-    ~XCustomCursor() {
-      XcursorImageDestroy(image_);
-      XFreeCursor(gfx::GetXDisplay(), cursor_);
-    }
-
-    ::Cursor cursor() const { return cursor_; }
-
-    void Ref() { ++ref_; }
-
-    // Returns true if the cursor was destroyed because of the unref.
-    bool Unref() {
-      if (--ref_ == 0) {
-        delete this;
-        return true;
-      }
-      return false;
-    }
-
-    const XcursorImage* image() const { return image_; }
-
-   private:
-    XcursorImage* image_;
-    int ref_;
-    ::Cursor cursor_;
-
-    DISALLOW_COPY_AND_ASSIGN(XCustomCursor);
-  };
-
-  XCustomCursorCache() = default;
-  ~XCustomCursorCache() { Clear(); }
-
-  std::map<::Cursor, XCustomCursor*> cache_;
-  DISALLOW_COPY_AND_ASSIGN(XCustomCursorCache);
-};
-
-// Converts a SKBitmap to unpremul alpha.
-SkBitmap ConvertSkBitmapToUnpremul(const SkBitmap& bitmap) {
-  DCHECK_NE(bitmap.alphaType(), kUnpremul_SkAlphaType);
-
-  SkImageInfo image_info = SkImageInfo::MakeN32(bitmap.width(), bitmap.height(),
-                                                kUnpremul_SkAlphaType);
-  SkBitmap converted_bitmap;
-  converted_bitmap.allocPixels(image_info);
-  bitmap.readPixels(image_info, converted_bitmap.getPixels(),
-                    image_info.minRowBytes(), 0, 0);
-
-  return converted_bitmap;
-}
-
-// Returns a cursor name, compatible with either X11 or the FreeDesktop.org
-// cursor spec
-// (https://www.x.org/releases/current/doc/libX11/libX11/libX11.html#x_font_cursors
-// and https://www.freedesktop.org/wiki/Specifications/cursor-spec/), followed
-// by fallbacks that can work as replacements in some environments where the
-// original may not be available (e.g. desktop environments other than
-// GNOME and KDE).
-// TODO(hferreiro): each list starts with the FreeDesktop.org icon name but
-// "ns-resize", "ew-resize", "nesw-resize", "nwse-resize", "grab", "grabbing",
-// which were not available in older versions of Breeze, the default KDE theme.
-std::vector<const char*> CursorNamesFromType(mojom::CursorType type) {
-  switch (type) {
-    case mojom::CursorType::kMove:
-      // Returning "move" is the correct thing here, but Blink doesn't make a
-      // distinction between move and all-scroll.  Other platforms use a cursor
-      // more consistent with all-scroll, so use that.
-    case mojom::CursorType::kMiddlePanning:
-    case mojom::CursorType::kMiddlePanningVertical:
-    case mojom::CursorType::kMiddlePanningHorizontal:
-      return {"all-scroll", "fleur"};
-    case mojom::CursorType::kEastPanning:
-    case mojom::CursorType::kEastResize:
-      return {"e-resize", "right_side"};
-    case mojom::CursorType::kNorthPanning:
-    case mojom::CursorType::kNorthResize:
-      return {"n-resize", "top_side"};
-    case mojom::CursorType::kNorthEastPanning:
-    case mojom::CursorType::kNorthEastResize:
-      return {"ne-resize", "top_right_corner"};
-    case mojom::CursorType::kNorthWestPanning:
-    case mojom::CursorType::kNorthWestResize:
-      return {"nw-resize", "top_left_corner"};
-    case mojom::CursorType::kSouthPanning:
-    case mojom::CursorType::kSouthResize:
-      return {"s-resize", "bottom_side"};
-    case mojom::CursorType::kSouthEastPanning:
-    case mojom::CursorType::kSouthEastResize:
-      return {"se-resize", "bottom_right_corner"};
-    case mojom::CursorType::kSouthWestPanning:
-    case mojom::CursorType::kSouthWestResize:
-      return {"sw-resize", "bottom_left_corner"};
-    case mojom::CursorType::kWestPanning:
-    case mojom::CursorType::kWestResize:
-      return {"w-resize", "left_side"};
-    case mojom::CursorType::kNone:
-      return {"none"};
-    case mojom::CursorType::kGrab:
-      return {"openhand", "grab"};
-    case mojom::CursorType::kGrabbing:
-      return {"closedhand", "grabbing", "hand2"};
-    case mojom::CursorType::kCross:
-      return {"crosshair", "cross"};
-    case mojom::CursorType::kHand:
-      return {"pointer", "hand", "hand2"};
-    case mojom::CursorType::kIBeam:
-      return {"text", "xterm"};
-    case mojom::CursorType::kProgress:
-      return {"progress", "left_ptr_watch", "watch"};
-    case mojom::CursorType::kWait:
-      return {"wait", "watch"};
-    case mojom::CursorType::kHelp:
-      return {"help"};
-    case mojom::CursorType::kNorthSouthResize:
-      return {"sb_v_double_arrow", "ns-resize"};
-    case mojom::CursorType::kEastWestResize:
-      return {"sb_h_double_arrow", "ew-resize"};
-    case mojom::CursorType::kColumnResize:
-      return {"col-resize", "sb_h_double_arrow"};
-    case mojom::CursorType::kRowResize:
-      return {"row-resize", "sb_v_double_arrow"};
-    case mojom::CursorType::kNorthEastSouthWestResize:
-      return {"size_bdiag", "nesw-resize", "fd_double_arrow"};
-    case mojom::CursorType::kNorthWestSouthEastResize:
-      return {"size_fdiag", "nwse-resize", "bd_double_arrow"};
-    case mojom::CursorType::kVerticalText:
-      return {"vertical-text"};
-    case mojom::CursorType::kZoomIn:
-      return {"zoom-in"};
-    case mojom::CursorType::kZoomOut:
-      return {"zoom-out"};
-    case mojom::CursorType::kCell:
-      return {"cell", "plus"};
-    case mojom::CursorType::kContextMenu:
-      return {"context-menu"};
-    case mojom::CursorType::kAlias:
-      return {"alias"};
-    case mojom::CursorType::kNoDrop:
-      return {"no-drop"};
-    case mojom::CursorType::kCopy:
-      return {"copy"};
-    case mojom::CursorType::kNotAllowed:
-      return {"not-allowed", "crossed_circle"};
-    case mojom::CursorType::kDndNone:
-      return {"dnd-none", "hand2"};
-    case mojom::CursorType::kDndMove:
-      return {"dnd-move", "hand2"};
-    case mojom::CursorType::kDndCopy:
-      return {"dnd-copy", "hand2"};
-    case mojom::CursorType::kDndLink:
-      return {"dnd-link", "hand2"};
-    case mojom::CursorType::kCustom:
-      // kCustom is for custom image cursors. The platform cursor will be set
-      // at WebCursor::GetPlatformCursor().
-      NOTREACHED();
-      FALLTHROUGH;
-    case mojom::CursorType::kNull:
-    case mojom::CursorType::kPointer:
-      return {"left_ptr"};
-  }
-  NOTREACHED();
-  return {"left_ptr"};
 }
 
 }  // namespace
@@ -554,75 +344,6 @@ int ShmEventBase() {
   return event_base;
 }
 
-::Cursor CreateReffedCustomXCursor(XcursorImage* image) {
-  return XCustomCursorCache::GetInstance()->InstallCustomCursor(image);
-}
-
-void RefCustomXCursor(::Cursor cursor) {
-  XCustomCursorCache::GetInstance()->Ref(cursor);
-}
-
-void UnrefCustomXCursor(::Cursor cursor) {
-  XCustomCursorCache::GetInstance()->Unref(cursor);
-}
-
-XcursorImage* SkBitmapToXcursorImage(const SkBitmap& cursor_image,
-                                     const gfx::Point& hotspot) {
-  // TODO(crbug.com/596782): It is possible for cursor_image to be zeroed out
-  // at this point, which leads to benign debug errors. Once this is fixed, we
-  // should  DCHECK_EQ(cursor_image.colorType(), kN32_SkColorType).
-
-  // X11 expects bitmap with unpremul alpha. If bitmap is premul then convert,
-  // otherwise semi-transparent parts of cursor will look strange.
-  const SkBitmap converted = (cursor_image.alphaType() != kUnpremul_SkAlphaType)
-                                 ? ConvertSkBitmapToUnpremul(cursor_image)
-                                 : cursor_image;
-
-  gfx::Point hotspot_point = hotspot;
-  SkBitmap scaled;
-
-  // X11 seems to have issues with cursors when images get larger than 64
-  // pixels. So rescale the image if necessary.
-  static const float kMaxPixel = GetMaxCursorSize();
-  bool needs_scale = false;
-  if (converted.width() > kMaxPixel || converted.height() > kMaxPixel) {
-    float scale = 1.f;
-    if (converted.width() > converted.height())
-      scale = kMaxPixel / converted.width();
-    else
-      scale = kMaxPixel / converted.height();
-
-    scaled = skia::ImageOperations::Resize(
-        converted, skia::ImageOperations::RESIZE_BETTER,
-        static_cast<int>(converted.width() * scale),
-        static_cast<int>(converted.height() * scale));
-    hotspot_point = gfx::ScaleToFlooredPoint(hotspot, scale);
-    needs_scale = true;
-  }
-
-  const SkBitmap& bitmap = needs_scale ? scaled : converted;
-  XcursorImage* image = XcursorImageCreate(bitmap.width(), bitmap.height());
-  image->xhot = std::min(bitmap.width() - 1, hotspot_point.x());
-  image->yhot = std::min(bitmap.height() - 1, hotspot_point.y());
-
-  if (bitmap.width() && bitmap.height()) {
-    // The |bitmap| contains ARGB image, so just copy it.
-    memcpy(image->pixels, bitmap.getPixels(),
-           bitmap.width() * bitmap.height() * 4);
-  }
-
-  return image;
-}
-
-::Cursor LoadCursorFromType(mojom::CursorType type) {
-  for (auto* name : CursorNamesFromType(type)) {
-    ::Cursor cursor = XcursorLibraryLoadCursor(gfx::GetXDisplay(), name);
-    if (cursor != x11::None)
-      return cursor;
-  }
-  return x11::None;
-}
-
 int CoalescePendingMotionEvents(const x11::Event* x11_event,
                                 x11::Event* last_event) {
   const auto* motion = x11_event->As<x11::MotionNotifyEvent>();
@@ -692,27 +413,6 @@ int CoalescePendingMotionEvents(const x11::Event* x11_event,
   }
 
   return num_coalesced;
-}
-
-void HideHostCursor() {
-  static base::NoDestructor<XScopedCursor> invisible_cursor(
-      CreateInvisibleCursor(), gfx::GetXDisplay());
-  XDefineCursor(gfx::GetXDisplay(), DefaultRootWindow(gfx::GetXDisplay()),
-                invisible_cursor->get());
-}
-
-::Cursor CreateInvisibleCursor() {
-  XDisplay* xdisplay = gfx::GetXDisplay();
-  ::Cursor invisible_cursor;
-  char nodata[] = {0, 0, 0, 0, 0, 0, 0, 0};
-  XColor black;
-  black.red = black.green = black.blue = 0;
-  Pixmap blank = XCreateBitmapFromData(xdisplay, DefaultRootWindow(xdisplay),
-                                       nodata, 8, 8);
-  invisible_cursor =
-      XCreatePixmapCursor(xdisplay, blank, blank, &black, &black, 0, 0);
-  XFreePixmap(xdisplay, blank);
-  return invisible_cursor;
 }
 
 void SetUseOSWindowFrame(x11::Window window, bool use_os_window_frame) {
@@ -1428,33 +1128,9 @@ size_t XRefcountedMemory::size() const {
 
 XRefcountedMemory::~XRefcountedMemory() = default;
 
-XScopedCursor::XScopedCursor(::Cursor cursor, XDisplay* display)
-    : cursor_(cursor), display_(display) {}
-
-XScopedCursor::~XScopedCursor() {
-  reset(0U);
-}
-
-::Cursor XScopedCursor::get() const {
-  return cursor_;
-}
-
-void XScopedCursor::reset(::Cursor cursor) {
-  if (cursor_)
-    XFreeCursor(display_, cursor_);
-  cursor_ = cursor;
-}
-
 void XImageDeleter::operator()(XImage* image) const {
   XDestroyImage(image);
 }
-
-namespace test {
-
-const XcursorImage* GetCachedXcursorImage(::Cursor cursor) {
-  return XCustomCursorCache::GetInstance()->GetXcursorImage(cursor);
-}
-}  // namespace test
 
 void SetX11ErrorHandlers(XErrorHandler error_handler,
                          XIOErrorHandler io_error_handler) {

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ky">
 <translation id="1008557486741366299">Азыр эмес</translation>
+<translation id="100957008357583611">Кайда жүргөнүңүз көрүнсүнбү?</translation>
 <translation id="1010200102790553230">Барак кийинчерээк жүктөлсүн</translation>
 <translation id="1015730422737071372">Кошумча маалымат берүү</translation>
 <translation id="1019413721762100891">Өчүк</translation>
@@ -425,7 +426,6 @@
 <translation id="2705137772291741111">Бул сайттын сакталган (кештелген) көчүрмөсү окулбай койду.</translation>
 <translation id="2709516037105925701">Автотолтуруу</translation>
 <translation id="2713444072780614174">Ак</translation>
-<translation id="2720342946869265578">Жакынкы</translation>
 <translation id="2721148159707890343">Сурам аткарылды</translation>
 <translation id="272451190272506600">Төлөө үчүн сенсорду басыңыз</translation>
 <translation id="2728127805433021124">Сервердин тастыктамасына чабал колтамга алгоритми кол койгон.</translation>
@@ -721,7 +721,6 @@
 <translation id="3990250421422698716">Оффсеттик басып чыгаруу</translation>
 <translation id="3996311196211510766"><ph name="ORIGIN" /> сайты бардык кирүү сурамдары үчүн баштапкы саясаты
     колдонулсун деп суранды, бирок бул саясатты учурда колдонууга болбойт.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 веб баракча табылды}other{# веб баракча табылды}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} беттен турган PDF документи}other{{COUNT} беттен турган PDF документи}}</translation>
 <translation id="4030383055268325496">Кошууну &amp;жасабоо</translation>
 <translation id="4032320456957708163">Серепчиңиз <ph name="ENROLLMENT_DOMAIN" /> тарабынан башкарылат</translation>
@@ -939,7 +938,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Сактоо…</translation>
 <translation id="4913987521957242411">Жогорку сол жагын тешүү</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{дагы 1 веб баракча}other{дагы # веб баракча}}</translation>
 <translation id="4923459931733593730">Төлөм</translation>
 <translation id="4926049483395192435">Белгилениши керек.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> мындай дейт:</translation>
@@ -1180,6 +1178,7 @@
 <translation id="5869405914158311789">Бул сайт жеткиликсиз</translation>
 <translation id="5869522115854928033">Сакталган сырсөздөр</translation>
 <translation id="5887400589839399685">Карта сакталды</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> дайындарыңыздын камдык көчүрмөсүн сактап, бул түзмөктү кайтарууну талап кылууда.</translation>
 <translation id="5895138241574237353">Өчүрүп күйгүзүү</translation>
 <translation id="5895187275912066135">Берилген күнү</translation>
 <translation id="5901630391730855834">Сары</translation>
@@ -1330,7 +1329,6 @@
 <translation id="6518133107902771759">Текшерүү</translation>
 <translation id="6521745193039995384">Жигердүү эмес</translation>
 <translation id="6529602333819889595">Жок кылууну &amp;кайталоо</translation>
-<translation id="6534179046333460208">Айланадагы Интернет сунуштары</translation>
 <translation id="6545864417968258051">Bluetooth түзмөктөрүн издөө</translation>
 <translation id="6547208576736763147">Муштум менен сол жакка эки жолу уруу</translation>
 <translation id="6554795675067793129">Аккаунтуңуз <ph name="ENROLLMENT_DOMAIN" /> тарабынан башкарылууда.</translation>
@@ -1852,7 +1850,6 @@
 <translation id="8790007591277257123">Жок кылууну &amp;кайталоо</translation>
 <translation id="8792621596287649091">Кимдир бирөө сиздин жеке дайындарыңызга же <ph name="ORG_NAME" /> аккаунтуңузга кирип алган окшойт. Chromium сырсөзүңүздү азыр өзгөртүүнү сунуштайт.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> серепчиңизде Chrome Enterprise туташтыргычтарын иштетти. Бул туташтыргычтардын айрым маалыматыңызга кирүү мүмкүнчүлүктөрү бар.</translation>
-<translation id="8800988563907321413">Сизге сунушталган жакын жердеги нерселер бул жерден көрүнөт</translation>
 <translation id="8805819170075074995">Тизмедеги жазуу "<ph name="LANGUAGE_ID" />": SpellcheckLanguage саясатында камтылгандыктан, киргизүү этибарга алынган жок.</translation>
 <translation id="8807160976559152894">Ар бир барактан кийин кыркуу</translation>
 <translation id="8820817407110198400">Кыстармалар</translation>

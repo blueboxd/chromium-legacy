@@ -55,8 +55,6 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
       service_manager::BinderRegistry* registry,
       blink::AssociatedInterfaceRegistry* associated_registry,
       RenderProcessHost* render_process_host) override;
-  base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
-      base::StringPiece name) override;
   void OverrideWebkitPrefs(RenderViewHost* render_view_host,
                            WebPreferences* prefs) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,

@@ -84,7 +84,7 @@ TEST(BookmarkUpdatePreprocessingTest, ShouldPropagateGuidFromSpecifics) {
 
   base::HistogramTester histogram_tester;
   sync_pb::EntitySpecifics specifics = entity.specifics();
-  AdaptGuidForBookmark(entity, &specifics);
+  EXPECT_FALSE(AdaptGuidForBookmark(entity, &specifics));
 
   EXPECT_THAT(specifics.bookmark().guid(), Eq(kGuidInSpecifics));
 
@@ -106,7 +106,7 @@ TEST(BookmarkUpdatePreprocessingTest, ShouldUseOriginatorClientItemIdAsGuid) {
 
   base::HistogramTester histogram_tester;
   sync_pb::EntitySpecifics specifics = entity.specifics();
-  AdaptGuidForBookmark(entity, &specifics);
+  EXPECT_TRUE(AdaptGuidForBookmark(entity, &specifics));
 
   EXPECT_THAT(specifics.bookmark().guid(), Eq(kOriginatorClientItemId));
 
@@ -128,7 +128,7 @@ TEST(BookmarkUpdatePreprocessingTest, ShouldInferGuid) {
 
   base::HistogramTester histogram_tester;
   sync_pb::EntitySpecifics specifics = entity.specifics();
-  AdaptGuidForBookmark(entity, &specifics);
+  EXPECT_TRUE(AdaptGuidForBookmark(entity, &specifics));
 
   EXPECT_TRUE(base::IsValidGUIDOutputString(specifics.bookmark().guid()));
 

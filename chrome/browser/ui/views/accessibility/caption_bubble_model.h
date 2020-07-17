@@ -44,9 +44,6 @@ class CaptionBubbleModel : public content::WebContentsObserver {
   void SetObserver(CaptionBubble* observer);
   void RemoveObserver();
 
-  // Alert the observer that a change has occurred to the model text.
-  void OnTextChange();
-
   // Set the partial text and alert the observer.
   void SetPartialText(const std::string& partial_text);
 
@@ -70,6 +67,9 @@ class CaptionBubbleModel : public content::WebContentsObserver {
       content::NavigationHandle* navigation_handle) override;
 
  private:
+  // Alert the observer that a change has occurred to the model text.
+  void OnTextChanged();
+
   std::string final_text_;
   std::string partial_text_;
 

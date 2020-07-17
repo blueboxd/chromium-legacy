@@ -22,14 +22,14 @@ namespace content {
 
 WorkerScriptLoaderFactory::WorkerScriptLoaderFactory(
     int process_id,
-    DedicatedWorkerId dedicated_worker_id,
+    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
     SharedWorkerId shared_worker_id,
     ServiceWorkerMainResourceHandle* service_worker_handle,
     base::WeakPtr<AppCacheHost> appcache_host,
     const BrowserContextGetter& browser_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
     : process_id_(process_id),
-      dedicated_worker_id_(dedicated_worker_id),
+      dedicated_worker_token_(dedicated_worker_token),
       shared_worker_id_(shared_worker_id),
       appcache_host_(std::move(appcache_host)),
       browser_context_getter_(browser_context_getter),
@@ -63,7 +63,7 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
 
   // Create a WorkerScriptLoader to load the script.
   auto script_loader = std::make_unique<WorkerScriptLoader>(
-      process_id_, dedicated_worker_id_, shared_worker_id_, routing_id,
+      process_id_, dedicated_worker_token_, shared_worker_id_, routing_id,
       request_id, options, resource_request, std::move(client),
       service_worker_handle_, appcache_host_, browser_context_getter_,
       loader_factory_, traffic_annotation);

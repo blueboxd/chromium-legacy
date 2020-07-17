@@ -5,7 +5,7 @@
 <translation id="111910763555783249">Benachrichtigungseinstellungen</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 Tag her}other{# Tage her}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{vor 1 Minute}other{vor # Minuten}}</translation>
-<translation id="1169783199079129864">{MINUTES,plural, =1{1 Min.}other{# Min.}}</translation>
+<translation id="1169783199079129864">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="1181037720776840403">Entfernen</translation>
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, Play Store-App</translation>
@@ -17,7 +17,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">EMPFOHLENE APPS</translation>
 <translation id="1368832886055348810">Rechtsläufig</translation>
-<translation id="1383876407941801731">Suchen</translation>
+<translation id="1383876407941801731">Suchtaste</translation>
 <translation id="1398853756734560583">Maximieren</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />, installierte App</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> kann nicht geteilt werden</translation>
@@ -144,7 +144,7 @@
 <translation id="5583640892426849032">Rücktaste</translation>
 <translation id="5613020302032141669">Linkspfeil</translation>
 <translation id="5675363643668471212">Ablageartikel</translation>
-<translation id="5754277640426581776">{MINUTES,plural, =1{1 Min.}other{# Min.}}</translation>
+<translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Heute aktiv}=1{Vor 1 Tag aktiv}other{Vor # Tagen aktiv}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 Tag und  }other{# Tage und  }}</translation>
 <translation id="5789643057113097023">.</translation>
@@ -168,7 +168,7 @@
 <translation id="6364916375976753737">Nach links blättern</translation>
 <translation id="6394627529324717982">Komma</translation>
 <translation id="6397363302884558537">Sprachausgabe stoppen</translation>
-<translation id="6404817160109697034">{SECONDS,plural, =1{1 Sek. her}other{# Sek. her}}</translation>
+<translation id="6404817160109697034">{SECONDS,plural, =1{Vor 1 s}other{Vor # s}}</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6430678249303439055">Alle Benachrichtigungen von dieser App blockieren</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Vor 1 Sekunde}other{Vor # Sekunden}}</translation>
@@ -197,9 +197,9 @@
 <translation id="7130207228079676353">HOHE WAHRSCHEINLICHKEIT</translation>
 <translation id="7170202025028120564">Die Displayeinstellungen Ihrer App werden beim nächsten Neustart übernommen.</translation>
 <translation id="7222373446505536781">F11</translation>
-<translation id="7238427729722629793">{MINUTES,plural, =1{1 Min. übrig}other{# Min. übrig}}</translation>
+<translation id="7238427729722629793">{MINUTES,plural, =1{1 min übrig}other{# min übrig}}</translation>
 <translation id="7319740667687257810">Übersicht, Teilansicht</translation>
-<translation id="7365057348334984696">{MINUTES,plural, =1{vor 1 Min.}other{vor # Min.}}</translation>
+<translation id="7365057348334984696">{MINUTES,plural, =1{vor 1 min}other{vor # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 Minute übrig}other{# Minuten übrig}}</translation>
 <translation id="7430878839542012341">Diese Suchanfrage aus dem Verlauf löschen?</translation>
@@ -214,11 +214,11 @@
 <translation id="7952747673138230804">Chrome OS zeigt Vorschläge zum Entdecken neuer Inhalte. Statistiken zur Verbesserung von Vorschlägen werden nur gesendet, wenn Sie der Freigabe von Nutzungsdaten zugestimmt haben. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Befehl</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Mehr als 1 ungelesene Benachrichtigung}other{Mehr als # ungelesene Benachrichtigungen}}</translation>
-<translation id="8086866675552927481">{MINUTES,plural, =1{in 1 Min.}other{in # Min.}}</translation>
+<translation id="8086866675552927481">{MINUTES,plural, =1{in 1 min}other{in # min}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8090736967111090568">Zahl von <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 Stunde her}other{# Stunden her}}</translation>
-<translation id="8131263257437993507">{SECONDS,plural, =1{1 Sek. übrig}other{# Sek. übrig}}</translation>
+<translation id="8131263257437993507">{SECONDS,plural, =1{Noch 1 s}other{Noch # s}}</translation>
 <translation id="8134065097954893699">Diese Seite neu laden</translation>
 <translation id="8144660977431427332">Ihre Suchanfragen werden mit Google Assistant durchgeführt. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatische Vervollständigung</translation>
@@ -242,7 +242,7 @@
 <translation id="8725488761726303204">+<ph name="NUMBER" /> weitere</translation>
 <translation id="8730621377337864115">Fertig</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}other{# h}}</translation>
-<translation id="8798099450830957504">Standardeinstellung</translation>
+<translation id="8798099450830957504">Standard</translation>
 <translation id="8806053966018712535">Ordner <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Bild mit Anmerkung versehen</translation>
 <translation id="8841375032071747811">Schaltfläche "Zurück"</translation>
@@ -252,7 +252,7 @@
 <translation id="8926951137623668982">Ablage immer ausgeblendet</translation>
 <translation id="8996630695507351249">Prüfen Sie, ob "<ph name="TARGET_DEVICE_NAME" />" mit dem Internet verbunden ist.</translation>
 <translation id="9002566407876343676">Öffnen</translation>
-<translation id="9044832324875206639">{SECONDS,plural, =1{1 Sek.}other{# Sek.}}</translation>
+<translation id="9044832324875206639">{SECONDS,plural, =1{1 s}other{# s}}</translation>
 <translation id="9059834730836941392">Benachrichtigung minimieren</translation>
 <translation id="9150735707954472829">Tab</translation>
 <translation id="9161053988251441839">VORGESCHLAGENE APPS</translation>

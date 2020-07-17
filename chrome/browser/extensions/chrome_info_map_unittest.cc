@@ -97,16 +97,4 @@ TEST_F(ChromeInfoMapTest, CheckPermissions) {
   EXPECT_FALSE(match);
 }
 
-TEST_F(ChromeInfoMapTest, TestNotificationsDisabled) {
-  scoped_refptr<InfoMap> info_map(new InfoMap());
-  scoped_refptr<Extension> app(
-      LoadManifest("manifest_tests", "valid_app.json"));
-  info_map->AddExtension(app.get(), base::Time(), false, false);
-
-  EXPECT_FALSE(info_map->AreNotificationsDisabled(app->id()));
-  info_map->SetNotificationsDisabled(app->id(), true);
-  EXPECT_TRUE(info_map->AreNotificationsDisabled(app->id()));
-  info_map->SetNotificationsDisabled(app->id(), false);
-}
-
 }  // namespace extensions

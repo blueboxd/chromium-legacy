@@ -24,6 +24,7 @@
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs_scope.h"
 #include "extensions/browser/install_flag.h"
+#include "extensions/browser/pref_types.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -237,6 +238,19 @@ class ExtensionPrefs : public KeyedService {
   // TODO(oleg): Replace IsExtensionBlocklisted by this method.
   BlocklistState GetExtensionBlocklistState(
       const std::string& extension_id) const;
+
+  // Gets or sets profile wide ExtensionPrefs.
+  void SetIntegerPref(const PrefMap& pref, int value);
+  void SetBooleanPref(const PrefMap& pref, bool value);
+  void SetStringPref(const PrefMap& pref, const std::string& value);
+
+  int GetPrefAsInteger(const PrefMap& pref) const;
+  bool GetPrefAsBoolean(const PrefMap& pref) const;
+  std::string GetPrefAsString(const PrefMap& pref) const;
+
+  // Increments/decrements an ExtensionPref with a PrefType::kInteger.
+  void IncrementPref(const PrefMap& pref);
+  void DecrementPref(const PrefMap& pref);
 
   // Populates |out| with the ids of all installed extensions.
   void GetExtensions(ExtensionIdList* out) const;
@@ -575,11 +589,6 @@ class ExtensionPrefs : public KeyedService {
   void SetInstallParam(const std::string& extension_id,
                        const std::string& install_parameter);
 
-  // The total number of times we've disabled an extension due to corrupted
-  // contents.
-  int GetCorruptedDisableCount() const;
-  void IncrementCorruptedDisableCount();
-
   // Whether the extension with the given |extension_id| needs to be synced.
   // This is set when the state (such as enabled/disabled or allowed in
   // incognito) is changed before Sync is ready.
@@ -685,6 +694,10 @@ class ExtensionPrefs : public KeyedService {
       base::Clock* clock,
       bool extensions_disabled,
       const std::vector<EarlyExtensionPrefsObserver*>& early_observers);
+
+  // Gets or sets profile wide ExtensionPrefs.
+  const base::Value* GetPref(const PrefMap& pref) const;
+  void SetPref(const PrefMap& pref, std::unique_ptr<base::Value> value);
 
   // Converts absolute paths in the pref to paths relative to the
   // install_directory_.

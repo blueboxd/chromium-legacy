@@ -83,9 +83,9 @@ class TestMoveLoop : public ui::X11MoveLoop {
 
   // ui::X11MoveLoop:
   bool RunMoveLoop(bool can_grab_pointer,
-                   ::Cursor old_cursor,
-                   ::Cursor new_cursor) override;
-  void UpdateCursor(::Cursor cursor) override;
+                   scoped_refptr<ui::X11Cursor> old_cursor,
+                   scoped_refptr<ui::X11Cursor> new_cursor) override;
+  void UpdateCursor(scoped_refptr<ui::X11Cursor> cursor) override;
   void EndMoveLoop() override;
 
  private:
@@ -226,8 +226,8 @@ bool TestMoveLoop::IsRunning() const {
 }
 
 bool TestMoveLoop::RunMoveLoop(bool can_grab_pointer,
-                               ::Cursor old_cursor,
-                               ::Cursor new_cursor) {
+                               scoped_refptr<ui::X11Cursor> old_cursor,
+                               scoped_refptr<ui::X11Cursor> new_cursor) {
   is_running_ = true;
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
@@ -235,7 +235,7 @@ bool TestMoveLoop::RunMoveLoop(bool can_grab_pointer,
   return true;
 }
 
-void TestMoveLoop::UpdateCursor(::Cursor cursor) {}
+void TestMoveLoop::UpdateCursor(scoped_refptr<ui::X11Cursor> cursor) {}
 
 void TestMoveLoop::EndMoveLoop() {
   if (is_running_) {

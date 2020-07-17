@@ -178,7 +178,7 @@
 <translation id="1304973015437969093">ID de extensiones/apps y direcciones URL de actualización para instalar en silencio</translation>
 <translation id="1307454923744766368">Los orígenes o patrones de nombres de host para los cuales no deben aplicarse
       restricciones en los orígenes no seguros</translation>
-<translation id="1309465583050255779">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> y, luego, estableces <ph name="DEFAULT_SEARCH_PROVIDER_NAME_POLICY_NAME" />, se especificará el nombre del proveedor de búsqueda predeterminado.
+<translation id="1309465583050255779">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />, establecer <ph name="DEFAULT_SEARCH_PROVIDER_NAME_POLICY_NAME" /> especificará el nombre del proveedor de búsqueda predeterminado.
 
       Si no estableces <ph name="DEFAULT_SEARCH_PROVIDER_NAME_POLICY_NAME" />, se utilizará el nombre de host especificado por la URL de búsqueda.</translation>
 <translation id="1312799700549720683">Controla la configuración de visualización.</translation>
@@ -560,7 +560,7 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 
       Actualmente, el número de servidores de impresión está limitado a 16. Solo se buscarán los primeros 16 servidores de impresión de la lista.
 
-      Esta política es similar a <ph name="EXTERNAL_PRINT_SERVERS_POLICY" />, a menos que se aplique por dispositivo.
+      Esta política es similar a <ph name="EXTERNAL_PRINT_SERVERS_POLICY" />, excepto que esta política se aplica por dispositivo.
       </translation>
 <translation id="1988371335297483117">Las cargas de actualizaciones automáticas en <ph name="PRODUCT_OS_NAME" /> se pueden descargar a través de HTTP en lugar de HTTPS, lo que permite el almacenamiento transparente en caché HTTP de descargas HTTP.
 
@@ -655,14 +655,9 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
       Estas políticas solo serán válidas si la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> para <ph name="PRODUCT_NAME" />.
       Estas políticas siempre serán válidas para <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2134437727173969994">Permite bloquear la pantalla</translation>
-<translation id="2135335181634291106">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> y, luego, estableces <ph name="DEFAULT_SEARCH_PROVIDER_ICON_URL_POLICY_NAME" />, se especificará la URL del ícono favorito del proveedor de búsqueda predeterminado.
+<translation id="2135335181634291106">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />, establecer <ph name="DEFAULT_SEARCH_PROVIDER_ICON_URL_POLICY_NAME" /> especificará la URL del ícono favorito del proveedor de búsqueda predeterminado.
 
       Si no estableces <ph name="DEFAULT_SEARCH_PROVIDER_ICON_URL_POLICY_NAME" />, no se especificará ningún ícono para el proveedor de búsqueda.</translation>
-<translation id="2137064848866899664">Si se establece esta política, la pantalla rotará en la orientación que se especifica en cada reinicio y la primera vez que se conecte luego de que se cambie el valor de la política. Los usuarios pueden cambiar la rotación de la pantalla a través de la página de configuración después de acceder, pero el valor de la política anulará la configuración en el siguiente reinicio.
-
-      Esta política se aplica tanto a las pantallas principales como a las secundarias.
-
-      Si la política no se establece, el valor predeterminado es de 0 grados, y el usuario puede cambiarlo. En este caso, el valor predeterminado no se volverá a aplicar en el reinicio.</translation>
 <translation id="2138449619211358657">Esta política permite que <ph name="PRODUCT_OS_NAME" /> omita cualquier proxy para la autenticación de portales cautivos.
 
       Esta política se aplica únicamente si hay un proxy configurado (por ejemplo, a través de la política, por el usuario en chrome://settings o por extensiones).
@@ -670,13 +665,6 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
       Si se habilita esta configuración, se mostrarán las páginas de autenticación de portales cautivos (es decir, todas las páginas web desde la página de acceso del portal cautivo hasta que <ph name="PRODUCT_NAME" />detecte una conexión a Internet exitosa) en una ventana separada; además, se ignorarán todas las opciones de configuración de la política y las restricciones para el usuario actual.
 
       Si se inhabilita esta configuración o no se establece, se mostrarán las páginas de autenticación de portales cautivos en una pestaña nueva del navegador (normal), con la configuración de proxy del usuario actual.</translation>
-<translation id="21394354835637379">Permite especificar desde qué URL es posible instalar extensiones, apps y temas.
-
-          A partir de <ph name="PRODUCT_NAME" /> 21, es más difícil instalar extensiones, apps y secuencias de comandos de usuario que no pertenezcan a Chrome Web Store. Antes, los usuarios podían hacer clic en un vínculo que los dirigía a un archivo *.crx y <ph name="PRODUCT_NAME" /> ofrecía instalar el archivo después de unas advertencias. A partir de <ph name="PRODUCT_NAME" /> 21, este tipo de archivos debe descargarse y arrastrarse a la página de configuración de <ph name="PRODUCT_NAME" />. Esta configuración permite especificar las URL que tendrán el flujo de instalación anterior que es más sencillo.
-
-          Cada elemento en esta lista es un patrón de coincidencia con el formato de extensiones (consulta https://developer.chrome.com/extensions/match_patterns). Los usuarios podrán instalar fácilmente elementos desde cualquier URL que coincida con un elemento de la lista. Estos patrones deben permitir tanto la ubicación del archivo *.crx file como la página desde donde se inicia la descarga (es decir, la URL de referencia).
-
-          <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> tiene prioridad sobre esta política. Esto quiere decir que no se instalará ninguna extensión de la lista negra, incluso si proviene de un sitio en esta lista.</translation>
 <translation id="2145735238144543545">Certificados de cliente obligatorios</translation>
 <translation id="214901426630414675">Restringir el modo de impresión doble</translation>
 <translation id="2149330464730004005">Habilitar la impresión a color</translation>
@@ -1500,7 +1488,7 @@ Esta política solo se puede establecer en la Consola del administrador de Googl
       Los sitios web configurados se abrirán automáticamente en otro navegador que no sea <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3264793472749429012">Codificación del proveedor de búsqueda predeterminado</translation>
 <translation id="3273221114520206906">Configuración de JavaScript predeterminada</translation>
-<translation id="328108936611091281">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> y, luego, estableces <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POLICY_NAME" />, se especificará la URL del motor de búsqueda utilizado en una búsqueda predeterminada. La URL debe incluir la string <ph name="SEARCH_TERM_MARKER" />, que se reemplazará en la búsqueda de términos que haga el usuario.
+<translation id="328108936611091281">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />, establecer <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POLICY_NAME" /> especificará la URL del motor de búsqueda utilizado en una búsqueda predeterminada. La URL debe incluir la string <ph name="SEARCH_TERM_MARKER" />, que se reemplazará en la búsqueda por los términos del usuario.
 
       Puedes especificar la URL de búsqueda de Google de la siguiente manera: <ph name="GOOGLE_SEARCH_URL" />.</translation>
 <translation id="3284094172359247914">Controla el uso de la API de WebUSB</translation>
@@ -1607,7 +1595,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       estricto en YouTube, pero no puede inhabilitar el modo restringido.
 
       Si esta configuración se establece como desactivada o no se establece ningún valor, <ph name="PRODUCT_NAME" /> no aplica el modo restringido en YouTube. Sin embargo, es posible que las políticas externas, como las de YouTube, apliquen el modo restringido.</translation>
-<translation id="3420141485959154417">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> y, luego, estableces <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POLICY_NAME" />, se especificará la URL del motor de búsqueda utilizado para la búsqueda de imágenes. (Si estableces <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POST_PARMS_POLICY_NAME" />, las solicitudes de búsqueda de imágenes utilizarán el método POST en su lugar).
+<translation id="3420141485959154417">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />, establecer <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POLICY_NAME" /> especificará la URL del motor de búsqueda utilizado para la búsqueda de imágenes. (Si estableces <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POST_PARMS_POLICY_NAME" />, las solicitudes de búsqueda de imágenes utilizarán el método POST en su lugar).
 
       Si no estableces <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POLICY_NAME" />, no se utilizarán métodos de búsqueda de imágenes.</translation>
 <translation id="3428247105888806363">Habilitar la predicción de red</translation>
@@ -1819,11 +1807,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si se inhabilita esta configuración, los usuarios no podrán utilizar el acceso mediante Smart Lock.
 
       Si no se establece esta política, los usuarios administrados por empresas no podrán usar la configuración predeterminada, pero los usuarios no administrados sí podrán usarla.</translation>
-<translation id="379602782757302612">Permite especificar las extensiones que los usuarios NO pueden instalar. Si se incluyen en la lista negra, se inhabilitarán las extensiones ya instaladas y el usuario no podrá habilitarlas. Cuando una extensión inhabilitada se quite de la lista negra, se volverá a habilitar automáticamente.
-
-          El valor "*" en la lista negra significa que todas las extensiones están inhabilitadas a menos que se incluyan de forma explícita en la lista blanca.
-
-          Si esta política no se establece, el usuario podrá instalar cualquier extensión en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3800626789999016379">Configura el directorio que <ph name="PRODUCT_NAME" /> usará para descargar archivos.
 
       Si estableces esta política, <ph name="PRODUCT_NAME" /> usará el directorio proporcionado, sin importar si el usuario especificó uno o si habilitó que la marca solicite una ubicación de descarga cada vez.
@@ -2083,7 +2066,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si se omite un campo, todos los valores se considerarán coincidentes. Por ejemplo, si no se especifica la conectividad, la vista previa de impresión iniciará la búsqueda de todo tipo de impresoras, ya sea locales o en la nube.
       Los patrones de expresión regulares deben seguir la sintaxis de JavaScript RegExp, y las coincidencias distinguen entre mayúsculas y minúsculas.</translation>
 <translation id="4088589230932595924">Modo incógnito forzado</translation>
-<translation id="4089849819635523136">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> y, luego, estableces <ph name="DEFAULT_SEARCH_PROVIDER_KEYWORD_POLICY_NAME" />, se especificará la palabra clave o el atajo que se utilizará en la barra de direcciones para activar la búsqueda de este proveedor.
+<translation id="4089849819635523136">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />, establecer <ph name="DEFAULT_SEARCH_PROVIDER_KEYWORD_POLICY_NAME" /> especificará la palabra clave o el atajo que se utilizará en la barra de direcciones para activar la búsqueda de este proveedor.
 
       Si no estableces <ph name="DEFAULT_SEARCH_PROVIDER_KEYWORD_POLICY_NAME" />, no se activará el proveedor de búsqueda con ninguna palabra clave.</translation>
 <translation id="4093716537292423758">Permitir tipos de archivo no admitidos</translation>
@@ -2248,7 +2231,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="4322842393287974810">Permitir que la aplicación de kiosko con lanzamiento automático sin tiempo de espera controle la versión de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Agregar un botón para cerrar sesión en la bandeja del sistema</translation>
 <translation id="4332177773549877617">Registrar eventos de instalaciones de apps de Android</translation>
-<translation id="4341199399451274159">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> y, luego, estableces <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" />, se especificará la codificación de caracteres que admite el proveedor de búsqueda. Las codificaciones son nombres de página de código como UTF-8, GB2312 y ISO-8859-1. Estos se prueban en el orden establecido.
+<translation id="4341199399451274159">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />, establecer <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" /> especificará la codificación de caracteres que admite el proveedor de búsqueda. Las codificaciones son nombres de página de código como UTF-8, GB2312 y ISO-8859-1. Estos se prueban en el orden establecido.
 
       Si no estableces <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" />, se utilizará UTF-8.</translation>
 <translation id="4343382787226139147">Especifica los Certificados de cliente que deben inscribirse con el protocolo de administración de dispositivos.</translation>
@@ -2509,7 +2492,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="4835622243021053389">Habilitar la autenticación NTLMv2</translation>
 <translation id="4855636880814771207">Si habilitas la política o no la estableces, los usuarios podrán activar y desactivar la conexión Bluetooth.
 
-      Si la inhabilitas, <ph name="PRODUCT_OS_NAME" /> desactivará la conexión Bluetooth, y los usuarios no podrán activarla.
+      Si la inhabilitas, el <ph name="PRODUCT_OS_NAME" /> desactivará la conexión Bluetooth, y los usuarios no podrán activarla.
 
       Nota: Para activar la conexión Bluetooth, los usuarios deberán salir y volver a acceder.</translation>
 <translation id="4856471929724652373">Envía informes sobre las actualizaciones del SO, como el estado de la actualización, la versión de la plataforma, la última revisión de actualizaciones y el último reinicio.
@@ -3379,29 +3362,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       De lo contrario, se ocultarán las direcciones IP locales con nombres de host de mDNS.
       Ten en cuenta que esta política afecta la protección de las IP locales, si los administradores la habilitan.</translation>
 <translation id="614662973812186053">Esta política también controla la recopilación de datos de diagnóstico y uso de Android.</translation>
-<translation id="6155247658847899816">Cuando se establece esta política, la resolución y el factor de escalas de cada
-      pantalla se establecen conforme a los valores especificados. Se aplica la
-      configuración de pantallas externas a las que estén conectadas.
-
-      Los valores correspondientes a los campos "external_width" y "external_height" deben especificarse en píxeles.
-      Los valores de los campos "external_scale_percentage" e
-      "internal_scale_percentage" deben especificarse en porcentajes.
-
-      Si se establece "external_use_native" como verdadero, la política ignorará
-      los valores de "external_height" y "external_width", y se especificará la
-      resolución de las pantallas externas en función de su resolución nativa.
-
-      Si se establece "external_use_native" como falso o no se establece, ni
-      tampoco se establece "external_height" o "external_width", la política no
-      afectará la configuración de las pantallas externas. Si una pantalla no es
-      compatible con la resolución especificada o con el factor de escalas, no se
-      aplica la política a esa pantalla.
-
-      Si se establece la función "recommended" como verdadera, los
-      usuarios, una vez que accedan a su cuenta, podrán modificar la resolución y el factor de escalas de cualquier pantalla desde la página de configuración, pero
-      los valores de la política anularán estos valores en el siguiente reinicio.
-      Si se establece la función "recommended" como falsa o no se
-      establece, los usuarios no podrán cambiar la configuración de pantalla.</translation>
 <translation id="6155936611791017817">Establece el estado predeterminado del cursor grande en la pantalla de acceso.</translation>
 <translation id="6157537876488211233">Lista separada por comas de las normas de omisión de proxy</translation>
 <translation id="6158324314836466367">Indica el nombre de la tienda web de la empresa (en desuso).</translation>
@@ -3717,7 +3677,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
           A partir de <ph name="PRODUCT_NAME" /> 76, la configuración predeterminada se comportará como si estuviera inhabilitada.
 
           A partir de <ph name="PRODUCT_NAME" /> 78, se ignorará esta política y se tratará como inhabilitada.</translation>
-<translation id="6724116921710627162">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> y, luego, estableces <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" />, se especificará la URL que usa un motor de búsqueda para proporcionar una página Nueva pestaña.
+<translation id="6724116921710627162">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />, establecer <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" />, especificará la URL que usa un motor de búsqueda para proporcionar una página Nueva pestaña.
 
       Si no estableces <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" />, no se proporcionará ninguna página Nueva pestaña.</translation>
 <translation id="672496466524161417">Si estableces la política como "ninguna" o no la estableces, los usuarios podrán administrar los certificados. Si la estableces con el valor "2", los usuarios solo podrán ver los certificados (pero no podrán administrarlos).
@@ -3730,7 +3690,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Si estableces el valor "False" para la política, o no la configuras, no se habilitará <ph name="PLUGIN_VM_NAME" /> para este usuario.
       Si estableces el valor "True", se habilitará <ph name="PLUGIN_VM_NAME" /> para el usuario, siempre y cuando lo permitan otras opciones de configuración. Para ejecutar <ph name="PLUGIN_VM_NAME" />, se debe establecer el valor "True" para <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> y <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" />, y se deben configurar las políticas <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> o <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" />.</translation>
-<translation id="6752711782954612641">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> y, luego, estableces <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" />, se especificarán los parámetros para la búsqueda de una URL con POST. Se compone de pares de nombre y valor separados por comas. Si un valor es un parámetro de plantilla, como <ph name="SEARCH_TERM_MARKER" />, se reemplazará por datos de términos de búsqueda reales.
+<translation id="6752711782954612641">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />, establecer <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> especificará los parámetros para la búsqueda de una URL con POST. Se compone de pares de nombre y valor separados por comas. Si un valor es un parámetro de plantilla, como <ph name="SEARCH_TERM_MARKER" />, se reemplazará por datos de términos de búsqueda reales.
 
       Si no estableces <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" />, se enviarán solicitudes de búsqueda con el método GET.</translation>
 <translation id="6757613329154374267">Se habilitó la funcionalidad de copia de seguridad y restablecimiento</translation>
@@ -4387,28 +4347,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Para obtener información detallada sobre los patrones válidos de <ph name="URL_LABEL" />, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="7747447585227954402">Permitir que los dispositivos usen un <ph name="PLUGIN_VM_NAME" /> en <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="7748793371045612978">Especifica una lista de apps y extensiones que se instalan de forma silenciosa,
-          sin interacción del usuario, y que este no puede desinstalar ni inhabilitar. Todos los permisos que solicitan las apps y extensiones
-          se conceden de forma implícita, sin interacción del usuario,
-          incluso los permisos adicionales que soliciten las apps o extensiones en
-          próximas versiones. Además, los permisos se conceden para las API de las extensiones
-          enterprise.deviceAttributes y enterprise.platformKeys
- (estas no están disponibles para las apps ni
-          extensiones instaladas de manera automática).
-
-          Esta política prevalece sobre una política de <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> posiblemente conflictiva. Si una app o extensión, instalada de manera automática, se quita de esta lista, <ph name="PRODUCT_NAME" /> la desinstalará de forma automática.
-
-          La instalación de manera automática está limitada a apps y extensiones que aparecen en Chrome Web Store para instancias que no sean una de las siguientes: las instancias de Windows que estén unidas a un dominio de Microsoft® Active Directory® o las instancias de Windows 10 Pro o Enterprise que estén habilitadas para la administración de dispositivos, además de las instancias de macOS administradas mediante MDM o vinculadas a un dominio a través de MCX.
-
-          Ten en cuenta que es posible que los usuarios modifiquen el código fuente de cualquier extensión a través de las Herramientas para desarrolladores (y muy probablemente deje de funcionar). Si esta situación puede plantear problemas, establece la política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Cada elemento de la lista de la política es una string que contiene un ID de extensión y, de forma opcional, una URL de actualización separada por un punto y coma (<ph name="SEMICOLON" />). El ID de extensión es la string de 32 letras que se encuentra, p. ej., en <ph name="CHROME_EXTENSIONS_LINK" /> en el modo de desarrollador. Si se especifica, la URL de actualización debe direccionarte a un documento XML del manifiesto de actualización, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />. De forma predeterminada, se usa la URL de actualización de Chrome Web Store (actualmente es "https://clients2.google.com/service/update2/crx"). Ten en cuenta que la URL de actualización que se establece en esta política solo se usa para la instalación inicial; las actualizaciones posteriores de la extensión utilizan la URL de actualización que se indica en el manifiesto de la extensión. Ten en cuenta también que el uso de la URL de actualización era explícitamente obligatorio en las versiones de <ph name="PRODUCT_NAME" /> hasta la 67 inclusive.
-
-          Por ejemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala la extensión con la ID <ph name="EXTENSION_ID_SAMPLE" /> desde la URL de actualización convencional de Chrome Web Store. Para obtener más información sobre las extensiones de host, consulta <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Si no estableces esta política, no se instala ninguna app ni extensión de forma automática, y el usuario podrá desinstalar cualquier app o extensión de <ph name="PRODUCT_NAME" />.
-
-          Ten en cuenta que esta política no se aplicará al modo Incógnito.</translation>
 <translation id="7749024457938190837">Incluye las extensiones que pueden omitir el cuadro de diálogo de confirmación cuando envían trabajos de impresión a través de la API chrome.printing</translation>
 <translation id="7749402620209366169">Habilita la autenticación de dos factores para los hosts de acceso remoto en lugar de un PIN especificado por el usuario.
 
@@ -4558,7 +4496,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Los dispositivos no administrados pueden ejecutar máquinas virtuales.</translation>
 <translation id="8001701200415781021">Determinar qué Cuentas de Google se pueden establecer como las principales del navegador en <ph name="PRODUCT_NAME" /></translation>
 <translation id="8003853057959146975">Envía archivos para analizar si se infringen las normas relacionadas con la protección de datos sensibles</translation>
-<translation id="8006219716745491366">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> y, luego, estableces <ph name="DEFAULT_SEARCH_PROVIDER_ALTERNATE_URLS_POLICY_NAME" />, se especificará una lista de URL alternativas para extraer términos de búsqueda del motor de búsqueda. Las URL deben incluir la string <ph name="SEARCH_TERM_MARKER" />.
+<translation id="8006219716745491366">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />, establecer <ph name="DEFAULT_SEARCH_PROVIDER_ALTERNATE_URLS_POLICY_NAME" /> especificará una lista de URL alternativas para extraer términos de búsqueda del motor de búsqueda. Las URL deben incluir la string <ph name="SEARCH_TERM_MARKER" />.
 
       Si no estableces <ph name="DEFAULT_SEARCH_PROVIDER_ALTERNATE_URLS_POLICY_NAME" />, no se usará ninguna URL alternativa para extraer términos de búsqueda.</translation>
 <translation id="8009554972280451023">Si habilitas esta configuración, los datos almacenados en los perfiles de <ph name="PRODUCT_NAME" />, como los favoritos, los datos de Autocompletar, las contraseñas, etc. también se guardarán en un archivo almacenado en la carpeta de perfil del usuario Roaming o una ubicación que el administrador especifique mediante la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Si habilitas esta política, se inhabilita la sincronización en la nube.
@@ -4779,7 +4717,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="8312129124898414409">Te permite establecer si los sitios web están autorizados a utilizar la generación de claves. La generación de claves puede permitirse o rechazarse para todos los sitios web. 
 
           Si esta política no se configura, se usará "BlockKeygen" y el usuario podrá cambiarla.</translation>
-<translation id="8313927126392971570">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> y, luego, estableces <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POST_PARMS_POLICY_NAME" />, se especificarán los parámetros durante la búsqueda de imágenes con POST. Se compone de pares de nombre y valor separados por comas. Si un valor es un parámetro de plantilla, como {imageThumbnail}, se reemplazará por datos de miniaturas de imágenes reales.
+<translation id="8313927126392971570">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />, establecer <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POST_PARMS_POLICY_NAME" /> especificará los parámetros durante la búsqueda de imágenes con POST. Se compone de pares de nombre y valor separados por comas. Si un valor es un parámetro de plantilla, como {imageThumbnail}, se reemplazará por datos de miniaturas de imágenes reales.
 
       Si no estableces <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POST_PARMS_POLICY_NAME" />, se enviarán las solicitudes de búsqueda de imágenes con el método GET.</translation>
 <translation id="8314214821702356835">Permite que los usuarios reproduzcan contenido multimedia cuando está bloqueado el dispositivo</translation>
@@ -4790,7 +4728,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 
       El valor de esta política se debe especificar en milisegundos.</translation>
 <translation id="8331479227794770304">Habilitar teclas de acción prolongada</translation>
-<translation id="8337114537412769126">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> y, luego, estableces <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POST_PARAMS_POLICY_NAME" />, se especificarán los parámetros durante la búsqueda de sugerencias con POST. Se compone de pares de nombre y valor separados por comas. Si un valor es un parámetro de plantilla, como <ph name="SEARCH_TERM_MARKER" />, se reemplazará por datos de términos de búsqueda reales.
+<translation id="8337114537412769126">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />, establecer <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POST_PARAMS_POLICY_NAME" /> especificará los parámetros durante la búsqueda de sugerencias con POST. Se compone de pares de nombre y valor separados por comas. Si un valor es un parámetro de plantilla, como <ph name="SEARCH_TERM_MARKER" />, se reemplazará por datos de términos de búsqueda reales.
 
       Si no estableces <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POST_PARAMS_POLICY_NAME" />, se enviarán las solicitudes de búsqueda de sugerencias con el método GET.</translation>
 <translation id="8339420913453596618">Se inhabilitó el segundo factor</translation>
@@ -4946,7 +4884,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       "1412.24.34": Actualizar solo a esta versión específica
 
       Advertencia: No se recomienda configurar restricciones de la versión, ya que pueden impedir que los usuarios reciban actualizaciones de software y correcciones de seguridad muy importantes. La restricción de las actualizaciones a un prefijo de una versión específica puede poner en riesgo a los usuarios.</translation>
-<translation id="8516298370361397304">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> y, luego, estableces <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POLICY_NAME" />, se especificará la URL del motor de búsqueda para proporcionar sugerencias de búsqueda. La URL debe incluir la string <ph name="SEARCH_TERM_MARKER" />, que se reemplazará en la búsqueda de términos que haga el usuario.
+<translation id="8516298370361397304">Si activas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> establecer <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POLICY_NAME" /> especificará la URL del motor de búsqueda para proporcionar sugerencias de búsqueda. La URL debe incluir la string <ph name="SEARCH_TERM_MARKER" />, que se reemplazará en la búsqueda por los términos del usuario.
 
       Puedes especificar la URL de búsqueda de Google de la siguiente manera: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.</translation>
 <translation id="8519264904050090490">Direcciones URL de excepción manual de usuario administrado</translation>

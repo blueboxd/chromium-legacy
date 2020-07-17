@@ -98,6 +98,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="1995660704900986789">Wyłącz</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Wpisz wiadomość</translation>
+<translation id="2018630726571919839">Opowiedz mi kawał</translation>
 <translation id="2050339315714019657">Pionowo</translation>
 <translation id="2067602449040652523">Jasność klawiatury</translation>
 <translation id="209965399369889474">Brak połączenia z siecią</translation>
@@ -125,6 +126,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="2354174487190027830">Aktywuję <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Dalej</translation>
 <translation id="2365393535144473978">Wraz z mobilną transmisją danych zostanie włączony Bluetooth.</translation>
+<translation id="2369165858548251131">„Cześć” po Chińsku</translation>
 <translation id="2390318262976603432">Ustawienia języka</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Dostępna aktualizacja</translation>
@@ -142,6 +144,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="256712445991462162">Lupa zadokowana</translation>
 <translation id="2575685495496069081">Wielokrotne logowanie jest wyłączone</translation>
 <translation id="2582112259361606227">Uruchom ponownie, by zaktualizować</translation>
+<translation id="2595239820337756193">Przelicz 5 km na mile</translation>
 <translation id="2617342710774726426">Karta SIM jest zablokowana</translation>
 <translation id="2621713457727696555">Zabezpieczona</translation>
 <translation id="2653659639078652383">Prześlij</translation>
@@ -195,6 +198,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="3154351730702813399">Administrator urządzenia może monitorować Twoją aktywność związaną z przeglądaniem.</translation>
 <translation id="3181441307743005334">Ponowne uruchomienie może trochę potrwać</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Połączono z urządzeniem}few{Połączono z # urządzeniami}many{Połączono z # urządzeniami}other{Połączono z # urządzenia}}</translation>
+<translation id="320207200541803018">Ustaw licznik</translation>
 <translation id="3203405173652969239">Włączono funkcję Switch Access</translation>
 <translation id="3207953481422525583">Ustawienia użytkownika</translation>
 <translation id="3217205077783620295">Dźwięk jest włączony. Kliknij, by wyciszyć.</translation>
@@ -207,6 +211,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> nadal może się później zalogować.</translation>
 <translation id="3321628682574733415">Nieprawidłowy kod rodzica</translation>
 <translation id="332587331255250389">Wymień baterię</translation>
+<translation id="334252345105450327">Zrób zrzutu ekranu</translation>
 <translation id="3351879221545518001">Obecnie przesyłasz ekran.</translation>
 <translation id="3364721542077212959">Narzędzia rysika</translation>
 <translation id="3368922792935385530">Połączone</translation>
@@ -239,6 +244,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="3631369015426612114">Zezwalaj na powiadomienia z tych źródeł</translation>
 <translation id="3638400994746983214">Przełącz ekran chroniący prywatność. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733">Użytkownik zarządzany <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="3702846122927433391">Populacja Nigerii</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Zrzut obszaru ekranu</translation>
 <translation id="371370241367527062">Przedni mikrofon</translation>
@@ -519,6 +525,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Powrót do wcześniejszej rozdzielczości za <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Menu zostało przeniesione w lewy górny róg ekranu.</translation>
+<translation id="7189412385142492784">Jak daleko jest Wenus</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Konieczne jest ponowne uruchomienie tego Chromebooka, by zainstalować aktualizację. Może to potrwać około minuty.</translation>
 <translation id="7256634071279256947">Tylny mikrofon</translation>
 <translation id="726276584504105859">Przeciągnij tutaj, by podzielić ekran</translation>
@@ -645,6 +652,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="8649101189709089199">Przeczytaj na głos</translation>
 <translation id="8652175077544655965">Zamknij ustawienia</translation>
 <translation id="8653151467777939995">Pokaż ustawienia powiadomień. Powiadomienia są włączone</translation>
+<translation id="8660331759611631213">Pierwiastek kwadratowy z 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Pokaż listę sieci. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

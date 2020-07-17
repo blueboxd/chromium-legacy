@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="km">
 <translation id="1008557486741366299">មិនមែនឥឡូវនេះទេ</translation>
+<translation id="100957008357583611">ប្រើទីតាំងរបស់អ្នកឬ?</translation>
 <translation id="1010200102790553230">ផ្ទុកទំព័រនៅ​ពេលក្រោយ</translation>
 <translation id="1015730422737071372">ផ្តល់ព័ត៌មានលម្អិតបន្ថែម</translation>
 <translation id="1019413721762100891">បិទ</translation>
@@ -428,7 +429,6 @@
 <translation id="2705137772291741111">ច្បាប់ចម្លងនៃគេហទំព័រនេះដែលត្រូវបានរក្សាទុក (ក្នុងឃ្លាំងសម្ងាត់) មិនអាចអានបានទេ</translation>
 <translation id="2709516037105925701">បំពេញស្វ័យប្រវត្តិ</translation>
 <translation id="2713444072780614174">ស</translation>
-<translation id="2720342946869265578">នៅក្បែរ</translation>
 <translation id="2721148159707890343">សំណើរបានជោគជ័យ</translation>
 <translation id="272451190272506600">ប៉ះ​ឧបករណ៍​ចាប់សញ្ញា ដើម្បី​បង់ប្រាក់</translation>
 <translation id="2728127805433021124">វិញ្ញាបនប័ត្រម៉ាស៊ីនមេត្រូវបានចុះហេត្ថលេខាដោយប្រើនីតិវិធីដោះស្រាយហត្ថលេខាខ្សោយ។</translation>
@@ -725,7 +725,6 @@
 <translation id="3990250421422698716">គម្លាតរុញ</translation>
 <translation id="3996311196211510766">គេហទំព័រ <ph name="ORIGIN" /> បានស្នើសុំឱ្យ​អនុវត្ត​គោលការណ៍​ដើម
     ចំពោះ​គ្រប់សំណើ​មក​កាន់​វា ប៉ុន្តែ​គោលការណ៍នេះមិនអាច​អនុវត្ត​បាន​ទេក្នុងពេលបច្ចុប្បន្ន។</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{គេហទំព័រនៅក្បែរ 1}other{គេហទំព័រនៅក្បែរ #}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{ឯកសារ PDF ដែលមាន {COUNT} ទំព័រ}other{ឯកសារ PDF ដែលមាន {COUNT} ទំព័រ}}</translation>
 <translation id="4030383055268325496">បកក្រោយការបន្ថែម</translation>
 <translation id="4032320456957708163">កម្មវិធីរុករកតាមអ៊ីនធឺណិត​របស់អ្នកត្រូវបាន​គ្រប់គ្រងដោយ <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -944,7 +943,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">រក្សាទុក...</translation>
 <translation id="4913987521957242411">ចោះ​ខាងលើ​ផ្នែកខាងឆ្វេង</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{និងគេហទំព័រ 1 ទៀត}other{និងគេហទំព័រ # ទៀត}}</translation>
 <translation id="4923459931733593730">ការបង់ប្រាក់</translation>
 <translation id="4926049483395192435">ត្រូវតែបញ្ជាក់</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> និយាយ​ថា</translation>
@@ -1185,6 +1183,7 @@
 <translation id="5869405914158311789">គេហទំព័រនេះមិនអាចចូលបានទេ</translation>
 <translation id="5869522115854928033">ពាក្យសម្ងាត់ដែលបានរក្សាទុក</translation>
 <translation id="5887400589839399685">បានរក្សាទុក​កាត</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> តម្រូវឱ្យអ្នកបម្រុងទុកទិន្នន័យរបស់អ្នក និងបញ្ជូនឧបករណ៍នេះត្រឡប់ទៅវិញ។</translation>
 <translation id="5895138241574237353">ចាប់ផ្តើមឡើងវិញ</translation>
 <translation id="5895187275912066135">ចេញនៅថ្ងៃទី</translation>
 <translation id="5901630391730855834">លឿង</translation>
@@ -1335,7 +1334,6 @@
 <translation id="6518133107902771759">ផ្ទៀងផ្ទាត់</translation>
 <translation id="6521745193039995384">មិន​សកម្ម</translation>
 <translation id="6529602333819889595">ធ្វើការលុបវិញ</translation>
-<translation id="6534179046333460208">ការផ្តល់យោបល់ Physical Web</translation>
 <translation id="6545864417968258051">ការស្កេនប៊្លូធូស</translation>
 <translation id="6547208576736763147">ចោះ​ពីររន្ធ​ខាងឆ្វេង</translation>
 <translation id="6554795675067793129">គណនី​របស់​អ្នក​ស្ថិតក្រោម​ការគ្រប់គ្រង​របស់ <ph name="ENROLLMENT_DOMAIN" /> ។</translation>
@@ -1858,7 +1856,6 @@
 <translation id="8790007591277257123">ធ្វើការលុបវិញ</translation>
 <translation id="8792621596287649091">អ្នកអាច​បាត់បង់​សិទ្ធិចូល​ប្រើ​គណនី <ph name="ORG_NAME" /> របស់អ្នក ឬ​ជួបប្រទះ​នឹង​ការលួចយក​អត្តសញ្ញាណ។ Chromium ណែនាំ​ឱ្យប្ដូរ​ពាក្យសម្ងាត់​របស់អ្នក​ឥឡូវនេះ។</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> បានបើក Chrome Enterprise Connectors នៅលើ​កម្មវិធីរុករក​តាមអ៊ីនធឺណិត​របស់អ្នក​។ កម្មវិធីភ្ជាប់ទាំងនេះមានសិទ្ធិចូលប្រើ​ទិន្នន័យមួយចំនួនរបស់អ្នក។</translation>
-<translation id="8800988563907321413">ការ​ផ្តល់​យោបល់​នៅក្បែរ​សម្រាប់​អ្នក​បង្ហាញ​នៅ​ទី​នេះ</translation>
 <translation id="8805819170075074995">ធាតុបញ្ជី "<ph name="LANGUAGE_ID" />"៖ ធាតុមិនត្រូវបាន​អើពើទេ ដោយសារធាតុនេះ​ក៏ត្រូវបានរួមបញ្ចូល​នៅក្នុងគោលការណ៍ SpellcheckLanguage ផងដែរ។</translation>
 <translation id="8807160976559152894">តម្រឹម​បន្ទាប់ពី​ទំព័រ​នីមួយៗ</translation>
 <translation id="8820817407110198400">ចំណាំ</translation>

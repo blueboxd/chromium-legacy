@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">seleccionar</translation>
 <translation id="1859234291848436338">Dirección de escritura</translation>
 <translation id="1860796786778352021">Peche da notificación</translation>
+<translation id="186476001994626254">Contido da función de pegado intelixente da Web</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Seleccion&amp;ar todo</translation>
@@ -75,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Abrir cartafol</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Hai un ano}other{Hai # anos}}</translation>
+<translation id="2878511608894704031">Eliminar todo</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{en 1 d}other{en # d}}</translation>
 <translation id="2931838996092594335">facer clic</translation>
 <translation id="2981684127883932071">Mostrando suxestións</translation>
@@ -172,6 +174,7 @@
 <translation id="6417265370957905582">Asistente de Google</translation>
 <translation id="6430678249303439055">Bloquear todas as notificacións desta aplicación</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Hai un segundo}other{Hai # segundos}}</translation>
+<translation id="6503257047630241175">Contido en formato RTF</translation>
 <translation id="6539092367496845964">Produciuse un erro. Téntao de novo máis tarde.</translation>
 <translation id="654149438358937226">Bloquear todas as notificacións</translation>
 <translation id="6567071839949112727">fai clic no predecesor</translation>

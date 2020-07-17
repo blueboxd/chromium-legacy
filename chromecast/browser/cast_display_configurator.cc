@@ -133,7 +133,10 @@ void CastDisplayConfigurator::EnableDisplay(
 
   display::DisplayConfigurationParams display_config_params(
       display_->display_id(), gfx::Point(), display_->native_mode());
-  delegate_->Configure(display_config_params, std::move(callback));
+  std::vector<display::DisplayConfigurationParams> config_request;
+  config_request.push_back(std::move(display_config_params));
+
+  delegate_->Configure(config_request, std::move(callback));
 }
 
 void CastDisplayConfigurator::DisableDisplay(
@@ -143,7 +146,10 @@ void CastDisplayConfigurator::DisableDisplay(
 
   display::DisplayConfigurationParams display_config_params(
       display_->display_id(), gfx::Point(), nullptr);
-  delegate_->Configure(display_config_params, std::move(callback));
+  std::vector<display::DisplayConfigurationParams> config_request;
+  config_request.push_back(std::move(display_config_params));
+
+  delegate_->Configure(config_request, std::move(callback));
 }
 
 void CastDisplayConfigurator::ConfigureDisplayFromCommandLine() {
@@ -210,8 +216,11 @@ void CastDisplayConfigurator::OnDisplaysAcquired(
 
   display::DisplayConfigurationParams display_config_params(
       display_->display_id(), origin, display_->native_mode());
+  std::vector<display::DisplayConfigurationParams> config_request;
+  config_request.push_back(std::move(display_config_params));
+
   delegate_->Configure(
-      display_config_params,
+      config_request,
       base::BindRepeating(&CastDisplayConfigurator::OnDisplayConfigured,
                           weak_factory_.GetWeakPtr(), display_,
                           display_->native_mode(), origin));
@@ -221,12 +230,14 @@ void CastDisplayConfigurator::OnDisplayConfigured(
     display::DisplaySnapshot* display,
     const display::DisplayMode* mode,
     const gfx::Point& origin,
-    bool success) {
+    const base::flat_map<int64_t, bool>& statuses) {
   DCHECK(display);
   DCHECK(mode);
   DCHECK_EQ(display, display_);
+  DCHECK_EQ(statuses.size(), 1UL);
 
   const gfx::Rect bounds(origin, mode->size());
+  bool success = statuses.at(display_->display_id());
   DVLOG(1) << __func__ << " success=" << success
            << " bounds=" << bounds.ToString();
   if (success) {

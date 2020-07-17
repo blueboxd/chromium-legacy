@@ -148,15 +148,14 @@ using chrome_test_util::SettingsDoneButton;
 #pragma mark - Tests
 
 // The tests in this file should correspond to the tests in //chrome/browser/
-// metrics/ukm_browsertest.cc and //chrome/android/javatests/src/org/chromium/
-// chrome/browser/sync/UkmTest.java.
+// metrics/ukm_browsertest.cc.
 
 // Make sure that UKM is disabled while an incognito tab is open.
 //
 // Corresponds to RegularPlusIncognitoCheck in //chrome/browser/metrics/
 // ukm_browsertest.cc.
-// TODO(crbug.com/1096582) Re-enable the test.
-- (void)DISABLED_testRegularPlusIncognito {
+- (void)testRegularPlusIncognito {
+  // Note: Tests begin with an open regular tab. This tab is opened in setUp.
   const uint64_t originalClientID = [MetricsAppInterface UKMClientID];
 
   [self openNewIncognitoTab];
@@ -176,7 +175,24 @@ using chrome_test_util::SettingsDoneButton;
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
              @"Failed to assert that UKM was not enabled.");
 
-  [self closeAllIncognitoTabs];
+  // Open a new regular tab to switch from incognito mode to normal mode. Then,
+  // close this newly-opened regular tab plus the regular tab that was opened
+  // after the first incognito tab was opened.
+  //
+  // TODO(crbug.com/640977): Due to continuous animations, it is not feasible
+  // (i) to use the tab switcher to switch between modes or (ii) to omit the
+  // below code block and simply call [ChromeEarlGrey closeAllIncognitoTabs];
+  // from incognito mode.
+  [self openNewRegularTab];
+  [ChromeEarlGrey closeCurrentTab];
+  [ChromeEarlGrey closeCurrentTab];
+  GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
+             @"Failed to assert that UKM was not enabled.");
+
+  // At this point, there is one open regular tab and one open incognito tab.
+  [ChromeEarlGrey closeAllIncognitoTabs];
+
+  // All incognito tabs have been closed, so UKM should be enabled.
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:YES],
              @"Failed to assert that UKM was enabled.");
 
@@ -190,6 +206,7 @@ using chrome_test_util::SettingsDoneButton;
 // Corresponds to IncognitoPlusRegularCheck in //chrome/browser/metrics/
 // ukm_browsertest.cc.
 - (void)testIncognitoPlusRegular {
+  // Note: Tests begin with an open regular tab. This tab is opened in setUp.
   const uint64_t originalClientID = [MetricsAppInterface UKMClientID];
 
   // TODO(crbug.com/640977): Due to continuous animations, it is not feasible
@@ -224,8 +241,7 @@ using chrome_test_util::SettingsDoneButton;
 // Make sure that UKM is disabled when metrics consent is revoked.
 //
 // Corresponds to MetricsConsentCheck in //chrome/browser/metrics/
-// ukm_browsertest.cc and to testMetricConsent in //chrome/android/javatests/
-// src/org/chromium/chrome/browser/sync/UkmTest.java.
+// ukm_browsertest.cc.
 - (void)testMetricsConsent {
 #if defined(CHROME_EARL_GREY_1)
   // TODO(crbug.com/1033726): EG1 Test fails on iOS 12.
@@ -256,8 +272,7 @@ using chrome_test_util::SettingsDoneButton;
 // Make sure that providing metrics consent doesn't enable UKM w/o sync.
 //
 // Corresponds to ConsentAddedButNoSyncCheck in //chrome/browser/metrics/
-// ukm_browsertest.cc and to consentAddedButNoSyncCheck in //chrome/android/
-// javatests/src/org/chromium/chrome/browser/sync/UkmTest.java.
+// ukm_browsertest.cc.
 - (void)testConsentAddedButNoSync {
   [SigninEarlGreyUtilsAppInterface signOut];
   [MetricsAppInterface setMetricsAndCrashReportingForTesting:NO];
@@ -276,8 +291,7 @@ using chrome_test_util::SettingsDoneButton;
 // Make sure that UKM is disabled when sync is disabled.
 //
 // Corresponds to ConsentAddedButNoSyncCheck in //chrome/browser/metrics/
-// ukm_browsertest.cc and to consentAddedButNoSyncCheck in //chrome/android/
-// javatests/src/org/chromium/chrome/browser/sync/UkmTest.java.
+// ukm_browsertest.cc.
 - (void)testSingleDisableSync {
 #if defined(CHROME_EARL_GREY_1)
   // TODO(crbug.com/1033726): EG1 Test fails on iOS 12.
@@ -323,8 +337,7 @@ using chrome_test_util::SettingsDoneButton;
 // Make sure that UKM is disabled when sync is not enabled.
 //
 // Corresponds to SingleSyncSignoutCheck in //chrome/browser/metrics/
-// ukm_browsertest.cc and to singleSyncSignoutCheck in //chrome/android/
-// javatests/src/org/chromium/chrome/browser/sync/UkmTest.java.
+// ukm_browsertest.cc.
 - (void)testSingleSyncSignout {
 #if defined(CHROME_EARL_GREY_1)
   // TODO(crbug.com/1033726): EG1 Test fails on iOS 12.

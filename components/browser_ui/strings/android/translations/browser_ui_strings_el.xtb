@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Κάμερα</translation>
 <translation id="1647391597548383849">Πρόσβαση στην κάμερα</translation>
 <translation id="1660204651932907780">Να επιτρέπεται στους ιστοτόπους να αναπαράγουν ήχο (συνιστάται)</translation>
+<translation id="1677097821151855053">Τα cookie και άλλα δεδομένα ιστοτόπου χρησιμοποιούνται για την απομνημόνευσή σας, όπως, για παράδειγμα, για σας συνδέουν ή να εξατομικεύουν τις διαφημίσεις σας. Για να διαχειριστείτε τα cookie για όλους τους ιστοτόπους, ανατρέξτε στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Να διαγραφούν τα δεδομένα ιστοτόπου;</translation>
 <translation id="169515064810179024">Αποκλεισμός πρόσβασης σε αισθητήρες κίνησης από ιστοτόπους</translation>
 <translation id="1717218214683051432">Αισθητήρες κίνησης</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Επιτρέπει τα cookie για έναν συγκεκριμένο ιστότοπο.</translation>
 <translation id="4046123991198612571">Επόμενο κομμάτι</translation>
 <translation id="4165986682804962316">Ρυθμίσεις ιστότοπου</translation>
+<translation id="4200726100658658164">Άνοιγμα ρυθμίσεων τοποθεσίας</translation>
 <translation id="4226663524361240545">Κατά τη λήψη ειδοποιήσεων ενδέχεται να δονείται η συσκευή</translation>
 <translation id="4242533952199664413">Ανοίξτε τις ρυθμίσεις</translation>
 <translation id="4259722352634471385">Αποκλείστηκε η μετάβαση στη διεύθυνση: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Όλοι οι ιστότοποι</translation>
 <translation id="6320088164292336938">Δόνηση</translation>
 <translation id="6388207532828177975">Διαγραφή και επαναφορά</translation>
+<translation id="6423924377271166037">Διαγραφή cookie</translation>
 <translation id="6439114592976064011">Αποκλείστε τη χρήση της συσκευής και των δεδομένων εικονικής πραγματικότητας από ιστοτόπους.</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6527303717912515753">Κοινοποίηση</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Αναζήτηση προς τα πίσω</translation>
 <translation id="8444433999583714703">Για να επιτρέψετε στην εφαρμογή <ph name="APP_NAME" /> να αποκτήσει πρόσβαση στην τοποθεσία σας, ενεργοποιήστε επίσης την τοποθεσία στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Ανάκληση άδειας συσκευής</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Χρησιμοποιείται 1 cookie}other{Χρησιμοποιούνται # cookie}}</translation>
 <translation id="8463851957836045671">Ο ιστότοπος είναι γρήγορος</translation>
 <translation id="851751545965956758">Αποκλεισμός ιστοτόπων από τη σύνδεση σε συσκευές</translation>
 <translation id="857943718398505171">Επιτρέπεται (συνιστάται)</translation>

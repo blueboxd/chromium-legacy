@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">儲存在您其他裝置上的書籤會顯示在這裡。</translation>
 <translation id="1113597929977215864">顯示「簡易檢視」模式</translation>
 <translation id="1122278879166832009">輕觸這裡即可從任何畫面快速存取你的首頁</translation>
+<translation id="1126809382673880764">無法封鎖不安全的網站、下載內容和擴充功能。在 Gmail 和 Google 搜尋等其他 Google 服務中，安全瀏覽功能的防護機制仍然會發揮作用 (在適用情況下)。</translation>
 <translation id="1129510026454351943">詳細資料：<ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 項下載作業仍待處理。}other{# 項下載作業仍待處理。}}</translation>
 <translation id="1145536944570833626">刪除現有資料。</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">淺色</translation>
 <translation id="1810845389119482123">尚未完成初始同步處理設定</translation>
 <translation id="1821253160463689938">使用 Cookie 記住你的偏好設定 (即使你沒有造訪這些網頁)</translation>
-<translation id="1826516787628120939">檢查中</translation>
 <translation id="1829244130665387512">在網頁中尋找</translation>
 <translation id="1853692000353488670">新增無痕式分頁</translation>
 <translation id="1856325424225101786">要重設精簡模式嗎？</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">儲存密碼</translation>
 <translation id="1952172573699511566">Chrome 會儘可能以你慣用的語言顯示網站文字。</translation>
 <translation id="1960290143419248813">這個版本的 Android 已停止支援 Chrome 更新</translation>
+<translation id="1963976881984600709">標準防護</translation>
 <translation id="1966710179511230534">請更新你的登入詳細資料。</translation>
 <translation id="1974060860693918893">進階</translation>
+<translation id="1984417487208496350">無防護 (不建議)</translation>
 <translation id="1984705450038014246">同步處理你的 Chrome 資料</translation>
 <translation id="1986685561493779662">這個名稱已有人使用</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" />按鈕</translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">使用 Google 智慧鏡頭的搜尋功能 <ph name="BEGIN_NEW" />新功能<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="4198423547019359126">沒有可用的下載位置</translation>
-<translation id="4202553989407425169">Chrome 可以檢查你的設定是否提供以下防護：</translation>
 <translation id="4209895695669353772">如要取得個人化的 Google 推薦內容，請開啟同步處理功能</translation>
 <translation id="423219824432660969">使用你在 <ph name="TIME" />設定的 Google 密碼，加密保護同步資料</translation>
 <translation id="4242533952199664413">開啟設定</translation>
@@ -459,6 +460,7 @@
 <translation id="4749960740855309258">開啟新分頁</translation>
 <translation id="4759238208242260848">下載</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{已完成 1 項下載作業。}other{已完成 # 項下載作業。}}</translation>
+<translation id="4766678251456904326">在裝置上新增帳戶</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{已排定 1 項下載作業。}other{已排定 # 項下載作業。}}</translation>
 <translation id="478981486571169252">你可以在 Chrome 中查看 <ph name="SITE_NAME" /> 登入狀態、瀏覽資料和網站資料。</translation>
 <translation id="4802417911091824046">通關密語加密保護的資料不包括 Google Pay 的付款方式和地址。
@@ -490,6 +492,7 @@
 <translation id="4943872375798546930">沒有結果</translation>
 <translation id="4961107849584082341">將這個網頁翻譯成任何語言</translation>
 <translation id="4970824347203572753">你所在的地區無法使用這項功能</translation>
+<translation id="4971735654804503942">針對不安全的網站、下載內容和擴充功能提供更快速的主動式防護機制。系統會顯示密碼遭外洩的警告訊息。須將瀏覽資料傳送至 Google。</translation>
 <translation id="497421865427891073">往前</translation>
 <translation id="4988210275050210843">正在下載檔案 (<ph name="MEGABYTES" />)。</translation>
 <translation id="4988526792673242964">網頁</translation>
@@ -561,7 +564,6 @@
 <translation id="5527082711130173040">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK1" />更新權限<ph name="END_LINK1" />。此外，<ph name="BEGIN_LINK2" />這個裝置的位置資訊存取權已關閉<ph name="END_LINK2" />。</translation>
 <translation id="5530766185686772672">關閉無痕式分頁</translation>
 <translation id="5534640966246046842">已複製網站</translation>
-<translation id="5548606607480005320">安全檢查</translation>
 <translation id="5561549206367097665">正在等待網路連線…</translation>
 <translation id="55737423895878184">允許分享位置資訊和顯示通知</translation>
 <translation id="5578795271662203820">透過 <ph name="SEARCH_ENGINE" /> 搜尋這張圖片</translation>
@@ -600,7 +602,6 @@
 <translation id="583281660410589416">未知</translation>
 <translation id="5833984609253377421">分享連結</translation>
 <translation id="5836192821815272682">正在下載 Chrome 更新…</translation>
-<translation id="584120177693484274">未檢查</translation>
 <translation id="5853623416121554550">已暫停</translation>
 <translation id="5854790677617711513">超過 30 天前</translation>
 <translation id="5858741533101922242">Chrome 無法開啟藍牙轉接器</translation>
@@ -736,10 +737,12 @@
 <translation id="685850645784703949">Google 探索 - 關閉</translation>
 <translation id="6864459304226931083">下載圖片</translation>
 <translation id="6865313869410766144">自動填入表單資料</translation>
+<translation id="6882836635272038266">針對已知不安全的網站、下載內容和擴充功能提供標準防護機制。</translation>
 <translation id="6884306546558072722">繼續探索離線內容</translation>
 <translation id="688738109438487280">將現有資料新增至 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="6891726759199484455">解鎖即可複製你的密碼</translation>
 <translation id="6896758677409633944">複製</translation>
+<translation id="6900532703269623216">強化防護</translation>
 <translation id="6903907808598579934">開啟同步處理功能</translation>
 <translation id="6942665639005891494">你隨時可以使用 [設定] 選單選項變更預設的下載位置</translation>
 <translation id="6945221475159498467">選取</translation>

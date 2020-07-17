@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1647391597548383849">Камераңызга мүмкүнчүлүк алуу</translation>
 <translation id="1660204651932907780">Сайттарга үн чыгарууга уруксат берилсин (сунушталат)</translation>
+<translation id="1677097821151855053">Cookie файлдары жана башка маалымат сизди эстеп калып, аккаунтка кирүү же жарнамаларды жекелештирүү ж.б. үчүн колдонулат. Бардык сайттардын cookie файлдарын башкаруу үчүн <ph name="BEGIN_LINK" />Жөндөөлөргө<ph name="END_LINK" /> өтүңүз.</translation>
 <translation id="1688867105868176567">Сайттын дайындары тазалансынбы?</translation>
 <translation id="169515064810179024">Сайттардын сенсорлорду колдонуусун бөгөттөө</translation>
 <translation id="1717218214683051432">Кыймыл сенсорлору</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Белгилүү бир сайттын cookie файлдарына уруксат берүү.</translation>
 <translation id="4046123991198612571">Кийинки трек</translation>
 <translation id="4165986682804962316">Сайт жөндөөлөрү</translation>
+<translation id="4200726100658658164">Жайгашкан жерди аныктоо жөндөөлөрүн ачуу</translation>
 <translation id="4226663524361240545">Билдирмелер кегенде түзмөк дирилдейт</translation>
 <translation id="4242533952199664413">Жөндөөлөрдү ачуу</translation>
 <translation id="4259722352634471385">Чабыттоо бөгөттөлгөн: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Бардык сайттар</translation>
 <translation id="6320088164292336938">Дирилдөө</translation>
 <translation id="6388207532828177975">Тазалоо жана баштапкы абалга келтирүү</translation>
+<translation id="6423924377271166037">Cookie файлдарын тазалоо</translation>
 <translation id="6439114592976064011">Сайттарга виртуалдык чындык түзмөктөрүңүздү жана маалыматты колдонууга тыюу салуу</translation>
 <translation id="6447842834002726250">Кукилер</translation>
 <translation id="6527303717912515753">Бөлүшүү</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Артка түрдүрүү</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> колдонмосуна жайгашкан жериңизге кирүүгө уруксат берүү үчүн, <ph name="BEGIN_LINK" />Android Жөндөөлөрүнөн<ph name="END_LINK" /> жайгашкан жер кызматын күйгүзүңүз.</translation>
 <translation id="8447861592752582886">Түзмөккө болгон уруксатты жоюу</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie файлы колдонулууда}other{# cookie файлы колдонулууда}}</translation>
 <translation id="8463851957836045671">Сайт тез жүктөлөт</translation>
 <translation id="851751545965956758">Сайттардын түзмөктөргө туташуусун бөгөттөө</translation>
 <translation id="857943718398505171">Уруксат берилген (сунушталат)</translation>

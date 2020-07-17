@@ -158,6 +158,8 @@ class CC_EXPORT LayerTreeImpl {
           decoding_mode_map);
   int GetMSAASampleCountForRaster(
       const scoped_refptr<DisplayItemList>& display_list);
+  gfx::ColorSpace GetRasterColorSpace(
+      gfx::ContentColorUsage content_color_usage) const;
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------

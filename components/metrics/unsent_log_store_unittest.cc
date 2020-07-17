@@ -137,7 +137,7 @@ class TestUnsentLogStore : public UnsentLogStore {
 TEST_F(UnsentLogStoreTest, EmptyLogList) {
   TestUnsentLogStore unsent_log_store(&prefs_, kLogByteLimit);
 
-  unsent_log_store.PersistUnsentLogs();
+  unsent_log_store.TrimAndPersistUnsentLogs();
   const base::ListValue* list_value = prefs_.GetList(kTestPrefName);
   EXPECT_EQ(0U, list_value->GetSize());
 
@@ -151,7 +151,7 @@ TEST_F(UnsentLogStoreTest, SingleElementLogList) {
   TestUnsentLogStore unsent_log_store(&prefs_, kLogByteLimit);
 
   unsent_log_store.StoreLog("Hello world!", base::nullopt);
-  unsent_log_store.PersistUnsentLogs();
+  unsent_log_store.TrimAndPersistUnsentLogs();
 
   TestUnsentLogStore result_unsent_log_store(&prefs_, kLogByteLimit);
   result_unsent_log_store.LoadPersistedUnsentLogs();
@@ -171,7 +171,7 @@ TEST_F(UnsentLogStoreTest, SingleElementLogList) {
 }
 
 // Store a set of logs over the length limit, but smaller than the min number of
-// bytes.
+// bytes. This should leave the logs unchanged.
 TEST_F(UnsentLogStoreTest, LongButTinyLogList) {
   TestUnsentLogStore unsent_log_store(&prefs_, kLogByteLimit);
 
@@ -179,7 +179,9 @@ TEST_F(UnsentLogStoreTest, LongButTinyLogList) {
   for (size_t i = 0; i < log_count; ++i)
     unsent_log_store.StoreLog("x", base::nullopt);
 
-  unsent_log_store.PersistUnsentLogs();
+  EXPECT_EQ(log_count, unsent_log_store.size());
+  unsent_log_store.TrimAndPersistUnsentLogs();
+  EXPECT_EQ(log_count, unsent_log_store.size());
 
   TestUnsentLogStore result_unsent_log_store(&prefs_, kLogByteLimit);
   result_unsent_log_store.LoadPersistedUnsentLogs();
@@ -215,11 +217,16 @@ TEST_F(UnsentLogStoreTest, LongButSmallLogList) {
     unsent_log_store.StoreLog(blank_log, base::nullopt);
   }
   unsent_log_store.StoreLog(last_kept, base::nullopt);
-  unsent_log_store.PersistUnsentLogs();
+
+  size_t original_size = unsent_log_store.size();
+  unsent_log_store.TrimAndPersistUnsentLogs();
+  // New size has been reduced.
+  EXPECT_EQ(original_size - 2, unsent_log_store.size());
 
   TestUnsentLogStore result_unsent_log_store(&prefs_, kLogByteLimit);
   result_unsent_log_store.LoadPersistedUnsentLogs();
-  EXPECT_EQ(unsent_log_store.size() - 2, result_unsent_log_store.size());
+  // Prefs should be the same size.
+  EXPECT_EQ(unsent_log_store.size(), result_unsent_log_store.size());
 
   result_unsent_log_store.ExpectNextLog(last_kept);
   while (result_unsent_log_store.size() > 1) {
@@ -229,7 +236,7 @@ TEST_F(UnsentLogStoreTest, LongButSmallLogList) {
 }
 
 // Store a set of logs within the length limit, but well over the minimum
-// number of bytes.
+// number of bytes. This should leave the logs unchanged.
 TEST_F(UnsentLogStoreTest, ShortButLargeLogList) {
   // Make the total byte count about twice the minimum.
   size_t log_count = kLogCountLimit;
@@ -240,15 +247,17 @@ TEST_F(UnsentLogStoreTest, ShortButLargeLogList) {
   for (size_t i = 0; i < log_count; ++i) {
     unsent_log_store.StoreLog(log_data, base::nullopt);
   }
-  unsent_log_store.PersistUnsentLogs();
+  unsent_log_store.TrimAndPersistUnsentLogs();
 
   TestUnsentLogStore result_unsent_log_store(&prefs_, kLogByteLimit);
   result_unsent_log_store.LoadPersistedUnsentLogs();
-  EXPECT_EQ(unsent_log_store.size(), result_unsent_log_store.size());
+  // Both have expected number of logs (original amount).
+  EXPECT_EQ(kLogCountLimit, unsent_log_store.size());
+  EXPECT_EQ(kLogCountLimit, result_unsent_log_store.size());
 }
 
 // Store a set of logs over the length limit, and over the minimum number of
-// bytes.
+// bytes. This will trim the set of logs.
 TEST_F(UnsentLogStoreTest, LongAndLargeLogList) {
   TestUnsentLogStore unsent_log_store(&prefs_, kLogByteLimit);
 
@@ -268,10 +277,12 @@ TEST_F(UnsentLogStoreTest, LongAndLargeLogList) {
       unsent_log_store.StoreLog(log_data, base::nullopt);
   }
 
-  unsent_log_store.PersistUnsentLogs();
+  unsent_log_store.TrimAndPersistUnsentLogs();
 
   TestUnsentLogStore result_unsent_log_store(&prefs_, kLogByteLimit);
   result_unsent_log_store.LoadPersistedUnsentLogs();
+  // Both original log and persisted are reduced to limit.
+  EXPECT_EQ(kLogCountLimit, unsent_log_store.size());
   EXPECT_EQ(kLogCountLimit, result_unsent_log_store.size());
 
   while (result_unsent_log_store.size() > 1) {
@@ -317,7 +328,7 @@ TEST_F(UnsentLogStoreTest, DiscardOrder) {
   unsent_log_store.StageNextLog();
   unsent_log_store.StoreLog("two", base::nullopt);
   unsent_log_store.DiscardStagedLog();
-  unsent_log_store.PersistUnsentLogs();
+  unsent_log_store.TrimAndPersistUnsentLogs();
 
   TestUnsentLogStore result_unsent_log_store(&prefs_, kLogByteLimit);
   result_unsent_log_store.LoadPersistedUnsentLogs();
@@ -418,7 +429,7 @@ TEST_F(UnsentLogStoreTest, UnsentLogMetadataMetrics) {
       foobar_log,
       base::Optional<base::HistogramBase::Count>(kFooBarSampleCount));
 
-  unsent_log_store.PersistUnsentLogs();
+  unsent_log_store.TrimAndPersistUnsentLogs();
 
   unsent_log_store.RecordMetaDataMertics();
   // The |oversize_log| was ignored, the kNoSampleLog won't be counted to
@@ -431,7 +442,7 @@ TEST_F(UnsentLogStoreTest, UnsentLogMetadataMetrics) {
   unsent_log_store.StageNextLog();
   unsent_log_store.MarkStagedLogAsSent();
   unsent_log_store.DiscardStagedLog();
-  unsent_log_store.PersistUnsentLogs();
+  unsent_log_store.TrimAndPersistUnsentLogs();
   unsent_log_store.RecordMetaDataMertics();
 
   // The |foobar_log| shall be sent.
@@ -442,7 +453,7 @@ TEST_F(UnsentLogStoreTest, UnsentLogMetadataMetrics) {
   // Pretend |kFooText| upload failure.
   unsent_log_store.StageNextLog();
   unsent_log_store.DiscardStagedLog();
-  unsent_log_store.PersistUnsentLogs();
+  unsent_log_store.TrimAndPersistUnsentLogs();
   unsent_log_store.RecordMetaDataMertics();
 
   // Verify the failed upload wasn't added to the sent samples count.

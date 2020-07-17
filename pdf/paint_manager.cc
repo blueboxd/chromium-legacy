@@ -11,25 +11,15 @@
 
 #include "base/auto_reset.h"
 #include "base/check_op.h"
+#include "pdf/paint_ready_rect.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 
-PaintManager::ReadyRect::ReadyRect() = default;
+namespace chrome_pdf {
 
-PaintManager::ReadyRect::ReadyRect(const pp::Rect& r,
-                                   const pp::ImageData& i,
-                                   bool f)
-    : rect(r), image_data(i), flush_now(f) {}
-
-PaintManager::ReadyRect::ReadyRect(const ReadyRect& that) = default;
-
-PaintManager::PaintManager(pp::Instance* instance,
-                           Client* client,
-                           bool is_always_opaque)
-    : instance_(instance),
-      client_(client),
-      is_always_opaque_(is_always_opaque) {
+PaintManager::PaintManager(pp::Instance* instance, Client* client)
+    : instance_(instance), client_(client) {
   DCHECK(instance_);
   DCHECK(client_);
 
@@ -177,7 +167,7 @@ void PaintManager::EnsureCallbackPending() {
 void PaintManager::DoPaint() {
   base::AutoReset<bool> auto_reset_in_paint(&in_paint_, true);
 
-  std::vector<ReadyRect> ready_rects;
+  std::vector<PaintReadyRect> ready_rects;
   std::vector<pp::Rect> pending_rects;
 
   DCHECK(aggregator_.HasPendingUpdate());
@@ -194,7 +184,8 @@ void PaintManager::DoPaint() {
     // we only resize by a small amount.
     pp::Size new_size = GetNewContextSize(graphics_.size(), pending_size_);
     if (graphics_.size() != new_size) {
-      graphics_ = pp::Graphics2D(instance_, new_size, is_always_opaque_);
+      graphics_ =
+          pp::Graphics2D(instance_, new_size, /*is_always_opaque=*/true);
       graphics_need_to_be_bound_ = true;
 
       // Since we're binding a new one, all of the callbacks have been canceled.
@@ -219,9 +210,9 @@ void PaintManager::DoPaint() {
   if (ready_rects.empty() && pending_rects.empty())
     return;  // Nothing was painted, don't schedule a flush.
 
-  std::vector<PaintAggregator::ReadyRect> ready_now;
+  std::vector<PaintReadyRect> ready_now;
   if (pending_rects.empty()) {
-    std::vector<PaintAggregator::ReadyRect> temp_ready;
+    std::vector<PaintReadyRect> temp_ready;
     temp_ready.insert(temp_ready.end(), ready_rects.begin(), ready_rects.end());
     aggregator_.SetIntermediateResults(temp_ready, pending_rects);
     ready_now = aggregator_.GetReadyRects();
@@ -233,7 +224,7 @@ void PaintManager::DoPaint() {
 
     view_size_changed_waiting_for_paint_ = false;
   } else {
-    std::vector<PaintAggregator::ReadyRect> ready_later;
+    std::vector<PaintReadyRect> ready_later;
     for (const auto& ready_rect : ready_rects) {
       // Don't flush any part (i.e. scrollbars) if we're resizing the browser,
       // as that'll lead to flashes.  Until we flush, the browser will use the
@@ -258,7 +249,7 @@ void PaintManager::DoPaint() {
   }
 
   for (const auto& ready_rect : ready_now) {
-    graphics_.PaintImageData(ready_rect.image_data, ready_rect.offset,
+    graphics_.PaintImageData(ready_rect.image_data, pp::Point(),
                              ready_rect.rect);
   }
 
@@ -322,3 +313,5 @@ void PaintManager::OnManualCallbackComplete(int32_t) {
   if (aggregator_.HasPendingUpdate())
     DoPaint();
 }
+
+}  // namespace chrome_pdf

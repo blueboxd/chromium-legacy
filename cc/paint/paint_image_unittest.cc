@@ -27,6 +27,9 @@ TEST(PaintImageTest, DecodesCorrectFrames) {
                          .set_paint_image_generator(generator)
                          .TakePaintImage();
 
+  // When there's no decoded SkImage the color usage defaults to SRGB.
+  EXPECT_EQ(image.GetContentColorUsage(), gfx::ContentColorUsage::kSRGB);
+
   // The recorded index is 0u but ask for 1u frame.
   SkImageInfo info = SkImageInfo::MakeN32Premul(10, 10);
   std::vector<size_t> memory(info.computeMinByteSize());
@@ -125,18 +128,34 @@ TEST(PaintImageTest, BuildPaintWorkletImage) {
   EXPECT_TRUE(paint_image.paint_worklet_input());
   EXPECT_EQ(paint_image.width(), size.width());
   EXPECT_EQ(paint_image.height(), size.height());
+  EXPECT_EQ(paint_image.GetContentColorUsage(), gfx::ContentColorUsage::kSRGB);
 }
 
-TEST(PaintImageTest, HbdImage) {
+TEST(PaintImageTest, SrgbImage) {
   auto generator = sk_make_sp<FakePaintImageGenerator>(
-      SkImageInfo::Make(10, 10, kRGBA_F16_SkColorType, kUnknown_SkAlphaType));
+      SkImageInfo::Make(10, 10, kRGBA_F16_SkColorType, kUnknown_SkAlphaType,
+                        gfx::ColorSpace::CreateSRGB().ToSkColorSpace()));
   PaintImage image = PaintImageBuilder::WithDefault()
                          .set_id(PaintImage::GetNextId())
                          .set_paint_image_generator(generator)
                          .set_is_high_bit_depth(true)
                          .TakePaintImage();
   EXPECT_TRUE(image.is_high_bit_depth());
-  EXPECT_FALSE(image.isHDR());
+  EXPECT_EQ(image.GetContentColorUsage(), gfx::ContentColorUsage::kSRGB);
+}
+
+TEST(PaintImageTest, HbdImage) {
+  auto generator = sk_make_sp<FakePaintImageGenerator>(SkImageInfo::Make(
+      10, 10, kRGBA_F16_SkColorType, kUnknown_SkAlphaType,
+      gfx::ColorSpace::CreateDisplayP3D65().ToSkColorSpace()));
+  PaintImage image = PaintImageBuilder::WithDefault()
+                         .set_id(PaintImage::GetNextId())
+                         .set_paint_image_generator(generator)
+                         .set_is_high_bit_depth(true)
+                         .TakePaintImage();
+  EXPECT_TRUE(image.is_high_bit_depth());
+  EXPECT_EQ(image.GetContentColorUsage(),
+            gfx::ContentColorUsage::kWideColorGamut);
 }
 
 TEST(PaintImageTest, PqHdrImage) {
@@ -149,7 +168,7 @@ TEST(PaintImageTest, PqHdrImage) {
                          .set_is_high_bit_depth(true)
                          .TakePaintImage();
   EXPECT_TRUE(image.is_high_bit_depth());
-  EXPECT_TRUE(image.isHDR());
+  EXPECT_EQ(image.GetContentColorUsage(), gfx::ContentColorUsage::kHDR);
 }
 
 TEST(PaintImageTest, HlgHdrImage) {
@@ -161,8 +180,9 @@ TEST(PaintImageTest, HlgHdrImage) {
                          .set_paint_image_generator(generator)
                          .set_is_high_bit_depth(true)
                          .TakePaintImage();
+
   EXPECT_TRUE(image.is_high_bit_depth());
-  EXPECT_TRUE(image.isHDR());
+  EXPECT_EQ(image.GetContentColorUsage(), gfx::ContentColorUsage::kHDR);
 }
 
 }  // namespace cc

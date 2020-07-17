@@ -46,6 +46,7 @@
 <translation id="115926840831309955">CVC-kodni tekshiring va qaytadan urining yoki amal qilish muddatini yangilang</translation>
 <translation id="1161325031994447685">Wi-Fi tarmog‘iga qayta ulanish</translation>
 <translation id="1165039591588034296">Xatolik</translation>
+<translation id="1165174597379888365">Sahifa ochilishi</translation>
 <translation id="1175364870820465910">&amp;Chop etish...</translation>
 <translation id="1175875016430184367">Oʻngdan 3 marta steplerlash</translation>
 <translation id="1178581264944972037">Pauza</translation>
@@ -266,6 +267,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="2001146170449793414">{COUNT,plural, =1{va yana 1 ta}other{va yana # ta}}</translation>
 <translation id="2003709556000175978">Parolingizni hozir yangilang</translation>
 <translation id="2003775180883135320">Yuqoridan 4 ta teshik ochish</translation>
+<translation id="202072848677994234">Bu shakldagi axborotlar himoyalanmagan ulanish orqali yuborilmoqda. Avtomatik kiritish yoqilmagan.</translation>
 <translation id="2025115093177348061">Boyitilgan reallik</translation>
 <translation id="2025186561304664664">Proksi-server avtomatik sozlanadi.</translation>
 <translation id="2030481566774242610"><ph name="LINK" /> manzilini nazarda tutdingizmi?</translation>
@@ -334,6 +336,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="2289385804009217824">Qirqish</translation>
 <translation id="2292556288342944218">Internet taqiqlab qo‘yilgan</translation>
 <translation id="2293443924986248631">Yoqilsa, sizni internet boʻylab kuzatadigan cookie fayllardan saytlar foydalana olmaydi. Ayrim saytlardagi funksiyalar ishalamay qolishi mumkin.</translation>
+<translation id="2295290966866883927">Siz ochgan sahifalarning URL manzillari tekshiruv uchun Google Cloud va boshqa tashqi xizmatlarga yuboriladi. Masalan, tarkibida zararli saytlar borligini aniqlash uchun.</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2300306941146563769">Yuklanmagan</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
@@ -425,7 +428,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="2705137772291741111">Bu saytning keshda saqlangan nusxasini o‘qib bo‘lmadi.</translation>
 <translation id="2709516037105925701">Avtoto‘ldirish</translation>
 <translation id="2713444072780614174">Oq</translation>
-<translation id="2720342946869265578">Yaqin-atrofda</translation>
 <translation id="2721148159707890343">So‘rov bajarildi</translation>
 <translation id="272451190272506600">Toʻlash uchun sensorga tegining</translation>
 <translation id="2728127805433021124">Server sertifikati kuchsiz imzo algoritmi yordamida imzolangan.</translation>
@@ -718,7 +720,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="3990250421422698716">Qogʻozlarni ajratib toʻplash</translation>
 <translation id="3996311196211510766"><ph name="ORIGIN" /> sayti manba siyosati tekshiruvini talab qildi
     lekin bu tekshiruv barcha soʻrovlar uchun ishlatilganda bu siyosat uchun qoʻllanilmaydi.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 ta veb-sahifa topildi}other{# ta veb-sahifa topildi}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} ta sahifadan iborat PDF hujjat}other{{COUNT} ta sahifadan iborat PDF hujjat}}</translation>
 <translation id="4030383055268325496">&amp;Qo‘shishni bekor qilish</translation>
 <translation id="4032320456957708163">Brauzeringiz <ph name="ENROLLMENT_DOMAIN" /> domeni tomonidan boshqariladi</translation>
@@ -936,7 +937,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Saqlash...</translation>
 <translation id="4913987521957242411">Yuqori chapdan teshik ochish</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{va yana 1 ta veb-sahifa}other{va yana # ta veb-sahifa}}</translation>
 <translation id="4923459931733593730">To‘lov</translation>
 <translation id="4926049483395192435">Qiymatini belgilang.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> saytidagi amalni tasdiqlang</translation>
@@ -1327,7 +1327,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="6518133107902771759">Tasdiqlash</translation>
 <translation id="6521745193039995384">Faol emas</translation>
 <translation id="6529602333819889595">&amp;O‘chirishni qaytarish</translation>
-<translation id="6534179046333460208">Atrofimizdagi Internet takliflari</translation>
 <translation id="6545864417968258051">Bluetooth qurilmalarni qidirish</translation>
 <translation id="6547208576736763147">Chapdan 2 ta teshik ochish</translation>
 <translation id="6554795675067793129">Hisobingiz <ph name="ENROLLMENT_DOMAIN" /> domenida boshqariladi.</translation>
@@ -1849,7 +1848,6 @@ Batafsil axborot:
 <translation id="8790007591277257123">&amp;Qayta o‘chirish</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> hisobingiz xavf ostida va shaxsiy ma’lumotlaringizni kimdir ko‘rishi mumkin. Parolingizni hoziroq o‘zgartirishni tavsiya etamiz.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> brauzeringizda Chrome korporativ konnektorlarini faollashtirdi. Bu konnektorlar ayrim axborotlaringizdan foydalana oladi.</translation>
-<translation id="8800988563907321413">Siz uchun maxsus takliflar shu yerda ko‘rsatiladi</translation>
 <translation id="8805819170075074995">“<ph name="LANGUAGE_ID" />” tili: Bu til SpellcheckLanguage parametrida borligi uchun inkor etildi.</translation>
 <translation id="8807160976559152894">Har bir sahifa chekkasini qirqish</translation>
 <translation id="8820817407110198400">Bukmarklar</translation>

@@ -227,6 +227,41 @@ void LoadingStatsCollector::RecordPageRequestSummary(
     }
     recorded_ukm = true;
   }
+  if (!summary.preconnect_origins.empty()) {
+    builder.SetSubresourceOriginPreconnectsInitiated(
+        std::min(ukm_cap, summary.preconnect_origins.size()));
+    const auto& actual_subresource_origins = summary.origins;
+    size_t correctly_predicted_subresource_origins_initiated = std::count_if(
+        summary.preconnect_origins.begin(), summary.preconnect_origins.end(),
+        [&actual_subresource_origins](const url::Origin& subresource_origin) {
+          return actual_subresource_origins.find(subresource_origin) !=
+                 actual_subresource_origins.end();
+        });
+    builder.SetCorrectSubresourceOriginPreconnectsInitiated(
+        std::min(ukm_cap, correctly_predicted_subresource_origins_initiated));
+    recorded_ukm = true;
+  }
+  if (!summary.prefetch_urls.empty()) {
+    builder.SetSubresourcePrefetchesInitiated(
+        std::min(ukm_cap, summary.prefetch_urls.size()));
+    const auto& actual_subresource_urls = summary.subresource_urls;
+    size_t correctly_predicted_subresource_prefetches_initiated = std::count_if(
+        summary.prefetch_urls.begin(), summary.prefetch_urls.end(),
+        [&actual_subresource_urls](const GURL& subresource_url) {
+          return actual_subresource_urls.find(subresource_url) !=
+                 actual_subresource_urls.end();
+        });
+    builder.SetCorrectSubresourcePrefetchesInitiated(std::min(
+        ukm_cap, correctly_predicted_subresource_prefetches_initiated));
+    recorded_ukm = true;
+  }
+  if (summary.first_prefetch_initiated) {
+    DCHECK(!summary.prefetch_urls.empty());
+    builder.SetNavigationStartToFirstSubresourcePrefetchInitiated(
+        (summary.first_prefetch_initiated.value() - summary.navigation_started)
+            .InMilliseconds());
+    recorded_ukm = true;
+  }
 
   auto it = preconnect_stats_.find(initial_url);
   if (it != preconnect_stats_.end()) {

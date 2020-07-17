@@ -21,11 +21,11 @@
 namespace history {
 
 class AndroidProviderBackend;
+class FaviconDatabase;
 class HistoryBackend;
 class HistoryBackendClient;
 class HistoryBackendNotifier;
 class HistoryDatabase;
-class ThumbnailDatabase;
 
 // This class provides the query/insert/update/remove methods to implement
 // android.provider.Browser.BookmarkColumns and
@@ -45,7 +45,7 @@ class AndroidProviderBackend : public base::SupportsUserData::Data {
  public:
   AndroidProviderBackend(const base::FilePath& cache_db_name,
                          HistoryDatabase* history_db,
-                         ThumbnailDatabase* thumbnail_db,
+                         FaviconDatabase* favicon_db,
                          HistoryBackendClient* backend_client,
                          HistoryBackendNotifier* notifier);
 
@@ -154,7 +154,7 @@ class AndroidProviderBackend : public base::SupportsUserData::Data {
   // The scoped transaction for AndroidProviderBackend.
   //
   // The new transactions are started automatically in both history and
-  // thumbnail database and could be a nesting transaction, if so, rolling back
+  // favicon database and could be a nesting transaction, if so, rolling back
   // of this transaction will cause the exsting and subsequent nesting
   // transactions failed.
   //
@@ -166,8 +166,7 @@ class AndroidProviderBackend : public base::SupportsUserData::Data {
   //
   class ScopedTransaction {
    public:
-    ScopedTransaction(HistoryDatabase* history_db,
-                      ThumbnailDatabase* thumbnail_db);
+    ScopedTransaction(HistoryDatabase* history_db, FaviconDatabase* favicon_db);
     ~ScopedTransaction();
 
     // Commit the transaction.
@@ -175,13 +174,13 @@ class AndroidProviderBackend : public base::SupportsUserData::Data {
 
    private:
     HistoryDatabase* history_db_;
-    ThumbnailDatabase* thumbnail_db_;
+    FaviconDatabase* favicon_db_;
     // Whether the transaction was committed.
     bool committed_;
     // The count of the nested transaction in history database.
     const int history_transaction_nesting_;
-    // The count of the nested transaction in thumbnail database.
-    const int thumbnail_transaction_nesting_;
+    // The count of the nested transaction in favicon database.
+    const int favicon_transaction_nesting_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedTransaction);
   };
@@ -335,7 +334,7 @@ class AndroidProviderBackend : public base::SupportsUserData::Data {
 
   HistoryDatabase* history_db_;
 
-  ThumbnailDatabase* thumbnail_db_;
+  FaviconDatabase* favicon_db_;
 
   HistoryBackendClient* backend_client_;
 

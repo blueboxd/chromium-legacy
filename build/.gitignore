@@ -12,6 +12,7 @@ ciopfs
 /goma
 /gomacc.lock
 /ipch/
+/lacros/prebuilt_ash_chrome/
 /Release
 /Release_x64
 /win_toolchain.json

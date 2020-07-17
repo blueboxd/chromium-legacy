@@ -3062,7 +3062,7 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_BUSY);
   if (data.GetBoolAttribute(ax::mojom::BoolAttribute::kModal))
     atk_state_set_add_state(atk_state_set, ATK_STATE_MODAL);
-  if (data.HasBoolAttribute(ax::mojom::BoolAttribute::kSelected))
+  if (data.IsSelectable())
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTABLE);
   if (data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
     atk_state_set_add_state(atk_state_set, ATK_STATE_SELECTED);

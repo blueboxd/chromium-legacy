@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1647391597548383849">Přístup k fotoaparátu</translation>
 <translation id="1660204651932907780">Povolit webům přehrávat zvuky (doporučeno)</translation>
+<translation id="1677097821151855053">Soubory cookie a další data webů slouží k tomu, aby si vás web zapamatoval, například pro účely přihlášení nebo personalizace reklam. Chcete-li spravovat cookies pro všechny weby, přejděte do <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Vymazat data webu?</translation>
 <translation id="169515064810179024">Blokovat webům přístup k senzorům pohybu</translation>
 <translation id="1717218214683051432">Pohybová čidla</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Povolit soubory cookie pro konkrétní web.</translation>
 <translation id="4046123991198612571">Další skladba</translation>
 <translation id="4165986682804962316">Nastavení webu</translation>
+<translation id="4200726100658658164">Otevřít nastavení polohy</translation>
 <translation id="4226663524361240545">Oznámení mohou aktivovat vibraci</translation>
 <translation id="4242533952199664413">Otevřít Nastavení</translation>
 <translation id="4259722352634471385">Navigace je blokována: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Všechny weby</translation>
 <translation id="6320088164292336938">Vibrovat</translation>
 <translation id="6388207532828177975">Vymazat a resetovat</translation>
+<translation id="6423924377271166037">Vymazat soubory cookie</translation>
 <translation id="6439114592976064011">Bránit webům v používání zařízení a dat pro virtuální realitu</translation>
 <translation id="6447842834002726250">Soubory cookie</translation>
 <translation id="6527303717912515753">Sdílet</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Přetočit dozadu</translation>
 <translation id="8444433999583714703">Pokud aplikaci <ph name="APP_NAME" /> chcete povolit přístup ke své poloze, zapněte polohu také v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Zrušit oprávnění zařízení</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Je používán 1 soubor cookie}few{Jsou používány # soubory cookie}many{Je používáno # souboru cookie}other{Je používáno # souborů cookie}}</translation>
 <translation id="8463851957836045671">Web je rychlý</translation>
 <translation id="851751545965956758">Bránit webům v připojení k zařízením</translation>
 <translation id="857943718398505171">Povoleno (doporučeno)</translation>

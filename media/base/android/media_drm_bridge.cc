@@ -575,21 +575,14 @@ void MediaDrmBridge::DeleteOnCorrectThread() const {
   }
 }
 
+std::unique_ptr<CallbackRegistration> MediaDrmBridge::RegisterEventCB(
+    EventCB event_cb) {
+  return event_callbacks_.Register(std::move(event_cb));
+}
+
 MediaCryptoContext* MediaDrmBridge::GetMediaCryptoContext() {
   DVLOG(2) << __func__;
   return &media_crypto_context_;
-}
-
-int MediaDrmBridge::RegisterPlayer(base::RepeatingClosure new_key_cb,
-                                   base::RepeatingClosure cdm_unset_cb) {
-  // |player_tracker_| can be accessed from any thread.
-  return player_tracker_.RegisterPlayer(std::move(new_key_cb),
-                                        std::move(cdm_unset_cb));
-}
-
-void MediaDrmBridge::UnregisterPlayer(int registration_id) {
-  // |player_tracker_| can be accessed from any thread.
-  player_tracker_.UnregisterPlayer(registration_id);
 }
 
 bool MediaDrmBridge::IsSecureCodecRequired() {
@@ -915,8 +908,6 @@ MediaDrmBridge::~MediaDrmBridge() {
   if (j_media_drm_)
     Java_MediaDrmBridge_destroy(env, j_media_drm_);
 
-  player_tracker_.NotifyCdmUnset();
-
   if (media_crypto_ready_cb_) {
     std::move(media_crypto_ready_cb_).Run(CreateJavaObjectPtr(nullptr), false);
   }
@@ -991,7 +982,7 @@ void MediaDrmBridge::OnHasAdditionalUsableKey() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __func__;
 
-  player_tracker_.NotifyNewKey();
+  event_callbacks_.Notify(Event::kHasAdditionalUsableKey);
 }
 
 }  // namespace media

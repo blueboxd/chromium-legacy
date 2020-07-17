@@ -8,6 +8,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
@@ -52,14 +53,16 @@
         addCreditCardWithHolderName:(NSString*)cardHolderName
                          cardNumber:(NSString*)cardNumber
                     expirationMonth:(NSString*)expirationMonth
-                     expirationYear:(NSString*)expirationYear {
+                     expirationYear:(NSString*)expirationYear
+                       cardNickname:(NSString*)cardNickname {
   autofill::CreditCard creditCard =
       [self creditCardWithHolderName:cardHolderName
                           cardNumber:cardNumber
                      expirationMonth:expirationMonth
-                      expirationYear:expirationYear];
+                      expirationYear:expirationYear
+                        cardNickname:cardNickname];
 
-  // Validates the credit card number and expiration date.
+  // Validates the credit card number, expiration date, and nickname.
   if (!creditCard.HasValidCardNumber()) {
     [self.addCreditCardMediatorDelegate
         creditCardMediatorHasInvalidCardNumber:self];
@@ -69,6 +72,14 @@
   if (!creditCard.HasValidExpirationDate()) {
     [self.addCreditCardMediatorDelegate
         creditCardMediatorHasInvalidExpirationDate:self];
+    return;
+  }
+
+  if ([self isCardNicknameManagementEnabled] &&
+      !autofill::CreditCard::IsNicknameValid(
+          base::SysNSStringToUTF16(cardNickname))) {
+    [self.addCreditCardMediatorDelegate
+        creditCardMediatorHasInvalidNickname:self];
     return;
   }
 
@@ -86,7 +97,8 @@
             cardHolderName:cardHolderName
                 cardNumber:cardNumber
            expirationMonth:expirationMonth
-            expirationYear:expirationYear];
+            expirationYear:expirationYear
+              cardNickname:cardNickname];
 
     self.personalDataManager->UpdateCreditCard(savedCreditCardCopy);
   } else {
@@ -128,32 +140,38 @@
 
 - (bool)addCreditCardViewController:
             (AutofillAddCreditCardViewController*)viewController
+                isValidCardNickname:(NSString*)cardNickname {
+  return [self isValidCardNickname:cardNickname];
+}
+
+- (bool)addCreditCardViewController:
+            (AutofillAddCreditCardViewController*)viewController
             isValidCreditCardNumber:(NSString*)cardNumber
                     expirationMonth:(NSString*)expirationMonth
-                     expirationYear:(NSString*)expirationYear {
-  BOOL isValidCardNumber = [self isValidCreditCardNumber:cardNumber];
-  BOOL isValidCardExpiryMonth =
-      [self isValidCreditCardExpirationMonth:expirationMonth];
-  BOOL isValidCardExpiryYear =
-      [self isValidCreditCardExpirationYear:expirationYear];
-
-  return (isValidCardNumber && isValidCardExpiryMonth && isValidCardExpiryYear);
+                     expirationYear:(NSString*)expirationYear
+                       cardNickname:(NSString*)cardNickname {
+  return ([self isValidCreditCardNumber:cardNumber] &&
+          [self isValidCreditCardExpirationMonth:expirationMonth] &&
+          [self isValidCreditCardExpirationYear:expirationYear] &&
+          [self isValidCardNickname:cardNickname]);
 }
 
 #pragma mark - Private
 
 // Returns a new autofill::CreditCard object with |cardHolderName|,
-// |cardNumber|, |expirationMonth|, |expirationYear|.
+// |cardNumber|, |expirationMonth|, |expirationYear|, |cardNickname|.
 - (autofill::CreditCard)creditCardWithHolderName:cardHolderName
                                       cardNumber:cardNumber
                                  expirationMonth:expirationMonth
-                                  expirationYear:expirationYear {
+                                  expirationYear:expirationYear
+                                    cardNickname:cardNickname {
   autofill::CreditCard creditCard = autofill::CreditCard();
   [self updateCreditCard:&creditCard
           cardHolderName:cardHolderName
               cardNumber:cardNumber
          expirationMonth:expirationMonth
-          expirationYear:expirationYear];
+          expirationYear:expirationYear
+            cardNickname:cardNickname];
   return creditCard;
 }
 
@@ -162,7 +180,8 @@
           cardHolderName:(NSString*)cardHolderName
               cardNumber:(NSString*)cardNumber
          expirationMonth:(NSString*)expirationMonth
-          expirationYear:(NSString*)expirationYear {
+          expirationYear:(NSString*)expirationYear
+            cardNickname:(NSString*)cardNickname {
   [self updateCreditCard:creditCard
             cardProperty:cardHolderName
           autofillUIType:AutofillUITypeCreditCardHolderFullName];
@@ -178,6 +197,8 @@
   [self updateCreditCard:creditCard
             cardProperty:expirationYear
           autofillUIType:AutofillUITypeCreditCardExpYear];
+
+  creditCard->SetNickname(base::SysNSStringToUTF16(cardNickname));
 }
 
 // Updates the |AutofillUIType| of the |creditCard| with the value of
@@ -197,7 +218,8 @@
   autofill::CreditCard creditCard = [self creditCardWithHolderName:nil
                                                         cardNumber:cardNumber
                                                    expirationMonth:nil
-                                                    expirationYear:nil];
+                                                    expirationYear:nil
+                                                      cardNickname:nil];
   return creditCard.HasValidCardNumber();
 }
 
@@ -213,8 +235,25 @@
       [self creditCardWithHolderName:nil
                           cardNumber:nil
                      expirationMonth:nil
-                      expirationYear:expirationYear];
+                      expirationYear:expirationYear
+                        cardNickname:nil];
   return creditCard.HasValidExpirationYear();
+}
+
+// Checks if a credit card has a valid |nickname|.
+- (BOOL)isValidCardNickname:(NSString*)cardNickname {
+  if ([self isCardNicknameManagementEnabled]) {
+    return autofill::CreditCard::IsNicknameValid(
+        base::SysNSStringToUTF16(cardNickname));
+  }
+
+  return YES;
+}
+
+// Returns whether card nickname managment feature is enabled.
+- (BOOL)isCardNicknameManagementEnabled {
+  return base::FeatureList::IsEnabled(
+      autofill::features::kAutofillEnableCardNicknameManagement);
 }
 
 @end

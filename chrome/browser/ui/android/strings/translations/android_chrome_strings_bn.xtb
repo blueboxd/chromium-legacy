@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">আপনার অন্যান্য ডিভাইসে সেভ করা বুকমার্কগুলি এখানে দেখা যাবে।</translation>
 <translation id="1113597929977215864">সরলীকৃত ভিউ দেখান</translation>
 <translation id="1122278879166832009">যেকোনও জায়গা থেকে দ্রুত আপনার হোমপেজ অ্যাক্সেস করতে এখানে ট্যাপ করুন</translation>
+<translation id="1126809382673880764">এই মোডে আপনার ডিভাইসের ক্ষতি করতে পারে এমন ওয়েবসাইট, ডাউনলোড অথবা এক্সটেনশন থেকে কোনও সুরক্ষা পাওয়া সম্ভব হয় না। তবে Gmail এবং Search-এর মতো অন্যান্য Google পরিষেবায়, যেখানে উপলভ্য সেখানে আপনি এখনও 'Safe Browsing'-এর সুরক্ষা পাবেন।</translation>
 <translation id="1129510026454351943">বিবরণ: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{১টি ডাউনলোড বাকি আছে।}one{#টি ডাউনলোড বাকি আছে।}other{#টি ডাউনলোড বাকি আছে।}}</translation>
 <translation id="1145536944570833626">বিদ্যমান ডেটা মুছুন।</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">আলো</translation>
 <translation id="1810845389119482123">প্রারম্ভিক সিঙ্ক সেট-আপ করা সম্পূর্ণ হয়নি</translation>
 <translation id="1821253160463689938">আপনার পছন্দগুলি মনে রাখার জন্য কুকি ব্যবহার করে। আপনি সেই সমস্ত পৃষ্ঠায় না গেলেও তা করে থাকে</translation>
-<translation id="1826516787628120939">চেক করা হচ্ছে</translation>
 <translation id="1829244130665387512">পৃষ্ঠাতে খুঁজুন</translation>
 <translation id="1853692000353488670">নতুন ছদ্মবেশী ট্যাব</translation>
 <translation id="1856325424225101786">লাইট মোড রিসেট করবেন?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">পাসওয়ার্ডগুলি সেভ করুন</translation>
 <translation id="1952172573699511566">যখন সম্ভব হবে ওয়েবসাইট আপনার পছন্দের ভাষায় টেক্সট দেখাবে।</translation>
 <translation id="1960290143419248813">Android-এর এই ভার্সনে Chrome আপডেট করা আর সম্ভব নয়</translation>
+<translation id="1963976881984600709">স্ট্যান্ডার্ড সুরক্ষা</translation>
 <translation id="1966710179511230534">অনুগ্রহ করে আমার সাইন-ইন বিবরণ আপডেট করুন।</translation>
 <translation id="1974060860693918893">উন্নত</translation>
+<translation id="1984417487208496350">সুরক্ষিত নয় (সাজেস্ট করা হচ্ছে না)</translation>
 <translation id="1984705450038014246">আপনার Chrome ডেটা সিঙ্ক করুন</translation>
 <translation id="1986685561493779662">নামটি আগে থেকেই আছে</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> বোতাম</translation>
@@ -394,7 +396,6 @@
 <translation id="4183868528246477015">Google Lens-এর <ph name="BEGIN_NEW" />নতুন<ph name="END_NEW" /> ভার্সন দিয়ে খুুঁজুন</translation>
 <translation id="4195643157523330669">নতুন ট্যাবে খুলুন</translation>
 <translation id="4198423547019359126">ডাউনলোড করার জন্য লোকেশন উপলভ্য নেই</translation>
-<translation id="4202553989407425169">আপনার সেটিংস এগুলির মাধ্যমে আপনাকে নিরাপদে রাখছে কিনা Chrome তা চেক করতে পারে:</translation>
 <translation id="4209895695669353772">Google-এর প্রস্তাবিত ব্যক্তিগতকৃত কন্টেন্ট পেতে সিঙ্ক বিকল্প চালু করুন</translation>
 <translation id="423219824432660969">Google পাসওয়ার্ড দিয়ে <ph name="TIME" />-এ সিঙ্ক করা ডেটা এনক্রিপ্ট করুন</translation>
 <translation id="4242533952199664413">সেটিংস খুলুন</translation>
@@ -461,6 +462,7 @@
 <translation id="4749960740855309258">একটি নতুন ট্যাব খুলুন</translation>
 <translation id="4759238208242260848">ডাউনলোডগুলি</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{১টি ডাউনলোড হয়ে গেছে।}one{#টি ডাউনলোড হয়ে গেছে।}other{#টি ডাউনলোড হয়ে গেছে।}}</translation>
+<translation id="4766678251456904326">ডিভাইসে অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{১টি ডাউনলোড শিডিউল করা হয়েছে।}one{#টি ডাউনলোড শিডিউল করা হয়েছে।}other{#টি ডাউনলোড শিডিউল করা হয়েছে।}}</translation>
 <translation id="478981486571169252">আপনি Chrome-এ <ph name="SITE_NAME" /> সাইটে নিজের সাইন-ইন স্ট্যাটাস, ব্রাউজিং ডেটা এবং সাইট ডেটা দেখতে পাবেন।</translation>
 <translation id="4802417911091824046">পাসফ্রেজ এনক্রিপশনে Google Pay-এর পেমেন্ট পদ্ধতি ও ঠিকানা অন্তর্ভুক্ত থাকে না।
@@ -492,6 +494,7 @@
 <translation id="4943872375798546930">কোন ফলাফল নেই</translation>
 <translation id="4961107849584082341">এই পৃষ্ঠাটি যেকোনও ভাষায় অনুবাদ করুন</translation>
 <translation id="4970824347203572753">আপনার লোকেশনে উপলভ্য নেই</translation>
+<translation id="4971735654804503942">ঝুঁকিপূর্ণ ওয়েবসাইট, ডাউনলোড এবং এক্সটেনশনের জন্য আরও দ্রুত, সক্রিয় সুরক্ষা ব্যবস্থা। পাসওয়ার্ড সুরক্ষিত নেই সেই সম্পর্কে আপনাকে জানায়। Google-কে পাঠানোর জন্য ব্রাউজ করা ডেটা প্রয়োজন।</translation>
 <translation id="497421865427891073">অগ্রবর্তী করুন</translation>
 <translation id="4988210275050210843">ফাইল ডাউনলোড হচ্ছে (<ph name="MEGABYTES" />)।</translation>
 <translation id="4988526792673242964">পৃষ্ঠাসমূহ</translation>
@@ -563,7 +566,6 @@
 <translation id="5527082711130173040">ডিভাইস স্ক্যান করার জন্য Chrome এর অবস্থানের অ্যাক্সেস প্রয়োজন।  <ph name="BEGIN_LINK1" />অনুমতিগুলির আপডেট করুন<ph name="END_LINK1" />। অবস্থানের অ্যাক্সেস <ph name="BEGIN_LINK2" />এই ডিভাইসের জন্যও বন্ধ করা হয়েছে<ph name="END_LINK2" />।</translation>
 <translation id="5530766185686772672">ছদ্মবেশী ট্যাবগুলি বন্ধ করুন</translation>
 <translation id="5534640966246046842">সাইট কপি করা হয়েছে</translation>
-<translation id="5548606607480005320">নিরাপত্তা সংক্রান্ত পরীক্ষা</translation>
 <translation id="5561549206367097665">নেটওয়ার্কের জন্য অপেক্ষা করা হচ্ছে...</translation>
 <translation id="55737423895878184">লোকেশন এবং বিজ্ঞপ্তিগুলি অনুমোদিত</translation>
 <translation id="5578795271662203820">এই ইমেজটির জন্য <ph name="SEARCH_ENGINE" /> খুঁজুন</translation>
@@ -602,7 +604,6 @@
 <translation id="583281660410589416">অজানা</translation>
 <translation id="5833984609253377421">লিঙ্ক শেয়ার করুন</translation>
 <translation id="5836192821815272682">Chrome-এর আপডেট ডাউনলোড করা হচ্ছে…</translation>
-<translation id="584120177693484274">পরীক্ষা করা হয়নি</translation>
 <translation id="5853623416121554550">পজ করা হয়েছে</translation>
 <translation id="5854790677617711513">৩০ দিনের বেশি পুরনো</translation>
 <translation id="5858741533101922242">Chrome ব্লুটুথ অ্যাডাপ্টার চালু করতে পারছে না</translation>
@@ -738,10 +739,12 @@
 <translation id="685850645784703949">Google-এর ডিসকভার - বন্ধ আছে</translation>
 <translation id="6864459304226931083">ছবি ডাউনলোড করুন</translation>
 <translation id="6865313869410766144">স্বতঃপূর্ণ ফর্ম ডেটা</translation>
+<translation id="6882836635272038266">ঝুঁকিপূর্ণ হিসেবে চিহ্নিত ওয়েবসাইট, ডাউনলোড এবং এক্সটেনশনের জন্য স্ট্যান্ডার্ড নিরাপত্তা।</translation>
 <translation id="6884306546558072722">অফলাইন থাকার সময়ে খুঁজে দেখুন</translation>
 <translation id="688738109438487280">বিদ্যমান ডেটা <ph name="TO_ACCOUNT" /> এ যোগ করুন।</translation>
 <translation id="6891726759199484455">আপনার পাসওয়ার্ড কপি করতে আনলক করুন</translation>
 <translation id="6896758677409633944">কপি</translation>
+<translation id="6900532703269623216">উন্নত সুরক্ষা</translation>
 <translation id="6903907808598579934">সিঙ্ক চালু করুন</translation>
 <translation id="6942665639005891494">সেটিংস মেনুর বিকল্পে গিয়ে যেকোনও সময় ডাউনলোডের ডিফল্ট লোকেশন পরিবর্তন করুন</translation>
 <translation id="6945221475159498467">নির্বাচন</translation>

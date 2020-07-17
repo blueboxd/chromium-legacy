@@ -266,6 +266,8 @@ component("ash") {
     "dbus/liveness_service_provider.h",
     "dbus/url_handler_service_provider.cc",
     "dbus/url_handler_service_provider.h",
+    "dbus/user_authentication_service_provider.cc",
+    "dbus/user_authentication_service_provider.h",
     "debug.cc",
     "debug.h",
     "detachable_base/detachable_base_handler.cc",
@@ -1807,6 +1809,7 @@ action("dbus_service_files") {
     "dbus/org.chromium.GesturePropertiesService.conf",
     "dbus/org.chromium.LivenessService.conf",
     "dbus/org.chromium.UrlHandlerService.conf",
+    "dbus/org.chromium.UserAuthenticationService.conf",
   ]
   output_conf_file = "$root_out_dir/dbus/ash_dbus_services.conf"
   outputs = [ output_conf_file ]

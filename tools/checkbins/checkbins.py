@@ -17,15 +17,20 @@ import os
 import optparse
 import sys
 
-# Find /third_party/pefile based on current directory and script path.
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..',
-                             'third_party', 'pefile'))
+REPO_ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
+FILES_CFG = os.path.join(REPO_ROOT, 'chrome', 'tools', 'build', 'win',
+                         'FILES.cfg')
+PEFILE_DIR = os.path.join(REPO_ROOT, 'third_party', 'pefile')
+sys.path.append(PEFILE_DIR)
+
 import pefile
 
 PE_FILE_EXTENSIONS = ['.exe', '.dll']
+# https://docs.microsoft.com/en-us/windows/win32/debug/pe-format
 DYNAMICBASE_FLAG = 0x0040
 NXCOMPAT_FLAG = 0x0100
 NO_SEH_FLAG = 0x0400
+GUARD_CF_FLAG = 0x4000
 MACHINE_TYPE_AMD64 = 0x8664
 
 # Please do not add your file here without confirming that it indeed doesn't
@@ -37,10 +42,12 @@ EXCLUDED_FILES = [
                   'previous_version_mini_installer.exe',
                   ]
 
+
 def IsPEFile(path):
   return (os.path.isfile(path) and
           os.path.splitext(path)[1].lower() in PE_FILE_EXTENSIONS and
           os.path.basename(path) not in EXCLUDED_FILES)
+
 
 def main(options, args):
   directory = args[0]
@@ -48,6 +55,20 @@ def main(options, args):
   pe_passed = 0
 
   failures = []
+
+  # Load FILES.cfg
+  exec_globals = {'__builtins__': None}
+  execfile(FILES_CFG, exec_globals)
+  files_cfg = exec_globals['FILES']
+
+  # Determines whether a specified file is in the 'default'
+  # filegroup - which means it's shipped with Chrome.
+  def IsInDefaultFileGroup(path):
+    for fileobj in files_cfg:
+      if fileobj['filename'] == os.path.basename(path):
+        if 'default' in fileobj.get('filegroup', {}):
+          return True
+    return False
 
   for file in os.listdir(directory):
     path = os.path.abspath(os.path.join(directory, file))
@@ -104,6 +125,20 @@ def main(options, args):
       elif options.verbose:
         print("Checking %s ImageBase (0x%X > 4GB)... PASS" %
               (path, pe.OPTIONAL_HEADER.ImageBase))
+
+    # Can only guarantee that files that are built by Chromium
+    # are protected by /GUARD:CF. Some system libraries are not.
+    if IsInDefaultFileGroup(path):
+      # Check for /GUARD:CF.
+      if pe.OPTIONAL_HEADER.DllCharacteristics & GUARD_CF_FLAG:
+        if options.verbose:
+          print("Checking %s for /GUARD:CF... PASS" % path)
+      else:
+        success = False
+        print("Checking %s for /GUARD:CF... FAIL" % path)
+    else:
+      if options.verbose:
+        print("Skipping check for /GUARD:CF for %s." % path)
 
     # Update tally.
     if success:

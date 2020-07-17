@@ -51,6 +51,7 @@
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/metadata/metadata_types.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/test/view_metadata_test_utils.h"
@@ -3780,6 +3781,62 @@ TEST_F(ViewTest, AddExistingChild) {
   v1.AddChildView(&v3);
   EXPECT_EQ(0, v1.GetIndexOf(&v2));
   EXPECT_EQ(1, v1.GetIndexOf(&v3));
+}
+
+TEST_F(ViewTest, UseMirroredLayoutDisableMirroring) {
+  base::i18n::SetICUDefaultLocale("ar");
+  ASSERT_TRUE(base::i18n::IsRTL());
+
+  View parent, child1, child2;
+  parent.SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::Orientation::kHorizontal));
+
+  child1.SetPreferredSize(gfx::Size(10, 10));
+  child2.SetPreferredSize(gfx::Size(10, 10));
+
+  parent.AddChildView(&child1);
+  parent.AddChildView(&child2);
+  parent.SizeToPreferredSize();
+
+  EXPECT_EQ(child1.GetNextFocusableView(), &child2);
+  EXPECT_GT(child1.GetMirroredX(), child2.GetMirroredX());
+  EXPECT_LT(child1.x(), child2.x());
+  EXPECT_NE(parent.GetMirroredXInView(5), 5);
+
+  parent.SetMirrored(false);
+
+  EXPECT_EQ(child1.GetNextFocusableView(), &child2);
+  EXPECT_GT(child2.GetMirroredX(), child1.GetMirroredX());
+  EXPECT_LT(child1.x(), child2.x());
+  EXPECT_EQ(parent.GetMirroredXInView(5), 5);
+}
+
+TEST_F(ViewTest, UseMirroredLayoutEnableMirroring) {
+  base::i18n::SetICUDefaultLocale("en");
+  ASSERT_FALSE(base::i18n::IsRTL());
+
+  View parent, child1, child2;
+  parent.SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::Orientation::kHorizontal));
+
+  child1.SetPreferredSize(gfx::Size(10, 10));
+  child2.SetPreferredSize(gfx::Size(10, 10));
+
+  parent.AddChildView(&child1);
+  parent.AddChildView(&child2);
+  parent.SizeToPreferredSize();
+
+  EXPECT_EQ(child1.GetNextFocusableView(), &child2);
+  EXPECT_LT(child1.GetMirroredX(), child2.GetMirroredX());
+  EXPECT_LT(child1.x(), child2.x());
+  EXPECT_NE(parent.GetMirroredXInView(5), 15);
+
+  parent.SetMirrored(true);
+
+  EXPECT_EQ(child1.GetNextFocusableView(), &child2);
+  EXPECT_LT(child2.GetMirroredX(), child1.GetMirroredX());
+  EXPECT_LT(child1.x(), child2.x());
+  EXPECT_EQ(parent.GetMirroredXInView(5), 15);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

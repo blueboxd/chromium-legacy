@@ -28,10 +28,9 @@ const char kSuccessResult[] = "success";
 class DummyTetherConnector : public FakeTetherConnector {
  public:
   // TetherConnector:
-  void ConnectToNetwork(
-      const std::string& tether_network_guid,
-      base::OnceClosure success_callback,
-      const network_handler::StringResultCallback& error_callback) override {}
+  void ConnectToNetwork(const std::string& tether_network_guid,
+                        base::OnceClosure success_callback,
+                        StringErrorCallback error_callback) override {}
 };
 
 // Does nothing when a disconnection is requested.
@@ -41,7 +40,7 @@ class DummyTetherDisconnector : public FakeTetherDisconnector {
   void DisconnectFromNetwork(
       const std::string& tether_network_guid,
       base::OnceClosure success_callback,
-      const network_handler::StringResultCallback& error_callback,
+      StringErrorCallback error_callback,
       const TetherSessionCompletionLogger::SessionCompletionReason&
           session_completion_reason) override {}
 };
@@ -53,30 +52,31 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
 
   void CallTetherConnect(const std::string& tether_network_guid,
                          base::OnceClosure success_callback,
-                         const network_handler::ErrorCallback& error_callback) {
-    InitiateTetherNetworkConnection(
-        tether_network_guid, std::move(success_callback), error_callback);
+                         network_handler::ErrorCallback error_callback) {
+    InitiateTetherNetworkConnection(tether_network_guid,
+                                    std::move(success_callback),
+                                    std::move(error_callback));
   }
 
-  void CallTetherDisconnect(
-      const std::string& tether_network_guid,
-      base::OnceClosure success_callback,
-      const network_handler::ErrorCallback& error_callback) {
-    InitiateTetherNetworkDisconnection(
-        tether_network_guid, std::move(success_callback), error_callback);
+  void CallTetherDisconnect(const std::string& tether_network_guid,
+                            base::OnceClosure success_callback,
+                            network_handler::ErrorCallback error_callback) {
+    InitiateTetherNetworkDisconnection(tether_network_guid,
+                                       std::move(success_callback),
+                                       std::move(error_callback));
   }
 
   // NetworkConnectionHandler:
   void ConnectToNetwork(const std::string& service_path,
                         base::OnceClosure success_callback,
-                        const network_handler::ErrorCallback& error_callback,
+                        network_handler::ErrorCallback error_callback,
                         bool check_error_state,
                         ConnectCallbackMode mode) override {}
 
   void DisconnectNetwork(
       const std::string& service_path,
       base::OnceClosure success_callback,
-      const network_handler::ErrorCallback& error_callback) override {}
+      network_handler::ErrorCallback error_callback) override {}
 
   void Init(NetworkStateHandler* network_state_handler,
             NetworkConfigurationHandler* network_configuration_handler,

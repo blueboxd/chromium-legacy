@@ -144,7 +144,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="256712445991462162">fiksirano povećalo</translation>
 <translation id="2575685495496069081">Višestruke prijave su onemogućene</translation>
 <translation id="2582112259361606227">Ponovo pokrenite da biste ažurirali</translation>
-<translation id="2595239820337756193">5 km u miljama</translation>
+<translation id="2595239820337756193">5 hiljada u miljama</translation>
 <translation id="2617342710774726426">SIM kartica je zaključana</translation>
 <translation id="2621713457727696555">Osigurano</translation>
 <translation id="2653659639078652383">Pošalji</translation>
@@ -198,7 +198,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="3154351730702813399">Administrator uređaja može nadzirati vašu aktivnost pregledanja.</translation>
 <translation id="3181441307743005334">Ponovno pokretanje može potrajati</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Povezano s uređajem}one{Povezano s # uređajem}few{Povezano s # uređaja}other{Povezano s # uređaja}}</translation>
-<translation id="320207200541803018">Postavi odbrojavanje</translation>
+<translation id="320207200541803018">Postavi tajmer</translation>
 <translation id="3203405173652969239">Prekidač za pristup je omogućen</translation>
 <translation id="3207953481422525583">Korisničke postavke</translation>
 <translation id="3217205077783620295">Zvuk je uključen. Deaktiviranjem će se isključiti zvuk.</translation>
@@ -211,7 +211,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> se može ponovo prijaviti kasnije.</translation>
 <translation id="3321628682574733415">Pogrešan kôd za roditelja</translation>
 <translation id="332587331255250389">Zamijenite bateriju</translation>
-<translation id="334252345105450327">Izrada snimke zaslona</translation>
+<translation id="334252345105450327">Snimi ekran</translation>
 <translation id="3351879221545518001">Trenutačno emitirate zaslon.</translation>
 <translation id="3364721542077212959">Stilos alati</translation>
 <translation id="3368922792935385530">Spojeno</translation>
@@ -525,7 +525,7 @@ Možete isprobati ovih nekoliko stvari da započnete.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Vraćanje na staru rezoluciju za <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Meni je pomjeren u gornji lijevi ugao ekrana.</translation>
-<translation id="7189412385142492784">Kolika je udaljenost do Venere</translation>
+<translation id="7189412385142492784">Koliko je udaljena Venera</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Ovaj Chromebook se treba ponovo pokrenuti da bi se primijenilo ažuriranje. To može potrajati do jedne minute.</translation>
 <translation id="7256634071279256947">Stražnji mikrofon</translation>
 <translation id="726276584504105859">Povucite ovdje za korištenje podijeljenog ekrana</translation>

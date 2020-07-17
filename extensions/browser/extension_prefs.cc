@@ -202,9 +202,6 @@ constexpr const char kExternalUninstalls[] = "extensions.external_uninstalls";
 // synced. Default value is false.
 constexpr const char kPrefDoNotSync[] = "do_not_sync";
 
-constexpr const char kCorruptedDisableCount[] =
-    "extensions.corrupted_disable_count";
-
 // A boolean preference that indicates whether the extension has local changes
 // that need to be synced. Default value is false.
 constexpr const char kPrefNeedsSync[] = "needs_sync";
@@ -239,6 +236,18 @@ constexpr const char kPrefDNRUseActionCountAsBadgeText[] =
 // The default value to use for permission withholding when setting the pref on
 // installation or for extensions where the pref has not been set.
 constexpr bool kDefaultWithholdingBehavior = false;
+
+// Checks whether the value passed in is consistent with the expected PrefType.
+bool CheckPrefType(PrefType pref_type, const base::Value* value) {
+  switch (pref_type) {
+    case kBool:
+      return value->is_bool();
+    case kString:
+      return value->is_string();
+    case kInteger:
+      return value->is_int();
+  }
+}
 
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public prefs::ScopedDictionaryPrefUpdate {
@@ -1683,6 +1692,71 @@ void ExtensionPrefs::ClearLastLaunchTimes() {
   }
 }
 
+const base::Value* ExtensionPrefs::GetPref(const PrefMap& pref) const {
+  DCHECK_EQ(PrefScope::kProfile, pref.scope);
+  const base::Value* pref_value = prefs_->Get(pref.name);
+  DCHECK(CheckPrefType(pref.type, pref_value))
+      << "PrefType does not match the value type of the stored value for "
+      << pref.name;
+  return pref_value;
+}
+
+void ExtensionPrefs::SetPref(const PrefMap& pref,
+                             std::unique_ptr<base::Value> value) {
+  DCHECK_EQ(PrefScope::kProfile, pref.scope);
+  DCHECK(CheckPrefType(pref.type, value.get()))
+      << "The value passed in does not match the expected PrefType for "
+      << pref.name;
+  prefs_->Set(pref.name, std::move(*value));
+}
+
+void ExtensionPrefs::SetIntegerPref(const PrefMap& pref, int value) {
+  DCHECK_EQ(PrefScope::kProfile, pref.scope);
+  DCHECK_EQ(PrefType::kInteger, pref.type);
+  prefs_->SetInteger(pref.name, value);
+}
+
+void ExtensionPrefs::SetBooleanPref(const PrefMap& pref, bool value) {
+  DCHECK_EQ(PrefScope::kProfile, pref.scope);
+  DCHECK_EQ(PrefType::kBool, pref.type);
+  prefs_->SetBoolean(pref.name, value);
+}
+
+void ExtensionPrefs::SetStringPref(const PrefMap& pref,
+                                   const std::string& value) {
+  DCHECK_EQ(PrefScope::kProfile, pref.scope);
+  DCHECK_EQ(PrefType::kString, pref.type);
+  prefs_->SetString(pref.name, value);
+}
+
+int ExtensionPrefs::GetPrefAsInteger(const PrefMap& pref) const {
+  DCHECK_EQ(PrefScope::kProfile, pref.scope);
+  DCHECK_EQ(PrefType::kInteger, pref.type);
+  return prefs_->GetInteger(pref.name);
+}
+
+bool ExtensionPrefs::GetPrefAsBoolean(const PrefMap& pref) const {
+  DCHECK_EQ(PrefScope::kProfile, pref.scope);
+  DCHECK_EQ(PrefType::kBool, pref.type);
+  return prefs_->GetBoolean(pref.name);
+}
+
+std::string ExtensionPrefs::GetPrefAsString(const PrefMap& pref) const {
+  DCHECK_EQ(PrefScope::kProfile, pref.scope);
+  DCHECK_EQ(PrefType::kString, pref.type);
+  return (prefs_->GetString(pref.name));
+}
+
+void ExtensionPrefs::IncrementPref(const PrefMap& pref) {
+  int count = GetPrefAsInteger(pref);
+  SetIntegerPref(pref, count + 1);
+}
+
+void ExtensionPrefs::DecrementPref(const PrefMap& pref) {
+  int count = GetPrefAsInteger(pref);
+  SetIntegerPref(pref, count - 1);
+}
+
 void ExtensionPrefs::GetExtensions(ExtensionIdList* out) const {
   CHECK(out);
 
@@ -1807,15 +1881,6 @@ void ExtensionPrefs::SetInstallParam(const std::string& extension_id,
                                      const std::string& install_parameter) {
   UpdateExtensionPref(extension_id, kPrefInstallParam,
                       std::make_unique<base::Value>(install_parameter));
-}
-
-int ExtensionPrefs::GetCorruptedDisableCount() const {
-  return prefs_->GetInteger(kCorruptedDisableCount);
-}
-
-void ExtensionPrefs::IncrementCorruptedDisableCount() {
-  int count = prefs_->GetInteger(kCorruptedDisableCount);
-  prefs_->SetInteger(kCorruptedDisableCount, count + 1);
 }
 
 bool ExtensionPrefs::NeedsSync(const std::string& extension_id) const {
@@ -2003,7 +2068,9 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterListPref(pref_names::kNativeMessagingAllowlist);
   registry->RegisterBooleanPref(pref_names::kNativeMessagingUserLevelHosts,
                                 true);
-  registry->RegisterIntegerPref(kCorruptedDisableCount, 0);
+  // TODO(archanasimha): move pref registration to where the variable is
+  // defined.
+  registry->RegisterIntegerPref(kCorruptedDisableCount.name, 0);
 
 #if !defined(OS_MACOSX)
   registry->RegisterBooleanPref(pref_names::kAppFullscreenAllowed, true);

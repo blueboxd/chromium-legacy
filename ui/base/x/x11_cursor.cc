@@ -4,45 +4,39 @@
 
 #include "ui/base/x/x11_cursor.h"
 
-#include "base/check_op.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/x/x11_util.h"
-#include "ui/gfx/geometry/point.h"
+#include "ui/base/x/x11_cursor_loader.h"
+#include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace ui {
 
-X11Cursor::X11Cursor(const SkBitmap& bitmap, const gfx::Point& hotspot) {
-  XcursorImage* image = SkBitmapToXcursorImage(bitmap, hotspot);
-  xcursor_ = XcursorImageLoadCursor(gfx::GetXDisplay(), image);
-  XcursorImageDestroy(image);
+X11Cursor::X11Cursor() = default;
+
+X11Cursor::X11Cursor(x11::Cursor cursor) : loaded_(true), xcursor_(cursor) {}
+
+void X11Cursor::OnCursorLoaded(Callback callback) {
+  if (loaded_)
+    std::move(callback).Run(xcursor_);
+  else
+    callbacks_.push_back(std::move(callback));
 }
 
-X11Cursor::X11Cursor(const std::vector<SkBitmap>& bitmaps,
-                     const gfx::Point& hotspot,
-                     int frame_delay_ms) {
-  // Initialize an XCursorImage for each frame, store all of them in
-  // XCursorImages and load the cursor from that.
-  XcursorImages* images = XcursorImagesCreate(bitmaps.size());
-  images->nimage = bitmaps.size();
-  for (size_t frame = 0; frame < bitmaps.size(); ++frame) {
-    XcursorImage* x_image = SkBitmapToXcursorImage(bitmaps[frame], hotspot);
-    x_image->delay = frame_delay_ms;
-    images->images[frame] = x_image;
-  }
-
-  xcursor_ = XcursorImagesLoadCursor(gfx::GetXDisplay(), images);
-  XcursorImagesDestroy(images);
+void X11Cursor::SetCursor(x11::Cursor cursor) {
+  DCHECK(!loaded_);
+  loaded_ = true;
+  xcursor_ = cursor;
+  for (auto& callback : callbacks_)
+    std::move(callback).Run(cursor);
+  callbacks_.clear();
 }
 
-X11Cursor::X11Cursor(::Cursor xcursor) : xcursor_(xcursor) {}
-
-// static
-scoped_refptr<X11Cursor> X11Cursor::CreateInvisible() {
-  return base::MakeRefCounted<X11Cursor>(CreateInvisibleCursor());
+x11::Cursor X11Cursor::ReleaseCursor() {
+  return std::exchange(xcursor_, x11::Cursor::None);
 }
 
 X11Cursor::~X11Cursor() {
-  XFreeCursor(gfx::GetXDisplay(), xcursor_);
+  if (xcursor_ != x11::Cursor::None)
+    x11::Connection::Get()->FreeCursor({xcursor_});
 }
 
 }  // namespace ui

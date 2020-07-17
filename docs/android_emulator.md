@@ -70,13 +70,33 @@ down. This is how builders run the emulator.
 The test runner will set up and tear down the emulator on each invocation.
 To manage emulator lifetime independently, use `tools/android/avd/avd.py`.
 
-**NOTE**: You'll first need to install the emulator configuration you intend to
-use:
+##### Prerequisite
 
-  ```
-    $ tools/android/avd/avd.py install \
-        --avd-config tools/android/avd/proto/generic_android28.textpb
-  ```
+ * Make sure KVM (Kernel-based Virtual Machine) is enabled.
+   See this
+   [link](https://developer.android.com/studio/run/emulator-acceleration#vm-linux)
+   from android studio for more details and instructions.
+
+ * You need to have the permissions to use KVM.
+   Use the following command to see if you are in group `kvm`:
+
+   ```
+     $ grep kvm /etc/group
+   ```
+
+   If your username is not shown in the group, add yourself to the group:
+
+   ```
+     $ sudo adduser $USER kvm
+     $ newgrp kvm
+   ```
+
+ * Install the emulator configuration you intend to use.
+
+    ```
+      $ tools/android/avd/avd.py install \
+          --avd-config tools/android/avd/proto/generic_android28.textpb
+    ```
 
 ##### Options
 

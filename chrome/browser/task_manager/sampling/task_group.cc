@@ -83,7 +83,7 @@ TaskGroup::TaskGroup(
     base::ProcessHandle proc_handle,
     base::ProcessId proc_id,
     bool is_running_in_vm,
-    const base::Closure& on_background_calculations_done,
+    const base::RepeatingClosure& on_background_calculations_done,
     const scoped_refptr<SharedSampler>& shared_sampler,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_pool_runner)
     : process_handle_(proc_handle),
@@ -122,22 +122,22 @@ TaskGroup::TaskGroup(
   if (process_id_ != base::kNullProcessId && !is_running_in_vm_) {
     worker_thread_sampler_ = base::MakeRefCounted<TaskGroupSampler>(
         base::Process::Open(process_id_), blocking_pool_runner,
-        base::Bind(&TaskGroup::OnCpuRefreshDone,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&TaskGroup::OnSwappedMemRefreshDone,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&TaskGroup::OnIdleWakeupsRefreshDone,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&TaskGroup::OnCpuRefreshDone,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&TaskGroup::OnSwappedMemRefreshDone,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&TaskGroup::OnIdleWakeupsRefreshDone,
+                            weak_ptr_factory_.GetWeakPtr()),
 #if defined(OS_LINUX) || defined(OS_MACOSX)
-        base::Bind(&TaskGroup::OnOpenFdCountRefreshDone,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&TaskGroup::OnOpenFdCountRefreshDone,
+                            weak_ptr_factory_.GetWeakPtr()),
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX)
-        base::Bind(&TaskGroup::OnProcessPriorityDone,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindRepeating(&TaskGroup::OnProcessPriorityDone,
+                            weak_ptr_factory_.GetWeakPtr()));
 
     shared_sampler_->RegisterCallback(
-        process_id_,
-        base::Bind(&TaskGroup::OnSamplerRefreshDone, base::Unretained(this)));
+        process_id_, base::BindRepeating(&TaskGroup::OnSamplerRefreshDone,
+                                         base::Unretained(this)));
   }
 }
 

@@ -154,6 +154,9 @@ void RecordDownloadShelfDragEvent(DownloadShelfDragEvent drag_event);
 #ifdef OS_ANDROID
 // Records whether the download dialog is shown to the user.
 void RecordDownloadPromptStatus(DownloadPromptStatus status);
+
+// Records whether the download later dialog is shown to the user.
+void RecordDownloadLaterPromptStatus(DownloadLaterPromptStatus status);
 #endif  // OS_ANDROID
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_

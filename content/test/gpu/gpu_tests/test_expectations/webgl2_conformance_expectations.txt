@@ -184,6 +184,10 @@ crbug.com/679639 [ d3d11 win nvidia ] conformance2/rendering/draw-with-integer-t
 crbug.com/691951 [ d3d11 win nvidia ] deqp/functional/gles3/shaderoperator/binary_operator_11.html [ RetryOnFailure ]
 crbug.com/735464 [ d3d11 win nvidia ] deqp/functional/gles3/textureshadow/* [ RetryOnFailure ]
 crbug.com/907544 [ vulkan win passthrough nvidia ] conformance/uniforms/uniform-default-values.html [ RetryOnFailure ]
+# Related to either upgrade to Windows 10 1909 or driver 451.48
+crbug.com/1106078 [ win nvidia-0x1cb3 no-use-gl ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
+crbug.com/1106076 [ win nvidia-0x1cb3 no-use-gl ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
+crbug.com/1106076 [ win nvidia-0x1cb3 no-use-gl ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
 
 # Win / NVIDIA Quadro P400 / D3D11 flaky failures
 crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/data/gles3/shaders/functions.html [ Failure ]

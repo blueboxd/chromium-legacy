@@ -1,7 +1,4 @@
-carlosk@chromium.org
-fgorski@chromium.org
-harringtond@chromium.org
-skym@chromium.org
+file://components/feed/OWNERS
 
 # Team: feed@chromium.org
 # COMPONENT: UI>Browser>ContentSuggestions>Feed

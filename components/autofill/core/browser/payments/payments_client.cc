@@ -220,7 +220,7 @@ base::Value BuildCreditCardDictionary(const CreditCard& credit_card,
 
   if (base::FeatureList::IsEnabled(
           features::kAutofillEnableCardNicknameUpstream) &&
-      credit_card.HasValidNickname()) {
+      credit_card.HasNonEmptyValidNickname()) {
     card.SetKey("nickname", base::Value(credit_card.nickname()));
   }
 
@@ -827,7 +827,7 @@ class UploadCardRequest : public PaymentsRequest {
 
     if (base::FeatureList::IsEnabled(
             features::kAutofillEnableCardNicknameUpstream) &&
-        request_details_.card.HasValidNickname()) {
+        request_details_.card.HasNonEmptyValidNickname()) {
       request_dict.SetKey("nickname",
                           base::Value(request_details_.card.nickname()));
     }

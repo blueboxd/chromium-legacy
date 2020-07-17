@@ -21,7 +21,6 @@
 #include "media/base/android/media_codec_util.h"
 #include "media/base/async_destroy_video_decoder.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -283,11 +282,9 @@ void MediaCodecVideoDecoder::DestroyAsync(
 
   if (self->media_crypto_context_) {
     // Cancel previously registered callback (if any).
+    self->event_cb_registration_.reset();
     self->media_crypto_context_->SetMediaCryptoReadyCB(base::NullCallback());
-    if (self->cdm_registration_id_)
-      self->media_crypto_context_->UnregisterPlayer(self->cdm_registration_id_);
     self->media_crypto_context_ = nullptr;
-    self->cdm_registration_id_ = 0;
   }
 
   // Mojo callbacks require that they're run before destruction.
@@ -411,8 +408,11 @@ void MediaCodecVideoDecoder::SetCdm(CdmContext* cdm_context, InitCB init_cb) {
 
   media_crypto_context_ = cdm_context->GetMediaCryptoContext();
 
-  // Register CDM callbacks. The callbacks registered will be posted back to
-  // this thread via BindToCurrentLoop.
+  // CdmContext will always post the registered callback back to this thread.
+  event_cb_registration_ = cdm_context->RegisterEventCB(base::BindRepeating(
+      &MediaCodecVideoDecoder::OnCdmContextEvent, weak_factory_.GetWeakPtr()));
+
+  // The callback will be posted back to this thread via BindToCurrentLoop.
   media_crypto_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
       base::BindOnce(&MediaCodecVideoDecoder::OnMediaCryptoReady,
                      weak_factory_.GetWeakPtr(), std::move(init_cb))));
@@ -449,16 +449,6 @@ void MediaCodecVideoDecoder::OnMediaCryptoReady(
   media_crypto_ = *media_crypto;
   requires_secure_codec_ = requires_secure_video_codec;
 
-  // Since |this| holds a reference to the |cdm_|, by the time the CDM is
-  // destructed, UnregisterPlayer() must have been called and |this| has been
-  // destructed as well. So the |cdm_unset_cb| will never have a chance to be
-  // called.
-  // TODO(xhwang): Remove |cdm_unset_cb| after it's not used on all platforms.
-  cdm_registration_id_ = media_crypto_context_->RegisterPlayer(
-      media::BindToCurrentLoop(base::Bind(&MediaCodecVideoDecoder::OnKeyAdded,
-                                          weak_factory_.GetWeakPtr())),
-      base::DoNothing());
-
   // Request a secure surface in all cases.  For L3, it's okay if we fall back
   // to TextureOwner rather than fail composition.  For L1, it's required.
   surface_chooser_helper_.SetSecureSurfaceMode(
@@ -470,8 +460,12 @@ void MediaCodecVideoDecoder::OnMediaCryptoReady(
   std::move(init_cb).Run(OkStatus());
 }
 
-void MediaCodecVideoDecoder::OnKeyAdded() {
+void MediaCodecVideoDecoder::OnCdmContextEvent(CdmContext::Event event) {
   DVLOG(2) << __func__;
+
+  if (event != CdmContext::Event::kHasAdditionalUsableKey)
+    return;
+
   waiting_for_key_ = false;
   StartTimerOrPumpCodec();
 }

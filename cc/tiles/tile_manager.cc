@@ -367,13 +367,10 @@ class DidFinishRunningAllTilesTask : public TileTask {
 
 gfx::ContentColorUsage GetContentColorUsageForPrioritizedTile(
     const PrioritizedTile& prioritized_tile) {
-  // TODO(cblume,ccameron): Add support for HDR.
-  bool contains_only_srgb_images = prioritized_tile.raster_source()
-                                       ->GetDisplayItemList()
-                                       ->discardable_image_map()
-                                       .contains_only_srgb_images();
-  return contains_only_srgb_images ? gfx::ContentColorUsage::kSRGB
-                                   : gfx::ContentColorUsage::kWideColorGamut;
+  return prioritized_tile.raster_source()
+      ->GetDisplayItemList()
+      ->discardable_image_map()
+      .content_color_usage();
 }
 
 }  // namespace

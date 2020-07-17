@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="as">
 <translation id="1008557486741366299">এতিয়া নহয়</translation>
+<translation id="100957008357583611">আপোনাৰ অৱস্থান ব্যৱহাৰ কৰিবনে?</translation>
 <translation id="1010200102790553230">পৃষ্ঠাটো পাছত ল'ড কৰক</translation>
 <translation id="1015730422737071372">অতিৰিক্ত বিৱৰণ প্ৰদান কৰক</translation>
 <translation id="1019413721762100891">অফ</translation>
@@ -425,7 +426,6 @@
 <translation id="2705137772291741111">এই ছাইটৰ ছেভ কৰি ৰখা (কেশ্ব কৰা) প্ৰতিলিপি পঢ়িব পৰা নাযায়।</translation>
 <translation id="2709516037105925701">স্বয়ংপূৰ্তি</translation>
 <translation id="2713444072780614174">বগা</translation>
-<translation id="2720342946869265578">Nearby</translation>
 <translation id="2721148159707890343">অনুৰোধ সফল হৈছে</translation>
 <translation id="272451190272506600">পৰিশোধ কৰিবলৈ ছেন্সৰ স্পর্শ কৰক</translation>
 <translation id="2728127805433021124">ছাৰ্ভাৰৰ প্ৰমাণপত্ৰ স্বাক্ষৰ কৰাৰ এটা দুৰ্বল কলনবিধি ব্যৱহাৰ কৰি স্বাক্ষৰ কৰা হৈছে।</translation>
@@ -719,7 +719,6 @@
 <translation id="3990250421422698716">লাহেকৈ অফছেটক হেঁচক</translation>
 <translation id="3996311196211510766">এই <ph name="ORIGIN" /> ছাইটটোৱে অনুৰোধ কৰিছে যে এটা মূল নীতি
     ইয়াৰ সকলো অনুৰোধতে প্ৰযোজ্য কৰা হওক, কিন্তু এই নীতিটো বর্তমান প্ৰয়োগ কৰিব নোৱাৰি।</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{ওচৰত ১টা ৱেবপৃষ্ঠা আছে}one{ওচৰত #টা ৱেবপৃষ্ঠা আছে}other{ওচৰত #টা ৱেবপৃষ্ঠা আছে}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} খন পৃষ্ঠা থকা PDF নথি}one{{COUNT} খন পৃষ্ঠা থকা PDF নথি}other{{COUNT} খন পৃষ্ঠা থকা PDF নথি}}</translation>
 <translation id="4030383055268325496">যোগ কৰাটো &amp;আনডু কৰক</translation>
 <translation id="4032320456957708163">আপোনাৰ ব্ৰাউজাৰটো <ph name="ENROLLMENT_DOMAIN" />এ পৰিচালনা কৰে</translation>
@@ -935,7 +934,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">ছেভ কৰক...</translation>
 <translation id="4913987521957242411">বাওঁফালে ওপৰৰ অংশত পাঞ্চ কৰক</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{আৰু ১টা ৱেবপৃষ্ঠা}one{আৰু #টা ৱেবপৃষ্ঠা}other{আৰু #টা ৱেবপৃষ্ঠা}}</translation>
 <translation id="4923459931733593730">পৰিশোধ</translation>
 <translation id="4926049483395192435">নির্দিষ্ট হ’বই লাগিব।</translation>
 <translation id="4926159001844873046"><ph name="SITE" />এ কয় যে</translation>
@@ -1176,6 +1174,7 @@
 <translation id="5869405914158311789">এই ছাইটটো খুলিব নোৱাৰি</translation>
 <translation id="5869522115854928033">ছেভ কৰা পাছৱৰ্ডসমূহ</translation>
 <translation id="5887400589839399685">কাৰ্ড ছেভ কৰা হ’ল</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" />ৰ বাবে আপুনি আপোনাৰ ডেটাৰ বেক আপ লোৱা আৰু এই ডিভাইচটো উভতাই দিয়াটো আৱশ্যক।</translation>
 <translation id="5895138241574237353">ৰিষ্টাৰ্ট কৰক</translation>
 <translation id="5895187275912066135">জাৰি কৰা তাৰিখ</translation>
 <translation id="5901630391730855834">হালধীয়া</translation>
@@ -1324,7 +1323,6 @@
 <translation id="6518133107902771759">সত্যাপন কৰক</translation>
 <translation id="6521745193039995384">সক্ৰিয় নহয়</translation>
 <translation id="6529602333819889595">মচা কার্য &amp;ৰিডু কৰক</translation>
-<translation id="6534179046333460208">ফিজিকেল ৱেব চুপাৰিছ</translation>
 <translation id="6545864417968258051">ব্লুটুথ স্কেনিং</translation>
 <translation id="6547208576736763147">বাওঁফালে দুবাৰ পাঞ্চ কৰক</translation>
 <translation id="6554795675067793129">আপোনাৰ একাউণ্টটো <ph name="ENROLLMENT_DOMAIN" />এ পৰিচালনা কৰে।</translation>
@@ -1843,7 +1841,6 @@
 <translation id="8790007591277257123">মচা কার্য &amp;ৰিডু কৰক</translation>
 <translation id="8792621596287649091">আপুনি <ph name="ORG_NAME" /> একাউণ্টটো এক্সেছ কৰিব নোৱাৰা হ’ব পাৰে বা আপোনাৰ পৰিচয় চুৰি হোৱাৰ নিচিনা ঘটনাৰ মুখামুখী হ’ব পাৰে। Chromiumএ আপোনাৰ পাছৱৰ্ডটো এতিয়াই সলনি কৰাটো চুপাৰিছ কৰিছে।</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" />এ আপোনাৰ ব্ৰাউজাৰত Chrome এণ্টাৰপ্ৰাইজ কানেক্টৰসমূহ সক্ষম কৰিছে। এই কানেক্টৰসমূহৰ আপোনাৰ কিছুমান ডেটালৈ এক্সেছ আছে।</translation>
-<translation id="8800988563907321413">আপোনালৈ পৰামৰ্শ হিচাপে অহা ওচৰ-পাজৰৰ সমল ইয়াত ওলাব</translation>
 <translation id="8805819170075074995">তালিকাৰ অন্তৰ্ভুক্তি "<ph name="LANGUAGE_ID" />": অন্তৰ্ভুক্তি অৱজ্ঞা কৰা হৈছে কাৰণ এইটো SpellcheckLanguage নীতিতো আছে।</translation>
 <translation id="8807160976559152894">প্ৰতিটো পৃষ্ঠাৰ পাছত ট্ৰিম কৰক</translation>
 <translation id="8820817407110198400">বুকমার্কসমূহ</translation>

@@ -184,11 +184,11 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
                            base::Time& first_decryption_time,
                            base::Time& latest_decryption_time);
 
-  // Callbacks for firing session events.
+  // Callbacks for firing session events. No SessionExpirationUpdateCB since
+  // the keys never expire.
   SessionMessageCB session_message_cb_;
   SessionClosedCB session_closed_cb_;
   SessionKeysChangeCB session_keys_change_cb_;
-  SessionExpirationUpdateCB session_expiration_update_cb_;
 
   // Since only Decrypt() is called off the renderer thread, we only need to
   // protect |key_map_|, the only member variable that is shared between

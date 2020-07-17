@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">तपाईँका अन्य यन्त्रहरूमा सुरक्षित गरिएका पुस्तक चिन्हहरू यहाँ देखिनेछन्।</translation>
 <translation id="1113597929977215864">सरलीकृत दृश्य देखाउनुहोस्</translation>
 <translation id="1122278879166832009">जुनसुकै ठाउँबाट आफ्नो गृहपृष्ठमाथि पहुँच राख्नुहोस्</translation>
+<translation id="1126809382673880764">तपाईंलाई जोखिमपूर्ण वेबसाइट, डाउनलोड वा एक्स्टेन्सनहरूविरुद्ध सुरक्षा प्रदान गर्दैन। उपलब्ध भएसम्म तपाईं अझै पनि Gmail र खोज जस्ता Google का अन्य सेवाहरूमा सुरक्षित ब्राउजिङको सुरक्षा प्राप्त गर्नु हुने छ।</translation>
 <translation id="1129510026454351943">विवरणहरू: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{१ डाउनलोड विचारधीन छ।}other{# डाउनलोडहरू विचारधीन छन्।}}</translation>
 <translation id="1145536944570833626">विद्यमान डेटा मेट्नुहोस्।</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">हल्का</translation>
 <translation id="1810845389119482123">सिंक गर्ने कार्यको प्रारम्भिक सेटअप पूरा भएको छैन</translation>
 <translation id="1821253160463689938">तपाईं ती पृष्ठहरूमा नजानुभए तापनि तपाईंका प्राथमिकताहरू सम्झनका लागि कुकीहरूको प्रयोग गर्छ</translation>
-<translation id="1826516787628120939">जाँच गर्दै</translation>
 <translation id="1829244130665387512">पृष्ठमा फेला पार्नुहोस्</translation>
 <translation id="1853692000353488670">नयाँ इनकगनिटो ट्याब</translation>
 <translation id="1856325424225101786">लाइट मोड रिसेट गर्ने हो?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">पासवर्डहरू संग्रह गर्नुहोस्</translation>
 <translation id="1952172573699511566">सम्भव भए सम्म वेबसाइटहरूले तपाईंको रुचाइएको भाषामा पाठ देखाउनेछ।</translation>
 <translation id="1960290143419248813">Chrome का अद्यावधिकहरू उपलब्ध गराउने सुविधा Android को यो संस्करणमा अब उप्रान्त समर्थित छैन</translation>
+<translation id="1963976881984600709">मानक सुरक्षा</translation>
 <translation id="1966710179511230534">कृपया तपाईंको साइन इन विवरण अपडेट गर्नुहोस्।</translation>
 <translation id="1974060860693918893">उन्नत</translation>
+<translation id="1984417487208496350">सुरक्षारहित मोड (सिफारिस गरिँदैन)</translation>
 <translation id="1984705450038014246">Chrome को आफ्नो डेटा सिंक गर्नुहोस्</translation>
 <translation id="1986685561493779662">नाम पहिलेदेखि नै विद्यमान छ</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> बटन</translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">Google Lens प्रयोग गरी खोज्नुहोस् <ph name="BEGIN_NEW" />नयाँ<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">नयाँ ट्याबमा खोल्नुहोस्</translation>
 <translation id="4198423547019359126">डाउनलोडसम्बन्धी कुनै पनि स्थानहरू उपलब्ध छैनन्</translation>
-<translation id="4202553989407425169">Chrome ले तपाईंका सेटिङले तपाईंलाई निम्न कुराहरूबाट सुरक्षा प्रदान गर्छन् कि गर्दैनन् भन्ने कुरा जाँच्न सक्छ:</translation>
 <translation id="4209895695669353772">Google ले सिफारिस गरेको वैयक्तीकृत सामग्री प्राप्त गर्न सिंक गर्ने सुविधा सक्रिय गर्नुहोस्</translation>
 <translation id="423219824432660969">Google को पासवर्डमार्फत <ph name="TIME" /> सम्मका सिंक गरिएको डेटा इन्क्रिप्ट गर्नुहोस्</translation>
 <translation id="4242533952199664413">सेटिङहरू खोल्नुहोस्</translation>
@@ -489,6 +490,7 @@
 <translation id="4943872375798546930">कुनै नतिजा छैन</translation>
 <translation id="4961107849584082341">यस पृष्ठलाई जुनसुकै भाषामा अनुवाद गर्नुहोस्</translation>
 <translation id="4970824347203572753">तपाईंको स्थानमा उपलब्ध छैन</translation>
+<translation id="4971735654804503942">खतरनाक वेबसाइट, डाउनलोड र एक्स्टेन्सनहरूबाट अझ छिटो र सक्रिय सुरक्षा। तपाईंलाई पासवर्डहरूको चोरी हुन सक्ने सम्भावनाबारे चेतावनी दिन्छ। ब्राउजिङ डेटा Google लाई पठाउनु पर्ने हुन्छ।</translation>
 <translation id="497421865427891073">अगाडि जानुहोस्</translation>
 <translation id="4988210275050210843">फाइलहरू डाउनलोड गर्दै (<ph name="MEGABYTES" />)।</translation>
 <translation id="4988526792673242964">पृष्ठहरू</translation>
@@ -560,7 +562,6 @@
 <translation id="5527082711130173040">यन्त्रहरू स्क्यान गर्न Chrome लाई स्थान माथिको पहुँच चाहिन्छ। <ph name="BEGIN_LINK1" />अनुमतिहरूलाई अपडेट गर्नुहोस्<ph name="END_LINK1" />। यो यन्त्रमा स्थान माथिको पहुँचलाई पनि <ph name="BEGIN_LINK2" />निष्क्रिय पारिएको छ<ph name="END_LINK2" />।</translation>
 <translation id="5530766185686772672">इनकगनिटो ट्याबहरू बन्द गर्नुहोस्</translation>
 <translation id="5534640966246046842">साइट प्रतिलिपि गरियो</translation>
-<translation id="5548606607480005320">सुरक्षा जाँच</translation>
 <translation id="5561549206367097665">नेटवर्कको प्रतीक्षा गर्दै…</translation>
 <translation id="55737423895878184">यस कार्यका लागि स्थानसम्बन्धी सेवा तथा सूचनाहरूलाई अनुमति छ</translation>
 <translation id="5578795271662203820">यस छविको लागि <ph name="SEARCH_ENGINE" /> खोज्नुहोस्</translation>
@@ -599,7 +600,6 @@
 <translation id="583281660410589416">अज्ञात</translation>
 <translation id="5833984609253377421">लिंक सेयर गर्नुहोस्</translation>
 <translation id="5836192821815272682">Chrome को अद्यावधिक डाउनलोड गर्दै…</translation>
-<translation id="584120177693484274">जाँच नगरिएको</translation>
 <translation id="5853623416121554550">पज गरियो</translation>
 <translation id="5854790677617711513">३० दिनभन्दा पुरानो</translation>
 <translation id="5858741533101922242">Chrome ले ब्लुटुथ एडाप्टरलाई सक्रिय गर्न सकेन</translation>
@@ -735,10 +735,12 @@
 <translation id="685850645784703949">Google को Discover - अफ छ</translation>
 <translation id="6864459304226931083">छवि डाउनलोड गर्नुहोस्</translation>
 <translation id="6865313869410766144">स्वत: भर्ने फारम लगत</translation>
+<translation id="6882836635272038266">खतरनाक मानिने वेबसाइट, डाउनलोड र एक्स्टेन्सनहरूबाट स्तरीय सुरक्षा।</translation>
 <translation id="6884306546558072722">अफलाइन अन्वेषण गरिराख्नुहोस्</translation>
 <translation id="688738109438487280">विद्यमान डेटा <ph name="TO_ACCOUNT" /> मा थप्नुहोस्।</translation>
 <translation id="6891726759199484455">आफ्नो पासवर्ड प्रतिलिपि गर्न अनलक गर्नुहोस्</translation>
 <translation id="6896758677409633944">प्रतिलिपि गर्नुहोस्</translation>
+<translation id="6900532703269623216">परिष्कृत सुरक्षा</translation>
 <translation id="6903907808598579934">सिंकलाई सक्रिय गर्नुहोस्</translation>
 <translation id="6942665639005891494">सेटिङहरू नामक मेनुको विकल्प प्रयोग गरी पूर्वनिर्धारित डाउनलोड स्थान जुनसुकै बेला परिवर्तन गर्नुहोस्</translation>
 <translation id="6945221475159498467">चयन गर्नुहोस्</translation>

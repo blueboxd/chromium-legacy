@@ -7,6 +7,7 @@ import os
 import re
 import sys
 
+from gpu_tests import common_browser_args as cba
 from gpu_tests import gpu_helper
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
@@ -322,14 +323,21 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return timeout
 
   @classmethod
-  def SetupWebGLBrowserArgs(cls, browser_args):
+  def GenerateBrowserArgs(cls, additional_args):
+    """Adds default arguments to |additional_args|.
+
+    See the parent class' method documentation for additional information.
+    """
+    default_args = super(WebGLConformanceIntegrationTest,
+                         cls).GenerateBrowserArgs(additional_args)
+
     # --test-type=gpu is used only to suppress the "Google API Keys are missing"
     # infobar, which causes flakiness in tests.
-    browser_args += [
-        '--autoplay-policy=no-user-gesture-required',
-        '--disable-domain-blocking-for-3d-apis',
-        '--disable-gpu-process-crash-limit',
-        '--test-type=gpu',
+    default_args.extend([
+        cba.AUTOPLAY_POLICY_NO_USER_GESTURE_REQUIRED,
+        cba.DISABLE_DOMAIN_BLOCKING_FOR_3D_APIS,
+        cba.DISABLE_GPU_PROCESS_CRASH_LIMIT,
+        cba.TEST_TYPE_GPU,
         '--enable-webgl-draft-extensions',
         # Try disabling the GPU watchdog to see if this affects the
         # intermittent GPU process hangs that have been seen on the
@@ -341,11 +349,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         # TODO(crbug.com/830901): see whether disabling this feature
         # makes the WebGL video upload tests reliable again.
         '--disable-features=UseSurfaceLayerForVideo',
-        # TODO(crbug.com/1085899): promote this to an argument that's
-        # specified for all of the GPU tests, not just the WebGL
-        # conformance tests.
-        '--disable-metal-test-shaders',
-    ]
+    ])
     # Note that the overriding of the default --js-flags probably
     # won't interact well with RestartBrowserIfNecessaryWithArgs, but
     # we don't use that in this test.
@@ -370,13 +374,14 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       logging.warning(' Original flags: ' + builtin_js_flags)
       logging.warning(' New flags: ' + user_js_flags)
     else:
-      browser_args += [builtin_js_flags]
-    cls.CustomizeBrowserArgs(browser_args)
+      default_args.append(builtin_js_flags)
+
+    return default_args
 
   @classmethod
   def SetUpProcess(cls):
     super(WebGLConformanceIntegrationTest, cls).SetUpProcess()
-    cls.SetupWebGLBrowserArgs([])
+    cls.CustomizeBrowserArgs([])
     cls.StartBrowser()
     # By setting multiple server directories, the root of the server
     # implicitly becomes the common base directory, i.e., the Chromium

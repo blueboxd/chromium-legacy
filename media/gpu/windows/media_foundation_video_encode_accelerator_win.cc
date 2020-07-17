@@ -48,10 +48,12 @@ constexpr const wchar_t* const kMediaFoundationVideoEncoderDLLs[] = {
     L"mf.dll", L"mfplat.dll",
 };
 
-eAVEncH264VProfile GetH264VProfile(VideoCodecProfile profile) {
+eAVEncH264VProfile GetH264VProfile(VideoCodecProfile profile,
+                                   bool is_constrained_h264) {
   switch (profile) {
     case H264PROFILE_BASELINE:
-      return eAVEncH264VProfile_Base;
+      return is_constrained_h264 ? eAVEncH264VProfile_ConstrainedBase
+                                 : eAVEncH264VProfile_Base;
     case H264PROFILE_MAIN:
       return eAVEncH264VProfile_Main;
     case H264PROFILE_HIGH: {
@@ -185,7 +187,8 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  if (GetH264VProfile(config.output_profile) == eAVEncH264VProfile_unknown) {
+  if (GetH264VProfile(config.output_profile, config.is_constrained_h264) ==
+      eAVEncH264VProfile_unknown) {
     DLOG(ERROR) << "Output profile not supported= " << config.output_profile;
     return false;
   }
@@ -250,7 +253,8 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  if (!InitializeInputOutputParameters(config.output_profile)) {
+  if (!InitializeInputOutputParameters(config.output_profile,
+                                       config.is_constrained_h264)) {
     DLOG(ERROR) << "Failed initializing input-output samples.";
     return false;
   }
@@ -524,7 +528,8 @@ bool MediaFoundationVideoEncodeAccelerator::ActivateAsyncEncoder(
 }
 
 bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputParameters(
-    VideoCodecProfile output_profile) {
+    VideoCodecProfile output_profile,
+    bool is_constrained_h264) {
   DCHECK(main_client_task_runner_->BelongsToCurrentThread());
   DCHECK(encoder_);
 
@@ -572,8 +577,9 @@ bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputParameters(
   hr = imf_output_media_type_->SetUINT32(MF_MT_INTERLACE_MODE,
                                          MFVideoInterlace_Progressive);
   RETURN_ON_HR_FAILURE(hr, "Couldn't set interlace mode", false);
-  hr = imf_output_media_type_->SetUINT32(MF_MT_MPEG2_PROFILE,
-                                         GetH264VProfile(output_profile));
+  hr = imf_output_media_type_->SetUINT32(
+      MF_MT_MPEG2_PROFILE,
+      GetH264VProfile(output_profile, is_constrained_h264));
   RETURN_ON_HR_FAILURE(hr, "Couldn't set codec profile", false);
   hr = encoder_->SetOutputType(output_stream_id_, imf_output_media_type_.Get(),
                                0);

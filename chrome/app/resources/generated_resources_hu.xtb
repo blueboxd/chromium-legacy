@@ -104,6 +104,7 @@
 <translation id="1124772482545689468">Felhasználó</translation>
 <translation id="1125550662859510761">Megjelenés: <ph name="WIDTH" /> × <ph name="HEIGHT" /> (natív)</translation>
 <translation id="1126809382673880764">Nem védi meg Önt a veszélyes webhelyek, letöltések vagy bővítmények ellen. Ahol lehetséges (más Google-szolgáltatásokban, például a Gmailben és a Keresőben) továbbra is megkapja a Biztonságos Böngészés által nyújtott védelmet.</translation>
+<translation id="112752777279960360">Ha első alkalommal szeretne androidos telefont beállítani biztonsági kulcsként való használatra ezen a számítógépen, nyissa meg a Chrome-ot telefonján, majd lépjen a „Beállítások &gt; Jelszavak &gt; Telefon használata biztonsági kulcsként” menüpontra. Ezután koppintson az „Új eszköz csatlakoztatása” lehetőségre, és olvassa be ezt a QR-kódot.</translation>
 <translation id="1128109161498068552">Ne engedélyezze a webhelyeknek, hogy exkluzív rendszerüzenetekkel elérhessék a MIDI-eszközöket</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Keresőmotor beállítása</translation>
@@ -509,6 +510,7 @@
 <translation id="1622054403950683339">Wi-Fi-hálózat elfelejtése</translation>
 <translation id="1623132449929929218">A képek jelenleg nem állnak rendelkezésre. Kapcsolódjon az internethez, ha szeretné megtekinteni a háttérképgyűjteményeket.</translation>
 <translation id="1623723619460186680">Kékfénycsökkentés</translation>
+<translation id="1624012933569991823">Beállítások</translation>
 <translation id="1627276047960621195">Fájlleírók</translation>
 <translation id="1627408615528139100">Már le lett töltve</translation>
 <translation id="1628948239858170093">Ellenőrzi a fájlt a megnyitása előtt?</translation>
@@ -745,6 +747,7 @@
 <translation id="1887850431809612466">Hardver ellenőrzése</translation>
 <translation id="1888523338879380247">{0,plural, =1{Az eszköz frissítésére rendelkezésre álló utolsó nap}other{# napon belül frissítse az eszközt}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;Azonosító: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783"><ph name="ATTACHMENTS" /> fogadása innen: <ph name="DEVICE_NAME" /></translation>
 <translation id="189210018541388520">Megnyitás teljes képernyőn</translation>
 <translation id="1892341345406963517">Üdvözöljük, <ph name="PARENT_NAME" />!</translation>
 <translation id="189358972401248634">Más nyelvek</translation>
@@ -1817,6 +1820,7 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3253225298092156258">Nem hozzáférhető</translation>
 <translation id="3253448572569133955">Ismeretlen fiók</translation>
 <translation id="3254516606912442756">Az időzóna automatikus észlelése ki van kapcsolva</translation>
+<translation id="3254715652085014625">Nyissa meg a Chrome-ot androidos telefonján, majd lépjen a „Beállítások &gt; Jelszavak &gt; Telefon használata biztonsági hardverkulcsként” menüpontra. Ezután kövesse a megjelenő utasításokat.</translation>
 <translation id="3255355328033513170">A(z) <ph name="SITE_GROUP_NAME" /> és a hozzá tartozó összes webhely által tárolt minden adat törlődik. Ez a cookie-kra is vonatkozik. A rendszer kijelentkezteti ezekről a webhelyekről (a megnyitott lapok esetében is).</translation>
 <translation id="3259723213051400722">Próbálja újra.</translation>
 <translation id="3264544094376351444">Talp nélküli betűtípus</translation>
@@ -3492,6 +3496,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="5390677308841849479">Sötétvörös-narancssárga</translation>
 <translation id="5390743329570580756">Küldés –</translation>
 <translation id="5397794290049113714">Ön</translation>
+<translation id="5398497406011404839">Rejtett könyvjelzők</translation>
 <translation id="5398572795982417028">Tartományon kívüli oldalra való hivatkozás; a maximális érték <ph name="MAXIMUM_PAGE" />.</translation>
 <translation id="5398772614898833570">Hirdetések letiltva</translation>
 <translation id="5402815541704507626">Frissítés letöltése mobiladat-kapcsolaton keresztül</translation>
@@ -3577,6 +3582,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="5496587651328244253">Rendezés</translation>
 <translation id="5497251278400702716">Ez a fájl</translation>
 <translation id="5499313591153584299">Ez a fájl káros lehet a számítógépre.</translation>
+<translation id="5499453227627332024">Frissítés áll rendelkezésre a Linux-tárolóban. A frissítést később is végrehajthatja a Beállítások alkalmazásban.</translation>
 <translation id="5500709606820808700">A biztonsági ellenőrzés ma lefutott</translation>
 <translation id="5502500733115278303">A Firefox alkalmazásból importálva</translation>
 <translation id="5503982651688210506">A(z) <ph name="HOST" /> továbbra is használhatja és mozgathatja a kamerát, valamint használhatja a mikrofont</translation>
@@ -4202,6 +4208,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />Redszer- és alkalmazásadatok<ph name="END_LINK1" />, valamint <ph name="BEGIN_LINK2" />mutatószámok<ph name="END_LINK2" /> küldése</translation>
 <translation id="6272643420381259437">Hiba (<ph name="ERROR" />) történt a beépülő modul letöltése során</translation>
 <translation id="6273677812470008672">Minőség</translation>
+<translation id="6273979226236203550">A jelszót ez az eszköz és Google-fiókja is tárolja. Honnan szeretné törölni?</translation>
 <translation id="6277105963844135994">Hálózati időtúllépés</translation>
 <translation id="6277518330158259200">&amp;Képernyőkép készítése</translation>
 <translation id="6278057325678116358">GTK+ használata</translation>
@@ -4562,6 +4569,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6758056191028427665">Ossza meg velünk, mennyire van megelégedve munkánkkal.</translation>
 <translation id="6759193508432371551">Gyári beállítások visszaállítása</translation>
 <translation id="6762833852331690540">Be</translation>
+<translation id="676560328519657314">Az Ön fizetési módjai a Google Pay szolgáltatásban</translation>
 <translation id="6767566652486411142">Másik nyelv választása…</translation>
 <translation id="6767639283522617719">Nem sikerült csatlakozni a domainhez. Győződjön meg róla, hogy a beállítások megfelelnek a helyi szervezeti egységnek.</translation>
 <translation id="6769557323306147204">A(z) <ph name="ORGANIZATION_NAME" /> javasolja, hogy frissítse az eszközt.</translation>
@@ -4734,6 +4742,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6972553992270299730">A(z) <ph name="ORIGIN" /> nem nyithatja meg az ebben a mappában lévő fájlokat, mert rendszerfájlok találhatók benne</translation>
 <translation id="6972629891077993081">HID-eszközök</translation>
 <translation id="6972754398087986839">Első lépések</translation>
+<translation id="6972887130317925583">Sikerült a nyilvánosságra került jelszó módosítása. Jelszavait bármikor ellenőrizheti itt: <ph name="SETTINGS" />.</translation>
 <translation id="6973611239564315524">Frissíthet a következőre: Debian 10 (Buster)</translation>
 <translation id="6974609594866392343">Offline demó mód</translation>
 <translation id="6977381486153291903">Firmware ellenőrzése</translation>
@@ -5593,6 +5602,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Billentyűparancs szerkesztve</translation>
 <translation id="8018313076035239964">Szabályozhatja, hogy a webhelyek milyen adatokat használhatnak fel, és milyen tartalmakat jeleníthetnek meg</translation>
+<translation id="8022688469248132790">Hiba részleteinek megtekintése</translation>
 <translation id="8023801379949507775">Bővítmények frissítése most</translation>
 <translation id="8026334261755873520">Böngészési adatok törlése</translation>
 <translation id="8028060951694135607">Microsoft kulcshelyreállító</translation>
@@ -6532,6 +6542,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="9180380851667544951">A webhely megoszthatja a képernyőjét</translation>
 <translation id="9188732951356337132">Használati és diagnosztikai adatok küldése. Ez az eszköz jelenleg automatikusan küld diagnosztikai, eszköz- és alkalmazáshasználati adatokat a Google-nak. Az adatok a rendszer- és alkalmazásstabilitás javításában, valamint más fejlesztésekben segítenek, nem használjuk fel őket az Ön gyermekének azonosítására. Bizonyos összesített adatok a Google-alkalmazásoknak és -partnereknek, például az Android-fejlesztőknek is segítenek. Ha az Internetes és alkalmazástevékenységek beállítás is be van kapcsolva a gyermekénél, akkor a rendszer ezeket az adatokat mentheti a gyermek Google-fiókjába. <ph name="BEGIN_LINK2" />További információ.<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec + előre megosztott kulcs</translation>
+<translation id="9198090666959937775">Androidos telefon használata biztonsági kulcsként</translation>
 <translation id="920045321358709304">Keresés a következővel: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Az offline adatok törlődnek</translation>
 <translation id="9201220332032049474">A képernyőzár beállításai</translation>
@@ -6574,6 +6585,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="942532530371314860">A(z) <ph name="APP_NAME" /> megosztja a Chrome egy lapját és a hangot.</translation>
 <translation id="945522503751344254">Visszajelzés küldése</translation>
 <translation id="947329552760389097">&amp;Elemek vizsgálata</translation>
+<translation id="951991426597076286">Elutasítás</translation>
 <translation id="952992212772159698">Nincs aktiválva</translation>
 <translation id="956500788634395331">Védelmet élvez a potenciálisan kártékony bővítményekkel szemben</translation>
 <translation id="957960681186851048">Ez a webhely megpróbált automatikusan letölteni több fájlt</translation>

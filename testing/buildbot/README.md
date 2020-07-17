@@ -163,8 +163,8 @@ Arguments specific to isolated script tests:
   name.
 
 There are other arguments specific to other test types (script tests, JUnit
-tests, instrumentation tests, CTS tests); consult the generator script and
-test_suites.pyl for more details and examples.
+tests); consult the generator script and test_suites.pyl for more details and
+examples.
 
 ### Compound test suites
 #### Composition test suites
@@ -338,16 +338,20 @@ Each bot's description is a dictionary containing the following:
   tests. The value is a string referring either to a basic or composition test
   suite from [test_suites.pyl](./test_suites.pyl).
 
-    * `cts_tests`: (Android-specific) conformance test suites.
-    * `gtest_tests`: GTest-based tests.
-    * `instrumentation_tests`: (Android-specific) instrumentation tests.
+    * `gtest_tests`: GTest-based tests (or other kinds of tests that
+       emulate the GTest-based API), which can be run either locally or
+       under Swarming.
     * `isolated_scripts`: Isolated script tests. These are bundled into an
        isolate, invoke a wrapper script from src/testing/scripts as their
        top-level entry point, and are used to adapt to multiple kinds of test
-       harnesses.
-    * `junit_tests`: (Android-specific) JUnit tests.
-    * `scripts`: Legacy script tests living in src/testing/scripts. These can
-       not be Swarmed, and further use is discouraged.
+       harnesses. These must implement the
+       [Test Executable API](//docs/testing/test_executable_api.md) and
+       can also be run either locally or under Swarming.
+    * `junit_tests`: (Android-specific) JUnit tests. These are not run
+       under Swarming.
+    * `scripts`: Legacy script tests living in src/testing/scripts. These
+       also are not (and usually can not) be run under Swarming. These
+       types of tests are strongly discouraged.
 
 * `swarming`: a dictionary specifying Swarming parameters to be applied to all
   tests that run on the bot.

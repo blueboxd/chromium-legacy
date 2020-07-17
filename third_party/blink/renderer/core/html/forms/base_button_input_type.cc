@@ -38,7 +38,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/layout/layout_button.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 
 namespace blink {
 
@@ -76,14 +76,15 @@ bool BaseButtonInputType::ShouldSaveAndRestoreFormControlState() const {
 void BaseButtonInputType::AppendToFormData(FormData&) const {}
 
 bool BaseButtonInputType::TypeShouldForceLegacyLayout() const {
+  UseCounter::Count(GetElement().GetDocument(),
+                    WebFeature::kLegacyLayoutByButton);
   return true;
 }
 
-LayoutObject* BaseButtonInputType::CreateLayoutObject(const ComputedStyle&,
-                                                      LegacyLayout) const {
-  UseCounter::Count(GetElement().GetDocument(),
-                    WebFeature::kLegacyLayoutByButton);
-  return new LayoutButton(&GetElement());
+LayoutObject* BaseButtonInputType::CreateLayoutObject(
+    const ComputedStyle& style,
+    LegacyLayout legacy) const {
+  return LayoutObjectFactory::CreateButton(GetElement(), style, legacy);
 }
 
 InputType::ValueMode BaseButtonInputType::GetValueMode() const {

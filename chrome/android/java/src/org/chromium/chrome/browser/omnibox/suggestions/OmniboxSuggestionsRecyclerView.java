@@ -83,7 +83,6 @@ public class OmniboxSuggestionsRecyclerView
      */
     public OmniboxSuggestionsRecyclerView(Context context) {
         super(context, null, android.R.attr.dropDownListViewStyle);
-        setLayoutManager(new LinearLayoutManager(context));
         setFocusable(true);
         setFocusableInTouchMode(true);
         setRecycledViewPool(new HistogramRecordingRecycledViewPool());
@@ -91,24 +90,26 @@ public class OmniboxSuggestionsRecyclerView
         // By default RecyclerViews come with item animators.
         setItemAnimator(null);
 
+        mScrollListener = new SuggestionScrollListener();
+        setOnScrollListener(mScrollListener);
+        setLayoutManager(new LinearLayoutManager(context) {
+            @Override
+            public int scrollVerticallyBy(
+                    int deltaY, RecyclerView.Recycler recycler, RecyclerView.State state) {
+                int scrollY = super.scrollVerticallyBy(deltaY, recycler, state);
+                if (scrollY == 0 && deltaY < 0) {
+                    mScrollListener.onOverscrollToTop();
+                }
+                return scrollY;
+            }
+        });
+
         final Resources resources = context.getResources();
         int paddingBottom =
                 resources.getDimensionPixelOffset(R.dimen.omnibox_suggestion_list_padding_bottom);
         ViewCompat.setPaddingRelative(this, 0, 0, 0, paddingBottom);
 
         mDropdownDelegate = new OmniboxSuggestionsDropdownDelegate(resources, this);
-        mScrollListener = new SuggestionScrollListener();
-        setOnScrollListener(mScrollListener);
-    }
-
-    @Override
-    protected boolean overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int rangeX,
-            int rangeY, int maxX, int maxY, boolean isTouchEvent) {
-        if (scrollY == 0 && deltaY < 0) {
-            mScrollListener.onOverscrollToTop();
-        }
-        return super.overScrollBy(
-                deltaX, deltaY, scrollX, scrollY, rangeX, rangeY, maxX, maxY, isTouchEvent);
     }
 
     @Override

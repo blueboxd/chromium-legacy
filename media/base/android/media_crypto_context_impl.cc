@@ -13,18 +13,7 @@ MediaCryptoContextImpl::MediaCryptoContextImpl(MediaDrmBridge* media_drm_bridge)
   DCHECK(media_drm_bridge_);
 }
 
-MediaCryptoContextImpl::~MediaCryptoContextImpl() {}
-
-int MediaCryptoContextImpl::RegisterPlayer(
-    base::RepeatingClosure new_key_cb,
-    base::RepeatingClosure cdm_unset_cb) {
-  return media_drm_bridge_->RegisterPlayer(std::move(new_key_cb),
-                                           std::move(cdm_unset_cb));
-}
-
-void MediaCryptoContextImpl::UnregisterPlayer(int registration_id) {
-  media_drm_bridge_->UnregisterPlayer(registration_id);
-}
+MediaCryptoContextImpl::~MediaCryptoContextImpl() = default;
 
 void MediaCryptoContextImpl::SetMediaCryptoReadyCB(
     MediaCryptoReadyCB media_crypto_ready_cb) {

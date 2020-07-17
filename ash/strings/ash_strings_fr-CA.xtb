@@ -98,6 +98,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1995660704900986789">Éteindre</translation>
 <translation id="2012624427112548395">Ctrl+Recherche+H</translation>
 <translation id="2016340657076538683">Rédiger un message</translation>
+<translation id="2018630726571919839">Raconte-moi une blague</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2067602449040652523">Luminosité du clavier</translation>
 <translation id="209965399369889474">Aucune connexion réseau</translation>
@@ -125,6 +126,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="2354174487190027830">Activation du réseau <ph name="NAME" /> en cours…</translation>
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="2365393535144473978">L'activation des données mobiles activera le Bluetooth.</translation>
+<translation id="2369165858548251131">Comment dit-on « Bonjour » en chinois?</translation>
 <translation id="2390318262976603432">Paramètres régionaux</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Mise à jour disponible</translation>
@@ -142,6 +144,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="256712445991462162">la loupe en mode ancré</translation>
 <translation id="2575685495496069081">La connexion multicompte a été désactivée</translation>
 <translation id="2582112259361606227">Redémarrer pour faire la mise à jour</translation>
+<translation id="2595239820337756193">Combien y a-t-il de milles dans 5 km?</translation>
 <translation id="2617342710774726426">La carte SIM est verrouillée</translation>
 <translation id="2621713457727696555">Sécurisé</translation>
 <translation id="2653659639078652383">Envoyer</translation>
@@ -195,6 +198,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="3154351730702813399">L'administrateur de l'appareil peut surveiller votre activité de navigation.</translation>
 <translation id="3181441307743005334">Le redémarrage peut prendre un certain temps</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connecté à un appareil}one{Connecté à # appareil}other{Connecté à # appareils}}</translation>
+<translation id="320207200541803018">Règle une minuterie</translation>
 <translation id="3203405173652969239">Switch Access est activé</translation>
 <translation id="3207953481422525583">Paramètres de l'utilisateur</translation>
 <translation id="3217205077783620295">Le son est activé et peut être coupé en cliquant sur le bouton de volume.</translation>
@@ -207,6 +211,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> peut toujours se connecter plus tard.</translation>
 <translation id="3321628682574733415">Code parental incorrect</translation>
 <translation id="332587331255250389">Veuillez remplacer la pile</translation>
+<translation id="334252345105450327">Prendre une capture d'écran</translation>
 <translation id="3351879221545518001">Vous diffusez actuellement l'écran.</translation>
 <translation id="3364721542077212959">Outils de stylet</translation>
 <translation id="3368922792935385530">Connecté</translation>
@@ -239,6 +244,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="3631369015426612114">Autoriser les notifications de :</translation>
 <translation id="3638400994746983214">Basculer l'écran de confidentialité. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733">Utilisateur géré : <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="3702846122927433391">Quelle est la population du Nigéria?</translation>
 <translation id="3705722231355495246">–</translation>
 <translation id="3712407551474845318">Capturer une zone</translation>
 <translation id="371370241367527062">Microphone avant</translation>
@@ -519,6 +525,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Rétablissement de la résolution précédente dans <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Le menu a été déplacé vers le coin supérieur gauche de l'écran.</translation>
+<translation id="7189412385142492784">À quelle distance se trouve Vénus?</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Ce Chromebook doit redémarrer pour installer une mise à jour. Cela peut prendre jusqu'à une minute.</translation>
 <translation id="7256634071279256947">Microphone arrière</translation>
 <translation id="726276584504105859">Glissez l'élément ici pour utiliser l'écran partagé</translation>
@@ -645,6 +652,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="8649101189709089199">Sélectionner pour énoncer</translation>
 <translation id="8652175077544655965">Fermer les paramètres</translation>
 <translation id="8653151467777939995">Afficher les paramètres de notification. Les notifications sont activées</translation>
+<translation id="8660331759611631213">Racine carrée de 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Afficher la liste de réseaux. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

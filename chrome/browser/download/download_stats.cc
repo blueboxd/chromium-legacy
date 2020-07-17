@@ -75,4 +75,9 @@ void RecordDownloadPromptStatus(DownloadPromptStatus status) {
   UMA_HISTOGRAM_ENUMERATION("MobileDownload.DownloadPromptStatus", status,
                             DownloadPromptStatus::MAX_VALUE);
 }
+
+void RecordDownloadLaterPromptStatus(DownloadLaterPromptStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("MobileDownload.DownloadLaterPromptStatus", status);
+}
+
 #endif  // OS_ANDROID

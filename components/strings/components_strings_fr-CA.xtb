@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr-CA">
 <translation id="1008557486741366299">Pas maintenant</translation>
+<translation id="100957008357583611">Utiliser la localisation?</translation>
 <translation id="1010200102790553230">Charger la page plus tard</translation>
 <translation id="1015730422737071372">Fournir des détails supplémentaires</translation>
 <translation id="1019413721762100891">Désactivé</translation>
@@ -421,7 +422,6 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="2705137772291741111">La copie sauvegardée (mise en cache) de ce site était illisible.</translation>
 <translation id="2709516037105925701">Remplissage automatique</translation>
 <translation id="2713444072780614174">Blanc</translation>
-<translation id="2720342946869265578">À proximité</translation>
 <translation id="2721148159707890343">Demande réussie</translation>
 <translation id="272451190272506600">Touchez le capteur pour payer</translation>
 <translation id="2728127805433021124">Le certificat du serveur a été signé avec un algorithme de signature faible.</translation>
@@ -715,7 +715,6 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="3987940399970879459">Moins de 1 Mo</translation>
 <translation id="3990250421422698716">Décalage</translation>
 <translation id="3996311196211510766">Le site <ph name="ORIGIN" /> a exigé qu'une politique d'origine soit appliquée à toutes les demandes qu'il reçoit, mais cette politique ne peut pas être appliquée actuellement.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 page Web à proximité}one{# page Web à proximité}other{# pages Web à proximité}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Document PDF contenant {COUNT} page}one{Document PDF contenant {COUNT} page}other{Document PDF contenant {COUNT} pages}}</translation>
 <translation id="4030383055268325496">&amp;Annuler l'ajout</translation>
 <translation id="4032320456957708163">Votre navigateur est géré par <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -929,7 +928,6 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Enregistrer…</translation>
 <translation id="4913987521957242411">Perforation en haut à gauche</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{et 1 page Web supplémentaire}one{et # page Web supplémentaire}other{et # pages Web supplémentaires}}</translation>
 <translation id="4923459931733593730">Paiement</translation>
 <translation id="4926049483395192435">Cette valeur est requise.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> indique</translation>
@@ -1170,6 +1168,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="5869405914158311789">Impossible d'accéder à ce site</translation>
 <translation id="5869522115854928033">Mots de passe enregistrés</translation>
 <translation id="5887400589839399685">Carte enregistrée</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> exige que vous sauvegardiez vos données et que vous retourniez cet appareil.</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
 <translation id="5895187275912066135">Émis le :</translation>
 <translation id="5901630391730855834">Jaune</translation>
@@ -1320,7 +1319,6 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="6518133107902771759">Vérifier</translation>
 <translation id="6521745193039995384">Inactive</translation>
 <translation id="6529602333819889595">&amp;Rétablir la suppression</translation>
-<translation id="6534179046333460208">Suggestions pour le Web physique</translation>
 <translation id="6545864417968258051">Recherche d'appareils Bluetooth</translation>
 <translation id="6547208576736763147">Double perforation à gauche</translation>
 <translation id="6554795675067793129">Votre compte est géré par <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1842,7 +1840,6 @@ Détails supplémentaires :
 <translation id="8790007591277257123">&amp;Rétablir la suppression</translation>
 <translation id="8792621596287649091">Vous risquez de perdre l'accès à votre compte <ph name="ORG_NAME" /> ou d'être victime d'un vol d'identité. Chromium recommande de modifier votre mot de passe maintenant.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> a activé les connecteurs Chrome Enterprise dans votre navigateur. Ces connecteurs ont accès à certaines de vos données.</translation>
-<translation id="8800988563907321413">Vos suggestions de pages Web à proximité s'affichent ici</translation>
 <translation id="8805819170075074995">Entrée de liste « <ph name="LANGUAGE_ID" /> » : l'entrée a été ignorée, car elle est aussi incluse dans la politique SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Couper après chaque page</translation>
 <translation id="8820817407110198400">Favoris</translation>

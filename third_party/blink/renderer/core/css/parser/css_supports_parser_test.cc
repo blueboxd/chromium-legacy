@@ -6,6 +6,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_impl.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_stream.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
@@ -24,66 +25,81 @@ class CSSSupportsParserTest : public testing::Test {
     return CSSTokenizer(string).TokenizeToEOF();
   }
 
-  Result SupportsCondition(String string, CSSSupportsParser::Mode mode) {
+  Result StaticConsumeSupportsCondition(String string) {
     CSSParserImpl impl(MakeContext());
-    auto tokens = Tokenize(string);
-    return CSSSupportsParser::SupportsCondition(tokens, impl, mode);
+    CSSTokenizer tokenizer(string);
+    CSSParserTokenStream stream(tokenizer);
+    Result result = CSSSupportsParser::ConsumeSupportsCondition(stream, impl);
+    return stream.AtEnd() ? result : Result::kParseFailure;
   }
 
   Result AtSupports(String string) {
-    return SupportsCondition(string, CSSSupportsParser::Mode::kForAtRule);
+    return StaticConsumeSupportsCondition(string);
   }
 
   Result WindowCSSSupports(String string) {
-    return SupportsCondition(string, CSSSupportsParser::Mode::kForWindowCSS);
+    String wrapped_condition = "(" + string + ")";
+    return StaticConsumeSupportsCondition(wrapped_condition);
   }
 
   Result ConsumeSupportsCondition(String string) {
     CSSParserImpl impl(MakeContext());
     CSSSupportsParser parser(impl);
-    auto tokens = Tokenize(string);
-    CSSParserTokenRange range = tokens;
-    return parser.ConsumeSupportsCondition(range);
+    CSSTokenizer tokenizer(string);
+    CSSParserTokenStream stream(tokenizer);
+    return parser.ConsumeSupportsCondition(stream);
   }
 
   Result ConsumeSupportsInParens(String string) {
     CSSParserImpl impl(MakeContext());
     CSSSupportsParser parser(impl);
-    auto tokens = Tokenize(string);
-    CSSParserTokenRange range = tokens;
-    return parser.ConsumeSupportsInParens(range);
+    CSSTokenizer tokenizer(string);
+    CSSParserTokenStream stream(tokenizer);
+    return parser.ConsumeSupportsInParens(stream);
   }
 
   Result ConsumeSupportsFeature(String string) {
     CSSParserImpl impl(MakeContext());
     CSSSupportsParser parser(impl);
-    auto tokens = Tokenize(string);
-    CSSParserTokenRange range = tokens;
-    return parser.ConsumeSupportsFeature(range);
+    CSSTokenizer tokenizer(string);
+    CSSParserTokenStream stream(tokenizer);
+    CSSParserToken first_token = stream.Peek();
+    CSSParserTokenStream::BlockGuard guard(stream);
+    stream.ConsumeWhitespace();
+    return parser.ConsumeSupportsFeature(first_token, stream);
   }
 
   Result ConsumeSupportsSelectorFn(String string) {
     CSSParserImpl impl(MakeContext());
     CSSSupportsParser parser(impl);
-    auto tokens = Tokenize(string);
-    CSSParserTokenRange range = tokens;
-    return parser.ConsumeSupportsSelectorFn(range);
+    CSSTokenizer tokenizer(string);
+    CSSParserTokenStream stream(tokenizer);
+    CSSParserToken first_token = stream.Peek();
+    CSSParserTokenStream::BlockGuard guard(stream);
+    stream.ConsumeWhitespace();
+    return parser.ConsumeSupportsSelectorFn(first_token, stream);
   }
 
   Result ConsumeSupportsDecl(String string) {
     CSSParserImpl impl(MakeContext());
     CSSSupportsParser parser(impl);
-    auto tokens = Tokenize(string);
-    CSSParserTokenRange range = tokens;
-    return parser.ConsumeSupportsDecl(range);
+    CSSTokenizer tokenizer(string);
+    CSSParserTokenStream stream(tokenizer);
+    CSSParserToken first_token = stream.Peek();
+    CSSParserTokenStream::BlockGuard guard(stream);
+    stream.ConsumeWhitespace();
+    return parser.ConsumeSupportsDecl(first_token, stream);
   }
 
   Result ConsumeGeneralEnclosed(String string) {
     CSSParserImpl impl(MakeContext());
     CSSSupportsParser parser(impl);
-    auto tokens = Tokenize(string);
-    CSSParserTokenRange range = tokens;
-    return parser.ConsumeGeneralEnclosed(range);
+    CSSTokenizer tokenizer(string);
+    CSSParserTokenStream stream(tokenizer);
+    CSSParserToken first_token = stream.Peek();
+    CSSParserTokenStream::BlockGuard guard(stream);
+    stream.ConsumeWhitespace();
+    return parser.ConsumeGeneralEnclosed(first_token, stream);
   }
 };
 
@@ -190,7 +206,27 @@ TEST_F(CSSSupportsParserTest, ConsumeSupportsInParens) {
               ConsumeSupportsInParens("selector(div)or (color:green)"));
     EXPECT_EQ(Result::kSupported,
               ConsumeSupportsInParens("selector(div)and (color:green)"));
+
+    // Invalid <supports-selector-fn> formerly handled by
+    // ConsumeSupportsSelectorFn()
+    EXPECT_EQ(Result::kParseFailure, ConsumeSupportsInParens("#test"));
+    EXPECT_EQ(Result::kParseFailure, ConsumeSupportsInParens("test"));
+
+    // Invalid <supports-selector-fn> but valid <general-enclosed>
+    EXPECT_EQ(Result::kUnsupported, ConsumeSupportsInParens("test(1)"));
   }
+
+  // Invalid <supports-decl> formerly handled by ConsumeSupportsDecl()
+  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsInParens(""));
+  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsInParens(")"));
+  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsInParens("color:red)"));
+  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsInParens("color:red"));
+
+  // Invalid <general-enclosed> formerly handled by ConsumeGeneralEnclosed()
+  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsInParens(""));
+  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsInParens(")"));
+  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsInParens("color:red"));
+  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsInParens("asdf"));
 }
 
 TEST_F(CSSSupportsParserTest, ConsumeSupportsSelectorFn) {
@@ -256,10 +292,6 @@ TEST_F(CSSSupportsParserTest, ConsumeSupportsSelectorFn) {
   EXPECT_EQ(Result::kUnsupported, ConsumeSupportsSelectorFn("selector(:asdf)"));
   EXPECT_EQ(Result::kUnsupported,
             ConsumeSupportsSelectorFn("selector(::asdf)"));
-
-  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsSelectorFn("#test"));
-  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsSelectorFn("test"));
-  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsSelectorFn("test(1)"));
 }
 
 TEST_F(CSSSupportsParserTest, ConsumeSupportsSelectorFnWithFeatureDisabled) {
@@ -290,12 +322,8 @@ TEST_F(CSSSupportsParserTest, ConsumeSupportsDecl) {
   EXPECT_EQ(Result::kUnsupported, ConsumeSupportsDecl("(color)"));
   EXPECT_EQ(Result::kUnsupported, ConsumeSupportsDecl("(color:)"));
 
-  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsDecl(""));
   EXPECT_EQ(Result::kParseFailure, ConsumeSupportsDecl("("));
-  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsDecl(")"));
   EXPECT_EQ(Result::kParseFailure, ConsumeSupportsDecl("()"));
-  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsDecl("color:red)"));
-  EXPECT_EQ(Result::kParseFailure, ConsumeSupportsDecl("color:red"));
 }
 
 TEST_F(CSSSupportsParserTest, ConsumeSupportsFeature) {
@@ -315,26 +343,8 @@ TEST_F(CSSSupportsParserTest, ConsumeGeneralEnclosed) {
   EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("asdf(1, 2)"));
   EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("asdf(1, 2)\t"));
 
-  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed(""));
   EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("("));
-  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed(")"));
   EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("()"));
-  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("color:red"));
-  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("asdf"));
-
-  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("(asdf)"));
-  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("( asdf )"));
-  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("(3)"));
-  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("max(1, 2)"));
-  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("asdf(1, 2)"));
-  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("asdf(1, 2)\t"));
-
-  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed(""));
-  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("("));
-  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed(")"));
-  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("()"));
-  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("color:red"));
-  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("asdf"));
 
   // Invalid <any-value>:
   EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("(asdf})"));

@@ -233,6 +233,10 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   bool PaintWithoutCommitForTesting(
       const base::Optional<IntRect>& interest_rect = base::nullopt);
 
+  bool ShouldCreateLayersAfterPaint() const {
+    return should_create_layers_after_paint_;
+  }
+
  protected:
   String DebugName(const cc::Layer*) const;
 
@@ -247,6 +251,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   bool FillsBoundsCompletely() const override { return false; }
   size_t GetApproximateUnsharedMemoryUsage() const final;
 
+  void UpdateShouldCreateLayersAfterPaint();
   void UpdateSafeOpaqueBackgroundColor();
 
   // Returns true if PaintController::PaintArtifact() changed and needs commit.
@@ -286,6 +291,10 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   bool contents_visible_ : 1;
   bool hit_testable_ : 1;
   bool needs_check_raster_invalidation_ : 1;
+  // True if the cc::Layers for this GraphicsLayer should be created after
+  // paint (in PaintArtifactCompositor). This depends on the display item list
+  // and is updated after CommitNewDisplayItems.
+  bool should_create_layers_after_paint_ : 1;
 
   GraphicsLayerPaintingPhase painting_phase_;
 

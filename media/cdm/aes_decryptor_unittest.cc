@@ -385,8 +385,6 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
   // Removes the session specified by |session_id|.
   void RemoveSession(const std::string& session_id) {
     EXPECT_CALL(cdm_client_, OnSessionKeysChangeCalled(session_id, false));
-    EXPECT_CALL(cdm_client_,
-                OnSessionExpirationUpdate(session_id, IsNullTime()));
     cdm_->RemoveSession(session_id, CreatePromise(RESOLVED));
   }
 

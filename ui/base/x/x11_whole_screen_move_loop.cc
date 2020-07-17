@@ -52,7 +52,6 @@ constexpr x11::ModMask kModifiersMasks[] = {
 X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
     : delegate_(delegate),
       in_move_loop_(false),
-      initial_cursor_(x11::None),
       grab_input_window_(x11::Window::None),
       grabbed_pointer_(false),
       canceled_(false) {}
@@ -131,9 +130,10 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
   return ui::POST_DISPATCH_PERFORM_DEFAULT;
 }
 
-bool X11WholeScreenMoveLoop::RunMoveLoop(bool can_grab_pointer,
-                                         ::Cursor old_cursor,
-                                         ::Cursor new_cursor) {
+bool X11WholeScreenMoveLoop::RunMoveLoop(
+    bool can_grab_pointer,
+    scoped_refptr<ui::X11Cursor> old_cursor,
+    scoped_refptr<ui::X11Cursor> new_cursor) {
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
 
   // Query the mouse cursor prior to the move loop starting so that it can be
@@ -181,7 +181,7 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(bool can_grab_pointer,
   return !canceled_;
 }
 
-void X11WholeScreenMoveLoop::UpdateCursor(::Cursor cursor) {
+void X11WholeScreenMoveLoop::UpdateCursor(scoped_refptr<ui::X11Cursor> cursor) {
   if (in_move_loop_)
     ui::ChangeActivePointerGrabCursor(cursor);
 }
@@ -219,7 +219,7 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
   std::move(quit_closure_).Run();
 }
 
-bool X11WholeScreenMoveLoop::GrabPointer(::Cursor cursor) {
+bool X11WholeScreenMoveLoop::GrabPointer(scoped_refptr<X11Cursor> cursor) {
   auto* connection = x11::Connection::Get();
 
   // Pass "owner_events" as false so that X sends all mouse events to

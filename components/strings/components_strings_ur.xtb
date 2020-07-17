@@ -426,7 +426,6 @@
 <translation id="2705137772291741111">اس سائٹ کی محفوظ کردہ (کیش کردہ) کاپی کو پڑھا نہیں جا سکا۔</translation>
 <translation id="2709516037105925701">آٹو فل</translation>
 <translation id="2713444072780614174">سفید</translation>
-<translation id="2720342946869265578">قریب</translation>
 <translation id="2721148159707890343">درخواست کامیاب رہی</translation>
 <translation id="272451190272506600">ادائیگی کرنے کے لیے سینسر کو ٹچ کریں</translation>
 <translation id="2728127805433021124">سرور کا سرٹیفیکیٹ ایک کمزور دستخط الگورتھم استعمال کر کے دستخط کیا ہوا ہے۔</translation>
@@ -725,7 +724,6 @@
 <translation id="3990250421422698716">جاگ آفسیٹ</translation>
 <translation id="3996311196211510766">اس سائٹ <ph name="ORIGIN" /> نے درخواست کی ہے کہ ایک ماخذ پالیسی کا اطلاق
     اس سے کی جانے والی سبھی درخواستوں پر کیا جائے، لیکن فی الحال اس پالیسی کو لاگو نہیں کیا جا سکتا۔</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 ویب صفحہ قریب میں ہے}other{# ویب صفحات قریب میں ہیں}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{‏{COUNT} صفحہ پر مشتمل PDF دستاویز}other{‏{COUNT} صفحات پر مشتمل PDF دستاویز}}</translation>
 <translation id="4030383055268325496">شامل کریں کو &amp;کالعدم کریں</translation>
 <translation id="4032320456957708163">آپ کا براؤزر <ph name="ENROLLMENT_DOMAIN" /> کے زیر انتظام ہے</translation>
@@ -943,7 +941,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />، <ph name="TYPE_2" />، <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">محفوظ کریں...</translation>
 <translation id="4913987521957242411">اوپر بائیں طرف فولڈ</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{اور 1 مزید ویب صفحہ}other{اور # مزید ویب صفحات}}</translation>
 <translation id="4923459931733593730">ادائیگی</translation>
 <translation id="4926049483395192435">متعین ہونا ضروری ہے۔</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> کے مطابق</translation>
@@ -1335,7 +1332,6 @@
 <translation id="6518133107902771759">توثیق کریں</translation>
 <translation id="6521745193039995384">فعال نہیں ہے</translation>
 <translation id="6529602333819889595">&amp;دوبارہ حذف کریں</translation>
-<translation id="6534179046333460208">فزیکل ویب تجاویز</translation>
 <translation id="6545864417968258051">بلوٹوتھ اسکیننگ</translation>
 <translation id="6547208576736763147">بائیں طرف دُہرا سوراخ</translation>
 <translation id="6554795675067793129"><ph name="ENROLLMENT_DOMAIN" /> آپ کے اکاؤنٹ کا نظم کرتا ہے۔</translation>
@@ -1857,7 +1853,6 @@
 <translation id="8790007591277257123">&amp;دوبارہ حذف کریں</translation>
 <translation id="8792621596287649091">‏آپ اپنے <ph name="ORG_NAME" /> اکاؤنٹ تک رسائی سے محروم ہو سکتے ہیں یا شناخت کی چوری ہو سکتی ہے۔ Chromium آپ کو ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="8793655568873652685">‏آپ کے براؤزر پر <ph name="ENROLLMENT_DOMAIN" /> نے Chrome انٹرپرائز کنیکٹرز کو آن کر دیا ہے۔ ان کنیکٹرز کو آپ کے کچھ ڈیٹا تک رسائی حاصل ہے۔</translation>
-<translation id="8800988563907321413">آپ کی قریبی تجاویز یہاں ظاہر ہوتی ہیں</translation>
 <translation id="8805819170075074995">‏فہرست کا اندراج "<ph name="LANGUAGE_ID" />": اندراج کو نظر انداز کیا گیا کیونکہ یہ SpellcheckLanguage پالیسی میں بھی شامل ہے۔</translation>
 <translation id="8807160976559152894">ہر صفحہ کے بعد تراشیں</translation>
 <translation id="8820817407110198400">بُک مارکس</translation>

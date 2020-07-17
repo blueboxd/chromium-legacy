@@ -109,7 +109,7 @@ void TreeScope::ClearScopedStyleResolver() {
   scoped_style_resolver_.Clear();
 }
 
-Element* TreeScope::getElementById(const AtomicString& element_id) const {
+Element* TreeScope::getElementById(const StringView& element_id) const {
   if (element_id.IsEmpty())
     return nullptr;
   if (!elements_by_id_)
@@ -382,7 +382,7 @@ DOMSelection* TreeScope::GetSelection() const {
 Element* TreeScope::FindAnchor(const String& name) {
   if (name.IsEmpty())
     return nullptr;
-  if (Element* element = getElementById(AtomicString(name)))
+  if (Element* element = getElementById(name))
     return element;
   for (HTMLAnchorElement& anchor :
        Traversal<HTMLAnchorElement>::StartsAfter(RootNode())) {

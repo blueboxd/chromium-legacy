@@ -2146,6 +2146,14 @@ void EventSender::AddTouchPoint(float x, float y, gin::Arguments* args) {
     args->ThrowError();
     return;
   }
+
+  // Web tests provide inputs in device-scale independent values, and need to be
+  // adjusted to physical pixels when blink is working in physical pixels as
+  // determined by UseZoomForDSF.
+  float dsf = DeviceScaleFactorForEvents(web_widget_test_proxy_);
+  x *= dsf;
+  y *= dsf;
+
   WebTouchPoint touch_point;
   touch_point.pointer_type = WebPointerProperties::PointerType::kTouch;
   touch_point.state = WebTouchPoint::State::kStatePressed;

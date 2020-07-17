@@ -58,6 +58,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/media_router_extension_access_logger.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"

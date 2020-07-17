@@ -2083,7 +2083,7 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
 
       } else if (credit_card->number().empty()) {
         DCHECK_EQ(credit_card->record_type(), CreditCard::LOCAL_CARD);
-        if (credit_card->HasValidNickname()) {
+        if (credit_card->HasNonEmptyValidNickname()) {
           suggestion->label = credit_card->nickname();
         } else if (type.GetStorableType() != CREDIT_CARD_NAME_FULL) {
           suggestion->label = credit_card->GetInfo(
@@ -2661,14 +2661,15 @@ base::string16 PersonalDataManager::GetDisplayNicknameForCreditCard(
   }
 
   // Always prefer a local nickname if available.
-  if (card.HasValidNickname() && card.record_type() == CreditCard::LOCAL_CARD)
+  if (card.HasNonEmptyValidNickname() &&
+      card.record_type() == CreditCard::LOCAL_CARD)
     return card.nickname();
   // Either the card a) has no nickname or b) is a server card and we would
   // prefer to use the nickname of a local card.
   std::vector<CreditCard*> candidates = GetCreditCards();
   for (CreditCard* candidate : candidates) {
     if (candidate->guid() != card.guid() && candidate->HasSameNumberAs(card) &&
-        candidate->HasValidNickname()) {
+        candidate->HasNonEmptyValidNickname()) {
       return candidate->nickname();
     }
   }

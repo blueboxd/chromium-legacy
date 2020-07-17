@@ -2,15 +2,19 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="1282031177488366470">Pomoc so zlepšovaním funkcií a výkonu Chromu</translation>
+<translation id="1479202195792305274">Keď sa prihlásite účtom Google, Chrome môže skontrolovať vaše heslá.</translation>
+<translation id="1647024380514430932">Chromu sa nepodarilo skontrolovať všetky heslá. Skúste to znova.</translation>
 <translation id="1682483655351012182">Synchronizácia údajov Chromu</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1917964099031477364">Tento účet bude spolu so všetkými neuloženými údajmi odstránený z Chromu a ďalších aplikácií Google v tomto zariadení.</translation>
+<translation id="2009224836393115614">Chromu sa nepodarilo skontrolovať heslá. Skontrolujte internetové pripojenie.</translation>
 <translation id="2147651015520127414">Chrome overil, že certifikát tohto webu vydal vydavateľ <ph name="ISSUER" />.</translation>
 <translation id="2199719347983604670">Údaje zo synchronizácie Chromu</translation>
 <translation id="2347208864470321755">Po zapnutí tejto funkcie bude prehliadač Chrome ponúkať preloženie stránok napísaných v inom jazyku pomocou služby Prekladač Google. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="2574249610672786438">Ak chcete vidieť svoje karty vo všetkých zariadeniach, v ktorých používate Chrome, prihláste sa v nich</translation>
 <translation id="2576431527583832481">Prehliadač Chrome bol práve vylepšený. K dispozícii je nová verzia.</translation>
 <translation id="257708665678654955">Chcete, aby prehliadač Google Chrome nabudúce ponúkol možnosť prekladu stránok tohto webu v jazyku <ph name="LANGUAGE_NAME" />?</translation>
+<translation id="2732745070297234559">Chromu sa nepodarilo skontrolovať všetky heslá. Skúste to znova zajtra.</translation>
 <translation id="2919738076569633423">Používaním prehliadača Chrome vyjadrujete súhlas so <ph name="BEGIN_LINK_TOS" />zmluvnými podmienkami<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">Odhlasujete sa z účtu spravovaného doménou <ph name="SIGNOUT_MANAGED_DOMAIN" />, takže údaje Chromu budú z tohto zariadenia odstránené. Vaše údaje zostanú vo vašom účte Google.</translation>
 <translation id="3148688391461398285">Získajte lepšie prostredie v prehliadači Chrome na základe svojej polohy.</translation>
@@ -28,6 +32,7 @@
 <translation id="424864128008805179">Odhlásiť sa z Chromu?</translation>
 <translation id="4249068189593983585">Tip pre Chrome: ďalšie možnosti karty získate pridržaním tlačidla „Zobraziť karty“ na paneli s nástrojmi, ktorý sa nachádza v dolnej alebo hornej časti obrazovky.</translation>
 <translation id="4523886039239821078">Niektoré doplnky spôsobujú zlyhanie prehliadača Chrome. Odinštalujte ich.</translation>
+<translation id="4698415050768537821">Chromu sa nepodarilo skontrolovať všetky heslá. Skúste to znova zajtra alebo <ph name="BEGIN_LINK" />skontrolujte heslá vo svojom účte Google<ph name="END_LINK" />.</translation>
 <translation id="5389212809648216794">Google Chrome nemôže použiť váš fotoaparát, pretože ho práve používa iná aplikácia</translation>
 <translation id="5639704535586432836">Otvorte Nastavenia &gt; Súkromie &gt; Fotoaparát &gt; Google Chrome a zapnite fotoaparát.</translation>
 <translation id="5642200033778930880">Google Chrome nemôže použiť váš fotoaparát v režime Rozdelené zobrazenie</translation>
@@ -42,6 +47,7 @@
 <translation id="7165736900384873061">Začnite používať čítačku QR prehliadača Google Chrome</translation>
 <translation id="7172660552945675509">Tip: <ph name="BEGIN_LINK" />Presuňte Chrome do doku<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome používa overenie Face ID na zaistenie oprávneného prístupu k heslám.</translation>
+<translation id="7261678641327190792">Chrome nemôže skontrolovať heslá</translation>
 <translation id="7265369419224458312">Priamo tu môžete pristupovať ku kartám, ktoré máte otvorené na počítači. Stačí otvoriť Chrome na počítači, prejsť do ponuky a vybrať možnosť „Prihlásiť sa do prehliadača Chrome…“.</translation>
 <translation id="7272930098487145294">Ak chcete uložiť obrázky, klepnutím na Nastavenia povoľte Chromu pridávať do vašich fotiek</translation>
 <translation id="7400722733683201933">O aplikácii Google Chrome</translation>

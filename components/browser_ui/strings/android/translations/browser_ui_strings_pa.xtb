@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">ਕੈਮਰਾ</translation>
 <translation id="1647391597548383849">ਆਪਣੇ ਕੈਮਰੇ ਤੱਕ ਪਹੁੰਚੋ</translation>
 <translation id="1660204651932907780">ਸਾਈਟਾਂ ਨੂੰ ਧੁਨੀ ਵਜਾਉਣ ਦਿਓ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
+<translation id="1677097821151855053">ਕੁਕੀਜ਼ ਅਤੇ ਹੋਰ ਸਾਈਟ ਡਾਟੇ ਦੀ ਵਰਤੋਂ ਤੁਹਾਨੂੰ ਯਾਦ ਰੱਖਣ ਲਈ ਕੀਤੀ ਜਾਂਦੀ ਹੈ, ਉਦਾਹਰਨ ਦੇ ਤੌਰ 'ਤੇ ਤੁਹਾਨੂੰ ਸਾਈਨ-ਇਨ ਕਰਨ ਲਈ ਜਾਂ ਵਿਗਿਆਪਨਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾਉਣ ਲਈ। ਸਾਰੀਆਂ ਸਾਈਟਾਂ ਲਈ ਕੁਕੀਜ਼ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਨ ਲਈ, <ph name="BEGIN_LINK" />ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਦੇਖੋ।</translation>
 <translation id="1688867105868176567">ਕੀ ਸਾਈਟ ਡਾਟਾ ਕਲੀਅਰ ਕਰਨਾ ਹੈ?</translation>
 <translation id="169515064810179024">ਸਾਈਟਾਂ ਨੂੰ ਗਤੀਸ਼ੀਲਤਾ ਸੈਂਸਰਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਤੋਂ ਬਲਾਕ ਕਰੋ</translation>
 <translation id="1717218214683051432">ਗਤੀਸ਼ੀਲਤਾ ਸੈਂਸਰ</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">ਕਿਸੇ ਖਾਸ ਸਾਈਟ ਨੂੰ ਕੁਕੀਜ਼ ਨੂੰ ਵਰਤਣ ਦਿਓ।</translation>
 <translation id="4046123991198612571">ਅਗਲਾ ਟਰੈਕ</translation>
 <translation id="4165986682804962316">ਸਾਈਟ ਸੈਟਿੰਗਾਂ</translation>
+<translation id="4200726100658658164">ਟਿਕਾਣਾ ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ</translation>
 <translation id="4226663524361240545">ਸੂਚਨਾਵਾਂ ਡੀਵਾਈਸ ਨੂੰ ਥਰਥਰਾਹਟ ਕਰ ਸਕਦੀਆਂ ਹਨ</translation>
 <translation id="4242533952199664413">ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ</translation>
 <translation id="4259722352634471385">ਨੈਵੀਗੇਸ਼ਨ ਬਲੌਕ ਕੀਤੀ ਹੈ: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">ਸਾਰੀਆਂ ਸਾਈਟਾਂ</translation>
 <translation id="6320088164292336938">ਵਾਈਬ੍ਰੇਟ ਕਰੋ</translation>
 <translation id="6388207532828177975">ਹਟਾਓ &amp; ਰੀਸੈਟ ਕਰੋ</translation>
+<translation id="6423924377271166037">ਕੁਕੀਜ਼ ਕਲੀਅਰ ਕਰੋ</translation>
 <translation id="6439114592976064011">ਸਾਈਟਾਂ ਨੂੰ ਤੁਹਾਡੇ ਆਭਾਸੀ ਵਾਸਤਵਿਕਤਾ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਵਰਤਣ ਤੋਂ ਬਲਾਕ ਕਰੋ</translation>
 <translation id="6447842834002726250">ਕੁਕੀਜ਼</translation>
 <translation id="6527303717912515753">ਸ਼ੇਅਰ ਕਰੋ</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">ਪਿੱਛੇ ਵੱਲ ਨੂੰ ਲੈ ਜਾਓ</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> ਨੂੰ ਆਪਣੇ ਟਿਕਾਣੇ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦੇਣ ਲਈ, <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਟਿਕਾਣਾ ਵੀ ਚਾਲੂ ਕਰੋ।</translation>
 <translation id="8447861592752582886">ਡੀਵਾਈਸ 'ਤੇ ਪਹੁੰਚ ਦੀ ਇਜਾਜ਼ਤ ਰੱਦ ਕਰੋ</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 ਕੁਕੀ ਵਰਤੋਂ ਵਿੱਚ ਹੈ}one{# ਕੁਕੀ ਵਰਤੋਂ ਵਿੱਚ ਹੈ}other{# ਕੁਕੀਜ਼ ਵਰਤੋਂ ਵਿੱਚ ਹਨ}}</translation>
 <translation id="8463851957836045671">ਸਾਈਟ ਤੇਜ਼ ਹੈ</translation>
 <translation id="851751545965956758">ਸਾਈਟਾਂ ਨੂੰ ਡੀਵਾਈਸਾਂ ਨਾਲ ਕਨੈਕਟ ਕਰਨ ਤੋਂ ਬਲਾਕ ਕਰੋ</translation>
 <translation id="857943718398505171">ਇਜਾਜ਼ਤ ਹੈ ( ਸਿਫ਼ਾਰਸ਼  ਕੀਤੇ)</translation>

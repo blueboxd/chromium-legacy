@@ -36,23 +36,20 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockManagedNetworkConfigurationHandler
                void(const std::string& service_path,
                     const base::DictionaryValue& user_settings,
                     const base::Closure& callback,
-                    const network_handler::ErrorCallback& error_callback));
-  MOCK_CONST_METHOD4(
-      CreateConfiguration,
-      void(const std::string& userhash,
-           const base::DictionaryValue& properties,
-           const network_handler::ServiceResultCallback& callback,
-           const network_handler::ErrorCallback& error_callback));
-  MOCK_CONST_METHOD3(
-      RemoveConfiguration,
-      void(const std::string& service_path,
-           const base::Closure& callback,
-           const network_handler::ErrorCallback& error_callback));
-  MOCK_CONST_METHOD3(
-      RemoveConfigurationFromCurrentProfile,
-      void(const std::string& service_path,
-           const base::Closure& callback,
-           const network_handler::ErrorCallback& error_callback));
+                    network_handler::ErrorCallback error_callback));
+  MOCK_CONST_METHOD4(CreateConfiguration,
+                     void(const std::string& userhash,
+                          const base::DictionaryValue& properties,
+                          network_handler::ServiceResultCallback callback,
+                          network_handler::ErrorCallback error_callback));
+  MOCK_CONST_METHOD3(RemoveConfiguration,
+                     void(const std::string& service_path,
+                          const base::Closure& callback,
+                          network_handler::ErrorCallback error_callback));
+  MOCK_CONST_METHOD3(RemoveConfigurationFromCurrentProfile,
+                     void(const std::string& service_path,
+                          const base::Closure& callback,
+                          network_handler::ErrorCallback error_callback));
   MOCK_METHOD4(SetPolicy,
                void(::onc::ONCSource onc_source,
                     const std::string& userhash,

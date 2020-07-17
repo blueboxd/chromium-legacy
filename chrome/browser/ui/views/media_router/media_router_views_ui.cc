@@ -54,6 +54,11 @@
 #include "ui/display/display.h"
 #include "url/origin.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#include "ui/base/cocoa/permissions_utils.h"
+#endif
+
 namespace media_router {
 
 namespace {
@@ -367,6 +372,15 @@ bool MediaRouterViewsUI::CreateRoute(const MediaSink::Id& sink_id,
     SendIssueForUnableToCast(cast_mode, sink_id);
     return false;
   }
+
+#if defined(OS_MACOSX)
+  if (base::mac::IsAtLeastOS10_15() &&
+      cast_mode == MediaCastMode::DESKTOP_MIRROR &&
+      !ui::IsScreenCaptureAllowed()) {
+    SendIssueForScreenPermission(sink_id);
+    return false;
+  }
+#endif
 
   GetIssueManager()->ClearNonBlockingIssues();
 
@@ -744,6 +758,18 @@ void MediaRouterViewsUI::SendIssueForRouteTimeout(
   issue_info.sink_id = sink_id;
   AddIssue(issue_info);
 }
+
+#if defined(OS_MACOSX)
+void MediaRouterViewsUI::SendIssueForScreenPermission(
+    const MediaSink::Id& sink_id) {
+  std::string issue_title = l10n_util::GetStringUTF8(
+      IDS_MEDIA_ROUTER_ISSUE_MAC_SCREEN_CAPTURE_PERMISSION_ERROR);
+  IssueInfo issue_info(issue_title, IssueInfo::Action::DISMISS,
+                       IssueInfo::Severity::WARNING);
+  issue_info.sink_id = sink_id;
+  AddIssue(issue_info);
+}
+#endif
 
 void MediaRouterViewsUI::SendIssueForUnableToCast(
     MediaCastMode cast_mode,

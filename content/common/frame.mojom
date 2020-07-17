@@ -4,7 +4,6 @@
 
 module content.mojom;
 
-import "content/common/ax_content_tree_update.mojom";
 import "content/common/document_scoped_interface_bundle.mojom";
 import "content/common/frame_messages.mojom";
 import "content/common/native_types.mojom";
@@ -45,6 +44,7 @@ import "third_party/blink/public/mojom/loader/referrer.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_container.mojom";
 import "third_party/blink/public/mojom/window_features/window_features.mojom";
+import "ui/accessibility/mojom/ax_tree_update.mojom";
 import "ui/base/mojom/window_open_disposition.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/origin.mojom";
@@ -102,7 +102,7 @@ interface Frame {
   // accessibility if it wasn't already enabled.
   // See ui/accessibility/ax_mode.h for valid values of |ax_mode|.
   SnapshotAccessibilityTree(uint32 ax_mode)
-      => (ax.mojom.AXContentTreeUpdate snapshot);
+      => (ax.mojom.AXTreeUpdate snapshot);
 
   // Get HTML data by serializing the target frame and replacing all resource
   // links with a path to the local copy passed in the message payload. In order

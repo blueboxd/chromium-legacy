@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
 <translation id="1647391597548383849">เข้าถึงกล้องถ่ายรูป</translation>
 <translation id="1660204651932907780">อนุญาตให้เว็บไซต์เล่นเสียง (แนะนำ)</translation>
+<translation id="1677097821151855053">คุกกี้และข้อมูลอื่นๆ ของเว็บไซต์ใช้ในการจดจำคุณ เช่น เพื่อลงชื่อเข้าใช้ให้คุณหรือปรับโฆษณาตามโปรไฟล์ของคุณ ดู<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" />เพื่อจัดการคุกกี้สำหรับทุกเว็บไซต์</translation>
 <translation id="1688867105868176567">ล้างข้อมูลเว็บไซต์ไหม</translation>
 <translation id="169515064810179024">บล็อกไม่ให้เว็บไซต์เข้าถึงเซ็นเซอร์ตรวจจับความเคลื่อนไหว</translation>
 <translation id="1717218214683051432">เซ็นเซอร์ตรวจจับความเคลื่อนไหว</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">อนุญาตคุกกี้ของเว็บไซต์ที่เจาะจง</translation>
 <translation id="4046123991198612571">แทร็กถัดไป</translation>
 <translation id="4165986682804962316">การตั้งค่าเว็บไซต์</translation>
+<translation id="4200726100658658164">เปิดการตั้งค่าตำแหน่ง</translation>
 <translation id="4226663524361240545">การแจ้งเตือนอาจทำให้อุปกรณ์สั่น</translation>
 <translation id="4242533952199664413">เปิดการตั้งค่า</translation>
 <translation id="4259722352634471385">มีการบล็อกการนำทาง: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">เว็บไซต์ทั้งหมด</translation>
 <translation id="6320088164292336938">สั่น</translation>
 <translation id="6388207532828177975">ล้างข้อมูลและรีเซ็ต</translation>
+<translation id="6423924377271166037">ล้างคุกกี้</translation>
 <translation id="6439114592976064011">บล็อกเว็บไซต์ไม่ให้ใช้อุปกรณ์และข้อมูล Virtual Reality ของคุณ</translation>
 <translation id="6447842834002726250">คุกกี้</translation>
 <translation id="6527303717912515753">แชร์</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">ย้อนกลับ</translation>
 <translation id="8444433999583714703">หากต้องการอนุญาตให้ <ph name="APP_NAME" /> เข้าถึงตำแหน่งของคุณ ให้เปิดตำแหน่งใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /> ด้วย</translation>
 <translation id="8447861592752582886">เพิกถอนสิทธิ์ของอุปกรณ์</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{ใช้คุกกี้อยู่ 1 รายการ}other{ใช้คุกกี้อยู่ # รายการ}}</translation>
 <translation id="8463851957836045671">เว็บไซต์โหลดเร็ว</translation>
 <translation id="851751545965956758">บล็อกเว็บไซต์ไม่ให้เชื่อมต่อกับอุปกรณ์</translation>
 <translation id="857943718398505171">อนุญาตแล้ว (แนะนำ)</translation>

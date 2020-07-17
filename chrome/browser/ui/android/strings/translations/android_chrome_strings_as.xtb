@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">আপোনাৰ ডিভাইচত ছেভ কৰা বুকমাৰ্কবোৰ ইয়াত দেখা পোৱা যাব।</translation>
 <translation id="1113597929977215864">সৰলীকৃত ভিউ প্ৰদর্শন কৰক</translation>
 <translation id="1122278879166832009">যিকোনো ঠাইৰ পৰা ক্ষিপ্ৰভাৱে নিজৰ গৃহপৃষ্ঠা এক্সেছ কৰিবলৈ ইয়াত টিপক</translation>
+<translation id="1126809382673880764">আপোনাক বিপজ্জনক ৱেবছাইট, ডাউনল’ড অথবা এক্সটেনশ্বনসমূহৰ পৰা সুৰক্ষা প্ৰদান নকৰে। Gmail আৰু Searchৰ দৰে অন্য Google সেৱাসমূহ, য’ত সুৰক্ষিত ব্ৰাউজিঙৰ সুবিধাটো উপলব্ধ, সেইবিলাকত আপুনি তথাপি এই সুবিধাটো পাব।</translation>
 <translation id="1129510026454351943">সবিশেষ: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{১টা ডাউনল’ড বাকী আছে।}one{#টা ডাউনল’ড বাকী আছে।}other{#টা ডাউনল’ড বাকী আছে।}}</translation>
 <translation id="1145536944570833626">পূর্বে থকা ডেটা মচক।</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">পাতল</translation>
 <translation id="1810845389119482123">প্ৰাৰম্ভিক ছিংক ছেট আপ সমাপ্ত হোৱা নাই</translation>
 <translation id="1821253160463689938">আপুনি সেই পৃষ্ঠাসমূহ পুনৰ নাচালেও আপোনাৰ পচন্দসমূহ মনত ৰাখিবলৈ কুকিৰ ব্যৱহাৰ কৰক</translation>
-<translation id="1826516787628120939">পৰীক্ষা কৰি থকা হৈছে</translation>
 <translation id="1829244130665387512">পৃষ্ঠাত বিচাৰক</translation>
 <translation id="1853692000353488670">নতুন ইনকগনিট’ টেব</translation>
 <translation id="1856325424225101786">লাইট ম’ড ৰিছেট কৰিবনে?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">পাছৱৰ্ড ছেভ কৰক</translation>
 <translation id="1952172573699511566">ৱেবছাইটবোৰে যেতিয়া সম্ভৱ হয় তেতিয়া আপুনি অগ্ৰাধিকাৰ দিয়া ভাষাত পাঠবোৰ দেখুৱাব।</translation>
 <translation id="1960290143419248813">Androidৰ এই সংস্কৰণটোত Chrome আপডে’টসমূহ আৰু নচলে</translation>
+<translation id="1963976881984600709">মানক সুৰক্ষা</translation>
 <translation id="1966710179511230534">অনুগ্ৰহ কৰি আপোনাৰ ছাইন ইনৰ সবিশেষ আপডে'ট কৰক।</translation>
 <translation id="1974060860693918893">উন্নত</translation>
+<translation id="1984417487208496350">কোনো সুৰক্ষা নাই (চুপাৰিছ কৰা নহয়)</translation>
 <translation id="1984705450038014246">আপোনাৰ Chrome ডেটা ছিংক কৰক</translation>
 <translation id="1986685561493779662">নামটো ইতিমধ্যে আছেই</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> বুটাম</translation>
@@ -147,7 +149,7 @@
 <translation id="2154710561487035718">URL প্ৰতিলিপি কৰক</translation>
 <translation id="2156074688469523661">বাকী থকা ছাইটসমূহ (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">আপোনাৰ ফ’নৰ পৰা অন্য ডিভাইচলৈ কোনো সমল শ্বেয়াৰ কৰিবলৈ দুয়োটা ডিভাইচৰ Chromeৰ ছেটিংসমূহলৈ গৈ ছিংক অন কৰক</translation>
-<translation id="2169830938017475061">এতিয়া</translation>
+<translation id="2169830938017475061">Now</translation>
 <translation id="2175927920773552910">কিউআৰ ক’ড</translation>
 <translation id="218608176142494674">শ্বেয়াৰ কৰি থকা হৈছে</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> হিচাপে অব্যাহত ৰাখক</translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">Google Lensৰে সন্ধান কৰক <ph name="BEGIN_NEW" />নতুন<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">নতুন টেবত খোলক</translation>
 <translation id="4198423547019359126">ডাউনল’ড কৰিবলৈ কোনো অৱস্থান নাই</translation>
-<translation id="4202553989407425169">আপোনাৰ ছেটিংসমূহে আপোনাক ইয়াৰ পৰা সুৰক্ষিত কৰি ৰাখিছেনে নাই সেয়া Chromeএ পৰীক্ষা কৰিব পাৰে:</translation>
 <translation id="4209895695669353772">Googleএ চুপাৰিছ কৰা ব্যক্তিগতকৰণ কৰা সমল পাবলৈ ছিংক অন কৰক</translation>
 <translation id="423219824432660969">আপোনাৰ Google ব্যৱহাৰ কৰি <ph name="TIME" /> পৰ্যন্ত আপোনাৰ ছিংক কৰা ডেটা এনক্ৰিপ্ট কৰক</translation>
 <translation id="4242533952199664413">ছেটিংসমূহ খোলক</translation>
@@ -459,6 +460,7 @@
 <translation id="4749960740855309258">এটা নতুন টেব খোলক</translation>
 <translation id="4759238208242260848">ডাউনল'ডসমূহ</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{১টা ডাউনল'ড সম্পূর্ণ হ'ল।}one{#টা ডাউনল'ড সম্পূর্ণ হ'ল।}other{#টা ডাউনল'ড সম্পূর্ণ হ'ল।}}</translation>
+<translation id="4766678251456904326">ডিভাইচত একাউণ্ট যোগ দিয়ক</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{১ টা ডাউনল’ডৰ সময়সূচী নিৰ্ধাৰণ কৰা হৈছে।}one{# টা ডাউনল’ডৰ সময়সূচী নিৰ্ধাৰণ কৰা হৈছে।}other{# টা ডাউনল’ডৰ সময়সূচী নিৰ্ধাৰণ কৰা হৈছে।}}</translation>
 <translation id="478981486571169252">আপুনি আপোনাৰ <ph name="SITE_NAME" />ৰ ছাইন ইনৰ স্থিতি, ব্ৰাউজ কৰা ডেটা আৰু ছাইটৰ ডেটা Chromeত দেখা পাব।</translation>
 <translation id="4802417911091824046">পাছফ্ৰেজ এনক্ৰিপশ্বনত Google Payৰ পৰিশোধ পদ্ধতি আৰু ঠিকনা অন্তৰ্ভুক্ত নহয়।
@@ -490,6 +492,7 @@
 <translation id="4943872375798546930">কোনো ফলাফল নাই</translation>
 <translation id="4961107849584082341">যিকোনো ভাষালৈ এই পৃষ্ঠাটো অনুবাদ কৰক</translation>
 <translation id="4970824347203572753">আপোনাৰ অৱস্থানত উপলব্ধ নহয়</translation>
+<translation id="4971735654804503942">ক্ষতিকাৰক হিচাপে জনাজাত ৱেবছাইট, ডাউনল'ড আৰু এক্সটেনশ্বনসমূহৰ পৰা ক্ষিপ্ৰ, আগতীয়া সুৰক্ষা। পাছৱর্ড ফাদিল হোৱা সম্পর্কে আপোনাক সকীয়নি দিয়ে। Googleলৈ পঠিয়াবলৈ ব্ৰাউজিং ডেটাৰ আৱশ্যক হয়।</translation>
 <translation id="497421865427891073">আগুৱাই যাওক</translation>
 <translation id="4988210275050210843">ফাইল ডাউনল’ড কৰি থকা হৈছে (<ph name="MEGABYTES" />)।</translation>
 <translation id="4988526792673242964">পৃষ্ঠা</translation>
@@ -561,7 +564,6 @@
 <translation id="5527082711130173040">ডিভাইচ স্কেন কৰিবলৈ Chromeএ অৱস্থান এক্সেছ কৰাটো প্ৰয়োজনীয়। <ph name="BEGIN_LINK1" />অনুমতি আপডে’ট কৰক<ph name="END_LINK1" />। অৱস্থান ইতিহাস <ph name="BEGIN_LINK2" />এই ডিভাইচটোৰ বাবেও অফ কৰি থোৱা হৈছে<ph name="END_LINK2" />।</translation>
 <translation id="5530766185686772672">ইনক’গনিট’ টেবসমূহ বন্ধ কৰক</translation>
 <translation id="5534640966246046842">ছাইটৰ প্ৰতিলিপি কৰা হ’ল</translation>
-<translation id="5548606607480005320">সুৰক্ষা পৰীক্ষা</translation>
 <translation id="5561549206367097665">নেটৱৰ্কৰ বাবে অপেক্ষাৰত…</translation>
 <translation id="55737423895878184">অৱস্থান আৰু জাননীক অনুমতি দিয়া হৈছে</translation>
 <translation id="5578795271662203820">এই ছবিৰ বাবে <ph name="SEARCH_ENGINE" />ত সন্ধান কৰক</translation>
@@ -600,7 +602,6 @@
 <translation id="583281660410589416">অজ্ঞাত</translation>
 <translation id="5833984609253377421">লিংক শ্বেয়াৰ কৰক</translation>
 <translation id="5836192821815272682">Chromeৰ আপডে’ট ডাউনল’ড কৰি থকা হৈছে…</translation>
-<translation id="584120177693484274">টিক মাৰ্ক আঁতৰোৱা হ’ল</translation>
 <translation id="5853623416121554550">পজ কৰা হ’ল</translation>
 <translation id="5854790677617711513">৩০ দিনতকৈ পুৰণি</translation>
 <translation id="5858741533101922242">Chromeএ ব্লুটুথ এডাপ্টৰটো অন কৰিবলৈ সক্ষম নহ’ল</translation>
@@ -735,10 +736,12 @@
 <translation id="685850645784703949">Googleৰ Discover - অফ আছে</translation>
 <translation id="6864459304226931083">প্ৰতিচ্ছবি ডাউনল'ড কৰক</translation>
 <translation id="6865313869410766144">স্বয়ংক্ৰিয়ভাৱে পূৰ কৰা ফৰ্মৰ ডেটা</translation>
+<translation id="6882836635272038266">ক্ষতিকাৰক হিচাপে জনাজাত ৱেবছাইট, ডাউনল'ড আৰু এক্সটেনশ্বনসমূহৰ পৰা উন্নত সুৰক্ষা।</translation>
 <translation id="6884306546558072722">অফলাইনত অন্বেষণ কৰি থাকক</translation>
 <translation id="688738109438487280">আগৰেপৰা থকা ডেটাবোৰ <ph name="TO_ACCOUNT" />ত যোগ কৰক।</translation>
 <translation id="6891726759199484455">আপোনাৰ পাছৱৰ্ড প্ৰতিলিপি কৰিবলৈ আনলক কৰক</translation>
 <translation id="6896758677409633944">প্ৰতিলিপি কৰক</translation>
+<translation id="6900532703269623216">বৰ্ধিত সুৰক্ষা</translation>
 <translation id="6903907808598579934">ছিংক অন কৰক</translation>
 <translation id="6942665639005891494">ছেটিংসমূহ-ৰ মেনুৰ বিকল্পটো ব্যৱহাৰ কৰি ডিফ’ল্ট ডাউনল’ডৰ অৱস্থান যিকোনো সময়তে সলনি কৰক</translation>
 <translation id="6945221475159498467">বাছনি কৰক</translation>

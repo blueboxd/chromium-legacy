@@ -1221,7 +1221,9 @@ bool WebAXObjectProxy::IsSelectable() {
   ui::AXNodeData node_data;
   accessibility_object_.Serialize(&node_data);
   // It's selectable if it has the attribute, whether it's true or false.
-  return node_data.HasBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+  return node_data.HasBoolAttribute(ax::mojom::BoolAttribute::kSelected) &&
+         accessibility_object_.Restriction() !=
+             blink::kWebAXRestrictionDisabled;
 }
 
 bool WebAXObjectProxy::IsMultiLine() {

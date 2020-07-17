@@ -168,14 +168,11 @@ AesDecryptor::AesDecryptor(
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
-    const SessionExpirationUpdateCB& session_expiration_update_cb)
+    const SessionExpirationUpdateCB& /*session_expiration_update_cb*/)
     : session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
-      session_keys_change_cb_(session_keys_change_cb),
-      session_expiration_update_cb_(session_expiration_update_cb) {
+      session_keys_change_cb_(session_keys_change_cb) {
   DVLOG(1) << __func__;
-  // AesDecryptor doesn't keep any persistent data, so no need to do anything
-  // with |security_origin|.
   DCHECK(session_message_cb_);
   DCHECK(session_closed_cb_);
   DCHECK(session_keys_change_cb_);
@@ -427,7 +424,7 @@ void AesDecryptor::RemoveSession(const std::string& session_id,
   session_keys_change_cb_.Run(session_id, false, std::move(keys_info));
 
   // 4.5.2 Run the Update Expiration algorithm on the session, providing NaN.
-  session_expiration_update_cb_.Run(session_id, base::Time());
+  // But for Clear Key, the keys never expire. So do nothing here.
 
   // 4.5.3 If any of the preceding steps failed, reject promise with a new
   //       DOMException whose name is the appropriate error name.

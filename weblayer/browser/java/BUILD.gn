@@ -187,16 +187,19 @@ android_library("java") {
     "//services/network/public/mojom:cookies_mojom_java",
     "//services/network/public/mojom:mojom_java",
     "//services/service_manager/public/java:service_manager_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_appcompat_appcompat_java",
     "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
     "//third_party/android_deps:androidx_core_core_java",
     "//third_party/android_deps:androidx_fragment_fragment_java",
+    "//third_party/android_deps:androidx_media_media_java",
     "//third_party/android_deps:androidx_preference_preference_java",
     "//third_party/android_deps:com_google_android_material_material_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
     "//ui/android:ui_full_java",
     "//ui/android:ui_java",
     "//url:gurl_java",
+    "//url:origin_java",
   ]
   srcjar_deps = [
     ":generated_enums",
@@ -235,6 +238,7 @@ android_library("test_java") {
     ":interfaces_java",
     ":java",
     ":weblayer_test_resources",
+    "//base:base_java",
     "//base:jni_java",
     "//components/infobars/android:java",
     "//components/location/android:location_java",
@@ -243,6 +247,7 @@ android_library("test_java") {
     "//net/android:net_java",
     "//services/device/public/java:geolocation_java",
     "//services/device/public/java:geolocation_java_test_support",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_full_java",
   ]
   srcjar_deps = [ ":test_aidl" ]

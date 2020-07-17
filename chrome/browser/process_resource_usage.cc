@@ -28,7 +28,9 @@ ProcessResourceUsage::~ProcessResourceUsage() {
 void ProcessResourceUsage::RunPendingRefreshCallbacks() {
   DCHECK(thread_checker_.CalledOnValidThread());
   auto task_runner = base::ThreadTaskRunnerHandle::Get();
-  for (auto& callback : refresh_callbacks_)
+  base::circular_deque<base::OnceClosure> callbacks;
+  std::swap(callbacks, refresh_callbacks_);
+  for (auto& callback : callbacks)
     task_runner->PostTask(FROM_HERE, std::move(callback));
 }
 

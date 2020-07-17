@@ -29,17 +29,6 @@ class MEDIA_EXPORT MediaCryptoContextImpl : public MediaCryptoContext {
 
   ~MediaCryptoContextImpl() final;
 
-  // PlayerTracker implementation.
-  // Methods can be called on any thread. The registered callbacks will be fired
-  // on |task_runner_|. The caller should make sure that the callbacks are
-  // posted to the correct thread.
-  //
-  // Note: RegisterPlayer() must be called before SetMediaCryptoReadyCB() to
-  // avoid missing any new key notifications.
-  int RegisterPlayer(base::RepeatingClosure new_key_cb,
-                     base::RepeatingClosure cdm_unset_cb) final;
-  void UnregisterPlayer(int registration_id) final;
-
   // MediaCryptoContext implementation.
   void SetMediaCryptoReadyCB(MediaCryptoReadyCB media_crypto_ready_cb) final;
 

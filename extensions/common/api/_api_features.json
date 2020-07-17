@@ -173,10 +173,6 @@
     "dependencies": ["permission:dns"],
     "contexts": ["blessed_extension"]
   },
-  "documentScan": {
-    "dependencies": ["permission:documentScan"],
-    "contexts": ["blessed_extension"]
-  },
   // This is not a real API, only here for documentation purposes.
   // See http://crbug.com/275944 for background.
   "extensionTypes": {

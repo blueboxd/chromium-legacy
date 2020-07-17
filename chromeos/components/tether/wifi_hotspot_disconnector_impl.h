@@ -35,27 +35,24 @@ class WifiHotspotDisconnectorImpl : public WifiHotspotDisconnector {
   ~WifiHotspotDisconnectorImpl() override;
 
   // WifiHotspotDisconnector:
-  void DisconnectFromWifiHotspot(
-      const std::string& wifi_network_guid,
-      base::OnceClosure success_callback,
-      const network_handler::StringResultCallback& error_callback) override;
+  void DisconnectFromWifiHotspot(const std::string& wifi_network_guid,
+                                 base::OnceClosure success_callback,
+                                 StringErrorCallback error_callback) override;
 
  private:
-  void OnSuccessfulWifiDisconnect(
-      const std::string& wifi_network_guid,
-      const std::string& wifi_network_path,
-      base::OnceClosure success_callback,
-      const network_handler::StringResultCallback& error_callback);
+  void OnSuccessfulWifiDisconnect(const std::string& wifi_network_guid,
+                                  const std::string& wifi_network_path,
+                                  base::OnceClosure success_callback,
+                                  StringErrorCallback error_callback);
   void OnFailedWifiDisconnect(
       const std::string& wifi_network_guid,
       const std::string& wifi_network_path,
-      const network_handler::StringResultCallback& error_callback,
+      StringErrorCallback error_callback,
       const std::string& error_name,
       std::unique_ptr<base::DictionaryValue> error_data);
-  void CleanUpAfterWifiDisconnection(
-      const std::string& wifi_network_path,
-      base::OnceClosure success_callback,
-      const network_handler::StringResultCallback& error_callback);
+  void CleanUpAfterWifiDisconnection(const std::string& wifi_network_path,
+                                     base::OnceClosure success_callback,
+                                     StringErrorCallback error_callback);
 
   NetworkConnectionHandler* network_connection_handler_;
   NetworkStateHandler* network_state_handler_;

@@ -28,13 +28,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
   // NetworkConnectionHandler:
   void ConnectToNetwork(const std::string& service_path,
                         base::OnceClosure success_callback,
-                        const network_handler::ErrorCallback& error_callback,
+                        network_handler::ErrorCallback error_callback,
                         bool check_error_state,
                         ConnectCallbackMode mode) override;
   void DisconnectNetwork(
       const std::string& service_path,
       base::OnceClosure success_callback,
-      const network_handler::ErrorCallback& error_callback) override;
+      network_handler::ErrorCallback error_callback) override;
 
   // NetworkStateHandlerObserver
   void NetworkListChanged() override;
@@ -57,7 +57,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
                    const std::string& service_path,
                    const std::string& profile_path,
                    base::OnceClosure success_callback,
-                   const network_handler::ErrorCallback& error);
+                   network_handler::ErrorCallback error);
     ~ConnectRequest();
     ConnectRequest(ConnectRequest&&);
 
@@ -128,10 +128,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
                                       const std::string& error_name);
 
   // Calls Shill.Manager.Disconnect asynchronously.
-  void CallShillDisconnect(
-      const std::string& service_path,
-      base::OnceClosure success_callback,
-      const network_handler::ErrorCallback& error_callback);
+  void CallShillDisconnect(const std::string& service_path,
+                           base::OnceClosure success_callback,
+                           network_handler::ErrorCallback error_callback);
 
   // Handle success from Shill.Service.Disconnect.
   void HandleShillDisconnectSuccess(const std::string& service_path,

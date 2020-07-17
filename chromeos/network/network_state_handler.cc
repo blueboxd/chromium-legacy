@@ -279,7 +279,7 @@ NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(
 void NetworkStateHandler::SetTechnologyEnabled(
     const NetworkTypePattern& type,
     bool enabled,
-    const network_handler::ErrorCallback& error_callback) {
+    network_handler::ErrorCallback error_callback) {
   std::vector<std::string> technologies = GetTechnologiesForType(type);
   for (const std::string& technology : technologies) {
     if (technology == kTypeTether) {
@@ -289,7 +289,7 @@ void NetworkStateHandler::SetTechnologyEnabled(
                        << "DeviceState, but the current state was: "
                        << tether_technology_state_;
         network_handler::RunErrorCallback(
-            error_callback, kTetherDevicePath,
+            std::move(error_callback), kTetherDevicePath,
             NetworkConnectionHandler::kErrorEnabledOrDisabledWhenNotAvailable,
             "");
         continue;
@@ -306,7 +306,7 @@ void NetworkStateHandler::SetTechnologyEnabled(
       continue;
     NET_LOG(USER) << "SetTechnologyEnabled " << technology << ":" << enabled;
     shill_property_handler_->SetTechnologyEnabled(technology, enabled,
-                                                  error_callback);
+                                                  std::move(error_callback));
   }
   // Signal Device/Technology state changed.
   NotifyDeviceListChanged();

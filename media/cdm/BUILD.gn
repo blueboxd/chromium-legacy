@@ -41,8 +41,6 @@ source_set("cdm") {
     "default_cdm_factory.h",
     "json_web_key.cc",
     "json_web_key.h",
-    "player_tracker_impl.cc",
-    "player_tracker_impl.h",
   ]
 
   # TODO(crbug.com/167187): Fix size_t to int truncations.

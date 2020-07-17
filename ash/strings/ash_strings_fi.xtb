@@ -98,6 +98,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="1995660704900986789">Virta pois</translation>
 <translation id="2012624427112548395">Ctrl + haku + H</translation>
 <translation id="2016340657076538683">Kirjoita viesti</translation>
+<translation id="2018630726571919839">Kerro vitsi</translation>
 <translation id="2050339315714019657">Pystysuunta</translation>
 <translation id="2067602449040652523">Näppäimistön kirkkaus</translation>
 <translation id="209965399369889474">Ei verkkoyhteyttä</translation>
@@ -125,6 +126,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="2354174487190027830">Aktivoidaan <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Jatka</translation>
 <translation id="2365393535144473978">Mobiilidatan käyttöönotto ottaa käyttöön Bluetoothin.</translation>
+<translation id="2369165858548251131">"Hei" kiinaksi</translation>
 <translation id="2390318262976603432">Kieli- ja maa-asetukset</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Päivitys saatavilla</translation>
@@ -142,6 +144,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="256712445991462162">kiinnitetty näytön suurentaja</translation>
 <translation id="2575685495496069081">Useille tileille kirjautuminen on poistettu käytöstä</translation>
 <translation id="2582112259361606227">Päivitä käynnistämällä uudelleen</translation>
+<translation id="2595239820337756193">5 km maileina</translation>
 <translation id="2617342710774726426">SIM-kortti on lukittu.</translation>
 <translation id="2621713457727696555">Suojattu</translation>
 <translation id="2653659639078652383">Lähetä</translation>
@@ -195,6 +198,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="3154351730702813399">Laitteen järjestelmänvalvoja saattaa seurata selaustoimintaasi.</translation>
 <translation id="3181441307743005334">Uudelleenkäynnistys voi kestää hetken</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Yhdistetty 1 laitteeseen}other{Yhdistetty # laitteeseen}}</translation>
+<translation id="320207200541803018">Aseta ajastin</translation>
 <translation id="3203405173652969239">Kytkimen käyttö päällä</translation>
 <translation id="3207953481422525583">Käyttäjäasetukset</translation>
 <translation id="3217205077783620295">Äänet ovat päällä. Mykistä ne kytkimellä.</translation>
@@ -207,6 +211,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> voi silti kirjautua sisään myöhemmin.</translation>
 <translation id="3321628682574733415">Virheellinen vanhemman koodi</translation>
 <translation id="332587331255250389">Vaihda paristo.</translation>
+<translation id="334252345105450327">Ota kuvakaappaus</translation>
 <translation id="3351879221545518001">Suoratoistat tällä hetkellä näyttöä.</translation>
 <translation id="3364721542077212959">Näyttökynätyökalut</translation>
 <translation id="3368922792935385530">Yhdistetty</translation>
@@ -239,6 +244,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="3631369015426612114">Salli ilmoitukset seuraavista:</translation>
 <translation id="3638400994746983214">Näytönsuoja päälle/pois. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> ylläpidetty käyttäjä</translation>
+<translation id="3702846122927433391">Nigerian väkiluku</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Tallenna kuvakaappaus alueesta</translation>
 <translation id="371370241367527062">Etumikrofoni</translation>
@@ -521,6 +527,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="7165278925115064263">Alt+Vaihto+K</translation>
 <translation id="7168224885072002358">Palautetaan vanha tarkkuus, aikaa palautukseen <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Valikko siirretty näytön vasempaan ylänurkkaan</translation>
+<translation id="7189412385142492784">Kuinka kaukana Venus on</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Tämä Chromebook on käynnistettävä uudelleen, jotta päivitys voidaan ottaa käyttöön. Tämä voi kestää enintään minuutin.</translation>
 <translation id="7256634071279256947">Takamikrofoni</translation>
 <translation id="726276584504105859">Jaa näyttö vetämällä tähän.</translation>
@@ -647,6 +654,7 @@ Pääset alkuun esimerkiksi näillä tavoilla.</translation>
 <translation id="8649101189709089199">Teksti puhuttuna</translation>
 <translation id="8652175077544655965">Sulje asetukset</translation>
 <translation id="8653151467777939995">Näytä ilmoitusasetukset. Ilmoitukset ovat päällä</translation>
+<translation id="8660331759611631213">71:n neliöjuuri</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, signaalin vahvuus <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Näytä verkkoluettelo. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

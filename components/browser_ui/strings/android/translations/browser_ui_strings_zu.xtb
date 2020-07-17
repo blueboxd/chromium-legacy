@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Ikhamela</translation>
 <translation id="1647391597548383849">Finyelela kukhamela yakho</translation>
 <translation id="1660204651932907780">Vumela amasayithi ukuthi adlale umsindo (kunconyiwe)</translation>
+<translation id="1677097821151855053">Amakhukhi nenye idatha yesayithi kusetshenziselwa ukukukhumbula, ngokwesibonelo ukungenisa ngemvume noma ukwenza izikhangiso zibe ngezakho. Ukuze uphathe amakhukhi awo wonke amasayithi, bona okuthi<ph name="BEGIN_LINK" />Amasethingi<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Sula idatha yesayithi?</translation>
 <translation id="169515064810179024">Vimbela amasayithi kusukela ekufinyeleleni kuzinzwa zokunyakaza</translation>
 <translation id="1717218214683051432">Izinzwa zokunyakaza</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Vumela amakhukhi esayithi elithile.</translation>
 <translation id="4046123991198612571">Ithrekhi elandelayo</translation>
 <translation id="4165986682804962316">Izilungiselelo zesayithi</translation>
+<translation id="4200726100658658164">Vula Izilungiselelo zendawo</translation>
 <translation id="4226663524361240545">Izaziso zingadlidliza idivayisi</translation>
 <translation id="4242533952199664413">Vula izilungiselelo</translation>
 <translation id="4259722352634471385">Ukuzulazula kuvinjiwe: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Wonke amasayithi</translation>
 <translation id="6320088164292336938">Dlidliza</translation>
 <translation id="6388207532828177975">Sula futhi usethe kabusha</translation>
+<translation id="6423924377271166037">Sula amakhukhi</translation>
 <translation id="6439114592976064011">Vimbela amasayithi ukuthi angasebenzisi idivayisi yakho yento engekho ngokoqobo nedatha</translation>
 <translation id="6447842834002726250">Amakhukhi</translation>
 <translation id="6527303717912515753">Yabelana</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Funela emuva</translation>
 <translation id="8444433999583714703">Ukuze uvumele i-<ph name="APP_NAME" /> ukuba ifinyelele indawo yakho, vula nendawo <ph name="BEGIN_LINK" />Kumasethingi e-Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Buyisa imvume yedivayisi</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Ikhukhi e-1 iyasebenza}one{Amakhukhi angu-# asebenzayo}other{Amakhukhi angu-# asebenzayo}}</translation>
 <translation id="8463851957836045671">Isayithi liyashesha</translation>
 <translation id="851751545965956758">Vimbela amasayithi kusukela ekuxhumekeni kumadivayisi</translation>
 <translation id="857943718398505171">Kuvunyelwe (kunconyiwe)</translation>

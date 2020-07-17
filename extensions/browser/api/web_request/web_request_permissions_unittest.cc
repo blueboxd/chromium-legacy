@@ -12,6 +12,7 @@
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_test.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/permissions/permission_set.h"

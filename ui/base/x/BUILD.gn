@@ -19,6 +19,8 @@ jumbo_component("x") {
     "x11_cursor.h",
     "x11_cursor_factory.cc",
     "x11_cursor_factory.h",
+    "x11_cursor_loader.cc",
+    "x11_cursor_loader.h",
     "x11_desktop_window_move_client.cc",
     "x11_desktop_window_move_client.h",
     "x11_display_manager.cc",
@@ -125,9 +127,13 @@ source_set("test_support") {
 
 source_set("unittests") {
   testonly = true
-  sources = [ "x11_cursor_factory_unittest.cc" ]
+  sources = [
+    "x11_cursor_factory_unittest.cc",
+    "x11_cursor_loader_unittest.cc",
+  ]
   deps = [
     ":x",
+    "//base",
     "//skia",
     "//testing/gtest",
     "//ui/gfx/geometry",

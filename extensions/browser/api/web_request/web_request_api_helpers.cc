@@ -117,6 +117,21 @@ void RecordRequestHeaderChanged(RequestHeaderType type) {
   UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequest.RequestHeaderChanged", type);
 }
 
+void RecordDNRRequestHeaderRemoved(RequestHeaderType type) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Extensions.DeclarativeNetRequest.RequestHeaderRemoved", type);
+}
+
+void RecordDNRRequestHeaderAdded(RequestHeaderType type) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Extensions.DeclarativeNetRequest.RequestHeaderAdded", type);
+}
+
+void RecordDNRRequestHeaderChanged(RequestHeaderType type) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Extensions.DeclarativeNetRequest.RequestHeaderChanged", type);
+}
+
 bool IsStringLowerCaseASCII(base::StringPiece s) {
   return std::none_of(s.begin(), s.end(), base::IsAsciiUpper<char>);
 }
@@ -234,6 +249,21 @@ void RecordResponseHeaderAdded(ResponseHeaderType type) {
 void RecordResponseHeaderRemoved(ResponseHeaderType type) {
   UMA_HISTOGRAM_ENUMERATION("Extensions.WebRequest.ResponseHeaderRemoved",
                             type);
+}
+
+void RecordDNRResponseHeaderChanged(ResponseHeaderType type) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Extensions.DeclarativeNetRequest.ResponseHeaderChanged", type);
+}
+
+void RecordDNRResponseHeaderAdded(ResponseHeaderType type) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Extensions.DeclarativeNetRequest.ResponseHeaderAdded", type);
+}
+
+void RecordDNRResponseHeaderRemoved(ResponseHeaderType type) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Extensions.DeclarativeNetRequest.ResponseHeaderRemoved", type);
 }
 
 using ResponseHeaderEntry = std::pair<const char*, ResponseHeaderType>;
@@ -389,22 +419,30 @@ bool ModifyRequestHeadersForAction(
     }
     header_actions->emplace(header, header_action);
 
-    // TODO(crbug.com/1088103): Record request headers modified by the
-    // Declarative Net Request API.
     switch (header_info.operation) {
-      case extensions::api::declarative_net_request::HEADER_OPERATION_SET:
+      case extensions::api::declarative_net_request::HEADER_OPERATION_SET: {
+        bool has_header = headers->HasHeader(header);
+
         headers->SetHeader(header, *header_info.value);
         header_modified = true;
         set_headers->insert(header);
+
+        if (has_header)
+          RecordRequestHeader(header, &RecordDNRRequestHeaderChanged);
+        else
+          RecordRequestHeader(header, &RecordDNRRequestHeaderAdded);
         break;
+      }
       case extensions::api::declarative_net_request::HEADER_OPERATION_REMOVE: {
         while (headers->HasHeader(header)) {
           header_modified = true;
           headers->RemoveHeader(header);
         }
 
-        if (header_modified)
+        if (header_modified) {
           removed_headers->insert(header);
+          RecordRequestHeader(header, &RecordDNRRequestHeaderRemoved);
+        }
         break;
       }
       case extensions::api::declarative_net_request::HEADER_OPERATION_APPEND:
@@ -471,14 +509,13 @@ bool ModifyResponseHeadersForAction(
     }
     (*header_actions)[header].push_back(header_action);
 
-    // TODO(crbug.com/1088103): Record response headers modified by the
-    // Declarative Net Request API.
     switch (header_info.operation) {
       case extensions::api::declarative_net_request::HEADER_OPERATION_REMOVE: {
         if (has_header(header)) {
           header_modified = true;
           create_override_headers_if_needed(override_response_headers);
           override_response_headers->get()->RemoveHeader(header);
+          RecordResponseHeader(header, &RecordDNRResponseHeaderRemoved);
         }
 
         break;
@@ -487,6 +524,13 @@ bool ModifyResponseHeadersForAction(
         header_modified = true;
         create_override_headers_if_needed(override_response_headers);
         override_response_headers->get()->AddHeader(header, *header_info.value);
+
+        // Record only the first time a header is appended. appends following a
+        // set from the same extension are treated as part of the set and are
+        // not logged.
+        if ((*header_actions)[header].size() == 1)
+          RecordResponseHeader(header, &RecordDNRResponseHeaderAdded);
+
         break;
       }
       case extensions::api::declarative_net_request::HEADER_OPERATION_SET: {
@@ -494,6 +538,7 @@ bool ModifyResponseHeadersForAction(
         create_override_headers_if_needed(override_response_headers);
         override_response_headers->get()->RemoveHeader(header);
         override_response_headers->get()->AddHeader(header, *header_info.value);
+        RecordResponseHeader(header, &RecordDNRResponseHeaderChanged);
         break;
       }
       case extensions::api::declarative_net_request::HEADER_OPERATION_NONE:

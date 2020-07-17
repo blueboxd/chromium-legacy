@@ -98,6 +98,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1995660704900986789">Fik</translation>
 <translation id="2012624427112548395">Ctrl+Kërko+H</translation>
 <translation id="2016340657076538683">Shkruaj një mesazh</translation>
+<translation id="2018630726571919839">Më trego një barsoletë</translation>
 <translation id="2050339315714019657">Portret (vertikal</translation>
 <translation id="2067602449040652523">Ndriçimi i tastierës</translation>
 <translation id="209965399369889474">Nuk është lidhur në rrjet</translation>
@@ -125,6 +126,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2354174487190027830">Po aktivizon <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Vazhdo</translation>
 <translation id="2365393535144473978">Aktivizimi i të dhënave celulare do të aktivizojë Bluetooth.</translation>
+<translation id="2369165858548251131">"Përshëndetje" në kinezisht</translation>
 <translation id="2390318262976603432">Cilësimet rajonale</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Ka përditësim</translation>
@@ -142,6 +144,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="256712445991462162">zmadhuesi i lidhur me stacionin</translation>
 <translation id="2575685495496069081">Identifikimi i shumëfishtë është çaktivizuar.</translation>
 <translation id="2582112259361606227">Rinise për të kryer përditësimin</translation>
+<translation id="2595239820337756193">5 km në milje</translation>
 <translation id="2617342710774726426">Karta SIM është e kyçur</translation>
 <translation id="2621713457727696555">I siguruar</translation>
 <translation id="2653659639078652383">Dërgoje</translation>
@@ -195,6 +198,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="3154351730702813399">Administratori i pajisjes mund të monitorojë aktivitetin tënd të shfletimit.</translation>
 <translation id="3181441307743005334">Rindezja mund të zgjasë pak</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Lidhur me një pajisje}other{Lidhur me # pajisje}}</translation>
+<translation id="320207200541803018">Cakto kohëmatësin</translation>
 <translation id="3203405173652969239">"Qasja me çelës" është aktivizuar</translation>
 <translation id="3207953481422525583">Cilësimet e përdoruesit</translation>
 <translation id="3217205077783620295">Volumi është aktiv. Ndërrimi do ta heqë audion.</translation>
@@ -207,6 +211,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> mund të identifikohet përsëri më vonë.</translation>
 <translation id="3321628682574733415">Kod i gabuar prindi</translation>
 <translation id="332587331255250389">Zëvendëso baterinë</translation>
+<translation id="334252345105450327">Nxirr një pamje të ekranit</translation>
 <translation id="3351879221545518001">Aktualisht po transmeton ekranin.</translation>
 <translation id="3364721542077212959">Veglat e stilolapsit</translation>
 <translation id="3368922792935385530">Lidhur</translation>
@@ -239,6 +244,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="3631369015426612114">Lejo njoftimet nga më poshtë</translation>
 <translation id="3638400994746983214">Ndrysho ekranin e privatësisë. <ph name="STATE_TEXT" /></translation>
 <translation id="366222428570480733">Përdorues i menaxhuar (<ph name="USER_EMAIL_ADDRESS" />)</translation>
+<translation id="3702846122927433391">Popullsia në Nigeri</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Regjistro sektorin</translation>
 <translation id="371370241367527062">Mikrofoni i përparmë</translation>
@@ -519,6 +525,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Po rikthehet te rezolucioni i vjetër për <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Menyja u zhvendos në këndin lart majtas të ekranit.</translation>
+<translation id="7189412385142492784">Sa larg është Afërdita</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Kjo pajisje Chromebook duhet të riniset për të zbatuar një përditësim. Kjo mund të zgjasë deri në 1 minutë.</translation>
 <translation id="7256634071279256947">Mikrofoni i pasmë</translation>
 <translation id="726276584504105859">Zvarrit këtu për të përdorur ekranin e ndarë</translation>
@@ -645,6 +652,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="8649101189709089199">Zgjidh që të thuhet</translation>
 <translation id="8652175077544655965">Mbyll "Cilësimet"</translation>
 <translation id="8653151467777939995">Shfaq cilësimet e njoftimeve. Njoftimet janë aktive</translation>
+<translation id="8660331759611631213">Rrënja katrore e 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, fuqia e sinjalit <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Shfaq listën e njoftimeve. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

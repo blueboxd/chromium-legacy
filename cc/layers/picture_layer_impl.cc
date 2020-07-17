@@ -10,7 +10,9 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <memory>
 #include <set>
+#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -751,10 +753,12 @@ void PictureLayerImpl::UpdateRasterSource(
             layer_tree_impl()->GetMSAASampleCountForRaster(
                 new_display_item_list);
         needs_full_invalidation |=
-            current_display_item_list->discardable_image_map()
-                .contains_only_srgb_images() !=
-            new_display_item_list->discardable_image_map()
-                .contains_only_srgb_images();
+            layer_tree_impl()->GetRasterColorSpace(
+                current_display_item_list->discardable_image_map()
+                    .content_color_usage()) !=
+            layer_tree_impl()->GetRasterColorSpace(
+                new_display_item_list->discardable_image_map()
+                    .content_color_usage());
         if (needs_full_invalidation)
           new_invalidation->Union(gfx::Rect(raster_source->GetSize()));
       }
@@ -1977,17 +1981,10 @@ void PictureLayerImpl::InvalidatePaintWorklets(
 
 gfx::ContentColorUsage PictureLayerImpl::GetContentColorUsage() const {
   auto display_item_list = raster_source_->GetDisplayItemList();
-  bool contains_only_srgb_images = true;
-  if (display_item_list) {
-    contains_only_srgb_images =
-        display_item_list->discardable_image_map().contains_only_srgb_images();
-  }
-
-  if (contains_only_srgb_images)
+  if (!display_item_list)
     return gfx::ContentColorUsage::kSRGB;
 
-  // TODO(cblume) This assumes only wide color gamut and not HDR
-  return gfx::ContentColorUsage::kWideColorGamut;
+  return display_item_list->discardable_image_map().content_color_usage();
 }
 
 }  // namespace cc

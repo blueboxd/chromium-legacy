@@ -104,6 +104,7 @@
 <translation id="1124772482545689468">使用者</translation>
 <translation id="1125550662859510761">解像度：<ph name="WIDTH" /> x <ph name="HEIGHT" /> (原廠設定)</translation>
 <translation id="1126809382673880764">無法防範危險網站、下載檔案和擴充程式。您仍可在其他 Google 服務 (例如 Gmail 和搜尋) 中使用「安全瀏覽」功能 (如有)。</translation>
+<translation id="112752777279960360">如果這是您首次設定 Android 手機作為此電腦的安全密鑰，請在手機上開啟 Chrome，並前往「設定 &gt; 密碼 &gt; 使用手機作為安全密鑰」，然後輕按「連接新裝置」並掃瞄此二維條碼。</translation>
 <translation id="1128109161498068552">禁止任何網站使用系統專用訊息存取 MIDI 裝置</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">編輯搜尋引擎</translation>
@@ -231,6 +232,7 @@
 <translation id="1274997165432133392">Cookie 和其他網站數據</translation>
 <translation id="1275718070701477396">已選取</translation>
 <translation id="1276994519141842946">無法解除安裝 <ph name="APP_NAME" /></translation>
+<translation id="127946606521051357">附近的裝置正在分享</translation>
 <translation id="1280820357415527819">正在搜尋流動網絡</translation>
 <translation id="1280965841156951489">編輯檔案</translation>
 <translation id="1285320974508926690">永不翻譯此網站</translation>
@@ -509,6 +511,7 @@
 <translation id="1622054403950683339">移除 Wi-Fi 網絡</translation>
 <translation id="1623132449929929218">目前無法提供相片，請重新連線至互聯網以查看桌布相片集。</translation>
 <translation id="1623723619460186680">減少藍光</translation>
+<translation id="1624012933569991823">設定</translation>
 <translation id="1627276047960621195">檔案描述符</translation>
 <translation id="1627408615528139100">已下載</translation>
 <translation id="1628948239858170093">要先掃瞄檔案再開啟嗎？</translation>
@@ -745,6 +748,7 @@
 <translation id="1887850431809612466">硬件版本</translation>
 <translation id="1888523338879380247">{0,plural, =1{今天是更新裝置的最後一天}other{請在 # 天內更新裝置}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID：&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783">正從 <ph name="DEVICE_NAME" /> 接收 <ph name="ATTACHMENTS" /></translation>
 <translation id="189210018541388520">開啟全螢幕</translation>
 <translation id="1892341345406963517"><ph name="PARENT_NAME" />，您好</translation>
 <translation id="189358972401248634">其他語言</translation>
@@ -1216,6 +1220,7 @@
 <translation id="2489918096470125693">新增資料夾(&amp;F)…</translation>
 <translation id="2490481887078769936">已從清單中移除「<ph name="FILE_NAME" />」</translation>
 <translation id="249113932447298600">很抱歉，系統目前不支援 <ph name="DEVICE_LABEL" /> 裝置。</translation>
+<translation id="2492308681814209210">「<ph name="DEVICE_NAME" />」正與您分享 <ph name="ATTACHMENTS" />。</translation>
 <translation id="2492461744635776704">正在準備憑證簽署要求</translation>
 <translation id="249303669840926644">無法完成註冊</translation>
 <translation id="2495777824269688114">探索更多功能或獲得解答。選取 [？] 即可取得協助。</translation>
@@ -1816,6 +1821,7 @@
 <translation id="3253225298092156258">無法使用</translation>
 <translation id="3253448572569133955">不明帳戶</translation>
 <translation id="3254516606912442756">已停用自動偵測時區功能</translation>
+<translation id="3254715652085014625">在 Android 手機上開啟 Chrome，然後前往「設定 &gt; 密碼 &gt; 使用手機作為安全密鑰」，並按照指示操作。</translation>
 <translation id="3255355328033513170">這樣做會刪除 <ph name="SITE_GROUP_NAME" /> 儲存的所有資料及此群組中的所有網站，其中包含 Cookie。您將會從這些網站 (包括在開啟的分頁) 中登出。</translation>
 <translation id="3259723213051400722">請再試一次。</translation>
 <translation id="3264544094376351444">Sans-serif 字型</translation>
@@ -3491,6 +3497,7 @@
 <translation id="5390677308841849479">深紅色和橙色</translation>
 <translation id="5390743329570580756">傳送類型</translation>
 <translation id="5397794290049113714">您</translation>
+<translation id="5398497406011404839">已隱藏的書籤</translation>
 <translation id="5398572795982417028">參照的網頁超出範圍限制 (<ph name="MAXIMUM_PAGE" />)</translation>
 <translation id="5398772614898833570">已封鎖廣告</translation>
 <translation id="5402815541704507626">使用流動數據下載更新</translation>
@@ -3576,6 +3583,7 @@
 <translation id="5496587651328244253">管理</translation>
 <translation id="5497251278400702716">此檔案</translation>
 <translation id="5499313591153584299">這個檔案可能對您的電腦有害。</translation>
+<translation id="5499453227627332024">您的 Linux 容器有可用的升級。您亦可稍後從「設定」應用程式進行升級。</translation>
 <translation id="5500709606820808700">今天已執行安全檢查</translation>
 <translation id="5502500733115278303">從 Firefox 匯入的書籤</translation>
 <translation id="5503982651688210506">繼續允許 <ph name="HOST" /> 使用和移動相機，以及使用麥克風</translation>
@@ -4144,6 +4152,7 @@
 <translation id="6212039847102026977">顯示進階網絡屬性</translation>
 <translation id="6212168817037875041">關閉螢幕</translation>
 <translation id="6212752530110374741">透過電郵傳送連結</translation>
+<translation id="6213230117190778270">接收</translation>
 <translation id="6216696360484424239">自動登入</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> 已離線。請重新連線至互聯網，然後再試一次。</translation>
 <translation id="6220413761270491930">載入擴充功能時發生錯誤</translation>
@@ -4200,6 +4209,7 @@
 <translation id="6270770586500173387">傳送<ph name="BEGIN_LINK1" />系統和應用程式資訊<ph name="END_LINK1" />，以及<ph name="BEGIN_LINK2" />指標數據<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">下載外掛程式時發生錯誤 (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">品質</translation>
+<translation id="6273979226236203550">您的密碼已儲存在此裝置和 Google 帳戶中。您要刪除哪一個密碼？</translation>
 <translation id="6277105963844135994">網絡逾時</translation>
 <translation id="6277518330158259200">擷取螢幕畫面(&amp;A)</translation>
 <translation id="6278057325678116358">使用 GTK+</translation>
@@ -4270,6 +4280,7 @@
 <translation id="6362853299801475928">報告問題(&amp;R)…</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">新增家人好友</translation>
+<translation id="6367985768157257101">要透過咫尺共享接收嗎？</translation>
 <translation id="636850387210749493">企業註冊</translation>
 <translation id="6370021412472292592">無法載入資訊清單。</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4560,6 +4571,7 @@
 <translation id="6758056191028427665">請讓我們瞭解您的滿意度。</translation>
 <translation id="6759193508432371551">恢復原廠設定</translation>
 <translation id="6762833852331690540">開啟</translation>
+<translation id="676560328519657314">您喺 Google Pay 入面嘅付款方法</translation>
 <translation id="6767566652486411142">選擇其他語言…</translation>
 <translation id="6767639283522617719">無法加入網域。請確定機構單位的設定正確。</translation>
 <translation id="6769557323306147204">「<ph name="ORGANIZATION_NAME" />」建議更新此裝置。</translation>
@@ -4732,6 +4744,7 @@
 <translation id="6972553992270299730">由於資料夾中包含系統檔案，<ph name="ORIGIN" /> 無法開啟此資料夾中的檔案</translation>
 <translation id="6972629891077993081">HID 裝置</translation>
 <translation id="6972754398087986839">開始使用</translation>
+<translation id="6972887130317925583">已成功變更被盜用的密碼。您可隨時在「<ph name="SETTINGS" />」中檢查密碼。</translation>
 <translation id="6973611239564315524">可以升級至 Debian 10 (Buster)</translation>
 <translation id="6974609594866392343">離線示範模式</translation>
 <translation id="6977381486153291903">韌體版本</translation>
@@ -5591,6 +5604,7 @@
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">已編輯捷徑</translation>
 <translation id="8018313076035239964">控制網站可使用的資料，以及可向您顯示的內容</translation>
+<translation id="8022688469248132790">睇下錯誤詳情</translation>
 <translation id="8023801379949507775">立即更新擴充功能</translation>
 <translation id="8026334261755873520">清除瀏覽數據</translation>
 <translation id="8028060951694135607">Microsoft 金鑰復原</translation>
@@ -6529,6 +6543,7 @@
 <translation id="9180380851667544951">網站可以分享您的螢幕畫面</translation>
 <translation id="9188732951356337132">傳送使用情況和診斷資料。此裝置目前會自動將診斷、裝置及應用程式的使用情況資料傳送至 Google。這些資料不會用來識別您子女的身分，而是用於改善系統和應用程式的穩定性和其他效能。部分彙整資料也會用於協助 Google 應用程式與合作夥伴 (例如 Android 開發人員)。如果已為子女開啟其他「網絡及應用程式活動記錄」設定，系統可能會將此資料儲存至其 Google 帳戶。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + 預先共用金鑰</translation>
+<translation id="9198090666959937775">使用您的 Android 手機作為安全密鑰</translation>
 <translation id="920045321358709304">透過 <ph name="SEARCH_ENGINE" /> 搜尋</translation>
 <translation id="9201023452444595544">所有離線資料將會被清除</translation>
 <translation id="9201220332032049474">螢幕鎖定選項</translation>
@@ -6568,9 +6583,11 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">請輸入複雜密碼</translation>
 <translation id="939736085109172342">新增資料夾</translation>
+<translation id="941070664607309480">按一下即可顯示您的裝置，以便接收分享</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> 正在共用 Chrome 分頁和音效。</translation>
 <translation id="945522503751344254">提供意見反映</translation>
 <translation id="947329552760389097">檢查元素 (&amp;I)</translation>
+<translation id="951991426597076286">拒絕</translation>
 <translation id="952992212772159698">未啟用</translation>
 <translation id="956500788634395331">保護您免受可能有害的擴充程式影響</translation>
 <translation id="957960681186851048">此網站曾嘗試自動下載多個檔案</translation>

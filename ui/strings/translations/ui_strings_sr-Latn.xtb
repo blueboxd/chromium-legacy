@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">izaberi</translation>
 <translation id="1859234291848436338">Smer pisanja</translation>
 <translation id="1860796786778352021">Zatvori obaveštenje</translation>
+<translation id="186476001994626254">Veb-sadržaj za pametno nalepljivanje</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Izaberi &amp;sve</translation>
@@ -75,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Otvorite direktorijum</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{Pre godinu dana}one{Pre # godinu}few{Pre # godine}other{Pre # godina}}</translation>
+<translation id="2878511608894704031">Izbriši sve</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{za 1 d}one{za # d}few{za # d}other{za # d}}</translation>
 <translation id="2931838996092594335">klik</translation>
 <translation id="2981684127883932071">Prikazuju se predlozi</translation>
@@ -172,6 +174,7 @@
 <translation id="6417265370957905582">Google pomoćnik</translation>
 <translation id="6430678249303439055">Blokiraj sva obaveštenja iz ove aplikacije</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Pre 1 sekundu}one{Pre # sekundu}few{Pre # sekunde}other{Pre # sekundi}}</translation>
+<translation id="6503257047630241175">RTF sadržaj</translation>
 <translation id="6539092367496845964">Nešto nije u redu. Probajte ponovo kasnije.</translation>
 <translation id="654149438358937226">Blokiraj sva obaveštenja</translation>
 <translation id="6567071839949112727">kliknite na prethodni element</translation>

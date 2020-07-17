@@ -90,9 +90,12 @@ class LoadingPredictor : public KeyedService,
   }
 
   // PreconnectManager::Delegate:
+  void PreconnectInitiated(const GURL& url,
+                           const GURL& preconnect_url) override;
   void PreconnectFinished(std::unique_ptr<PreconnectStats> stats) override;
 
   // PrefetchManager::Delegate:
+  void PrefetchInitiated(const GURL& url, const GURL& prefetch_url) override;
   void PrefetchFinished(std::unique_ptr<PrefetchStats> stats) override;
 
   size_t GetActiveHintsSizeForTesting() { return active_hints_.size(); }
@@ -162,6 +165,7 @@ class LoadingPredictor : public KeyedService,
   std::unique_ptr<PrefetchManager> prefetch_manager_;
   std::map<GURL, base::TimeTicks> active_hints_;
   std::set<NavigationID> active_navigations_;
+  std::map<GURL, std::set<NavigationID>> active_urls_to_navigations_;
   bool shutdown_ = false;
   size_t total_hints_activated_ = 0;
 

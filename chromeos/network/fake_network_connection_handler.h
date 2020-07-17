@@ -30,14 +30,14 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkConnectionHandler
     // For ConnectToNetwork() calls.
     ConnectionParams(const std::string& service_path,
                      base::OnceClosure success_callback,
-                     const network_handler::ErrorCallback& error_callback,
+                     network_handler::ErrorCallback error_callback,
                      bool check_error_state,
                      ConnectCallbackMode connect_callback_mode);
 
     // For DisconnectNetwork() calls.
     ConnectionParams(const std::string& service_path,
                      base::OnceClosure success_callback,
-                     const network_handler::ErrorCallback& error_callback);
+                     network_handler::ErrorCallback error_callback);
 
     ConnectionParams(ConnectionParams&&);
     ~ConnectionParams();
@@ -52,9 +52,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkConnectionHandler
     }
 
     void InvokeSuccessCallback();
-    void InvokeErrorCallback(
-        const std::string& error_name,
-        std::unique_ptr<base::DictionaryValue> error_data) const;
+    void InvokeErrorCallback(const std::string& error_name,
+                             std::unique_ptr<base::DictionaryValue> error_data);
 
    private:
     std::string service_path_;
@@ -75,13 +74,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkConnectionHandler
   // NetworkConnectionHandler:
   void ConnectToNetwork(const std::string& service_path,
                         base::OnceClosure success_callback,
-                        const network_handler::ErrorCallback& error_callback,
+                        network_handler::ErrorCallback error_callback,
                         bool check_error_state,
                         ConnectCallbackMode connect_callback_mode) override;
   void DisconnectNetwork(
       const std::string& service_path,
       base::OnceClosure success_callback,
-      const network_handler::ErrorCallback& error_callback) override;
+      network_handler::ErrorCallback error_callback) override;
   void Init(NetworkStateHandler* network_state_handler,
             NetworkConfigurationHandler* network_configuration_handler,
             ManagedNetworkConfigurationHandler*

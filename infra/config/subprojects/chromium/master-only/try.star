@@ -335,6 +335,10 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
+    name = 'linux-lacros-rel',
+)
+
+try_.chromium_linux_builder(
     name = 'fuchsia-compile-x64-dbg',
     tryjob = try_.job(
         experiment_percentage = 50,
@@ -704,7 +708,7 @@ try_.chromium_win_builder(
 
 try_.chromium_win_builder(
     name = 'win7-rel',
-    execution_timeout = time.hour * 9 / 2,  # 4.5 (can't multiply float * duration)
+    execution_timeout = 4 * time.hour + 30 * time.minute,
     goma_jobs = goma.jobs.J300,
     ssd = True,
 )

@@ -3,7 +3,7 @@
 <translationbundle lang="eu">
 <translation id="102360288709523007">Hobetu Chromium Google-ri erabilera-estatistikak eta hutsegite-txostenak bidalita.</translation>
 <translation id="1185134272377778587">Chromium arakatzaileari buruz</translation>
-<translation id="1257458525759135959">Irudiak gordetzeko, sakatu Ezarpenak eta eman baimena Chromium-i argazkiak gehitzeko</translation>
+<translation id="1257458525759135959">Irudiak gordetzeko, sakatu Ezarpenak eta eman argazkiak gehitzeko baimena Chromium-i</translation>
 <translation id="1472013873724362412">Kontua ez dabil Chromium sisteman. Jarri harremanetan domeinuaren administratzailearekin edo erabili ohiko Google-ko kontu bat saioa hasteko.</translation>
 <translation id="1507010443238049608">Lagundu Chromium-en eginbideak eta funtzionamendua hobetzen</translation>
 <translation id="1617663976202781617">Chromium-en sinkronizazioaren datuak</translation>
@@ -20,6 +20,8 @@
 <translation id="2730884209570016437">Chromium-ek ezin du erabili kamera, beste aplikazio bat ari delako hura erabiltzen</translation>
 <translation id="2915596697727466327">Chromium-ek aurpegi bidezko identifikazioa erabiltzen du pasahitzak baimena dutenek bakarrik atzitzen dituztela ziurtatzeko.</translation>
 <translation id="3256316712990552818">Chromium-en kopiatu da</translation>
+<translation id="3344973607274501920">Chromium-ek ezin izan ditu egiaztatu pasahitzak. Egiaztatu Internetera konektatuta zaudela.</translation>
+<translation id="3639997914391704523">Google-ko kontu batekin saioa hasten baduzu, Chromium-ek pasahitzak egiazta ditzake.</translation>
 <translation id="3805899903892079518">Chromium-ek ez du argazki eta bideoetarako sarbiderik. Gaitu sarbidea iOS sistemako Settings &gt; Privacy &gt; Photos atalean.</translation>
 <translation id="4555020257205549924">Eginbide hau aktibatuta dagoenean, Chromium-ek beste hizkuntzetan idatzita dauden orriak Google Translate bidez itzultzea proposatuko dizu. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Aktibatu Chromium-en eskanerra</translation>
@@ -27,6 +29,7 @@
 <translation id="4999538639245140991"><ph name="SIGNOUT_MANAGED_DOMAIN" /> domeinuak kudeatutako kontu baten saioa amaituko duzunez, Chromium-en dituzun datuak ezabatu egingo dira gailu honetatik. Hala ere, datu horiek Google-ko kontuan egoten jarraituko dute.</translation>
 <translation id="5521125884468363740">Chromium erabiltzen duzun gailu guztietan zure fitxak eskura izateko, hasi saioa eta aktibatu sinkronizazioa</translation>
 <translation id="5573014823074921752">Chromium-i buruzko aholkua: fitxetako aukera gehiago ikusteko, eduki sakatuta tresna-barrako Erakutsi fitxak botoia. Pantailaren goiko edo beheko aldean aurkituko duzu.</translation>
+<translation id="5700709190537129682">Chromium-ek ezin ditu egiaztatu pasahitzak</translation>
 <translation id="5777187867430702742">Chromium-eko orri bat</translation>
 <translation id="5862307444128926510">Ongi etorri Chromium-era</translation>
 <translation id="5945387852661427312"><ph name="DOMAIN" /> domeinuak kudeatutako kontu batekin hasi duzu saioa eta administratzaileari eman diozu Chromium datuen kontrola. Datuak betiko lotuko dira kontu honekin. Saioa amaitzen baduzu, Chromium datuak ezabatu egingo dira gailutik, baina Google-ko kontuan izango dituzu gordeta.</translation>
@@ -34,6 +37,7 @@
 <translation id="6268381023930128611">Chromium-eko saioa amaitu?</translation>
 <translation id="6424492062988593837">Chromium hobetu egin dugu! Bertsio berria duzu erabilgarri.</translation>
 <translation id="6604711459180487467">Atera etekin handiagoa Chromium-i kokapena erabilita.</translation>
+<translation id="6820823224820483452">Chromium-ek ezin izan ditu egiaztatu pasahitz guztiak. Saiatu berriro bihar.</translation>
 <translation id="7099326575020694068">Chromium-ek ezin du erabili kamera Ikuspegi zatitua moduan</translation>
 <translation id="7208566199746267865">Chromium-ekin denbora aurrezten duzu kontuak sarera eramanda. Ezarpenak atalean gehi edo ken ditzakezu kontuak.</translation>
 <translation id="7269362888766543920">Gehigarri batzuek huts eginarazten diote Chromium-i. Desinstala itzazu.</translation>
@@ -42,6 +46,7 @@
 <translation id="7400689562045506105">Erabili Chromium edonon</translation>
 <translation id="7674213385180944843">Ireki Ezarpenak &gt; Pribatutasuna &gt; Kamera &gt; Chromium, eta aktibatu kamera.</translation>
 <translation id="7746854981345936341">Chromium-i buruzko aholkua: botoi batzuk pantailaren behealdean daude; esaterako, Atzera, Aurrera eta Bilaketa botoiak.</translation>
+<translation id="7798909783578470546">Chromium-ek ezin izan ditu egiaztatu pasahitz guztiak. Saiatu berriro.</translation>
 <translation id="786327964234957808"><ph name="USER_EMAIL1" /> kontuaren ordez <ph name="USER_EMAIL2" /> kontua erabiliko duzu sinkronizatzeko. <ph name="DOMAIN" /> da zure orain arteko Chromium datuen kudeatzailea. Aurrera eginez gero, datuak ezabatu egingo dira gailu honetatik, baina <ph name="USER_EMAIL1" /> kontuan egoten jarraituko dute.</translation>
 <translation id="7890287942691234100">Hasi Chromium-en eskanerra erabiltzen</translation>
 <translation id="8013573822802650211">Chromium erabiltzen duzun gailu guztietan zure fitxak eskura izateko, hasi saioa gailu guztietan</translation>
@@ -51,5 +56,6 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Chromium-en egileak. Eskubide guztiak erreserbatuta.</translation>
 <translation id="8776843108004031667">Kontu hau eta gorde gabeko datuak kendu egingo dira Chromium-etik.</translation>
 <translation id="9022552996538154597">Hasi saioa Chromium-en</translation>
+<translation id="921174536258924340">Chromium-ek ezin izan ditu egiaztatu pasahitz guztiak. Saiatu berriro bihar edo <ph name="BEGIN_LINK" />egiaztatu pasahitzak Google-ko kontuan<ph name="END_LINK" />.</translation>
 <translation id="985602178874221306">Chromium egileak</translation>
 </translationbundle>

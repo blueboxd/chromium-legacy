@@ -304,6 +304,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kNearbySharingActiveProfilePrefName] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kNearbySharingDeviceNamePrefName] =
+      settings_api::PrefType::PREF_TYPE_STRING;
 
   // Search page.
   (*s_whitelist)[DefaultSearchManager::kDefaultSearchProviderDataPrefName] =

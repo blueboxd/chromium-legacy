@@ -7,8 +7,10 @@
 
 #include <vector>
 
-#include "ppapi/cpp/image_data.h"
+#include "pdf/paint_ready_rect.h"
 #include "ppapi/cpp/rect.h"
+
+namespace chrome_pdf {
 
 // This class is responsible for aggregating multiple invalidation and scroll
 // commands to produce a scroll and repaint sequence. You can use this manually
@@ -19,15 +21,6 @@
 // See http://code.google.com/p/ppapi/wiki/2DPaintingModel
 class PaintAggregator {
  public:
-  // Stores information about a rectangle that has finished painting.  The
-  // PaintManager will paint it only when everything else on the screen is also
-  // ready.
-  struct ReadyRect {
-    pp::Point offset;
-    pp::Rect rect;
-    pp::ImageData image_data;
-  };
-
   struct PaintUpdate {
     PaintUpdate();
     PaintUpdate(const PaintUpdate& that);
@@ -69,11 +62,11 @@ class PaintAggregator {
   // Sets the result of a call to the plugin to paint.  This includes rects that
   // are finished painting (ready), and ones that are still in-progress
   // (pending).
-  void SetIntermediateResults(const std::vector<ReadyRect>& ready,
+  void SetIntermediateResults(const std::vector<PaintReadyRect>& ready,
                               const std::vector<pp::Rect>& pending);
 
   // Returns the rectangles that are ready to be painted.
-  std::vector<ReadyRect> GetReadyRects() const;
+  std::vector<PaintReadyRect> GetReadyRects() const;
 
   // The given rect should be repainted.
   void InvalidateRect(const pp::Rect& rect);
@@ -109,7 +102,7 @@ class PaintAggregator {
     std::vector<pp::Rect> paint_rects;
 
     // Rectangles that are finished painting.
-    std::vector<ReadyRect> ready_rects;
+    std::vector<PaintReadyRect> ready_rects;
 
     // Whether we have added the scroll damage rect to paint_rects yet or not.
     bool synthesized_scroll_damage_rect_;
@@ -126,5 +119,7 @@ class PaintAggregator {
 
   InternalPaintUpdate update_;
 };
+
+}  // namespace chrome_pdf
 
 #endif  // PDF_PAINT_AGGREGATOR_H_

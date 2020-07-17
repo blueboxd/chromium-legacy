@@ -311,10 +311,10 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
 #if BUILDFLAG(IS_CAST_AUDIO_ONLY)
     {switches::kDisableGpu, ""},
     {switches::kDisableSoftwareRasterizer, ""},
+    {switches::kDisableGpuCompositing, ""},
 #if defined(OS_ANDROID)
     {switches::kDisableFrameRateLimit, ""},
     {switches::kDisableGLDrawingForTests, ""},
-    {switches::kDisableGpuCompositing, ""},
     {cc::switches::kDisableThreadedAnimation, ""},
 #endif  // defined(OS_ANDROID)
 #endif  // BUILDFLAG(IS_CAST_AUDIO_ONLY)
@@ -345,9 +345,6 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
     {switches::kEnableUseZoomForDSF, "false"},
     // TODO(halliwell): Revert after fix for b/63101386.
     {switches::kDisallowNonExactResourceReuse, ""},
-    // Enable autoplay without requiring any user gesture.
-    {switches::kAutoplayPolicy,
-     switches::autoplay::kNoUserGestureRequiredPolicy},
     // Disable pinch zoom gesture.
     {switches::kDisablePinch, ""},
 };

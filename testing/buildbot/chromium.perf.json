@@ -193,7 +193,8 @@
     "additional_compile_targets": [
       "microdump_stackwalk",
       "angle_perftests",
-      "chrome_apk"
+      "chrome_apk",
+      "system_webview_google_apk"
     ],
     "isolated_scripts": [
       {
@@ -645,7 +646,8 @@
     "additional_compile_targets": [
       "microdump_stackwalk",
       "angle_perftests",
-      "chrome_apk"
+      "chrome_apk",
+      "system_webview_google_apk"
     ],
     "isolated_scripts": [
       {

@@ -98,6 +98,7 @@
 <translation id="1995660704900986789">끄기</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">메시지 입력</translation>
+<translation id="2018630726571919839">재미있는 이야기 듣기</translation>
 <translation id="2050339315714019657">세로 방향</translation>
 <translation id="2067602449040652523">키보드 밝기</translation>
 <translation id="209965399369889474">네트워크에 연결되어 있지 않음</translation>
@@ -125,6 +126,7 @@
 <translation id="2354174487190027830"><ph name="NAME" /> 활성화 중</translation>
 <translation id="2359808026110333948">계속</translation>
 <translation id="2365393535144473978">모바일 데이터를 사용 설정하면 블루투스가 사용 설정됩니다.</translation>
+<translation id="2369165858548251131">중국어로 '안녕'</translation>
 <translation id="2390318262976603432">언어 설정</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">업데이트 가능</translation>
@@ -142,6 +144,7 @@
 <translation id="256712445991462162">고정 돋보기</translation>
 <translation id="2575685495496069081">멀티 로그인이 사용 중지됨</translation>
 <translation id="2582112259361606227">업데이트하려면 다시 시작</translation>
+<translation id="2595239820337756193">5km를 마일로 변환</translation>
 <translation id="2617342710774726426">SIM 카드가 잠겨 있습니다.</translation>
 <translation id="2621713457727696555">잠김</translation>
 <translation id="2653659639078652383">제출</translation>
@@ -195,6 +198,7 @@
 <translation id="3154351730702813399">기기 관리자가 탐색 활동을 모니터링할 수 있습니다.</translation>
 <translation id="3181441307743005334">다시 시작하는 데 시간이 다소 걸릴 수 있습니다</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{기기 1개에 연결됨}other{기기 #개에 연결됨}}</translation>
+<translation id="320207200541803018">타이머 설정</translation>
 <translation id="3203405173652969239">스위치 제어 사용 중</translation>
 <translation id="3207953481422525583">사용자 설정</translation>
 <translation id="3217205077783620295">볼륨이 켜져 있으며 전환하면 오디오가 꺼집니다.</translation>
@@ -207,6 +211,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" />님은 나중에도 로그인할 수 있습니다.</translation>
 <translation id="3321628682574733415">잘못된 부모 코드</translation>
 <translation id="332587331255250389">배터리를 교체해 주세요</translation>
+<translation id="334252345105450327">스크린샷 찍기</translation>
 <translation id="3351879221545518001">현재 화면을 전송하고 있습니다.</translation>
 <translation id="3364721542077212959">스타일러스 도구</translation>
 <translation id="3368922792935385530">연결됨</translation>
@@ -239,6 +244,7 @@
 <translation id="3631369015426612114">다음 항목에 알림 허용:</translation>
 <translation id="3638400994746983214">개인정보 보호 화면을 켜거나 끕니다. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> 관리 사용자</translation>
+<translation id="3702846122927433391">나이지리아의 인구</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">영역 캡처</translation>
 <translation id="371370241367527062">전면 마이크</translation>
@@ -519,6 +525,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />초 후 기존 해상도로 돌아갑니다.</translation>
 <translation id="7188494361780961876">메뉴가 화면 왼쪽 상단으로 이동했습니다.</translation>
+<translation id="7189412385142492784">금성까지의 거리</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. 업데이트를 적용하려면 Chromebook을 다시 시작해야 합니다. 여기에는 최대 1분이 걸릴 수 있습니다.</translation>
 <translation id="7256634071279256947">후면 마이크</translation>
 <translation id="726276584504105859">화면 분할을 사용하려면 여기를 드래그하세요.</translation>
@@ -645,6 +652,7 @@
 <translation id="8649101189709089199">텍스트 읽어주기</translation>
 <translation id="8652175077544655965">설정 닫기</translation>
 <translation id="8653151467777939995">알림 설정을 표시합니다. 알림이 사용 설정되어 있습니다.</translation>
+<translation id="8660331759611631213">71의 제곱근</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, 신호 강도 <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">네트워크 목록을 표시합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

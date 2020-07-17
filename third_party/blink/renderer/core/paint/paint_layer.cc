@@ -2972,7 +2972,10 @@ bool PaintLayer::ChildBackgroundIsKnownToBeOpaqueInRect(
 bool PaintLayer::ShouldBeSelfPaintingLayer() const {
   return GetLayoutObject().LayerTypeRequired() == kNormalPaintLayer ||
          (scrollable_area_ && scrollable_area_->HasOverlayOverflowControls()) ||
-         ScrollsOverflow();
+         ScrollsOverflow() ||
+         (RuntimeEnabledFeatures::CompositeSVGEnabled() &&
+          GetLayoutObject().IsSVGRoot() &&
+          ToLayoutSVGRoot(GetLayoutObject()).HasDescendantCompositingReasons());
 }
 
 void PaintLayer::UpdateSelfPaintingLayer() {
@@ -3403,11 +3406,19 @@ bool PaintLayer::HasFilterThatMovesPixels() const {
 void PaintLayer::SetNeedsRepaint() {
   SetSelfNeedsRepaint();
 
-  // If you need repaint, then you might issue raster invalidations, and in
-  // Composite after Paint mode, we do these in PAC::Update().
   LocalFrameView* frame_view = GetLayoutObject().GetDocument().View();
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && frame_view) {
-    frame_view->SetPaintArtifactCompositorNeedsUpdate();
+  if (frame_view) {
+    // If you need repaint, then you might issue raster invalidations, and in
+    // Composite after Paint mode, we do these in PAC::Update().
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      frame_view->SetPaintArtifactCompositorNeedsUpdate();
+    } else if (RuntimeEnabledFeatures::CompositeSVGEnabled()) {
+      // With GraphicsLayer layerization after paint, we also need to call
+      // PaintArtifactCompositor::Update for raster invalidations.
+      // TODO(pdr): Can we do a lighter-weight update that only does raster
+      // invalidation and skips the overlap test?
+      frame_view->SetPaintArtifactCompositorNeedsUpdate();
+    }
   }
 
   // Do this unconditionally to ensure container chain is marked when

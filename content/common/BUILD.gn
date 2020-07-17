@@ -56,9 +56,6 @@ source_set("common") {
     "android/use_zoom_for_dsf_policy_android.cc",
     "appcache_interfaces.cc",
     "appcache_interfaces.h",
-    "ax_content_node_data.cc",
-    "ax_content_node_data.h",
-    "ax_content_tree_update.h",
     "ax_serialization_utils.cc",
     "ax_serialization_utils.h",
     "background_fetch/background_fetch_types.cc",
@@ -431,8 +428,6 @@ mojom("mojo_bindings") {
 
   sources = [
     "associated_interfaces.mojom",
-    "ax_content_node_data.mojom",
-    "ax_content_tree_update.mojom",
     "child_process.mojom",
     "document_scoped_interface_bundle.mojom",
     "dom_automation_controller.mojom",
@@ -473,40 +468,6 @@ mojom("mojo_bindings") {
   }
 
   cpp_typemaps = [
-    {
-      types = [
-        {
-          mojom = "ax.mojom.AXContentNodeData"
-          cpp = "::content::AXContentNodeData"
-        },
-      ]
-      traits_headers =
-          [ "//content/common/ax_content_node_data_mojom_traits.h" ]
-      traits_sources =
-          [ "//content/common/ax_content_node_data_mojom_traits.cc" ]
-      traits_public_deps = [
-        ":mojo_bindings_shared",
-        "//ui/accessibility",
-      ]
-      traits_deps = [ "//ui/accessibility/mojom" ]
-    },
-    {
-      types = [
-        {
-          mojom = "ax.mojom.AXContentTreeUpdate"
-          cpp = "::content::AXContentTreeUpdate"
-        },
-      ]
-      traits_headers =
-          [ "//content/common/ax_content_tree_update_mojom_traits.h" ]
-      traits_sources =
-          [ "//content/common/ax_content_tree_update_mojom_traits.cc" ]
-      traits_public_deps = [
-        ":mojo_bindings_shared",
-        "//ui/accessibility",
-      ]
-      traits_deps = [ "//ui/accessibility/mojom" ]
-    },
     {
       types = [
         {

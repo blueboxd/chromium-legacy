@@ -103,8 +103,8 @@ class ProcessSingleton {
   // handled within the current browser instance or false if the remote process
   // should handle it (i.e., because the current process is shutting down).
   using NotificationCallback =
-      base::Callback<bool(const base::CommandLine& command_line,
-                          const base::FilePath& current_directory)>;
+      base::RepeatingCallback<bool(const base::CommandLine& command_line,
+                                   const base::FilePath& current_directory)>;
 
   ProcessSingleton(const base::FilePath& user_data_dir,
                    const NotificationCallback& notification_callback);
@@ -138,7 +138,7 @@ class ProcessSingleton {
 #if defined(OS_WIN)
   // Called to query whether to kill a hung browser process that has visible
   // windows. Return true to allow killing the hung process.
-  using ShouldKillRemoteProcessCallback = base::Callback<bool()>;
+  using ShouldKillRemoteProcessCallback = base::RepeatingCallback<bool()>;
   void OverrideShouldKillRemoteProcessCallbackForTesting(
       const ShouldKillRemoteProcessCallback& display_dialog_callback);
 #endif
@@ -164,7 +164,7 @@ class ProcessSingleton {
       const base::TimeDelta& timeout);
   void OverrideCurrentPidForTesting(base::ProcessId pid);
   void OverrideKillCallbackForTesting(
-      const base::Callback<void(int)>& callback);
+      const base::RepeatingCallback<void(int)>& callback);
 #endif
 
  private:
@@ -204,7 +204,7 @@ class ProcessSingleton {
 
   // Function to call when the other process is hung and needs to be killed.
   // Allows overriding for tests.
-  base::Callback<void(int)> kill_callback_;
+  base::RepeatingCallback<void(int)> kill_callback_;
 
   // Path in file system to the socket.
   base::FilePath socket_path_;

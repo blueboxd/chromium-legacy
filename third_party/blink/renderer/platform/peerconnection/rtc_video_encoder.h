@@ -47,6 +47,7 @@ PLATFORM_EXPORT extern const base::Feature kWebRtcScreenshareSwEncoding;
 class PLATFORM_EXPORT RTCVideoEncoder : public webrtc::VideoEncoder {
  public:
   RTCVideoEncoder(media::VideoCodecProfile profile,
+                  bool is_constrained_h264,
                   media::GpuVideoAcceleratorFactories* gpu_factories);
   ~RTCVideoEncoder() override;
 
@@ -70,6 +71,8 @@ class PLATFORM_EXPORT RTCVideoEncoder : public webrtc::VideoEncoder {
   friend class RTCVideoEncoder::Impl;
 
   const media::VideoCodecProfile profile_;
+
+  const bool is_constrained_h264_;
 
   // Factory for creating VEAs, shared memory buffers, etc.
   media::GpuVideoAcceleratorFactories* gpu_factories_;

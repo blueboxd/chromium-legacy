@@ -248,8 +248,7 @@ ExecutionContext* ExecutionContextFromV8Wrappable(const Range* range) {
 }
 
 ExecutionContext* ExecutionContextFromV8Wrappable(const DOMParser* parser) {
-  return parser->GetDocument() ? parser->GetDocument()->GetExecutionContext()
-                               : nullptr;
+  return parser->GetWindow();
 }
 
 v8::MaybeLocal<v8::Function> CreateNamedConstructorFunction(

@@ -78,7 +78,7 @@
 <translation id="1093457606523402488">Видливи мрежи:</translation>
 <translation id="1094607894174825014">Операцијата за читање или пишување беше побарана со неважечко отстапување на: „<ph name="DEVICE_NAME" />".</translation>
 <translation id="109647177154844434">Деинсталирањето на Parallels Desktop ќе ја избрише сликата на Windows. Тоа ги опфаќа апликациите, поставките и податоците. Дали сигурно сакате да продолжите?</translation>
-<translation id="1097515232094183876">{COUNT,plural, =1{1 линк}one{# линк}other{# линкови}}</translation>
+<translation id="1097515232094183876">{COUNT,plural, =1{1 линк}one{# линк}other{# линка}}</translation>
 <translation id="1097658378307015415">Пред да се најавите, влезете како Гостин за да ја активирате мрежата <ph name="NETWORK_ID" /></translation>
 <translation id="1099962274138857708">Слика копирана од <ph name="DEVICE_NAME" /></translation>
 <translation id="1102187190604780492">Дозволете вашиот „Помошник“ проактивно да ви прикажува информации за она што е на екранот</translation>
@@ -232,6 +232,7 @@
 <translation id="1274997165432133392">Колачиња и други податоци за локација</translation>
 <translation id="1275718070701477396">Избран</translation>
 <translation id="1276994519141842946">Не може да се деинсталира <ph name="APP_NAME" /></translation>
+<translation id="127946606521051357">Уред во близина споделува</translation>
 <translation id="1280820357415527819">Се пребаруваат мобилни мрежи</translation>
 <translation id="1280965841156951489">Измени датотеки</translation>
 <translation id="1285320974508926690">Никогаш не преведувај ја оваа локација</translation>
@@ -1220,6 +1221,7 @@
 <translation id="2489918096470125693">Додај &amp;Папка</translation>
 <translation id="2490481887078769936">Датотеката „<ph name="FILE_NAME" />“ е отстранета од списокот</translation>
 <translation id="249113932447298600">Извинете. Во моментов не се поддржува уредот <ph name="DEVICE_LABEL" />.</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> споделува <ph name="ATTACHMENTS" /> со вас.</translation>
 <translation id="2492461744635776704">Се подготвува барање за најавување со сертификат</translation>
 <translation id="249303669840926644">Не можеше да заврши регистрацијата</translation>
 <translation id="2495777824269688114">Откријте повеќе функции и добијте одговори. Изберете „?“ за помош.</translation>
@@ -4151,6 +4153,7 @@
 <translation id="6212039847102026977">Покажи ги напредните својства на мрежата</translation>
 <translation id="6212168817037875041">Исклучи го екранот</translation>
 <translation id="6212752530110374741">Испрати е-порака со линк</translation>
+<translation id="6213230117190778270">Прими</translation>
 <translation id="6216696360484424239">Најавувајте се автоматски</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> е офлајн. Поврзете се на интернет и обидете се повторно.</translation>
 <translation id="6220413761270491930">Грешка при вчитување наставка</translation>
@@ -4278,6 +4281,7 @@
 <translation id="6362853299801475928">&amp;Пријави проблем…</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Додај семејство и пријатели</translation>
+<translation id="6367985768157257101">Да се примат преку „Споделување во близина“?</translation>
 <translation id="636850387210749493">Запишување компанија</translation>
 <translation id="6370021412472292592">Не може да вчита манифест.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4334,7 +4338,7 @@
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> - пуштено е аудио</translation>
 <translation id="6442187272350399447">Супер</translation>
 <translation id="6444070574980481588">Постави датум и време</translation>
-<translation id="6444909401984215022"><ph name="WINDOW_TITLE" /> - Скенирањето уреди со Bluetooth е активно</translation>
+<translation id="6444909401984215022"><ph name="WINDOW_TITLE" /> - Барањето уреди со Bluetooth е активно</translation>
 <translation id="6445450263907939268">Доколку не ги сакавте промениве, може да ги обновите претходните поставки.</translation>
 <translation id="6447842834002726250">Колачиња</translation>
 <translation id="6450876761651513209">Променете ги поставките поврзани со приватноста</translation>
@@ -4895,7 +4899,7 @@
 <translation id="7152478047064750137">Екстензијава не бара специјални дозволи</translation>
 <translation id="7154130902455071009">Променете ја почетната страница во: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Постојна фотографија од камера или датотека</translation>
-<translation id="7163766494674803047">Грешка на уредот за печатење</translation>
+<translation id="7163766494674803047">Грешка на печатачот</translation>
 <translation id="7165320105431587207">Не успеа да се конфигурира мрежата</translation>
 <translation id="716640248772308851">„<ph name="EXTENSION" />“ може да чита слики, видео и аудио датотеки на означените локации.</translation>
 <translation id="7167486101654761064">&amp;Секогаш отворај датотеки од овој тип</translation>
@@ -5915,7 +5919,7 @@
 <translation id="8419098111404128271">Резултати од пребарувањето за „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="8419368276599091549">Добре дојдовте во вашиот <ph name="DEVICE_TYPE" />!</translation>
 <translation id="8420308167132684745">Измена на ставки во речникот</translation>
-<translation id="8422787418163030046">Фиоката недостасува</translation>
+<translation id="8422787418163030046">Недостасува фиока</translation>
 <translation id="8425213833346101688">Промени</translation>
 <translation id="8425492902634685834">Прикачи на лентата со задачи</translation>
 <translation id="8425768983279799676">PIN-кодот може да го користите за отклучување на уредот.</translation>
@@ -6188,7 +6192,7 @@
 <translation id="8756143264090841047">Бришење преземени содржини</translation>
 <translation id="8756969031206844760">Дали да се ажурира лозинката?</translation>
 <translation id="8757090071857742562">Не може да се емитува работната површина. Проверете дали сте го потврдиле известувањето да започнете со споделување на екранот.</translation>
-<translation id="8757203080302669031">Картичкава активно скенира уреди со Bluetooth.</translation>
+<translation id="8757203080302669031">Картичкава активно бара уреди со Bluetooth.</translation>
 <translation id="8757803915342932642">Уред на уреди на Google Cloud</translation>
 <translation id="8758418656925882523">Овозможи диктирање (зборувајте за да напишете)</translation>
 <translation id="8759408218731716181">Не може да се постават повеќе најави</translation>
@@ -6583,9 +6587,11 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Внеси пристапна фраза</translation>
 <translation id="939736085109172342">Нова папка</translation>
+<translation id="941070664607309480">Кликнете за да бидете видливи и да може да сподели со вас</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> споделува картичка на Chrome и аудио.</translation>
 <translation id="945522503751344254">Испратете повратни информации</translation>
 <translation id="947329552760389097">&amp;Проверете ги елементите</translation>
+<translation id="951991426597076286">Одбиј</translation>
 <translation id="952992212772159698">Не е активиран</translation>
 <translation id="956500788634395331">Заштитени сте од потенцијално штетни екстензии</translation>
 <translation id="957960681186851048">Сајтов се обиде автоматски да преземе повеќе датотеки</translation>

@@ -65,7 +65,6 @@ void UserChooserDetailedViewController::HandleUserSwitch(int user_index) {
 }
 
 void UserChooserDetailedViewController::HandleAddUserAction() {
-  MultiProfileUMA::RecordSigninUser(MultiProfileUMA::SIGNIN_USER_BY_TRAY);
   tray_controller_->CloseBubble();
   Shell::Get()->session_controller()->ShowMultiProfileLogin();
   // ShowMultiProfileLogin may delete us.

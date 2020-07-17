@@ -2,15 +2,19 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
 <translation id="1282031177488366470">Ajudar a melhorar os recursos e o desempenho do Chrome</translation>
+<translation id="1479202195792305274">O Chrome pode verificar suas senhas quando você faz login com sua Conta do Google.</translation>
+<translation id="1647024380514430932">Não foi possível verificar todas as senhas com o Chrome. Tente novamente.</translation>
 <translation id="1682483655351012182">Sincronizar seus dados do Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1917964099031477364">A conta e os dados não salvos serão removidos do Chrome e de outros apps do Google neste dispositivo.</translation>
+<translation id="2009224836393115614">Não foi possível verificar suas senhas com o Chrome. Verifique sua conexão de Internet.</translation>
 <translation id="2147651015520127414">O Chrome verificou que <ph name="ISSUER" /> emitiu o certificado desse website.</translation>
 <translation id="2199719347983604670">Dados da "Sincronização do Chrome"</translation>
 <translation id="2347208864470321755">Quando este recurso está ativado, o Google Chrome disponibiliza a tradução de páginas escritas em outros idiomas usando o Google Tradutor. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2574249610672786438">Para ver suas guias em qualquer lugar onde você usar o Chrome, faça login em todos os seus dispositivos</translation>
 <translation id="2576431527583832481">O Google Chrome ficou ainda melhor! Uma nova versão está disponível.</translation>
 <translation id="257708665678654955">Quer que na próxima vez o Google Chrome ofereça a tradução de páginas em <ph name="LANGUAGE_NAME" /> deste site?</translation>
+<translation id="2732745070297234559">Não foi possível verificar todas as senhas com o Chrome. Tente novamente amanhã.</translation>
 <translation id="2919738076569633423">Ao usar o Chrome, você concorda com os <ph name="BEGIN_LINK_TOS" />Termos de Serviço<ph name="END_LINK_TOS" />.</translation>
 <translation id="3030414234702425231">Como você está saindo de uma conta gerenciada por <ph name="SIGNOUT_MANAGED_DOMAIN" />, os dados do Chrome serão excluídos deste dispositivo, mas permanecerão na sua Conta do Google.</translation>
 <translation id="3148688391461398285">Tenha uma experiência melhor no Google Chrome com base no seu local.</translation>
@@ -28,6 +32,7 @@
 <translation id="424864128008805179">Sair do Google Chrome?</translation>
 <translation id="4249068189593983585">Dica do Chrome. Para ver mais opções de guia, toque no botão "Mostrar guias" na barra de ferramentas localizada na parte superior ou inferior da tela e mantenha-o pressionado.</translation>
 <translation id="4523886039239821078">Alguns complementos causam a falha do Google Chrome. Desinstale-os.</translation>
+<translation id="4698415050768537821">Não foi possível verificar todas as senhas com o Chrome. Tente novamente amanhã ou <ph name="BEGIN_LINK" />verifique-as na sua Conta do Google<ph name="END_LINK" />.</translation>
 <translation id="5389212809648216794">O Google Chrome não pode usar a câmera porque ela está sendo usada por outro app</translation>
 <translation id="5639704535586432836">Abra Ajustes &gt; Privacidade &gt; Câmera &gt; Google Chrome e ative a câmera.</translation>
 <translation id="5642200033778930880">O Google Chrome não pode usar a câmera no modo Visualização dividida</translation>
@@ -42,6 +47,7 @@
 <translation id="7165736900384873061">Começar a usar o leitor de QR do Google Chrome</translation>
 <translation id="7172660552945675509">Dica: <ph name="BEGIN_LINK" />mova o Chrome para sua base<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">O Chrome usa o Face ID para garantir o acesso autorizado às suas senhas.</translation>
+<translation id="7261678641327190792">Não é possível verificar suas senhas com o Chrome.</translation>
 <translation id="7265369419224458312">Acesse as guias que você abriu no seu computador, bem aqui. Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login no Google Chrome…”</translation>
 <translation id="7272930098487145294">Para salvar imagens, toque em "Configurações" e permita que o Chrome as adicione às suas fotos</translation>
 <translation id="7400722733683201933">Sobre o Google Chrome</translation>

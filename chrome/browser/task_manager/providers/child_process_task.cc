@@ -194,7 +194,7 @@ void ChildProcessTask::Refresh(const base::TimeDelta& update_interval,
   // invoke it and record the current values (which might be invalid at the
   // moment. We can safely ignore that and count on future refresh cycles
   // potentially having valid values).
-  process_resources_sampler_->Refresh(base::Closure());
+  process_resources_sampler_->Refresh(base::DoNothing());
 
   v8_memory_allocated_ = base::saturated_cast<int64_t>(
       process_resources_sampler_->GetV8MemoryAllocated());

@@ -519,8 +519,8 @@ default_executable_configs = default_compiler_configs + [
                              ] + _linker_configs
 
 if (is_win) {
-  # Currently only turn on linker CFI for executables, and position it so it can
-  # be removed when needed.
+  # Turn on linker CFI for executables, and position it so it can be removed
+  # if needed.
   default_executable_configs += [ "//build/config/win:cfi_linker" ]
 }
 
@@ -534,6 +534,11 @@ default_shared_library_configs = default_compiler_configs + [
                                    "//build/config:default_libs",
                                    "//build/config:shared_library_config",
                                  ] + _linker_configs
+if (is_win) {
+  # Turn on linker CFI for DLLs, and position it so it can be removed if needed.
+  default_shared_library_configs += [ "//build/config/win:cfi_linker" ]
+}
+
 if (is_android) {
   # Strip native JNI exports from shared libraries by default. Binaries that
   # want this can remove this config.

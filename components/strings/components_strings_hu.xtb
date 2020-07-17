@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
 <translation id="1008557486741366299">Ne most</translation>
+<translation id="100957008357583611">Engedélyezi a helyadatok használatát?</translation>
 <translation id="1010200102790553230">Oldal betöltése később</translation>
 <translation id="1015730422737071372">További részletek megadása</translation>
 <translation id="1019413721762100891">Ki</translation>
@@ -425,7 +426,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="2705137772291741111">A webhely mentett (gyorsítótárazott) példánya nem olvasható.</translation>
 <translation id="2709516037105925701">Automatikus kitöltés</translation>
 <translation id="2713444072780614174">Fehér</translation>
-<translation id="2720342946869265578">A közelben</translation>
 <translation id="2721148159707890343">Sikeres kérés</translation>
 <translation id="272451190272506600">A fizetéshez érintse meg az ujjlenyomat-érzékelőt</translation>
 <translation id="2728127805433021124">A szerver tanúsítványa gyenge aláírási algoritmussal van aláírva.</translation>
@@ -718,7 +718,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="3990250421422698716">Példányok eltolása</translation>
 <translation id="3996311196211510766">A(z) <ph name="ORIGIN" /> webhely egy adott eredetházirend alkalmazását kérte
     az összes kérésére, de ez a házirend jelenleg nem alkalmazható.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 közeli weboldal}other{# közeli weboldal}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} oldalból álló PDF-dokumentum}other{{COUNT} oldalból álló PDF-dokumentum}}</translation>
 <translation id="4030383055268325496">&amp;Hozzáadás visszavonása</translation>
 <translation id="4032320456957708163">Böngészőjét a(z) <ph name="ENROLLMENT_DOMAIN" /> felügyeli</translation>
@@ -936,7 +935,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> és <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Mentés…</translation>
 <translation id="4913987521957242411">Lyuk balra fent</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{és egy további weboldal}other{és # további weboldal}}</translation>
 <translation id="4923459931733593730">Fizetés</translation>
 <translation id="4926049483395192435">Meg kell határozni.</translation>
 <translation id="4926159001844873046">A(z) <ph name="SITE" /> közlendője</translation>
@@ -1177,6 +1175,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="5869405914158311789">A webhely nem érhető el</translation>
 <translation id="5869522115854928033">Mentett jelszavak</translation>
 <translation id="5887400589839399685">Kártya elmentve</translation>
+<translation id="589006512797629854">A(z) <ph name="ENROLLMENT_DOMAIN" /> megköveteli, hogy biztonsági másolatot készítsen adatairól, és küldje vissza ezt az eszközt.</translation>
 <translation id="5895138241574237353">Újraindítás</translation>
 <translation id="5895187275912066135">Kiállítva</translation>
 <translation id="5901630391730855834">Sárga</translation>
@@ -1327,7 +1326,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="6518133107902771759">Ellenőrzés</translation>
 <translation id="6521745193039995384">Nem aktív</translation>
 <translation id="6529602333819889595">&amp;Törlés újra</translation>
-<translation id="6534179046333460208">Fizikai web – javaslatok</translation>
 <translation id="6545864417968258051">Bluetooth-alapú keresés</translation>
 <translation id="6547208576736763147">Kettő lyuk a bal oldalon</translation>
 <translation id="6554795675067793129">Az Ön fiókkezelője: <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1850,7 +1848,6 @@ További részletek:
 <translation id="8790007591277257123">&amp;Törlés újra</translation>
 <translation id="8792621596287649091">Elveszítheti a hozzáférést <ph name="ORG_NAME" />-fiókjához, vagy visszaélhetnek személyes adataival. A Chromium azt javasolja, hogy azonnal módosítsa jelszavát.</translation>
 <translation id="8793655568873652685">A(z) <ph name="ENROLLMENT_DOMAIN" /> bekapcsolta a Chrome Enterprise Connectors integrációs eszközöket az Ön böngészőjében. Az eszközök hozzáférnek bizonyos adatokhoz.</translation>
-<translation id="8800988563907321413">A közeli javaslatok helye</translation>
 <translation id="8805819170075074995">„<ph name="LANGUAGE_ID" />” listabejegyzés: A bejegyzést figyelmen kívül hagyja a rendszer, mert szerepel a SpellcheckLanguage házirendben is.</translation>
 <translation id="8807160976559152894">Vágás minden oldal után</translation>
 <translation id="8820817407110198400">Könyvjelzők</translation>

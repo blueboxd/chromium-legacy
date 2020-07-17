@@ -18,6 +18,10 @@
 - (void)creditCardMediatorHasInvalidExpirationDate:
     (AutofillAddCreditCardMediator*)mediator;
 
+// Notifies that the card nickname is invalid.
+- (void)creditCardMediatorHasInvalidNickname:
+    (AutofillAddCreditCardMediator*)mediator;
+
 // Notifies that the credit card scanner needs to be shown.
 - (void)creditCardMediatorShowScanner:(AutofillAddCreditCardMediator*)mediator;
 

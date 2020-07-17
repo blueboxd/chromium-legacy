@@ -2051,4 +2051,53 @@ TEST(BookmarkModelMergerTest, ShouldEnsureLimitDepthOfTree) {
               Eq(kMaxBookmarkTreeDepth + 2));
 }
 
+TEST(BookmarkModelMergerTest, ShouldReuploadBookmarkOnEmptyGuid) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      switches::kSyncReuploadBookmarkFullTitles);
+
+  const std::string kFolder1Title = "folder1";
+  const std::string kFolder2Title = "folder2";
+
+  const std::string kFolder1Id = "Folder1Id";
+  const std::string kFolder2Id = "Folder2Id";
+
+  const std::string suffix = syncer::UniquePosition::RandomSuffix();
+  const syncer::UniquePosition posFolder1 =
+      syncer::UniquePosition::InitialPosition(suffix);
+  const syncer::UniquePosition posFolder2 =
+      syncer::UniquePosition::After(posFolder1, suffix);
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  // -------- The remote model --------
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateBookmarkBarNodeUpdateData());
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kFolder1Id, /*parent_id=*/kBookmarkBarId, kFolder1Title,
+      /*url=*/std::string(),
+      /*is_folder=*/true, /*unique_position=*/posFolder1,
+      base::GenerateGUID()));
+
+  // Mimic that the entity didn't have GUID in specifics. This entity should be
+  // reuploaded later.
+  updates.back().entity.is_bookmark_guid_in_specifics_preprocessed = true;
+
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kFolder2Id, /*parent_id=*/kBookmarkBarId, kFolder2Title,
+      /*url=*/std::string(),
+      /*is_folder=*/true, /*unique_position=*/posFolder2,
+      base::GenerateGUID()));
+
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      Merge(std::move(updates), bookmark_model.get());
+
+  ASSERT_THAT(tracker->GetEntityForSyncId(kFolder1Id), NotNull());
+  ASSERT_THAT(tracker->GetEntityForSyncId(kFolder2Id), NotNull());
+
+  EXPECT_TRUE(tracker->GetEntityForSyncId(kFolder1Id)->IsUnsynced());
+  EXPECT_FALSE(tracker->GetEntityForSyncId(kFolder2Id)->IsUnsynced());
+}
+
 }  // namespace sync_bookmarks

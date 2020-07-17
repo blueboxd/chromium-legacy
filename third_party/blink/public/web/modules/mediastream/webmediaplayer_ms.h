@@ -83,7 +83,6 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
       WebMediaPlayerClient* client,
       WebMediaPlayerDelegate* delegate,
       std::unique_ptr<media::MediaLog> media_log,
-      std::unique_ptr<WebMediaStreamRendererFactory> factory,
       scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
@@ -277,6 +276,8 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   // Helper method used for testing.
   void SetGpuMemoryBufferVideoForTesting(
       media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool);
+  void SetMediaStreamRendererFactoryForTesting(
+      std::unique_ptr<WebMediaStreamRendererFactory>);
 
   // Callback used to fulfill video.requestVideoFrameCallback() requests.
   void OnNewFramePresentedCallback();

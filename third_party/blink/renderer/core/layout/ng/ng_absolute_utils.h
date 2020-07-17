@@ -55,6 +55,10 @@ CORE_EXPORT bool AbsoluteNeedsChildInlineSize(const ComputedStyle&);
 // block-size.
 CORE_EXPORT bool AbsoluteNeedsChildBlockSize(const ComputedStyle&);
 
+// Returns true if the inline size can be computed from an aspect ratio and
+// the block size.
+bool IsInlineSizeComputableFromBlockSize(const ComputedStyle& style);
+
 // Computes part of the absolute position which depends on the child's
 // inline-size.
 // |replaced_size| should be set if and only if element is replaced element.

@@ -88,8 +88,7 @@ class PixelIntegrationTest(
     # Some pixel tests require non-standard browser arguments. Need to
     # check before running each page that it can run in the current
     # browser instance.
-    self.RestartBrowserIfNecessaryWithArgs(
-        self._AddDefaultArgs(page.browser_args))
+    self.RestartBrowserIfNecessaryWithArgs(page.browser_args)
     url = self.UrlOfStaticFilePath(test_path)
     # This property actually comes off the class, not 'self'.
     tab = self.tab

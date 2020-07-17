@@ -436,7 +436,8 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   UIEdgeInsets parentInset = [super collectionView:collectionView
                                             layout:collectionViewLayout
                             insetForSectionAtIndex:section];
-  if ([self.collectionUpdater isHeaderSection:section]) {
+  if ([self.collectionUpdater isHeaderSection:section] ||
+      [self.collectionUpdater isDiscoverSection:section]) {
     parentInset.top = 0;
     parentInset.left = 0;
     parentInset.right = 0;

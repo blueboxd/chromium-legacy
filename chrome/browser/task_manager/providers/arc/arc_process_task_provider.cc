@@ -100,26 +100,30 @@ void ArcProcessTaskProvider::OnUpdateSystemProcessList(
 void ArcProcessTaskProvider::RequestAppProcessList() {
   arc::ArcProcessService* arc_process_service =
       arc::ArcProcessService::Get();
-  auto callback = base::Bind(&ArcProcessTaskProvider::OnUpdateAppProcessList,
-                             weak_ptr_factory_.GetWeakPtr());
   if (!arc_process_service) {
     VLOG(2) << "ARC process instance is not ready.";
     ScheduleNextAppRequest();
     return;
   }
-  arc_process_service->RequestAppProcessList(callback);
+
+  auto callback =
+      base::BindOnce(&ArcProcessTaskProvider::OnUpdateAppProcessList,
+                     weak_ptr_factory_.GetWeakPtr());
+  arc_process_service->RequestAppProcessList(std::move(callback));
 }
 
 void ArcProcessTaskProvider::RequestSystemProcessList() {
   arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
-  auto callback = base::Bind(&ArcProcessTaskProvider::OnUpdateSystemProcessList,
-                             weak_ptr_factory_.GetWeakPtr());
   if (!arc_process_service) {
     VLOG(2) << "ARC process instance is not ready.";
     ScheduleNextSystemRequest();
     return;
   }
-  arc_process_service->RequestSystemProcessList(callback);
+
+  auto callback =
+      base::BindOnce(&ArcProcessTaskProvider::OnUpdateSystemProcessList,
+                     weak_ptr_factory_.GetWeakPtr());
+  arc_process_service->RequestSystemProcessList(std::move(callback));
 }
 
 void ArcProcessTaskProvider::StartUpdating() {
@@ -134,25 +138,27 @@ void ArcProcessTaskProvider::StopUpdating() {
   nspid_to_sys_task_.clear();
 }
 
-void ArcProcessTaskProvider::ScheduleNextRequest(const base::Closure& task) {
+void ArcProcessTaskProvider::ScheduleNextRequest(base::OnceClosure task) {
   if (!is_updating_)
     return;
   // TODO(nya): Remove this timer once ARC starts to send us UpdateProcessList
   // message when the process list changed. As of today, ARC does not send
   // the process list unless we request it by RequestAppProcessList message.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, task, arc::ArcProcessService::kProcessSnapshotRefreshTime);
+      FROM_HERE, std::move(task),
+      arc::ArcProcessService::kProcessSnapshotRefreshTime);
 }
 
 void ArcProcessTaskProvider::ScheduleNextAppRequest() {
-  ScheduleNextRequest(base::Bind(&ArcProcessTaskProvider::RequestAppProcessList,
-                                 weak_ptr_factory_.GetWeakPtr()));
+  ScheduleNextRequest(
+      base::BindOnce(&ArcProcessTaskProvider::RequestAppProcessList,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcProcessTaskProvider::ScheduleNextSystemRequest() {
   ScheduleNextRequest(
-      base::Bind(&ArcProcessTaskProvider::RequestSystemProcessList,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ArcProcessTaskProvider::RequestSystemProcessList,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace task_manager

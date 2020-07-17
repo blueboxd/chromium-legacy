@@ -446,7 +446,7 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
     : pp::Instance(instance),
       pp::Find_Private(this),
       pp::Printing_Dev(this),
-      paint_manager_(this, this, true) {
+      paint_manager_(this, this) {
   callback_factory_.Initialize(this);
   pp::Module::Get()->AddPluginInterface(kPPPPdfInterface, &ppp_private);
   AddPerInstanceObject(kPPPPdfInterface, this);
@@ -949,7 +949,7 @@ void OutOfProcessInstance::StopFind() {
 }
 
 void OutOfProcessInstance::OnPaint(const std::vector<pp::Rect>& paint_rects,
-                                   std::vector<PaintManager::ReadyRect>* ready,
+                                   std::vector<PaintReadyRect>* ready,
                                    std::vector<pp::Rect>* pending) {
   base::AutoReset<bool> auto_reset_in_paint(&in_paint_, true);
   if (image_data_.is_null()) {
@@ -960,7 +960,7 @@ void OutOfProcessInstance::OnPaint(const std::vector<pp::Rect>& paint_rects,
     first_paint_ = false;
     pp::Rect rect = pp::Rect(pp::Point(), image_data_.size());
     FillRect(rect, background_color_);
-    ready->push_back(PaintManager::ReadyRect(rect, image_data_, true));
+    ready->push_back(PaintReadyRect(rect, image_data_, /*flush_now=*/true));
   }
 
   if (!received_viewport_message_ || !needs_reraster_)
@@ -984,8 +984,7 @@ void OutOfProcessInstance::OnPaint(const std::vector<pp::Rect>& paint_rects,
       engine_->Paint(pdf_rect, skia_image_data_, pdf_ready, pdf_pending);
       for (auto& ready_rect : pdf_ready) {
         ready_rect.Offset(available_area_.point());
-        ready->push_back(
-            PaintManager::ReadyRect(ready_rect, image_data_, false));
+        ready->push_back(PaintReadyRect(ready_rect, image_data_));
       }
       for (auto& pending_rect : pdf_pending) {
         pending_rect.Offset(available_area_.point());
@@ -1000,7 +999,7 @@ void OutOfProcessInstance::OnPaint(const std::vector<pp::Rect>& paint_rects,
     if (rect.y() < first_page_ypos) {
       pp::Rect region = rect.Intersect(pp::Rect(
           pp::Point(), pp::Size(plugin_size_.width(), first_page_ypos)));
-      ready->push_back(PaintManager::ReadyRect(region, image_data_, false));
+      ready->push_back(PaintReadyRect(region, image_data_));
       FillRect(region, background_color_);
     }
 
@@ -1008,8 +1007,7 @@ void OutOfProcessInstance::OnPaint(const std::vector<pp::Rect>& paint_rects,
       pp::Rect intersection = background_part.location.Intersect(rect);
       if (!intersection.IsEmpty()) {
         FillRect(intersection, background_part.color);
-        ready->push_back(
-            PaintManager::ReadyRect(intersection, image_data_, false));
+        ready->push_back(PaintReadyRect(intersection, image_data_));
       }
     }
   }

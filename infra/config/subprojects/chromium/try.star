@@ -359,14 +359,9 @@ try_.chromium_linux_builder(
     tryjob = try_.job(),
 )
 
-# The fuchsia_arm64 builder will now run tests as well as compiles.
-# The experiment percentage is used to ramp up the test load while
-# monitoring stability and capacity.  crbug.com/1042511
 try_.chromium_linux_builder(
     name = 'fuchsia_arm64',
-    tryjob = try_.job(
-      experiment_percentage=100,
-    ),
+    tryjob = try_.job(),
 )
 
 try_.chromium_linux_builder(

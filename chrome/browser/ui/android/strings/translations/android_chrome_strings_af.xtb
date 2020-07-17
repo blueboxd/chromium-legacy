@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Boekmerke wat op jou ander toestelle gestoor is, sal hier verskyn.</translation>
 <translation id="1113597929977215864">Wys vereenvoudigde aansig</translation>
 <translation id="1122278879166832009">Tik hier om vinnig van enige plek af toegang tot jou tuisblad te kry</translation>
+<translation id="1126809382673880764">Beskerm jou nie teen gevaarlike webwerwe, aflaaie en uitbreidings nie. Jy sal steeds Veiligblaai-beskerming in ander Google-dienste, soos Gmail en Search, kry waar dit beskikbaar is.</translation>
 <translation id="1129510026454351943">Besonderhede: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 aflaai hangende.}other{# aflaaie hangende.}}</translation>
 <translation id="1145536944570833626">Vee bestaande data uit.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Lig</translation>
 <translation id="1810845389119482123">Aanvanklike sinkronisering-opstelling is nie klaar nie</translation>
 <translation id="1821253160463689938">Gebruik webkoekies om jou voorkeure te onthou, selfs al besoek jy nie daardie bladsye nie</translation>
-<translation id="1826516787628120939">Gaan tans na</translation>
 <translation id="1829244130665387512">Vind op bladsy</translation>
 <translation id="1853692000353488670">Nuwe incognito-oortjie</translation>
 <translation id="1856325424225101786">Stel Ligte Modus terug?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Stoor wagwoorde</translation>
 <translation id="1952172573699511566">Webwerwe sal, indien moontlik, teks in jou voorkeurtaal vertoon.</translation>
 <translation id="1960290143419248813">Chrome-opdaterings word nie meer vir hierdie weergawe van Android gesteun nie</translation>
+<translation id="1963976881984600709">Standaardbeskerming</translation>
 <translation id="1966710179511230534">Dateer asseblief jou aanmeldbesonderhede op.</translation>
 <translation id="1974060860693918893">Gevorderd</translation>
+<translation id="1984417487208496350">Geen beskerming nie (nie aanbeveel nie)</translation>
 <translation id="1984705450038014246">Sinkroniseer jou Chrome-data</translation>
 <translation id="1986685561493779662">Naam bestaan reeds</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" />-knoppie</translation>
@@ -392,7 +394,6 @@ Raak en hou enige woord om te soek. Kies meer of minder woorde as jy jou soektog
 <translation id="4183868528246477015">Soek met Google Lens <ph name="BEGIN_NEW" />Nuut<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Maak in nuwe oortjie oop</translation>
 <translation id="4198423547019359126">Geen beskikbare aflaailiggings nie</translation>
-<translation id="4202553989407425169">Chrome kan nagaan of jou instellings jou beskerm teen:</translation>
 <translation id="4209895695669353772">Skakel sinkronisering aan om gepersonaliseerde inhoud wat deur Google voorgestel is, te kry</translation>
 <translation id="423219824432660969">Enkripteer gesinkroniseerde data met Google-wagwoord vanaf <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Maak instellings oop</translation>
@@ -459,6 +460,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="4749960740855309258">Maak 'n nuwe oortjie oop</translation>
 <translation id="4759238208242260848">Aflaaie</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 aflaai is voltooi.}other{# aflaaie is voltooi.}}</translation>
+<translation id="4766678251456904326">Voeg rekening by toestel</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 aflaai is geskeduleer.}other{# aflaaie is geskeduleer.}}</translation>
 <translation id="478981486571169252">Jy sal jou <ph name="SITE_NAME" />-aanmeldingstatus, -blaaierdata en -werfdata in Chrome sien.</translation>
 <translation id="4802417911091824046">Wagfrase-enkripsie sluit nie betaalmetodes en adresse van Google Pay af in nie.
@@ -490,6 +492,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="4943872375798546930">Geen resultate nie</translation>
 <translation id="4961107849584082341">Vertaal hierdie bladsy in enige taal</translation>
 <translation id="4970824347203572753">Nie in jou ligging beskikbaar nie</translation>
+<translation id="4971735654804503942">Vinniger, proaktiewe beskerming teen gevaarlike webwerwe, aflaaie en uitbreidings. Waarsku jou oor wagwoordskendings. Vereis dat blaaierdata na Google toe gestuur word.</translation>
 <translation id="497421865427891073">Gaan vorentoe</translation>
 <translation id="4988210275050210843">Laai tans lêer af (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Bladsye</translation>
@@ -561,7 +564,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5527082711130173040">Chrome benodig liggingtoegang om toestelle te soek. <ph name="BEGIN_LINK1" />Dateer toestemmings op<ph name="END_LINK1" />. Liggingtoegang is ook <ph name="BEGIN_LINK2" />afgeskakel vir hierdie toestel<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Maak incognito-oortjies toe</translation>
 <translation id="5534640966246046842">Werf is gekopieer</translation>
-<translation id="5548606607480005320">Veiligheidskontrole</translation>
 <translation id="5561549206367097665">Wag tans vir netwerk …</translation>
 <translation id="55737423895878184">Ligging en kennisgewings word toegelaat</translation>
 <translation id="5578795271662203820">Deursoek <ph name="SEARCH_ENGINE" /> vir hierdie prent</translation>
@@ -600,7 +602,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="583281660410589416">Onbekend</translation>
 <translation id="5833984609253377421">Deel skakel</translation>
 <translation id="5836192821815272682">Laai tans Chrome-opdatering af …</translation>
-<translation id="584120177693484274">Ongemerk</translation>
 <translation id="5853623416121554550">laat wag</translation>
 <translation id="5854790677617711513">Ouer as 30 dae</translation>
 <translation id="5858741533101922242">Chrome kan nie Bluetooth-aansluitprop aanskakel nie</translation>
@@ -736,10 +737,12 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="685850645784703949">Ontdek deur Google – af</translation>
 <translation id="6864459304226931083">Laai prent af</translation>
 <translation id="6865313869410766144">Vul vormdata outomaties in</translation>
+<translation id="6882836635272038266">Standaardbeskerming teen webwerwe, aflaaie en uitbreidings wat bekend is dat hulle gevaarlik is.</translation>
 <translation id="6884306546558072722">Hou aan om vanlyn te verken</translation>
 <translation id="688738109438487280">Voeg bestaande data by <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Ontsluit om jou wagwoord te kopieer</translation>
 <translation id="6896758677409633944">Kopieer</translation>
+<translation id="6900532703269623216">Verbeterde beskerming</translation>
 <translation id="6903907808598579934">Skakel sinkronisering aan</translation>
 <translation id="6942665639005891494">Verander enige tyd die verstekaflaailigging met die Instellingskieslysopsie</translation>
 <translation id="6945221475159498467">Kies</translation>

@@ -25,6 +25,9 @@ suite('NearbyShare', function() {
       'nearby_sharing': {
         'enabled': {
           value: true,
+        },
+        'device_name': {
+          value: '',
         }
       }
     };
@@ -63,5 +66,19 @@ suite('NearbyShare', function() {
     assertEquals(false, featureToggleButton.checked);
     assertEquals(false, subpage.prefs.nearby_sharing.enabled.value);
     assertEquals('Off', onOffText.textContent.trim());
+  });
+
+  test('update device name preference', function() {
+    assertEquals('', subpage.prefs.nearby_sharing.device_name.value);
+
+    subpage.$$('#editDeviceNameButton').click();
+    Polymer.dom.flush();
+
+    const dialog = subpage.$$('nearby-share-device-name-dialog');
+    const newName = 'NEW NAME';
+    dialog.$$('cr-input').value = newName;
+    dialog.$$('.action-button').click();
+
+    assertEquals(newName, subpage.prefs.nearby_sharing.device_name.value);
   });
 });

@@ -8,6 +8,7 @@
 #include "ash/dbus/gesture_properties_service_provider.h"
 #include "ash/dbus/liveness_service_provider.h"
 #include "ash/dbus/url_handler_service_provider.h"
+#include "ash/dbus/user_authentication_service_provider.h"
 #include "base/feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
@@ -40,6 +41,11 @@ AshDBusServices::AshDBusServices(dbus::Bus* system_bus) {
       dbus::ObjectPath(chromeos::kUrlHandlerServicePath),
       chromeos::CrosDBusService::CreateServiceProviderList(
           std::make_unique<UrlHandlerServiceProvider>()));
+  user_authentication_service_ = chromeos::CrosDBusService::Create(
+      system_bus, chromeos::kUserAuthenticationServiceName,
+      dbus::ObjectPath(chromeos::kUserAuthenticationServicePath),
+      chromeos::CrosDBusService::CreateServiceProviderList(
+          std::make_unique<UserAuthenticationServiceProvider>()));
 }
 
 AshDBusServices::~AshDBusServices() {
@@ -47,6 +53,7 @@ AshDBusServices::~AshDBusServices() {
   gesture_properties_service_.reset();
   liveness_service_.reset();
   url_handler_service_.reset();
+  user_authentication_service_.reset();
 }
 
 }  // namespace ash

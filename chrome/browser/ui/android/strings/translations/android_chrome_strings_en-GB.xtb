@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Bookmarks saved on your other devices will appear here.</translation>
 <translation id="1113597929977215864">Show simplified view</translation>
 <translation id="1122278879166832009">Tap here to quickly access your homepage from anywhere</translation>
+<translation id="1126809382673880764">Does not protect you against dangerous websites, downloads and extensions. You’ll still get Safe Browsing protection, where available, in other Google services, like Gmail and Search.</translation>
 <translation id="1129510026454351943">Details: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download pending.}other{# downloads pending.}}</translation>
 <translation id="1145536944570833626">Delete existing data.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Light</translation>
 <translation id="1810845389119482123">Initial sync setup not finished</translation>
 <translation id="1821253160463689938">Uses cookies to remember your preferences, even if you don't visit those pages</translation>
-<translation id="1826516787628120939">Checking</translation>
 <translation id="1829244130665387512">Find in page</translation>
 <translation id="1853692000353488670">New incognito tab</translation>
 <translation id="1856325424225101786">Reset Lite mode?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Save passwords</translation>
 <translation id="1952172573699511566">Websites will show text in your preferred language, when possible.</translation>
 <translation id="1960290143419248813">Chrome updates are no longer supported for this version of Android</translation>
+<translation id="1963976881984600709">Standard protection</translation>
 <translation id="1966710179511230534">Please update your sign-in details.</translation>
 <translation id="1974060860693918893">Advanced</translation>
+<translation id="1984417487208496350">No protection (not recommended)</translation>
 <translation id="1984705450038014246">Sync your Chrome data</translation>
 <translation id="1986685561493779662">Name already exists</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> button</translation>
@@ -358,6 +360,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="3892148308691398805">Copy text</translation>
 <translation id="3894427358181296146">Add folder</translation>
 <translation id="3895926599014793903">Force enable zoom</translation>
+<translation id="3909763690984331376">Safety check <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Finding the best from the web…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Combine my data</translation>
@@ -392,7 +395,6 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="4183868528246477015">Search with Google Lens <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Open in new tab</translation>
 <translation id="4198423547019359126">No available download locations</translation>
-<translation id="4202553989407425169">Chrome can check if your settings are protecting you from:</translation>
 <translation id="4209895695669353772">To get personalised content suggested by Google, turn on sync</translation>
 <translation id="423219824432660969">Encrypt synced data with Google password as of <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Open settings</translation>
@@ -491,6 +493,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4943872375798546930">No results</translation>
 <translation id="4961107849584082341">Translate this page to any language</translation>
 <translation id="4970824347203572753">Not available in your location</translation>
+<translation id="4971735654804503942">Faster, proactive protection against dangerous websites, downloads and extensions. Warns you about password breaches. Requires browsing data to be sent to Google.</translation>
 <translation id="497421865427891073">go forward</translation>
 <translation id="4988210275050210843">Downloading file (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Pages</translation>
@@ -562,7 +565,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5527082711130173040">Chrome needs location access to scan for devices. <ph name="BEGIN_LINK1" />Update permissions<ph name="END_LINK1" />. Location access is also <ph name="BEGIN_LINK2" />turned off for this device<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Close incognito tabs</translation>
 <translation id="5534640966246046842">Site copied</translation>
-<translation id="5548606607480005320">Safety check</translation>
 <translation id="5561549206367097665">Waiting for network…</translation>
 <translation id="55737423895878184">Location and notifications are allowed</translation>
 <translation id="5578795271662203820">Search <ph name="SEARCH_ENGINE" /> for this image</translation>
@@ -580,6 +582,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5686790454216892815">File name too long</translation>
 <translation id="5694049548840660018">Get back home easily</translation>
 <translation id="569536719314091526">Translate this page to any language from the More options button</translation>
+<translation id="5696597120588531049">Chrome can help keep you safe from data breaches, unsafe websites and more</translation>
 <translation id="5697688514913266141">Your file will be saved to <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Edit<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Switch to tab</translation>
 <translation id="572328651809341494">Recent tabs</translation>
@@ -601,7 +604,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="583281660410589416">Unknown</translation>
 <translation id="5833984609253377421">Share link</translation>
 <translation id="5836192821815272682">Downloading Chrome Update…</translation>
-<translation id="584120177693484274">Unchecked</translation>
 <translation id="5853623416121554550">paused</translation>
 <translation id="5854790677617711513">Older than 30 days</translation>
 <translation id="5858741533101922242">Chrome is unable to turn on Bluetooth adaptor</translation>
@@ -714,6 +716,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6656545060687952787">Chrome needs location access to scan for devices. <ph name="BEGIN_LINK" />Update permissions<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Password</translation>
 <translation id="6659594942844771486">Tab</translation>
+<translation id="6663079968236414793">Link to text</translation>
 <translation id="666573598175432848">A newer version of Chrome is available. Tap this element to go to the Play Store.</translation>
 <translation id="666731172850799929">Open in <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome Privacy Notice</translation>
@@ -737,10 +740,12 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="685850645784703949">Discover by Google – off</translation>
 <translation id="6864459304226931083">Download image</translation>
 <translation id="6865313869410766144">Auto-fill form data</translation>
+<translation id="6882836635272038266">Standard protection against websites, downloads and extensions that are known to be dangerous.</translation>
 <translation id="6884306546558072722">Keep exploring offline</translation>
 <translation id="688738109438487280">Add existing data to <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Unlock to copy your password</translation>
 <translation id="6896758677409633944">Copy</translation>
+<translation id="6900532703269623216">Enhanced protection</translation>
 <translation id="6903907808598579934">Turn on sync</translation>
 <translation id="6942665639005891494">Change the default download location at any time using the Settings menu option</translation>
 <translation id="6945221475159498467">Select</translation>

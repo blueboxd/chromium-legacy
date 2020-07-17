@@ -20,13 +20,15 @@ namespace tether {
 // the associated Wi-Fi network.
 class TetherConnector {
  public:
+  using StringErrorCallback =
+      NetworkConnectionHandler::TetherDelegate::StringErrorCallback;
+
   TetherConnector() {}
   virtual ~TetherConnector() {}
 
-  virtual void ConnectToNetwork(
-      const std::string& tether_network_guid,
-      base::OnceClosure success_callback,
-      const network_handler::StringResultCallback& error_callback) = 0;
+  virtual void ConnectToNetwork(const std::string& tether_network_guid,
+                                base::OnceClosure success_callback,
+                                StringErrorCallback error_callback) = 0;
 
   // Returns whether the connection attempt was successfully canceled.
   virtual bool CancelConnectionAttempt(

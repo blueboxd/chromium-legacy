@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">välj</translation>
 <translation id="1859234291848436338">Skrivriktning</translation>
 <translation id="1860796786778352021">Meddelande om stängning</translation>
+<translation id="186476001994626254">Web Smart Paste-innehåll</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Välj &amp;alla</translation>
@@ -75,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Öppna mappen</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 år sedan}other{# år sedan}}</translation>
+<translation id="2878511608894704031">Radera allt</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{om 1 dag}other{om # dgr}}</translation>
 <translation id="2931838996092594335">klicka</translation>
 <translation id="2981684127883932071">Visar förslag</translation>
@@ -172,6 +174,7 @@
 <translation id="6417265370957905582">Google Assistent</translation>
 <translation id="6430678249303439055">Blockera alla aviseringar från den här appen</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 sekund sedan}other{# sekunder sedan}}</translation>
+<translation id="6503257047630241175">RTF-innehåll</translation>
 <translation id="6539092367496845964">Något gick fel. Försök igen senare.</translation>
 <translation id="654149438358937226">Blockera alla aviseringar</translation>
 <translation id="6567071839949112727">klicka på det överordnade objektet</translation>

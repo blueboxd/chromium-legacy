@@ -93,21 +93,3 @@ if (is_component_build) {
     ]
   }
 }
-
-source_set("content_browser_manifest") {
-  sources = [
-    "content_browser_manifest.cc",
-    "content_browser_manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//content/public/common:service_names",
-  ]
-
-  public_deps = [ "//services/service_manager/public/cpp" ]
-}
-
-group("service_manifests") {
-  public_deps = [ ":content_browser_manifest" ]
-}

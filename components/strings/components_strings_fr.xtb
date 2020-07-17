@@ -164,7 +164,7 @@
 <translation id="1592005682883173041">Accès aux données locales</translation>
 <translation id="1594030484168838125">Sélectionner</translation>
 <translation id="161042844686301425">Cyan</translation>
-<translation id="1620510694547887537">Appareil photo</translation>
+<translation id="1620510694547887537">Caméra</translation>
 <translation id="1623104350909869708">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
 <translation id="16338877384480380">Architecture-B</translation>
 <translation id="1638780421120290329">Impossible d'enregistrer cette carte</translation>
@@ -425,7 +425,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="2705137772291741111">La copie enregistrée (en cache) de ce site est illisible.</translation>
 <translation id="2709516037105925701">Saisie automatique</translation>
 <translation id="2713444072780614174">Blanc</translation>
-<translation id="2720342946869265578">À proximité</translation>
 <translation id="2721148159707890343">Demande réussie.</translation>
 <translation id="272451190272506600">Appuyez sur le capteur pour payer</translation>
 <translation id="2728127805433021124">Le certificat du serveur a été signé avec un algorithme de signature faible.</translation>
@@ -720,7 +719,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="3990250421422698716">Décalage</translation>
 <translation id="3996311196211510766">Le site <ph name="ORIGIN" /> a exigé qu'une règle d'origine
     soit appliquée à toutes les requêtes qu'il reçoit. Or, cette règle n'est pas applicable actuellement.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 page Web à proximité}one{# page Web à proximité}other{# pages Web à proximité}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Document PDF contenant {COUNT} page}one{Document PDF contenant {COUNT} page}other{Document PDF contenant {COUNT} pages}}</translation>
 <translation id="4030383055268325496">&amp;Annuler l'ajout</translation>
 <translation id="4032320456957708163">Votre navigateur est géré par <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -938,7 +936,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Enregistrer…</translation>
 <translation id="4913987521957242411">Perforation en haut à gauche</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{et 1 autre page Web}one{et # autre page Web}other{et # autres pages Web}}</translation>
 <translation id="4923459931733593730">Paiement</translation>
 <translation id="4926049483395192435">Doit être spécifié.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> indique</translation>
@@ -1329,7 +1326,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="6518133107902771759">Valider</translation>
 <translation id="6521745193039995384">Inactive</translation>
 <translation id="6529602333819889595">&amp;Rétablir la suppression</translation>
-<translation id="6534179046333460208">Suggestions pour le Web physique</translation>
 <translation id="6545864417968258051">Recherche Bluetooth</translation>
 <translation id="6547208576736763147">Double perforation à gauche</translation>
 <translation id="6554795675067793129">Votre compte est géré par <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1851,7 +1847,6 @@ Informations supplémentaires :
 <translation id="8790007591277257123">&amp;Rétablir la suppression</translation>
 <translation id="8792621596287649091">Vous risquez de perdre l'accès à votre compte <ph name="ORG_NAME" /> ou d'être victime d'usurpation d'identité. L'équipe Chromium vous recommande de modifier votre mot de passe maintenant.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> a activé ces connecteurs dans votre navigateur, lesquels ont accès à certaines de vos données.</translation>
-<translation id="8800988563907321413">Vos suggestions à proximité s'affichent ici</translation>
 <translation id="8805819170075074995">Entrée de la liste "<ph name="LANGUAGE_ID" />" : entrée ignorée, car elle est aussi incluse dans la règle SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Couper après chaque page</translation>
 <translation id="8820817407110198400">Favoris</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
 <translation id="1008557486741366299">Inte nu</translation>
+<translation id="100957008357583611">Får din plats användas?</translation>
 <translation id="1010200102790553230">Läs in sidan senare</translation>
 <translation id="1015730422737071372">Ange ytterligare information</translation>
 <translation id="1019413721762100891">Av</translation>
@@ -425,7 +426,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="2705137772291741111">Det gick inte att läsa den sparade (cachelagrade) kopian av webbplatsen.</translation>
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="2713444072780614174">Vit</translation>
-<translation id="2720342946869265578">I närheten</translation>
 <translation id="2721148159707890343">Begäran genomfördes</translation>
 <translation id="272451190272506600">Placera fingret på sensorn för att betala</translation>
 <translation id="2728127805433021124">Serverns certifikat är signerat med en svag signaturalgoritm.</translation>
@@ -722,7 +722,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="3990250421422698716">Stötvis förskjutning</translation>
 <translation id="3996311196211510766">Webbplatsen <ph name="ORIGIN" /> har begärt att en ursprungsprincip
     ska gälla varje gång den svarar på en begäran, men denna princip går inte att tillämpa just nu.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 webbsida i närheten}other{# webbsidor i närheten}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-dokument som innehåller {COUNT} sida}other{PDF-dokument som innehåller {COUNT} sidor}}</translation>
 <translation id="4030383055268325496">&amp;Ångra Lägg till</translation>
 <translation id="4032320456957708163">Din webbläsare hanteras av <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -940,7 +939,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Spara …</translation>
 <translation id="4913987521957242411">Häfta uppe till vänster</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{och en till webbsida}other{och # till webbsidor}}</translation>
 <translation id="4923459931733593730">Betalning</translation>
 <translation id="4926049483395192435">Värdet måste anges.</translation>
 <translation id="4926159001844873046">Från <ph name="SITE" />:</translation>
@@ -1181,6 +1179,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="5869405914158311789">Webbplatsen kan inte nås</translation>
 <translation id="5869522115854928033">Sparade lösenord</translation>
 <translation id="5887400589839399685">Kortet har sparats</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> kräver att du säkerhetskopierar din data och returnerar enheten.</translation>
 <translation id="5895138241574237353">Starta om</translation>
 <translation id="5895187275912066135">Utfärdat</translation>
 <translation id="5901630391730855834">Gul</translation>
@@ -1331,7 +1330,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="6518133107902771759">Verifiera</translation>
 <translation id="6521745193039995384">Inte aktiv</translation>
 <translation id="6529602333819889595">&amp;Gör om Ta bort</translation>
-<translation id="6534179046333460208">Förslag från Physical Web</translation>
 <translation id="6545864417968258051">Bluetooth-sökning</translation>
 <translation id="6547208576736763147">Två hål till vänster</translation>
 <translation id="6554795675067793129">Kontot hanteras av <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1854,7 +1852,6 @@ Mer information:
 <translation id="8790007591277257123">&amp;Gör om Ta bort</translation>
 <translation id="8792621596287649091">Du kan förlora åtkomsten till kontot på <ph name="ORG_NAME" /> eller bli utsatt för identitetsstöld. Du rekommenderas att ändra lösenordet nu.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> har aktiverat Chrome Enterprise Connectors i din webbläsare. Dessa funktioner har åtkomst till en del av din data.</translation>
-<translation id="8800988563907321413">Förslag på webbsidor i närheten visas här</translation>
 <translation id="8805819170075074995">Listposten <ph name="LANGUAGE_ID" />: Posten ignorerades eftersom den även ingår i principen SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Beskär efter varje sida</translation>
 <translation id="8820817407110198400">Bokmärken</translation>

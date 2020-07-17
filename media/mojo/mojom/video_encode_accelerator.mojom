@@ -96,6 +96,7 @@ struct VideoEncodeAcceleratorConfig {
   bool has_gop_length;  // Whether or not config has group of picture length
   uint8 h264_output_level;
   bool has_h264_output_level;  // Whether or not config has H264 output level
+  bool is_constrained_h264;
   StorageType storage_type;
   bool has_storage_type;  // Whether or not config has storage type config
   ContentType content_type;

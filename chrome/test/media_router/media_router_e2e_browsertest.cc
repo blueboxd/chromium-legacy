@@ -83,8 +83,8 @@ void MediaRouterE2EBrowserTest::CreateMediaRoute(
   // Wait for MediaSinks compatible with |source| to be discovered.
   ASSERT_TRUE(ConditionalWait(
       base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(1),
-      base::Bind(&MediaRouterE2EBrowserTest::IsSinkDiscovered,
-                 base::Unretained(this))));
+      base::BindRepeating(&MediaRouterE2EBrowserTest::IsSinkDiscovered,
+                          base::Unretained(this))));
 
   const auto& sink_map = observer_->sink_map;
   const auto it = sink_map.find(receiver_);
@@ -100,8 +100,8 @@ void MediaRouterE2EBrowserTest::CreateMediaRoute(
   // Wait for the route request to be fulfilled (and route to be started).
   ASSERT_TRUE(ConditionalWait(
       base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(1),
-      base::Bind(&MediaRouterE2EBrowserTest::IsRouteCreated,
-                 base::Unretained(this))));
+      base::BindRepeating(&MediaRouterE2EBrowserTest::IsRouteCreated,
+                          base::Unretained(this))));
 }
 
 void MediaRouterE2EBrowserTest::StopMediaRoute() {

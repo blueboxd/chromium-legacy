@@ -389,11 +389,10 @@ void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
   }
 
   if (top_sites_) {
-    // Always blacklist in the local TopSites.
     if (add_url)
-      top_sites_->AddBlacklistedURL(url);
+      top_sites_->AddBlockedUrl(url);
     else
-      top_sites_->RemoveBlacklistedURL(url);
+      top_sites_->RemoveBlockedUrl(url);
   }
 
   // Only blacklist in the server-side suggestions service if it's active.
@@ -406,10 +405,8 @@ void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
 }
 
 void MostVisitedSites::ClearBlacklistedUrls() {
-  if (top_sites_) {
-    // Always update the blacklist in the local TopSites.
-    top_sites_->ClearBlacklistedURLs();
-  }
+  if (top_sites_)
+    top_sites_->ClearBlockedUrls();
 
   // Only update the server-side blacklist if it's active.
   if (mv_source_ == TileSource::SUGGESTIONS_SERVICE) {
@@ -567,8 +564,8 @@ NTPTilesVector MostVisitedSites::CreateWhitelistEntryPointTiles(
     if (whitelist_tiles.size() + num_actual_tiles >= max_num_sites_)
       break;
 
-    // Skip blacklisted sites.
-    if (top_sites_ && top_sites_->IsBlacklisted(whitelist.entry_point))
+    // Skip blocked sites.
+    if (top_sites_ && top_sites_->IsBlocked(whitelist.entry_point))
       continue;
 
     // Skip tiles already present.
@@ -639,8 +636,8 @@ NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
       break;
     }
 
-    // Skip blacklisted sites.
-    if (top_sites_ && top_sites_->IsBlacklisted(popular_site.url))
+    // Skip blocked sites.
+    if (top_sites_ && top_sites_->IsBlocked(popular_site.url))
       continue;
 
     const std::string& host = popular_site.url.host();
@@ -893,7 +890,7 @@ bool MostVisitedSites::ShouldAddHomeTile() const {
          homepage_client_->IsHomepageTileEnabled() &&
          !homepage_client_->GetHomepageUrl().is_empty() &&
          !(top_sites_ &&
-           top_sites_->IsBlacklisted(homepage_client_->GetHomepageUrl()));
+           top_sites_->IsBlocked(homepage_client_->GetHomepageUrl()));
 }
 
 void MostVisitedSites::AddToHostsAndTotalCount(const NTPTilesVector& new_tiles,

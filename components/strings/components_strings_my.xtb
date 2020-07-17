@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="my">
 <translation id="1008557486741366299">ယခု မလို</translation>
+<translation id="100957008357583611">သင့်တည်နေရာကို အသုံးပြုမလား။</translation>
 <translation id="1010200102790553230">စာမျက်နှာကို နောက်မှဖွင့်ရန်</translation>
 <translation id="1015730422737071372">နောက်ထပ်အသေးစိတ်အချက်အလက်များ ပေးပါ</translation>
 <translation id="1019413721762100891">ပိတ်ထားသည်</translation>
@@ -427,7 +428,6 @@
 <translation id="2705137772291741111">သိမ်းဆည်းခဲ့သည့် (ယာယီသိမ်းဆည်းထားသည့်) မိတ္တူကို ဖတ်မရပါ။</translation>
 <translation id="2709516037105925701">အလိုလျောက် ဖြည့်စွက်</translation>
 <translation id="2713444072780614174">အဖြူ</translation>
-<translation id="2720342946869265578">အနီးတဝိုက်</translation>
 <translation id="2721148159707890343">တောင်းဆိုချက် အောင်မြင်ပါသည်</translation>
 <translation id="272451190272506600">ငွေပေးချေရန် အာရုံခံစနစ်ကို ထိပါ</translation>
 <translation id="2728127805433021124">ဆာဗာ၏ လက်မှတ်ကို အားနည်းသည့် လက်မှတ် အယ်လ်ဂိုရီသမ်ကို သုံးပြီး ထိုးထားသည်။</translation>
@@ -721,7 +721,6 @@
 <translation id="3990250421422698716">လည်ပတ်မှု ချိန်ညှိရန်</translation>
 <translation id="3996311196211510766">ဝဘ်ဆိုက် <ph name="ORIGIN" /> က ၎င်း၏တောင်းဆိုချက် အားလုံးသို့
     ရင်းမြစ်မူဝါဒ ထည့်သွင်းရန် သတ်မှတ်ထားသော်လည်း လက်ရှိတွင် ဤမူဝါဒကို ထည့်သွင်း၍မရပါ။</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{အနီးတဝိုက်တွင် ဝဘ်စာမျက်နှာ ၁ ခုရှိသည်}other{အနီးတဝိုက်တွင် ဝဘ်စာမျက်နှာ # ခုရှိသည်}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{စာမျက်နှာ {COUNT} မျက်နှာ ပါဝင်သော PDF မှတ်တမ်း}other{စာမျက်နှာ {COUNT} မျက်နှာ ပါဝင်သော PDF မှတ်တမ်း}}</translation>
 <translation id="4030383055268325496">&amp;ထည့်ပေးမှုကို ပြန်လုပ်ရန်</translation>
 <translation id="4032320456957708163">သင့်ဘရောင်ဇာကို <ph name="ENROLLMENT_DOMAIN" /> က စီမံခန့်ခွဲထားသည်</translation>
@@ -940,7 +939,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />၊ <ph name="TYPE_2" />၊ <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">သိမ်းရန်...</translation>
 <translation id="4913987521957242411">ဘယ်ဘက်ထိပ်တွင် ဖောက်ရန်</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{နှင့် နောက်ထပ် ဝဘ်စာမျက်နှာ ၁ ခု}other{နှင့် နောက်ထပ် ဝဘ်စာမျက်နှာ # ခု}}</translation>
 <translation id="4923459931733593730">ငွေပေးချေမှု</translation>
 <translation id="4926049483395192435">ဖေါ်ပြပေးရန် လိုသည်။</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> က ဆိုထားသည်မှာ</translation>
@@ -1181,6 +1179,7 @@
 <translation id="5869405914158311789">ဤဆိုက်ကို ဆက်သွယ်၍မရပါ</translation>
 <translation id="5869522115854928033">သိမ်းဆည်းထားသည့် စကားဝှက်များ</translation>
 <translation id="5887400589839399685">ကတ်ကို သိမ်းပြီးပါပြီ</translation>
+<translation id="589006512797629854">သင့်ဒေတာများကို အရန်သိမ်းပြီး ဤစက်ကို ပြန်ပို့ရန် <ph name="ENROLLMENT_DOMAIN" /> က လိုအပ်သည်။</translation>
 <translation id="5895138241574237353">ပြန်စတင်မည</translation>
 <translation id="5895187275912066135">ထုတ်ပေး ရက်</translation>
 <translation id="5901630391730855834">အၐါရောင်</translation>
@@ -1330,7 +1329,6 @@
 <translation id="6518133107902771759">စိစစ်ရန်</translation>
 <translation id="6521745193039995384">ဆောင်ရွက်မှုမရှိပါ</translation>
 <translation id="6529602333819889595">&amp;ဖျက်ရန်ကို ပြန်လုပ်ရန်</translation>
-<translation id="6534179046333460208">ရုပ်ပိုင်းဆိုင်ရာ ဝဘ်အကြံပြုချက်များ</translation>
 <translation id="6545864417968258051">ဘလူးတုသ် ရှာဖွေခြင်း</translation>
 <translation id="6547208576736763147">ဘယ်ဘက်တွင် နှစ်ချက်ဖောက်ရန်</translation>
 <translation id="6554795675067793129">သင့်အကောင့်ကို <ph name="ENROLLMENT_DOMAIN" /> က စီမံခန့်ခွဲထားပါသည်။</translation>
@@ -1853,7 +1851,6 @@
 <translation id="8790007591277257123">&amp;ဖျက်ရန်ကို ပြန်လုပ်ရန်</translation>
 <translation id="8792621596287649091">သင်သည် သင့် <ph name="ORG_NAME" /> အကောင့်ကို အသုံးပြုခွင့် ဆုံးရှုံးနိုင်သည် သို့မဟုတ် အထောက်အထား အခိုးခံရနိုင်သည်။ သင့်စကားဝှက်ကို ယခုပင်ပြောင်းလဲရန် Chromium က အကြံပြုပါသည်။</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> က သင့်ဘရောင်ဇာတွင် Chrome Enterprise Connectors ကို ဖွင့်ထားသည်။ ဤချိတ်ဆက်စနစ်များက သင့်ဒေတာအချို့ကို ဝင်သုံးခွင့်ရှိသည်။</translation>
-<translation id="8800988563907321413">အနီးတဝိုက် အကြံပြုချက်များ ဤနေရာတွင် ပေါ်ပါမည်</translation>
 <translation id="8805819170075074995">စာရင်းထည့်သွင်းမှု "<ph name="LANGUAGE_ID" />"- SpellcheckLanguage မူဝါဒတွင်လည်း ပါဝင်နေသောကြောင့် ထည့်သွင်းမှုကို လျစ်လျူရှုထားသည်။</translation>
 <translation id="8807160976559152894">တစ်မျက်နှာအပြီး ဖြတ်ထုတ်ရန်</translation>
 <translation id="8820817407110198400">စာညှပ်များ</translation>

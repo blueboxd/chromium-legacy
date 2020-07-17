@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">ເລືອກ</translation>
 <translation id="1859234291848436338">ທິດທາງການຂຽນ</translation>
 <translation id="1860796786778352021">ປິດການແຈ້ງເຕືອນ</translation>
+<translation id="186476001994626254">ການວາງເນື້ອຫາອັດສະລິຍະໃນເວັບ</translation>
 <translation id="1871244248791675517">ແຊກເຂົ້າ</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">ເລືອກ​ທັງ​ຫມົດ</translation>
@@ -75,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">ເປີດ​ໂຟລເດີ</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 ປີກ່ອນນີ້}other{# ປີກ່ອນນີ້}}</translation>
+<translation id="2878511608894704031">ລຶບທັງໝົດ</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{ໃນ 1 ມື້}other{ໃນ # ມື້}}</translation>
 <translation id="2931838996092594335">ຄລິກ</translation>
 <translation id="2981684127883932071">ກຳລັງສະແດງການແນະນຳ</translation>
@@ -172,6 +174,7 @@
 <translation id="6417265370957905582">ຜູ້ຊ່ວຍ Google</translation>
 <translation id="6430678249303439055">ບລັອກທຸກການແຈ້ງເຕືອນຈາກແອັບນີ້</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 ວິນາທີກ່ອນນີ້}other{# ວິນາທີກ່ອນນີ້}}</translation>
+<translation id="6503257047630241175">ເນື້ອຫາ RTF</translation>
 <translation id="6539092367496845964">ມີບາງຢ່າງຜິດພາດ. ລອງໃໝ່ໃນພາຍຫລັງ.</translation>
 <translation id="654149438358937226">ບລັອກທຸກການແຈ້ງເຕືອນ</translation>
 <translation id="6567071839949112727">ຄລິກອັນກ່ອນນີ້</translation>

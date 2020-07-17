@@ -7,6 +7,7 @@
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="nearby_share_device_name_dialog.html">
 
 <dom-module id="settings-nearby-share-subpage">
   <template>
@@ -22,6 +23,27 @@
           pref="{{prefs.nearby_sharing.enabled}}">
       </settings-toggle-button>
     </div>
+    <div class="settings-box two-line">
+      <div class="start">
+        <div role="heading" aria-hidden="true">
+          $i18n{nearbyShareDeviceNameRowTitle}
+        </div>
+        <div aria-hidden="true" class="secondary">
+          [[prefs.nearby_sharing.device_name.value]]
+        </div>
+      </div>
+      <div class="separator"></div>
+      <cr-button id="editDeviceNameButton" on-click="onDeviceNameTap_"
+          aria-description="[[getEditNameButtonAriaDescription_(
+              prefs.nearby_sharing.device_name.value)]]">
+        $i18n{nearbyShareEditDeviceName}
+      </cr-button>
+    </div>
+    <template is="dom-if" if="[[showDeviceNameDialog_]]" restamp>
+      <nearby-share-device-name-dialog prefs="{{prefs}}" id="deviceNameDialog"
+          on-close="onDeviceNameDialogClose_">
+      </nearby-share-device-name-dialog>
+    </template>
   </template>
   <script src="nearby_share_subpage.js"></script>
 </dom-module>

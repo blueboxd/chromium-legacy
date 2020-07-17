@@ -62,6 +62,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/browser/service_worker/service_worker_test_utils.h"
 #include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/common/api/test.h"

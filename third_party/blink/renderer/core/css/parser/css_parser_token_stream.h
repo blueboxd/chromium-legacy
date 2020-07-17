@@ -47,15 +47,24 @@ class CORE_EXPORT CSSParserTokenStream {
     explicit BlockGuard(CSSParserTokenStream& stream) : stream_(stream) {
       const CSSParserToken next = stream.ConsumeInternal();
       DCHECK_EQ(next.GetBlockType(), CSSParserToken::kBlockStart);
+      initial_stack_depth_ = stream_.BlockStackDepth();
+      DCHECK_GT(initial_stack_depth_, 0u);
     }
 
     ~BlockGuard() {
       stream_.EnsureLookAhead();
       stream_.UncheckedSkipToEndOfBlock();
+      DCHECK(AtEndOfBlock());
+    }
+
+    bool AtEndOfBlock() const {
+      return (stream_.BlockStackDepth() == initial_stack_depth_ - 1) ||
+             stream_.AtEnd();
     }
 
    private:
     CSSParserTokenStream& stream_;
+    wtf_size_t initial_stack_depth_;
   };
 
   // We found that this value works well empirically by printing out the
@@ -131,6 +140,12 @@ class CORE_EXPORT CSSParserTokenStream {
     DCHECK(HasLookAhead());
     return tokenizer_.PreviousOffset();
   }
+
+  // Returns a view on a range of characters in the original string.
+  StringView StringRangeAt(wtf_size_t start, wtf_size_t length) const;
+
+  // Returns the block stack depth for the underlying tokenizer.
+  wtf_size_t BlockStackDepth() const;
 
   void ConsumeWhitespace();
   CSSParserToken ConsumeIncludingWhitespace();

@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/clock.h"
 
 namespace notifications {
 class NotificationScheduleService;
@@ -28,7 +29,9 @@ class PrefetchNotificationServiceImpl : public PrefetchNotificationService {
  public:
   PrefetchNotificationServiceImpl(
       notifications::NotificationScheduleService* schedule_service,
-      std::unique_ptr<PrefetchNotificationServiceBridge> bridge);
+      std::unique_ptr<PrefetchNotificationServiceBridge> bridge,
+      base::Clock* clock);
+
   ~PrefetchNotificationServiceImpl() override;
 
  private:
@@ -53,8 +56,9 @@ class PrefetchNotificationServiceImpl : public PrefetchNotificationService {
 
   std::unique_ptr<PrefetchNotificationServiceBridge> bridge_;
 
+  base::Clock* clock_;
+
   base::WeakPtrFactory<PrefetchNotificationServiceImpl> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(PrefetchNotificationServiceImpl);
 };
 
 }  // namespace prefetch

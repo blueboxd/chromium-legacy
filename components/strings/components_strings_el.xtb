@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="1008557486741366299">Όχι τώρα</translation>
+<translation id="100957008357583611">Χρήση της τοποθεσίας σας;</translation>
 <translation id="1010200102790553230">Φόρτωση σελίδας αργότερα</translation>
 <translation id="1015730422737071372">Καταχωρίστε επιπλέον λεπτομέρειες</translation>
 <translation id="1019413721762100891">Απενεργοποιημένο</translation>
@@ -425,7 +426,6 @@
 <translation id="2705137772291741111">Δεν είναι δυνατή η ανάγνωση του αποθηκευμένου αντιγράφου (κρυφής μνήμης) αυτού του ιστότοπου.</translation>
 <translation id="2709516037105925701">Αυτόματη συμπλήρωση</translation>
 <translation id="2713444072780614174">Λευκό</translation>
-<translation id="2720342946869265578">Σε κοντινή απόσταση</translation>
 <translation id="2721148159707890343">Το αίτημα ήταν επιτυχές</translation>
 <translation id="272451190272506600">Αγγίξτε τον αισθητήρα για την πληρωμή</translation>
 <translation id="2728127805433021124">Το πιστοποιητικό του διακομιστή είναι υπογεγραμμένο με έναν αδύναμο αλγόριθμο υπογραφής.</translation>
@@ -722,7 +722,6 @@
 <translation id="3990250421422698716">Μετατόπιση στοίβας</translation>
 <translation id="3996311196211510766">Ο ιστότοπος <ph name="ORIGIN" /> ζήτησε να εφαρμοστεί μια πολιτική προέλευσης
     για όλα τα αιτήματά του, αλλά δεν είναι δυνατή η εφαρμογή της πολιτικής αυτήν τη στιγμή.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 ιστοσελίδα σε κοντινή απόσταση}other{# ιστοσελίδες σε κοντινή απόσταση}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Έγγραφο PDF που περιέχει {COUNT} σελίδα}other{Έγγραφο PDF που περιέχει {COUNT} σελίδες}}</translation>
 <translation id="4030383055268325496">&amp;Αναίρεση προσθήκης</translation>
 <translation id="4032320456957708163">Το πρόγραμμα περιήγησής σας είναι διαχειριζόμενο από τον τομέα <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -941,7 +940,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Αποθήκευση…</translation>
 <translation id="4913987521957242411">Τρύπημα επάνω αριστερά</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{και 1 ακόμη ιστοσελίδα}other{και # ακόμη ιστοσελίδες}}</translation>
 <translation id="4923459931733593730">Πληρωμή</translation>
 <translation id="4926049483395192435">Πρέπει να καθοριστεί.</translation>
 <translation id="4926159001844873046">Ο ιστότοπος <ph name="SITE" /> λέει</translation>
@@ -1182,6 +1180,7 @@
 <translation id="5869405914158311789">Δεν είναι δυνατή η πρόσβαση σε αυτόν τον ιστότοπο</translation>
 <translation id="5869522115854928033">Αποθηκευμένοι κωδικοί πρόσβασης</translation>
 <translation id="5887400589839399685">Η κάρτα αποθηκεύτηκε</translation>
+<translation id="589006512797629854">Ο τομέας <ph name="ENROLLMENT_DOMAIN" /> απαιτεί τη δημιουργία αντιγράφων ασφαλείας των δεδομένων σας και την επιστροφή αυτής της συσκευής.</translation>
 <translation id="5895138241574237353">Επανεκκίνηση</translation>
 <translation id="5895187275912066135">Εκδόθηκε την</translation>
 <translation id="5901630391730855834">Κίτρινο</translation>
@@ -1332,7 +1331,6 @@
 <translation id="6518133107902771759">Επαλήθευση</translation>
 <translation id="6521745193039995384">Ανενεργή</translation>
 <translation id="6529602333819889595">&amp;Επανάληψη διαγραφής</translation>
-<translation id="6534179046333460208">Προτάσεις Φυσικού δικτύου</translation>
 <translation id="6545864417968258051">Σάρωση Bluetooth</translation>
 <translation id="6547208576736763147">Διπλό τρύπημα στα αριστερά</translation>
 <translation id="6554795675067793129">Η διαχείριση του λογαριασμού σας γίνεται από τον τομέα <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1855,7 +1853,6 @@
 <translation id="8790007591277257123">&amp;Επανάληψη διαγραφής</translation>
 <translation id="8792621596287649091">Μπορεί να χάσετε την πρόσβαση στον λογαριασμό σας <ph name="ORG_NAME" /> ή να πέσετε θύμα κλοπής στοιχείων ταυτότητας. Το Chromium συνιστά να αλλάξετε τον κωδικό πρόσβασής σας τώρα.</translation>
 <translation id="8793655568873652685">Το <ph name="ENROLLMENT_DOMAIN" /> ενεργοποίησε το Chrome Enterprise Connectors στο πρόγραμμα περιήγησής σας. Αυτές οι εφαρμογές σύνδεσης έχουν πρόσβαση σε ορισμένα από τα δεδομένα σας.</translation>
-<translation id="8800988563907321413">Οι προτάσεις σε κοντινή απόσταση εμφανίζονται εδώ</translation>
 <translation id="8805819170075074995">Καταχώριση λίστας "<ph name="LANGUAGE_ID" />": Η καταχώριση παραβλέπεται επειδή περιλαμβάνεται επίσης στην πολιτική SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Περικοπή μετά από κάθε σελίδα</translation>
 <translation id="8820817407110198400">Σελιδοδείκτες</translation>

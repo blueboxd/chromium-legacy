@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lo">
 <translation id="1008557486741366299">ບໍ່ແມ່ນດຽວນີ້</translation>
+<translation id="100957008357583611">ໃຊ້ສະຖານທີ່ຂອງທ່ານບໍ?</translation>
 <translation id="1010200102790553230">ໂຫຼດໜ້າໃນພາຍຫຼັງ</translation>
 <translation id="1015730422737071372">ລະບຸລາຍລະອຽດເພີ່ມເຕີມ</translation>
 <translation id="1019413721762100891">ປິດ</translation>
@@ -425,7 +426,6 @@
 <translation id="2705137772291741111">ສຳເນົາທີ່ບັນທຶກໄວ້ຂອງເວັບໄຊນີ້ບໍ່ສາມາດອ່ານໄດ້.</translation>
 <translation id="2709516037105925701">ຕື່ມອັດຕະໂນມັດ</translation>
 <translation id="2713444072780614174">ສີ​ຂາວ</translation>
-<translation id="2720342946869265578">ຢູ່ໃກ້ຄຽງ</translation>
 <translation id="2721148159707890343">ການ​ຮ້ອງ​ຂໍ​ສໍາ​ເລັດ</translation>
 <translation id="272451190272506600">ແຕະເຊັນເຊີເພື່ອຈ່າຍ</translation>
 <translation id="2728127805433021124">ໃບຢັ້ງຢືນຂອງເຊີບເວີໄດ້ຮັບການລົງລາຍເຊັນດ້ວຍການໃຊ້ຂັ້ນຕອນການລົງລາຍເຊັນອ່ອນແອ</translation>
@@ -722,7 +722,6 @@
 <translation id="3990250421422698716">ການຊົດເຊີຍພື້ນຜິວທີ່ບໍ່ສະໝໍ່າສະເໝີ</translation>
 <translation id="3996311196211510766">ເວັບໄຊ <ph name="ORIGIN" /> ໄດ້ຂໍໃຫ້ນຳໃຊ້ນະໂຍບາຍ
     ຕົ້ນທາງກັບຄຳຂໍຂອງມັນທັງໝົດ, ແຕ່ລະບົບບໍ່ສາມາດນຳໃຊ້ນະໂຍບາຍນີ້ໄດ້ໃນປັດຈຸບັນນີ້.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 ໜ້າເວັບທີ່ຢູ່ໃກ້ຄຽງ}other{# ໜ້າເວັບທີ່ຢູ່ໃກ້ຄຽງ}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{ເອກະສານ PDF ທີ່ປະກອບມີ {COUNT} ໜ້າ}other{ເອກະສານ PDF ທີ່ປະກອບມີ {COUNT} ໜ້າ}}</translation>
 <translation id="4030383055268325496">ປ່ຽນ​ກັບ​ຄືນຄໍາສັ່ງເພີ່ມ</translation>
 <translation id="4032320456957708163">ໂປຣແກຣມທ່ອງເວັບຂອງທ່ານຖືກຈັດໂດຍ <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -940,7 +939,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">ບັນທຶກ...</translation>
 <translation id="4913987521957242411">ເຈາະຮູຢູ່ເທິງສຸດເບື້ອງຊ້າຍ</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{ແລະ ອີກ 1 ໜ້າເວັບ}other{ແລະ ອີກ # ໜ້າເວັບ}}</translation>
 <translation id="4923459931733593730">ການຈ່າຍເງິນ</translation>
 <translation id="4926049483395192435">ຕ້ອງ​ໄດ້​ຮັບ​ການລະບຸ.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> ບອກວ່າ</translation>
@@ -1181,6 +1179,7 @@
 <translation id="5869405914158311789">ບໍ່ສາມາດເຂົ້າເຖິງເວັບໄຊນີ້ໄດ້</translation>
 <translation id="5869522115854928033">ລະ​ຫັດ​ຜ່ານ​ທີ່ບັນທຶກໄວ້</translation>
 <translation id="5887400589839399685">ບັນທຶກບັດໄວ້ແລ້ວ</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> ກຳນົດໃຫ້ທ່ານສຳຮອງຂໍ້ມູນຂອງທ່ານໄວ້ ແລະ ສົ່ງຄືນອຸປະກອນນີ້.</translation>
 <translation id="5895138241574237353">ເລີ່ມຕົ້ນໃໝ່</translation>
 <translation id="5895187275912066135">ອອກໃຫ້</translation>
 <translation id="5901630391730855834">ສີ​ເຫຼືອງ</translation>
@@ -1331,7 +1330,6 @@
 <translation id="6518133107902771759">ກວດສອບ</translation>
 <translation id="6521745193039995384">ບໍ່ເຄື່ອນໄຫວ</translation>
 <translation id="6529602333819889595">ເຮັດຄືນຄໍາສັ່ງລຶບ</translation>
-<translation id="6534179046333460208">ຄຳແນະນຳເວັບແທ້</translation>
 <translation id="6545864417968258051">ການສະແກນ Bluetooth</translation>
 <translation id="6547208576736763147">ເຈາະຮູເບື້ອງຊ້າຍສອງຮູ</translation>
 <translation id="6554795675067793129">ບັນຊີຂອງທ່ານຖືກຈັດການໂດຍ <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1853,7 +1851,6 @@
 <translation id="8790007591277257123">ເຮັດຄືນຄໍາສັ່ງລຶບ</translation>
 <translation id="8792621596287649091">ທ່ານສາມາດສູນເສຍການເຂົ້າເຖິງບັນຊີ <ph name="ORG_NAME" /> ຂອງທ່ານ ຫຼື ປະສົບກັບການຖືກລັກໃຊ້ຕົວຕົນ. Chromium ຂໍແນະນຳໃຫ້ປ່ຽນລະຫັດຜ່ານຂອງທ່ານດຽວນີ້.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> ໄດ້ເປີດ Chrome Enterprise Connectors ໃນໂປຣແກຣມທ່ອງເວັບຂອງທ່ານແລ້ວ. ເຄື່ອງມືເຊື່ອມຕໍ່ເຫຼົ່ານີ້ມີສິດເຂົ້າເຖິງບາງຂໍ້ມູນຂອງທ່ານໄດ້.</translation>
-<translation id="8800988563907321413">ການແນະນຳຢູ່ໃກ້ຄຽງຂອງທ່ານປາກົດຢູ່ບ່ອນນີ້</translation>
 <translation id="8805819170075074995">ບອກລາຍການ "<ph name="LANGUAGE_ID" />": ລາຍການຖືກລະເລີຍ ເພາະວ່າມັນຮວມມີຢູ່ໃນນະໂຍບາຍ SpellcheckLanguage ນຳ.</translation>
 <translation id="8807160976559152894">ຕັດອອກຫຼັງຈາກແຕ່ລະໜ້າ</translation>
 <translation id="8820817407110198400">ບຸກມາກສ໌</translation>

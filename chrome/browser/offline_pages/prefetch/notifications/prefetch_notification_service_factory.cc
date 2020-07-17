@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/singleton.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/notifications/scheduler/notification_schedule_service_factory.h"
 #include "chrome/browser/offline_pages/prefetch/notifications/prefetch_notification_service_bridge_android.h"
 #include "chrome/browser/offline_pages/prefetch/notifications/prefetch_notification_service_impl.h"
@@ -46,7 +47,7 @@ PrefetchNotificationServiceFactory::BuildServiceInstanceFor(
   auto* schedule_service = NotificationScheduleServiceFactory::GetForKey(key);
   return std::make_unique<
       offline_pages::prefetch::PrefetchNotificationServiceImpl>(
-      schedule_service, std::move(bridge));
+      schedule_service, std::move(bridge), base::DefaultClock::GetInstance());
 }
 
 SimpleFactoryKey* PrefetchNotificationServiceFactory::GetKeyToUse(

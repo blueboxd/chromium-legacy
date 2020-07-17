@@ -62,6 +62,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwPrintDocumentAdapter;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.AwThreadUtils;
 import org.chromium.android_webview.gfx.AwDrawFnImpl;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.base.BuildInfo;
@@ -441,12 +442,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     private void checkThread() {
         if (!ThreadUtils.runningOnUiThread()) {
             final RuntimeException threadViolation = createThreadException();
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
-                @Override
-                public void run() {
-                    throw threadViolation;
-                }
-            });
+            AwThreadUtils.postToUiThreadLooper(() -> { throw threadViolation; });
             throw createThreadException();
         }
     }

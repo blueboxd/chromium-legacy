@@ -33,8 +33,13 @@
 
 #include <vector>
 
+#include "base/optional.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+namespace base {
+class UnguessableToken;
+}
 
 namespace gfx {
 class Size;
@@ -114,6 +119,11 @@ class BLINK_EXPORT WebElement : public WebNode {
   // strings directly to WebElement and enable public component usage through
   // /public/web interfaces.
   WebString GetComputedValue(const WebString& property_name);
+
+  // Returns the EmbeddingToken associated to this WebElement, or base::nullopt
+  // if there isn't one set. Currently, this can only return actual values for
+  // elements wrapping instances of an blink::HTMLFrameOwnerElement.
+  base::Optional<base::UnguessableToken> GetEmbeddingToken() const;
 
 #if INSIDE_BLINK
   WebElement(Element*);

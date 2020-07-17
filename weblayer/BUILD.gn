@@ -244,8 +244,6 @@ source_set("weblayer_lib_base") {
     "browser/web_contents_view_delegate_impl.h",
     "browser/weblayer_browser_interface_binders.cc",
     "browser/weblayer_browser_interface_binders.h",
-    "browser/weblayer_content_browser_overlay_manifest.cc",
-    "browser/weblayer_content_browser_overlay_manifest.h",
     "browser/weblayer_features.cc",
     "browser/weblayer_features.h",
     "browser/weblayer_field_trials.cc",

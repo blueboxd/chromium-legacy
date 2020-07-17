@@ -43,15 +43,11 @@ class FakeEmptyTopSites : public history::TopSites {
   // history::TopSites:
   void GetMostVisitedURLs(GetMostVisitedURLsCallback callback) override;
   void SyncWithHistory() override {}
-  bool HasBlacklistedItems() const override {
-    return false;
-  }
-  void AddBlacklistedURL(const GURL& url) override {}
-  void RemoveBlacklistedURL(const GURL& url) override {}
-  bool IsBlacklisted(const GURL& url) override {
-    return false;
-  }
-  void ClearBlacklistedURLs() override {}
+  bool HasBlockedUrls() const override { return false; }
+  void AddBlockedUrl(const GURL& url) override {}
+  void RemoveBlockedUrl(const GURL& url) override {}
+  bool IsBlocked(const GURL& url) override { return false; }
+  void ClearBlockedUrls() override {}
   bool IsFull() override { return false; }
   bool loaded() const override {
     return false;

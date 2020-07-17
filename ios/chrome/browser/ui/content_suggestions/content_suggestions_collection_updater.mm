@@ -569,6 +569,11 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
              sectionIdentifierForSection:section] == SectionIdentifierLogo;
 }
 
+- (BOOL)isDiscoverSection:(NSInteger)section {
+  return [self.collectionViewController.collectionViewModel
+             sectionIdentifierForSection:section] == SectionIdentifierDiscover;
+}
+
 - (BOOL)isPromoSection:(NSInteger)section {
   return [self.collectionViewController.collectionViewModel
              sectionIdentifierForSection:section] == SectionIdentifierPromo;

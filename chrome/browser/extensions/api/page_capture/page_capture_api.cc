@@ -31,6 +31,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/public_session_permission_helper.h"
+#include "extensions/common/permissions/api_permission_set.h"
 #endif
 
 using content::BrowserThread;

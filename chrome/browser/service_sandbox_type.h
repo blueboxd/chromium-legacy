@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SERVICE_SANDBOX_TYPE_H_
 
 #include "build/build_config.h"
-#include "content/public/browser/sandbox_type.h"
 #include "content/public/browser/service_process_host.h"
+#include "sandbox/policy/sandbox_type.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/services/speech/buildflags.h"
@@ -25,12 +25,12 @@ class RemovableStorageWriter;
 }  // namespace chrome
 
 template <>
-inline content::SandboxType
+inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<chrome::mojom::RemovableStorageWriter>() {
 #if defined(OS_WIN)
-  return SandboxType::kNoSandboxAndElevatedPrivileges;
+  return sandbox::policy::SandboxType::kNoSandboxAndElevatedPrivileges;
 #else
-  return SandboxType::kNoSandbox;
+  return sandbox::policy::SandboxType::kNoSandbox;
 #endif  // !defined(OS_WIN)
 }
 
@@ -43,9 +43,9 @@ class UtilReadIcon;
 }  // namespace chrome
 
 template <>
-inline content::SandboxType
+inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<chrome::mojom::UtilReadIcon>() {
-  return content::SandboxType::kIconReader;
+  return sandbox::policy::SandboxType::kIconReader;
 }
 #endif  // defined(OS_WIN)
 
@@ -58,9 +58,9 @@ class UtilWin;
 }  // namespace chrome
 
 template <>
-inline content::SandboxType
+inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<chrome::mojom::UtilWin>() {
-  return content::SandboxType::kNoSandbox;
+  return sandbox::policy::SandboxType::kNoSandbox;
 }
 #endif  // defined(OS_WIN)
 
@@ -72,9 +72,9 @@ class ProfileImport;
 }  // namespace chrome
 
 template <>
-inline content::SandboxType
+inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<chrome::mojom::ProfileImport>() {
-  return content::SandboxType::kNoSandbox;
+  return sandbox::policy::SandboxType::kNoSandbox;
 }
 
 // media::mojom::SpeechRecognitionService
@@ -87,9 +87,9 @@ class SpeechRecognitionService;
 }  // namespace media
 
 template <>
-inline content::SandboxType
+inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<media::mojom::SpeechRecognitionService>() {
-  return content::SandboxType::kSpeechRecognition;
+  return sandbox::policy::SandboxType::kSpeechRecognition;
 }
 #endif  // BUILDFLAG(ENABLE_SODA)
 #endif  // !defined(OS_ANDROID)
@@ -103,9 +103,9 @@ class PrintingService;
 }  // namespace printing
 
 template <>
-inline content::SandboxType
+inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<printing::mojom::PrintingService>() {
-  return content::SandboxType::kPdfConversion;
+  return sandbox::policy::SandboxType::kPdfConversion;
 }
 #endif  // defined(OS_WIN)
 
@@ -118,9 +118,9 @@ class ProxyResolverFactory;
 }  // namespace proxy_resolver
 
 template <>
-inline content::SandboxType
+inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<proxy_resolver::mojom::ProxyResolverFactory>() {
-  return content::SandboxType::kProxyResolver;
+  return sandbox::policy::SandboxType::kProxyResolver;
 }
 #endif  // defined(OS_WIN)
 
@@ -133,9 +133,9 @@ class Quarantine;
 }  // namespace quarantine
 
 template <>
-inline content::SandboxType
+inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<quarantine::mojom::Quarantine>() {
-  return content::SandboxType::kNoSandbox;
+  return sandbox::policy::SandboxType::kNoSandbox;
 }
 #endif  // defined(OS_WIN)
 
@@ -148,9 +148,9 @@ class Sharing;
 }  // namespace sharing
 
 template <>
-inline content::SandboxType
+inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<sharing::mojom::Sharing>() {
-  return content::SandboxType::kSharingService;
+  return sandbox::policy::SandboxType::kSharingService;
 }
 #endif  // !defined(OS_MACOSX)
 

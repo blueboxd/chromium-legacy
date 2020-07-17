@@ -399,7 +399,7 @@ bool X11Window::ShouldUseNativeFrame() const {
 }
 
 void X11Window::SetCursor(PlatformCursor cursor) {
-  XWindow::SetCursor(static_cast<X11Cursor*>(cursor)->xcursor());
+  XWindow::SetCursor(static_cast<X11Cursor*>(cursor));
 }
 
 void X11Window::MoveCursorTo(const gfx::Point& location) {

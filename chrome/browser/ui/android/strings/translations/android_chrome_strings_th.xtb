@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">บุ๊กมาร์กที่บันทึกไว้ในอุปกรณ์เครื่องอื่นๆ ของคุณจะปรากฏที่นี่</translation>
 <translation id="1113597929977215864">แสดง "มุมมองอย่างง่าย"</translation>
 <translation id="1122278879166832009">แตะที่นี่เพื่อเข้าถึงหน้าแรกได้อย่างรวดเร็วจากทุกที่</translation>
+<translation id="1126809382673880764">ไม่ปกป้องคุณจากเว็บไซต์ การดาวน์โหลด และส่วนขยายที่เป็นอันตราย คุณจะยังคงได้รับการปกป้องจาก Google Safe Browsing ในบริการอื่นๆ ของ Google ที่มีฟีเจอร์นี้ เช่น Gmail และ Search</translation>
 <translation id="1129510026454351943">รายละเอียด: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{การดาวน์โหลดที่รอดำเนินการ 1 รายการ}other{การดาวน์โหลดที่รอดำเนินการ # รายการ}}</translation>
 <translation id="1145536944570833626">ลบข้อมูลที่มีอยู่</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">สว่าง</translation>
 <translation id="1810845389119482123">ตั้งค่าการซิงค์เริ่มต้นไม่สำเร็จ</translation>
 <translation id="1821253160463689938">ใช้คุกกี้เพื่อให้จดจำค่ากำหนดของคุณ แม้ว่าคุณไม่ได้เข้าชมหน้าเว็บเหล่านั้น</translation>
-<translation id="1826516787628120939">กำลังตรวจสอบ</translation>
 <translation id="1829244130665387512">ค้นหาในหน้าเว็บ</translation>
 <translation id="1853692000353488670">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
 <translation id="1856325424225101786">รีเซ็ตโหมด Lite ไหม</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">บันทึกรหัสผ่าน</translation>
 <translation id="1952172573699511566">เมื่อเป็นไปได้ เว็บไซต์จะแสดงในภาษาที่คุณต้องการ</translation>
 <translation id="1960290143419248813">Android เวอร์ชันนี้ไม่รองรับการอัปเดต Chrome อีกต่อไปแล้ว</translation>
+<translation id="1963976881984600709">การปกป้องแบบมาตรฐาน</translation>
 <translation id="1966710179511230534">โปรดอัปเดตรายละเอียดการลงชื่อเข้าใช้ของคุณ</translation>
 <translation id="1974060860693918893">ขั้นสูง</translation>
+<translation id="1984417487208496350">ไม่มีการปกป้อง (ไม่แนะนำ)</translation>
 <translation id="1984705450038014246">ซิงค์ข้อมูล Chrome</translation>
 <translation id="1986685561493779662">มีชื่อนี้อยู่แล้ว</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> ปุ่ม<ph name="LINK_NAME" /></translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">ค้นหาด้วย Google Lens <ph name="BEGIN_NEW" />ใหม่<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
 <translation id="4198423547019359126">ไม่มีตำแหน่งการดาวน์โหลดที่ใช้ได้</translation>
-<translation id="4202553989407425169">Chrome ตรวจสอบได้ว่าการตั้งค่าต่างๆ ปกป้องคุณอยู่หรือไม่จากรายการต่อไปนี้</translation>
 <translation id="4209895695669353772">เปิดการซิงค์เพื่อรับคำแนะนำเนื้อหาที่ปรับเปลี่ยนในแบบของคุณจาก Google</translation>
 <translation id="423219824432660969">เข้ารหัสลับข้อมูลที่ซิงค์ด้วยรหัสผ่าน Google ตั้งแต่ <ph name="TIME" /></translation>
 <translation id="4242533952199664413">เปิดการตั้งค่า</translation>
@@ -459,6 +460,7 @@
 <translation id="4749960740855309258">เปิดแท็บใหม่</translation>
 <translation id="4759238208242260848">ดาวน์โหลด</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{การดาวน์โหลด 1 รายการเสร็จสมบูรณ์}other{การดาวน์โหลด # รายการเสร็จสมบูรณ์}}</translation>
+<translation id="4766678251456904326">เพิ่มบัญชีลงในอุปกรณ์</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{กำหนดเวลาการดาวน์โหลดแล้ว 1 รายการ}other{กำหนดเวลาการดาวน์โหลดแล้ว # รายการ}}</translation>
 <translation id="478981486571169252">คุณจะเห็นสถานะการลงชื่อเข้าใช้ ข้อมูลการท่องเว็บ และข้อมูลเว็บไซต์ของ <ph name="SITE_NAME" /> ใน Chrome</translation>
 <translation id="4802417911091824046">การเข้ารหัสลับด้วยรหัสผ่านจะไม่รวมข้อมูลวิธีการชำระเงินและที่อยู่จาก Google Pay
@@ -490,6 +492,7 @@
 <translation id="4943872375798546930">ไม่มีผลการค้นหา</translation>
 <translation id="4961107849584082341">แปลหน้านี้เป็นภาษาใดก็ได้</translation>
 <translation id="4970824347203572753">ไม่พร้อมใช้งานในประเทศของคุณ</translation>
+<translation id="4971735654804503942">การปกป้องเชิงรุกอย่างรวดเร็วขึ้นจากเว็บไซต์ การดาวน์โหลด และส่วนขยายที่เป็นอันตราย เตือนคุณเรื่องการละเมิดรหัสผ่าน ต้องส่งข้อมูลการท่องเว็บให้ Google</translation>
 <translation id="497421865427891073">ไปข้างหน้า</translation>
 <translation id="4988210275050210843">กำลังดาวน์โหลดไฟล์ (<ph name="MEGABYTES" />)</translation>
 <translation id="4988526792673242964">หน้า</translation>
@@ -561,7 +564,6 @@
 <translation id="5527082711130173040">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ โปรด<ph name="BEGIN_LINK1" />อัปเดตสิทธิ์<ph name="END_LINK1" /> การเข้าถึงตำแหน่ง<ph name="BEGIN_LINK2" />สำหรับอุปกรณ์เครื่องนี้ยังปิดอยู่<ph name="END_LINK2" /></translation>
 <translation id="5530766185686772672">ปิดแท็บที่ไม่ระบุตัวตน</translation>
 <translation id="5534640966246046842">คัดลอกไซต์แล้ว</translation>
-<translation id="5548606607480005320">การตรวจสอบความปลอดภัย</translation>
 <translation id="5561549206367097665">กำลังรอเครือข่าย…</translation>
 <translation id="55737423895878184">อนุญาตให้ใช้ตำแหน่งและแสดงการแจ้งเตือน</translation>
 <translation id="5578795271662203820">ค้นหาภาพนี้ใน <ph name="SEARCH_ENGINE" /></translation>
@@ -600,7 +602,6 @@
 <translation id="583281660410589416">ไม่รู้จัก</translation>
 <translation id="5833984609253377421">แชร์ลิงก์</translation>
 <translation id="5836192821815272682">กำลังดาวน์โหลดอัปเดต Chrome…</translation>
-<translation id="584120177693484274">ยังไม่ได้ตรวจตสอบ</translation>
 <translation id="5853623416121554550">หยุดชั่วคราว</translation>
 <translation id="5854790677617711513">เกิน 30 วัน</translation>
 <translation id="5858741533101922242">Chrome ไม่สามารถเปิดอะแดปเตอร์บลูทูธ</translation>
@@ -736,10 +737,12 @@
 <translation id="685850645784703949">Discover โดย Google - ปิดอยู่</translation>
 <translation id="6864459304226931083">ดาวน์โหลดรูปภาพ</translation>
 <translation id="6865313869410766144">ข้อมูลฟอร์มที่ป้อนอัตโนมัติ</translation>
+<translation id="6882836635272038266">การปกป้องแบบมาตรฐานจากเว็บไซต์ การดาวน์โหลด และส่วนขยายที่ทราบแล้วว่าเป็นอันตราย</translation>
 <translation id="6884306546558072722">สำรวจแบบอออฟไลน์ต่อไป</translation>
 <translation id="688738109438487280">เพิ่มข้อมูลที่มีอยู่ลงใน <ph name="TO_ACCOUNT" /></translation>
 <translation id="6891726759199484455">ปลดล็อกเพื่อคัดลอกรหัสผ่าน</translation>
 <translation id="6896758677409633944">คัดลอก</translation>
+<translation id="6900532703269623216">การปกป้องที่ปรับปรุงแล้ว</translation>
 <translation id="6903907808598579934">เปิดการซิงค์</translation>
 <translation id="6942665639005891494">เปลี่ยนตำแหน่งเริ่มต้นในการดาวน์โหลดได้ทุกเมื่อโดยใช้ตัวเลือกเมนู "การตั้งค่า"</translation>
 <translation id="6945221475159498467">เลือก</translation>

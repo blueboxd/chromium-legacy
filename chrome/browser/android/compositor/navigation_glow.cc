@@ -4,36 +4,20 @@
 
 #include "chrome/browser/android/compositor/navigation_glow.h"
 
-#include "base/android/build_info.h"
 #include "chrome/android/chrome_jni_headers/CompositorNavigationGlow_jni.h"
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/edge_effect.h"
-#include "ui/android/edge_effect_l.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
 
 using base::android::JavaParamRef;
 
-namespace {
-
-// Used for conditional creation of EdgeEffect types for the overscroll glow.
-bool IsAndroidLOrNewer() {
-  static bool android_l_or_newer =
-      base::android::BuildInfo::GetInstance()->sdk_int() >=
-      base::android::SDK_VERSION_LOLLIPOP;
-  return android_l_or_newer;
-}
-
-}  // namespace
-
 namespace android {
 
-NavigationGlow::NavigationGlow(float dip_scale,
-                               content::WebContents* web_contents)
-    : dip_scale_(dip_scale),
-      glow_effect_(std::make_unique<ui::OverscrollGlow>(this)) {
+NavigationGlow::NavigationGlow(content::WebContents* web_contents)
+    : glow_effect_(std::make_unique<ui::OverscrollGlow>(this)) {
   DCHECK(web_contents);
   view_ = web_contents->GetNativeView();
   view_->AddObserver(this);
@@ -114,24 +98,19 @@ void NavigationGlow::OnAnimate(base::TimeTicks frame_time) {
     window_->SetNeedsAnimate();
 }
 
-std::unique_ptr<ui::EdgeEffectBase> NavigationGlow::CreateEdgeEffect() {
+std::unique_ptr<ui::EdgeEffect> NavigationGlow::CreateEdgeEffect() {
   auto& resource_manager = window_->GetCompositor()->GetResourceManager();
-  if (IsAndroidLOrNewer())
-    return std::make_unique<ui::EdgeEffectL>(&resource_manager);
-
-  return std::make_unique<ui::EdgeEffect>(&resource_manager, dip_scale_);
+  return std::make_unique<ui::EdgeEffect>(&resource_manager);
 }
 
 static jlong JNI_CompositorNavigationGlow_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const jfloat dip_scale,
     const JavaParamRef<jobject>& jweb_contents) {
   auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
   if (web_contents == nullptr)
     return 0;
-  return reinterpret_cast<intptr_t>(
-      new NavigationGlow(dip_scale, web_contents));
+  return reinterpret_cast<intptr_t>(new NavigationGlow(web_contents));
 }
 
 }  // namespace android

@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1647391597548383849">I-access ang iyong camera</translation>
 <translation id="1660204651932907780">Payagan ang mga site na mag-play ng tunog (inirerekomenda)</translation>
+<translation id="1677097821151855053">Ginagamit ang cookies at iba pang data ng site para tandaan ka, halimbawa para i-sign in ka o i-personalize ang mga ad. Para mapamahalaan ang cookies para sa lahat ng site, tingnan ang <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">I-clear ang data ng site?</translation>
 <translation id="169515064810179024">I-block ang mga site sa pag-access sa mga sensor ng paggalaw</translation>
 <translation id="1717218214683051432">Mga sensor ng paggalaw</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Payagan ang cookies para sa isang partikular na site.</translation>
 <translation id="4046123991198612571">Susunod na track</translation>
 <translation id="4165986682804962316">Mga setting ng site</translation>
+<translation id="4200726100658658164">Buksan ang Mga Setting ng Lokasyon</translation>
 <translation id="4226663524361240545">Maaaring mag-vibrate ang device dahil sa mga notification</translation>
 <translation id="4242533952199664413">Buksan ang mga setting</translation>
 <translation id="4259722352634471385">Naka-block ang navigation: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Lahat ng site</translation>
 <translation id="6320088164292336938">Mag-vibrate</translation>
 <translation id="6388207532828177975">I-clear at i-reset</translation>
+<translation id="6423924377271166037">I-clear ang cookies</translation>
 <translation id="6439114592976064011">I-block ang mga site sa paggamit sa iyong virtual reality device at data</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6527303717912515753">Ibahagi</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Maghanap nang pabalik</translation>
 <translation id="8444433999583714703">Para payagan ang <ph name="APP_NAME" /> na i-access ang iyong lokasyon, i-on din ang lokasyon sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Bawiin ang pahintulot ng device</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie ang ginagamit}one{# cookie ang ginagamit}other{# na cookie ang ginagamit}}</translation>
 <translation id="8463851957836045671">Mabilis ang site</translation>
 <translation id="851751545965956758">I-block ang mga site sa pagkonekta sa mga device</translation>
 <translation id="857943718398505171">Pinapayagan (inirerekomenda)</translation>

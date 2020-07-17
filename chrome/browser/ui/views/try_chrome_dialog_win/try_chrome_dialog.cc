@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
@@ -983,12 +984,12 @@ TryChromeDialog::Result TryChromeDialog::Show(
   dialog.ShowDialogAsync();
 
   if (listener) {
-    listener.Run(base::Bind(&TryChromeDialog::OnProcessNotification,
-                            base::Unretained(&dialog)));
+    listener.Run(base::BindRepeating(&TryChromeDialog::OnProcessNotification,
+                                     base::Unretained(&dialog)));
   }
   run_loop.Run();
   if (listener)
-    listener.Run(base::Closure());
+    listener.Run(base::NullCallback());
 
   return dialog.result();
 }

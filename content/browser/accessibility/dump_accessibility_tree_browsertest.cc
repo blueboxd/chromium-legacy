@@ -786,6 +786,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaListBox) {
   RunAriaTest(FILE_PATH_LITERAL("aria-listbox.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaListBoxDisabled) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-listbox-disabled.html"));
+}
 // TODO(crbug.com/983802): Flaky.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        DISABLED_AccessibilityAriaListBoxActiveDescendant) {

@@ -260,11 +260,6 @@
       ]
     }
   ],
-  "documentScan": {
-    "channel": "stable",
-    "extension_types": ["extension", "platform_app"],
-    "platforms": ["chromeos"]
-  },
   "externally_connectable.all_urls": {
     "channel": "stable",
     "extension_types": ["extension"],

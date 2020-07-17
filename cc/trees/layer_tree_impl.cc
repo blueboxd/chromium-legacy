@@ -2555,6 +2555,11 @@ int LayerTreeImpl::GetMSAASampleCountForRaster(
   return host_impl_->GetMSAASampleCountForRaster(display_list);
 }
 
+gfx::ColorSpace LayerTreeImpl::GetRasterColorSpace(
+    gfx::ContentColorUsage content_color_usage) const {
+  return host_impl_->GetRasterColorSpace(content_color_usage);
+}
+
 void LayerTreeImpl::SetPendingPageScaleAnimation(
     std::unique_ptr<PendingPageScaleAnimation> pending_animation) {
   pending_page_scale_animation_ = std::move(pending_animation);

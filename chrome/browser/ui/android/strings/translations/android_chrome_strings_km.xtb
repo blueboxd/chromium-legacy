@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">ចំណាំដែលបានរក្សាទុកនៅលើឧបករណ៍ផ្សេងទៀតរបស់អ្នកនឹងបង្ហាញនៅទីនេះ</translation>
 <translation id="1113597929977215864">បង្ហាញ​ទិដ្ឋភាព​សាមញ្ញ</translation>
 <translation id="1122278879166832009">ចុចត្រង់នេះ ដើម្បី​ចូលប្រើ​ទំព័រដើម​របស់អ្នក​បានយ៉ាងរហ័ស​ពីគ្រប់កម្មវិធី</translation>
+<translation id="1126809382673880764">មិនការពារអ្នក​ពីគេហទំព័រ ការទាញយក ឬកម្មវិធី​បន្ថែម​ដែលមានគ្រោះថ្នាក់ទេ។ អ្នក​នឹង​នៅតែ​ទទួលបាន​ការការពារ​ការរុករក​ដោយសុវត្ថិភាព (ប្រសិនបើមាន) នៅក្នុង​សេវាកម្ម Google ផ្សេងទៀត​ដូចជា Gmail និង​កម្មវិធីស្វែងរកជាដើម។</translation>
 <translation id="1129510026454351943">ព័ត៌មានលម្អិត៖ <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{ការទាញយក 1 មិនទាន់​សម្រេច។}other{ការទាញយក # មិនទាន់​សម្រេច។}}</translation>
 <translation id="1145536944570833626">លុបទិន្នន័យដែលមានស្រាប់។</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">ភ្លឺ</translation>
 <translation id="1810845389119482123">ការរៀបចំ​សមកាលកម្ម​ដំបូង​មិនបាន​បញ្ចប់​ទេ</translation>
 <translation id="1821253160463689938">ប្រើ​ខូគី​ដើម្បី​ចងចាំ​ចំណូលចិត្ត​របស់អ្នក បើ​ទោះ​បី​ជា​អ្នក​​មិន​ចូលមើល​ទំព័រ​ទាំងនោះ​ក៏ដោយ</translation>
-<translation id="1826516787628120939">កំពុងពិនិត្យមើល</translation>
 <translation id="1829244130665387512">ស្វែងរកក្នុងទំព័រ</translation>
 <translation id="1853692000353488670">ផ្ទាំងអនាមិកថ្មី</translation>
 <translation id="1856325424225101786">កំណត់​មុខងារស្រាល​ឡើងវិញឬ?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">រក្សាទុកពាក្យសម្ងាត់</translation>
 <translation id="1952172573699511566">គេហទំព័រ​នឹង​បង្ហាញ​អក្សរ​ជា​ភាសា​ដែលអ្នកចង់ប្រើ​ នៅពេល​ដែល​មាន។</translation>
 <translation id="1960290143419248813">កំណែថ្មីៗ​របស់ Chrome មិន​អាចប្រើជាមួយកំណែ Android នេះ​ទៀតទេ</translation>
+<translation id="1963976881984600709">ការការពារ​ស្តង់ដារ</translation>
 <translation id="1966710179511230534">សូមធ្វើបច្ចុប្បន្នភាពព័ត៌មានលំអិតការចូលរបស់អ្នក</translation>
 <translation id="1974060860693918893">កម្រិតខ្ពស់</translation>
+<translation id="1984417487208496350">គ្មានការការពារទេ (មិនណែនាំ)</translation>
 <translation id="1984705450038014246">ធ្វើសមកាលកម្ម​ទិន្នន័យ Chrome របស់អ្នក</translation>
 <translation id="1986685561493779662">ឈ្មោះមាន​រួច​ហើយ</translation>
 <translation id="1987739130650180037">ប៊ូតុង <ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">ស្វែងរកដោយប្រើ Google Lens <ph name="BEGIN_NEW" />ថ្មី<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">បើកនៅក្នុងផ្ទាំងថ្មី</translation>
 <translation id="4198423547019359126">មិនមាន​ទីតាំង​សម្រាប់​ការទាញយក​ទេ</translation>
-<translation id="4202553989407425169">Chrome អាចពិនិត្យថាតើការកំណត់របស់អ្នកកំពុងការពារអ្នកពី៖</translation>
 <translation id="4209895695669353772">ដើម្បីទទួលបានខ្លឹមសារ​ស្រប​តាមបុគ្គលដែលណែនាំដោយ Google សូមបើកសមកាលកម្ម</translation>
 <translation id="423219824432660969">អ៊ីនគ្រីបទិន្នន័យ​ដែលបាន​ធ្វើសមកាលកម្មដោយប្រើពាក្យសម្ងាត់ Google ពីថ្ងៃទី <ph name="TIME" /></translation>
 <translation id="4242533952199664413">បើកការកំណត់</translation>
@@ -459,6 +460,7 @@
 <translation id="4749960740855309258">បើកផ្ទាំងថ្មី</translation>
 <translation id="4759238208242260848">ទាញយក</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{ការទាញយក 1 បាន​បញ្ចប់។}other{ការទាញយក # បាន​បញ្ចប់។}}</translation>
+<translation id="4766678251456904326">បញ្ចូលគណនីទៅក្នុងឧបករណ៍</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{បានកំណត់​កាលវិភាគ​នៃការទាញយក 1។}other{បានកំណត់​កាលវិភាគ​នៃការទាញយក #។}}</translation>
 <translation id="478981486571169252">អ្នក​នឹងមើលឃើញ​ស្ថានភាព​ចូល <ph name="SITE_NAME" />, ទិន្នន័យ​រុករក និង​ទិន្នន័យគេហទំព័រ​របស់អ្នក​នៅក្នុង Chrome។</translation>
 <translation id="4802417911091824046">ការ​អ៊ីនគ្រីបឃ្លាសម្ងាត់មិន​រួមបញ្ចូល​អាសយដ្ឋាន និងវិធីបង់ប្រាក់​ពី Google Pay ទេ។
@@ -490,6 +492,7 @@
 <translation id="4943872375798546930">គ្មានលទ្ធផលទេ</translation>
 <translation id="4961107849584082341">បកប្រែ​ទំព័រនេះ​ទៅជាភាសា​ណាមួយ</translation>
 <translation id="4970824347203572753">មិនអាច​ប្រើ​នៅក្នុង​ទីតាំង​របស់អ្នក​បានទេ</translation>
+<translation id="4971735654804503942">ការការពារបរិសកម្ម និងរហ័សជាងមុនពីគេហទំព័រ ការទាញយក និងកម្មវិធី​បន្ថែមដែលមានគ្រោះថ្នាក់។ ព្រមានអ្នក​អំពីការបំពានពាក្យសម្ងាត់។ តម្រូវឱ្យបញ្ជូនទិន្នន័យរុករក​ទៅ Google។</translation>
 <translation id="497421865427891073">ទៅមុខ</translation>
 <translation id="4988210275050210843">កំពុង​ទាញយក​ឯកសារ (<ph name="MEGABYTES" />)។</translation>
 <translation id="4988526792673242964">ទំព័រ</translation>
@@ -561,7 +564,6 @@
 <translation id="5527082711130173040">Chrome ត្រូវការចូលប្រើទីតាំងដើម្បីស្កេនរកឧបករណ៍ សូម<ph name="BEGIN_LINK1" />អាប់ដេតសិទ្ធិអនុញ្ញាត<ph name="END_LINK1" />។ ការចូលប្រើទីតាំងក៏ត្រូវ<ph name="BEGIN_LINK2" />បានបិទសម្រាប់ឧបករណ៍នេះផងដែរ<ph name="END_LINK2" />។</translation>
 <translation id="5530766185686772672">បិទផ្ទាំងអនាមិក</translation>
 <translation id="5534640966246046842">បានចម្លង​ទំព័រ</translation>
-<translation id="5548606607480005320">ការពិនិត្យ​សុវត្ថិភាព</translation>
 <translation id="5561549206367097665">កំពុង​រង់​ចាំ​បណ្ដាញ​…</translation>
 <translation id="55737423895878184">ទីតាំង និង​ការជូន​ដំណឹង​ត្រូវ​បាន​អនុញ្ញាត</translation>
 <translation id="5578795271662203820">ស្វែងរក <ph name="SEARCH_ENGINE" /> សម្រាប់រូបភាពនេះ</translation>
@@ -600,7 +602,6 @@
 <translation id="583281660410589416">មិនស្គាល់</translation>
 <translation id="5833984609253377421">ចែក​រំលែក​តំណ</translation>
 <translation id="5836192821815272682">កំពុងទាញយក​កំណែថ្មី Chrome …</translation>
-<translation id="584120177693484274">បានដោះធីក</translation>
 <translation id="5853623416121554550">បាន​ផ្អាក</translation>
 <translation id="5854790677617711513">ចាស់ជាង 30 ថ្ងៃ</translation>
 <translation id="5858741533101922242">Chrome មិនអាចបើក​អាដាប់ទ័រ​ប៊្លូធូស​បានទេ</translation>
@@ -736,10 +737,12 @@
 <translation id="685850645784703949">Discover by Google - បិទ</translation>
 <translation id="6864459304226931083">ទាញយករូបភាព</translation>
 <translation id="6865313869410766144">បំពេញទិន្នន័យបែបបទស្វ័យប្រវត្តិ</translation>
+<translation id="6882836635272038266">ការការពារស្តង់ដារពីគេហទំព័រ ការទាញយក និងកម្មវិធី​បន្ថែមដែលចាត់ទុកថាមានគ្រោះថ្នាក់។</translation>
 <translation id="6884306546558072722">បន្តរុករក​ដោយគ្មាន​អ៊ីនធឺណិត</translation>
 <translation id="688738109438487280">បន្ថែមទិន្នន័យដែលមានស្រាប់ទៅ <ph name="TO_ACCOUNT" /> ។</translation>
 <translation id="6891726759199484455">ដោះសោ​ដើម្បី​ចម្លង​ពាក្យសម្ងាត់​របស់អ្នក</translation>
 <translation id="6896758677409633944">ចម្លង</translation>
+<translation id="6900532703269623216">ការការពារ​ដែលប្រសើរជាងមុន</translation>
 <translation id="6903907808598579934">បើកសមកាលកម្ម</translation>
 <translation id="6942665639005891494">ប្ដូរ​ទីតាំង​ទាញយក​លំនាំដើម​បាន​គ្រប់ពេល​ដោយ​ប្រើ​ជម្រើ​សម៉ឺនុយ​​ការកំណត់</translation>
 <translation id="6945221475159498467">ជ្រើសរើស</translation>

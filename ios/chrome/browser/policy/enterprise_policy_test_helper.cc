@@ -72,3 +72,8 @@ policy::MockConfigurationPolicyProvider*
 EnterprisePolicyTestHelper::GetPolicyProvider() {
   return &policy_provider_;
 }
+
+BrowserPolicyConnectorIOS*
+EnterprisePolicyTestHelper::GetBrowserPolicyConnector() {
+  return browser_policy_connector_.get();
+}

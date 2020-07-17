@@ -7,10 +7,10 @@ package org.chromium.net.test;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
+import androidx.annotation.GuardedBy;
+
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-
-import javax.annotation.concurrent.GuardedBy;
 
 /**
  * Junit4 rule for starting embedded test server when necessary (i.e. when accessed via

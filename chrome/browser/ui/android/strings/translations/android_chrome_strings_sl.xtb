@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Tu bodo prikazani zaznamki, shranjeni v drugih napravah.</translation>
 <translation id="1113597929977215864">Pokaži poenostavljen pogled</translation>
 <translation id="1122278879166832009">Dotaknite se tukaj, če želite hitro dostopati do domače strani od koder koli</translation>
+<translation id="1126809382673880764">Ne ščiti pred nevarnimi spletnimi mesti, prenosi in razširitvami. Še vedno boste deležni zaščite Varnega brskanja, kjer je na voljo, v drugih Googlovih storitvah, kot sta Gmail in Iskanje Google.</translation>
 <translation id="1129510026454351943">Podrobnosti: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 prenos na čakanju}one{# prenos na čakanju}two{# prenosa na čakanju}few{# prenosi na čakanju}other{# prenosov na čakanju}}</translation>
 <translation id="1145536944570833626">Izbris obstoječih podatkov.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Svetlo</translation>
 <translation id="1810845389119482123">Začetna nastavitev sinhronizacije se ni dokončala</translation>
 <translation id="1821253160463689938">Uporablja piškotke, da si zapomni vaše nastavitve, tudi če teh strani ne obiskujete</translation>
-<translation id="1826516787628120939">Preverjanje</translation>
 <translation id="1829244130665387512">Poiščite na strani</translation>
 <translation id="1853692000353488670">Nov zavihek brez beleženja zgodovine</translation>
 <translation id="1856325424225101786">Želite ponastaviti lahki način?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Shranjevanje gesel</translation>
 <translation id="1952172573699511566">Spletna mesta bodo besedilo prikazala v izbranem jeziku, če je mogoče.</translation>
 <translation id="1960290143419248813">Posodobitve za Chrome v tej različici Androida niso več podprte.</translation>
+<translation id="1963976881984600709">Standardna zaščita</translation>
 <translation id="1966710179511230534">Posodobite podrobnosti prijave.</translation>
 <translation id="1974060860693918893">Dodatno</translation>
+<translation id="1984417487208496350">Brez zaščite (ni priporočljivo)</translation>
 <translation id="1984705450038014246">Sinhronizacija podatkov v Chromu</translation>
 <translation id="1986685561493779662">Ime že obstaja</translation>
 <translation id="1987739130650180037">Gumb <ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
@@ -358,6 +360,7 @@ Dotaknite se poljubne besede in jo pridržite, če želite iskati. Če želite i
 <translation id="3892148308691398805">Kopiraj besedilo</translation>
 <translation id="3894427358181296146">Dodajanje mape</translation>
 <translation id="3895926599014793903">Vsili povečavo</translation>
+<translation id="3909763690984331376">Varnostno preverjanje <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Iskanje najboljšega v spletu …</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Združevanje podatkov</translation>
@@ -392,7 +395,6 @@ Dotaknite se poljubne besede in jo pridržite, če želite iskati. Če želite i
 <translation id="4183868528246477015">Iskanje z Google Lens <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Odpri v novem zavihku</translation>
 <translation id="4198423547019359126">Ni razpoložljivih mest za prenos</translation>
-<translation id="4202553989407425169">Chrome lahko preveri, ali vas nastavitve ščitijo pred naslednjim:</translation>
 <translation id="4209895695669353772">Če želite prejemati prilagojeno vsebino, ki jo predlaga Google, vklopite sinhronizacijo</translation>
 <translation id="423219824432660969">Šifriranje sinhroniziranih podatkov z geslom za Google Račun z dnem <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Odpri nastavitve</translation>
@@ -491,6 +493,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4943872375798546930">Ni rezultatov</translation>
 <translation id="4961107849584082341">Prevedite to stran v kateri koli jezik</translation>
 <translation id="4970824347203572753">Ni na voljo na vaši lokaciji</translation>
+<translation id="4971735654804503942">Hitrejša, še boljša zaščita proti nevarnim spletnim mestom, prenosom in razširitvam. Opozori vas glede kršitev gesel. Zahteva pošiljanje podatkov brskanja Googlu.</translation>
 <translation id="497421865427891073">Pojdi naprej</translation>
 <translation id="4988210275050210843">Prenos datoteke (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Strani</translation>
@@ -562,7 +565,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5527082711130173040">Chrome za iskanje naprav potrebuje dostop do lokacije. <ph name="BEGIN_LINK1" />Posodobite dovoljenja<ph name="END_LINK1" />. Dostop do lokacije je prav tako <ph name="BEGIN_LINK2" />izklopljen za to napravo<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Zapri zavih. brez bel. zgo.</translation>
 <translation id="5534640966246046842">Spletno mesto kopirano</translation>
-<translation id="5548606607480005320">Varnostno preverjanje</translation>
 <translation id="5561549206367097665">Čakanje na omrežje …</translation>
 <translation id="55737423895878184">Lokacija in obvestila so dovoljeni</translation>
 <translation id="5578795271662203820">Za iskanje te slike uporabi <ph name="SEARCH_ENGINE" /></translation>
@@ -580,6 +582,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5686790454216892815">Ime datoteke je predolgo</translation>
 <translation id="5694049548840660018">Preprosta vrnitev na domačo stran</translation>
 <translation id="569536719314091526">Prevedite to stran v kateri koli jezik z gumbom »Več možnosti«</translation>
+<translation id="5696597120588531049">Chrome vas lahko varuje pred podatkovnimi kršitvami, spletnimi mesti, ki niso varna, in drugim</translation>
 <translation id="5697688514913266141">Datoteka bo shranjena v mapo <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Uredi<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Preklop na zavihek</translation>
 <translation id="572328651809341494">Nedavni zavihki</translation>
@@ -601,7 +604,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="583281660410589416">Neznano</translation>
 <translation id="5833984609253377421">Deli povezavo z drugimi</translation>
 <translation id="5836192821815272682">Prenašanje posodobitve za Chrome …</translation>
-<translation id="584120177693484274">Nepotrjeno</translation>
 <translation id="5853623416121554550">začasno ustavljeno</translation>
 <translation id="5854790677617711513">Starejše od 30 dni</translation>
 <translation id="5858741533101922242">Chrome ne more vklopiti vmesnika za Bluetooth</translation>
@@ -714,6 +716,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6656545060687952787">Chrome za iskanje naprav potrebuje dostop do lokacije. <ph name="BEGIN_LINK" />Posodobite dovoljenja<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Geslo</translation>
 <translation id="6659594942844771486">Tabulator</translation>
+<translation id="6663079968236414793">Ustvari povezavo do besedila</translation>
 <translation id="666573598175432848">Na voljo je novejša različica Chroma. Dotaknite se tega elementa, če želite odpreti Trgovino Play.</translation>
 <translation id="666731172850799929">Odpri v: <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Obvestilo o zasebnosti za Chrome</translation>
@@ -737,10 +740,12 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="685850645784703949">Googlovo Odkrivanje – izklopljeno</translation>
 <translation id="6864459304226931083">Prenos slike</translation>
 <translation id="6865313869410766144">Podatki za samodejno izpolnjevanje obrazcev</translation>
+<translation id="6882836635272038266">Standardna zaščita proti spletnim mestom, prenosom in razširitvam, za katere vemo, da so nevarni.</translation>
 <translation id="6884306546558072722">Nadaljevanje raziskovanja brez povezave</translation>
 <translation id="688738109438487280">Dodajanje obstoječih podatkov v račun <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Odklenite, če želite kopirati geslo</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
+<translation id="6900532703269623216">Izboljšana zaščita</translation>
 <translation id="6903907808598579934">Vklopi sinhronizacijo</translation>
 <translation id="6942665639005891494">Z možnostjo v meniju z nastavitvami lahko kadar koli spremenite privzeto mesto za prenose</translation>
 <translation id="6945221475159498467">Izberi</translation>

@@ -586,6 +586,92 @@ TEST(RangesTest, GenerateN) {
   EXPECT_THAT(input, ElementsAre(1, 2, 3, 4, 0));
 }
 
+TEST(RangesTest, Remove) {
+  int input[] = {1, 0, 1, 1, 0};
+
+  EXPECT_EQ(input + 3, ranges::remove(input + 1, input + 5, 1));
+  EXPECT_EQ(input[0], 1);
+  EXPECT_EQ(input[1], 0);
+  EXPECT_EQ(input[2], 0);
+
+  Int ints[] = {2, 2, 1, 1, 2, 2};
+  EXPECT_EQ(ints + 2, ranges::remove(ints, 2, &Int::value));
+  EXPECT_EQ(ints[0], 1);
+  EXPECT_EQ(ints[1], 1);
+}
+
+TEST(RangesTest, RemoveIf) {
+  int input[] = {0, 1, 2, 3, 4};
+
+  EXPECT_EQ(input + 2, ranges::remove_if(input, input + 4, is_even));
+  EXPECT_EQ(input[0], 1);
+  EXPECT_EQ(input[1], 3);
+  EXPECT_EQ(input[4], 4);
+
+  Int ints[] = {2, 2, 1, 1, 2, 2};
+  EXPECT_EQ(ints + 2, ranges::remove_if(ints, is_even, &Int::value));
+  EXPECT_EQ(ints[0], 1);
+  EXPECT_EQ(ints[1], 1);
+}
+
+TEST(RangesTest, RemoveCopy) {
+  int input[] = {0, 1, 2, 3, 4};
+  int output[] = {0, 0, 0, 0, 0};
+
+  EXPECT_EQ(output + 1, ranges::remove_copy(input, input + 2, output, 0));
+  EXPECT_THAT(input, ElementsAre(0, 1, 2, 3, 4));
+  EXPECT_THAT(output, ElementsAre(1, 0, 0, 0, 0));
+
+  EXPECT_EQ(output + 4, ranges::remove_copy(input, output, 4));
+  EXPECT_THAT(input, ElementsAre(0, 1, 2, 3, 4));
+  EXPECT_THAT(output, ElementsAre(0, 1, 2, 3, 0));
+}
+
+TEST(RangesTest, RemovCopyIf) {
+  Int input[] = {0, 1, 2, 3, 4};
+  Int output[] = {0, 0, 0, 0, 0};
+
+  EXPECT_EQ(output + 2, ranges::remove_copy_if(input, input + 4, output,
+                                               is_even, &Int::value));
+  EXPECT_THAT(input, ElementsAre(0, 1, 2, 3, 4));
+  EXPECT_THAT(output, ElementsAre(1, 3, 0, 0, 0));
+
+  EXPECT_EQ(output + 3,
+            ranges::remove_copy_if(input, output, is_odd, &Int::value));
+  EXPECT_THAT(input, ElementsAre(0, 1, 2, 3, 4));
+  EXPECT_THAT(output, ElementsAre(0, 2, 4, 0, 0));
+}
+
+TEST(RangesTest, Unique) {
+  int input[] = {0, 0, 1, 1, 2};
+
+  EXPECT_EQ(input + 2, ranges::unique(input, input + 3));
+  EXPECT_EQ(input[0], 0);
+  EXPECT_EQ(input[1], 1);
+  EXPECT_EQ(input[3], 1);
+  EXPECT_EQ(input[4], 2);
+
+  Int ints[] = {2, 2, 1, 1, 2, 2};
+  EXPECT_EQ(ints + 3, ranges::unique(ints, {}, &Int::value));
+  EXPECT_EQ(ints[0], 2);
+  EXPECT_EQ(ints[1], 1);
+  EXPECT_EQ(ints[2], 2);
+}
+
+TEST(RangesTest, UniqueCopy) {
+  Int input[] = {0, 0, 1, 2, 2};
+  Int output[] = {0, 0, 0, 0, 0};
+
+  EXPECT_EQ(output + 3,
+            ranges::unique_copy(input, input + 4, output, {}, &Int::value));
+  EXPECT_THAT(input, ElementsAre(0, 0, 1, 2, 2));
+  EXPECT_THAT(output, ElementsAre(0, 1, 2, 0, 0));
+
+  EXPECT_EQ(output + 3, ranges::unique_copy(input, output, {}, &Int::value));
+  EXPECT_THAT(input, ElementsAre(0, 0, 1, 2, 2));
+  EXPECT_THAT(output, ElementsAre(0, 1, 2, 0, 0));
+}
+
 TEST(RangesTest, LowerBound) {
   int array[] = {0, 0, 1, 1, 2, 2};
 

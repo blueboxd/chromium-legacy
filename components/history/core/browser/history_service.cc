@@ -12,9 +12,8 @@
 // HistoryService <----------------> HistoryBackend
 //                                   -> HistoryDatabase
 //                                      -> SQLite connection to History
-//                                   -> ThumbnailDatabase
-//                                      -> SQLite connection to Thumbnails
-//                                         (and favicons)
+//                                   -> FaviconDatabase
+//                                      -> SQLite connection to favicons
 
 #include "components/history/core/browser/history_service.h"
 

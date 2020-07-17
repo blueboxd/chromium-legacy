@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/sandbox_type.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/process_type.h"
 #include "sandbox/policy/win/sandbox_win.h"

@@ -21,10 +21,10 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "components/history/core/browser/favicon_database.h"
 #include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_database.h"
-#include "components/history/core/browser/thumbnail_database.h"
 
 namespace history {
 
@@ -168,7 +168,7 @@ ExpireHistoryBackend::ExpireHistoryBackend(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : notifier_(notifier),
       main_db_(nullptr),
-      thumb_db_(nullptr),
+      favicon_db_(nullptr),
       backend_client_(backend_client),
       task_runner_(task_runner) {
   DCHECK(notifier_);
@@ -178,9 +178,9 @@ ExpireHistoryBackend::~ExpireHistoryBackend() {
 }
 
 void ExpireHistoryBackend::SetDatabases(HistoryDatabase* main_db,
-                                        ThumbnailDatabase* thumb_db) {
+                                        FaviconDatabase* favicon_db) {
   main_db_ = main_db;
-  thumb_db_ = thumb_db;
+  favicon_db_ = favicon_db;
 }
 
 void ExpireHistoryBackend::DeleteURL(const GURL& url, base::Time end_time) {
@@ -334,7 +334,7 @@ void ExpireHistoryBackend::ExpireHistoryBeforeForTesting(base::Time end_time) {
 
 void ExpireHistoryBackend::ClearOldOnDemandFaviconsIfPossible(
     base::Time expiration_threshold) {
-  if (!thumb_db_)
+  if (!favicon_db_)
     return;
 
   // Extra precaution to avoid repeated calls to GetOldOnDemandFavicons() close
@@ -348,7 +348,7 @@ void ExpireHistoryBackend::ClearOldOnDemandFaviconsIfPossible(
   last_on_demand_expiration_threshold_ = expiration_threshold;
 
   std::map<favicon_base::FaviconID, IconMappingsForExpiry> icon_mappings =
-      thumb_db_->GetOldOnDemandFavicons(expiration_threshold);
+      favicon_db_->GetOldOnDemandFavicons(expiration_threshold);
   DeleteEffects effects;
 
   for (auto id_and_mappings_pair : icon_mappings) {
@@ -360,8 +360,8 @@ void ExpireHistoryBackend::ClearOldOnDemandFaviconsIfPossible(
       continue;
     }
 
-    thumb_db_->DeleteFavicon(icon_id);
-    thumb_db_->DeleteIconMappingsForFaviconId(icon_id);
+    favicon_db_->DeleteFavicon(icon_id);
+    favicon_db_->DeleteIconMappingsForFaviconId(icon_id);
     effects.deleted_favicons.insert(mappings.icon_url);
   }
 
@@ -408,18 +408,16 @@ void ExpireHistoryBackend::StartExpiringOldStuff(
 }
 
 void ExpireHistoryBackend::DeleteFaviconsIfPossible(DeleteEffects* effects) {
-  if (!thumb_db_)
+  if (!favicon_db_)
     return;
 
   for (auto i = effects->affected_favicons.begin();
        i != effects->affected_favicons.end(); ++i) {
-    if (!thumb_db_->HasMappingFor(*i)) {
+    if (!favicon_db_->HasMappingFor(*i)) {
       GURL icon_url;
       favicon_base::IconType icon_type;
-      if (thumb_db_->GetFaviconHeader(*i,
-                                      &icon_url,
-                                      &icon_type) &&
-          thumb_db_->DeleteFavicon(*i)) {
+      if (favicon_db_->GetFaviconHeader(*i, &icon_url, &icon_type) &&
+          favicon_db_->DeleteFavicon(*i)) {
         effects->deleted_favicons.insert(icon_url);
       }
     }
@@ -494,12 +492,13 @@ void ExpireHistoryBackend::DeleteIcons(const GURL& gurl,
                                        DeleteEffects* effects) {
   // Collect shared information.
   std::vector<IconMapping> icon_mappings;
-  if (thumb_db_ && thumb_db_->GetIconMappingsForPageURL(gurl, &icon_mappings)) {
+  if (favicon_db_ &&
+      favicon_db_->GetIconMappingsForPageURL(gurl, &icon_mappings)) {
     for (auto m = icon_mappings.begin(); m != icon_mappings.end(); ++m) {
       effects->affected_favicons.insert(m->icon_id);
     }
     // Delete the mapping entries for the url.
-    thumb_db_->DeleteIconMappings(gurl);
+    favicon_db_->DeleteIconMappings(gurl);
   }
 }
 

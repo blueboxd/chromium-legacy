@@ -96,6 +96,10 @@ class CreditCard : public AutofillDataModel {
   // has an IIN of 4.
   static const char* GetCardNetwork(const base::string16& number);
 
+  // Returns whether the nickname is valid. Note that empty nicknames are valid
+  // because they are not required.
+  static bool IsNicknameValid(const base::string16& nickname);
+
   // Network issuer strings are defined at the bottom of this file, e.g.
   // kVisaCard.
   void SetNetworkForMaskedCard(base::StringPiece network);
@@ -291,8 +295,9 @@ class CreditCard : public AutofillDataModel {
   // Returns whether the card has a cardholder name.
   bool HasNameOnCard() const;
 
-  // Returns whether the card has a valid nickname.
-  bool HasValidNickname() const;
+  // Returns whether the card has a non-empty nickname that also
+  // passes |IsNicknameValid| checks.
+  bool HasNonEmptyValidNickname() const;
 
   // Should be used ONLY by tests.
   base::string16 NicknameAndLastFourDigitsForTesting() const;
@@ -315,7 +320,7 @@ class CreditCard : public AutofillDataModel {
   base::string16 NetworkForFill() const;
 
   // A label for this card formatted as 'Nickname - ****2345'. Always call
-  // HasValidNickname() before calling this.
+  // HasNonEmptyValidNickname() before calling this.
   base::string16 NicknameAndLastFourDigits(
       base::string16 customized_nickname = base::string16()) const;
 

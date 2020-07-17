@@ -147,9 +147,9 @@ class DrmThread : public base::Thread,
       base::OnceCallback<void(MovableDisplaySnapshots)> callback) override;
   void AddGraphicsDevice(const base::FilePath& path, base::File file) override;
   void RemoveGraphicsDevice(const base::FilePath& path) override;
-  void ConfigureNativeDisplay(
-      const display::DisplayConfigurationParams& display_config_params,
-      base::OnceCallback<void(bool)> callback) override;
+  void ConfigureNativeDisplays(
+      const std::vector<display::DisplayConfigurationParams>& config_requests,
+      ConfigureNativeDisplaysCallback callback) override;
   void GetHDCPState(int64_t display_id,
                     base::OnceCallback<void(int64_t, bool, display::HDCPState)>
                         callback) override;

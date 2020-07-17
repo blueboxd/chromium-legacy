@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="1008557486741366299">לא עכשיו</translation>
+<translation id="100957008357583611">להשתמש במיקום שלך?</translation>
 <translation id="1010200102790553230">לטעינת הדף מאוחר יותר</translation>
 <translation id="1015730422737071372">ספק פרטים נוספים</translation>
 <translation id="1019413721762100891">כבוי</translation>
@@ -45,6 +46,7 @@
 <translation id="115926840831309955">‏יש לבדוק שה-CVC תקין ולנסות שוב, או לעדכן את תאריך התפוגה</translation>
 <translation id="1161325031994447685">‏להתחבר מחדש אל ה-Wi-Fi</translation>
 <translation id="1165039591588034296">שגיאה</translation>
+<translation id="1165174597379888365">ביקור בדף</translation>
 <translation id="1175364870820465910">הדפסה…</translation>
 <translation id="1175875016430184367">3 סיכות הידוק בצד ימין</translation>
 <translation id="1178581264944972037">השהה</translation>
@@ -266,6 +268,7 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{ואפליקציה אחת נוספת}two{ושתי אפליקציות נוספות}many{ו-# אפליקציות נוספות}other{ו-# אפליקציות נוספות}}</translation>
 <translation id="2003709556000175978">צריך לאפס את הסיסמה עכשיו</translation>
 <translation id="2003775180883135320">4 ניקובים בצד שמאל</translation>
+<translation id="202072848677994234">שליחת הטופס הזה מתבצעת בחיבור לא מאובטח. המילוי האוטומטי מושבת.</translation>
 <translation id="2025115093177348061">מציאות רבודה</translation>
 <translation id="2025186561304664664">‏שרת Proxy נקבע למוגדר אוטומטית.</translation>
 <translation id="2030481566774242610">האם התכוונת ל-<ph name="LINK" />?</translation>
@@ -334,6 +337,7 @@
 <translation id="2289385804009217824">חיתוך</translation>
 <translation id="2292556288342944218">הגישה לאינטרנט חסומה</translation>
 <translation id="2293443924986248631">‏כשהאפשרות מופעלת, אתרים לא יכולים להשתמש בקובצי cookie כדי לעקוב אחריך באינטרנט. ייתכנו שיבושים בפעולה של תכונות באתרים מסוימים.</translation>
+<translation id="2295290966866883927">‏כתובות URL של דפים שאליהם נכנסת נשלחות אל Google Cloud או צדדים שלישיים לניתוח. לדוגמה, ייתכן שהן ייסרקו כדי לזהות אתרים לא בטוחים.</translation>
 <translation id="2297722699537546652">B5 (Envelope)‎</translation>
 <translation id="2300306941146563769">לא הועלה</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)‎</translation>
@@ -425,7 +429,6 @@
 <translation id="2705137772291741111">העותק השמור (בקובץ השמור) של האתר הזה היה בלתי קריא.</translation>
 <translation id="2709516037105925701">מילוי אוטומטי</translation>
 <translation id="2713444072780614174">לבן</translation>
-<translation id="2720342946869265578">קרוב</translation>
 <translation id="2721148159707890343">הבקשה בוצעה בהצלחה</translation>
 <translation id="272451190272506600">כדי לשלם, יש לגעת בחיישן</translation>
 <translation id="2728127805433021124">האישור של השרת נחתם באמצעות אלגוריתם של חתימה חלשה.</translation>
@@ -722,7 +725,6 @@
 <translation id="3990250421422698716">היסט הלשונית</translation>
 <translation id="3996311196211510766">האתר <ph name="ORIGIN" /> ביקש להחיל מדיניות מקור
     על כל הבקשות הנשלחות אליו, אבל לא ניתן כרגע להחיל את המדיניות הזו.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{דף אינטרנט קרוב אחד}two{# דפי אינטרנט קרובים}many{# דפי אינטרנט קרובים}other{# דפי אינטרנט קרובים}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{‏מסמך ה-PDF מכיל דף אחד ({COUNT})}two{‏מסמך ה-PDF מכיל {COUNT} דפים}many{‏מסמך ה-PDF מכיל {COUNT} דפים}other{‏מסמך ה-PDF מכיל {COUNT} דפים}}</translation>
 <translation id="4030383055268325496">&amp;ביטול הוספה</translation>
 <translation id="4032320456957708163">הדפדפן שלך מנוהל על ידי <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -942,7 +944,6 @@ Del</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">שמירה...</translation>
 <translation id="4913987521957242411">ניקוב בפינה השמאלית העליונה</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{ועוד דף אינטרנט אחד}two{ועוד # דפי אינטרנט}many{ועוד # דפי אינטרנט}other{ועוד # דפי אינטרנט}}</translation>
 <translation id="4923459931733593730">תשלום</translation>
 <translation id="4926049483395192435">יש לציין ערך זה.</translation>
 <translation id="4926159001844873046">האתר <ph name="SITE" /> אומר</translation>
@@ -1184,6 +1185,7 @@ Del</translation>
 <translation id="5869405914158311789">לא ניתן לגשת לאתר הזה</translation>
 <translation id="5869522115854928033">סיסמאות שמורות</translation>
 <translation id="5887400589839399685">הכרטיס נשמר</translation>
+<translation id="589006512797629854">לפי הדרישה של <ph name="ENROLLMENT_DOMAIN" />, עליך לגבות את הנתונים שלך ולהחזיר את המכשיר.</translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="5895187275912066135">הונפק בתאריך</translation>
 <translation id="5901630391730855834">צהוב</translation>
@@ -1334,7 +1336,6 @@ Del</translation>
 <translation id="6518133107902771759">אימות</translation>
 <translation id="6521745193039995384">לא פעילה</translation>
 <translation id="6529602333819889595">&amp;ביצוע מחדש של מחיקה</translation>
-<translation id="6534179046333460208">הצעות לאינטרנט הפיזי</translation>
 <translation id="6545864417968258051">‏סריקת Bluetooth</translation>
 <translation id="6547208576736763147">שני ניקובים בצד שמאל</translation>
 <translation id="6554795675067793129">החשבון שלך מנוהל על-ידי <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1857,7 +1858,6 @@ Del</translation>
 <translation id="8790007591277257123">&amp;ביצוע מחדש של מחיקה</translation>
 <translation id="8792621596287649091">‏הגישה שלך לחשבון <ph name="ORG_NAME" /> עשויה להישלל והזהות שלך עשויה להיגנב. ההמלצה של Chromium היא לשנות את הסיסמה עכשיו.</translation>
 <translation id="8793655568873652685">‏הדומיין <ph name="ENROLLMENT_DOMAIN" /> הפעיל את Chrome Enterprise Connectors בדפדפן שלך. למחברים האלה יש גישה אל חלק מהנתונים שלך.</translation>
-<translation id="8800988563907321413">כאן מופיעות הצעות עבורך למקומות קרובים</translation>
 <translation id="8805819170075074995">‏ערך רשימה "<ph name="LANGUAGE_ID" />": המערכת התעלמה מהערך מאחר שהוא כלול גם במדיניות SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">חיתוך אחרי כל עמוד</translation>
 <translation id="8820817407110198400">סימניות</translation>

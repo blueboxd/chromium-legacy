@@ -23,6 +23,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
@@ -907,7 +908,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Enables or disables flipping of the gfx::Canvas during Paint(). Note that
   // if canvas flipping is enabled, the canvas will be flipped only if the UI
   // layout is right-to-left; that is, the canvas will be flipped only if
-  // base::i18n::IsRTL() returns true.
+  // GetMirrored() is true.
   //
   // Enabling canvas flipping is useful for leaf views that draw an image that
   // needs to be flipped horizontally when the UI layout is right-to-left
@@ -915,6 +916,19 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // because their drawing logic stays the same and they can become agnostic to
   // the UI directionality.
   virtual void EnableCanvasFlippingForRTLUI(bool enable);
+
+  // When set, this view will ignore base::l18n::IsRTL() and instead be drawn
+  // according to |is_mirrored|.
+  //
+  // This is useful for views that should be displayed the same regardless of UI
+  // direction. Unlike EnableCanvasFlippingForRTLUI this setting has an effect
+  // on the visual order of child views.
+  //
+  // This setting does not propagate to child views. So while the visual order
+  // of this view's children may change, the visual order of this view's
+  // grandchildren in relation to their parents are unchanged.
+  void SetMirrored(bool is_mirrored) { is_mirrored_ = is_mirrored; }
+  bool GetMirrored() const;
 
   // Input ---------------------------------------------------------------------
   // The points, rects, mouse locations, and touch locations in the following
@@ -1975,6 +1989,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // to be flipped horizontally (using the appropriate transform) on
   // right-to-left locales for this View.
   bool flip_canvas_on_paint_for_rtl_ui_ = false;
+
+  // Controls whether GetTransform(), the mirroring functions, and the like
+  // horizontally mirror. This controls how child views are physically
+  // positioned onscreen. The default behavior should be correct in most cases,
+  // but can be overridden if a particular view must always be laid out in some
+  // direction regardless of the application's default UI direction.
+  base::Optional<bool> is_mirrored_;
 
   // Accelerated painting ------------------------------------------------------
 

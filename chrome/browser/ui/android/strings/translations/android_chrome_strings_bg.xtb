@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Тук ще се показват отметките, които сте запазили на другите си устройства.</translation>
 <translation id="1113597929977215864">Показване на опростения изглед</translation>
 <translation id="1122278879166832009">Докоснете тук за бърз достъп до началната си страница от всяко място</translation>
+<translation id="1126809382673880764">Няма защита срещу опасни уебсайтове, изтеглени файлове и разширения. Пак ще получавате защита посредством Безопасно сърфиране в други услуги на Google, където функцията се поддържа – например Gmail и Търсене.</translation>
 <translation id="1129510026454351943">Подробности: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Предстои 1 изтегляне.}other{Предстоят # изтегляния.}}</translation>
 <translation id="1145536944570833626">Изтриване на съществуващите данни.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Светло</translation>
 <translation id="1810845389119482123">Първоначалното настройване на синхронизирането не завърши</translation>
 <translation id="1821253160463689938">Използва „бисквитки“ за запомняне на предпочитанията ви дори ако не посещавате тези страници</translation>
-<translation id="1826516787628120939">Извършва се проверка</translation>
 <translation id="1829244130665387512">Търсене в страницата</translation>
 <translation id="1853692000353488670">Нов раздел „инкогнито“</translation>
 <translation id="1856325424225101786">Да се нулира ли олекотеният режим?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Запазени пароли</translation>
 <translation id="1952172573699511566">Когато е възможно, текстът на уебсайтовете ще се показва на предпочитания от вас език.</translation>
 <translation id="1960290143419248813">Актуализациите на Chrome вече не се поддържат за тази версия на Android</translation>
+<translation id="1963976881984600709">Стандартна защита</translation>
 <translation id="1966710179511230534">Моля, актуализирайте данните си за вход.</translation>
 <translation id="1974060860693918893">Разширени</translation>
+<translation id="1984417487208496350">Без защита (не се препоръчва)</translation>
 <translation id="1984705450038014246">Синхронизиране на данните ви в Chrome</translation>
 <translation id="1986685561493779662">Името вече съществува</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> бутон „<ph name="LINK_NAME" />“</translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">Търсене с Google Обектив <ph name="BEGIN_NEW" />Ново<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Отваряне в нов раздел</translation>
 <translation id="4198423547019359126">Няма местоположения за изтегляне</translation>
-<translation id="4202553989407425169">Chrome може да проверява дали настройките ви предпазват от:</translation>
 <translation id="4209895695669353772">Включете синхронизирането, за да получавате персонализирано съдържание, предлагано от Google</translation>
 <translation id="423219824432660969">Шифроване на синхронизираните данни с паролата за Google от <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Отваряне на настройките</translation>
@@ -459,6 +460,7 @@
 <translation id="4749960740855309258">Отваряне на нов раздел</translation>
 <translation id="4759238208242260848">Изтегляния</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 изтегляне завърши.}other{# изтегляния завършиха.}}</translation>
+<translation id="4766678251456904326">Добавяне на профил към устройството</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{Насрочено е 1 изтегляне.}other{Насрочени са # изтегляния.}}</translation>
 <translation id="478981486571169252">В Chrome ще виждате дали сте влезли в профила си в <ph name="SITE_NAME" />, както и съответните данни за сърфирането и сайта.</translation>
 <translation id="4802417911091824046">Шифроването с пропуск не включва начините на плащане и адресите от Google Pay.
@@ -490,6 +492,7 @@
 <translation id="4943872375798546930">Няма резултати</translation>
 <translation id="4961107849584082341">Превод на тази страница на който и да е език</translation>
 <translation id="4970824347203572753">Не се предлага за местоположението ви</translation>
+<translation id="4971735654804503942">По-бърза, изпреварваща защита срещу опасни уебсайтове, изтеглени файлове и разширения. Предупреждава ви за разкрити пароли. За да действа, до Google трябва да се изпращат данни за сърфирането.</translation>
 <translation id="497421865427891073">Преминаване напред</translation>
 <translation id="4988210275050210843">Изтегля се файл (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Страници</translation>
@@ -561,7 +564,6 @@
 <translation id="5527082711130173040">Chrome се нуждае от достъп до местоположението, за да сканира за устройства. <ph name="BEGIN_LINK1" />Актуализирайте разрешенията<ph name="END_LINK1" />. Също така услугите за местоположение са <ph name="BEGIN_LINK2" />изключени за това устройство<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Раздели „инкогнито“: Затв.</translation>
 <translation id="5534640966246046842">Сайтът е копиран</translation>
-<translation id="5548606607480005320">Проверка на безопасността</translation>
 <translation id="5561549206367097665">Изчаква се връзка с мрежата…</translation>
 <translation id="55737423895878184">Достъпът до местоположението и известията са разрешени</translation>
 <translation id="5578795271662203820">Търсене на изображението със: <ph name="SEARCH_ENGINE" /></translation>
@@ -600,7 +602,6 @@
 <translation id="583281660410589416">Неизвестно</translation>
 <translation id="5833984609253377421">Споделяне на връзката</translation>
 <translation id="5836192821815272682">Актуализацията на Chrome се изтегля…</translation>
-<translation id="584120177693484274">Непроверено</translation>
 <translation id="5853623416121554550">на пауза</translation>
 <translation id="5854790677617711513">По-стари от 30 дни</translation>
 <translation id="5858741533101922242">Chrome не може да включи адаптера за Bluetooth</translation>
@@ -736,10 +737,12 @@
 <translation id="685850645784703949">Discover от Google – изкл.</translation>
 <translation id="6864459304226931083">Изтегляне на изображението</translation>
 <translation id="6865313869410766144">Данни за автоматично попълване на формуляри</translation>
+<translation id="6882836635272038266">Стандартна защита срещу уебсайтове, изтеглени файлове и разширения, за които е известно, че са опасни.</translation>
 <translation id="6884306546558072722">Разглеждайте офлайн</translation>
 <translation id="688738109438487280">Добавяне на съществуващите данни към <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Отключете, за да копирате паролата си</translation>
 <translation id="6896758677409633944">Копиране</translation>
+<translation id="6900532703269623216">Подобрена защита</translation>
 <translation id="6903907808598579934">Включване на синхронизирането</translation>
 <translation id="6942665639005891494">Променете стандартното местоположение за изтегляне по всяко време чрез опцията в менюто „Настройки“</translation>
 <translation id="6945221475159498467">Избиране</translation>

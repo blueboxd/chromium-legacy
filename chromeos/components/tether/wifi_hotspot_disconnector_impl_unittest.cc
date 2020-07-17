@@ -55,7 +55,7 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
     return last_disconnect_success_callback_;
   }
 
-  network_handler::ErrorCallback last_disconnect_error_callback() {
+  network_handler::ErrorCallback& last_disconnect_error_callback() {
     return last_disconnect_error_callback_;
   }
 
@@ -63,16 +63,16 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
   void DisconnectNetwork(
       const std::string& service_path,
       base::OnceClosure success_callback,
-      const network_handler::ErrorCallback& error_callback) override {
+      network_handler::ErrorCallback error_callback) override {
     last_disconnect_service_path_ = service_path;
     last_disconnect_success_callback_ = std::move(success_callback);
-    last_disconnect_error_callback_ = error_callback;
+    last_disconnect_error_callback_ = std::move(error_callback);
 
     std::move(disconnect_callback_).Run();
   }
   void ConnectToNetwork(const std::string& service_path,
                         base::OnceClosure success_callback,
-                        const network_handler::ErrorCallback& error_callback,
+                        network_handler::ErrorCallback error_callback,
                         bool check_error_state,
                         ConnectCallbackMode mode) override {}
   void Init(NetworkStateHandler* network_state_handler,
@@ -172,7 +172,8 @@ class WifiHotspotDisconnectorImplTest : public testing::Test {
           test_network_connection_handler_->last_disconnect_error_callback()
               .is_null());
       network_handler::RunErrorCallback(
-          test_network_connection_handler_->last_disconnect_error_callback(),
+          std::move(test_network_connection_handler_
+                        ->last_disconnect_error_callback()),
           wifi_service_path_, NetworkConnectionHandler::kErrorDisconnectFailed,
           std::string() /* error_detail */);
     }

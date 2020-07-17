@@ -54,8 +54,10 @@
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/ui/table_view/table_view_illustrated_empty_view.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
@@ -198,6 +200,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 // Background shown when there is no bookmarks or folders at the current root
 // node.
 @property(nonatomic, strong) BookmarkEmptyBackground* emptyTableBackgroundView;
+
+// Illustrated View displayed when the current root node is empty.
+@property(nonatomic, strong) TableViewIllustratedEmptyView* emptyViewBackground;
 
 // The loading spinner background which appears when loading the BookmarkModel
 // or syncing.
@@ -1409,21 +1414,40 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 // Shows empty bookmarks background view.
 - (void)showEmptyBackground {
-  if (!self.emptyTableBackgroundView) {
-    // Set up the background view shown when the table is empty.
-    self.emptyTableBackgroundView = [[BookmarkEmptyBackground alloc]
-        initWithFrame:self.sharedState.tableView.bounds];
-    self.emptyTableBackgroundView.autoresizingMask =
-        UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    self.emptyTableBackgroundView.text =
-        l10n_util::GetNSString(IDS_IOS_BOOKMARK_NO_BOOKMARKS_LABEL);
-    self.emptyTableBackgroundView.frame = self.sharedState.tableView.bounds;
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
+    if (!self.emptyViewBackground) {
+      self.emptyViewBackground = [[TableViewIllustratedEmptyView alloc]
+          initWithFrame:self.sharedState.tableView.bounds
+                  image:[UIImage imageNamed:@"bookmark_empty"]
+                  title:l10n_util::GetNSString(IDS_IOS_BOOKMARK_EMPTY_TITLE)
+               subtitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_EMPTY_MESSAGE)];
+    }
+    self.sharedState.tableView.backgroundView = self.emptyViewBackground;
+    self.navigationItem.searchController = nil;
+  } else {
+    if (!self.emptyTableBackgroundView) {
+      // Set up the background view shown when the table is empty.
+      self.emptyTableBackgroundView = [[BookmarkEmptyBackground alloc]
+          initWithFrame:self.sharedState.tableView.bounds];
+      self.emptyTableBackgroundView.autoresizingMask =
+          UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+      self.emptyTableBackgroundView.text =
+          l10n_util::GetNSString(IDS_IOS_BOOKMARK_NO_BOOKMARKS_LABEL);
+      self.emptyTableBackgroundView.frame = self.sharedState.tableView.bounds;
+    }
+    self.sharedState.tableView.backgroundView = self.emptyTableBackgroundView;
   }
-  self.sharedState.tableView.backgroundView = self.emptyTableBackgroundView;
 }
 
 - (void)hideEmptyBackground {
-  self.sharedState.tableView.backgroundView = nil;
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
+    if (self.sharedState.tableView.backgroundView == self.emptyViewBackground) {
+      self.sharedState.tableView.backgroundView = nil;
+    }
+    self.navigationItem.searchController = self.searchController;
+  } else {
+    self.sharedState.tableView.backgroundView = nil;
+  }
 }
 
 #pragma mark - ContextBarDelegate implementation

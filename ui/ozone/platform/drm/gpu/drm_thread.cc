@@ -325,19 +325,23 @@ void DrmThread::RefreshNativeDisplays(
   std::move(callback).Run(display_manager_->GetDisplays());
 }
 
-void DrmThread::ConfigureNativeDisplay(
-    const display::DisplayConfigurationParams& display_config_params,
-    base::OnceCallback<void(bool)> callback) {
-  TRACE_EVENT0("drm", "DrmThread::ConfigureNativeDisplay");
+void DrmThread::ConfigureNativeDisplays(
+    const std::vector<display::DisplayConfigurationParams>& config_requests,
+    base::OnceCallback<void(const base::flat_map<int64_t, bool>&)> callback) {
+  TRACE_EVENT0("drm", "DrmThread::ConfigureNativeDisplays");
 
-  if (display_config_params.mode) {
-    std::move(callback).Run(display_manager_->ConfigureDisplay(
-        display_config_params.id, *display_config_params.mode.value(),
-        display_config_params.origin));
-  } else {
-    std::move(callback).Run(
-        display_manager_->DisableDisplay(display_config_params.id));
+  base::flat_map<int64_t, bool> statuses;
+  for (const auto& config : config_requests) {
+    bool status = false;
+    if (config.mode) {
+      status = display_manager_->ConfigureDisplay(
+          config.id, *config.mode.value(), config.origin);
+    } else {
+      status = display_manager_->DisableDisplay(config.id);
+    }
+    statuses.insert(std::make_pair(config.id, status));
   }
+  std::move(callback).Run(statuses);
 }
 
 void DrmThread::TakeDisplayControl(base::OnceCallback<void(bool)> callback) {

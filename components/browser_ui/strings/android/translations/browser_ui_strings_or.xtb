@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">କ୍ୟାମେରା</translation>
 <translation id="1647391597548383849">ଆପଣଙ୍କର କ୍ୟାମେରା ଆକ୍ସେସ୍‌ କରନ୍ତୁ</translation>
 <translation id="1660204651932907780">ସାଉଣ୍ଡ ଚାଲୁ କରିବାକୁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ଅନୁମତି ଦିଅନ୍ତୁ (ସୁପାରିଶ୍ କରାଯାଇଛି)</translation>
+<translation id="1677097821151855053">ଆପଣଙ୍କୁ ସାଇନ୍ ଇନ୍ କରିବା କିମ୍ବା ବିଜ୍ଞାପନଗୁଡ଼ିକୁ ବ୍ୟକ୍ତିଗତକୃତ କରିବା ପରି, ଆପଣଙ୍କ ସୂଚନା ମନେରଖିବା ପାଇଁ କୁକୀ ଏବଂ ଅନ୍ୟ ସାଇଟ୍ ଡାଟା ବ୍ୟବହାର କରାଯାଇଥାଏ। ସମସ୍ତ ସାଇଟ୍ ପାଇଁ କୁକୀଗୁଡ଼ିକ ପରିଚାଳନା କରିବାକୁ, <ph name="BEGIN_LINK" />ସେଟିଂସ୍<ph name="END_LINK" /> ଦେଖନ୍ତୁ।</translation>
 <translation id="1688867105868176567">ସାଇଟ୍‍ ଡାଟା ଖାଲି କରିବେ?</translation>
 <translation id="169515064810179024">ମୋସନ୍ ସେନ୍ସର୍ ଆକ୍ସେସ୍ କରିବାରୁ ସାଇଟ୍‍ଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="1717218214683051432">ମୋସନ୍ ସେନ୍ସର୍</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">ଏକ ନିର୍ଦ୍ଦିଷ୍ଟ ସାଇଟ୍ ପାଇଁ କୁକୀଗୁଡ଼ିକୁ ଅନୁମତି ଦିଏ।</translation>
 <translation id="4046123991198612571">ପରବର୍ତ୍ତୀ ଟ୍ରାକ୍</translation>
 <translation id="4165986682804962316">ସାଇଟ୍‍ ସେଟିଂସ୍‌</translation>
+<translation id="4200726100658658164">ଲୋକେସନ୍ ସେଟିଂସ୍ ଖୋଲନ୍ତୁ</translation>
 <translation id="4226663524361240545">ବିଜ୍ଞପ୍ତି ଡିଭାଇସ୍‍କୁ ଭାଇବ୍ରେଟ୍ କରିପାରେ</translation>
 <translation id="4242533952199664413">ସେଟିଂସ୍‌ ଖୋଲନ୍ତୁ</translation>
 <translation id="4259722352634471385">ନାଭିଗେସନ୍ ଅବରୋଧ କରାଯାଇଛି: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">ସମସ୍ତ ସାଇଟ୍‍ଗୁଡ଼ିକ</translation>
 <translation id="6320088164292336938">କମ୍ପନ</translation>
 <translation id="6388207532828177975">ଖାଲି ଏବଂ ରିସେଟ୍ କରନ୍ତୁ</translation>
+<translation id="6423924377271166037">କୁକୀଗୁଡ଼ିକୁ ଖାଲି କରନ୍ତୁ</translation>
 <translation id="6439114592976064011">ଆପଣଙ୍କର ଭର୍ଚୁଆଲ୍ ରିଆଲିଟୀ ଡିଭାଇସ୍ ଏବଂ ଡାଟା ବ୍ୟବହାର କରିବାରୁ ସାଇଟଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="6447842834002726250">କୁକୀଗୁଡିକ</translation>
 <translation id="6527303717912515753">ସେୟାର୍ କରନ୍ତୁ</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">ପଛକୁ ଫେରନ୍ତୁ</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" />କୁ ଆପଣଙ୍କ ଲୋକେସନ୍ ଆକ୍ସେସ୍ ଦେବା ପାଇଁ, <ph name="BEGIN_LINK" />Android ସେଟିଂସ<ph name="END_LINK" />ରେ ଲୋକେସନ୍ ମଧ୍ୟ ଚାଲୁ କରନ୍ତୁ।</translation>
 <translation id="8447861592752582886">ଡିଭାଇସ୍ ଅନୁମତି କାଢ଼ି ଦିଅନ୍ତୁ</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1ଟି କୁକୀ ବ୍ୟବହାର କରାଯାଉଛି}other{#ଟି କୁକୀ ବ୍ୟବହାର କରାଯାଉଛି}}</translation>
 <translation id="8463851957836045671">ସାଇଟ୍ ଶୀଘ୍ର ଲୋଡ୍ ହୁଏ</translation>
 <translation id="851751545965956758">ସାଇଟ୍‌ଗୁଡ଼ିକୁ ଡିଭାଇସ୍‌ଗୁଡ଼ିକ ସହିତ ସଂଯୋଗ ହେବାରୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="857943718398505171">ଅନୁମୋଦିତ (ସୁପାରିଶ କରାଯାଇଛି)</translation>

@@ -20,6 +20,8 @@
 <translation id="2730884209570016437">Chromium imeshindwa kutumia kamera yako kwa sababu inatumiwa na programu nyingine</translation>
 <translation id="2915596697727466327">Chromium hutumia Kitambulisho cha Uso ili kuhakikisha ufikiaji uliodhinishwa wa manenosiri yako.</translation>
 <translation id="3256316712990552818">Imenakiliwa kwenye Chromium</translation>
+<translation id="3344973607274501920">Chromium imeshindwa kukagua manenosiri yako. Jaribu kuangalia muunganisho wako wa Intaneti.</translation>
+<translation id="3639997914391704523">Chromium inaweza kukagua manenosiri yako unapoingia ukitumia Akaunti ya Google.</translation>
 <translation id="3805899903892079518">Chromium haina uwezo wa kufikia picha au video zako. Washa uwezo wa kufikia katika Mipangilio ya iOS &gt; Faragha &gt; Picha.</translation>
 <translation id="4555020257205549924">Kipengele hiki kikiwashwa, Chromium itatafsiri kurasa zilizoandikwa kwa lugha nyingine kwa kutumia Google Tafsiri. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Washa kichanganuzi cha Chromium</translation>
@@ -27,6 +29,7 @@
 <translation id="4999538639245140991">Kwa sababu unaondoka kwenye akaunti inayodhibitiwa na <ph name="SIGNOUT_MANAGED_DOMAIN" />, data yako ya Chromium itafutwa kwenye kifaa hiki, lakini itasalia katika Akaunti yako ya Google.</translation>
 <translation id="5521125884468363740">Ili uone vichupo vyako kwenye kifaa chochote unakotumia Chromium, ingia katika akaunti na uwashe kipengele cha kusawazisha</translation>
 <translation id="5573014823074921752">Kidokezo cha Chromium. Ili upate chaguo zaidi za kichupo, gusa na ushikilie kitufe cha 'Onyesha Vichupo' katika upau wa vidhibiti unaopatikana katika sehemu ya chini au juu ya skrini yako.</translation>
+<translation id="5700709190537129682">Chromium imeshindwa kukagua manenosiri yako</translation>
 <translation id="5777187867430702742">Ukurasa wa Chromium</translation>
 <translation id="5862307444128926510">Karibu kwenye Chromium</translation>
 <translation id="5945387852661427312">Unaingia kwa kutumia akaunti inayodhibitiwa na <ph name="DOMAIN" /> na kumpa msimamizi wa kikoa hicho udhibiti wa data yako ya Chromium. Data yako ya Chromium itahusishwa na akaunti hii daima. Kuondoka kwenye Chromium kutafuta data yako kwenye kifaa hiki, lakini itaendelea kuhifadhiwa katika Akaunti yako ya Google.</translation>
@@ -34,6 +37,7 @@
 <translation id="6268381023930128611">Ungependa kuondoka kwenye Chromium?</translation>
 <translation id="6424492062988593837">Chromium imekuwa bora! Toleo jipya linapatikana.</translation>
 <translation id="6604711459180487467">Pata hali bora ya utumiaji katika Chromium kulingana na mahali uliko.</translation>
+<translation id="6820823224820483452">Chromium imeshindwa kukagua manenosiri yote. Jaribu tena kesho.</translation>
 <translation id="7099326575020694068">Chromium imeshindwa kutumia kamera yako katika hali ya Mwonekano wa Madirisha Mawili</translation>
 <translation id="7208566199746267865">Chromium inaokoa muda wako kwa kuleta akaunti zako kwenye wavuti. Unaweza kuongeza au kuondoa akaunti katika Mipangilio.</translation>
 <translation id="7269362888766543920">Baadhi ya programu jalizi husababisha Chromium iache kufanya kazi. Tafadhali jaribu kuziondoa.</translation>
@@ -42,6 +46,7 @@
 <translation id="7400689562045506105">Tumia Chromium Kila mahali</translation>
 <translation id="7674213385180944843">Fungua Mipangilio &gt; Faragha &gt; Kamera &gt; Chromium na uwashe kamera.</translation>
 <translation id="7746854981345936341">Kidokezo cha Chromium. Baadhi ya vitufe sasa vinapatikana katika sehemu ya chini ya skrini yako, kama vile kitufe cha Nyuma, Mbele na Tafuta.</translation>
+<translation id="7798909783578470546">Chromium imeshindwa kukagua manenosiri yote. Jaribu tena.</translation>
 <translation id="786327964234957808">Unabadilisha akaunti za kusawazisha kutoka <ph name="USER_EMAIL1" /> kuwa <ph name="USER_EMAIL2" />. Data yako iliyopo ya Chromium inadhibitiwa na <ph name="DOMAIN" />. Hatua hii itafuta data yako kwenye kifaa hiki, lakini data yako itasalia katika <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Anza kutumia kichanganuzi cha Chromium</translation>
 <translation id="8013573822802650211">Ili uone vichupo vyako kwenye kifaa chochote unakotumia Chromium, ingia katika akaunti ukitumia vifaa vyako vyote</translation>
@@ -51,5 +56,6 @@
 <translation id="8586442755830160949">Hakimiliki <ph name="YEAR" /> Wasanidi wa Chromium. Haki zote zimehifadhiwa.</translation>
 <translation id="8776843108004031667">Akaunti hii na data yoyote ambayo haijahifadhiwa itaondolewa kwenye Chromium.</translation>
 <translation id="9022552996538154597">Ingia kwenye Chromium</translation>
+<translation id="921174536258924340">Chromium imeshindwa kukagua manenosiri yote. Jaribu tena kesho au <ph name="BEGIN_LINK" />ukague manenosiri katika Akaunti yako ya Google<ph name="END_LINK" /></translation>
 <translation id="985602178874221306">Waandishi wa Chromium</translation>
 </translationbundle>

@@ -311,7 +311,7 @@ void AddAdditionalRequestHeaders(
                        origin_header_value.Serialize());
   }
 
-  if (base::FeatureList::IsEnabled(features::kDocumentPolicy)) {
+  if (base::FeatureList::IsEnabled(features::kDocumentPolicyNegotiation)) {
     const blink::DocumentPolicy::FeatureState& required_policy =
         frame_tree_node->effective_frame_policy().required_document_policy;
     if (!required_policy.empty()) {

@@ -146,10 +146,9 @@ void TaskManagerInterface::SetEnabledResourceFlags(int64_t flags) {
 }
 
 void TaskManagerInterface::ScheduleRefresh(base::TimeDelta refresh_time) {
-  refresh_timer_->Start(FROM_HERE,
-                        refresh_time,
-                        base::Bind(&TaskManagerInterface::Refresh,
-                                   base::Unretained(this)));
+  refresh_timer_->Start(FROM_HERE, refresh_time,
+                        base::BindRepeating(&TaskManagerInterface::Refresh,
+                                            base::Unretained(this)));
 }
 
 }  // namespace task_manager

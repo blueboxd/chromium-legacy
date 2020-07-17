@@ -27,6 +27,7 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "promoted to a layer based on a performance heuristic."},
     {CompositingReason::kPlugin, "plugin", "Is an accelerated plugin"},
     {CompositingReason::kIFrame, "iFrame", "Is an accelerated iFrame"},
+    {CompositingReason::kSVGRoot, "SVGRoot", "Is an accelerated SVG root"},
     {CompositingReason::kBackfaceVisibilityHidden, "backfaceVisibilityHidden",
      "Has backface-visibility: hidden"},
     {CompositingReason::kActiveTransformAnimation, "activeTransformAnimation",

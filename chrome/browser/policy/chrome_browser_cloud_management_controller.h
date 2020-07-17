@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 
 class DeviceIdentityProvider;
@@ -152,6 +153,11 @@ class ChromeBrowserCloudManagementController
   void StartInvalidations();
 
   base::ObserverList<Observer, true>::Unchecked observers_;
+
+  // TODO(crbug.com/1092442): Move the delegate factory ownership to
+  // ChromeBrowserCloudManagementController's delegate after CBCMController has
+  // been split into delegates and moved to components.
+  enterprise_reporting::ReportingDelegateFactoryDesktop delegate_factory_;
 
   std::unique_ptr<ChromeBrowserCloudManagementRegistrar>
       cloud_management_registrar_;

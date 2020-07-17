@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pa">
 <translation id="1008557486741366299">ਹੁਣ ਨਹੀਂ</translation>
+<translation id="100957008357583611">ਕੀ ਤੁਹਾਡੇ ਟਿਕਾਣੇ ਦੀ ਵਰਤੋਂ ਕਰਨੀ ਹੈ?</translation>
 <translation id="1010200102790553230">ਪੰਨਾ ਬਾਅਦ ਵਿੱਚ ਲੋਡ ਕਰੋ</translation>
 <translation id="1015730422737071372">ਵਾਧੂ ਵੇਰਵੇ ਮੁਹੱਈਆ ਕਰਵਾਓ</translation>
 <translation id="1019413721762100891">ਬੰਦ</translation>
@@ -421,7 +422,6 @@
 <translation id="2705137772291741111">ਇਸ ਸਾਈਟ ਦੀ ਰੱਖਿਅਤ (ਕੈਸ਼ੇ ਕੀਤੀ) ਕਾਪੀ ਪੜ੍ਹਨਯੋਗ ਨਹੀਂ ਸੀ।</translation>
 <translation id="2709516037105925701">ਆਟੋਫਿਲ</translation>
 <translation id="2713444072780614174">ਸਫ਼ੈਦ</translation>
-<translation id="2720342946869265578">ਨਜ਼ਦੀਕੀ</translation>
 <translation id="2721148159707890343">ਬੇਨਤੀ ਸਫਲ ਹੋਈ</translation>
 <translation id="272451190272506600">ਭੁਗਤਾਨ ਕਰਨ ਲਈ ਸੈਂਸਰ ਨੂੰ ਸਪਰਸ਼ ਕਰੋ</translation>
 <translation id="2728127805433021124">ਸਰਵਰ ਦਾ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਇੱਕ ਕਮਜ਼ੋਰ ਹਸਤਾਖਰ ਅਲਗੋਰਿਦਮ ਵਰਤਦੇ ਹੋਏ ਸਾਈਨ ਹੋਇਆ ਹੈ।</translation>
@@ -713,7 +713,6 @@
 <translation id="3987940399970879459">1 MB ਤੋਂ ਘੱਟ</translation>
 <translation id="3990250421422698716">ਜੌਗ ਆਫ਼ਸੈੱਟ</translation>
 <translation id="3996311196211510766">ਸਾਈਟ <ph name="ORIGIN" /> ਨੇ ਬੇਨਤੀ ਕੀਤੀ ਹੈ ਕਿ ਮੂਲ ਸੰਬੰਧੀ ਨੀਤੀ ਨੂੰ ਉਸ ਦੀਆਂ ਸਾਰੀਆਂ ਬੇਨਤੀਆਂ 'ਤੇ ਲਾਗੂ ਕੀਤਾ ਜਾਂਦਾ ਹੈ, ਪਰ ਇਸ ਨੀਤੀ ਨੂੰ ਫਿਲਹਾਲ ਲਾਗੂ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{ਨੇੜੇ-ਤੇੜੇ 1 ਵੈੱਬ ਪੰਨਾ}one{ਨੇੜੇ-ਤੇੜੇ # ਵੈੱਬ ਪੰਨੇ}other{ਨੇੜੇ-ਤੇੜੇ # ਵੈੱਬ ਪੰਨੇ}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF ਦਸਤਾਵੇਜ਼ ਵਿੱਚ {COUNT} ਪੰਨਾ ਹੈ}one{PDF ਦਸਤਾਵੇਜ਼ ਵਿੱਚ {COUNT} ਪੰਨਾ ਹੈ}other{PDF ਦਸਤਾਵੇਜ਼ ਵਿੱਚ {COUNT} ਪੰਨੇ ਹਨ}}</translation>
 <translation id="4030383055268325496">&amp;ਜੋੜਨਾ ਅਨਡੂ ਕਰੋ</translation>
 <translation id="4032320456957708163">ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਰ ਦਾ ਪ੍ਰਬੰਧਨ <ph name="ENROLLMENT_DOMAIN" /> ਵੱਲੋਂ ਕੀਤਾ ਜਾਂਦਾ ਹੈ</translation>
@@ -927,7 +926,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">ਰੱਖਿਅਤ ਕਰੋ...</translation>
 <translation id="4913987521957242411">ਉੱਪਰ ਖੱਬੇ ਪਾਸੇ ਮੋਰੀ</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{ਅਤੇ 1 ਹੋਰ ਵੈੱਬ ਪੰਨਾ}one{ਅਤੇ # ਹੋਰ ਵੈੱਬ ਪੰਨੇ}other{ਅਤੇ # ਹੋਰ ਵੈੱਬ ਪੰਨੇ}}</translation>
 <translation id="4923459931733593730">ਭੁਗਤਾਨ ਵਿਧੀ</translation>
 <translation id="4926049483395192435">ਨਿਰਦਿਸ਼ਟ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ।</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> ਦੇ ਮੁਤਾਬਕ</translation>
@@ -1168,6 +1166,7 @@
 <translation id="5869405914158311789">ਇਸ ਸਾਈਟ 'ਤੇ ਪਹੁੰਚਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ</translation>
 <translation id="5869522115854928033">ਸੁਰੱਖਿਅਤ ਕੀਤੇ ਪਾਸਵਰਡ</translation>
 <translation id="5887400589839399685">ਕਾਰਡ ਰੱਖਿਅਤ ਕੀਤਾ ਗਿਆ</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> ਲਈ ਤੁਹਾਨੂੰ ਆਪਣੇ ਡਾਟੇ ਦਾ ਬੈਕਅੱਪ ਲੈਣ ਅਤੇ ਇਸ ਡੀਵਾਈਸ ਨੂੰ ਵਾਪਸ ਕਰਨ ਦੀ ਲੋੜ ਹੈ।</translation>
 <translation id="5895138241574237353">ਰੀਸਟਾਰਟ ਕਰੋ</translation>
 <translation id="5895187275912066135">ਨੂੰ ਜਾਰੀ ਕੀਤਾ</translation>
 <translation id="5901630391730855834">ਪੀਲਾ</translation>
@@ -1317,7 +1316,6 @@
 <translation id="6518133107902771759">ਪ੍ਰਮਾਣਿਤ ਕਰੋ</translation>
 <translation id="6521745193039995384">ਕਿਰਿਆਸ਼ੀਲ ਨਹੀਂ</translation>
 <translation id="6529602333819889595">&amp;ਮਿਟਾਏ ਗਏ ਨੂੰ ਮੁੜ-ਓਹੀ ਕਰੋ</translation>
-<translation id="6534179046333460208">ਫਿਜ਼ੀਕਲ ਵੈੱਬ ਸੁਝਾਅ</translation>
 <translation id="6545864417968258051">ਬਲੂਟੁੱਥ ਸਕੈਨਿੰਗ</translation>
 <translation id="6547208576736763147">ਖੱਬੇ ਪਾਸੇ ਦੋ ਮੋਰੀਆਂ</translation>
 <translation id="6554795675067793129">ਤੁਹਾਡੇ ਖਾਤੇ ਦਾ ਪ੍ਰਬੰਧਨ <ph name="ENROLLMENT_DOMAIN" /> ਵੱਲੋਂ ਕੀਤਾ ਜਾਂਦਾ ਹੈ।</translation>
@@ -1839,7 +1837,6 @@
 <translation id="8790007591277257123">&amp;ਮਿਟਾਏ ਗਏ ਨੂੰ ਮੁੜ-ਓਹੀ ਕਰੋ</translation>
 <translation id="8792621596287649091">ਤੁਸੀਂ ਆਪਣੇ <ph name="ORG_NAME" /> ਖਾਤੇ 'ਤੇ ਪਹੁੰਚ ਗੁਆ ਸਕਦੇ ਹੋ ਜਾਂ ਤੁਹਾਡੀ ਪਛਾਣ ਚੋਰੀ ਹੋ ਸਕਦੀ ਹੈ। Chromium ਵੱਲੋਂ ਹੁਣੇ ਤੁਹਾਡਾ ਪਾਸਵਰਡ ਬਦਲਣ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> ਨੇ ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਰ 'ਤੇ Chrome Enterprise Connectors ਨੂੰ ਚਾਲੂ ਕਰ ਦਿੱਤਾ ਹੈ। ਇਹਨਾਂ ਕਨੈਕਟਰਾਂ ਦੀ ਤੁਹਾਡੇ ਕੁਝ ਡਾਟੇ ਤੱਕ ਪਹੁੰਚ ਹੈ।</translation>
-<translation id="8800988563907321413">ਤੁਹਾਡੇ ਨਜ਼ਦੀਕੀ ਸੁਝਾਅ ਇੱਥੇ ਵਿਖਾਈ ਦੇਣਗੇ</translation>
 <translation id="8805819170075074995">ਸੂਚੀ ਇੰਦਰਾਜ "<ph name="LANGUAGE_ID" />": ਇੰਦਰਾਜ ਅਣਡਿੱਠ ਕਰ ਦਿੱਤਾ ਗਿਆ ਕਿਉਂਕਿ ਇਹ SpellcheckLanguage ਨੀਤੀ ਵਿੱਚ ਵੀ ਸ਼ਾਮਲ ਹੈ।</translation>
 <translation id="8807160976559152894">ਹਰ ਪੰਨੇ ਤੋਂ ਬਾਅਦ ਕਟਾਈ</translation>
 <translation id="8820817407110198400">ਬੁੱਕਮਾਰਕਸ</translation>

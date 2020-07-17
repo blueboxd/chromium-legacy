@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_button.h"
 #include "third_party/blink/renderer/core/layout/layout_deprecated_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
@@ -25,6 +26,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_button.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
@@ -223,6 +225,16 @@ LayoutBox* LayoutObjectFactory::CreateTableSection(Node& node,
   if (disable_ng_for_type)
     UseCounter::Count(node.GetDocument(), WebFeature::kLegacyLayoutByTable);
   return CreateObject<LayoutBox, LayoutNGTableSection, LayoutTableSection>(
+      node, style, legacy, disable_ng_for_type);
+}
+
+LayoutObject* LayoutObjectFactory::CreateButton(Node& node,
+                                                const ComputedStyle& style,
+                                                LegacyLayout legacy) {
+  bool disable_ng_for_type = !RuntimeEnabledFeatures::LayoutNGFlexBoxEnabled();
+  if (disable_ng_for_type)
+    UseCounter::Count(node.GetDocument(), WebFeature::kLegacyLayoutByFlexBox);
+  return CreateObject<LayoutBlock, LayoutNGButton, LayoutButton>(
       node, style, legacy, disable_ng_for_type);
 }
 

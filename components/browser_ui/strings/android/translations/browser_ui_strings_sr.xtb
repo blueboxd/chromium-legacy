@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1647391597548383849">Приступ камери</translation>
 <translation id="1660204651932907780">Дозволи сајтовима да пуштају звук (препоручено)</translation>
+<translation id="1677097821151855053">Колачићи и други подаци о сајтовима се користе да бисте били запамћени, на пример, ради пријављивања или персонализовања огласа. Да бисте управљали колачићима за све сајтове, погледајте <ph name="BEGIN_LINK" />Подешавања<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Желите ли да обришете податке сајта?</translation>
 <translation id="169515064810179024">Не дозвољавај сајтовима да приступају сензорима за покрет</translation>
 <translation id="1717218214683051432">Сензори покрета</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Омогућава колачиће за одређени сајт.</translation>
 <translation id="4046123991198612571">Следећа песма</translation>
 <translation id="4165986682804962316">Подешавања сајта</translation>
+<translation id="4200726100658658164">Отворите подешавања локације</translation>
 <translation id="4226663524361240545">Уређај ће вибрирати када примате обавештења</translation>
 <translation id="4242533952199664413">Отвори подешавања</translation>
 <translation id="4259722352634471385">Навигација је блокирана: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Сви сајтови</translation>
 <translation id="6320088164292336938">Вибрација</translation>
 <translation id="6388207532828177975">Обриши и ресетуј</translation>
+<translation id="6423924377271166037">Обриши колачиће</translation>
 <translation id="6439114592976064011">Не дозвољава сајтовима да користе уређај и податке виртуелне реалности</translation>
 <translation id="6447842834002726250">Колачићи</translation>
 <translation id="6527303717912515753">Дели</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Премотај уназад</translation>
 <translation id="8444433999583714703">Да бисте дозволили да <ph name="APP_NAME" /> приступа локацији, укључите локацију и у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Опозови дозволу за уређај</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Користи се 1 колачић}one{Користи се # колачић}few{Користе се # колачића}other{Користи се # колачића}}</translation>
 <translation id="8463851957836045671">Сајт је брз</translation>
 <translation id="851751545965956758">Онемогући сајтовима да се повезују са уређајима</translation>
 <translation id="857943718398505171">Дозвољено (препоручено)</translation>

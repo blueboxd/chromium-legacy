@@ -84,7 +84,7 @@ class FAKE_DISPLAY_EXPORT FakeDisplayDelegate : public NativeDisplayDelegate,
   void RelinquishDisplayControl(DisplayControlCallback callback) override;
   void GetDisplays(GetDisplaysCallback callback) override;
   void Configure(
-      const display::DisplayConfigurationParams& display_config_params,
+      const std::vector<display::DisplayConfigurationParams>& config_requests,
       ConfigureCallback callback) override;
   void GetHDCPState(const DisplaySnapshot& output,
                     GetHDCPStateCallback callback) override;

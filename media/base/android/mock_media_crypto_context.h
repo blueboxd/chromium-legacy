@@ -26,10 +26,6 @@ class MEDIA_EXPORT MockMediaCryptoContext
   MediaCryptoContext* GetMediaCryptoContext() override;
 
   // MediaCryptoContext implementation.
-  MOCK_METHOD2(RegisterPlayer,
-               int(base::RepeatingClosure new_key_cb,
-                   base::RepeatingClosure cdm_unset_cb));
-  MOCK_METHOD1(UnregisterPlayer, void(int registration_id));
   void SetMediaCryptoReadyCB(
       MediaCryptoReadyCB media_crypto_ready_cb) override {
     SetMediaCryptoReadyCB_(media_crypto_ready_cb);
@@ -37,11 +33,8 @@ class MEDIA_EXPORT MockMediaCryptoContext
   MOCK_METHOD1(SetMediaCryptoReadyCB_,
                void(MediaCryptoReadyCB& media_crypto_ready_cb));
 
-  static constexpr int kRegistrationId = 1000;
-
-  base::RepeatingClosure new_key_cb;
-  base::RepeatingClosure cdm_unset_cb;
   MediaCryptoReadyCB media_crypto_ready_cb;
+
   // To be set to true when |media_crypto_ready_cb| is consumed and run.
   bool ran_media_crypto_ready_cb = false;
 

@@ -266,6 +266,8 @@ bool StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
   if (input.has_h264_output_level())
     h264_output_level = input.h264_output_level();
 
+  bool is_constrained_h264 = input.is_constrained_h264();
+
   base::Optional<media::VideoEncodeAccelerator::Config::StorageType>
       storage_type;
   if (input.has_storage_type()) {
@@ -284,8 +286,8 @@ bool StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
 
   *output = media::VideoEncodeAccelerator::Config(
       input_format, input_visible_size, output_profile, input.initial_bitrate(),
-      initial_framerate, gop_length, h264_output_level, storage_type,
-      content_type, spatial_layers);
+      initial_framerate, gop_length, h264_output_level, is_constrained_h264,
+      storage_type, content_type, spatial_layers);
   return true;
 }
 

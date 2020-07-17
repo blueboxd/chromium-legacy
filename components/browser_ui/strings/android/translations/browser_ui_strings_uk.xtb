@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1647391597548383849">Доступ до камери</translation>
 <translation id="1660204651932907780">Дозволити сайтам відтворювати звук (рекомендується)</translation>
+<translation id="1677097821151855053">Файли cookie та інші дані із сайтів використовуються, щоб запам'ятати ваші дані, наприклад, щоб входити у ваш обліковий запис або персоналізувати рекламу. Щоб керувати файлами cookie для всіх сайтів, перегляньте <ph name="BEGIN_LINK" />Налаштування<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Очистити дані сайту?</translation>
 <translation id="169515064810179024">Заборонити сайтам доступ до датчиків руху</translation>
 <translation id="1717218214683051432">Датчики руху</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Дозволити файли cookie для конкретного сайту.</translation>
 <translation id="4046123991198612571">Наступна композиція</translation>
 <translation id="4165986682804962316">Налаштування сайту</translation>
+<translation id="4200726100658658164">Відкрити налаштування доступу до моїх геоданих</translation>
 <translation id="4226663524361240545">Коли надходитимуть сповіщення, пристрій може вібрувати</translation>
 <translation id="4242533952199664413">Відкрити налаштування</translation>
 <translation id="4259722352634471385">Веб-сторінку <ph name="URL" /> заблоковано</translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Усі сайти</translation>
 <translation id="6320088164292336938">Вібросигнал</translation>
 <translation id="6388207532828177975">Очистити та скинути</translation>
+<translation id="6423924377271166037">Видалити файли cookie</translation>
 <translation id="6439114592976064011">Заборонити сайтам доступ до даних і пристрою віртуальної реальності</translation>
 <translation id="6447842834002726250">Cookie-файли</translation>
 <translation id="6527303717912515753">Надіслати</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Назад</translation>
 <translation id="8444433999583714703">Щоб надати додатку <ph name="APP_NAME" /> доступ до геоданих, також увімкніть їх у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Скасувати доступ до пристрою</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Використовується 1 файл cookie}one{Використовується # файл cookie}few{Використовуються # файли cookie}many{Використовуються # файлів cookie}other{Використовуються # файлу cookie}}</translation>
 <translation id="8463851957836045671">Сайт працює швидко</translation>
 <translation id="851751545965956758">Заборонити сайтам підключатися до пристроїв</translation>
 <translation id="857943718398505171">Дозволено (рекомендується)</translation>

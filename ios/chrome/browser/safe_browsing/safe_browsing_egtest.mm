@@ -60,6 +60,10 @@ const char kMalwareWarningDetails[] =
   GURL _safeURL2;
   // Text that is found on the safe page.
   std::string _safeContent2;
+  // The default value for SafeBrowsingEnabled pref.
+  BOOL _safeBrowsingEnabledPrefDefault;
+  // The default value for SafeBrowsingProceedAnywayDisabled pref.
+  BOOL _proceedAnywayDisabledPrefDefault;
 }
 @end
 
@@ -105,8 +109,29 @@ const char kMalwareWarningDetails[] =
   // GREYAssertTrue cannot be called before [super setUp].
   GREYAssertTrue(started, @"Test server failed to start.");
 
+  // Save the existing value of the pref to set it back in tearDown.
+  _safeBrowsingEnabledPrefDefault =
+      [ChromeEarlGrey userBooleanPref:prefs::kSafeBrowsingEnabled];
   // Ensure that Safe Browsing opt-out starts in its default (opted-in) state.
   [ChromeEarlGrey setBoolValue:YES forUserPref:prefs::kSafeBrowsingEnabled];
+
+  // Save the existing value of the pref to set it back in tearDown.
+  _proceedAnywayDisabledPrefDefault = [ChromeEarlGrey
+      userBooleanPref:prefs::kSafeBrowsingProceedAnywayDisabled];
+  // Ensure that Proceed link is shown by default in the safe browsing warning.
+  [ChromeEarlGrey setBoolValue:NO
+                   forUserPref:prefs::kSafeBrowsingProceedAnywayDisabled];
+}
+
+- (void)tearDown {
+  // Ensure that Safe Browsing is reset to its original value.
+  [ChromeEarlGrey setBoolValue:_safeBrowsingEnabledPrefDefault
+                   forUserPref:prefs::kSafeBrowsingEnabled];
+
+  // Ensure that Proceed link is reset to its original value.
+  [ChromeEarlGrey setBoolValue:_proceedAnywayDisabledPrefDefault
+                   forUserPref:prefs::kSafeBrowsingProceedAnywayDisabled];
+  [super tearDown];
 }
 
 // Tests that safe pages are not blocked.

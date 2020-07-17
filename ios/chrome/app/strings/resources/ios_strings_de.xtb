@@ -42,7 +42,7 @@
 <translation id="1375321115329958930">Gespeicherte Passwörter</translation>
 <translation id="1377255359165588604">Die Synchronisierung funktioniert nicht mehr.</translation>
 <translation id="1377321085342047638">Kartennummer</translation>
-<translation id="1383876407941801731">Suchen</translation>
+<translation id="1383876407941801731">Suchtaste</translation>
 <translation id="1389974829397082527">Keine Lesezeichen vorhanden</translation>
 <translation id="1400642268715879018">Letzte 4 Wochen</translation>
 <translation id="1407135791313364759">Alle öffnen</translation>
@@ -105,7 +105,7 @@
 <translation id="2139867232736819575">Nach von Ihnen kopiertem Text suchen</translation>
 <translation id="2149973817440762519">Lesezeichen bearbeiten</translation>
 <translation id="2175927920773552910">QR-Code</translation>
-<translation id="2198757192731523470">Mithilfe Ihres Verlaufs kann Google die Google-Suche, Werbung und andere Google-Dienste personalisieren.</translation>
+<translation id="2198757192731523470">Mithilfe Ihres Verlaufs kann Google die Google Suche, Werbung und andere Google-Dienste personalisieren.</translation>
 <translation id="2218443599109088993">Herauszoomen</translation>
 <translation id="2230173723195178503">Webseite geladen</translation>
 <translation id="2239626343334228536">Browserdaten werden gelöscht…</translation>
@@ -208,7 +208,7 @@ Wenn der Inkognitomodus aktiviert ist, können Websites Cookies nicht verwenden,
 <translation id="3371831930909698441">Übersetzer ist verfügbar. Optionen sind unten auf dem Bildschirm verfügbar.</translation>
 <translation id="3393920035788932672">Pop-ups erlaubt</translation>
 <translation id="3443810440409579745">Tab erhalten.</translation>
-<translation id="3445288400492335833"><ph name="MINUTES" /> Min.</translation>
+<translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Geteilte Ansicht</translation>
 <translation id="345565170154308620">Passwörter verwalten…</translation>
 <translation id="3469166899695866866">Download beenden?</translation>
@@ -422,7 +422,7 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="6119050551270742952">Die aktuelle Webseite ist im Inkognitomodus</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Eintrag entfernt</translation>
-<translation id="6136914049981179737">Vor Sek.</translation>
+<translation id="6136914049981179737">Gerade eben</translation>
 <translation id="616831107264507309">Später lesen</translation>
 <translation id="6177442314419606057">Suche in Chrome</translation>
 <translation id="6184086493125982861">Tabs anzeigen</translation>

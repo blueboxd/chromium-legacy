@@ -467,6 +467,20 @@ android_aar_prebuilt(
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_media_media_java") {
+  aar_path = "libs/androidx_media_media/media-1.0.0.aar"
+  info_path = "libs/androidx_media_media/androidx_media_media.info"
+  deps = [
+    ":androidx_annotation_annotation_java",
+    ":androidx_core_core_java",
+    ":androidx_versionedparcelable_versionedparcelable_java",
+  ]
+
+  # Target has AIDL, but we do not support it yet: http://crbug.com/644439
+  ignore_aidl = true
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_mediarouter_mediarouter_java") {
   aar_path = "libs/androidx_mediarouter_mediarouter/mediarouter-1.0.0.aar"
   info_path = "libs/androidx_mediarouter_mediarouter/androidx_mediarouter_mediarouter.info"
@@ -1830,24 +1844,6 @@ android_aar_prebuilt("androidx_loader_loader_java") {
     ":androidx_lifecycle_lifecycle_livedata_java",
     ":androidx_lifecycle_lifecycle_viewmodel_java",
   ]
-}
-
-# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("androidx_media_media_java") {
-  aar_path = "libs/androidx_media_media/media-1.0.0.aar"
-  info_path = "libs/androidx_media_media/androidx_media_media.info"
-
-  # To remove visibility constraint, add this dependency to
-  # //third_party/android_deps/build.gradle.
-  visibility = [ ":*" ]
-  deps = [
-    ":androidx_annotation_annotation_java",
-    ":androidx_core_core_java",
-    ":androidx_versionedparcelable_versionedparcelable_java",
-  ]
-
-  # Target has AIDL, but we do not support it yet: http://crbug.com/644439
-  ignore_aidl = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

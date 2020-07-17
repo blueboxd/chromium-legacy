@@ -20,6 +20,7 @@
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
+#include "third_party/blink/public/mojom/tokens/worker_tokens.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 #include "third_party/blink/public/platform/web_dedicated_worker.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -36,26 +37,31 @@ DedicatedWorkerHostFactoryClient::DedicatedWorkerHostFactoryClient(
 DedicatedWorkerHostFactoryClient::~DedicatedWorkerHostFactoryClient() = default;
 
 void DedicatedWorkerHostFactoryClient::CreateWorkerHostDeprecated(
+    const base::UnguessableToken& dedicated_worker_token,
     base::OnceCallback<void(const network::CrossOriginEmbedderPolicy&)>
         callback) {
   DCHECK(!base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
+  DCHECK(!dedicated_worker_token.is_empty());
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
   factory_->CreateWorkerHost(
+      blink::mojom::DedicatedWorkerToken::New(dedicated_worker_token),
       browser_interface_broker.InitWithNewPipeAndPassReceiver(),
       std::move(callback));
   OnWorkerHostCreated(std::move(browser_interface_broker));
 }
 
 void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
+    const base::UnguessableToken& dedicated_worker_token,
     const blink::WebURL& script_url,
     network::mojom::CredentialsMode credentials_mode,
     const blink::WebFetchClientSettingsObject& fetch_client_settings_object,
     blink::CrossVariantMojoRemote<blink::mojom::BlobURLTokenInterfaceBase>
         blob_url_token) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
-
+  DCHECK(!dedicated_worker_token.is_empty());
   factory_->CreateWorkerHostAndStartScriptLoad(
+      blink::mojom::DedicatedWorkerToken::New(dedicated_worker_token),
       script_url, credentials_mode,
       FetchClientSettingsObjectFromWebToMojom(fetch_client_settings_object),
       std::move(blob_url_token), receiver_.BindNewPipeAndPassRemote());

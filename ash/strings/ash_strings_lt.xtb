@@ -98,6 +98,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="1995660704900986789">Išjungti maitinimą</translation>
 <translation id="2012624427112548395">„Ctrl“ + paieškos klavišas + H</translation>
 <translation id="2016340657076538683">Įveskite pranešimą</translation>
+<translation id="2018630726571919839">Papasakok pokštą</translation>
 <translation id="2050339315714019657">Stačias</translation>
 <translation id="2067602449040652523">Klaviatūros šviesumas</translation>
 <translation id="209965399369889474">Neprisijungta prie tinklo</translation>
@@ -125,6 +126,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="2354174487190027830">Aktyvinamas „<ph name="NAME" />“</translation>
 <translation id="2359808026110333948">Tęskite</translation>
 <translation id="2365393535144473978">Įgalinus mobiliojo ryšio duomenis bus įgalintas „Bluetooth“.</translation>
+<translation id="2369165858548251131">„Labas“ kinų kalba</translation>
 <translation id="2390318262976603432">Lokalės nustatymai</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Pasiekiamas naujinys</translation>
@@ -142,6 +144,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="256712445991462162">prie doko prijungtas didintuvas</translation>
 <translation id="2575685495496069081">Neleidžiama prisijungti prie kelių paskyrų</translation>
 <translation id="2582112259361606227">Paleisti iš naujo, kad būtų atnaujinta</translation>
+<translation id="2595239820337756193">5 tūkst. mylių</translation>
 <translation id="2617342710774726426">SIM kortelė užrakinta</translation>
 <translation id="2621713457727696555">Apsaugota</translation>
 <translation id="2653659639078652383">Pateikti</translation>
@@ -195,6 +198,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="3154351730702813399">Įrenginio administratorius gali stebėti jūsų naršymo veiklą.</translation>
 <translation id="3181441307743005334">Paleidimas iš naujo gali šiek tiek užtrukti</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Prisijungta prie įrenginio}one{Prisijungta prie # įrenginio}few{Prisijungta prie # įrenginių}many{Prisijungta prie # įrenginio}other{Prisijungta prie # įrenginių}}</translation>
+<translation id="320207200541803018">Nustatyk laikmatį</translation>
 <translation id="3203405173652969239">Prieiga jungikliu įgalinta</translation>
 <translation id="3207953481422525583">Naudotojo nustatymai</translation>
 <translation id="3217205077783620295">Garsumas įjungtas; perjungiant garsas bus nutildytas.</translation>
@@ -207,6 +211,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> vis tiek galės vėliau prisijungti.</translation>
 <translation id="3321628682574733415">Netinkamas tėvų kodas</translation>
 <translation id="332587331255250389">Pakeiskite akumuliatorių</translation>
+<translation id="334252345105450327">Sukurk ekrano kopiją</translation>
 <translation id="3351879221545518001">Šiuo metu perduodate ekrano vaizdą.</translation>
 <translation id="3364721542077212959">Rašiklio įrankiai</translation>
 <translation id="3368922792935385530">Prijungta</translation>
@@ -239,6 +244,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="3631369015426612114">Leisti pranešimus iš toliau nurodytų šaltinių.</translation>
 <translation id="3638400994746983214">Perjunkite privatumo ekraną. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> tvarkomas naudotojas</translation>
+<translation id="3702846122927433391">Populiacija Nigerijoje</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Užfiksuoti sritį</translation>
 <translation id="371370241367527062">Priekinis mikrofonas</translation>
@@ -519,6 +525,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="7165278925115064263">„Alt“ + „Shift“ + K</translation>
 <translation id="7168224885072002358">Po <ph name="TIMEOUT_SECONDS" /> bus grąžinta sena skyra</translation>
 <translation id="7188494361780961876">Meniu perkeltas į viršutinį kairįjį ekrano kampą.</translation>
+<translation id="7189412385142492784">Kaip toli yra Venera</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Kad būtų pritaikytas naujinys, šį „Chromebook“ reikia paleisti iš naujo. Tai gali užtrukti iki minutės</translation>
 <translation id="7256634071279256947">Užpakalinis mikrofonas</translation>
 <translation id="726276584504105859">Vilkite čia, kad naudotumėte skaidytą ekraną</translation>
@@ -645,6 +652,7 @@ Jei norite pradėti, pabandykite atlikti nurodytus veiksmus.</translation>
 <translation id="8649101189709089199">Teksto ištarimas</translation>
 <translation id="8652175077544655965">Uždaryti nustatymus</translation>
 <translation id="8653151467777939995">Rodyti pranešimų nustatymus. Pranešimai įjungti</translation>
+<translation id="8660331759611631213">Kvadratinė šaknis iš 71</translation>
 <translation id="8663756353922886599">„<ph name="CONNECTION_STATUS" />“, signalo stiprumas <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Rodyti tinklų sąrašą. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

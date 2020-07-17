@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">തിരഞ്ഞെടുക്കൂ</translation>
 <translation id="1859234291848436338">എഴുതേണ്ട ദിശ</translation>
 <translation id="1860796786778352021">അറിയിപ്പ് അടയ്‌ക്കൽ</translation>
+<translation id="186476001994626254">വെബ് സ്‌മാർട്ട് ഒട്ടിക്കൽ ഉള്ളടക്കം</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">എല്ലാം &amp;തിരഞ്ഞെടുക്കൂ</translation>
@@ -75,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">ഫോൾഡർ തുറക്കുക</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{ഒരു വർഷം മുമ്പ്}other{# വർഷം മുമ്പ്}}</translation>
+<translation id="2878511608894704031">എല്ലാം ഇല്ലാതാക്കൂ</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{ഒരു ദിവസത്തിൽ}other{# ദിവസത്തിൽ}}</translation>
 <translation id="2931838996092594335">ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="2981684127883932071">നിർദ്ദേശങ്ങൾ കാണിക്കുന്നു</translation>
@@ -172,6 +174,7 @@
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6430678249303439055">ഈ ആപ്പിൽ നിന്നുള്ള എല്ലാ അറിയിപ്പുകളും ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 സെക്കൻഡ് മുമ്പ്}other{# സെക്കൻഡ് മുമ്പ്}}</translation>
+<translation id="6503257047630241175">RTF ഉള്ളടക്കം</translation>
 <translation id="6539092367496845964">എന്തോ കുഴപ്പം സംഭവിച്ചു. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="654149438358937226">എല്ലാ അറിയിപ്പുകളും ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="6567071839949112727">ആൻസിസ്റ്ററിൽ ക്ലിക്ക് ചെയ്യുക</translation>

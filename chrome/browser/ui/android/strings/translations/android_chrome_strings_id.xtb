@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Bookmark yang tersimpan di perangkat lainnya akan muncul di sini.</translation>
 <translation id="1113597929977215864">Buka tampilan sederhana</translation>
 <translation id="1122278879166832009">Ketuk di sini untuk mengakses halaman beranda dengan cepat dari mana saja</translation>
+<translation id="1126809382673880764">Tidak melindungi Anda terhadap situs, download, dan ekstensi berbahaya. Anda akan tetap mendapatkan perlindungan Safe Browsing, jika tersedia, di layanan Google lainnya, seperti Gmail dan Penelusuran.</translation>
 <translation id="1129510026454351943">Detail: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download tertunda.}other{# download tertunda.}}</translation>
 <translation id="1145536944570833626">Hapus data yang sudah ada.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Terang</translation>
 <translation id="1810845389119482123">Penyiapan sinkronisasi awal belum selesai</translation>
 <translation id="1821253160463689938">Menggunakan cookie untuk mengingat preferensi, meski Anda tidak membuka halaman tersebut</translation>
-<translation id="1826516787628120939">Memeriksa</translation>
 <translation id="1829244130665387512">Cari di halaman</translation>
 <translation id="1853692000353488670">Tab samaran baru</translation>
 <translation id="1856325424225101786">Setel ulang Mode Ringan?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Simpan sandi</translation>
 <translation id="1952172573699511566">Situs akan menampilkan teks dalam bahasa pilihan Anda, jika memungkinkan.</translation>
 <translation id="1960290143419248813">Update Chrome tidak lagi didukung untuk versi Android ini</translation>
+<translation id="1963976881984600709">Perlindungan standar</translation>
 <translation id="1966710179511230534">Perbarui detail ID masuk Anda.</translation>
 <translation id="1974060860693918893">Lanjutan</translation>
+<translation id="1984417487208496350">Tidak ada perlindungan (tidak direkomendasikan)</translation>
 <translation id="1984705450038014246">Sinkronkan data Chrome Anda</translation>
 <translation id="1986685561493779662">Nama sudah ada</translation>
 <translation id="1987739130650180037">Tombol <ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
@@ -392,7 +394,6 @@ Sentuh lama kata apa pun untuk menelusurinya. Untuk menyaring penelusuran, pilih
 <translation id="4183868528246477015">Telusuri dgn Google Lens <ph name="BEGIN_NEW" />Baru<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Buka di tab baru</translation>
 <translation id="4198423547019359126">Tidak tersedia lokasi download</translation>
-<translation id="4202553989407425169">Chrome dapat memeriksa apakah setelan melindungi Anda dari:</translation>
 <translation id="4209895695669353772">Untuk mendapatkan konten hasil personalisasi yang disarankan oleh Google, aktifkan sinkronisasi</translation>
 <translation id="423219824432660969">Enkripsikan data yang disinkronkan dengan sandi Google mulai tanggal <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Buka setelan</translation>
@@ -459,6 +460,7 @@ Akun Google Anda mungkin memiliki bentuk histori penjelajahan lain seperti penel
 <translation id="4749960740855309258">Membuka tab baru</translation>
 <translation id="4759238208242260848">Download</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download selesai.}other{# download selesai.}}</translation>
+<translation id="4766678251456904326">Tambahkan akun ke perangkat</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 download dijadwalkan.}other{# download dijadwalkan.}}</translation>
 <translation id="478981486571169252">Di Chrome, Anda akan melihat status login, data penjelajahan, dan data situs <ph name="SITE_NAME" />.</translation>
 <translation id="4802417911091824046">Enkripsi frasa sandi tidak mencakup alamat dan metode pembayaran dari Google Pay.
@@ -490,6 +492,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="4943872375798546930">Tidak ada hasil</translation>
 <translation id="4961107849584082341">Terjemahkan halaman ini ke bahasa apa pun</translation>
 <translation id="4970824347203572753">Tidak tersedia di lokasi Anda</translation>
+<translation id="4971735654804503942">Perlindungan lebih cepat dan proaktif terhadap situs, download, dan ekstensi berbahaya. Memberi Anda peringatan terkait kebocoran sandi. Mengharuskan pengiriman data penjelajahan ke Google.</translation>
 <translation id="497421865427891073">Maju</translation>
 <translation id="4988210275050210843">Mendownload file (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Halaman</translation>
@@ -561,7 +564,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5527082711130173040">Chrome memerlukan akses lokasi untuk memindai perangkat. <ph name="BEGIN_LINK1" />Perbarui izin<ph name="END_LINK1" />. Akses lokasi juga <ph name="BEGIN_LINK2" />dinonaktifkan untuk perangkat ini<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Tutup tab samaran</translation>
 <translation id="5534640966246046842">Situs disalin</translation>
-<translation id="5548606607480005320">Pemeriksaan keselamatan</translation>
 <translation id="5561549206367097665">Menunggu jaringan…</translation>
 <translation id="55737423895878184">Lokasi dan notifikasi diizinkan</translation>
 <translation id="5578795271662203820">Telusuri <ph name="SEARCH_ENGINE" /> untuk gambar ini</translation>
@@ -600,7 +602,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="583281660410589416">Tidak dikenal</translation>
 <translation id="5833984609253377421">Bagikan link</translation>
 <translation id="5836192821815272682">Mendownload Update Chrome…</translation>
-<translation id="584120177693484274">Belum diperiksa</translation>
 <translation id="5853623416121554550">dijeda</translation>
 <translation id="5854790677617711513">Lebih dari 30 hari</translation>
 <translation id="5858741533101922242">Chrome tidak dapat mengaktifkan adaptor Bluetooth</translation>
@@ -736,10 +737,12 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="685850645784703949">Discover oleh Google - nonaktif</translation>
 <translation id="6864459304226931083">Download gambar</translation>
 <translation id="6865313869410766144">Data formulir isi-otomatis</translation>
+<translation id="6882836635272038266">Perlindungan standar terhadap situs, download, dan ekstensi yang bereputasi berbahaya.</translation>
 <translation id="6884306546558072722">Terus menjelajah saat offline</translation>
 <translation id="688738109438487280">Menambahkan data yang sudah ada ke <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Buka kunci untuk menyalin sandi Anda</translation>
 <translation id="6896758677409633944">Salin</translation>
+<translation id="6900532703269623216">Perlindungan yang disempurnakan</translation>
 <translation id="6903907808598579934">Aktifkan sinkronisasi</translation>
 <translation id="6942665639005891494">Ubah lokasi download default kapan saja menggunakan opsi menu Setelan</translation>
 <translation id="6945221475159498467">Pilih</translation>

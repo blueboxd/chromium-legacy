@@ -18,8 +18,8 @@ class TopSitesObserver {
   enum class ChangeReason {
     // TopSites was changed by most visited.
     MOST_VISITED,
-    // TopSites was changed by add/remove/clear blacklist.
-    BLACKLIST,
+    // The set of blocked urls has changed.
+    BLOCKED_URLS,
     // TopSites was changed by AddForcedURLs.
     FORCED_URL,
   };

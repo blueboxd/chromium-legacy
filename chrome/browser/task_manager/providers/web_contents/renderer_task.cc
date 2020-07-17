@@ -119,7 +119,7 @@ void RendererTask::Refresh(const base::TimeDelta& update_interval,
   // it and record the current values (which might be invalid at the moment. We
   // can safely ignore that and count on future refresh cycles potentially
   // having valid values).
-  renderer_resources_sampler_->Refresh(base::Closure());
+  renderer_resources_sampler_->Refresh(base::DoNothing());
 
   v8_memory_allocated_ = base::saturated_cast<int64_t>(
       renderer_resources_sampler_->GetV8MemoryAllocated());

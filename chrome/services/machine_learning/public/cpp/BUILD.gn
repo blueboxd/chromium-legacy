@@ -1,0 +1,31 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+
+source_set("cpp") {
+  public = [ "decision_tree_model.h" ]
+
+  sources = [ "decision_tree_model.cc" ]
+
+  public_deps = [
+    "//base",
+    "//chrome/services/machine_learning/public/mojom",
+    "//components/optimization_guide",
+    "//components/optimization_guide/proto:optimization_guide_proto",
+  ]
+}
+
+source_set("test_support") {
+  public = [ "test_support/machine_learning_test_utils.h" ]
+
+  sources = [ "test_support/machine_learning_test_utils.cc" ]
+
+  public_deps = [
+    "//base",
+    "//chrome/services/machine_learning/public/mojom",
+    "//components/optimization_guide",
+    "//components/optimization_guide/proto:optimization_guide_proto",
+  ]
+}

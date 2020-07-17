@@ -20,13 +20,9 @@
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/public/media/cast_key_status.h"
+#include "media/base/callback_registry.h"
 #include "media/base/content_decryption_module.h"
-#include "media/base/player_tracker.h"
 #include "media/cdm/json_web_key.h"
-
-namespace media {
-class PlayerTrackerImpl;
-}
 
 namespace chromecast {
 namespace media {
@@ -49,9 +45,8 @@ class CastCdm : public ::media::ContentDecryptionModule {
       const ::media::SessionKeysChangeCB& session_keys_change_cb,
       const ::media::SessionExpirationUpdateCB& session_expiration_update_cb);
 
-  int RegisterPlayer(base::RepeatingClosure new_key_cb,
-                     base::RepeatingClosure cdm_unset_cb);
-  void UnregisterPlayer(int registration_id);
+  std::unique_ptr<::media::CallbackRegistration> RegisterEventCB(
+      ::media::CdmContext::EventCB event_cb);
 
   // Returns the decryption context needed to decrypt frames encrypted with
   // |key_id|. Returns null if |key_id| is not available.
@@ -106,8 +101,11 @@ class CastCdm : public ::media::ContentDecryptionModule {
   // doesn't need hardware resource.
   MediaResourceTracker* const media_resource_tracker_;
   std::unique_ptr<MediaResourceTracker::ScopedUsage> media_resource_usage_;
-  std::unique_ptr<::media::PlayerTrackerImpl> player_tracker_impl_;
+
   std::unique_ptr<CastCdmContext> cast_cdm_context_;
+
+  ::media::CallbackRegistry<::media::CdmContext::EventCB::RunType>
+      event_callbacks_;
 
   base::ThreadChecker thread_checker_;
 

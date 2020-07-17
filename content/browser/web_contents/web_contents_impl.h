@@ -587,6 +587,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   ui::AXMode GetAccessibilityMode() override;
   // Broadcasts the mode change to all frames.
   void SetAccessibilityMode(ui::AXMode mode) override;
+  void AXTreeIDForMainFrameHasChanged() override;
   void AccessibilityEventReceived(
       const AXEventNotificationDetails& details) override;
   void AccessibilityLocationChangesReceived(

@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">日文輸入法 (適用於美式鍵盤)</translation>
 <translation id="1047956942837015229">正在刪除 <ph name="COUNT" /> 個項目…</translation>
 <translation id="1049926623896334335">Word 文件</translation>
+<translation id="1060368002126861100">如要透過「<ph name="APP_NAME" />」開啟檔案，請先將檔案移至 Windows 資料夾。</translation>
 <translation id="1062407476771304334">取代</translation>
 <translation id="1065449928621190041">加拿大法文鍵盤</translation>
 <translation id="1119069657431255176">使用 Bzip2 壓縮的 tar 封存檔案</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">注意：系統可能會自動刪除這些暫存檔案，以釋放磁碟空間。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">資料夾</translation>
 <translation id="3549797760399244642">前往 drive.google.com…</translation>
+<translation id="3553048479571901246">如要透過「<ph name="APP_NAME" />」開啟檔案，請先將檔案複製至 Windows 資料夾。</translation>
 <translation id="357479282490346887">立陶宛文</translation>
 <translation id="3583509704582854624">英數字元輸入法 (適用於日文鍵盤)</translation>
 <translation id="3603385196401704894">加拿大法語</translation>

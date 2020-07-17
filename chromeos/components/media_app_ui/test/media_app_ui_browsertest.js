@@ -473,65 +473,6 @@ TEST_F('MediaAppUIBrowserTest', 'CanFullscreenVideo', async () => {
   testDone();
 });
 
-// Tests that we receive an error if our message is unhandled.
-TEST_F('MediaAppUIBrowserTest', 'ReceivesNoHandlerError', async () => {
-  guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
-  let caughtError = {};
-
-  try {
-    await guestMessagePipe.sendMessage('unknown-message');
-  } catch (error) {
-    caughtError = error;
-  }
-
-  assertEquals(caughtError.name, 'Error');
-  assertEquals(
-      caughtError.message,
-      'unknown-message: No handler registered for message type \'unknown-message\'');
-
-  assertMatchErrorStack(caughtError.stack, [
-    // Error stack of the test context.
-    'Error: unknown-message: No handler registered for message type \'unknown-message\'',
-    'at MessagePipe.sendMessage \\(chrome:',
-    'at async MediaAppUIBrowserTest.<anonymous>',
-    // Error stack of the untrusted context (guestMessagePipe) is appended.
-    'Error from chrome-untrusted:',
-    'Error: No handler registered for message type \'unknown-message\'',
-    'at MessagePipe.receiveMessage_ \\(chrome-untrusted:',
-    'at MessagePipe.messageListener_ \\(chrome-untrusted:',
-  ]);
-  testDone();
-});
-
-// Tests that we receive an error if the handler fails.
-TEST_F('MediaAppUIBrowserTest', 'ReceivesProxiedError', async () => {
-  guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
-  let caughtError = {};
-
-  try {
-    await guestMessagePipe.sendMessage('bad-handler');
-  } catch (error) {
-    caughtError = error;
-  }
-
-  assertEquals(caughtError.name, 'Error');
-  assertEquals(caughtError.message, 'bad-handler: This is an error');
-  assertMatchErrorStack(caughtError.stack, [
-    // Error stack of the test context.
-    'Error: bad-handler: This is an error',
-    'at MessagePipe.sendMessage \\(chrome:',
-    'at async MediaAppUIBrowserTest.<anonymous>',
-    // Error stack of the untrusted context (guestMessagePipe) is appended.
-    'Error from chrome-untrusted:',
-    'Error: This is an error',
-    'at guest_query_receiver.js',
-    'at MessagePipe.callHandlerForMessageType_ \\(chrome-untrusted:',
-    'at MessagePipe.receiveMessage_ \\(chrome-untrusted:',
-    'at MessagePipe.messageListener_ \\(chrome-untrusted:',
-  ]);
-  testDone();
-});
-
 // Tests the IPC behind the implementation of ReceivedFile.overwriteOriginal()
 // in the untrusted context. Ensures it correctly updates the file handle owned
 // by the privileged context.
@@ -579,8 +520,7 @@ TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalPickerFallback', async () => {
   testDone();
 });
 
-// Tests `MessagePipe.sendMessage()` properly propagates errors and appends
-// stacktraces.
+// Tests `MessagePipe.sendMessage()` properly propagates errors.
 TEST_F('MediaAppUIBrowserTest', 'CrossContextErrors', async () => {
   // Prevent the trusted context throwing errors resulting JS errors.
   guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
@@ -611,17 +551,6 @@ TEST_F('MediaAppUIBrowserTest', 'CrossContextErrors', async () => {
 
   assertEquals(caughtError.name, 'NotAllowedError');
   assertEquals(caughtError.message, `test: overwrite-file: ${error.message}`);
-  assertMatchErrorStack(caughtError.stack, [
-    // Error stack of the untrusted & test context.
-    'at MessagePipe.sendMessage \\(chrome-untrusted:',
-    'at async ReceivedFile.overwriteOriginal \\(chrome-untrusted:',
-    'at async runTestQuery \\(guest_query_receiver',
-    'at async MessagePipe.callHandlerForMessageType_ \\(chrome-untrusted:',
-    // Error stack of the trusted context is appended.
-    'Error from chrome:',
-    'NotAllowedError: Fake NotAllowedError for CrossContextErrors test.',
-    'at MediaAppUIBrowserTest',
-  ]);
   testDone();
 });
 

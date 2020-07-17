@@ -1,0 +1,24 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module blink.mojom;
+
+import "mojo/public/mojom/base/unguessable_token.mojom";
+
+// These identifiers uniquely represent workers (dedicated/shared/service)
+// across the content and blink layers. It is only intended to be transferred
+// between the browser process and the renderer process hosting the worker.
+// This is a simple wrapper that provides type safety.
+
+struct DedicatedWorkerToken {
+  mojo_base.mojom.UnguessableToken value;
+};
+
+struct SharedWorkerToken {
+  mojo_base.mojom.UnguessableToken value;
+};
+
+struct ServiceWorkerToken {
+  mojo_base.mojom.UnguessableToken value;
+};

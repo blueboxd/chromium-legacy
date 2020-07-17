@@ -33,9 +33,9 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/public/web/modules/media/webmediaplayer_util.h"
-#include "third_party/blink/public/web/modules/mediastream/web_media_stream_renderer_factory.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_local_frame_wrapper.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_renderer_factory_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/webmediaplayer_ms_compositor.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
@@ -299,7 +299,6 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     WebMediaPlayerClient* client,
     WebMediaPlayerDelegate* delegate,
     std::unique_ptr<media::MediaLog> media_log,
-    std::unique_ptr<WebMediaStreamRendererFactory> factory,
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
@@ -320,7 +319,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       paused_(true),
       video_transformation_(media::kNoTransformation),
       media_log_(std::move(media_log)),
-      renderer_factory_(std::move(factory)),
+      renderer_factory_(std::make_unique<MediaStreamRendererFactoryImpl>()),
       main_render_task_runner_(std::move(main_render_task_runner)),
       io_task_runner_(std::move(io_task_runner)),
       compositor_task_runner_(std::move(compositor_task_runner)),
@@ -1317,6 +1316,11 @@ void WebMediaPlayerMS::SetGpuMemoryBufferVideoForTesting(
     media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool) {
   CHECK(frame_deliverer_);
   frame_deliverer_->gpu_memory_buffer_pool_.reset(gpu_memory_buffer_pool);
+}
+
+void WebMediaPlayerMS::SetMediaStreamRendererFactoryForTesting(
+    std::unique_ptr<WebMediaStreamRendererFactory> renderer_factory) {
+  renderer_factory_ = std::move(renderer_factory);
 }
 
 void WebMediaPlayerMS::OnDisplayTypeChanged(

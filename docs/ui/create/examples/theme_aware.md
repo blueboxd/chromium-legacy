@@ -35,7 +35,7 @@ This example assumes you are already familiar with Views toolkit fundamentals,
 such as how to lay out UI elements and how to customize them.
 
 
-## Run the Example
+## Run the example
 
 The example code is in the file
 [`ui/views/examples/colored_dialog_example.cc`](https://source.chromium.org/chromium/chromium/src/+/master:ui/views/examples/colored_dialog_example.cc)
@@ -50,7 +50,7 @@ $ out\Default\views_examples --enable-examples="Colored Dialog"
 ```
 
 
-## Technique 1: Use Existing Views Controls
+## Technique 1: use existing Views controls
 
 The example's dialog consists of a title, a text field, and two buttons.
 For all these components, you can use Views’ existing controls. The existing
@@ -83,7 +83,7 @@ is necessary.
 ```
 
 
-## Technique 2: Override `OnThemeChanged()` in Custom Controls
+## Technique 2: override `OnThemeChanged()` in custom controls
 
 The checkbox in the main UI overrides `OnThemeChanged()` to implement
 customized behavior (in this case, automatically adjusting its visible state
@@ -129,7 +129,7 @@ not handle theme changes while the control is visible, and (depending on how
 the colors are calculated) may not even work correctly to begin with.
 
 
-## Technique 3: Use Theme Neutral Icons and Images
+## Technique 3: use theme neutral icons and images
 
 The button in the main UI contains an icon. Using a vector icon (as shown in
 the example) makes it easy to re-rasterize to the correct color any time the
@@ -173,7 +173,7 @@ public:
 ```
 
 
-## Learn More
+## Learn more
 
 To experiment with all Views examples and controls, run the examples app
 without any argument, which will show a list of all the examples and controls

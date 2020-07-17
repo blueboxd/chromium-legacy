@@ -171,13 +171,11 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   auto* last_cursor = static_cast<ui::X11Cursor*>(
       source_window->GetHost()->last_cursor().platform());
   move_loop_->RunMoveLoop(
-      !source_window->HasCapture(),
-      last_cursor ? last_cursor->xcursor() : x11::None,
+      !source_window->HasCapture(), last_cursor,
       static_cast<ui::X11Cursor*>(
           cursor_manager_
               ->GetInitializedCursor(ui::mojom::CursorType::kGrabbing)
-              .platform())
-          ->xcursor());
+              .platform()));
 
   if (alive) {
     auto resulting_operation = negotiated_operation();
@@ -354,10 +352,8 @@ void DesktopDragDropClientAuraX11::UpdateCursor(
       cursor_type = ui::mojom::CursorType::kDndLink;
       break;
   }
-  move_loop_->UpdateCursor(
-      static_cast<ui::X11Cursor*>(
-          cursor_manager_->GetInitializedCursor(cursor_type).platform())
-          ->xcursor());
+  move_loop_->UpdateCursor(static_cast<ui::X11Cursor*>(
+      cursor_manager_->GetInitializedCursor(cursor_type).platform()));
 }
 
 void DesktopDragDropClientAuraX11::OnBeginForeignDrag(x11::Window window) {

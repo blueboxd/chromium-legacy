@@ -593,6 +593,10 @@ void WebRuntimeFeatures::EnableDocumentPolicy(bool enable) {
   RuntimeEnabledFeatures::SetDocumentPolicyEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableDocumentPolicyNegotiation(bool enable) {
+  RuntimeEnabledFeatures::SetDocumentPolicyNegotiationEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnablePermissionsPolicyHeader(bool enable) {
   RuntimeEnabledFeatures::SetPermissionsPolicyHeaderEnabled(enable);
 }

@@ -180,8 +180,8 @@ class RenderingRepresentativePerfTest(object):
     values_per_story = {}
     for row in csv_obj:
       # For now only frame_times is used for testing representatives'
-      # performance.
-      if row['name'] != METRIC_NAME:
+      # performance and cpu_wall_time_ratio is used for validation.
+      if row['name'] != METRIC_NAME and row['name'] != 'cpu_wall_time_ratio':
         continue
       story_name = row['stories']
       if (story_name not in self.upper_limit_data):
@@ -189,13 +189,16 @@ class RenderingRepresentativePerfTest(object):
       if story_name not in values_per_story:
         values_per_story[story_name] = {
           'averages': [],
-          'ci_095': []
+          'ci_095': [],
+          'cpu_wall_time_ratio': []
         }
 
-      if (row['avg'] == '' or row['count'] == 0):
-        continue
-      values_per_story[story_name]['ci_095'].append(float(row['ci_095']))
-      values_per_story[story_name]['averages'].append(float(row['avg']))
+      if row['name'] == METRIC_NAME and row['avg'] != '' and row['count'] != 0:
+        values_per_story[story_name]['ci_095'].append(float(row['ci_095']))
+        values_per_story[story_name]['averages'].append(float(row['avg']))
+      elif row['name'] == 'cpu_wall_time_ratio' and row['avg'] != '':
+        values_per_story[story_name]['cpu_wall_time_ratio'].append(
+          float(row['avg']))
 
     return values_per_story
 
@@ -219,10 +222,14 @@ class RenderingRepresentativePerfTest(object):
         self.result_recorder[rerun].add_failure(story_name, self.benchmark)
         continue
 
-      upper_limit_avg = self.upper_limit_data[story_name]['avg']
-      upper_limit_ci = self.upper_limit_data[story_name]['ci_095']
+      upper_limits = self.upper_limit_data
+      upper_limit_avg = upper_limits[story_name]['avg']
+      upper_limit_ci = upper_limits[story_name]['ci_095']
+      lower_limit_cpu_ratio = upper_limits[story_name]['cpu_wall_time_ratio']
       measured_avg = np.mean(np.array(values_per_story[story_name]['averages']))
       measured_ci = np.mean(np.array(values_per_story[story_name]['ci_095']))
+      measured_cpu_ratio = np.mean(np.array(
+        values_per_story[story_name]['cpu_wall_time_ratio']))
 
       if (measured_ci > upper_limit_ci * CI_ERROR_MARGIN and
         self.is_control_story(story_name)):
@@ -233,10 +240,16 @@ class RenderingRepresentativePerfTest(object):
         self.result_recorder[rerun].add_failure(
           story_name, self.benchmark, True)
       elif (measured_avg > upper_limit_avg * AVG_ERROR_MARGIN):
-        print(('[  FAILED  ] {}/{} higher average {}({:.3f}) compared' +
-          ' to upper limit ({:.3f})').format(self.benchmark, story_name,
-          METRIC_NAME, measured_avg, upper_limit_avg))
-        self.result_recorder[rerun].add_failure(story_name, self.benchmark)
+        if (measured_cpu_ratio >= lower_limit_cpu_ratio):
+          print(('[  FAILED  ] {}/{} higher average {}({:.3f}) compared' +
+            ' to upper limit ({:.3f})').format(self.benchmark, story_name,
+            METRIC_NAME, measured_avg, upper_limit_avg))
+          self.result_recorder[rerun].add_failure(story_name, self.benchmark)
+        else:
+          print(('[       OK ] {}/{} higher average {}({:.3f}) compared ' +
+            'to upper limit({:.3f}). Invalidated for low cpu_wall_time_ratio'
+            ).format(self.benchmark, story_name, METRIC_NAME, measured_avg,
+                      upper_limit_avg))
       else:
         print(('[       OK ] {}/{} lower average {}({:.3f}) compared ' +
           'to upper limit({:.3f}).').format(self.benchmark, story_name,

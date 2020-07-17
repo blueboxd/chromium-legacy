@@ -6,8 +6,11 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/overlays/public/infobar_modal/infobar_modal_overlay_responses.h"
 #include "ios/chrome/browser/overlays/public/overlay_response.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_mediator+subclassing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -19,6 +22,7 @@
 #pragma mark - InfobarModalDelegate
 
 - (void)dismissInfobarModal:(id)infobarModal {
+  base::RecordAction(base::UserMetricsAction(kInfobarModalCancelButtonTapped));
   [self.delegate stopOverlayForMediator:self];
 }
 

@@ -89,6 +89,11 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
 
   bool HasNonIsolatedBlendingDescendants() const final;
 
+  bool HasDescendantCompositingReasons() const {
+    return AdditionalCompositingReasons() != CompositingReason::kNone;
+  }
+  void NotifyDescendantCompositingReasonsChanged();
+
   const char* GetName() const override { return "LayoutSVGRoot"; }
 
  private:
@@ -165,6 +170,11 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   // would normally not change under zoom. See: https://crbug.com/222786.
   double LogicalSizeScaleFactorForPercentageLengths() const;
 
+  PaintLayerType LayerTypeRequired() const override;
+  bool CanHaveAdditionalCompositingReasons() const override { return true; }
+  CompositingReasons AdditionalCompositingReasons() const override;
+  bool HasDescendantWithCompositingReason() const;
+
   LayoutObjectChildList children_;
   LayoutSize container_size_;
   FloatRect object_bounding_box_;
@@ -178,6 +188,8 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   bool has_box_decoration_background_ : 1;
   mutable bool has_non_isolated_blending_descendants_ : 1;
   mutable bool has_non_isolated_blending_descendants_dirty_ : 1;
+  mutable bool has_descendant_with_compositing_reason_ : 1;
+  mutable bool has_descendant_with_compositing_reason_dirty_ : 1;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGRoot, IsSVGRoot());

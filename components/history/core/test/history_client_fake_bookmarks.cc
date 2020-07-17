@@ -86,7 +86,7 @@ class HistoryBackendClientFakeBookmarks : public HistoryBackendClient {
 #if defined(OS_ANDROID)
   void OnHistoryBackendInitialized(HistoryBackend* history_backend,
                                    HistoryDatabase* history_database,
-                                   ThumbnailDatabase* thumbnail_database,
+                                   FaviconDatabase* favicon_database,
                                    const base::FilePath& history_dir) override;
   void OnHistoryBackendDestroyed(HistoryBackend* history_backend,
                                  const base::FilePath& history_dir) override;
@@ -122,9 +122,8 @@ bool HistoryBackendClientFakeBookmarks::IsWebSafe(const GURL& url) {
 void HistoryBackendClientFakeBookmarks::OnHistoryBackendInitialized(
     HistoryBackend* history_backend,
     HistoryDatabase* history_database,
-    ThumbnailDatabase* thumbnail_database,
-    const base::FilePath& history_dir) {
-}
+    FaviconDatabase* favicon_database,
+    const base::FilePath& history_dir) {}
 
 void HistoryBackendClientFakeBookmarks::OnHistoryBackendDestroyed(
     HistoryBackend* history_backend,

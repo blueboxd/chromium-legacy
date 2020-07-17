@@ -341,6 +341,10 @@ void WebView::RenderProcessGone(base::TerminationStatus status) {
   NotifyAccessibilityWebContentsChanged();
 }
 
+void WebView::AXTreeIDForMainFrameHasChanged() {
+  NotifyAccessibilityWebContentsChanged();
+}
+
 void WebView::ResizeDueToAutoResize(content::WebContents* source,
                                     const gfx::Size& new_size) {
   if (source != web_contents())

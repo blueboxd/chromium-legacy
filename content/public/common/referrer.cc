@@ -7,6 +7,7 @@
 #include <atomic>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/numerics/safe_conversions.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"

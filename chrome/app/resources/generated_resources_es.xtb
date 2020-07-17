@@ -3625,7 +3625,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5553089923092577885">Asignaciones de políticas de certificados</translation>
 <translation id="5554489410841842733">Este icono aparecerá cuando la extensión pueda actuar en la página actual.</translation>
 <translation id="5554720593229208774">Entidad emisora de certificados de correo electrónico</translation>
-<translation id="5554931805291741487">La zona de salida está casi llena</translation>
+<translation id="5554931805291741487">La bandeja de salida está casi llena</translation>
 <translation id="5556459405103347317">Volver a cargar</translation>
 <translation id="5557991081552967863">Mantener Wi-Fi activado en suspensión</translation>
 <translation id="5558125320634132440">Este sitio web está bloqueado porque puede que incluya contenido para adultos</translation>
@@ -6572,6 +6572,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="942532530371314860"><ph name="APP_NAME" /> está compartiendo audio y una pestaña de Chrome.</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>
 <translation id="947329552760389097">&amp;Inspeccionar elementos</translation>
+<translation id="951991426597076286">Rechazar</translation>
 <translation id="952992212772159698">Sin activar</translation>
 <translation id="956500788634395331">Tienes protección frente a extensiones potencialmente dañinas</translation>
 <translation id="957960681186851048">Este sitio web ha intentado descargar varios archivos automáticamente</translation>

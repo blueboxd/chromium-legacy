@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">ستظهر هنا الإشارات التي تم حفظها على أجهزتك الأخرى.</translation>
 <translation id="1113597929977215864">إظهار العرض المبسَّط</translation>
 <translation id="1122278879166832009">انقر هنا للوصول بسرعة إلى صفحتك الرئيسية من أي مكان</translation>
+<translation id="1126809382673880764">‏لا يوفّر لك هذا الوضع حماية من الإضافات أو عمليات التنزيل أو المواقع الإلكترونية الضارة. وستظل تستفيد من ميزة "التصفّح الآمن" عند توفّرها في خدمات Google الأخرى، مثل Gmail و"بحث Google".</translation>
 <translation id="1129510026454351943">التفاصيل: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{هناك عملية تنزيل واحدة مُعلَّقة.}zero{هناك # عملية تنزيل مُعلَّقة.}two{هناك عمليتا تنزيل (#) مُعلَّقتان.}few{هناك # عمليات تنزيل مُعلَّقة.}many{هناك # عملية تنزيل مُعلَّقة.}other{هناك # عملية تنزيل مُعلَّقة.}}</translation>
 <translation id="1145536944570833626">يمكنك حذف البيانات الحالية.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">فاتح</translation>
 <translation id="1810845389119482123">إعداد المزامنة الأولية لم يكتمل</translation>
 <translation id="1821253160463689938">يستخدم ملفات تعريف الارتباط لتذكّر الإعدادات المُفضّلة حتى إذا لم تزُر تلك الصفحات.</translation>
-<translation id="1826516787628120939">حساب شيكات</translation>
 <translation id="1829244130665387512">البحث في الصفحة</translation>
 <translation id="1853692000353488670">علامة تبويب جديدة للتصفح المتخفي</translation>
 <translation id="1856325424225101786">هل ترغب في إعادة ضبط الوضع البسيط؟</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">حفظ كلمات المرور</translation>
 <translation id="1952172573699511566">ستعرض المواقع الإلكترونية النص بلغتك المفضّلة إن أمكن.</translation>
 <translation id="1960290143419248813">‏لم تعد تحديثات Chrome متاحة لهذا الإصدار من نظام التشغيل Android</translation>
+<translation id="1963976881984600709">الحماية العادية</translation>
 <translation id="1966710179511230534">يُرجى تحديث تفاصيل تسجيل الدخول.</translation>
 <translation id="1974060860693918893">الإعدادات المتقدّمة</translation>
+<translation id="1984417487208496350">بلا حماية (غير مُستحسَن)</translation>
 <translation id="1984705450038014246">‏مزامنة بيانات Chrome</translation>
 <translation id="1986685561493779662">الاسم موجود من قبل</translation>
 <translation id="1987739130650180037">زر <ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">‏البحث باستخدام "عدسة Google" <ph name="BEGIN_NEW" />جديد<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">الفتح في علامة تبويب جديدة</translation>
 <translation id="4198423547019359126">ما من مواقع تنزيل متاحة</translation>
-<translation id="4202553989407425169">‏بإمكان متصفِّح Chrome التحقّق من مستوى الحماية لديك من خلال مراجعة:</translation>
 <translation id="4209895695669353772">‏للحصول على محتوى مُخصَّص اقترحته Google، يُرجى تفعيل المزامنة.</translation>
 <translation id="423219824432660969">‏ترميز البيانات المتزامنة باستخدام كلمة مرور Google اعتبارًا من <ph name="TIME" /></translation>
 <translation id="4242533952199664413">فتح الإعدادات</translation>
@@ -459,6 +460,7 @@
 <translation id="4749960740855309258">فتح علامة تبويب جديدة</translation>
 <translation id="4759238208242260848">الملفات التي تم تنزيلها</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{اكتملت عملية تنزيل واحدة.}zero{اكتملت # عملية تنزيل.}two{اكتملت عمليتا تنزيل (#).}few{اكتملت # عمليات تنزيل.}many{اكتملت # عملية تنزيل.}other{اكتملت # عملية تنزيل.}}</translation>
+<translation id="4766678251456904326">إضافة حساب إلى الجهاز</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{تمّت جدوَلة عملية تنزيل واحدة}zero{تمّت جدوَلة # عملية تنزيل}two{تمّت جدوَلة عمليتَي تنزيل}few{تمّت جدوَلة # عمليات تنزيل}many{تمّت جدوَلة # عملية تنزيل}other{تمّت جدوَلة # عملية تنزيل}}</translation>
 <translation id="478981486571169252">‏ستظهر لك حالة تسجيل الدخول <ph name="SITE_NAME" />، وبيانات التصفُّح وبيانات الموقع الإلكتروني في متصفِّح Chrome.</translation>
 <translation id="4802417911091824046">‏لا يتضمّن التشفير باستخدام عبارة المرور طرق الدفع والعناوين من Google Pay.
@@ -490,6 +492,7 @@
 <translation id="4943872375798546930">لا نتائج</translation>
 <translation id="4961107849584082341">ترجمة هذه الصفحة إلى أي لغة</translation>
 <translation id="4970824347203572753">لا تتوفر هذه الميزة في موقعك الجغرافي</translation>
+<translation id="4971735654804503942">‏يوفّر حماية استباقية سريعة من الإضافات وعمليات التنزيل والمواقع الإلكترونية الضارة. ويُحذّرك من اختراقات كلمة المرور. يتطلّب إرسال بيانات التصفّح إلى Google.</translation>
 <translation id="497421865427891073">انتقال للأمام</translation>
 <translation id="4988210275050210843">جارٍ تنزيل الملف (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">الصفحات</translation>
@@ -561,7 +564,6 @@
 <translation id="5527082711130173040">‏يحتاج Chrome للوصول إلى الموقع للبحث عن الأجهزة. <ph name="BEGIN_LINK1" />تحديث الأذونات<ph name="END_LINK1" />. الوصول إلى الموقع <ph name="BEGIN_LINK2" />غير مفعّل لهذا الجهاز<ph name="END_LINK2" /> أيضًا.</translation>
 <translation id="5530766185686772672">إغلاق علامات تبويب التصفح المتخفي</translation>
 <translation id="5534640966246046842">تم نسخ الموقع</translation>
-<translation id="5548606607480005320">التحقّق من الأمان</translation>
 <translation id="5561549206367097665">في انتظار الشبكة...</translation>
 <translation id="55737423895878184">مسموح بالإشعارات وتحديد الموقع الجغرافي</translation>
 <translation id="5578795271662203820">البحث في <ph name="SEARCH_ENGINE" /> عن هذه الصورة</translation>
@@ -600,7 +602,6 @@
 <translation id="583281660410589416">غير معروف</translation>
 <translation id="5833984609253377421">مشاركة الرابط</translation>
 <translation id="5836192821815272682">‏جارٍ تنزيل تحديث Chrome…</translation>
-<translation id="584120177693484274">لم يتم التحقّق</translation>
 <translation id="5853623416121554550">متوقف مؤقتًا</translation>
 <translation id="5854790677617711513">مرّ عليها أكثر من 30 يومًا</translation>
 <translation id="5858741533101922242">‏يتعذر على Chrome تشغيل محوّل البلوتوث</translation>
@@ -736,10 +737,12 @@
 <translation id="685850645784703949">‏ميزة "اقتراحات من Google" متوقفة</translation>
 <translation id="6864459304226931083">تنزيل الصورة</translation>
 <translation id="6865313869410766144">الملء التلقائي للبيانات</translation>
+<translation id="6882836635272038266">يوفّر لك حماية عادية من الإضافات وعمليات التنزيل والمواقع الإلكترونية الضارة.</translation>
 <translation id="6884306546558072722">مواصلة الاطّلاع على المحتوى بلا اتصال بالإنترنت</translation>
 <translation id="688738109438487280">يمكنك إضافة البيانات الحالية إلى <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">فتح القفل لنسخ كلمة المرور</translation>
 <translation id="6896758677409633944">نسخ</translation>
+<translation id="6900532703269623216">حماية مُحسّنة</translation>
 <translation id="6903907808598579934">تفعيل المزامنة</translation>
 <translation id="6942665639005891494">تغيير موقع التنزيل التلقائي في أي وقت باستخدام خيار قائمة "الإعدادات"</translation>
 <translation id="6945221475159498467">تحديد</translation>

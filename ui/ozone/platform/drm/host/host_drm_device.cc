@@ -128,15 +128,18 @@ bool HostDrmDevice::GpuRefreshNativeDisplays() {
   return true;
 }
 
-void HostDrmDevice::GpuConfigureNativeDisplay(
-    const display::DisplayConfigurationParams& display_config_params,
+void HostDrmDevice::GpuConfigureNativeDisplays(
+    const std::vector<display::DisplayConfigurationParams>& config_requests,
     display::ConfigureCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (IsConnected()) {
-    drm_device_->ConfigureNativeDisplay(display_config_params,
-                                        std::move(callback));
+    drm_device_->ConfigureNativeDisplays(config_requests, std::move(callback));
   } else {
-    std::move(callback).Run(false);
+    // If not connected, report failure to config.
+    base::flat_map<int64_t, bool> dummy_statuses;
+    for (const auto& config : config_requests)
+      dummy_statuses.insert(std::make_pair(config.id, false));
+    std::move(callback).Run(dummy_statuses);
   }
 }
 

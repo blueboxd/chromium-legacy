@@ -272,7 +272,8 @@ TEST_F(OmniboxViewTest, GetStateChanges_DeletedText_RichAutocompletion) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeatureWithParameters(
       omnibox::kRichAutocompletion,
-      {{OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefix, "true"}});
+      {{OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixParam,
+        "true"}});
 
   // Cases with single selection
 

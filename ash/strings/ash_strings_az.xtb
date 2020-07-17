@@ -98,6 +98,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="1995660704900986789">Söndürün</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Mesaj yazın</translation>
+<translation id="2018630726571919839">Gülməli əhvalat danış</translation>
 <translation id="2050339315714019657">Portret</translation>
 <translation id="2067602449040652523">Klaviatura parlaqlığı</translation>
 <translation id="209965399369889474">Şəbəkəyə qoşulmayıb</translation>
@@ -125,6 +126,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> aktivləşdirilir</translation>
 <translation id="2359808026110333948">Davam edin</translation>
 <translation id="2365393535144473978">Mobil datanın aktiv edilməsi ilə Bluetooh da aktiv ediləcək.</translation>
+<translation id="2369165858548251131">Çin dilində "Salam"</translation>
 <translation id="2390318262976603432">Yerli ayarlar</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Güncəlləmə əlçatandır</translation>
@@ -142,6 +144,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="256712445991462162">iç böyüdücü</translation>
 <translation id="2575685495496069081">Çoxsaylı giriş deaktivdir</translation>
 <translation id="2582112259361606227">Güncəlləmək üçün yenidən başladın</translation>
+<translation id="2595239820337756193">5000 mil</translation>
 <translation id="2617342710774726426">SIM kart kilidlənib</translation>
 <translation id="2621713457727696555">Qorunur</translation>
 <translation id="2653659639078652383">Təqdim edin</translation>
@@ -195,6 +198,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="3154351730702813399">Cihaz admini axtarış fəaliyyətinizi izləyə bilər.</translation>
 <translation id="3181441307743005334">Yenidən başlatmaq bir qədər vaxt apara bilər</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Cihaza qoşuldunuz}other{# cihaza qoşuldunuz}}</translation>
+<translation id="320207200541803018">Taymer ayarlayın</translation>
 <translation id="3203405173652969239">Dəyişdirici Girişi aktivdir</translation>
 <translation id="3207953481422525583">İstifadəçi ayarları</translation>
 <translation id="3217205077783620295">Səs səviyyəsi aktivdir, keçirdikdə audio səssiz ediləcək.</translation>
@@ -207,6 +211,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> sonradan yenə daxil ola biləcək.</translation>
 <translation id="3321628682574733415">Yanlış valideyn kodu</translation>
 <translation id="332587331255250389">Batareyanı dəyişin</translation>
+<translation id="334252345105450327">Skrinşot çəkin</translation>
 <translation id="3351879221545518001">Hazırda ekranı paylaşırsınız.</translation>
 <translation id="3364721542077212959">Fırça alətləri</translation>
 <translation id="3368922792935385530">Qoşuludur</translation>
@@ -239,6 +244,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="3631369015426612114">Aşağıdakı bildirişlərə icazə verin</translation>
 <translation id="3638400994746983214">Məxfilik ekranını dəyişdirin. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> İdarə edilən istifadəçi</translation>
+<translation id="3702846122927433391">Nigeriyanın əhalisi</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Zonanın ani şəkli</translation>
 <translation id="371370241367527062">Ön mikrofon</translation>
@@ -519,6 +525,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> daxilində köhnə həllə qayıtma</translation>
 <translation id="7188494361780961876">Menyu ekranın yuxarı sol küncünə köçürülüb.</translation>
+<translation id="7189412385142492784">Venera nə qədər uzaqdadır</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Bu Chromebook yeniləməni tətbiq etmək üçün yenidən başlamalıdır. Bu, 1 dəqiqəyə qədər vaxt apara bilər.</translation>
 <translation id="7256634071279256947">Arxa mikrofon</translation>
 <translation id="726276584504105859">Ekranı bölmək üçün bura sürüşdürün</translation>
@@ -645,6 +652,7 @@ Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="8649101189709089199">Səsləndirmək üçün seçim</translation>
 <translation id="8652175077544655965">Ayarları bağlayın</translation>
 <translation id="8653151467777939995">Bildiriş ayarlarını göstərin. Bildirişlər aktivdir</translation>
+<translation id="8660331759611631213">71-in kvadrat kökü</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Şəbəkə siyahısını göstərin. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

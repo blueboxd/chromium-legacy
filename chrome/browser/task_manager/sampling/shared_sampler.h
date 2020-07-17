@@ -45,7 +45,7 @@ class SharedSampler : public base::RefCountedThreadSafe<SharedSampler> {
     base::Time start_time;
   };
   using OnSamplingCompleteCallback =
-      base::Callback<void(base::Optional<SamplingResult>)>;
+      base::RepeatingCallback<void(base::Optional<SamplingResult>)>;
 
   // Returns a combination of refresh flags supported by the shared sampler.
   int64_t GetSupportedFlags() const;

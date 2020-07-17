@@ -41,6 +41,7 @@
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -629,6 +630,26 @@ void CastWebContentsImpl::ReadyToCommitNavigation(
   DCHECK(navigation_handle);
   if (!web_contents_ || closing_ || stopped_)
     return;
+
+  // We want to honor the autoplay feature policy (via allow="autoplay") without
+  // explicit user activation, since media on Cast is extremely likely to have
+  // already been explicitly requested by a user via voice or over the network.
+  // By spoofing the "high media engagement" signal, we can bypass the user
+  // gesture requirement for autoplay.
+  int32_t autoplay_flags = blink::mojom::kAutoplayFlagHighMediaEngagement;
+
+  // Main frames should have autoplay enabled by default, since autoplay
+  // delegation via parent frame doesn't work here.
+  if (navigation_handle->IsInMainFrame())
+    autoplay_flags |= blink::mojom::kAutoplayFlagForceAllow;
+
+  mojo::AssociatedRemote<blink::mojom::AutoplayConfigurationClient> client;
+  navigation_handle->GetRenderFrameHost()
+      ->GetRemoteAssociatedInterfaces()
+      ->GetInterface(&client);
+  auto autoplay_origin = url::Origin::Create(navigation_handle->GetURL());
+  client->AddAutoplayFlags(autoplay_origin, autoplay_flags);
+
   if (!navigation_handle->IsInMainFrame())
     return;
 

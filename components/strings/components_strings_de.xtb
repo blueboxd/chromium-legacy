@@ -97,7 +97,7 @@
           <ph name="LIST_ITEM" />Ihren Arbeitgeber oder Ihre Bildungseinrichtung
           <ph name="LIST_ITEM" />Ihren Internetanbieter
         <ph name="END_LIST" /></translation>
-<translation id="1339601241726513588">Anmeldedomain: </translation>
+<translation id="1339601241726513588">Registrierungsdomain:</translation>
 <translation id="1340482604681802745">Abholadresse</translation>
 <translation id="1346748346194534595">Rechts</translation>
 <translation id="1348198688976932919">Die Website, die Sie aufrufen möchten, enthält gefährliche Apps</translation>
@@ -132,7 +132,7 @@
 <translation id="147358896496811705">2A0</translation>
 <translation id="1476595624592550506">Passwort ändern</translation>
 <translation id="1484290072879560759">Versandadresse auswählen</translation>
-<translation id="1492194039220927094">Richtlinien übernehmen: </translation>
+<translation id="1492194039220927094">Richtlinien per Push-Benachrichtigung:</translation>
 <translation id="1501859676467574491">Zeigen Sie Karten von Ihrem Google-Konto</translation>
 <translation id="1507202001669085618">&lt;p&gt;Diese Fehlermeldung wird angezeigt, wenn Sie ein WLAN-Portal verwenden, bei dem eine Anmeldung erforderlich ist, bevor Sie online gehen können.&lt;/p&gt;
     &lt;p&gt;Klicken Sie auf der Seite, die Sie öffnen möchten, auf &lt;strong&gt;Verbinden&lt;/strong&gt;, um den Fehler zu beheben.&lt;/p&gt;</translation>
@@ -421,7 +421,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="2705137772291741111">Die (im Cache) gespeicherte Kopie dieser Website war nicht lesbar.</translation>
 <translation id="2709516037105925701">Automatisches Ausfüllen</translation>
 <translation id="2713444072780614174">Weiß</translation>
-<translation id="2720342946869265578">In der Nähe</translation>
 <translation id="2721148159707890343">Anfrage erfolgreich</translation>
 <translation id="272451190272506600">Berühren Sie zum Bezahlen den Sensor</translation>
 <translation id="2728127805433021124">Das Serverzertifikat ist mit einem schwachen Signaturalgorithmus signiert.</translation>
@@ -656,7 +655,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="3744899669254331632">Sie können <ph name="SITE" /> zurzeit nicht aufrufen, weil die Website verschlüsselte Anmeldedaten gesendet hat, die von Chromium nicht verarbeitet werden können. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert.</translation>
 <translation id="3745099705178523657">Nach erfolgter Bestätigung werden die Kartendetails Ihres Google-Kontos an diese Website weitergegeben.</translation>
 <translation id="3748148204939282805">Hacker könnten auf <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> etwa versuchen, Sie zur Installation von Software oder zur Herausgabe von Daten wie Passwörtern, Telefonnummern oder Kreditkartendetails zu bewegen. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="3754210790023674521">Bild-im-Bild-Modus beenden</translation>
+<translation id="3754210790023674521">Bild im Bild beenden</translation>
 <translation id="3759461132968374835">Es liegen keine kürzlich gemeldeten Abstürze vor. Abstürze, die bei deaktivierter Absturzberichtsfunktion aufgetreten sind, werden hier nicht angezeigt.</translation>
 <translation id="3760561303380396507">Windows Hello anstelle des CVCs verwenden?</translation>
 <translation id="3761718714832595332">Status ausblenden</translation>
@@ -713,7 +712,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="3987940399970879459">Weniger als 1 MB</translation>
 <translation id="3990250421422698716">Jog-Versatz</translation>
 <translation id="3996311196211510766">Die Website <ph name="ORIGIN" /> verlangt, dass auf alle an sie gerichteten Anfragen eine Ursprungsrichtlinie angewendet wird. Diese Richtlinie kann jedoch momentan nicht angewandt werden.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 Webseite in der Nähe}other{# Webseiten in der Nähe}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-Dokument mit {COUNT} Seite}other{PDF-Dokument mit {COUNT} Seiten}}</translation>
 <translation id="4030383055268325496">&amp;Hinzufügen rückgängig machen</translation>
 <translation id="4032320456957708163">Ihr Browser wird von <ph name="ENROLLMENT_DOMAIN" /> verwaltet</translation>
@@ -891,7 +889,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="4738601419177586157">Suchvorschlag: <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Passwörter verwalten…</translation>
 <translation id="4744603770635761495">Ausführbarer Pfad</translation>
-<translation id="4750917950439032686">Ihre Daten wie Passwörter oder Kreditkartennummern sind privat, wenn Sie sie an diese Website senden.</translation>
+<translation id="4750917950439032686">Ihre Daten wie Passwörter oder Kreditkartennummern sind geschützt, wenn Sie sie an diese Website senden.</translation>
 <translation id="4756388243121344051">&amp;Verlauf</translation>
 <translation id="4758311279753947758">Kontaktdaten hinzufügen</translation>
 <translation id="4761104368405085019">Mikrofon verwenden</translation>
@@ -927,7 +925,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Wird gespeichert...</translation>
 <translation id="4913987521957242411">Lochung oben links</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{und 1 weitere Webseite}other{und # weitere Webseiten}}</translation>
 <translation id="4923459931733593730">Zahlung</translation>
 <translation id="4926049483395192435">Angabe erforderlich</translation>
 <translation id="4926159001844873046">Auf <ph name="SITE" /> wird Folgendes angezeigt:</translation>
@@ -1318,7 +1315,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="6518133107902771759">Bestätigen</translation>
 <translation id="6521745193039995384">Nicht aktiv</translation>
 <translation id="6529602333819889595">&amp;Löschen wiederholen</translation>
-<translation id="6534179046333460208">Physical Web-Vorschläge</translation>
 <translation id="6545864417968258051">Bluetooth-Suche</translation>
 <translation id="6547208576736763147">Doppelte Lochung links</translation>
 <translation id="6554795675067793129">Ihr Konto wird von <ph name="ENROLLMENT_DOMAIN" /> verwaltet.</translation>
@@ -1615,7 +1611,7 @@ Weitere Details:
 <translation id="7752995774971033316">Nicht verwaltet</translation>
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
 <translation id="7758069387465995638">Möglicherweise wurde die Verbindung von einer Firewall oder Antivirensoftware blockiert.</translation>
-<translation id="7759163816903619567">Anzeigebereich: </translation>
+<translation id="7759163816903619567">Anzeigedomain:</translation>
 <translation id="776110834126722255">Veraltet</translation>
 <translation id="7761701407923456692">Das Serverzertifikat stimmt nicht mit der URL überein.</translation>
 <translation id="7763386264682878361">Zahlungsmanifest-Parser</translation>
@@ -1648,7 +1644,7 @@ Weitere Details:
 <translation id="7878562273885520351">Ihr Passwort könnte gefährdet sein</translation>
 <translation id="7882421473871500483">Braun</translation>
 <translation id="7887683347370398519">Prüfen Sie Ihren CVC und versuchen Sie es dann erneut.</translation>
-<translation id="7887885240995164102">Bild-im-Bild-Modus aktivieren</translation>
+<translation id="7887885240995164102">Bild im Bild aktivieren</translation>
 <translation id="7888575728750733395">Rendering Intent für Druck</translation>
 <translation id="7904208859782148177">C3 (Umschlag)</translation>
 <translation id="7932579305932748336">Im­prä­g­nie­ren</translation>
@@ -1841,7 +1837,6 @@ Weitere Details:
 <translation id="8790007591277257123">&amp;Löschen wiederholen</translation>
 <translation id="8792621596287649091">Sie könnten den Zugriff auf Ihr <ph name="ORG_NAME" />-Konto verlieren oder zum Opfer von Identitätsdiebstahl werden. Chromium empfiehlt Ihnen, Ihr Passwort jetzt zu ändern.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> hat Chrome Enterprise Connectors für Ihren Browser aktiviert. Diese Connectors haben Zugriff auf einen Teil Ihrer Daten.</translation>
-<translation id="8800988563907321413">Hier werden Ihre Vorschläge in der Nähe angezeigt</translation>
 <translation id="8805819170075074995">Listeneintrag "<ph name="LANGUAGE_ID" />": Der Eintrag wird ignoriert, weil er auch in der Richtlinie "SpellcheckLanguage" enthalten ist.</translation>
 <translation id="8807160976559152894">Nach jeder Seite zuschneiden</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>

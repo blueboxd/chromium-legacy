@@ -40,6 +40,16 @@ class QUIC_EXPORT_PRIVATE QuicSessionKey {
   bool operator<(const QuicSessionKey& other) const;
   bool operator==(const QuicSessionKey& other) const;
 
+  // Checks if requests using QuicSessionKey can potentially be used to service
+  // requests using another.  Returns true if all fields except QuicServerId's
+  // host and port match. The caller *MUST* also make sure that the session
+  // associated with one key has been verified for use with the host/port of the
+  // other.
+  //
+  // Note that this method is symmetric, so it doesn't matter which key's method
+  // is called on the other.
+  bool CanUseForAliasing(const QuicSessionKey& other) const;
+
   const std::string& host() const { return server_id_.host(); }
 
   PrivacyMode privacy_mode() const {

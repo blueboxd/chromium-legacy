@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="1008557486741366299">Teraz nie</translation>
+<translation id="100957008357583611">Chcete použiť svoju polohu?</translation>
 <translation id="1010200102790553230">Načítať stránku neskôr</translation>
 <translation id="1015730422737071372">Poskytnite ďalšie podrobnosti</translation>
 <translation id="1019413721762100891">vypnuté</translation>
@@ -421,7 +422,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="2705137772291741111">Uložená kópia tohto webu (vo vyrovnávacej pamäti) bola nečitateľná.</translation>
 <translation id="2709516037105925701">Automatické dopĺňanie</translation>
 <translation id="2713444072780614174">Biela</translation>
-<translation id="2720342946869265578">Nablízku</translation>
 <translation id="2721148159707890343">Žiadosť bola úspešná</translation>
 <translation id="272451190272506600">Dotknite sa senzora a zaplaťte</translation>
 <translation id="2728127805433021124">Certifikát servera je podpísaný pomocou slabého podpisového algoritmu.</translation>
@@ -711,7 +711,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="3987940399970879459">Menej ako 1 MB</translation>
 <translation id="3990250421422698716">Odsadenie zarovnania okrajov</translation>
 <translation id="3996311196211510766">Web <ph name="ORIGIN" /> požiadal, aby sa na všetky jeho požiadavky vzťahovalo pravidlo pre zdroj, ale toto pravidlo sa momentálne nedá uplatniť.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 webová stránka v okolí}few{# webové stránky v okolí}many{# webovej stránky v okolí}other{# webových stránok v okolí}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Dokument PDF s {COUNT} stranou}few{Dokument PDF s {COUNT} stranami}many{Dokument PDF s {COUNT} strany}other{Dokument PDF s {COUNT} stranami}}</translation>
 <translation id="4030383055268325496">&amp;Vrátiť späť pridanie</translation>
 <translation id="4032320456957708163">Váš prehliadač spravuje doména <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -925,7 +924,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Uložiť...</translation>
 <translation id="4913987521957242411">Prederaviť vľavo hore</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{a 1 ďalšia webová stránka}few{a # ďalšie webové stránky}many{a # ďalšej webovej stránky}other{a # ďalších webových stránok}}</translation>
 <translation id="4923459931733593730">Platba</translation>
 <translation id="4926049483395192435">Musí byť určená.</translation>
 <translation id="4926159001844873046">Správa z webu <ph name="SITE" /></translation>
@@ -1166,6 +1164,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="5869405914158311789">Tento web je nedostupný</translation>
 <translation id="5869522115854928033">Uložené heslá</translation>
 <translation id="5887400589839399685">Karta bola uložená</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> vyžaduje, aby ste zálohovali svoje údaje a toto zariadenie vrátili.</translation>
 <translation id="5895138241574237353">Reštartovať</translation>
 <translation id="5895187275912066135">Vydané dňa</translation>
 <translation id="5901630391730855834">Žltá</translation>
@@ -1315,7 +1314,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="6518133107902771759">Overiť</translation>
 <translation id="6521745193039995384">Neaktívne</translation>
 <translation id="6529602333819889595">&amp;Znova odstrániť</translation>
-<translation id="6534179046333460208">Návrhy Fyzického webu</translation>
 <translation id="6545864417968258051">Vyhľadávanie zariadení Bluetooth</translation>
 <translation id="6547208576736763147">Dve dierky vľavo</translation>
 <translation id="6554795675067793129">Váš účet spravuje doména <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1838,7 +1836,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="8790007591277257123">&amp;Znova vymazať</translation>
 <translation id="8792621596287649091">Môžete stratiť prístup do účtu <ph name="ORG_NAME" /> alebo vám niekto môže ukradnúť identitu. Chromium odporúča, aby ste si ihneď zmenili heslo.</translation>
 <translation id="8793655568873652685">Doména <ph name="ENROLLMENT_DOMAIN" /> zapla vo vašom prehliadači Chrome Enterprise Connectors. Tieto konektory majú prístup k niektorým vašim údajom.</translation>
-<translation id="8800988563907321413">Tu sa zobrazia návrhy funkcie Nablízku</translation>
 <translation id="8805819170075074995">Položka zoznamu <ph name="LANGUAGE_ID" />: položka bola ignorovaná, pretože je tiež zahrnutá v pravidle SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Orezať po každej strane</translation>
 <translation id="8820817407110198400">Záložky</translation>

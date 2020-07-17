@@ -8,9 +8,11 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/display.h"
+#include "ui/display/types/display_configuration_params.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/display/types/native_display_observer.h"
 
@@ -62,7 +64,7 @@ class CastDisplayConfigurator : public display::NativeDisplayObserver {
   void OnDisplayConfigured(display::DisplaySnapshot* display,
                            const display::DisplayMode* mode,
                            const gfx::Point& origin,
-                           bool success);
+                           const base::flat_map<int64_t, bool>& statuses);
   void UpdateScreen(int64_t display_id,
                     const gfx::Rect& bounds,
                     float device_scale_factor,

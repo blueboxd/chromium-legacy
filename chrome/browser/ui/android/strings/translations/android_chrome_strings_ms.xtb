@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Penanda halaman yang disimpan pada peranti anda yang lain akan dipaparkan di sini.</translation>
 <translation id="1113597929977215864">Tunjukkan paparan ringkas</translation>
 <translation id="1122278879166832009">Ketik di sini untuk mengakses halaman utama anda dari mana-mana sahaja dengan cepat</translation>
+<translation id="1126809382673880764">Tidak melindungi anda daripada tapak web, muat turun dan sambungan yang berbahaya. Anda akan mendapat perlindungan Penyemakan Imbas Selamat, jika tersedia, dalam perkhidmatan Google yang lain, seperti Gmail dan Carian.</translation>
 <translation id="1129510026454351943">Butiran: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 muat turun belum selesai.}other{# muat turun belum selesai.}}</translation>
 <translation id="1145536944570833626">Padam data sedia ada.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Cahaya</translation>
 <translation id="1810845389119482123">Penyediaan penyegerakan permulaan belum selesai</translation>
 <translation id="1821253160463689938">Menggunakan kuki untuk mengingati pilihan anda, walaupun anda tidak melawati halaman tersebut</translation>
-<translation id="1826516787628120939">Menyemak</translation>
 <translation id="1829244130665387512">Cari dalam halaman</translation>
 <translation id="1853692000353488670">Tab inkognito baharu</translation>
 <translation id="1856325424225101786">Tetapkan semula mod Ringkas?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Simpan kata laluan</translation>
 <translation id="1952172573699511566">Tapak web akan menunjukkan teks dalam bahasa pilihan anda, jika boleh.</translation>
 <translation id="1960290143419248813">Kemas kini Chrome tidak disokong untuk versi Android ini lagi</translation>
+<translation id="1963976881984600709">Perlindungan standard</translation>
 <translation id="1966710179511230534">Sila kemas kini butiran log masuk anda.</translation>
 <translation id="1974060860693918893">Lanjutan</translation>
+<translation id="1984417487208496350">Tiada perlindungan (tidak disyorkan)</translation>
 <translation id="1984705450038014246">Segerakkan data Chrome anda</translation>
 <translation id="1986685561493779662">Nama sudah wujud</translation>
 <translation id="1987739130650180037">Butang <ph name="LINK_NAME" /> <ph name="MESSAGE" /></translation>
@@ -392,7 +394,6 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="4183868528246477015">Cari dengan Google Lens <ph name="BEGIN_NEW" />Baharu<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Buka dalam tab baharu</translation>
 <translation id="4198423547019359126">Tiada lokasi muat turun tersedia</translation>
-<translation id="4202553989407425169">Chrome boleh menyemak sama ada tetapan anda melindungi anda daripada:</translation>
 <translation id="4209895695669353772">Hidupkan penyegerakan untuk mendapatkan kandungan diperibadikan yang dicadangkan oleh Google</translation>
 <translation id="423219824432660969">Sulitkan data yang disegerakkan dengan kata laluan Google bermula dari <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Buka tetapan</translation>
@@ -459,6 +460,7 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="4749960740855309258">Buka tab baharu</translation>
 <translation id="4759238208242260848">Muat turun</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 muat turun selesai.}other{# muat turun selesai.}}</translation>
+<translation id="4766678251456904326">Tambahkan akaun pada peranti</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 muat turun dijadualkan.}other{# muat turun dijadualkan.}}</translation>
 <translation id="478981486571169252">Anda akan melihat status log masuk <ph name="SITE_NAME" />, data semakan imbas dan data tapak anda dalam Chrome.</translation>
 <translation id="4802417911091824046">Penyulitan ungkapan laluan tidak termasuk kaedah pembayaran dan alamat daripada Google Pay.
@@ -490,6 +492,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="4943872375798546930">Tiada hasil carian</translation>
 <translation id="4961107849584082341">Terjemahkan halaman ini ke sebarang bahasa</translation>
 <translation id="4970824347203572753">Tidak tersedia di lokasi anda</translation>
+<translation id="4971735654804503942">Perlindungan proaktif yang lebih pantas terhadap tapak web, muat turun dan sambungan yang berbahaya. Memberi anda amaran tentang pelanggaran kata laluan. Menghendaki data semakan imbas dihantar kepada Google.</translation>
 <translation id="497421865427891073">Ke hadapan</translation>
 <translation id="4988210275050210843">Memuat turun fail (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Halaman</translation>
@@ -561,7 +564,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5527082711130173040">Chrome memerlukan akses lokasi untuk mengimbas peranti. <ph name="BEGIN_LINK1" />Kemas kini kebenaran<ph name="END_LINK1" />. Akses lokasi turut <ph name="BEGIN_LINK2" />dimatikan untuk peranti ini<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Tutup tab inkognito</translation>
 <translation id="5534640966246046842">Tapak disalin</translation>
-<translation id="5548606607480005320">Semakan keselamatan</translation>
 <translation id="5561549206367097665">Menunggu rangkaian…</translation>
 <translation id="55737423895878184">Lokasi dan pemberitahuan dibenarkan</translation>
 <translation id="5578795271662203820">Cari imej ini di <ph name="SEARCH_ENGINE" /></translation>
@@ -600,7 +602,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="583281660410589416">Tidak diketahui</translation>
 <translation id="5833984609253377421">Kongsi pautan</translation>
 <translation id="5836192821815272682">Memuat Turun Kemas Kini Chrome…</translation>
-<translation id="584120177693484274">Dinyahtanda</translation>
 <translation id="5853623416121554550">dijeda</translation>
 <translation id="5854790677617711513">Lebih lama daripada 30 hari</translation>
 <translation id="5858741533101922242">Chrome tidak dapat menghidupkan penyesuai Bluetooth</translation>
@@ -736,10 +737,12 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="685850645784703949">Discover oleh Google - dimatikan</translation>
 <translation id="6864459304226931083">Muat turun imej</translation>
 <translation id="6865313869410766144">Autolengkap data borang</translation>
+<translation id="6882836635272038266">Perlindungan standard daripada tapak web, muat turun dan sambungan yang diketahui berbahaya.</translation>
 <translation id="6884306546558072722">Teruskan meneroka di luar talian</translation>
 <translation id="688738109438487280">Tambahkan data sedia ada pada <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Buka kunci untuk menyalin kata laluan anda</translation>
 <translation id="6896758677409633944">Salin</translation>
+<translation id="6900532703269623216">Perlindungan dipertingkat</translation>
 <translation id="6903907808598579934">Hidupkan penyegerakan</translation>
 <translation id="6942665639005891494">Tukar lokasi muat turun lalai pada bila-bila masa menggunakan pilihan menu Tetapan</translation>
 <translation id="6945221475159498467">Pilih</translation>

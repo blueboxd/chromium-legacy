@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">일본어 입력(미국 키보드용)</translation>
 <translation id="1047956942837015229"><ph name="COUNT" />개 항목 삭제 중...</translation>
 <translation id="1049926623896334335">Word 문서</translation>
+<translation id="1060368002126861100"><ph name="APP_NAME" /> 앱으로 파일을 열려면 먼저 파일을 Windows 파일 폴더로 옮기세요.</translation>
 <translation id="1062407476771304334">바꾸기</translation>
 <translation id="1065449928621190041">캐나다 프랑스어 키보드</translation>
 <translation id="1119069657431255176">Bzip2으로 압축된 tar 압축 파일</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">주의: 이 파일은 임시 파일이며 디스크 여유 공간을 확보하기 위해 자동으로 삭제될 수 있습니다.  <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">폴더</translation>
 <translation id="3549797760399244642">drive.google.com 사이트로 이동...</translation>
+<translation id="3553048479571901246"><ph name="APP_NAME" /> 앱으로 파일을 열려면 먼저 파일을 Windows 파일 폴더에 복사하세요.</translation>
 <translation id="357479282490346887">리투아니아어</translation>
 <translation id="3583509704582854624">영숫자 입력(일본어 키보드용)</translation>
 <translation id="3603385196401704894">프랑스어(캐나다)</translation>

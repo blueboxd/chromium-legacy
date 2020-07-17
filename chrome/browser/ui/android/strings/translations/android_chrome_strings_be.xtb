@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">Тут з'явяцца закладкі, захаваныя на вашых іншых прыладах.</translation>
 <translation id="1113597929977215864">Паказаць у спрошчаным выглядзе</translation>
 <translation id="1122278879166832009">Каб хутка трапіць на галоўную старонку з любой іншай, націсніце тут</translation>
+<translation id="1126809382673880764">Не абараняе ад небяспечных вэб-сайтаў, спамповак і пашырэнняў. Вы застаняцеся пад абаронай Бяспечнага прагляду пры карыстанні іншымі сэрвісамі Google, у якіх ён даступны, такімі як Gmail і Пошук.</translation>
 <translation id="1129510026454351943">Падрабязнасці: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Чакаецца 1 спампоўка.}one{Чакаецца # спампоўка.}few{Чакаецца # спампоўкі.}many{Чакаецца # спамповак.}other{Чакаецца # спампоўкі.}}</translation>
 <translation id="1145536944570833626">Выдаліць існуючыя даныя.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">Светлая</translation>
 <translation id="1810845389119482123">Першапачатковая наладка сінхранізацыі не завершана</translation>
 <translation id="1821253160463689938">Выкарыстоўваць файлы cookie для захавання параметраў, нават калі вы не адкрываеце гэтыя старонкі</translation>
-<translation id="1826516787628120939">Ідзе праверка</translation>
 <translation id="1829244130665387512">Пошук на старонцы</translation>
 <translation id="1853692000353488670">Новая ўкладка інкогніта</translation>
 <translation id="1856325424225101786">Скінуць налады лёгкага рэжыму?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">Захоўваць паролі</translation>
 <translation id="1952172573699511566">Тэкст на вэб-сайтах будзе паказвацца на мове, выбранай вамі ў якасці прыярытэтнай, калі гэта магчыма.</translation>
 <translation id="1960290143419248813">Абнаўленні Chrome больш не падтрымліваюцца для гэтай версіі Android.</translation>
+<translation id="1963976881984600709">Стандартная абарона</translation>
 <translation id="1966710179511230534">Абнавіце ўліковыя даныя для ўваходу.</translation>
 <translation id="1974060860693918893">Пашыраныя налады</translation>
+<translation id="1984417487208496350">Без абароны (не рэкамендуецца)</translation>
 <translation id="1984705450038014246">Сінхранізацыя даных Chrome</translation>
 <translation id="1986685561493779662">Такая назва ўжо існуе</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" />, кнопка "<ph name="LINK_NAME" />"</translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">Пошук праз Google Аб'ектыў <ph name="BEGIN_NEW" />Новае<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Адкрыць у новай укладцы</translation>
 <translation id="4198423547019359126">Няма месца для спампоўкі</translation>
-<translation id="4202553989407425169">Chrome можа праверыць налады наступных фактараў бяспекі:</translation>
 <translation id="4209895695669353772">Каб атрымліваць прапановы персаналізаванага змесціва ад Google, уключыце сінхранізацыю</translation>
 <translation id="423219824432660969">Зашыфраваць сінхранізаваныя даныя з дапамогай пароля да ўліковага запісу Google па стане на <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Адкрыць налады</translation>
@@ -459,6 +460,7 @@
 <translation id="4749960740855309258">Адкрыць новую ўкладку</translation>
 <translation id="4759238208242260848">Спампоўкі</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 спампоўка завершана.}one{# спампоўка завершана.}few{# спампоўкі завершана.}many{# спамповак завершана.}other{# спампоўкі завершана.}}</translation>
+<translation id="4766678251456904326">Дадаць уліковы запіс на прыладу</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{Запланавана 1 спампоўка.}one{Запланавана # спампоўка.}few{Запланаваны # спампоўкі.}many{Запланаваны # спамповак.}other{Запланаваны # спампоўкі.}}</translation>
 <translation id="478981486571169252">Вы ўбачыце, ці выкананы ўваход на сайт <ph name="SITE_NAME" />, гісторыю праглядаў і даныя сайтаў у Chrome.</translation>
 <translation id="4802417911091824046">Шыфраванне фразы-пароля не распаўсюджваецца на спосабы аплаты і адрасы з Google Pay.
@@ -490,6 +492,7 @@
 <translation id="4943872375798546930">Няма вынікаў</translation>
 <translation id="4961107849584082341">Гэту старонку можна перакласці на любую мову</translation>
 <translation id="4970824347203572753">Недаступна ў вашым рэгіёне</translation>
+<translation id="4971735654804503942">Больш хуткая актыўная абарона ад небяспечных вэб-сайтаў, спамповак і пашырэнняў. Папярэджвае пра ўцечкі пароляў. Патрабуе адпраўкі даных прагляду сайтаў у Google.</translation>
 <translation id="497421865427891073">Наперад</translation>
 <translation id="4988210275050210843">Ідзе спампоўванне файла (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Старонкі</translation>
@@ -561,7 +564,6 @@
 <translation id="5527082711130173040">Для пошуку прылад браўзеру Chrome патрабуецца доступ да месцазнаходжання. <ph name="BEGIN_LINK1" />Змяніце дазволы<ph name="END_LINK1" />. Доступ да месцазнаходжання <ph name="BEGIN_LINK2" />для гэтай прылады таксама выключаны<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Закрыць укладкі інкогніта</translation>
 <translation id="5534640966246046842">Сайт скапіраваны</translation>
-<translation id="5548606607480005320">Праверка бяспекі</translation>
 <translation id="5561549206367097665">Чакаецца адказ сеткі…</translation>
 <translation id="55737423895878184">Вызначэнне месцазнаходжання і апавяшчэнні дазволены</translation>
 <translation id="5578795271662203820">Шукаць гэты відарыс праз <ph name="SEARCH_ENGINE" /></translation>
@@ -600,7 +602,6 @@
 <translation id="583281660410589416">Невядома</translation>
 <translation id="5833984609253377421">Абагуліць спасылку</translation>
 <translation id="5836192821815272682">Спампоўваецца абнаўленне Chrome…</translation>
-<translation id="584120177693484274">Праверка не выканана</translation>
 <translation id="5853623416121554550">прыпынена</translation>
 <translation id="5854790677617711513">Даныя, старэйшыя за 30 дзён</translation>
 <translation id="5858741533101922242">Браўзеру Chrome не ўдалося ўключыць Bluetooth-адаптар</translation>
@@ -736,10 +737,12 @@
 <translation id="685850645784703949">Рэкамендацыі ад Google выключаны</translation>
 <translation id="6864459304226931083">Спампаваць відарыс</translation>
 <translation id="6865313869410766144">Даныя для аўтазапаўнення</translation>
+<translation id="6882836635272038266">Стандартная абарона ад вэб-сайтаў, спамповак і пашырэнняў, вядомых як небяспечныя.</translation>
 <translation id="6884306546558072722">Праглядайце змесціва ў пазасеткавым рэжыме</translation>
 <translation id="688738109438487280">Дадаць існуючыя даныя ва ўліковы запіс <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Разблакіруйце, каб скапіраваць пароль</translation>
 <translation id="6896758677409633944">Капіраваць</translation>
+<translation id="6900532703269623216">Палепшаная абарона</translation>
 <translation id="6903907808598579934">Уключыць сінхранізацыю</translation>
 <translation id="6942665639005891494">Стандартнае размяшчэнне спамповак можна змяніць у наладах</translation>
 <translation id="6945221475159498467">Выбраць</translation>

@@ -195,7 +195,7 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateClipPathCache();
   ALWAYS_INLINE void UpdateStickyTranslation();
   ALWAYS_INLINE void UpdateTransform();
-  ALWAYS_INLINE void UpdateTransformForSVGChild();
+  ALWAYS_INLINE void UpdateTransformForSVGChild(CompositingReasons);
   ALWAYS_INLINE bool EffectCanUseCurrentClipAsOutputClip() const;
   ALWAYS_INLINE void UpdateEffect();
   ALWAYS_INLINE void UpdateFilter();
@@ -612,21 +612,27 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
     context_.current.transform = properties_->StickyTranslation();
 }
 
-static bool NeedsTransformForSVGChild(const LayoutObject& object) {
+static bool NeedsTransformForSVGChild(
+    const LayoutObject& object,
+    CompositingReasons direct_compositing_reasons) {
+  if (!object.IsSVGChild() || object.IsText())
+    return false;
+  if (direct_compositing_reasons &
+      CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(object))
+    return true;
   // TODO(pdr): Check for the presence of a transform instead of the value.
   // Checking for an identity matrix will cause the property tree structure
   // to change during animations if the animation passes through the
   // identity matrix.
-  // TODO(crbug.com/666244): Check CompositingReasonsForAnimation here when we
-  // support composited transform animations in SVG.
-  return object.IsSVGChild() && !object.IsText() &&
-         !object.LocalToSVGParentTransform().IsIdentity();
+  return !object.LocalToSVGParentTransform().IsIdentity();
 }
 
 static void SetTransformNodeStateFromAffineTransform(
     TransformPaintPropertyNode::State& state,
-    const AffineTransform& transform) {
-  if (transform.IsIdentityOrTranslation())
+    const AffineTransform& transform,
+    bool disable_2d_translation_optimization) {
+  if (!disable_2d_translation_optimization &&
+      transform.IsIdentityOrTranslation())
     state.transform_and_origin = {FloatSize(transform.E(), transform.F())};
   else
     state.transform_and_origin = {TransformationMatrix(transform)};
@@ -634,7 +640,8 @@ static void SetTransformNodeStateFromAffineTransform(
 
 // SVG does not use the general transform update of |UpdateTransform|, instead
 // creating a transform node for SVG-specific transforms without 3D.
-void FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild() {
+void FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild(
+    CompositingReasons direct_compositing_reasons) {
   DCHECK(properties_);
   DCHECK(object_.IsSVGChild());
   // SVG does not use paint offset internally, except for SVGForeignObject which
@@ -644,14 +651,49 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild() {
 
   if (NeedsPaintPropertyUpdate()) {
     AffineTransform transform = object_.LocalToSVGParentTransform();
-    if (NeedsTransformForSVGChild(object_)) {
+    if (NeedsTransformForSVGChild(object_, direct_compositing_reasons)) {
       // The origin is included in the local transform, so leave origin empty.
-      // TODO(crbug.com/666244): Support composited transform animation for SVG
-      // using similar code as |UpdateTransform| for animations.
       TransformPaintPropertyNode::State state;
-      SetTransformNodeStateFromAffineTransform(state, transform);
-      OnUpdate(properties_->UpdateTransform(*context_.current.transform,
-                                            std::move(state)));
+      bool disable_2d_translation_optimization =
+          full_context_.direct_compositing_reasons &
+          CompositingReason::kActiveTransformAnimation;
+      SetTransformNodeStateFromAffineTransform(
+          state, transform, disable_2d_translation_optimization);
+
+      // TODO(pdr): There is additional logic in
+      // FragmentPaintPropertyTreeBuilder::UpdateTransform that likely needs to
+      // be included here, such as setting rendering context ids, etc.
+      if (RuntimeEnabledFeatures::CompositeSVGEnabled()) {
+        state.direct_compositing_reasons =
+            direct_compositing_reasons &
+            CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(
+                object_);
+        state.flags.flattens_inherited_transform =
+            context_.current.should_flatten_inherited_transform;
+        state.compositor_element_id = GetCompositorElementId(
+            CompositorElementIdNamespace::kPrimaryTransform);
+      }
+
+      TransformPaintPropertyNode::AnimationState animation_state;
+      animation_state.is_running_animation_on_compositor =
+          object_.StyleRef().IsRunningTransformAnimationOnCompositor();
+      auto effective_change_type = properties_->UpdateTransform(
+          *context_.current.transform, std::move(state), animation_state);
+      if (effective_change_type ==
+              PaintPropertyChangeType::kChangedOnlySimpleValues &&
+          properties_->Transform()->HasDirectCompositingReasons()) {
+        if (auto* paint_artifact_compositor =
+                object_.GetFrameView()->GetPaintArtifactCompositor()) {
+          bool updated = paint_artifact_compositor->DirectlyUpdateTransform(
+              *properties_->Transform());
+          if (updated) {
+            effective_change_type =
+                PaintPropertyChangeType::kChangedOnlyCompositedValues;
+            properties_->Transform()->CompositorSimpleValuesUpdated();
+          }
+        }
+      }
+      OnUpdate(effective_change_type);
     } else {
       OnClear(properties_->ClearTransform());
     }
@@ -734,7 +776,7 @@ static bool ActiveTransformAnimationIsAxisAligned(
 
 void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
   if (object_.IsSVGChild()) {
-    UpdateTransformForSVGChild();
+    UpdateTransformForSVGChild(full_context_.direct_compositing_reasons);
     return;
   }
 
@@ -1222,13 +1264,15 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
       EffectPaintPropertyNode::State state;
       state.local_transform_space = context_.current.transform;
 
-      if (auto* layer = ToLayoutBoxModelObject(object_).Layer()) {
-        // Try to use the cached filter.
-        if (properties_->Filter())
-          state.filter = properties_->Filter()->Filter();
-        layer->UpdateFilterReferenceBox();
-        layer->UpdateCompositorFilterOperationsForFilter(state.filter);
-        layer->ClearFilterOnEffectNodeDirty();
+      if (object_.IsBoxModelObject()) {
+        if (auto* layer = ToLayoutBoxModelObject(object_).Layer()) {
+          // Try to use the cached filter.
+          if (properties_->Filter())
+            state.filter = properties_->Filter()->Filter();
+          layer->UpdateFilterReferenceBox();
+          layer->UpdateCompositorFilterOperationsForFilter(state.filter);
+          layer->ClearFilterOnEffectNodeDirty();
+        }
       }
 
       // The CSS filter spec didn't specify how filters interact with overflow
@@ -1763,7 +1807,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
     }
     if (!content_to_parent_space.IsIdentity()) {
       TransformPaintPropertyNode::State state;
-      SetTransformNodeStateFromAffineTransform(state, content_to_parent_space);
+      SetTransformNodeStateFromAffineTransform(state, content_to_parent_space,
+                                               false);
       state.flags.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
       OnUpdate(properties_->UpdateReplacedContentTransform(
@@ -3411,7 +3456,8 @@ bool PaintPropertyTreeBuilder::UpdateFragments() {
        // the paint offset and border box has been computed.
        MayNeedClipPathClip(object_) ||
        NeedsEffect(object_, context_.direct_compositing_reasons) ||
-       NeedsTransformForSVGChild(object_) ||
+       NeedsTransformForSVGChild(object_,
+                                 context_.direct_compositing_reasons) ||
        NeedsFilter(object_, context_.direct_compositing_reasons) ||
        NeedsCssClip(object_) || NeedsInnerBorderRadiusClip(object_) ||
        NeedsOverflowClip(object_) || NeedsPerspective(object_) ||

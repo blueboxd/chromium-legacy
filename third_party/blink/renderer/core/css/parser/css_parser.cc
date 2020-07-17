@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_fast_paths.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_impl.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_stream.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_selector_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_supports_parser.h"
@@ -212,13 +213,17 @@ StyleRuleKeyframe* CSSParser::ParseKeyframeRule(const CSSParserContext* context,
 
 bool CSSParser::ParseSupportsCondition(const String& condition,
                                        SecureContextMode secure_context_mode) {
-  CSSTokenizer tokenizer(condition);
-  const auto tokens = tokenizer.TokenizeToEOF();
+  // window.CSS.supports requires to parse as-if it was wrapped in parenthesis.
+  String wrapped_condition = "(" + condition + ")";
+  CSSTokenizer tokenizer(wrapped_condition);
+  CSSParserTokenStream stream(tokenizer);
   CSSParserImpl parser(StrictCSSParserContext(secure_context_mode));
-  return CSSSupportsParser::SupportsCondition(
-             CSSParserTokenRange(tokens), parser,
-             CSSSupportsParser::Mode::kForWindowCSS) ==
-         CSSSupportsParser::Result::kSupported;
+  CSSSupportsParser::Result result =
+      CSSSupportsParser::ConsumeSupportsCondition(stream, parser);
+  if (!stream.AtEnd())
+    result = CSSSupportsParser::Result::kParseFailure;
+
+  return result == CSSSupportsParser::Result::kSupported;
 }
 
 bool CSSParser::ParseColor(Color& color, const String& string, bool strict) {

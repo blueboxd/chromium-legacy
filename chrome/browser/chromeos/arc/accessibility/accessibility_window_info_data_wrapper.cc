@@ -112,7 +112,7 @@ void AccessibilityWindowInfoDataWrapper::Serialize(
   AccessibilityInfoDataWrapper::Serialize(out_data);
 
   // String properties.
-  const std::string name = ComputeAXName();
+  const std::string name = ComputeAXName(true);
   if (!name.empty()) {
     out_data->SetName(name);
     out_data->SetNameFrom(ax::mojom::NameFrom::kTitle);
@@ -142,7 +142,8 @@ void AccessibilityWindowInfoDataWrapper::Serialize(
   // and LAYER_ORDER in ax::mojom::IntAttributes.
 }
 
-std::string AccessibilityWindowInfoDataWrapper::ComputeAXName() const {
+std::string AccessibilityWindowInfoDataWrapper::ComputeAXName(
+    bool do_recursive) const {
   std::string title;
   GetProperty(mojom::AccessibilityWindowStringProperty::TITLE, &title);
   return title;

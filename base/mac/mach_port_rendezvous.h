@@ -20,6 +20,7 @@
 #include "base/mac/scoped_mach_port.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 
 namespace base {
 
@@ -90,7 +91,8 @@ class BASE_EXPORT MachPortRendezvousServer {
   // until the process known by |pid| has either acquired the ports or died.
   //
   // This must be called with the lock from GetLock() held.
-  void RegisterPortsForPid(pid_t pid, const MachPortsForRendezvous& ports);
+  void RegisterPortsForPid(pid_t pid, const MachPortsForRendezvous& ports)
+      EXCLUSIVE_LOCKS_REQUIRED(GetLock());
 
   // Returns a lock on the internal port registration map. The parent process
   // should hold this lock for the duration of launching a process, including
@@ -98,7 +100,7 @@ class BASE_EXPORT MachPortRendezvousServer {
   // cannot race acquiring ports before they are registered. The lock should
   // be released after the child process is launched and the ports are
   // registered.
-  Lock& GetLock() { return lock_; }
+  Lock& GetLock() LOCK_RETURNED(lock_) { return lock_; }
 
  private:
   friend class MachPortRendezvousServerTest;

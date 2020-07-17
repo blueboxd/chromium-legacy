@@ -5,6 +5,7 @@
 #include "chromeos/components/tether/wifi_hotspot_disconnector_impl.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/pref_names.h"
@@ -50,20 +51,20 @@ WifiHotspotDisconnectorImpl::~WifiHotspotDisconnectorImpl() = default;
 void WifiHotspotDisconnectorImpl::DisconnectFromWifiHotspot(
     const std::string& wifi_network_guid,
     base::OnceClosure success_callback,
-    const network_handler::StringResultCallback& error_callback) {
+    StringErrorCallback error_callback) {
   const NetworkState* wifi_network_state =
       network_state_handler_->GetNetworkStateFromGuid(wifi_network_guid);
   if (!wifi_network_state) {
     PA_LOG(ERROR) << "Wi-Fi NetworkState for GUID " << wifi_network_guid << " "
                   << "does not exist. Cannot disconnect.";
-    error_callback.Run(NetworkConnectionHandler::kErrorNotFound);
+    std::move(error_callback).Run(NetworkConnectionHandler::kErrorNotFound);
     return;
   }
 
   if (!wifi_network_state->IsConnectedState()) {
     PA_LOG(ERROR) << "Wi-Fi NetworkState for GUID " << wifi_network_guid << " "
                   << "is not connected. Cannot disconnect.";
-    error_callback.Run(NetworkConnectionHandler::kErrorNotConnected);
+    std::move(error_callback).Run(NetworkConnectionHandler::kErrorNotConnected);
     return;
   }
 
@@ -80,44 +81,46 @@ void WifiHotspotDisconnectorImpl::DisconnectFromWifiHotspot(
   pref_service_->Set(prefs::kDisconnectingWifiNetworkPath,
                      base::Value(wifi_network_path));
 
+  auto copyable_error_callback =
+      base::AdaptCallbackForRepeating(std::move(error_callback));
   network_connection_handler_->DisconnectNetwork(
       wifi_network_path,
       base::BindOnce(&WifiHotspotDisconnectorImpl::OnSuccessfulWifiDisconnect,
                      weak_ptr_factory_.GetWeakPtr(), wifi_network_guid,
                      wifi_network_path, std::move(success_callback),
-                     error_callback),
-      base::BindRepeating(&WifiHotspotDisconnectorImpl::OnFailedWifiDisconnect,
-                          weak_ptr_factory_.GetWeakPtr(), wifi_network_guid,
-                          wifi_network_path, error_callback));
+                     copyable_error_callback),
+      base::BindOnce(&WifiHotspotDisconnectorImpl::OnFailedWifiDisconnect,
+                     weak_ptr_factory_.GetWeakPtr(), wifi_network_guid,
+                     wifi_network_path, copyable_error_callback));
 }
 
 void WifiHotspotDisconnectorImpl::OnSuccessfulWifiDisconnect(
     const std::string& wifi_network_guid,
     const std::string& wifi_network_path,
     base::OnceClosure success_callback,
-    const network_handler::StringResultCallback& error_callback) {
+    StringErrorCallback error_callback) {
   PA_LOG(VERBOSE) << "Successfully disconnected from Wi-Fi network with GUID "
                   << wifi_network_guid << ".";
   CleanUpAfterWifiDisconnection(wifi_network_path, std::move(success_callback),
-                                error_callback);
+                                std::move(error_callback));
 }
 
 void WifiHotspotDisconnectorImpl::OnFailedWifiDisconnect(
     const std::string& wifi_network_guid,
     const std::string& wifi_network_path,
-    const network_handler::StringResultCallback& error_callback,
+    StringErrorCallback error_callback,
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
   PA_LOG(ERROR) << "Failed to disconnect from Wi-Fi network with GUID "
                 << wifi_network_guid << ". Error name: " << error_name;
   CleanUpAfterWifiDisconnection(wifi_network_path, base::OnceClosure(),
-                                error_callback);
+                                std::move(error_callback));
 }
 
 void WifiHotspotDisconnectorImpl::CleanUpAfterWifiDisconnection(
     const std::string& wifi_network_path,
     base::OnceClosure success_callback,
-    const network_handler::StringResultCallback& error_callback) {
+    StringErrorCallback error_callback) {
   network_configuration_remover_->RemoveNetworkConfigurationByPath(
       wifi_network_path);
   pref_service_->ClearPref(prefs::kDisconnectingWifiNetworkPath);
@@ -125,7 +128,8 @@ void WifiHotspotDisconnectorImpl::CleanUpAfterWifiDisconnection(
   if (success_callback)
     std::move(success_callback).Run();
   else
-    error_callback.Run(NetworkConnectionHandler::kErrorDisconnectFailed);
+    std::move(error_callback)
+        .Run(NetworkConnectionHandler::kErrorDisconnectFailed);
 }
 
 }  // namespace tether

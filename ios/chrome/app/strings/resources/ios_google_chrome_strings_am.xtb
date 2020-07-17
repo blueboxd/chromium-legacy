@@ -2,15 +2,19 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
 <translation id="1282031177488366470">የChrome ባህሪያት እና አፈጻጸም እንዲሻሻል ያግዙ</translation>
+<translation id="1479202195792305274">Chrome በእርስዎ የGoogle መለያ በሚገቡበት ጊዜ የእርስዎን የይለፍ ቃላትን ሊፈትሽ ይችላል።</translation>
+<translation id="1647024380514430932">Chrome ሁሉንም የይለፍ ቃላት ማረጋገጥ አልቻለም። እንደገና ይሞክሩ።</translation>
 <translation id="1682483655351012182">የChrome ውሂብዎን ያስምሩ</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1917964099031477364">ይህ መለያ እና ማንኛውም ያልተቀመጠ ውሂብ ከChrome እና በዚህ መሣሪያ ላይ ካሉት ከሌሎች የGoogle መተግበሪያዎች ይወገዳል።</translation>
+<translation id="2009224836393115614">Chrome የእርስዎን የይለፍ ቃላት መፈተሽ አልችለም። የበይነመረብ ግንኙነትዎን ለመፈተሽ ይሞክሩ።</translation>
 <translation id="2147651015520127414">Chrome የዚህ ድር ጣቢያ እውቅና ማረጋገጫ ያወጣው <ph name="ISSUER" /> መሆኑን አረጋግጧል።</translation>
 <translation id="2199719347983604670">ውሂብ ከChrome ስምረት</translation>
 <translation id="2347208864470321755">ይህ ባህሪ ሲበራ Chrome በሌሎች ቋንቋዎች የተጻፉ ገጾች Google ትርጉምን በመጠቀም እንዲተረጎምልዎ ይጠይቀዎታል። <ph name="BEGIN_LINK" />ተጨማሪ ለመረዳት<ph name="END_LINK" /></translation>
 <translation id="2574249610672786438">Chromeን ከሚጠቀሙበት የትኛዉም ቦታ ትሮችን ለማየት በሁሉም መሣሪያዎችዎ ላይ ይግቡ</translation>
 <translation id="2576431527583832481">Chrome አሁን ተሻሽሏል! አዲስ ስሪት አለ።</translation>
 <translation id="257708665678654955">Google Chrome በሚቀጥለው ጊዜ ከዚህ ጣቢያ የመጡ የ<ph name="LANGUAGE_NAME" /> ገጾች እንዲተረጎምልዎ ይፈልጋሉ?</translation>
+<translation id="2732745070297234559">Chrome ሁሉንም የይለፍ ቃላት ማረጋገጥ አልቻለም። ነገ እንደገና ይሞክሩ።</translation>
 <translation id="2919738076569633423">Chromeን በመጠቀምዎ በ<ph name="BEGIN_LINK_TOS" />አገልግሎት ውሉ<ph name="END_LINK_TOS" /> ተስማማተዋል።</translation>
 <translation id="3030414234702425231">እርስዎ በ<ph name="SIGNOUT_MANAGED_DOMAIN" /> ከሚተዳደር መለያ ዘግተው እየወጡ ስለሆነ Chrome ውሂብዎ ከዚህ መሣሪያ ላይ ይሰረዛል። የእርስዎ ውሂብ በእርስዎ Google መለያ ውስጥ ይቆያል።</translation>
 <translation id="3148688391461398285">Chrome ውስጥ በአካባቢዎ ላይ የተመሠረተ የተሻለ ተሞክሮ ያግኙ።</translation>
@@ -28,6 +32,7 @@
 <translation id="424864128008805179">ከChrome ተዘግቶ ይወጣ?</translation>
 <translation id="4249068189593983585">የChrome ጠቃሚ ምክር። ተጨማሪ የትር አማራጮችን ለማግኘት በመሣሪያ አሞሌው ውስጥ የትሮችን አሳይ አዝራሩን ነክተው ይያዙ፣ ይህ በማያ ገጽዎ አናት ወይም ግርጌ ላይ ነው ያለው።</translation>
 <translation id="4523886039239821078">አንዳንድ ተጨማሪዎች Chrome እንዲበላሽ ያደርጋሉ። እባክዎ የሚከተለውን ያራግፉ፦</translation>
+<translation id="4698415050768537821">Chrome ሁሉንም የይለፍ ቃላት ማረጋገጥ አልቻለም። ነገ እንደገና ይሞክሩ ወይም <ph name="BEGIN_LINK" />የGoogle መለያዎን ይለፍ ቃላት ይፈትሹ።<ph name="END_LINK" /></translation>
 <translation id="5389212809648216794">ሌላ መተግበሪያ ካሜራዎን እየተጠቀመበት ስለሆነ Google Chrome ካሜራዎን መጠቀም አይችልም</translation>
 <translation id="5639704535586432836">ቅንብሮች &gt; ግላዊነት &gt; ካሜራ &gt; Google Chromeን ይክፈቱና ካሜራውን ያብሩ።</translation>
 <translation id="5642200033778930880">Google Chrome ካሜራዎን በተከፈለ እይታ ሁነታ መጠቀም አይችልም</translation>
@@ -42,7 +47,9 @@
 <translation id="7165736900384873061">የGoogle Chrome QR መቃኛን መጠቀም ይጀምሩ</translation>
 <translation id="7172660552945675509">ጠቃሚ ምክር፦ <ph name="BEGIN_LINK" />Chromeን ወደ የእርስዎ መትከያ ይውሰዱት<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome ፈቀዳ ያለው የይለፍ ቃላትዎ መዳረሻ ለማረጋገጥ የመልክ መታወቂያን ይጠቀማል።</translation>
+<translation id="7261678641327190792">Chrome የእርስዎን የይለፍ ቃላት መፈተሽ አይችልም</translation>
 <translation id="7265369419224458312">በኮምፒውተርዎ ላይ የከፈቷቸውን ትሮች እዚሁ ይድረሱባቸው። በቀላሉ Chromeን በኮምፒውተርዎ ላይ ይክፈቱ፣ ወደ ምናሌ ይሂዱ፣ እና «ወደ Chrome ግባ...»ን ይምረጡ</translation>
+<translation id="7272930098487145294">ምስሎችን ለማስቀመጥ፣ Chrome ወደ የእርስዎ ፎቶዎች ማከል እንዲችል ለማድረግ ቅንብሮች ላይ መታ ያድርጉ</translation>
 <translation id="7400722733683201933">ስለ Google Chrome</translation>
 <translation id="756809126120519699">የChrome ውሂብ ጸድቷል</translation>
 <translation id="7626032353295482388">ወደ Chrome እንኳን ደህና መጡ</translation>

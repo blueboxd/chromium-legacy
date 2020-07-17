@@ -49,6 +49,7 @@ source_set("mediators") {
     "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/overlays/public/infobar_modal",
     "//ios/chrome/browser/ui/infobars/modals",
+    "//ios/chrome/browser/ui/infobars/modals:public",
     "//ios/chrome/browser/ui/overlays:coordinators",
   ]
 }

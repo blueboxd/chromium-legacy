@@ -730,14 +730,19 @@ StyleRuleMedia* CSSParserImpl::ConsumeMediaRule(CSSParserTokenStream& stream) {
 StyleRuleSupports* CSSParserImpl::ConsumeSupportsRule(
     CSSParserTokenStream& stream) {
   wtf_size_t prelude_offset_start = stream.LookAheadOffset();
-  CSSParserTokenRange prelude = ConsumeAtRulePrelude(stream);
+  CSSSupportsParser::Result supported =
+      CSSSupportsParser::ConsumeSupportsCondition(stream, *this);
+  // Check whether the entire prelude was consumed. If it wasn't, ensure we
+  // consume any leftovers plus the block before returning a parse error.
+  stream.ConsumeWhitespace();
+  CSSParserTokenRange prelude_remainder = ConsumeAtRulePrelude(stream);
+  if (!prelude_remainder.AtEnd())
+    supported = CSSSupportsParser::Result::kParseFailure;
   wtf_size_t prelude_offset_end = stream.LookAheadOffset();
   if (!ConsumeEndOfPreludeForAtRuleWithBlock(stream))
     return nullptr;
   CSSParserTokenStream::BlockGuard guard(stream);
 
-  CSSSupportsParser::Result supported = CSSSupportsParser::SupportsCondition(
-      prelude, *this, CSSSupportsParser::Mode::kForAtRule);
   if (supported == CSSSupportsParser::Result::kParseFailure)
     return nullptr;  // Parse error, invalid @supports condition
 
@@ -747,7 +752,12 @@ StyleRuleSupports* CSSParserImpl::ConsumeSupportsRule(
     observer_->StartRuleBody(stream.Offset());
   }
 
-  const auto prelude_serialized = prelude.Serialize().StripWhiteSpace();
+  const auto prelude_serialized =
+      stream
+          .StringRangeAt(prelude_offset_start,
+                         prelude_offset_end - prelude_offset_start)
+          .ToString()
+          .SimplifyWhiteSpace();
 
   HeapVector<Member<StyleRuleBase>> rules;
   ConsumeRuleList(stream, kRegularRuleList,

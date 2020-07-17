@@ -31,6 +31,9 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
   void GetSettings(GetSettingsCallback callback) override;
   void UpdateSettings(const AmbientSettings& settings,
                       UpdateSettingsCallback callback) override;
+  void FetchSettingPreview(int preview_width,
+                           int preview_height,
+                           OnSettingPreviewFetchedCallback callback) override;
   void FetchPersonalAlbums(int banner_width,
                            int banner_height,
                            int num_albums,
@@ -68,6 +71,17 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
   void OnUpdateSettings(UpdateSettingsCallback callback,
                         std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
                         std::unique_ptr<std::string> response);
+
+  void FetchSettingPreviewInternal(int preview_width,
+                                   int preview_height,
+                                   OnSettingPreviewFetchedCallback callback,
+                                   const std::string& gaia_id,
+                                   const std::string& access_token);
+
+  void OnSettingPreviewFetched(
+      OnSettingPreviewFetchedCallback callback,
+      std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
+      std::unique_ptr<std::string> response);
 
   void FetchPersonalAlbumsInternal(int banner_width,
                                    int banner_height,

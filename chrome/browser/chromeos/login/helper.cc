@@ -43,12 +43,6 @@
 
 namespace chromeos {
 
-namespace {
-
-constexpr char kInvalidJsonError[] = "Invalid JSON Dictionary";
-
-}  // namespace
-
 gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
   gfx::Rect bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   if (!size.IsEmpty()) {
@@ -93,65 +87,6 @@ base::string16 NetworkStateHelper::GetCurrentNetworkName() const {
   return base::string16();
 }
 
-void NetworkStateHelper::GetConnectedWifiNetwork(std::string* out_onc_spec) {
-  const NetworkState* network_state =
-      NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
-          NetworkTypePattern::WiFi());
-
-  if (!network_state)
-    return;
-
-  std::unique_ptr<base::DictionaryValue> current_onc =
-      network_util::TranslateNetworkStateToONC(network_state);
-  std::string security;
-  current_onc->GetString(
-      onc::network_config::WifiProperty(onc::wifi::kSecurity), &security);
-  if (security != onc::wifi::kSecurityNone)
-    return;
-
-  const std::string hex_ssid = network_state->GetHexSsid();
-
-  std::unique_ptr<base::DictionaryValue> copied_onc(
-      new base::DictionaryValue());
-  copied_onc->Set(onc::toplevel_config::kType,
-                  std::make_unique<base::Value>(onc::network_type::kWiFi));
-  copied_onc->Set(onc::network_config::WifiProperty(onc::wifi::kHexSSID),
-                  std::make_unique<base::Value>(hex_ssid));
-  copied_onc->Set(onc::network_config::WifiProperty(onc::wifi::kSecurity),
-                  std::make_unique<base::Value>(security));
-  base::JSONWriter::Write(*copied_onc.get(), out_onc_spec);
-}
-
-void NetworkStateHelper::CreateAndConnectNetworkFromOnc(
-    const std::string& onc_spec,
-    const base::Closure& success_callback,
-    const network_handler::ErrorCallback& error_callback) const {
-  base::JSONReader::ValueWithError parsed_json =
-      base::JSONReader::ReadAndReturnValueWithError(
-          onc_spec, base::JSON_ALLOW_TRAILING_COMMAS);
-
-  base::DictionaryValue* toplevel_onc = nullptr;
-  if (!parsed_json.value ||
-      !parsed_json.value->GetAsDictionary(&toplevel_onc)) {
-    LOG(ERROR) << kInvalidJsonError << ": " << parsed_json.error_message;
-    std::unique_ptr<base::DictionaryValue> error_data =
-        std::make_unique<base::DictionaryValue>();
-    error_data->SetString(network_handler::kErrorName, kInvalidJsonError);
-    error_data->SetString(network_handler::kErrorDetail,
-                          parsed_json.error_message);
-    error_callback.Run(kInvalidJsonError, std::move(error_data));
-    return;
-  }
-
-  NetworkHandler::Get()
-      ->managed_network_configuration_handler()
-      ->CreateConfiguration(
-          "", *toplevel_onc,
-          base::Bind(&NetworkStateHelper::OnCreateConfiguration,
-                     base::Unretained(this), success_callback, error_callback),
-          error_callback);
-}
-
 bool NetworkStateHelper::IsConnected() const {
   chromeos::NetworkStateHandler* nsh =
       chromeos::NetworkHandler::Get()->network_state_handler();
@@ -168,12 +103,12 @@ bool NetworkStateHelper::IsConnecting() const {
 
 void NetworkStateHelper::OnCreateConfiguration(
     const base::Closure& success_callback,
-    const network_handler::ErrorCallback& error_callback,
+    network_handler::ErrorCallback error_callback,
     const std::string& service_path,
     const std::string& guid) const {
   // Connect to the network.
   NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
-      service_path, success_callback, error_callback,
+      service_path, success_callback, std::move(error_callback),
       false /* check_error_state */, ConnectCallbackMode::ON_COMPLETED);
 }
 

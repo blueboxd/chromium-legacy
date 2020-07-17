@@ -275,11 +275,13 @@ void AdsPageLoadMetricsObserver::OnTimingUpdate(
   ancestor_data->SetFirstEligibleToPaint(
       timing.paint_timing->first_eligible_to_paint);
 
-  // Set creative origin status if this is the first FCP for any frame in the
-  // root ad frame's subtree.
-  if (timing.paint_timing->first_contentful_paint &&
-      ancestor_data->creative_origin_status() ==
-          FrameData::OriginStatus::kUnknown) {
+  // Update earliest FCP as needed.
+  bool has_new_fcp = ancestor_data->SetEarliestFirstContentfulPaint(
+      timing.paint_timing->first_contentful_paint);
+
+  // If this is the earliest FCP for any frame in the root ad frame's subtree,
+  // set Creative Origin Status.
+  if (has_new_fcp) {
     FrameData::OriginStatus origin_status =
         AdsPageLoadMetricsObserver::IsSubframeSameOriginToMainFrame(
             subframe_rfh,

@@ -425,7 +425,6 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="2705137772291741111">La copia guardada (almacenada en caché) de este sitio web no se ha podido leer.</translation>
 <translation id="2709516037105925701">Autocompletar</translation>
 <translation id="2713444072780614174">Blanco</translation>
-<translation id="2720342946869265578">Cercanas</translation>
 <translation id="2721148159707890343">Solicitud correcta</translation>
 <translation id="272451190272506600">Toca el sensor para pagar</translation>
 <translation id="2728127805433021124">El certificado del servidor está firmado con un algoritmo de firma no seguro.</translation>
@@ -722,7 +721,6 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="3990250421422698716">Agrupar</translation>
 <translation id="3996311196211510766">El sitio web <ph name="ORIGIN" /> ha solicitado que se aplique una política de origen
     a todas las solicitudes que reciba, pero esta política no se puede aplicar actualmente.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{ 1 página web cercana}other{ # páginas web cercanas}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Documento PDF que contiene {COUNT} página}other{Documento PDF que contiene {COUNT} páginas}}</translation>
 <translation id="4030383055268325496">&amp;Deshacer acción de añadir</translation>
 <translation id="4032320456957708163">El navegador lo administra <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -940,7 +938,6 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> y <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Guardar...</translation>
 <translation id="4913987521957242411">Perforado en la parte superior izquierda</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{ y 1 página web más}other{ y # páginas web más}}</translation>
 <translation id="4923459931733593730">Pago</translation>
 <translation id="4926049483395192435">Se debe especificar un valor.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> dice</translation>
@@ -1331,7 +1328,6 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="6518133107902771759">Verificar</translation>
 <translation id="6521745193039995384">Inactiva</translation>
 <translation id="6529602333819889595">&amp;Rehacer eliminación</translation>
-<translation id="6534179046333460208">Sugerencias de la Web física</translation>
 <translation id="6545864417968258051">Búsqueda de dispositivos Bluetooth</translation>
 <translation id="6547208576736763147">Perforado doble en la parte izquierda</translation>
 <translation id="6554795675067793129"><ph name="ENROLLMENT_DOMAIN" /> administra tu cuenta.</translation>
@@ -1853,7 +1849,6 @@ Más información:
 <translation id="8790007591277257123">&amp;Rehacer eliminación</translation>
 <translation id="8792621596287649091">Podrías perder el acceso a tu cuenta de <ph name="ORG_NAME" /> o tener problemas de suplantación de identidad. Chromium te recomienda que cambies tu contraseña ahora.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> ha activado Chrome Enterprise Connectors en tu navegador. Estos conectores tienen acceso a algunos de tus datos.</translation>
-<translation id="8800988563907321413">Las sugerencias de la sección Cercanas aparecen aquí</translation>
 <translation id="8805819170075074995">Entrada de lista "<ph name="LANGUAGE_ID" />": se ha ignorado la entrada porque también está incluida en la política SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Recortar después de cada página</translation>
 <translation id="8820817407110198400">Marcadores</translation>

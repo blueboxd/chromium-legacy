@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
@@ -54,6 +55,22 @@ class ClipboardHistoryTest : public AshTestBase {
     for (auto& data : datas) {
       EXPECT_EQ(expected_strings[expected_strings_index++],
                 base::UTF8ToUTF16(data.text()));
+    }
+  }
+
+  void WriteAndEnsureBitmapHistory(std::vector<SkBitmap>& input_bitmaps,
+                                   std::vector<SkBitmap>& expected_bitmaps) {
+    for (const auto& input_bitmap : input_bitmaps) {
+      ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
+      scw.WriteImage(input_bitmap);
+    }
+    const std::vector<ui::ClipboardData> datas = GetClipboardHistoryData();
+    EXPECT_EQ(expected_bitmaps.size(), datas.size());
+
+    int expected_bitmaps_index = 0;
+    for (auto& data : datas) {
+      EXPECT_TRUE(gfx::BitmapsAreEqual(
+          expected_bitmaps[expected_bitmaps_index++], data.bitmap()));
     }
   }
 
@@ -162,6 +179,32 @@ TEST_F(ClipboardHistoryTest, PauseHistory) {
 
   ClipboardHistory::ScopedPause scoped_pause(clipboard_history());
   WriteAndEnsureTextHistory(input_strings, expected_strings);
+}
+
+// Tests that bitmaps are recorded in clipboard history.
+TEST_F(ClipboardHistoryTest, BasicBitmap) {
+  SkBitmap test_bitmap;
+  test_bitmap.allocN32Pixels(3, 2);
+  test_bitmap.eraseARGB(255, 0, 255, 0);
+  std::vector<SkBitmap> input_bitmaps{test_bitmap};
+  std::vector<SkBitmap> expected_bitmaps{test_bitmap};
+
+  WriteAndEnsureBitmapHistory(input_bitmaps, expected_bitmaps);
+}
+
+// Tests that duplicate bitmaps show up in history in most-recent order.
+TEST_F(ClipboardHistoryTest, DuplicateBitmap) {
+  SkBitmap test_bitmap_1;
+  test_bitmap_1.allocN32Pixels(3, 2);
+  test_bitmap_1.eraseARGB(255, 0, 255, 0);
+  SkBitmap test_bitmap_2;
+  test_bitmap_2.allocN32Pixels(3, 2);
+  test_bitmap_2.eraseARGB(0, 255, 0, 0);
+
+  std::vector<SkBitmap> input_bitmaps{test_bitmap_1, test_bitmap_2,
+                                      test_bitmap_1};
+  std::vector<SkBitmap> expected_bitmaps{test_bitmap_1, test_bitmap_2};
+  WriteAndEnsureBitmapHistory(input_bitmaps, expected_bitmaps);
 }
 
 }  // namespace ash

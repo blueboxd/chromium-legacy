@@ -495,7 +495,6 @@ def CreateRJavaFiles(srcjar_dir,
                      package,
                      main_r_txt_file,
                      extra_res_packages,
-                     extra_r_txt_files,
                      rjava_build_options,
                      srcjar_out,
                      custom_root_package_name=None,
@@ -510,9 +509,6 @@ def CreateRJavaFiles(srcjar_dir,
     main_r_txt_file: The main R.txt file containing the valid values
       of _all_ resource IDs.
     extra_res_packages: A list of extra package names.
-    extra_r_txt_files: A list of extra R.txt files. One per item in
-      |extra_res_packages|. Note that all resource IDs in them will be ignored,
-      |and replaced by the values extracted from |main_r_txt_file|.
     rjava_build_options: An RJavaBuildOptions instance that controls how
       exactly the R.java file is generated.
     srcjar_out: Path of desired output srcjar.
@@ -527,18 +523,14 @@ def CreateRJavaFiles(srcjar_dir,
   Raises:
     Exception if a package name appears several times in |extra_res_packages|
   """
-  assert len(extra_res_packages) == len(extra_r_txt_files), \
-         'Need one R.txt file per package'
   rjava_build_options._MaybeRewriteRTxtPackageIds(main_r_txt_file)
 
   packages = list(extra_res_packages)
-  r_txt_files = list(extra_r_txt_files)
 
   if package and package not in packages:
     # Sometimes, an apk target and a resources target share the same
     # AndroidManifest.xml and thus |package| will already be in |packages|.
     packages.append(package)
-    r_txt_files.append(main_r_txt_file)
 
   # Map of (resource_type, name) -> Entry.
   # Contains the correct values for resources.
@@ -580,53 +572,19 @@ def CreateRJavaFiles(srcjar_dir,
   with open(root_r_java_path, 'w') as f:
     f.write(root_java_file_contents)
 
-  # Map of package_name->resource_type->entry
-  resources_by_package = (
-      collections.defaultdict(lambda: collections.defaultdict(list)))
-  # Build the R.java files using each package's R.txt file, but replacing
-  # each entry's placeholder value with correct values from all_resources.
-  for package, r_txt_file in zip(packages, r_txt_files):
-    if package in resources_by_package:
-      raise Exception(('Package name "%s" appeared twice. All '
-                       'android_resources() targets must use unique package '
-                       'names, or no package name at all.') % package)
-    resources_by_type = resources_by_package[package]
-    # The sub-R.txt files have the wrong values at this point. Read them to
-    # figure out which entries belong to them, but use the values from the
-    # main R.txt file.
-    for entry in _ParseTextSymbolsFile(r_txt_file):
-      entry = all_resources.get((entry.resource_type, entry.name))
-      # For most cases missing entry here is an error. It means that some
-      # library claims to have or depend on a resource that isn't included into
-      # the APK. There is one notable exception: Google Play Services (GMS).
-      # GMS is shipped as a bunch of AARs. One of them - basement - contains
-      # R.txt with ids of all resources, but most of the resources are in the
-      # other AARs. However, all other AARs reference their resources via
-      # basement's R.java so the latter must contain all ids that are in its
-      # R.txt. Most targets depend on only a subset of GMS AARs so some
-      # resources are missing, which is okay because the code that references
-      # them is missing too. We can't get an id for a resource that isn't here
-      # so the only solution is to skip the resource entry entirely.
-      #
-      # We can verify that all entries referenced in the code were generated
-      # correctly by running Proguard on the APK: it will report missing
-      # fields.
-      if entry:
-        resources_by_type[entry.resource_type].append(entry)
-
-  for package, resources_by_type in resources_by_package.iteritems():
+  for package in packages:
     _CreateRJavaSourceFile(srcjar_dir, package, root_r_java_package,
-                           resources_by_type, rjava_build_options)
+                           rjava_build_options)
 
 
 def _CreateRJavaSourceFile(srcjar_dir, package, root_r_java_package,
-                           resources_by_type, rjava_build_options):
+                           rjava_build_options):
   """Generates an R.java source file."""
   package_r_java_dir = os.path.join(srcjar_dir, *package.split('.'))
   build_utils.MakeDirectory(package_r_java_dir)
   package_r_java_path = os.path.join(package_r_java_dir, 'R.java')
-  java_file_contents = _RenderRJavaSource(
-      package, root_r_java_package, resources_by_type, rjava_build_options)
+  java_file_contents = _RenderRJavaSource(package, root_r_java_package,
+                                          rjava_build_options)
   with open(package_r_java_path, 'w') as f:
     f.write(java_file_contents)
 
@@ -646,8 +604,7 @@ def _GetNonSystemIndex(entry):
   return len(res_ids)
 
 
-def _RenderRJavaSource(package, root_r_java_package, resources_by_type,
-                       rjava_build_options):
+def _RenderRJavaSource(package, root_r_java_package, rjava_build_options):
   """Generates the contents of a R.java file."""
   template = Template(
       """/* AUTO-GENERATED FILE.  DO NOT MODIFY. */
@@ -671,7 +628,6 @@ public final class R {
 
   return template.render(
       package=package,
-      resources=resources_by_type,
       resource_types=sorted(_ALL_RESOURCE_TYPES),
       root_package=root_r_java_package,
       has_on_resources_loaded=rjava_build_options.has_on_resources_loaded)
@@ -958,12 +914,6 @@ def ResourceArgsParser():
       '--extra-res-packages',
       help='Additional package names to generate R.java files for.')
 
-  input_opts.add_argument(
-      '--extra-r-text-files',
-      help='For each additional package, the R.txt file should contain a '
-           'list of resources to be included in the R.java file in the format '
-           'generated by aapt.')
-
   return (parser, input_opts, output_opts)
 
 
@@ -989,12 +939,6 @@ def HandleCommonOptions(options):
         build_utils.ParseGnList(options.extra_res_packages))
   else:
     options.extra_res_packages = []
-
-  if options.extra_r_text_files:
-    options.extra_r_text_files = (
-        build_utils.ParseGnList(options.extra_r_text_files))
-  else:
-    options.extra_r_text_files = []
 
 
 def ParseAndroidResourceStringsFromXml(xml_data):

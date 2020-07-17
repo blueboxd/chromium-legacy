@@ -42,7 +42,7 @@ class ArcProcessTaskProvider : public TaskProvider {
   using ArcTaskMap =
       std::unordered_map<base::ProcessId, std::unique_ptr<ArcProcessTask>>;
   using OptionalArcProcessList = arc::ArcProcessService::OptionalArcProcessList;
-  void ScheduleNextRequest(const base::Closure& task);
+  void ScheduleNextRequest(base::OnceClosure task);
 
   // Auto-retry if ARC bridge service is not ready.
   void RequestAppProcessList();

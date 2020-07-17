@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">ບຸກມາກທີ່ບັນທຶກໄວ້ຢູ່ໃນອຸປະກອນອື່ນຂອງທ່ານຈະປາກົດຢູ່ທີ່ນີ້.</translation>
 <translation id="1113597929977215864">ສະແດງມຸມມອງງ່າຍດາຍ</translation>
 <translation id="1122278879166832009">ແຕະບ່ອນນີ້ເພື່ອເຂົ້າເຖິງໜ້າຫຼັກຂອງທ່ານໄດ້ຢ່າງວ່ອງໄວຈາກບ່ອນໃດໆກໍຕາມ</translation>
+<translation id="1126809382673880764">ບໍ່ປົກປ້ອງທ່ານຈາກເວັບໄຊ, ການດາວໂຫຼດ ແລະ ສ່ວນຂະຫຍາຍທີ່ເປັນອັນຕະລາຍ. ທ່ານຈະຍັງໄດ້ຮັບການປົກປ້ອງ Safe Browsing, ຢູ່ບ່ອນທີ່ໃຊ້ໄດ້, ຢູ່ໃນການບໍລິການອື່ນຂອງ Google ເຊັ່ນ: Gmail ແລະ ຊອກຫາ.</translation>
 <translation id="1129510026454351943">ລາຍລະອຽດ: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 ການດາວໂຫຼດຍັງຄ້າງຢູ່.}other{# ການດາວໂຫຼດຍັງຄ້າງຢູ່.}}</translation>
 <translation id="1145536944570833626">ລຶບຂໍ້ມູນທີ່ມີຢູ່.</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">ແສງ​</translation>
 <translation id="1810845389119482123">ບໍ່ສຳເລັດການຕັ້ງຄ່າການຊິ້ງຂໍ້ມູນເບື້ອງຕົ້ນ</translation>
 <translation id="1821253160463689938">ໃຊ້ຄຸກກີ້ເພື່ອຈື່ການຕັ້ງຄ່າຂອງທ່ານ, ເຖິງແມ່ນວ່າທ່ານບໍ່ໄດ້ເຂົ້າເບິ່ງໜ້າເຫຼົ່ານັ້ນກໍຕາມ</translation>
-<translation id="1826516787628120939">ກໍາລັງກວດເບິ່ງ</translation>
 <translation id="1829244130665387512">ຊອກ​ຫາ​ຢູ່​ໃນ​ຫນ້າ</translation>
 <translation id="1853692000353488670">ແຖບບໍ່ເຜີຍຕົວຕົນໃໝ່</translation>
 <translation id="1856325424225101786">ຣີເຊັດໂໝດ Lite ບໍ?</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">ບັນທຶກລະ​ຫັດ​ຜ່ານ</translation>
 <translation id="1952172573699511566">ເວັບໄຊຈະສະແດງຂໍ້ຄວາມໃນພາສາທີ່ທ່ານເລືອກ ເມື່ອເປັນໄປໄດ້.</translation>
 <translation id="1960290143419248813">ບໍ່ຮອງຮັບການອັບເດດ Chrome ສຳລັບ Android ເວີຊັນນີ້ອີກຕໍ່ໄປ</translation>
+<translation id="1963976881984600709">ການປົກປ້ອງມາດຕະຖານ</translation>
 <translation id="1966710179511230534">ກະ​ລຸ​ນາ​ອັບເດດລາຍລະອຽດການລົງຊື່ເຂົ້າໃຊ້​ຂອງ​ທ່ານ​.</translation>
 <translation id="1974060860693918893">ຂັ້ນສູງ</translation>
+<translation id="1984417487208496350">ບໍ່ມີການປົກປ້ອງ (ບໍ່ແນະນຳ)</translation>
 <translation id="1984705450038014246">ຊິ້ງຂໍ້ມູນ Chrome ຂອງທ່ານ</translation>
 <translation id="1986685561493779662">ມີຊື່ຢູ່ແລ້ວ</translation>
 <translation id="1987739130650180037">ປຸ່ມ <ph name="MESSAGE" /> <ph name="LINK_NAME" /></translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">ຊອກຫາດ້ວຍ Google Lens <ph name="BEGIN_NEW" />ໃໝ່<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">ເປີດຢູ່ໃນແຖບໃໝ່</translation>
 <translation id="4198423547019359126">ບໍ່ມີບ່ອນບັນທຶກການດາວໂຫຼດທີ່ສາມາດໃຊ້ໄດ້</translation>
-<translation id="4202553989407425169">Chrome ສາມາດກວດເບິ່ງວ່າການຕັ້ງຄ່າຂອງທ່ານກຳລັງປົກປ້ອງທ່ານຫຼືບໍ່ຈາກ:</translation>
 <translation id="4209895695669353772">ເພື່ອຮັບເນື້ອຫາແບບເປັນສ່ວນຕົວທີ່ແນະນຳໂດຍ Google, ກະລຸນາເປີດການຊິ້ງຂໍ້ມູນກ່ອນ</translation>
 <translation id="423219824432660969">ເຂົ້າລະຫັດຂໍ້ມູນທີ່ຊິ້ງຂໍ້ມູນແລ້ວດ້ວຍລະຫັດຜ່ານ Google ໃນວັນທີ <ph name="TIME" /></translation>
 <translation id="4242533952199664413">ເປີດ​ການ​ຕັ້ງ​ຄ່າ</translation>
@@ -459,6 +460,7 @@
 <translation id="4749960740855309258">ເປີດແຖບໃໝ່</translation>
 <translation id="4759238208242260848">ດາວ​ໂຫຼດ</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{ສຳເລັດ 1 ການດາວໂຫຼດແລ້ວ.}other{ສຳເລັດ # ການດາວໂຫຼດແລ້ວ.}}</translation>
+<translation id="4766678251456904326">ເພີ່ມບັນຊີໃສ່ອຸປະກອນ</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{ກຳນົດເວລາການດາວໂຫຼດ 1 ລາຍການແລ້ວ}other{ກຳນົດເວລາການດາວໂຫຼດ # ລາຍການແລ້ວ}}</translation>
 <translation id="478981486571169252">ທ່ານຈະເຫັນສະຖານະການເຂົ້າສູ່ລະບົບ <ph name="SITE_NAME" />, ຂໍ້ມູນການທ່ອງເວັບ ແລະ ຂໍ້ມູນເວັບໄຊຂອງທ່ານໃນ Chrome.</translation>
 <translation id="4802417911091824046">ການເຂົ້າລະຫັດໂດຍໃຊ້ລະຫັດຜ່ານບໍ່ຮວມເອົາວິທີການຈ່າຍເງິນ ແລະ ທີ່ຢູ່ຈາກ Google Pay.
@@ -490,6 +492,7 @@
 <translation id="4943872375798546930">ບໍ່​ມີ​ຜົນ​ໄດ້​ຮັບ</translation>
 <translation id="4961107849584082341">ແປໜ້ານີ້ເປັນພາສາໃດໆກໍໄດ້</translation>
 <translation id="4970824347203572753">ບໍ່ມີໃຫ້ນຳໃຊ້ໃນສະຖານທີ່ຂອງທ່ານ</translation>
+<translation id="4971735654804503942">ການປົກປ້ອງແບບເຊີງບຸກທີ່ໄວກວ່າຈາກເວັບໄຊ, ການດາວໂຫຼດ ແລະ ສ່ວນຂະຫຍາຍທີ່ເປັນອັນຕະລາຍ. ເຕືອນທ່ານກ່ຽວກັບການລະເມີດລະຫັດຜ່ານ. ຈຳເປັນຕ້ອງສົ່ງຂໍ້ມູນການທ່ອງເວັບໃຫ້ Google.</translation>
 <translation id="497421865427891073">ໄປຂ້າງ​ຫນ້າ</translation>
 <translation id="4988210275050210843">ກຳລັງດາວໂຫຼດໄຟລ໌ (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">ໜ້າ</translation>
@@ -561,7 +564,6 @@
 <translation id="5527082711130173040">Chrome ຈຳເປັນຕ້ອງເຂົ້າເຖິງສະຖານທີ່ເພື່ອສະແກນຫາອຸປະກອນ. ກະລຸນາ <ph name="BEGIN_LINK1" />ອັບເດດການອະນຸຍາດ<ph name="END_LINK1" />. ນອກນັ້ນ, ການເຂົ້າເຖິງສະຖານທີ່ແມ່ນ <ph name="BEGIN_LINK2" />ປິດຢູ່ສຳລັບອຸປະກອນນີ້<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">ປິດແຖບທີ່ບໍ່ເຜີຍຕົວຕົນ</translation>
 <translation id="5534640966246046842">ສຳເນົາເວັບໄຊແລ້ວ</translation>
-<translation id="5548606607480005320">ການກວດສອບຄວາມປອດໄພ</translation>
 <translation id="5561549206367097665">ກຳລັງລໍຖ້າເຄືອຂ່າຍ...</translation>
 <translation id="55737423895878184">ອະນຸຍາດການແຈ້ງເຕືອນ ແລະ ສະຖານທີ່</translation>
 <translation id="5578795271662203820">ຄົ້ນ​ຫາ <ph name="SEARCH_ENGINE" /> ​ຮູບ​ນີ້</translation>
@@ -600,7 +602,6 @@
 <translation id="583281660410589416">ບໍ່​ຮູ້ຈັກ</translation>
 <translation id="5833984609253377421">ແບ່ງປັນລິ້ງ</translation>
 <translation id="5836192821815272682">ກຳລັງດາວໂຫຼດການອັບເດດ Chrome…</translation>
-<translation id="584120177693484274">ຍົກເລີກການເລືອກ</translation>
 <translation id="5853623416121554550">ຢຸດຊົ່ວຄາວແລ້ວ</translation>
 <translation id="5854790677617711513">ເກົ່າກວ່າ 30 ມື້</translation>
 <translation id="5858741533101922242">Chrome ບໍ່ສາມາດເປີດອະແດັບເຕີ Bluetooth ໄດ້</translation>
@@ -736,10 +737,12 @@
 <translation id="685850645784703949">Discover ໂດຍ Google - ປິດຢູ່</translation>
 <translation id="6864459304226931083">ດາວໂຫຼດຮູບພາບ</translation>
 <translation id="6865313869410766144">ຕື່ມຂໍ້ມູນແບບຟອມອັດຕະໂນມັດ</translation>
+<translation id="6882836635272038266">ການປົກປ້ອງມາດຕະຖານຕໍ່ກັບເວັບໄຊ, ການດາວໂຫຼດ ແລະ ສ່ວນຂະຫຍາຍທີ່ຮູ້ຈັກວ່າເປັນອັນຕະລາຍ.</translation>
 <translation id="6884306546558072722">ສືບຕໍ່ສຳຫຼວດແບບອອບລາຍ</translation>
 <translation id="688738109438487280">ເພີ່ມຂໍ້ມູນທີ່ມີຢູ່ໃສ່ <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">ປົດລັອກເພື່ອສຳເນົາລະຫັດຜ່ານຂອງທ່ານ</translation>
 <translation id="6896758677409633944">ກັອບປີ້</translation>
+<translation id="6900532703269623216">ການປົກປ້ອງທີ່ປັບປຸງດີຂຶ້ນ</translation>
 <translation id="6903907808598579934">ເປີດການຊິ້ງຂໍ້ມູນ</translation>
 <translation id="6942665639005891494">ປ່ຽນບ່ອນຈັດເກັບການດາວໂຫຼດເລີ່ມຕົ້ນໄດ້ທຸກເວລາ ໂດຍໃຊ້ຕົວເລືອກເມນູການຕັ້ງຄ່າ</translation>
 <translation id="6945221475159498467">ເລືອກ</translation>

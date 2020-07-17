@@ -16,6 +16,7 @@
 <translation id="1111673857033749125">您在其他设备上保存的书签将列在此处。</translation>
 <translation id="1113597929977215864">显示简化版视图</translation>
 <translation id="1122278879166832009">不论您正在浏览哪个网站，都可点按此处快速访问您的主页</translation>
+<translation id="1126809382673880764">不会保护您免受危险网站、下载内容和扩展程序的侵害。在 Gmail 和 Google 搜索等其他 Google 服务中，若安全浏览保护可用，您仍将获得该保护。</translation>
 <translation id="1129510026454351943">错误详情：<ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{有 1 项下载尚待处理。}other{有 # 项下载尚待处理。}}</translation>
 <translation id="1145536944570833626">删除现有数据。</translation>
@@ -98,7 +99,6 @@
 <translation id="1807246157184219062">浅色调</translation>
 <translation id="1810845389119482123">未完成初始同步设置</translation>
 <translation id="1821253160463689938">使用 Cookie 记住您的偏好设置（即使您不访问这些网页）</translation>
-<translation id="1826516787628120939">正在检查</translation>
 <translation id="1829244130665387512">在网页中查找</translation>
 <translation id="1853692000353488670">打开新的无痕式标签页</translation>
 <translation id="1856325424225101786">重置精简模式？</translation>
@@ -112,8 +112,10 @@
 <translation id="1943432128510653496">保存密码</translation>
 <translation id="1952172573699511566">网站将尽可能以您的首选语言显示文字。</translation>
 <translation id="1960290143419248813">此版本的 Android 不再支持 Chrome 更新</translation>
+<translation id="1963976881984600709">标准保护</translation>
 <translation id="1966710179511230534">请更新您的登录详细信息。</translation>
 <translation id="1974060860693918893">高级</translation>
+<translation id="1984417487208496350">不提供任何保护（不建议）</translation>
 <translation id="1984705450038014246">同步 Chrome 数据</translation>
 <translation id="1986685561493779662">名称已存在</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" />按钮</translation>
@@ -392,7 +394,6 @@
 <translation id="4183868528246477015">使用 Google 智能镜头进行搜索<ph name="BEGIN_NEW" />新功能<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="4198423547019359126">没有可用的下载内容保存位置</translation>
-<translation id="4202553989407425169">Chrome 可检查您的设置是否从以下方面为您提供了保护：</translation>
 <translation id="4209895695669353772">要获取 Google 推荐的个性化内容，请开启同步功能</translation>
 <translation id="423219824432660969">自 <ph name="TIME" />起，使用 Google 密码加密已同步的数据</translation>
 <translation id="4242533952199664413">打开“设置”</translation>
@@ -490,6 +491,7 @@
 <translation id="4943872375798546930">找不到结果</translation>
 <translation id="4961107849584082341">将此页面翻译成任何语言</translation>
 <translation id="4970824347203572753">无法在您所在的国家/地区使用</translation>
+<translation id="4971735654804503942">为您提供更快速主动的保护措施，免受危险网站、下载内容或扩展程序的威胁。系统会在密码遭泄露时向您发出警告。您需要向 Google 发送浏览数据。</translation>
 <translation id="497421865427891073">前进</translation>
 <translation id="4988210275050210843">正在下载文件 (<ph name="MEGABYTES" />)。</translation>
 <translation id="4988526792673242964">网页</translation>
@@ -561,7 +563,6 @@
 <translation id="5527082711130173040">Chrome 需要拥有位置信息使用权才能扫描设备。请<ph name="BEGIN_LINK1" />更新权限<ph name="END_LINK1" />。<ph name="BEGIN_LINK2" />此设备的位置信息使用权也已被停用<ph name="END_LINK2" />。</translation>
 <translation id="5530766185686772672">关闭隐身标签页</translation>
 <translation id="5534640966246046842">已复制网站</translation>
-<translation id="5548606607480005320">安全检查</translation>
 <translation id="5561549206367097665">正在等待连接到网络…</translation>
 <translation id="55737423895878184">允许使用位置信息以及显示通知</translation>
 <translation id="5578795271662203820">在<ph name="SEARCH_ENGINE" />中搜索此图片</translation>
@@ -600,7 +601,6 @@
 <translation id="583281660410589416">未知</translation>
 <translation id="5833984609253377421">分享链接</translation>
 <translation id="5836192821815272682">正在下载 Chrome 更新…</translation>
-<translation id="584120177693484274">未检查</translation>
 <translation id="5853623416121554550">已暂停</translation>
 <translation id="5854790677617711513">30 天之前的</translation>
 <translation id="5858741533101922242">Chrome 无法开启蓝牙适配器</translation>
@@ -736,10 +736,12 @@
 <translation id="685850645784703949">Google 探索 - 已关闭</translation>
 <translation id="6864459304226931083">下载图片</translation>
 <translation id="6865313869410766144">自动填充表单数据</translation>
+<translation id="6882836635272038266">针对已知危险网站、下载内容和扩展程序提供标准保护。</translation>
 <translation id="6884306546558072722">离线时也能畅享网络内容</translation>
 <translation id="688738109438487280">将现有数据添加到 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="6891726759199484455">需解锁才能复制您的密码</translation>
 <translation id="6896758677409633944">复制</translation>
+<translation id="6900532703269623216">增强型保护</translation>
 <translation id="6903907808598579934">开启同步功能</translation>
 <translation id="6942665639005891494">使用“设置”菜单选项随时更改默认的下载内容保存位置</translation>
 <translation id="6945221475159498467">选择</translation>

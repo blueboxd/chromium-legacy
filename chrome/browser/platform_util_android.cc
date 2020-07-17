@@ -25,7 +25,7 @@ void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
 void OpenItem(Profile* profile,
               const base::FilePath& full_path,
               OpenItemType item_type,
-              const OpenOperationCallback& callback) {
+              OpenOperationCallback callback) {
   NOTIMPLEMENTED();
 }
 

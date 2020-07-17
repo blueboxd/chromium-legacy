@@ -30,10 +30,10 @@
 #include "build/build_config.h"
 #include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/expire_history_backend.h"
+#include "components/history/core/browser/favicon_database.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
-#include "components/history/core/browser/thumbnail_database.h"
 #include "components/history/core/browser/visit_tracker.h"
 #include "sql/init_status.h"
 
@@ -64,7 +64,7 @@ class TypedURLSyncBridge;
 class URLDatabase;
 
 // The maximum number of bitmaps for a single icon URL which can be stored in
-// the thumbnail database.
+// the favicon database.
 static const size_t kMaxFaviconBitmapsPerIconURL = 8;
 
 // Returns a formatted version of |url| with the HTTP/HTTPS scheme, port,
@@ -216,7 +216,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   void ClearCachedDataForContextID(ContextID context_id);
 
-  // Clears all on-demand favicons from thumbnail database.
+  // Clears all on-demand favicons.
   void ClearAllOnDemandFavicons();
 
   // Gets the counts and last last time of URLs that belong to |origins| in the
@@ -554,7 +554,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, ImportedFaviconsTest);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, URLsNoLongerBookmarked);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, StripUsernamePasswordTest);
-  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteThumbnailsDatabaseTest);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddPageVisitSource);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddPageVisitBackForward);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddPageVisitRedirectBackForward);
@@ -634,8 +633,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                            ProcessUserChangeRemove);
   friend class ::TestingProfile;
 
-  // Returns the name of the Favicons database. This is the new name
-  // of the Thumbnails database.
+  // Returns the name of the Favicons database.
   base::FilePath GetFaviconsFileName() const;
 
   class URLQuerier;
@@ -868,15 +866,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Deletes all history. This is a special case of deleting that is separated
   // from our normal dependency-following method for performance reasons. The
   // logic lives here instead of ExpireHistoryBackend since it will cause
-  // re-initialization of some databases (e.g. Thumbnails) that could fail.
+  // re-initialization of some databases (e.g. favicons) that could fail.
   // When these databases are not valid, our pointers must be null, so we need
   // to handle this type of operation to keep the pointers in sync.
   void DeleteAllHistory();
 
-  // Given a vector of all URLs that we will keep, removes all thumbnails
-  // referenced by any URL, and also all favicons that aren't used by those
-  // URLs.
-  bool ClearAllThumbnailHistory(const std::vector<GURL>& kept_urls);
+  // Given a vector of all URLs that we will keep, removes all favicons that
+  // aren't used by those URLs.
+  bool ClearAllFaviconHistory(const std::vector<GURL>& kept_urls);
 
   // Deletes all information in the history database, except for the supplied
   // set of URLs in the URL table (these should correspond to the bookmarked
@@ -898,13 +895,13 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Directory where database files will be stored, empty until Init is called.
   base::FilePath history_dir_;
 
-  // The history/thumbnail databases. Either may be null if the database could
+  // The history/favicon databases. Either may be null if the database could
   // not be opened, all users must first check for null and return immediately
-  // if it is. The thumbnail DB may be null when the history one isn't, but not
+  // if it is. The favicon DB may be null when the history one isn't, but not
   // vice-versa.
   std::unique_ptr<HistoryDatabase> db_;
   bool scheduled_kill_db_;  // Database is being killed due to error.
-  std::unique_ptr<ThumbnailDatabase> thumbnail_db_;
+  std::unique_ptr<FaviconDatabase> favicon_db_;
 
   // Manages expiration between the various databases.
   ExpireHistoryBackend expirer_;

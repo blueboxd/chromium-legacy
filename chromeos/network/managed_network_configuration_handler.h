@@ -86,11 +86,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   // CreateConfiguration or if it is managed by a policy. The given properties
   // will be merged with the existing settings, and it won't clear any existing
   // properties.
-  virtual void SetProperties(
-      const std::string& service_path,
-      const base::DictionaryValue& user_settings,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+  virtual void SetProperties(const std::string& service_path,
+                             const base::DictionaryValue& user_settings,
+                             const base::Closure& callback,
+                             network_handler::ErrorCallback error_callback) = 0;
 
   // Initially configures an unconfigured network with the given user settings
   // and returns the new identifier to |callback| if successful. Fails if the
@@ -100,8 +99,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   virtual void CreateConfiguration(
       const std::string& userhash,
       const base::DictionaryValue& properties,
-      const network_handler::ServiceResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) const = 0;
+      network_handler::ServiceResultCallback callback,
+      network_handler::ErrorCallback error_callback) const = 0;
 
   // Removes the user's configuration from the network with |service_path|. The
   // network may still show up in the visible networks after this, but no user
@@ -109,7 +108,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   virtual void RemoveConfiguration(
       const std::string& service_path,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) const = 0;
+      network_handler::ErrorCallback error_callback) const = 0;
 
   // Removes the user's configuration from the network with |service_path| in
   // the network's active network profile.
@@ -118,7 +117,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   virtual void RemoveConfigurationFromCurrentProfile(
       const std::string& service_path,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) const = 0;
+      network_handler::ErrorCallback error_callback) const = 0;
 
   // Only to be called by NetworkConfigurationUpdater or from tests. Sets
   // |network_configs_onc| and |global_network_config| as the current policy of

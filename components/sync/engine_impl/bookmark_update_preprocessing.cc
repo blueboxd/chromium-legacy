@@ -160,20 +160,22 @@ void AdaptTitleForBookmark(const sync_pb::SyncEntity& update_entity,
   }
 }
 
-void AdaptGuidForBookmark(const sync_pb::SyncEntity& update_entity,
+bool AdaptGuidForBookmark(const sync_pb::SyncEntity& update_entity,
                           sync_pb::EntitySpecifics* specifics) {
   DCHECK(specifics);
   // Tombstones and permanent entities don't have a GUID.
   if (update_entity.deleted() ||
       !update_entity.server_defined_unique_tag().empty()) {
-    return;
+    return false;
   }
   // Legacy clients don't populate the guid field in the BookmarkSpecifics, so
   // we use the originator_client_item_id instead, if it is a valid GUID.
   // Otherwise, we leave the field empty.
   if (specifics->bookmark().has_guid()) {
     LogGuidSource(BookmarkGuidSource::kSpecifics);
-  } else if (base::IsValidGUID(update_entity.originator_client_item_id())) {
+    return false;
+  }
+  if (base::IsValidGUID(update_entity.originator_client_item_id())) {
     // Bookmarks created around 2016, between [M44..M52) use an uppercase GUID
     // as originator client item ID, so it needs to be lowercased to adhere to
     // the invariant that GUIDs in specifics are canonicalized.
@@ -188,6 +190,7 @@ void AdaptGuidForBookmark(const sync_pb::SyncEntity& update_entity,
     DCHECK(base::IsValidGUIDOutputString(specifics->bookmark().guid()));
     LogGuidSource(BookmarkGuidSource::kInferred);
   }
+  return true;
 }
 
 std::string InferGuidForLegacyBookmarkForTesting(

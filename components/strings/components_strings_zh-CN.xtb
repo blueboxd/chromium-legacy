@@ -421,7 +421,6 @@
 <translation id="2705137772291741111">无法读取此网站的已保存（缓存）副本。</translation>
 <translation id="2709516037105925701">自动填充</translation>
 <translation id="2713444072780614174">白色</translation>
-<translation id="2720342946869265578">附近</translation>
 <translation id="2721148159707890343">请求成功</translation>
 <translation id="272451190272506600">触摸传感器即可付款</translation>
 <translation id="2728127805433021124">服务器的证书是使用弱签名算法进行签名的。</translation>
@@ -711,7 +710,6 @@
 <translation id="3987940399970879459">小于 1 MB</translation>
 <translation id="3990250421422698716">撞页偏移</translation>
 <translation id="3996311196211510766">网站 <ph name="ORIGIN" /> 已要求收到的所有请求都应用一项来源政策，但此政策目前无法应用。</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{附近有 1 个网页}other{附近有 # 个网页}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{包含 {COUNT} 页内容的 PDF 文档}other{包含 {COUNT} 页内容的 PDF 文档}}</translation>
 <translation id="4030383055268325496">撤消添加(&amp;U)</translation>
 <translation id="4032320456957708163">您的浏览器由 <ph name="ENROLLMENT_DOMAIN" /> 管理</translation>
@@ -925,7 +923,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">保存…</translation>
 <translation id="4913987521957242411">打孔（左上角）</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{和另外 1 个网页}other{和另外 # 个网页}}</translation>
 <translation id="4923459931733593730">付款</translation>
 <translation id="4926049483395192435">必须指定。</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> 显示</translation>
@@ -1315,7 +1312,6 @@
 <translation id="6518133107902771759">验证</translation>
 <translation id="6521745193039995384">无效</translation>
 <translation id="6529602333819889595">恢复删除(&amp;R)</translation>
-<translation id="6534179046333460208">实物网建议</translation>
 <translation id="6545864417968258051">蓝牙扫描</translation>
 <translation id="6547208576736763147">双孔（左侧）</translation>
 <translation id="6554795675067793129">您的帐号由 <ph name="ENROLLMENT_DOMAIN" /> 管理。</translation>
@@ -1838,7 +1834,6 @@
 <translation id="8790007591277257123">恢复删除(&amp;R)</translation>
 <translation id="8792621596287649091">您可能会无法再访问自己的 <ph name="ORG_NAME" /> 帐号，或者身份信息遭到盗用。Chromium 建议您立即更改密码。</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> 在您的浏览器中启用了 Chrome 企业版接口。这些接口可以访问您的部分数据。</translation>
-<translation id="8800988563907321413">此处将显示系统建议您浏览的附近网页</translation>
 <translation id="8805819170075074995">列表条目“<ph name="LANGUAGE_ID" />”：该条目因同时存在于 SpellcheckLanguage 政策中而被忽略。</translation>
 <translation id="8807160976559152894">完成每页后裁切</translation>
 <translation id="8820817407110198400">书签</translation>

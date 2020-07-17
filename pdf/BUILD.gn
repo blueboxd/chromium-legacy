@@ -52,6 +52,8 @@ if (enable_pdf) {
       "paint_aggregator.h",
       "paint_manager.cc",
       "paint_manager.h",
+      "paint_ready_rect.cc",
+      "paint_ready_rect.h",
       "pdf.cc",
       "pdf_engine.h",
       "pdf_init.cc",

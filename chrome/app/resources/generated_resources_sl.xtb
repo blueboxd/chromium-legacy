@@ -232,6 +232,7 @@
 <translation id="1274997165432133392">Piškotki in drugi podatki spletnega mesta</translation>
 <translation id="1275718070701477396">Izbrano</translation>
 <translation id="1276994519141842946">Aplikacije <ph name="APP_NAME" /> ni bilo mogoče odmestiti</translation>
+<translation id="127946606521051357">Naprava v bližini ima vklopljeno deljenje z drugimi</translation>
 <translation id="1280820357415527819">Iskanje mobilnih omrežij</translation>
 <translation id="1280965841156951489">Uredi datoteke</translation>
 <translation id="1285320974508926690">Nikoli ne prevedi tega spletnega mesta</translation>
@@ -1220,6 +1221,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2489918096470125693">Dodaj &amp;mapo ...</translation>
 <translation id="2490481887078769936">Datoteka »<ph name="FILE_NAME" />« je odstranjena s seznama</translation>
 <translation id="249113932447298600">Oprostite, naprava <ph name="DEVICE_LABEL" /> še ni podprta.</translation>
+<translation id="2492308681814209210">Naprava <ph name="DEVICE_NAME" /> z vami deli <ph name="ATTACHMENTS" />.</translation>
 <translation id="2492461744635776704">Pripravljanje zahteve za podpisovanje potrdil</translation>
 <translation id="249303669840926644">Registracije ni bilo mogoče dokončati</translation>
 <translation id="2495777824269688114">Odkrijte več funkcij ali prejmite odgovore. Če želite pomoč, izberite »?«.</translation>
@@ -4153,6 +4155,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6212039847102026977">Prikaži dodatne lastnosti omrežja</translation>
 <translation id="6212168817037875041">Izklop zaslona</translation>
 <translation id="6212752530110374741">Pošlji povezavo po e-pošti</translation>
+<translation id="6213230117190778270">Sprejmi</translation>
 <translation id="6216696360484424239">Samodejna prijava</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> nima povezave. Povežite se v internet in poskusite znova.</translation>
 <translation id="6220413761270491930">Napaka pri nalaganju razširitve</translation>
@@ -4280,6 +4283,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6362853299801475928">&amp;Prijavite težavo ...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Dodajte sorodnike in prijatelje</translation>
+<translation id="6367985768157257101">Želite sprejeti s funkcijo Deljenje v bližini?</translation>
 <translation id="636850387210749493">Prijava v podjetje</translation>
 <translation id="6370021412472292592">Manifesta ni bilo mogoče naložiti.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -6583,9 +6587,11 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Vnesite geslo</translation>
 <translation id="939736085109172342">Nova mapa</translation>
+<translation id="941070664607309480">Kliknite, če želite, da vaša naprava postane vidna in bo podatke mogoče deliti z vami</translation>
 <translation id="942532530371314860">Aplikacija <ph name="APP_NAME" /> je v skupno rabo dala zavihek v Chromu in zvok.</translation>
 <translation id="945522503751344254">Pošlji povratne informacije</translation>
 <translation id="947329552760389097">&amp;Pregled elementov</translation>
+<translation id="951991426597076286">Zavrni</translation>
 <translation id="952992212772159698">Ni aktivirano</translation>
 <translation id="956500788634395331">Zaščiteni ste pred morebiti škodljivimi razširitvami</translation>
 <translation id="957960681186851048">Spletno mesto je poskušalo samodejno prenesti več datotek</translation>

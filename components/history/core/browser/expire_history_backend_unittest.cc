@@ -24,11 +24,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/history/core/browser/favicon_database.h"
 #include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database.h"
-#include "components/history/core/browser/thumbnail_database.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/history/core/browser/top_sites_impl.h"
 #include "components/history/core/browser/top_sites_observer.h"
@@ -140,7 +140,7 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
 
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<HistoryDatabase> main_db_;
-  std::unique_ptr<ThumbnailDatabase> thumb_db_;
+  std::unique_ptr<FaviconDatabase> thumb_db_;
   scoped_refptr<TopSitesImpl> top_sites_;
 
   // base::Time at the beginning of the test, so everybody agrees what "now" is.
@@ -162,7 +162,7 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
       main_db_.reset();
 
     base::FilePath thumb_name = path().Append(kFaviconsFilename);
-    thumb_db_.reset(new ThumbnailDatabase(nullptr));
+    thumb_db_ = std::make_unique<FaviconDatabase>();
     if (thumb_db_->Init(thumb_name) != sql::INIT_OK)
       thumb_db_.reset();
 
@@ -952,10 +952,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsStarred) {
   EXPECT_EQ(0, new_url_row2.typed_count());
   EXPECT_EQ(0, new_url_row2.visit_count());
 
-  // Thumbnails and favicons should still exist. Note that we keep thumbnails
-  // that may have been updated since the time threshold. Since the URL still
-  // exists in history, this should not be a privacy problem, we only update
-  // the visit counts in this case for consistency anyway.
+  // Favicons should still exist.
   favicon_base::FaviconID favicon_id =
       GetFavicon(url_row1.url(), favicon_base::IconType::kFavicon);
   EXPECT_TRUE(HasFavicon(favicon_id));

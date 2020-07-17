@@ -29,6 +29,7 @@ class NGAbsoluteUtilsTest : public testing::Test {
 
   void SetUp() override {
     style_ = ComputedStyle::Create();
+    style_->SetPosition(EPosition::kAbsolute);
     // If not set, border widths will always be 0.
     style_->SetBorderLeftStyle(EBorderStyle::kSolid);
     style_->SetBorderRightStyle(EBorderStyle::kSolid);

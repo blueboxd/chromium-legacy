@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="1008557486741366299">나중에 하기</translation>
+<translation id="100957008357583611">위치를 사용하시겠습니까?</translation>
 <translation id="1010200102790553230">페이지 나중에 로드하기</translation>
 <translation id="1015730422737071372">추가 세부정보 제공</translation>
 <translation id="1019413721762100891">꺼짐</translation>
@@ -421,7 +422,6 @@
 <translation id="2705137772291741111">사이트의 저장된(캐시된) 사본을 읽을 수 없습니다.</translation>
 <translation id="2709516037105925701">자동 완성</translation>
 <translation id="2713444072780614174">흰색</translation>
-<translation id="2720342946869265578">근처</translation>
 <translation id="2721148159707890343">요청 성공</translation>
 <translation id="272451190272506600">센서를 터치하여 결제</translation>
 <translation id="2728127805433021124">서버의 인증서가 안전성이 낮은 서명 알고리즘을 사용하여 서명되어 있습니다.</translation>
@@ -715,7 +715,6 @@
 <translation id="3987940399970879459">1MB 미만</translation>
 <translation id="3990250421422698716">조그 오프셋</translation>
 <translation id="3996311196211510766">사이트 <ph name="ORIGIN" />에서 모든 요청에 출처 정책을 적용하도록 요청했으나 이 정책은 현재 적용할 수 없습니다.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{주변 웹페이지 1개}other{주변 웹페이지 #개}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT}페이지로 이루어진 PDF 문서}other{{COUNT}페이지로 이루어진 PDF 문서}}</translation>
 <translation id="4030383055268325496">추가 실행 취소(&amp;U)</translation>
 <translation id="4032320456957708163"><ph name="ENROLLMENT_DOMAIN" />에서 관리하는 브라우저입니다</translation>
@@ -929,7 +928,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">저장...</translation>
 <translation id="4913987521957242411">왼쪽 상단 펀칭</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{외 웹페이지 1개}other{외 웹페이지 #개}}</translation>
 <translation id="4923459931733593730">결제</translation>
 <translation id="4926049483395192435">지정해야 합니다.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> 내용:</translation>
@@ -1170,6 +1168,7 @@
 <translation id="5869405914158311789">사이트에 연결할 수 없음</translation>
 <translation id="5869522115854928033">저장된 비밀번호</translation>
 <translation id="5887400589839399685">저장된 카드</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" />에서 데이터를 백업하고 이 기기를 반환할 것을 요청합니다.</translation>
 <translation id="5895138241574237353">다시 시작</translation>
 <translation id="5895187275912066135">발급일:</translation>
 <translation id="5901630391730855834">노란색</translation>
@@ -1320,7 +1319,6 @@
 <translation id="6518133107902771759">확인</translation>
 <translation id="6521745193039995384">활성화되지 않음</translation>
 <translation id="6529602333819889595">삭제 다시 실행(&amp;R)</translation>
-<translation id="6534179046333460208">피지컬 웹 제안</translation>
 <translation id="6545864417968258051">블루투스 검색</translation>
 <translation id="6547208576736763147">왼쪽 2공 펀칭</translation>
 <translation id="6554795675067793129">사용자의 계정은 <ph name="ENROLLMENT_DOMAIN" />에서 관리합니다.</translation>
@@ -1841,7 +1839,6 @@
 <translation id="8790007591277257123">삭제 다시 실행(&amp;R)</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> 계정에 액세스할 수 없게 되거나 신원 도용이 발생할 수도 있습니다. 따라서 지금 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" />에서 브라우저에 Chrome Enterprise 커넥터를 사용 설정했습니다. 커넥터가 내 데이터 중 일부에 액세스할 수 있습니다.</translation>
-<translation id="8800988563907321413">근처 추천 항목이 여기에 표시됩니다.</translation>
 <translation id="8805819170075074995">목록 항목 '<ph name="LANGUAGE_ID" />': SpellcheckLanguage 정책에도 포함되었기 때문에 항목이 무시되었습니다.</translation>
 <translation id="8807160976559152894">각 페이지 뒤에 트림</translation>
 <translation id="8820817407110198400">북마크</translation>

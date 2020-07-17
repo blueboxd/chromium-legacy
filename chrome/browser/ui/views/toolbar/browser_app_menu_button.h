@@ -63,6 +63,7 @@ class BrowserAppMenuButton : public AppMenuButton {
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   SkColor GetInkDropBaseColor() const override;
   base::string16 GetTooltipText(const gfx::Point& p) const override;
+  void OnThemeChanged() override;
   // Updates the presentation according to |severity_| and the theme provider.
   void UpdateIcon() override;
 
@@ -74,6 +75,8 @@ class BrowserAppMenuButton : public AppMenuButton {
 
  private:
   void OnTouchUiChanged();
+
+  void UpdateTextAndHighlightColor();
 
   AppMenuIconController::TypeAndSeverity type_and_severity_{
       AppMenuIconController::IconType::NONE,

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
 <translation id="1008557486741366299">Ei nyt</translation>
+<translation id="100957008357583611">Käytä sijaintiasi?</translation>
 <translation id="1010200102790553230">Lataa sivu myöhemmin</translation>
 <translation id="1015730422737071372">Lisätietoja</translation>
 <translation id="1019413721762100891">Pois päältä</translation>
@@ -425,7 +426,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="2705137772291741111">Tämän sivuston välimuistiin tallennettu kopio oli lukukelvoton.</translation>
 <translation id="2709516037105925701">Automaattinen täyttö</translation>
 <translation id="2713444072780614174">Valkoinen</translation>
-<translation id="2720342946869265578">Nearby</translation>
 <translation id="2721148159707890343">Pyyntö onnistui</translation>
 <translation id="272451190272506600">Maksa koskettamalla tunnistinta</translation>
 <translation id="2728127805433021124">Palvelimen varmenne on allekirjoitettu heikolla allekirjoitusalgoritmilla.</translation>
@@ -723,7 +723,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="3990250421422698716">Jog offset</translation>
 <translation id="3996311196211510766">Sivusto <ph name="ORIGIN" /> pyytää alkuperäkäytännön
     soveltamista kaikkiin sen pyyntöihin, mutta käytäntöä ei voi soveltaa tällä hetkellä.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 verkkosivu lähistöllä}other{# verkkosivua lähistöllä}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-dokumentti, jossa on {COUNT} sivu}other{PDF-dokumentti, jossa on {COUNT} sivua}}</translation>
 <translation id="4030383055268325496">K&amp;umoa lisäys</translation>
 <translation id="4032320456957708163">Selaimen ylläpitäjä on <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -941,7 +940,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Tallenna…</translation>
 <translation id="4913987521957242411">Reikä vasemmassa yläkulmassa</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{ja 1 muu verkkosivu}other{ja # muuta verkkosivua}}</translation>
 <translation id="4923459931733593730">Maksu</translation>
 <translation id="4926049483395192435">On määritettävä.</translation>
 <translation id="4926159001844873046">Viesti osoitteesta <ph name="SITE" /></translation>
@@ -1182,6 +1180,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="5869405914158311789">Sivustoon ei saada yhteyttä</translation>
 <translation id="5869522115854928033">Tallennetut salasanat</translation>
 <translation id="5887400589839399685">Kortti tallennettu</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> edellyttää, että varmuuskopioit datasi ja palautat tämän laitteen.</translation>
 <translation id="5895138241574237353">Käynnistä uudelleen</translation>
 <translation id="5895187275912066135">Myönnetty</translation>
 <translation id="5901630391730855834">Keltainen</translation>
@@ -1332,7 +1331,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="6518133107902771759">Vahvista</translation>
 <translation id="6521745193039995384">Ei aktiivinen</translation>
 <translation id="6529602333819889595">&amp;Toista poisto</translation>
-<translation id="6534179046333460208">Fyysisen webin ehdotukset</translation>
 <translation id="6545864417968258051">Bluetooth-haku</translation>
 <translation id="6547208576736763147">Kaksi reikää vasemmalla</translation>
 <translation id="6554795675067793129">Tätä tiliä ylläpitää <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1855,7 +1853,6 @@ Lisätietoja:
 <translation id="8790007591277257123">&amp;Toista poisto</translation>
 <translation id="8792621596287649091">Saatat menettää <ph name="ORG_NAME" />-tilisi käyttöoikeuden tai joutua identiteettivarkauden uhriksi. Chromium suosittelee salasanan vaihtamista välittömästi.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> on laittanut Chrome Enterprise Connectorsin päälle selaimessasi. Nämä liittimet pääsevät osaan datastasi.</translation>
-<translation id="8800988563907321413">Nearby-ehdotuksesi näkyvät tässä.</translation>
 <translation id="8805819170075074995">Luettelokohde <ph name="LANGUAGE_ID" />: Kohde on ohitettu, koska se sisältyy myös SpellcheckLanguage-käytäntöön.</translation>
 <translation id="8807160976559152894">Leikkaa jokaisen sivun jälkeen</translation>
 <translation id="8820817407110198400">Kirjanmerkit</translation>

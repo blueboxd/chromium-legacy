@@ -57,7 +57,6 @@
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "third_party/blink/public/web/blink.h"
-#include "third_party/blink/public/web/modules/mediastream/web_media_stream_renderer_factory.h"
 #include "third_party/blink/public/web/modules/mediastream/webmediaplayer_ms.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "url/origin.h"
@@ -709,7 +708,6 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
 
   return new blink::WebMediaPlayerMS(
       frame, client, GetWebMediaPlayerDelegate(), std::move(media_log),
-      blink::CreateWebMediaStreamRendererFactory(),
       render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia),
       render_thread->GetIOTaskRunner(), video_frame_compositor_task_runner,
       render_thread->GetMediaThreadTaskRunner(),

@@ -524,6 +524,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // Invoked when a user cancels a before unload dialog.
   virtual void BeforeUnloadDialogCancelled() {}
 
+  // Called whenever the AXTreeID for the main frame has changed.
+  virtual void AXTreeIDForMainFrameHasChanged() {}
+
   // Called when accessibility events or location changes are received
   // from a render frame, but only when the accessibility mode has the
   // ui::AXMode::kWebContents flag set.

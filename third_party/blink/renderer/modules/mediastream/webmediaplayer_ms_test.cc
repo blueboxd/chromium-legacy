@@ -680,7 +680,6 @@ void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {
           : WebMediaPlayer::SurfaceLayerMode::kNever;
   player_ = std::make_unique<WebMediaPlayerMS>(
       nullptr, this, &delegate_, std::make_unique<media::NullMediaLog>(),
-      std::unique_ptr<WebMediaStreamRendererFactory>(render_factory_),
       scheduler::GetSingleThreadTaskRunnerForTesting(),
       scheduler::GetSingleThreadTaskRunnerForTesting(),
       scheduler::GetSingleThreadTaskRunnerForTesting(),
@@ -690,6 +689,8 @@ void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {
       WTF::Bind(&WebMediaPlayerMSTest::CreateMockSurfaceLayerBridge,
                 WTF::Unretained(this)),
       std::move(submitter_), surface_layer_mode);
+  player_->SetMediaStreamRendererFactoryForTesting(
+      std::unique_ptr<WebMediaStreamRendererFactory>(render_factory_));
 }
 
 MockMediaStreamVideoRenderer* WebMediaPlayerMSTest::LoadAndGetFrameProvider(

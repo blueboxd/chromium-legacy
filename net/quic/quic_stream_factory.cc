@@ -1153,10 +1153,7 @@ bool QuicStreamFactory::CanUseExistingSession(const QuicSessionKey& session_key,
   for (const auto& key_value : active_sessions_) {
     QuicChromiumClientSession* session = key_value.second;
     if (destination.Equals(all_sessions_[session].destination()) &&
-        session->CanPool(session_key.host(), session_key.privacy_mode(),
-                         session_key.socket_tag(),
-                         session_key.network_isolation_key(),
-                         session_key.disable_secure_dns())) {
+        session->CanPool(session_key.host(), session_key)) {
       return true;
     }
   }
@@ -1181,16 +1178,16 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
              .Equals(HostPortPair::FromURL(url)));
   // Enforce session affinity for promised streams.
   //
-  // TODO(https://crbug.com/1105544): This logic should also handle
-  // NetworkIsolationKey.
+  // TODO(https://crbug.com/1105544): Both having one promise per URL globally
+  // and deleting them on mismatch leaks data between NetworkIsolationKeys. Fix
+  // that.
   quic::QuicClientPromisedInfo* promised =
       push_promise_index_.GetPromised(url.spec());
   if (promised) {
     QuicChromiumClientSession* session =
         static_cast<QuicChromiumClientSession*>(promised->session());
     DCHECK(session);
-    if (session->quic_session_key().privacy_mode() ==
-        session_key.privacy_mode()) {
+    if (session->quic_session_key().CanUseForAliasing(session_key)) {
       request->SetSession(session->CreateHandle(destination));
       ++num_push_streams_created_;
       return OK;
@@ -1231,10 +1228,7 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
     for (const auto& key_value : active_sessions_) {
       QuicChromiumClientSession* session = key_value.second;
       if (destination.Equals(all_sessions_[session].destination()) &&
-          session->CanPool(session_key.server_id().host(),
-                           session_key.privacy_mode(), session_key.socket_tag(),
-                           session_key.network_isolation_key(),
-                           session_key.disable_secure_dns())) {
+          session->CanPool(session_key.server_id().host(), session_key)) {
         request->SetSession(session->CreateHandle(destination));
         return OK;
       }
@@ -1673,12 +1667,8 @@ bool QuicStreamFactory::HasMatchingIpSession(const QuicSessionAliasKey& key,
 
     const SessionSet& sessions = ip_aliases_[address];
     for (QuicChromiumClientSession* session : sessions) {
-      if (!session->CanPool(server_id.host(), key.session_key().privacy_mode(),
-                            key.session_key().socket_tag(),
-                            key.session_key().network_isolation_key(),
-                            key.session_key().disable_secure_dns())) {
+      if (!session->CanPool(server_id.host(), key.session_key()))
         continue;
-      }
       active_sessions_[key.session_key()] = session;
       session_aliases_[session].insert(key);
       return true;

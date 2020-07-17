@@ -21,9 +21,9 @@
 #include "chromecast/media/cma/test/mock_frame_provider.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/callback_registry.h"
 #include "media/base/media_util.h"
 #include "media/base/video_decoder_config.h"
-#include "media/cdm/player_tracker_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -59,20 +59,17 @@ ACTION_P2(PushBuffer, delegate, buffer_pts) {
 class CastCdmContextForTest : public CastCdmContext {
  public:
   CastCdmContextForTest() : license_installed_(false) {}
+
   void SetLicenseInstalled() {
     license_installed_ = true;
-    player_tracker_.NotifyNewKey();
+    event_callbacks_.Notify(
+        ::media::CdmContext::Event::kHasAdditionalUsableKey);
   }
 
   // CastCdmContext implementation:
-  int RegisterPlayer(base::RepeatingClosure new_key_cb,
-                     base::RepeatingClosure cdm_unset_cb) override {
-    return player_tracker_.RegisterPlayer(std::move(new_key_cb),
-                                          std::move(cdm_unset_cb));
-  }
-
-  void UnregisterPlayer(int registration_id) override {
-    return player_tracker_.UnregisterPlayer(registration_id);
+  std::unique_ptr<::media::CallbackRegistration> RegisterEventCB(
+      ::media::CdmContext::EventCB event_cb) override {
+    return event_callbacks_.Register(std::move(event_cb));
   }
 
   std::unique_ptr<DecryptContextImpl> GetDecryptContext(
@@ -95,7 +92,8 @@ class CastCdmContextForTest : public CastCdmContext {
  private:
   bool license_installed_;
   base::Closure new_key_cb_;
-  ::media::PlayerTrackerImpl player_tracker_;
+  ::media::CallbackRegistry<::media::CdmContext::EventCB::RunType>
+      event_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(CastCdmContextForTest);
 };

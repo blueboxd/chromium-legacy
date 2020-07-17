@@ -6,6 +6,7 @@
 
 #include "ash/clipboard/clipboard_history_controller.h"
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -75,6 +76,7 @@ void ClipboardHistory::OnClipboardDataChanged() {
                                 /* data_dst = */ nullptr, &mime_types);
 
   ui::ClipboardData new_data;
+  bool contains_bitmap = false;
   for (const auto& type16 : mime_types) {
     const std::string type(base::UTF16ToUTF8(type16));
     if (type == ui::ClipboardFormatType::GetPlainTextType().GetName()) {
@@ -97,18 +99,36 @@ void ClipboardHistory::OnClipboardDataChanged() {
                          /* data_dst = */ nullptr, &rtf_data);
       new_data.SetRTFData(rtf_data);
     } else if (type == ui::ClipboardFormatType::GetBitmapType().GetName()) {
-      // TODO(newcomer): Read the bitmap asynchronously.
+      contains_bitmap = true;
     }
     // TODO(newcomer): Handle custom data, which could be files.
   }
+
+  if (contains_bitmap) {
+    clipboard->ReadImage(
+        ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr,
+        base::BindOnce(&ClipboardHistory::OnRecievePNGFromClipboard,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(new_data)));
+    return;
+  }
+  CommitData(std::move(new_data));
+}
+
+void ClipboardHistory::CommitData(ui::ClipboardData data) {
   // Keep duplicates to maintain most recent ordering.
-  history_with_duplicates_.push_back(std::move(new_data));
+  history_with_duplicates_.push_back(std::move(data));
 
   // Keep the history with duplicates to a reasonable limit, but greater than
   // kMaxClipboardItemsShared, so that repeated copies to not push off relevant
   // data.
   if (history_with_duplicates_.size() > kMaxClipboardItemsShared * 2)
     history_with_duplicates_.pop_front();
+}
+
+void ClipboardHistory::OnRecievePNGFromClipboard(ui::ClipboardData data,
+                                                 const SkBitmap& bitmap) {
+  data.SetBitmapData(bitmap);
+  CommitData(std::move(data));
 }
 
 void ClipboardHistory::PauseClipboardHistory() {

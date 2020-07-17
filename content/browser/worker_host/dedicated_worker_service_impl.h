@@ -24,27 +24,28 @@ class CONTENT_EXPORT DedicatedWorkerServiceImpl
   void RemoveObserver(Observer* observer) override;
   void EnumerateDedicatedWorkers(Observer* observer) override;
 
-  DedicatedWorkerId GenerateNextDedicatedWorkerId();
-
   // Notifies all observers about a new worker.
-  void NotifyWorkerCreated(DedicatedWorkerId dedicated_worker_id,
-                           int worker_process_id,
-                           GlobalFrameRoutingId ancestor_render_frame_host_id);
+  void NotifyWorkerCreated(
+      const blink::mojom::DedicatedWorkerToken& worker_token,
+      int worker_process_id,
+      GlobalFrameRoutingId ancestor_render_frame_host_id);
 
   // Notifies all observers about a worker being destroyed.
   void NotifyBeforeWorkerDestroyed(
-      DedicatedWorkerId dedicated_worker_id,
+      const blink::mojom::DedicatedWorkerToken& worker_token,
       GlobalFrameRoutingId ancestor_render_frame_host_id);
 
   // Notifies all observers that a worker's final response URL was determined.
   void NotifyWorkerFinalResponseURLDetermined(
-      DedicatedWorkerId dedicated_worker_id,
+      const blink::mojom::DedicatedWorkerToken& worker_token,
       const GURL& url);
 
- private:
-  // Generates IDs for new dedicated workers.
-  DedicatedWorkerId::Generator dedicated_worker_id_generator_;
+  // Returns true if a worker with the given token has already been registered
+  // with the service. This allows for malformed messages with duplicated
+  // tokens to be detected, and the offending renderer to be shutdown.
+  bool HasToken(const blink::mojom::DedicatedWorkerToken& worker_token) const;
 
+ private:
   base::ObserverList<Observer> observers_;
 
   struct DedicatedWorkerInfo {
@@ -59,7 +60,7 @@ class CONTENT_EXPORT DedicatedWorkerServiceImpl
     GlobalFrameRoutingId ancestor_render_frame_host_id;
     base::Optional<GURL> final_response_url;
   };
-  base::flat_map<DedicatedWorkerId, DedicatedWorkerInfo>
+  base::flat_map<blink::mojom::DedicatedWorkerToken, DedicatedWorkerInfo>
       dedicated_worker_infos_;
 };
 

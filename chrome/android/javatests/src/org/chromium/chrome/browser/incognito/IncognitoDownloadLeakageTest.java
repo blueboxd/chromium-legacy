@@ -67,7 +67,8 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @EnableFeatures({ChromeFeatureList.CCT_INCOGNITO})
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "enable-features=UseDownloadOfflineContentProvider"})
 public class IncognitoDownloadLeakageTest {
     private String mDownloadTestPage;
     private final String mDownloadedFileName = "test.gzip";

@@ -1186,8 +1186,13 @@ bool AutocompleteMatch::TryRichAutocompletion(
     return true;
   }
 
+  const bool can_autocomplete_titles =
+      OmniboxFieldTrial::RichAutocompletionAutocompleteTitles() &&
+      input.text().size() >=
+          OmniboxFieldTrial::RichAutocompletionAutocompleteTitlesMinChar();
+
   // Try matching the prefix of |secondary_text|.
-  if (OmniboxFieldTrial::RichAutocompletionAutocompleteTitles() &&
+  if (can_autocomplete_titles &&
       base::StartsWith(secondary_text_lower, input_text_lower,
                        base::CompareCase::SENSITIVE)) {
     fill_into_edit = secondary_text;
@@ -1198,7 +1203,10 @@ bool AutocompleteMatch::TryRichAutocompletion(
     return true;
   }
 
-  if (!OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefix())
+  // Check if non-prefix autocompletion is possible.
+  if (!OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefix() ||
+      input.text().size() <
+          OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefixMinChar())
     return false;
 
   // Try matching a non-prefix the |primary_text|.
@@ -1215,8 +1223,7 @@ bool AutocompleteMatch::TryRichAutocompletion(
 
   // Try matching a non-prefix the |secondary_text|.
   size_t secondary_find_index = secondary_text_lower.find(input_text_lower);
-  if (OmniboxFieldTrial::RichAutocompletionAutocompleteTitles() &&
-      secondary_find_index != base::string16::npos) {
+  if (can_autocomplete_titles && secondary_find_index != base::string16::npos) {
     fill_into_edit = secondary_text;
     fill_into_edit_additional_text = primary_text;
     inline_autocompletion =

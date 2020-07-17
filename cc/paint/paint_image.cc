@@ -7,8 +7,10 @@
 #include <memory>
 #include <sstream>
 #include <utility>
+
 #include "base/atomic_sequence_num.h"
 #include "base/hash/hash.h"
+#include "base/logging.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_image_generator.h"
 #include "cc/paint/paint_record.h"
@@ -276,28 +278,24 @@ int PaintImage::height() const {
              : GetSkImageInfo().height();
 }
 
-bool PaintImage::isSRGB() const {
+gfx::ContentColorUsage PaintImage::GetContentColorUsage() const {
   // Right now, JS paint worklets can only be in sRGB
   if (paint_worklet_input_)
-    return true;
+    return gfx::ContentColorUsage::kSRGB;
 
-  if (const auto* color_space = GetSkImageInfo().colorSpace())
-    return color_space->isSRGB();
+  const auto* color_space = GetSkImageInfo().colorSpace();
 
   // Assume the image will be sRGB if we don't know yet.
-  return true;
-}
+  if (!color_space || color_space->isSRGB())
+    return gfx::ContentColorUsage::kSRGB;
 
-bool PaintImage::isHDR() const {
-  // Right now, JS paint worklets can only be in sRGB
-  if (paint_worklet_input_)
-    return false;
+  // TODO(crbug.com/1106417): Use SkColorSpace::isHDR() when available.
+  skcms_TransferFunction fn;
+  if (!color_space->isNumericalTransferFn(&fn) && fn.g < 0)
+    return gfx::ContentColorUsage::kHDR;
 
-  if (const auto* color_space = GetSkImageInfo().colorSpace())
-    return gfx::ColorSpace(*color_space).IsHDR();
-
-  // Assume the image will not be HDR if we don't know yet.
-  return false;
+  // If it's not HDR and not SRGB, report it as WCG.
+  return gfx::ContentColorUsage::kWideColorGamut;
 }
 
 const ImageHeaderMetadata* PaintImage::GetImageHeaderMetadata() const {

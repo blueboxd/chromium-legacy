@@ -661,40 +661,6 @@ TEST_P(MediaCodecVideoDecoderVp8Test, ResetDrainsVP8CodecsBeforeFlushing) {
   testing::Mock::VerifyAndClearExpectations(&reset_cb);
 }
 
-// Makes sure UnregisterPlayer() works with async decoder destruction.
-// Uses VP8 because this is the only codec that could trigger async destruction.
-// See https://crbug.com/893498
-TEST_P(MediaCodecVideoDecoderVp8Test, UnregisterPlayerBeforeAsyncDestruction) {
-  CreateCdm(true, false);
-  EXPECT_CALL(*cdm_, RegisterPlayer(_, _));
-  auto* codec = InitializeFully_OneDecodePending(
-      TestVideoConfig::NormalEncrypted(codec_));
-
-  // Accept the first decode to transition out of the flushed state. This is
-  // necessary to make sure the decoder is destructed asynchronously.
-  codec->AcceptOneInput();
-  PumpCodec();
-
-  // When |mcvd_| is reset, expect that it will unregister itself immediately,
-  // before the decoder is actually destructed, asynchronously.
-  EXPECT_CALL(*cdm_, UnregisterPlayer(MockMediaCryptoContext::kRegistrationId));
-  mcvd_.reset();
-}
-
-// A reference test for UnregisterPlayerBeforeAsyncDestruction.
-TEST_P(MediaCodecVideoDecoderVp8Test, UnregisterPlayerBeforeSyncDestruction) {
-  CreateCdm(true, false);
-  EXPECT_CALL(*cdm_, RegisterPlayer(_, _));
-  InitializeFully_OneDecodePending(TestVideoConfig::NormalEncrypted(codec_));
-
-  // Do not attempt any decode to keep the decoder in a clean state. This is
-  // necessary to make sure the decoder is destructed synchronously.
-
-  // When |mcvd_| is reset, expect that it will unregister itself immediately.
-  EXPECT_CALL(*cdm_, UnregisterPlayer(MockMediaCryptoContext::kRegistrationId));
-  mcvd_.reset();
-}
-
 TEST_P(MediaCodecVideoDecoderVp8Test, ResetDoesNotDrainVp8WithAsyncApi) {
   EXPECT_CALL(*device_info_, IsAsyncApiSupported())
       .WillRepeatedly(Return(true));
@@ -867,50 +833,35 @@ TEST_P(MediaCodecVideoDecoderVp8Test,
 TEST_P(MediaCodecVideoDecoderTest, CdmInitializationWorksForL3) {
   // Make sure that MCVD uses the cdm, and sends it along to the codec.
   CreateCdm(true, false);
-  EXPECT_CALL(*cdm_, RegisterPlayer(_, _));
   InitializeWithOverlay_OneDecodePending(
       TestVideoConfig::NormalEncrypted(codec_));
-  ASSERT_TRUE(!!cdm_->new_key_cb);
-  ASSERT_TRUE(!!cdm_->cdm_unset_cb);
   ASSERT_TRUE(!!cdm_->ran_media_crypto_ready_cb);
   ASSERT_EQ(surface_chooser_->current_state_.is_secure, true);
   ASSERT_EQ(surface_chooser_->current_state_.is_required, false);
   ASSERT_EQ(codec_allocator_->most_recent_config->codec_type, CodecType::kAny);
   // We can't check for equality safely, but verify that something was provided.
   ASSERT_TRUE(codec_allocator_->most_recent_config->media_crypto);
-
-  // When |mcvd_| is destroyed, expect that it will unregister itself.
-  EXPECT_CALL(*cdm_, UnregisterPlayer(MockMediaCryptoContext::kRegistrationId));
 }
 
 TEST_P(MediaCodecVideoDecoderTest, CdmInitializationWorksForL1) {
   // Make sure that MCVD uses the cdm, and sends it along to the codec.
   CreateCdm(true, true);
-  EXPECT_CALL(*cdm_, RegisterPlayer(_, _));
   InitializeWithOverlay_OneDecodePending(
       TestVideoConfig::NormalEncrypted(codec_));
-  ASSERT_TRUE(!!cdm_->new_key_cb);
-  ASSERT_TRUE(!!cdm_->cdm_unset_cb);
   ASSERT_TRUE(!!cdm_->ran_media_crypto_ready_cb);
   ASSERT_EQ(surface_chooser_->current_state_.is_secure, true);
   ASSERT_EQ(surface_chooser_->current_state_.is_required, true);
   ASSERT_EQ(codec_allocator_->most_recent_config->codec_type,
             CodecType::kSecure);
   ASSERT_TRUE(codec_allocator_->most_recent_config->media_crypto);
-
-  // When |mcvd_| is destroyed, expect that it will unregister itself.
-  EXPECT_CALL(*cdm_, UnregisterPlayer(MockMediaCryptoContext::kRegistrationId));
 }
 
 TEST_P(MediaCodecVideoDecoderTest, CdmIsSetEvenForClearStream) {
   // Make sure that MCVD uses the cdm, and sends it along to the codec.
   CreateCdm(true, false);
-  EXPECT_CALL(*cdm_, RegisterPlayer(_, _));
   // We use the Large config, since VPx can be rejected if it's too small, in
   // favor of software decode, since this is unencrypted.
   InitializeWithOverlay_OneDecodePending(TestVideoConfig::Large(codec_));
-  ASSERT_TRUE(!!cdm_->new_key_cb);
-  ASSERT_TRUE(!!cdm_->cdm_unset_cb);
   ASSERT_TRUE(!!cdm_->ran_media_crypto_ready_cb);
   ASSERT_EQ(surface_chooser_->current_state_.is_secure, true);
   ASSERT_EQ(surface_chooser_->current_state_.is_required, false);
@@ -918,9 +869,6 @@ TEST_P(MediaCodecVideoDecoderTest, CdmIsSetEvenForClearStream) {
             CodecType::kSecure);
   // We can't check for equality safely, but verify that something was provided.
   ASSERT_TRUE(codec_allocator_->most_recent_config->media_crypto);
-
-  // When |mcvd_| is destroyed, expect that it will unregister itself.
-  EXPECT_CALL(*cdm_, UnregisterPlayer(MockMediaCryptoContext::kRegistrationId));
 }
 
 TEST_P(MediaCodecVideoDecoderTest, NoMediaCryptoContext_ClearStream) {
@@ -928,8 +876,6 @@ TEST_P(MediaCodecVideoDecoderTest, NoMediaCryptoContext_ClearStream) {
   // is not available.
   CreateCdm(false, false);
   InitializeWithOverlay_OneDecodePending(TestVideoConfig::Normal(codec_));
-  ASSERT_FALSE(!!cdm_->new_key_cb);
-  ASSERT_FALSE(!!cdm_->cdm_unset_cb);
   ASSERT_FALSE(!!cdm_->media_crypto_ready_cb);
   ASSERT_FALSE(!!cdm_->ran_media_crypto_ready_cb);
   ASSERT_EQ(surface_chooser_->current_state_.is_secure, false);

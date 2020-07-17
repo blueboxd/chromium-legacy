@@ -181,7 +181,7 @@ class CellularSetupOtaActivatorImplTest : public testing::Test {
   }
 
   void InvokePendingActivationCallback(bool success) {
-    const std::vector<FakeNetworkActivationHandler::ActivationParams>&
+    std::vector<FakeNetworkActivationHandler::ActivationParams>&
         complete_activation_calls =
             fake_network_activation_handler_->complete_activation_calls();
     ASSERT_EQ(1u, complete_activation_calls.size());

@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SITE_INSTANCE_IMPL_H_
 #define CONTENT_BROWSER_SITE_INSTANCE_IMPL_H_
 
+#include <functional>
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -87,13 +89,21 @@ class CONTENT_EXPORT SiteInfo {
   //                if the SiteInstance's process isn't going to be locked.
   const GURL& process_lock_url() const { return process_lock_url_; }
 
+  // Returns false if the site_url() is empty.
+  bool is_empty() const { return site_url().possibly_invalid_spec().empty(); }
+
   bool operator==(const SiteInfo& other) const;
   bool operator!=(const SiteInfo& other) const;
+
+  // Defined to allow this object to act as a key for std::map and std::set.
+  bool operator<(const SiteInfo& other) const;
 
   // Returns a string representation of this SiteInfo principal.
   std::string GetDebugString() const;
 
  private:
+  static auto MakeTie(const SiteInfo& site_info);
+
   GURL site_url_;
   // The URL to use when locking a process to this SiteInstance's site via
   // SetProcessLock(). This is the same as |site_url_| except for cases
@@ -305,9 +315,9 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   bool HasSite() const;
 
   // Returns whether there is currently a related SiteInstance (registered with
-  // BrowsingInstance) for the site of the given url.  If so, we should try to
-  // avoid dedicating an unused SiteInstance to it (e.g., in a new tab).
-  bool HasRelatedSiteInstance(const GURL& url);
+  // BrowsingInstance) for the given SiteInfo.  If so, we should try to avoid
+  // dedicating an unused SiteInstance to it (e.g., in a new tab).
+  bool HasRelatedSiteInstance(const SiteInfo& site_info);
 
   // Returns whether this SiteInstance is compatible with and can host the given
   // |url|. If not, the browser should force a SiteInstance swap when
@@ -427,7 +437,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // Returns true if this object was constructed as a default site instance.
   bool IsDefaultSiteInstance() const;
 
-  // Returns true if |site_url| is a site URL that the BrowsingInstance has
+  // Returns true if |site_url| is a site url that the BrowsingInstance has
   // associated with its default SiteInstance.
   bool IsSiteInDefaultSiteInstance(const GURL& site_url) const;
 

@@ -944,6 +944,12 @@ bool AXNodeData::IsClickable() const {
   return ui::IsClickable(role);
 }
 
+bool AXNodeData::IsSelectable() const {
+  // It's selectable if it has the attribute, whether it's true or false.
+  return HasBoolAttribute(ax::mojom::BoolAttribute::kSelected) &&
+         GetRestriction() != ax::mojom::Restriction::kDisabled;
+}
+
 bool AXNodeData::IsIgnored() const {
   return HasState(ax::mojom::State::kIgnored) ||
          role == ax::mojom::Role::kIgnored;

@@ -92,7 +92,7 @@ bool AccessibilityNodeInfoDataWrapper::IsImportantInAndroid() const {
 bool AccessibilityNodeInfoDataWrapper::CanBeAccessibilityFocused() const {
   if (!IsAccessibilityFocusableContainer() && !HasAccessibilityFocusableText())
     return false;
-  return !ComputeAXName().empty();
+  return !ComputeAXName(true).empty();
 }
 
 bool AccessibilityNodeInfoDataWrapper::IsAccessibilityFocusableContainer()
@@ -320,7 +320,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   bool is_node_tree_root = tree_source_->IsRootOfNodeTree(GetId());
 
   // String properties.
-  const std::string name = ComputeAXName();
+  const std::string name = ComputeAXName(true);
   if (!name.empty())
     out_data->SetName(name);
 
@@ -478,9 +478,10 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   }
 }
 
-std::string AccessibilityNodeInfoDataWrapper::ComputeAXName() const {
+std::string AccessibilityNodeInfoDataWrapper::ComputeAXName(
+    bool do_recursive) const {
   // Accessible name computation is a concatenated string comprising of:
-  // content description, text, labelled by text, pane title, and cached name
+  // content description, text, labeled by text, pane title, and cached name
   // from previous events.
 
   // TODO(sarakato): Exposing all possible labels for a node, may result in
@@ -492,14 +493,12 @@ std::string AccessibilityNodeInfoDataWrapper::ComputeAXName() const {
   GetProperty(AXStringProperty::CONTENT_DESCRIPTION, &content_description);
   GetProperty(AXStringProperty::TEXT, &text);
 
-  int labelled_by = -1;
-  if (GetProperty(AXIntProperty::LABELED_BY, &labelled_by)) {
-    AccessibilityInfoDataWrapper* labelled_by_node =
-        tree_source_->GetFromId(labelled_by);
-    if (labelled_by_node && labelled_by_node->IsNode()) {
-      // TODO(sarakato): Fix potential bug to be an infinite loop.
-      label = labelled_by_node->ComputeAXName();
-    }
+  int labeled_by = -1;
+  if (do_recursive && GetProperty(AXIntProperty::LABELED_BY, &labeled_by)) {
+    AccessibilityInfoDataWrapper* labeled_by_node =
+        tree_source_->GetFromId(labeled_by);
+    if (labeled_by_node && labeled_by_node->IsNode())
+      label = labeled_by_node->ComputeAXName(false);
   }
 
   std::string pane_title;
@@ -668,7 +667,7 @@ void AccessibilityNodeInfoDataWrapper::ComputeNameFromContentsInternal(
     return;
 
   // Take the name from either content description or text. It's not clear
-  // whether labelled by should be taken into account here.
+  // whether labeled by should be taken into account here.
   std::string name;
   if (!GetProperty(AXStringProperty::CONTENT_DESCRIPTION, &name) ||
       name.empty()) {

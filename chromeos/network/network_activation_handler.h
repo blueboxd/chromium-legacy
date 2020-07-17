@@ -28,7 +28,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkActivationHandler {
   virtual void CompleteActivation(
       const std::string& service_path,
       const base::Closure& success_callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+      network_handler::ErrorCallback error_callback) = 0;
 
  protected:
   NetworkActivationHandler() = default;

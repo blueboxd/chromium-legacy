@@ -80,6 +80,8 @@ class ASH_PUBLIC_EXPORT AmbientBackendController {
   using GetSettingsCallback =
       base::OnceCallback<void(const base::Optional<AmbientSettings>& settings)>;
   using UpdateSettingsCallback = base::OnceCallback<void(bool success)>;
+  using OnSettingPreviewFetchedCallback =
+      base::OnceCallback<void(const std::vector<std::string>& preview_urls)>;
   using OnPersonalAlbumsFetchedCallback =
       base::OnceCallback<void(PersonalAlbums)>;
 
@@ -105,6 +107,11 @@ class ASH_PUBLIC_EXPORT AmbientBackendController {
   // Update ambient mode Settings to server.
   virtual void UpdateSettings(const AmbientSettings& settings,
                               UpdateSettingsCallback callback) = 0;
+
+  // Fetch preview images for live album.
+  virtual void FetchSettingPreview(int preview_width,
+                                   int preview_height,
+                                   OnSettingPreviewFetchedCallback) = 0;
 
   virtual void FetchPersonalAlbums(int banner_width,
                                    int banner_height,

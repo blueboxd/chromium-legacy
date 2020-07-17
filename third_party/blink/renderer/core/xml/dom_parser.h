@@ -44,7 +44,7 @@ class DOMParser final : public ScriptWrappable {
 
   void Trace(Visitor*) const override;
 
-  Document* GetDocument() const;
+  LocalDOMWindow* GetWindow() const { return window_.Get(); }
 
  private:
   WeakMember<LocalDOMWindow> window_;

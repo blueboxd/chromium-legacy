@@ -69,7 +69,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
       const std::string& property_name,
       const base::Value& value,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+      network_handler::ErrorCallback error_callback) = 0;
 
   // Tells the device specified by |device_path| to register to the cellular
   // network with id |network_id|. If |network_id| is empty then registration
@@ -81,7 +81,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
       const std::string& device_path,
       const std::string& network_id,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+      network_handler::ErrorCallback error_callback) = 0;
 
   // SIM PIN/PUK methods
 
@@ -100,12 +100,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
   //
   // This method applies to Cellular devices only. The call will fail with a
   // "not-supported" error if called on a non-cellular device.
-  virtual void RequirePin(
-      const std::string& device_path,
-      bool require_pin,
-      const std::string& pin,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+  virtual void RequirePin(const std::string& device_path,
+                          bool require_pin,
+                          const std::string& pin,
+                          const base::Closure& callback,
+                          network_handler::ErrorCallback error_callback) = 0;
 
   // Sends the PIN code |pin| to the device |device_path|.
   //
@@ -117,11 +116,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
   //
   // This method applies to Cellular devices only. The call will fail with a
   // "not-supported" error if called on a non-cellular device.
-  virtual void EnterPin(
-      const std::string& device_path,
-      const std::string& pin,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+  virtual void EnterPin(const std::string& device_path,
+                        const std::string& pin,
+                        const base::Closure& callback,
+                        network_handler::ErrorCallback error_callback) = 0;
 
   // Sends the PUK code |puk| to the SIM to unblock a blocked SIM. On success,
   // the SIM will be unblocked and its PIN code will be set to |pin|.
@@ -133,12 +131,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
   //
   // This method applies to Cellular devices only. The call will fail with a
   // "not-supported" error if called on a non-cellular device.
-  virtual void UnblockPin(
-      const std::string& device_path,
-      const std::string& puk,
-      const std::string& new_pin,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+  virtual void UnblockPin(const std::string& device_path,
+                          const std::string& puk,
+                          const std::string& new_pin,
+                          const base::Closure& callback,
+                          network_handler::ErrorCallback error_callback) = 0;
 
   // Tells the device to change the PIN code used to unlock a locked SIM card.
   //
@@ -151,12 +148,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
   //
   // This method applies to Cellular devices only. The call will fail with a
   // "not-supported" error if called on a non-cellular device.
-  virtual void ChangePin(
-      const std::string& device_path,
-      const std::string& old_pin,
-      const std::string& new_pin,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+  virtual void ChangePin(const std::string& device_path,
+                         const std::string& old_pin,
+                         const std::string& new_pin,
+                         const base::Closure& callback,
+                         network_handler::ErrorCallback error_callback) = 0;
 
   // Enables/disables roaming of all cellular devices. This happens
   // asychronously in the background and applies also to devices which become
@@ -176,34 +172,34 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
   virtual void AddWifiWakeOnPacketConnection(
       const net::IPEndPoint& ip_endpoint,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+      network_handler::ErrorCallback error_callback) = 0;
 
   // Adds |types| to the list of packet types that the device should monitor to
   // wake the system from suspend.
   virtual void AddWifiWakeOnPacketOfTypes(
       const std::vector<std::string>& types,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+      network_handler::ErrorCallback error_callback) = 0;
 
   // Removes |ip_endpoint| from the list of tcp connections that the wifi device
   // should monitor to wake the system from suspend.
   virtual void RemoveWifiWakeOnPacketConnection(
       const net::IPEndPoint& ip_endpoint,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+      network_handler::ErrorCallback error_callback) = 0;
 
   // Removes |types| from the list of packet types that the device should
   // monitor to wake the system from suspend.
   virtual void RemoveWifiWakeOnPacketOfTypes(
       const std::vector<std::string>& types,
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+      network_handler::ErrorCallback error_callback) = 0;
 
   // Clears the list of tcp connections that the wifi device should monitor to
   // wake the system from suspend.
   virtual void RemoveAllWifiWakeOnPacketConnections(
       const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) = 0;
+      network_handler::ErrorCallback error_callback) = 0;
 
   static std::unique_ptr<NetworkDeviceHandler> InitializeForTesting(
       NetworkStateHandler* network_state_handler);

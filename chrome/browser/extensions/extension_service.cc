@@ -72,7 +72,6 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/crx_file/id_util.h"
 #include "components/favicon_base/favicon_url_parser.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -87,6 +86,7 @@
 #include "extensions/browser/external_install_info.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/browser/unloaded_extension_reason.h"
@@ -1964,9 +1964,6 @@ void ExtensionService::Observe(int type,
       }
 
       process_map->RemoveAllFromProcess(process->GetID());
-      content::GetIOThreadTaskRunner({})->PostTask(
-          FROM_HERE, base::BindOnce(&InfoMap::UnregisterAllExtensionsInProcess,
-                                    system_->info_map(), process->GetID()));
       break;
     }
 

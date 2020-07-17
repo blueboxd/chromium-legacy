@@ -478,8 +478,8 @@ class ProcessSingleton::LinuxWatcher
       DCHECK_CURRENTLY_ON(BrowserThread::IO);
       // Wait for reads.
       fd_watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
-          fd, base::Bind(&SocketReader::OnSocketCanReadWithoutBlocking,
-                         base::Unretained(this)));
+          fd, base::BindRepeating(&SocketReader::OnSocketCanReadWithoutBlocking,
+                                  base::Unretained(this)));
       // If we haven't completed in a reasonable amount of time, give up.
       timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kTimeoutInSeconds),
                    this, &SocketReader::CleanupAndDeleteSelf);
@@ -590,8 +590,8 @@ void ProcessSingleton::LinuxWatcher::StartListening(int socket) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Watch for client connections on this socket.
   socket_watcher_ = base::FileDescriptorWatcher::WatchReadable(
-      socket, base::Bind(&LinuxWatcher::OnSocketCanReadWithoutBlocking,
-                         base::Unretained(this), socket));
+      socket, base::BindRepeating(&LinuxWatcher::OnSocketCanReadWithoutBlocking,
+                                  base::Unretained(this), socket));
 }
 
 void ProcessSingleton::LinuxWatcher::HandleMessage(
@@ -719,8 +719,8 @@ ProcessSingleton::ProcessSingleton(
   lock_path_ = user_data_dir.Append(chrome::kSingletonLockFilename);
   cookie_path_ = user_data_dir.Append(chrome::kSingletonCookieFilename);
 
-  kill_callback_ = base::Bind(&ProcessSingleton::KillProcess,
-                              base::Unretained(this));
+  kill_callback_ = base::BindRepeating(&ProcessSingleton::KillProcess,
+                                       base::Unretained(this));
 }
 
 ProcessSingleton::~ProcessSingleton() {
@@ -944,7 +944,7 @@ void ProcessSingleton::OverrideCurrentPidForTesting(base::ProcessId pid) {
 }
 
 void ProcessSingleton::OverrideKillCallbackForTesting(
-    const base::Callback<void(int)>& callback) {
+    const base::RepeatingCallback<void(int)>& callback) {
   kill_callback_ = callback;
 }
 

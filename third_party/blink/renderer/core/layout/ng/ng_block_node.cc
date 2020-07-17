@@ -730,12 +730,19 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
     constraint_space = &zero_constraint_space;
 
   if (Style().AspectRatio() && input.type == MinMaxSizesType::kContent) {
+    LayoutUnit block_size(kIndefiniteSize);
+    if (IsOutOfFlowPositioned()) {
+      // For out-of-flow, the input percentage block size is actually our
+      // block size. We should use that for aspect-ratio purposes if known.
+      block_size = input.percentage_resolution_block_size;
+    }
+
     NGFragmentGeometry fragment_geometry =
         CalculateInitialMinMaxFragmentGeometry(*constraint_space, *this);
     NGBoxStrut border_padding =
         fragment_geometry.border + fragment_geometry.padding;
     LayoutUnit size_from_ar = ComputeInlineSizeFromAspectRatio(
-        *constraint_space, Style(), border_padding);
+        *constraint_space, Style(), border_padding, block_size);
     if (size_from_ar != kIndefiniteSize) {
       return {{size_from_ar, size_from_ar},
               Style().LogicalHeight().IsPercentOrCalc()};

@@ -174,9 +174,18 @@ void LayoutSVGContainer::Paint(const PaintInfo& paint_info) const {
 }
 
 void LayoutSVGContainer::UpdateCachedBoundaries() {
+  auto old_object_bounding_box = object_bounding_box_;
+
   SVGLayoutSupport::ComputeContainerBoundingBoxes(
       this, object_bounding_box_, object_bounding_box_valid_,
       stroke_bounding_box_, local_visual_rect_);
+
+  // Change of object_bounding_box_ may change reference box of resource
+  // effects.
+  if (old_object_bounding_box != object_bounding_box_ &&
+      !IsSVGHiddenContainer() &&
+      SVGResourcesCache::CachedResourcesForLayoutObject(*this))
+    SetShouldDoFullPaintInvalidation();
 }
 
 bool LayoutSVGContainer::NodeAtPoint(HitTestResult& result,

@@ -11,11 +11,7 @@ crbug.com/922725 http/tests/media/autoplay/document-user-activation-cross-origin
 crbug.com/910979 http/tests/html/validation-bubble-oopif-clip.html [ Failure ]
 
 # These started failing when network service was enabled by default.
-crbug.com/933880 external/wpt/FileAPI/url/cross-global-revoke.sub.html [ Failure ]
-crbug.com/933880 external/wpt/FileAPI/url/url-with-fetch.any.html [ Failure ]
-crbug.com/933880 external/wpt/FileAPI/url/url-with-xhr.any.html [ Failure ]
 crbug.com/933880 external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
-crbug.com/933880 http/tests/inspector-protocol/network/interception-take-stream.js [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/raw-headers-for-protected-document.js [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/security-info-on-response.js [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/xhr-interception-auth-fail.js [ Failure ]
@@ -26,3 +22,6 @@ http/tests/inspector-protocol/fetch/fetch-oopif.js [ Skip ]
 
 # JS Self-Profiling currently requires site isolation.
 crbug.com/956688 http/tests/js-self-profiling/* [ Skip ]
+
+crbug.com/1106413 external/wpt/webmessaging/multi-globals/broadcastchannel-current.sub.html [ Failure ]
+crbug.com/1106413 external/wpt/webmessaging/multi-globals/broadcastchannel-incumbent.sub.html [ Failure ]

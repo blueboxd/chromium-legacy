@@ -25,7 +25,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
-#include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
+#include "ui/base/x/x11_cursor.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/platform_event.h"
@@ -48,7 +48,6 @@ class Insets;
 class Point;
 class Rect;
 }  // namespace gfx
-class SkBitmap;
 
 namespace ui {
 
@@ -272,40 +271,11 @@ COMPONENT_EXPORT(UI_BASE_X) bool QueryShmSupport();
 // Returns the first event ID for the MIT-SHM extension, if available.
 COMPONENT_EXPORT(UI_BASE_X) int ShmEventBase();
 
-// Creates a custom X cursor from the image. This takes ownership of image. The
-// caller must not free/modify the image. The refcount of the newly created
-// cursor is set to 1.
-COMPONENT_EXPORT(UI_BASE_X)::Cursor
-    CreateReffedCustomXCursor(XcursorImage* image);
-
-// Increases the refcount of the custom cursor.
-COMPONENT_EXPORT(UI_BASE_X) void RefCustomXCursor(::Cursor cursor);
-
-// Decreases the refcount of the custom cursor, and destroys it if it reaches 0.
-COMPONENT_EXPORT(UI_BASE_X) void UnrefCustomXCursor(::Cursor cursor);
-
-// Creates a XcursorImage and copies the SkBitmap |bitmap| on it. Caller owns
-// the returned object.
-COMPONENT_EXPORT(UI_BASE_X)
-XcursorImage* SkBitmapToXcursorImage(const SkBitmap& bitmap,
-                                     const gfx::Point& hotspot);
-
-// Loads and returns an X11 cursor, trying to find one that matches |type|. If
-// unavailable, x11::None is returned.
-COMPONENT_EXPORT(UI_BASE_X)
-::Cursor LoadCursorFromType(mojom::CursorType type);
-
 // Coalesce all pending motion events (touch or mouse) that are at the top of
 // the queue, and return the number eliminated, storing the last one in
 // |last_event|.
 COMPONENT_EXPORT(UI_BASE_X)
 int CoalescePendingMotionEvents(const x11::Event* xev, x11::Event* last_event);
-
-// Hides the host cursor.
-COMPONENT_EXPORT(UI_BASE_X) void HideHostCursor();
-
-// Returns an invisible cursor.
-COMPONENT_EXPORT(UI_BASE_X)::Cursor CreateInvisibleCursor();
 
 // Sets whether |window| should use the OS window frame.
 COMPONENT_EXPORT(UI_BASE_X)
@@ -588,24 +558,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XRefcountedMemory
   DISALLOW_COPY_AND_ASSIGN(XRefcountedMemory);
 };
 
-// Keeps track of a cursor returned by an X function and makes sure it's
-// XFreeCursor'd.
-class COMPONENT_EXPORT(UI_BASE_X) XScopedCursor {
- public:
-  // Keeps track of |cursor| created with |display|.
-  XScopedCursor(::Cursor cursor, XDisplay* display);
-  ~XScopedCursor();
-
-  ::Cursor get() const;
-  void reset(::Cursor cursor);
-
- private:
-  ::Cursor cursor_;
-  XDisplay* display_;
-
-  DISALLOW_COPY_AND_ASSIGN(XScopedCursor);
-};
-
 struct COMPONENT_EXPORT(UI_BASE_X) XImageDeleter {
   void operator()(XImage* image) const;
 };
@@ -692,14 +644,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XVisualManager {
 
   DISALLOW_COPY_AND_ASSIGN(XVisualManager);
 };
-
-namespace test {
-
-// Returns the cached XcursorImage for |cursor|.
-COMPONENT_EXPORT(UI_BASE_X)
-const XcursorImage* GetCachedXcursorImage(::Cursor cursor);
-
-}  // namespace test
 
 }  // namespace ui
 

@@ -29,10 +29,9 @@ namespace blink {
 
 Document* DOMParser::parseFromString(const String& str, const String& type) {
   Document* doc = DocumentInit::Create()
-                      .WithURL(GetDocument()->Url())
+                      .WithURL(window_->Url())
                       .WithTypeFrom(type)
                       .WithExecutionContext(window_)
-                      .WithOwnerDocument(GetDocument())
                       .CreateDocument();
   doc->SetContent(str);
   doc->SetMimeType(AtomicString(type));
@@ -45,10 +44,6 @@ DOMParser::DOMParser(ScriptState* script_state)
 void DOMParser::Trace(Visitor* visitor) const {
   visitor->Trace(window_);
   ScriptWrappable::Trace(visitor);
-}
-
-Document* DOMParser::GetDocument() const {
-  return window_->document();
 }
 
 }  // namespace blink

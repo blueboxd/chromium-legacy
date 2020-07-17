@@ -56,6 +56,9 @@ TestRendererType const kRendererTypesGpu[] = {
 #if defined(ENABLE_CC_VULKAN_TESTS)
     TestRendererType::kSkiaVk,
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
+#if defined(ENABLE_CC_DAWN_TESTS)
+    TestRendererType::kSkiaDawn,
+#endif  // defined(ENABLE_CC_DAWN_TESTS)
 };
 
 INSTANTIATE_TEST_SUITE_P(All,

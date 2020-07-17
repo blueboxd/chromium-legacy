@@ -47,7 +47,8 @@ class TryChromeDialog : public views::ButtonListener,
   // Receives a closure to run upon process singleton notification when the
   // modal dialog is open, or a null closure when the active dialog is
   // dismissed.
-  using ActiveModalDialogListener = base::Callback<void(base::Closure)>;
+  using ActiveModalDialogListener =
+      base::RepeatingCallback<void(base::RepeatingClosure)>;
 
   enum Result {
     NOT_NOW,                    // Don't launch chrome. Exit now.

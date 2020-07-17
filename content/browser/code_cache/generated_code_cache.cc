@@ -54,6 +54,8 @@ void CheckValidKeys(const GURL& resource_url, const GURL& origin_lock) {
 // with a separator in between. |origin_lock| could be empty when renderer is
 // not locked to an origin (ex: SitePerProcess is disabled) and it is safe to
 // use only |resource_url| as the key in such cases.
+// TODO(wjmaclean): Either convert this to use a SiteInfo object, or convert it
+// to something not based on URLs.
 std::string GetCacheKey(const GURL& resource_url, const GURL& origin_lock) {
   CheckValidKeys(resource_url, origin_lock);
 

@@ -12,7 +12,9 @@
 #include "ash/public/cpp/window_tree_host_lookup.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
+#include "base/location.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -235,9 +237,18 @@ void ClipboardHistoryController::MenuOptionSelected(int index) {
   DCHECK(host);
   host->DeliverEventToSink(&synthetic_key_event);
 
-  // Replace the original item back on top of the clipboard.
-  if (selected_item_not_on_top)
-    WriteClipboardDataToClipboard(*(clipboard_items_.begin()));
+  if (!selected_item_not_on_top)
+    return;
+
+  // Replace the original item back on top of the clipboard. Some apps take a
+  // long time to receive the paste event, also some apps will read from the
+  // clipboard multiple times per paste. Wait 100ms before replacing the item
+  // back onto the clipboard.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&WriteClipboardDataToClipboard,
+                     *(clipboard_items_.begin())),
+      base::TimeDelta::FromMilliseconds(100));
 }
 
 }  // namespace ash

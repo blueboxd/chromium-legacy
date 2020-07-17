@@ -80,7 +80,7 @@ void MediaRouterBaseBrowserTest::UninstallMRExtension() {
 bool MediaRouterBaseBrowserTest::ConditionalWait(
     base::TimeDelta timeout,
     base::TimeDelta interval,
-    const base::Callback<bool(void)>& callback) {
+    const base::RepeatingCallback<bool(void)>& callback) {
   base::ElapsedTimer timer;
   do {
     if (callback.Run())

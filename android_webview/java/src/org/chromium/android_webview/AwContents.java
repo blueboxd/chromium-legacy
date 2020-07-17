@@ -3275,7 +3275,7 @@ public class AwContents implements SmartClipProvider {
     @CalledByNative
     private static void generateMHTMLCallback(String path, long size, Callback<String> callback) {
         if (callback == null) return;
-        callback.onResult(size < 0 ? null : path);
+        AwThreadUtils.postToUiThreadLooper(() -> { callback.onResult(size < 0 ? null : path); });
     }
 
     @CalledByNative
@@ -3358,7 +3358,7 @@ public class AwContents implements SmartClipProvider {
         if (isDestroyed(NO_WARN)) return;
         // Posting avoids invoking the callback inside invoking_composite_
         // (see synchronous_compositor_impl.cc and crbug/452530).
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onComplete(requestId));
+        AwThreadUtils.postToUiThreadLooper(() -> callback.onComplete(requestId));
     }
 
     // Called as a result of AwContentsJni.get().updateLastHitTestData.
@@ -3544,7 +3544,7 @@ public class AwContents implements SmartClipProvider {
         if (path == null || isDestroyed(WARN)) {
             if (callback == null) return;
 
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, callback.bind(null));
+            AwThreadUtils.postToUiThreadLooper(callback.bind(null));
         } else {
             AwContentsJni.get().generateMHTML(mNativeAwContents, AwContents.this, path, callback);
         }

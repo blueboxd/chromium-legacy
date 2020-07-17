@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="1008557486741366299">Nu acum</translation>
+<translation id="100957008357583611">Folosești locația?</translation>
 <translation id="1010200102790553230">Încarcă pagina mai târziu</translation>
 <translation id="1015730422737071372">Specifică detalii suplimentare</translation>
 <translation id="1019413721762100891">dezactivate</translation>
@@ -425,7 +426,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="2705137772291741111">Copia salvată (în memoria cache) a acestui site nu a putut fi citită.</translation>
 <translation id="2709516037105925701">Completare automată</translation>
 <translation id="2713444072780614174">Alb</translation>
-<translation id="2720342946869265578">În apropiere</translation>
 <translation id="2721148159707890343">Solicitarea a reușit</translation>
 <translation id="272451190272506600">Atinge senzorul pentru a plăti</translation>
 <translation id="2728127805433021124">Certificatul serverului este semnat utilizând un algoritm de semnătură slab.</translation>
@@ -720,7 +720,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="3990250421422698716">Decalaj de îndoire</translation>
 <translation id="3996311196211510766">Site-ul <ph name="ORIGIN" /> a solicitat ca o politică de origine
     să se aplice tuturor solicitărilor, dar această politică nu poate fi aplicată momentan.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 pagină web în apropiere}few{# pagini web în apropiere}other{# de pagini web în apropiere}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Document PDF cu {COUNT} pagină}few{Document PDF cu {COUNT} pagini}other{Document PDF cu {COUNT} de pagini}}</translation>
 <translation id="4030383055268325496">&amp;Anulați adăugarea</translation>
 <translation id="4032320456957708163">Browserul este gestionat de <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -938,7 +937,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Salvează...</translation>
 <translation id="4913987521957242411">Perforare în stânga sus</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{și încă 1 pagină web}few{și încă # pagini web}other{și încă # de pagini web}}</translation>
 <translation id="4923459931733593730">Plată</translation>
 <translation id="4926049483395192435">Valoarea trebuie specificată.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> afișează mesajul</translation>
@@ -1179,6 +1177,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="5869405914158311789">Acest site nu poate fi accesat</translation>
 <translation id="5869522115854928033">Parole salvate</translation>
 <translation id="5887400589839399685">Cardul a fost salvat</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> solicită să faci backup datelor și să returnezi dispozitivul.</translation>
 <translation id="5895138241574237353">Reîncepe</translation>
 <translation id="5895187275912066135">Emis la</translation>
 <translation id="5901630391730855834">Galben</translation>
@@ -1329,7 +1328,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="6518133107902771759">Confirmați</translation>
 <translation id="6521745193039995384">Inactivă</translation>
 <translation id="6529602333819889595">&amp;Repetați ștergerea</translation>
-<translation id="6534179046333460208">Sugestii pentru Webul material</translation>
 <translation id="6545864417968258051">Căutare Bluetooth</translation>
 <translation id="6547208576736763147">Perforare dublă în stânga</translation>
 <translation id="6554795675067793129">Contul tău este administrat de <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1852,7 +1850,6 @@ Detalii suplimentare:
 <translation id="8790007591277257123">&amp;Repetați ștergerea</translation>
 <translation id="8792621596287649091">Este posibil să pierzi accesul la contul <ph name="ORG_NAME" /> sau să fii victima unui furt de identitate. Chromium îți recomandă să îți schimbi acum parola.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> a activat Chrome Enterprise Connectors în browser. Acești conectori au acces la o parte din datele tale.</translation>
-<translation id="8800988563907321413">Sugestiile pentru În apropiere sunt afișate aici</translation>
 <translation id="8805819170075074995">Intrarea din listă „<ph name="LANGUAGE_ID" />”: intrarea este ignorată deoarece este inclusă și în politica SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Decupare după fiecare pagină</translation>
 <translation id="8820817407110198400">Marcaje</translation>

@@ -82,6 +82,10 @@ std::string WebString::Utf8(UTF8ConversionMode mode) const {
   return String(impl_).Utf8(static_cast<WTF::UTF8ConversionMode>(mode));
 }
 
+WebString WebString::Substring(size_t pos, size_t len) const {
+  return String(impl_->Substring(pos, len));
+}
+
 WebString WebString::FromUTF8(const char* data, size_t length) {
   return String::FromUTF8(data, length);
 }

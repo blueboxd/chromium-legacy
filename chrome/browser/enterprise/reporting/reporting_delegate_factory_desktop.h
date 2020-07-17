@@ -9,10 +9,11 @@
 
 #include <memory>
 
-namespace enterprise_reporting {
+#include "chrome/browser/enterprise/reporting/report_generator.h"
+#include "components/enterprise/browser/reporting/browser_report_generator.h"
+#include "components/enterprise/browser/reporting/profile_report_generator.h"
 
-class BrowserReportGenerator;
-class ProfileReportGenerator;
+namespace enterprise_reporting {
 
 // Desktop implementation of the reporting delegate factory. Creates desktop-
 // specific delegates for the enterprise reporting classes.
@@ -30,6 +31,8 @@ class ReportingDelegateFactoryDesktop : public ReportingDelegateFactory {
 
   std::unique_ptr<ProfileReportGenerator::Delegate>
   GetProfileReportGeneratorDelegate() override;
+
+  std::unique_ptr<ReportGenerator::Delegate> GetReportGeneratorDelegate();
 };
 
 }  // namespace enterprise_reporting

@@ -9,14 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_refptr.h"
-#include "ui/gfx/x/x11.h"
-
-class SkBitmap;
-
-namespace gfx {
-class Point;
-}
+#include "ui/gfx/x/xproto.h"
 
 namespace ui {
 
@@ -27,27 +20,34 @@ class COMPONENT_EXPORT(UI_BASE_X) X11Cursor
  public:
   REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
-  // Handles creating X11 cursor resources from SkBitmap/hotspot.
-  X11Cursor(const SkBitmap& bitmap, const gfx::Point& hotspot);
+  using Callback = base::OnceCallback<void(x11::Cursor)>;
+
+  X11Cursor();
+  explicit X11Cursor(x11::Cursor cursor);
+
   X11Cursor(const X11Cursor&) = delete;
   X11Cursor& operator=(const X11Cursor&) = delete;
-  X11Cursor(const std::vector<SkBitmap>& bitmaps,
-            const gfx::Point& hotspot,
-            int frame_delay_ms);
-  // Wraps an X11 cursor |xcursor|.
-  explicit X11Cursor(::Cursor xcursor);
 
-  // Creates a new cursor that is invisible.
-  static scoped_refptr<X11Cursor> CreateInvisible();
+  void OnCursorLoaded(Callback callback);
 
-  ::Cursor xcursor() const { return xcursor_; }
+  bool loaded() const { return loaded_; }
+  x11::Cursor xcursor() const { return xcursor_; }
 
  private:
   friend class base::RefCounted<X11Cursor>;
+  friend class XCursorLoader;
+
+  void SetCursor(x11::Cursor cursor);
+
+  // This cannot be named Release() since it conflicts with base::RefCounted.
+  x11::Cursor ReleaseCursor();
 
   ~X11Cursor();
 
-  ::Cursor xcursor_ = x11::None;
+  bool loaded_ = false;
+  x11::Cursor xcursor_ = x11::Cursor::None;
+
+  std::vector<Callback> callbacks_;
 };
 
 }  // namespace ui

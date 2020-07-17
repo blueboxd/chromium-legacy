@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">përzgjidh</translation>
 <translation id="1859234291848436338">Drejtimi i shkrimit</translation>
 <translation id="1860796786778352021">Mbyllja e njoftimit</translation>
+<translation id="186476001994626254">Përmbajtja e ngjitjes inteligjente për ueb</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Zgjidhi &amp;të gjitha</translation>
@@ -75,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Hap dosjen</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 vit më parë}other{# vite më parë}}</translation>
+<translation id="2878511608894704031">Fshi të gjitha</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{në 1 ditë}other{në # ditë}}</translation>
 <translation id="2931838996092594335">kliko</translation>
 <translation id="2981684127883932071">Po shfaq sugjerimet</translation>
@@ -172,6 +174,7 @@
 <translation id="6417265370957905582">Asistenti i Google</translation>
 <translation id="6430678249303439055">Blloko të gjitha njoftimet nga ky aplikacion</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 sekondë më parë}other{# sekonda më parë}}</translation>
+<translation id="6503257047630241175">Përmbajtja në format RTF</translation>
 <translation id="6539092367496845964">Ndodhi një gabim. Provo përsëri më vonë.</translation>
 <translation id="654149438358937226">Blloko të gjitha njoftimet</translation>
 <translation id="6567071839949112727">kliko te paraardhësi</translation>

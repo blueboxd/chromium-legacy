@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1647391597548383849">Tillgång till din kamera</translation>
 <translation id="1660204651932907780">Tillåt att ljud spelas upp på webbplatser (rekommenderas)</translation>
+<translation id="1677097821151855053">Cookies och annan webbplatsdata används för att komma ihåg dig, till exempel vid inloggning och annonsanpassning. Du kan hantera cookies för alla webbplatser i <ph name="BEGIN_LINK" />inställningarna<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Vill du ta bort webbplatsdata?</translation>
 <translation id="169515064810179024">Blockera webbplatser från att använda enhetens rörelsesensorer</translation>
 <translation id="1717218214683051432">Rörelsesensorer</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Tillåt cookies för en enskild webbplats.</translation>
 <translation id="4046123991198612571">Nästa spår</translation>
 <translation id="4165986682804962316">Platsinställningar</translation>
+<translation id="4200726100658658164">Öppna platsinställningarna</translation>
 <translation id="4226663524361240545">Aviseringar kan göra att enheten vibrerar</translation>
 <translation id="4242533952199664413">Öppna Inställningar</translation>
 <translation id="4259722352634471385">Webbadressen har blockerats: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Alla webbplatser</translation>
 <translation id="6320088164292336938">Vibration</translation>
 <translation id="6388207532828177975">Ta bort och återställ</translation>
+<translation id="6423924377271166037">Rensa cookies</translation>
 <translation id="6439114592976064011">Blockera webbplatser från att använda VR-enheter och VR-data</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6527303717912515753">Dela</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Sök bakåt</translation>
 <translation id="8444433999583714703">Om du vill ge <ph name="APP_NAME" /> åtkomst till din plats måste du även aktivera plats i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Återkalla enhetsbehörighet</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie används}other{# cookies används}}</translation>
 <translation id="8463851957836045671">Webbplatsen är snabb</translation>
 <translation id="851751545965956758">Förhindra att webbplatser ansluter till enheter</translation>
 <translation id="857943718398505171">Tillåten (rekommenderas)</translation>

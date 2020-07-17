@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">Entrada em japonês (para teclado americano)</translation>
 <translation id="1047956942837015229">Excluindo <ph name="COUNT" /> itens...</translation>
 <translation id="1049926623896334335">Documento do Word</translation>
+<translation id="1060368002126861100">Para abrir arquivos usando <ph name="APP_NAME" />, primeiro os mova para a pasta de arquivos do Windows.</translation>
 <translation id="1062407476771304334">Substituir</translation>
 <translation id="1065449928621190041">Teclado canadense (francês)</translation>
 <translation id="1119069657431255176">Arquivo tar comprimido Bzip2</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">Atenção: esses arquivos são temporários e podem ser excluídos automaticamente para liberar espaço em disco.  <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="3549797760399244642">Ir para drive.google.com...</translation>
+<translation id="3553048479571901246">Para abrir arquivos usando <ph name="APP_NAME" />, primeiro os copie para a pasta de arquivos do Windows.</translation>
 <translation id="357479282490346887">Lituano</translation>
 <translation id="3583509704582854624">Entrada alfanumérica (para teclado japonês)</translation>
 <translation id="3603385196401704894">Francês canadense</translation>

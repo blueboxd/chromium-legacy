@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sq">
 <translation id="1008557486741366299">Jo tani</translation>
+<translation id="100957008357583611">Të përdoret vendndodhja jote?</translation>
 <translation id="1010200102790553230">Ngarkoje faqen më vonë</translation>
 <translation id="1015730422737071372">Jep detaje të tjera</translation>
 <translation id="1019413721762100891">Joaktive</translation>
@@ -424,7 +425,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2705137772291741111">Kopja e ruajtur (në memorien specifike) të këtij sajti ishte e palexueshme.</translation>
 <translation id="2709516037105925701">Plotëso automatikisht</translation>
 <translation id="2713444072780614174">E bardhë</translation>
-<translation id="2720342946869265578">Në afërsi</translation>
 <translation id="2721148159707890343">Kërkesa pati sukses</translation>
 <translation id="272451190272506600">Prek sensorët për të paguar</translation>
 <translation id="2728127805433021124">Certifikata e serverit është nënshkruar duke përdorur një algoritëm të dobët nënshkrimi.</translation>
@@ -719,7 +719,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="3990250421422698716">Zhvendosja e bordurës</translation>
 <translation id="3996311196211510766">Sajti <ph name="ORIGIN" /> ka kërkuar që të zbatohet një politikë e origjinës
     për të gjitha kërkesat drejtuar atij, por kjo politikë nuk mund të zbatohet aktualisht.</translation>
-<translation id="40103911065039147">{URL_count,plural, =1{1 faqe uebi në afërsi}other{# faqe uebi në afërsi}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Dokumenti PDF me {COUNT} faqe}other{Dokumenti PDF me {COUNT} faqe}}</translation>
 <translation id="4030383055268325496">&amp;Zhbëje shtimin</translation>
 <translation id="4032320456957708163">Shfletuesi yt menaxhohet nga <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -935,7 +934,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Ruaj...</translation>
 <translation id="4913987521957242411">Shpim lart majtas</translation>
-<translation id="4914479371620770914">{URL_count,plural, =1{dhe 1 faqe uebi më shumë}other{dhe # faqe uebi më shumë}}</translation>
 <translation id="4923459931733593730">Pagesa</translation>
 <translation id="4926049483395192435">Duhet të specifikohet.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> thotë</translation>
@@ -1176,6 +1174,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="5869405914158311789">Ky sajt është i paarritshëm</translation>
 <translation id="5869522115854928033">Fjalëkalimet e ruajtura</translation>
 <translation id="5887400589839399685">Karta u ruajt</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> kërkon që të rezervosh të dhënat e tua dhe ta kthesh këtë pajisje.</translation>
 <translation id="5895138241574237353">Rinis</translation>
 <translation id="5895187275912066135">Lëshuar më</translation>
 <translation id="5901630391730855834">E verdhë</translation>
@@ -1325,7 +1324,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6518133107902771759">Verifiko</translation>
 <translation id="6521745193039995384">Jo aktiv</translation>
 <translation id="6529602333819889595">&amp;Bëje përsëri fshirjen</translation>
-<translation id="6534179046333460208">Sugjerime të "Uebit fizik"</translation>
 <translation id="6545864417968258051">Skanimi për Bluetooth</translation>
 <translation id="6547208576736763147">Dy shpime majtas</translation>
 <translation id="6554795675067793129">Llogaria jote menaxhohet nga <ph name="ENROLLMENT_DOMAIN" />.</translation>
@@ -1847,7 +1845,6 @@ Detaje shtesë:
 <translation id="8790007591277257123">&amp;Bëje përsëri fshirjen</translation>
 <translation id="8792621596287649091">Mund të ndodhë që të humbësh qasjen në llogarinë tënde të <ph name="ORG_NAME" /> ose mund të pësosh vjedhje të identitetit. Chromium rekomandon që ta ndryshosh fjalëkalimin tani.</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> ka aktivizuar Chrome Enterprise Connectors në shfletuesin tënd. Këta bashkues kanë qasje te disa nga të dhënat e tua.</translation>
-<translation id="8800988563907321413">Sugjerimet e tua në afërsi shfaqen këtu</translation>
 <translation id="8805819170075074995">Hyrja e listës "<ph name="LANGUAGE_ID" />": Hyrja është shpërfillur sepse është e përfshirë edhe në politikën e SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Prerje pas çdo faqeje</translation>
 <translation id="8820817407110198400">Faqeshënuesit</translation>

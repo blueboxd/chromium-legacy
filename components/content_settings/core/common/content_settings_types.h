@@ -149,10 +149,12 @@ enum class ContentSettingsType : int32_t {
   WAKE_LOCK_SCREEN,
   WAKE_LOCK_SYSTEM,
 
-  // Legacy SameSite cookie behavior. This disables SameSiteByDefaultCookies
-  // and CookiesWithoutSameSiteMustBeSecure, and forces the legacy behavior
-  // where cookies that don't specify SameSite are treated as SameSite=None and
-  // SameSite=None cookies are not required to be Secure.
+  // Legacy SameSite cookie behavior. This disables SameSiteByDefaultCookies,
+  // CookiesWithoutSameSiteMustBeSecure, and SchemefulSameSite, forcing the
+  // legacy behavior wherein cookies that don't specify SameSite are treated as
+  // SameSite=None, SameSite=None cookies are not required to be Secure, and
+  // schemeful same-site is not active.
+  //
   // This will also be used to revert to legacy behavior when future changes
   // in cookie handling are introduced.
   LEGACY_COOKIE_ACCESS,

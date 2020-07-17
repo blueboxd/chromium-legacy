@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/task/current_thread.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/policy_bundle.h"
 
@@ -27,10 +27,10 @@ void MockConfigurationPolicyProvider::UpdateChromePolicy(
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .CopyFrom(policy);
   UpdatePolicy(std::move(bundle));
-  bool spin_run_loop = base::MessageLoopCurrent::IsSet();
+  bool spin_run_loop = base::CurrentThread::IsSet();
 #if defined(OS_IOS)
   // On iOS, the UI message loop does not support RunUntilIdle().
-  spin_run_loop &= !base::MessageLoopCurrentForUI::IsSet();
+  spin_run_loop &= !base::CurrentUIThread::IsSet();
 #endif  // defined(OS_IOS)
   if (spin_run_loop)
     base::RunLoop().RunUntilIdle();
@@ -43,7 +43,7 @@ void MockConfigurationPolicyProvider::UpdateExtensionPolicy(
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, extension_id))
       .CopyFrom(policy);
   UpdatePolicy(std::move(bundle));
-  if (base::MessageLoopCurrent::IsSet())
+  if (base::CurrentThread::IsSet())
     base::RunLoop().RunUntilIdle();
 }
 

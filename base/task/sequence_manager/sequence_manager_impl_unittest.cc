@@ -17,7 +17,6 @@
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/optional.h"
@@ -27,6 +26,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "base/task/sequence_manager/real_time_domain.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/task_queue.h"
@@ -4264,7 +4264,7 @@ class DestructionObserverProbe : public RefCounted<DestructionObserverProbe> {
   bool* destruction_observer_called_;
 };
 
-class SMDestructionObserver : public MessageLoopCurrent::DestructionObserver {
+class SMDestructionObserver : public CurrentThread::DestructionObserver {
  public:
   SMDestructionObserver(bool* task_destroyed, bool* destruction_observer_called)
       : task_destroyed_(task_destroyed),

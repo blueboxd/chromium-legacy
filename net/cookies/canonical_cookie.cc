@@ -589,6 +589,14 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
   // match the cookie-path.
   if (!IsOnPath(url.path()))
     status.AddExclusionReason(CookieInclusionStatus::EXCLUDE_NOT_ON_PATH);
+
+  // For LEGACY cookies we should always return the schemeless context,
+  // otherwise let GetContextForCookieInclusion() decide.
+  CookieOptions::SameSiteCookieContext::ContextType cookie_inclusion_context =
+      access_semantics == CookieAccessSemantics::LEGACY
+          ? options.same_site_cookie_context().context()
+          : options.same_site_cookie_context().GetContextForCookieInclusion();
+
   // Don't include same-site cookies for cross-site requests.
   CookieEffectiveSameSite effective_same_site =
       GetEffectiveSameSite(access_semantics);
@@ -601,20 +609,19 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
                               CookieEffectiveSameSite::COUNT);
   }
   UMA_HISTOGRAM_ENUMERATION(
-      "Cookie.RequestSameSiteContext",
-      options.same_site_cookie_context().GetContextForCookieInclusion(),
+      "Cookie.RequestSameSiteContext", cookie_inclusion_context,
       CookieOptions::SameSiteCookieContext::ContextType::COUNT);
 
   switch (effective_same_site) {
     case CookieEffectiveSameSite::STRICT_MODE:
-      if (options.same_site_cookie_context().GetContextForCookieInclusion() <
+      if (cookie_inclusion_context <
           CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_STRICT) {
         status.AddExclusionReason(
             CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT);
       }
       break;
     case CookieEffectiveSameSite::LAX_MODE:
-      if (options.same_site_cookie_context().GetContextForCookieInclusion() <
+      if (cookie_inclusion_context <
           CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX) {
         status.AddExclusionReason(
             (SameSite() == CookieSameSite::UNSPECIFIED)
@@ -626,7 +633,7 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
     // TODO(crbug.com/990439): Add a browsertest for this behavior.
     case CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE:
       DCHECK(SameSite() == CookieSameSite::UNSPECIFIED);
-      if (options.same_site_cookie_context().GetContextForCookieInclusion() <
+      if (cookie_inclusion_context <
           CookieOptions::SameSiteCookieContext::ContextType::
               SAME_SITE_LAX_METHOD_UNSAFE) {
         // TODO(chlily): Do we need a separate CookieInclusionStatus for this?
@@ -707,16 +714,22 @@ void CanonicalCookie::IsSetPermittedInContext(
     UMA_HISTOGRAM_BOOLEAN("Cookie.SameSiteNoneIsSecure", IsSecure());
   }
 
+  // For LEGACY cookies we should always return the schemeless context,
+  // otherwise let GetContextForCookieInclusion() decide.
+  CookieOptions::SameSiteCookieContext::ContextType cookie_inclusion_context =
+      access_semantics == CookieAccessSemantics::LEGACY
+          ? options.same_site_cookie_context().context()
+          : options.same_site_cookie_context().GetContextForCookieInclusion();
+
   access_result->effective_same_site = GetEffectiveSameSite(access_semantics);
   DCHECK(access_result->effective_same_site !=
          CookieEffectiveSameSite::UNDEFINED);
-
   switch (access_result->effective_same_site) {
     case CookieEffectiveSameSite::STRICT_MODE:
       // This intentionally checks for `< SAME_SITE_LAX`, as we allow
       // `SameSite=Strict` cookies to be set for top-level navigations that
       // qualify for receipt of `SameSite=Lax` cookies.
-      if (options.same_site_cookie_context().GetContextForCookieInclusion() <
+      if (cookie_inclusion_context <
           CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX) {
         DVLOG(net::cookie_util::kVlogSetCookies)
             << "Trying to set a `SameSite=Strict` cookie from a "
@@ -727,7 +740,7 @@ void CanonicalCookie::IsSetPermittedInContext(
       break;
     case CookieEffectiveSameSite::LAX_MODE:
     case CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE:
-      if (options.same_site_cookie_context().GetContextForCookieInclusion() <
+      if (cookie_inclusion_context <
           CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX) {
         if (SameSite() == CookieSameSite::UNSPECIFIED) {
           DVLOG(net::cookie_util::kVlogSetCookies)

@@ -307,7 +307,7 @@ class ChromeProvidedSharingOptionsProvider {
                 mActivity.getResources().getString(R.string.sharing_highlights),
                 (currentActivity)
                         -> {
-                    RecordUserAction.record("SharingHubAndroid.SharedHighlights");
+                    RecordUserAction.record("SharingHubAndroid.LinkToTextSelected");
                     RecordHistogram.recordMediumTimesHistogram(
                             "Sharing.SharingHubAndroid.TimeToShare",
                             System.currentTimeMillis() - mShareStartTime);

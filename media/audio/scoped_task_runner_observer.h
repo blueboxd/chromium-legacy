@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -23,7 +23,7 @@ namespace media {
 // NOTE: The class that inherits from this class must implement the
 // WillDestroyCurrentMessageLoop virtual method from DestructionObserver.
 class ScopedTaskRunnerObserver
-    : public base::MessageLoopCurrent::DestructionObserver {
+    : public base::CurrentThread::DestructionObserver {
  public:
   explicit ScopedTaskRunnerObserver(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);

@@ -43,7 +43,7 @@ void WizardInProcessBrowserTest::SetUpOnMainThread() {
 }
 
 void WizardInProcessBrowserTest::TearDownOnMainThread() {
-  ASSERT_TRUE(base::MessageLoopCurrentForUI::IsSet());
+  ASSERT_TRUE(base::CurrentUIThread::IsSet());
 
   if (!host_)
     return;

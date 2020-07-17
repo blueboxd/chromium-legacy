@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/native_library.h"
@@ -21,6 +20,7 @@
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/current_thread.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -58,7 +58,7 @@ GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2(
       max_extra_cycles_before_kill_(max_extra_cycles_before_kill),
       is_test_mode_(is_test_mode),
       watched_gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  base::MessageLoopCurrent::Get()->AddTaskObserver(this);
+  base::CurrentThread::Get()->AddTaskObserver(this);
   num_of_processors_ = base::SysInfo::NumberOfProcessors();
 
 #if defined(OS_WIN)
@@ -92,7 +92,7 @@ GpuWatchdogThreadImplV2::~GpuWatchdogThreadImplV2() {
 
   Stop();  // stop the watchdog thread
 
-  base::MessageLoopCurrent::Get()->RemoveTaskObserver(this);
+  base::CurrentThread::Get()->RemoveTaskObserver(this);
   base::PowerMonitor::RemoveObserver(this);
   GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogEnd);
 #if defined(OS_WIN)

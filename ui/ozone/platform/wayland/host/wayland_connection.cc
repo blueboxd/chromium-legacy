@@ -14,8 +14,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_util.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/geometry/point.h"
@@ -117,7 +117,7 @@ void WaylandConnection::ScheduleFlush() {
   // When we are in tests, the message loop is set later when the
   // initialization of the OzonePlatform complete. Thus, just
   // flush directly. This doesn't happen in normal run.
-  if (!base::MessageLoopCurrentForUI::IsSet()) {
+  if (!base::CurrentUIThread::IsSet()) {
     Flush();
   } else if (!scheduled_flush_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(

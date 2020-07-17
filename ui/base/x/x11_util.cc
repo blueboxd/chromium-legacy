@@ -27,7 +27,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -37,6 +36,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -97,7 +97,7 @@ int DefaultX11ErrorHandler(XDisplay* d, XErrorEvent* e) {
   if (TLSDestructionCheckerForX11::HasBeenDestroyed())
     return 0;
 
-  if (base::MessageLoopCurrent::Get()) {
+  if (base::CurrentThread::Get()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&x11::LogErrorEventDescription, *e));
   } else {

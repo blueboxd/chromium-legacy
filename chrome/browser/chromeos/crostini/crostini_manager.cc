@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_reporting_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_stability_monitor.h"
 #include "chrome/browser/chromeos/crostini/crostini_types.mojom.h"
+#include "chrome/browser/chromeos/crostini/crostini_upgrade_available_notification.h"
 #include "chrome/browser/chromeos/crostini/throttle/crostini_throttle.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
@@ -1052,6 +1053,10 @@ void CrostiniManager::MaybeUpdateCrostiniAfterChecks() {
     // Can't do a component Load with kForce when offline.
     VLOG(1) << "Not online, so can't check now for cros-termina upgrade.";
     return;
+  }
+  if (ShouldPromptContainerUpgrade(DefaultContainerId())) {
+    upgrade_available_notification_ =
+        CrostiniUpgradeAvailableNotification::Show(profile_, base::DoNothing());
   }
   InstallTerminaComponent(base::DoNothing());
 }

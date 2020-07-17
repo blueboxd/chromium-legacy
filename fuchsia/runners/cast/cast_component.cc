@@ -13,8 +13,8 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
+#include "base/task/current_thread.h"
 #include "fuchsia/base/agent_manager.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
@@ -206,7 +206,7 @@ void CastComponent::CreateViewWithViewRef(
     // Scenic View. It is merely used as a conduit for propagating termination
     // signals.
     headless_view_token_ = std::move(view_token);
-    base::MessageLoopCurrentForIO::Get()->WatchZxHandle(
+    base::CurrentIOThread::Get()->WatchZxHandle(
         headless_view_token_.get(), false /* persistent */,
         ZX_SOCKET_PEER_CLOSED, &headless_disconnect_watch_, this);
 

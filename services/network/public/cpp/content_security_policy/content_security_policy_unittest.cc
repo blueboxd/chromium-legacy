@@ -233,17 +233,19 @@ TEST(ContentSecurityPolicy, ParseFrameAncestors) {
     TestFrameAncestorsCSPParser(test.header, &test.expected_result);
 }
 
-TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
-  // First directive is valid, second one is ignored.
+TEST(ContentSecurityPolicy, ParseDirectives) {
+  // One duplicate directive.
   {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
     headers->SetHeader("Content-Security-Policy",
-                       "frame-ancestors example.com; other_directive "
-                       "value; frame-ancestors example.org");
+                       "frame-ancestors example.com; script-src "
+                       "example2.com; frame-ancestors example3.com");
     std::vector<mojom::ContentSecurityPolicyPtr> policies;
     AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                         &policies);
+    EXPECT_EQ(2U, policies[0]->directives.size());
+
     auto& frame_ancestors =
         policies[0]->directives[mojom::CSPDirectiveName::FrameAncestors];
     EXPECT_EQ(frame_ancestors->sources.size(), 1U);
@@ -254,18 +256,37 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     EXPECT_EQ(frame_ancestors->sources[0]->is_host_wildcard, false);
     EXPECT_EQ(frame_ancestors->sources[0]->is_port_wildcard, false);
     EXPECT_EQ(frame_ancestors->allow_self, false);
+
+    auto& script_src =
+        policies[0]->directives[mojom::CSPDirectiveName::ScriptSrc];
+    EXPECT_EQ(script_src->sources.size(), 1U);
+    EXPECT_EQ(script_src->sources[0]->scheme, "");
+    EXPECT_EQ(script_src->sources[0]->host, "example2.com");
+    EXPECT_EQ(script_src->sources[0]->port, url::PORT_UNSPECIFIED);
+    EXPECT_EQ(script_src->sources[0]->path, "");
+    EXPECT_EQ(script_src->sources[0]->is_host_wildcard, false);
+    EXPECT_EQ(script_src->sources[0]->is_port_wildcard, false);
+    EXPECT_EQ(script_src->allow_self, false);
+
+    EXPECT_EQ(1U, policies[0]->parsing_errors.size());
+    EXPECT_EQ(
+        "Ignoring duplicate Content-Security-Policy directive "
+        "'frame-ancestors'.",
+        policies[0]->parsing_errors[0]);
   }
 
-  // Skip the first directive, which is not frame-ancestors.
+  // One invalid directive.
   {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
     headers->SetHeader("Content-Security-Policy",
-                       "other_directive value; frame-ancestors "
+                       "other-directive value; frame-ancestors "
                        "example.org");
     std::vector<mojom::ContentSecurityPolicyPtr> policies;
     AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                         &policies);
+    EXPECT_EQ(1U, policies[0]->directives.size());
+
     auto& frame_ancestors =
         policies[0]->directives[mojom::CSPDirectiveName::FrameAncestors];
     EXPECT_EQ(frame_ancestors->sources.size(), 1U);
@@ -277,6 +298,143 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     EXPECT_EQ(frame_ancestors->sources[0]->is_port_wildcard, false);
     EXPECT_EQ(frame_ancestors->allow_self, false);
     EXPECT_EQ(frame_ancestors->allow_star, false);
+
+    EXPECT_EQ(1U, policies[0]->parsing_errors.size());
+    EXPECT_EQ(
+        "Unrecognized Content-Security-Policy directive 'other-directive'.",
+        policies[0]->parsing_errors[0]);
+  }
+
+  // Invalid characters in directive name.
+  {
+    scoped_refptr<net::HttpResponseHeaders> headers(
+        new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+    headers->SetHeader("Content-Security-Policy",
+                       "frame_ancestors example.com;");
+    std::vector<mojom::ContentSecurityPolicyPtr> policies;
+    AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                        &policies);
+    EXPECT_TRUE(policies[0]->directives.empty());
+
+    EXPECT_EQ(1U, policies[0]->parsing_errors.size());
+    EXPECT_EQ(
+        "The Content-Security-Policy directive name 'frame_ancestors' contains "
+        "one or more invalid characters. Only ASCII alphanumeric characters or "
+        "dashes '-' are allowed in directive names.",
+        policies[0]->parsing_errors[0]);
+  }
+
+  // Invalid characters in directive value.
+  {
+    scoped_refptr<net::HttpResponseHeaders> headers(
+        new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+    headers->SetHeader("Content-Security-Policy", "frame-ancestors ü.com;");
+    std::vector<mojom::ContentSecurityPolicyPtr> policies;
+    AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                        &policies);
+    EXPECT_TRUE(policies[0]->directives.empty());
+
+    EXPECT_EQ(1U, policies[0]->parsing_errors.size());
+    EXPECT_EQ(
+        "The value for the Content-Security-Policy directive 'frame-ancestors' "
+        "contains one or more invalid characters. Non-whitespace characters "
+        "outside ASCII 0x21-0x7E must be percent-encoded, as described in RFC "
+        "3986, section 2.1: http://tools.ietf.org/html/rfc3986#section-2.1.",
+        policies[0]->parsing_errors[0]);
+  }
+
+  // Missing semicolon between directive names.
+  {
+    scoped_refptr<net::HttpResponseHeaders> headers(
+        new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+    headers->SetHeader("Content-Security-Policy", "frame-ancestors object-src");
+    std::vector<mojom::ContentSecurityPolicyPtr> policies;
+    AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                        &policies);
+    EXPECT_EQ(1U, policies[0]->directives.size());
+
+    auto& frame_ancestors =
+        policies[0]->directives[mojom::CSPDirectiveName::FrameAncestors];
+    EXPECT_EQ(frame_ancestors->sources.size(), 1U);
+    EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
+    EXPECT_EQ(frame_ancestors->sources[0]->host, "object-src");
+    EXPECT_EQ(frame_ancestors->sources[0]->port, url::PORT_UNSPECIFIED);
+    EXPECT_EQ(frame_ancestors->sources[0]->path, "");
+    EXPECT_EQ(frame_ancestors->sources[0]->is_host_wildcard, false);
+    EXPECT_EQ(frame_ancestors->sources[0]->is_port_wildcard, false);
+    EXPECT_EQ(frame_ancestors->allow_self, false);
+    EXPECT_EQ(frame_ancestors->allow_star, false);
+
+    EXPECT_EQ(1U, policies[0]->parsing_errors.size());
+    EXPECT_EQ(
+        "The Content-Security-Policy directive 'frame-ancestors' contains "
+        "'object-src' as a source expression. Did you want to add it as a "
+        "directive and forget a semicolon?",
+        policies[0]->parsing_errors[0]);
+  }
+
+  // Path containing query.
+  {
+    scoped_refptr<net::HttpResponseHeaders> headers(
+        new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+    headers->SetHeader("Content-Security-Policy",
+                       "frame-ancestors http://example.org/index.html?a=b;");
+    std::vector<mojom::ContentSecurityPolicyPtr> policies;
+    AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                        &policies);
+    EXPECT_EQ(1U, policies[0]->directives.size());
+
+    auto& frame_ancestors =
+        policies[0]->directives[mojom::CSPDirectiveName::FrameAncestors];
+    EXPECT_EQ(frame_ancestors->sources.size(), 1U);
+    EXPECT_EQ(frame_ancestors->sources[0]->scheme, "http");
+    EXPECT_EQ(frame_ancestors->sources[0]->host, "example.org");
+    EXPECT_EQ(frame_ancestors->sources[0]->port, url::PORT_UNSPECIFIED);
+    EXPECT_EQ(frame_ancestors->sources[0]->path, "/index.html");
+    EXPECT_EQ(frame_ancestors->sources[0]->is_host_wildcard, false);
+    EXPECT_EQ(frame_ancestors->sources[0]->is_port_wildcard, false);
+    EXPECT_EQ(frame_ancestors->allow_self, false);
+    EXPECT_EQ(frame_ancestors->allow_star, false);
+
+    EXPECT_EQ(1U, policies[0]->parsing_errors.size());
+    EXPECT_EQ(
+        "The source list for Content-Security-Policy directive "
+        "'frame-ancestors' contains a source with an invalid path: "
+        "'/index.html?a=b'. The query component, including the '?', will be "
+        "ignored.",
+        policies[0]->parsing_errors[0]);
+  }
+
+  // Path containing ref.
+  {
+    scoped_refptr<net::HttpResponseHeaders> headers(
+        new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+    headers->SetHeader("Content-Security-Policy",
+                       "frame-ancestors http://example.org/index.html#a;");
+    std::vector<mojom::ContentSecurityPolicyPtr> policies;
+    AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                        &policies);
+    EXPECT_EQ(1U, policies[0]->directives.size());
+
+    auto& frame_ancestors =
+        policies[0]->directives[mojom::CSPDirectiveName::FrameAncestors];
+    EXPECT_EQ(frame_ancestors->sources.size(), 1U);
+    EXPECT_EQ(frame_ancestors->sources[0]->scheme, "http");
+    EXPECT_EQ(frame_ancestors->sources[0]->host, "example.org");
+    EXPECT_EQ(frame_ancestors->sources[0]->port, url::PORT_UNSPECIFIED);
+    EXPECT_EQ(frame_ancestors->sources[0]->path, "/index.html");
+    EXPECT_EQ(frame_ancestors->sources[0]->is_host_wildcard, false);
+    EXPECT_EQ(frame_ancestors->sources[0]->is_port_wildcard, false);
+    EXPECT_EQ(frame_ancestors->allow_self, false);
+    EXPECT_EQ(frame_ancestors->allow_star, false);
+
+    EXPECT_EQ(1U, policies[0]->parsing_errors.size());
+    EXPECT_EQ(
+        "The source list for Content-Security-Policy directive "
+        "'frame-ancestors' contains a source with an invalid path: "
+        "'/index.html#a'. The fragment identifier, including the '#', will be "
+        "ignored.",
+        policies[0]->parsing_errors[0]);
   }
 
   // Multiple CSP headers with multiple frame-ancestors directives present.
@@ -323,7 +481,7 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
     headers->SetHeader("Content-Security-Policy",
-                       "other_directive value, frame-ancestors example.org");
+                       "other-directive value, frame-ancestors example.org");
     std::vector<mojom::ContentSecurityPolicyPtr> policies;
     AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                         &policies);
@@ -809,6 +967,7 @@ TEST(ContentSecurityPolicy, ParseSerializedSourceList) {
   struct TestCase {
     std::string directive_value;
     base::Callback<mojom::CSPSourceListPtr()> expected;
+    std::string expected_error;
   } cases[] = {
       {
           "'nonce-a' 'nonce-a=' 'nonce-a==' 'nonce-a===' 'nonce-==' 'nonce-' "
@@ -823,6 +982,7 @@ TEST(ContentSecurityPolicy, ParseSerializedSourceList) {
             csp->nonces.push_back("cde==");
             return csp;
           }),
+          "",
       },
       {
           "'sha256-abc' 'sha256-ABC' 'sha256 'sha256-' 'sha384-abc' "
@@ -846,13 +1006,39 @@ TEST(ContentSecurityPolicy, ParseSerializedSourceList) {
                 mojom::CSPHashAlgorithm::SHA512, "cde"));
             return csp;
           }),
+          "",
       },
       {
           "'none' ",
           base::Bind([] { return mojom::CSPSourceList::New(); }),
+          "",
       },
       {
-          "'wrong' 'self'",
+          "'none' 'self'",
+          base::Bind([] {
+            auto csp = mojom::CSPSourceList::New();
+            csp->allow_self = true;
+            return csp;
+          }),
+          "The Content-Security-Policy directive 'script-src' contains the "
+          "keyword 'none' alongside with other source expressions. The keyword "
+          "'none' must be the only source expression in the directive value, "
+          "otherwise it is ignored.",
+      },
+      {
+          "'self' 'none'",
+          base::Bind([] {
+            auto csp = mojom::CSPSourceList::New();
+            csp->allow_self = true;
+            return csp;
+          }),
+          "The Content-Security-Policy directive 'script-src' contains the "
+          "keyword 'none' alongside with other source expressions. The keyword "
+          "'none' must be the only source expression in the directive value, "
+          "otherwise it is ignored.",
+      },
+      {
+          "'self'",
           base::Bind([] {
             auto csp = mojom::CSPSourceList::New();
             csp->allow_self = true;
@@ -866,6 +1052,8 @@ TEST(ContentSecurityPolicy, ParseSerializedSourceList) {
             csp->allow_star = true;
             return csp;
           }),
+          "The source list for the Content-Security-Policy directive "
+          "'script-src' contains an invalid source: ''wrong''.",
       },
       {
           "'wrong' 'unsafe-inline'",
@@ -874,6 +1062,8 @@ TEST(ContentSecurityPolicy, ParseSerializedSourceList) {
             csp->allow_inline = true;
             return csp;
           }),
+          "The source list for the Content-Security-Policy directive "
+          "'script-src' contains an invalid source: ''wrong''.",
       },
       {
           "'wrong' 'unsafe-eval'",
@@ -882,6 +1072,8 @@ TEST(ContentSecurityPolicy, ParseSerializedSourceList) {
             csp->allow_eval = true;
             return csp;
           }),
+          "The source list for the Content-Security-Policy directive "
+          "'script-src' contains an invalid source: ''wrong''.",
       },
       {
           "'wrong' 'wasm-eval'",
@@ -890,6 +1082,8 @@ TEST(ContentSecurityPolicy, ParseSerializedSourceList) {
             csp->allow_wasm_eval = true;
             return csp;
           }),
+          "The source list for the Content-Security-Policy directive "
+          "'script-src' contains an invalid source: ''wrong''.",
       },
       {
           "'wrong' 'strict-dynamic'",
@@ -898,6 +1092,8 @@ TEST(ContentSecurityPolicy, ParseSerializedSourceList) {
             csp->allow_dynamic = true;
             return csp;
           }),
+          "The source list for the Content-Security-Policy directive "
+          "'script-src' contains an invalid source: ''wrong''.",
       },
       {
           "'wrong' 'unsafe-hashes'",
@@ -906,6 +1102,8 @@ TEST(ContentSecurityPolicy, ParseSerializedSourceList) {
             csp->allow_unsafe_hashes = true;
             return csp;
           }),
+          "The source list for the Content-Security-Policy directive "
+          "'script-src' contains an invalid source: ''wrong''.",
       },
       {
           "'wrong' 'report-sample'",
@@ -914,6 +1112,8 @@ TEST(ContentSecurityPolicy, ParseSerializedSourceList) {
             csp->report_sample = true;
             return csp;
           }),
+          "The source list for the Content-Security-Policy directive "
+          "'script-src' contains an invalid source: ''wrong''.",
       },
   };
 
@@ -928,6 +1128,9 @@ TEST(ContentSecurityPolicy, ParseSerializedSourceList) {
                                         &policies);
     EXPECT_TRUE(test.expected.Run().Equals(
         policies[0]->directives[mojom::CSPDirectiveName::ScriptSrc]));
+
+    if (!test.expected_error.empty())
+      EXPECT_EQ(test.expected_error, policies[0]->parsing_errors[0]);
   }
 }
 

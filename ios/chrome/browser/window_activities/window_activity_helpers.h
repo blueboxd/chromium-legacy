@@ -41,10 +41,6 @@ typedef NS_ENUM(NSInteger, WindowActivityOrigin) {
 // Helper functions to create NSUserActivity instances that encode specific
 // actions in the browser, and to decode those actions from those activities.
 
-// Create a new activity that opens a new, empty tab. |in_incognito| indicates
-// if the new tab should be incognito.
-NSUserActivity* ActivityToOpenNewTab(bool in_incognito);
-
 // Create a new activity that opens a new tab, loading |url| with the referrer
 // |referrer|. |in_incognito| indicates if the new tab should be incognito.
 NSUserActivity* ActivityToLoadURL(WindowActivityOrigin origin,
@@ -63,6 +59,10 @@ NSUserActivity* ActivityToMoveTab(NSString* tab_id);
 // true if |activity| is one that indicates a URL load (including loading the
 // new tab page in a new tab).
 bool ActivityIsURLLoad(NSUserActivity* activity);
+
+// true if |activity| is one that indicates a URL load (including loading the
+// new tab page in a new tab) in normal mode.
+bool ActivityIsURLLoadInNormalMode(NSUserActivity* activity);
 
 // true if |activity| is one that indicates a tab move.
 bool ActivityIsTabMove(NSUserActivity* activity);

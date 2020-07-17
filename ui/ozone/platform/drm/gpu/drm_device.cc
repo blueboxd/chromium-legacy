@@ -16,8 +16,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
+#include "base/task/current_thread.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -206,19 +206,19 @@ class DrmDevice::IOWatcher : public base::MessagePumpLibevent::FdWatcher {
 
  private:
   void Register() {
-    DCHECK(base::MessageLoopCurrentForIO::IsSet());
-    base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+    DCHECK(base::CurrentIOThread::IsSet());
+    base::CurrentIOThread::Get()->WatchFileDescriptor(
         fd_, true, base::MessagePumpForIO::WATCH_READ, &controller_, this);
   }
 
   void Unregister() {
-    DCHECK(base::MessageLoopCurrentForIO::IsSet());
+    DCHECK(base::CurrentIOThread::IsSet());
     controller_.StopWatchingFileDescriptor();
   }
 
   // base::MessagePumpLibevent::FdWatcher overrides:
   void OnFileCanReadWithoutBlocking(int fd) override {
-    DCHECK(base::MessageLoopCurrentForIO::IsSet());
+    DCHECK(base::CurrentIOThread::IsSet());
     TRACE_EVENT1("drm", "OnDrmEvent", "socket", fd);
 
     if (!ProcessDrmEvent(

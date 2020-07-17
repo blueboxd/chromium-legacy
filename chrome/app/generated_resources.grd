@@ -7745,6 +7745,18 @@ the Bookmarks menu.">
         Cancel sign in
       </message>
 
+      <!-- Dice Web Signin Interception Bubble-->
+      <if expr="not chromeos and not is_android">
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_BUBBLE_TITLE" desc="Title of the web signin interception bubble">
+          Create Work Profile?
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_NEW_PROFILE_BUTTON_LABEL" desc="Label of the confirmation button in the web signin interception bubble">
+          New Profile
+        </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CANCEL_BUTTON_LABEL" desc="Label of the cancel button in the web signin interception bubble">
+          Cancel
+        </message>
+      </if>
 
       <!-- Signin Error tab modal dialog -->
       <message name="IDS_SIGNIN_ERROR_TITLE" desc="Title of the signin error tab modal dialog.">

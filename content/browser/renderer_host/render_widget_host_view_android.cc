@@ -1104,6 +1104,10 @@ bool RenderWidgetHostViewAndroid::RequestRepaintForTesting() {
 void RenderWidgetHostViewAndroid::FrameTokenChangedForSynchronousCompositor(
     uint32_t frame_token,
     const gfx::ScrollOffset& root_scroll_offset) {
+  if (!viz::FrameTokenGT(frame_token, sync_compositor_last_frame_token_))
+    return;
+  sync_compositor_last_frame_token_ = frame_token;
+
   if (host() && frame_token) {
     if (!using_viz_for_webview_) {
       // For viz it's reported through FrameSinkManager.

@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/pending_task.h"
@@ -24,6 +23,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/task/task_observer.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -304,7 +304,7 @@ void PostNTasks(int posts_remaining) {
 #if defined(OS_WIN)
 
 void SubPumpFunc(OnceClosure on_done) {
-  MessageLoopCurrent::ScopedAllowApplicationTasksInNativeNestedLoop
+  CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop
       allow_nestable_tasks;
   MSG msg;
   while (::GetMessage(&msg, NULL, 0, 0)) {
@@ -321,7 +321,7 @@ const wchar_t kMessageBoxTitle[] = L"SingleThreadTaskExecutor Unit Test";
 // can cause implicit message loops.
 void MessageBoxFunc(TaskList* order, int cookie, bool is_reentrant) {
   order->RecordStart(MESSAGEBOX, cookie);
-  Optional<MessageLoopCurrent::ScopedAllowApplicationTasksInNativeNestedLoop>
+  Optional<CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop>
       maybe_allow_nesting;
   if (is_reentrant)
     maybe_allow_nesting.emplace();
@@ -428,7 +428,7 @@ TestIOHandler::TestIOHandler(const wchar_t* name, HANDLE signal, bool wait)
 }
 
 void TestIOHandler::Init() {
-  MessageLoopCurrentForIO::Get()->RegisterIOHandler(file_.Get(), this);
+  CurrentIOThread::Get()->RegisterIOHandler(file_.Get(), this);
 
   DWORD read;
   EXPECT_FALSE(ReadFile(file_.Get(), buffer_, size(), &read, context()));
@@ -445,8 +445,8 @@ void TestIOHandler::OnIOCompleted(MessagePumpForIO::IOContext* context,
 }
 
 void TestIOHandler::WaitForIO() {
-  EXPECT_TRUE(MessageLoopCurrentForIO::Get()->WaitForIOCompletion(300, this));
-  EXPECT_TRUE(MessageLoopCurrentForIO::Get()->WaitForIOCompletion(400, this));
+  EXPECT_TRUE(CurrentIOThread::Get()->WaitForIOCompletion(300, this));
+  EXPECT_TRUE(CurrentIOThread::Get()->WaitForIOCompletion(400, this));
 }
 
 void RunTest_IOHandler() {
@@ -1338,7 +1338,7 @@ TEST_P(SingleThreadTaskExecutorTypedTest, MAYBE_RecursivePosts) {
 
 TEST_P(SingleThreadTaskExecutorTypedTest, NestableTasksAllowedAtTopLevel) {
   SingleThreadTaskExecutor executor(GetParam());
-  EXPECT_TRUE(MessageLoopCurrent::Get()->NestableTasksAllowed());
+  EXPECT_TRUE(CurrentThread::Get()->NestableTasksAllowed());
 }
 
 // Nestable tasks shouldn't be allowed to run reentrantly by default (regression
@@ -1350,7 +1350,7 @@ TEST_P(SingleThreadTaskExecutorTypedTest, NestableTasksDisallowedByDefault) {
       FROM_HERE,
       BindOnce(
           [](RunLoop* run_loop) {
-            EXPECT_FALSE(MessageLoopCurrent::Get()->NestableTasksAllowed());
+            EXPECT_FALSE(CurrentThread::Get()->NestableTasksAllowed());
             run_loop->Quit();
           },
           Unretained(&run_loop)));
@@ -1379,7 +1379,7 @@ TEST_P(SingleThreadTaskExecutorTypedTest,
                       // nestable tasks are by default disallowed from this
                       // layer.
                       EXPECT_FALSE(
-                          MessageLoopCurrent::Get()->NestableTasksAllowed());
+                          CurrentThread::Get()->NestableTasksAllowed());
                       nested_run_loop->Quit();
                     },
                     Unretained(&nested_run_loop)));
@@ -1400,11 +1400,11 @@ TEST_P(SingleThreadTaskExecutorTypedTest,
       BindOnce(
           [](RunLoop* run_loop) {
             {
-              MessageLoopCurrent::ScopedAllowApplicationTasksInNativeNestedLoop
+              CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop
                   allow_nestable_tasks;
-              EXPECT_TRUE(MessageLoopCurrent::Get()->NestableTasksAllowed());
+              EXPECT_TRUE(CurrentThread::Get()->NestableTasksAllowed());
             }
-            EXPECT_FALSE(MessageLoopCurrent::Get()->NestableTasksAllowed());
+            EXPECT_FALSE(CurrentThread::Get()->NestableTasksAllowed());
             run_loop->Quit();
           },
           Unretained(&run_loop)));
@@ -1413,22 +1413,22 @@ TEST_P(SingleThreadTaskExecutorTypedTest,
 
 TEST_P(SingleThreadTaskExecutorTypedTest, IsIdleForTesting) {
   SingleThreadTaskExecutor executor(GetParam());
-  EXPECT_TRUE(MessageLoopCurrent::Get()->IsIdleForTesting());
+  EXPECT_TRUE(CurrentThread::Get()->IsIdleForTesting());
   executor.task_runner()->PostTask(FROM_HERE, BindOnce([]() {}));
   executor.task_runner()->PostDelayedTask(FROM_HERE, BindOnce([]() {}),
                                           TimeDelta::FromMilliseconds(10));
-  EXPECT_FALSE(MessageLoopCurrent::Get()->IsIdleForTesting());
+  EXPECT_FALSE(CurrentThread::Get()->IsIdleForTesting());
   RunLoop().RunUntilIdle();
-  EXPECT_TRUE(MessageLoopCurrent::Get()->IsIdleForTesting());
+  EXPECT_TRUE(CurrentThread::Get()->IsIdleForTesting());
 
   PlatformThread::Sleep(TimeDelta::FromMilliseconds(20));
-  EXPECT_TRUE(MessageLoopCurrent::Get()->IsIdleForTesting());
+  EXPECT_TRUE(CurrentThread::Get()->IsIdleForTesting());
 }
 
 TEST_P(SingleThreadTaskExecutorTypedTest, IsIdleForTestingNonNestableTask) {
   SingleThreadTaskExecutor executor(GetParam());
   RunLoop run_loop;
-  EXPECT_TRUE(MessageLoopCurrent::Get()->IsIdleForTesting());
+  EXPECT_TRUE(CurrentThread::Get()->IsIdleForTesting());
   bool nested_task_run = false;
   executor.task_runner()->PostTask(
       FROM_HERE, BindLambdaForTesting([&]() {
@@ -1440,18 +1440,18 @@ TEST_P(SingleThreadTaskExecutorTypedTest, IsIdleForTestingNonNestableTask) {
         executor.task_runner()->PostTask(
             FROM_HERE, BindLambdaForTesting([&]() {
               EXPECT_FALSE(nested_task_run);
-              EXPECT_TRUE(MessageLoopCurrent::Get()->IsIdleForTesting());
+              EXPECT_TRUE(CurrentThread::Get()->IsIdleForTesting());
             }));
 
         nested_run_loop.RunUntilIdle();
         EXPECT_FALSE(nested_task_run);
-        EXPECT_FALSE(MessageLoopCurrent::Get()->IsIdleForTesting());
+        EXPECT_FALSE(CurrentThread::Get()->IsIdleForTesting());
       }));
 
   run_loop.RunUntilIdle();
 
   EXPECT_TRUE(nested_task_run);
-  EXPECT_TRUE(MessageLoopCurrent::Get()->IsIdleForTesting());
+  EXPECT_TRUE(CurrentThread::Get()->IsIdleForTesting());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -1706,7 +1706,7 @@ TEST(SingleThreadTaskExecutorTest,
   // This test ensures that application tasks are being processed by the native
   // subpump despite the kMsgHaveWork event having already been consumed by the
   // time the subpump is entered. This is subtly enforced by
-  // MessageLoopCurrent::ScopedAllowApplicationTasksInNativeNestedLoop which
+  // CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop which
   // will ScheduleWork() upon construction (and if it's absent, the
   // SingleThreadTaskExecutor shouldn't process application tasks so
   // kMsgHaveWork is irrelevant). Note: This test also fails prior to the fix
@@ -1959,7 +1959,7 @@ class DestructionObserverProbe : public RefCounted<DestructionObserverProbe> {
   bool* destruction_observer_called_;
 };
 
-class MLDestructionObserver : public MessageLoopCurrent::DestructionObserver {
+class MLDestructionObserver : public CurrentThread::DestructionObserver {
  public:
   MLDestructionObserver(bool* task_destroyed, bool* destruction_observer_called)
       : task_destroyed_(task_destroyed),
@@ -1991,7 +1991,7 @@ TEST(SingleThreadTaskExecutorTest, DestructionObserverTest) {
   bool destruction_observer_called = false;
 
   MLDestructionObserver observer(&task_destroyed, &destruction_observer_called);
-  MessageLoopCurrent::Get()->AddDestructionObserver(&observer);
+  CurrentThread::Get()->AddDestructionObserver(&observer);
   executor->task_runner()->PostDelayedTask(
       FROM_HERE,
       BindOnce(&DestructionObserverProbe::Run,
@@ -2078,7 +2078,7 @@ LRESULT CALLBACK TestWndProcThunk(HWND hwnd,
     case 2:
       // Since we're about to enter a modal loop, tell the message loop that we
       // intend to nest tasks.
-      MessageLoopCurrent::ScopedAllowApplicationTasksInNativeNestedLoop
+      CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop
           allow_nestable_tasks;
       bool did_run = false;
       ThreadTaskRunnerHandle::Get()->PostTask(

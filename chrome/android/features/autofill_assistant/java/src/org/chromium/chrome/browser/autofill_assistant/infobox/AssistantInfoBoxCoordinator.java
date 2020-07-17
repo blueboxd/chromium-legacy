@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiController;
 import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxViewBinder.ViewHolder;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
@@ -24,7 +25,8 @@ public class AssistantInfoBoxCoordinator {
 
     public AssistantInfoBoxCoordinator(Context context, AssistantInfoBoxModel model) {
         this(context, model,
-                ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY));
+                ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY,
+                        AutofillAssistantUiController.getProfile()));
     }
 
     /** Used for testing to inject an image fetcher. */

@@ -1495,11 +1495,12 @@ interface TransformStream
     getter readable
     getter writable
     method constructor
-interface TrustedTypePolicyFactory
+interface TrustedTypePolicyFactory : EventTarget
     attribute @@toStringTag
     getter defaultPolicy
     getter emptyHTML
     getter emptyScript
+    getter onbeforecreatepolicy
     method constructor
     method createPolicy
     method getAttributeType
@@ -1508,6 +1509,7 @@ interface TrustedTypePolicyFactory
     method isHTML
     method isScript
     method isScriptURL
+    setter onbeforecreatepolicy
 interface URL
     attribute @@toStringTag
     getter hash

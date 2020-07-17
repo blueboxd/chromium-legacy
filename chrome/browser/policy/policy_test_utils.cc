@@ -5,9 +5,9 @@
 #include "chrome/browser/policy/policy_test_utils.h"
 
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/current_thread.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
@@ -189,7 +189,7 @@ void PolicyTest::UpdateProviderPolicy(const PolicyMap& policy) {
   SetEnterpriseUsersDefaults(&policy_with_defaults);
 #endif
   provider_.UpdateChromePolicy(policy_with_defaults);
-  DCHECK(base::MessageLoopCurrent::Get());
+  DCHECK(base::CurrentThread::Get());
   base::RunLoop loop;
   loop.RunUntilIdle();
 }

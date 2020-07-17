@@ -35,7 +35,7 @@
 #include "third_party/blink/public/web/modules/media/webmediaplayer_util.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_local_frame_wrapper.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream_renderer_factory_impl.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_renderer_factory.h"
 #include "third_party/blink/renderer/modules/mediastream/webmediaplayer_ms_compositor.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
@@ -319,7 +319,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       paused_(true),
       video_transformation_(media::kNoTransformation),
       media_log_(std::move(media_log)),
-      renderer_factory_(std::make_unique<MediaStreamRendererFactoryImpl>()),
+      renderer_factory_(std::make_unique<MediaStreamRendererFactory>()),
       main_render_task_runner_(std::move(main_render_task_runner)),
       io_task_runner_(std::move(io_task_runner)),
       compositor_task_runner_(std::move(compositor_task_runner)),
@@ -1319,7 +1319,7 @@ void WebMediaPlayerMS::SetGpuMemoryBufferVideoForTesting(
 }
 
 void WebMediaPlayerMS::SetMediaStreamRendererFactoryForTesting(
-    std::unique_ptr<WebMediaStreamRendererFactory> renderer_factory) {
+    std::unique_ptr<MediaStreamRendererFactory> renderer_factory) {
   renderer_factory_ = std::move(renderer_factory);
 }
 

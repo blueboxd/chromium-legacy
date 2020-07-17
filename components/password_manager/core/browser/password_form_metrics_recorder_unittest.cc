@@ -14,6 +14,7 @@
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -1115,6 +1116,7 @@ TEST(PasswordFormMetricsRecorder, FilledValueMatchesSavedUsernameAndPassword) {
            PasswordFormMetricsRecorder::FillingAssistance::kAutomatic});
 }
 
+#if !defined(OS_IOS)
 struct FillingSourceTestCase {
   std::vector<TestCaseFieldInfo> fields;
 
@@ -1550,5 +1552,6 @@ TEST(PasswordFormMetricsRecorder, StoresUsedForFillingInLast7And28DaysExpiry) {
         PasswordFormMetricsRecorder::FillingSource::kNotFilled, 1);
   }
 }
+#endif
 
 }  // namespace password_manager

@@ -7,8 +7,8 @@
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
@@ -139,8 +139,8 @@ TEST(BrowserTaskEnvironmentTest, TraitsConstructor) {
       BrowserTaskEnvironment::Options::REAL_IO_THREAD,
       base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED);
   // Should set up a UI main thread.
-  EXPECT_TRUE(base::MessageLoopCurrentForUI::IsSet());
-  EXPECT_FALSE(base::MessageLoopCurrentForIO::IsSet());
+  EXPECT_TRUE(base::CurrentUIThread::IsSet());
+  EXPECT_FALSE(base::CurrentIOThread::IsSet());
 
   // Should create a real IO thread. If it was on the same thread the following
   // will timeout.
@@ -171,8 +171,8 @@ TEST(BrowserTaskEnvironmentTest, TraitsConstructorOverrideMainThreadType) {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
   // Should set up a UI main thread.
-  EXPECT_TRUE(base::MessageLoopCurrentForUI::IsSet());
-  EXPECT_FALSE(base::MessageLoopCurrentForIO::IsSet());
+  EXPECT_TRUE(base::CurrentUIThread::IsSet());
+  EXPECT_FALSE(base::CurrentIOThread::IsSet());
 
   // There should be a mock clock.
   EXPECT_THAT(task_environment.GetMockClock(), testing::NotNull());

@@ -1462,12 +1462,6 @@ TEST_F(ServiceWorkerUpdateJobTest, RegisterWithDifferentUpdateViaCache) {
   scoped_refptr<ServiceWorkerRegistration> new_registration =
       RunRegisterJob(script_url, options);
 
-  // Update check succeeds but no update is found.
-  histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
-                                     blink::ServiceWorkerStatusCode::kOk, 1);
-  histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
-                                     false, 1);
-
   // Ensure that the registration object is not copied.
   EXPECT_EQ(old_registration, new_registration);
   EXPECT_EQ(blink::mojom::ServiceWorkerUpdateViaCache::kNone,
@@ -1501,12 +1495,6 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_NoChange) {
       registration->active_version();
   first_version->StartUpdate();
   base::RunLoop().RunUntilIdle();
-
-  // Update check succeeds but no update is found.
-  histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
-                                     blink::ServiceWorkerStatusCode::kOk, 1);
-  histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
-                                     false, 1);
 
   // Verify results.
   ASSERT_TRUE(registration->active_version());
@@ -1543,12 +1531,6 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(kToday, registration->last_update_check());
     EXPECT_FALSE(update_helper_->update_found_);
-
-    // Update check succeeds but no update is found.
-    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
-                                       blink::ServiceWorkerStatusCode::kOk, 1);
-    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
-                                       false, 1);
   }
 
   // Run an update where the script did not change and the network was
@@ -1568,11 +1550,6 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
     registration->RemoveListener(update_helper_);
     registration = update_helper_->SetupInitialRegistration(kNewVersionOrigin);
     ASSERT_TRUE(registration.get());
-    // Update check succeeds but no update is found.
-    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
-                                       blink::ServiceWorkerStatusCode::kOk, 1);
-    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
-                                       false, 1);
   }
 
   registration->AddListener(update_helper_);
@@ -1588,11 +1565,6 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
     registration->active_version()->StartUpdate();
     base::RunLoop().RunUntilIdle();
     EXPECT_LT(kYesterday, registration->last_update_check());
-    // Update check succeeds and update is found.
-    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
-                                       blink::ServiceWorkerStatusCode::kOk, 1);
-    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
-                                       true, 1);
   }
 
   // Run an update to a worker that loads successfully but fails to start up
@@ -1614,12 +1586,6 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
     registration->active_version()->StartUpdate();
     base::RunLoop().RunUntilIdle();
     EXPECT_LT(kYesterday, registration->last_update_check());
-    // Update check succeeds and update is found even when starting a worker
-    // fails.
-    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
-                                       blink::ServiceWorkerStatusCode::kOk, 1);
-    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
-                                       true, 1);
   }
 }
 
@@ -1645,11 +1611,6 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_NewVersion) {
       registration->active_version();
   first_version->StartUpdate();
   base::RunLoop().RunUntilIdle();
-  // Update check succeeds and update is found.
-  histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
-                                     blink::ServiceWorkerStatusCode::kOk, 1);
-  histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
-                                     true, 1);
 
   // The worker is updated after RequestTermination() is called from the
   // renderer. Until then, the active version stays active.
@@ -2084,12 +2045,6 @@ Cross-Origin-Embedder-Policy: none
     base::RunLoop().RunUntilIdle();
     EXPECT_LT(kYesterday, registration->last_update_check());
     EXPECT_FALSE(update_helper_->update_found_);
-
-    // Update check succeeds but no update is found.
-    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
-                                       blink::ServiceWorkerStatusCode::kOk, 1);
-    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
-                                       false, 1);
   }
 
   // Run an update where the COEP value and the script changed.
@@ -2103,11 +2058,6 @@ Cross-Origin-Embedder-Policy: none
     base::RunLoop().RunUntilIdle();
     EXPECT_LT(kYesterday, registration->last_update_check());
     EXPECT_TRUE(update_helper_->update_found_);
-    // Update check succeeds and update is found.
-    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
-                                       blink::ServiceWorkerStatusCode::kOk, 1);
-    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
-                                       true, 1);
     ASSERT_NE(nullptr, registration->waiting_version());
     EXPECT_EQ(CrossOriginEmbedderPolicyRequireCorp(),
               registration->waiting_version()->cross_origin_embedder_policy());
@@ -2125,11 +2075,6 @@ Cross-Origin-Embedder-Policy: none
     base::RunLoop().RunUntilIdle();
     EXPECT_LT(kYesterday, registration->last_update_check());
     EXPECT_TRUE(update_helper_->update_found_);
-    // Update check succeeds and update is found.
-    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
-                                       blink::ServiceWorkerStatusCode::kOk, 1);
-    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
-                                       true, 1);
     ASSERT_NE(nullptr, registration->waiting_version());
     EXPECT_EQ(CrossOriginEmbedderPolicyNone(),
               registration->waiting_version()->cross_origin_embedder_policy());

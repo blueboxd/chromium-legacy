@@ -163,7 +163,8 @@ class NearbyProcessManagerTest : public testing::Test {
         profile->GetProfileUserName());
   }
 
-  content::BrowserTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_{
+      content::BrowserTaskEnvironment::MainThreadType::IO};
   content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
   TestingProfileManager testing_profile_manager_{
       TestingBrowserProcess::GetGlobal()};
@@ -308,7 +309,7 @@ TEST_F(NearbyProcessManagerTest, GetOrStartNearbyConnections) {
   fake_sharing_service.WaitForConnections();
 
   EXPECT_TRUE(fake_sharing_service.dependencies()->bluetooth_adapter);
-  EXPECT_TRUE(fake_sharing_service.dependencies()->webrtc_signaling_messenger);
+  EXPECT_TRUE(fake_sharing_service.dependencies()->webrtc_dependencies);
 }
 
 TEST_F(NearbyProcessManagerTest,
@@ -331,7 +332,7 @@ TEST_F(NearbyProcessManagerTest,
   fake_sharing_service.WaitForConnections();
 
   EXPECT_FALSE(fake_sharing_service.dependencies()->bluetooth_adapter);
-  EXPECT_TRUE(fake_sharing_service.dependencies()->webrtc_signaling_messenger);
+  EXPECT_TRUE(fake_sharing_service.dependencies()->webrtc_dependencies);
 }
 
 TEST_F(NearbyProcessManagerTest, ResetNearbyProcess) {

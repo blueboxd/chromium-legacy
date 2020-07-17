@@ -227,6 +227,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
   virtual bool IsClipboardEvent() const;
   virtual bool IsBeforeTextInsertedEvent() const;
 
+  virtual bool IsBeforeCreatePolicyEvent() const;
   virtual bool IsBeforeUnloadEvent() const;
   virtual bool IsErrorEvent() const;
 

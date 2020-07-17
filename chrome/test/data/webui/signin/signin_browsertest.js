@@ -66,3 +66,20 @@ var SigninReauthTest = class extends SigninBrowserTest {
 TEST_F('SigninReauthTest', 'Dialog', function() {
   mocha.run();
 });
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/signin/dice_web_signin_intercept/dice_web_signin_intercept.html.
+ * This has to be declared as a variable for TEST_F to find it correctly.
+ */
+// eslint-disable-next-line no-var
+var DiceWebSigninInterceptTest = class extends SigninBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://signin-dice-web-intercept/test_loader.html?module=signin/dice_web_signin_intercept_test.js';
+  }
+};
+
+TEST_F('DiceWebSigninInterceptTest', 'Bubble', function() {
+  mocha.run();
+});

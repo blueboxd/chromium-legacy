@@ -72,7 +72,7 @@ void OnRenderProcessGone(
     switch (delegate->OnRenderProcessGone(child_process_pid, crashed)) {
       case AwRenderProcessGoneDelegate::RenderProcessGoneResult::kException:
         // Let the exception propagate back to the message loop.
-        base::MessageLoopCurrentForUI::Get()->Abort();
+        base::CurrentUIThread::Get()->Abort();
         return;
       case AwRenderProcessGoneDelegate::RenderProcessGoneResult::kUnhandled:
         if (crashed) {

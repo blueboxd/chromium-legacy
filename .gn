@@ -212,9 +212,7 @@ no_check_targets = [
   "//remoting:*",  # 27 errors
   "//sandbox/linux:*",  # 13 errors
   "//sandbox/mac:*",  # 14 errors
-  "//sandbox/policy:*",  # 1 error
   "//sandbox/win:*",  # 7 errors
-  "//sandbox:*",  # 3 errors
 
   # //third_party/blink/*, https://crbug.com/800764
   "//third_party/blink/common:*",  # 9 errors

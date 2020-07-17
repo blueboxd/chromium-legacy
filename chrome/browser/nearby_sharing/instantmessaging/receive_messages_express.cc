@@ -106,6 +106,7 @@ void ReceiveMessagesExpress::DoStartReceivingMessages(
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  kTrafficAnnotation);
+  url_loader_->SetTimeoutDuration(kNetworkTimeout);
   url_loader_->AttachStringForUpload(request.SerializeAsString(),
                                      "application/x-protobuf");
   url_loader_->DownloadAsStream(url_loader_factory_.get(), this);

@@ -56,7 +56,10 @@ fuzzer_test("sandbox_ipc_fuzzer") {
   if (!is_win) {
     defines = [ "SANDBOX_FUZZ_TARGET" ]
   }
-  deps = [ "//base" ]
+  deps = [
+    ":sandbox",
+    "//base",
+  ]
   dict = "ipc.dict"
   libfuzzer_options = [ "max_len=1024" ]
 }

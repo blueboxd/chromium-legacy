@@ -64,6 +64,12 @@ std::string GetMimeTypeForPath(const std::string& path) {
   } else if (base::EndsWith(filename, ".png",
                             base::CompareCase::INSENSITIVE_ASCII)) {
     return "image/png";
+  } else if (base::EndsWith(filename, ".map",
+                            base::CompareCase::INSENSITIVE_ASCII)) {
+    return "application/json";
+  } else if (base::EndsWith(filename, ".ts",
+                            base::CompareCase::INSENSITIVE_ASCII)) {
+    return "application/x-typescript";
   } else if (base::EndsWith(filename, ".gif",
                             base::CompareCase::INSENSITIVE_ASCII)) {
     return "image/gif";

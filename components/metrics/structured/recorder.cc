@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "components/metrics/structured/event_base.h"
 #include "components/metrics/structured/histogram_util.h"
@@ -37,7 +37,7 @@ void Recorder::Record(const EventBase& event) {
     return;
   }
 
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   for (auto& observer : observers_)
     observer.OnRecord(event);
 
@@ -51,7 +51,7 @@ void Recorder::Record(const EventBase& event) {
 void Recorder::ProfileAdded(const base::FilePath& profile_path) {
   // All calls to the StructuredMetricsProvider (the observer) must be on the UI
   // sequence.
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   // TODO(crbug.com/1016655 ): investigate whether we can verify that
   // |profile_path| corresponds to a valid (non-guest, non-signin) profile.
   for (auto& observer : observers_)

@@ -27,6 +27,7 @@
 #include "ui/gfx/overlay_transform.h"
 
 namespace viz {
+class AggregatedFrame;
 class CompositorFrame;
 class DisplayResourceProvider;
 class Surface;
@@ -45,7 +46,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
    public:
     virtual ~FrameAnnotator() = default;
 
-    virtual void AnnotateAggregatedFrame(CompositorFrame* frame) = 0;
+    virtual void AnnotateAggregatedFrame(AggregatedFrame* frame) = 0;
   };
 
   SurfaceAggregator(SurfaceManager* manager,
@@ -58,7 +59,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // been invalidated. It can be used in cases where we still want to support
   // partial damage but the target surface might need contents outside the
   // damage rect of the root surface.
-  CompositorFrame Aggregate(const SurfaceId& surface_id,
+  AggregatedFrame Aggregate(const SurfaceId& surface_id,
                             base::TimeTicks expected_display_time,
                             gfx::OverlayTransform display_transform,
                             const gfx::Rect& target_damage = gfx::Rect(),

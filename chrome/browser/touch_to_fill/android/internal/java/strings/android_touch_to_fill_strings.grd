@@ -199,15 +199,6 @@
       <message name="IDS_TOUCH_TO_FILL_CONTINUE" desc="Title of the button that continues filling with the only available set of credentials.">
         Continue
       </message>
-      <message name="IDS_TOUCH_TO_FILL_BRANDING_VARIATION_1" desc="Message shown at the bottom of the Touch To Fill sheet to draw attention to the feature.">
-        New in <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph>! Tap to sign in
-      </message>
-      <message name="IDS_TOUCH_TO_FILL_BRANDING_VARIATION_2" desc="Message shown at the bottom of the Touch To Fill sheet to draw attention to the feature.">
-        New in <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph>! Control how you sign in with one tap
-      </message>
-      <message name="IDS_TOUCH_TO_FILL_BRANDING_VARIATION_3" desc="Message shown at the bottom of the Touch To Fill sheet to draw attention to the feature.">
-        Powered by <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph>
-      </message>
     </messages>
   </release>
 </grit>

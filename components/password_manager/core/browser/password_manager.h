@@ -110,9 +110,14 @@ class PasswordManager : public PasswordManagerInterface {
                               autofill::FieldRendererId field_id,
                               const base::string16& field_value) override;
   void OnPasswordNoLongerGenerated(PasswordManagerDriver* driver) override;
-  void OnPasswordFormRemoved(PasswordManagerDriver* driver,
-                             autofill::FormRendererId form_id) override;
-  void OnIframeDetach(const std::string& frame_id) override;
+  void OnPasswordFormRemoved(
+      PasswordManagerDriver* driver,
+      const autofill::FieldDataManager* field_data_manager,
+      autofill::FormRendererId form_id) override;
+  void OnIframeDetach(
+      const std::string& frame_id,
+      PasswordManagerDriver* driver,
+      const autofill::FieldDataManager* field_data_manager) override;
 #endif
 
   // Notifies the renderer to start the generation flow or pops up additional UI
@@ -334,6 +339,17 @@ class PasswordManager : public PasswordManagerInterface {
 
   // Resets |autofill_assistant_mode_| to the default.
   void ResetAutofillAssistantMode();
+
+#if defined(OS_IOS)
+  // Even though the formal submission might not happen, the manager
+  // could still be provisionally saved on user input or have autofilled data,
+  // in this case submission might be considered successful and a save prompt
+  // might be shown.
+  void CheckForPotentialSubmission(
+      PasswordFormManager* form_manager,
+      const autofill::FieldDataManager* field_data_manager,
+      PasswordManagerDriver* driver);
+#endif
 
   // PasswordFormManager transition schemes:
   // 1. HTML submission with navigation afterwads.

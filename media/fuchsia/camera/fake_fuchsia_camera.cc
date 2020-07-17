@@ -10,7 +10,7 @@
 #include "base/fuchsia/process_context.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/writable_shared_memory_region.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -239,7 +239,7 @@ void FakeCameraStream::ProduceFrame(base::TimeTicks timestamp, uint8_t salt) {
       ZX_OK);
 
   // Watch release fence to get notified when the frame is released.
-  base::MessageLoopCurrentForIO::Get()->WatchZxHandle(
+  base::CurrentIOThread::Get()->WatchZxHandle(
       buffer->release_fence.get(), /*persistent=*/false,
       ZX_EVENTPAIR_PEER_CLOSED, &buffer->release_fence_watch_controller, this);
 

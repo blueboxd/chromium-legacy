@@ -64,6 +64,8 @@ jumbo_component("ax_base") {
     "ax_relative_bounds.h",
     "ax_role_properties.cc",
     "ax_role_properties.h",
+    "ax_tree_id.cc",
+    "ax_tree_id.h",
   ]
 
   public_deps = [
@@ -71,6 +73,7 @@ jumbo_component("ax_base") {
     ":ax_enums_mojo",
     "//base",
     "//base:i18n",
+    "//base/util/values:values_util",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -129,8 +132,6 @@ jumbo_component("accessibility") {
     "ax_tree_combiner.h",
     "ax_tree_data.cc",
     "ax_tree_data.h",
-    "ax_tree_id.cc",
-    "ax_tree_id.h",
     "ax_tree_id_registry.cc",
     "ax_tree_id_registry.h",
     "ax_tree_manager.h",

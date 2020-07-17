@@ -12,7 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/logging/logging_service_api.h"
 #include "chrome/chrome_cleaner/logging/proto/chrome_cleaner_report.pb.h"
@@ -40,7 +40,7 @@ void PendingLogsService::ScheduleLogsUploadTask(
     const ChromeCleanerReport& chrome_cleaner_report,
     base::FilePath* log_file,
     RegistryLogger* registry_logger) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   DCHECK(log_file);
   DCHECK(registry_logger);
   // This can happen when we fail while retrying. The logging service is not
@@ -124,7 +124,7 @@ void PendingLogsService::ClearPendingLogFile(
 }
 
 PendingLogsService::PendingLogsService() {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
 }
 
 PendingLogsService::~PendingLogsService() = default;

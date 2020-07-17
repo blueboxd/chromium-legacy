@@ -9,8 +9,8 @@
 
 #include "base/no_destructor.h"
 #include "base/unguessable_token.h"
+#include "ui/accessibility/ax_base_export.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
-#include "ui/accessibility/ax_export.h"
 
 namespace mojo {
 template <typename DataViewType, typename T>
@@ -26,7 +26,7 @@ class AXTreeIDDataView;
 namespace ui {
 
 // A unique ID representing an accessibility tree.
-class AX_EXPORT AXTreeID {
+class AX_BASE_EXPORT AXTreeID {
  public:
   // Create an Unknown AXTreeID.
   AXTreeID();
@@ -73,14 +73,15 @@ class AX_EXPORT AXTreeID {
 };
 
 // For use in std::unordered_map.
-struct AXTreeIDHash {
+struct AX_BASE_EXPORT AXTreeIDHash {
   size_t operator()(const ui::AXTreeID& tree_id) const;
 };
 
-AX_EXPORT std::ostream& operator<<(std::ostream& stream, const AXTreeID& value);
+AX_BASE_EXPORT std::ostream& operator<<(std::ostream& stream,
+                                        const AXTreeID& value);
 
 // The value to use when an AXTreeID is unknown.
-AX_EXPORT extern const AXTreeID& AXTreeIDUnknown();
+AX_BASE_EXPORT extern const AXTreeID& AXTreeIDUnknown();
 
 }  // namespace ui
 

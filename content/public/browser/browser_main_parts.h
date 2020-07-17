@@ -29,7 +29,7 @@ namespace content {
 //    things which should be done immediately before the start of the main
 //    message loop should go in |PreMainMessageLoopStart()|.
 //  - RunMainMessageLoopParts:  things to be done before and after invoking the
-//    main message loop run method (e.g. MessageLoopCurrentForUI::Get()->Run()).
+//    main message loop run method (e.g. CurrentUIThread::Get()->Run()).
 //
 // How to add stuff (to existing parts):
 //  - Figure out when your new code should be executed. What must happen

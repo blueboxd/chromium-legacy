@@ -4,6 +4,9 @@
 
 #include "components/viz/test/compositor_frame_helpers.h"
 
+#include <memory>
+#include <utility>
+
 namespace viz {
 namespace {
 
@@ -134,6 +137,13 @@ CompositorFrame CompositorFrameBuilder::MakeInitCompositorFrame() const {
 
 CompositorFrame MakeDefaultCompositorFrame() {
   return CompositorFrameBuilder().AddDefaultRenderPass().Build();
+}
+
+AggregatedFrame MakeDefaultAggregatedFrame() {
+  AggregatedFrame frame;
+  frame.render_pass_list =
+      std::move(MakeDefaultCompositorFrame().render_pass_list);
+  return frame;
 }
 
 CompositorFrame MakeEmptyCompositorFrame() {

@@ -5,16 +5,20 @@
 package org.chromium.chrome.browser.password_check;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.COMPROMISED_CREDENTIAL;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
-import static org.chromium.components.embedder_support.util.UrlUtilities.stripScheme;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollUiThread;
 
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.IdRes;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
@@ -27,12 +31,14 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties;
+import org.chromium.chrome.browser.password_check.internal.R;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.widget.ButtonCompat;
 
 /**
  * View tests for the Password Check component ensure model changes are reflected in the check UI.
@@ -41,7 +47,11 @@ import org.chromium.ui.modelutil.PropertyModel;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PasswordCheckViewTest {
     private static final CompromisedCredential ANA =
-            new CompromisedCredential("https://some-url.com", "Ana", "password", false);
+            new CompromisedCredential("some-url.com", "Ana", "password", false);
+    private static final CompromisedCredential PHISHED =
+            new CompromisedCredential("example.com", "Baub", "DoSomething", true);
+    private static final CompromisedCredential LEAKED =
+            new CompromisedCredential("some-other-url.com", "AZiegler", "N0M3rcy", false);
 
     private PropertyModel mModel = PasswordCheckProperties.createDefaultModel();
     private PasswordCheckFragmentView mPasswordCheckView;
@@ -76,10 +86,40 @@ public class PasswordCheckViewTest {
                                     .build()));
             mModel.get(ITEMS).add(buildCredentialItem(ANA));
         });
-        pollUiThread(
-                () -> Criteria.checkThat(mPasswordCheckView.getListView().getChildCount(), is(2)));
-        TextView entry = (TextView) mPasswordCheckView.getListView().getChildAt(1);
-        assertThat(entry.getText(), is(stripScheme(ANA.getOriginUrl())));
+        pollUiThread(() -> Criteria.checkThat(getCredentials().getChildCount(), is(2)));
+        // Has a change passwords button.
+        assertNotNull(getCredentialChangeButtonAt(1));
+        assertThat(getCredentialChangeButtonAt(1).getVisibility(), is(View.VISIBLE));
+        assertThat(getCredentialChangeButtonAt(1).getText(),
+                is(getString(R.string.password_check_credential_row_change_button_caption)));
+
+        // Has a more button.
+        assertNotNull(getCredentialMoreButtonAt(1));
+        assertThat(getCredentialMoreButtonAt(1).getVisibility(), is(View.VISIBLE));
+        assertThat(getCredentialMoreButtonAt(1).getContentDescription(),
+                is(getString(org.chromium.chrome.R.string.more)));
+    }
+
+    @Test
+    @MediumTest
+    public void testCrendentialDisplaysNameOriginAndReason() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.get(ITEMS).add(buildCredentialItem(PHISHED));
+            mModel.get(ITEMS).add(buildCredentialItem(LEAKED));
+        });
+        pollUiThread(() -> Criteria.checkThat(getCredentials().getChildCount(), is(2)));
+
+        // The phished credential is rendered first:
+        assertThat(getCredentialOriginAt(0).getText(), is(PHISHED.getOriginUrl()));
+        assertThat(getCredentialUserAt(0).getText(), is(PHISHED.getUsername()));
+        assertThat(getCredentialReasonAt(0).getText(),
+                is(getString(R.string.password_check_credential_row_reason_phished)));
+
+        // The leaked credential is rendered second:
+        assertThat(getCredentialOriginAt(1).getText(), is(LEAKED.getOriginUrl()));
+        assertThat(getCredentialUserAt(1).getText(), is(LEAKED.getUsername()));
+        assertThat(getCredentialReasonAt(1).getText(),
+                is(getString(R.string.password_check_credential_row_reason_leaked)));
     }
 
     private static MVCListAdapter.ListItem buildCredentialItem(CompromisedCredential credential) {
@@ -88,5 +128,33 @@ public class PasswordCheckViewTest {
                         .Builder(PasswordCheckProperties.CompromisedCredentialProperties.ALL_KEYS)
                         .with(COMPROMISED_CREDENTIAL, credential)
                         .build());
+    }
+
+    private RecyclerView getCredentials() {
+        return mPasswordCheckView.getListView();
+    }
+
+    private TextView getCredentialOriginAt(int index) {
+        return getCredentials().getChildAt(index).findViewById(R.id.credential_origin);
+    }
+
+    private TextView getCredentialUserAt(int index) {
+        return getCredentials().getChildAt(index).findViewById(R.id.compromised_username);
+    }
+
+    private TextView getCredentialReasonAt(int index) {
+        return getCredentials().getChildAt(index).findViewById(R.id.compromised_reason);
+    }
+
+    private ButtonCompat getCredentialChangeButtonAt(int index) {
+        return getCredentials().getChildAt(index).findViewById(R.id.credential_change_button);
+    }
+
+    private ImageView getCredentialMoreButtonAt(int index) {
+        return getCredentials().getChildAt(index).findViewById(R.id.credential_menu_button);
+    }
+
+    private String getString(@IdRes int stringResource) {
+        return mTestRule.getActivity().getString(stringResource);
     }
 }

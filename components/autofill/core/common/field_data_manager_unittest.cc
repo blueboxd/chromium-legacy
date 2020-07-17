@@ -105,4 +105,20 @@ TEST_F(FieldDataManagerTest, FindMachedValue) {
       field_data_manager->FindMachedValue(UTF8ToUTF16("second_element")));
 }
 
+TEST_F(FieldDataManagerTest, UpdateFieldDataMapWithAutofilledValue) {
+  const scoped_refptr<FieldDataManager> field_data_manager =
+      base::MakeRefCounted<FieldDataManager>();
+  const FieldRendererId id(control_elements_[0].unique_renderer_id);
+  field_data_manager->UpdateFieldDataWithAutofilledValue(
+      id, ASCIIToUTF16("autofilled"),
+      FieldPropertiesFlags::kAutofilledOnPageLoad);
+
+  EXPECT_TRUE(field_data_manager->HasFieldData(id));
+  EXPECT_EQ(base::string16(), field_data_manager->GetUserTypedValue(id));
+  EXPECT_EQ(UTF8ToUTF16("autofilled"),
+            field_data_manager->GetAutofilledValue(id));
+  EXPECT_EQ(FieldPropertiesFlags::kAutofilledOnPageLoad,
+            field_data_manager->GetFieldPropertiesMask(id));
+}
+
 }  // namespace autofill

@@ -12,13 +12,13 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
+#include "base/task/current_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/trace_event/trace_event.h"
 #include "mojo/public/c/system/quota.h"
@@ -96,7 +96,7 @@ class Connector::RunLoopNestingObserver
   }
 
   static RunLoopNestingObserver* GetForThread() {
-    if (!base::MessageLoopCurrent::Get())
+    if (!base::CurrentThread::Get())
       return nullptr;
     // The NestingObserver for each thread. Note that this is always a
     // Connector::RunLoopNestingObserver; we use the base type here because that

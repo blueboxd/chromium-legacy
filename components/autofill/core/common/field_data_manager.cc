@@ -85,6 +85,27 @@ bool FieldDataManager::WasAutofilledOnUserTrigger(FieldRendererId id) const {
                               FieldPropertiesFlags::kAutofilledOnUserTrigger);
 }
 
+bool FieldDataManager::WasAutofilledOnPageLoad(FieldRendererId id) const {
+  return HasFieldData(id) && (GetFieldPropertiesMask(id) &
+                              FieldPropertiesFlags::kAutofilledOnPageLoad);
+}
+
+void FieldDataManager::UpdateFieldDataWithAutofilledValue(
+    FieldRendererId id,
+    const base::string16& value,
+    FieldPropertiesMask mask) {
+  UpdateFieldDataMapWithNullValue(id, mask);
+  autofilled_values_map_[id] = value;
+}
+
+base::Optional<base::string16> FieldDataManager::GetAutofilledValue(
+    FieldRendererId id) const {
+  if (autofilled_values_map_.count(id))
+    return base::Optional<base::string16>(autofilled_values_map_.at(id));
+  else
+    return base::nullopt;
+}
+
 FieldDataManager::~FieldDataManager() = default;
 
 }  // namespace autofill

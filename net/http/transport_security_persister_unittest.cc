@@ -12,8 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/task/current_thread.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/features.h"
@@ -45,13 +45,13 @@ class TransportSecurityPersisterTest : public ::testing::TestWithParam<bool>,
   }
 
   ~TransportSecurityPersisterTest() override {
-    EXPECT_TRUE(base::MessageLoopCurrentForIO::IsSet());
+    EXPECT_TRUE(base::CurrentIOThread::IsSet());
     base::RunLoop().RunUntilIdle();
   }
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
+    ASSERT_TRUE(base::CurrentIOThread::IsSet());
     scoped_refptr<base::SequencedTaskRunner> background_runner(
         base::ThreadPool::CreateSequencedTaskRunner(
             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,

@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -45,7 +45,7 @@ class WebRtcAudioDeviceImpl;
 
 // Object factory for RTC PeerConnections.
 class MODULES_EXPORT PeerConnectionDependencyFactory
-    : base::MessageLoopCurrent::DestructionObserver {
+    : base::CurrentThread::DestructionObserver {
  public:
   ~PeerConnectionDependencyFactory() override;
 
@@ -131,7 +131,7 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   void EnsureWebRtcAudioDeviceImpl();
 
  private:
-  // Implement base::MessageLoopCurrent::DestructionObserver.
+  // Implement base::CurrentThread::DestructionObserver.
   // This makes sure the libjingle PeerConnectionFactory is released before
   // the renderer message loop is destroyed.
   void WillDestroyCurrentMessageLoop() override;

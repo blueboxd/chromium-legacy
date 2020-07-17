@@ -12,12 +12,16 @@ interface IncomingMessagesListener {
 
 // Runs in browser process and is used by the nearby library to send and
 // receive messages.
+// TODO(crbug.com/1106387) : Update Nearby library to use async callbacks
+// instead of blocking calls.
 interface WebRtcSignalingMessenger {
   // Sends a signaling message |message| to |peer_id|.
+  [Sync]
   SendMessage(string self_id, string peer_id, string message)
     => (bool success);
 
   // Registers |listener| to start receiving messages from other devices.
+  [Sync]
   StartReceivingMessages(string self_id,
     pending_remote<IncomingMessagesListener> listener) => (bool success);
 

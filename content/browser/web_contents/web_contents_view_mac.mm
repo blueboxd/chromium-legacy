@@ -10,8 +10,8 @@
 
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_sending_event.h"
-#include "base/message_loop/message_loop_current.h"
 #import "base/message_loop/message_pump_mac.h"
+#include "base/task/current_thread.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/remote_cocoa/browser/ns_view_ids.h"
@@ -152,7 +152,7 @@ void WebContentsViewMac::StartDragging(
 
   // The drag invokes a nested event loop, arrange to continue
   // processing events.
-  base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
+  base::CurrentThread::ScopedNestableTaskAllower allow;
   NSDragOperation mask = static_cast<NSDragOperation>(allowed_operations) &
                          ~NSDragOperationGeneric;
   [drag_dest_ setDragStartTrackersForProcess:source_rwh->GetProcess()->GetID()];

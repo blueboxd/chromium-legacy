@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -102,7 +102,7 @@ TestBrowserThread::~TestBrowserThread() {
   // |BrowserThreadImpl::GetTaskRunnerForThread(identifier_)| will no longer
   // recognize their BrowserThreadImpl for RunsTasksInCurrentSequence(). This
   // happens most often when such verifications are made from
-  // MessageLoopCurrent::DestructionObservers. Callers that care to work around
+  // CurrentThread::DestructionObservers. Callers that care to work around
   // that should instead use this shutdown sequence:
   //   1) TestBrowserThread::Stop()
   //   2) ~MessageLoop()
@@ -188,9 +188,9 @@ void BrowserTaskEnvironment::Init() {
   DeferredInitFromSubclass(std::move(default_ui_task_runner));
 
   if (HasIOMainLoop()) {
-    CHECK(base::MessageLoopCurrentForIO::IsSet());
+    CHECK(base::CurrentIOThread::IsSet());
   } else if (main_thread_type() == MainThreadType::UI) {
-    CHECK(base::MessageLoopCurrentForUI::IsSet());
+    CHECK(base::CurrentUIThread::IsSet());
   }
 
   // Set the current thread as the UI thread.

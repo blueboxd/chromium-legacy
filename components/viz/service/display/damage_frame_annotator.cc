@@ -8,17 +8,17 @@
 #include <utility>
 
 #include "cc/base/math_util.h"
-#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/shared_quad_state.h"
+#include "components/viz/common/surfaces/aggregated_frame.h"
 
 namespace viz {
 
 DamageFrameAnnotator::DamageFrameAnnotator() = default;
 DamageFrameAnnotator::~DamageFrameAnnotator() = default;
 
-void DamageFrameAnnotator::AnnotateAggregatedFrame(CompositorFrame* frame) {
+void DamageFrameAnnotator::AnnotateAggregatedFrame(AggregatedFrame* frame) {
   DCHECK(frame);
   auto* root_render_pass = frame->render_pass_list.back().get();
 

@@ -16,9 +16,9 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/synchronization/lock.h"
+#include "base/task/current_thread.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "mojo/core/core.h"
@@ -91,7 +91,7 @@ class MessageView {
 };
 
 class ChannelPosix : public Channel,
-                     public base::MessageLoopCurrent::DestructionObserver,
+                     public base::CurrentThread::DestructionObserver,
                      public base::MessagePumpForIO::FdWatcher {
  public:
   ChannelPosix(Delegate* delegate,
@@ -183,15 +183,15 @@ class ChannelPosix : public Channel,
     DCHECK(!write_watcher_);
     read_watcher_.reset(
         new base::MessagePumpForIO::FdWatchController(FROM_HERE));
-    base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
+    base::CurrentThread::Get()->AddDestructionObserver(this);
     if (server_.is_valid()) {
-      base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+      base::CurrentIOThread::Get()->WatchFileDescriptor(
           server_.platform_handle().GetFD().get(), false /* persistent */,
           base::MessagePumpForIO::WATCH_READ, read_watcher_.get(), this);
     } else {
       write_watcher_.reset(
           new base::MessagePumpForIO::FdWatchController(FROM_HERE));
-      base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+      base::CurrentIOThread::Get()->WatchFileDescriptor(
           socket_.get(), true /* persistent */,
           base::MessagePumpForIO::WATCH_READ, read_watcher_.get(), this);
       base::AutoLock lock(write_lock_);
@@ -211,7 +211,7 @@ class ChannelPosix : public Channel,
       return;
     if (io_task_runner_->RunsTasksInCurrentSequence()) {
       pending_write_ = true;
-      base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+      base::CurrentIOThread::Get()->WatchFileDescriptor(
           socket_.get(), false /* persistent */,
           base::MessagePumpForIO::WATCH_WRITE, write_watcher_.get(), this);
     } else {
@@ -222,7 +222,7 @@ class ChannelPosix : public Channel,
   }
 
   void ShutDownOnIOThread() {
-    base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
+    base::CurrentThread::Get()->RemoveDestructionObserver(this);
 
     read_watcher_.reset();
     write_watcher_.reset();
@@ -241,7 +241,7 @@ class ChannelPosix : public Channel,
     self_ = nullptr;
   }
 
-  // base::MessageLoopCurrent::DestructionObserver:
+  // base::CurrentThread::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
     DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
     if (self_)
@@ -254,7 +254,7 @@ class ChannelPosix : public Channel,
       CHECK_EQ(fd, server_.platform_handle().GetFD().get());
 #if !defined(OS_NACL)
       read_watcher_.reset();
-      base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
+      base::CurrentThread::Get()->RemoveDestructionObserver(this);
 
       AcceptSocketConnection(server_.platform_handle().GetFD().get(), &socket_);
       ignore_result(server_.TakePlatformHandle());

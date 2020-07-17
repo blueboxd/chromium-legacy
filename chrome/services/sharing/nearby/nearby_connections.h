@@ -49,6 +49,9 @@ class NearbyConnections : public mojom::NearbyConnections {
   static NearbyConnections& GetInstance();
 
   bluetooth::mojom::Adapter* GetBluetoothAdapter();
+  network::mojom::P2PSocketManager* GetWebRtcP2PSocketManager();
+  network::mojom::MdnsResponder* GetWebRtcMdnsResponder();
+  sharing::mojom::IceConfigFetcher* GetWebRtcIceConfigFetcher();
   sharing::mojom::WebRtcSignalingMessenger* GetWebRtcSignalingMessenger();
 
  private:
@@ -59,6 +62,9 @@ class NearbyConnections : public mojom::NearbyConnections {
 
   // Medium dependencies:
   mojo::Remote<bluetooth::mojom::Adapter> bluetooth_adapter_;
+  mojo::Remote<network::mojom::P2PSocketManager> socket_manager_;
+  mojo::Remote<network::mojom::MdnsResponder> mdns_responder_;
+  mojo::Remote<sharing::mojom::IceConfigFetcher> ice_config_fetcher_;
   mojo::Remote<sharing::mojom::WebRtcSignalingMessenger>
       webrtc_signaling_messenger_;
 

@@ -14,7 +14,7 @@
 
 namespace viz {
 
-class CompositorFrame;
+class AggregatedFrame;
 class RenderPass;
 
 // Draws a red outline around the root RenderPasses damage rect.
@@ -24,7 +24,7 @@ class DamageFrameAnnotator : public SurfaceAggregator::FrameAnnotator {
   ~DamageFrameAnnotator() override;
 
   // SurfaceAggregator::FrameAnnotator implementation.
-  void AnnotateAggregatedFrame(CompositorFrame* frame) override;
+  void AnnotateAggregatedFrame(AggregatedFrame* frame) override;
 
  private:
   struct Highlight {

@@ -13,9 +13,9 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
+#include "base/task/current_thread.h"
 #include "device/base/device_info_query_win.h"
 #include "device/base/device_monitor_win.h"
 #include "services/device/serial/serial_device_enumerator_win.h"
@@ -235,8 +235,8 @@ bool SerialIoHandlerWin::PostOpen() {
   DCHECK(!read_context_);
   DCHECK(!write_context_);
 
-  base::MessageLoopCurrentForIO::Get()->RegisterIOHandler(
-      file().GetPlatformFile(), this);
+  base::CurrentIOThread::Get()->RegisterIOHandler(file().GetPlatformFile(),
+                                                  this);
 
   comm_context_.reset(new base::MessagePumpForIO::IOContext());
   read_context_.reset(new base::MessagePumpForIO::IOContext());

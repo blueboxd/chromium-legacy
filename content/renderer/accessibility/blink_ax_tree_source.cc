@@ -447,6 +447,10 @@ bool BlinkAXTreeSource::GetTreeData(ui::AXTreeData* tree_data) const {
     tree_data->sel_focus_affinity = focus_affinity;
   }
 
+  // Get the tree ID for this frame.
+  if (WebLocalFrame* web_frame = document().GetFrame())
+    tree_data->tree_id = web_frame->GetAXTreeID();
+
   tree_data->root_scroller_id = root().RootScroller().AxID();
 
   return true;

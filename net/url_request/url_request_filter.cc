@@ -5,8 +5,8 @@
 #include "net/url_request/url_request_filter.h"
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/stl_util.h"
+#include "base/task/current_thread.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 
@@ -22,15 +22,14 @@ bool OnMessageLoopForInterceptorAddition() {
   // MessageLoop is required for some tests where there is no chance to insert
   // an interceptor between a networking thread being started and a resource
   // request being issued.
-  return base::MessageLoopCurrentForIO::IsSet() ||
-         !base::MessageLoopCurrent::IsSet();
+  return base::CurrentIOThread::IsSet() || !base::CurrentThread::IsSet();
 }
 
 // When removing interceptors, DCHECK that this function returns true.
 bool OnMessageLoopForInterceptorRemoval() {
-  // Checking for a MessageLoopCurrentForIO is a best effort at determining
+  // Checking for a CurrentIOThread is a best effort at determining
   // whether the current thread is a networking thread.
-  return base::MessageLoopCurrentForIO::IsSet();
+  return base::CurrentIOThread::IsSet();
 }
 
 }  // namespace
@@ -112,7 +111,7 @@ void URLRequestFilter::ClearHandlers() {
 URLRequestJob* URLRequestFilter::MaybeInterceptRequest(
     URLRequest* request,
     NetworkDelegate* network_delegate) const {
-  DCHECK(base::MessageLoopCurrentForIO::Get());
+  DCHECK(base::CurrentIOThread::Get());
   URLRequestJob* job = nullptr;
   if (!request->url().is_valid())
     return nullptr;

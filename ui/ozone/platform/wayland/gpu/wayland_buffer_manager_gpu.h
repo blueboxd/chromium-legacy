@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_GPU_WAYLAND_BUFFER_MANAGER_GPU_H_
 #define UI_OZONE_PLATFORM_WAYLAND_GPU_WAYLAND_BUFFER_MANAGER_GPU_H_
 
+#include <map>
 #include <memory>
 
 #include "base/macros.h"
@@ -152,7 +153,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   void SubmitSwapResultOnOriginThread(gfx::AcceleratedWidget widget,
                                       uint32_t buffer_id,
                                       gfx::SwapResult swap_result);
-  void SubmitPresentationtOnOriginThread(
+  void SubmitPresentationOnOriginThread(
       gfx::AcceleratedWidget widget,
       uint32_t buffer_id,
       const gfx::PresentationFeedback& feedback);
@@ -181,19 +182,22 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
       supported_buffer_formats_with_modifiers_;
 
   // This task runner can be used to pass messages back to the same thread,
-  // where the commit buffer request came from. For example, swap requests come
-  // from the GpuMainThread, but rerouted to the IOChildThread and then mojo
-  // calls happen. However, when the manager receives mojo calls, it has to
+  // where the commit buffer request came from. For example, swap requests can
+  // come from the GpuMainThread, but rerouted are to the IOChildThread and then
+  // mojo calls happen. However, when the manager receives mojo calls, it has to
   // reroute calls back to the same thread where the calls came from to ensure
-  // correct sequence.
-  scoped_refptr<base::SingleThreadTaskRunner> commit_thread_runner_;
+  // correct sequence. Note that not all calls come from the GpuMainThread, e.g.
+  // WaylandCanvasSurface calls from the VizCompositorThread.
+  base::small_map<std::map<gfx::AcceleratedWidget,
+                           scoped_refptr<base::SingleThreadTaskRunner>>>
+      commit_thread_runners_;  // Guarded by |lock_|.
 
   // A task runner, which is initialized in a multi-process mode. It is used to
   // ensure all the methods of this class are run on IOChildThread. This is
   // needed to ensure mojo calls happen on a right sequence.
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner_;
 
-  // Protects access to |widget_to_surface_map_|.
+  // Protects access to |widget_to_surface_map_| and |commit_thread_runners_|.
   base::Lock lock_;
 
   // Keeps track of the next unique buffer ID.

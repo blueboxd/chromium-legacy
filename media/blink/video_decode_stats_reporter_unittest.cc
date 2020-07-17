@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/current_thread.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -109,7 +109,7 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
 
   void SetUp() override {
     // Do this first. Lots of pieces depend on the task runner.
-    auto message_loop = base::MessageLoopCurrent::Get();
+    auto message_loop = base::CurrentThread::Get();
     original_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     task_runner_ = new base::TestMockTimeTaskRunner();
     message_loop.SetTaskRunner(task_runner_);
@@ -131,7 +131,7 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
 
     // Run task runner to have Mojo cleanup interceptor_.
     task_runner_->RunUntilIdle();
-    base::MessageLoopCurrent::Get().SetTaskRunner(original_task_runner_);
+    base::CurrentThread::Get().SetTaskRunner(original_task_runner_);
   }
 
   PipelineStatistics MakeAdvancingDecodeStats() {

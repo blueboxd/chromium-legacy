@@ -235,6 +235,10 @@ bool Event::IsBeforeTextInsertedEvent() const {
   return false;
 }
 
+bool Event::IsBeforeCreatePolicyEvent() const {
+  return false;
+}
+
 bool Event::IsBeforeUnloadEvent() const {
   return false;
 }

@@ -27,16 +27,10 @@
          + Bottom margin (2 dp) -->
     <dimen name="touch_to_fill_sheet_height_button">60dp</dimen>
 
-    <!-- Top padding between RecyclerView elements (8 dp)
-        + Top margin (16 dp)
-        + Text height (20 dp) -->
-    <dimen name="touch_to_fill_sheet_height_branding">44dp</dimen>
-
     <!-- Depending on the experiments that are active we might show a call to
          action button or branding message to the users, at which point we need
          different bottom paddings. They are exposed here, so that they can be
          added dynamically, depending on the state of the experiments. -->
     <dimen name="touch_to_fill_sheet_bottom_padding_credentials">16dp</dimen>
     <dimen name="touch_to_fill_sheet_bottom_padding_button">8dp</dimen>
-    <dimen name="touch_to_fill_sheet_bottom_padding_branding">16dp</dimen>
 </resources>

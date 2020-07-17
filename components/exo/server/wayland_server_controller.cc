@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "components/exo/display.h"
 #include "components/exo/file_helper.h"
 #include "components/exo/input_method_surface_manager.h"

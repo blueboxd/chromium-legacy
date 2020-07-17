@@ -45,7 +45,9 @@ bool ClipboardData::operator==(const ClipboardData& that) const {
          custom_data_format_ == that.custom_data_format() &&
          custom_data_data_ == that.custom_data_data() &&
          web_smart_paste_ == that.web_smart_paste() &&
-         gfx::BitmapsAreEqual(bitmap_, that.bitmap());
+         gfx::BitmapsAreEqual(bitmap_, that.bitmap()) &&
+         (src_.get() ? (that.source() && *src_.get() == *that.source())
+                     : !that.source());
 }
 
 void ClipboardData::SetBitmapData(const SkBitmap& bitmap) {

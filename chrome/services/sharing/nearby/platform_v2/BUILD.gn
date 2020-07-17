@@ -25,15 +25,23 @@ source_set("platform_v2") {
     "submittable_executor.cc",
     "submittable_executor.h",
     "system_clock.cc",
+    "webrtc.cc",
+    "webrtc.h",
   ]
 
   public_deps = [
-    "//base",
     "//third_party/nearby:platform_v2_api_platform",
     "//third_party/nearby:platform_v2_impl_shared_file",
   ]
 
-  deps = [ "//crypto" ]
+  deps = [
+    "//base",
+    "//chrome/services/sharing/nearby",
+    "//chrome/services/sharing/public/mojom",
+    "//chrome/services/sharing/webrtc",
+    "//crypto",
+    "//jingle:webrtc_glue",
+  ]
 }
 
 source_set("unit_tests") {
@@ -50,11 +58,14 @@ source_set("unit_tests") {
     "recursive_mutex_unittest.cc",
     "scheduled_executor_unittest.cc",
     "single_thread_executor_unittest.cc",
+    "webrtc_test.cc",
   ]
 
   deps = [
     ":platform_v2",
     "//base/test:test_support",
+    "//chrome/services/sharing/nearby/test_support",
+    "//mojo/public/cpp/bindings",
     "//testing/gtest",
   ]
 }

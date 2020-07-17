@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
@@ -19,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/current_thread.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task_runner_util.h"
 #include "base/test/bind_test_util.h"
@@ -1000,7 +1000,7 @@ bool EmbeddedTestServer::PostTaskToIOThreadAndWait(base::OnceClosure closure) {
   // TODO(mattm): Is this still necessary/desirable? Try removing this and see
   // if anything breaks.
   std::unique_ptr<base::SingleThreadTaskExecutor> temporary_loop;
-  if (!base::MessageLoopCurrent::Get())
+  if (!base::CurrentThread::Get())
     temporary_loop = std::make_unique<base::SingleThreadTaskExecutor>();
 
   base::RunLoop run_loop;
@@ -1027,7 +1027,7 @@ bool EmbeddedTestServer::PostTaskToIOThreadAndWaitWithResult(
   // TODO(mattm): Is this still necessary/desirable? Try removing this and see
   // if anything breaks.
   std::unique_ptr<base::SingleThreadTaskExecutor> temporary_loop;
-  if (!base::MessageLoopCurrent::Get())
+  if (!base::CurrentThread::Get())
     temporary_loop = std::make_unique<base::SingleThreadTaskExecutor>();
 
   base::RunLoop run_loop;

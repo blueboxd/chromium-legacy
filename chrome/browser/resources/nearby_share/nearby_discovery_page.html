@@ -1,39 +1,61 @@
 <style>
+  :host {
+    --nearby-page-space-block: 26px;
+    --nearby-page-space-inline: 32px;
+    --nearby-page-space-large-inline: 42px;
+  }
+
   #actions {
-    margin-top: 17px;
+    margin-block-end: var(--nearby-page-space-block);
+    margin-block-start: 17px;
+    margin-inline-end:  var(--nearby-page-space-inline);
+    margin-inline-start: var(--nearby-page-space-inline);
     text-align: end;
+  }
+
+  #center-content {
+    background: radial-gradient(160% 50% at 0 100%, rgba(138, 180, 248, 0.25),
+        rgba(255, 255, 255, 0));
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
   }
 
   #device-list {
     overflow: auto;
+    padding-inline-end:  var(--nearby-page-space-large-inline);
+    padding-inline-start:  var(--nearby-page-space-large-inline);
     width: 191px;
   }
 
   nearby-preview {
-    margin-inline-end: 10px;
-    margin-inline-start: 10px;
+    margin-inline-end:  var(--nearby-page-space-large-inline);
+    margin-inline-start:  var(--nearby-page-space-large-inline);
   }
 
   #help {
     color: rgb(95, 99, 104);
     font-size: 9px;
     line-height: 12px;
-    margin: 12px auto;
+    margin-block-end: 12px;
+    margin-block-start: 12px;
+    margin-inline-end:  var(--nearby-page-space-inline);
+    margin-inline-start: var(--nearby-page-space-inline);
   }
 
   #page-content {
-    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 27px 32px 25px 37px;
   }
 
   #process-row {
     display: flex;
     flex-grow: 1;
     justify-content: space-between;
-    margin-top: 48px;
+    margin-block-start: 48px;
     overflow: hidden;
   }
 
@@ -42,7 +64,10 @@
     font-size: 100%;
     font-weight: normal;
     line-height: 154%;
-    margin: 0;
+    margin-block-end: 0;
+    margin-block-start: 0;
+    margin-inline-end:  var(--nearby-page-space-inline);
+    margin-inline-start: var(--nearby-page-space-inline);
   }
 
   #title {
@@ -51,7 +76,10 @@
     font-weight: normal;
     letter-spacing: 0.27px;
     line-height: 150%;
-    margin: 0;
+    margin-block-end: 0;
+    margin-block-start: var(--nearby-page-space-block);
+    margin-inline-end:  var(--nearby-page-space-inline);
+    margin-inline-start: var(--nearby-page-space-inline);
   }
 </style>
 
@@ -59,29 +87,23 @@
   <h1 id="title">Nearby Share</h1>
   <h2 id="subtitle">Select people you would like to share with</h2>
 
-  <div id="process-row">
-    <nearby-preview title="Doggo.jpg"></nearby-preview>
-    <div id="device-list">
-      <nearby-device name="Alyssa's Pixel"></nearby-device>
-      <nearby-device name="Shangela's Pixel 2XL Name Is Looong"></nearby-device>
-      <nearby-device name="MirasChromebookIsAllInOneWord"></nearby-device>
-      <nearby-device name="One"></nearby-device>
-      <nearby-device name="Two"></nearby-device>
-      <nearby-device name="Three"></nearby-device>
-      <nearby-device name="Four"></nearby-device>
-      <nearby-device name="Five"></nearby-device>
-      <nearby-device name="Six"></nearby-device>
-      <nearby-device name="Seven"></nearby-device>
-      <nearby-device name="Eight"></nearby-device>
-      <nearby-device name="Nine"></nearby-device>
-      <nearby-device name="Ten"></nearby-device>
-    </div>
-  </div>
+  <div id="center-content">
 
-  <div id="help">
-    Make sure both devices are unlocked, close together (within 1 ft), and have
-    Bluetooth turned on. If you’re sharing with a Chromebook make sure Nearby
-    Share is turned on from quick settings.
+    <div id="process-row">
+      <nearby-preview title="Doggo.jpg"></nearby-preview>
+      <div id="device-list">
+        <nearby-device name="Alyssa's Pixel"></nearby-device>
+        <nearby-device name="Shangela's Pixel 2XL"></nearby-device>
+        <nearby-device name="Mira's Chromebook"></nearby-device>
+      </div>
+    </div>
+
+    <div id="help">
+      Make sure both devices are unlocked, close together (within 1 ft), and
+      have Bluetooth turned on. If you’re sharing with a Chromebook make sure
+      Nearby Share is turned on from quick settings.
+    </div>
+
   </div>
 
   <div id="actions">

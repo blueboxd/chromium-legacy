@@ -18,7 +18,6 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -28,6 +27,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/current_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
@@ -2153,7 +2153,7 @@ void RenderTextHarfBuzz::ShapeRunsWithFont(
   std::vector<internal::TextRunHarfBuzz*> runs_with_missing_glyphs;
   for (internal::TextRunHarfBuzz*& run : *in_out_runs) {
     // First do a cache lookup.
-    bool can_use_cache = base::MessageLoopCurrentForUI::IsSet() &&
+    bool can_use_cache = base::CurrentUIThread::IsSet() &&
                          run->range.length() <= kMaxRunLengthToCache;
     bool found_in_cache = false;
     const internal::ShapeRunWithFontInput cache_key(

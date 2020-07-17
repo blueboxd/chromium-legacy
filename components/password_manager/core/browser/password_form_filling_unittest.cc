@@ -171,12 +171,19 @@ TEST_F(PasswordFormFillingTest, Autofill) {
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
       &client_, &driver_, observed_form_, best_matches, federated_matches_,
       &saved_match_, metrics_recorder_.get());
+
+  // On Android Touch To Fill will prevent autofilling credentials on page load.
+#if defined(OS_ANDROID)
+  EXPECT_EQ(LikelyFormFilling::kFillOnAccountSelect, likely_form_filling);
+  EXPECT_TRUE(fill_data.wait_for_username);
+#else
   EXPECT_EQ(LikelyFormFilling::kFillOnPageLoad, likely_form_filling);
+  EXPECT_FALSE(fill_data.wait_for_username);
+#endif
 
   // Check that the message to the renderer (i.e. |fill_data|) is filled
   // correctly.
   EXPECT_EQ(observed_form_.url, fill_data.url);
-  EXPECT_FALSE(fill_data.wait_for_username);
   EXPECT_EQ(observed_form_.username_element, fill_data.username_field.name);
   EXPECT_EQ(saved_match_.username_value, fill_data.username_field.value);
   EXPECT_EQ(observed_form_.password_element, fill_data.password_field.name);
@@ -240,10 +247,17 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadSuggestion) {
     // In all cases where a current password exists, fill on load should be
     // permitted. Otherwise, the renderer will not fill anyway and return
     // kFillOnAccountSelect.
-    if (test_case.current_password_present)
-      EXPECT_EQ(LikelyFormFilling::kFillOnPageLoad, likely_form_filling);
-    else
+    if (test_case.current_password_present) {
+      // On Android Touch To Fill will prevent autofilling credentials on page
+      // load.
+#if defined(OS_ANDROID)
       EXPECT_EQ(LikelyFormFilling::kFillOnAccountSelect, likely_form_filling);
+#else
+      EXPECT_EQ(LikelyFormFilling::kFillOnPageLoad, likely_form_filling);
+#endif
+    } else {
+      EXPECT_EQ(LikelyFormFilling::kFillOnAccountSelect, likely_form_filling);
+    }
   }
 }
 

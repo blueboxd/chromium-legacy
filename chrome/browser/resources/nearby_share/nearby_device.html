@@ -6,7 +6,28 @@
     box-sizing: border-box;
     display: flex;
     height: 40px;
-    margin-top: 6px;
+    margin-block-end: 6px;
+    padding-block-end: 6px;
+    padding-block-start: 6px;
+    padding-inline-end: 9px;
+    padding-inline-start: 9px;
+  }
+
+  #icon {
+    color: rgb(26, 115, 232);
+    height: 15px;
+    width: 15px;
+  }
+
+  #icon-container {
+    align-items: center;
+    background-color: rgb(232, 240, 254);
+    border-radius: 13px;
+    display: flex;
+    flex-shrink: 0;
+    height: 26px;
+    justify-content: center;
+    width: 26px;
   }
 
   #name {
@@ -15,11 +36,13 @@
     font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.3px;
+    margin-inline-start: 11px;
     overflow: hidden;
-    text-align: center;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 </style>
-
+<div id="icon-container">
+  <iron-icon id="icon" icon="nearby-share:smartphone"></iron-icon>
+</div>
 <div id="name">[[name]]</div>

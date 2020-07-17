@@ -15,19 +15,12 @@ _mdc_public_headers = [
   # $ cd src/ios/third_party/material_components_ios
   # $ find src -path 'src/components/*/src/*.h' -a \! -path '*Test*'|\
   #   sed -e 's:\(.*\):  "\1",:'|sort -u
-  "src/components/ActionSheet/src/ActionSheetThemer/MDCActionSheetScheme.h",
-  "src/components/ActionSheet/src/ActionSheetThemer/MDCActionSheetThemer.h",
-  "src/components/ActionSheet/src/ActionSheetThemer/MaterialActionSheet+ActionSheetThemer.h",
-  "src/components/ActionSheet/src/ColorThemer/MDCActionSheetColorThemer.h",
-  "src/components/ActionSheet/src/ColorThemer/MaterialActionSheet+ColorThemer.h",
   "src/components/ActionSheet/src/MDCActionSheetAction.h",
   "src/components/ActionSheet/src/MDCActionSheetController.h",
   "src/components/ActionSheet/src/MDCActionSheetControllerDelegate.h",
   "src/components/ActionSheet/src/MaterialActionSheet.h",
   "src/components/ActionSheet/src/Theming/MDCActionSheetController+MaterialTheming.h",
   "src/components/ActionSheet/src/Theming/MaterialActionSheet+Theming.h",
-  "src/components/ActionSheet/src/TypographyThemer/MDCActionSheetTypographyThemer.h",
-  "src/components/ActionSheet/src/TypographyThemer/MaterialActionSheet+TypographyThemer.h",
   "src/components/ActionSheet/src/private/MDCActionSheetHeaderView.h",
   "src/components/ActionSheet/src/private/MDCActionSheetItemTableViewCell.h",
   "src/components/ActionSheet/src/private/MaterialActionSheetStrings.h",
@@ -565,10 +558,7 @@ _mdc_include_dirs = [
   # $ find src -path 'src/components/*/src/*.h' -a \! -path '*Test*'|\
   #   sed -e 's:\(.*\)/[^/]*:  "\1",:'|sort -u
   "src/components/ActionSheet/src",
-  "src/components/ActionSheet/src/ActionSheetThemer",
-  "src/components/ActionSheet/src/ColorThemer",
   "src/components/ActionSheet/src/Theming",
-  "src/components/ActionSheet/src/TypographyThemer",
   "src/components/ActionSheet/src/private",
   "src/components/ActivityIndicator/src",
   "src/components/ActivityIndicator/src/private",
@@ -733,14 +723,6 @@ _mdc_sources = [
   # $ cd src/ios/third_party/material_components_ios
   # $ find src -path 'src/components/*/src/*.[hm]' -a \! -path '*Test*'|\
   #   sed -e 's:\(.*\):  "\1",:'|sort -u
-  "src/components/ActionSheet/src/ActionSheetThemer/MDCActionSheetScheme.h",
-  "src/components/ActionSheet/src/ActionSheetThemer/MDCActionSheetScheme.m",
-  "src/components/ActionSheet/src/ActionSheetThemer/MDCActionSheetThemer.h",
-  "src/components/ActionSheet/src/ActionSheetThemer/MDCActionSheetThemer.m",
-  "src/components/ActionSheet/src/ActionSheetThemer/MaterialActionSheet+ActionSheetThemer.h",
-  "src/components/ActionSheet/src/ColorThemer/MDCActionSheetColorThemer.h",
-  "src/components/ActionSheet/src/ColorThemer/MDCActionSheetColorThemer.m",
-  "src/components/ActionSheet/src/ColorThemer/MaterialActionSheet+ColorThemer.h",
   "src/components/ActionSheet/src/MDCActionSheetAction.h",
   "src/components/ActionSheet/src/MDCActionSheetController.h",
   "src/components/ActionSheet/src/MDCActionSheetController.m",
@@ -749,9 +731,6 @@ _mdc_sources = [
   "src/components/ActionSheet/src/Theming/MDCActionSheetController+MaterialTheming.h",
   "src/components/ActionSheet/src/Theming/MDCActionSheetController+MaterialTheming.m",
   "src/components/ActionSheet/src/Theming/MaterialActionSheet+Theming.h",
-  "src/components/ActionSheet/src/TypographyThemer/MDCActionSheetTypographyThemer.h",
-  "src/components/ActionSheet/src/TypographyThemer/MDCActionSheetTypographyThemer.m",
-  "src/components/ActionSheet/src/TypographyThemer/MaterialActionSheet+TypographyThemer.h",
   "src/components/ActionSheet/src/private/MDCActionSheetHeaderView.h",
   "src/components/ActionSheet/src/private/MDCActionSheetHeaderView.m",
   "src/components/ActionSheet/src/private/MDCActionSheetItemTableViewCell.h",

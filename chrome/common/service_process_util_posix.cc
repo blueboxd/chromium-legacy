@@ -13,9 +13,9 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "build/branding_buildflags.h"
 #include "chrome/common/multi_process_lock.h"
 
@@ -232,7 +232,7 @@ void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK_EQ(g_signal_socket, -1);
   DCHECK(!signal->IsSignaled());
-  *success = base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+  *success = base::CurrentIOThread::Get()->WatchFileDescriptor(
       sockets[0], true, base::MessagePumpForIO::WATCH_READ, &watcher,
       terminate_monitor.get());
   if (!*success) {

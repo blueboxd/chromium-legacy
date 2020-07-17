@@ -6,6 +6,9 @@
  * @fileoverview The 'nearby-device' component shows details of a remote device.
  */
 
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import './icons.js';
+
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 Polymer({

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.preference.PreferenceFragmentCompat;
 
@@ -35,6 +36,11 @@ public class PasswordCheckFragmentView extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         getActivity().setTitle(R.string.passwords_check_title);
         setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getStyledContext()));
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         mComponentDelegate = sComponentFactory.create(this);
     }
 

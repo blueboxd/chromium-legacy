@@ -27,31 +27,47 @@ GURL GetUrl() {
 
 namespace chromeos {
 
-void CrostiniUpgraderDialog::Show(base::OnceClosure launch_closure,
+void CrostiniUpgraderDialog::Show(Profile* profile,
+                                  base::OnceClosure launch_closure,
                                   bool only_run_launch_closure_on_restart) {
-  auto* instance = SystemWebDialogDelegate::FindInstance(GetUrl().spec());
-  if (instance) {
-    instance->Focus();
+  if (Reshow()) {
     return;
   }
 
-  instance = new CrostiniUpgraderDialog(std::move(launch_closure),
-                                        only_run_launch_closure_on_restart);
+  auto* instance = new CrostiniUpgraderDialog(
+      profile, std::move(launch_closure), only_run_launch_closure_on_restart);
   instance->ShowSystemDialog();
   EmitUpgradeDialogEventHistogram(crostini::UpgradeDialogEvent::kDialogShown);
 }
 
+bool CrostiniUpgraderDialog::Reshow() {
+  auto* instance = SystemWebDialogDelegate::FindInstance(GetUrl().spec());
+  if (instance) {
+    instance->Focus();
+    return true;
+  }
+  return false;
+}
+
 CrostiniUpgraderDialog::CrostiniUpgraderDialog(
+    Profile* profile,
     base::OnceClosure launch_closure,
     bool only_run_launch_closure_on_restart)
     : SystemWebDialogDelegate{GetUrl(), /*title=*/{}},
+      profile_(profile),
       only_run_launch_closure_on_restart_(only_run_launch_closure_on_restart),
-      launch_closure_{std::move(launch_closure)} {}
+      launch_closure_{std::move(launch_closure)} {
+  DCHECK(profile_);
+  crostini::CrostiniManager::GetForProfile(profile_)->SetCrostiniDialogStatus(
+      crostini::DialogType::UPGRADER, true);
+}
 
 CrostiniUpgraderDialog::~CrostiniUpgraderDialog() {
   if (deletion_closure_for_testing_) {
     std::move(deletion_closure_for_testing_).Run();
   }
+  crostini::CrostiniManager::GetForProfile(profile_)->SetCrostiniDialogStatus(
+      crostini::DialogType::UPGRADER, false);
 }
 
 void CrostiniUpgraderDialog::GetDialogSize(gfx::Size* size) const {
@@ -135,15 +151,10 @@ void RunLaunchClosure(base::WeakPtr<crostini::CrostiniManager> crostini_manager,
 }  // namespace
 
 void CrostiniUpgraderDialog::OnDialogShown(content::WebUI* webui) {
-  auto* crostini_manager =
-      crostini::CrostiniManager::GetForProfile(Profile::FromWebUI(webui));
-  crostini_manager->SetCrostiniDialogStatus(crostini::DialogType::UPGRADER,
-                                            true);
-  crostini_manager->UpgradePromptShown(crostini::ContainerId::GetDefault());
-
   upgrader_ui_ = static_cast<CrostiniUpgraderUI*>(webui->GetController());
   upgrader_ui_->set_launch_callback(base::BindOnce(
-      &RunLaunchClosure, crostini_manager->GetWeakPtr(),
+      &RunLaunchClosure,
+      crostini::CrostiniManager::GetForProfile(profile_)->GetWeakPtr(),
       std::move(launch_closure_), only_run_launch_closure_on_restart_));
   return SystemWebDialogDelegate::OnDialogShown(webui);
 }
@@ -151,10 +162,6 @@ void CrostiniUpgraderDialog::OnDialogShown(content::WebUI* webui) {
 void CrostiniUpgraderDialog::OnCloseContents(content::WebContents* source,
                                              bool* out_close_dialog) {
   upgrader_ui_ = nullptr;
-  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(
-      Profile::FromBrowserContext(source->GetBrowserContext()));
-  crostini_manager->SetCrostiniDialogStatus(crostini::DialogType::UPGRADER,
-                                            false);
   return SystemWebDialogDelegate::OnCloseContents(source, out_close_dialog);
 }
 

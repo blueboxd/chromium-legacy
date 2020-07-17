@@ -4,23 +4,18 @@
 
 package org.chromium.chrome.browser.touch_to_fill;
 
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FIELD_TRIAL_PARAM_BRANDING_MESSAGE;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FIELD_TRIAL_PARAM_SHOW_CONFIRMATION_BUTTON;
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import androidx.annotation.DimenRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
@@ -203,35 +198,15 @@ class TouchToFillView implements BottomSheetContent {
         if (hasMultipleCredentials) {
             totalHeight += resources.getDimensionPixelSize(
                     R.dimen.touch_to_fill_sheet_height_second_credential);
-        }
-
-        final boolean hasButton = !hasMultipleCredentials
-                && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                        ChromeFeatureList.TOUCH_TO_FILL_ANDROID,
-                        FIELD_TRIAL_PARAM_SHOW_CONFIRMATION_BUTTON, false);
-        if (hasButton) {
+            totalHeight += resources.getDimensionPixelSize(
+                    R.dimen.touch_to_fill_sheet_bottom_padding_credentials);
+        } else {
             totalHeight +=
                     resources.getDimensionPixelSize(R.dimen.touch_to_fill_sheet_height_button);
+            totalHeight += resources.getDimensionPixelSize(
+                    R.dimen.touch_to_fill_sheet_bottom_padding_button);
         }
 
-        final boolean hasBranding = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                                            ChromeFeatureList.TOUCH_TO_FILL_ANDROID,
-                                            FIELD_TRIAL_PARAM_BRANDING_MESSAGE, 0)
-                != 0;
-        if (hasBranding) {
-            totalHeight +=
-                    resources.getDimensionPixelSize(R.dimen.touch_to_fill_sheet_height_branding);
-        }
-
-        return totalHeight + getDesiredBottomPadding(hasButton, hasBranding);
-    }
-
-    private @Px int getDesiredBottomPadding(boolean hasButton, boolean hasBranding) {
-        @DimenRes
-        int bottomPaddingId = R.dimen.touch_to_fill_sheet_bottom_padding_credentials;
-        if (hasButton) bottomPaddingId = R.dimen.touch_to_fill_sheet_bottom_padding_button;
-        if (hasBranding) bottomPaddingId = R.dimen.touch_to_fill_sheet_bottom_padding_branding;
-
-        return mContext.getResources().getDimensionPixelSize(bottomPaddingId);
+        return totalHeight;
     }
 }

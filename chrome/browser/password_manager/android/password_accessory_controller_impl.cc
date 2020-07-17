@@ -283,6 +283,8 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
 
   if (base::FeatureList::IsEnabled(
           password_manager::features::kRecoverFromNeverSaveAndroid) &&
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillKeyboardAccessory) &&
       is_password_field &&
       password_client_->IsSavingAndFillingEnabled(origin.GetURL())) {
     BlacklistedStatus blacklisted_status =

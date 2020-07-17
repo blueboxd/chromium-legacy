@@ -46,6 +46,7 @@
     "backgroundfetchsuccess",
     "beforematch",
     "beforecopy",
+    "beforecreatepolicy",
     "beforecut",
     "beforeinput",
     "beforeinstallprompt",

@@ -8,6 +8,8 @@
 #include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 
+class Profile;
+
 namespace chromeos {
 
 class CrostiniUpgraderUI;
@@ -20,8 +22,12 @@ class CrostiniUpgraderDialog : public SystemWebDialogDelegate {
   // not desired. This contrasts to being propmpted for container upgrade from
   // The app launcher, in which case the user could opt not to upgrade and the
   // app should still be launched.
-  static void Show(base::OnceClosure launch_closure,
+  static void Show(Profile* profile,
+                   base::OnceClosure launch_closure,
                    bool only_run_launch_closure_on_restart = false);
+
+  // Returns true if there was an existing instance to reshow.
+  static bool Reshow();
 
   void SetDeletionClosureForTesting(
       base::OnceClosure deletion_closure_for_testing);
@@ -30,7 +36,8 @@ class CrostiniUpgraderDialog : public SystemWebDialogDelegate {
       crostini::UpgradeDialogEvent event);
 
  private:
-  explicit CrostiniUpgraderDialog(base::OnceClosure launch_closure,
+  explicit CrostiniUpgraderDialog(Profile* profile,
+                                  base::OnceClosure launch_closure,
                                   bool only_run_launch_closure_on_restart);
   ~CrostiniUpgraderDialog() override;
 
@@ -46,6 +53,7 @@ class CrostiniUpgraderDialog : public SystemWebDialogDelegate {
                        bool* out_close_dialog) override;
 
   CrostiniUpgraderUI* upgrader_ui_ = nullptr;  // Not owned.
+  Profile* profile_;                           // Not owned
   const bool only_run_launch_closure_on_restart_;
   base::OnceClosure launch_closure_;
   base::OnceClosure deletion_closure_for_testing_;

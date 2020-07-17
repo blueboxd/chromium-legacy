@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
+#include "base/task/current_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -78,7 +78,7 @@ TouchUiController* TouchUiController::Get() {
 TouchUiController::TouchUiController(TouchUiState touch_ui_state)
     : touch_ui_state_(touch_ui_state) {
 #if defined(OS_WIN)
-  if (base::MessageLoopCurrentForUI::IsSet() &&
+  if (base::CurrentUIThread::IsSet() &&
       (base::win::GetVersion() >= base::win::Version::WIN10)) {
     singleton_hwnd_observer_ =
         std::make_unique<gfx::SingletonHwndObserver>(base::BindRepeating(

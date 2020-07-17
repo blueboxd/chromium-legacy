@@ -407,13 +407,12 @@ void LaunchCrostiniApp(Profile* profile,
         files, std::move(callback));
   }
 
-  if (crostini_manager->ShouldPromptContainerUpgrade(
-          ContainerId(registration->VmName(), registration->ContainerName())) ||
-      crostini_manager->GetCrostiniDialogStatus(DialogType::UPGRADER)) {
-    chromeos::CrostiniUpgraderDialog::Show(base::BindOnce(
-        &LaunchCrostiniAppImpl, profile, app_id, std::move(*registration),
-        display_id, files, std::move(callback)));
-    VLOG(1) << "Upgrade dialog";
+  if (crostini_manager->GetCrostiniDialogStatus(DialogType::UPGRADER)) {
+    // Reshow the existing dialog.
+    chromeos::CrostiniUpgraderDialog::Reshow();
+    VLOG(1) << "Reshowing upgrade dialog";
+    std::move(callback).Run(
+        false, "LaunchCrostiniApp called while upgrade dialog showing");
     return;
   }
   LaunchCrostiniAppImpl(profile, app_id, std::move(*registration), display_id,

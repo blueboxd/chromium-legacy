@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/win/scoped_variant.h"
 #include "ui/base/ime/input_method_delegate.h"
@@ -140,7 +140,7 @@ class TSFBridgeImpl : public TSFBridge {
 TSFBridgeImpl::TSFBridgeImpl() = default;
 
 TSFBridgeImpl::~TSFBridgeImpl() {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   if (!IsInitialized())
     return;
 
@@ -167,7 +167,7 @@ TSFBridgeImpl::~TSFBridgeImpl() {
 }
 
 bool TSFBridgeImpl::Initialize() {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   if (client_id_ != TF_CLIENTID_NULL) {
     DVLOG(1) << "Already initialized.";
     return false;
@@ -217,7 +217,7 @@ bool TSFBridgeImpl::Initialize() {
 }
 
 void TSFBridgeImpl::OnTextInputTypeChanged(const TextInputClient* client) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   DCHECK(IsInitialized());
 
   if (client != client_) {
@@ -259,7 +259,7 @@ void TSFBridgeImpl::SetInputPanelPolicy(bool input_panel_policy_manual) {
 }
 
 bool TSFBridgeImpl::CancelComposition() {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   DCHECK(IsInitialized());
 
   TSFDocument* document = GetAssociatedDocument();
@@ -272,7 +272,7 @@ bool TSFBridgeImpl::CancelComposition() {
 }
 
 bool TSFBridgeImpl::ConfirmComposition() {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   DCHECK(IsInitialized());
 
   TSFDocument* document = GetAssociatedDocument();
@@ -286,7 +286,7 @@ bool TSFBridgeImpl::ConfirmComposition() {
 
 void TSFBridgeImpl::SetFocusedClient(HWND focused_window,
                                      TextInputClient* client) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   DCHECK(client);
   DCHECK(IsInitialized());
   if (attached_window_handle_ != focused_window)
@@ -306,7 +306,7 @@ void TSFBridgeImpl::SetFocusedClient(HWND focused_window,
 }
 
 void TSFBridgeImpl::RemoveFocusedClient(TextInputClient* client) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   if (!IsInitialized())
     return;
   if (client_ != client)
@@ -324,7 +324,7 @@ void TSFBridgeImpl::RemoveFocusedClient(TextInputClient* client) {
 
 void TSFBridgeImpl::SetInputMethodDelegate(
     internal::InputMethodDelegate* delegate) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   DCHECK(delegate);
   DCHECK(IsInitialized());
 
@@ -337,7 +337,7 @@ void TSFBridgeImpl::SetInputMethodDelegate(
 }
 
 void TSFBridgeImpl::RemoveInputMethodDelegate() {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   DCHECK(IsInitialized());
 
   for (TSFDocumentMap::iterator it = tsf_document_map_.begin();
@@ -362,7 +362,7 @@ TextInputClient* TSFBridgeImpl::GetFocusedTextInputClient() const {
 }
 
 Microsoft::WRL::ComPtr<ITfThreadMgr> TSFBridgeImpl::GetThreadManager() {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   DCHECK(IsInitialized());
   return thread_manager_;
 }
@@ -584,7 +584,7 @@ TSFBridge::~TSFBridge() {}
 
 // static
 void TSFBridge::Initialize() {
-  if (!base::MessageLoopCurrentForUI::IsSet()) {
+  if (!base::CurrentUIThread::IsSet()) {
     DVLOG(1) << "Do not use TSFBridge without UI thread.";
     return;
   }
@@ -601,7 +601,7 @@ void TSFBridge::Initialize() {
 
 // static
 TSFBridge* TSFBridge::ReplaceForTesting(TSFBridge* bridge) {
-  if (!base::MessageLoopCurrentForUI::IsSet()) {
+  if (!base::CurrentUIThread::IsSet()) {
     DVLOG(1) << "Do not use TSFBridge without UI thread.";
     return nullptr;
   }
@@ -612,7 +612,7 @@ TSFBridge* TSFBridge::ReplaceForTesting(TSFBridge* bridge) {
 
 // static
 void TSFBridge::Shutdown() {
-  if (!base::MessageLoopCurrentForUI::IsSet()) {
+  if (!base::CurrentUIThread::IsSet()) {
     DVLOG(1) << "Do not use TSFBridge without UI thread.";
   }
   TSFBridgeImpl* delegate = static_cast<TSFBridgeImpl*>(TSFBridgeTLS().Get());
@@ -622,7 +622,7 @@ void TSFBridge::Shutdown() {
 
 // static
 TSFBridge* TSFBridge::GetInstance() {
-  if (!base::MessageLoopCurrentForUI::IsSet()) {
+  if (!base::CurrentUIThread::IsSet()) {
     DVLOG(1) << "Do not use TSFBridge without UI thread.";
     return nullptr;
   }

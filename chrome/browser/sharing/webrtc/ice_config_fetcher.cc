@@ -68,7 +68,7 @@ IceConfigFetcher::IceConfigFetcher(
 
 IceConfigFetcher::~IceConfigFetcher() = default;
 
-void IceConfigFetcher::GetIceServers(IceServerCallback callback) {
+void IceConfigFetcher::GetIceServers(GetIceServersCallback callback) {
   url_loader_.reset();
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -91,7 +91,7 @@ void IceConfigFetcher::GetIceServers(IceServerCallback callback) {
 }
 
 void IceConfigFetcher::OnIceServersResponse(
-    IceServerCallback callback,
+    GetIceServersCallback callback,
     std::unique_ptr<std::string> response_body) {
   std::vector<sharing::mojom::IceServerPtr> ice_servers;
 

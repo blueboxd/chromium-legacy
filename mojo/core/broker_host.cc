@@ -33,7 +33,7 @@ BrokerHost::BrokerHost(base::ProcessHandle client_process,
   CHECK(connection_params.endpoint().is_valid() ||
         connection_params.server_endpoint().is_valid());
 
-  base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
+  base::CurrentThread::Get()->AddDestructionObserver(this);
 
   channel_ = Channel::Create(this, std::move(connection_params),
                              Channel::HandlePolicy::kAcceptHandles,
@@ -43,7 +43,7 @@ BrokerHost::BrokerHost(base::ProcessHandle client_process,
 
 BrokerHost::~BrokerHost() {
   // We're always destroyed on the creation thread, which is the IO thread.
-  base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
+  base::CurrentThread::Get()->RemoveDestructionObserver(this);
 
   if (channel_)
     channel_->ShutDown();

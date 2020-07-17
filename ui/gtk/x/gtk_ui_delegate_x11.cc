@@ -63,7 +63,9 @@ bool GtkUiDelegateX11::SetGdkWindowTransientFor(GdkWindow* window,
 void GtkUiDelegateX11::ClearTransientFor(gfx::AcceleratedWidget parent) {
   ui::X11Window* parent_window =
       ui::X11WindowManager::GetInstance()->GetWindow(parent);
-  parent_window->SetTransientWindow(x11::Window::None);
+  // parent_window might be dead if there was a top-down window close
+  if (parent_window)
+    parent_window->SetTransientWindow(x11::Window::None);
 }
 
 GdkDisplay* GtkUiDelegateX11::GetGdkDisplay() {

@@ -34,8 +34,24 @@ NearbyConnections::NearbyConnections(
     bluetooth_adapter_.set_disconnect_handler(base::BindOnce(
         &NearbyConnections::OnDisconnect, weak_ptr_factory_.GetWeakPtr()));
   }
+
+  socket_manager_.Bind(
+      std::move(dependencies->webrtc_dependencies->socket_manager));
+  socket_manager_.set_disconnect_handler(base::BindOnce(
+      &NearbyConnections::OnDisconnect, weak_ptr_factory_.GetWeakPtr()));
+
+  mdns_responder_.Bind(
+      std::move(dependencies->webrtc_dependencies->mdns_responder));
+  mdns_responder_.set_disconnect_handler(base::BindOnce(
+      &NearbyConnections::OnDisconnect, weak_ptr_factory_.GetWeakPtr()));
+
+  ice_config_fetcher_.Bind(
+      std::move(dependencies->webrtc_dependencies->ice_config_fetcher));
+  ice_config_fetcher_.set_disconnect_handler(base::BindOnce(
+      &NearbyConnections::OnDisconnect, weak_ptr_factory_.GetWeakPtr()));
+
   webrtc_signaling_messenger_.Bind(
-      std::move(dependencies->webrtc_signaling_messenger));
+      std::move(dependencies->webrtc_dependencies->messenger));
   webrtc_signaling_messenger_.set_disconnect_handler(base::BindOnce(
       &NearbyConnections::OnDisconnect, weak_ptr_factory_.GetWeakPtr()));
 
@@ -61,6 +77,29 @@ bluetooth::mojom::Adapter* NearbyConnections::GetBluetoothAdapter() {
     return nullptr;
 
   return bluetooth_adapter_.get();
+}
+
+network::mojom::P2PSocketManager*
+NearbyConnections::GetWebRtcP2PSocketManager() {
+  if (!socket_manager_.is_bound())
+    return nullptr;
+
+  return socket_manager_.get();
+}
+
+network::mojom::MdnsResponder* NearbyConnections::GetWebRtcMdnsResponder() {
+  if (!mdns_responder_.is_bound())
+    return nullptr;
+
+  return mdns_responder_.get();
+}
+
+sharing::mojom::IceConfigFetcher*
+NearbyConnections::GetWebRtcIceConfigFetcher() {
+  if (!ice_config_fetcher_.is_bound())
+    return nullptr;
+
+  return ice_config_fetcher_.get();
 }
 
 sharing::mojom::WebRtcSignalingMessenger*

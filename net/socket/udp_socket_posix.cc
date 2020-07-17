@@ -18,10 +18,10 @@
 #include "base/debug/alias.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
@@ -393,7 +393,7 @@ int UDPSocketPosix::RecvFrom(IOBuffer* buf,
   if (nread != ERR_IO_PENDING)
     return nread;
 
-  if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+  if (!base::CurrentIOThread::Get()->WatchFileDescriptor(
           socket_, true, base::MessagePumpForIO::WATCH_READ,
           &read_socket_watcher_, &read_watcher_)) {
     PLOG(ERROR) << "WatchFileDescriptor failed on read";
@@ -438,7 +438,7 @@ int UDPSocketPosix::SendToOrWrite(IOBuffer* buf,
   if (result != ERR_IO_PENDING)
     return result;
 
-  if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+  if (!base::CurrentIOThread::Get()->WatchFileDescriptor(
           socket_, true, base::MessagePumpForIO::WATCH_WRITE,
           &write_socket_watcher_, &write_watcher_)) {
     DVPLOG(1) << "WatchFileDescriptor failed on write";
@@ -1464,7 +1464,7 @@ void UDPSocketPosix::StopWatchingFileDescriptor() {
 }
 
 bool UDPSocketPosix::InternalWatchFileDescriptor() {
-  return base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+  return base::CurrentIOThread::Get()->WatchFileDescriptor(
       socket_, true, base::MessagePumpForIO::WATCH_WRITE,
       &write_socket_watcher_, write_async_watcher_.get());
 }

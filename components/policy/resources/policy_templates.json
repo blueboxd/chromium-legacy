@@ -6172,9 +6172,9 @@
       'id': 623,
       'caption': '''Default legacy <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> cookie behavior setting''',
       'tags': [],
-      'desc': '''Allows you to revert all cookies to legacy <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> behavior. Reverting to legacy behavior causes cookies that don't specify a <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> attribute to be treated as if they were "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE">SameSite=None</ph>", and removes the requirement for "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE">SameSite=None</ph>" cookies to carry the "<ph name="ATTRIBUTE_SECURE_NAME">Secure</ph>" attribute. See https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies for full description.
+      'desc': '''Allows you to revert all cookies to legacy <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> behavior. Reverting to legacy behavior causes cookies that don't specify a <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> attribute to be treated as if they were "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE">SameSite=None</ph>", removes the requirement for "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE">SameSite=None</ph>" cookies to carry the "<ph name="ATTRIBUTE_SECURE_NAME">Secure</ph>" attribute, and skips the scheme comparison when evaluating if two sites are same-site. See https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies for full description.
 
-          When this policy is not set, the default <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> behavior for cookies that don't specify a <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> attribute will depend on the user's personal configuration for the <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES">SameSite-by-default</ph> feature, which may be set by a field trial or by enabling or disabling the flag <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES">same-site-by-default-cookies</ph> flag.''',
+          When this policy is not set, the default <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> behavior for cookies will depend on the user's personal configuration for the <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES">SameSite-by-default</ph> feature, the <ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE">Cookies-without-SameSite-must-be-secure</ph> feature, and the <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE">Schemeful Same-Site</ph> feature which may be set by a field trial or by enabling or disabling the <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES">same-site-by-default-cookies</ph> flag, the <ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE">cookies-without-same-site-must-be-secure</ph> flag, or the <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE">schemeful-same-site</ph> flag, respectively.''',
     },
     {
       'name': 'LegacySameSiteCookieBehaviorEnabledForDomainList',
@@ -6197,7 +6197,7 @@
       'id': 624,
       'caption': '''Revert to legacy <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> behavior for cookies on these sites''',
       'tags': [],
-      'desc': '''Cookies set for domains matching these patterns will revert to legacy <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> behavior. Reverting to legacy behavior causes cookies that don't specify a <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> attribute to be treated as if they were "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE">SameSite=None</ph>", and removes the requirement for "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE">SameSite=None</ph>" cookies to carry the "<ph name="ATTRIBUTE_SECURE_NAME">Secure</ph>" attribute. See https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies for full description.
+      'desc': '''Cookies set for domains matching these patterns will revert to legacy <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> behavior. Reverting to legacy behavior causes cookies that don't specify a <ph name="ATTRIBUTE_SAMESITE_NAME">SameSite</ph> attribute to be treated as if they were "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE">SameSite=None</ph>", removes the requirement for "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE">SameSite=None</ph>" cookies to carry the "<ph name="ATTRIBUTE_SECURE_NAME">Secure</ph>" attribute, and skips the scheme comparison when evaluating if two sites are same-site. See https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies for full description.
 
           For cookies on domains not covered by the patterns specified here, or for all cookies if this policy is not set, the global default value will be used either from the <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME">LegacySameSiteCookieBehaviorEnabled</ph> policy, if it is set, or the user's personal configuration otherwise.
 
@@ -18834,7 +18834,11 @@
       'tags': [],
       'desc': '''Setting the policy to True allows pages to show pop-ups while the pages unload.
 
-      Setting the policy to False or leaving it unset prevents pages from showing pop-ups while the pages unload.''',
+      Setting the policy to False or leaving it unset prevents pages from showing pop-ups while the pages unload.
+
+      This policy will be removed in Chrome 88.
+
+      See https://www.chromestatus.com/feature/5989473649164288.''',
     },
     {
       'name': 'DeviceWilcoDtcConfiguration',

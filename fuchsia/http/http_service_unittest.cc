@@ -5,8 +5,8 @@
 #include <fuchsia/net/oldhttp/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/task/current_thread.h"
 #include "base/test/task_environment.h"
 #include "fuchsia/http/http_service_impl.h"
 #include "fuchsia/http/url_loader_impl.h"
@@ -115,7 +115,7 @@ zx_signals_t RunLoopUntilSignal(zx_handle_t handle, zx_signals_t signals) {
   TestZxHandleWatcher watcher(run_loop.QuitClosure());
   base::MessagePumpForIO::ZxHandleWatchController watch_contoller(FROM_HERE);
 
-  base::MessageLoopCurrentForIO::Get()->WatchZxHandle(
+  base::CurrentIOThread::Get()->WatchZxHandle(
       handle, /*persistent=*/false, signals, &watch_contoller, &watcher);
   run_loop.Run();
 

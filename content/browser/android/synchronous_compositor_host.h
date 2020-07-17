@@ -180,9 +180,6 @@ class CONTENT_EXPORT SynchronousCompositorHost
   float min_page_scale_factor_ = 0.f;
   float max_page_scale_factor_ = 0.f;
 
-  // From viz display.
-  uint32_t last_frame_token_ = 0u;
-
   scoped_refptr<SynchronousCompositorSyncCallBridge> bridge_;
 
   // Indicates whether and for what reason a request for begin frames has been

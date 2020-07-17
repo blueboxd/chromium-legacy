@@ -831,11 +831,10 @@ void PartitionAllocator<thread_safe>::init(
       &partition_root_);
 }
 
-template void PartitionAllocator<internal::ThreadSafe>::~PartitionAllocator();
+template PartitionAllocator<internal::ThreadSafe>::~PartitionAllocator();
 template void PartitionAllocator<internal::ThreadSafe>::init(
     PartitionAllocatorAlignment alignment);
-template void
-    PartitionAllocator<internal::NotThreadSafe>::~PartitionAllocator();
+template PartitionAllocator<internal::NotThreadSafe>::~PartitionAllocator();
 template void PartitionAllocator<internal::NotThreadSafe>::init(
     PartitionAllocatorAlignment alignment);
 

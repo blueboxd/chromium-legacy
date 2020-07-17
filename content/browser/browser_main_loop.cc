@@ -21,7 +21,6 @@
 #include "base/logging.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -39,6 +38,7 @@
 #include "base/strings/string_split.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/system_monitor.h"
+#include "base/task/current_thread.h"
 #include "base/task/thread_pool/initialization_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -673,7 +673,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
   // PostMainMessageLoopStart() below.
 
   TRACE_EVENT0("startup", "BrowserMainLoop::MainMessageLoopStart");
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   InitializeMainThread();
 }
 
@@ -1168,7 +1168,7 @@ void BrowserMainLoop::InitializeMainThread() {
 
   // Register the main thread. The main thread's task runner should already have
   // been initialized in MainMessageLoopStart() (or before if
-  // MessageLoopCurrent::Get() was externally provided).
+  // CurrentThread::Get() was externally provided).
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
   main_thread_.reset(new BrowserThreadImpl(
       BrowserThread::UI, base::ThreadTaskRunnerHandle::Get()));

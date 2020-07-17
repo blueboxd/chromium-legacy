@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "ui/events/event.h"
 
 namespace ui {
@@ -38,7 +38,7 @@ bool WaylandEventWatcher::StopProcessingEvents() {
   if (!watching_)
     return false;
 
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   watching_ = false;
   return controller_.StopWatchingFileDescriptor();
 }
@@ -85,9 +85,9 @@ bool WaylandEventWatcher::StartWatchingFd(
     DCHECK(!watching_);
   }
 
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   int display_fd = wl_display_get_fd(display_);
-  watching_ = base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
+  watching_ = base::CurrentUIThread::Get()->WatchFileDescriptor(
       display_fd, true, mode, &controller_, this);
   return watching_;
 }

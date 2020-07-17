@@ -31,6 +31,7 @@ using autofill::FormData;
 using autofill::FormRendererId;
 using autofill::FieldRendererId;
 using autofill::PasswordFormFillData;
+using base::SysNSStringToUTF16;
 using password_manager::FillData;
 using password_manager::GetPageURLAndCheckTrustLevel;
 using password_manager::SerializePasswordFormFillData;
@@ -189,6 +190,10 @@ constexpr char kCommandPrefix[] = "passwordForm";
                              forms.size(), 50);
   if (forms.size() != 1)
     return;
+
+  // Extract FieldDataManager data for observed fields.
+  [self extractKnownFieldData:forms[0]];
+
   [self.delegate formHelper:self
               didSubmitForm:forms[0]
                 inMainFrame:formInMainFrame];
@@ -254,15 +259,31 @@ constexpr char kCommandPrefix[] = "passwordForm";
     return;
   }
 
+  // Necessary copy so the values can be used inside a block.
+  FieldRendererId usernameID = formData.username_field.unique_renderer_id;
+  FieldRendererId passwordID = formData.password_field.unique_renderer_id;
+  base::string16 usernameValue = username;
+  base::string16 passwordValue = password;
+
   // Send JSON over to the web view.
+  __weak PasswordFormHelper* weakSelf = self;
   [self.jsPasswordManager
        fillPasswordForm:SerializePasswordFormFillData(formData)
                 inFrame:GetMainFrame(_webState)
            withUsername:base::SysUTF16ToNSString(username)
                password:base::SysUTF16ToNSString(password)
       completionHandler:^(NSString* result) {
+        BOOL success = [result isEqual:@"true"];
+        if (success) {
+          weakSelf.fieldDataManager->UpdateFieldDataWithAutofilledValue(
+              usernameID, usernameValue,
+              FieldPropertiesFlags::kAutofilledOnPageLoad);
+          weakSelf.fieldDataManager->UpdateFieldDataWithAutofilledValue(
+              passwordID, passwordValue,
+              FieldPropertiesFlags::kAutofilledOnPageLoad);
+        }
         if (completionHandler) {
-          completionHandler([result isEqual:@"true"]);
+          completionHandler(success);
         }
       }];
 }
@@ -341,12 +362,6 @@ constexpr char kCommandPrefix[] = "passwordForm";
     return;
   }
 
-  self.fieldDataManager->UpdateFieldDataMapWithNullValue(
-      formData.username_field.unique_renderer_id,
-      FieldPropertiesFlags::kAutofilledOnPageLoad);
-  self.fieldDataManager->UpdateFieldDataMapWithNullValue(
-      formData.password_field.unique_renderer_id,
-      FieldPropertiesFlags::kAutofilledOnPageLoad);
   [self fillPasswordForm:formData
             withUsername:formData.username_field.value
                 password:formData.password_field.value
@@ -358,43 +373,59 @@ constexpr char kCommandPrefix[] = "passwordForm";
     confirmPasswordIdentifier:(FieldRendererId)confirmPasswordIdentifier
             generatedPassword:(NSString*)generatedPassword
             completionHandler:(nullable void (^)(BOOL))completionHandler {
-  self.fieldDataManager->UpdateFieldDataMapWithNullValue(
-      newPasswordIdentifier, FieldPropertiesFlags::kAutofilledOnUserTrigger);
-  self.fieldDataManager->UpdateFieldDataMapWithNullValue(
-      confirmPasswordIdentifier,
-      FieldPropertiesFlags::kAutofilledOnUserTrigger);
-
   // Send JSON over to the web view.
-  [self.jsPasswordManager fillPasswordForm:formIdentifier
-                                   inFrame:GetMainFrame(_webState)
-                     newPasswordIdentifier:newPasswordIdentifier
-                 confirmPasswordIdentifier:confirmPasswordIdentifier
-                         generatedPassword:generatedPassword
-                         completionHandler:^(NSString* result) {
-                           if (completionHandler) {
-                             completionHandler([result isEqual:@"true"]);
-                           }
-                         }];
+  __weak PasswordFormHelper* weakSelf = self;
+  [self.jsPasswordManager
+               fillPasswordForm:formIdentifier
+                        inFrame:GetMainFrame(_webState)
+          newPasswordIdentifier:newPasswordIdentifier
+      confirmPasswordIdentifier:confirmPasswordIdentifier
+              generatedPassword:generatedPassword
+              completionHandler:^(NSString* result) {
+                BOOL success = [result isEqual:@"true"];
+                if (success) {
+                  weakSelf.fieldDataManager->UpdateFieldDataWithAutofilledValue(
+                      newPasswordIdentifier,
+                      SysNSStringToUTF16(generatedPassword),
+                      FieldPropertiesFlags::kAutofilledOnUserTrigger);
+                  weakSelf.fieldDataManager->UpdateFieldDataWithAutofilledValue(
+                      confirmPasswordIdentifier,
+                      SysNSStringToUTF16(generatedPassword),
+                      FieldPropertiesFlags::kAutofilledOnUserTrigger);
+                }
+                if (completionHandler) {
+                  completionHandler(success);
+                }
+              }];
 }
 
 - (void)fillPasswordFormWithFillData:(const password_manager::FillData&)fillData
                    completionHandler:
                        (nullable void (^)(BOOL))completionHandler {
-  self.fieldDataManager->UpdateFieldDataMapWithNullValue(
-      fillData.username_element_id,
-      FieldPropertiesFlags::kAutofilledOnUserTrigger);
-  self.fieldDataManager->UpdateFieldDataMapWithNullValue(
-      fillData.password_element_id,
-      FieldPropertiesFlags::kAutofilledOnUserTrigger);
+  // Necessary copy so the values can be used inside a block.
+  FieldRendererId usernameID = fillData.username_element_id;
+  FieldRendererId passwordID = fillData.password_element_id;
+  base::string16 usernameValue = fillData.username_value;
+  base::string16 passwordValue = fillData.password_value;
 
+  __weak PasswordFormHelper* weakSelf = self;
   [self.jsPasswordManager
        fillPasswordForm:SerializeFillData(fillData)
                 inFrame:GetMainFrame(_webState)
-           withUsername:base::SysUTF16ToNSString(fillData.username_value)
-               password:base::SysUTF16ToNSString(fillData.password_value)
+           withUsername:base::SysUTF16ToNSString(usernameValue)
+               password:base::SysUTF16ToNSString(passwordValue)
       completionHandler:^(NSString* result) {
+        BOOL success = [result isEqual:@"true"];
+        if (success) {
+          weakSelf.fieldDataManager->UpdateFieldDataWithAutofilledValue(
+              usernameID, usernameValue,
+              FieldPropertiesFlags::kAutofilledOnUserTrigger);
+          weakSelf.fieldDataManager->UpdateFieldDataWithAutofilledValue(
+              passwordID, passwordValue,
+              FieldPropertiesFlags::kAutofilledOnUserTrigger);
+        }
         if (completionHandler) {
-          completionHandler([result isEqual:@"true"]);
+          completionHandler(success);
         }
       }];
 }

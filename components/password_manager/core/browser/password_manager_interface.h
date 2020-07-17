@@ -11,6 +11,7 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "components/autofill/core/common/field_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/renderer_id.h"
 #include "components/password_manager/core/browser/form_submission_observer.h"
@@ -76,12 +77,17 @@ class PasswordManagerInterface : public FormSubmissionObserver {
 
   // Call when a form is removed so that this class can decide if whether or not
   // the form was submitted.
-  virtual void OnPasswordFormRemoved(PasswordManagerDriver* driver,
-                                     autofill::FormRendererId form_id) = 0;
+  virtual void OnPasswordFormRemoved(
+      PasswordManagerDriver* driver,
+      const autofill::FieldDataManager* field_data_manager,
+      autofill::FormRendererId form_id) = 0;
 
   // Checks if there is a submitted PasswordFormManager for a form from the
   // detached frame.
-  virtual void OnIframeDetach(const std::string& frame_id) = 0;
+  virtual void OnIframeDetach(
+      const std::string& frame_id,
+      PasswordManagerDriver* driver,
+      const autofill::FieldDataManager* field_data_manager) = 0;
 #endif
 };
 

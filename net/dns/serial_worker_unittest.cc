@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/test/test_with_task_environment.h"
@@ -158,7 +158,7 @@ TEST_F(SerialWorkerTest, ExecuteAndSerializeReads) {
     WaitForWork();
     RunUntilBreak("OnWorkFinished");
 
-    EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
+    EXPECT_TRUE(base::CurrentThread::Get()->IsIdleForTesting());
   }
 
   // Schedule two calls. OnWork checks if it is called serially.
@@ -171,7 +171,7 @@ TEST_F(SerialWorkerTest, ExecuteAndSerializeReads) {
   RunUntilBreak("OnWorkFinished");
 
   // No more tasks should remain.
-  EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
+  EXPECT_TRUE(base::CurrentThread::Get()->IsIdleForTesting());
 }
 
 }  // namespace

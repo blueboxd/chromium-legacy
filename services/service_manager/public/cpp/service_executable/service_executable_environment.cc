@@ -6,9 +6,9 @@
 
 #include "base/check.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
@@ -29,7 +29,7 @@ namespace service_manager {
 
 ServiceExecutableEnvironment::ServiceExecutableEnvironment()
     : ipc_thread_("IPC Thread") {
-  DCHECK(!base::MessageLoopCurrent::Get());
+  DCHECK(!base::CurrentThread::Get());
 
 #if defined(OS_LINUX)
   const base::CommandLine& command_line =

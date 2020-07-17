@@ -14,10 +14,10 @@
 #include "base/check.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial.h"
 #include "base/notreached.h"
 #include "base/strings/string16.h"
+#include "base/task/current_thread.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -117,7 +117,7 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
             std::make_unique<base::TestMockTimeTaskRunner::ScopedContext>(
                 task_runner_)),
         scoped_set_tick_clock_for_testing_(task_runner_->GetMockTickClock()) {
-    base::MessageLoopCurrent::Get()->SetTaskRunner(task_runner_);
+    base::CurrentThread::Get()->SetTaskRunner(task_runner_);
 
     // Start with a non-zero time.
     task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(42));

@@ -49,7 +49,6 @@ android_resources("java_resources") {
     "java/res/drawable/touch_to_fill_header_image.xml",
     "java/res/layout/touch_to_fill_credential_item.xml",
     "java/res/layout/touch_to_fill_fill_button.xml",
-    "java/res/layout/touch_to_fill_footer.xml",
     "java/res/layout/touch_to_fill_header_item.xml",
     "java/res/layout/touch_to_fill_sheet.xml",
     "java/res/values/dimens.xml",

@@ -243,7 +243,7 @@ bool CertificateProviderService::SetExtensionCertificateReplyReceived(
   return true;
 }
 
-void CertificateProviderService::ReplyToSignRequest(
+bool CertificateProviderService::ReplyToSignRequest(
     const std::string& extension_id,
     int sign_request_id,
     const std::vector<uint8_t>& signature) {
@@ -257,10 +257,7 @@ void CertificateProviderService::ReplyToSignRequest(
   net::SSLPrivateKey::SignCallback callback;
   if (!sign_requests_.RemoveRequest(extension_id, sign_request_id, &certificate,
                                     &callback)) {
-    LOG(ERROR) << "request id unknown.";
-    // The request was aborted before, or the extension replied multiple times
-    // to the same request.
-    return;
+    return false;
   }
 
   const net::Error error_code = signature.empty() ? net::ERR_FAILED : net::OK;
@@ -270,6 +267,7 @@ void CertificateProviderService::ReplyToSignRequest(
     for (auto& observer : observers_)
       observer.OnSignCompleted(certificate, extension_id);
   }
+  return true;
 }
 
 bool CertificateProviderService::LookUpCertificate(

@@ -55,7 +55,7 @@ curve. For example:
 
 The labels 'from' and 'to' are aliases for '0%' and '100%', respectively.
 Keyframes may specify different property values, and the set of keyframes is not
-required to specify values at 0% or 100% (partial keyframes).  If missing
+required to specify values at 0% or 100% (partial keyframes). If missing
 starting or ending values for a property, a neutral property values is used
 based on the underlying value. In the above example, the redshift animation will
 animate from the current color to red.
@@ -84,7 +84,7 @@ or canceling CSS animations.
 Changes to the [phase](
 https://www.w3.org/TR/web-animations-1/#animation-effect-phases-and-states)
  of a CSS animation may result in firing one or more [AnimationEvent](
-https://developer.mozilla.org/en-US/docs/Web/API/AnimationEvent)s.  Each CSS
+https://developer.mozilla.org/en-US/docs/Web/API/AnimationEvent)s. Each CSS
 animation has an associated [AnimationEventDelegate](
 https://cs.chromium.org/search?lang=cc&q=class:AnimationEventDelegate) with an
 [OnEventCondition](
@@ -95,7 +95,7 @@ The [CSSAnimation interface](
 https://cs.chromium.org/search?q=file:css_animation.idl) extends the
 [Animation interface](https://cs.chromium.org/search?q=file:animation.idl) to
 include an animationName property, which indicated the name of the keyframes
-rule associated with the animation.  Note that this association may be broken
+rule associated with the animation. Note that this association may be broken
 by interacting with the animation via the web-animation API.
 
 
@@ -129,7 +129,7 @@ iterates over names in transition-property calling
 [CalculateTransitionUpdateForProperty](https://cs.chromium.org/search?lang=cc&q=function:CSSAnimations::CalculateTransitionUpdateForProperty)
 for each property. If there is already an active transition for the property
 and the value of the property changes, the transition is retargeted to the new
-end point.  When retargeting an animation, the current position is used as a
+end point. When retargeting an animation, the current position is used as a
 starting point, which is calculated by applying active animations with an
 updated timestamp to the underlying style in [CalculateBeforeChangeStyle](
 https://cs.chromium.org/search?lang=cc&q=function:CSSAnimations::CalculateBeforeChangeStyle
@@ -144,7 +144,7 @@ transitions, and canceling finished transitions.
 Changes to the [phase](
 https://www.w3.org/TR/web-animations-1/#animation-effect-phases-and-states)
 of a CSS transition may result in firing one or more [TransitionEvent](
-https://developer.mozilla.org/en-US/docs/Web/API/TransitionEvent)s.  Each CSS
+https://developer.mozilla.org/en-US/docs/Web/API/TransitionEvent)s. Each CSS
 transition has an associated [TransitionEventDelegate](
 https://cs.chromium.org/search?lang=cc&q=class:TransitionEventDelegate) with an
 [OnEventCondition](
@@ -198,7 +198,7 @@ https://developer.mozilla.org/en-US/docs/Web/API/Element/animate) page.
 At a fundamental level, the web animation model converts a time value to one or
 more property values. This is true whether we are using a DocumentTimeline
 driven by an AnimationClock, or a ScrollTimeline that converts a scroll position
-to an abstract representation of time.  The same rules also apply for
+to an abstract representation of time. The same rules also apply for
 CSSAnimations and CSSTransitions, which derive from the base Animation class.
 
 The web animation model can be further broken down into two sub-models:
@@ -259,7 +259,7 @@ Each keyframe has an offset, and for each property, we determine the keyframe
 pair that bounds the iteration progress. Returning to our example with an
 iteration progress of 0.6 at the 1s mark, we are iterating between the '50%'
 and 'to' keyframes. The relative progress between these frames is
-(0.6 - 0.5) / (1.0 - 0.5) = 0.2.  This value is the input to our
+(0.6 - 0.5) / (1.0 - 0.5) = 0.2. This value is the input to our
 animation-timing-function. The timing function for this keyframe pair
 is 'ease-out', which is equivalent to cubic-bezier(0, 0, 0.58, 1)). Plugging an
 input value of 0.2 into our cubic-bezier function, we get an output of roughly
@@ -273,7 +273,7 @@ For our example,
 opacity = 0.31 * 0 + (1 - 0.31) * 0.5 = 0.35
 
 The interpolation procedure is less straightforward for non-scalar values
-(especially for transform lists).  Nonetheless, this example provides a good
+(especially for transform lists). Nonetheless, this example provides a good
 overview of the web animation model.
 
 Points of interest in the Blink code base:
@@ -298,9 +298,559 @@ signaling that an animation style recalc is needed if the sampled value changed.
 * [Animation::Update](
 https://cs.chromium.org/search?q=function:blink::Animation::Update):
 Called in response to ticking the animation timeline or to revalidate outdated
-animations.  In addition to applying the web animation model via
+animations. In addition to applying the web animation model via
 UpdateInheritedTime, this method determines if the animation is finished.
 
+
+## Web-animation API
+
+The Web-animation API provides a unified framework for interacting with
+animations regardless of the animation type (creation mechanism). CSS
+animations and transitions can also be manipulated via the API even though not
+created via the Element.animate method. The following sections cover each of
+the JavaScript extensions that build up the web-animation API.
+
+### Animatable
+
+Objects that may be the target of a KeyframeEffect implement the [Animatable][]
+interface. At present, this set of objects is restricted to Element and
+derived classes. Refer to the web-animation section under animation types for a
+description of Element.animate.
+
+[Animatable]: https://drafts.csswg.org/web-animations/#the-animatable-interface-mixin
+
+### Animation
+
+The [Animation interface][] contains methods and attributes for programmatically
+interacting with animations. [Animation object][]s may be created via the
+constructor or the Element.animate method covered previously.
+[Animation object][]s may be queried via a getAnimations call. The query
+retrieves all animations regardless of type and may be used to interact with CSS
+animations or transitions.
+
+The animation API consists of the following attributes and methods:
+
+* **[Animation constructor][]**: This constructor is called regardless of the
+type of animation. The constructor may also be called directly from JavaScript
+to create a web animation, which is particularly useful when a [timeline][]
+other than the [default document timeline][] is being used.
+
+   ```javascript
+   const keyframeEffect = new KeyframeEffect(...);
+   const timeline = new ScrollTimeline(...);
+   const animation = new Animation(keyframeEffect, timeline);
+   // Unlike Element.animate, an animation created directly via the constructor
+   // does not autoplay.
+   animation.play();
+   ```
+
+* **[id attribute][]**: sets or gets an id that can be used to identify the
+animation. These ids are purely informational, but may be used by the developer
+to facilitate bookkeeping or debugging.
+
+* **[effect attribute][]**: gets or sets the [AnimationEffect][] for the
+animation. The algorithm for setting the effect of an animation is outlined in
+[web-animations -- Setting the associated effect of an animation](
+https://drafts.csswg.org/web-animations/#setting-the-associated-effect). A few
+extra steps are required for CSS animations and transitions, which have an
+[AnimationEffect::EventDelegate][] that need to be reattached after the effect
+is updated. Special handling is also required if the new effect is null to
+cancel or finish the CSS animation / transition.
+
+   ```javascript
+   // Clone an animation effect.
+   const animationA = elementA.animate(...);
+   const animationB = elementB.animate(animationA.effect.getKeyframes(),
+                                       animationA.effect.getTiming());
+   ```
+
+* **[readonly timeline attribute][]**: At present Blink only supports fetching
+the associated timeline. Efforts are underway to support setting the timeline as
+well, which is useful for attaching a scroll timeline to an animation created
+via Element.animate. Refer to the [Timelines][] section of the web animation
+spec for more details.
+
+   ```javascript
+   const animation = element.animate(...);
+   assert_equals(animation.timeline, document.timeline);
+   ```
+
+* **[startTime attribute][]**: gets or sets the start time of an animation. The
+start time is unresolved when the animation is paused, idle or play-pending
+(scheduled to play but not yet acked by the client). A running (if not
+play-pending) or finished animation has a resolved start time. The current time
+of an animation is determined from the timeline time, start time and playback
+rate if the animation is not paused or finished. Setting the start time of an
+animation is applied immediately rather than waiting on an ack from the client;
+however, a resulting change in the finished state will not resolve a finished
+promise or queue an onfinish handler until the next [microtask checkpoint][]
+since the state change may be temporary. The setStartTime method is overridden
+for CSSAnimations since calling it may update the animation-play-state property
+by unpausing a CSS animation. Refer to
+[Web-animations -- Setting the start time of an animation](
+https://drafts.csswg.org/web-animations/#setting-the-start-time-of-an-animation)
+for more detail.
+
+   ```javascript
+   const animation = element.animate(...);
+   // The newly created animation is scheduled to play, but the start time is
+   // unresolved until acked by the client agent.
+   assert_true(animation.pending);
+   assert_equals(animation.playState, 'running');
+   assert_false(!!animation.startTime);
+   animation.ready.then(() => {
+     assert_false(animation.pending);
+     assert_times_equal(animation.startTime, document.timeline.currentTime);
+   });
+   ```
+
+   ```javascript
+   const animation = element.animate(...);
+   aniamtion.pause();
+   // The animation is in a pending-paused state.
+   assert_true(animation.pending);
+   assert_equals(animation.playState, 'paused');
+   assert_false(!!animation.startTime);
+   assert_equals(animation.currentTime, 0);
+   // Explicitly setting the start time aborts the pending-pause, and starts the
+   // animation.
+   animation.startTime = document.timeline.currentTime;
+   assert_false(animation.pending);
+   assert_equals(animation.playState, 'running');
+   assert_times_equal(animation.startTime, document.timeline.currentTime);
+   assert_equals(animation.currentTime, 0);
+   ```
+
+* **[currentTime attribute][]**: gets or sets the current time of an animation.
+When setting the current time, either the start time or hold time of the
+animation is updated depending on the play state. The start time is updated for
+a running or finished animation, and the hold time is updated for an idle or
+paused animation. The change is applied immediately and does not wait on an ack
+from the client. Similar to setting the start time, updating the current time
+will not resolve a finished promise or queue an onfinished event until the next
+[microtask checkpoint][] since the state change may be temporary. Refer to
+[Web-animations -- The current time of an animation](
+https://drafts.csswg.org/web-animations/#the-current-time-of-an-animation) and
+[Web-animations -- Setting the current time of an animation](
+https://drafts.csswg.org/web-animations/#setting-the-current-time-of-an-animation)
+for more detail.
+
+   ```javascript
+   const animation = element.animate(...);
+   // Advance to 1000ms mark in the animation. Since the animation is
+   // play-pending the hold time is updated. Once ready, the start time will
+   // be set to align with the hold time.
+   animation.currentTime = 1000;
+   assert_true(animation.pending);
+   assert_equals(animation.playState, 'running');
+   animation.ready.then(() => {
+     assert_false(animation.pending);
+     assert_times_equal(animation.startTime,
+                        document.timeline.currentTime - 1000);
+     assert_times_equals(animation.currentTime, 10000);
+   });
+   ```
+
+* **[playbackRate attribute][]**: gets or sets the playback rate of the
+animation. An animation with a negative value for the playback rate plays in the
+reverse direction. The setter is closely related to the updatePlaybackRate
+method with the difference that with this setter the change takes place
+immediately and does not require an ack from the client. The getter reports the
+active playback rate and not the pending playback rate. These values may differ
+for a brief time interval if using updatePlaybackRate to asynchronously change
+the playback rate. The algorithm for setting the playback rate is covered under
+[web animations -- setting the playback rate on an animation](
+https://drafts.csswg.org/web-animations/#setting-the-playback-rate-of-an-animation)
+in the spec. An additional step in required in Blink to ensure that a composited
+animation is kept in sync with a change to the playback rate and to prevent a
+discontinuity (jump) in the animation. Typically, using updatePlaybackRate is
+preferable to using the setter.
+
+   ```javascript
+   const animation = element.animate(...);
+   assert_equals(animation.playbackRate, 1);
+   animation.playbackRate = -1;
+   // The change to the playback rate is reflected immediately.
+   assert_equals(animation.playbackRate, -1);
+   ```
+
+* **[readonly playState attribute][]**: gets the play state of an animation,
+which may be one of the following: 'idle', 'paused', 'running', or 'finished'.
+At present, the play state in Blink has an extra state called 'pending', which
+is not used in web animations but is still externally referenced. The play state
+is forward looking insofar as a pending-play animation will report running and a
+pending-pause animation will report paused. The pending attribute can be checked
+to disambiguate whether the reported play state reflects the current or the
+scheduled state. The algorithm for determining the play state is outlined in
+[web animations -- play states](
+https://drafts.csswg.org/web-animations/#play-states).
+
+   ```javascript
+   const animation = element.animate(...);
+   // play state is updated even though the animation has not ticked.
+   assert_equals(animation.playState, 'running');
+   animation.pause();
+   assert_equals(animation.playState, 'paused');
+   ```
+
+* **[readonly replaceState attribute][]**: gets the replace state of an
+animation, which may be one of the following: 'active', 'removed', or
+'persisted'. A replaceState of 'active' indicates that the animation is in
+effect, but may be replaced if conditions are satisfied (finished and all
+affected properties are also affected by other finished animations higher in
+composite order). A 'removed' animation is an animation that is finished and
+marked for removal due to being replaceable. A persisted animation is an
+animation that has been explicitly marked for exclusion for the automated
+removal process via the persist method. The procedure for marking and removing
+animations is covered in [web animations - replacing animations](
+https://drafts.csswg.org/web-animations/#replacing-animations). In the Blink
+implementation, identifying which animations are replaceable is done in
+[Animation::IsReplaceable][]. Removal of replaced animations is done in
+[AnimationTimeline::RemoveReplacedAnimations][], which calls
+[Animation::RemoveReplacedAnimation][]. Removal is done during the timeline
+update cycle after animations have ticked and their finished states have been
+updated.
+
+   ```javascript
+   function commitPersistedAnimations() {
+     document.getAnimations().forEach((anim) => {
+       if (anim.playState == ‘finished’ &&
+           anim.replaceState == ‘persisted’) {
+         anim.commitStyles();
+         anim.cancel();
+       }
+     });
+   };
+   ```
+
+* **[readonly pending attribute][]**: gets the pending status of an animation.
+Changes to the play state via the play, pause, and reverse methods do not take
+effect immediately, but instead schedule a task to execute once the
+animation is ready (acked by the client agent). An animation in the 'running'
+playState is pending until it receives a start time. Conversely, a
+pending-pause animation may still have a start-time until the client agent is
+ready to pause the animation. As the play state of a CSS animation may also be
+changed via the animation-play-state property, a style flush is required when
+querying the play state of a CSS animation.
+
+   ```javascript
+   div.style.animation = `fade 1s linear`;
+   const animation = div.getAnimations[0];
+   assert_equals(animation.playState, 'running');
+   assert_true(animation.pending);
+   animation.ready.then(() => {
+     assert_false(animation.pending);
+     // Updating the play state via the animation-play-state property causes
+     // the aniamtion to be pause-pending.
+     div.style.animationPlayState = 'paused';
+     assert_equals(animation.playState, 'paused');
+     assert_true(animation.pending);
+     animation.ready.then(() => {
+       assert_false(animation.pending);
+     });
+   });
+   ````
+
+* **[readonly ready attribute][]**: The ready promise is resolved when
+pending play or paused operations are acked by the client agent. A change that
+requires an ack from the client agent must call
+[Animation::SetCompositorPending][]. The method name is somewhat misleading as
+it applies whether or not the animation is actually run on the compositor.
+The method updates the list of pending animations if required. In turn,
+[PendingAnimations::Update][] updates the list of animations that are waiting
+for a start time, and notifies that the animation is ready if not requiring a
+start time. If all animations needing a start time are main-thread animations,
+they are also marked as ready. If at least one animation is composited, all new
+animations created during the update cycle must wait on the compositor in order
+to properly synchronize the start times. Animations from a previous cycle are
+exempt from start synchronization to guard against plugging up of the animation
+pipeline. Composited animations call
+[PendingAnimations::NotifyCompositorAnimationStarted][] with the start time,
+which in turn calls [Animation::NotifyReady][]. If all animations for an element
+are running on the main thread, then NotifyCompositorAnimationStarted is called
+directly. Again, the method name is somewhat misleading.
+
+   ```javascript
+   const slideAnimation = element.animate(...);
+   const fadeAnimation = element.animate(...);
+   slideAnimation.ready.then(() => {
+     // Synchronize the fade animation to run 1s after the start of the slide
+     // animations.
+     fadeAnimation.startTime = slideAnimation + 1000;
+   })
+   ```
+
+* **[readonly finished attribute][]**:  The finished promise is resolved after
+an animation finishes. Since the finished state may be temporary, the resolution
+is deferred until the next [microtask checkpoint][]. This delay facilitates
+getting consistent results when the ordering of API calls is changed. For
+example, setting the current time to the end time and reversing the direction of
+the animation should not resolve the finished promise. API calls that affect
+current time or play state must update the finished state of the animation. The
+algorithm is outlined in [web animation -- updating the finished state](
+https://drafts.csswg.org/web-animations/#updating-the-finished-state). In
+Blink, updating the finished state and scheduling the microtask is performed in
+[Animation::UpdateFinishedState][]. The microtask is handled in
+[Animation::AsyncFinishMicrotask][]. The finished promise is convenient for
+chaining together animations and for applying style updates.
+
+   ```javascript
+     const animation = element.animate(keyframes,
+                                       { duration: 1000,
+                                         fill: `forwards`
+                                       });
+     animation.finished.then(() => {
+       animation.commitStyles();
+       animation.cancel();
+       // Follow up animation.
+       element.animate(...);
+     });
+   ```
+
+* **[onfinished attribute][]**: gets or sets the onfinished event handler that
+allows the web developer to attach customized JavaScript to run once an
+animation has finished.
+
+   ```javascript
+   const animation = element.animate(keyframes,
+                                     {
+                                       duration: 1000
+                                       fill: 'forwards'
+                                     });
+   animation`.onfinished = () => {
+     animation.commitStyles();
+     animation.cancel();
+   };
+   ```
+
+* **[oncancel attribute][]**: gets or sets the oncancel event handler that
+allows the web developer to attach customized JavaScript to run once an
+animation has been canceled.
+
+   ```javascript
+   const animation = element.animate(keyframes,
+                                     {
+                                       duration: 1000
+                                       fill: 'forwards'
+                                     });
+   animation.oncancel = () => {
+     myTrackedAnimations.remove(animation);
+   };
+   ```
+
+* **[onremove attribute][]**: gets or sets the onremove event handler that
+allows the web developer to attach customized JavaScript to run once an
+animation has been removed.
+
+   ```javascript
+   const animation = element.animate(keyframes,
+                                     {
+                                       duration: 1000
+                                       fill: 'forwards'
+                                     });
+   animation.onremove = () => {
+     animation.commitStyles();
+   };
+   ```
+
+* **[cancel nethod]**: synchronously cancels an animation. This operation will
+reject any pending read or finished promise, cancel any pending play or pause
+task, and queue a cancel event.
+
+   ```javascript
+   const animation = element.animate(keyframes,
+                                     { duration: 1000, fill: 'forwards' });
+   animation.finished.then(() => {
+     assert_unreached();
+   });
+   animation.ready.then(() => {
+     assert_unreached();
+   });
+   animation.currentTime = 500;
+   animation.cancel();
+   assert_equals(animation.currentTime, null);
+   assert_equals(animation.playState, 'idle');
+   assert_false(animation.pending);
+   ```
+
+* **[finish method]**: synchronously updates the current time of the animation
+to be the end time. If playing in the revsere direction, the current time will
+be set to zero. The finished promise is immediately resolved and finish event
+queued.
+
+   ```javascript
+   const animation = element.animate(keyframes,
+                                     { duration: 1000, fill: 'forwards' });
+   animation.finish();
+   assert_equals(animation.currentTime, 1000);
+   assert_equals(animation.playState, 'finished');
+   assert_false(animation.pending);
+   ```
+
+* **[play method]**: schedules an animation to begin playing. The animation
+will resume playing from the hold time. If the hold time is unresolved at the
+time play is called, it will be set to the start or end time depending on the
+direction of the pending playback rate. The initialization procedure is
+altered slightly if a scroll timeline is used instead of a document timeline.
+In this case, the start time is set directly. Nonetheless, an ack is still
+required from the client agent. [Animation::NotifyReady][] calls
+[Animation::CommitPendingPlay][] to run the microtask for syncing the start
+time, resetting the hold time and resolving the ready promise.
+
+   ```javascript
+   const animation = new Animation(kefyrameEffect, document.timeline);
+   animation.play();
+   ```
+
+* **[pause nethod]**: schedules an animation to pause. The pending state remains
+true until acked from the client agent. [Animation::NotifyReady][] calls
+[Animation::CommitPendingPause][] to run the microtask for updating the hold
+time, resetting the start time, and resolving the ready promise.
+
+   ```javascript
+   const animation = element.animate(keyframes,
+                                     { duration: 1000, fill: 'forwards' });
+   button.onclick = () {
+     if (animation.playState == 'running')
+       animation.pause();
+     else
+       animation.play();
+   }
+   ```
+
+* **[updatePlaybackRate nethod]**: sets a pending playback rate for the
+animation. The change does not take effect until acked by the client agent.
+[Animation::NotifyReady][] calls [Animation::CommitPendingPlay][] or
+ [Animation::CommitPendingPause][] depending on the play state. The algorithm
+ is specced in [web animations -- seamlessly updating the playback rate...](
+ https://drafts.csswg.org/web-animations/#seamlessly-updating-the-playback-rate-of-an-animation).
+
+   ```javascript
+   const animation = element.animate(...);
+   // The playback rate is updated even though the animation has not ticked.
+   assert_equals(animation.playbackRate, 1);
+   aniamtion.playbackRate = -1;
+   assert_equals(animation.playbackRate, -1);
+   animation.updatePlayback(-2);
+   // The playback rate is not updated until acked by the client agent.
+   assert_equals(animation.playbackRate, -1);
+   assert_true(animation.pending);
+   animation.ready.then(() => {
+     assert_equals(animation.playbackRate, -2);
+     assert_false(animation.pending);
+   });
+   ```
+
+* **[reverse method]**: reverses the direction of a running animation. The
+change to playback rate does not take effect until acked by the client agent.
+An animation that is not running is started in the reverse direction.
+
+   ```javascript
+   const animation = element.animate(keyframes, { duration: 1000 });
+   animation.reverse();
+   assert_true(animation.pending);
+   // Change to playback rate has not yet taken effect.
+   assert_equals(animation.playbackRate, 1);
+   animation.ready.then(() => {
+      // Snap to the end of the animation when playing in the reverse direction.
+      assert_times_equal(animation.currentTime, 1000);
+      assert_equals(aniamtion.playbackRate(1));
+      assert_false(animation.pending);
+   });
+   ```
+
+* **[persist method]**: marks an animation as persistent such that it is exempt
+from being marked and removed as a replaceable animation.
+
+   ```javascript
+   const animationA = element.animation({ transform: ['scale(1)', 'scale(2)'] },
+                                        { duration: 1000, fill: 'forwards' });
+   const animationB = element.animation({ transform: ['scale(1)', 'scale(2)'] },
+                                        { duration: 1000,
+                                          composite: 'accumulate',
+                                          fill: 'forwards' });
+   animationB.finished.then(() => {
+     // The first animation will be automatically be removed since the second
+     // animation is higher in the composite order and affects the same
+     // property. Removal of the first animation will result in a visual change
+     // since using composite mode 'accumulate' for the second animation. We
+     // can prevent the removal by persisting the first animation.
+     assert_equals(animationA.removeState, 'removed');
+     aniamtionA.persist();
+     // The first animation is once again active.
+     assert_equals(aniamtionA.removeState, 'persist');
+   });
+   ```
+
+* **[commitStyles method]**: adds an inline style to the target element based on
+the current value of the effect stack up to an including the animation.
+
+   ```javascript
+   const animationA = element.animation({ transform: ['scale(1)', 'scale(2)'] },
+                                        { duration: 1000, fill: 'forwards' });
+   const animationB = element.animation({ transform: ['scale(1)', 'scale(2)'] },
+                                        { duration: 1000,
+                                          composite: 'accumulate',
+                                          fill: 'forwards' });
+   animationA.finished.then(() => {
+     // The first animation will be automatically be removed since the second
+     // animation is higher in the composite order and affects the same
+     // property. Removal of the first animation will result in a visual change
+     // since using composite mode 'accumulate' for the second animation.
+     // Rather than persisting the first animation, we can instead call
+     // commitStyles to capture the current state of the animation effect stack
+     // in an inline style.
+     animationA.commitStyles();
+     // element.style is now set to capture the finished state of the first
+     // animation, and it can be safely removed without introducing a visual
+     // change.
+     animationA.cancel();
+   });
+   ```
+
+[Animation interface]: https://drafts.csswg.org/web-animations/#the-animation-interface
+[Animation object]: https://cs.chromium.org/search/?q=class:blink::Animation$
+[timeline]: https://drafts.csswg.org/web-animations/#timelines
+[Timelines]: https://drafts.csswg.org/web-animations/#timelines
+[default document timeline]: https://drafts.csswg.org/web-animations/#the-documents-default-timeline
+[AnimationEffect::EventDelegate]: https://cs.chromium.org/search?lang=cc&q=class:AnimationEffect::EventDelegate$
+[Animation constructor]:  https://cs.chromium.org/search/?q=function:blink::Animation::Animation$
+[id attribute]: https://cs.chromium.org/search/?q=function:blink::Animation::(setI|i)d$
+[effect attribute]: https://cs.chromium.org/search/?q=function:blink::Animation::(setE|e)ffect$
+[readonly timeline attribute]: https://cs.chromium.org/search/?q=function:blink::Animation::timeline$
+[startTime attribute]: https://cs.chromium.org/search/?q=function:blink::(CSS|)Animation::(setS|s)tartTime$
+[currentTime attribute]: https://cs.chromium.org/search/?q=function:blink::Animation::(setC|c)urrentTime$
+[playbackRate attribute]: https://cs.chromium.org/search/?q=function:blink::Animation::(setP|p)laybackRate$
+[readonly playState attribute]:  https://cs.chromium.org/search/?q=function:blink::Animation::playState$
+[readonly replaceState attribute]: https://cs.chromium.org/search/?q=function:blink::Animation::replaceState$
+[readonly pending attribute]: https://cs.chromium.org/search/?q=function:blink::(CSS|)Animation::pending$
+[readonly ready attribute]: https://cs.chromium.org/search/?q=function:blink::Animation::ready$
+[readonly finished attribute]: https://cs.chromium.org/search/?q=function:blink::Animation::finished$
+[onfinished attribute]: https://cs.chromium.org/search/?q=file:animation.h+DEFINE_ATTRIBUTE_EVENT_LISTENER
+[oncancel attribute]: https://cs.chromium.org/search/?q=file:animation.h+DEFINE_ATTRIBUTE_EVENT_LISTENER
+[onremove attribute]: https://cs.chromium.org/search/?q=file:animation.h+DEFINE_ATTRIBUTE_EVENT_LISTENER
+[cancel nethod]: https://cs.chromium.org/search/?q=function:blink::Animation::cancel$
+[finish method]: https://cs.chromium.org/search/?q=function:blink::Animation::finish$
+[play method]: https://cs.chromium.org/search/?q=function:blink::Animation::play$
+[pause nethod]: https://cs.chromium.org/search/?q=function:blink::Animation::pause$
+[updatePlaybackRate nethod]: https://cs.chromium.org/search/?q=function:blink::Animation::updatePlaybackRate$
+[reverse method]: https://cs.chromium.org/search/?q=function:blink::Animation::reverse$
+[persist method]: https://cs.chromium.org/search/?q=function:blink::Animation::persist$
+[commitStyles method]: https://cs.chromium.org/search/?q=function:blink::Animation::commitStyles$
+[Animation::SetCompositorPending]: https://cs.chromium.org/search/?q=function:blink::Animation::SetCompositorPending$
+[PendingAnimations::Update]: https://cs.chromium.org/search/?q=function:blink::PendingAnimations::Update$
+[Animation::UpdateFinishedState]: https://cs.chromium.org/search/?q=function:blink::Animation::UpdateFinishedState$
+[Animation::AsyncFinishMicrotask]: https://cs.chromium.org/search/?q=function:blink::Animation::AsyncFinishMicrotask$
+[PendingAnimations::NotifyCompositorAnimationStarted]: https://cs.chromium.org/search/?q=function:blink::PendingAnimations::NotifyCompositorAnimationStarted$
+[Animation::NotifyReady]: https://cs.chromium.org/search/?q=function:blink::Animation::NotifyReady$
+[Animation::CommitPendingPlay]: https://cs.chromium.org/search/?q=function:blink::Animation::CommitPendingPlay$
+[Animation::CommitPendingPause]: https://cs.chromium.org/search/?q=function:blink::Animation::CommitPendingPause$
+[Animation::IsReplaceable]: https://cs.chromium.org/search/?q=function:blink::Animation::IsReplaceable$
+[AnimationTimeline::RemoveReplacedAnimations]: https://cs.chromium.org/search/?q=function:blink::AnimationTimeline::RemoveReplacedAnimation$
+[Animation::RemoveReplacedAnimation]: https://cs.chromium.org/search/?q=function:blink::Animation::RemoveReplacedAnimation$
+[microtask checkpoint]: https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide
+
+TODO: Summarize remaining interfaces that comprise the web-animations-api.
 
 ## Integration with Chromium
 
@@ -653,10 +1203,6 @@ about the state.
 ### Properties And Values API
 
 TODO: Summarize properties and values API.
-
-### Web Animations API
-
-TODO: Summarize Web Animations API.
 
 ### [Animation Worklet](../../modules/animationworklet/README.md)
 

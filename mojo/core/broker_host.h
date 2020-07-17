@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
+#include "base/task/current_thread.h"
 #include "build/build_config.h"
 #include "mojo/core/channel.h"
 #include "mojo/core/connection_params.h"
@@ -26,7 +26,7 @@ namespace core {
 // The BrokerHost is a channel to a broker client process, servicing synchronous
 // IPCs issued by the client.
 class BrokerHost : public Channel::Delegate,
-                   public base::MessageLoopCurrent::DestructionObserver {
+                   public base::CurrentThread::DestructionObserver {
  public:
   BrokerHost(base::ProcessHandle client_process,
              ConnectionParams connection_params,
@@ -51,7 +51,7 @@ class BrokerHost : public Channel::Delegate,
                         std::vector<PlatformHandle> handles) override;
   void OnChannelError(Channel::Error error) override;
 
-  // base::MessageLoopCurrent::DestructionObserver:
+  // base::CurrentThread::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override;
 
   void OnBufferRequest(uint32_t num_bytes);

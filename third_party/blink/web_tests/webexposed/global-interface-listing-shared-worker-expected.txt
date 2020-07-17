@@ -1372,11 +1372,12 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter readable
 [Worker]     getter writable
 [Worker]     method constructor
-[Worker] interface TrustedTypePolicyFactory
+[Worker] interface TrustedTypePolicyFactory : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter defaultPolicy
 [Worker]     getter emptyHTML
 [Worker]     getter emptyScript
+[Worker]     getter onbeforecreatepolicy
 [Worker]     method constructor
 [Worker]     method createPolicy
 [Worker]     method getAttributeType
@@ -1385,6 +1386,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method isHTML
 [Worker]     method isScript
 [Worker]     method isScriptURL
+[Worker]     setter onbeforecreatepolicy
 [Worker] interface URL
 [Worker]     static method createObjectURL
 [Worker]     static method revokeObjectURL

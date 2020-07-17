@@ -22,7 +22,7 @@ void StaticTaskRunnerHolder::WillDestroyCurrentMessageLoop() {
 const scoped_refptr<base::SequencedTaskRunner>& StaticTaskRunnerHolder::Get() {
   if (!initialized_) {
     task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(traits_);
-    base::MessageLoopCurrent::Get().AddDestructionObserver(this);
+    base::CurrentThread::Get().AddDestructionObserver(this);
     initialized_ = true;
   }
   return task_runner_;

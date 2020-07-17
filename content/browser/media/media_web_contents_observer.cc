@@ -5,6 +5,7 @@
 #include "content/browser/media/media_web_contents_observer.h"
 
 #include <memory>
+#include <tuple>
 
 #include "build/build_config.h"
 #include "content/browser/media/audible_metrics.h"
@@ -29,17 +30,6 @@ AudibleMetrics* GetAudibleMetrics() {
   return metrics;
 }
 
-// Returns true if |player_id| exists in |player_map|.
-bool MediaPlayerEntryExists(
-    const MediaPlayerId& player_id,
-    const MediaWebContentsObserver::ActiveMediaPlayerMap& player_map) {
-  const auto& players = player_map.find(player_id.render_frame_host);
-  if (players == player_map.end())
-    return false;
-
-  return players->second.find(player_id.delegate_id) != players->second.end();
-}
-
 #if defined(OS_ANDROID)
 static void SuspendAllMediaPlayersInRenderFrame(
     RenderFrameHost* render_frame_host) {
@@ -50,16 +40,91 @@ static void SuspendAllMediaPlayersInRenderFrame(
 
 }  // anonymous namespace
 
+// Maintains state for a single player.  Issues WebContents and power-related
+// notifications appropriate for state changes.
+class MediaWebContentsObserver::PlayerInfo {
+ public:
+  PlayerInfo(const MediaPlayerId& id, MediaWebContentsObserver* observer)
+      : id_(id), observer_(observer) {}
+
+  ~PlayerInfo() {
+    if (is_playing_) {
+      NotifyPlayerStopped(WebContentsObserver::MediaStoppedReason::kUnspecified,
+                          MediaPowerExperimentManager::NotificationMode::kSkip);
+    }
+  }
+
+  PlayerInfo(const PlayerInfo&) = delete;
+  PlayerInfo& operator=(const PlayerInfo&) = delete;
+
+  void set_has_audio(bool has_audio) { has_audio_ = has_audio; }
+
+  bool has_video() const { return has_video_; }
+  void set_has_video(bool has_video) { has_video_ = has_video; }
+
+  bool is_playing() const { return is_playing_; }
+
+  void SetIsPlaying() {
+    DCHECK(!is_playing_);
+    is_playing_ = true;
+
+    NotifyPlayerStarted();
+  }
+
+  void SetIsStopped(bool reached_end_of_stream) {
+    DCHECK(is_playing_);
+    is_playing_ = false;
+
+    NotifyPlayerStopped(
+        reached_end_of_stream
+            ? WebContentsObserver::MediaStoppedReason::kReachedEndOfStream
+            : WebContentsObserver::MediaStoppedReason::kUnspecified,
+        MediaPowerExperimentManager::NotificationMode::kNotify);
+  }
+
+ private:
+  void NotifyPlayerStarted() {
+    observer_->web_contents_impl()->MediaStartedPlaying(
+        WebContentsObserver::MediaPlayerInfo(has_video_, has_audio_), id_);
+
+    if (observer_->power_experiment_manager_) {
+      // Bind the callback to a WeakPtr for the frame, so that we won't try to
+      // notify the frame after it's been destroyed.
+      observer_->power_experiment_manager_->PlayerStarted(
+          id_, base::BindRepeating(
+                   &MediaWebContentsObserver::OnExperimentStateChanged,
+                   observer_->GetWeakPtrForFrame(id_.render_frame_host), id_));
+    }
+  }
+
+  void NotifyPlayerStopped(
+      WebContentsObserver::MediaStoppedReason stopped_reason,
+      MediaPowerExperimentManager::NotificationMode notification_mode) {
+    observer_->web_contents_impl()->MediaStoppedPlaying(
+        WebContentsObserver::MediaPlayerInfo(has_video_, has_audio_), id_,
+        stopped_reason);
+
+    if (observer_->power_experiment_manager_) {
+      observer_->power_experiment_manager_->PlayerStopped(id_,
+                                                          notification_mode);
+    }
+  }
+
+  const MediaPlayerId id_;
+  MediaWebContentsObserver* const observer_;
+
+  bool has_audio_ = false;
+  bool has_video_ = false;
+  bool is_playing_ = false;
+};
+
 MediaWebContentsObserver::MediaWebContentsObserver(WebContents* web_contents)
     : WebContentsObserver(web_contents),
       audible_metrics_(GetAudibleMetrics()),
       session_controllers_manager_(this),
       power_experiment_manager_(MediaPowerExperimentManager::Instance()) {}
 
-MediaWebContentsObserver::~MediaWebContentsObserver() {
-  // Remove all players so that the experiment manager is notified.
-  RemoveAllPlayers();
-}
+MediaWebContentsObserver::~MediaWebContentsObserver() = default;
 
 void MediaWebContentsObserver::WebContentsDestroyed() {
   AudioStreamMonitor* audio_stream_monitor =
@@ -70,12 +135,17 @@ void MediaWebContentsObserver::WebContentsDestroyed() {
                           !web_contents()->IsAudioMuted());
 
   // Remove all players so that the experiment manager is notified.
-  RemoveAllPlayers();
+  player_info_map_.clear();
 }
 
 void MediaWebContentsObserver::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
-  ClearWakeLocks(render_frame_host);
+  base::EraseIf(
+      player_info_map_,
+      [render_frame_host](const PlayerInfoMap::value_type& id_and_player_info) {
+        return render_frame_host == id_and_player_info.first.render_frame_host;
+      });
+
   session_controllers_manager_.RenderFrameDeleted(render_frame_host);
 
   if (fullscreen_player_ &&
@@ -107,7 +177,10 @@ bool MediaWebContentsObserver::HasActiveEffectivelyFullscreenVideo() const {
     return false;
 
   // Check that the player is active.
-  return MediaPlayerEntryExists(*fullscreen_player_, active_video_players_);
+  if (const PlayerInfo* player_info = GetPlayerInfo(*fullscreen_player_))
+    return player_info->is_playing() && player_info->has_video();
+
+  return false;
 }
 
 bool MediaWebContentsObserver::IsPictureInPictureAllowedForFullscreenVideo()
@@ -174,10 +247,16 @@ void MediaWebContentsObserver::RequestPersistentVideo(bool value) {
 
 bool MediaWebContentsObserver::IsPlayerActive(
     const MediaPlayerId& player_id) const {
-  if (MediaPlayerEntryExists(player_id, active_video_players_))
-    return true;
+  if (const PlayerInfo* player_info = GetPlayerInfo(player_id))
+    return player_info->is_playing();
 
-  return MediaPlayerEntryExists(player_id, active_audio_players_);
+  return false;
+}
+
+MediaWebContentsObserver::PlayerInfo* MediaWebContentsObserver::GetPlayerInfo(
+    const MediaPlayerId& id) const {
+  const auto it = player_info_map_.find(id);
+  return it != player_info_map_.end() ? it->second.get() : nullptr;
 }
 
 void MediaWebContentsObserver::OnMediaDestroyed(
@@ -191,20 +270,11 @@ void MediaWebContentsObserver::OnMediaPaused(RenderFrameHost* render_frame_host,
                                              int delegate_id,
                                              bool reached_end_of_stream) {
   const MediaPlayerId player_id(render_frame_host, delegate_id);
-  const bool removed_audio =
-      RemoveMediaPlayerEntry(player_id, &active_audio_players_);
-  const bool removed_video =
-      RemoveMediaPlayerEntry(player_id, &active_video_players_);
+  PlayerInfo* player_info = GetPlayerInfo(player_id);
+  if (!player_info || !player_info->is_playing())
+    return;
 
-  if (removed_audio || removed_video) {
-    // Notify observers the player has been "paused".
-    web_contents_impl()->MediaStoppedPlaying(
-        WebContentsObserver::MediaPlayerInfo(removed_video, removed_audio),
-        player_id,
-        reached_end_of_stream
-            ? WebContentsObserver::MediaStoppedReason::kReachedEndOfStream
-            : WebContentsObserver::MediaStoppedReason::kUnspecified);
-  }
+  player_info->SetIsStopped(reached_end_of_stream);
 
   if (reached_end_of_stream)
     session_controllers_manager_.OnEnd(player_id);
@@ -218,21 +288,32 @@ void MediaWebContentsObserver::OnMediaPlaying(
     bool has_video,
     bool has_audio,
     media::MediaContentType media_content_type) {
-  const MediaPlayerId id(render_frame_host, delegate_id);
-  if (has_audio)
-    AddMediaPlayerEntry(id, &active_audio_players_);
+  const MediaPlayerId player_id(render_frame_host, delegate_id);
 
-  if (has_video)
-    AddMediaPlayerEntry(id, &active_video_players_);
+  // TODO(wdzierzanowski): OnMediaPlaying() should only ever be called for a
+  // player that has started playing (crbug.com/1091203).  For now, we must
+  // handle updating the metadata here as well.
+  PlayerInfo* player_info = GetPlayerInfo(player_id);
+  if (!player_info) {
+    PlayerInfoMap::iterator it;
+    std::tie(it, std::ignore) = player_info_map_.emplace(
+        player_id, std::make_unique<PlayerInfo>(player_id, this));
+    player_info = it->second.get();
+  }
+
+  player_info->set_has_audio(has_audio);
+  player_info->set_has_video(has_video);
 
   if (!session_controllers_manager_.RequestPlay(
-          id, has_audio, media_content_type, has_video)) {
+          player_id, has_audio, media_content_type, has_video)) {
+    // Return early to avoid spamming WebContents with playing/stopped
+    // notifications.  If RequestPlay() fails, media session will send a pause
+    // signal right away.
     return;
   }
 
-  // Notify observers of the new player.
-  web_contents_impl()->MediaStartedPlaying(
-      WebContentsObserver::MediaPlayerInfo(has_video, has_audio), id);
+  if (!player_info->is_playing())
+    player_info->SetIsPlaying();
 }
 
 void MediaWebContentsObserver::OnMediaEffectivelyFullscreenChanged(
@@ -282,31 +363,6 @@ void MediaWebContentsObserver::OnPictureInPictureAvailabilityChanged(
       MediaPlayerId(render_frame_host, delegate_id), available);
 }
 
-void MediaWebContentsObserver::ClearWakeLocks(
-    RenderFrameHost* render_frame_host) {
-  std::set<MediaPlayerId> video_players;
-  RemoveAllMediaPlayerEntries(render_frame_host, &active_video_players_,
-                              &video_players);
-  std::set<MediaPlayerId> audio_players;
-  RemoveAllMediaPlayerEntries(render_frame_host, &active_audio_players_,
-                              &audio_players);
-
-  std::set<MediaPlayerId> removed_players;
-  std::set_union(video_players.begin(), video_players.end(),
-                 audio_players.begin(), audio_players.end(),
-                 std::inserter(removed_players, removed_players.end()));
-
-  // Notify all observers the player has been "paused".
-  for (const auto& id : removed_players) {
-    auto it = video_players.find(id);
-    bool was_video = (it != video_players.end());
-    bool was_audio = (audio_players.find(id) != audio_players.end());
-    web_contents_impl()->MediaStoppedPlaying(
-        WebContentsObserver::MediaPlayerInfo(was_video, was_audio), id,
-        WebContentsObserver::MediaStoppedReason::kUnspecified);
-  }
-}
-
 device::mojom::WakeLock* MediaWebContentsObserver::GetAudioWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!audio_wake_lock_) {
@@ -350,66 +406,6 @@ void MediaWebContentsObserver::OnMediaPositionStateChanged(
   session_controllers_manager_.OnMediaPositionStateChanged(id, position);
 }
 
-void MediaWebContentsObserver::AddMediaPlayerEntry(
-    const MediaPlayerId& id,
-    ActiveMediaPlayerMap* player_map) {
-  (*player_map)[id.render_frame_host].insert(id.delegate_id);
-  if (power_experiment_manager_) {
-    // Bind the callback to a WeakPtr for the frame, so that we won't try to
-    // notify the frame after it's been destroyed.
-    power_experiment_manager_->PlayerStarted(
-        id,
-        base::BindRepeating(&MediaWebContentsObserver::OnExperimentStateChanged,
-                            GetWeakPtrForFrame(id.render_frame_host), id));
-  }
-}
-
-bool MediaWebContentsObserver::RemoveMediaPlayerEntry(
-    const MediaPlayerId& id,
-    ActiveMediaPlayerMap* player_map) {
-  // If the power experiment is running, then notify it.
-  if (power_experiment_manager_)
-    power_experiment_manager_->PlayerStopped(id);
-
-  auto it = player_map->find(id.render_frame_host);
-  if (it == player_map->end())
-    return false;
-
-  // Remove the player.
-  bool did_remove = it->second.erase(id.delegate_id) == 1;
-  if (!did_remove)
-    return false;
-
-  // If there are no players left, remove the map entry.
-  if (it->second.empty())
-    player_map->erase(it);
-
-  return true;
-}
-
-void MediaWebContentsObserver::RemoveAllMediaPlayerEntries(
-    RenderFrameHost* render_frame_host,
-    ActiveMediaPlayerMap* player_map,
-    std::set<MediaPlayerId>* removed_players) {
-  auto it = player_map->find(render_frame_host);
-  if (it == player_map->end())
-    return;
-
-  for (int delegate_id : it->second) {
-    MediaPlayerId id(render_frame_host, delegate_id);
-    removed_players->insert(id);
-
-    // Since the player is being destroyed, don't bother to notify it if it's
-    // no longer the active experiment.
-    if (power_experiment_manager_) {
-      power_experiment_manager_->PlayerStopped(
-          id, MediaPowerExperimentManager::NotificationMode::kSkip);
-    }
-  }
-
-  player_map->erase(it);
-}
-
 WebContentsImpl* MediaWebContentsObserver::web_contents_impl() const {
   return static_cast<WebContentsImpl*>(web_contents());
 }
@@ -426,26 +422,6 @@ void MediaWebContentsObserver::OnExperimentStateChanged(MediaPlayerId id,
   id.render_frame_host->Send(
       new MediaPlayerDelegateMsg_NotifyPowerExperimentState(
           id.render_frame_host->GetRoutingID(), id.delegate_id, is_starting));
-}
-
-void MediaWebContentsObserver::RemoveAllPlayers(
-    ActiveMediaPlayerMap* player_map) {
-  if (power_experiment_manager_) {
-    for (auto& iter : *player_map) {
-      for (auto delegate_id : iter.second) {
-        MediaPlayerId id(iter.first, delegate_id);
-        power_experiment_manager_->PlayerStopped(
-            id, MediaPowerExperimentManager::NotificationMode::kSkip);
-      }
-    }
-  }
-
-  player_map->clear();
-}
-
-void MediaWebContentsObserver::RemoveAllPlayers() {
-  RemoveAllPlayers(&active_audio_players_);
-  RemoveAllPlayers(&active_video_players_);
 }
 
 base::WeakPtr<MediaWebContentsObserver>

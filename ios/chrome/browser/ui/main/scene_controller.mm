@@ -368,8 +368,12 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                .userActivities) {
         if (ActivityIsURLLoad(activity)) {
           UrlLoadParams params = LoadParamsFromActivity(activity);
-          UrlLoadingBrowserAgent::FromBrowser(self.mainInterface.browser)
-              ->Load(params);
+          ApplicationMode mode = params.in_incognito
+                                     ? ApplicationMode::INCOGNITO
+                                     : ApplicationMode::NORMAL;
+          [self openOrReuseTabInMode:mode
+                   withUrlLoadParams:params
+                 tabOpenedCompletion:nil];
         } else if (!activityWithCompletion) {
           // Completion involves user interaction.
           // Only one can be triggered.
@@ -1453,8 +1457,24 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
     return YES;
   }
+  BOOL hasPendingURL = NO;
+
+  if (@available(iOS 13, *)) {
+    // Only consider normal mode load as this function always returns NO for
+    // incognito browser.
+    for (NSUserActivity* activity in self.sceneState.connectionOptions
+             .userActivities) {
+      if (ActivityIsURLLoadInNormalMode(activity)) {
+        hasPendingURL = YES;
+        break;
+      }
+    }
+  }
+
+  // If there is a URLLoading activity, avoid opening a new tab as the NTP would
+  // flash before the target URL is loaded.
   return browser->GetWebStateList()->empty() &&
-         !(browser->GetBrowserState()->IsOffTheRecord());
+         !(browser->GetBrowserState()->IsOffTheRecord()) && !hasPendingURL;
 }
 
 #pragma mark - SceneURLLoadingServiceDelegate
@@ -1685,7 +1705,6 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     SnapshotTabHelper::FromWebState(webState)->UpdateSnapshotWithCallback(nil);
   }
 }
-
 
 // Checks the target BVC's current tab's URL. If this URL is chrome://newtab,
 // loads |urlLoadParams| in this tab. Otherwise, open |urlLoadParams| in a new

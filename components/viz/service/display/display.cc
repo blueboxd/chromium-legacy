@@ -25,6 +25,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
+#include "components/viz/common/surfaces/aggregated_frame.h"
 #include "components/viz/common/viz_utils.h"
 #include "components/viz/service/display/damage_frame_annotator.h"
 #include "components/viz/service/display/direct_renderer.h"
@@ -642,7 +643,7 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
 
   base::ElapsedTimer aggregate_timer;
   aggregate_timer.Begin();
-  CompositorFrame frame;
+  AggregatedFrame frame;
   {
     FrameRateDecider::ScopedAggregate scoped_aggregate(
         frame_rate_decider_.get());
@@ -659,24 +660,24 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
   // TODO(vikassoni) : Extend this capability to record whether a video frame is
   // inline or fullscreen.
   UMA_HISTOGRAM_ENUMERATION("Compositing.SurfaceAggregator.FrameContainsVideo",
-                            frame.metadata.may_contain_video
+                            frame.may_contain_video
                                 ? TypeOfVideoInFrame::kVideo
                                 : TypeOfVideoInFrame::kNoVideo);
 
-  if (frame.metadata.delegated_ink_metadata) {
+  if (frame.delegated_ink_metadata) {
     TRACE_EVENT_INSTANT1(
         "viz", "Delegated Ink Metadata was aggregated for DrawAndSwap.",
         TRACE_EVENT_SCOPE_THREAD, "ink metadata",
-        frame.metadata.delegated_ink_metadata->ToString());
+        frame.delegated_ink_metadata->ToString());
     // TODO(1052145): This metadata will be stored here and used to determine
     // which points should be drawn onto the back buffer (via Skia or OS APIs)
     // before being swapped onto the screen.
   }
 
 #if defined(OS_ANDROID)
-  bool wide_color_enabled = display_color_spaces_.GetOutputColorSpace(
-                                frame.metadata.content_color_usage, true) !=
-                            gfx::ColorSpace::CreateSRGB();
+  bool wide_color_enabled =
+      display_color_spaces_.GetOutputColorSpace(
+          frame.content_color_usage, true) != gfx::ColorSpace::CreateSRGB();
   if (wide_color_enabled != last_wide_color_enabled_) {
     client_->SetWideColorEnabled(wide_color_enabled);
     last_wide_color_enabled_ = wide_color_enabled;
@@ -698,13 +699,11 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
   // Run callbacks early to allow pipelining and collect presented callbacks.
   damage_tracker_->RunDrawCallbacks();
 
-  frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
-                                     stored_latency_info_.begin(),
-                                     stored_latency_info_.end());
+  frame.latency_info.insert(frame.latency_info.end(),
+                            stored_latency_info_.begin(),
+                            stored_latency_info_.end());
   stored_latency_info_.clear();
-  bool have_copy_requests = false;
-  for (const auto& pass : frame.render_pass_list)
-    have_copy_requests |= !pass->copy_requests.empty();
+  bool have_copy_requests = frame.has_copy_requests;
 
   gfx::Size surface_size;
   bool have_damage = false;
@@ -749,8 +748,14 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
         "Compositing.Display.Draw.Occlusion.Calculation.Time",
         draw_occlusion_timer.Elapsed().InMicroseconds());
 
-    bool disable_image_filtering =
-        frame.metadata.is_resourceless_software_draw_with_scroll_or_animation;
+    // TODO(vmpstr): This used to set to
+    // frame.metadata.is_resourceless_software_draw_with_scroll_or_animation
+    // from CompositedFrame. However, after changing this to AggregatedFrame, it
+    // seems that the value is never changed from the default false (i.e.
+    // SurfaceAggregator has no reference to
+    // is_resourceless_software_draw_with_scroll_or_animation). The TODO here is
+    // to clean up the code below or to figure out if this value is important.
+    bool disable_image_filtering = false;
     if (software_renderer_) {
       software_renderer_->SetDisablePictureQuadImageFiltering(
           disable_image_filtering);
@@ -806,18 +811,17 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
     swapped_since_resize_ = true;
 
     ui::LatencyInfo::TraceIntermediateFlowEvents(
-        frame.metadata.latency_info,
+        frame.latency_info,
         perfetto::protos::pbzero::ChromeLatencyInfo::STEP_DRAW_AND_SWAP);
 
     cc::benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
     DirectRenderer::SwapFrameData swap_frame_data;
-    swap_frame_data.latency_info = std::move(frame.metadata.latency_info);
-    if (frame.metadata.top_controls_visible_height.has_value()) {
+    swap_frame_data.latency_info = std::move(frame.latency_info);
+    if (frame.top_controls_visible_height.has_value()) {
       swap_frame_data.top_controls_visible_height_changed =
           last_top_controls_visible_height_ !=
-          *frame.metadata.top_controls_visible_height;
-      last_top_controls_visible_height_ =
-          *frame.metadata.top_controls_visible_height;
+          *frame.top_controls_visible_height;
+      last_top_controls_visible_height_ = *frame.top_controls_visible_height;
     }
 
     // We must notify scheduler and increase |pending_swaps_| before calling
@@ -835,16 +839,15 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
 
     if (have_damage) {
       // Do not store more than the allowed size.
-      if (ui::LatencyInfo::Verify(frame.metadata.latency_info,
-                                  "Display::DrawAndSwap")) {
-        stored_latency_info_.swap(frame.metadata.latency_info);
+      if (ui::LatencyInfo::Verify(frame.latency_info, "Display::DrawAndSwap")) {
+        stored_latency_info_.swap(frame.latency_info);
       }
     } else {
       // There was no damage. Terminate the latency info objects.
-      while (!frame.metadata.latency_info.empty()) {
-        auto& latency = frame.metadata.latency_info.back();
+      while (!frame.latency_info.empty()) {
+        auto& latency = frame.latency_info.back();
         latency.Terminate();
-        frame.metadata.latency_info.pop_back();
+        frame.latency_info.pop_back();
       }
     }
 
@@ -1018,7 +1021,7 @@ void Display::SetNeedsOneBeginFrame() {
     scheduler_->SetNeedsOneBeginFrame(false);
 }
 
-void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
+void Display::RemoveOverdrawQuads(AggregatedFrame* frame) {
   if (frame->render_pass_list.empty())
     return;
 

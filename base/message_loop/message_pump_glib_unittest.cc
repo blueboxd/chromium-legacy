@@ -18,13 +18,13 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/waitable_event_watcher.h"
+#include "base/task/current_thread.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
@@ -472,7 +472,7 @@ void TestGLibLoopInternal(EventInjector* injector, OnceClosure done) {
 
   // Run a nested, straight GLib message loop.
   {
-    MessageLoopCurrent::ScopedNestableTaskAllower allow_nestable_tasks;
+    CurrentThread::ScopedNestableTaskAllower allow_nestable_tasks;
     runner->RunGLib();
   }
 
@@ -506,7 +506,7 @@ void TestGtkLoopInternal(EventInjector* injector, OnceClosure done) {
 
   // Run a nested, straight Gtk message loop.
   {
-    MessageLoopCurrent::ScopedNestableTaskAllower allow_nestable_tasks;
+    CurrentThread::ScopedNestableTaskAllower allow_nestable_tasks;
     runner->RunLoop();
   }
 
@@ -745,7 +745,7 @@ TEST_F(MessagePumpGLibFdWatchTest, QuitWatcher) {
                           Unretained(watcher.get()), &event,
                           std::move(write_fd_task), io_runner()));
 
-  // Queue |event| to signal on |MessageLoopCurrentForUI::Get()|.
+  // Queue |event| to signal on |CurrentUIThread::Get()|.
   ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&event)));
 

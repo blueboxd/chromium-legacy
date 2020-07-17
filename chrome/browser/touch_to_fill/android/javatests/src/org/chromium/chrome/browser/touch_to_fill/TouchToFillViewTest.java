@@ -15,7 +15,6 @@ import static org.mockito.Mockito.verify;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.CREDENTIAL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FooterProperties.BRANDING_MESSAGE_ID;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.SINGLE_CREDENTIAL;
@@ -45,7 +44,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FooterProperties;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -192,46 +190,6 @@ public class TouchToFillViewTest {
                 mTouchToFillView.getContentView().findViewById(R.id.touch_to_fill_sheet_subtitle);
 
         assertThat(subtitle.getText(), is(getFormattedNotSecureSubtitle("m.example.org")));
-    }
-
-    @Test
-    @MediumTest
-    public void testBrandingVariationZeroHides() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel.get(SHEET_ITEMS)
-                    .add(new MVCListAdapter.ListItem(TouchToFillProperties.ItemType.FOOTER,
-                            new PropertyModel.Builder(FooterProperties.ALL_KEYS)
-                                    .with(BRANDING_MESSAGE_ID, 0)
-                                    .build()));
-            mModel.set(VISIBLE, true);
-        });
-        pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.HALF);
-        TextView brandingMessage =
-                mTouchToFillView.getContentView().findViewById(R.id.touch_to_fill_branding_message);
-
-        assertThat(brandingMessage.getVisibility(), is(View.GONE));
-    }
-
-    @Test
-    @MediumTest
-    public void testBrandingVariationOneDisplayed() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel.get(SHEET_ITEMS)
-                    .add(new MVCListAdapter.ListItem(TouchToFillProperties.ItemType.FOOTER,
-                            new PropertyModel.Builder(FooterProperties.ALL_KEYS)
-                                    .with(BRANDING_MESSAGE_ID,
-                                            R.string.touch_to_fill_branding_variation_1)
-                                    .build()));
-            mModel.set(VISIBLE, true);
-        });
-        pollUiThread(() -> getBottomSheetState() == BottomSheetController.SheetState.HALF);
-        TextView brandingMessage =
-                mTouchToFillView.getContentView().findViewById(R.id.touch_to_fill_branding_message);
-
-        String expectedBrandingMessage =
-                String.format(getActivity().getString(R.string.touch_to_fill_branding_variation_1),
-                        getActivity().getString(org.chromium.chrome.R.string.app_name));
-        assertThat(brandingMessage.getText(), is(expectedBrandingMessage));
     }
 
     @Test

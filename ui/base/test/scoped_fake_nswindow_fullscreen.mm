@@ -12,8 +12,8 @@
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 // Donates a testing implementation of [NSWindow toggleFullScreen:].
@@ -105,7 +105,7 @@ class ScopedFakeNSWindowFullscreen::Impl {
     [[NSNotificationCenter defaultCenter]
         postNotificationName:NSWindowWillStartLiveResizeNotification
                       object:window];
-    DCHECK(base::MessageLoopCurrentForUI::IsSet());
+    DCHECK(base::CurrentUIThread::IsSet());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&Impl::FinishEnterFullscreen, base::Unretained(this),
@@ -145,7 +145,7 @@ class ScopedFakeNSWindowFullscreen::Impl {
         postNotificationName:NSWindowWillExitFullScreenNotification
                       object:window_];
 
-    DCHECK(base::MessageLoopCurrentForUI::IsSet());
+    DCHECK(base::CurrentUIThread::IsSet());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&Impl::FinishExitFullscreen, base::Unretained(this)));

@@ -125,7 +125,7 @@ using base::UserMetricsAction;
       break;
 #endif  // !defined(NDEBUG)
     case PopupMenuActionOpenNewWindow:
-      [self.dispatcher openNewWindowWithActivity:ActivityToOpenNewTab(false)];
+      [self.dispatcher openNewWindowWithActivity:nil];
       break;
     case PopupMenuActionBookmarks:
       RecordAction(UserMetricsAction("MobileMenuAllBookmarks"));

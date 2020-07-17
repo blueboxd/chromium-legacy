@@ -26,7 +26,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -37,6 +36,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/current_thread.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/hang_watcher.h"
 #include "base/threading/platform_thread.h"
@@ -1698,7 +1698,7 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // across versions.
   RecordBrowserStartupTime();
 
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
 
   performance_monitor::ProcessMonitor::GetInstance()->StartGatherCycle();
 

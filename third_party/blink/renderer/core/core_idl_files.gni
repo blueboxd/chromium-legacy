@@ -146,6 +146,7 @@ core_interface_idl_files_core_only =
                     "events/animation_event.idl",
                     "events/animation_playback_event.idl",
                     "events/application_cache_error_event.idl",
+                    "events/before_create_policy_event.idl",
                     "events/before_unload_event.idl",
                     "events/clipboard_event.idl",
                     "events/composition_event.idl",

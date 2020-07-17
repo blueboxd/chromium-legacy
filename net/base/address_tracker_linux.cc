@@ -13,9 +13,9 @@
 #include "base/bind_helpers.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/optional.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/task/current_thread.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "net/base/network_interfaces_linux.h"
 

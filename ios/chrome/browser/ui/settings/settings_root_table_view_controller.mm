@@ -143,7 +143,6 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
 
 - (void)viewWillDisappear:(BOOL)animated {
   [super viewWillDisappear:animated];
-  [self.navigationController setToolbarHidden:YES animated:YES];
 }
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated {

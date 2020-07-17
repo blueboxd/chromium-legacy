@@ -15,13 +15,13 @@
 #include "base/containers/flat_map.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/process/process_metrics.h"
 #include "base/sequence_checker.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/task/task_observer.h"
 #include "base/threading/platform_thread.h"
@@ -517,7 +517,7 @@ void SetupCpuTimeMetrics() {
   static bool did_setup = false;
   if (did_setup)
     return;
-  base::MessageLoopCurrent::Get()->AddTaskObserver(
+  base::CurrentThread::Get()->AddTaskObserver(
       ProcessCpuTimeTaskObserver::GetInstance());
   did_setup = true;
 }

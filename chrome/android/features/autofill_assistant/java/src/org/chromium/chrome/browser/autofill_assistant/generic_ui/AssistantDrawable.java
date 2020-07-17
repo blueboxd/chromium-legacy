@@ -19,6 +19,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiController;
 import org.chromium.chrome.browser.autofill_assistant.drawable.AssistantDrawableIcon;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
@@ -103,8 +104,8 @@ public abstract class AssistantDrawable {
     }
 
     private static class AssistantBitmapDrawable extends AssistantDrawable {
-        private final ImageFetcher mImageFetcher =
-                ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY);
+        private final ImageFetcher mImageFetcher = ImageFetcherFactory.createImageFetcher(
+                ImageFetcherConfig.DISK_CACHE_ONLY, AutofillAssistantUiController.getProfile());
         private final String mUrl;
         private final int mWidthInPixels;
         private final int mHeightInPixels;

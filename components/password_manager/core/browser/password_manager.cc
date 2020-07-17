@@ -51,6 +51,7 @@
 #endif
 
 using autofill::ACCOUNT_CREATION_PASSWORD;
+using autofill::FieldDataManager;
 using autofill::FieldRendererId;
 using autofill::FormData;
 using autofill::FormRendererId;
@@ -740,25 +741,30 @@ void PasswordManager::OnPasswordNoLongerGenerated(
     manager->PasswordNoLongerGenerated();
 }
 
-void PasswordManager::OnPasswordFormRemoved(PasswordManagerDriver* driver,
-                                            FormRendererId form_id) {
+void PasswordManager::OnPasswordFormRemoved(
+    PasswordManagerDriver* driver,
+    const FieldDataManager* field_data_manager,
+    FormRendererId form_id) {
   for (auto& manager : form_managers_) {
     if (driver && !manager->GetDriver())
       manager->SetDriver(driver->AsWeakPtr());
+    // Find a form with corresponding renderer id.
     if (manager->DoesManageAccordingToRendererId(form_id, driver)) {
-      if (manager->is_submitted())
-        OnLoginSuccessful();
-      else
-        return;
+      CheckForPotentialSubmission(manager.get(), field_data_manager, driver);
+      return;
     }
   }
 }
 
-void PasswordManager::OnIframeDetach(const std::string& frame_id) {
-  PasswordFormManager* submitted_manager = GetSubmittedManager();
-  if (submitted_manager &&
-      submitted_manager->observed_form().frame_id == frame_id) {
-    OnLoginSuccessful();
+void PasswordManager::OnIframeDetach(
+    const std::string& frame_id,
+    PasswordManagerDriver* driver,
+    const FieldDataManager* field_data_manager) {
+  for (auto& manager : form_managers_) {
+    // Find a form with corresponding frame id.
+    if (manager->observed_form().frame_id == frame_id) {
+      CheckForPotentialSubmission(manager.get(), field_data_manager, driver);
+    }
   }
 }
 #endif
@@ -1252,6 +1258,25 @@ void PasswordManager::ResetAutofillAssistantMode() {
 
   autofill_assistant_mode_ = AutofillAssistantMode::kNotRunning;
 }
+
+#if defined(OS_IOS)
+void PasswordManager::CheckForPotentialSubmission(
+    PasswordFormManager* form_manager,
+    const FieldDataManager* field_data_manager,
+    PasswordManagerDriver* driver) {
+  // If the manager is not submitted, it still can have autofilled data.
+  if (!form_manager->is_submitted()) {
+    form_manager->UpdateObservedFormDataWithFieldDataManagerInfo(
+        field_data_manager);
+    // Provisionally save form and set the manager to be submitted if valid
+    // data was recovered.
+    form_manager->ProvisionallySave(form_manager->observed_form(), driver,
+                                    nullptr);
+  }
+  if (form_manager->is_submitted())
+    OnLoginSuccessful();
+}
+#endif
 
 base::TimeDelta PasswordManager::GetTimeoutForDisablingPrompts() {
   return base::TimeDelta::FromSeconds(disable_prompts_timeout_in_seconds_);

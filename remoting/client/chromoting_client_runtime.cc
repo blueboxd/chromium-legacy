@@ -8,8 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/task/current_thread.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
@@ -31,7 +31,7 @@ ChromotingClientRuntime* ChromotingClientRuntime::GetInstance() {
 ChromotingClientRuntime::ChromotingClientRuntime() {
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Remoting");
 
-  DCHECK(!base::MessageLoopCurrent::Get());
+  DCHECK(!base::CurrentThread::Get());
 
   VLOG(1) << "Starting main message loop";
   ui_task_executor_.reset(

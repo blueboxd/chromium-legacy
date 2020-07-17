@@ -10,11 +10,11 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/current_thread.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -415,7 +415,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerRestartOnUpdate) {
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner(
       new base::TestMockTimeTaskRunner(base::Time::Now(),
                                        base::TimeTicks::Now()));
-  base::MessageLoopCurrent::Get()->SetTaskRunner(task_runner);
+  base::CurrentThread::Get()->SetTaskRunner(task_runner);
 
   NotifierId notifier_id(GURL("https://example.com"));
 
@@ -456,7 +456,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerRestartOnUpdate) {
   task_runner->FastForwardBy(base::TimeDelta::FromSeconds(2));
   ASSERT_EQ(popup_timers_controller->timer_finished(), 1);
 
-  base::MessageLoopCurrent::Get()->SetTaskRunner(old_task_runner);
+  base::CurrentThread::Get()->SetTaskRunner(old_task_runner);
 }
 
 TEST_F(MessageCenterImplTest, Renotify) {

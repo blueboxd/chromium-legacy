@@ -32,7 +32,7 @@
 #include "ui/views/layout/grid_layout.h"
 
 #if defined(OS_MACOSX)
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "chrome/browser/ui/views/policy/enterprise_startup_dialog_mac_util.h"
 #endif
 
@@ -164,7 +164,7 @@ void EnterpriseStartupDialogView::RemoveWidgetObserver(
 
 void EnterpriseStartupDialogView::StartModalDialog() {
 #if defined(OS_MACOSX)
-  base::MessageLoopCurrent::ScopedNestableTaskAllower allow_nested;
+  base::CurrentThread::ScopedNestableTaskAllower allow_nested;
   StartModal(GetWidget()->GetNativeWindow());
 #endif
 }

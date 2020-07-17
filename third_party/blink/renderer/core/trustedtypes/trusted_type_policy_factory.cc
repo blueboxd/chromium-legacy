@@ -9,6 +9,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_trusted_html.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_trusted_script_url.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/before_create_policy_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -17,6 +20,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
@@ -25,6 +29,16 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
     const String& policy_name,
     const TrustedTypePolicyOptions* policy_options,
     ExceptionState& exception_state) {
+  if (RuntimeEnabledFeatures::TrustedTypeBeforePolicyCreationEventEnabled()) {
+    DispatchEventResult result =
+        DispatchEvent(*BeforeCreatePolicyEvent::Create(policy_name));
+    if (result != DispatchEventResult::kNotCanceled) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotAllowedError,
+          "The policy creation has been canceled.");
+      return nullptr;
+    }
+  }
   if (!GetExecutionContext()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The document is detached.");
@@ -308,8 +322,16 @@ void TrustedTypePolicyFactory::CountTrustedTypeAssignmentError() {
   }
 }
 
+const AtomicString& TrustedTypePolicyFactory::InterfaceName() const {
+  return event_target_names::kTrustedTypePolicyFactory;
+}
+
+ExecutionContext* TrustedTypePolicyFactory::GetExecutionContext() const {
+  return ExecutionContextClient::GetExecutionContext();
+}
+
 void TrustedTypePolicyFactory::Trace(Visitor* visitor) const {
-  ScriptWrappable::Trace(visitor);
+  EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
   visitor->Trace(empty_html_);
   visitor->Trace(empty_script_);

@@ -22,6 +22,11 @@ ClipboardDataEndpoint& ClipboardDataEndpoint::operator=(
 ClipboardDataEndpoint& ClipboardDataEndpoint::operator=(
     ClipboardDataEndpoint&& other) = default;
 
+bool ClipboardDataEndpoint::operator==(
+    const ClipboardDataEndpoint& other) const {
+  return url_ == other.url_;
+}
+
 ClipboardDataEndpoint::~ClipboardDataEndpoint() = default;
 
 }  // namespace ui

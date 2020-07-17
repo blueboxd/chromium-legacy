@@ -9,13 +9,13 @@
 #include "base/bind_helpers.h"
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -191,7 +191,7 @@ class ScheduleWorkTest : public testing::Test {
           java_thread_->state()->sequence_manager.get());
     }
 #endif
-    return MessageLoopCurrent::Get()->GetCurrentSequenceManagerImpl();
+    return CurrentThread::Get()->GetCurrentSequenceManagerImpl();
   }
 
  private:

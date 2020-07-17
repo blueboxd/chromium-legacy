@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_VIZ_TEST_COMPOSITOR_FRAME_HELPERS_H_
 #define COMPONENTS_VIZ_TEST_COMPOSITOR_FRAME_HELPERS_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/optional.h"
@@ -12,6 +13,7 @@
 #include "components/viz/common/quads/frame_deadline.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/common/surfaces/aggregated_frame.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "ui/latency/latency_info.h"
 
@@ -72,6 +74,9 @@ class CompositorFrameBuilder {
 // Creates a CompositorFrame that has a render pass with 20x20 output_rect and
 // empty damage_rect. This CompositorFrame is valid and can be sent over IPC.
 CompositorFrame MakeDefaultCompositorFrame();
+
+// Makes an aggregated frame out of the default compositor frame.
+AggregatedFrame MakeDefaultAggregatedFrame();
 
 // Creates a CompositorFrame that will be valid once its render_pass_list is
 // initialized.

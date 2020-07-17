@@ -28,6 +28,9 @@
       <include name="IDR_PROFILE_PICKER_PROFILE_CARD_JS"
                file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_card.js"
                use_base_dir="false" type="BINDATA" preprocess="true"/>
+      <include name="IDR_PROFILE_PICKER_PROFILE_CREATION_FLOW_PROFILE_TYPE_CHOICE_JS"
+               file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_creation_flow/profile_type_choice.js"
+               use_base_dir="false" type="BINDATA"/>
     </includes>
     <structures>
       <structure
@@ -53,11 +56,6 @@
       <structure
           name="IDR_PROFILE_PICKER_ENSURE_LAZY_LOADED_JS"
           file="profile_creation_flow/ensure_lazy_loaded.js"
-          type="chrome_html"
-          compress="false"/>
-      <structure
-          name="IDR_PROFILE_PICKER_PROFILE_TYPE_INPUT_JS"
-          file="profile_creation_flow/profile_type_choice.js"
           type="chrome_html"
           compress="false"/>
       <structure

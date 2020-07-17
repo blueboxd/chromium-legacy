@@ -13,9 +13,9 @@
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/task/task_executor.h"
 #include "base/threading/platform_thread.h"
@@ -121,7 +121,7 @@ BrowserThreadImpl::BrowserThreadImpl(
     //
     // In unit tests, usage of the  FileDescriptorWatcher API is already allowed
     // if the UI thread is running a MessageLoopForIO.
-    if (!base::MessageLoopCurrentForIO::IsSet()) {
+    if (!base::CurrentIOThread::IsSet()) {
       file_descriptor_watcher_.emplace(GetIOThreadTaskRunner({}));
     }
     base::FileDescriptorWatcher::AssertAllowed();

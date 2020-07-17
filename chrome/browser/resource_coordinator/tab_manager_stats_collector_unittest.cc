@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/task/current_thread.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -55,7 +55,7 @@ class TabManagerStatsCollectorTest
             std::make_unique<base::TestMockTimeTaskRunner::ScopedContext>(
                 task_runner_)),
         scoped_set_tick_clock_for_testing_(task_runner_->GetMockTickClock()) {
-    base::MessageLoopCurrent::Get()->SetTaskRunner(task_runner_);
+    base::CurrentThread::Get()->SetTaskRunner(task_runner_);
 
     // Start with a non-zero time.
     task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(42));

@@ -1,0 +1,33 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * @fileoverview A helper object used by the dice web signin intercept bubble to
+ * interact with the browser.
+ */
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+
+/** @interface */
+export class DiceWebSigninInterceptBrowserProxy {
+  /** Called when the user accepts the interception bubble. */
+  accept() {}
+
+  /** Called when the user cancels the interception. */
+  cancel() {}
+}
+
+/** @implements {DiceWebSigninInterceptBrowserProxy} */
+export class DiceWebSigninInterceptBrowserProxyImpl {
+  /** @override */
+  accept() {
+    chrome.send('accept');
+  }
+
+  /** @override */
+  cancel() {
+    chrome.send('cancel');
+  }
+}
+
+addSingletonGetter(DiceWebSigninInterceptBrowserProxyImpl);

@@ -444,24 +444,6 @@
             ]
         }
     ],
-    "AndroidTouchToFill": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "show_confirmation_button": "false"
-                    },
-                    "enable_features": [
-                        "TouchToFillAndroid"
-                    ]
-                }
-            ]
-        }
-    ],
     "AppListLaunchRecorder": [
         {
             "platforms": [

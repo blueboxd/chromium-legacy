@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display/display.h"
 
+#include <limits>
 #include <utility>
 
 #include "base/bind.h"
@@ -21,6 +22,7 @@
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
+#include "components/viz/common/surfaces/aggregated_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/direct_renderer.h"
@@ -917,10 +919,13 @@ TEST_F(DisplayTest, DrawOcclusionWithBlending) {
   SetUpGpuDisplay(settings);
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
-  CompositorFrame frame = CompositorFrameBuilder()
-                              .AddDefaultRenderPass()
-                              .AddDefaultRenderPass()
-                              .Build();
+  CompositorFrame compositor_frame = CompositorFrameBuilder()
+                                         .AddDefaultRenderPass()
+                                         .AddDefaultRenderPass()
+                                         .Build();
+  AggregatedFrame frame;
+  frame.render_pass_list = std::move(compositor_frame.render_pass_list);
+
   bool is_clipped = false;
   bool are_contents_opaque = true;
   float opacity = 1.f;
@@ -967,10 +972,12 @@ TEST_F(DisplayTest, DrawOcclusionWithIntersectingBackdropFilter) {
   SetUpGpuDisplay(settings);
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
-  CompositorFrame frame = CompositorFrameBuilder()
-                              .AddDefaultRenderPass()
-                              .AddDefaultRenderPass()
-                              .Build();
+  CompositorFrame compositor_frame = CompositorFrameBuilder()
+                                         .AddDefaultRenderPass()
+                                         .AddDefaultRenderPass()
+                                         .Build();
+  AggregatedFrame frame;
+  frame.render_pass_list = std::move(compositor_frame.render_pass_list);
 
   bool is_clipped = false;
   bool are_contents_opaque = true;
@@ -1043,7 +1050,8 @@ TEST_F(DisplayTest, DrawOcclusionWithNonCoveringDrawQuad) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
+
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(50, 50, 100, 100);
   gfx::Rect rect3(25, 25, 50, 100);
@@ -1265,7 +1273,8 @@ TEST_F(DisplayTest, DrawOcclusionWithSingleOverlapBehindDisjointedDrawQuads) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
+
   std::vector<gfx::Rect> rects;
   rects.emplace_back(0, 0, 100, 100);
   rects.emplace_back(150, 0, 150, 150);
@@ -1320,7 +1329,7 @@ TEST_F(DisplayTest, DrawOcclusionWithMultipleOverlapBehindDisjointedDrawQuads) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   std::vector<gfx::Rect> rects;
   rects.emplace_back(0, 0, 100, 100);
   rects.emplace_back(150, 0, 150, 150);
@@ -1373,7 +1382,7 @@ TEST_F(DisplayTest, CompositorFrameWithOverlapDrawQuad) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(25, 25, 50, 50);
   gfx::Rect rect3(50, 50, 50, 25);
@@ -1504,7 +1513,7 @@ TEST_F(DisplayTest, CompositorFrameWithTransformer) {
 
   // Rect 2, 3, 4 are contained in rect 1 only after applying the half scale
   // matrix. They are repetition of CompositorFrameWithOverlapDrawQuad.
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(50, 50, 100, 100);
   gfx::Rect rect3(100, 100, 100, 50);
@@ -1772,7 +1781,7 @@ TEST_F(DisplayTest, CompositorFrameWithEpsilonScaleTransform) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect(0, 0, 100, 100);
 
   SkScalar epsilon = 0.000000001f;
@@ -1882,7 +1891,7 @@ TEST_F(DisplayTest, CompositorFrameWithNegativeScaleTransform) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect(0, 0, 100, 100);
 
   gfx::Transform negative_scale;
@@ -2004,7 +2013,7 @@ TEST_F(DisplayTest, CompositorFrameWithRotation) {
   display_->Initialize(&client, manager_.surface_manager());
 
   // rect 2 is inside rect 1 initially.
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(75, 75, 10, 10);
 
@@ -2131,7 +2140,7 @@ TEST_F(DisplayTest, CompositorFrameWithPerspective) {
   display_->Initialize(&client, manager_.surface_manager());
 
   // rect 2 is inside rect 1 initially.
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(10, 10, 1, 1);
 
@@ -2204,7 +2213,7 @@ TEST_F(DisplayTest, CompositorFrameWithOpacityChange) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(25, 25, 10, 10);
 
@@ -2268,7 +2277,7 @@ TEST_F(DisplayTest, CompositorFrameWithOpaquenessChange) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(25, 25, 10, 10);
 
@@ -2333,7 +2342,7 @@ TEST_F(DisplayTest, CompositorFrameZTranslate) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(0, 0, 200, 100);
 
@@ -2387,7 +2396,7 @@ TEST_F(DisplayTest, CompositorFrameWithTranslateTransformer) {
   display_->Initialize(&client, manager_.surface_manager());
 
   // rect 2 and 3 are outside rect 1 initially.
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(120, 120, 10, 10);
   gfx::Rect rect3(100, 100, 100, 20);
@@ -2506,7 +2515,7 @@ TEST_F(DisplayTest, CompositorFrameWithCombinedSharedQuadState) {
   display_->Initialize(&client, manager_.surface_manager());
 
   // rect 3 is inside of combined rect of rect 1 and rect 2.
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(100, 0, 60, 60);
   gfx::Rect rect3(10, 10, 120, 30);
@@ -2630,10 +2639,12 @@ TEST_F(DisplayTest, DrawOcclusionWithMultipleRenderPass) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = CompositorFrameBuilder()
-                              .AddDefaultRenderPass()
-                              .AddDefaultRenderPass()
-                              .Build();
+  CompositorFrame compositor_frame = CompositorFrameBuilder()
+                                         .AddDefaultRenderPass()
+                                         .AddDefaultRenderPass()
+                                         .Build();
+  AggregatedFrame frame;
+  frame.render_pass_list = std::move(compositor_frame.render_pass_list);
 
   // rect 3 is inside of combined rect of rect 1 and rect 2.
   // rect 4 is identical to rect 3, but in a separate render pass.
@@ -2682,7 +2693,7 @@ TEST_F(DisplayTest, CompositorFrameWithMultipleRenderPass) {
   display_->Initialize(&client, manager_.surface_manager());
 
   // rect 3 is inside of combined rect of rect 1 and rect 2.
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(100, 0, 60, 60);
 
@@ -2755,7 +2766,7 @@ TEST_F(DisplayTest, CompositorFrameWithCoveredRenderPass) {
   display_->Initialize(&client, manager_.surface_manager());
 
   // rect 3 is inside of combined rect of rect 1 and rect 2.
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
 
   std::unique_ptr<RenderPass> render_pass2 = RenderPass::Create();
@@ -2822,7 +2833,7 @@ TEST_F(DisplayTest, CompositorFrameWithClip) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(50, 50, 25, 25);
   gfx::Rect clip_rect(0, 0, 60, 60);
@@ -2937,7 +2948,7 @@ TEST_F(DisplayTest, CompositorFrameWithCopyRequest) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(50, 50, 25, 25);
 
@@ -2983,7 +2994,7 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(50, 0, 100, 100);
   gfx::Rect rect3(0, 0, 25, 25);
@@ -3161,7 +3172,7 @@ TEST_F(DisplayTest, CompositorFrameWithMultipleDrawQuadInSharedQuadState) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect1_1(0, 0, 50, 50);
   gfx::Rect rect1_2(50, 0, 50, 50);
@@ -3336,7 +3347,7 @@ TEST_F(DisplayTest, CompositorFrameWithNonInvertibleTransform) {
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(10, 10, 50, 50);
   gfx::Rect rect3(0, 0, 10, 10);
@@ -3439,7 +3450,7 @@ TEST_F(DisplayTest, DrawOcclusionWithLargeDrawQuad) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   // The size of this DrawQuad will be 237790x237790 > 2^32 (uint32_t.max())
   // which caused the integer overflow in the bug.
   gfx::Rect rect1(237790, 237790);
@@ -3949,7 +3960,7 @@ TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerDoesNotOcclude) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
 
   // The quad with rounded corner does not completely cover the quad below it.
   // The corners of the below quad are visiblg through the clipped corners.
@@ -4006,7 +4017,7 @@ TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerDoesOcclude) {
   display_->Initialize(&client, manager_.surface_manager());
 
   // The quad with rounded corner completely covers the quad below it.
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
   gfx::Rect quad_rect(10, 10, 1000, 1000);
   gfx::RRectF rounded_corner_bounds(gfx::RectF(quad_rect), 10.f);
   gfx::Rect occluded_quad_rect(13, 13, 994, 994);
@@ -4061,7 +4072,7 @@ TEST_F(DisplayTest, DrawOcclusionSplit) {
 
   // The two partially occluded quads will be split into two additional quads,
   // preserving only the visible regions.
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
 
   //  +--------------------------------+
   //  |***+----------------------+ <- Large occluding Rect
@@ -4154,7 +4165,7 @@ TEST_F(DisplayTest, FirstPassVisibleComplexityReduction) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
 
   const bool is_clipped = false;
   const bool are_contents_opaque = true;
@@ -4270,7 +4281,7 @@ TEST_F(DisplayTest, DrawOcclusionSplitDeviceScaleFactorFractional) {
       1.5f);
   display_->Resize(gfx::Size(1000, 1000));
 
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
 
   const bool is_clipped = false;
   const bool are_contents_opaque = true;
@@ -4315,7 +4326,7 @@ TEST_F(DisplayTest, DrawOcclusionWithRoundedCornerPartialOcclude) {
   display_->Initialize(&client, manager_.surface_manager());
 
   // The quad with rounded corner completely covers the quad below it.
-  CompositorFrame frame = MakeDefaultCompositorFrame();
+  AggregatedFrame frame = MakeDefaultAggregatedFrame();
 
   //      +----------------------+
   //      |                      | <- Large occluding Rect

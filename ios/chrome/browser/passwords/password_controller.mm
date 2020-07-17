@@ -366,9 +366,14 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 // Track detaching iframes.
 - (void)webState:(WebState*)webState
     frameWillBecomeUnavailable:(WebFrame*)web_frame {
+  // No need to try to detect submissions when the webState is being destroyed.
+  if (webState->IsBeingDestroyed())
+    return;
   if (web_frame->IsMainFrame() || !web_frame->CanCallJavaScriptFunction())
     return;
-  _passwordManager->OnIframeDetach(web_frame->GetFrameId());
+  _passwordManager->OnIframeDetach(web_frame->GetFrameId(),
+                                   self.passwordManagerDriver,
+                                   self.formHelper.fieldDataManager.get());
 }
 
 #pragma mark - FormSuggestionProvider
@@ -1064,7 +1069,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   // whether the form was submitted.
   if (params.type == "password_form_removed") {
     self.passwordManager->OnPasswordFormRemoved(
-        self.passwordManagerDriver, FormRendererId(params.unique_form_id));
+        self.passwordManagerDriver, self.formHelper.fieldDataManager.get(),
+        FormRendererId(params.unique_form_id));
   }
 }
 

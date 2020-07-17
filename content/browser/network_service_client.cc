@@ -37,7 +37,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #endif
 
 namespace content {
@@ -65,7 +65,7 @@ NetworkServiceClient::NetworkServiceClient(
 {
 
 #if defined(OS_MACOSX)
-  if (base::MessageLoopCurrentForUI::IsSet())  // Not set in some unit tests.
+  if (base::CurrentUIThread::IsSet())  // Not set in some unit tests.
     net::CertDatabase::GetInstance()->StartListeningForKeychainEvents();
 #endif
 

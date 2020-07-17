@@ -5,11 +5,11 @@
 #include "base/power_monitor/power_monitor_device_source.h"
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/task/current_thread.h"
 #include "base/win/wrapped_window_proc.h"
 
 namespace base {
@@ -68,7 +68,7 @@ bool PowerMonitorDeviceSource::IsOnBatteryPowerImpl() {
 
 PowerMonitorDeviceSource::PowerMessageWindow::PowerMessageWindow()
     : instance_(NULL), message_hwnd_(NULL) {
-  if (!MessageLoopCurrentForUI::IsSet()) {
+  if (!CurrentUIThread::IsSet()) {
     // Creating this window in (e.g.) a renderer inhibits shutdown on Windows.
     // See http://crbug.com/230122. TODO(vandebo): http://crbug.com/236031
     DLOG(ERROR)

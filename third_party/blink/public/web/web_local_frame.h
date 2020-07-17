@@ -39,6 +39,7 @@
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/base/ime/ime_text_span.h"
 #include "v8/include/v8.h"
 
@@ -177,6 +178,12 @@ class WebLocalFrame : public WebFrame {
   // Sets the name of this frame.
   virtual void SetName(const WebString&) = 0;
 
+  // Returns the AXTreeID associated to the current frame. It is tied to the
+  // frame's associated EmbeddingToken, and so it will only be a valid one after
+  // the first time that document has been loaded, and will change whenever the
+  // loaded document changes (e.g. frame navigated to a different document).
+  virtual ui::AXTreeID GetAXTreeID() const = 0;
+
   // Hierarchy ----------------------------------------------------------
 
   // Returns true if the current frame is a provisional frame.
@@ -208,7 +215,8 @@ class WebLocalFrame : public WebFrame {
   // Returns the embedding token for this frame or nullopt if the frame hasn't
   // committed a navigation. This token changes when a new document is committed
   // in this WebLocalFrame.
-  virtual const base::Optional<base::UnguessableToken>& GetEmbeddingToken() = 0;
+  virtual const base::Optional<base::UnguessableToken>& GetEmbeddingToken()
+      const = 0;
 
   // Navigation Ping --------------------------------------------------------
 

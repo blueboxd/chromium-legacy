@@ -131,6 +131,7 @@ jumbo_component("cpp") {
 
   deps = [
     "//base",
+    "//base/util/ranges:ranges",
     "//components/prefs",
     "//ipc",
     "//services/proxy_resolver/public/mojom",

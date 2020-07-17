@@ -26,9 +26,9 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/task/task_observer.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -220,12 +220,12 @@ class TaskObserver : public base::TaskObserver {
 void RunAllTasksUntilIdle() {
   while (true) {
     TaskObserver task_observer;
-    base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer);
+    base::CurrentThread::Get()->AddTaskObserver(&task_observer);
     // May spin message loop.
     base::ThreadPoolInstance::Get()->FlushForTesting();
 
     base::RunLoop().RunUntilIdle();
-    base::MessageLoopCurrent::Get()->RemoveTaskObserver(&task_observer);
+    base::CurrentThread::Get()->RemoveTaskObserver(&task_observer);
 
     if (!task_observer.processed())
       break;

@@ -505,7 +505,13 @@ CertificateProviderInternalReportSignatureFunction::Run() {
   if (params->signature)
     signature.assign(params->signature->begin(), params->signature->end());
 
-  service->ReplyToSignRequest(extension_id(), params->request_id, signature);
+  if (!service->ReplyToSignRequest(extension_id(), params->request_id,
+                                   signature)) {
+    // The request was aborted before, or the extension managed to bypass the
+    // checks in the API bindings and specified a bad or an already used id.
+    DLOG(WARNING) << "Unexpected reply of extension " << extension_id()
+                  << " to sign request " << params->request_id;
+  }
   return RespondNow(NoArguments());
 }
 

@@ -521,7 +521,14 @@ TEST_P(PasswordFormManagerTest, Autofill) {
   task_environment_.FastForwardUntilNoTasksRemain();
 
   EXPECT_EQ(observed_form_.url, fill_data.url);
+
+  // On Android Touch To Fill will prevent autofilling credentials on page load.
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(fill_data.wait_for_username);
+#else
   EXPECT_FALSE(fill_data.wait_for_username);
+#endif
+
   EXPECT_EQ(observed_form_.fields[1].name, fill_data.username_field.name);
   EXPECT_EQ(saved_match_.username_value, fill_data.username_field.value);
   EXPECT_EQ(observed_form_.fields[2].name, fill_data.password_field.name);
@@ -1795,13 +1802,7 @@ TEST_P(PasswordFormManagerTest, Update) {
   EXPECT_GE(updated_form.date_last_used, kNow);
 }
 
-// TODO(https://crbug.com/918846): implement FillingAssistance metric on iOS.
-#if defined(OS_IOS)
-#define MAYBE_FillingAssistanceMetric DISABLED_FillingAssistanceMetric
-#else
-#define MAYBE_FillingAssistanceMetric FillingAssistanceMetric
-#endif
-TEST_P(PasswordFormManagerTest, MAYBE_FillingAssistanceMetric) {
+TEST_P(PasswordFormManagerTest, FillingAssistanceMetric) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
   // Simulate that the user fills the saved credentials manually.
@@ -2061,6 +2062,32 @@ TEST_P(PasswordFormManagerTest, iOSUpdateStateWithoutPresaving) {
 
   EXPECT_EQ(new_field_value,
             form_manager_->observed_form().fields[kPasswordFieldIndex].value);
+}
+
+TEST_P(PasswordFormManagerTest, iOSUsingFieldDataManagerData) {
+  CreateFormManager(observed_form_);
+
+  auto field_data_manager = base::MakeRefCounted<autofill::FieldDataManager>();
+  field_data_manager->UpdateFieldDataMap(
+      observed_form_.fields[1].unique_renderer_id,
+      base::UTF8ToUTF16("typed_username"), FieldPropertiesFlags::kUserTyped);
+  field_data_manager->UpdateFieldDataWithAutofilledValue(
+      observed_form_.fields[2].unique_renderer_id,
+      base::UTF8ToUTF16("autofilled_pw"),
+      FieldPropertiesFlags::kAutofilledOnPageLoad);
+
+  form_manager_->UpdateObservedFormDataWithFieldDataManagerInfo(
+      field_data_manager.get());
+
+  EXPECT_EQ(form_manager_->observed_form().fields[1].typed_value,
+            base::UTF8ToUTF16("typed_username"));
+  EXPECT_EQ(form_manager_->observed_form().fields[1].properties_mask,
+            FieldPropertiesFlags::kUserTyped);
+
+  EXPECT_EQ(form_manager_->observed_form().fields[2].value,
+            base::UTF8ToUTF16("autofilled_pw"));
+  EXPECT_EQ(form_manager_->observed_form().fields[2].properties_mask,
+            FieldPropertiesFlags::kAutofilledOnPageLoad);
 }
 
 #endif  // defined(OS_IOS)

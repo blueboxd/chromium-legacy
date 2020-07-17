@@ -9,12 +9,12 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/current_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/registry.h"
 #include "ui/gfx/font.h"
@@ -238,7 +238,7 @@ bool GetFallbackFont(const Font& font,
   // browser process because we can use the shared system fallback, but in the
   // renderer this can cause hangs. Code that needs font fallback in the
   // renderer should instead use the font proxy.
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
 
   // The text passed must be at least length 1.
   if (text.empty())

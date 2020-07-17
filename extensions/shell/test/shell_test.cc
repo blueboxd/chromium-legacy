@@ -7,8 +7,8 @@
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/task/current_thread.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/shell/browser/desktop_controller.h"
@@ -45,7 +45,7 @@ void AppShellTest::PreRunTestOnMainThread() {
   extension_system_ = static_cast<ShellExtensionSystem*>(
       ExtensionSystem::Get(browser_context_));
   extension_system_->FinishInitialization();
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   base::RunLoop().RunUntilIdle();
 }
 

@@ -50,6 +50,7 @@ class MockSurfaceGpu : public WaylandSurfaceGpu {
   MockSurfaceGpu(WaylandBufferManagerGpu* buffer_manager,
                  gfx::AcceleratedWidget widget)
       : buffer_manager_(buffer_manager), widget_(widget) {
+    LOG(ERROR) << "MOCKSURFACEGPU: " << widget_;
     buffer_manager_->RegisterSurface(widget_, this);
   }
   ~MockSurfaceGpu() { buffer_manager_->UnregisterSurface(widget_); }
@@ -805,6 +806,7 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditions) {
 
   const gfx::AcceleratedWidget widget = window_->GetWidget();
   auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+  MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget_);
 
   auto* linux_dmabuf = server_.zwp_linux_dmabuf_v1();
   EXPECT_CALL(*linux_dmabuf, CreateParams(_, _, _)).Times(1);
@@ -902,6 +904,7 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditionsAckConfigured) {
     Sync();
 
     auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+    MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget);
 
     auto* linux_dmabuf = server_.zwp_linux_dmabuf_v1();
     EXPECT_CALL(*linux_dmabuf, CreateParams(_, _, _)).Times(1);

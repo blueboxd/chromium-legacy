@@ -16,9 +16,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/optional.h"
+#include "base/task/current_thread.h"
 #include "base/token.h"
 #include "base/trace_event/trace_event.h"
 #include "chromecast/external_mojo/public/cpp/common.h"
@@ -358,7 +358,7 @@ class ExternalMojoBroker::ReadWatcher
         listen_handle_(std::move(listen_handle)),
         watch_controller_(FROM_HERE) {
     DCHECK(listen_handle_.is_valid());
-    base::MessageLoopCurrentForIO::Get().WatchFileDescriptor(
+    base::CurrentIOThread::Get().WatchFileDescriptor(
         listen_handle_.GetFD().get(), true /* persistent */,
         base::MessagePumpForIO::WATCH_READ, &watch_controller_, this);
   }

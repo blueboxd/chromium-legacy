@@ -12,10 +12,10 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/task/current_thread.h"
 #include "base/win/message_window.h"
 #include "media/base/keyboard_event_counter.h"
 #include "third_party/skia/include/core/SkPoint.h"
@@ -41,7 +41,7 @@ std::unique_ptr<RAWINPUTDEVICE> GetRawInputDevices(HWND hwnd, DWORD flags) {
 // UserInputMonitorWin since it needs to be deleted on the UI thread.
 class UserInputMonitorWinCore
     : public base::SupportsWeakPtr<UserInputMonitorWinCore>,
-      public base::MessageLoopCurrent::DestructionObserver {
+      public base::CurrentThread::DestructionObserver {
  public:
   enum EventBitMask {
     MOUSE_EVENT_MASK = 1,
@@ -146,7 +146,7 @@ void UserInputMonitorWinCore::StartMonitor() {
   window_ = std::move(window);
   // Start observing message loop destruction if we start monitoring the first
   // event.
-  base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
+  base::CurrentThread::Get()->AddDestructionObserver(this);
 }
 
 void UserInputMonitorWinCore::StartMonitorWithMapping(
@@ -175,7 +175,7 @@ void UserInputMonitorWinCore::StopMonitor() {
   key_press_count_mapping_.reset();
 
   // Stop observing message loop destruction if no event is being monitored.
-  base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
+  base::CurrentThread::Get()->RemoveDestructionObserver(this);
 }
 
 LRESULT UserInputMonitorWinCore::OnInput(HRAWINPUT input_handle) {

@@ -205,6 +205,7 @@ crbug.com/1098369 fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
 
 crbug.com/1011060 virtual/gpu/fast/canvas/bug382588.html [ Pass Failure ]
 crbug.com/1011060 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Failure Crash ]
+crbug.com/1106590 virtual/gpu/fast/canvas/canvas-path-non-invertible-transform.html [ Pass Crash ]
 
 crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform-2.html [ Pass Crash ]
 crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform.html [ Pass Crash ]
@@ -6824,7 +6825,6 @@ crbug.com/1099689 [ Linux ] external/wpt/html/browsers/windows/nested-browsing-c
 crbug.com/1010170 media/video-played-reset.html [ Pass Failure ]
 
 #Sheriff 2020-06-30
-crbug.com/1099657 [ Mac10.13 ] virtual/threaded-no-composited-antialiasing/animations/svg-attribute-interpolation/svg-d-interpolation.html [ Pass Failure ]
 crbug.com/1100786 [ Mac10.10 ] fast/scroll-snap/snaps-after-touchpad-scrolling.html [ Failure ]
 crbug.com/1100786 [ Mac10.10 ] storage/indexeddb/transaction-active-flag.html [ Timeout ]
 

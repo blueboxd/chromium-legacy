@@ -21,7 +21,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #endif
 
 namespace content {
@@ -65,10 +65,10 @@ void NativeEventObserver::OnWindowEventDispatcherFinishedProcessingEvent(
 
 #if defined(OS_WIN)
 void NativeEventObserver::RegisterObserver() {
-  base::MessageLoopCurrentForUI::Get()->AddMessagePumpObserver(this);
+  base::CurrentUIThread::Get()->AddMessagePumpObserver(this);
 }
 void NativeEventObserver::DeregisterObserver() {
-  base::MessageLoopCurrentForUI::Get()->RemoveMessagePumpObserver(this);
+  base::CurrentUIThread::Get()->RemoveMessagePumpObserver(this);
 }
 void NativeEventObserver::WillDispatchMSG(const MSG& msg) {
   will_run_event_callback_.Run(&msg);

@@ -1141,7 +1141,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter readable
 [Worker]     getter writable
 [Worker]     method constructor
-[Worker] interface TrustedTypePolicyFactory
+[Worker] interface TrustedTypePolicyFactory : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter defaultPolicy
 [Worker]     getter emptyHTML

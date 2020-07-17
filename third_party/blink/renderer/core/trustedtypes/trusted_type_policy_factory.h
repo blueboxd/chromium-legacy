@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TRUSTEDTYPES_TRUSTED_TYPE_POLICY_FACTORY_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -22,7 +23,7 @@ class TrustedTypePolicy;
 class TrustedTypePolicyOptions;
 
 class CORE_EXPORT TrustedTypePolicyFactory final
-    : public ScriptWrappable,
+    : public EventTargetWithInlineData,
       public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(TrustedTypePolicyFactory);
@@ -36,6 +37,8 @@ class CORE_EXPORT TrustedTypePolicyFactory final
                                   ExceptionState&);
 
   TrustedTypePolicy* defaultPolicy() const;
+
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecreatepolicy, kBeforecreatepolicy)
 
   bool isHTML(ScriptState*, const ScriptValue&);
   bool isScript(ScriptState*, const ScriptValue&);
@@ -68,6 +71,8 @@ class CORE_EXPORT TrustedTypePolicyFactory final
   //  relate it to the total number of TT enabled documents.)
   void CountTrustedTypeAssignmentError();
 
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
   void Trace(Visitor*) const override;
 
  private:

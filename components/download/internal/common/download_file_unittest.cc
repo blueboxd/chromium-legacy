@@ -762,7 +762,7 @@ void TestRenameCompletionCallback(base::OnceClosure closure,
 // succeed.
 //
 // Note that there is only one queue of tasks to run, and that is in the tests'
-// base::MessageLoopCurrent::Get(). Each RunLoop processes that queue until it
+// base::CurrentThread::Get(). Each RunLoop processes that queue until it
 // sees a QuitClosure() targeted at itself, at which point it stops processing.
 TEST_P(DownloadFileTestWithRename, RenameWithErrorRetry) {
   ASSERT_TRUE(CreateDownloadFile(true));

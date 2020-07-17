@@ -8551,11 +8551,6 @@ void RenderFrameHostImpl::AddMessageToConsoleImpl(
                                                  discard_duplicates);
 }
 
-void RenderFrameHostImpl::AddInspectorIssue(
-    blink::mojom::InspectorIssueInfoPtr info) {
-  GetAssociatedLocalFrame()->AddInspectorIssue(std::move(info));
-}
-
 void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
     const GURL& url,
     bool is_same_document_navigation,

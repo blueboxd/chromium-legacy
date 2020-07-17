@@ -116,6 +116,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebContentCaptureClient* ContentCaptureClient() const override;
   WebDocument GetDocument() const override;
   WebString AssignedName() const override;
+  ui::AXTreeID GetAXTreeID() const override;
   void SetName(const WebString&) override;
   bool IsProvisional() const override;
   WebLocalFrameImpl* LocalRoot() override;
@@ -123,7 +124,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebFrame* FindFrameByName(const WebString& name) override;
   void SetEmbeddingToken(
       const base::UnguessableToken& embedding_token) override;
-  const base::Optional<base::UnguessableToken>& GetEmbeddingToken() override;
+  const base::Optional<base::UnguessableToken>& GetEmbeddingToken()
+      const override;
   void SendPings(const WebURL& destination_url) override;
   void StartReload(WebFrameLoadType) override;
   void StartNavigation(const WebURLRequest&) override;

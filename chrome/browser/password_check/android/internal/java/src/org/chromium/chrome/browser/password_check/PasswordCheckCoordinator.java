@@ -22,10 +22,10 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi {
 
     PasswordCheckCoordinator(PasswordCheckFragmentView fragmentView) {
         mFragmentView = fragmentView;
-        PropertyModel model = new PropertyModel.Builder(PasswordCheckProperties.ALL_KEYS).build();
+        PropertyModel model = PasswordCheckProperties.createDefaultModel();
         PasswordCheckMediator mediator = new PasswordCheckMediator();
-        mediator.initialize(model);
         PasswordCheckCoordinator.setUpModelChangeProcessors(model, mFragmentView);
+        mediator.initialize(model);
     }
 
     // TODO(crbug.com/1101256): Move to view code.

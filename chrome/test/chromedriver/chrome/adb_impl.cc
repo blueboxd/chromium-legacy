@@ -13,7 +13,6 @@
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -21,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "base/time/time.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/constants/version.h"
@@ -84,7 +84,7 @@ class ResponseBuffer : public base::RefCountedThreadSafe<ResponseBuffer> {
 void ExecuteCommandOnIOThread(
     const std::string& command, scoped_refptr<ResponseBuffer> response_buffer,
     int port) {
-  CHECK(base::MessageLoopCurrentForIO::IsSet());
+  CHECK(base::CurrentIOThread::IsSet());
   AdbClientSocket::AdbQuery(port, command,
       base::Bind(&ResponseBuffer::OnResponse, response_buffer));
 }
@@ -94,7 +94,7 @@ void SendFileOnIOThread(const std::string& device_serial,
                         const std::string& content,
                         scoped_refptr<ResponseBuffer> response_buffer,
                         int port) {
-  CHECK(base::MessageLoopCurrentForIO::IsSet());
+  CHECK(base::CurrentIOThread::IsSet());
   AdbClientSocket::SendFile(
       port, device_serial, filename, content,
       base::Bind(&ResponseBuffer::OnResponse, response_buffer));

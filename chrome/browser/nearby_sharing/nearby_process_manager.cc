@@ -21,16 +21,23 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sharing/webrtc/ice_config_fetcher.h"
 #include "chrome/browser/sharing/webrtc/sharing_mojo_service.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "content/public/browser/network_context_client_base.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "device/bluetooth/adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/p2p.mojom.h"
+#include "services/network/public/mojom/p2p_trusted.mojom.h"
 
 namespace {
 
@@ -79,6 +86,33 @@ bool IsStoredNearbyProfile(Profile* profile) {
     return profile == nullptr;
   return profile && entry->GetPath() == profile->GetPath();
 }
+
+template <typename T>
+struct MojoPipe {
+  mojo::PendingRemote<T> remote;
+  mojo::PendingReceiver<T> receiver{remote.InitWithNewPipeAndPassReceiver()};
+};
+
+class P2PTrustedSocketManagerClientImpl
+    : public network::mojom::P2PTrustedSocketManagerClient {
+ public:
+  explicit P2PTrustedSocketManagerClientImpl(
+      mojo::PendingRemote<network::mojom::P2PTrustedSocketManager>
+          socket_manager)
+      : socket_manager_(std::move(socket_manager)) {}
+  ~P2PTrustedSocketManagerClientImpl() override = default;
+
+  // network::mojom::P2PTrustedSocketManagerClient:
+  void InvalidSocketPortRangeRequested() override { NOTIMPLEMENTED(); }
+  void DumpPacket(const std::vector<uint8_t>& packet_header,
+                  uint64_t packet_length,
+                  bool incoming) override {
+    NOTIMPLEMENTED();
+  }
+
+ private:
+  mojo::Remote<network::mojom::P2PTrustedSocketManager> socket_manager_;
+};
 
 }  // namespace
 
@@ -233,8 +267,8 @@ void NearbyProcessManager::BindNearbyConnections() {
   GetBluetoothAdapter(dependencies_ptr,
                       base::ScopedClosureRunner(done_closure));
 
-  GetWebRtcSignalingMessenger(dependencies_ptr,
-                              base::ScopedClosureRunner(done_closure));
+  GetWebRtcDependencies(dependencies_ptr,
+                        base::ScopedClosureRunner(done_closure));
 
   // Terminate the process if the Nearby Connections interface disconnects as
   // that indicated an incorrect state and we have to restart the process.
@@ -281,24 +315,55 @@ void NearbyProcessManager::OnGetBluetoothAdapter(
   dependencies->bluetooth_adapter = std::move(pending_adapter);
 }
 
-void NearbyProcessManager::GetWebRtcSignalingMessenger(
+void NearbyProcessManager::GetWebRtcDependencies(
     location::nearby::connections::mojom::NearbyConnectionsDependencies*
         dependencies,
     base::ScopedClosureRunner done_closure) {
   DCHECK(active_profile_);
 
+  auto* network_context =
+      content::BrowserContext::GetDefaultStoragePartition(active_profile_)
+          ->GetNetworkContext();
+
   auto url_loader_factory = active_profile_->GetURLLoaderFactory();
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(active_profile_);
 
-  mojo::PendingRemote<sharing::mojom::WebRtcSignalingMessenger> messenger;
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<WebRtcSignalingMessenger>(identity_manager,
-                                                 std::move(url_loader_factory)),
-      messenger.InitWithNewPipeAndPassReceiver());
+  MojoPipe<network::mojom::P2PTrustedSocketManagerClient> socket_manager_client;
+  MojoPipe<network::mojom::P2PTrustedSocketManager> trusted_socket_manager;
+  MojoPipe<network::mojom::P2PSocketManager> socket_manager;
+  MojoPipe<network::mojom::MdnsResponder> mdns_responder;
 
-  NS_LOG(VERBOSE) << __func__ << " Got WebRTC signaling messenger";
-  dependencies->webrtc_signaling_messenger = std::move(messenger);
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<P2PTrustedSocketManagerClientImpl>(
+          std::move(trusted_socket_manager.remote)),
+      std::move(socket_manager_client.receiver));
+
+  // Create socket manager.
+  network_context->CreateP2PSocketManager(
+      net::NetworkIsolationKey::CreateTransient(),
+      std::move(socket_manager_client.remote),
+      std::move(trusted_socket_manager.receiver),
+      std::move(socket_manager.receiver));
+
+  // Create mdns responder.
+  network_context->CreateMdnsResponder(std::move(mdns_responder.receiver));
+
+  // Create ice config fetcher.
+  MojoPipe<sharing::mojom::IceConfigFetcher> ice_config_fetcher;
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<IceConfigFetcher>(url_loader_factory),
+      std::move(ice_config_fetcher.receiver));
+
+  MojoPipe<sharing::mojom::WebRtcSignalingMessenger> messenger;
+  mojo::MakeSelfOwnedReceiver(std::make_unique<WebRtcSignalingMessenger>(
+                                  identity_manager, url_loader_factory),
+                              std::move(messenger.receiver));
+
+  dependencies->webrtc_dependencies =
+      location::nearby::connections::mojom::WebRtcDependencies::New(
+          std::move(socket_manager.remote), std::move(mdns_responder.remote),
+          std::move(ice_config_fetcher.remote), std::move(messenger.remote));
 }
 
 void NearbyProcessManager::OnDependenciesGathered(

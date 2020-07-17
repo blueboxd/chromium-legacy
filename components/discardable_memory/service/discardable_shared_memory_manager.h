@@ -21,10 +21,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/task/current_thread.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -46,7 +46,7 @@ namespace discardable_memory {
 class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
     : public base::DiscardableMemoryAllocator,
       public base::trace_event::MemoryDumpProvider,
-      public base::MessageLoopCurrent::DestructionObserver {
+      public base::CurrentThread::DestructionObserver {
  public:
   DiscardableSharedMemoryManager();
   ~DiscardableSharedMemoryManager() override;
@@ -122,7 +122,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
     return a->memory()->last_known_usage() > b->memory()->last_known_usage();
   }
 
-  // base::MessageLoopCurrent::DestructionObserver implementation:
+  // base::CurrentThread::DestructionObserver implementation:
   void WillDestroyCurrentMessageLoop() override;
 
   void AllocateLockedDiscardableSharedMemory(
@@ -175,7 +175,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   // when the thread is gone and remove this.
   // A prerequisite for this is allowing objects to be bound to the lifetime
   // of a sequence directly.
-  base::MessageLoopCurrent mojo_thread_message_loop_;
+  base::CurrentThread mojo_thread_message_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> mojo_thread_task_runner_;
 
   base::WeakPtrFactory<DiscardableSharedMemoryManager> weak_ptr_factory_{this};

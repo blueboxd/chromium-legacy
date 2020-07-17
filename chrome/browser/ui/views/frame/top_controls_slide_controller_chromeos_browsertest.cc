@@ -631,7 +631,9 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
       browser_view()->GetActiveWebContents()));
 }
 
-IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestScrollingPage) {
+// TODO(https://crbug.com/1106700): Flakily timing out.
+IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
+                       DISABLED_TestScrollingPage) {
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());

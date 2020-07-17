@@ -19,13 +19,13 @@
 #include "base/i18n/icu_util.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
+#include "base/task/current_thread.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_run_loop_timeout.h"
@@ -644,7 +644,7 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
     // This can be called from a posted task. Allow nested tasks here, because
     // otherwise the test body will have to do it in order to use RunLoop for
     // waiting.
-    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
+    base::CurrentThread::ScopedNestableTaskAllower allow;
 
 #if !defined(OS_ANDROID)
     // Fail the test if a renderer crashes while the test is running.

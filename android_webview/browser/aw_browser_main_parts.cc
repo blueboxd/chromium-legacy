@@ -29,9 +29,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
+#include "base/task/current_thread.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/embedder_support/android/metrics/memory_metrics_logger.h"
@@ -75,7 +75,7 @@ int AwBrowserMainParts::PreEarlyInitialization() {
 
   // Creates a SingleThreadTaskExecutor for Android WebView if doesn't exist.
   DCHECK(!main_task_executor_.get());
-  if (!base::MessageLoopCurrent::IsSet()) {
+  if (!base::CurrentThread::IsSet()) {
     main_task_executor_ = std::make_unique<base::SingleThreadTaskExecutor>(
         base::MessagePumpType::UI);
   }

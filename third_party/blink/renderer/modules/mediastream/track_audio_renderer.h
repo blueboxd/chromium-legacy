@@ -36,7 +36,7 @@ class LocalFrame;
 // PeerConnection/WebRTC-sourced) MediaStreamAudioTracks to an audio output
 // device, reconciling differences in the rates of production and consumption of
 // the audio data.  Note that remote PeerConnection-sourced tracks are NOT
-// rendered by this implementation (see WebMediaStreamRendererFactoryImpl).
+// rendered by this implementation (see MediaStreamRendererFactory).
 //
 // This class uses AudioDeviceFactory to create media::AudioRendererSink and
 // owns/manages their lifecycles.  Output devices are automatically re-created

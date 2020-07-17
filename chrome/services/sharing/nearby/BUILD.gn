@@ -6,14 +6,9 @@ source_set("nearby") {
   sources = [
     "nearby_connections.cc",
     "nearby_connections.h",
-    "webrtc/incoming_messages_listener.cc",
-    "webrtc/incoming_messages_listener.h",
   ]
 
-  deps = [
-    "platform_v2",
-    "//third_party/nearby:core",
-  ]
+  deps = [ "//third_party/nearby:core" ]
 
   public_deps = [
     "decoder",

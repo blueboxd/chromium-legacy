@@ -8,8 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task/current_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/xproto_util.h"
@@ -45,7 +45,7 @@ NOINLINE void WaitingForUIThreadToHandleIOError() {
 }
 
 int BrowserX11IOErrorHandler(Display* d) {
-  if (!base::MessageLoopCurrentForUI::IsSet()) {
+  if (!base::CurrentUIThread::IsSet()) {
     // Wait for the UI thread (which has a different connection to the X server)
     // to get the error. We can't call shutdown from this thread without
     // tripping an error. Doing it through a function so that we'll be able

@@ -12,9 +12,9 @@
 #include "base/bind_helpers.h"
 #include "base/check_op.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/current_thread.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/base/typed_buffer.h"
@@ -139,7 +139,7 @@ void RdpClient::Core::Connect(const ScreenResolution& resolution,
     return;
   }
 
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   DCHECK(!rdp_client_window_);
   DCHECK(!self_.get());
 

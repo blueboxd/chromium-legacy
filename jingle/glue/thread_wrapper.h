@@ -14,10 +14,10 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "third_party/webrtc/rtc_base/thread.h"
 
 namespace jingle_glue {
@@ -33,9 +33,8 @@ namespace jingle_glue {
 // - Using JingleThreadWrapper() constructor. In this case the creating code
 //   must pass a valid task runner for the current thread and also delete the
 //   wrapper later.
-class JingleThreadWrapper
-    : public base::MessageLoopCurrent::DestructionObserver,
-      public rtc::Thread {
+class JingleThreadWrapper : public base::CurrentThread::DestructionObserver,
+                            public rtc::Thread {
  public:
   // Create JingleThreadWrapper for the current thread if it hasn't been created
   // yet. The thread wrapper is destroyed automatically when the current
@@ -60,7 +59,7 @@ class JingleThreadWrapper
   // need to call Send() for other threads.
   void set_send_allowed(bool allowed) { send_allowed_ = allowed; }
 
-  // MessageLoopCurrent::DestructionObserver implementation.
+  // CurrentThread::DestructionObserver implementation.
   void WillDestroyCurrentMessageLoop() override;
 
   // rtc::MessageQueue overrides.

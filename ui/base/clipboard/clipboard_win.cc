@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
@@ -23,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/current_thread.h"
 #include "base/win/message_window.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
@@ -232,7 +232,7 @@ Clipboard* Clipboard::Create() {
 
 // ClipboardWin implementation.
 ClipboardWin::ClipboardWin() {
-  if (base::MessageLoopCurrentForUI::IsSet())
+  if (base::CurrentUIThread::IsSet())
     clipboard_owner_ = std::make_unique<base::win::MessageWindow>();
 }
 

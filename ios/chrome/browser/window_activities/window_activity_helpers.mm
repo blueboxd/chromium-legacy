@@ -38,14 +38,6 @@ NSUserActivity* BaseActivityForURLOpening(bool in_incognito) {
 
 }  // namespace
 
-NSUserActivity* ActivityToOpenNewTab(bool in_incognito) {
-  NSUserActivity* activity = BaseActivityForURLOpening(in_incognito);
-  [activity addUserInfoEntriesFromDictionary:@{
-    kURLKey : net::NSURLWithGURL(GURL(kChromeUINewTabURL))
-  }];
-  return activity;
-}
-
 NSUserActivity* ActivityToLoadURL(WindowActivityOrigin origin,
                                   const GURL& url,
                                   const web::Referrer& referrer,
@@ -86,6 +78,10 @@ NSUserActivity* ActivityToMoveTab(NSString* tab_id) {
 bool ActivityIsURLLoad(NSUserActivity* activity) {
   return [activity.activityType isEqualToString:kLoadURLActivityType] ||
          [activity.activityType isEqualToString:kLoadIncognitoURLActivityType];
+}
+
+bool ActivityIsURLLoadInNormalMode(NSUserActivity* activity) {
+  return [activity.activityType isEqualToString:kLoadURLActivityType];
 }
 
 bool ActivityIsTabMove(NSUserActivity* activity) {

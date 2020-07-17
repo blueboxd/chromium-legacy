@@ -15,6 +15,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
@@ -22,6 +23,7 @@
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_onboarding.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -68,6 +70,8 @@ using autofill::FieldRendererId;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
 using base::SysUTF8ToNSString;
+using FillingAssistance =
+    password_manager::PasswordFormMetricsRecorder::FillingAssistance;
 using password_manager::PasswordFormManagerForUI;
 using password_manager::PasswordFormManager;
 using password_manager::PasswordStoreConsumer;
@@ -163,6 +167,7 @@ PasswordForm CreatePasswordForm(const char* origin_url,
   form.signon_realm = origin_url;
   form.username_value = ASCIIToUTF16(username_value);
   form.password_value = ASCIIToUTF16(password_value);
+  form.in_store = autofill::PasswordForm::Store::kProfileStore;
   return form;
 }
 
@@ -203,6 +208,13 @@ ACTION(InvokeEmptyConsumerWithForms) {
 
 @end
 
+@interface JsPasswordManager (Testing)
+
+// Provides access to JavaScript Manager for testing with mocks.
+@property BOOL noFormsSeen;
+
+@end
+
 // Real FormSuggestionController is wrapped to register the addition of
 // suggestions.
 @interface PasswordsTestSuggestionController : FormSuggestionController
@@ -225,14 +237,10 @@ ACTION(InvokeEmptyConsumerWithForms) {
 // that the fail is handled correctly.
 @interface FakeJsPasswordManager : JsPasswordManager
 
-- (void)fillPasswordForm:(std::unique_ptr<base::Value>)form
-                 inFrame:(web::WebFrame*)frame
-            withUsername:(NSString*)username
-                password:(NSString*)password
-       completionHandler:(void (^)(NSString*))completionHandler;
+- (void)findPasswordFormsInFrame:(web::WebFrame*)frame
+               completionHandler:(void (^)(NSString*))completionHandler;
 
-// Can be set to YES to mock filing failure on the next call.
-@property BOOL will_fail;
+@property BOOL noFormsSeen;
 
 - (instancetype)init;
 
@@ -243,26 +251,20 @@ ACTION(InvokeEmptyConsumerWithForms) {
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _will_fail = YES;
+    _noFormsSeen = YES;
   }
   return self;
 }
 
-- (void)fillPasswordForm:(std::unique_ptr<base::Value>)form
-                 inFrame:(web::WebFrame*)frame
-            withUsername:(NSString*)username
-                password:(NSString*)password
-       completionHandler:(void (^)(NSString*))completionHandler {
-  if (_will_fail) {
-    _will_fail = NO;
-    completionHandler(@"false");
-  } else {
-    [super fillPasswordForm:std::move(form)
-                    inFrame:frame
-               withUsername:username
-                   password:password
-          completionHandler:(void (^)(NSString*))completionHandler];
-  }
+- (void)findPasswordFormsInFrame:(web::WebFrame*)frame
+               completionHandler:(void (^)(NSString*))completionHandler {
+  DCHECK(completionHandler);
+  auto fakeCompletionHandler = ^(NSString* res) {
+    _noFormsSeen = [res isEqualToString:@"[]"] ? YES : NO;
+    completionHandler(res);
+  };
+  [super findPasswordFormsInFrame:frame
+                completionHandler:fakeCompletionHandler];
 }
 
 @end
@@ -2095,4 +2097,88 @@ TEST_F(PasswordControllerTest,
     auto frames = web_state()->GetWebFramesManager()->GetAllWebFrames();
     return frames.size() == 1;
   }));
+}
+
+TEST_F(PasswordControllerTest, PasswordMetricsNoSavedCredentials) {
+  base::HistogramTester histogram_tester;
+  {
+    ON_CALL(*store_, GetLogins)
+        .WillByDefault(WithArg<1>(InvokeEmptyConsumerWithForms()));
+    LoadHtml(@"<html><body>"
+              "<form name='login_form' id='login_form'>"
+              "  <input type='text' name='username'>"
+              "  <input type='password' name='password'>"
+              "  <button id='submit_button' value='Submit'>"
+              "</form>"
+              "</body></html>");
+    WaitForFormManagersCreation();
+
+    std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+    EXPECT_CALL(*weak_client_, PromptUserToSaveOrUpdatePasswordPtr)
+        .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+
+    std::string main_frame_id = web::GetMainWebFrameId(web_state());
+    ExecuteJavaScript(
+        @"document.getElementsByName('username')[0].value = 'user';"
+         "document.getElementsByName('password')[0].value = 'pw';"
+         "document.getElementById('submit_button').click();");
+    LoadHtmlWithRendererInitiatedNavigation(
+        @"<html><body>Success</body></html>");
+
+    auto& form_manager_check = form_manager_to_save;
+    ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
+      return form_manager_check != nullptr;
+    }));
+  }
+
+  histogram_tester.ExpectUniqueSample("PasswordManager.FillingAssistance",
+                                      FillingAssistance::kNoSavedCredentials,
+                                      1);
+}
+
+TEST_F(PasswordControllerTest, PasswordMetricsAutomatic) {
+  base::HistogramTester histogram_tester;
+
+  passwordController_.formHelper.jsPasswordManager =
+      [[FakeJsPasswordManager alloc] init];
+
+  PasswordForm form(CreatePasswordForm(BaseUrl().c_str(), "user", "pw"));
+  EXPECT_CALL(*store_, GetLogins)
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
+
+  LoadHtml(@"<html><body>"
+            "<form name='login_form' id='login_form'>"
+            "  <input type='text' name='username'>"
+            "  <input type='password' name='password'>"
+            "  <button id='submit_button' value='Submit'>"
+            "</form>"
+            "</body></html>");
+  WaitForFormManagersCreation();
+
+  PasswordFormFillData form_data;
+  SetPasswordFormFillData(BaseUrl(), "login_form", 0, "username", 1, "user",
+                          "password", 2, "pw", nullptr, nullptr, false,
+                          &form_data);
+  __block BOOL block_was_called = NO;
+  __block BOOL return_value = NO;
+  [passwordController_ fillPasswordForm:form_data
+                      completionHandler:^(BOOL success) {
+                        block_was_called = YES;
+                        return_value = success;
+                      }];
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
+    return block_was_called;
+  }));
+
+  ExecuteJavaScript(
+      @"var e = new UIEvent('touchend');"
+       "document.getElementById('submit_button').dispatchEvent(e);");
+  LoadHtmlWithRendererInitiatedNavigation(@"<html><body>Success</body></html>");
+
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
+    return passwordController_.formHelper.jsPasswordManager.noFormsSeen;
+  }));
+
+  histogram_tester.ExpectUniqueSample("PasswordManager.FillingAssistance",
+                                      FillingAssistance::kAutomatic, 1);
 }

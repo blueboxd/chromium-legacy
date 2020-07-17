@@ -9,10 +9,10 @@
 
 #include "base/check_op.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/current_thread.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/gfx/range/range.h"
@@ -345,7 +345,7 @@ gfx::Range GetFirstEmphasizedRange(const ui::CompositionText& composition) {
 // the default kill ring size of 1 (i.e. a single buffer) is assumed.
 base::string16* GetKillBuffer() {
   static base::NoDestructor<base::string16> kill_buffer;
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   return kill_buffer.get();
 }
 

@@ -11,7 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "base/task/task_traits.h"
 
 // Allows sequences to be defined at compile time so that objects can opt into
@@ -65,8 +65,7 @@ namespace internal {
 // Provides a TaskRunner and can persist after the message loop is destroyed,
 // which is useful if e.g. a StaticTaskRunnerHolder outlives a
 // base::test::TaskEnvironment in tests. Only usable by StaticSequence.
-class StaticTaskRunnerHolder
-    : public base::MessageLoopCurrent::DestructionObserver {
+class StaticTaskRunnerHolder : public base::CurrentThread::DestructionObserver {
  public:
   ~StaticTaskRunnerHolder() override;
 

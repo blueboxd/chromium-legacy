@@ -445,18 +445,20 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(
   *start_offset = FindStartOfStyle(offset, ax::mojom::MoveDirection::kBackward);
   *end_offset = FindStartOfStyle(offset, ax::mojom::MoveDirection::kForward);
 
-  const ui::TextAttributeList& attributes =
-      offset_to_text_attributes().find(*start_offset)->second;
-
   std::ostringstream attributes_stream;
-  for (const ui::TextAttribute& attribute : attributes) {
-    // Don't expose the default language value of "en-US".
-    // TODO(nektar): Determine if it's possible to check against the interface
-    // language.
-    if (attribute.first == "language" && attribute.second == "en-US")
-      continue;
+  auto iter = offset_to_text_attributes().find(*start_offset);
+  if (iter != offset_to_text_attributes().end()) {
+    const ui::TextAttributeList& attributes = iter->second;
 
-    attributes_stream << attribute.first << ":" << attribute.second << ";";
+    for (const ui::TextAttribute& attribute : attributes) {
+      // Don't expose the default language value of "en-US".
+      // TODO(nektar): Determine if it's possible to check against the interface
+      // language.
+      if (attribute.first == "language" && attribute.second == "en-US")
+        continue;
+
+      attributes_stream << attribute.first << ":" << attribute.second << ";";
+    }
   }
   base::string16 attributes_str = base::UTF8ToUTF16(attributes_stream.str());
 

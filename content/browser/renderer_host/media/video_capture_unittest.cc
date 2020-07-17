@@ -303,7 +303,7 @@ class VideoCaptureTest : public testing::Test,
   }
 
   // |media_stream_manager_| needs to outlive |task_environment_| because it is
-  // a MessageLoopCurrent::DestructionObserver.
+  // a CurrentThread::DestructionObserver.
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   const content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<media::AudioManager> audio_manager_;

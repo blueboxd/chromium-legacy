@@ -14,11 +14,11 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/process/process_handle.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/lock.h"
+#include "base/task/current_thread.h"
 #include "build/build_config.h"
 
 #if !defined(OS_ANDROID)
@@ -43,9 +43,8 @@ struct BreakpadInfo;
 // Processes signal that they need to be dumped by sending a datagram over a
 // UNIX domain socket. All processes of the same type share the client end of
 // this socket which is installed in their descriptor table before exec.
-class CrashHandlerHostLinux
-    : public base::MessagePumpForIO::FdWatcher,
-      public base::MessageLoopCurrent::DestructionObserver {
+class CrashHandlerHostLinux : public base::MessagePumpForIO::FdWatcher,
+                              public base::CurrentThread::DestructionObserver {
  public:
   CrashHandlerHostLinux(const std::string& process_type,
                         const base::FilePath& dumps_path,
@@ -66,7 +65,7 @@ class CrashHandlerHostLinux
   void OnFileCanWriteWithoutBlocking(int fd) override;
   void OnFileCanReadWithoutBlocking(int fd) override;
 
-  // MessageLoopCurrent::DestructionObserver impl:
+  // CurrentThread::DestructionObserver impl:
   void WillDestroyCurrentMessageLoop() override;
 
   // Whether we are shutting down or not.
@@ -125,7 +124,7 @@ class CrashHandlerHostLinux
 namespace crashpad {
 
 class CrashHandlerHost : public base::MessagePumpForIO::FdWatcher,
-                         public base::MessageLoopCurrent::DestructionObserver {
+                         public base::CurrentThread::DestructionObserver {
  public:
   // An interface for observers to be notified when a child process is crashing.
   class Observer {
@@ -165,7 +164,7 @@ class CrashHandlerHost : public base::MessagePumpForIO::FdWatcher,
   void OnFileCanWriteWithoutBlocking(int fd) override;
   void OnFileCanReadWithoutBlocking(int fd) override;
 
-  // MessageLoopCurrent::DestructionObserver impl:
+  // CurrentThread::DestructionObserver impl:
   void WillDestroyCurrentMessageLoop() override;
 
   base::Lock observers_lock_;

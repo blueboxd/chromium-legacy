@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -284,7 +284,7 @@ void DoDragImpl(std::unique_ptr<ui::OSExchangeData> drag_data,
                 gfx::Point point,
                 int operation) {
   // Allow nested run loop so we get DnD events as we drag this around.
-  base::MessageLoopCurrent::ScopedNestableTaskAllower nestable_task_allower;
+  base::CurrentThread::ScopedNestableTaskAllower nestable_task_allower;
 
   views::Widget* widget = views::Widget::GetWidgetForNativeView(native_view);
   if (widget) {

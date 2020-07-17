@@ -18,9 +18,9 @@
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
@@ -108,7 +108,7 @@ void CronetOnUnLoad(JavaVM* jvm, void* reserved) {
 
 void JNI_CronetLibraryLoader_CronetInitOnInitThread(JNIEnv* env) {
   // Initialize SingleThreadTaskExecutor for init thread.
-  DCHECK(!base::MessageLoopCurrent::IsSet());
+  DCHECK(!base::CurrentThread::IsSet());
   DCHECK(!g_init_task_executor);
   g_init_task_executor =
       new base::SingleThreadTaskExecutor(base::MessagePumpType::JAVA);

@@ -58,7 +58,7 @@ SpeechSynthesis* SpeechSynthesis::speechSynthesis(LocalDOMWindow& window) {
     // TODO(crbug/811929): Consider moving this logic into the Android-
     // specific backend implementation.
 #else
-    synthesis->InitializeMojomSynthesis();
+    ignore_result(synthesis->TryEnsureMojomSynthesis());
 #endif
   }
   return synthesis;
@@ -90,7 +90,7 @@ void SpeechSynthesis::OnSetVoiceList(
 
 const HeapVector<Member<SpeechSynthesisVoice>>& SpeechSynthesis::getVoices() {
   // Kick off initialization here to ensure voice list gets populated.
-  InitializeMojomSynthesisIfNeeded();
+  ignore_result(TryEnsureMojomSynthesis());
   return voice_list_;
 }
 
@@ -143,24 +143,27 @@ void SpeechSynthesis::cancel() {
   // fire events on them asynchronously.
   utterance_queue_.clear();
 
-  InitializeMojomSynthesisIfNeeded();
-  mojom_synthesis_->Cancel();
+  if (mojom::blink::SpeechSynthesis* mojom_synthesis =
+          TryEnsureMojomSynthesis())
+    mojom_synthesis->Cancel();
 }
 
 void SpeechSynthesis::pause() {
   if (is_paused_)
     return;
 
-  InitializeMojomSynthesisIfNeeded();
-  mojom_synthesis_->Pause();
+  if (mojom::blink::SpeechSynthesis* mojom_synthesis =
+          TryEnsureMojomSynthesis())
+    mojom_synthesis->Pause();
 }
 
 void SpeechSynthesis::resume() {
   if (!CurrentSpeechUtterance())
     return;
 
-  InitializeMojomSynthesisIfNeeded();
-  mojom_synthesis_->Resume();
+  if (mojom::blink::SpeechSynthesis* mojom_synthesis =
+          TryEnsureMojomSynthesis())
+    mojom_synthesis->Resume();
 }
 
 void SpeechSynthesis::DidStartSpeaking(SpeechSynthesisUtterance* utterance) {
@@ -220,8 +223,8 @@ void SpeechSynthesis::StartSpeakingImmediately() {
   utterance->SetStartTime(millis / 1000.0);
   is_paused_ = false;
 
-  InitializeMojomSynthesisIfNeeded();
-  utterance->Start(this);
+  if (TryEnsureMojomSynthesis())
+    utterance->Start(this);
 }
 
 void SpeechSynthesis::HandleSpeakingCompleted(
@@ -339,21 +342,17 @@ void SpeechSynthesis::SetMojomSynthesisForTesting(
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI)));
 }
 
-void SpeechSynthesis::InitializeMojomSynthesis() {
-  DCHECK(!mojom_synthesis_.is_bound());
+mojom::blink::SpeechSynthesis* SpeechSynthesis::TryEnsureMojomSynthesis() {
+  if (mojom_synthesis_.is_bound())
+    return mojom_synthesis_.get();
 
   // The frame could be detached. In that case, calls on mojom_synthesis_ will
   // just get dropped. That's okay and is simpler than having to null-check
   // mojom_synthesis_ before each use.
   ExecutionContext* context = GetExecutionContext();
 
-  if (!context) {
-    // Mimic the LocalDOMWindow::GetTaskRunner code that uses the current
-    // task runner when frames are detached.
-    ignore_result(mojom_synthesis_.BindNewPipeAndPassReceiver(
-        Thread::Current()->GetTaskRunner()));
-    return;
-  }
+  if (!context)
+    return nullptr;
 
   auto receiver = mojom_synthesis_.BindNewPipeAndPassReceiver(
       context->GetTaskRunner(TaskType::kMiscPlatformAPI));
@@ -362,11 +361,7 @@ void SpeechSynthesis::InitializeMojomSynthesis() {
 
   mojom_synthesis_->AddVoiceListObserver(receiver_.BindNewPipeAndPassRemote(
       context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
-}
-
-void SpeechSynthesis::InitializeMojomSynthesisIfNeeded() {
-  if (!mojom_synthesis_.is_bound())
-    InitializeMojomSynthesis();
+  return mojom_synthesis_.get();
 }
 
 const AtomicString& SpeechSynthesis::InterfaceName() const {

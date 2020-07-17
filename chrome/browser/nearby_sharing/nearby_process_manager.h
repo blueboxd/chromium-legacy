@@ -143,7 +143,7 @@ class NearbyProcessManager : public ProfileManagerObserver {
       base::ScopedClosureRunner done_closure,
       scoped_refptr<device::BluetoothAdapter> adapter);
 
-  void GetWebRtcSignalingMessenger(
+  void GetWebRtcDependencies(
       location::nearby::connections::mojom::NearbyConnectionsDependencies*
           dependencies,
       base::ScopedClosureRunner done_closure);

@@ -255,7 +255,7 @@ const base::Feature kAutofillTokenPrefixMatching{
 
 // Enables the touch to fill feature for Android.
 const base::Feature kAutofillTouchToFill = {"TouchToFillAndroid",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAutofillUploadThrottling{"AutofillUploadThrottling",
                                               base::FEATURE_ENABLED_BY_DEFAULT};

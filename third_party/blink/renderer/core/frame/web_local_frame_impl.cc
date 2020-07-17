@@ -667,6 +667,14 @@ WebString WebLocalFrameImpl::AssignedName() const {
   return GetFrame()->Tree().GetName();
 }
 
+ui::AXTreeID WebLocalFrameImpl::GetAXTreeID() const {
+  const base::Optional<base::UnguessableToken>& embedding_token =
+      GetEmbeddingToken();
+  if (embedding_token && !embedding_token->is_empty())
+    return ui::AXTreeID::FromToken(embedding_token.value());
+  return ui::AXTreeIDUnknown();
+}
+
 void WebLocalFrameImpl::SetName(const WebString& name) {
   GetFrame()->Tree().SetName(name, FrameTree::kReplicate);
 }
@@ -2102,7 +2110,7 @@ void WebLocalFrameImpl::SetEmbeddingToken(
 }
 
 const base::Optional<base::UnguessableToken>&
-WebLocalFrameImpl::GetEmbeddingToken() {
+WebLocalFrameImpl::GetEmbeddingToken() const {
   return frame_->GetEmbeddingToken();
 }
 

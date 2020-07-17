@@ -1233,7 +1233,7 @@ interface TransformStream
     getter readable
     getter writable
     method constructor
-interface TrustedTypePolicyFactory
+interface TrustedTypePolicyFactory : EventTarget
     attribute @@toStringTag
     getter defaultPolicy
     getter emptyHTML

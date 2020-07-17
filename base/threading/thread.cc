@@ -13,10 +13,10 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/task/simple_task_executor.h"
@@ -343,15 +343,15 @@ void Thread::ThreadMain() {
 
   // Lazily initialize the |message_loop| so that it can run on this thread.
   DCHECK(delegate_);
-  // This binds MessageLoopCurrent and ThreadTaskRunnerHandle.
+  // This binds CurrentThread and ThreadTaskRunnerHandle.
   delegate_->BindToCurrentThread(timer_slack_);
-  DCHECK(MessageLoopCurrent::Get());
+  DCHECK(CurrentThread::Get());
   DCHECK(ThreadTaskRunnerHandle::IsSet());
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
   // Allow threads running a MessageLoopForIO to use FileDescriptorWatcher API.
   std::unique_ptr<FileDescriptorWatcher> file_descriptor_watcher;
-  if (MessageLoopCurrentForIO::IsSet()) {
+  if (CurrentIOThread::IsSet()) {
     file_descriptor_watcher.reset(
         new FileDescriptorWatcher(delegate_->GetDefaultTaskRunner()));
   }

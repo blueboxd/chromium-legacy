@@ -12,6 +12,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -870,17 +871,21 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
         base::FilePath() /* profile_path */,
         nullptr /* shared_cors_origin_access_list */);
   } else if (content::HasWebUIScheme(gurl)) {
-    content::WebContents* target_tab;
-#ifndef NDEBUG
-    // In debug builds, allow retrieving files from the chrome:// and
-    // devtools:// schemes
-    target_tab = DevToolsWindow::AsDevToolsWindow(web_contents_)
-                     ->GetInspectedWebContents();
-    const bool allow_web_ui_scheme =
-        target_tab && content::HasWebUIScheme(target_tab->GetURL());
+    // In debug builds, or when a custom devtools is used, allow retrieving
+    // files from the chrome:// and devtools:// schemes.
+#if defined(NDEBUG)
+    const bool devtools_should_be_debuggable = true;
 #else
-    const bool allow_web_ui_scheme = false;
+    const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+    const bool devtools_should_be_debuggable =
+        cmd_line->HasSwitch(switches::kCustomDevtoolsFrontend);
 #endif
+    content::WebContents* target_tab =
+        DevToolsWindow::AsDevToolsWindow(web_contents_)
+            ->GetInspectedWebContents();
+    const bool allow_web_ui_scheme =
+        devtools_should_be_debuggable && target_tab &&
+        content::HasWebUIScheme(target_tab->GetURL());
     if (allow_web_ui_scheme) {
       std::vector<std::string> allowed_webui_hosts;
       content::RenderFrameHost* frame_host = web_contents()->GetMainFrame();
@@ -889,6 +894,7 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
           std::move(allowed_webui_hosts));
     } else {
       base::DictionaryValue response;
+      response.SetBoolean("schemeSupported", false);
       response.SetInteger("statusCode", 403);
       callback.Run(&response);
       return;

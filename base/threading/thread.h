@@ -46,7 +46,7 @@ class TimeDomain;
 //
 //  (1) Thread::CleanUp()
 //  (2) MessageLoop::~MessageLoop
-//  (3.b) MessageLoopCurrent::DestructionObserver::WillDestroyCurrentMessageLoop
+//  (3.b) CurrentThread::DestructionObserver::WillDestroyCurrentMessageLoop
 //
 // This API is not thread-safe: unless indicated otherwise its methods are only
 // valid from the owning sequence (which is the one from which Start() is

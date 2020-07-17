@@ -42,7 +42,7 @@ void JingleThreadWrapper::EnsureForCurrentMessageLoop() {
     std::unique_ptr<JingleThreadWrapper> wrapper =
         JingleThreadWrapper::WrapTaskRunner(
             base::ThreadTaskRunnerHandle::Get());
-    base::MessageLoopCurrent::Get()->AddDestructionObserver(wrapper.release());
+    base::CurrentThread::Get()->AddDestructionObserver(wrapper.release());
   }
 
   DCHECK_EQ(rtc::Thread::Current(), current());

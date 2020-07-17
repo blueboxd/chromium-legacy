@@ -16,12 +16,12 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/current_thread.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/history/core/browser/favicon_database.h"
@@ -189,7 +189,7 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
     top_sites_->ShutdownOnUIThread();
     top_sites_ = nullptr;
 
-    if (base::MessageLoopCurrent::Get())
+    if (base::CurrentThread::Get())
       base::RunLoop().RunUntilIdle();
 
     pref_service_.reset();

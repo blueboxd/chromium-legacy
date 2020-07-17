@@ -51,7 +51,7 @@ class WebLocalFrame;
 class WebMediaPlayerClient;
 class WebMediaStreamAudioRenderer;
 class WebMediaPlayerMSCompositor;
-class WebMediaStreamRendererFactory;
+class MediaStreamRendererFactory;
 class WebMediaStreamVideoRenderer;
 class WebString;
 class WebVideoFrameSubmitter;
@@ -277,7 +277,7 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   void SetGpuMemoryBufferVideoForTesting(
       media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool);
   void SetMediaStreamRendererFactoryForTesting(
-      std::unique_ptr<WebMediaStreamRendererFactory>);
+      std::unique_ptr<MediaStreamRendererFactory>);
 
   // Callback used to fulfill video.requestVideoFrameCallback() requests.
   void OnNewFramePresentedCallback();
@@ -334,7 +334,7 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
 
   std::unique_ptr<media::MediaLog> media_log_;
 
-  std::unique_ptr<WebMediaStreamRendererFactory> renderer_factory_;
+  std::unique_ptr<MediaStreamRendererFactory> renderer_factory_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

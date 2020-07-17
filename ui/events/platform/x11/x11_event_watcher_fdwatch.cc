@@ -4,7 +4,7 @@
 
 #include "ui/events/platform/x11/x11_event_watcher_fdwatch.h"
 
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "ui/gfx/x/x11.h"
 
 namespace ui {
@@ -17,13 +17,13 @@ X11EventWatcherFdWatch::~X11EventWatcherFdWatch() {
 }
 
 void X11EventWatcherFdWatch::StartWatching() {
-  if (started_ || !base::MessageLoopCurrent::Get())
+  if (started_ || !base::CurrentThread::Get())
     return;
 
   DCHECK(event_source_->connection()) << "Unable to get connection to X server";
 
   int fd = ConnectionNumber(event_source_->connection()->display());
-  base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
+  base::CurrentUIThread::Get()->WatchFileDescriptor(
       fd, true, base::MessagePumpForUI::WATCH_READ, &watcher_controller_, this);
   started_ = true;
 }

@@ -12,10 +12,10 @@
 #include "base/bind_helpers.h"
 #include "base/cancelable_callback.h"
 #include "base/debug/debugger.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -330,32 +330,32 @@ TEST_F(TaskEnvironmentTest,
 // MainThreadType which is redundant (message loop and message pump tests
 // otherwise cover the advanced functionality provided by UI/IO pumps).
 TEST_F(TaskEnvironmentTest, MainThreadType) {
-  // Uses MessageLoopCurrent as a convenience accessor but could be replaced by
-  // different accessors when we get rid of MessageLoopCurrent.
-  EXPECT_FALSE(MessageLoopCurrent::IsSet());
-  EXPECT_FALSE(MessageLoopCurrentForUI::IsSet());
-  EXPECT_FALSE(MessageLoopCurrentForIO::IsSet());
+  // Uses CurrentThread as a convenience accessor but could be replaced by
+  // different accessors when we get rid of CurrentThread.
+  EXPECT_FALSE(CurrentThread::IsSet());
+  EXPECT_FALSE(CurrentUIThread::IsSet());
+  EXPECT_FALSE(CurrentIOThread::IsSet());
   {
     TaskEnvironment task_environment;
-    EXPECT_TRUE(MessageLoopCurrent::IsSet());
-    EXPECT_FALSE(MessageLoopCurrentForUI::IsSet());
-    EXPECT_FALSE(MessageLoopCurrentForIO::IsSet());
+    EXPECT_TRUE(CurrentThread::IsSet());
+    EXPECT_FALSE(CurrentUIThread::IsSet());
+    EXPECT_FALSE(CurrentIOThread::IsSet());
   }
   {
     TaskEnvironment task_environment(TaskEnvironment::MainThreadType::UI);
-    EXPECT_TRUE(MessageLoopCurrent::IsSet());
-    EXPECT_TRUE(MessageLoopCurrentForUI::IsSet());
-    EXPECT_FALSE(MessageLoopCurrentForIO::IsSet());
+    EXPECT_TRUE(CurrentThread::IsSet());
+    EXPECT_TRUE(CurrentUIThread::IsSet());
+    EXPECT_FALSE(CurrentIOThread::IsSet());
   }
   {
     TaskEnvironment task_environment(TaskEnvironment::MainThreadType::IO);
-    EXPECT_TRUE(MessageLoopCurrent::IsSet());
-    EXPECT_FALSE(MessageLoopCurrentForUI::IsSet());
-    EXPECT_TRUE(MessageLoopCurrentForIO::IsSet());
+    EXPECT_TRUE(CurrentThread::IsSet());
+    EXPECT_FALSE(CurrentUIThread::IsSet());
+    EXPECT_TRUE(CurrentIOThread::IsSet());
   }
-  EXPECT_FALSE(MessageLoopCurrent::IsSet());
-  EXPECT_FALSE(MessageLoopCurrentForUI::IsSet());
-  EXPECT_FALSE(MessageLoopCurrentForIO::IsSet());
+  EXPECT_FALSE(CurrentThread::IsSet());
+  EXPECT_FALSE(CurrentUIThread::IsSet());
+  EXPECT_FALSE(CurrentIOThread::IsSet());
 }
 
 #if defined(OS_POSIX)

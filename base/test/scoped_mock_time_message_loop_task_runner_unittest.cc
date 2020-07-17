@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_pending_task.h"
@@ -43,7 +43,7 @@ class ScopedMockTimeMessageLoopTaskRunnerTest : public testing::Test {
  public:
   ScopedMockTimeMessageLoopTaskRunnerTest()
       : original_task_runner_(new TestMockTimeTaskRunner()) {
-    MessageLoopCurrent::Get()->SetTaskRunner(original_task_runner_);
+    CurrentThread::Get()->SetTaskRunner(original_task_runner_);
   }
 
  protected:

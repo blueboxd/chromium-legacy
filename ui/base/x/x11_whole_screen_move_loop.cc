@@ -11,10 +11,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_util.h"
@@ -89,7 +89,7 @@ bool X11WholeScreenMoveLoop::CanDispatchEvent(const ui::PlatformEvent& event) {
 }
 
 uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
 
   // This method processes all events while the move loop is active.
   if (!in_move_loop_)

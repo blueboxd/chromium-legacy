@@ -18,10 +18,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
+#include "base/task/current_thread.h"
 #include "base/task_runner.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
@@ -78,7 +78,7 @@ class ChannelWinMessageQueue {
 };
 
 class ChannelWin : public Channel,
-                   public base::MessageLoopCurrent::DestructionObserver,
+                   public base::CurrentThread::DestructionObserver,
                    public base::MessagePumpForIO::IOHandler {
  public:
   ChannelWin(Delegate* delegate,
@@ -190,9 +190,8 @@ class ChannelWin : public Channel,
   ~ChannelWin() override = default;
 
   void StartOnIOThread() {
-    base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
-    base::MessageLoopCurrentForIO::Get()->RegisterIOHandler(handle_.Get(),
-                                                            this);
+    base::CurrentThread::Get()->AddDestructionObserver(this);
+    base::CurrentIOThread::Get()->RegisterIOHandler(handle_.Get(), this);
 
     if (needs_connection_) {
       BOOL ok = ::ConnectNamedPipe(handle_.Get(), &connect_context_.overlapped);
@@ -233,7 +232,7 @@ class ChannelWin : public Channel,
   }
 
   void ShutDownOnIOThread() {
-    base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
+    base::CurrentThread::Get()->RemoveDestructionObserver(this);
 
     // TODO(https://crbug.com/583525): This function is expected to be called
     // once, and |handle_| should be valid at this point.
@@ -248,7 +247,7 @@ class ChannelWin : public Channel,
     self_ = nullptr;
   }
 
-  // base::MessageLoopCurrent::DestructionObserver:
+  // base::CurrentThread::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
     DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
     if (self_)

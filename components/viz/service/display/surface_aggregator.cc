@@ -28,6 +28,7 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/surfaces/aggregated_frame.h"
 #include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/renderer_utils.h"
@@ -1629,7 +1630,7 @@ bool SurfaceAggregator::CanMergeRoundedCorner(
   return true;
 }
 
-CompositorFrame SurfaceAggregator::Aggregate(
+AggregatedFrame SurfaceAggregator::Aggregate(
     const SurfaceId& surface_id,
     base::TimeTicks expected_display_time,
     gfx::OverlayTransform display_transform,
@@ -1660,9 +1661,8 @@ CompositorFrame SurfaceAggregator::Aggregate(
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
       "SurfaceAggregation", "display_trace", display_trace_id_);
 
-  CompositorFrame frame;
-  frame.metadata.display_transform_hint = display_transform;
-  frame.metadata.top_controls_visible_height =
+  AggregatedFrame frame;
+  frame.top_controls_visible_height =
       root_surface_frame.metadata.top_controls_visible_height;
 
   dest_pass_list_ = &frame.render_pass_list;
@@ -1696,8 +1696,9 @@ CompositorFrame SurfaceAggregator::Aggregate(
 
   PropagateCopyRequestPasses();
   has_copy_requests_ = !copy_request_passes_.empty();
-  frame.metadata.may_contain_video = prewalk_result.may_contain_video;
-  frame.metadata.content_color_usage = prewalk_result.content_color_usage;
+  frame.has_copy_requests = has_copy_requests_;
+  frame.may_contain_video = prewalk_result.may_contain_video;
+  frame.content_color_usage = prewalk_result.content_color_usage;
 
   CopyUndrawnSurfaces(&prewalk_result);
   referenced_surfaces_.insert(surface_id);
@@ -1743,15 +1744,15 @@ CompositorFrame SurfaceAggregator::Aggregate(
     Surface* surface = manager_->GetSurfaceForId(it.first);
     if (surface) {
       surface->allocation_group()->TakeAggregatedLatencyInfoUpTo(
-          surface, &frame.metadata.latency_info);
+          surface, &frame.latency_info);
     }
-    if (!ui::LatencyInfo::Verify(frame.metadata.latency_info,
+    if (!ui::LatencyInfo::Verify(frame.latency_info,
                                  "SurfaceAggregator::Aggregate")) {
       break;
     }
   }
 
-  frame.metadata.delegated_ink_metadata = std::move(delegated_ink_metadata_);
+  frame.delegated_ink_metadata = std::move(delegated_ink_metadata_);
 
   if (frame_annotator_)
     frame_annotator_->AnnotateAggregatedFrame(&frame);

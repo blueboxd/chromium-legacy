@@ -13,9 +13,9 @@
 #include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial.h"
 #include "base/process/process.h"
+#include "base/task/current_thread.h"
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -74,7 +74,7 @@ void CrashResolveHost(const std::string& host_to_crash,
 
 class NetworkServiceTestHelper::NetworkServiceTestImpl
     : public network::mojom::NetworkServiceTest,
-      public base::MessageLoopCurrent::DestructionObserver {
+      public base::CurrentThread::DestructionObserver {
  public:
   NetworkServiceTestImpl()
       : test_host_resolver_(new TestHostResolver()),
@@ -268,12 +268,12 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
       mojo::PendingReceiver<network::mojom::NetworkServiceTest> receiver) {
     receivers_.Add(this, std::move(receiver));
     if (!registered_as_destruction_observer_) {
-      base::MessageLoopCurrentForIO::Get()->AddDestructionObserver(this);
+      base::CurrentIOThread::Get()->AddDestructionObserver(this);
       registered_as_destruction_observer_ = true;
     }
   }
 
-  // base::MessageLoopCurrent::DestructionObserver:
+  // base::CurrentThread::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
     // Needs to be called on the IO thread.
     receivers_.Clear();

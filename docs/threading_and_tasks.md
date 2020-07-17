@@ -879,7 +879,7 @@ with dialogs (DialogBox), common dialogs (GetOpenFileName), OLE functions
 Sample workaround when inner task processing is needed:
   HRESULT hr;
   {
-    MessageLoopCurrent::ScopedNestableTaskAllower allow;
+    CurrentThread::ScopedNestableTaskAllower allow;
     hr = DoDragDrop(...); // Implicitly runs a modal message loop.
   }
   // Process |hr| (the result returned by DoDragDrop()).
@@ -887,7 +887,7 @@ Sample workaround when inner task processing is needed:
 
 Please be SURE your task is reentrant (nestable) and all global variables
 are stable and accessible before before using
-MessageLoopCurrent::ScopedNestableTaskAllower.
+CurrentThread::ScopedNestableTaskAllower.
 
 ## APIs for general use
 
@@ -914,10 +914,10 @@ simple task posting environment (one default task queue) can use a
 Unit tests can use [TaskEnvironment](https://cs.chromium.org/chromium/src/base/test/task_environment.h)
 which is highly configurable.
 
-## MessageLoop and MessageLoopCurrent
+## MessageLoop and CurrentThread
 
-You might come across references to MessageLoop or MessageLoopCurrent in the
+You might come across references to MessageLoop or CurrentThread in the
 code or documentation. These classes no longer exist and we are in the process
-or getting rid of all references to them. base::MessageLoopCurrent was replaced
+or getting rid of all references to them. base::CurrentThread was replaced
 by base::CurrentThread and the drop in replacements for base::MessageLoop are
 base::SingleThreadTaskExecutor and base::Test::TaskEnvironment.

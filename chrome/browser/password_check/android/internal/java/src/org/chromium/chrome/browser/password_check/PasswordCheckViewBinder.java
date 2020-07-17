@@ -92,6 +92,14 @@ class PasswordCheckViewBinder {
             formattedOrigin =
                     formattedOrigin.replaceFirst("/$", ""); // Strip possibly trailing slash.
             pslOriginText.setText(formattedOrigin);
+
+            TextView username = view.findViewById(R.id.compromised_username);
+            username.setText(credential.getUsername());
+
+            TextView reason = view.findViewById(R.id.compromised_reason);
+            reason.setText(credential.isPhished()
+                            ? R.string.password_check_credential_row_reason_phished
+                            : R.string.password_check_credential_row_reason_leaked);
         } else {
             assert false : "Unhandled update to property:" + propertyKey;
         }

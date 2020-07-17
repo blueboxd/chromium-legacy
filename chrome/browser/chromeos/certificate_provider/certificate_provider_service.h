@@ -146,9 +146,8 @@ class CertificateProviderService : public KeyedService {
   // If the signature could be calculated by the extension, |signature| is
   // provided in the reply and should be the signature of the data sent in the
   // sign request. Otherwise, in case of a failure, |signature| must be empty.
-  // The call is ignored if |sign_request_id| is not referring to a pending
-  // request.
-  void ReplyToSignRequest(const std::string& extension_id,
+  // Returns false if |sign_request_id| is not referring to a pending request.
+  bool ReplyToSignRequest(const std::string& extension_id,
                           int sign_request_id,
                           const std::vector<uint8_t>& signature);
 

@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -194,7 +194,7 @@ class OCSPBrowserTest : public PlatformBrowserTest,
  private:
   void UpdateChromePolicy(const policy::PolicyMap& policies) {
     policy_provider_.UpdateChromePolicy(policies);
-    ASSERT_TRUE(base::MessageLoopCurrent::Get());
+    ASSERT_TRUE(base::CurrentThread::Get());
 
     base::RunLoop().RunUntilIdle();
 

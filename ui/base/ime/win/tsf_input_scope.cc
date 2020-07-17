@@ -9,8 +9,8 @@
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/stl_util.h"
+#include "base/task/current_thread.h"
 #include "base/win/windows_version.h"
 
 namespace ui {
@@ -155,7 +155,7 @@ InputScope ConvertTextInputModeToInputScope(TextInputMode text_input_mode) {
 }  // namespace
 
 void InitializeTsfForInputScopes() {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   // Thread safety is not required because this function is under UI thread.
   if (!g_get_proc_done) {
     g_get_proc_done = true;

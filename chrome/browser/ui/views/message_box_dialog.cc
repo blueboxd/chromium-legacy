@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/task/current_thread.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/simple_message_box_internal.h"
@@ -108,7 +108,7 @@ chrome::MessageBoxResult MessageBoxDialog::Show(
 // ResourceBundle is not initialized yet.
 // Fallback to logging with a default response or a Windows MessageBox.
 #if defined(OS_WIN)
-  if (!base::MessageLoopCurrentForUI::IsSet() ||
+  if (!base::CurrentUIThread::IsSet() ||
       !base::RunLoop::IsRunningOnCurrentThread() ||
       !ui::ResourceBundle::HasSharedInstance()) {
     LOG_IF(ERROR, !checkbox_text.empty()) << "Dialog checkbox won't be shown";
@@ -120,7 +120,7 @@ chrome::MessageBoxResult MessageBoxDialog::Show(
     return chrome::MESSAGE_BOX_RESULT_DEFERRED;
   }
 #elif defined(OS_MACOSX)
-  if (!base::MessageLoopCurrentForUI::IsSet() ||
+  if (!base::CurrentUIThread::IsSet() ||
       !base::RunLoop::IsRunningOnCurrentThread() ||
       !ui::ResourceBundle::HasSharedInstance()) {
     // Even though this function could return a value synchronously here in
@@ -131,7 +131,7 @@ chrome::MessageBoxResult MessageBoxDialog::Show(
     return chrome::MESSAGE_BOX_RESULT_DEFERRED;
   }
 #else
-  if (!base::MessageLoopCurrentForUI::IsSet() ||
+  if (!base::CurrentUIThread::IsSet() ||
       !ui::ResourceBundle::HasSharedInstance() ||
       !display::Screen::GetScreen()) {
     LOG(ERROR) << "Unable to show a dialog outside the UI thread message loop: "

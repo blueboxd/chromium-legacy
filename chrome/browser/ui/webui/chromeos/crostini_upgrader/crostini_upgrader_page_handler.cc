@@ -40,7 +40,7 @@ CrostiniUpgraderPageHandler::~CrostiniUpgraderPageHandler() {
 namespace {
 
 void Redisplay() {
-  CrostiniUpgraderDialog::Show(base::DoNothing());
+  CrostiniUpgraderDialog::Reshow();
 }
 
 }  // namespace

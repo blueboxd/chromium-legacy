@@ -653,8 +653,13 @@ MediaFactory::CreateRendererFactorySelector(
 
 #if BUILDFLAG(IS_CHROMECAST)
   if (renderer_media_playback_options.is_remoting_renderer_enabled()) {
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+    auto default_factory = std::make_unique<CastRendererClientFactory>(
+        media_log, CreateMojoRendererFactory());
+#else
     auto default_factory = CreateDefaultRendererFactory(
         media_log, decoder_factory, render_thread, render_frame_);
+#endif
     mojo::PendingRemote<media::mojom::Remotee> remotee;
     interface_broker_->GetInterface(remotee.InitWithNewPipeAndPassReceiver());
     auto remoting_renderer_factory =

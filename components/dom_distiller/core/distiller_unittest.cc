@@ -16,10 +16,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/current_thread.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -252,7 +252,7 @@ class TestDistillerURLFetcher : public DistillerURLFetcher {
   }
 
   void PostCallbackTask() {
-    ASSERT_TRUE(base::MessageLoopCurrent::Get());
+    ASSERT_TRUE(base::CurrentThread::Get());
     ASSERT_FALSE(callback_.is_null());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback_), responses_[url_]));

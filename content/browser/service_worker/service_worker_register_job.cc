@@ -377,8 +377,6 @@ void ServiceWorkerRegisterJob::OnUpdateCheckFinished(
   // Update check failed.
   if (result == ServiceWorkerSingleScriptUpdateChecker::Result::kFailed) {
     DCHECK(failure_info);
-    ServiceWorkerMetrics::RecordByteForByteUpdateCheckStatus(
-        failure_info->status, /*has_found_update=*/false);
     ResolvePromise(failure_info->status, failure_info->error_message, nullptr);
     // This terminates the current job (|this|).
     Complete(failure_info->status, failure_info->error_message);
@@ -390,8 +388,6 @@ void ServiceWorkerRegisterJob::OnUpdateCheckFinished(
 
   // Update check succeeded.
   if (result == ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical) {
-    ServiceWorkerMetrics::RecordByteForByteUpdateCheckStatus(
-        blink::ServiceWorkerStatusCode::kOk, /*has_found_update=*/false);
     ResolvePromise(blink::ServiceWorkerStatusCode::kOk, std::string(),
                    registration());
     // This terminates the current job (|this|).
@@ -400,8 +396,6 @@ void ServiceWorkerRegisterJob::OnUpdateCheckFinished(
     return;
   }
 
-  ServiceWorkerMetrics::RecordByteForByteUpdateCheckStatus(
-      blink::ServiceWorkerStatusCode::kOk, /*has_found_update=*/true);
   CreateNewVersionForUpdate();
 }
 

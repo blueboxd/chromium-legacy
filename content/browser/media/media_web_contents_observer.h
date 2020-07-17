@@ -9,9 +9,10 @@
 
 #include <map>
 #include <memory>
-#include <set>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_power_experiment_manager.h"
 #include "content/browser/media/session/media_session_controllers_manager.h"
@@ -53,9 +54,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
  public:
   explicit MediaWebContentsObserver(WebContents* web_contents);
   ~MediaWebContentsObserver() override;
-
-  using PlayerSet = std::set<int>;
-  using ActiveMediaPlayerMap = std::map<RenderFrameHost*, PlayerSet>;
 
   // Called by WebContentsImpl when the audible state may have changed.
   void MaybeUpdateAudibleState();
@@ -113,6 +111,16 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   }
 
  private:
+  class PlayerInfo;
+  friend class PlayerInfo;
+
+  using PlayerInfoMap =
+      base::flat_map<MediaPlayerId, std::unique_ptr<PlayerInfo>>;
+
+  // Returns the PlayerInfo associated with |id|, or nullptr if no such
+  // PlayerInfo exists.
+  PlayerInfo* GetPlayerInfo(const MediaPlayerId& id) const;
+
   void OnMediaDestroyed(RenderFrameHost* render_frame_host, int delegate_id);
   void OnMediaPaused(RenderFrameHost* render_frame_host,
                      int delegate_id,
@@ -140,9 +148,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
                                              int delegate_id,
                                              bool available);
 
-  // Clear |render_frame_host|'s tracking entry for its WakeLocks.
-  void ClearWakeLocks(RenderFrameHost* render_frame_host);
-
   device::mojom::WakeLock* GetAudioWakeLock();
 
   // WakeLock related methods for audio and video.
@@ -150,30 +155,12 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void CancelAudioLock();
   void UpdateVideoLock();
 
-  // Helper methods for adding or removing player entries in |player_map|.
-  void AddMediaPlayerEntry(const MediaPlayerId& id,
-                           ActiveMediaPlayerMap* player_map);
-  // Returns true if an entry is actually removed.
-  bool RemoveMediaPlayerEntry(const MediaPlayerId& id,
-                              ActiveMediaPlayerMap* player_map);
-  // Removes all entries from |player_map| for |render_frame_host|. Removed
-  // entries are added to |removed_players|.
-  void RemoveAllMediaPlayerEntries(RenderFrameHost* render_frame_host,
-                                   ActiveMediaPlayerMap* player_map,
-                                   std::set<MediaPlayerId>* removed_players);
-
   // Convenience method that casts web_contents() to a WebContentsImpl*.
   WebContentsImpl* web_contents_impl() const;
 
   // Notify |id| about |is_starting|.  Note that |id| might no longer be in the
   // active players list, which is fine.
   void OnExperimentStateChanged(MediaPlayerId id, bool is_starting);
-
-  // Remove all players from |player_map|.
-  void RemoveAllPlayers(ActiveMediaPlayerMap* player_map);
-
-  // Remove all players.
-  void RemoveAllPlayers();
 
   // Return a weak pointer to |this| that's local to |render_frame_host|, in the
   // sense that we can cancel all of the ptrs to one frame without cancelling
@@ -185,8 +172,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   AudibleMetrics* audible_metrics_;
 
   // Tracking variables and associated wake locks for media playback.
-  ActiveMediaPlayerMap active_audio_players_;
-  ActiveMediaPlayerMap active_video_players_;
+  PlayerInfoMap player_info_map_;
   mojo::Remote<device::mojom::WakeLock> audio_wake_lock_;
   base::Optional<MediaPlayerId> fullscreen_player_;
   base::Optional<bool> picture_in_picture_allowed_in_fullscreen_;

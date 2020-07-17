@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/current_thread.h"
 #include "base/values.h"
 #include "components/metrics/structured/event_base.h"
 #include "components/metrics/structured/histogram_util.h"
@@ -108,7 +108,7 @@ void StructuredMetricsProvider::OnRecord(const EventBase& event) {
 
 void StructuredMetricsProvider::OnProfileAdded(
     const base::FilePath& profile_path) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   if (initialized_)
     return;
 
@@ -136,14 +136,14 @@ void StructuredMetricsProvider::OnInitializationCompleted(const bool success) {
 }
 
 void StructuredMetricsProvider::OnRecordingEnabled() {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   if (!recording_enabled_)
     Recorder::GetInstance()->AddObserver(this);
   recording_enabled_ = true;
 }
 
 void StructuredMetricsProvider::OnRecordingDisabled() {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   if (recording_enabled_)
     Recorder::GetInstance()->RemoveObserver(this);
   recording_enabled_ = false;
@@ -160,7 +160,7 @@ void StructuredMetricsProvider::OnRecordingDisabled() {
 
 void StructuredMetricsProvider::ProvideCurrentSessionData(
     ChromeUserMetricsExtension* uma_proto) {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   if (!recording_enabled_ || !initialized_)
     return;
 

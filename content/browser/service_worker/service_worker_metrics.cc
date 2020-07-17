@@ -578,17 +578,6 @@ void ServiceWorkerMetrics::RecordLookupRegistrationTime(
   }
 }
 
-void ServiceWorkerMetrics::RecordByteForByteUpdateCheckStatus(
-    blink::ServiceWorkerStatusCode status,
-    bool has_found_update) {
-  DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.UpdateCheck.Result", status);
-  if (status == blink::ServiceWorkerStatusCode::kOk) {
-    UMA_HISTOGRAM_BOOLEAN("ServiceWorker.UpdateCheck.UpdateFound",
-                          has_found_update);
-  }
-}
-
 void ServiceWorkerMetrics::RecordGetAllOriginsInfoTime(base::TimeDelta time) {
   base::UmaHistogramMediumTimes("ServiceWorker.GetAllOriginsInfoTime", time);
 }

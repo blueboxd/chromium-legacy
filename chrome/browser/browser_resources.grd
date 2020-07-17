@@ -191,6 +191,8 @@
       </if>
       <if expr="is_win or is_macosx or desktop_linux">
         <include name="IDR_SIGNIN_DICE_WEB_INTERCEPT_HTML" file="resources\signin\dice_web_signin_intercept\dice_web_signin_intercept.html" type="BINDATA" />
+        <include name="IDR_SIGNIN_DICE_WEB_INTERCEPT_APP_JS" file="${root_gen_dir}\chrome\browser\resources\signin\dice_web_signin_intercept\dice_web_signin_intercept_app.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_SIGNIN_DICE_WEB_INTERCEPT_BROWSER_PROXY_JS" file="resources/signin/dice_web_signin_intercept/dice_web_signin_intercept_browser_proxy.js" type="BINDATA" />
         <include name="IDR_SIGNIN_EMAIL_CONFIRMATION_HTML" file="resources\signin\signin_email_confirmation\signin_email_confirmation.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_SIGNIN_EMAIL_CONFIRMATION_APP_JS" file="${root_gen_dir}\chrome\browser\resources\signin\signin_email_confirmation\signin_email_confirmation_app.js" use_base_dir="false" preprocess="true" type="BINDATA" />
         <include name="IDR_SIGNIN_ERROR_HTML" file="resources\signin\signin_error\signin_error.html" type="BINDATA" />

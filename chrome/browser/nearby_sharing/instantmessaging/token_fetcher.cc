@@ -18,11 +18,8 @@ TokenFetcher::~TokenFetcher() = default;
 
 void TokenFetcher::GetAccessToken(
     base::OnceCallback<void(const std::string& token)> callback) {
-  // Using Mode::kWaitUntilRefreshTokenAvailable waits for the account to have a
-  // refresh token which can take forever if the user is not signed in (and
-  // doesnt sign in). Since nearby sharing is only available for already signed
-  // in users, we are using this mode to ensure that best effort in trying to
-  // get a token.
+  // Using Mode::Immediate since Nearby Share is only available for signed-in
+  // users.
 
   token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
       identity_manager_->GetPrimaryAccountId(
@@ -30,7 +27,7 @@ void TokenFetcher::GetAccessToken(
       kOAuthConsumerName, {GaiaConstants::kTachyonOAuthScope},
       base::BindOnce(&TokenFetcher::OnOAuthTokenFetched,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
-      signin::AccessTokenFetcher::Mode::kWaitUntilRefreshTokenAvailable);
+      signin::AccessTokenFetcher::Mode::kImmediate);
 }
 
 void TokenFetcher::OnOAuthTokenFetched(

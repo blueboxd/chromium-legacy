@@ -25,6 +25,7 @@
     "TextTrack",
     "TextTrackCue",
     "TextTrackList",
+    "TrustedTypePolicyFactory",
     "VideoTrackList",
     "ApplicationCache",
     "MojoInterfaceInterceptor",

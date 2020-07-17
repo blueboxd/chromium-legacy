@@ -27,9 +27,9 @@
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
-#include "third_party/blink/public/web/modules/mediastream/web_media_stream_renderer_factory.h"
 #include "third_party/blink/public/web/modules/mediastream/webmediaplayer_ms.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_renderer_factory.h"
 #include "third_party/blink/renderer/modules/mediastream/webmediaplayer_ms_compositor.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -440,7 +440,7 @@ class MockWebVideoFrameSubmitter : public WebVideoFrameSubmitter {
 
 // The class is used to generate a MockVideoProvider in
 // WebMediaPlayerMS::load().
-class MockRenderFactory : public WebMediaStreamRendererFactory {
+class MockRenderFactory : public MediaStreamRendererFactory {
  public:
   MockRenderFactory(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -690,7 +690,7 @@ void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {
                 WTF::Unretained(this)),
       std::move(submitter_), surface_layer_mode);
   player_->SetMediaStreamRendererFactoryForTesting(
-      std::unique_ptr<WebMediaStreamRendererFactory>(render_factory_));
+      std::unique_ptr<MediaStreamRendererFactory>(render_factory_));
 }
 
 MockMediaStreamVideoRenderer* WebMediaPlayerMSTest::LoadAndGetFrameProvider(

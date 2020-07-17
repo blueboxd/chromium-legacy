@@ -14,10 +14,10 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -188,7 +188,7 @@ void NetInternalsTest::MessageHandler::HandleMessage(
     const content::WebUI::MessageCallback& handler,
     const base::ListValue* data) {
   // The handler might run a nested loop to wait for something.
-  base::MessageLoopCurrent::ScopedNestableTaskAllower nestable_task_allower;
+  base::CurrentThread::ScopedNestableTaskAllower nestable_task_allower;
   handler.Run(data);
 }
 

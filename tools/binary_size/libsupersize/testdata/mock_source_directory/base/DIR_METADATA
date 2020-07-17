@@ -3,4 +3,4 @@ monorail {
   component: "Blink>Internal"
 }
 team_email: "team@chromium.org"
-os: OS_LINUX
+os: LINUX

@@ -10,6 +10,7 @@ import android.graphics.RectF;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
+import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiController;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
@@ -38,7 +39,8 @@ public class AssistantOverlayCoordinator {
             BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
             ScrimView scrim, AssistantOverlayModel model) {
         this(context, browserControls, compositorViewHolder, scrim, model,
-                ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY));
+                ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY,
+                        AutofillAssistantUiController.getProfile()));
     }
 
     public AssistantOverlayCoordinator(Context context,

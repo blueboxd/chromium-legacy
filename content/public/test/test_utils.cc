@@ -11,11 +11,11 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/current_thread.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/task_observer.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -130,7 +130,7 @@ void RunMessageLoop() {
 }
 
 void RunThisRunLoop(base::RunLoop* run_loop) {
-  base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
+  base::CurrentThread::ScopedNestableTaskAllower allow;
   run_loop->Run();
 }
 
@@ -152,7 +152,7 @@ void RunAllTasksUntilIdle() {
     // current loop iteration and loop in case the MessageLoop posts tasks to
     // the Task Scheduler after the initial flush.
     TaskObserver task_observer;
-    base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer);
+    base::CurrentThread::Get()->AddTaskObserver(&task_observer);
 
     // This must use RunLoop::Type::kNestableTasksAllowed in case this
     // RunAllTasksUntilIdle() call is nested inside an existing Run(). Without
@@ -165,7 +165,7 @@ void RunAllTasksUntilIdle() {
 
     run_loop.Run();
 
-    base::MessageLoopCurrent::Get()->RemoveTaskObserver(&task_observer);
+    base::CurrentThread::Get()->RemoveTaskObserver(&task_observer);
 
     if (!task_observer.processed())
       break;

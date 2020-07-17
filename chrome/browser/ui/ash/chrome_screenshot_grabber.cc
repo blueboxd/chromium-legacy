@@ -18,11 +18,11 @@
 #include "base/files/file_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
+#include "base/task/current_thread.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
@@ -223,7 +223,7 @@ void SaveScreenshot(scoped_refptr<base::TaskRunner> ui_task_runner,
                     scoped_refptr<base::RefCountedMemory> png_data,
                     ScreenshotFileResult result,
                     const base::FilePath& local_path) {
-  DCHECK(!base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(!base::CurrentUIThread::IsSet());
   DCHECK(!screenshot_path.empty());
 
   ScreenshotResult screenshot_result = ScreenshotResult::SUCCESS;
@@ -257,7 +257,7 @@ void SaveScreenshot(scoped_refptr<base::TaskRunner> ui_task_runner,
 void EnsureLocalDirectoryExists(
     const base::FilePath& path,
     ChromeScreenshotGrabber::FileCallback callback) {
-  DCHECK(!base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(!base::CurrentUIThread::IsSet());
   DCHECK(!path.empty());
 
   if (!base::CreateDirectory(path.DirName())) {

@@ -5,10 +5,10 @@
 #import "ios/web/public/test/web_test_with_web_state.h"
 
 #include "base/ios/ios_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/current_thread.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/web/common/features.h"
 #import "ios/web/js_messaging/crw_js_injector.h"
@@ -193,7 +193,7 @@ void WebTestWithWebState::WaitForBackgroundTasks() {
   // Because tasks can add new tasks to either queue, the loop continues until
   // the first pass where no activity is seen from either queue.
   bool activitySeen = false;
-  base::MessageLoopCurrent messageLoop = base::MessageLoopCurrent::Get();
+  base::CurrentThread messageLoop = base::CurrentThread::Get();
   messageLoop->AddTaskObserver(this);
   do {
     activitySeen = false;

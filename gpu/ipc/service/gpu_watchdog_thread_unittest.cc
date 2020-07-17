@@ -5,9 +5,9 @@
 #include "base/test/task_environment.h"
 #include "gpu/ipc/service/gpu_watchdog_thread_v2.h"
 
-#include "base/message_loop/message_loop_current.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
+#include "base/task/current_thread.h"
 #include "base/test/power_monitor_test_base.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -67,7 +67,7 @@ class GpuWatchdogPowerTest : public GpuWatchdogTest {
 
 void GpuWatchdogTest::SetUp() {
   ASSERT_TRUE(base::ThreadTaskRunnerHandle::IsSet());
-  ASSERT_TRUE(base::MessageLoopCurrent::IsSet());
+  ASSERT_TRUE(base::CurrentThread::IsSet());
 
   // Set watchdog timeout to 1000 milliseconds
   watchdog_thread_ = gpu::GpuWatchdogThreadImplV2::Create(

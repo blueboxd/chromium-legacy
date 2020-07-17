@@ -6,6 +6,7 @@
 
 #include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/services/sharing/nearby/nearby_connections.h"
 #include "chrome/services/sharing/nearby/platform_v2/atomic_boolean.h"
 #include "chrome/services/sharing/nearby/platform_v2/atomic_uint32.h"
 #include "chrome/services/sharing/nearby/platform_v2/condition_variable.h"
@@ -15,6 +16,7 @@
 #include "chrome/services/sharing/nearby/platform_v2/recursive_mutex.h"
 #include "chrome/services/sharing/nearby/platform_v2/scheduled_executor.h"
 #include "chrome/services/sharing/nearby/platform_v2/submittable_executor.h"
+#include "chrome/services/sharing/nearby/platform_v2/webrtc.h"
 #include "third_party/nearby/src/cpp/platform_v2/api/atomic_boolean.h"
 #include "third_party/nearby/src/cpp/platform_v2/api/atomic_reference.h"
 #include "third_party/nearby/src/cpp/platform_v2/api/ble.h"
@@ -138,7 +140,22 @@ std::unique_ptr<WifiLanMedium> ImplementationPlatform::CreateWifiLanMedium() {
 }
 
 std::unique_ptr<WebRtcMedium> ImplementationPlatform::CreateWebRtcMedium() {
-  return nullptr;
+  auto& connections = connections::NearbyConnections::GetInstance();
+
+  network::mojom::P2PSocketManager* socket_manager =
+      connections.GetWebRtcP2PSocketManager();
+  network::mojom::MdnsResponder* mdns_responder =
+      connections.GetWebRtcMdnsResponder();
+  sharing::mojom::IceConfigFetcher* ice_config_fetcher =
+      connections.GetWebRtcIceConfigFetcher();
+  sharing::mojom::WebRtcSignalingMessenger* messenger =
+      connections.GetWebRtcSignalingMessenger();
+
+  if (!socket_manager || !mdns_responder || !ice_config_fetcher || !messenger)
+    return nullptr;
+
+  return std::make_unique<chrome::WebRtcMedium>(socket_manager, mdns_responder,
+                                                ice_config_fetcher, messenger);
 }
 
 std::unique_ptr<Mutex> ImplementationPlatform::CreateMutex(Mutex::Mode mode) {

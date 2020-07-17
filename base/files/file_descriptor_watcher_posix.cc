@@ -9,12 +9,12 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/current_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_local.h"
@@ -34,7 +34,7 @@ ThreadLocalPointer<FileDescriptorWatcher>& GetTlsFdWatcher() {
 
 class FileDescriptorWatcher::Controller::Watcher
     : public MessagePumpForIO::FdWatcher,
-      public MessageLoopCurrent::DestructionObserver {
+      public CurrentThread::DestructionObserver {
  public:
   Watcher(WeakPtr<Controller> controller, MessagePumpForIO::Mode mode, int fd);
   ~Watcher() override;
@@ -48,7 +48,7 @@ class FileDescriptorWatcher::Controller::Watcher
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
-  // MessageLoopCurrent::DestructionObserver:
+  // CurrentThread::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override;
 
   // The MessagePumpForIO's watch handle (stops the watch when destroyed).
@@ -96,20 +96,19 @@ FileDescriptorWatcher::Controller::Watcher::Watcher(
 
 FileDescriptorWatcher::Controller::Watcher::~Watcher() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  MessageLoopCurrentForIO::Get()->RemoveDestructionObserver(this);
+  CurrentIOThread::Get()->RemoveDestructionObserver(this);
 }
 
 void FileDescriptorWatcher::Controller::Watcher::StartWatching() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(MessageLoopCurrentForIO::IsSet());
+  DCHECK(CurrentIOThread::IsSet());
 
-  const bool watch_success =
-      MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
-          fd_, false, mode_, &fd_watch_controller_, this);
+  const bool watch_success = CurrentIOThread::Get()->WatchFileDescriptor(
+      fd_, false, mode_, &fd_watch_controller_, this);
   DCHECK(watch_success) << "Failed to watch fd=" << fd_;
 
   if (!registered_as_destruction_observer_) {
-    MessageLoopCurrentForIO::Get()->AddDestructionObserver(this);
+    CurrentIOThread::Get()->AddDestructionObserver(this);
     registered_as_destruction_observer_ = true;
   }
 }

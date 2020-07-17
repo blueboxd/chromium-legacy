@@ -464,9 +464,6 @@ void SynchronousCompositorHost::DidPresentCompositorFrames(
 
 void SynchronousCompositorHost::UpdatePresentedFrameToken(
     uint32_t frame_token) {
-  if (!viz::FrameTokenGT(frame_token, last_frame_token_))
-    return;
-  last_frame_token_ = frame_token;
   rwhva_->FrameTokenChangedForSynchronousCompositor(frame_token,
                                                     root_scroll_offset_);
 }

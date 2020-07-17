@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/task/current_thread.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_settings_service.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
@@ -205,7 +205,7 @@ int CountProxyBroadcasts(
 }
 
 void RunUntilIdle() {
-  DCHECK(base::MessageLoopCurrent::Get());
+  DCHECK(base::CurrentThread::Get());
   base::RunLoop loop;
   loop.RunUntilIdle();
 }

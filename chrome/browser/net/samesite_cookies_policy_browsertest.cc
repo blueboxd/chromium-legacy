@@ -26,15 +26,17 @@ const char kURL[] = "http://example.com";
 }  // namespace
 
 // Test fixture that enables (if param is true) and disables (if param is false)
-// SameSite-by-default and Cookies-without-SameSite-must-be-Secure, to test the
-// policies that override those features, under both conditions.
+// SameSite-by-default, Cookies-without-SameSite-must-be-Secure, and Schemeful
+// Same-Site to test the policies that override those features, under both
+// conditions.
 class SameSiteCookiesPolicyTest : public PolicyTest,
                                   public ::testing::WithParamInterface<bool> {
  public:
   SameSiteCookiesPolicyTest() {
     std::vector<base::Feature> samesite_features = {
         net::features::kSameSiteByDefaultCookies,
-        net::features::kCookiesWithoutSameSiteMustBeSecure};
+        net::features::kCookiesWithoutSameSiteMustBeSecure,
+        net::features::kSchemefulSameSite};
     if (AreSameSiteFeaturesEnabled()) {
       feature_list_.InitWithFeatures(samesite_features /* enabled */, {});
     } else {
@@ -90,6 +92,25 @@ IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
                                 net::CookieOptions::SameSiteCookieContext(
                                     net::CookieOptions::SameSiteCookieContext::
                                         ContextType::CROSS_SITE)));
+
+  // When Schemeful Same-Site is enabled a context downgrade to an insufficient
+  // context should still be allowed with legacy access. This'll always work if
+  // Schemeful Same-Site is disabled because the schemeless context is Lax
+  // which is sufficient.
+  EXPECT_TRUE(content::SetCookie(
+      profile, url, "samesite-lax=1; SameSite=Lax",
+      net::CookieOptions::SameSiteCookieContext(
+          net::CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX,
+          net::CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE)));
+  // Similarly when we try to get the cookie.
+  EXPECT_THAT(
+      content::GetCookies(profile, url,
+                          net::CookieOptions::SameSiteCookieContext(
+                              net::CookieOptions::SameSiteCookieContext::
+                                  ContextType::SAME_SITE_LAX,
+                              net::CookieOptions::SameSiteCookieContext::
+                                  ContextType::CROSS_SITE)),
+      testing::HasSubstr("samesite-lax=1"));
 }
 
 IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
@@ -132,6 +153,48 @@ IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
                                 net::CookieOptions::SameSiteCookieContext(
                                     net::CookieOptions::SameSiteCookieContext::
                                         ContextType::CROSS_SITE)));
+
+  // When Schemeful Same-Site is enabled a context downgrade to an insufficient
+  // context should always be blocked. If Schemeful Same-Site is disabled then
+  // this shouldn't be blocked.
+  // Similarly when we try to get the cookie.
+  if (AreSameSiteFeaturesEnabled()) {
+    EXPECT_FALSE(
+        content::SetCookie(profile, url, "samesite-lax=1; SameSite=Lax",
+                           net::CookieOptions::SameSiteCookieContext(
+                               net::CookieOptions::SameSiteCookieContext::
+                                   ContextType::SAME_SITE_LAX,
+                               net::CookieOptions::SameSiteCookieContext::
+                                   ContextType::CROSS_SITE)));
+    // We should be able to get the cookie which was previously added.
+    EXPECT_EQ("samesite-unspecified=1", content::GetCookies(profile, url));
+    // But no cookies should be returned for a downgrade to an insufficient
+    // context, since SameSite-by-default is active which requires a minimum of
+    // a Lax context.
+    EXPECT_EQ(
+        "", content::GetCookies(profile, url,
+                                net::CookieOptions::SameSiteCookieContext(
+                                    net::CookieOptions::SameSiteCookieContext::
+                                        ContextType::SAME_SITE_LAX,
+                                    net::CookieOptions::SameSiteCookieContext::
+                                        ContextType::CROSS_SITE)));
+  } else {
+    EXPECT_TRUE(
+        content::SetCookie(profile, url, "samesite-lax=1; SameSite=Lax",
+                           net::CookieOptions::SameSiteCookieContext(
+                               net::CookieOptions::SameSiteCookieContext::
+                                   ContextType::SAME_SITE_LAX,
+                               net::CookieOptions::SameSiteCookieContext::
+                                   ContextType::CROSS_SITE)));
+    EXPECT_THAT(
+        content::GetCookies(profile, url,
+                            net::CookieOptions::SameSiteCookieContext(
+                                net::CookieOptions::SameSiteCookieContext::
+                                    ContextType::SAME_SITE_LAX,
+                                net::CookieOptions::SameSiteCookieContext::
+                                    ContextType::CROSS_SITE)),
+        testing::HasSubstr("samesite-lax=1"));
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
@@ -190,6 +253,25 @@ IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
                                 net::CookieOptions::SameSiteCookieContext(
                                     net::CookieOptions::SameSiteCookieContext::
                                         ContextType::CROSS_SITE)));
+  // When Schemeful Same-Site is enabled a context downgrade to an insufficient
+  // context should still be allowed with legacy access. This'll always work if
+  // Schemeful Same-Site is disabled because the schemeless context is Lax
+  // which is sufficient.
+  EXPECT_TRUE(content::SetCookie(
+      profile, legacy_allowed_domain_url, "samesite-lax=1; SameSite=Lax",
+      net::CookieOptions::SameSiteCookieContext(
+          net::CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX,
+          net::CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE)));
+  // Similarly when we try to get the cookie.
+  EXPECT_THAT(
+      content::GetCookies(profile, legacy_allowed_domain_url,
+                          net::CookieOptions::SameSiteCookieContext(
+                              net::CookieOptions::SameSiteCookieContext::
+                                  ContextType::SAME_SITE_LAX,
+                              net::CookieOptions::SameSiteCookieContext::
+                                  ContextType::CROSS_SITE)),
+      testing::HasSubstr("samesite-lax=1"));
+
   // For the domain that is not Legacy by policy, we expect it to work only if
   // the SameSite features are disabled.
   if (AreSameSiteFeaturesEnabled()) {
@@ -203,6 +285,26 @@ IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
     EXPECT_EQ(
         "", content::GetCookies(profile, other_domain_url,
                                 net::CookieOptions::SameSiteCookieContext(
+                                    net::CookieOptions::SameSiteCookieContext::
+                                        ContextType::CROSS_SITE)));
+    EXPECT_FALSE(content::SetCookie(
+        profile, other_domain_url, "samesite-lax=1; SameSite=Lax",
+        net::CookieOptions::SameSiteCookieContext(
+            net::CookieOptions::SameSiteCookieContext::ContextType::
+                SAME_SITE_LAX,
+            net::CookieOptions::SameSiteCookieContext::ContextType::
+                CROSS_SITE)));
+    // We should be able to get the cookie which was previously added.
+    EXPECT_EQ("samesite-unspecified=1",
+              content::GetCookies(profile, other_domain_url));
+    // But no cookies should be returned for a downgrade to an insufficient
+    // context, since SameSite-by-default is active which requires a minimum of
+    // a Lax context.
+    EXPECT_EQ(
+        "", content::GetCookies(profile, other_domain_url,
+                                net::CookieOptions::SameSiteCookieContext(
+                                    net::CookieOptions::SameSiteCookieContext::
+                                        ContextType::SAME_SITE_LAX,
                                     net::CookieOptions::SameSiteCookieContext::
                                         ContextType::CROSS_SITE)));
   } else {
@@ -219,6 +321,22 @@ IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
                             net::CookieOptions::SameSiteCookieContext(
                                 net::CookieOptions::SameSiteCookieContext::
                                     ContextType::CROSS_SITE)));
+
+    EXPECT_TRUE(content::SetCookie(
+        profile, other_domain_url, "samesite-lax=1; SameSite=Lax",
+        net::CookieOptions::SameSiteCookieContext(
+            net::CookieOptions::SameSiteCookieContext::ContextType::
+                SAME_SITE_LAX,
+            net::CookieOptions::SameSiteCookieContext::ContextType::
+                CROSS_SITE)));
+    EXPECT_THAT(
+        content::GetCookies(profile, other_domain_url,
+                            net::CookieOptions::SameSiteCookieContext(
+                                net::CookieOptions::SameSiteCookieContext::
+                                    ContextType::SAME_SITE_LAX,
+                                net::CookieOptions::SameSiteCookieContext::
+                                    ContextType::CROSS_SITE)),
+        testing::HasSubstr("samesite-lax=1"));
   }
 }
 

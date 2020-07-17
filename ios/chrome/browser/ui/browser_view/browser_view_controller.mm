@@ -1599,6 +1599,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self.tabStripCoordinator hideTabStrip:![self canShowTabStrip]];
     _fakeStatusBarView.hidden = ![self canShowTabStrip];
     [self addConstraintsToPrimaryToolbar];
+    // If tabstrip is coming back due to a window resize or screen rotation,
+    // reset the full screen controller to adjust the tabstrip position.
+    if (ShouldShowCompactToolbar(previousTraitCollection) &&
+        !ShouldShowCompactToolbar()) {
+      [self
+          updateForFullscreenProgress:self.fullscreenController->GetProgress()];
+    }
   }
 
   [self setNeedsStatusBarAppearanceUpdate];

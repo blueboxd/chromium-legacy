@@ -45,6 +45,7 @@ class ScopedAllowScheduleGpuTask;
 }
 
 namespace viz {
+class AggregatedFrame;
 class DirectRenderer;
 class DisplayClient;
 class DisplayResourceProvider;
@@ -173,7 +174,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   void ForceImmediateDrawAndSwapIfPossible();
   void SetNeedsOneBeginFrame();
-  void RemoveOverdrawQuads(CompositorFrame* frame);
+  void RemoveOverdrawQuads(AggregatedFrame* frame);
 
   void SetSupportedFrameIntervals(std::vector<base::TimeDelta> intervals);
 

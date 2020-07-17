@@ -14,7 +14,7 @@ namespace base {
 class SingleThreadTaskRunner;
 
 // A scoped wrapper around TestMockTimeTaskRunner that replaces
-// MessageLoopCurrent::Get()'s task runner (and consequently
+// CurrentThread::Get()'s task runner (and consequently
 // ThreadTaskRunnerHandle) with a TestMockTimeTaskRunner and resets it back at
 // the end of its scope.
 //

@@ -630,6 +630,21 @@ _CONFIG = [
     },
     {
         'paths':
+        ['third_party/blink/renderer/core/frame/web_local_frame_impl.cc'],
+        'allowed': [
+            'ui::AXTreeID',
+            'ui::AXTreeIDUnknown',
+        ],
+    },
+    {
+        'paths':
+        ['third_party/blink/renderer/core/frame/web_local_frame_impl.h'],
+        'allowed': [
+            'ui::AXTreeID',
+        ],
+    },
+    {
+        'paths':
         ['third_party/blink/renderer/core/fileapi/file_reader_loader.cc'],
         'allowed': [
             'net::ERR_FILE_NOT_FOUND',
@@ -1047,14 +1062,14 @@ _CONFIG = [
             'base::LazyInstance',
             'base::Lock',
             # TODO(crbug.com/787254): Remove base::BindOnce, base::Unretained,
-            # base::Passed, base::Closure, base::MessageLoopCurrent,
+            # base::Passed, base::Closure, base::CurrentThread,
             # base::RetainedRef, base::EndsWith and base::CompareCase.
             'base::Bind.*',
             'base::Closure',
             'base::CompareCase',
             'base::EndsWith',
             'base::MD5.*',
-            'base::MessageLoopCurrent',
+            'base::CurrentThread',
             'base::Passed',
             'base::PowerObserver',
             'base::RetainedRef',

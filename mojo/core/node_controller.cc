@@ -13,9 +13,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
+#include "base/task/current_thread.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "mojo/core/broker.h"
@@ -108,7 +108,7 @@ ports::ScopedEvent DeserializeEventMessage(
 // the IO thread is killed, the NodeController can cleanly drop all its peers
 // at that time.
 class ThreadDestructionObserver
-    : public base::MessageLoopCurrent::DestructionObserver {
+    : public base::CurrentThread::DestructionObserver {
  public:
   static void Create(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                      base::OnceClosure callback) {
@@ -124,14 +124,14 @@ class ThreadDestructionObserver
  private:
   explicit ThreadDestructionObserver(base::OnceClosure callback)
       : callback_(std::move(callback)) {
-    base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
+    base::CurrentThread::Get()->AddDestructionObserver(this);
   }
 
   ~ThreadDestructionObserver() override {
-    base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
+    base::CurrentThread::Get()->RemoveDestructionObserver(this);
   }
 
-  // base::MessageLoopCurrent::DestructionObserver:
+  // base::CurrentThread::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
     std::move(callback_).Run();
     delete this;

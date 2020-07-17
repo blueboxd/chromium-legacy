@@ -9,7 +9,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -38,7 +38,7 @@ namespace {
 // This function posts |task| and runs the given |mode|.
 void RunTaskInMode(CFRunLoopMode mode, OnceClosure task) {
   // Since this task is "ours" rather than a system task, allow nesting.
-  MessageLoopCurrent::ScopedNestableTaskAllower allow;
+  CurrentThread::ScopedNestableTaskAllower allow;
   CancelableOnceClosure cancelable(std::move(task));
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, cancelable.callback());
   while (CFRunLoopRunInMode(mode, 0, true) == kCFRunLoopRunHandledSource)
@@ -133,7 +133,7 @@ TEST(MessagePumpMacTest, QuitWithModalWindow) {
   RunLoop run_loop;
   ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&] {
-        MessageLoopCurrent::ScopedNestableTaskAllower allow;
+        CurrentThread::ScopedNestableTaskAllower allow;
         ScopedPumpMessagesInPrivateModes pump_private;
         [NSApp runModalForWindow:window];
       }));

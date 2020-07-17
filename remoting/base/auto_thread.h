@@ -30,7 +30,7 @@ namespace remoting {
 //
 //  (1) Thread::CleanUp()
 //  (2) MessageLoop::~MessageLoop
-//  (3.b) MessageLoopCurrent::DestructionObserver::WillDestroyCurrentMessageLoop
+//  (3.b) CurrentThread::DestructionObserver::WillDestroyCurrentMessageLoop
 class AutoThread : base::PlatformThread::Delegate {
  public:
   // Create an AutoThread with the specified message-loop |type| and |name|.

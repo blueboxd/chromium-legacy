@@ -21,23 +21,20 @@ class SharedURLLoaderFactory;
 class SimpleURLLoader;
 }  // namespace network
 
-class IceConfigFetcher {
+class IceConfigFetcher : public sharing::mojom::IceConfigFetcher {
  public:
-  using IceServerCallback =
-      base::OnceCallback<void(std::vector<sharing::mojom::IceServerPtr>)>;
-
   explicit IceConfigFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-  ~IceConfigFetcher();
+  ~IceConfigFetcher() override;
 
   IceConfigFetcher(const IceConfigFetcher& other) = delete;
   IceConfigFetcher& operator=(const IceConfigFetcher& other) = delete;
 
   // TODO(himanshujaju) - Cache configs fetched from server.
-  void GetIceServers(IceServerCallback callback);
+  void GetIceServers(GetIceServersCallback callback) override;
 
  private:
-  void OnIceServersResponse(IceServerCallback callback,
+  void OnIceServersResponse(GetIceServersCallback callback,
                             std::unique_ptr<std::string> response_body);
 
   std::vector<sharing::mojom::IceServerPtr> ParseIceConfigJson(

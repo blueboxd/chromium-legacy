@@ -9,9 +9,9 @@
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/strings/string_util.h"
+#include "base/task/current_thread.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 
@@ -122,8 +122,8 @@ bool File::Init(const base::FilePath& name) {
   if (!base_file_.IsValid())
     return false;
 
-  base::MessageLoopCurrentForIO::Get()->RegisterIOHandler(
-      base_file_.GetPlatformFile(), CompletionHandler::Get());
+  base::CurrentIOThread::Get()->RegisterIOHandler(base_file_.GetPlatformFile(),
+                                                  CompletionHandler::Get());
 
   init_ = true;
   sync_base_file_ =
@@ -280,7 +280,7 @@ void File::WaitForPendingIO(int* num_pending_io) {
     // Asynchronous IO operations may be in flight and the completion may end
     // up calling us back so let's wait for them.
     base::MessagePumpForIO::IOHandler* handler = CompletionHandler::Get();
-    base::MessageLoopCurrentForIO::Get()->WaitForIOCompletion(100, handler);
+    base::CurrentIOThread::Get()->WaitForIOCompletion(100, handler);
   }
 }
 

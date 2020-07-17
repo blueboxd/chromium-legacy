@@ -18,10 +18,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_run_loop_timeout.h"
@@ -175,7 +175,7 @@ class TestArcVmBootNotificationServer
     ASSERT_EQ(HANDLE_EINTR(listen(fd_.get(), 5)), 0);
 
     controller_.reset(new base::MessagePumpForUI::FdWatchController(FROM_HERE));
-    ASSERT_TRUE(base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
+    ASSERT_TRUE(base::CurrentUIThread::Get()->WatchFileDescriptor(
         fd_.get(), true, base::MessagePumpForUI::WATCH_READ, controller_.get(),
         this));
   }

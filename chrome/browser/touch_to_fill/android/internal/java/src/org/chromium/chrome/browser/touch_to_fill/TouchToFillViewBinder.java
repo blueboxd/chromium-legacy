@@ -9,7 +9,6 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.DISMISS_HANDLER;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FooterProperties.BRANDING_MESSAGE_ID;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.SINGLE_CREDENTIAL;
@@ -18,7 +17,6 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SH
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 import static org.chromium.components.embedder_support.util.UrlUtilities.stripScheme;
 
-import android.content.Context;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.view.ViewGroup;
@@ -89,9 +87,6 @@ class TouchToFillViewBinder {
             case ItemType.FILL_BUTTON:
                 return new TouchToFillViewHolder(parent, R.layout.touch_to_fill_fill_button,
                         TouchToFillViewBinder::bindFillButtonView);
-            case ItemType.FOOTER:
-                return new TouchToFillViewHolder(parent, R.layout.touch_to_fill_footer,
-                        TouchToFillViewBinder::bindFooterView);
         }
         assert false : "Cannot create view for ItemType: " + itemType;
         return null;
@@ -198,23 +193,6 @@ class TouchToFillViewBinder {
                         String.format(view.getContext().getString(
                                               R.string.touch_to_fill_sheet_subtitle_not_secure),
                                 model.get(FORMATTED_URL)));
-            }
-        } else {
-            assert false : "Unhandled update to property:" + key;
-        }
-    }
-
-    private static void bindFooterView(PropertyModel model, View view, PropertyKey key) {
-        if (key == BRANDING_MESSAGE_ID) {
-            TextView brandingMessage = view.findViewById(R.id.touch_to_fill_branding_message);
-            @StringRes
-            int messageId = model.get(BRANDING_MESSAGE_ID);
-            if (messageId == 0) {
-                brandingMessage.setVisibility(View.GONE);
-            } else {
-                Context context = view.getContext();
-                brandingMessage.setText(String.format(context.getString(messageId),
-                        context.getString(org.chromium.chrome.R.string.app_name)));
             }
         } else {
             assert false : "Unhandled update to property:" + key;

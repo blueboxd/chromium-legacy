@@ -12,7 +12,6 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/process/process.h"
@@ -20,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/current_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_crash_keys.h"
@@ -102,7 +102,7 @@ GpuWatchdogThreadImplV1::GpuWatchdogThreadImplV1()
   UpdateActiveTTY();
   host_tty_ = active_tty_;
 #endif
-  base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer_);
+  base::CurrentThread::Get()->AddTaskObserver(&task_observer_);
 }
 
 // static
@@ -244,7 +244,7 @@ GpuWatchdogThreadImplV1::~GpuWatchdogThreadImplV1() {
     fclose(tty_file_);
 #endif
 
-  base::MessageLoopCurrent::Get()->RemoveTaskObserver(&task_observer_);
+  base::CurrentThread::Get()->RemoveTaskObserver(&task_observer_);
 }
 
 void GpuWatchdogThreadImplV1::OnAcknowledge() {

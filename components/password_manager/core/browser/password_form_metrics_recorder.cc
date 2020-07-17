@@ -16,6 +16,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/time/default_clock.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
@@ -525,7 +526,9 @@ void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
     is_mixed_content_form_ = true;
   }
 
+#if !defined(OS_IOS)
   filling_source_ = FillingSource::kNotFilled;
+#endif
   account_storage_usage_level_ = account_storage_usage_level;
 
   if (saved_passwords.empty() && is_blacklisted) {
@@ -562,12 +565,14 @@ void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
     return;
   }
 
+#if !defined(OS_IOS)
   // At this point, the password was filled from at least one of the two stores,
   // so compute the filling source now.
   filling_source_ = ComputeFillingSource(
       username_password_state.password_exists_in_profile_store,
       username_password_state.password_exists_in_account_store);
   DCHECK_NE(*filling_source_, FillingSource::kNotFilled);
+#endif
 
   if (username_password_state.saved_username_typed) {
     filling_assistance_ = FillingAssistance::kUsernameTypedPasswordFilled;

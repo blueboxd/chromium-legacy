@@ -39,6 +39,7 @@ js_library("nearby_confirmation_page") {
 
 js_library("nearby_device") {
   deps = [
+    "//third_party/polymer/v3_0/components-chromium/iron-icon",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }

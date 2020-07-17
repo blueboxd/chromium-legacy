@@ -24,13 +24,13 @@
 #include "base/linux_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/current_thread.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread.h"
@@ -153,7 +153,7 @@ void CrashHandlerHostLinux::StartUploaderThread() {
 }
 
 void CrashHandlerHostLinux::Init() {
-  base::MessageLoopCurrentForIO ml = base::MessageLoopCurrentForIO::Get();
+  base::CurrentIOThread ml = base::CurrentIOThread::Get();
   CHECK(ml->WatchFileDescriptor(browser_socket_, true /* persistent */,
                                 base::MessagePumpForIO::WATCH_READ,
                                 &fd_watch_controller_, this));
@@ -558,7 +558,7 @@ CrashHandlerHost::CrashHandlerHost()
 }
 
 void CrashHandlerHost::Init() {
-  base::MessageLoopCurrentForIO ml = base::MessageLoopCurrentForIO::Get();
+  base::CurrentIOThread ml = base::CurrentIOThread::Get();
   CHECK(ml->WatchFileDescriptor(browser_socket_.get(), /* persistent= */ true,
                                 base::MessagePumpForIO::WATCH_READ,
                                 &fd_watch_controller_, this));

@@ -22,6 +22,8 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardDataEndpoint {
   ClipboardDataEndpoint& operator=(const ClipboardDataEndpoint& other);
   ClipboardDataEndpoint& operator=(ClipboardDataEndpoint&& other);
 
+  bool operator==(const ClipboardDataEndpoint& other) const;
+
   ~ClipboardDataEndpoint();
 
  private:

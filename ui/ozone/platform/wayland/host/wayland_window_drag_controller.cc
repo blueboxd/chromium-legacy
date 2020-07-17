@@ -12,9 +12,9 @@
 #include "base/callback.h"
 #include "base/check.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
+#include "base/task/current_thread.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -231,7 +231,7 @@ bool WaylandWindowDragController::CanDispatchEvent(const PlatformEvent& event) {
 uint32_t WaylandWindowDragController::DispatchEvent(
     const PlatformEvent& event) {
   DCHECK_EQ(state_, State::kDetached);
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
 
   VLOG(2) << "Dispatch. event=" << event->GetName();
 

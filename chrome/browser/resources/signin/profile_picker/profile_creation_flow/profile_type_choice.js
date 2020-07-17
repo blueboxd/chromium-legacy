@@ -7,5 +7,5 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 Polymer({
   is: 'profile-type-choice',
 
-  _template: html`<div> Profile type choice </div>`,
+  _template: html`{__html_template__}`,
 });

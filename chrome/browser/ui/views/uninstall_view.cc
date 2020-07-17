@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/uninstall_view.h"
 
-#include "base/message_loop/message_loop_current.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
+#include "base/task/current_thread.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -176,7 +176,7 @@ base::string16 UninstallView::GetItemAt(int index) const {
 namespace chrome {
 
 int ShowUninstallBrowserPrompt() {
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   int result = service_manager::RESULT_CODE_NORMAL_EXIT;
 
   base::RunLoop run_loop;

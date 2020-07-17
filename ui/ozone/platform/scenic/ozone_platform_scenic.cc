@@ -11,9 +11,9 @@
 #include "base/check.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/notreached.h"
+#include "base/task/current_thread.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
@@ -61,9 +61,8 @@ class ScenicPlatformEventSource : public ui::PlatformEventSource {
 };
 
 // OzonePlatform for Scenic.
-class OzonePlatformScenic
-    : public OzonePlatform,
-      public base::MessageLoopCurrent::DestructionObserver {
+class OzonePlatformScenic : public OzonePlatform,
+                            public base::CurrentThread::DestructionObserver {
  public:
   OzonePlatformScenic() = default;
   ~OzonePlatformScenic() override = default;
@@ -188,7 +187,7 @@ class OzonePlatformScenic
     surface_factory_->Initialize(std::move(gpu_host_remote));
     bound_in_main_process_ = true;
 
-    base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
+    base::CurrentThread::Get()->AddDestructionObserver(this);
   }
 
   void ShutdownInMainProcess() {
@@ -199,7 +198,7 @@ class OzonePlatformScenic
     bound_in_main_process_ = false;
   }
 
-  // base::MessageLoopCurrent::DestructionObserver implementation.
+  // base::CurrentThread::DestructionObserver implementation.
   void WillDestroyCurrentMessageLoop() override { ShutdownInMainProcess(); }
 
   std::unique_ptr<ScenicWindowManager> window_manager_;

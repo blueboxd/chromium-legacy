@@ -13,8 +13,8 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/task/current_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "net/base/io_buffer.h"
@@ -178,7 +178,7 @@ int SocketPosix::Accept(std::unique_ptr<SocketPosix>* socket,
   if (rv != ERR_IO_PENDING)
     return rv;
 
-  if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+  if (!base::CurrentIOThread::Get()->WatchFileDescriptor(
           socket_fd_, true, base::MessagePumpForIO::WATCH_READ,
           &accept_socket_watcher_, this)) {
     PLOG(ERROR) << "WatchFileDescriptor failed on accept";
@@ -203,7 +203,7 @@ int SocketPosix::Connect(const SockaddrStorage& address,
   if (rv != ERR_IO_PENDING)
     return rv;
 
-  if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+  if (!base::CurrentIOThread::Get()->WatchFileDescriptor(
           socket_fd_, true, base::MessagePumpForIO::WATCH_WRITE,
           &write_socket_watcher_, this)) {
     PLOG(ERROR) << "WatchFileDescriptor failed on connect";
@@ -299,7 +299,7 @@ int SocketPosix::ReadIfReady(IOBuffer* buf,
   if (rv != ERR_IO_PENDING)
     return rv;
 
-  if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+  if (!base::CurrentIOThread::Get()->WatchFileDescriptor(
           socket_fd_, true, base::MessagePumpForIO::WATCH_READ,
           &read_socket_watcher_, this)) {
     PLOG(ERROR) << "WatchFileDescriptor failed on read";
@@ -349,7 +349,7 @@ int SocketPosix::WaitForWrite(IOBuffer* buf,
   DCHECK(!callback.is_null());
   DCHECK_LT(0, buf_len);
 
-  if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
+  if (!base::CurrentIOThread::Get()->WatchFileDescriptor(
           socket_fd_, true, base::MessagePumpForIO::WATCH_WRITE,
           &write_socket_watcher_, this)) {
     PLOG(ERROR) << "WatchFileDescriptor failed on write";

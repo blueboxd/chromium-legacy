@@ -103,7 +103,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
     std::vector<PlaneData> planes;
   };
 
-  void SubmitFrame();
+  void MaybeSubmitFrames();
 
   EGLSyncKHR InsertFence(bool implicit);
   void FenceRetired(PendingFrame* frame);
@@ -116,8 +116,8 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
   gfx::AcceleratedWidget widget_;
   std::vector<std::unique_ptr<PendingFrame>> unsubmitted_frames_;
+  std::vector<std::unique_ptr<PendingFrame>> submitted_frames_;
   std::vector<std::unique_ptr<PendingFrame>> pending_presentation_frames_;
-  std::unique_ptr<PendingFrame> submitted_frame_;
   bool has_implicit_external_sync_;
   bool last_swap_buffers_result_ = true;
   bool use_egl_fence_sync_ = true;

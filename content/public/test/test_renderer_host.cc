@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/task/current_thread.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -116,7 +116,7 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
   // graphics services. Some tests have their own, so this only creates one
   // (single-threaded) when none exists. This means tests must ensure any
   // TaskEnvironment they make is created before the RenderViewHostTestEnabler.
-  if (!base::MessageLoopCurrent::Get()) {
+  if (!base::CurrentThread::Get()) {
     task_environment_ =
         std::make_unique<base::test::SingleThreadTaskEnvironment>();
   }

@@ -5,7 +5,7 @@
 #include "fuchsia/http/url_loader_impl.h"
 
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/message_loop/message_loop_current.h"
+#include "base/task/current_thread.h"
 #include "base/task/post_task.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "net/base/chunked_upload_data_stream.h"
@@ -361,7 +361,7 @@ bool URLLoaderImpl::WriteResponseBytes(int result) {
     if (status == ZX_ERR_SHOULD_WAIT) {
       // Wait until the socket is writable again.
       buffered_bytes_ = result;
-      base::MessageLoopCurrentForIO::Get()->WatchZxHandle(
+      base::CurrentIOThread::Get()->WatchZxHandle(
           write_socket_.get(), false /* persistent */,
           ZX_SOCKET_WRITABLE | ZX_SOCKET_PEER_CLOSED, &write_watch_, this);
       return false;

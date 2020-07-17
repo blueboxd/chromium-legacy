@@ -6,9 +6,9 @@
 
 #include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/task/current_thread.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_paths.h"
@@ -122,7 +122,7 @@ void ContentBrowserTest::PreRunTestOnMainThread() {
 #endif
 
   // Pump startup related events.
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  DCHECK(base::CurrentUIThread::IsSet());
   base::RunLoop().RunUntilIdle();
 
 #if defined(OS_MACOSX)

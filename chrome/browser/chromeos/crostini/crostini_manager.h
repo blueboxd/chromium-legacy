@@ -40,6 +40,7 @@ class Profile;
 namespace crostini {
 
 class CrostiniStabilityMonitor;
+class CrostiniUpgradeAvailableNotification;
 
 class LinuxPackageOperationProgressObserver {
  public:
@@ -969,6 +970,9 @@ class CrostiniManager : public KeyedService,
   base::Time time_of_last_disk_type_metric_;
 
   std::unique_ptr<CrostiniStabilityMonitor> crostini_stability_monitor_;
+
+  std::unique_ptr<CrostiniUpgradeAvailableNotification>
+      upgrade_available_notification_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

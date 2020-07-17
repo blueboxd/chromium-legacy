@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip.Typ
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
@@ -44,7 +45,7 @@ import java.util.Set;
 @JNINamespace("autofill_assistant")
 // TODO(crbug.com/806868): This class should be removed once all logic is in native side and the
 // model is directly modified by the native AssistantMediator.
-class AutofillAssistantUiController {
+public class AutofillAssistantUiController {
     private static Set<ChromeActivity> sActiveChromeActivities;
     private long mNativeUiController;
 
@@ -54,6 +55,19 @@ class AutofillAssistantUiController {
     private WebContents mWebContents;
     private SnackbarController mSnackbarController;
 
+    /**
+     * Getter for the current profile while assistant is running. Since autofill assistant is only
+     * available in regular mode and there is only one regular profile in android, this method
+     * returns {@link Profile#getLastUsedRegularProfile()}.
+     *
+     * TODO(b/161519639): Return current profile to support multi profiles, instead of returning
+     * always regular profile. This could be achieve by retrieving profile from native and using it
+     * where the profile is needed on Java side.
+     * @return The current regular profile.
+     */
+    public static Profile getProfile() {
+        return Profile.getLastUsedRegularProfile();
+    }
     /**
      * Finds an activity to which a AA UI can be added.
      *
@@ -164,6 +178,12 @@ class AutofillAssistantUiController {
                             if (!allowTabSwitching) {
                                 safeNativeStop(DropOutReason.TAB_DETACHED);
                                 return;
+                            }
+
+                            // If we have an open snackbar, execute the callback immediately. This
+                            // may shut down the Autofill Assistant.
+                            if (mSnackbarController != null) {
+                                mSnackbarController.onDismissNoAction(/* actionData= */ null);
                             }
                             AutofillAssistantClient.fromWebContents(mWebContents).destroyUi();
                         }
@@ -368,9 +388,10 @@ class AutofillAssistantUiController {
 
     // Native methods.
     private void safeSnackbarResult(boolean undo) {
-        if (mNativeUiController != 0) {
+        if (mSnackbarController != null && mNativeUiController != 0) {
             AutofillAssistantUiControllerJni.get().snackbarResult(
                     mNativeUiController, AutofillAssistantUiController.this, undo);
+            mSnackbarController = null;
         }
     }
 

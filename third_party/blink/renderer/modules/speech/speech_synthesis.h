@@ -125,8 +125,7 @@ class MODULES_EXPORT SpeechSynthesis final
 
   void SetMojomSynthesisForTesting(
       mojo::PendingRemote<mojom::blink::SpeechSynthesis>);
-  void InitializeMojomSynthesis();
-  void InitializeMojomSynthesisIfNeeded();
+  mojom::blink::SpeechSynthesis* TryEnsureMojomSynthesis();
 
   HeapMojoReceiver<mojom::blink::SpeechSynthesisVoiceListObserver,
                    SpeechSynthesis>

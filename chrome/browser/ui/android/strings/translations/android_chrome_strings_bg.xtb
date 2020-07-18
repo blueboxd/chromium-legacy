@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">Връзката с интернет се проверява</translation>
 <translation id="2359808026110333948">Напред</translation>
 <translation id="2369533728426058518">отваряне на раздели</translation>
-<translation id="2377295302146152376">Chrome не можа да провери за актуализации</translation>
 <translation id="2387895666653383613">Мащабиране на текста</translation>
 <translation id="2394602618534698961">Изтеглените от вас файлове се показват тук</translation>
 <translation id="2407481962792080328">Когато влезете в профила си в Google, тази функция се включва</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Получете помощ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Местоположението е изключено. Включете го от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Можете по всяко време да включите синхронизирането в настройките</translation>
-<translation id="3059710691562604940">Функцията „Безопасно сърфиране“ е изключена. Chrome препоръчва да я включите.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> отметка}other{<ph name="BOOKMARKS_COUNT_MANY" /> отметки}}</translation>
 <translation id="3089395242580810162">Отваряне в раздел „инкогнито“</translation>
 <translation id="3114012059975132928">Видеоплейър</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">Налице е актуализация. Още опции</translation>
 <translation id="3524138585025253783">ПИ за програмисти</translation>
 <translation id="3527085408025491307">Папка</translation>
-<translation id="3533694711092285624">Няма запазени пароли. Chrome може да проверява паролите ви, когато ги запазите.</translation>
 <translation id="3542235761944717775">Свободно място: <ph name="KILOBYTES" /> КБ</translation>
 <translation id="3549657413697417275">Търсене в историята ви</translation>
 <translation id="3557336313807607643">Добавяне към контактите</translation>
@@ -360,6 +357,7 @@
 <translation id="3892148308691398805">Копиране на текста</translation>
 <translation id="3894427358181296146">Добавяне на папка</translation>
 <translation id="3895926599014793903">Принудително активиране на промяната на мащаба</translation>
+<translation id="3909763690984331376">Проверка на безопасността <ph name="BEGIN_NEW" />Ново<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Намираме най-доброто от мрежата…</translation>
 <translation id="3927692899758076493">Безсерифен</translation>
 <translation id="3928666092801078803">Комбиниране на данните ми</translation>
@@ -570,6 +568,7 @@
 <translation id="5581519193887989363">Винаги можете да изберете какво да се синхронизира от <ph name="BEGIN_LINK1" />настройките<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>
 <translation id="5599455543593328020">Режим „инкогнито“</translation>
+<translation id="5620163320393916465">Няма запазени пароли</translation>
 <translation id="5620928963363755975">Използвайте бутона „Още опции“, за да намерите файловете и страниците си в „Изтегляния“</translation>
 <translation id="5626134646977739690">Име:</translation>
 <translation id="5639724618331995626">Разрешаване на всички сайтове</translation>
@@ -581,6 +580,7 @@
 <translation id="5686790454216892815">Името на файла е твърде дълго</translation>
 <translation id="5694049548840660018">Връщайте се лесно към началната си страница</translation>
 <translation id="569536719314091526">Страницата може да бъде преведена на който и да е език чрез бутона за още опции</translation>
+<translation id="5696597120588531049">Chrome може да ви защити от нарушения на сигурността на данните, опасни уебсайтове и др.</translation>
 <translation id="5697688514913266141">Файлът ще бъде запазен в <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Редактиране<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Превключване към раздел</translation>
 <translation id="572328651809341494">Скорошни раздели</translation>
@@ -714,6 +714,7 @@
 <translation id="6656545060687952787">Chrome се нуждае от достъп до местоположението, за да сканира за устройства. <ph name="BEGIN_LINK" />Актуализиране на разрешенията<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Парола</translation>
 <translation id="6659594942844771486">Раздел</translation>
+<translation id="6663079968236414793">Връзка към текста</translation>
 <translation id="666573598175432848">Налице е нова версия на Chrome. Докоснете този елемент, за да отворите Google Play Магазин.</translation>
 <translation id="666731172850799929">Отваряне в <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Съобщение за поверителност на Chrome</translation>

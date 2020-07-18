@@ -1,15 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
-<translation id="1334465099090928258">技術提供：<ph name="APP_NAME" /></translation>
 <translation id="1717486229951421299">輕觸即可填入的憑證清單已開啟，顯示在畫面下半部。</translation>
 <translation id="207576718733492531">輕觸即可填入的憑證清單已關閉。</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2410754283952462441">選擇帳戶</translation>
 <translation id="3399357656427473483">輕觸即可填入的憑證清單。</translation>
-<translation id="496501580515239715">「<ph name="APP_NAME" />」推出新功能！控管輕觸即可登入的方式</translation>
 <translation id="5441504010984421144">輕觸即可填入的憑證清單已開啟，顯示於整個畫面。</translation>
 <translation id="5624120631404540903">管理密碼</translation>
-<translation id="765102084632356159">「<ph name="APP_NAME" />」推出新功能！輕觸即可登入</translation>
 <translation id="804577341878669140">繼續使用帳戶登入</translation>
 </translationbundle>

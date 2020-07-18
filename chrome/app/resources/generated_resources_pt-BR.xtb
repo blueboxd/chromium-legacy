@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Somente codificar</translation>
 <translation id="1038462104119736705">Recomenda-se ter pelo menos <ph name="INSTALL_SIZE" /> de espaço livre para o Linux. Para liberar espaço, exclua arquivos do dispositivo.</translation>
 <translation id="1039337018183941703">Arquivo inválido ou corrompido</translation>
+<translation id="104086161873270383">Novo Perfil</translation>
 <translation id="1041175011127912238">Esta página não está respondendo</translation>
 <translation id="1041263367839475438">Dispositivos disponíveis</translation>
 <translation id="1042174272890264476">Seu computador já vem com a biblioteca RLZ do <ph name="SHORT_PRODUCT_NAME" /> integrada. O RLZ atribui uma tag não exclusiva e sem identificação pessoal para medir as pesquisas e o uso do <ph name="SHORT_PRODUCT_NAME" /> gerados por uma campanha promocional específica. Esses marcadores às vezes aparecem em consultas da Pesquisa Google no <ph name="PRODUCT_NAME" />.</translation>
@@ -232,6 +233,7 @@
 <translation id="1274997165432133392">Cookies e outros dados do site</translation>
 <translation id="1275718070701477396">Selecionado</translation>
 <translation id="1276994519141842946">Não foi possível desinstalar o app <ph name="APP_NAME" /></translation>
+<translation id="127946606521051357">Um dispositivo por perto está compartilhando</translation>
 <translation id="1280820357415527819">Pesquisando redes móveis</translation>
 <translation id="1280965841156951489">Editar arquivos</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
@@ -254,6 +256,7 @@
 <translation id="1306606229401759371">Alterar configurações</translation>
 <translation id="1307165550267142340">Seu PIN foi criado</translation>
 <translation id="1307559529304613120">Ops. O sistema encontrou uma falha ao armazenar um token de acesso de longo prazo à API para este dispositivo.</translation>
+<translation id="1313162974556054106">Nome do dispositivo</translation>
 <translation id="1313405956111467313">Configuração automática de proxy</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">Sua conta será desconectada de todos os sites, inclusive nas guias abertas</translation>
@@ -704,7 +707,6 @@
 <translation id="184273675144259287">Substituir seus apps e arquivos do Linux por um backup anterior</translation>
 <translation id="1842766183094193446">Tem certeza de que quer ativar o modo de demonstração?</translation>
 <translation id="1846308012215045257">Aperte Ctrl e clique para executar o plug-in <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">Grupo <ph name="GROUP_NAME" />: <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Ativar o Modo ambiente</translation>
 <translation id="1849186935225320012">Esta página tem controle total de dispositivos MIDI.</translation>
 <translation id="1850508293116537636">Girar no &amp;sentido horário</translation>
@@ -1220,6 +1222,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2489918096470125693">Adicionar &amp;pasta...</translation>
 <translation id="2490481887078769936">O arquivo "<ph name="FILE_NAME" />" foi removido da lista</translation>
 <translation id="249113932447298600">O dispositivo <ph name="DEVICE_LABEL" /> não é atualmente suportado.</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> está compartilhando <ph name="ATTACHMENTS" /> com você.</translation>
 <translation id="2492461744635776704">Preparando a solicitação de assinatura de certificado</translation>
 <translation id="249303669840926644">Não foi possível concluir o registro</translation>
 <translation id="2495777824269688114">Descubra mais recursos ou veja respostas. Selecione “?” para receber ajuda.</translation>
@@ -1721,6 +1724,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3103941660000130485">Erro no upgrade do Linux</translation>
 <translation id="3105796011181310544">Voltar a usar o Google?</translation>
 <translation id="310671807099593501">O site está usando o Bluetooth</translation>
+<translation id="3109724472072898302">Recolhido</translation>
 <translation id="3115147772012638511">Aguardando o cache...</translation>
 <translation id="3115580024857770654">Recolher tudo</translation>
 <translation id="3116968597797150452">Perfil certificado</translation>
@@ -1788,7 +1792,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3192947282887913208">Arquivos de áudio</translation>
 <translation id="3199127022143353223">Servidores</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{O Chrome recomenda que você verifique essa senha agora}one{O Chrome recomenda que você verifique essa senha agora}other{O Chrome recomenda que você verifique essas senhas agora}}</translation>
-<translation id="3200941271596533635">Ativar modo leitor</translation>
 <translation id="3201422919974259695">Os dispositivos USB disponíveis serão exibidos aqui.</translation>
 <translation id="3202131003361292969">Caminho</translation>
 <translation id="3202173864863109533">O áudio desta guia está sendo desativado.</translation>
@@ -4154,6 +4157,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6212039847102026977">Mostrar propriedades de rede avançadas</translation>
 <translation id="6212168817037875041">Desligar a tela</translation>
 <translation id="6212752530110374741">Enviar link por e-mail</translation>
+<translation id="6213230117190778270">Receber</translation>
 <translation id="6216696360484424239">Fazer login automaticamente</translation>
 <translation id="6218058416316985984">O <ph name="DEVICE_TYPE" /> está off-line. Conecte-se à Internet e tente novamente.</translation>
 <translation id="6220413761270491930">Erro ao carregar extensão</translation>
@@ -4210,7 +4214,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6270770586500173387">Enviar <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /> e <ph name="BEGIN_LINK1" />informações sobre o sistema e apps<ph name="END_LINK1" /></translation>
 <translation id="6272643420381259437">Ocorreu um erro (<ph name="ERROR" />) ao fazer o download do plug-in</translation>
 <translation id="6273677812470008672">Qualidade</translation>
-<translation id="6273979226236203550">Sua senha foi armazenada neste dispositivo e na sua Conta do Google. Qual você quer excluir?</translation>
 <translation id="6277105963844135994">Tempo limite de rede</translation>
 <translation id="6277518330158259200">T&amp;irar captura de tela</translation>
 <translation id="6278057325678116358">Usar GTK+</translation>
@@ -4254,6 +4257,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6322653941595359182">Enviar e receber mensagens de texto no Chromebook</translation>
 <translation id="6324916366299863871">Editar atalho</translation>
 <translation id="6325191661371220117">Desativar inicialização automática</translation>
+<translation id="6325525973963619867">Falha</translation>
 <translation id="6326175484149238433">Remover do Google Chrome</translation>
 <translation id="6326855256003666642">Contagem de manutenção de atividade</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> precisa que você atualize o dispositivo antes do fim do prazo.</translation>
@@ -4281,6 +4285,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6362853299801475928">&amp;Informar um problema...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Adicionar familiares e amigos</translation>
+<translation id="6367985768157257101">Receber usando o "Compartilhar por proximidade"?</translation>
 <translation id="636850387210749493">Registro da empresa</translation>
 <translation id="6370021412472292592">Não foi possível carregar o manifesto.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4856,7 +4861,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7099337801055912064">Não é possível carregar um PPD grande. O tamanho máximo é 250 KB.</translation>
 <translation id="7102687220333134671">As atualizações automáticas estão ativadas</translation>
 <translation id="7102832101143475489">A solicitação expirou</translation>
-<translation id="7102928824073746774">Grupo sem nome: <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Preferências de USB</translation>
 <translation id="710640343305609397">Abrir configurações de rede</translation>
 <translation id="7108338896283013870">Ocultar</translation>
@@ -4932,6 +4936,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="720110658997053098">Manter este dispositivo permanentemente no modo quiosque</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' excluído</translation>
 <translation id="7201420661433230412">Visualizar arquivos</translation>
+<translation id="7203150201908454328">Expandido</translation>
 <translation id="7203826966018112936">Adicionar uma conta escolar a um perfil permite fazer login facilitado como estudante em sites e extensões, mesmo sob controle dos pais. Isso não permite que a criança acesse favoritos, senhas e outros dados de navegação sincronizados com a conta escolar.&lt;br&gt;&lt;br&gt;
     Se a criança usa um Chromebook na escola e você quer proporcionar a mesma experiência em casa para garantir que a criança tenha acesso a todos os trabalhos escolares necessários, saia dessa conta do Family Link e faça login na conta escolar na página de contas do Chrome OS (observação: os controles dos pais do Family Link não serão aplicados).&lt;br&gt;&lt;br&gt;
     Se a criança não usa um Chromebook na escola ou se você prefere gerenciar a experiência da criança em casa usando o Family Link, clique no botão "Próximo" abaixo para adicionar uma conta escolar a esse perfil.</translation>
@@ -5327,7 +5332,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7704521324619958564">Abrir Play Store</translation>
 <translation id="7705276765467986571">Não foi possível carregar o modelo do favorito.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Ativar modo leitor</translation>
 <translation id="7707108266051544351">Este site foi impedido de usar os sensores de movimento.</translation>
 <translation id="7707922173985738739">Usar dados móveis</translation>
 <translation id="7709152031285164251">Falha - <ph name="INTERRUPT_REASON" /></translation>
@@ -6584,6 +6588,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Inserir senha</translation>
 <translation id="939736085109172342">Nova pasta</translation>
+<translation id="941070664607309480">Clique aqui para ficar visível e permitir que o dispositivo compartilhe com você</translation>
 <translation id="942532530371314860">O app <ph name="APP_NAME" /> está compartilhando áudio e uma guia do Chrome.</translation>
 <translation id="945522503751344254">Enviar comentários</translation>
 <translation id="947329552760389097">&amp;Inspecionar elementos</translation>

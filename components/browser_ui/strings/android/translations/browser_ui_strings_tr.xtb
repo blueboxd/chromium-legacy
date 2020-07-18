@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1647391597548383849">Kameranıza erişim</translation>
 <translation id="1660204651932907780">Sitelerin ses çalmasına izin ver (önerilir)</translation>
+<translation id="1677097821151855053">Çerezler ve diğer site verileri sizi hatırlamamız için kullanılır, örneğin oturumunuzu açmak veya reklamları kişiselleştirmek için. Çerezlerin tüm siteler için nasıl yönetileceğini <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" /> bölümünden öğrenebilirsiniz.</translation>
 <translation id="1688867105868176567">Site verileri temizlensin mi?</translation>
 <translation id="169515064810179024">Sitelerin hareket sensörlerine erişimini engelle</translation>
 <translation id="1717218214683051432">Hareket sensörleri</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Belirli bir site için çerezlere izin verin.</translation>
 <translation id="4046123991198612571">Sonraki parça</translation>
 <translation id="4165986682804962316">Site ayarları</translation>
+<translation id="4200726100658658164">Konum Ayarlarını açın</translation>
 <translation id="4226663524361240545">Bildirimler cihazı titretebilir</translation>
 <translation id="4242533952199664413">Ayarları aç</translation>
 <translation id="4259722352634471385">Gezinme engellendi: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Tüm siteler</translation>
 <translation id="6320088164292336938">Titreşim</translation>
 <translation id="6388207532828177975">Temizle ve sıfırla</translation>
+<translation id="6423924377271166037">Çerezleri sil</translation>
 <translation id="6439114592976064011">Sitelerin sanal gerçeklik cihazınızı ve verilerinizi kullanması engellenir</translation>
 <translation id="6447842834002726250">Çerezler</translation>
 <translation id="6527303717912515753">Paylaş</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Geriye doğru git</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> uygulamasının konumunuza erişebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda da konumu açın.</translation>
 <translation id="8447861592752582886">Cihaz iznini iptal et</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 çerez kullanımda}other{# çerez kullanımda}}</translation>
 <translation id="8463851957836045671">Site hızlı yükleniyor</translation>
 <translation id="851751545965956758">Sitelerin cihazlara bağlanmasını engelle</translation>
 <translation id="857943718398505171">İzin verildi (önerilir)</translation>

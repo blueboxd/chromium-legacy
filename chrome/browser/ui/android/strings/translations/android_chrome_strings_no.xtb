@@ -170,7 +170,6 @@ Trykk på et ord for å søke. For å finstemme søket, trykk og hold inne for �
 <translation id="2353636109065292463">Sjekker internettilkoblingen din</translation>
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="2369533728426058518">åpne faner</translation>
-<translation id="2377295302146152376">Chrome kunne ikke se etter oppdateringer</translation>
 <translation id="2387895666653383613">Tekstskalering</translation>
 <translation id="2394602618534698961">Filer du laster ned, vises her</translation>
 <translation id="2407481962792080328">Når du logger på Google-kontoen din, blir denne funksjonen slått på</translation>
@@ -259,7 +258,6 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Posisjon er slått av. Slå den på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Du kan når som helst slå på synkronisering i innstillingene</translation>
-<translation id="3059710691562604940">Safe Browsing er slått av. Chrome anbefaler at du slår det på.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bokmerke}other{<ph name="BOOKMARKS_COUNT_MANY" /> bokmerker}}</translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
 <translation id="3114012059975132928">Videospiller</translation>
@@ -320,7 +318,6 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="3522247891732774234">En oppdatering er tilgjengelig. Flere alternativer</translation>
 <translation id="3524138585025253783">Utvikler-UI</translation>
 <translation id="3527085408025491307">Mappe</translation>
-<translation id="3533694711092285624">Ingen lagrede passord. Chrome kan sjekke passordene dine når du lagrer dem.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> kB er tilgjengelig</translation>
 <translation id="3549657413697417275">Søk i loggen</translation>
 <translation id="3557336313807607643">Legg til i kontakter</translation>
@@ -571,6 +568,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5581519193887989363">Du kan når som helst velge hva du vil synkronisere, i <ph name="BEGIN_LINK1" />innstillingene<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="5599455543593328020">Inkognitomodus</translation>
+<translation id="5620163320393916465">Ingen lagrede passord</translation>
 <translation id="5620928963363755975">Du finner filene og sidene dine under Nedlastinger via Flere alternativer-knappen</translation>
 <translation id="5626134646977739690">Navn:</translation>
 <translation id="5639724618331995626">Tillat alle nettsteder</translation>

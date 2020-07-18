@@ -170,7 +170,6 @@ Tocca una parola per eseguire una ricerca. Per perfezionare la ricerca, tocca e 
 <translation id="2353636109065292463">Controllare la connessione a Internet</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2369533728426058518">schede aperte</translation>
-<translation id="2377295302146152376">Chrome non può controllare la disponibilità di aggiornamenti</translation>
 <translation id="2387895666653383613">Ridimensionamento testo</translation>
 <translation id="2394602618534698961">I file scaricati vengono visualizzati qui</translation>
 <translation id="2407481962792080328">Questa funzionalità viene attivata quando accedi al tuo Account Google</translation>
@@ -259,7 +258,6 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Richiedi assistenza<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">La geolocalizzazione non è attiva; attivala nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Puoi attivare la sincronizzazione in qualsiasi momento nelle impostazioni</translation>
-<translation id="3059710691562604940">Navigazione sicura è disattivata. Chrome consiglia di attivarla.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> preferito}other{<ph name="BOOKMARKS_COUNT_MANY" /> preferiti}}</translation>
 <translation id="3089395242580810162">Apri in scheda in incognito</translation>
 <translation id="3114012059975132928">Video player</translation>
@@ -320,7 +318,6 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="3522247891732774234">Aggiornamento disponibile. Altre opzioni</translation>
 <translation id="3524138585025253783">Sviluppatore UI</translation>
 <translation id="3527085408025491307">Cartella</translation>
-<translation id="3533694711092285624">Nessuna password salvata. Chrome può controllare le password quando le salvi.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> kB disponibili</translation>
 <translation id="3549657413697417275">Cerca nella cronologia</translation>
 <translation id="3557336313807607643">Aggiungi ai contatti</translation>
@@ -360,6 +357,7 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="3892148308691398805">Copia testo</translation>
 <translation id="3894427358181296146">Aggiungi cartella</translation>
 <translation id="3895926599014793903">Attivazione forzata dello zoom</translation>
+<translation id="3909763690984331376">Controllo di sicurezza <ph name="BEGIN_NEW" />Novità<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Stiamo cercando il meglio sul Web…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Unisci i miei dati</translation>
@@ -570,6 +568,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5581519193887989363">Puoi scegliere in qualsiasi momento i dati da sincronizzare nelle <ph name="BEGIN_LINK1" />impostazioni<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Modifica indirizzo</translation>
 <translation id="5599455543593328020">Modalità di navigazione in incognito</translation>
+<translation id="5620163320393916465">Nessuna password salvata</translation>
 <translation id="5620928963363755975">Usa il pulsante Altre opzioni per trovare i tuoi file e le tue pagine nella cartella Download</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5639724618331995626">Consenti tutti i siti</translation>
@@ -581,6 +580,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5686790454216892815">Nome file troppo lungo</translation>
 <translation id="5694049548840660018">Torna alla home page facilmente</translation>
 <translation id="569536719314091526">Traduci questa pagina in una lingua qualsiasi usando il pulsante Altre opzioni</translation>
+<translation id="5696597120588531049">Chrome può contribuire a proteggerti da violazioni dei dati, siti web non sicuri e non solo</translation>
 <translation id="5697688514913266141">Il file verrà salvato in: <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Modifica<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Passa alla scheda</translation>
 <translation id="572328651809341494">Schede recenti</translation>
@@ -714,6 +714,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6656545060687952787">Chrome ha bisogno dell'accesso alla posizione per cercare dispositivi. <ph name="BEGIN_LINK" />Aggiorna le autorizzazioni<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Password</translation>
 <translation id="6659594942844771486">Scheda</translation>
+<translation id="6663079968236414793">Link al testo</translation>
 <translation id="666573598175432848">È disponibile una versione più recente di Chrome. Tocca questo elemento per andare al Play Store.</translation>
 <translation id="666731172850799929">Apri in <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Informativa sulla privacy di Chrome</translation>

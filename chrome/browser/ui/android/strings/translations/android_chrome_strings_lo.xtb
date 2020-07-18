@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">ກຳລັງກວດການເຊື່ອມຕໍ່ອິນເຕີເນັດຂອງທ່ານ</translation>
 <translation id="2359808026110333948">ສືບຕໍ່</translation>
 <translation id="2369533728426058518">ເປີດແຖບ</translation>
-<translation id="2377295302146152376">Chrome ບໍ່ສາມາດກວດຫາການອັບເດດໄດ້</translation>
 <translation id="2387895666653383613">ຂະໜາດໂຕໜັງສື</translation>
 <translation id="2394602618534698961">ໄຟລ໌ທີ່ທ່ານດາວໂຫຼດຈະປາກົດຢູ່ບ່ອນນີ້</translation>
 <translation id="2407481962792080328">ຄຸນສົມບັດນີ້ຈະເປີດໃຊ້ເມື່ອທ່ານເຂົ້າສູ່ລະບົບບັນຊີ Google ຂອງທ່ານ</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ຂໍຄວາມຊ່ວຍເຫຼືອ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">ສະຖານທີ່ປິດຢູ່, ກະລຸນາເປີດມັນໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">ທ່ານສາມາດເປີດການຊິ້ງຂໍ້ມູນໄດ້ທຸກເວລາໃນການຕັ້ງຄ່າ</translation>
-<translation id="3059710691562604940">Safe Browsing ປິດຢູ່. Chrome ແນະນຳໃຫ້ເປີດມັນ.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ບຸກມາກ}other{<ph name="BOOKMARKS_COUNT_MANY" /> ບຸກມາກ}}</translation>
 <translation id="3089395242580810162">ເປີດ​ໃນ​ແຖບ​ບໍ່ເປີດເຜີຍຕົນຕົວ</translation>
 <translation id="3114012059975132928">ໂປຣແກຣມຫຼິ້ນວິດີໂອ</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">ອັບເດດມີໃຫ້ແລ້ວ. ຕົວເລືອກເພີ່ມເຕີມ</translation>
 <translation id="3524138585025253783">ສ່ວນຕິດຕໍ່ຜູ້ໃຊ້ສຳລັບຜູ້ພັດທະນາ</translation>
 <translation id="3527085408025491307">ໂຟລເດີ</translation>
-<translation id="3533694711092285624">ບໍ່ມີລະຫັດຜ່ານທີ່ບັນທຶກໄວ້. Chrome ສາມາດກວດເບິ່ງລະຫັດຜ່ານຂອງທ່ານເມື່ອທ່ານບັນທຶກພວກມັນໄວ້.</translation>
 <translation id="3542235761944717775">ຍັງເຫຼືອ <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">ຊອກຫາປະຫວັດຂອງທ່ານ</translation>
 <translation id="3557336313807607643">ເພີ່ມໃສ່ລາຍຊື່ຜູ້ຕິດຕໍ່</translation>
@@ -360,6 +357,7 @@
 <translation id="3892148308691398805">ສຳເນົາຂໍ້ຄວາມ</translation>
 <translation id="3894427358181296146">ເພີ່ມໂຟລເດີ</translation>
 <translation id="3895926599014793903">ບັງຄັບໃຫ້ເປີດ​ໃຊ້​ການ​ຊູມ</translation>
+<translation id="3909763690984331376">ການກວດກາຄວາມປອດໄພ <ph name="BEGIN_NEW" />ໃໝ່<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">ກຳລັງຊອກຫາສິ່ງທີ່ດີສຸດຈາກເວັບ...</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">ລວມຂໍ້ມູນຂອງຂ້ອຍເຂົ້າກັນ</translation>
@@ -570,6 +568,7 @@
 <translation id="5581519193887989363">ທ່ານສາມາດເລືອກສິ່ງທີ່ຈະຊິ້ງຂໍ້ມູນໄດ້ໃນ <ph name="BEGIN_LINK1" />ການຕັ້ງຄ່າ<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">ແກ້ໄຂທີ່ຢູ່</translation>
 <translation id="5599455543593328020">ໂໝດທີ່ບໍ່ເຜີຍຕົວຕົນ</translation>
+<translation id="5620163320393916465">ບໍ່ມີລະຫັດຜ່ານທີ່ບັນທຶກໄວ້</translation>
 <translation id="5620928963363755975">ຊອກຫາໄຟລ໌ ແລະ ໜ້າເວັບຂອງທ່ານໃການດາວໂຫຼດຈາກປຸ່ມຕົວເລືອກເພີ່ມເຕີມ</translation>
 <translation id="5626134646977739690">ຊື່:</translation>
 <translation id="5639724618331995626">ອະນຸຍາດທຸກເວັບໄຊ</translation>
@@ -581,6 +580,7 @@
 <translation id="5686790454216892815">ຊື່ໄຟລ໌ຍາວເກີນໄປ</translation>
 <translation id="5694049548840660018">ກັບຄືນໜ້າຫຼັກໄດ້ຢ່າງງ່າຍດາຍ</translation>
 <translation id="569536719314091526">ແປໜ້ານີ້ເປັນພາສາໃດໆກໍໄດ້ຈາກປຸ່ມຕົວເລືອກເພີ່ມເຕີມ</translation>
+<translation id="5696597120588531049">Chrome ສາມາດຊ່ວຍຮັກສາທ່ານໃຫ້ປອດໄພຈາກການລະເມີດຂໍ້ມູນ, ເວັບໄຊທີ່ບໍ່ປອດໄພ ແລະ ອື່ນໆອີກ</translation>
 <translation id="5697688514913266141">ໄຟລ໌ຂອງທ່ານຈະຖືກບັນທຶກໄວ້ໃນ <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />ແກ້ໄຂ<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">ປ່ຽນເປັນແຖບ</translation>
 <translation id="572328651809341494">ແຖບບໍ່ດົນມານີ້</translation>
@@ -714,6 +714,7 @@
 <translation id="6656545060687952787">Chrome ຕ້ອງການ​ມີ​ການ​ເຂົ້າ​ເຖິງ​ທີ່​ຕັ້ງ​ເພື່ອ​ສະ​ແກນ​ຫາ​ອຸປະກອນ. ກະລຸນາ <ph name="BEGIN_LINK" />ອັບ​ເດດ​ການ​ອະນຸຍາດ<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">ລະຫັດຜ່ານ</translation>
 <translation id="6659594942844771486">ແຖບ</translation>
+<translation id="6663079968236414793">ລິ້ງຫາຂໍ້ຄວາມ</translation>
 <translation id="666573598175432848">ມີ Chrome ເວີຊັນໃໝ່. ແຕະອົງປະກອບນີ້ເພື່ອໄປທີ່ Play Store.</translation>
 <translation id="666731172850799929">ເປີດ​ຢູ່​ໃນ <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">ແຈ້ງ​ການ​ຄວາມ​ເປັນ​ສ່ວນ​ຕົວ​ຂອງ Chrome</translation>

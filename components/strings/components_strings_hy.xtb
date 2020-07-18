@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Ձեր պատճենած պատկերը</translation>
 <translation id="1150979032973867961">Այս սերվերը չի կարող ապացուցել, որ <ph name="DOMAIN" /> է: Ձեր համակարգչի օպերացիոն համակարգը չի վստահում դրա անվտանգության վկայականին: Պատճառը կարող է լինել սխալ կազմաձևումը կամ կապակցման խափանումը հարձակվողի կողմից:</translation>
 <translation id="1151972924205500581">Պահանջվում է գաղտնաբառ</translation>
-<translation id="1152921474424827756">Բացել <ph name="URL" />-ի <ph name="BEGIN_LINK" />քեշավորված պատճենը<ph name="END_LINK" /></translation>
 <translation id="1156303062776767266">Դուք տեղային կամ ընդհանուր ֆայլ եք դիտում</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" />-ն անսպասելիորեն ընդհատեց կապակցումը:</translation>
 <translation id="115926840831309955">Ստուգեք ձեր CVC կոդը և նորից փորձեք, կամ փոփոխեք վավերականության ժամկետը</translation>
 <translation id="1161325031994447685">Նորից միանալ Wi-Fi-ին</translation>
 <translation id="1165039591588034296">Սխալ</translation>
+<translation id="1165174597379888365">Բացվել է էջ</translation>
 <translation id="1175364870820465910">&amp;Տպել…</translation>
 <translation id="1175875016430184367">Երեք ամրակ աջ կողմում</translation>
 <translation id="1178581264944972037">Դադար</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">Գովազդ</translation>
 <translation id="1919367280705858090">Որոշակի սխալների վերացման օգնություն</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Ոչինչ չկա}=1{1 կայք}one{# sites}other{# կայք}}</translation>
-<translation id="194030505837763158">Անցեք <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Հնարավոր է՝ չկարողանաք օգտագործել ձեր կազմակերպության հաշիվը, կամ ինչ-որ մեկը կարող է գողանալ ձեր անձնական տվյալները։ Խորհուրդ ենք տալիս փոխել գաղտնաբառը։</translation>
 <translation id="1947454675006758438">Ամրակ վերևի աջ կողմում</translation>
 <translation id="1959001866257244765">Օգնեք բարձրացնել անվտանգության մակարդակը համացանցում՝ Google-ին ուղարկելով <ph name="BEGIN_WHITEPAPER_LINK" />ձեր այցելած որոշ էջերի հասցեներն ու բովանդակությունը և որոշակի տեղեկություններ համակարգի մասին<ph name="END_WHITEPAPER_LINK" />։ <ph name="BEGIN_PRIVACY_PAGE_LINK" />Գաղտնիության քաղաքականություն<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,9 +266,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{ու ևս 1 հավելված}one{and # more}other{ու ևս # հավելված}}</translation>
 <translation id="2003709556000175978">Վերակայեք գաղտնաբառը</translation>
 <translation id="2003775180883135320">Չորս անցք վերևում</translation>
+<translation id="202072848677994234">Այս ձևը ուղարկվում է ոչ ապահով կապի միջոցով։ Ինքնալրացումն անջատված է։</translation>
 <translation id="2025115093177348061">Լրացված իրականություն</translation>
 <translation id="2025186561304664664">Պրոքսին ինքնակարգավորվում է:</translation>
-<translation id="2030481566774242610">Հավանաբար նկատի ունեիք <ph name="LINK" />:</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Ստուգել պրոքսի-սերվերի և հրապատի կազմաձևումը<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Դարակ 7</translation>
 <translation id="204357726431741734">Մուտք գործեք՝ Google հաշվում պահված գաղտնաբառերն օգտագործելու համար</translation>
@@ -335,6 +334,7 @@
 <translation id="2289385804009217824">Կտրել</translation>
 <translation id="2292556288342944218">Համացանցի մուտքն արգելափակված է</translation>
 <translation id="2293443924986248631">Երբ այս կարգավորումը միացված է, կայքերը չեն կարող օգտագործել քուքիները, որոնց միջոցով հետագծվում են ձեր գործողությունները համացանցում։ Որոշ կայքերում գործառույթները կարող են չաշխատել։</translation>
+<translation id="2295290966866883927">Ձեր այցելած էջերի հասցեները ուղարկվում են Google Cloud կամ գործընկեր կազմակերպություններին՝ վերլուծության նպատակով։ Օրինակ, դրանցում կարող է ստուգվել վտանգավոր կայքերի առկայությունը։</translation>
 <translation id="2297722699537546652">B5 (ծրար)</translation>
 <translation id="2300306941146563769">Վերբեռնված չէ</translation>
 <translation id="2310021320168182093">Chou2 (ծրար)</translation>
@@ -1047,6 +1047,7 @@
 <translation id="5308380583665731573">Կապակցվել</translation>
 <translation id="5308689395849655368">Խափանումների մասին հաշվետվությունների ուղարկումն անջատված է:</translation>
 <translation id="5314967030527622926">Բուկլետ պատրաստելու գործիք</translation>
+<translation id="5316812925700871227">Պտտել ժամացույցի սլաքի հակառակ ուղղությամբ</translation>
 <translation id="5317780077021120954">Պահել</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" />/<ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Ընտրեք կոնտակտային տվյալները</translation>
@@ -1070,7 +1071,6 @@
 <translation id="5421136146218899937">Մաքրել դիտարկումների տվյալները…</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> կայքն ուզում է ձեզ ծանուցումներ ուղարկել</translation>
 <translation id="5430298929874300616">Հեռացնել էջանիշը</translation>
-<translation id="5431657950005405462">Ձեր ֆայլը չի գտնվել</translation>
 <translation id="5439770059721715174">Սխեմայի ստուգման սխալ «<ph name="ERROR_PATH" />»-ում` <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Հակառակ հերթականությամբ՝ երեսի կողմով վերև</translation>
 <translation id="5447765697759493033">Այս կայքը չի թարգմանվի</translation>
@@ -1444,7 +1444,6 @@
 <translation id="7083258188081898530">Դարակ 9</translation>
 <translation id="7086090958708083563">Օգտատերը վերբեռնման հայտ է ուղարկել</translation>
 <translation id="7087282848513945231">Կոմսություն</translation>
-<translation id="7090678807593890770">Որոնեք Google-ում «<ph name="LINK" />» հարցումով</translation>
 <translation id="7108338896283013870">Թաքցնել</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> կայքն ուզում է օգտագործել ձեր տեսախցիկը</translation>
 <translation id="7108819624672055576">Թույլատրվել է ընդլայնման կողմից</translation>
@@ -1880,7 +1879,6 @@
 <translation id="893332455753468063">Ավելացրեք անունը</translation>
 <translation id="8943282376843390568">Լայմ</translation>
 <translation id="8957210676456822347">Գրավող կայքէջի նույնականացում</translation>
-<translation id="8958582951173503172">Երբ անվտանգությանը սպառնացող գործողություններ են հայտնաբերվում Chrome Enterprise Connectors-ի կողմից, դրանց մասին համապատասխան տվյալներն ուղարկվում են ձեր ադմինիստրատորին։ Սա կարող է ներառել Chrome-ում ձեր այցելած էջերի հասցեները, ֆայլերի անուններ կամ մետատվյալներ, ինչպես նաև օգտանուններ, որոնք օգտագործում եք ձեր սարքում կամ Chrome-ում հաշիվ մտնելու համար։</translation>
 <translation id="8962950042226115166">Կասկածելի կայք</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Առաջարկներ.<ph name="MARKUP_2" />Համոզվեք, որ ունեք ինտերնետ կապ<ph name="MARKUP_3" />Մի փոքր ուշ վերաբեռնեք այս կայքէջը<ph name="MARKUP_4" />Ստուգեք ձեր մուտքագրած հասցեն<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Պահել քարտը</translation>

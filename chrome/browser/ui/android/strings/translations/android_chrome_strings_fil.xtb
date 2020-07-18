@@ -170,7 +170,6 @@ Mag-tap ng anumang salita para maghanap. Para pinuhin ang iyong paghahanap, pind
 <translation id="2353636109065292463">Sinusuri ang iyong koneksyon sa internet</translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
 <translation id="2369533728426058518">magbukas ng mga tab</translation>
-<translation id="2377295302146152376">Hindi matingnan ng Chrome kung may mga update</translation>
 <translation id="2387895666653383613">Pag-scale ng text</translation>
 <translation id="2394602618534698961">Lalabas dito ang mga file na dina-download mo</translation>
 <translation id="2407481962792080328">Kapag nag-sign in ka sa iyong Google Account, mao-on ang feature na ito</translation>
@@ -259,7 +258,6 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Humingi ng tulong<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Naka-off ang lokasyon; i-on ito sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Maaari mong i-on ang pag-sync anumang oras sa mga setting.</translation>
-<translation id="3059710691562604940">Naka-off ang Ligtas na Pag-browse. Inirerekomenda ng Chrome na i-on ito.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bookmark}one{<ph name="BOOKMARKS_COUNT_MANY" /> bookmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> na bookmark}}</translation>
 <translation id="3089395242580810162">Buksan sa tab na incognito</translation>
 <translation id="3114012059975132928">Player ng video</translation>
@@ -320,7 +318,6 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="3522247891732774234">May available na update. Higit pang mga opsyon</translation>
 <translation id="3524138585025253783">Developer UI</translation>
 <translation id="3527085408025491307">Folder</translation>
-<translation id="3533694711092285624">Walang naka-save na password. Masusuri ng Chrome ang iyong mga password kapag na-save mo ang mga ito.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB ang available</translation>
 <translation id="3549657413697417275">Hanapin sa iyong history</translation>
 <translation id="3557336313807607643">Idagdag sa mga contact</translation>
@@ -360,6 +357,7 @@ Pindutin nang matagal ang anumang salita para maghanap. Para pinuhin ang iyong p
 <translation id="3892148308691398805">Kopyahin ang text</translation>
 <translation id="3894427358181296146">Magdagdag ng folder</translation>
 <translation id="3895926599014793903">Puwersahang i-enable ang zoom</translation>
+<translation id="3909763690984331376">Pag-check sa kaligtasan <ph name="BEGIN_NEW" />Bago<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Hinahanap ang pinakamahusay mula sa web…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Pagsamahin ang aking data</translation>
@@ -570,6 +568,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5581519193887989363">Mapipili mo kung ano ang isi-sync anumang oras sa <ph name="BEGIN_LINK1" />mga setting<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Mag-edit ng address</translation>
 <translation id="5599455543593328020">Incognito mode</translation>
+<translation id="5620163320393916465">Walang naka-save na password</translation>
 <translation id="5620928963363755975">Hanapin ang iyong mga file at page sa Mga Download mula sa button na Higit Pang Opsyon</translation>
 <translation id="5626134646977739690">Pangalan:</translation>
 <translation id="5639724618331995626">Payagan ang lahat ng site</translation>
@@ -581,6 +580,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5686790454216892815">Masyadong mahaba ang pangalan ng file</translation>
 <translation id="5694049548840660018">Bumalik sa home nang walang kahirap-hirap</translation>
 <translation id="569536719314091526">Isalin ang page na ito sa anumang wika mula sa button na Higit pang opsyon</translation>
+<translation id="5696597120588531049">Makakatulong ang Chrome na panatilihin kang ligtas laban sa mga paglabag sa data, hindi ligtas na website, at higit pa</translation>
 <translation id="5697688514913266141">Mase-save ang iyong file sa <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />I-edit<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Lumipat Sa Tab</translation>
 <translation id="572328651809341494">Mga kamakailang tab</translation>
@@ -714,6 +714,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6656545060687952787">Kailangan ng Chrome ng access sa lokasyon upang makapag-scan at makakita ng mga device. <ph name="BEGIN_LINK" />I-update ang mga pahintulot<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Password</translation>
 <translation id="6659594942844771486">Tab</translation>
+<translation id="6663079968236414793">I-link sa text</translation>
 <translation id="666573598175432848">May available na mas bagong bersyon ng Chrome. I-tap ang element na ito para pumunta sa Play Store.</translation>
 <translation id="666731172850799929">Buksan sa <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Notification ng Privacy ng Chrome</translation>

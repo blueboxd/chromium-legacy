@@ -49,7 +49,7 @@ class SerialIoHandlerWin : public SerialIoHandler,
                      DWORD error) override;
 
   void ClearPendingError();
-  void OnDeviceRemoved(const base::string16& device_path);
+  void OnDeviceRemoved(const std::wstring& device_path);
 
   // Context used for overlapped reads.
   std::unique_ptr<base::MessagePumpForIO::IOContext> read_context_;

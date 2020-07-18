@@ -170,7 +170,6 @@ Hae napauttamalla sanaa. Jos haluat tarkentaa hakuasi, valitse enemmän tai väh
 <translation id="2353636109065292463">Internetyhteyttäsi tarkistetaan</translation>
 <translation id="2359808026110333948">Jatka</translation>
 <translation id="2369533728426058518">Avoimet välilehdet</translation>
-<translation id="2377295302146152376">Chrome ei voinut tarkistaa päivityksiä.</translation>
 <translation id="2387895666653383613">Tekstin skaalaus</translation>
 <translation id="2394602618534698961">Lataamasi tiedostot näkyvät tässä</translation>
 <translation id="2407481962792080328">Tämä ominaisuus otetaan käyttöön, kun kirjaudut Google-tilillesi</translation>
@@ -259,7 +258,6 @@ Hae sanaa koskettamalla sitä pitkään. Jos haluat tarkentaa hakuasi, valitse e
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Tutustu ohjeisiin<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Sijainti on pois päältä. Voit laittaa sen päälle <ph name="BEGIN_LINK" />Android-asetuksista<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Voit ottaa synkronoinnin käyttöön milloin tahansa asetuksista.</translation>
-<translation id="3059710691562604940">Selaussuoja on pois päältä. Chrome suosittelee laittamaan sen päälle.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> kirjanmerkki}other{<ph name="BOOKMARKS_COUNT_MANY" /> kirjanmerkkiä}}</translation>
 <translation id="3089395242580810162">Avaa incognito-välilehdellä</translation>
 <translation id="3114012059975132928">Videosoitin</translation>
@@ -320,7 +318,6 @@ Hae sanaa koskettamalla sitä pitkään. Jos haluat tarkentaa hakuasi, valitse e
 <translation id="3522247891732774234">Päivitys on saatavilla. Näytä lisäasetukset.</translation>
 <translation id="3524138585025253783">Kehittäjän UI</translation>
 <translation id="3527085408025491307">Kansio</translation>
-<translation id="3533694711092285624">Ei tallennettuja salasanoja. Chrome voi tarkistaa salasanasi, kun tallennat niitä.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> kt käytettävissä</translation>
 <translation id="3549657413697417275">Haku omasta historiasta</translation>
 <translation id="3557336313807607643">Lisää yhteystietoihin</translation>
@@ -360,6 +357,7 @@ Hae sanaa koskettamalla sitä pitkään. Jos haluat tarkentaa hakuasi, valitse e
 <translation id="3892148308691398805">Kopioi teksti</translation>
 <translation id="3894427358181296146">Lisää kansio</translation>
 <translation id="3895926599014793903">Ota zoomaus käyttöön</translation>
+<translation id="3909763690984331376">Turvatarkistus <ph name="BEGIN_NEW" />Uusi<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Haetaan verkon parasta sisältöä…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Yhdistä tiedot</translation>
@@ -570,6 +568,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5581519193887989363">Voit valita synkronoitavan sisällön <ph name="BEGIN_LINK1" />asetuksissa<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Osoitteen muokkaus</translation>
 <translation id="5599455543593328020">Incognito-tila</translation>
+<translation id="5620163320393916465">Ei tallennettuja salasanoja</translation>
 <translation id="5620928963363755975">Valitse Lisäasetukset ja sitten Lataukset, niin löydät tiedostosi ja sivusi.</translation>
 <translation id="5626134646977739690">Nimi:</translation>
 <translation id="5639724618331995626">Salli kaikki sivustot</translation>
@@ -581,6 +580,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5686790454216892815">Tiedoston nimi on liian pitkä</translation>
 <translation id="5694049548840660018">Palaa etusivulle helposti</translation>
 <translation id="569536719314091526">Käännä sivu mille tahansa kielelle Lisävalinnat-painikkeella</translation>
+<translation id="5696597120588531049">Chrome voi auttaa suojaamaan sinua esim. tietosuojaloukkauksilta ja riskialttiilta verkkosivustoilta</translation>
 <translation id="5697688514913266141">Tiedostosi tallennetaan tänne: <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Muuta<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Vaihda välilehdelle</translation>
 <translation id="572328651809341494">Hiljattain suljetut välilehdet</translation>
@@ -714,6 +714,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6656545060687952787">Chrome tarvitsee sijaintitietojen käyttöoikeuden hakeakseen laitteita. <ph name="BEGIN_LINK" />Päivitä käyttöoikeudet<ph name="END_LINK" />.</translation>
 <translation id="6657585470893396449">Salasana</translation>
 <translation id="6659594942844771486">Välilehti</translation>
+<translation id="6663079968236414793">Linkitä tekstiin</translation>
 <translation id="666573598175432848">Uusi Chrome-versio on saatavilla. Avaa Play Kauppa napauttamalla tätä elementtiä.</translation>
 <translation id="666731172850799929">Avaa sovelluksessa <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chromen tietosuojailmoitus</translation>

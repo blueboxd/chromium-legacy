@@ -1440,11 +1440,6 @@
 <translation id="3184161739683646075">DNS-over-HTTPS モードを管理する</translation>
 <translation id="3185009703220253572">バージョン <ph name="SINCE_VERSION" /> 以降</translation>
 <translation id="3187220842205194486">Android アプリは企業キーにアクセスできません。このポリシーは Android アプリには適用されません。</translation>
-<translation id="3190338425427039045">このポリシーを有効に設定するか未設定のままにした場合、ユーザーのデバイスでサポートされているすべての音声出力が許可されます。
-
-      このポリシーを無効に設定した場合、ユーザーがログインしている間の音声出力は許可されません。
-
-      注: このポリシーは、内蔵マイクだけでなく、音声ユーザー補助機能などのすべての音声入力に適用されます。スクリーン リーダーを必要とするユーザーに対しては、このポリシーをオンにしないでください。</translation>
 <translation id="3196585866522778760">このポリシーはサポートが終了しており、<ph name="PRODUCT_OS_NAME" /> バージョン 85 で削除されます。代わりに <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> を使用してください。
 
           バッテリーでの使用中、ユーザー入力が行われなくなってからアイドル時の操作を行うまでの時間を指定します。
@@ -1475,9 +1470,6 @@
       設定したウェブサイトは、<ph name="PRODUCT_NAME" /> ではなく別のブラウザで自動的に表示されるようになります。</translation>
 <translation id="3264793472749429012">デフォルトの検索プロバイダのエンコード</translation>
 <translation id="3273221114520206906">デフォルトのJavaScript 設定</translation>
-<translation id="328108936611091281"><ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> がオンの場合に、<ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POLICY_NAME" /> では、デフォルトの検索に使用する検索エンジンの URL を指定できます。この URL には <ph name="SEARCH_TERM_MARKER" /> という文字列を含めます。この文字列は、クエリの送信時にユーザーが指定した検索キーワードに置き換えられます。
-
-      Google の検索 URL は次のように指定できます。<ph name="GOOGLE_SEARCH_URL" /></translation>
 <translation id="3284094172359247914">WebUSB API の使用を管理する</translation>
 <translation id="3288595667065905535">リリース チャンネル</translation>
 <translation id="3292147213643666827"><ph name="CLOUD_PRINT_NAME" /> と、パソコンに接続している従来のプリンタとの間で、<ph name="PRODUCT_NAME" /> がプロキシとして動作できるようにします。
@@ -1494,9 +1486,6 @@
       このポリシーは Chrome 88 で削除されます。
 
       詳しくは、https://www.chromestatus.com/feature/4664843055398912 をご覧ください。</translation>
-<translation id="3303653927512453822">すべての Cookie を以前の <ph name="ATTRIBUTE_SAMESITE_NAME" /> 動作に戻します。以前の動作に戻すと、<ph name="ATTRIBUTE_SAMESITE_NAME" /> 属性のない Cookie は「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」が指定されたものとして扱われます。また、「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」の Cookie に「<ph name="ATTRIBUTE_SECURE_NAME" />」属性は必須ではなくなります。詳細については https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies をご覧ください。
-
-          このポリシーを設定した場合、<ph name="ATTRIBUTE_SAMESITE_NAME" /> 属性のない Cookie のデフォルトの <ph name="ATTRIBUTE_SAMESITE_NAME" /> 動作は、ユーザーが個人設定で <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 機能をどのように設定しているか（公開テストで設定、あるいは <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> フラグで有効または無効に設定）に応じて決まります。</translation>
 <translation id="3303911765031636277">OnFileAttached Chrome Enterprise コネクタの設定ポリシー</translation>
 <translation id="3304662785258434098">特定のサイトで混合コンテンツを許可する例外をユーザーが追加できるかどうかを設定できます。
 
@@ -3046,17 +3035,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       このポリシーを未設定のままにした場合、macOS、Android（プライベート DNS も VPN も有効にしていない場合）、Chrome OS では組み込みの DNS クライアントがデフォルトで有効になります。ただし、ユーザーは chrome://flags を編集するかコマンドライン フラグを指定することで、組み込みの DNS クライアントを使用するかどうかを変更できます。</translation>
 <translation id="5630352020869108293">最後のセッションを復元する</translation>
 <translation id="5633871703004128675">「テキストカーソルによるハイライト表示」のユーザー補助機能を有効にする</translation>
-<translation id="5643906875497889108">インストールを許可するアプリや拡張機能のタイプを指定し、ランタイム アクセスを制限します。
-
-          この設定では、<ph name="PRODUCT_NAME" /> にインストールできる拡張機能やアプリのタイプと、その通信先のホストをホワイトリスト登録します。値は文字列のリストで、各項目は「extension」、「theme」、「user_script」、「hosted_app」、「legacy_packaged_app」、「platform_app」のいずれかとなります。これらのタイプについて詳しくは、<ph name="PRODUCT_NAME" /> 拡張機能のドキュメントをご覧ください。
-
-          このポリシーは、ExtensionInstallForcelist で指定された、強制インストールされる拡張機能やアプリにも影響します。
-
-          この設定を指定した場合、リストにないタイプの拡張機能やアプリはインストールされません。
-
-          この設定が未指定の場合、インストールできる拡張機能やアプリのタイプに関して制限は適用されません。
-
-          複数の拡張機能 ID をカンマで区切って指定している 75 より前のバージョンについてはサポートされておらず、スキップされます。ポリシーのその他の部分については、引き続き適用されます。</translation>
 <translation id="5645779841392247734">これらのサイトの Cookie を許可する</translation>
 <translation id="5646234199535103501">OnBulkDataEntry Chrome Enterprise コネクタの設定ポリシー</translation>
 <translation id="5656177735561364047">共有クリップボード機能を有効にする</translation>
@@ -3632,15 +3610,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       このポリシーは、高度な保護機能プログラムに登録しているユーザーに対し、不正なソフトウェアがないかスキャンする目的で、ダウンロードしたコンテンツを Google に送信することを許可するかどうかを制御します。True に設定するか未設定のままにした場合、高度な保護機能プログラムに登録しているユーザーには、詳細なスキャンのためにファイルを Google に送信するかを確認するメッセージが表示されます。ユーザーが [スキャン] を選択した場合、ダウンロードしたコンテンツは Google に送信されます。False に設定した場合、ユーザーにメッセージは表示されず、ダウンロードしたコンテンツは Google に送信されません。</translation>
 <translation id="670597451099978576">ログイン画面で特定のベンダー ID と製品 ID が指定されている USB デバイスへの接続を自動的にこれらのサイトに許可します。</translation>
-<translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> では、拡張機能の更新やインストールを安全に行うことができます。ただし、Chrome ウェブストア以外でホストされている一部の拡張機能のコンテンツは、安全でない署名アルゴリズムやハッシュ アルゴリズム（SHA1 など）のみによって保護されていることがあります。このポリシーが無効になっている場合、Chrome では、そうした拡張機能のフレッシュ インストールや更新は（その拡張機能のデベロッパーがアルゴリズムを強化したバージョンを再作成するまで）許可されません。このポリシーが有効になっている場合は、そうした拡張機能のインストールや更新が許可されます。
-
-          このポリシーが未設定の場合、デフォルトの動作は有効な場合と同じです。
-          ただし、<ph name="PRODUCT_NAME" /> 76 以降では、未設定の場合のデフォルトの動作は無効な場合と同じになります。
-
-          さらに、<ph name="PRODUCT_NAME" /> 78 以降では、このポリシーは無視され、無効として扱われます。</translation>
-<translation id="6724116921710627162"><ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> がオンの場合に、<ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" /> では、検索エンジンが新しいタブページを提供するために使用する URL を指定できます。
-
-      <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" /> を未設定のままにした場合、新しいタブページは提供されません。</translation>
 <translation id="672496466524161417">このポリシーを [なし] に設定するか未設定のままにした場合は、ユーザーが証明書を管理できます。このポリシーを 2 に設定した場合、ユーザーは証明書を管理できず、表示のみ可能となります。このポリシーを 1 に設定した場合、ユーザーはユーザー証明書を管理できますが、デバイス全体の証明書を管理することはできません。</translation>
 <translation id="6731757988219967594">アダルト コンテンツに基づいて最上位サイト（埋め込み iframe 以外）を除外する</translation>
 <translation id="6734521799274931721">Chrome OS でネットワーク ファイル共有を使用できるかどうかの設定</translation>
@@ -4174,11 +4143,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       このポリシーを設定しないか、0 に設定した場合、指定された URL にアクセスすると、すぐに代替ブラウザが開きます。
 
       このポリシーに数字を設定した場合、その数字のミリ秒間メッセージが表示され、その後で代替ブラウザが開きます。</translation>
-<translation id="7586477707097444774">ここで指定したパターンに一致するドメインに設定されている Cookie を、以前の <ph name="ATTRIBUTE_SAMESITE_NAME" /> 動作に戻します。以前の動作に戻すと、<ph name="ATTRIBUTE_SAMESITE_NAME" /> 属性のない Cookie は「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」が指定されたものとして扱われます。また、「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」の Cookie に「<ph name="ATTRIBUTE_SECURE_NAME" />」属性は必須ではなくなります。詳細については https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies をご覧ください。
-
-          ここで指定したパターンに一致しないドメインの Cookie（またはこのポリシーが未設定の場合はすべての Cookie）には、グローバルなデフォルト値（<ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
-
-          ここで指定するパターンは URL ではなくドメインとして扱われるため、スキームやポートは指定しないでください。</translation>
 <translation id="7590188804371204512">外部拡張機能のインストールを管理します。
 
       この設定を有効にした場合、外部拡張機能のインストールはブロックされます。
@@ -4607,9 +4571,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       注: 自動再生は <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> ポリシーで明示的に指定されているドメインにのみ適用されます。すべてのサイトで自動再生を有効にするには、このリストに http://* と https://* を追加します。</translation>
 <translation id="8274603902181597201">ユーザーの ecryptfs ホーム ディレクトリのデータをワイプして、ext4 で暗号化された新規のホーム ディレクトリから開始する。</translation>
 <translation id="8285435910062771358">全画面拡大鏡を有効にする</translation>
-<translation id="8286955010912199104">このポリシーを True に設定した場合、ページにアンロード中のポップアップ表示を許可します。
-
-      このポリシーを False に設定するか未設定のままにした場合、ページのアンロード中にポップアップは表示されません。</translation>
 <translation id="8288199156259560552">Android Google 位置情報サービスを有効にする</translation>
 <translation id="8290875622178450531">「音声入力」のユーザー補助機能を有効にします。
 
@@ -4814,9 +4775,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       "1412.24.34": この指定バージョンにのみ更新
 
       警告: バージョンの制限を設定することはおすすめしません。設定した場合、ユーザーがソフトウェアのアップデートや重要なセキュリティ修正を取得できなくなる可能性があります。つまり、更新対象を特定のバージョンのプレフィックスに制限すると、ユーザーが危険にさらされる恐れがあります。</translation>
-<translation id="8516298370361397304"><ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> がオンの場合に、<ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POLICY_NAME" /> では、検索候補を表示する検索エンジンの URL を指定できます。この URL には <ph name="SEARCH_TERM_MARKER" /> という文字列を含めます。この文字列は、クエリの送信時にユーザーが指定した検索キーワードに置き換えられます。
-
-      Google の検索 URL は次のように指定できます。<ph name="GOOGLE_SUGGEST_SEARCH_URL" /></translation>
 <translation id="8519264904050090490">管理対象ユーザーの手動による例外 URL</translation>
 <translation id="8519516251436131647">ユーザー補助機能のショートカットを有効にします。
 
@@ -5098,14 +5056,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       このポリシーが false に設定されている場合、同期の同意メッセージは表示されません。
       このポリシーが true に設定されているか未設定の場合は、同期の同意メッセージを表示できます。</translation>
 <translation id="8943934315109955032">機密データ保護ルールの違反をチェックしない</translation>
-<translation id="894510252300143386"><ph name="PRODUCT_NAME" /> の拡張機能の管理設定を指定します。
-
-          このポリシーでは、拡張機能に関する既存のポリシーで管理されている設定など、複数の設定を管理します。このポリシーと以前のポリシーの両方が設定されている場合は、このポリシーが優先されます。
-
-          このポリシーは、拡張機能 ID または更新 URL をそれぞれの設定にマッピングします。拡張機能 ID を使用する場合、設定は指定した拡張機能にのみ適用されます。また、「<ph name="DEFAULT_SCOPE" />」という特別な ID でデフォルトの設定を指定できます。デフォルトの設定は、このポリシーでカスタムの設定が指定されていないすべての拡張機能に適用されます。更新 URL を使用する場合、設定はこの拡張機能のマニフェストで指定されている更新 URL を使用するすべての拡張機能に適用されます（<ph name="LINK_TO_EXTENSION_DOC1" />を参照）。
-
-          <ph name="MS_AD_NAME" /> ドメインに登録されていない Windows インスタンスの場合、強制インストールできるのは Chrome ウェブストアに公開されているアプリと拡張機能のみとなります。
-          </translation>
 <translation id="8947415621777543415">デバイスの位置をレポート</translation>
 <translation id="8949552982791839607">無効の場合、危険性のあるコマンドライン フラグ付きで Chrome が起動したときにセキュリティ警告は表示されません。
 

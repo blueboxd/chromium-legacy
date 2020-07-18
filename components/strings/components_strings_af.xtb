@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Prent wat jy gekopieer het</translation>
 <translation id="1150979032973867961">Hierdie bediener kon nie bewys dat dit <ph name="DOMAIN" /> is nie; sy sekuriteitsertifikaat word nie deur jou rekenaar se bedryfstelsel vertrou nie. Dit kan veroorsaak word deur 'n wanopstelling of 'n aanvaller wat jou verbinding onderskep.</translation>
 <translation id="1151972924205500581">Wagwoord word vereis</translation>
-<translation id="1152921474424827756">Gaan by 'n <ph name="BEGIN_LINK" />gekaste kopie<ph name="END_LINK" /> van <ph name="URL" /> in</translation>
 <translation id="1156303062776767266">Jy bekyk tans 'n plaaslike of gedeelde lêer</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> het die verbinding onverwags toegemaak.</translation>
 <translation id="115926840831309955">Gaan jou CVC na en probeer weer, of dateer die vervaldatum op</translation>
 <translation id="1161325031994447685">Weer aan Wi-Fi koppel</translation>
 <translation id="1165039591588034296">Fout</translation>
+<translation id="1165174597379888365">Bladsy is besoek</translation>
 <translation id="1175364870820465910">Druk uit …</translation>
 <translation id="1175875016430184367">Tripelkram regs</translation>
 <translation id="1178581264944972037">Laat wag</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">Advertensies</translation>
 <translation id="1919367280705858090">Kry hulp met 'n spesifieke foutboodskap</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Geen}=1{1 werf}other{# werwe}}</translation>
-<translation id="194030505837763158">Gaan na <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Jy kan toegang tot jou organisasie se rekening verloor of identiteitdiefstal ervaar. Chromium beveel aan dat jy jou wagwoord nou verander.</translation>
 <translation id="1947454675006758438">Kram regs bo</translation>
 <translation id="1959001866257244765">Help om sekuriteit op die web vir almal beter te maak deur <ph name="BEGIN_WHITEPAPER_LINK" />URL'e van sommige bladsye wat jy besoek, beperkte stelselinligting en sommige bladsyinhoud<ph name="END_WHITEPAPER_LINK" /> na Google toe te stuur. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Privaatheidsbeleid<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,9 +266,9 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="2001146170449793414">{COUNT,plural, =1{en nog 1}other{en nog #}}</translation>
 <translation id="2003709556000175978">Stel jou wagwoord nou terug</translation>
 <translation id="2003775180883135320">Vierpons bo</translation>
+<translation id="202072848677994234">Hierdie vorm word oor 'n onveilige verbinding ingedien. Outovul is gedeaktiveer.</translation>
 <translation id="2025115093177348061">Aangevulde realiteit</translation>
 <translation id="2025186561304664664">Instaanbediener is gestel om outomaties op te stel.</translation>
-<translation id="2030481566774242610">Het jy bedoel <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Die instaanbediener en brandmuur nagaan<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Laai 7</translation>
 <translation id="204357726431741734">Meld aan om wagwoorde te gebruik wat in jou Google-rekening gestoor is</translation>
@@ -335,6 +334,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="2289385804009217824">Knip</translation>
 <translation id="2292556288342944218">Jou internettoegang is geblokkeer</translation>
 <translation id="2293443924986248631">Wanneer dit aan is, kan werwe nie webkoekies gebruik wat jou oral op die web naspoor nie. Kenmerke op sommige werwe kan breek.</translation>
+<translation id="2295290966866883927">URL'e van bladsye wat jy besoek, word na Google Cloud of derde partye vir ontleding gestuur. Hulle kan byvoorbeeld geskandeer word om onveilige webwerwe te bespeur.</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2300306941146563769">Nie opgelaai nie</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
@@ -1047,6 +1047,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="5308380583665731573">Koppel</translation>
 <translation id="5308689395849655368">Omvalverslaggewing is gedeaktiveer.</translation>
 <translation id="5314967030527622926">Brosjuremaker</translation>
+<translation id="5316812925700871227">Draai antikloksgewys</translation>
 <translation id="5317780077021120954">Berg</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> uit <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Kies kontakinligting</translation>
@@ -1070,7 +1071,6 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="5421136146218899937">Vee blaaidata uit …</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> wil vir jou kennisgewings stuur</translation>
 <translation id="5430298929874300616">Verwyder boekmerk</translation>
-<translation id="5431657950005405462">Jou lêer kon nie gevind word nie</translation>
 <translation id="5439770059721715174">Skema-stawingsfout by "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Omgekeerde volgorde, voorkant na bo</translation>
 <translation id="5447765697759493033">Hierdie werf sal nie vertaal word nie</translation>
@@ -1444,7 +1444,6 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="7083258188081898530">Laai 9</translation>
 <translation id="7086090958708083563">Oplaai deur gebruiker versoek</translation>
 <translation id="7087282848513945231">Land</translation>
-<translation id="7090678807593890770">Deursoek Google vir <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Versteek</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> wil jou kamera gebruik</translation>
 <translation id="7108819624672055576">Toegelaat deur 'n uitbreiding</translation>
@@ -1880,7 +1879,6 @@ Bykomende besonderhede:
 <translation id="893332455753468063">Voeg naam by</translation>
 <translation id="8943282376843390568">Lemmetjiegroen</translation>
 <translation id="8957210676456822347">Gevangeportaal-magtiging</translation>
-<translation id="8958582951173503172">Wanneer sekuriteitsgevalle deur Chrome Enterprise Connectors gevlag word, word relevante data oor die geval na jou administrateur gestuur. Dit kan insluit: URL'e van bladsye wat jy in Chrome besoek, lêername of metadata en die gebruikernaam wat jy gebruik om op jou toestel en by Chrome aan te meld.</translation>
 <translation id="8962950042226115166">Verdagte werf</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Voorstelle:<ph name="MARKUP_2" />Maak seker dat jy 'n dataverbinding het<ph name="MARKUP_3" />Herlaai hierdie webbladsy later<ph name="MARKUP_4" />Gaan die adres na wat jy ingevoer het<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Stoor kaart</translation>

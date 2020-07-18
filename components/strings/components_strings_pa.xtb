@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">ਤੁਹਾਡੇ ਵੱਲੋਂ ਕਾਪੀ ਕੀਤਾ ਚਿੱਤਰ</translation>
 <translation id="1150979032973867961">ਇਹ ਸਰਵਰ ਇਹ ਸਾਬਤ ਨਹੀਂ ਕਰ ਸਕਿਆ ਕਿ ਇਹ <ph name="DOMAIN" /> ਹੈ; ਇਸਦਾ ਸੁਰੱਖਿਆ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਤੁਹਾਡੇ ਕੰਪਿਊਟਰ ਦੇ ਓਪਰੇਟਿੰਗ ਸਿਸਟਮ ਵੱਲੋਂ ਭਰੋਸੇਯੋਗ ਨਹੀਂ ਹੈ। ਇਹ ਇੱਕ ਗਲਤ ਸੰਰੂਪਣ ਕਾਰਨ ਹੋ ਸਕਦਾ ਹੈ ਜਾਂ ਕੋਈ ਹਮਲਾਵਰ ਤੁਹਾਡੇ ਕਨੈਕਸ਼ਨ ਨੂੰ ਰਾਹ ਵਿੱਚ ਰੋਕ ਰਿਹਾ ਹੈ।</translation>
 <translation id="1151972924205500581">ਪਾਸਵਰਡ ਲੋੜੀਂਦਾ</translation>
-<translation id="1152921474424827756"><ph name="URL" /> ਦੀ ਇੱਕ <ph name="BEGIN_LINK" />ਕੈਸ਼ੇ ਕੀਤੀ ਕਾਪੀ<ph name="END_LINK" /> ਤੱਕ ਪਹੁੰਚ ਪ੍ਰਾਪਤ ਕਰੋ</translation>
 <translation id="1156303062776767266">ਤੁਸੀਂ ਸਥਾਨਕ ਜਾਂ ਸਾਂਝੀ ਕੀਤੀ ਗਈ ਫ਼ਾਈਲ ਦੇਖ ਰਹੇ ਹੋ</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ਨੇ ਅਚਾਨਕ ਕਨੈਕਸ਼ਨ ਬੰਦ ਕੀਤਾ।</translation>
 <translation id="115926840831309955">ਆਪਣੇ CVC ਦੀ ਜਾਂਚ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ ਜਾਂ ਮਿਆਦ ਸਮਾਪਤੀ ਦੀ ਤਾਰੀਖ ਅੱਪਡੇਟ ਕਰੋ</translation>
 <translation id="1161325031994447685">ਵਾਈ-ਫਾਈ ਨਾਲ ਦੁਬਾਰਾ ਕਨੈਕਟ ਕਰੋ</translation>
 <translation id="1165039591588034296">ਗੜਬੜ</translation>
+<translation id="1165174597379888365">ਪੰਨਾ ਦੇਖਿਆ ਗਿਆ</translation>
 <translation id="1175364870820465910">&amp;ਪ੍ਰਿੰਟ...</translation>
 <translation id="1175875016430184367">ਸੱਜੇ ਪਾਸੇ ਤਿੰਨ ਪਿੰਨਾਂ</translation>
 <translation id="1178581264944972037">ਰੋਕੋ</translation>
@@ -243,7 +243,6 @@
 <translation id="1919345977826869612">ਵਿਗਿਆਪਨ</translation>
 <translation id="1919367280705858090">ਇੱਕ ਖਾਸ ਗੜਬੜ-ਸੁਨੇਹਾ ਸੰਬੰਧੀ ਮਦਦ ਪ੍ਰਾਪਤ ਕਰੋ</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{ਕੋਈ ਨਹੀਂ}=1{1 ਸਾਈਟ}other{# ਸਾਈਟਾਂ}}</translation>
-<translation id="194030505837763158"><ph name="LINK" /> ਤੇ ਜਾਓ</translation>
 <translation id="1945968466830820669">ਤੁਸੀਂ ਆਪਣੀ ਸੰਸਥਾ ਦੇ ਖਾਤੇ 'ਤੇ ਪਹੁੰਚ ਗੁਆ ਸਕਦੇ ਹੋ ਜਾਂ ਤੁਹਾਡੀ ਪਛਾਣ ਚੋਰੀ ਹੋ ਸਕਦੀ ਹੈ। Chromium ਵੱਲੋਂ ਹੁਣੇ ਤੁਹਾਡਾ ਪਾਸਵਰਡ ਬਦਲਣ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।</translation>
 <translation id="1947454675006758438">ਉੱਪਰ ਸੱਜੇ ਪਾਸੇ ਪਿੰਨ</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />ਤੁਹਾਡੇ ਵੱਲੋਂ ਦੇਖੇ ਕੁਝ ਪੰਨਿਆਂ ਦੇ URL, ਸੀਮਤ ਸਿਸਟਮ ਜਾਣਕਾਰੀ ਅਤੇ ਕੁਝ ਪੰਨਾ ਸਮੱਗਰੀ<ph name="END_WHITEPAPER_LINK" /> Google ਨੂੰ ਭੇਜ ਕੇ ਵੈੱਬ 'ਤੇ ਸੁਰੱਖਿਆ ਨੂੰ ਹਰੇਕ ਲਈ ਬਿਹਤਰ ਬਣਾਉਣ ਵਿੱਚ ਮਦਦ ਕਰੋ। <ph name="BEGIN_PRIVACY_PAGE_LINK" />ਪਰਦੇਦਾਰੀ ਨੀਤੀ<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -263,9 +262,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{ਅਤੇ 1 ਹੋਰ}one{ਅਤੇ # ਹੋਰ}other{ਅਤੇ # ਹੋਰ}}</translation>
 <translation id="2003709556000175978">ਹੁਣੇ ਆਪਣਾ ਪਾਸਵਰਡ ਰੀਸੈੱਟ ਕਰੋ</translation>
 <translation id="2003775180883135320">ਉੱਪਰ ਚਾਰ ਮੋਰੀਆਂ</translation>
+<translation id="202072848677994234">ਇਹ ਫ਼ਾਰਮ ਕਿਸੇ ਅਸੁਰੱਖਿਅਤ ਕਨੈਕਸ਼ਨ 'ਤੇ ਸਪੁਰਦ ਕੀਤਾ ਗਿਆ ਹੈ। ਸਵੈਚਲਿਤ ਭਰਨਾ ਬੰਦ ਹੈ।</translation>
 <translation id="2025115093177348061">ਆਗਮੈਂਟਿਡ ਰਿਐਲਿਟੀ</translation>
 <translation id="2025186561304664664">ਪ੍ਰੌਕਸੀ ਨੂੰ ਸਵੈ ਸੰਰੂਪਿਤ 'ਤੇ ਸੈਟ ਕੀਤਾ ਗਿਆ ਹੈ।</translation>
-<translation id="2030481566774242610">ਕੀ ਤੁਹਾਡਾ ਮਤਲਬ <ph name="LINK" /> ਤੋਂ ਸੀ?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />ਪ੍ਰੌਕਸੀ ਅਤੇ ਫ਼ਾਇਰਵਾਲ ਦੀ ਜਾਂਚ ਕਰੋ<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">ਟ੍ਰੇਅ 7</translation>
 <translation id="204357726431741734">ਆਪਣੇ Google ਖਾਤੇ ਵਿੱਚ ਰੱਖਿਅਤ ਕੀਤੇ ਪਾਸਵਰਡ ਵਰਤਣ ਲਈ ਸਾਈਨ-ਇਨ ਕਰੋ</translation>
@@ -331,6 +330,7 @@
 <translation id="2289385804009217824">ਕਟਾਈ</translation>
 <translation id="2292556288342944218">ਤੁਹਾਡੀ ਇੰਟਰਨੈੱਟ ਪਹੁੰਚ ਨੂੰ ਬਲੌਕ ਕੀਤਾ ਗਿਆ ਹੈ</translation>
 <translation id="2293443924986248631">ਚਾਲੂ ਹੋਣ 'ਤੇ, ਸਾਈਟਾਂ ਉਹਨਾਂ ਕੁਕੀਜ਼ ਦੀ ਵਰਤੋਂ ਨਹੀਂ ਕਰ ਸਕਦੀਆਂ ਜੋ ਵੈੱਬ 'ਤੇ ਤੁਹਾਨੂੰ ਟਰੈਕ ਕਰਦੀਆਂ ਹਨ। ਸ਼ਾਇਦ ਕੁਝ ਸਾਈਟਾਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਠੀਕ ਤਰੀਕੇ ਨਾਲ ਕੰਮ ਨਾ ਕਰਨ।</translation>
+<translation id="2295290966866883927">ਤੁਹਾਡੇ ਵੱਲੋਂ ਦੇਖੇ ਗਏ ਪੰਨਿਆਂ ਦੇ URL ਨੂੰ ਵਿਸ਼ਲੇਸ਼ਣ ਲਈ Google ਕਲਾਊਡ ਜਾਂ ਤੀਜੀਆਂ ਧਿਰਾਂ ਨੂੰ ਭੇਜਿਆ ਜਾਂਦਾ ਹੈ। ਉਦਾਹਰਨ ਲਈ, ਅਸੁਰੱਖਿਅਤ ਵੈੱਬਸਾਈਟਾਂ ਦਾ ਪਤਾ ਲਗਾਉਣ ਲਈ ਉਹਨਾਂ ਨੂੰ ਸਕੈਨ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।</translation>
 <translation id="2297722699537546652">B5 (ਲਿਫ਼ਾਫ਼ਾ)</translation>
 <translation id="2300306941146563769">ਅੱਪਲੋਡ ਨਹੀਂ ਕੀਤੀ ਗਈ</translation>
 <translation id="2310021320168182093">Chou2 (ਲਿਫ਼ਾਫ਼ਾ)</translation>
@@ -1034,6 +1034,7 @@
 <translation id="5308380583665731573">ਕਨੈਕਟ ਕਰੋ</translation>
 <translation id="5308689395849655368">ਕ੍ਰੈਸ਼ ਰਿਪੋਰਟਿੰਗ ਬੰਦ ਹੈ।</translation>
 <translation id="5314967030527622926">ਬੁੱਕਲੈੱਟ ਮੇਕਰ</translation>
+<translation id="5316812925700871227">ਕਾਉਂਟਰਕਲੌਕਵਾਈਜ ਰੋਟੇਟ ਕਰੋ</translation>
 <translation id="5317780077021120954">ਰੱਖਿਅਤ ਕਰੋ</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="NUM_MATCHES" /> ਵਿੱਚੋਂ <ph name="MATCH_POSITION" /></translation>
 <translation id="5324080437450482387">ਸੰਪਰਕ ਜਾਣਕਾਰੀ ਚੁਣੋ</translation>
@@ -1057,7 +1058,6 @@
 <translation id="5421136146218899937">ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟਾ ਹਟਾਓ</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> ਤੁਹਾਨੂੰ ਸੂਚਨਾਵਾਂ ਭੇਜਣਾ ਚਾਹੁੰਦੀ ਹੈ।</translation>
 <translation id="5430298929874300616">ਬੁੱਕਮਾਰਕ ਹਟਾਓ</translation>
-<translation id="5431657950005405462">ਤੁਹਾਡੀ ਫ਼ਾਈਲ ਨਹੀਂ ਮਿਲੀ ਸੀ</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" ਤੇ Schema ਪ੍ਰਮਾਣੀਕਰਨ ਗੜਬੜ : <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">ਉਲਟੇ ਕ੍ਰਮ ਵਿੱਚ ਪਾਸਾ ਉੱਪਰ ਕੀਤੇ ਹੋਏ</translation>
 <translation id="5447765697759493033">ਇਸ ਸਾਈਟ ਦਾ ਅਨੁਵਾਦ ਨਹੀਂ ਕੀਤਾ ਜਾਵੇਗਾ</translation>
@@ -1430,7 +1430,6 @@
 <translation id="7083258188081898530">ਟ੍ਰੇਅ 9</translation>
 <translation id="7086090958708083563">ਵਰਤੋਂਕਾਰ ਵੱਲੋਂ ਅੱਪਲੋਡ ਦੀ ਬੇਨਤੀ ਕੀਤੀ ਗਈ</translation>
 <translation id="7087282848513945231">ਕਾਉਂਟੀ</translation>
-<translation id="7090678807593890770"><ph name="LINK" /> ਨੂੰ Google 'ਤੇ ਖੋਜੋ</translation>
 <translation id="7108338896283013870">ਲੁਕਾਓ</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> ਦੀ ਤੁਹਾਡਾ ਕੈਮਰਾ ਵਰਤਣ ਦੀ ਇੱਛਾ ਹੈ</translation>
 <translation id="7108819624672055576">ਕਿਸੇ ਐਕਸਟੈਂਸ਼ਨ ਵੱਲੋਂ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਗਈ</translation>
@@ -1866,7 +1865,6 @@
 <translation id="893332455753468063">ਨਾਮ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="8943282376843390568">ਪੀਲਾ-ਹਰਾ</translation>
 <translation id="8957210676456822347">ਕੈਪਟਿਵ ਪੋਰਟਲ ਇਖਤਿਆਰੀਕਰਨ</translation>
-<translation id="8958582951173503172">Chrome Enterprise Connectors ਵੱਲੋਂ ਸੁਰੱਖਿਆ ਇਵੈਂਟਾਂ ਨੂੰ ਫਲੈਗ ਕੀਤੇ ਜਾਣ 'ਤੇ ਇਵੈਂਟ ਸੰਬੰਧੀ ਢੁਕਵਾਂ ਡਾਟਾ ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਭੇਜਿਆ ਜਾਂਦਾ ਹੈ। ਇਸ ਵਿੱਚ ਤੁਹਾਡੇ ਵੱਲੋਂ Chrome 'ਚ ਦੇਖੇ ਜਾਂਦੇ ਪੰਨਿਆਂ ਦੇ URL, ਫ਼ਾਈਲਾਂ ਦੇ ਨਾਮ ਜਾਂ ਮੈਟਾਡਾਟਾ, ਅਤੇ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਅਤੇ Chrome ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕਰਨ ਲਈ ਤੁਹਾਡੇ ਵੱਲੋਂ ਵਰਤਿਆ ਜਾਣ ਵਾਲਾ ਵਰਤੋਂਕਾਰ ਨਾਮ ਸ਼ਾਮਲ ਹੋ ਸਕਦਾ ਹੈ।</translation>
 <translation id="8962950042226115166">ਸ਼ੱਕੀ ਸਾਈਟ</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />ਸੁਝਾਅ:<ph name="MARKUP_2" />ਯਕੀਨੀ ਬਣਾਓ ਕਿ ਤੁਹਾਡੇ ਕੋਲ ਇੱਕ ਡਾਟਾ ਕਨੈਕਸ਼ਨ ਹੈ<ph name="MARKUP_3" />ਬਾਅਦ ਵਿੱਚ ਇਹ ਵੈਬਸਫ਼ਾ ਰੀਲੋਡ ਕਰੋ<ph name="MARKUP_4" />ਉਸ ਪਤੇ ਦੀ ਜਾਂਚ ਕਰੋ, ਜੋ ਤੁਸੀਂ ਦਰਜ ਕੀਤਾ ਸੀ<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">ਕਾਰਡ ਰੱਖਿਅਤ ਕਰੋ</translation>

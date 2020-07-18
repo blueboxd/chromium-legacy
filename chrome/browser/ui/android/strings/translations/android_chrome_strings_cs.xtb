@@ -170,7 +170,6 @@ Vyhledávání spustíte klepnutím na libovolné slovo. Chcete-li vyhledáván�
 <translation id="2353636109065292463">Kontrola připojení k internetu</translation>
 <translation id="2359808026110333948">Pokračovat</translation>
 <translation id="2369533728426058518">otevřené karty</translation>
-<translation id="2377295302146152376">Chrome nemohl vyhledat aktualizace</translation>
 <translation id="2387895666653383613">Zvětšení/zmenšení textu</translation>
 <translation id="2394602618534698961">Zde se zobrazují stažené soubory</translation>
 <translation id="2407481962792080328">Když se přihlásíte k účtu Google, je tato funkce zapnutá</translation>
@@ -259,7 +258,6 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Zobrazit nápovědu<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Určování polohy je vypnuté, zapnete jej v <ph name="BEGIN_LINK" />nastavení zařízení Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Synchronizaci můžete kdykoliv zapnout v nastavení</translation>
-<translation id="3059710691562604940">Bezpečné prohlížení je vypnuté. Chrome ho doporučuje zapnout.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> záložka}few{<ph name="BOOKMARKS_COUNT_MANY" /> záložky}many{<ph name="BOOKMARKS_COUNT_MANY" /> záložky}other{<ph name="BOOKMARKS_COUNT_MANY" /> záložek}}</translation>
 <translation id="3089395242580810162">Otevřít na anonymní kartě</translation>
 <translation id="3114012059975132928">Přehrávač videa</translation>
@@ -320,7 +318,6 @@ Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete
 <translation id="3522247891732774234">K dispozici je aktualizace. Další možnosti</translation>
 <translation id="3524138585025253783">Uživatelské rozhraní pro vývojáře</translation>
 <translation id="3527085408025491307">Složka</translation>
-<translation id="3533694711092285624">Nemáte žádná uložená hesla. Chrome může hesla zkontrolovat, pouze když si je uložíte.</translation>
 <translation id="3542235761944717775">Dostupné místo: <ph name="KILOBYTES" /> kB</translation>
 <translation id="3549657413697417275">Prohledávat historii</translation>
 <translation id="3557336313807607643">Přidat do kontaktů</translation>
@@ -571,6 +568,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5581519193887989363">Synchronizované položky můžete kdykoliv vybrat v <ph name="BEGIN_LINK1" />nastavení<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Upravit adresu</translation>
 <translation id="5599455543593328020">Anonymní režim</translation>
+<translation id="5620163320393916465">Nemáte žádná uložená hesla</translation>
 <translation id="5620928963363755975">Stažené soubory a stránky můžete najít pomocí tlačítka Další možnosti</translation>
 <translation id="5626134646977739690">Jméno:</translation>
 <translation id="5639724618331995626">Povolit všechny weby</translation>

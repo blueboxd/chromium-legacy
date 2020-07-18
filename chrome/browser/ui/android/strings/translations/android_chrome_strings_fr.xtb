@@ -170,7 +170,6 @@ Appuyez sur n'importe quel mot pour lancer une recherche. Pour affiner la recher
 <translation id="2353636109065292463">Vérifier votre connexion Internet</translation>
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="2369533728426058518">onglets ouverts</translation>
-<translation id="2377295302146152376">Chrome ne parvient pas à rechercher les mises à jour</translation>
 <translation id="2387895666653383613">Mise à l'échelle du texte</translation>
 <translation id="2394602618534698961">Les fichiers que vous téléchargez sont affichés ici</translation>
 <translation id="2407481962792080328">Lorsque vous vous connectez à votre compte Google, cette fonctionnalité est activée</translation>
@@ -259,7 +258,6 @@ Appuyez sur n'importe quel mot pour effectuer une recherche. Pour affiner la rec
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">La localisation est désactivée. Activez-la dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Vous pouvez activer la synchronisation à tout moment dans les paramètres</translation>
-<translation id="3059710691562604940">La navigation sécurisée étant désactivée, Chrome vous recommande de l'activer.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> favori}one{<ph name="BOOKMARKS_COUNT_MANY" /> favori}other{<ph name="BOOKMARKS_COUNT_MANY" /> favoris}}</translation>
 <translation id="3089395242580810162">Ouvrir onglet navig. privée</translation>
 <translation id="3114012059975132928">Lecteur vidéo</translation>
@@ -320,7 +318,6 @@ Appuyez sur n'importe quel mot pour effectuer une recherche. Pour affiner la rec
 <translation id="3522247891732774234">Mise à jour disponible. Plus d'options</translation>
 <translation id="3524138585025253783">UI des développeurs</translation>
 <translation id="3527085408025491307">Dossier</translation>
-<translation id="3533694711092285624">Aucun mot de passe enregistré. Chrome ne peut vérifier vos mots de passe que si vous les enregistrez.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> Ko disponibles</translation>
 <translation id="3549657413697417275">Recherchez dans l'historique</translation>
 <translation id="3557336313807607643">Ajouter aux contacts</translation>
@@ -360,6 +357,7 @@ Appuyez sur n'importe quel mot pour effectuer une recherche. Pour affiner la rec
 <translation id="3892148308691398805">Copier le texte</translation>
 <translation id="3894427358181296146">Ajouter un dossier</translation>
 <translation id="3895926599014793903">Forcer l'activation du zoom</translation>
+<translation id="3909763690984331376">Contrôle de sécurité <ph name="BEGIN_NEW" />Nouveau<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Recherche du meilleur contenu sur le Web…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Combiner mes données</translation>
@@ -460,6 +458,7 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="4749960740855309258">Ouvrir un nouvel onglet</translation>
 <translation id="4759238208242260848">Téléchargements</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 téléchargement terminé.}one{# téléchargement terminé.}other{# téléchargements terminés.}}</translation>
+<translation id="4766678251456904326">Ajouter un compte à l'appareil</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 téléchargement planifié.}one{# téléchargement planifié.}other{# téléchargements planifié.}}</translation>
 <translation id="478981486571169252">Vous verrez votre état de connexion à <ph name="SITE_NAME" /> ainsi que vos données de navigation et les données des sites dans Chrome.</translation>
 <translation id="4802417911091824046">Le chiffrement par phrase secrète ne s'applique pas aux modes de paiement et adresses Google Pay.
@@ -569,6 +568,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5581519193887989363">Vous avez toujours la possibilité de sélectionner les éléments à synchroniser dans les <ph name="BEGIN_LINK1" />paramètres<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Modifier l'adresse</translation>
 <translation id="5599455543593328020">Mode Navigation privée</translation>
+<translation id="5620163320393916465">Aucun mot de passe enregistré</translation>
 <translation id="5620928963363755975">Recherchez vos fichiers et vos pages dans les téléchargements, à partir du bouton "Plus d'options"</translation>
 <translation id="5626134646977739690">Nom :</translation>
 <translation id="5639724618331995626">Autoriser tous les sites</translation>
@@ -580,6 +580,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5686790454216892815">Nom de fichier trop long</translation>
 <translation id="5694049548840660018">Revenir facilement à l'accueil</translation>
 <translation id="569536719314091526">Traduire cette page dans n'importe quelle langue à partir du bouton "Plus d'options"</translation>
+<translation id="5696597120588531049">Chrome peut vous aider à vous protéger, entre autres, contre les violations de données et les sites Web dangereux</translation>
 <translation id="5697688514913266141">Votre fichier va être enregistré dans le dossier <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Modifier<ph name="END_LINK2" /></translation>
 <translation id="570347048394355941">Ouvrir un autre onglet</translation>
 <translation id="572328651809341494">Onglets récents</translation>
@@ -713,6 +714,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6656545060687952787">Chrome doit accéder aux données de localisation pour rechercher des appareils. <ph name="BEGIN_LINK" />Mettre à jour les autorisations<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Mot de passe</translation>
 <translation id="6659594942844771486">Onglet</translation>
+<translation id="6663079968236414793">Lien vers le texte</translation>
 <translation id="666573598175432848">Une nouvelle version de Chrome est disponible. Appuyez sur cet élément pour accéder au Play Store.</translation>
 <translation id="666731172850799929">Ouvrir dans <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Avis de confidentialité de Chrome</translation>

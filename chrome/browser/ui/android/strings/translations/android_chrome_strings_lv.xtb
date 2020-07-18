@@ -170,7 +170,6 @@ Pieskarieties jebkuram vārdam, lai to meklētu. Ja vēlaties precizēt meklēš
 <translation id="2353636109065292463">Notiek interneta savienojuma pārbaude</translation>
 <translation id="2359808026110333948">Turpināt</translation>
 <translation id="2369533728426058518">atvērt cilnes</translation>
-<translation id="2377295302146152376">Pārlūkā Chrome nevarēja pārbaudīt atjauninājumu pieejamību</translation>
 <translation id="2387895666653383613">Teksta mērogošana</translation>
 <translation id="2394602618534698961">Šeit tiek rādīti jūsu lejupielādētie faili</translation>
 <translation id="2407481962792080328">Kad pierakstāties savā Google kontā, šī funkcija ir ieslēgta.</translation>
@@ -259,7 +258,6 @@ Nospiediet un turiet jebkuru vārdu, lai to meklētu. Lai precizētu meklēšanu
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Saņemt palīdzību<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Atrašanās vietu noteikšana ir izslēgta. Ieslēdziet to <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Jebkurā brīdī varat ieslēgt sinhronizāciju iestatījumos.</translation>
-<translation id="3059710691562604940">Droša pārlūkošana ir izslēgta. Pārlūkā Chrome tiek ieteikts to ieslēgt.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> grāmatzīme}zero{<ph name="BOOKMARKS_COUNT_MANY" /> grāmatzīmju}one{<ph name="BOOKMARKS_COUNT_MANY" /> grāmatzīme}other{<ph name="BOOKMARKS_COUNT_MANY" /> grāmatzīmes}}</translation>
 <translation id="3089395242580810162">Atvērt inkognito režīma cilnē</translation>
 <translation id="3114012059975132928">Videoklipu atskaņotājs</translation>
@@ -320,7 +318,6 @@ Nospiediet un turiet jebkuru vārdu, lai to meklētu. Lai precizētu meklēšanu
 <translation id="3522247891732774234">Pieejams atjauninājums. Citas iespējas</translation>
 <translation id="3524138585025253783">Izstrādātāja lietotājsaskarne</translation>
 <translation id="3527085408025491307">Mape</translation>
-<translation id="3533694711092285624">Nav saglabātu paroļu. Pārlūkprogrammā Chrome var pārbaudīt jūsu paroles, ja jūs tās saglabājat.</translation>
 <translation id="3542235761944717775">Pieejami <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">Meklēt savā vēsturē</translation>
 <translation id="3557336313807607643">Pievienot kontaktpersonām</translation>
@@ -360,6 +357,7 @@ Nospiediet un turiet jebkuru vārdu, lai to meklētu. Lai precizētu meklēšanu
 <translation id="3892148308691398805">Kopēt tekstu</translation>
 <translation id="3894427358181296146">Mapes pievienošana</translation>
 <translation id="3895926599014793903">Tālummaiņas piespiedu iespējošana</translation>
+<translation id="3909763690984331376">Drošības pārbaude <ph name="BEGIN_NEW" />Jaunums<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Notiek vislabākā tīmekļa satura meklēšana</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Datu apvienošana</translation>
@@ -570,6 +568,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5581519193887989363">Jūs jebkurā laikā <ph name="BEGIN_LINK1" />iestatījumos<ph name="END_LINK1" /> varat izvēlēties, ko sinhronizēt.</translation>
 <translation id="5595485650161345191">Rediģēt adresi</translation>
 <translation id="5599455543593328020">Inkognito režīms</translation>
+<translation id="5620163320393916465">Nav saglabātu paroļu</translation>
 <translation id="5620928963363755975">Atrodiet savus failus un lapas sadaļā Lejupielādes, nospiežot pogu Vairāk opciju</translation>
 <translation id="5626134646977739690">Nosaukums:</translation>
 <translation id="5639724618331995626">Atļaut apmeklēt visas vietnes</translation>
@@ -581,6 +580,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5686790454216892815">Faila nosaukums ir pārāk garš</translation>
 <translation id="5694049548840660018">Ātra atgriešanās sākumlapā</translation>
 <translation id="569536719314091526">Tulkojiet šīs lapas saturu jebkurā valodā, izmantojot pogu Vairāk opciju.</translation>
+<translation id="5696597120588531049">Chrome var palīdzēt aizsargāt jūs pret datu noplūdi, nedrošām vietnēm un citiem apdraudējumiem.</translation>
 <translation id="5697688514913266141">Fails tiks saglabāts katalogā <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Rediģēt<ph name="END_LINK2" /></translation>
 <translation id="570347048394355941">Pāriet uz cilni</translation>
 <translation id="572328651809341494">Nesen atvērtas cilnes</translation>
@@ -714,6 +714,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6656545060687952787">Lai meklētu ierīces, pārlūkam Chrome ir nepieciešama piekļuve atrašanās vietai. <ph name="BEGIN_LINK" />Atjauniniet atļaujas<ph name="END_LINK" />.</translation>
 <translation id="6657585470893396449">Parole</translation>
 <translation id="6659594942844771486">Cilne</translation>
+<translation id="6663079968236414793">Izveidot saiti uz tekstu</translation>
 <translation id="666573598175432848">Ir pieejama jaunāka pārlūka Chrome versija. Pieskarieties šim elementam, lai pārietu uz Play veikalu.</translation>
 <translation id="666731172850799929">Atvērt lietotnē <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome konfidencialitātes paziņojums</translation>

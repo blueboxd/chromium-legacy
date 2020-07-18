@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">کیمرا</translation>
 <translation id="1647391597548383849">اپنے کیمرے تک رسائی حاصل کریں</translation>
 <translation id="1660204651932907780">سائٹس کو آواز چلانے کی اجازت دیں (تجویز کردہ)</translation>
+<translation id="1677097821151855053">کوکیز اور دیگر سائٹ کا ڈیٹا آپ کو یاد رکھنے کے لئے استعمال ہوتا ہے، مثال کے طور پر آپ کو سائن ان کرنے یا اشتہارات کو ذاتی نوعیت کا بنانے کے لیے۔ سبھی سائٹس کی خاطر کوکیز کا نظم کرنے کے لیے، <ph name="BEGIN_LINK" />ترتیبات<ph name="END_LINK" /> دیکھیں۔</translation>
 <translation id="1688867105868176567">سائٹ کا ڈیٹا صاف کریں؟</translation>
 <translation id="169515064810179024">سائٹس کو موشن سینسرز تک رسائی حاصل کرنے سے مسدود کریں</translation>
 <translation id="1717218214683051432">موشن سینسرز</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">مخصوص سائٹ کے لیے کوکیز کی اجازت دیں۔</translation>
 <translation id="4046123991198612571">اگلا ٹریک</translation>
 <translation id="4165986682804962316">سائٹ کی ترتیبات</translation>
+<translation id="4200726100658658164">مقام کی ترتیبات کھولیں</translation>
 <translation id="4226663524361240545">اطلاعات آلہ کو وائبریٹ کر سکتی ہیں</translation>
 <translation id="4242533952199664413">ترتیبات کھولیں</translation>
 <translation id="4259722352634471385">نیویگیشن مسدود ہے: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">سبھی سائٹس</translation>
 <translation id="6320088164292336938">وائبریٹ کریں</translation>
 <translation id="6388207532828177975">صاف کریں اور ری سیٹ کریں</translation>
+<translation id="6423924377271166037">کوکیز صاف کریں</translation>
 <translation id="6439114592976064011">سائٹس کو اپنا ورچوئل ریئلٹی آلہ اور ڈیٹا استعمال کرنے سے مسدود کریں</translation>
 <translation id="6447842834002726250">کوکیز</translation>
 <translation id="6527303717912515753">اشتراک کریں</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">پیچھے لے جائیں</translation>
 <translation id="8444433999583714703">‏<ph name="APP_NAME" /> کو اپنے مقام تک رسائی دینے کے لیے، <ph name="BEGIN_LINK" />Android کی ترتیبات<ph name="END_LINK" /> میں بھی مقام آن کریں۔</translation>
 <translation id="8447861592752582886">آلہ کی اجازت کالعدم کریں</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 زیر استعمال کوکی}other{# زیر استعمال کوکیز}}</translation>
 <translation id="8463851957836045671">سائٹ تیز ہے</translation>
 <translation id="851751545965956758">سائٹس کو آلات سے منسلک ہونے سے مسدود کریں</translation>
 <translation id="857943718398505171">اجازت یافتہ (تجویز کردہ)</translation>

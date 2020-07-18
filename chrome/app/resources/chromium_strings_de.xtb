@@ -104,6 +104,7 @@
 <translation id="5224391634244552924">Keine gespeicherten Passwörter. Chromium kann Ihre Passwörter prüfen, wenn Sie sie speichern.</translation>
 <translation id="5277894862589591112">Starten Sie Chromium neu, um die Änderungen zu übernehmen</translation>
 <translation id="5358375970380395591">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Chromium-Profil. Ihre Chromium-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME" /> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. <ph name="LEARN_MORE" /></translation>
+<translation id="5374145464979633459">Beim Prüfen der Gerätesoftware durch Chromium ist ein Fehler aufgetreten</translation>
 <translation id="5386450000063123300">Chromium wird aktualisiert (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Anmeldung in Chromium zulassen</translation>
 <translation id="5398878173008909840">Eine neue Version von Chromium ist verfügbar.</translation>

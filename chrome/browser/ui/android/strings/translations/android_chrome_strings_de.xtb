@@ -170,7 +170,6 @@ Tippen Sie auf ein Wort, um eine Suche damit zu starten. Sie können Ihre Suche 
 <translation id="2353636109065292463">Internetverbindung überprüfen</translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2369533728426058518">Tabs öffnen</translation>
-<translation id="2377295302146152376">Chrome konnte nicht nach Updates suchen</translation>
 <translation id="2387895666653383613">Text-Skalierung</translation>
 <translation id="2394602618534698961">Dateien, die Sie herunterladen, werden hier angezeigt</translation>
 <translation id="2407481962792080328">Wenn Sie sich in Ihrem Google-Konto anmelden, ist diese Funktion eingeschaltet</translation>
@@ -259,7 +258,6 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Die Standortermittlung ist deaktiviert. Sie können sie in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
 <translation id="3058498974290601450">Sie können die Synchronisierung jederzeit in den Einstellungen aktivieren</translation>
-<translation id="3059710691562604940">Safe Browsing ist deaktiviert. Es wird empfohlen, diese Funktion zu aktivieren.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> Lesezeichen}other{<ph name="BOOKMARKS_COUNT_MANY" /> Lesezeichen}}</translation>
 <translation id="3089395242580810162">In Inkognitotab öffnen</translation>
 <translation id="3114012059975132928">Videoplayer</translation>
@@ -320,7 +318,6 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="3522247891732774234">Update verfügbar. Weitere Optionen</translation>
 <translation id="3524138585025253783">Benutzeroberfläche für Entwickler</translation>
 <translation id="3527085408025491307">Ordner</translation>
-<translation id="3533694711092285624">Keine gespeicherten Passwörter. Chrome kann Ihre Passwörter prüfen, wenn Sie sie speichern.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB verfügbar</translation>
 <translation id="3549657413697417275">Im Verlauf suchen</translation>
 <translation id="3557336313807607643">Zu Kontakten hinzufügen</translation>
@@ -360,6 +357,7 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="3892148308691398805">Text kopieren</translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
 <translation id="3895926599014793903">Zoom zwingend aktivieren</translation>
+<translation id="3909763690984331376">Sicherheitscheck <ph name="BEGIN_NEW" />Neu<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Das Beste aus dem Web wird gesucht…</translation>
 <translation id="3927692899758076493">Serifenlose Schrift</translation>
 <translation id="3928666092801078803">Daten zusammenführen</translation>
@@ -460,6 +458,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4749960740855309258">Neuen Tab öffnen</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 Download abgeschlossen.}other{# Downloads abgeschlossen.}}</translation>
+<translation id="4766678251456904326">Konto zum Gerät hinzufügen</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 Download geplant.}other{# Downloads geplant.}}</translation>
 <translation id="478981486571169252">Sie können Ihren Anmeldestatus für <ph name="SITE_NAME" />, Browserdaten und Websitedaten in Chrome einsehen.</translation>
 <translation id="4802417911091824046">Die Passphrasenverschlüsselung enthält keine Zahlungsmethoden oder Adressen von Google Pay.
@@ -569,6 +568,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5581519193887989363">Sie können in den <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> auswählen, was Sie synchronisieren möchten.</translation>
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
 <translation id="5599455543593328020">Inkognitomodus</translation>
+<translation id="5620163320393916465">Keine gespeicherten Passwörter</translation>
 <translation id="5620928963363755975">Ihre Dateien und Seiten finden Sie durch Auswahl der Schaltfläche "Weitere Optionen" unter "Downloads"</translation>
 <translation id="5626134646977739690">Name:</translation>
 <translation id="5639724618331995626">Alle Websites zulassen</translation>
@@ -580,6 +580,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5686790454216892815">Dateiname zu lang</translation>
 <translation id="5694049548840660018">Ganz einfach zur Startseite zurückkehren</translation>
 <translation id="569536719314091526">Über die Schaltfläche "Weitere Optionen" können Sie sich diese Seite in eine beliebige Sprache übersetzen lassen</translation>
+<translation id="5696597120588531049">Chrome kann dazu beitragen, Sie beispielsweise vor Datenpannen und unsicheren Websites zu schützen</translation>
 <translation id="5697688514913266141">Ihre Datei wird in <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" /> gespeichert. <ph name="BEGIN_LINK2" />Bearbeiten.<ph name="END_LINK2" /></translation>
 <translation id="570347048394355941">Zum Tab wechseln</translation>
 <translation id="572328651809341494">Zuletzt geöffnete Tabs</translation>
@@ -713,6 +714,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6656545060687952787">Chrome benötigt Zugriff auf den Standort, um nach Geräten suchen zu können. <ph name="BEGIN_LINK" />Berechtigungen aktualisieren<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Passwort</translation>
 <translation id="6659594942844771486">Tab</translation>
+<translation id="6663079968236414793">Link zum Text</translation>
 <translation id="666573598175432848">Eine neuere Chrome-Version ist verfügbar. Tippen Sie auf dieses Element, um zum Play Store zu gelangen.</translation>
 <translation id="666731172850799929">In <ph name="APP_NAME" /> öffnen</translation>
 <translation id="666981079809192359">Chrome-Datenschutzhinweise</translation>

@@ -23,16 +23,16 @@ struct WebUsbPlatformCapabilityDescriptor;
 class UsbDeviceWin : public UsbDevice {
  public:
   struct FunctionInfo {
-    base::string16 driver;
-    base::string16 path;
+    std::wstring driver;
+    std::wstring path;
   };
 
-  UsbDeviceWin(const base::string16& device_path,
-               const base::string16& hub_path,
+  UsbDeviceWin(const std::wstring& device_path,
+               const std::wstring& hub_path,
                const base::flat_map<int, FunctionInfo>& functions,
                uint32_t bus_number,
                uint32_t port_number,
-               const base::string16& driver_name);
+               const std::wstring& driver_name);
 
   // UsbDevice implementation:
   void Open(OpenCallback callback) override;
@@ -43,11 +43,11 @@ class UsbDeviceWin : public UsbDevice {
 
   ~UsbDeviceWin() override;
 
-  const base::string16& device_path() const { return device_path_; }
+  const std::wstring& device_path() const { return device_path_; }
   const base::flat_map<int, FunctionInfo>& functions() const {
     return functions_;
   }
-  const base::string16& driver_name() const { return driver_name_; }
+  const std::wstring& driver_name() const { return driver_name_; }
 
   // Opens the device's parent hub in order to read the device, configuration
   // and string descriptors.
@@ -82,10 +82,10 @@ class UsbDeviceWin : public UsbDevice {
  private:
   SEQUENCE_CHECKER(sequence_checker_);
 
-  const base::string16 device_path_;
-  const base::string16 hub_path_;
+  const std::wstring device_path_;
+  const std::wstring hub_path_;
   base::flat_map<int, FunctionInfo> functions_;
-  const base::string16 driver_name_;
+  const std::wstring driver_name_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceWin);
 };

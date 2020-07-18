@@ -29,8 +29,8 @@ class SerialDeviceEnumeratorWin : public SerialDeviceEnumerator {
   static base::Optional<base::FilePath> GetPath(
       const std::string& friendly_name);
 
-  void OnPathAdded(const base::string16& device_path);
-  void OnPathRemoved(const base::string16& device_path);
+  void OnPathAdded(const std::wstring& device_path);
+  void OnPathRemoved(const std::wstring& device_path);
 
  private:
   class UiThreadHelper;

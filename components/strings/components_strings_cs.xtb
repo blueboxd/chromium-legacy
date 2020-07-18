@@ -40,7 +40,6 @@
 <translation id="1131264053432022307">Obrázek, který jste zkopírovali</translation>
 <translation id="1150979032973867961">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Operační systém vašeho počítače nedůvěřuje jeho bezpečnostnímu certifikátu.Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="1151972924205500581">Je vyžadováno heslo</translation>
-<translation id="1152921474424827756">Otevřete <ph name="BEGIN_LINK" />archivovanou kopii<ph name="END_LINK" /> stránky <ph name="URL" /></translation>
 <translation id="1156303062776767266">Prohlížíte si místní nebo sdílený soubor.</translation>
 <translation id="1158211211994409885">Web <ph name="HOST_NAME" /> neočekávaně ukončil připojení.</translation>
 <translation id="115926840831309955">Zkontrolujte kód CVC a zkuste to znovu nebo aktualizujte datum konce platnosti</translation>
@@ -244,7 +243,6 @@
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1919367280705858090">Nápověda ke konkrétní chybové zprávě</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Žádné}=1{1 web}few{# weby}many{# webu}other{# webů}}</translation>
-<translation id="194030505837763158">Přejít na odkaz <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Mohli byste ztratit přístup k účtu organizace nebo by mohlo dojít k odcizení vaší identity. Chromium doporučuje okamžitě změnit heslo.</translation>
 <translation id="1947454675006758438">Sponka vpravo nahoře</translation>
 <translation id="1959001866257244765">Pomozte se zlepšováním bezpečnosti na webu tím, že do Googlu budete odesílat <ph name="BEGIN_WHITEPAPER_LINK" />adresy URL některých navštívených stránek, omezené informace o systému a část obsahu stránek<ph name="END_WHITEPAPER_LINK" />. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Zásady ochrany soukromí<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,7 +265,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="202072848677994234">Formulář je odesílán přes nezabezpečené připojení. Automatické vyplňování je deaktivováno.</translation>
 <translation id="2025115093177348061">Rozšířená realita</translation>
 <translation id="2025186561304664664">Proxy server je nastaven na automatickou konfiguraci.</translation>
-<translation id="2030481566774242610">Měli jste na mysli <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Zkontrolovat proxy server a firewall<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Přihrádka 7</translation>
 <translation id="204357726431741734">Chcete-li používat hesla uložená v účtu Google, přihlaste se</translation>
@@ -1035,6 +1032,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="5308380583665731573">Připojení</translation>
 <translation id="5308689395849655368">Zprávy o selhání jsou zakázány.</translation>
 <translation id="5314967030527622926">Brožura</translation>
+<translation id="5316812925700871227">Otočit proti směru hodinových ručiček</translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> z <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Vybrat kontaktní údaje</translation>
@@ -1058,7 +1056,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="5421136146218899937">Vymazat údaje o prohlížení...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> vám chce zasílat oznámení</translation>
 <translation id="5430298929874300616">Odstranit záložku</translation>
-<translation id="5431657950005405462">Soubor nebyl nalezen</translation>
 <translation id="5439770059721715174">Chyba validace schématu v místě <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Obrácené pořadí lícem nahoru</translation>
 <translation id="5447765697759493033">Tento web nebude přeložen</translation>
@@ -1431,7 +1428,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7083258188081898530">Přihrádka 9</translation>
 <translation id="7086090958708083563">Uživatel požádal o nahrání</translation>
 <translation id="7087282848513945231">Okres</translation>
-<translation id="7090678807593890770">Vyhledejte na Googlu <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Skrýt</translation>
 <translation id="7108634116785509031">Webová stránka <ph name="HOST" /> chce použít vaši kameru</translation>
 <translation id="7108819624672055576">Povoleno rozšířením</translation>
@@ -1867,7 +1863,6 @@ Další podrobnosti:
 <translation id="893332455753468063">Přidání jména</translation>
 <translation id="8943282376843390568">Limetková</translation>
 <translation id="8957210676456822347">Autorizace captive portálu</translation>
-<translation id="8958582951173503172">Když konektory Chrome Enterprise Connectors nahlásí události týkající se zabezpečení, administrátorovi budou odeslána související data o události. Mohou být zahrnuty adresy URL stránek, které navštěvujete v Chromu, názvy souborů nebo metadata a uživatelské jméno, pomocí něhož se přihlašujete do svého zařízení a do Chromu.</translation>
 <translation id="8962950042226115166">Podezřelý web</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Návrhy:<ph name="MARKUP_2" />Zkontrolujte, zda máte datové připojení.<ph name="MARKUP_3" />Načtěte tuto webovou stránku znovu později.<ph name="MARKUP_4" />Zkontrolujte zadanou adresu.<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Uložit kartu</translation>

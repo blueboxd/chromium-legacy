@@ -98,6 +98,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="1995660704900986789">Kapat</translation>
 <translation id="2012624427112548395">Ctrl+Arama+H</translation>
 <translation id="2016340657076538683">Mesaj yazın</translation>
+<translation id="2018630726571919839">Bana bir fıkra anlat</translation>
 <translation id="2050339315714019657">Dikey</translation>
 <translation id="2067602449040652523">Klavye parlaklığı</translation>
 <translation id="209965399369889474">Ağa bağlı değilsiniz</translation>
@@ -125,6 +126,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> etkinleştiriliyor</translation>
 <translation id="2359808026110333948">Devam et</translation>
 <translation id="2365393535144473978">Mobil veri etkinleştirildiğinde Bluetooth açılır.</translation>
+<translation id="2369165858548251131">Çince "Merhaba"</translation>
 <translation id="2390318262976603432">Yerel Ayarlar</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Güncelleme var</translation>
@@ -142,6 +144,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="256712445991462162">yerleştirilmiş büyüteç</translation>
 <translation id="2575685495496069081">Çoklu oturum açma devre dışı bırakıldı</translation>
 <translation id="2582112259361606227">Güncellemek için yeniden başlat</translation>
+<translation id="2595239820337756193">5 km kaç mildir</translation>
 <translation id="2617342710774726426">SIM kart kilitli</translation>
 <translation id="2621713457727696555">Güvenliği sağlandı</translation>
 <translation id="2653659639078652383">Gönder</translation>
@@ -195,6 +198,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="3154351730702813399">Cihaz yöneticisi göz atma etkinliğinizi izleyebilir.</translation>
 <translation id="3181441307743005334">Yeniden başlatmak biraz zaman alabilir</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Bir cihaza bağlı}other{# cihaza bağlı}}</translation>
+<translation id="320207200541803018">Zamanlayıcı ayarla</translation>
 <translation id="3203405173652969239">Anahtar Erişimi etkinleştirildi</translation>
 <translation id="3207953481422525583">Kullanıcı Ayarları</translation>
 <translation id="3217205077783620295">Ses açık, düğmeye basılırsa ses kapatılacak.</translation>
@@ -207,6 +211,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> daha sonra yine oturum açabilir.</translation>
 <translation id="3321628682574733415">Ebeveyn kodu yanlış</translation>
 <translation id="332587331255250389">Lütfen pili değiştirin</translation>
+<translation id="334252345105450327">Ekran görüntüsü al</translation>
 <translation id="3351879221545518001">Şu anda ekranı yayınlıyorsunuz.</translation>
 <translation id="3364721542077212959">Ekran kalemi araçları</translation>
 <translation id="3368922792935385530">Bağlı</translation>
@@ -239,6 +244,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="3631369015426612114">Şunlardan gelen bildirimlere izin ver:</translation>
 <translation id="3638400994746983214">Gizlilik ekranını aç/kapat. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Yönetilen kullanıcı</translation>
+<translation id="3702846122927433391">Nijerya'nın nüfusu</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Alan yakala</translation>
 <translation id="371370241367527062">Ön mikrofon</translation>
@@ -520,6 +526,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="7165278925115064263">Alt+Üst Karakter+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> saniye içinde eski çözünürlüğe dönülüyor</translation>
 <translation id="7188494361780961876">Menü, ekranın sol üst köşesine taşındı.</translation>
+<translation id="7189412385142492784">Venüs ne kadar uzak</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Bir güncellemenin uygulanması için bu Chromebook'un yeniden başlatılması gerekiyor. Bu işlem bir dakika kadar sürebilir.</translation>
 <translation id="7256634071279256947">Arka mikrofon</translation>
 <translation id="726276584504105859">Ekranı bölünmüş olarak kullanmak için burayı sürükleyin</translation>
@@ -646,6 +653,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="8649101189709089199">Seç ve Dinle</translation>
 <translation id="8652175077544655965">Ayarları kapat</translation>
 <translation id="8653151467777939995">Bildirim ayarlarını göster. Bildirimler açık</translation>
+<translation id="8660331759611631213">71'in karekökü</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" /> Sinyal Gücü</translation>
 <translation id="8664753092453405566">Ağ listesini göster. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

@@ -5492,6 +5492,8 @@ big-grid{
         995
       ],
       "areaNames": {},
+      "rowLineNameOffsets": [],
+      "columnLineNameOffsets": [],
       "gridBorder": [
         "M",
         8,
@@ -5514,6 +5516,7 @@ big-grid{
         "showPositiveLineNumbers": true,
         "showNegativeLineNumbers": true,
         "showAreaNames": true,
+        "showLineNames": true,
         "gridBorderColor": "rgba(255, 0, 0, 0)",
         "cellBorderColor": "rgba(128, 0, 0, 0)",
         "rowGapColor": "rgba(0, 255, 0, 0)",

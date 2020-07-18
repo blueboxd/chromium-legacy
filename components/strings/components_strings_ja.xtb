@@ -39,7 +39,6 @@
 <translation id="1131264053432022307">コピーした画像</translation>
 <translation id="1150979032973867961">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のパソコンのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="1151972924205500581">パスワードを入力してください</translation>
-<translation id="1152921474424827756"><ph name="URL" /> の<ph name="BEGIN_LINK" />キャッシュ コピー<ph name="END_LINK" />にアクセスします</translation>
 <translation id="1156303062776767266">ローカル ファイルまたは共有ファイルを表示しています</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> により途中で接続が切断されました。</translation>
 <translation id="115926840831309955">CVC を確認してからもう一度試すか、有効期限を更新してください</translation>
@@ -242,7 +241,6 @@
 <translation id="1919345977826869612">広告</translation>
 <translation id="1919367280705858090">特定のエラー メッセージに関する情報</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{なし}=1{1 件のサイト}other{# 件のサイト}}</translation>
-<translation id="194030505837763158"><ph name="LINK" /> に移動します</translation>
 <translation id="1945968466830820669">組織のアカウントにアクセスできなくなったり、個人情報が盗まれたりする可能性があります。今すぐパスワードを変更することをおすすめします。</translation>
 <translation id="1947454675006758438">ステープル（右上）</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />アクセスしたページの URL、システム情報、およびページのコンテンツの一部<ph name="END_WHITEPAPER_LINK" />を Google に送信して、ウェブ全体のセキュリティ強化にご協力ください。<ph name="BEGIN_PRIVACY_PAGE_LINK" />プライバシー ポリシー<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -264,7 +262,6 @@
 <translation id="2003775180883135320">4 穴パンチ（上）</translation>
 <translation id="2025115093177348061">拡張現実（AR）</translation>
 <translation id="2025186561304664664">プロキシは自動設定になっています。</translation>
-<translation id="2030481566774242610">もしかして: <ph name="LINK" /></translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />プロキシとファイアウォールを確認する<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">トレイ 7</translation>
 <translation id="204357726431741734">Google アカウントに保存したパスワードを使用するには、ログインしてください</translation>
@@ -1035,6 +1032,7 @@
 <translation id="5308380583665731573">接続</translation>
 <translation id="5308689395849655368">障害レポートが無効になっています。</translation>
 <translation id="5314967030527622926">ブックレット メーカー</translation>
+<translation id="5316812925700871227">反時計回りに回転</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />、<ph name="MATCH_POSITION" />/<ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">連絡作情報を選択</translation>
@@ -1058,7 +1056,6 @@
 <translation id="5421136146218899937">閲覧履歴データを削除...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> が通知を送信しようとしています。</translation>
 <translation id="5430298929874300616">ブックマークを削除</translation>
-<translation id="5431657950005405462">ファイルが見つかりませんでした</translation>
 <translation id="5439770059721715174">「<ph name="ERROR_PATH" />」でスキーマ確認エラー: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">逆の順序（上向き）</translation>
 <translation id="5447765697759493033">このサイトは翻訳されません</translation>
@@ -1431,7 +1428,6 @@
 <translation id="7083258188081898530">トレイ 9</translation>
 <translation id="7086090958708083563">ユーザーからアップロードがリクエストされました</translation>
 <translation id="7087282848513945231">郡</translation>
-<translation id="7090678807593890770"><ph name="LINK" /> を Google で検索してください</translation>
 <translation id="7108338896283013870">非表示</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> から、カメラの使用許可を求められています</translation>
 <translation id="7108819624672055576">拡張機能によって許可</translation>
@@ -1868,7 +1864,6 @@
 <translation id="893332455753468063">名前の追加</translation>
 <translation id="8943282376843390568">ライム</translation>
 <translation id="8957210676456822347">キャプティブ ポータル認証</translation>
-<translation id="8958582951173503172">セキュリティ イベントが Chrome Enterprise Connectors によって報告されると、そのイベントに関するデータが管理者に送信されます。送信されるデータには、Chrome でアクセスしたページの URL、ファイルの名前やメタデータ、デバイスと Chrome へのログインに使用したユーザー名が含まれる可能性があります。</translation>
 <translation id="8962950042226115166">不審なサイト</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />アドバイス:<ph name="MARKUP_2" />データ接続があることを確認します<ph name="MARKUP_3" />このウェブページを後で再読み込みします<ph name="MARKUP_4" />入力したアドレスを確認します<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">カードを保存</translation>

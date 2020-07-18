@@ -171,7 +171,6 @@
 <translation id="2353636109065292463">ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2359808026110333948">ಮುಂದುವರೆಸಿ</translation>
 <translation id="2369533728426058518">ತೆರೆದ ಟ್ಯಾಬ್‌ಗಳು</translation>
-<translation id="2377295302146152376">ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಲು Chrome ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="2387895666653383613">ಪಠ್ಯ ಸ್ಕೇಲಿಂಗ್</translation>
 <translation id="2394602618534698961">ನೀವು ಡೌನ್‌ಲೋಡ್ ಮಾಡುವ ಫೈಲ್‌ಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ</translation>
 <translation id="2407481962792080328">ನಿಮ್ಮ Google ಖಾತೆಗೆ ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗ, ಈ ವೈಶಿಷ್ಟ್ಯವು ಆನ್ ಆಗುತ್ತದೆ</translation>
@@ -260,7 +259,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ಸಹಾಯ ಪಡೆಯಿರಿ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">ಸ್ಥಳ ಆಫ್ ಆಗಿದೆ; <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಇದನ್ನು ಆನ್‌ ಮಾಡಿ.</translation>
 <translation id="3058498974290601450">ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಯಾವಾಗ ಬೇಕಾದರೂ ಸಿಂಕ್ ಆನ್ ಮಾಡಬಹುದು</translation>
-<translation id="3059710691562604940">ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್‌ ಆಫ್ ಆಗಿದೆ. ಅದನ್ನು ಆನ್ ಮಾಡಲು Chrome ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ಬುಕ್‌ಮಾರ್ಕ್‌}one{<ph name="BOOKMARKS_COUNT_MANY" /> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು}other{<ph name="BOOKMARKS_COUNT_MANY" /> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು}}</translation>
 <translation id="3089395242580810162">ಅಜ್ಞಾತ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="3114012059975132928">ವೀಡಿಯೊ ಪ್ಲೇಯರ್</translation>
@@ -321,7 +319,6 @@
 <translation id="3522247891732774234">ಅಪ್‌ಡೇಟ್‌ ಲಭ್ಯವಿದೆ. ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು</translation>
 <translation id="3524138585025253783">ಡೆವಲಪರ್ UI</translation>
 <translation id="3527085408025491307">ಫೋಲ್ಡರ್</translation>
-<translation id="3533694711092285624">ಉಳಿಸಿರುವ ಯಾವುದೇ ಪಾಸ್‍‍ವರ್ಡ್‍ಗಳಿಲ್ಲ. ನೀವು ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಉಳಿಸಿದಾಗ, Chrome ಅವುಗಳನ್ನು ಪರಿಶೀಲಿಸಬಹುದು.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB ಲಭ್ಯವಿದೆ</translation>
 <translation id="3549657413697417275">ನಿಮ್ಮ ಇತಿಹಾಸವನ್ನು ಹುಡುಕಿ</translation>
 <translation id="3557336313807607643">ಸಂಪರ್ಕಗಳಿಗೆ ಸೇರಿಸಿ</translation>
@@ -571,6 +568,7 @@
 <translation id="5581519193887989363">ನೀವು ಏನನ್ನು ಸಿಂಕ್ ಮಾಡಬೇಕು ಎಂಬುದನ್ನು <ph name="BEGIN_LINK1" />ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK1" /> ಯಾವಾಗ ಬೇಕಾದರೂ ಆರಿಸಿಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="5595485650161345191">ವಿಳಾಸ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="5599455543593328020">ಅಜ್ಞಾತ ಮೋಡ್</translation>
+<translation id="5620163320393916465">ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳಿಲ್ಲ</translation>
 <translation id="5620928963363755975">ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳ ಬಟನ್‌ನಿಂದ ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಿದ ನಿಮ್ಮ ಫೈಲ್‌ಗಳು ಮತ್ತು ಪುಟಗಳನ್ನು ಹುಡುಕಿ</translation>
 <translation id="5626134646977739690">ಹೆಸರು:</translation>
 <translation id="5639724618331995626">ಎಲ್ಲ ಸೈಟ್‌ಗಳನ್ನು ಅನುಮತಿಸಿ</translation>

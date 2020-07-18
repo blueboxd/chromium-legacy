@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Само шифруј</translation>
 <translation id="1038462104119736705">За Linux се препоручује најмање <ph name="INSTALL_SIZE" /> простора. Да бисте ослободили простор, избришите датотеке са уређаја.</translation>
 <translation id="1039337018183941703">Неважећа или оштећена датотека</translation>
+<translation id="104086161873270383">Нови профил</translation>
 <translation id="1041175011127912238">Ова страница не реагује</translation>
 <translation id="1041263367839475438">Доступни уређаји</translation>
 <translation id="1042174272890264476">Уз рачунар такође добијате уграђену RLZ библиотеку производа <ph name="SHORT_PRODUCT_NAME" />. RLZ додељује нејединствену ознаку помоћу које вас није могуће лично идентификовати да би измерио претраге и коришћење производа <ph name="SHORT_PRODUCT_NAME" /> који су подстакнути одређеном промотивном кампањом. Те ознаке се понекад приказују у упитима Google претраге у производу <ph name="PRODUCT_NAME" />.</translation>
@@ -255,6 +256,7 @@
 <translation id="1306606229401759371">Промени подешавања</translation>
 <translation id="1307165550267142340">Направили сте PIN</translation>
 <translation id="1307559529304613120">Упс! Систем није успео да сачува ознаку дугорочног приступа API-ју за овај уређај.</translation>
+<translation id="1313162974556054106">Назив уређаја</translation>
 <translation id="1313405956111467313">Аутоматска конфигурација проксија</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">Одјавићете се са свих сајтова, укључујући и инстанце на отвореним картицама</translation>
@@ -702,7 +704,6 @@
 <translation id="184273675144259287">Замените Linux апликације и датотеке претходном резервном копијом</translation>
 <translation id="1842766183094193446">Желите ли стварно да омогућите режим демонстрације?</translation>
 <translation id="1846308012215045257">Кликните и задржите тастер Control да бисте покренули <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">Група <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Омогућите амбијентални режим</translation>
 <translation id="1849186935225320012">Ова страница у потпуности контролише MIDI уређаје.</translation>
 <translation id="1850508293116537636">Окрећи &amp;у смеру кретања казаљке на сату</translation>
@@ -1720,6 +1721,7 @@
 <translation id="3103941660000130485">Грешка при надограђивању Linux-а</translation>
 <translation id="3105796011181310544">Желите ли да се вратите на Google?</translation>
 <translation id="310671807099593501">Сајт користи Bluetooth</translation>
+<translation id="3109724472072898302">Скупљено</translation>
 <translation id="3115147772012638511">Чека се кеш меморија...</translation>
 <translation id="3115580024857770654">Скупи све</translation>
 <translation id="3116968597797150452">Профил сертификата</translation>
@@ -1787,7 +1789,6 @@
 <translation id="3192947282887913208">Аудио датотеке</translation>
 <translation id="3199127022143353223">Сервери</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome вам препоручује да одмах проверите ову лозинку}one{Chrome вам препоручује да одмах проверите ове лозинке}few{Chrome вам препоручује да одмах проверите ове лозинке}other{Chrome вам препоручује да одмах проверите ове лозинке}}</translation>
-<translation id="3200941271596533635">Укључи/искључи режим читача</translation>
 <translation id="3201422919974259695">Доступни USB уређаји ће се приказивати овде.</translation>
 <translation id="3202131003361292969">Путања</translation>
 <translation id="3202173864863109533">Звук ове картице је искључен.</translation>
@@ -4208,7 +4209,6 @@
 <translation id="6270770586500173387">Шаљи <ph name="BEGIN_LINK1" />информације о систему и апликацијама<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />показатеље<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Дошло је до грешке (<ph name="ERROR" />) при преузимању додатне компоненте</translation>
 <translation id="6273677812470008672">Квалитет</translation>
-<translation id="6273979226236203550">Лозинка се чува на овом уређају и на вашем Google налогу. Где желите да је избришете?</translation>
 <translation id="6277105963844135994">Временско ограничење мреже</translation>
 <translation id="6277518330158259200">С&amp;ними екран</translation>
 <translation id="6278057325678116358">Користи GTK+</translation>
@@ -4252,6 +4252,7 @@
 <translation id="6322653941595359182">Шаљите и примајте SMS-ове помоћу Chromebook-а</translation>
 <translation id="6324916366299863871">Измени пречицу</translation>
 <translation id="6325191661371220117">Онемогући аутоматско покретање</translation>
+<translation id="6325525973963619867">Неуспешно</translation>
 <translation id="6326175484149238433">Уклони из Chrome-а</translation>
 <translation id="6326855256003666642">Број keepalive сигнала</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> тражи да ажурирате овај уређај пре истека рока.</translation>
@@ -4855,7 +4856,6 @@
 <translation id="7099337801055912064">Велики PPD не може да се учита. Максимална величина је 250 kB.</translation>
 <translation id="7102687220333134671">Аутоматска ажурирања су укључена</translation>
 <translation id="7102832101143475489">Захтев је истекао</translation>
-<translation id="7102928824073746774">Група без назива – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Подешавања USB-а</translation>
 <translation id="710640343305609397">Отвори подешавања мреже</translation>
 <translation id="7108338896283013870">Сакриј</translation>
@@ -4931,6 +4931,7 @@
 <translation id="720110658997053098">Трајно задржи овај уређај у режиму киоска</translation>
 <translation id="7201118060536064622">Ставка „<ph name="DELETED_ITEM_NAME" />“ је избрисана</translation>
 <translation id="7201420661433230412">Прикажи датотеке</translation>
+<translation id="7203150201908454328">Проширено</translation>
 <translation id="7203826966018112936">Додавање школског налога на профил омогућава да се дете лако пријављује на веб-сајтове и у додатке као ученик, а да и даље ради под родитељским надзором. Тиме се детету не даје приступ обележивачима, лозинкама или другим подацима прегледача који се синхронизују са школским налогом.&lt;br&gt;&lt;br&gt;
     Ако дете користи Chromebook у школи и желите да пресликате тај доживљај код куће како бисте осигурали да оно има приступ свим неопходним школским задацима, одјавите се са овог Family Link налога и пријавите се на школски налог са странице Chrome ОС налога (напомена: Family Link родитељски надзор се неће примењивати).&lt;br&gt;&lt;br&gt;
     Ако дете не користи Chromebook у школи или бисте радије да управљате дететовим доживљајем код куће користећи Family Link, кликните на дугме Даље у наставку да бисте додали школски налог овом профилу.</translation>
@@ -5326,7 +5327,6 @@
 <translation id="7704521324619958564">Отвори Play продавницу</translation>
 <translation id="7705276765467986571">Није могуће учитати модел обележивача.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Укључи/искључи режим читача</translation>
 <translation id="7707108266051544351">Овом сајту је забрањено да користи сензоре за покрет.</translation>
 <translation id="7707922173985738739">Користи мобилне податке</translation>
 <translation id="7709152031285164251">Није успело – <ph name="INTERRUPT_REASON" /></translation>

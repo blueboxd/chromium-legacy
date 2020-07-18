@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">복사한 이미지</translation>
 <translation id="1150979032973867961">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 컴퓨터의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="1151972924205500581">비밀번호를 입력해야 합니다.</translation>
-<translation id="1152921474424827756"><ph name="URL" />의 <ph name="BEGIN_LINK" />캐시된 사본<ph name="END_LINK" />에 액세스</translation>
 <translation id="1156303062776767266">표시된 파일은 로컬 또는 공유 파일입니다.</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" />와(과)의 연결이 예기치 않게 종료되었습니다.</translation>
 <translation id="115926840831309955">CVC를 확인하고 다시 시도하거나 만료일을 업데이트하세요.</translation>
 <translation id="1161325031994447685">Wi-Fi에 다시 연결</translation>
 <translation id="1165039591588034296">오류</translation>
+<translation id="1165174597379888365">페이지를 방문함</translation>
 <translation id="1175364870820465910">인쇄(&amp;P)</translation>
 <translation id="1175875016430184367">오른쪽 트리플 스테이플</translation>
 <translation id="1178581264944972037">일시중지</translation>
@@ -243,7 +243,6 @@
 <translation id="1919345977826869612">광고</translation>
 <translation id="1919367280705858090">특정 오류 메시지에 관한 도움말 보기</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{없음}=1{사이트 1개}other{사이트 #개}}</translation>
-<translation id="194030505837763158"><ph name="LINK" />(으)로 이동</translation>
 <translation id="1945968466830820669">조직의 계정에 액세스할 수 없게 되거나 신원 도용이 발생할 수도 있습니다. 지금 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="1947454675006758438">오른쪽 상단 스테이플</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />방문한 일부 페이지의 URL, 제한된 시스템 정보, 일부 페이지 콘텐츠<ph name="END_WHITEPAPER_LINK" />를 Google에 전송하여 모든 웹 사용자를 위해 보안을 강화하는 데 참여해 주세요. <ph name="BEGIN_PRIVACY_PAGE_LINK" />개인정보처리방침<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -263,9 +262,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{외 1개}other{외 #개}}</translation>
 <translation id="2003709556000175978">지금 비밀번호 재설정</translation>
 <translation id="2003775180883135320">상단 4공 펀칭</translation>
+<translation id="202072848677994234">이 양식은 안전하지 않은 연결을 통해 제출됩니다. 자동 완성 기능이 사용 중지되었습니다.</translation>
 <translation id="2025115093177348061">증강 현실</translation>
 <translation id="2025186561304664664">프록시가 자동 설정되도록 지정됩니다.</translation>
-<translation id="2030481566774242610"><ph name="LINK" />을(를) 찾으셨나요?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />프록시 및 방화벽 확인<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">트레이 7</translation>
 <translation id="204357726431741734">Google 계정에 저장된 비밀번호를 사용하여 로그인</translation>
@@ -331,6 +330,7 @@
 <translation id="2289385804009217824">트림</translation>
 <translation id="2292556288342944218">인터넷 액세스가 차단됨</translation>
 <translation id="2293443924986248631">이 옵션을 사용 설정하면 사이트가 웹 전반에서 사용자를 추적하는 쿠키를 사용할 수 없습니다. 일부 사이트에서는 기능이 작동하지 않을 수 있습니다.</translation>
+<translation id="2295290966866883927">방문한 페이지의 URL은 분석을 위해 Google Cloud 또는 타사로 전송됩니다. 예를 들어, URL은 안전하지 않은 웹사이트를 감지하기 위해 검사될 수 있습니다.</translation>
 <translation id="2297722699537546652">B5(봉투)</translation>
 <translation id="2300306941146563769">업로드되지 않음</translation>
 <translation id="2310021320168182093">Chou2(봉투)</translation>
@@ -1036,6 +1036,7 @@
 <translation id="5308380583665731573">연결</translation>
 <translation id="5308689395849655368">비정상 종료 보고가 사용 중지되었습니다.</translation>
 <translation id="5314967030527622926">소책자 제작기</translation>
+<translation id="5316812925700871227">반시계 방향으로 회전</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" />/<ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">연락처 정보 선택</translation>
@@ -1059,7 +1060,6 @@
 <translation id="5421136146218899937">인터넷 사용 기록 삭제...</translation>
 <translation id="5426179911063097041"><ph name="SITE" />에서 알림을 보내려고 합니다.</translation>
 <translation id="5430298929874300616">북마크 삭제</translation>
-<translation id="5431657950005405462">파일을 찾을 수 없음</translation>
 <translation id="5439770059721715174">'<ph name="ERROR_PATH" />'에서 스키마 유효성 검사 오류: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">역순으로 인쇄면이 위를 향하게</translation>
 <translation id="5447765697759493033">이 사이트는 번역되지 않습니다.</translation>
@@ -1433,7 +1433,6 @@
 <translation id="7083258188081898530">트레이 9</translation>
 <translation id="7086090958708083563">사용자가 요청한 업로드</translation>
 <translation id="7087282848513945231">카운티</translation>
-<translation id="7090678807593890770">Google에서 <ph name="LINK" /> 검색</translation>
 <translation id="7108338896283013870">숨기기</translation>
 <translation id="7108634116785509031"><ph name="HOST" />에서 카메라에 액세스하려고 합니다</translation>
 <translation id="7108819624672055576">확장 프로그램에서 허용</translation>
@@ -1868,7 +1867,6 @@
 <translation id="893332455753468063">이름 추가</translation>
 <translation id="8943282376843390568">라임색</translation>
 <translation id="8957210676456822347">캡티브 포털 승인</translation>
-<translation id="8958582951173503172">Chrome Enterprise 커넥터에서 보안 관련 활동을 신고한 경우 활동에 대한 데이터가 관리자에게 전송됩니다. 여기에는 Chrome에서 방문한 페이지 URL, 파일 이름 또는 메타데이터, 기기와 Chrome 로그인에 사용한 사용자 이름이 포함될 수 있습니다.</translation>
 <translation id="8962950042226115166">의심스러운 사이트</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />제안사항:<ph name="MARKUP_2" />데이터 연결 상태 확인<ph name="MARKUP_3" />나중에 페이지 새로고침<ph name="MARKUP_4" />입력한 주소 확인<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">카드 저장</translation>

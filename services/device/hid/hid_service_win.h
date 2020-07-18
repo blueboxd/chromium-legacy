@@ -59,17 +59,17 @@ class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
   static void AddDeviceBlocking(
       base::WeakPtr<HidServiceWin> service,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const base::string16& device_path,
+      const std::wstring& device_path,
       const std::string& physical_device_id);
 
   // DeviceMonitorWin::Observer implementation:
   void OnDeviceAdded(const GUID& class_guid,
-                     const base::string16& device_path) override;
+                     const std::wstring& device_path) override;
   void OnDeviceRemoved(const GUID& class_guid,
-                       const base::string16& device_path) override;
+                       const std::wstring& device_path) override;
 
   // Tries to open the device read-write and falls back to read-only.
-  static base::win::ScopedHandle OpenDevice(const base::string16& device_path);
+  static base::win::ScopedHandle OpenDevice(const std::wstring& device_path);
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

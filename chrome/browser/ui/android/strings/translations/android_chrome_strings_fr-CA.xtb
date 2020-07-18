@@ -170,7 +170,6 @@ Touchez un mot pour lancer une recherche. Pour affiner votre recherche, maintene
 <translation id="2353636109065292463">Vérification de votre connexion Internet en cours…</translation>
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="2369533728426058518">onglets ouverts</translation>
-<translation id="2377295302146152376">Chrome n'a pas pu vérifier la présence de mises à jour</translation>
 <translation id="2387895666653383613">Mise à l'échelle texte</translation>
 <translation id="2394602618534698961">Les fichiers que vous téléchargez s'affichent ici</translation>
 <translation id="2407481962792080328">Lorsque vous vous connecterez à votre compte Google, cette fonctionnalité sera activée</translation>
@@ -259,7 +258,6 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Le paramètre Position est désactivé, activez-le dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Vous pouvez activer la synchronisation à tout moment dans les paramètres</translation>
-<translation id="3059710691562604940">La navigation sécurisée est désactivée. Chrome vous recommande de l'activer.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> favori}one{<ph name="BOOKMARKS_COUNT_MANY" /> favori}other{<ph name="BOOKMARKS_COUNT_MANY" /> favoris}}</translation>
 <translation id="3089395242580810162">Ouvrir dans onglet nav. privée</translation>
 <translation id="3114012059975132928">Lecteur vidéo</translation>
@@ -320,7 +318,6 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="3522247891732774234">Mise à jour disponible. Plus d'options</translation>
 <translation id="3524138585025253783">IU de concepteur</translation>
 <translation id="3527085408025491307">Dossier</translation>
-<translation id="3533694711092285624">Aucun mot de passe enregistré. Chrome ne peut vérifier vos mots de passe que si vous les enregistrez.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> ko disponible(s)</translation>
 <translation id="3549657413697417275">Rechercher dans votre historique</translation>
 <translation id="3557336313807607643">Ajouter aux contacts</translation>
@@ -360,6 +357,7 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="3892148308691398805">Copier le texte</translation>
 <translation id="3894427358181296146">Ajouter un dossier</translation>
 <translation id="3895926599014793903">Forcer l'activation du zoom</translation>
+<translation id="3909763690984331376">Vérification de la sécurité <ph name="BEGIN_NEW" />Nouv.<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">À la recherche du meilleur du Web…</translation>
 <translation id="3927692899758076493">Sans empattement</translation>
 <translation id="3928666092801078803">Combiner mes données</translation>
@@ -570,6 +568,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5581519193887989363">Vous pouvez toujours choisir les éléments à synchroniser dans les <ph name="BEGIN_LINK1" />paramètres<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Modifier l'adresse</translation>
 <translation id="5599455543593328020">Mode de navigation privée</translation>
+<translation id="5620163320393916465">Aucun mot de passe enregistré</translation>
 <translation id="5620928963363755975">Trouvez vos fichiers et vos pages dans Téléchargements à partir du bouton Plus d'options</translation>
 <translation id="5626134646977739690">Nom :</translation>
 <translation id="5639724618331995626">Autoriser tous les sites</translation>
@@ -581,6 +580,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5686790454216892815">Nom de fichier trop long</translation>
 <translation id="5694049548840660018">Revenez facilement à votre page d'accueil</translation>
 <translation id="569536719314091526">Utilisez le bouton Plus d'options pour traduire cette page vers n'importe quelle langue</translation>
+<translation id="5696597120588531049">Chrome peut vous aider à vous protéger, entre autres, contre les violations de données et les sites Web non sécuritaires</translation>
 <translation id="5697688514913266141">Votre fichier sera enregistré dans <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Modifier<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Passer à l'onglet</translation>
 <translation id="572328651809341494">Onglets récents</translation>
@@ -714,6 +714,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6656545060687952787">Google Chrome nécessite l'accès à votre position pour rechercher des appareils. <ph name="BEGIN_LINK" />Mettre les autorisations à jour<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Mot de passe</translation>
 <translation id="6659594942844771486">Onglet</translation>
+<translation id="6663079968236414793">Lien vers le texte</translation>
 <translation id="666573598175432848">Une version plus récente de Chrome est proposée. Touchez cet élément pour accéder à la boutique Play Store.</translation>
 <translation id="666731172850799929">Ouvrir dans <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Avis de confidentialité Chrome</translation>

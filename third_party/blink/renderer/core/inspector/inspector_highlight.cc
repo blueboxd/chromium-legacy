@@ -369,6 +369,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridHighlightConfigInfo(
   grid_config_info->setBoolean("showNegativeLineNumbers",
                                grid_config.show_negative_line_numbers);
   grid_config_info->setBoolean("showAreaNames", grid_config.show_area_names);
+  grid_config_info->setBoolean("showLineNames", grid_config.show_line_names);
 
   if (grid_config.grid_color != Color::kTransparent) {
     grid_config_info->setString("gridBorderColor",
@@ -512,6 +513,42 @@ std::unique_ptr<protocol::DictionaryValue> BuildAreaNamePaths(
   return area_paths;
 }
 
+std::unique_ptr<protocol::ListValue> BuildGridLineNames(
+    LayoutGrid* layout_grid,
+    GridTrackSizingDirection direction,
+    float scale) {
+  std::unique_ptr<protocol::ListValue> lines = protocol::ListValue::create();
+
+  const Vector<LayoutUnit>& tracks = direction == kForColumns
+                                         ? layout_grid->ColumnPositions()
+                                         : layout_grid->RowPositions();
+  const NamedGridLinesMap& named_lines_map =
+      direction == kForColumns ? layout_grid->StyleRef().NamedGridColumnLines()
+                               : layout_grid->StyleRef().NamedGridRowLines();
+  LayoutUnit gap = layout_grid->GridGap(direction);
+
+  for (const auto& item : named_lines_map) {
+    const String& name = item.key;
+
+    for (const size_t index : item.value) {
+      std::unique_ptr<protocol::DictionaryValue> line =
+          protocol::DictionaryValue::create();
+
+      LayoutUnit track = tracks.at(index);
+      line->setString("name", name);
+
+      LayoutUnit gap_offset =
+          index > 0 && index < tracks.size() - 1 ? gap / 2 : LayoutUnit();
+      line->setValue("offset", protocol::FundamentalValue::create(
+                                   (track - gap_offset) * scale));
+
+      lines->pushValue(std::move(line));
+    }
+  }
+
+  return lines;
+}
+
 std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
     LocalFrameView* containing_view,
     LayoutGrid* layout_grid,
@@ -611,6 +648,14 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   // Area names
   if (grid_highlight_config.show_area_names) {
     grid_info->setValue("areaNames", BuildAreaNamePaths(layout_grid, scale));
+  }
+
+  // line names
+  if (grid_highlight_config.show_line_names) {
+    grid_info->setValue("rowLineNameOffsets",
+                        BuildGridLineNames(layout_grid, kForRows, scale));
+    grid_info->setValue("columnLineNameOffsets",
+                        BuildGridLineNames(layout_grid, kForColumns, scale));
   }
 
   // Grid border
@@ -734,7 +779,8 @@ InspectorGridHighlightConfig::InspectorGridHighlightConfig()
       cell_border_dash(false),
       show_positive_line_numbers(false),
       show_negative_line_numbers(false),
-      show_area_names(false) {}
+      show_area_names(false),
+      show_line_names(false) {}
 
 InspectorHighlight::InspectorHighlight(
     Node* node,
@@ -1283,6 +1329,7 @@ InspectorGridHighlightConfig InspectorHighlight::DefaultGridConfig() {
   config.show_positive_line_numbers = true;
   config.show_negative_line_numbers = true;
   config.show_area_names = true;
+  config.show_line_names = true;
   config.grid_border_dash = false;
   config.cell_border_dash = true;
   return config;

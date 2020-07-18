@@ -1370,6 +1370,7 @@ InspectorOverlayAgent::ToGridHighlightConfig(
   highlight_config->show_negative_line_numbers =
       config->getShowNegativeLineNumbers(false);
   highlight_config->show_area_names = config->getShowAreaNames(false);
+  highlight_config->show_line_names = config->getShowLineNames(false);
   highlight_config->show_grid_extension_lines =
       config->getShowGridExtensionLines(false);
   highlight_config->grid_border_dash = config->getGridBorderDash(false);

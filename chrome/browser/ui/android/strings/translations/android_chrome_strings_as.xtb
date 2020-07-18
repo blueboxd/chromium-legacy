@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">আপোনাৰ ইণ্টাৰনেট সংযোগ পৰীক্ষা কৰি থকা হৈছে</translation>
 <translation id="2359808026110333948">অব্যাহত ৰাখক</translation>
 <translation id="2369533728426058518">খুলি ৰখা টেব</translation>
-<translation id="2377295302146152376">Chromeএ আপডে’ট আছেনে নাই পৰীক্ষা কৰিব নোৱাৰিলে</translation>
 <translation id="2387895666653383613">পাঠ মিলোৱা কাৰ্য</translation>
 <translation id="2394602618534698961">আপুনি ডাউনল'ড কৰা ফাইলসমূহ ইয়াত প্ৰদর্শন কৰা হয়</translation>
 <translation id="2407481962792080328">আপুনি Google একাউণ্টত ছাইন ইন কৰিলে এই সুবিধাটো অন কৰা হয়</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />সহায় লওক<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">অৱস্থান অফ আছে <ph name="BEGIN_LINK" />Android ছেটিংসমূহত<ph name="END_LINK" /> অন কৰক।</translation>
 <translation id="3058498974290601450">আপুনি ছেটিংসমূহ-লৈ গৈ যিকোনো সময়তে ছিংক অন কৰিব পাৰে</translation>
-<translation id="3059710691562604940">সুৰক্ষিত ব্ৰাউজিং অফ আছে। Chromeএ ইয়াক অন কৰাটো চুপাৰিছ কৰে।</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" />টা বুকমাৰ্ক}one{<ph name="BOOKMARKS_COUNT_MANY" />টা বুকমাৰ্ক}other{<ph name="BOOKMARKS_COUNT_MANY" />টা বুকমাৰ্ক}}</translation>
 <translation id="3089395242580810162">ইনক'গনিট' টেবত খোলক</translation>
 <translation id="3114012059975132928">ভিডিঅ’ প্লে’য়াৰ</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">আপডে’ট উপলব্ধ। অধিক বিকল্প</translation>
 <translation id="3524138585025253783">বিকাশকৰ্তাৰ UI</translation>
 <translation id="3527085408025491307">ফ’ল্ডাৰ</translation>
-<translation id="3533694711092285624">ছেভ কৰা কোনো পাছৱৰ্ড নাই। আপুনি আপোনাৰ পাছৱর্ডসমূহ ছেভ কৰিলে Chromeএ সেইবোৰ পৰীক্ষা কৰিব পাৰে।</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> কে.বি. উপলব্ধ</translation>
 <translation id="3549657413697417275">আপোনাৰ ব্ৰাউজিং ইতিহাসত সন্ধান কৰক</translation>
 <translation id="3557336313807607643">সর্ম্পকসূচীত যোগ কৰক</translation>
@@ -570,6 +567,7 @@
 <translation id="5581519193887989363">আপুনি কি ছিংক কৰিব লাগে সেয়া <ph name="BEGIN_LINK1" />ছেটিংসমূহ<ph name="END_LINK1" />-লৈ গৈ যেতিয়াই মন যায় তেতিয়াই সলনি কৰিব পাৰে।</translation>
 <translation id="5595485650161345191">ঠিকনা সম্পাদনা কৰক</translation>
 <translation id="5599455543593328020">ইনক'গনিট' ম'ড</translation>
+<translation id="5620163320393916465">ছেভ কৰা কোনো পাছৱৰ্ড নাই</translation>
 <translation id="5620928963363755975">অধিক বিকল্প-ৰ বুটামটো ব্যৱহাৰ কৰি আপোনাৰ ফাইল আৰু পৃষ্ঠাসমূহ ডাউনল’ড-ৰ ভিতৰত পাওক</translation>
 <translation id="5626134646977739690">নাম:</translation>
 <translation id="5639724618331995626">সকলো ছাইটকে অনুমতি দিয়ক</translation>

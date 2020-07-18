@@ -255,6 +255,7 @@
 <translation id="1306606229401759371">Промени ги поставките</translation>
 <translation id="1307165550267142340">Вашиот PIN е создаден</translation>
 <translation id="1307559529304613120">Ах! Системот не успеа да го складира пристапниот токен на долгорочниот АПИ за уредот.</translation>
+<translation id="1313162974556054106">Име на уредот</translation>
 <translation id="1313405956111467313">Автоматска конфигурација на прокси</translation>
 <translation id="131364520783682672">Големи букви</translation>
 <translation id="1313660246522271310">Ќе ве одјавиме од сите сајтови, вклучително и од отворените картички</translation>
@@ -705,7 +706,6 @@
 <translation id="184273675144259287">Заменете ги апликациите и датотеките на Linux со претходен бекап</translation>
 <translation id="1842766183094193446">Дали сигурно сакате да овозможите демо-режим?</translation>
 <translation id="1846308012215045257">Контролен клик за да го извршите приклучокот <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">Група <ph name="GROUP_NAME" /> - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Овозможување на „Амбиентален режим“</translation>
 <translation id="1849186935225320012">Страницата има целосна контрола над MIDI-уреди.</translation>
 <translation id="1850508293116537636">Ротирај &amp;надесно</translation>
@@ -1723,6 +1723,7 @@
 <translation id="3103941660000130485">Грешка при надградувањето на Linux</translation>
 <translation id="3105796011181310544">Да се врати на Google?</translation>
 <translation id="310671807099593501">Сајтот користи Bluetooth</translation>
+<translation id="3109724472072898302">Собрано</translation>
 <translation id="3115147772012638511">Се чека кешот...</translation>
 <translation id="3115580024857770654">Собери ги сите</translation>
 <translation id="3116968597797150452">Профил со сертификат</translation>
@@ -1790,7 +1791,6 @@
 <translation id="3192947282887913208">Аудиодатотеки</translation>
 <translation id="3199127022143353223">Сервери</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome препорачува веднаш да ја проверите лозинкава}one{Chrome препорачува веднаш да ги проверите лозинкиве}other{Chrome препорачува веднаш да ги проверите лозинкиве}}</translation>
-<translation id="3200941271596533635">Префрли на режим на читач</translation>
 <translation id="3201422919974259695">Достапните USB-уреди ќе се појават тука.</translation>
 <translation id="3202131003361292969">Патека</translation>
 <translation id="3202173864863109533">Звукот на оваа картичка е исклучен.</translation>
@@ -4210,7 +4210,6 @@
 <translation id="6270770586500173387">Испрати <ph name="BEGIN_LINK1" />информации за системот и апликацијата<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />метриката<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Грешка (<ph name="ERROR" />) при преземањето на приклучокот</translation>
 <translation id="6273677812470008672">Квалитет</translation>
-<translation id="6273979226236203550">Вашата лозинка е зачувана на уредов и во сметката на Google. Од каде сакате да ја избришете?</translation>
 <translation id="6277105963844135994">Истек на време на мрежата</translation>
 <translation id="6277518330158259200">&amp;Сними слика од екранот</translation>
 <translation id="6278057325678116358">Користи GTK+</translation>
@@ -4857,7 +4856,6 @@
 <translation id="7099337801055912064">Не може да се вчита голема PPD-датотека. Максималната големина е 250 KB.</translation>
 <translation id="7102687220333134671">Автоматските ажурирања се вклучени</translation>
 <translation id="7102832101143475489">Барањето истече</translation>
-<translation id="7102928824073746774">Неименувана група - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Поставки за USB</translation>
 <translation id="710640343305609397">Отвори ги мрежните поставки</translation>
 <translation id="7108338896283013870">Сокриј</translation>
@@ -4933,6 +4931,7 @@
 <translation id="720110658997053098">Трајно задржи го уредов во режим на киоск</translation>
 <translation id="7201118060536064622">Ставката „<ph name="DELETED_ITEM_NAME" />“ е избришана</translation>
 <translation id="7201420661433230412">Прикажи ги датотеките</translation>
+<translation id="7203150201908454328">Проширено</translation>
 <translation id="7203826966018112936">Ако додадете училишна сметка на профилот, ќе се овозможи лесно најавување на веб-сајтовите и екстензиите како ученик додека се работи под родителски контроли. Така детето не добива пристап до обележувачите, лозинките и другите податоци од прелистувачот што се синхронизираат со училишната сметка.&lt;br&gt;&lt;br&gt;
     Ако вашето дете користи Chromebook во училиште и сакате на истиот начин да учи и дома за да бидете сигурни дека има пристап до сите потребни училишни задачи, одјавете се од сметкава на Family Link и најавете се на училишната сметка од страницата со сметки на Chrome OS (забелешка: родителските контроли на Family Link нема да важат).&lt;br&gt;&lt;br&gt;
     Ако детето не користи Chromebook во училиште или, пак, ако повеќе сакате да му помагате на детето дома со Family Link, кликнете го копчето „Следно“ подолу и додајте училишна сметка на профилов.</translation>
@@ -5328,7 +5327,6 @@
 <translation id="7704521324619958564">Отвори Play Store</translation>
 <translation id="7705276765467986571">Не може да се вчита модел на обележувач.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Вклучи/исклучи режим на читач</translation>
 <translation id="7707108266051544351">Користењето на сензорите за движење е блокирано за сајтов.</translation>
 <translation id="7707922173985738739">Ќе користи мобилен интернет</translation>
 <translation id="7709152031285164251">Не успеа - <ph name="INTERRUPT_REASON" /></translation>

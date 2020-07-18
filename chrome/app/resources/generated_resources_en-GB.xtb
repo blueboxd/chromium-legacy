@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Encipher Only</translation>
 <translation id="1038462104119736705">At least <ph name="INSTALL_SIZE" /> of space is recommended for Linux. To increase free space, delete files from your device.</translation>
 <translation id="1039337018183941703">Invalid or corrupt file</translation>
+<translation id="104086161873270383">New Profile</translation>
 <translation id="1041175011127912238">This page isn't responding</translation>
 <translation id="1041263367839475438">Available devices</translation>
 <translation id="1042174272890264476">Your computer also comes with <ph name="SHORT_PRODUCT_NAME" />'s RLZ library built in. RLZ assigns a non-unique, non-personally identifiable tag to measure the searches and <ph name="SHORT_PRODUCT_NAME" /> usage driven by a particular promotional campaign. These labels sometimes appear in Google Search queries in <ph name="PRODUCT_NAME" />.</translation>
@@ -255,6 +256,7 @@
 <translation id="1306606229401759371">Change settings</translation>
 <translation id="1307165550267142340">Your PIN was created</translation>
 <translation id="1307559529304613120">Oops!  The system failed to store the long-term API access token for this device.</translation>
+<translation id="1313162974556054106">Device Name</translation>
 <translation id="1313405956111467313">Automatic proxy configuration</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">You'll be signed out of all sites, including in open tabs</translation>
@@ -705,7 +707,6 @@
 <translation id="184273675144259287">Replace your Linux apps and files with a previous backup</translation>
 <translation id="1842766183094193446">Are you sure that you want to enable demo mode?</translation>
 <translation id="1846308012215045257">Control-click to run <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">Group <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Enable Ambient Mode</translation>
 <translation id="1849186935225320012">This page has full control of MIDI devices.</translation>
 <translation id="1850508293116537636">Rotate &amp;clockwise</translation>
@@ -1723,6 +1724,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3103941660000130485">Error upgrading Linux</translation>
 <translation id="3105796011181310544">Change back to Google?</translation>
 <translation id="310671807099593501">Site is using Bluetooth</translation>
+<translation id="3109724472072898302">Collapsed</translation>
 <translation id="3115147772012638511">Waiting for cache...</translation>
 <translation id="3115580024857770654">Collapse all</translation>
 <translation id="3116968597797150452">Certificate profile</translation>
@@ -1790,7 +1792,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3192947282887913208">Audio Files</translation>
 <translation id="3199127022143353223">Servers</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome recommends checking this password now}other{Chrome recommends checking these passwords now}}</translation>
-<translation id="3200941271596533635">Toggle reader mode</translation>
 <translation id="3201422919974259695">Available USB devices will appear here.</translation>
 <translation id="3202131003361292969">Path</translation>
 <translation id="3202173864863109533">This tab's audio is being muted.</translation>
@@ -4210,7 +4211,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6270770586500173387">Send <ph name="BEGIN_LINK1" />system and app information<ph name="END_LINK1" />, and <ph name="BEGIN_LINK2" />metrics<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">There was an error (<ph name="ERROR" />) while downloading the plug-in</translation>
 <translation id="6273677812470008672">Quality</translation>
-<translation id="6273979226236203550">Your password is stored on this device and in your Google Account. Which one do you want to delete?</translation>
 <translation id="6277105963844135994">Network timeout</translation>
 <translation id="6277518330158259200">T&amp;ake Screenshot</translation>
 <translation id="6278057325678116358">Use GTK+</translation>
@@ -4254,6 +4254,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6322653941595359182">Send and receive text messages from your Chromebook</translation>
 <translation id="6324916366299863871">Edit shortcut</translation>
 <translation id="6325191661371220117">Disable auto-launch</translation>
+<translation id="6325525973963619867">Failed</translation>
 <translation id="6326175484149238433">Remove from Chrome</translation>
 <translation id="6326855256003666642">Keepalive Count</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> requires you to update this device before the deadline.</translation>
@@ -4857,7 +4858,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7099337801055912064">Can’t load large PPD. Maximum size is 250 KB.</translation>
 <translation id="7102687220333134671">Automatic updates are turned on</translation>
 <translation id="7102832101143475489">The request timed out</translation>
-<translation id="7102928824073746774">Unnamed group – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">USB preferences</translation>
 <translation id="710640343305609397">Open network settings</translation>
 <translation id="7108338896283013870">Hide</translation>
@@ -4933,6 +4933,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="720110658997053098">Permanently keep this device in kiosk mode</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' deleted</translation>
 <translation id="7201420661433230412">View files</translation>
+<translation id="7203150201908454328">Expanded</translation>
 <translation id="7203826966018112936">Adding a school account to a profile enables easy sign-in to websites and extensions as a student while operating under parental controls. It does not give a child access to bookmarks, passwords or other browser data synced with the school account.&lt;br&gt;&lt;br&gt;
     If your child uses a Chromebook in school and you wish to mirror the school experience at home to ensure that your child has access to all necessary schoolwork, please sign out of this Family Link account and sign in to the school account from the Chrome OS accounts page (note: Family Link parental controls will not apply).&lt;br&gt;&lt;br&gt;
     If your child does not use a Chromebook in school or if you prefer to manage your child’s experience at home using Family Link, please click the Next button below to add a school account to this profile.</translation>
@@ -5328,7 +5329,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7704521324619958564">Open Play Store</translation>
 <translation id="7705276765467986571">Could not load bookmark model.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Toggle reader mode</translation>
 <translation id="7707108266051544351">This site has been blocked from using motion sensors.</translation>
 <translation id="7707922173985738739">Use mobile data</translation>
 <translation id="7709152031285164251">Failed - <ph name="INTERRUPT_REASON" /></translation>

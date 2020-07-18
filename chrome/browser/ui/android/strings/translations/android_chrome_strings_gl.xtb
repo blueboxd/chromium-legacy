@@ -170,7 +170,6 @@ Toca calquera palabra para buscala. Mantena premida para seleccionar máis ou me
 <translation id="2353636109065292463">Comprobando a túa conexión a Internet</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2369533728426058518">pestanas abertas</translation>
-<translation id="2377295302146152376">Chrome non puido buscar actualizacións</translation>
 <translation id="2387895666653383613">Axuste de texto</translation>
 <translation id="2394602618534698961">Os ficheiros descargados aparecen aquí</translation>
 <translation id="2407481962792080328">Cando inicies sesión na túa Conta de Google, activarase esta función</translation>
@@ -259,7 +258,6 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obter axuda<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">A localización está desactivada. Actívaa na <ph name="BEGIN_LINK" />configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Podes activar a sincronización en calquera momento na configuración</translation>
-<translation id="3059710691562604940">A opción Navegación segura está desactivada. Chrome recomenda activala.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> marcador}other{<ph name="BOOKMARKS_COUNT_MANY" /> marcadores}}</translation>
 <translation id="3089395242580810162">Abrir en pestana de incógnito</translation>
 <translation id="3114012059975132928">Reprodutor de vídeo</translation>
@@ -320,7 +318,6 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="3522247891732774234">Hai unha actualización dispoñible. Máis opcións</translation>
 <translation id="3524138585025253783">IU para programadores</translation>
 <translation id="3527085408025491307">Cartafol</translation>
-<translation id="3533694711092285624">Non hai contrasinais gardados. Chrome pode comprobar os teus contrasinais cando os gardes.</translation>
 <translation id="3542235761944717775">Almacenamento dispoñible: <ph name="KILOBYTES" /> kB</translation>
 <translation id="3549657413697417275">Buscar no historial</translation>
 <translation id="3557336313807607643">Engadir a contactos</translation>
@@ -571,6 +568,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5581519193887989363">Sempre podes escoller na <ph name="BEGIN_LINK1" />configuración<ph name="END_LINK1" /> o contido que queres sincronizar.</translation>
 <translation id="5595485650161345191">Editar enderezo</translation>
 <translation id="5599455543593328020">Modo de incógnito</translation>
+<translation id="5620163320393916465">Non hai contrasinais gardados</translation>
 <translation id="5620928963363755975">A través do botón Máis opcións, atopa os ficheiros e as páxinas que descargaches na sección Descargas</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5639724618331995626">Permitir todos os sitios</translation>

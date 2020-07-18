@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">הצפנה בלבד</translation>
 <translation id="1038462104119736705">‏מומלץ ששטח האחסון הפנוי יהיה <ph name="INSTALL_SIZE" /> לפחות כדי להשתמש ב-Linux. כדי לפנות שטח אחסון, יש למחוק קבצים מהמכשיר.</translation>
 <translation id="1039337018183941703">הקובץ לא חוקי, או שהוא פגום</translation>
+<translation id="104086161873270383">פרופיל חדש</translation>
 <translation id="1041175011127912238">הדף לא מגיב</translation>
 <translation id="1041263367839475438">מכשירים זמינים</translation>
 <translation id="1042174272890264476">‏המחשב שלך מגיע גם עם ספריית ה-RLZ המובנה של <ph name="SHORT_PRODUCT_NAME" />‏. RLZ מקצה תג שאינו ייחודי ואינו ניתן לזיהוי על מנת למדוד את החיפוש ואת השימוש ב-<ph name="SHORT_PRODUCT_NAME" /> המונעים על ידי קמפיין ספציפי לקידום מכירות. התוויות האלה מופיעות לעתים בשאילתות החיפוש של Google ב-<ph name="PRODUCT_NAME" />.</translation>
@@ -255,6 +256,7 @@
 <translation id="1306606229401759371">שנה הגדרות</translation>
 <translation id="1307165550267142340">קוד האימות שלך נוצר</translation>
 <translation id="1307559529304613120">‏אופס! המערכת לא הצליחה לאחסן את אסימון הגישה לטווח ארוך אל ממשק ה-API עבור המכשיר הזה.</translation>
+<translation id="1313162974556054106">שם מכשיר</translation>
 <translation id="1313405956111467313">‏תצורה אוטומטית של שרת proxy</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">המערכת תוציא אותך מכל האתרים, כולל בכרטיסיות הפתוחות.</translation>
@@ -702,7 +704,6 @@
 <translation id="184273675144259287">‏החלפת הקבצים והאפליקציות של Linux בגיבוי קודם</translation>
 <translation id="1842766183094193446">להפעיל מצב הדגמה?</translation>
 <translation id="1846308012215045257">‏כדי להפעיל את <ph name="PLUGIN_NAME" />, לחץ עליו תוך כדי הקשה על Control</translation>
-<translation id="1846880379134204029">הקבוצה <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">הפעלת מצב אווירה</translation>
 <translation id="1849186935225320012">‏לדף זה יש שליטה מלאה על מכשירי MIDI.</translation>
 <translation id="1850508293116537636">סובב &amp;בכיוון השעון</translation>
@@ -1721,6 +1722,7 @@
 <translation id="3103941660000130485">‏אירעה שגיאה בשדרוג Linux</translation>
 <translation id="3105796011181310544">‏להחזיר אל Google?</translation>
 <translation id="310671807099593501">‏האתר משתמש ב-Bluetooth</translation>
+<translation id="3109724472072898302">מכווץ</translation>
 <translation id="3115147772012638511">ממתין למטמון...</translation>
 <translation id="3115580024857770654">כיווץ הכול</translation>
 <translation id="3116968597797150452">פרופיל האישור</translation>
@@ -1788,7 +1790,6 @@
 <translation id="3192947282887913208">קובצי אודיו</translation>
 <translation id="3199127022143353223">שרתים</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{‏ההמלצה של Chrome היא לבדוק את הסיסמה הזו עכשיו}two{‏ההמלצה של Chrome היא לבדוק את הסיסמאות האלה עכשיו}many{‏ההמלצה של Chrome היא לבדוק את הסיסמאות האלה עכשיו}other{‏ההמלצה של Chrome היא לבדוק את הסיסמאות האלה עכשיו}}</translation>
-<translation id="3200941271596533635">הפעלה או השבתה של הקורא</translation>
 <translation id="3201422919974259695">‏התקני USB זמינים יופיעו כאן.</translation>
 <translation id="3202131003361292969">נתיב</translation>
 <translation id="3202173864863109533">האודיו בכרטיסייה זו מושתק.</translation>
@@ -4208,7 +4209,6 @@
 <translation id="6270770586500173387">שלח <ph name="BEGIN_LINK1" />פרטי מערכת ויישומים<ph name="END_LINK1" />, כמו גם <ph name="BEGIN_LINK2" />מדדים<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">אירעה שגיאה (<ph name="ERROR" />) במהלך הורדת הפלאגין</translation>
 <translation id="6273677812470008672">איכות</translation>
-<translation id="6273979226236203550">‏הסיסמה שלך שמורה במכשיר הזה ובחשבון Google שלך. מאיפה למחוק את הסיסמה?</translation>
 <translation id="6277105963844135994">תם הזמן הקצוב לתפוגה של הרשת</translation>
 <translation id="6277518330158259200">צלם מסך</translation>
 <translation id="6278057325678116358">‏השתמש ב-GTK+‎</translation>
@@ -4252,6 +4252,7 @@
 <translation id="6322653941595359182">‏אפשר לשלוח ולקבל הודעות טקסט דרך ה-Chromebook</translation>
 <translation id="6324916366299863871">עריכת קיצור דרך</translation>
 <translation id="6325191661371220117">השבת הפעלה אוטומטית</translation>
+<translation id="6325525973963619867">נכשל</translation>
 <translation id="6326175484149238433">‏הסר מ-Chrome</translation>
 <translation id="6326855256003666642">‏ספירת Keepalive</translation>
 <translation id="632707535499064463">בהתאם לבקשה של <ph name="ORGANIZATION_NAME" />, יש לעדכן את המכשיר הזה לפני התאריך האחרון.</translation>
@@ -4855,7 +4856,6 @@
 <translation id="7099337801055912064">‏לא ניתן לטעון קובץ PPD גדול. הגודל המקסימלי הוא ‎250 kB.</translation>
 <translation id="7102687220333134671">עדכונים אוטומטיים מופעלים</translation>
 <translation id="7102832101143475489">תם פרק הזמן שהוקצב לבקשה</translation>
-<translation id="7102928824073746774">קבוצה ללא שם – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">‏העדפות USB</translation>
 <translation id="710640343305609397">פתיחת הגדרות רשת</translation>
 <translation id="7108338896283013870">הסתרה</translation>
@@ -4931,6 +4931,7 @@
 <translation id="720110658997053098">השארת המכשיר הזה במצב קיוסק באופן קבוע</translation>
 <translation id="7201118060536064622">הפריט '<ph name="DELETED_ITEM_NAME" />' נמחק</translation>
 <translation id="7201420661433230412">הצג קבצים</translation>
+<translation id="7203150201908454328">מורחב</translation>
 <translation id="7203826966018112936">‏הוספת חשבון בית ספרי לפרופיל מאפשרת לתלמיד או לתלמידה להיכנס בקלות לאתרים ולתוספים, ועדיין לפעול במסגרת המגבלות של בקרת ההורים. חשבון זה לא מעניק לילד או לילדה גישה לסימניות, לסיסמאות או לנתוני דפדפן אחרים המסונכרנים עם החשבון הבית ספרי.&lt;br&gt;&lt;br&gt;
     אם הילד או הילדה שלך משתמשים ב-Chromebook בבית הספר, וברצונך ליצור בשבילם בבית חוויה הדומה ללמידה בבית הספר ולהבטיח שיש להם גישה לכל המקורות הדרושים ללמידה, עליך לצאת מהחשבון הזה של Family Link ולהיכנס שוב לחשבון הבית ספרי מדף החשבונות ב-Chrome (הערה: בקרת ההורים של Family Link לא תחול על החשבון).&lt;br&gt;&lt;br&gt;
     אם הילד או הילדה לא משתמשים ב-Chromebook בבית הספר, או אם עדיף לך לנהל את החוויה של הילד או הילדה בבית באמצעות Family Link, עליך ללחוץ על הלחצן 'הבא' למטה כדי להוסיף חשבון בית ספרי לפרופיל הזה.</translation>
@@ -5326,7 +5327,6 @@
 <translation id="7704521324619958564">‏פתח את Play Store</translation>
 <translation id="7705276765467986571">לא ניתן להעלות דגם סימניה.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">הפעלה או השבתה של הקורא</translation>
 <translation id="7707108266051544351">גישת האתר הזה אל חיישני התנועה נחסמה.</translation>
 <translation id="7707922173985738739">השתמש בחבילת גלישה</translation>
 <translation id="7709152031285164251">נכשל - <ph name="INTERRUPT_REASON" /></translation>

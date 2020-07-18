@@ -459,8 +459,7 @@ bool CollectBluetoothLowEnergyDeviceInfo(
 
   std::unique_ptr<device::win::BluetoothLowEnergyDeviceInfo> result(
       new device::win::BluetoothLowEnergyDeviceInfo());
-  result->path = base::FilePath(
-      base::as_u16cstr(device_interface_detail_data->DevicePath));
+  result->path = base::FilePath(device_interface_detail_data->DevicePath);
   if (!CollectBluetoothLowEnergyDeviceInstanceId(
           device_info_handle, &device_info_data, result, error)) {
     return false;

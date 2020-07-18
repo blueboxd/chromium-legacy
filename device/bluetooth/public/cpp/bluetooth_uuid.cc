@@ -84,7 +84,7 @@ BluetoothUUID::BluetoothUUID(GUID uuid) {
   DCHECK_EQ('{', buffer[0]);
   DCHECK_EQ('}', buffer[37]);
 
-  GetCanonicalUuid(base::UTF16ToUTF8(buffer.substr(1, 36)), &value_,
+  GetCanonicalUuid(base::WideToUTF8(buffer.substr(1, 36)), &value_,
                    &canonical_value_, &format_);
   DCHECK_EQ(kFormat128Bit, format_);
 }

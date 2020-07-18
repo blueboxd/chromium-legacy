@@ -46,7 +46,7 @@ using mojom::UsbTransferStatus;
 
 namespace {
 
-const base::StringPiece16 kWinUsbDriverName = L"winusb";
+const base::WStringPiece kWinUsbDriverName = L"winusb";
 
 uint8_t BuildRequestFlags(UsbTransferDirection direction,
                           UsbControlTransferType request_type,
@@ -618,8 +618,8 @@ UsbDeviceHandleWin::~UsbDeviceHandleWin() {
 }
 
 void UsbDeviceHandleWin::UpdateFunction(int interface_number,
-                                        const base::string16& function_driver,
-                                        const base::string16& function_path) {
+                                        const std::wstring& function_driver,
+                                        const std::wstring& function_path) {
   auto it = interfaces_.find(interface_number);
   if (it == interfaces_.end())
     return;

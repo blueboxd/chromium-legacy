@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">Japonca giriş (ABD klavye için)</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> öğe siliniyor...</translation>
 <translation id="1049926623896334335">Word belgesi</translation>
+<translation id="1060368002126861100">Dosyaları <ph name="APP_NAME" /> ile açmak için önce dosyaları Windows dosyaları klasörüne taşıyın.</translation>
 <translation id="1062407476771304334">Değiştir</translation>
 <translation id="1065449928621190041">Fransızca (Kanada) klavye</translation>
 <translation id="1119069657431255176">Bzip2 sıkıştırılmış tar arşivi</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">Dikkat: Bu dosyalar geçicidir ve disk alanından kazanmak için otomatik olarak silinebilir.  <ph name="BEGIN_LINK" />Daha Fazla Bilgi<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Klasör</translation>
 <translation id="3549797760399244642">drive.google.com'a git...</translation>
+<translation id="3553048479571901246">Dosyaları <ph name="APP_NAME" /> ile açmak için önce dosyaları Windows dosyaları klasörüne kopyalayın.</translation>
 <translation id="357479282490346887">Litvanca</translation>
 <translation id="3583509704582854624">Alfasayısal giriş (Japonca klavye için)</translation>
 <translation id="3603385196401704894">Kanada Fransızcası</translation>

@@ -1,15 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
-<translation id="1334465099090928258">ขับเคลื่อนโดย <ph name="APP_NAME" /></translation>
 <translation id="1717486229951421299">รายการข้อมูลเข้าสู่ระบบที่จะกรอกเมื่อแตะเปิดอยู่ที่ระดับความสูงครึ่งหนึ่งของหน้าจอ</translation>
 <translation id="207576718733492531">รายการข้อมูลเข้าสู่ระบบที่จะกรอกเมื่อแตะปิดอยู่</translation>
 <translation id="2359808026110333948">ต่อไป</translation>
 <translation id="2410754283952462441">เลือกบัญชี</translation>
 <translation id="3399357656427473483">รายการข้อมูลเข้าสู่ระบบที่จะกรอกเมื่อแตะ</translation>
-<translation id="496501580515239715">ฟีเจอร์ใหม่ใน <ph name="APP_NAME" /> ควบคุมวิธีลงชื่อเข้าใช้ด้วยการแตะเพียงครั้งเดียว</translation>
 <translation id="5441504010984421144">รายการข้อมูลเข้าสู่ระบบที่จะกรอกเมื่อแตะเปิดอยู่ที่ระดับความสูงเต็มหน้าจอ</translation>
 <translation id="5624120631404540903">จัดการรหัสผ่าน</translation>
-<translation id="765102084632356159">ฟีเจอร์ใหม่ใน <ph name="APP_NAME" /> แตะเพื่อลงชื่อเข้าใช้</translation>
 <translation id="804577341878669140">ดำเนินการต่อกับบัญชี</translation>
 </translationbundle>

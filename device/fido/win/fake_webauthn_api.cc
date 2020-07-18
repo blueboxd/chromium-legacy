@@ -108,7 +108,7 @@ HRESULT FakeWinWebAuthnApi::AuthenticatorGetAssertion(
   }
 
   const auto rp_id_hash =
-      fido_parsing_utils::CreateSHA256Hash(base::UTF16ToUTF8(rp_id));
+      fido_parsing_utils::CreateSHA256Hash(base::WideToUTF8(rp_id));
 
   RegistrationData* registration = nullptr;
   base::span<const uint8_t> credential_id;
@@ -211,23 +211,23 @@ PCWSTR FakeWinWebAuthnApi::GetErrorName(HRESULT hr) {
   // See the comment for WebAuthNGetErrorName() in <webauthn.h>.
   switch (hr) {
     case S_OK:
-      return STRING16_LITERAL("Success");
+      return L"Success";
     case NTE_EXISTS:
-      return STRING16_LITERAL("InvalidStateError");
+      return L"InvalidStateError";
     case HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED):
     case NTE_NOT_SUPPORTED:
     case NTE_TOKEN_KEYSET_STORAGE_FULL:
-      return STRING16_LITERAL("ConstraintError");
+      return L"ConstraintError";
     case NTE_INVALID_PARAMETER:
-      return STRING16_LITERAL("NotSupportedError");
+      return L"NotSupportedError";
     case NTE_DEVICE_NOT_FOUND:
     case NTE_NOT_FOUND:
     case HRESULT_FROM_WIN32(ERROR_CANCELLED):
     case NTE_USER_CANCELLED:
     case HRESULT_FROM_WIN32(ERROR_TIMEOUT):
-      return STRING16_LITERAL("NotAllowedError");
+      return L"NotAllowedError";
     default:
-      return STRING16_LITERAL("UnknownError");
+      return L"UnknownError";
   }
 }
 

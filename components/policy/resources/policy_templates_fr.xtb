@@ -205,6 +205,11 @@
 <translation id="1376119291123231789">Activer le mode avancé de recharge de la batterie</translation>
 <translation id="1384459581748403878">Référence : <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Indiquer l'état de la mise à jour du système</translation>
+<translation id="1390901586107713894">Permet de déterminer quelles extensions les utilisateurs ne peuvent PAS installer. Les extensions déjà installées, mais qui sont bloquées, sont désactivées sans que l'utilisateur puisse les activer. Elles sont automatiquement réactivées dès que vous les retirez de la liste de blocage.
+
+          Si vous saisissez la valeur "*" dans la liste de blocage, toutes les extensions sont bloquées, sauf si elles sont spécifiquement répertoriées dans la liste d'autorisation.
+
+          Si cette règle n'est pas configurée, les utilisateurs peuvent installer n'importe quelle extension dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1393485621820363363">Imprimantes d'appareils d'entreprise activées</translation>
 <translation id="1397855852561539316">URL de suggestions de recherche du moteur de recherche par défaut</translation>
 <translation id="1404043648050567997">Le service de navigation sécurisée affiche une page d'avertissement lorsque l'utilisateur essaie d'accéder à des sites signalés comme étant potentiellement malveillants. L'activation de ce paramètre bloque la navigation sur ces sites dès lors que l'avertissement apparaît.
@@ -1052,6 +1057,13 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 <translation id="253135976343875019">Délai d'inactivité avant l'affichage d'un avertissement (en cas de connexion secteur)</translation>
 <translation id="2536525645274582300">L'utilisateur décide d'activer ou non les services de localisation Google</translation>
 <translation id="254653220329944566">Active la création de rapports dans le cloud pour <ph name="PRODUCT_NAME" /></translation>
+<translation id="2547854230073316008">Permet de définir la résolution et le facteur de scaling de chaque écran. Les paramètres des écrans externes s'appliquent aux écrans connectés. (Cette règle ne s'applique pas si un écran n'accepte pas la résolution ni le scaling spécifiés.)
+
+      Si la valeur <ph name="EXTERNAL_USE_NATIVE" /> est définie sur "True", cette règle ignore les valeurs <ph name="EXTERNAL_WIDTH" /> et <ph name="EXTERNAL_HEIGHT" />, et applique la résolution native des écrans externes. Si la valeur <ph name="EXTERNAL_USE_NATIVE" /> est définie sur "False", ou que cette même valeur ainsi que les valeurs <ph name="EXTERNAL_WIDTH" /> ou <ph name="EXTERNAL_HEIGHT" /> ne sont pas définies, cette règle n'affecte pas les écrans externes.
+
+      Si l'indicateur recommandé est défini sur "True", les utilisateurs peuvent modifier la résolution et le facteur de scaling de n'importe quel écran dans les paramètres. Toutefois, leurs paramètres changeront de nouveau au redémarrage suivant. Si l'indicateur recommandé est défini sur "False" ou qu'il n'est pas défini, les utilisateurs ne peuvent pas modifier les paramètres des écrans.
+
+      Remarque : Définissez les valeurs <ph name="EXTERNAL_WIDTH" /> et <ph name="EXTERNAL_HEIGHT" /> en pixels, et les valeurs <ph name="EXTERNAL_SCALE_PERCENTAGE" /> et <ph name="INTERNAL_SCALE_PERCENTAGE" /> en pourcentage.</translation>
 <translation id="2548397295248733155">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
 
           Elle permet de spécifier le délai d'inactivité au terme duquel l'écran est éteint (lorsque l'appareil fonctionne sur batterie).
@@ -1500,11 +1512,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 <translation id="3184161739683646075">Contrôle le mode DNS-over-HTTPS</translation>
 <translation id="3185009703220253572">depuis la version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Les applications Android n'ont pas accès aux clés d'entreprise. Cette règle n'a aucun effet sur ces applications.</translation>
-<translation id="3190338425427039045">Si cette règle est activée ou qu'elle n'est pas configurée, toutes les sorties audio compatibles sur les appareils des utilisateurs sont autorisées.
-
-      Si cette règle est désactivée, aucune sortie audio n'est autorisée lorsque les utilisateurs sont connectés.
-
-      Remarque : Cette règle concerne toutes les entrées audio (pas seulement le micro intégré), y compris les fonctionnalités d'accessibilité audio. Ne l'activez pas si un utilisateur a besoin d'un lecteur d'écran.</translation>
 <translation id="3196585866522778760">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
 
           Elle permet de spécifier le délai d'inactivité de l'utilisateur au terme duquel l'action à effectuer en cas d'inactivité est mise en œuvre (lorsque l'appareil fonctionne sur batterie).
@@ -1537,11 +1544,11 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3251500716404598358">Configurer les règles pour passer d'un navigateur à l'autre.
 
       Les sites Web configurés s'ouvrent automatiquement dans un navigateur autre que <ph name="PRODUCT_NAME" />.</translation>
+<translation id="3255762580838224124">Si cette règle est configurée, chaque écran pivote en fonction de l'orientation spécifiée, à chaque redémarrage ainsi que la première fois qu'il est affiché après une modification de la valeur de cette règle. Une fois connectés, les utilisateurs peuvent modifier le paramètre de rotation d'écran. Toutefois, le paramètre initial sera rétabli au redémarrage suivant. Cette règle s'applique à l'écran principal, ainsi qu'aux écrans secondaires.
+
+      Si cette règle n'est pas configurée, la valeur par défaut est de 0 degré, et les utilisateurs sont libres de la modifier. Dans ce cas, la valeur par défaut n'est pas rétablie au redémarrage.</translation>
 <translation id="3264793472749429012">Codages du moteur de recherche par défaut</translation>
 <translation id="3273221114520206906">Paramètre JavaScript par défaut</translation>
-<translation id="328108936611091281">Si la règle <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> est activée, la règle <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POLICY_NAME" /> vous permet de spécifier l'URL du moteur de recherche utilisé lors d'une recherche par défaut. L'URL doit inclure la chaîne <ph name="SEARCH_TERM_MARKER" />, qui sera remplacée lors de la requête par les termes de recherche de l'utilisateur.
-
-      Vous pouvez spécifier cette URL comme suit : <ph name="GOOGLE_SEARCH_URL" />.</translation>
 <translation id="3284094172359247914">Contrôler l'utilisation de l'API WebUSB</translation>
 <translation id="3288595667065905535">Version disponible</translation>
 <translation id="3292147213643666827">Permet à <ph name="PRODUCT_NAME" /> de faire office de proxy entre <ph name="CLOUD_PRINT_NAME" /> et les imprimantes existantes connectées à la machine.
@@ -1558,9 +1565,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Cette règle sera supprimée dans Chrome 88.
 
       Pour en savoir plus, consultez l'article à l'adresse https://www.chromestatus.com/feature/4664843055398912.</translation>
-<translation id="3303653927512453822">Permet de rétablir l'ancien comportement <ph name="ATTRIBUTE_SAMESITE_NAME" /> pour tous les cookies. Si vous rétablissez l'ancien comportement, les cookies dont la valeur de l'attribut <ph name="ATTRIBUTE_SAMESITE_NAME" /> n'est pas spécifiée sont traités comme si la valeur <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" /> était définie. De plus, ceux dont l'attribut a pour valeur <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" /> n'exigent plus que la valeur de l'attribut <ph name="ATTRIBUTE_SECURE_NAME" /> soit spécifiée. Pour obtenir une description complète, consultez la page https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
-
-          Lorsque cette règle n'est pas configurée, le comportement <ph name="ATTRIBUTE_SAMESITE_NAME" /> par défaut pour les cookies dont la valeur de l'attribut <ph name="ATTRIBUTE_SAMESITE_NAME" /> n'est pas spécifiée dépend de la configuration personnelle de l'utilisateur concernant la fonctionnalité <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, qui peut être définie lors d'un test, ou par l'activation ou la désactivation de l'indicateur <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />.</translation>
 <translation id="3303911765031636277">Règle de configuration du connecteur Chrome Enterprise OnFileAttached</translation>
 <translation id="3304662785258434098">Permet de définir si les utilisateurs peuvent ajouter ou non des exceptions qui autorisent l'affichage de contenu mixte sur des sites spécifiques.
 
@@ -1889,6 +1893,17 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="382476126209906314">Configurer le préfixe TalkGadget pour les hôtes d'accès à distance</translation>
 <translation id="3824972131618513497">Paramètres de commande de la gestion de l'alimentation et du redémarrage.</translation>
 <translation id="3826475866868158882">Services de localisation Google activés</translation>
+<translation id="383002993919016993">Permet d'empêcher l'utilisateur de charger des pages Web à partir d'URL bloquées. La liste de blocage concernée répertorie les formats d'URL indiquant quelles URL sont bloquées.
+
+      Un format d'URL doit respecter les conditions énoncées sur la page https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Vous pouvez définir des exceptions dans la règle URLAllowlist. Ces règles sont limitées à 1 000 entrées (les entrées suivantes seront donc ignorées).
+
+      Notez qu'il est déconseillé de bloquer les URL internes chrome://*, car cela peut provoquer des erreurs inattendues.
+
+      Vous pouvez bloquer les URL javascript://*. Toutefois, cela ne concerne que le code JavaScript saisi dans la barre d'adresse (ou, par exemple, les favoris intelligents). Sachez que cette règle ne s'applique pas aux URL JavaScript intégrées dans les pages si les données sont chargées dynamiquement. Par exemple, si vous bloquez "example.com/abc", la page "example.com" pourra quand même charger "example.com/abc" via une requête XMLHTTPRequest.
+
+      Si cette règle n'est pas configurée, aucune URL n'est bloquée dans le navigateur.</translation>
 <translation id="3831376478177535007">Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME" /> accepte de faire confiance aux certificats émis par l'ancienne infrastructure PKI de Symantec Corporation s'ils sont correctement validés et que leur chaîne de confiance renvoie à un certificat CA reconnu.
 
       Notez que cette règle dépend de la reconnaissance des certificats de l'ancienne infrastructure de Symantec par le système d'exploitation. Si une mise à jour du système d'exploitation modifie sa gestion de ces certificats, cette règle n'aura plus d'effet. En outre, cette règle n'est qu'une solution temporaire destinée à laisser suffisamment de temps aux entreprises pour cesser d'utiliser les anciens certificats Symantec. Elle sera supprimée aux alentours du 1er janvier 2019.
@@ -2561,6 +2576,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier. Si cette règle n'est pas configurée, les utilisateurs choisissent si l'étagère doit être masquée automatiquement ou non.</translation>
 <translation id="4816674326202173458">Autoriser l'utilisateur d'entreprise à être à la fois un utilisateur principal et un utilisateur secondaire (comportement par défaut pour les utilisateurs non gérés)</translation>
 <translation id="4826326557828204741">Définit l'action à effectuer si le délai d'inactivité est atteint lorsque l'appareil fonctionne sur batterie.</translation>
+<translation id="482803100714220060">Afficher les URL complètes</translation>
 <translation id="4830531683854509779">Envoie des rapports sur les statistiques matérielles pour les composants SoC.
 
       Si la règle est définie sur "False" ou n'est pas définie, les statistiques ne seront pas envoyées.
@@ -2589,6 +2605,11 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       </translation>
 <translation id="489803897780524242">Paramètre contrôlant le positionnement des termes de recherche pour le moteur de recherche par défaut</translation>
 <translation id="4899708173828500852">Activer la navigation sécurisée</translation>
+<translation id="4902163780937592202">Permet de fusionner les règles liées aux listes d'installation d'extensions <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME" /> et <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
+
+      Si vous activez cette règle, les valeurs issues des règles relatives au cloud (machine) et aux plates-formes (machines et utilisateurs) sont fusionnées dans une seule liste et utilisées globalement. Ce ne sont pas uniquement les valeurs de la source ayant la priorité la plus élevée qui sont utilisées.
+
+      Si vous désactivez cette règle ou qu'elle n'est pas configurée, seules les entrées de listes issues de la source ayant la priorité la plus élevée sont prises en compte. Toutes les autres sources sont affichées en tant que sources en conflit, mais ignorées.</translation>
 <translation id="4906194810004762807">Fréquence d'actualisation des règles de l'appareil</translation>
 <translation id="4917385247580444890">Très bon</translation>
 <translation id="4919122295221518724">Appliquer un traitement plus strict au contenu mixte</translation>
@@ -2695,6 +2716,19 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="5075834892754086022">Si cette règle est définie, le nombre minimal de caractères que peut contenir un code ayant été configuré est appliqué. (Un code doit contenir au minimum 1 caractère ; les valeurs inférieures à 1 sont considérées comme égales à 1.)
 
           Si cette règle n'est pas définie, la longueur du code ne pourra pas être inférieure à six chiffres. C'est la longueur minimale conseillée.</translation>
+<translation id="5077993112092904096">Cette règle étant obsolète, veuillez utiliser à la place la règle <ph name="URL_BLOCKLIST_POLICY_NAME" />.
+
+      Celle-ci permet d'empêcher l'utilisateur de charger des pages Web à partir d'URL bloquées. La liste de blocage concernée répertorie les formats d'URL indiquant quelles URL sont bloquées.
+
+      Un format d'URL doit respecter les conditions énoncées sur la page https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Vous pouvez définir des exceptions dans la règle URLAllowlist. Ces règles sont limitées à 1 000 entrées (les entrées suivantes seront donc ignorées).
+
+      Notez qu'il est déconseillé de bloquer les URL internes chrome://*, car cela peut provoquer des erreurs inattendues.
+
+      À compter de la version Chrome 73, vous pouvez bloquer les URL javascript://*. Toutefois, cela ne concerne que le code JavaScript saisi dans la barre d'adresse (ou, par exemple, les favoris intelligents). Sachez que cette règle ne s'applique pas aux URL JavaScript intégrées dans les pages si les données sont chargées dynamiquement. Par exemple, si vous bloquez "example.com/abc", la page "example.com" pourra quand même charger "example.com/abc" via une requête XMLHTTPRequest.
+
+      Si cette règle n'est pas configurée, aucune URL n'est bloquée dans le navigateur.</translation>
 <translation id="5085647276663819155">Désactiver l'aperçu avant impression</translation>
 <translation id="5090209345759901501">Appliquer le paramètre de contenu Flash à tous les contenus</translation>
 <translation id="5090791951240382356">Autoriser la fusion de règles de dictionnaire qui proviennent de sources différentes</translation>
@@ -3179,17 +3213,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Si cette règle n'est pas configurée, le client DNS intégré est activé par défaut sur macOS, Android (lorsque ni le DNS privé, ni le VPN ne sont activés) et Chrome OS, et l'utilisateur peut choisir si le client DNS intégré doit être utilisé ou non, soit en modifiant chrome://flags, soit à l'aide d'un indicateur de ligne de commande.</translation>
 <translation id="5630352020869108293">Restaurer la dernière session</translation>
 <translation id="5633871703004128675">Activer la fonctionnalité d'accessibilité de mise en surbrillance du curseur de saisie</translation>
-<translation id="5643906875497889108">Définit les types d'applications ou d'extensions qui sont autorisés à être installés, et limite l'accès pendant l'exécution.
-
-          Cette règle permet d'ajouter à la liste blanche les types d'extensions ou d'applications qui peuvent être installés dans <ph name="PRODUCT_NAME" /> et les hôtes avec lesquels ils peuvent interagir. Il s'agit d'une liste de chaînes qui peuvent prendre les valeurs suivantes : "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app" et "platform_app". Pour en savoir plus sur ces différents types, consultez la documentation relative aux extensions dans <ph name="PRODUCT_NAME" />.
-
-          Sachez que cette règle installe également d'office les extensions et les applications via la règle ExtensionInstallForcelist.
-
-          Si cette règle est configurée, les types d'extensions ou d'applications qui ne figurent pas dans la liste ne sont pas installés.
-
-          Si cette règle n'est pas configurée, aucune restriction n'est imposée concernant les types d'extensions ou d'applications pouvant être installés.
-
-          Avant la version 75, l'utilisation de plusieurs identifiants d'extension séparés par une virgule n'est pas prise en charge et sera donc ignorée. Le reste de la règle continuera de s'appliquer.</translation>
 <translation id="5645779841392247734">Autoriser les cookies sur ces sites</translation>
 <translation id="5646234199535103501">Règle de configuration du connecteur Chrome Enterprise OnBulkDataEntry</translation>
 <translation id="5656177735561364047">Activer la fonctionnalité de presse-papiers partagé</translation>
@@ -3636,6 +3659,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6394350458541421998">Cette règle a été supprimée à partir de la version 29 de <ph name="PRODUCT_OS_NAME" />. Veuillez utiliser la règle PresentationScreenDimDelayScale à la place.</translation>
 <translation id="6401669939808766804">Déconnecter l'utilisateur</translation>
 <translation id="640244877779556713">Activer la suggestion d'emoji</translation>
+<translation id="6407093060083181305">Configurer la liste de blocage concernant l'installation des extensions</translation>
 <translation id="6417265370957905582">Assistant Google</translation>
 <translation id="6422575351619065453">En mode Kiosque, cette règle permet de déterminer si le menu d'accessibilité flottant est affiché.
 
@@ -3813,6 +3837,11 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6658245400435704251">Indique le nombre maximal de secondes pendant lesquelles un appareil peut retarder de façon aléatoire le téléchargement d'une mise à jour à partir du moment où celle-ci est disponible sur le serveur. L'appareil peut attendre pendant une certaine partie de ce temps en termes de temps de l'horloge et pendant la partie restante en termes de nombre de recherches de mise à jour. Dans tous les cas, le facteur de dispersion est limité à une quantité de temps constante, de sorte qu'un appareil ne reste jamais bloqué dans l'attente d'une mise à jour.</translation>
 <translation id="6665670272107384733">Définir la fréquence à laquelle l'utilisateur doit saisir le mot de passe pour utiliser le déverrouillage rapide</translation>
 <translation id="6667586534922258705">Activer le bouton permettant d'afficher le mot de passe sur l'écran de connexion et de verrouillage</translation>
+<translation id="6669700740683748046">Permet d'afficher ou non l'URL complète dans la barre d'adresse.
+      Si cette règle est définie sur "True", l'URL complète est affichée dans la barre d'adresse, y compris les schémas et les sous-domaines.
+      Si cette règle est définie sur "False", l'URL par défaut s'affiche.
+      Si cette règle n'est pas configurée, l'URL par défaut s'affiche. Toutefois, l'utilisateur peut alterner entre l'affichage par défaut et l'affichage de l'URL complète à l'aide d'une option de menu contextuel.
+      </translation>
 <translation id="6672070613706645316">Autoriser les utilisateurs à personnaliser l'arrière-plan sur la page "Nouvel onglet"</translation>
 <translation id="6672630473862787247">Activer l'authentification ambiante pour les sessions standards, Invité et de navigation privée.</translation>
 <translation id="6685903773201985073">Activer l'authentification ambiante pour les sessions Invité et standards.</translation>
@@ -3834,15 +3863,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 
       Elle permet de contrôler si les utilisateurs inscrits au Programme Protection Avancée sont autorisés à envoyer leurs téléchargements à Google pour les faire analyser afin de détecter d'éventuels logiciels malveillants. Si cette règle est définie sur "True" ou si elle n'est pas configurée, ces utilisateurs sont invités à envoyer leurs téléchargements à Google pour une analyse approfondie. Si ces utilisateurs sélectionnent l'option d'analyse, leurs téléchargements sont envoyés à Google. Si cette règle est définie sur "False", aucune invite ne s'affiche, et les téléchargements des utilisateurs ne sont pas envoyés à Google.</translation>
 <translation id="670597451099978576">Autoriser automatiquement ces sites à se connecter aux appareils USB à l'aide des ID de fournisseur et de produit indiqués sur l'écran de connexion.</translation>
-<translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> assure la sécurité de la mise à jour et de l'installation d'extensions. Cependant, le contenu de certaines extensions hébergées en dehors du Chrome Web Store peut n'être protégé que par une connexion non sécurisée ou des algorithmes de hachage tels que SHA1. Si cette règle est désactivée, Chrome n'autorise pas l'installation ni la mise à jour de ces extensions (tant que les développeurs ne les dotent pas d'algorithmes plus sécurisés). Si cette règle est activée, l'installation et la mise à jour de ces extensions sont autorisées.
-
-          Si elle n'est pas définie, la règle est activée par défaut.
-          Depuis <ph name="PRODUCT_NAME" /> 76, la règle est désactivée par défaut si elle n'est pas définie.
-
-          À partir de <ph name="PRODUCT_NAME" /> 78, la règle sera ignorée et considérée comme désactivée.</translation>
-<translation id="6724116921710627162">Si la règle <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> est activée, la règle <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" /> vous permet de spécifier l'URL qu'un moteur de recherche utilise pour afficher une page Nouvel onglet.
-
-      Si la règle <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" /> n'est pas configurée, aucune page Nouvel onglet n'est proposée.</translation>
 <translation id="672496466524161417">Si cette règle est définie sur "None" ou qu'elle n'est pas configurée, les utilisateurs gèrent les certificats. Si cette règle est définie sur "2", les utilisateurs peuvent uniquement consulter les certificats (sans pouvoir les gérer).
 
       Si cette règle est définie sur "1", les utilisateurs gèrent les certificats utilisateur, mais pas ceux au niveau de l'appareil.</translation>
@@ -4393,11 +4413,6 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
       Si cette règle n'est pas définie ou est définie sur 0, tout clic sur une URL entraîne son ouverture automatique dans un navigateur secondaire.
 
       Si cette règle est définie sur un nombre, Chrome affiche un message pendant le nombre de millisecondes défini, puis ouvre le navigateur secondaire.</translation>
-<translation id="7586477707097444774">Permet de rétablir l'ancien comportement <ph name="ATTRIBUTE_SAMESITE_NAME" /> pour les cookies définis sur les domaines correspondant à ces formats. Si vous rétablissez l'ancien comportement, les cookies dont la valeur de l'attribut <ph name="ATTRIBUTE_SAMESITE_NAME" /> n'est pas spécifiée sont traités comme si la valeur <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" /> était définie. De plus, ceux dont l'attribut a pour valeur <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" /> n'exigent plus que la valeur de l'attribut <ph name="ATTRIBUTE_SECURE_NAME" /> soit spécifiée. Pour obtenir une description complète, consultez la page https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
-
-          Pour les cookies sur des domaines autres que ceux représentés par les formats spécifiés ici, ou pour tous les cookies si cette règle n'est pas configurée, la valeur par défaut globale est utilisée à partir de la règle <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
-
-          Notez que les formats que vous répertoriez ici sont traités comme des domaines et non des URL. Vous ne devez donc pas spécifier de schéma ni de port.</translation>
 <translation id="7590188804371204512">Permet de contrôler l'installation d'extensions externes.
 
       Lorsque ce paramètre est activé, l'installation d'extensions externes est bloquée.
@@ -4855,9 +4870,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
       Remarque : La lecture automatique ne concerne que les domaines clairement indiqués dans la règle <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Pour l'activer pour tous les sites, ajoutez http://* et https://* à cette liste.</translation>
 <translation id="8274603902181597201">Nettoyer le répertoire d'accueil eCryptfs de l'utilisateur et employer un nouveau répertoire d'accueil chiffré avec ext4.</translation>
 <translation id="8285435910062771358">Loupe plein écran activée</translation>
-<translation id="8286955010912199104">Si cette règle est définie sur "True", les pages sont autorisées à afficher des fenêtres pop-up pendant qu'elles se déchargent.
-
-      Si cette règle est définie sur "False" ou qu'elle n'est pas configurée, les pages ne peuvent pas afficher de fenêtres pop-up pendant qu'elles se déchargent.</translation>
 <translation id="8288199156259560552">Activer le service de localisation Google pour Android</translation>
 <translation id="8290875622178450531">Activer la fonctionnalité d'accessibilité de dictée.
 
@@ -5059,9 +5071,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
       "1412.24.34" : installation de cette version spécifique seulement
 
       Avertissement : Il est déconseillé de configurer des restrictions de version, car cela pourrait empêcher les utilisateurs de recevoir des mises à jour logicielles et des correctifs de sécurité essentiels. Limiter les mises à jour à un préfixe de version spécifique pourrait constituer un risque pour les utilisateurs.</translation>
-<translation id="8516298370361397304">Si la règle <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> est activée, la règle <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POLICY_NAME" /> vous permet de spécifier l'URL du moteur de recherche pour fournir des suggestions de recherche. L'URL doit inclure la chaîne <ph name="SEARCH_TERM_MARKER" />, qui sera remplacée lors de la requête par les termes de recherche de l'utilisateur.
-
-      Vous pouvez spécifier cette URL comme suit : <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.</translation>
 <translation id="8519264904050090490">URL d'exception manuelle des utilisateurs gérés</translation>
 <translation id="8519516251436131647">Activer les raccourcis des fonctionnalités d'accessibilité.
 
@@ -5363,14 +5372,6 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications AR
       Si cette règle est définie sur False, l'autorisation de synchronisation n'est pas affichée.
       Si cette règle est définie sur True ou si elle n'est pas configurée, l'autorisation de synchronisation peut être affichée.</translation>
 <translation id="8943934315109955032">Ne pas vérifier si les règles de protection des données sensibles sont respectées</translation>
-<translation id="894510252300143386">Configure les paramètres de gestion des extensions pour <ph name="PRODUCT_NAME" />.
-
-          Cette règle contrôle plusieurs paramètres, y compris ceux contrôlés par des règles existantes associées à une extension. Le cas échéant, elle remplace les anciennes règles.
-
-          Cette règle fait correspondre un ID d'extension ou une URL de mise à jour avec sa configuration. Avec un ID d'extension, la configuration n'est appliquée qu'à l'extension spécifiée. Une configuration par défaut peut être définie pour l'ID spécial <ph name="DEFAULT_SCOPE" />, lequel s'applique à toutes les extensions pour lesquelles aucune configuration personnalisée n'est définie dans cette règle. Avec une URL de mise à jour, la configuration est appliquée à l'ensemble des extensions avec l'URL de mise à jour telle qu'elle est indiquée dans le fichier manifeste de cette extension, comme indiqué sur la page <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />, l'installation d'office est limitée aux applications et aux extensions répertoriées sur le Chrome Web Store.
-          </translation>
 <translation id="8947415621777543415">Indiquer l'emplacement de l'appareil</translation>
 <translation id="8949552982791839607">Si cette règle est désactivée, les avertissements de sécurité ne s'affichent pas lorsque Chrome est lancé avec certains indicateurs de ligne de commande présentant un risque.
 

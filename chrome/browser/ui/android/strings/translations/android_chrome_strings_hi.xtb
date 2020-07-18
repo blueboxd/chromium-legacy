@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">आपके इंटरनेट कनेक्शन की जाँच की जा रही है</translation>
 <translation id="2359808026110333948">जारी रखें</translation>
 <translation id="2369533728426058518">खुले टैब</translation>
-<translation id="2377295302146152376">Chrome, अपडेट की जांच नहीं कर सका.</translation>
 <translation id="2387895666653383613">लेख स्‍केलिंग</translation>
 <translation id="2394602618534698961">आप जिन फ़ाइलों को डाउनलोड करते हैं वे यहां दिखाई देंगी</translation>
 <translation id="2407481962792080328">जब आप अपने Google खाते में लॉग इन करते हैं, तो यह सुविधा चालू हो जाती है</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />सहायता पाएं<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">स्थान सेवा बंद है, उसे <ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में चालू करें.</translation>
 <translation id="3058498974290601450">आप सेटिंग में किसी भी समय सिंक चालू कर सकते हैं</translation>
-<translation id="3059710691562604940">सुरक्षित ब्राउज़िंग की सुविधा बंद है. Chrome इसे चालू करने का सुझाव देता है.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> बुकमार्क}one{<ph name="BOOKMARKS_COUNT_MANY" /> बुकमार्क}other{<ph name="BOOKMARKS_COUNT_MANY" /> बुकमार्क}}</translation>
 <translation id="3089395242580810162">गुप्त टैब में खोलें</translation>
 <translation id="3114012059975132928">वीडियो प्लेयर</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">अपडेट उपलब्ध है. ज़्यादा विकल्प</translation>
 <translation id="3524138585025253783">डेवलपर यूज़र इंटरफ़ेस (यूआई)</translation>
 <translation id="3527085408025491307">फ़ोल्डर</translation>
-<translation id="3533694711092285624">सेव किया हुआ कोई भी पासवर्ड नहीं है. Chrome आपके पासवर्ड की जांच तब कर सकता है, जब आप उन्हें सेव करें.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> केबी उपलब्ध</translation>
 <translation id="3549657413697417275">अपने इतिहास में खोजें</translation>
 <translation id="3557336313807607643">संपर्कों में जोड़ें</translation>
@@ -360,6 +357,7 @@
 <translation id="3892148308691398805">टेक्स्ट कॉपी करें</translation>
 <translation id="3894427358181296146">फ़ोल्डर जोड़ें</translation>
 <translation id="3895926599014793903">ज़बरदस्ती ज़ूम करना चालू करें</translation>
+<translation id="3909763690984331376">सुरक्षा जांच <ph name="BEGIN_NEW" />नया<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">वेब की सबसे अच्छी जानकारी ढूंढी जा रही है…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">मेरा डेटा संयोजित करें</translation>
@@ -570,6 +568,7 @@
 <translation id="5581519193887989363">आप जब चाहें तब <ph name="BEGIN_LINK1" />सेटिंग<ph name="END_LINK1" /> में जाकर किसी भी चीज़ को सिंक करने का विकल्प चुन सकते हैं.</translation>
 <translation id="5595485650161345191">पते में बदलाव करें</translation>
 <translation id="5599455543593328020">गुप्त मोड</translation>
+<translation id="5620163320393916465">पासवर्ड सेव नहीं किए गए हैं</translation>
 <translation id="5620928963363755975">ज़्यादा विकल्प बटन से डाउनलोड में जाकर अपनी फ़ाइलें और पेज पाएं</translation>
 <translation id="5626134646977739690">नाम:</translation>
 <translation id="5639724618331995626">सभी साइटों को अनुमति दें</translation>
@@ -581,6 +580,7 @@
 <translation id="5686790454216892815">फ़ाइल का नाम बहुत लंबा है</translation>
 <translation id="5694049548840660018">होम पेज पर आसानी से वापस जाएं</translation>
 <translation id="569536719314091526">'ज़्यादा विकल्प' बटन से इस पेज का अनुवाद किसी भी भाषा में करें</translation>
+<translation id="5696597120588531049">Chrome आपको डेटा के गलत इस्तेमाल, नुकसान पहुंचाने वाली वेबसाइटों वगैरह से सुरक्षित रहने में मदद कर सकता है</translation>
 <translation id="5697688514913266141">आपकी फ़ाइल <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" /> में सेव की जाएगी. <ph name="BEGIN_LINK2" />बदलाव करें<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">टैब पर स्विच करें</translation>
 <translation id="572328651809341494">हाल ही के टैब</translation>
@@ -714,6 +714,7 @@
 <translation id="6656545060687952787">डिवाइस स्‍कैन करने के लिए Chrome को जगह की जानकारी का एक्‍सेस की ज़रूरत है. <ph name="BEGIN_LINK" />अनुमतियां अपडेट करें<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6659594942844771486">टैब</translation>
+<translation id="6663079968236414793">टेक्स्ट का लिंक</translation>
 <translation id="666573598175432848">Chrome का नया वर्शन उपलब्ध है. 'Play स्टोर' पर जाने के लिए इस एलिमेंट पर टैप करें.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> में खोलें</translation>
 <translation id="666981079809192359">Chrome निजता सूचना</translation>

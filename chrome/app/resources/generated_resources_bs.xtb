@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Samo šifriranje</translation>
 <translation id="1038462104119736705">Preporučuje se najmanje <ph name="INSTALL_SIZE" /> slobodnog prostora za Linux. Da oslobodite prostor, izbrišite fajlove s uređaja.</translation>
 <translation id="1039337018183941703">Nevažeći ili oštećen fajl</translation>
+<translation id="104086161873270383">Novi profil</translation>
 <translation id="1041175011127912238">Ova stranica ne reagira</translation>
 <translation id="1041263367839475438">Dostupni uređaji</translation>
 <translation id="1042174272890264476">Vaš računar također ima ugrađenu RLZ biblioteku proizvoda <ph name="SHORT_PRODUCT_NAME" />. RLZ dodjeljuje nejedinstvenu oznaku koja ne može poslužiti za ličnu identifikaciju za mjerenje pretraživanja i korištenje proizvoda <ph name="SHORT_PRODUCT_NAME" /> do kojeg je došlo putem određene promotivne kampanje. Te oznake se nekada pojavljuju u upitima Google Pretraživanja u proizvodu <ph name="PRODUCT_NAME" />.</translation>
@@ -255,6 +256,7 @@
 <translation id="1306606229401759371">Promijeni postavke</translation>
 <translation id="1307165550267142340">Vaš PIN je kreiran</translation>
 <translation id="1307559529304613120">Ups!  Sistem nije uspio pohraniti token za dugoročni pristup API-ju za ovaj uređaj.</translation>
+<translation id="1313162974556054106">Naziv uređaja</translation>
 <translation id="1313405956111467313">Automatsko konfiguriranje proksi servera</translation>
 <translation id="131364520783682672">Velika slova</translation>
 <translation id="1313660246522271310">Odjavit ćete se sa svih web lokacija, uključujući otvorene kartice</translation>
@@ -705,7 +707,6 @@ da li    proksi server funkcionira. Ako smatrate da ne trebate koristiti
 <translation id="184273675144259287">Zamijenite Linux aplikacije i fajlove prethodnom sigurnosnom kopijom</translation>
 <translation id="1842766183094193446">Jeste li sigurni da želite omogućiti demo-način?</translation>
 <translation id="1846308012215045257">Ctrl + klik da pokrenete dodatak <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">Grupa <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Omogućite Ambijentalni način rada</translation>
 <translation id="1849186935225320012">Ova stranica ima punu kontrolu nad MIDI uređajima.</translation>
 <translation id="1850508293116537636">Rotiraj u smjeru kazaljke na satu</translation>
@@ -1723,6 +1724,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3103941660000130485">Greška prilikom nadogradnje Linuxa</translation>
 <translation id="3105796011181310544">Vratiti na Google?</translation>
 <translation id="310671807099593501">Web lokacija koristi bluetooth</translation>
+<translation id="3109724472072898302">Skupljeno</translation>
 <translation id="3115147772012638511">Čekanje na keš momoriju...</translation>
 <translation id="3115580024857770654">Sažmi sve</translation>
 <translation id="3116968597797150452">Profil certifikata</translation>
@@ -1790,7 +1792,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3192947282887913208">Audio fajlovi</translation>
 <translation id="3199127022143353223">Serveri</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome preporučuje da odmah provjerite tu lozinku}one{Chrome preporučuje da odmah provjerite te lozinke}few{Chrome preporučuje da odmah provjerite te lozinke}other{Chrome preporučuje da odmah provjerite te lozinke}}</translation>
-<translation id="3200941271596533635">Uključi/isključi način rada za čitanje</translation>
 <translation id="3201422919974259695">Dostupni USB uređaji pojavit će se ovdje.</translation>
 <translation id="3202131003361292969">Putanja</translation>
 <translation id="3202173864863109533">Zvuk kartice je isključen.</translation>
@@ -4210,7 +4211,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6270770586500173387">Pošalji <ph name="BEGIN_LINK1" />sistemske informacije i informacije o aplikacijama<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />metriku<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Došlo je do greške (<ph name="ERROR" />) pri preuzimanju dodatka</translation>
 <translation id="6273677812470008672">Kvalitet</translation>
-<translation id="6273979226236203550">Vaša lozinka je pohranjena na ovom uređaju i na Google računu. Koju verziju lozinke želite izbrisati?</translation>
 <translation id="6277105963844135994">Vrijeme mreže je isteklo</translation>
 <translation id="6277518330158259200">N&amp;apravi snimak ekrana</translation>
 <translation id="6278057325678116358">Koristi GTK+</translation>
@@ -4254,6 +4254,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6322653941595359182">Šaljite i primajte SMS-ove s Chromebooka</translation>
 <translation id="6324916366299863871">Uredite prečicu</translation>
 <translation id="6325191661371220117">Onemogući automatsko pokretanje</translation>
+<translation id="6325525973963619867">Nije uspjelo</translation>
 <translation id="6326175484149238433">Ukloni iz Chromea</translation>
 <translation id="6326855256003666642">Broj aktivnih radnji</translation>
 <translation id="632707535499064463">Organizacija <ph name="ORGANIZATION_NAME" /> traži da ažurirate ovaj uređaj prije roka.</translation>
@@ -4857,7 +4858,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="7099337801055912064">Nije moguće učitati veliki PPD. Maksimalna veličina je 250 kB.</translation>
 <translation id="7102687220333134671">Automatska su ažuriranja uključena</translation>
 <translation id="7102832101143475489">Zahtjev je istekao.</translation>
-<translation id="7102928824073746774">Neimenovana grupa – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Postavke USB-a</translation>
 <translation id="710640343305609397">Otvori postavke mreže</translation>
 <translation id="7108338896283013870">Sakrij</translation>
@@ -4933,6 +4933,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="720110658997053098">Trajno zadrži ovaj uređaj u načinu rada kioska</translation>
 <translation id="7201118060536064622">Stavka "<ph name="DELETED_ITEM_NAME" />" je izbrisana</translation>
 <translation id="7201420661433230412">Pregled datoteka</translation>
+<translation id="7203150201908454328">Prošireno</translation>
 <translation id="7203826966018112936">Ako dodate školski račun na profil, omogućit ćete jednostavnu prijavu na web lokacije i ekstenzije za učenike, a i dalje će biti aktivan roditeljski nadzor. Ovim dijete ne dobija pristup oznakama, lozinkama ili drugim podacima preglednika koji se sinhroniziraju sa školskim računom.&lt;br&gt;&lt;br&gt;
     Ako vaše dijete koristi Chromebook u školi i želite preslikati iskustvo školskog okruženja kod kuće da djetetu osigurate pristup svim školskim zadacima, odjavite se s ovog računa Family Linka i prijavite se na školski račun putem stranice računa Chrome OS-a (napomena: roditeljski nadzor Family Linka se neće primjenjivati).&lt;br&gt;&lt;br&gt;
     Ako vaše dijete ne koristi Chromebook u školi ili ako želite upravljati njegovim iskustvom kod kuće putem Family Linka, kliknite dugme Naprijed u nastavku da dodate školski račun na ovaj profil.</translation>
@@ -5328,7 +5329,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="7704521324619958564">Otvori Play trgovinu</translation>
 <translation id="7705276765467986571">Učitavanje modela oznake nije uspjelo.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Uključi/isključi način rada za čitanje</translation>
 <translation id="7707108266051544351">Ovoj web lokaciji je blokirano korištenje senzora pokreta.</translation>
 <translation id="7707922173985738739">Koristi prijenos podataka na mobilnoj mreži</translation>
 <translation id="7709152031285164251">Neuspješno – <ph name="INTERRUPT_REASON" /></translation>

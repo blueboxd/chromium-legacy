@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">आपकी कॉपी की हुई इमेज</translation>
 <translation id="1150979032973867961">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र आपके कंप्यूटर के ऑपरेटिंग सिस्टम द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="1151972924205500581">पासवर्ड आवश्यक</translation>
-<translation id="1152921474424827756"><ph name="URL" /> की <ph name="BEGIN_LINK" />सहेजी गई (कैश) कॉपी<ph name="END_LINK" /> एक्सेस करें</translation>
 <translation id="1156303062776767266">आप स्थानीय या शेयर की गई फ़ाइल देख रहे हैं</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ने अनपेक्षित रूप से कनेक्शन बंद कर दिया है.</translation>
 <translation id="115926840831309955">अपना कार्ड वेरीफ़िकेशन कोड (सीवीसी) जाँचें और फिर से कोशिश करें या कार्ड की समयसीमा खत्म होने की तारीख में बदलाव करें</translation>
 <translation id="1161325031994447685">वाई-फ़ाई से फिर से कनेक्ट करें</translation>
 <translation id="1165039591588034296">गड़बड़ी</translation>
+<translation id="1165174597379888365">पेज को देखा जा चुका है</translation>
 <translation id="1175364870820465910">&amp;प्रिंट करें...</translation>
 <translation id="1175875016430184367">दाईं ओर ट्रिपल स्टेपल</translation>
 <translation id="1178581264944972037">रोकें</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">विज्ञापन</translation>
 <translation id="1919367280705858090">गड़बड़ी के किसी खास मैसेज से मदद पाना</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{कुछ नहीं}=1{1 साइट}one{# साइट}other{# साइट}}</translation>
-<translation id="194030505837763158"><ph name="LINK" /> पर जाएं</translation>
 <translation id="1945968466830820669">आपके संगठन के खाते का एक्सेस खो सकता है या आपकी पहचान चोरी हो सकती है. Chromium आपको अभी अपना पासवर्ड बदलने का सुझाव देता है.</translation>
 <translation id="1947454675006758438">सबसे ऊपर दाईं ओर स्टेपल</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />आप जिन पेजों पर जाते हैं उनमें से कुछ के यूआरएल, सिस्टम की थोड़ी जानकारी, और पेज का कुछ कॉन्टेंट<ph name="END_WHITEPAPER_LINK" /> Google को भेजकर, वेब पर सभी के लिए सुरक्षा को बेहतर बनाने में मदद करें. <ph name="BEGIN_PRIVACY_PAGE_LINK" />निजता नीति<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,9 +266,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{और 1 ज़्यादा}one{और # ज़्यादा}other{और # ज़्यादा}}</translation>
 <translation id="2003709556000175978">अपना पासवर्ड अभी रीसेट करें</translation>
 <translation id="2003775180883135320">सबसे ऊपर क्वाड पंच</translation>
+<translation id="202072848677994234">यह फ़ॉर्म ऐसे कनेक्शन पर भेजा गया है जो सुरक्षित नहीं है. अपने-आप भरने की सुविधा बंद है.</translation>
 <translation id="2025115093177348061">ऑगमेंटेड रिएलिटी (एआर)</translation>
 <translation id="2025186561304664664">प्रॉक्‍सी अपने-आप कॉन्‍फ़‍िगर पर सेट है.</translation>
-<translation id="2030481566774242610">क्या आप मतलब <ph name="LINK" /> से है?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />प्रॉक्सी और फायरवॉल की जाँच करें<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">ट्रे 7</translation>
 <translation id="204357726431741734">अपने Google खाते में सेव किए गए पासवर्ड इस्तेमाल करने के लिए साइन इन करें</translation>
@@ -335,6 +334,7 @@
 <translation id="2289385804009217824">ट्रिम करें</translation>
 <translation id="2292556288342944218">आपका इंटरनेट कनेक्शन ब्लॉक कर दिया गया है</translation>
 <translation id="2293443924986248631">इसके चालू होने पर, साइटें उन कुकी का इस्तेमाल नहीं कर सकतीं जो आपको वेब पर ट्रैक करती हैं. शायद कुछ साइटों पर सुविधाएं ठीक से काम न करें.</translation>
+<translation id="2295290966866883927">आप जिन पेजों पर जाते हैं उनके यूआरएल को विश्लेषण के लिए, 'Google क्लाउड' या तीसरे पक्षों को भेजा जाता है. उदाहरण के लिए, इन्हें ऐसी वेबसाइटों की जांच करने के लिए स्कैन किया जा सकता है जो नुकसान पहुंचा सकती हैं.</translation>
 <translation id="2297722699537546652">बी5 (एन्वेलप)</translation>
 <translation id="2300306941146563769">अपलोड नहीं किया गया</translation>
 <translation id="2310021320168182093">शू2 (एन्वेलप)</translation>
@@ -1044,6 +1044,7 @@
 <translation id="5308380583665731573">कनेक्ट करें</translation>
 <translation id="5308689395849655368">खराबी रिपोर्ट बंद कर दिया गया है.</translation>
 <translation id="5314967030527622926">बुकलेट मेकर</translation>
+<translation id="5316812925700871227">घड़ी की विपरीत दिशा में घुमाएं</translation>
 <translation id="5317780077021120954">सेव करें</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="NUM_MATCHES" /> में से <ph name="MATCH_POSITION" /></translation>
 <translation id="5324080437450482387">संपर्क जानकारी चुनें</translation>
@@ -1067,7 +1068,6 @@
 <translation id="5421136146218899937">ब्राउज़िंग डेटा साफ़ करें...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> वेबसाइट आपको सूचनाएं भेजना चाहती है</translation>
 <translation id="5430298929874300616">बुकमार्क निकालें</translation>
-<translation id="5431657950005405462">आपकी फ़ाइल नहीं मिली</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" पर स्कीमा सत्यापन गड़बड़ी: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">दूसरी तरफ़ सीधा करके रखें</translation>
 <translation id="5447765697759493033">इस साइट का अनुवाद नहीं किया जाएगा</translation>
@@ -1441,7 +1441,6 @@
 <translation id="7083258188081898530">ट्रे 9</translation>
 <translation id="7086090958708083563">उपयोगकर्ता ने अपलोड का अनुरोध किया</translation>
 <translation id="7087282848513945231">काउंटी</translation>
-<translation id="7090678807593890770"><ph name="LINK" /> के लिए Google में खोज करें</translation>
 <translation id="7108338896283013870">छुपाएं</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> आपके कैमरे का उपयोग करना चाहता है</translation>
 <translation id="7108819624672055576">किसी एक्सटेंशन ने अनुमति दी है</translation>
@@ -1878,7 +1877,6 @@
 <translation id="893332455753468063">नाम जोड़ें</translation>
 <translation id="8943282376843390568">नींबू पीला</translation>
 <translation id="8957210676456822347">कैप्‍टिव पोर्टल की अनुमति देना</translation>
-<translation id="8958582951173503172">जब Chrome Enterprise Connectors सुरक्षा से जुड़ी गतिविधि के बारे में फ़्लैग करते हैं, तब इवेंट के बारे में उससे जुड़ा डेटा आपके एडमिन को भेजा जाता है. इसमें, आप जिन पेजों पर जाते हैं उनके यूआरएल और फ़ाइल के नाम या मेटाडेटा शामिल हो सकते हैं. साथ ही, वह उपयोगकर्ता नाम भी शामिल हो सकता है जिसका इस्तेमाल आप अपने डिवाइस और Chrome में साइन इन करने के लिए करते हैं.</translation>
 <translation id="8962950042226115166">संदिग्ध साइट</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />सुझाव:<ph name="MARKUP_2" />तय करें कि आपके पास डेटा कनेक्शन है<ph name="MARKUP_3" />इस वेबपेज को बाद में फिर लोड करें<ph name="MARKUP_4" />आपने जो पता डाला है उसकी जाँच करें<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">कार्ड सेव करें</translation>

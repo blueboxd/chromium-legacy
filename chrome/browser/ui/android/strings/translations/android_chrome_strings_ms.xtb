@@ -170,7 +170,6 @@ Ketik mana-mana perkataan untuk mencari. Untuk memperhalus carian anda, sentuh &
 <translation id="2353636109065292463">Memeriksa sambungan Internet anda</translation>
 <translation id="2359808026110333948">Teruskan</translation>
 <translation id="2369533728426058518">tab terbuka</translation>
-<translation id="2377295302146152376">Chrome tidak dapat menyemak kemas kini</translation>
 <translation id="2387895666653383613">Penskalaan teks</translation>
 <translation id="2394602618534698961">Fail yang anda muat turun dipaparkan di sini</translation>
 <translation id="2407481962792080328">Apabila anda log masuk ke Akaun Google anda, ciri ini akan dihidupkan</translation>
@@ -259,7 +258,6 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Lokasi dimatikan, hidupkannya dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Anda boleh mematikan penyegerakan pada bila-bila masa dalam tetapan</translation>
-<translation id="3059710691562604940">Penyemakan Imbas Selamat dimatikan. Chrome mengesyorkan agar ciri ini dihidupkan.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> penanda halaman}other{<ph name="BOOKMARKS_COUNT_MANY" /> penanda halaman}}</translation>
 <translation id="3089395242580810162">Buka dalam tab inkognito</translation>
 <translation id="3114012059975132928">Pemain video</translation>
@@ -320,7 +318,6 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="3522247891732774234">Kemas kini tersedia. Lagi pilihan</translation>
 <translation id="3524138585025253783">UI Pembangun</translation>
 <translation id="3527085408025491307">Folder</translation>
-<translation id="3533694711092285624">Tiada kata laluan yang disimpan. Chrome boleh menyemak kata laluan anda yang disimpan.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB tersedia</translation>
 <translation id="3549657413697417275">Cari sejarah anda</translation>
 <translation id="3557336313807607643">Tambahkan pada kenalan</translation>
@@ -360,6 +357,7 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="3892148308691398805">Salin teks</translation>
 <translation id="3894427358181296146">Tambah folder</translation>
 <translation id="3895926599014793903">Zum didaya paksa</translation>
+<translation id="3909763690984331376">Semakan keselamatan <ph name="BEGIN_NEW" />Baharu<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Mencari maklumat terbaik daripada web…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Gabungkan data saya</translation>
@@ -570,6 +568,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5581519193887989363">Anda boleh memilih item yang hendak disegerakkan dalam <ph name="BEGIN_LINK1" />tetapan<ph name="END_LINK1" /> pada bila-bila masa.</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
 <translation id="5599455543593328020">Mod inkognito</translation>
+<translation id="5620163320393916465">Tiada kata laluan yang disimpan</translation>
 <translation id="5620928963363755975">Cari fail dan halaman anda dalam Muat Turun daripada butang Lagi Pilihan</translation>
 <translation id="5626134646977739690">Nama:</translation>
 <translation id="5639724618331995626">Benarkan semua tapak</translation>
@@ -581,6 +580,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5686790454216892815">Nama fail terlalu panjang</translation>
 <translation id="5694049548840660018">Kembali ke laman utama dengan mudah</translation>
 <translation id="569536719314091526">Terjemahkan halaman ini ke dalam sebarang bahasa lain daripada butang Lagi pilihan</translation>
+<translation id="5696597120588531049">Chrome dapat membantu untuk memastikan anda selamat daripada pelanggaran data, tapak web yang tidak selamat dan pelbagai lagi</translation>
 <translation id="5697688514913266141">Fail anda akan disimpan ke <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Edit<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Beralih Kepada Tab</translation>
 <translation id="572328651809341494">Tab terbaharu</translation>
@@ -714,6 +714,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6656545060687952787">Chrome memerlukan akses lokasi untuk mengimbas peranti. <ph name="BEGIN_LINK" />Kemaskinikan kebenaran<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Kata laluan</translation>
 <translation id="6659594942844771486">Tab</translation>
+<translation id="6663079968236414793">Pautan kepada teks</translation>
 <translation id="666573598175432848">Versi Chrome yang lebih baharu tersedia. Ketik elemen ini untuk pergi ke Gedung Play.</translation>
 <translation id="666731172850799929">Buka dalam <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Notis Privasi Chrome</translation>

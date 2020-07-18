@@ -232,6 +232,7 @@
 <translation id="1274997165432133392">Файлы cookie і іншыя даныя сайтаў</translation>
 <translation id="1275718070701477396">Выбрана</translation>
 <translation id="1276994519141842946">Не ўдалося выдаліць праграму <ph name="APP_NAME" /></translation>
+<translation id="127946606521051357">Прылада паблізу спрабуе абагуліць даныя</translation>
 <translation id="1280820357415527819">Ідзе пошук мабільных сетак</translation>
 <translation id="1280965841156951489">Змяніць файлы</translation>
 <translation id="1285320974508926690">Ніколі не перакладаць гэты сайт</translation>
@@ -704,7 +705,6 @@
 <translation id="184273675144259287">Замяніць файлы і праграмы Linux папярэдняй рэзервовай копіяй</translation>
 <translation id="1842766183094193446">Сапраўды ўключыць дэманстрацыйны рэжым?</translation>
 <translation id="1846308012215045257">Каб запусціць <ph name="PLUGIN_NAME" />, націсніце камбінацыю Ctrl + Левая клавіша мышы</translation>
-<translation id="1846880379134204029">Група <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Уключыць Неактыўны рэжым</translation>
 <translation id="1849186935225320012">Гэта старонка мае поўны кантроль над прыладамі MIDI.</translation>
 <translation id="1850508293116537636">Павярнуць &amp;па гадзіннікавай стрэлцы</translation>
@@ -1220,6 +1220,7 @@
 <translation id="2489918096470125693">Дадаць &amp;папку...</translation>
 <translation id="2490481887078769936">Файл "<ph name="FILE_NAME" />" выдалены са спіса</translation>
 <translation id="249113932447298600">На жаль, прылада <ph name="DEVICE_LABEL" /> зараз не падтрымліваецца.</translation>
+<translation id="2492308681814209210">Прылада "<ph name="DEVICE_NAME" />" спрабуе абагуліць з вамі даныя (<ph name="ATTACHMENTS" />)</translation>
 <translation id="2492461744635776704">Рыхтуецца запыт на подпіс сертыфіката</translation>
 <translation id="249303669840926644">Не ўдалося завяршыць рэгістрацыю</translation>
 <translation id="2495777824269688114">Знаходзьце адказы на свае пытанні і даведайцеся пра больш функцый. Для даведкі націсніце "?".</translation>
@@ -1721,6 +1722,7 @@
 <translation id="3103941660000130485">Памылка абнаўлення Linux</translation>
 <translation id="3105796011181310544">Зноў зрабіць Google стандартнай пошукавай сістэмай?</translation>
 <translation id="310671807099593501">Сайт выкарыстоўвае Bluetooth</translation>
+<translation id="3109724472072898302">Згорнута</translation>
 <translation id="3115147772012638511">Чакаецца кэш...</translation>
 <translation id="3115580024857770654">Згарнуць усе</translation>
 <translation id="3116968597797150452">Профіль сертыфіката</translation>
@@ -1788,7 +1790,6 @@
 <translation id="3192947282887913208">Аўдыяфайлы</translation>
 <translation id="3199127022143353223">Серверы</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome рэкамендуе праверыць гэты пароль зараз}one{Chrome рэкамендуе праверыць гэтыя паролі зараз}few{Chrome рэкамендуе праверыць гэтыя паролі зараз}many{Chrome рэкамендуе праверыць гэтыя паролі зараз}other{Chrome рэкамендуе праверыць гэтыя паролі зараз}}</translation>
-<translation id="3200941271596533635">Уключыць або выключыць рэжым чытання</translation>
 <translation id="3201422919974259695">Тут з'явяцца даступныя прылады USB.</translation>
 <translation id="3202131003361292969">Шлях</translation>
 <translation id="3202173864863109533">Гук на гэтай укладцы выключаны.</translation>
@@ -4151,6 +4152,7 @@
 <translation id="6212039847102026977">Паказаць пашыраныя параметры сеткі</translation>
 <translation id="6212168817037875041">Выключыць дысплэй</translation>
 <translation id="6212752530110374741">Адправіць спасылку па пошце</translation>
+<translation id="6213230117190778270">Прыняць</translation>
 <translation id="6216696360484424239">Аўтаматычны ўваход</translation>
 <translation id="6218058416316985984">Прылада <ph name="DEVICE_TYPE" /> не падключана да інтэрнэту. Падключыцеся да інтэрнэту і паўтарыце спробу.</translation>
 <translation id="6220413761270491930">Памылка загрузкі пашырэння</translation>
@@ -4207,7 +4209,6 @@
 <translation id="6270770586500173387">Адправіць <ph name="BEGIN_LINK1" />звесткі пра сістэму і праграмы<ph name="END_LINK1" />, а таксама <ph name="BEGIN_LINK2" />паказчыкі<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Адбылася памылка (<ph name="ERROR" />) падчас спампоўкі ўбудовы</translation>
 <translation id="6273677812470008672">Якасць</translation>
-<translation id="6273979226236203550">Пароль захаваны на гэтай прыладзе і ва Уліковым запісе Google. Які з іх выдаліць?</translation>
 <translation id="6277105963844135994">Час чакання сеткі</translation>
 <translation id="6277518330158259200">&amp;Зрабіць здымак экрана</translation>
 <translation id="6278057325678116358">Выкарыстоўваць GTK+</translation>
@@ -4278,6 +4279,7 @@
 <translation id="6362853299801475928">&amp;Паведаміць аб праблеме...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Дадаванне членаў сям'і і сяброў</translation>
+<translation id="6367985768157257101">Выкарыстаць для атрымання даных функцыю "Абагульванне паблізу"?</translation>
 <translation id="636850387210749493">Рэгістрацыя для арганізацый</translation>
 <translation id="6370021412472292592">Не ўдалося загрузіць маніфест.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4853,7 +4855,6 @@
 <translation id="7099337801055912064">Не ўдалося загрузіць вялікі файл PPD. Максімальны памер – 250 КБ.</translation>
 <translation id="7102687220333134671">Аўтаматычныя абнаўленні ўключаны</translation>
 <translation id="7102832101143475489">Запыт пратэрмінаваны</translation>
-<translation id="7102928824073746774">Група без назвы – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Параметры USB</translation>
 <translation id="710640343305609397">Адкрыць налады сеткі</translation>
 <translation id="7108338896283013870">Схаваць</translation>
@@ -4929,6 +4930,7 @@
 <translation id="720110658997053098">Заўсёды ўжываць на гэтай прыладзе рэжым кіёска</translation>
 <translation id="7201118060536064622"><ph name="DELETED_ITEM_NAME" /> – выдалена</translation>
 <translation id="7201420661433230412">Праглядзець файлы</translation>
+<translation id="7203150201908454328">Разгорнута</translation>
 <translation id="7203826966018112936">Калі дадаць навучальны ўліковы запіс у профіль, карыстальнік зможа лёгка ўваходзіць на вэб-сайты і ў пашырэнні ў якасці вучня, застаючыся пры гэтым пад бацькоўскім кантролем. Пры гэтым дзіця не атрымае доступу да закладак, пароляў або іншых даных браўзера, сінхранізаваных з навучальным уліковым запісам.&lt;br&gt;&lt;br&gt;
     Калі дзіця ў працэсе навучання карыстаецца прыладай Chromebook, а вы хочаце працягваць гэты працэс дома і забяспечыць дзіцяці доступ да ўсіх неабходных матэрыялаў, выйдзіце з гэтага ўліковага запісу Family Link і ўвайдзіце ў навучальны ўліковы запіс на старонцы ўліковых запісаў Chrome OS (звярніце ўвагу: налады бацькоўскага кантролю сэрвісу Family Link дзейнічаць не будуць).&lt;br&gt;&lt;br&gt;
     Калі дзіця не карыстаецца прыладай Chromebook у працэсе навучання ці вы хочаце кантраляваць навучальны працэс дзіцяці з дому, выкарыстоўваючы Family Link, націсніце кнопку "Далей", каб дадаць навучальны ўліковы запіс у гэты профіль.</translation>
@@ -5324,7 +5326,6 @@
 <translation id="7704521324619958564">Адкрыць Краму Play</translation>
 <translation id="7705276765467986571">Не ўдалося загрузіць мадэль закладак.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Уключыць або выключыць рэжым чытання</translation>
 <translation id="7707108266051544351">Гэтаму сайту заблакіраваны доступ да датчыкаў руху.</translation>
 <translation id="7707922173985738739">Выкарыстоўваць мабільную перадачу даных</translation>
 <translation id="7709152031285164251">Памылка: <ph name="INTERRUPT_REASON" /></translation>
@@ -6580,6 +6581,7 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Увядзіце фразу-пароль</translation>
 <translation id="939736085109172342">Новая папка</translation>
+<translation id="941070664607309480">Націсніце, каб ваша прылада стала бачнай і змагла атрымаць іх</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> абагульвае гук і ўкладку Chrome.</translation>
 <translation id="945522503751344254">Адправіць водгук</translation>
 <translation id="947329552760389097">&amp;Праверыць элементы</translation>

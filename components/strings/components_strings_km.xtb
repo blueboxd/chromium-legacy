@@ -41,12 +41,12 @@
 <translation id="1150979032973867961">ម៉ាស៊ីនមេនេះមិនអាចបង្ហាញថាវាជា <ph name="DOMAIN" /> ទេ វិញ្ញាបនប័ត្រសុវត្ថិភាពរបស់វា
 មិនត្រូវបានជឿ៌ជាក់ដោយប្រព័ន្ធប្រតិបត្តិការកុំព្យូទ័ររបស់អ្នកទេ។ នេះអាចបណ្តាលមកពីការកំណត់មិនត្រឹមត្រូវ ឬមានការស្ទាក់ការភ្ជាប់របស់អ្នកពីអ្នកវាយប្រហារ។</translation>
 <translation id="1151972924205500581">តម្រូវឲ្យមានពាក្យសម្ងាត់</translation>
-<translation id="1152921474424827756">ចូលប្រើ <ph name="BEGIN_LINK" />ច្បាប់ចម្លងផ្ទុកក្នុងឃ្លាំងសម្ងាត់<ph name="END_LINK" /> នៃ <ph name="URL" /></translation>
 <translation id="1156303062776767266">អ្នក​កំពុង​មើល​ឯកសារ​ដែលបានចែករំលែក ឬឯកសារមូលដ្ឋាន</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> បានបិទការតភ្ជាប់ដោយមិនបានរំពឹងទុក</translation>
 <translation id="115926840831309955">ពិនិត្យមើល CVC របស់អ្នក រួចព្យាយាមម្ដងទៀត ឬធ្វើ​បច្ចុប្បន្នភាព​កាលបរិច្ឆេទ​ផុតកំណត់</translation>
 <translation id="1161325031994447685">កំពុងភ្ជាប់ Wi-Fi ឡើងវិញ</translation>
 <translation id="1165039591588034296">កំហុសឆ្គង</translation>
+<translation id="1165174597379888365">ទំព័រត្រូវបានចូលមើល</translation>
 <translation id="1175364870820465910">បោះពុម្ព...</translation>
 <translation id="1175875016430184367">កិប​បីគ្រាប់​ខាងស្ដាំ</translation>
 <translation id="1178581264944972037">ផ្អាក</translation>
@@ -249,7 +249,6 @@
 <translation id="1919345977826869612">ពាណិជ្ជកម្ម</translation>
 <translation id="1919367280705858090">ទទួល​បានជំនួយដោយ​ប្រើ​​សារ​បញ្ហា​ជាក់លាក់មួយ</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{គ្មាន}=1{ទំព័រ 1}other{ទំព័រ #}}</translation>
-<translation id="194030505837763158">ទៅកាន់ <ph name="LINK" /></translation>
 <translation id="1945968466830820669">អ្នក​អាច​បាត់បង់​សិទ្ធិចូល​ប្រើ​គណនីរបស់​ស្ថាប័ន​អ្នក ឬ​ជួបប្រទះ​នឹង​ការលួចយក​អត្តសញ្ញាណ។ Chromium សូមណែនាំ​ឱ្យប្ដូរ​ពាក្យសម្ងាត់​របស់អ្នក​ឥឡូវ​នេះ។</translation>
 <translation id="1947454675006758438">កិប​ខាងលើ​ផ្នែកខាងស្ដាំ</translation>
 <translation id="1959001866257244765">ជួយពង្រឹង​សុវត្ថិភាព​នៅលើ​អ៊ីនធឺណិត​សម្រាប់​អ្នករាល់គ្នា​តាមរយៈការផ្ញើ <ph name="BEGIN_WHITEPAPER_LINK" />URL របស់ទំព័រ​មួយចំនួន​ដែលអ្នកចូលមើល ព័ត៌មាន​ប្រព័ន្ធមួយចំនួន និងខ្លឹមសារទំព័រ​មួយចំនួន<ph name="END_WHITEPAPER_LINK" />ទៅ Google។ <ph name="BEGIN_PRIVACY_PAGE_LINK" />គោលការណ៍​ឯកជនភាព<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -269,9 +268,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{និង 1 ទៀត}other{និង # ទៀត}}</translation>
 <translation id="2003709556000175978">កំណត់​ពាក្យសម្ងាត់​របស់អ្នក​ឡើងវិញ​ឥឡូវនេះ</translation>
 <translation id="2003775180883135320">ចោះ​បួនរន្ធ​ខាងលើ</translation>
+<translation id="202072848677994234">ទម្រង់បែបបទនេះត្រូវបានដាក់បញ្ជូនតាមរយៈ​ការតភ្ជាប់​ដែលគ្មានសុវត្ថិភាព។ ការបំពេញ​ដោយស្វ័យប្រវត្តិ​ត្រូវបានបិទ។</translation>
 <translation id="2025115093177348061">AR</translation>
 <translation id="2025186561304664664">ប្រូកស៊ីត្រូវបានកំណត់ទៅកំណត់ដោយស្វ័យប្រវត្តិ</translation>
-<translation id="2030481566774242610">តើអ្នកមានន័យថា <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />សូមពិនិត្យប្រូកស៊ី និង firewall<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">ទម្រទី 7</translation>
 <translation id="204357726431741734">ចូលគណនី ដើម្បីប្រើ​ពាក្យសម្ងាត់​ដែលរក្សាទុក​នៅក្នុងគណនី Google របស់អ្នក</translation>
@@ -337,6 +336,7 @@
 <translation id="2289385804009217824">តម្រឹម</translation>
 <translation id="2292556288342944218">ការចូលប្រើអ៊ីនធឺណិតរបស់អ្នកត្រូវបានរារាំង</translation>
 <translation id="2293443924986248631">នៅពេល​បើក គេហទំព័រ​មិន​អាច​ប្រើ​ខូគី ដែលតាមដាន​អ្នក​នៅលើអ៊ីនធឺណិតបានទេ។ មុខងារ​នៅលើ​គេហទំព័រ​មួយចំនួន​អាចដំណើរការ​មិន​ត្រឹមត្រូវ។</translation>
+<translation id="2295290966866883927">URL នៃ​ទំព័រដែលអ្នកចូលមើលត្រូវបានផ្ញើទៅ Google Cloud ឬភាគីទីបីដើម្បី​វិភាគ។ ឧទាហរណ៍ URL ទាំងនោះ​អាចត្រូវបានស្កេន ដើម្បីរកមើល​គេហទំព័រ​ដែលគ្មានសុវត្ថិភាព។</translation>
 <translation id="2297722699537546652">B5 (ស្រោម​សំបុត្រ)</translation>
 <translation id="2300306941146563769">មិនបាន​បង្ហោះទេ</translation>
 <translation id="2310021320168182093">Chou2 (ស្រោម​សំបុត្រ)</translation>
@@ -1051,6 +1051,7 @@
 <translation id="5308380583665731573">ភ្ជាប់</translation>
 <translation id="5308689395849655368">ការរាយការណ៍ការគាំងត្រូវបានបិទ។</translation>
 <translation id="5314967030527622926">ឧបករណ៍​ធ្វើកូន​សៀវភៅ</translation>
+<translation id="5316812925700871227">បង្វិលបញ្ច្រាសទ្រនិចនាឡិកា</translation>
 <translation id="5317780077021120954">រក្សាទុក</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> ក្នុង​ចំណោម <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">ជ្រើសរើស​ព័ត៌មាន​ទំនាក់ទំនង</translation>
@@ -1074,7 +1075,6 @@
 <translation id="5421136146218899937">ជម្រះទិន្នន័យរុករក...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> ចង់​ផ្ញើ​ការជូន​ដំណឹងទៅអ្នក</translation>
 <translation id="5430298929874300616">ដកចំណាំចេញ</translation>
-<translation id="5431657950005405462">រកមិនឃើញឯកសាររបស់អ្នកទេ</translation>
 <translation id="5439770059721715174">កំហុសឆ្គងសុពលភាពសញ្ញាតំណាងនៅ "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">ផ្ងារឡើងតាមលំដាប់លំដោយ​បញ្ច្រាស</translation>
 <translation id="5447765697759493033">ទំព័រ​នេះ​នឹង​មិនត្រូវ​បានបកប្រែទេ</translation>
@@ -1448,7 +1448,6 @@
 <translation id="7083258188081898530">ទម្រទី 9</translation>
 <translation id="7086090958708083563">ការបង្ហោះដែលបានស្នើសុំដោយអ្នកប្រើប្រាស់</translation>
 <translation id="7087282848513945231">ប្រទេស</translation>
-<translation id="7090678807593890770">ស្វែងរក <ph name="LINK" /> នៅលើ Google</translation>
 <translation id="7108338896283013870">លាក់</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> ចង់ប្រើ​កាមេរ៉ា​របស់អ្នក</translation>
 <translation id="7108819624672055576">អនុញ្ញាតដោយកម្មវិធីបន្ថែម</translation>
@@ -1885,7 +1884,6 @@
 <translation id="893332455753468063">បញ្ចូល​ឈ្មោះ</translation>
 <translation id="8943282376843390568">លឿងខ្ចី</translation>
 <translation id="8957210676456822347">ការអនុញ្ញាតច្រកចូលគ្រប់គ្រង</translation>
-<translation id="8958582951173503172">នៅពេល​ព្រឹត្តិការណ៍​ទាក់ទងនឹង​សុវត្ថិភាព​ត្រូវបានសម្គាល់​ដោយ Chrome Enterprise Connectors ទិន្នន័យ​ដែលពាក់ព័ន្ធ​នឹង​ព្រឹត្តិការណ៍នោះ​ត្រូវបានផ្ញើទៅ​អ្នកគ្រប់គ្រង​របស់អ្នក​។ ទិន្នន័យនេះ​អាចរួមបញ្ចូល URL នៃទំព័រ​ដែលអ្នក​ចូលមើល ឈ្មោះឯកសារ ឬទិន្នន័យ​មេតា និង​ឈ្មោះអ្នកប្រើប្រាស់ ដែលអ្នកប្រើ​ ដើម្បីចូល​ឧបករណ៍​របស់អ្នក និង Chrome។</translation>
 <translation id="8962950042226115166">គេហទំព័រ​គួរឱ្យសង្ស័យ</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />ការផ្តល់យោបល់៖<ph name="MARKUP_2" />សូមប្រាកដថាអ្នកមានការតភ្ជាប់ទិន្នន័យ<ph name="MARKUP_3" />ដំណើរការគេហទំព័រនេះឡើងវិញនៅពេលក្រោយ<ph name="MARKUP_4" />ពិនិត្យមើលអាសយដ្ឋានដែលអ្នកបានបញ្ជូល<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">រក្សាទុក​បណ្ណ</translation>

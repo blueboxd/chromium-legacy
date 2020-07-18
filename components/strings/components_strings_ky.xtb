@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Сиз көчүргөн сүрөт</translation>
 <translation id="1150979032973867961">Бул сервер <ph name="DOMAIN" /> экендигин далилдей алган жок; себеби компьютериңиздин иш тутуму коопсуздук тастыктамасына ишенбейт. Мындай көйгөй туура эмес конфигурация менен шартталышы мүмкүн же туташууңузга чабуулчу кийлигишип жатат.</translation>
 <translation id="1151972924205500581">Сырсөз талап кылынат</translation>
-<translation id="1152921474424827756"><ph name="URL" /> дарегиндеги <ph name="BEGIN_LINK" />кештелген көчүрмөсүн<ph name="END_LINK" /> колдонуңуз</translation>
 <translation id="1156303062776767266">Жергиликтүү же бөлүшүлгөн файлды көрүп жатасыз</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> сайты күтүүсүздөн туташууну үзүп койду.</translation>
 <translation id="115926840831309955">CVC кодун текшерип, кайталап көрүңүз же мөөнөтү аяктай турган күндү жаңыртыңыз</translation>
 <translation id="1161325031994447685">Wi-Fi'га кайра туташып көрүңүз</translation>
 <translation id="1165039591588034296">Ката</translation>
+<translation id="1165174597379888365">Баракка баш багылды</translation>
 <translation id="1175364870820465910">&amp;Басып чыгаруу…</translation>
 <translation id="1175875016430184367">Оң жагын үч жолу илмек менен бекитүү</translation>
 <translation id="1178581264944972037">Бир азга токтотуу</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">Жарнамалар</translation>
 <translation id="1919367280705858090">Белгилүү бир каталар боюнча жардам алуу</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Бирөө да жок}=1{1 сайт}other{# сайт}}</translation>
-<translation id="194030505837763158">Буга өтүңүз <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Кимдир бирөө сиздин жеке дайындарыңызга же уюмуңуздун аккаунтуна кирип алган окшойт. Chromium сырсөзүңүздү азыр өзгөртүүнү сунуштайт.</translation>
 <translation id="1947454675006758438">Жогорку оң жагын илмек менен бекитүү</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />Баш баккан айрым сайттарыңыздын URL'дерин, тутум тууралуу чектелген маалыматты жана барактагы айрым мазмунду<ph name="END_WHITEPAPER_LINK" /> Google'га жөнөтүү менен Интернеттеги коопсуздукту баары үчүн күчөтүүгө жардам бериңиз. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Купуялык саясаты<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,9 +266,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{жана дагы 1}other{жана дагы #}}</translation>
 <translation id="2003709556000175978">Сырсөзүңүздү азыр өзгөртүңүз</translation>
 <translation id="2003775180883135320">Жогорку жагын төрт жолу тешүү</translation>
+<translation id="202072848677994234">Бул форма кооптуу байланыш аркылуу тапшырылды. Автоматтык түрдө тапшыруу өчүрүлдү.</translation>
 <translation id="2025115093177348061">Кошумчаланган чындык</translation>
 <translation id="2025186561304664664">Прокси автоконфигурацияланат деп коюлду.</translation>
-<translation id="2030481566774242610"><ph name="LINK" /> ушуну айтайын дедиңиз беле?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Прокси менен брандмауэрди текшерип көрүңүз<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">7-түпкүч</translation>
 <translation id="204357726431741734">Google аккаунтуңузда сакталган сырсөздөрдү колдонуу үчүн аккаунтуңузга кириңиз</translation>
@@ -335,6 +334,7 @@
 <translation id="2289385804009217824">Кыркуу</translation>
 <translation id="2292556288342944218">Интернетке кирүү мүмкүнчүлүгүңүз бөгөттөлгөн</translation>
 <translation id="2293443924986248631">Күйгүзүлсө, сайттар сизге вебде көз салуу үчүн cookie файлдарын колдоно алышпайт. Функциялар айрым сайттарда туура иштебеши мүмкүн.</translation>
+<translation id="2295290966866883927">Сиз кирген барактардын URL даректери Google Булутка же үчүнчү тараптарга талдоо үчүн жөнөтүлүп турат. Мисалы, алар кооптуу вебсайттарды аныктоо үчүн колдонулушу мүмкүн.</translation>
 <translation id="2297722699537546652">B5 (Конверт)</translation>
 <translation id="2300306941146563769">Жүктөлүп берилген жок</translation>
 <translation id="2310021320168182093">Chou2 (Конверт)</translation>
@@ -1046,6 +1046,7 @@
 <translation id="5308380583665731573">Туташуу</translation>
 <translation id="5308689395849655368">Ката жөнүндө кабарлоо мүмкүнчүлүгү өчүрүлдү.</translation>
 <translation id="5314967030527622926">Буклет жасагыч</translation>
+<translation id="5316812925700871227">Сааттын жебесине каршы айландыруу</translation>
 <translation id="5317780077021120954">Сактоо</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="NUM_MATCHES" /> ичинен <ph name="MATCH_POSITION" /> дал келүү</translation>
 <translation id="5324080437450482387">Байланыш маалыматын тандоо</translation>
@@ -1069,7 +1070,6 @@
 <translation id="5421136146218899937">Серептөө дайындарын тазалап салуу…</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> сизге билдирмелерди жөнөткөнү жатат</translation>
 <translation id="5430298929874300616">Кыстарманы алып салуу</translation>
-<translation id="5431657950005405462">Файлыңыз табылган жок</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />": <ph name="ERROR" /> схемалык текшерүү катасы</translation>
 <translation id="5443468954631487277">Тескери иретте алдыңкы бетин өйдө каратып</translation>
 <translation id="5447765697759493033">Бул сайт которулбайт</translation>
@@ -1443,7 +1443,6 @@
 <translation id="7083258188081898530">9-түпкүч</translation>
 <translation id="7086090958708083563">Колдонуучу тарабынан жүктөп берүү суралды</translation>
 <translation id="7087282848513945231">Округ</translation>
-<translation id="7090678807593890770">Google'дан <ph name="LINK" /> дегенди издеңиз</translation>
 <translation id="7108338896283013870">Жашыруу</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> камераңызды колдонгону жатат</translation>
 <translation id="7108819624672055576">Кеңейтүү тарабынан уруксат берилген</translation>
@@ -1879,7 +1878,6 @@
 <translation id="893332455753468063">Атын кошуу</translation>
 <translation id="8943282376843390568">Ачык жашыл</translation>
 <translation id="8957210676456822347">Туткундоочу порталга уруксат алуу</translation>
-<translation id="8958582951173503172">Кооптуу иш-чаралар Chrome Enterprise Connectors тарабынан белгиленсе, ал иш-чарага тиешелүү маалымат администраторуңузга жөнөтүлөт. Анда сиз Chrome'до ачкан барактардын URL даректери, файлдардын аталыштары же метадайындар, түзмөгүңүзгө жана Chrome'го кирүүдө колдонгон колдонуучунун аты бар.</translation>
 <translation id="8962950042226115166">Шектүү сайт</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Сунуштар:<ph name="MARKUP_2" />Мобилдик Интернет туташууңуз бар экенин текшериңиз<ph name="MARKUP_3" />Бул веб-баракчаны кийинчерээк кайра жүктөңүз<ph name="MARKUP_4" />Киргизген дарегиңизди текшериңиз<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Картаны сактоо</translation>

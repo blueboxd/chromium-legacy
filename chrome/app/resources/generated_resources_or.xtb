@@ -231,6 +231,7 @@
 <translation id="1274997165432133392">କୁକୀ ଏବଂ ଅନ୍ୟ ସାଇଟ୍‍ ଡାଟା</translation>
 <translation id="1275718070701477396">ଚୟନ କରାଯାଇଛି</translation>
 <translation id="1276994519141842946"><ph name="APP_NAME" />କୁ ଅନଇନଷ୍ଟଲ୍ କରାଯାଇପାରିଲା ନାହିଁ</translation>
+<translation id="127946606521051357">ନିକଟର ଡିଭାଇସ୍ ସେୟାର୍ କରୁଛି</translation>
 <translation id="1280820357415527819">ମୋବାଇଲ୍ ନେଟୱାର୍କଗୁଡିକୁ ଖୋଜୁଛି</translation>
 <translation id="1280965841156951489">ଫାଇଲଗୁଡ଼ିକୁ ଏଡିଟ୍ କରନ୍ତୁ</translation>
 <translation id="1285320974508926690">ଏହି ସାଇଟ୍‍କୁ କଦାପି ଅନୁବାଦ କରନ୍ତୁ ନାହିଁ</translation>
@@ -698,7 +699,6 @@
 <translation id="184273675144259287">ଆପଣଙ୍କର Linux ଆପ୍ସ ଏବଂ ଫାଇଲ୍‌ଗୁଡ଼ିକ ପୂର୍ବବର୍ତ୍ତୀ ବ୍ୟାକ୍‌ଅପ୍ ସହିତ ବଦଳାନ୍ତୁ</translation>
 <translation id="1842766183094193446">ଆପଣ କ’ଣ ସୁନିଶ୍ଚିତ ଯେ ଆପଣ ଡେମୋ ମୋଡ୍‌ ସକ୍ଷମ କରିବାକୁ ଚାହୁଁଛନ୍ତି?</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" />କୁ ଚଲାଇବା ପାଇଁ Controlକୁ ଦବାଇ ଧରି କ୍ଲିକ୍ କରନ୍ତୁ</translation>
-<translation id="1846880379134204029">ଗୋଷ୍ଠୀ <ph name="GROUP_NAME" /> - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">ଆମ୍ବିଏଣ୍ଟ ମୋଡ୍ ସକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="1849186935225320012">ଏହି ପୃଷ୍ଠା ପାଖରେ MIDI ଡିଭାଇସ୍‌ଗୁଡ଼ିକ ଉପରେ ପୂର୍ଣ୍ଣ ନିୟନ୍ତ୍ରଣ ଅଛି।</translation>
 <translation id="1850508293116537636">&amp;ଡାହାଣ ପଟକୁ ଘୂରାନ୍ତୁ</translation>
@@ -1213,6 +1213,7 @@
 <translation id="2489918096470125693">&amp;ଫୋଲ୍ଡର ଯୋଗ କରନ୍ତୁ...</translation>
 <translation id="2490481887078769936">ତାଲିକାରୁ ’<ph name="FILE_NAME" />’କୁ କାଢ଼ି ଦିଆଗଲା</translation>
 <translation id="249113932447298600">କ୍ଷମା କରିବେ, ବର୍ତ୍ତମାନ ସମୟରେ ଡିଭାଇସ୍<ph name="DEVICE_LABEL" /> ସମର୍ଥିତ ନୁହେଁ</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> ଆପଣଙ୍କ ସହ <ph name="ATTACHMENTS" /> ସେୟାର୍ କରୁଛି।</translation>
 <translation id="2492461744635776704">ସାର୍ଟିଫିକେଟ୍ ସାଇନ୍ କରିବା ଅନୁରୋଧ ପ୍ରସ୍ତୁତ କରାଯାଉଛି</translation>
 <translation id="249303669840926644">ପଞ୍ଜିକରଣ ସମ୍ପୂର୍ଣ୍ଣ କରିପାରିଲା ନାହିଁ</translation>
 <translation id="2495777824269688114">ଅଧିକ ବୈଶିଷ୍ଟ ଖୋଜନ୍ତୁ କିମ୍ବା ଉତ୍ତର ପ୍ରାପ୍ତ କରନ୍ତୁ। ସାହାଯ୍ୟ ପାଇଁ “?” ଚୟନ କରନ୍ତୁ</translation>
@@ -1714,6 +1715,7 @@
 <translation id="3103941660000130485">Linux ଅପଗ୍ରେଡ୍ କରିବା ସମୟରେ ତ୍ରୁଟି</translation>
 <translation id="3105796011181310544">ପୁଣି Googleକୁ ବଦଳାଇବାକୁ ଚାହାଁନ୍ତି?</translation>
 <translation id="310671807099593501">ସାଇଟ୍ ଆପଣଙ୍କର ବ୍ଲୁଟୁଥ୍ ବ୍ୟବହାର କରୁଛି।</translation>
+<translation id="3109724472072898302">ସଙ୍କୁଚିତ କରାଗଲା</translation>
 <translation id="3115147772012638511">କେଚ୍ ନିମନ୍ତେ ପ୍ରତୀକ୍ଷାରତ...</translation>
 <translation id="3115580024857770654">ସବୁ ସଙ୍କୁଚିତ କରନ୍ତୁ</translation>
 <translation id="3116968597797150452">ସାର୍ଟିଫିକେଟ୍ ପ୍ରୋଫାଇଲ୍</translation>
@@ -1781,7 +1783,6 @@
 <translation id="3192947282887913208">ଅଡିଓ ଫାଇଲ୍ସ</translation>
 <translation id="3199127022143353223">ସର୍ଭର୍‌ଗୁଡ଼ିକ</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome ଏହି ପାସୱାର୍ଡକୁ ବର୍ତ୍ତମାନ ଯାଞ୍ଚ କରିବା ପାଇଁ ସୁପାରିଶ କରେ}other{Chrome ଏହି ପାସୱାର୍ଡଗୁଡ଼ିକୁ ବର୍ତ୍ତମାନ ଯାଞ୍ଚ କରିବା ପାଇଁ ସୁପାରିଶ କରେ}}</translation>
-<translation id="3200941271596533635">ରିଡର୍ ମୋଡ୍ ଟୋଗଲ୍ କରନ୍ତୁ</translation>
 <translation id="3201422919974259695">ଏଠାରେ ଉପଲବ୍ଧ ଥିବା USB ଡିଭାଇସ୍‍ଗୁଡ଼ିକ ଦେଖାଯିବ।</translation>
 <translation id="3202131003361292969">ପାଥ୍</translation>
 <translation id="3202173864863109533">ଏହି ଟାବ୍‌ର ଅଡିଓ ମ୍ୟୁଟ୍‌ କରାଯାଉଛି।</translation>
@@ -4143,6 +4144,7 @@
 <translation id="6212039847102026977">ଅତ୍ୟାଧୁନିକ ନେଟ୍‍ୱର୍କ ଗୁଣାବଳୀ ଦେଖାନ୍ତୁ</translation>
 <translation id="6212168817037875041">ଡିସ୍‌ପ୍ଲେ ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="6212752530110374741">ଇମେଲ୍‍ ଲିଙ୍କ୍‌</translation>
+<translation id="6213230117190778270">ପ୍ରାପ୍ତ କରନ୍ତୁ</translation>
 <translation id="6216696360484424239">ସ୍ୱଚାଳିତ ଭାବେ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> ଅଫ୍‍ଲାଇନ୍ ଅଛି। ଇଣ୍ଟର୍ନେଟ୍‌‍କୁ ସଂଯୋଗ କରନ୍ତୁ ଏବଂ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="6220413761270491930">ଏକ୍ସଟେନ୍‌ସନ୍ ଲୋଡ୍ ହେବା ସମୟରେ ତ୍ରୁଟି</translation>
@@ -4199,7 +4201,6 @@
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />ସିଷ୍ଟମ୍‌ ଏବଂ ଆପ୍‌ ସୂଚନା <ph name="END_LINK1" /> ଏବଂ <ph name="BEGIN_LINK2" />ମେଟ୍ରିକ୍ସ<ph name="END_LINK2" /> ପଠାନ୍ତୁ</translation>
 <translation id="6272643420381259437">ପ୍ଲଗ୍‌ଇନ୍ ଡାଉନ୍‌ଲୋଡ୍ କରିବା ସମୟରେ ଏକ ତ୍ରୁଟି (<ph name="ERROR" />) ଦେଖାଯାଇଥିଲା</translation>
 <translation id="6273677812470008672">ଗୁଣବତ୍ତା</translation>
-<translation id="6273979226236203550">ଆପଣଙ୍କ ପାସୱାର୍ଡ ଏହି ଡିଭାଇସରେ ଏବଂ ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟରେ ଷ୍ଟୋର୍ କରାଯାଇଥାଏ। ଆପଣ କେଉଁଟିକୁ ଡିଲିଟ୍ କରିବାକୁ ଚାହୁଁଛନ୍ତି?</translation>
 <translation id="6277105963844135994">ନେଟ୍‌ୱାର୍କର ସମୟ ସମାପ୍ତ</translation>
 <translation id="6277518330158259200">ସ୍କ୍ରିନ୍‌ସଟ୍ ନିଅନ୍ତୁ</translation>
 <translation id="6278057325678116358">GTK+ ବ୍ୟବହାର କରନ୍ତୁ</translation>
@@ -4243,6 +4244,7 @@
 <translation id="6322653941595359182">ଆପଣଙ୍କର Chromebookରୁ ଟେକ୍ସଟ୍‍ ମେସେଜ୍‌ ପଠାନ୍ତୁ ଏବଂ ପ୍ରାପ୍ତ କରନ୍ତୁ।</translation>
 <translation id="6324916366299863871">ସର୍ଟକଟ୍‌କୁ ଏଡିଟ୍ କରନ୍ତୁ</translation>
 <translation id="6325191661371220117">ସ୍ୱତଃ-ଲଞ୍ଚକୁ ଅକ୍ଷମ କରନ୍ତୁ</translation>
+<translation id="6325525973963619867">ବିଫଳ ହୋଇଛି</translation>
 <translation id="6326175484149238433">Chromeରୁ କାଢ଼ିଦିଅନ୍ତୁ</translation>
 <translation id="6326855256003666642">କିପ୍‍ଆଲାଇଭ୍ କାଉଣ୍ଟ</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> ଆପଣ ସମୟସୀମା ପୂର୍ବରୁ ଆପଣଙ୍କ ଡିଭାଇସ୍ ଅପଡେଟ୍ କରିବା ଆବଶ୍ୟକ କରେ।</translation>
@@ -4270,6 +4272,7 @@
 <translation id="6362853299801475928">ଏକ ସମସ୍ୟା ରିପୋର୍ଟ କରନ୍ତୁ...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">ଫ୍ୟାମିଲି ଏବଂ ବନ୍ଧୁମାନଙ୍କୁ ଯୋଗ କରନ୍ତୁ</translation>
+<translation id="6367985768157257101">Nearby Share ମାଧ୍ୟମରେ ପ୍ରାପ୍ତ କରନ୍ତୁ?</translation>
 <translation id="636850387210749493">ଏଣ୍ଟର୍‌ପ୍ରାଇଜ୍ ନାମାଙ୍କନ</translation>
 <translation id="6370021412472292592">ମାନିଫେଷ୍ଟକୁ ଲୋଡ୍ କରାଯାଇପାରିଲା ନାହିଁ।</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4847,7 +4850,6 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="7099337801055912064">ବିଶାଳ PPDକୁ ଲୋଡ୍ କରାଯାଇପାରିବ ନାହିଁ। ସର୍ବାଧିକ ଆକାର 250 kB ଅଟେ।</translation>
 <translation id="7102687220333134671">ସ୍ୱଚାଳିତ ଅପ୍‍‍ଡେଟ୍ ଚାଲୁ ଅଛି</translation>
 <translation id="7102832101143475489">ଅନୁରୋଧର ସମୟ ସମାପ୍ତ ହୋଇଯାଇଛି</translation>
-<translation id="7102928824073746774">ବେନାମୀ ଗୋଷ୍ଠୀ - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">USB ପ୍ରାଥମିକତାଗୁଡ଼ିକ</translation>
 <translation id="710640343305609397">ନେଟୱାର୍କ ସେଟିଂସ୍ ଖୋଲନ୍ତୁ</translation>
 <translation id="7108338896283013870">ଲୁଚାନ୍ତୁ</translation>
@@ -4923,6 +4925,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="720110658997053098">ଏହି ଡିଭାଇସ୍‌କୁ ସ୍ଥାୟୀଭାବେ କିଓସ୍କ ମୋଡ୍‌ରେ ରଖନ୍ତୁ</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' ଡିଲିଟ୍ କରାଗଲା</translation>
 <translation id="7201420661433230412">ଫାଇଲ୍‌ଗୁଡ଼ିକୁ ଦେଖନ୍ତୁ</translation>
+<translation id="7203150201908454328">ପ୍ରସାରିତ ହୋଇଛି</translation>
 <translation id="7203826966018112936">ଜଣେ ବିଦ୍ୟାର୍ଥୀ ଭାବରେ ବାପାମାଙ୍କ ନିୟନ୍ତ୍ରଣରେ କାମ କରୁଥିବା ସମୟରେ ଏକ ସ୍କୁଲ ଆକାଉଣ୍ଟକୁ ପ୍ରୋଫାଇଲ୍ ସହ ଯୋଗ କରିବା ଦ୍ଵାରା ୱେବସାଇଟ୍ ଏବଂ ଏକ୍ସଟେନସନକୁ ସହଜରେ ସାଇନ୍-ଇନ୍ କରିବା ସକ୍ଷମ ହୁଏ। ଏହା ଜଣେ ପିଲାକୁ ସ୍କୁଲ ଆକାଉଣ୍ଟ ସହିତ ସିଙ୍କ୍ କରାଯାଇଥିବା ବୁକମାର୍କ, ପାସୱାର୍ଡ କିମ୍ବା ଅନ୍ୟ ବ୍ରାଉଜର୍ ଡାଟା ଆକ୍ସେସ୍ କରିବାକୁ ଦେଇନଥାଏ।&lt;br&gt;&lt;br&gt;
     ଯଦି ଆପଣଙ୍କ ପିଲା ସ୍କୁଲରେ କୌଣସି Chromebook ବ୍ୟବହାର କରେ ଏବଂ ଆପଣଙ୍କ ପିଲା ପାଖରେ ସମସ୍ତ ଆବଶ୍ୟକୀୟ ସ୍କୁଲ କାର୍ଯ୍ୟକୁ ଆକ୍ସେସ୍ ଅଛି ବୋଲି ସୁନିଶ୍ଚିତ କରିବାକୁ ଆପଣ ଘରେ ସ୍କୁଲର ଅନୁଭୂତି ଦେବାକୁ ଚାହୁଁଛନ୍ତି, ତେବେ ଦୟାକରି ଏହି Family Link ଆକାଉଣ୍ଟକୁ ସାଇନ୍ ଆଉଟ୍ କରି Chrome OS ଆକାଉଣ୍ଟ ପୃଷ୍ଠାରୁ ସ୍କୁଲ ଆକାଉଣ୍ଟରେ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ (ଧ୍ୟାନ ଦିଅନ୍ତୁ: Family Link ବାପାମାଙ୍କ ନିୟନ୍ତ୍ରଣଗୁଡ଼ିକ ଲାଗୁ ହେବ ନାହିଁ)।&lt;br&gt;&lt;br&gt;
     ଯଦି ଆପଣଙ୍କ ପିଲା ସ୍କୁଲରେ କୌଣସି Chromebook ବ୍ୟବହାର କରେ ନାହିଁ କିମ୍ବା ଯଦି ଆପଣ ଆପଣଙ୍କ ଘରେ Family Link ବ୍ୟବହାର କରି ପିଲାର ଅନୁଭୂତି ପରିଚାଳନା କରିବାକୁ ପସନ୍ଦ କରନ୍ତି, ତେବେ ଦୟାକରି ଏହି ପ୍ରୋଫାଇଲରେ ଏକ ସ୍କୁଲ ଆକାଉଣ୍ଟ ଯୋଗ କରିବାକୁ ନିମ୍ନରେ ଥିବା ପରବର୍ତ୍ତୀ ବଟନରେ କ୍ଲିକ୍ କରନ୍ତୁ।</translation>
@@ -5318,7 +5321,6 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="7704521324619958564">Play Store ଖୋଲନ୍ତୁ</translation>
 <translation id="7705276765467986571">ବୁକ୍‌ମାର୍କ ମଡେଲ୍ ଲୋଡ୍ କରାଯାଇପାରିଲା ନାହିଁ</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">ରିଡର୍ ମୋଡ୍ ଟୋଗଲ୍ କରନ୍ତୁ</translation>
 <translation id="7707108266051544351">ଏହି ସାଇଟ୍‍କୁ ମୋସନ୍ ସେନ୍‌ସର୍ ବ୍ୟବହାର କରିବା ପାଇଁ ବ୍ଲକ୍ କରାଯାଇଛି।</translation>
 <translation id="7707922173985738739">ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବହାର କରନ୍ତୁ।</translation>
 <translation id="7709152031285164251">ବିଫଳ ହେଲା - <ph name="INTERRUPT_REASON" /></translation>
@@ -6572,6 +6574,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">ପାସ୍‌-ଫ୍ରେଜ୍ ଲେଖନ୍ତୁ</translation>
 <translation id="939736085109172342">ନୂତନ ଫୋଲ୍ଡର</translation>
+<translation id="941070664607309480">ଦେଖାଯିବା ପାଇଁ କ୍ଲିକ୍ କରନ୍ତୁ ଯାହା ଫଳରେ ଏହା ଆପଣଙ୍କ ସହିତ ସେୟାର୍ କରିପାରିବ</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> ଏକ ଟାବ୍‍ ଏବଂ ଅଡ଼ିଓ ସେୟାର୍‌ କରୁଛି।</translation>
 <translation id="945522503751344254">ମତାମତ ପଠାନ୍ତୁ</translation>
 <translation id="947329552760389097">&amp;ଉପାଦାନଗୁଡ଼ିକ ନିରୀକ୍ଷଣ କରନ୍ତୁ</translation>

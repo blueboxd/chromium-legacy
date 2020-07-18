@@ -170,7 +170,6 @@ Dotaknite se poljubne besede, če želite iskati. Če želite izboljšati iskanj
 <translation id="2353636109065292463">Preverjanje internetne povezave</translation>
 <translation id="2359808026110333948">Naprej</translation>
 <translation id="2369533728426058518">odpiranje zavihkov</translation>
-<translation id="2377295302146152376">Chrome ni mogel preveriti, ali so na voljo posodobitve</translation>
 <translation id="2387895666653383613">Prilagajanje velikosti besedila</translation>
 <translation id="2394602618534698961">Datoteke, ki jih prenesete, so prikazane tu</translation>
 <translation id="2407481962792080328">Ko se prijavite v račun Google, se ta funkcija vklopi</translation>
@@ -259,7 +258,6 @@ Dotaknite se poljubne besede in jo pridržite, če želite iskati. Če želite i
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Poiščite pomoč<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Lokacija je izklopljena. Vklopite jo lahko v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Sinhronizacijo lahko kadarkoli vklopite v nastavitvah.</translation>
-<translation id="3059710691562604940">Varno brskanje je izklopljeno. Chrome priporoča, da ga vklopite.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> zaznamek}one{<ph name="BOOKMARKS_COUNT_MANY" /> zaznamek}two{<ph name="BOOKMARKS_COUNT_MANY" /> zaznamka}few{<ph name="BOOKMARKS_COUNT_MANY" /> zaznamki}other{<ph name="BOOKMARKS_COUNT_MANY" /> zaznamkov}}</translation>
 <translation id="3089395242580810162">Odpri v zavihku brez bel. zg.</translation>
 <translation id="3114012059975132928">Videopredvajalnik</translation>
@@ -320,7 +318,6 @@ Dotaknite se poljubne besede in jo pridržite, če želite iskati. Če želite i
 <translation id="3522247891732774234">Posodobitev je na voljo. Več možnosti.</translation>
 <translation id="3524138585025253783">Uporabniški vmesnik za razvijalce</translation>
 <translation id="3527085408025491307">Mapa</translation>
-<translation id="3533694711092285624">Ni shranjenih gesel. Chrome lahko preveri gesla, če jih shranite.</translation>
 <translation id="3542235761944717775">Na voljo: <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">Iščite v svoji zgodovini</translation>
 <translation id="3557336313807607643">Dodaj med stike</translation>
@@ -571,6 +568,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5581519193887989363">V <ph name="BEGIN_LINK1" />nastavitvah<ph name="END_LINK1" /> lahko kadar koli izberete, kaj želite sinhronizirati.</translation>
 <translation id="5595485650161345191">Uredi naslov</translation>
 <translation id="5599455543593328020">Način brez beleženja zgodovine</translation>
+<translation id="5620163320393916465">Ni shranjenih gesel</translation>
 <translation id="5620928963363755975">Poiščite datoteke in strani v Prenosih z gumbom »Več možnosti«</translation>
 <translation id="5626134646977739690">Ime:</translation>
 <translation id="5639724618331995626">Dovoli vsa spletna mesta</translation>

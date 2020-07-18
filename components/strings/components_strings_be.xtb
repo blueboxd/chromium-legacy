@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Скапіраваны вамі відарыс</translation>
 <translation id="1150979032973867961">Серверу не ўдалося даказаць, што гэта <ph name="DOMAIN" />: аперацыйная сістэма камп'ютара не давярае сертыфікату бяспекі гэтага дамена. Прычынай могуць быць няправільныя налады або зламыснік, які спрабуе перахапіць падключэнне.</translation>
 <translation id="1151972924205500581">Увядзіце пароль</translation>
-<translation id="1152921474424827756">Доступ да <ph name="BEGIN_LINK" />копіі з кэша<ph name="END_LINK" /> <ph name="URL" /></translation>
 <translation id="1156303062776767266">Вы праглядаеце лакальны ці абагулены файл</translation>
 <translation id="1158211211994409885">Хост <ph name="HOST_NAME" /> нечакана закрыў падключэнне.</translation>
 <translation id="115926840831309955">Праверце код CVC і паўтарыце спробу або змяніце тэрмін дзеяння</translation>
 <translation id="1161325031994447685">Паўторна падключыцца да Wi-Fi</translation>
 <translation id="1165039591588034296">Памылка</translation>
+<translation id="1165174597379888365">Наведваецца старонка</translation>
 <translation id="1175364870820465910">&amp;Друк...</translation>
 <translation id="1175875016430184367">Тры скабы справа</translation>
 <translation id="1178581264944972037">Прыпыніць</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">Рэклама</translation>
 <translation id="1919367280705858090">Дапамога пры асобных паведамленнях аб памылцы</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Няма}=1{1 сайт}one{# сайт}few{# сайты}many{# сайтаў}other{# сайта}}</translation>
-<translation id="194030505837763158">Перайсці на старонку "<ph name="LINK" />"</translation>
 <translation id="1945968466830820669">Вы можаце страціць доступ да ўліковага запісу арганізацыі, або ў вас могуць скрасці асабістыя даныя. Chromium рэкамендуе змяніць пароль.</translation>
 <translation id="1947454675006758438">Скаба зверху справа</translation>
 <translation id="1959001866257244765">Дапамагаць павысіць бяспеку ў інтэрнэце для ўсіх карыстальнікаў, адпраўляючы <ph name="BEGIN_WHITEPAPER_LINK" />URL-адрасы некаторых наведаных вамі старонак, пэўную сістэмную інфармацыю і змесціва старонак<ph name="END_WHITEPAPER_LINK" /> у Google. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Палітыка прыватнасці<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,9 +266,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{і яшчэ 1}one{і яшчэ #}few{і яшчэ #}many{і яшчэ #}other{і яшчэ #}}</translation>
 <translation id="2003709556000175978">Скіньце свой пароль</translation>
 <translation id="2003775180883135320">Чатыры дзіркі зверху</translation>
+<translation id="202072848677994234">Гэта форма будзе адпраўлена па неабароненым падключэнні. Аўтазапаўненне выключана.</translation>
 <translation id="2025115093177348061">Дапоўненая рэальнасць</translation>
 <translation id="2025186561304664664">Для проксі-сервера ўказана аўтаматычнае наладжванне.</translation>
-<translation id="2030481566774242610">Вы мелі на ўвазе "<ph name="LINK" />"?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Праверыць проксі-сервер і брандмаўэр.<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Латок 7</translation>
 <translation id="204357726431741734">Каб выкарыстоўваць захаваныя ва Уліковым запісе Google паролі, увайдзіце ў яго</translation>
@@ -335,6 +334,7 @@
 <translation id="2289385804009217824">Абрэзка</translation>
 <translation id="2292556288342944218">Доступ да інтэрнэту заблакіраваны</translation>
 <translation id="2293443924986248631">Калі ўключыць гэту наладу, сайты не змогуць выкарыстоўваць файлы cookie для адсочвання вас у інтэрнэце. Функцыі на некаторых сайтах могуць перастаць працаваць.</translation>
+<translation id="2295290966866883927">URL-адрасы старонак, якія вы наведваеце, перасылаюцца для аналізу ў Google Cloud або трэцім бакам: напрыклад, для праверкі, ці няма сярод наведаных вэб-сайтаў небяспечных.</translation>
 <translation id="2297722699537546652">B5 (канверт)</translation>
 <translation id="2300306941146563769">Не запампавана</translation>
 <translation id="2310021320168182093">Chou2 (канверт)</translation>
@@ -1069,7 +1069,6 @@
 <translation id="5421136146218899937">Выдаліць гісторыю праглядаў...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> запытвае дазвол адпраўляць вам апавяшчэнні</translation>
 <translation id="5430298929874300616">Выдаліць закладку</translation>
-<translation id="5431657950005405462">Файл не знойдзены</translation>
 <translation id="5439770059721715174">Пры праверцы схемы выяўлена памылка (<ph name="ERROR_PATH" />: <ph name="ERROR" />)</translation>
 <translation id="5443468954631487277">У адваротным парадку, рабочым бокам уверх</translation>
 <translation id="5447765697759493033">Гэты сайт не будзе перакладацца</translation>
@@ -1443,7 +1442,6 @@
 <translation id="7083258188081898530">Латок 9</translation>
 <translation id="7086090958708083563">Запампоўка запытана карыстальнікам</translation>
 <translation id="7087282848513945231">Акруга</translation>
-<translation id="7090678807593890770">Шукаць <ph name="LINK" /> у Google</translation>
 <translation id="7108338896283013870">Схаваць</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> запытвае доступ да камеры</translation>
 <translation id="7108819624672055576">Дазволена пашырэннем</translation>
@@ -1880,7 +1878,6 @@
 <translation id="893332455753468063">Дадаць імя</translation>
 <translation id="8943282376843390568">Лайм</translation>
 <translation id="8957210676456822347">Аўтарызацыя праз партал узаемадзеяння</translation>
-<translation id="8958582951173503172">Калі падзеі бяспекі пазначаюцца злучальнікамі Chrome Enterprise Connectors, то адпаведныя даныя аб падзеі адпраўляюцца адміністратару. Сярод гэтых даных могуць быць URL-адрасы старонак, якія вы наведваеце ў Chrome, назвы файлаў або метаданыя, а таксама імя карыстальніка, якое вы выкарыстоўваеце для ўваходу ў сваю прыладу або ў Chrome.</translation>
 <translation id="8962950042226115166">Падазроны сайт</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Рэкамендацыі:<ph name="MARKUP_2" />Праверце, ці ёсць у вас падключэнне для перадачы даных.<ph name="MARKUP_3" />Перазагрузіце старонку пазней.<ph name="MARKUP_4" />Праверце ўведзены адрас.<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Захаваць картку</translation>

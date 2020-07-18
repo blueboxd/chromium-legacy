@@ -701,7 +701,6 @@
 <translation id="184273675144259287">আপোনাৰ Linux এপ্‌ আৰু ফাইলসমূহ পূৰ্বৱৰ্তী বেক আপৰ সৈতে সলনি কৰক</translation>
 <translation id="1842766183094193446">ডেম’ ম’ড সক্ষম কৰিবলৈ আপুনি নিশ্চিতনে?</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" />ক চলাবলৈ Control টিপি থাকি ক্লিক কৰক</translation>
-<translation id="1846880379134204029">গোট <ph name="GROUP_NAME" /> - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">স্তিমিত ম’ড সক্ষম কৰক</translation>
 <translation id="1849186935225320012">এই পৃষ্ঠাটোৰ MIDI ডিভাইচসমূহৰ সম্পূৰ্ণ নিয়ন্ত্ৰণ আছে।</translation>
 <translation id="1850508293116537636">ঘড়ীৰ কাঁটাৰ দিশ&amp;ত ঘূৰাওক</translation>
@@ -1718,6 +1717,7 @@
 <translation id="3103941660000130485">Linux আপগ্ৰে’ড কৰোঁতে আসোঁৱাহ হৈছে</translation>
 <translation id="3105796011181310544">পুনৰ Googleলৈ সলনি কৰিবনে?</translation>
 <translation id="310671807099593501">ছাইটটোৱে ব্লুটুথ ব্যৱহাৰ কৰি আছে</translation>
+<translation id="3109724472072898302">সংকুচিত কৰা আছে</translation>
 <translation id="3115147772012638511">কেশ্বৰ কাৰণে অপেক্ষা কৰি থকা হৈছে...</translation>
 <translation id="3115580024857770654">সকলো সংকুচিত কৰক</translation>
 <translation id="3116968597797150452">প্ৰমাণপত্ৰৰ প্ৰ’ফাইল</translation>
@@ -1785,7 +1785,6 @@
 <translation id="3192947282887913208">অডিঅ’ ফাইল</translation>
 <translation id="3199127022143353223">ছাৰ্ভাৰসমূহ</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chromeএ এই পাছৱৰ্ডটো এতিয়াই পৰীক্ষা কৰাটো চুপাৰিছ কৰে}one{Chromeএ এই পাছৱৰ্ডসমূহ এতিয়াই পৰীক্ষা কৰাটো চুপাৰিছ কৰে}other{Chromeএ এই পাছৱৰ্ডসমূহ এতিয়াই পৰীক্ষা কৰাটো চুপাৰিছ কৰে}}</translation>
-<translation id="3200941271596533635">ৰীডাৰ ম’ড ট’গল কৰক</translation>
 <translation id="3201422919974259695">উপলব্ধ ইউএছবি ডিভাইচসমূহ ইয়াত দেখা পোৱা যাব।</translation>
 <translation id="3202131003361292969">পথ</translation>
 <translation id="3202173864863109533">এই টেবটোৰ অডিঅ’ মিউট কৰি থকা হৈছে।</translation>
@@ -4198,7 +4197,6 @@
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />ছিষ্টেম আৰু এপৰ তথ্য<ph name="END_LINK1" /> আৰু <ph name="BEGIN_LINK2" />মেট্ৰিক্স<ph name="END_LINK2" /> পঠিয়াওক</translation>
 <translation id="6272643420381259437">প্লাগইন ডাউনল’ড কৰাৰ সময়ত কোনো আসোঁৱাহ (<ph name="ERROR" />) হৈছে</translation>
 <translation id="6273677812470008672">গুণগত মান</translation>
-<translation id="6273979226236203550">আপোনাৰ পাছৱৰ্ডটো এই ডিভাইচটোত আৰু আপোনাৰ Google একাউণ্টত ষ্ট’ৰ কৰা আছে। আপুনি কোনটো মচিব বিচাৰে?</translation>
 <translation id="6277105963844135994">নেটৱর্কৰ সময় উকলা</translation>
 <translation id="6277518330158259200">স্ক্ৰীণশ্বট লও&amp;ক</translation>
 <translation id="6278057325678116358">GTK+ ব্যৱহাৰ কৰক</translation>
@@ -4841,7 +4839,6 @@
 <translation id="7099337801055912064">ডাঙৰ PPD ল‘ড কৰিব পৰা নগ‘ল। সৰ্বোচ্চ আকাৰ ২৫০ কেবি</translation>
 <translation id="7102687220333134671">স্বয়ংক্ৰিয়ভাৱে হোৱা আপডে’টৰ সুবিধাটো অন কৰা হ’ল</translation>
 <translation id="7102832101143475489">অনুৰোধটোৰ সময় উকলিল</translation>
-<translation id="7102928824073746774">নামবিহীন গোট - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">ইউএছবিৰ অগ্ৰাধিকাৰসমূহ</translation>
 <translation id="710640343305609397">নেটৱৰ্ক ছেটিংসমূহ খোলক</translation>
 <translation id="7108668606237948702">দিয়ক</translation>
@@ -4916,6 +4913,7 @@
 <translation id="720110658997053098">আপুনি এই ডিভাইচটো স্থায়ীভাৱে কিঅ’স্ক ম’ডত ৰাখক</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' মচা হ’ল</translation>
 <translation id="7201420661433230412">ফাইলবোৰ চাওক</translation>
+<translation id="7203150201908454328">বিস্তাৰিত</translation>
 <translation id="7203826966018112936">এটা প্ৰ’ফাইলত এটা বিদ্যালয়ৰ একাউণ্ট যোগ দিলে এগৰাকী শিক্ষাৰ্থী হিচাপে অভিভাৱকীয় নিয়ন্ত্ৰণসমূহৰ অধীনত কার্য সম্পাদন কৰিও ৱেবছাইট আৰু এক্সটেনশ্বনসমূহত ছাইন ইন কৰাটো সহজ হৈ পৰে। এইটোৱে এটি শিশুক বিদ্যালয়ৰ একাউণ্টটোৰ সৈতে ছিংক হৈ থকা বুকমাৰ্ক, পাছৱৰ্ড আৰু অন্য ব্ৰাউজাৰ ডেটাৰ এক্সেছ প্ৰদান নকৰে।&lt;br&gt;&lt;br&gt;
     যদি আপোনাৰ শিশুটিয়ে বিদ্যালয়ত এটা Chromebook ব্যৱহাৰ কৰে আৰু আপুনি নিজৰ শিশুৱে সকলো আৱশ্যকীয় বিদ্যালয়ৰ কামৰ এক্সেছ পোৱাটো নিশ্চিত কৰিবলৈ বিদ্যালয়ৰ অভিজ্ঞতা ঘৰতে প্ৰদান কৰিব বিচাৰে, তেন্তে অনুগ্ৰহ কৰি এই Family Link একাউণ্টটোৰ পৰা ছাইন আউট কৰক আৰু Chrome OS একাউণ্ট পৃষ্ঠাৰ পৰা বিদ্যালয়ৰ একাউণ্টটোত ছাইন ইন কৰক (টোকা: Family Linkৰ অভিভাৱকীয় নিয়ন্ত্ৰণসমূহ প্ৰযোজ্য নহ’ব)।&lt;br&gt;&lt;br&gt;
     যদি আপোনাৰ শিশুটিয়ে বিদ্যালয়ত এটা Chromebook ব্যৱহাৰ নকৰে অথবা যদি আপুনি Family Link ব্যৱহাৰ কৰি ঘৰত আপোনাৰ শিশুটিৰ অভিজ্ঞতা পৰিচালনা কৰাত অগ্ৰাধিকাৰ দিয়ে, তেন্তে অনুগ্ৰহ কৰি এই প্ৰ’ফাইলটোত এটা বিদ্যালয়ৰ একাউণ্ট যোগ দিবলৈ তলত থকা পৰৱৰ্তী বুটামটোত ক্লিক কৰক।</translation>
@@ -5309,7 +5307,6 @@
 <translation id="7704521324619958564">Play Store খোলক</translation>
 <translation id="7705276765467986571">বুকমাৰ্ক ম’ডেল ল’ড কৰিব পৰা নগ’ল৷</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">ৰীডাৰ ম’ড ট’গল কৰক</translation>
 <translation id="7707108266051544351">এই ছাইটটোক ম'শ্বন ছেন্সৰসমূহ ব্যৱহাৰ কৰাৰ পৰা অৱৰোধ কৰা হৈছে।</translation>
 <translation id="7707922173985738739">ম’বাইল ডেটা ব্যৱহাৰ কৰক</translation>
 <translation id="7709152031285164251">বিফল হ’ল - <ph name="INTERRUPT_REASON" /></translation>

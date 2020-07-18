@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">インターネット接続を確認しています</translation>
 <translation id="2359808026110333948">続行</translation>
 <translation id="2369533728426058518">開いているタブ</translation>
-<translation id="2377295302146152376">アップデートを確認できませんでした</translation>
 <translation id="2387895666653383613">テキストの拡大と縮小</translation>
 <translation id="2394602618534698961">ダウンロードしたファイルがここに表示されます</translation>
 <translation id="2407481962792080328">この機能は Google アカウントにログインすると有効になります</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">位置情報が OFF になっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で ON にしてください。</translation>
 <translation id="3058498974290601450">同期は設定でいつでもオンにできます。</translation>
-<translation id="3059710691562604940">セーフ ブラウジングがオフになっています。Chrome はオンにすることをおすすめしています。</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> 個のブックマーク}other{<ph name="BOOKMARKS_COUNT_MANY" /> 個のブックマーク}}</translation>
 <translation id="3089395242580810162">シークレット タブで開く</translation>
 <translation id="3114012059975132928">動画プレーヤー</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">アップデートが見つかりました。その他のオプション</translation>
 <translation id="3524138585025253783">デベロッパー管理画面</translation>
 <translation id="3527085408025491307">フォルダ</translation>
-<translation id="3533694711092285624">保存されているパスワードがありません。パスワードを保存すると Chrome で確認できるようになります。</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB の空き</translation>
 <translation id="3549657413697417275">履歴を検索</translation>
 <translation id="3557336313807607643">連絡先に追加</translation>
@@ -569,6 +566,7 @@
 <translation id="5581519193887989363">同期する項目はいつでも [<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] で選択できます。</translation>
 <translation id="5595485650161345191">住所の編集</translation>
 <translation id="5599455543593328020">シークレット モード</translation>
+<translation id="5620163320393916465">保存されているパスワードはありません</translation>
 <translation id="5620928963363755975">[その他のオプション] から [ダウンロード] を開いて自分のファイルやページを探すことができます</translation>
 <translation id="5626134646977739690">名前:</translation>
 <translation id="5639724618331995626">すべてのサイトを許可</translation>

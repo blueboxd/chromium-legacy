@@ -170,7 +170,6 @@ Ketuk kata apa pun untuk menelusuri. Untuk menyaring penelusuran, sentuh lama un
 <translation id="2353636109065292463">Memeriksa koneksi internet Anda</translation>
 <translation id="2359808026110333948">Lanjutkan</translation>
 <translation id="2369533728426058518">tab terbuka</translation>
-<translation id="2377295302146152376">Chrome tidak dapat memeriksa update</translation>
 <translation id="2387895666653383613">Ukuran teks</translation>
 <translation id="2394602618534698961">File yang Anda download muncul di sini</translation>
 <translation id="2407481962792080328">Saat login ke Akun Google Anda, fitur ini akan diaktifkan</translation>
@@ -259,7 +258,6 @@ Sentuh lama kata apa pun untuk menelusurinya. Untuk menyaring penelusuran, pilih
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Lokasi nonaktif, aktifkan di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Anda dapat mengaktifkan sinkronisasi kapan saja di setelan</translation>
-<translation id="3059710691562604940">Safe Browsing nonaktif. Chrome merekomendasikan untuk mengaktifkannya.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bookmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> bookmark}}</translation>
 <translation id="3089395242580810162">Buka di tab samaran</translation>
 <translation id="3114012059975132928">Pemutar video</translation>
@@ -320,7 +318,6 @@ Sentuh lama kata apa pun untuk menelusurinya. Untuk menyaring penelusuran, pilih
 <translation id="3522247891732774234">Pembaruan tersedia. Opsi lainnya</translation>
 <translation id="3524138585025253783">UI Developer</translation>
 <translation id="3527085408025491307">Folder</translation>
-<translation id="3533694711092285624">Tidak ada sandi yang tersimpan. Chrome dapat memeriksa sandi Anda saat menyimpannya.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB tersedia</translation>
 <translation id="3549657413697417275">Telusuri histori penggunaan</translation>
 <translation id="3557336313807607643">Tambahkan ke kontak</translation>
@@ -360,6 +357,7 @@ Sentuh lama kata apa pun untuk menelusurinya. Untuk menyaring penelusuran, pilih
 <translation id="3892148308691398805">Salin teks</translation>
 <translation id="3894427358181296146">Tambah folder</translation>
 <translation id="3895926599014793903">Aktifkan zoom secara paksa</translation>
+<translation id="3909763690984331376">Pemeriksaan keselamatan <ph name="BEGIN_NEW" />Baru<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Menemukan yang terbaik dari web...</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Gabungkan data saya</translation>
@@ -570,6 +568,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5581519193887989363">Anda dapat memilih konten apa yang akan disinkronkan di <ph name="BEGIN_LINK1" />setelan<ph name="END_LINK1" /> kapan saja.</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
 <translation id="5599455543593328020">Mode samaran</translation>
+<translation id="5620163320393916465">Tidak ada sandi yang tersimpan</translation>
 <translation id="5620928963363755975">Temukan file dan halaman di Download dari tombol Opsi Lainnya</translation>
 <translation id="5626134646977739690">Nama:</translation>
 <translation id="5639724618331995626">Izinkan semua situs</translation>
@@ -581,6 +580,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5686790454216892815">Nama file terlalu panjang</translation>
 <translation id="5694049548840660018">Kembali ke beranda dengan mudah</translation>
 <translation id="569536719314091526">Terjemahkan halaman ini ke bahasa apa pun dari tombol Opsi lainnya</translation>
+<translation id="5696597120588531049">Chrome dapat membantu Anda agar tetap aman dari pelanggaran data, situs yang tidak aman, dan lainnya</translation>
 <translation id="5697688514913266141">File Anda akan disimpan ke <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Edit<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Beralih ke Tab</translation>
 <translation id="572328651809341494">Tab terbaru</translation>
@@ -714,6 +714,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6656545060687952787">Chrome memerlukan akses lokasi untuk memindai perangkat. <ph name="BEGIN_LINK" />Perbarui izin<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Sandi</translation>
 <translation id="6659594942844771486">Tab</translation>
+<translation id="6663079968236414793">Tautkan ke teks</translation>
 <translation id="666573598175432848">Versi baru Chrome telah tersedia. Ketuk elemen ini untuk membuka Play Store.</translation>
 <translation id="666731172850799929">Buka di <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Notifikasi Privasi Chrome</translation>
@@ -752,7 +753,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6981982820502123353">Aksesibilitas</translation>
 <translation id="6989267951144302301">Tidak dapat mendownload</translation>
 <translation id="6990079615885386641">Dapatkan aplikasi dari Google Play Store: <ph name="APP_ACTION" /></translation>
-<translation id="6995899638241819463">Berikan peringatan jika sandi terungkap saat terjadi pelanggaran data</translation>
+<translation id="6995899638241819463">Berikan peringatan jika sandi Anda terekspos saat terjadi pelanggaran data</translation>
 <translation id="7015203776128479407">Penyiapan sinkronisasi awal belum selesai. Sinkronisasi nonaktif.</translation>
 <translation id="7022756207310403729">Buka di browser</translation>
 <translation id="702463548815491781">Disarankan saat TalkBack atau Tombol Akses aktif</translation>

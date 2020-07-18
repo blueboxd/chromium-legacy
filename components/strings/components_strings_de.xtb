@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1008557486741366299">Jetzt nicht</translation>
+<translation id="100957008357583611">Standort verwenden?</translation>
 <translation id="1010200102790553230">Seite später laden</translation>
 <translation id="1015730422737071372">Weitere Details angeben</translation>
 <translation id="1019413721762100891">Aus</translation>
@@ -39,12 +40,12 @@
 <translation id="1131264053432022307">Von Ihnen kopiertes Bild</translation>
 <translation id="1150979032973867961">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Computers als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="1151972924205500581">Passwort erforderlich</translation>
-<translation id="1152921474424827756">Rufen Sie eine <ph name="BEGIN_LINK" />im Cache gespeicherte Kopie<ph name="END_LINK" /> von <ph name="URL" /> auf.</translation>
 <translation id="1156303062776767266">Sie sehen sich eine lokale oder freigegebene Datei an</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> hat die Verbindung unerwartet geschlossen.</translation>
 <translation id="115926840831309955">Prüfen Sie Ihren CVC und versuchen Sie es noch einmal oder ändern Sie das Ablaufdatum</translation>
 <translation id="1161325031994447685">WLAN-Verbindung erneut herstellen</translation>
 <translation id="1165039591588034296">Fehler</translation>
+<translation id="1165174597379888365">Seite aufgerufen</translation>
 <translation id="1175364870820465910">&amp;Drucken...</translation>
 <translation id="1175875016430184367">Drei Heftklammern rechts</translation>
 <translation id="1178581264944972037">Anhalten</translation>
@@ -242,7 +243,6 @@
 <translation id="1919345977826869612">Werbung</translation>
 <translation id="1919367280705858090">Hilfe bei bestimmten Fehlermeldungen</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Keine}=1{1 Website}other{# Websites}}</translation>
-<translation id="194030505837763158">Besuchen Sie die Seite <ph name="LINK" />.</translation>
 <translation id="1945968466830820669">Sie könnten den Zugriff auf das Konto Ihres Unternehmens verlieren oder zum Opfer von Identitätsdiebstahl werden. Chromium empfiehlt Ihnen, Ihr Passwort jetzt zu ändern.</translation>
 <translation id="1947454675006758438">Heftklammer oben rechts</translation>
 <translation id="1959001866257244765">Helfen Sie mit, die Sicherheit im Web für alle zu verbessern, und senden Sie die <ph name="BEGIN_WHITEPAPER_LINK" />URLs einiger von Ihnen besuchter Seiten, eingeschränkte Systemdaten und manche Seiteninhalte<ph name="END_WHITEPAPER_LINK" /> an Google. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Datenschutzerklärung<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -262,9 +262,9 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="2001146170449793414">{COUNT,plural, =1{und 1 weitere}other{und # weitere}}</translation>
 <translation id="2003709556000175978">Jetzt Passwort zurücksetzen</translation>
 <translation id="2003775180883135320">Vierfache Lochung oben</translation>
+<translation id="202072848677994234">Dieses Formular wird über eine unsichere Verbindung gesendet. Automatisches Ausfüllen ist deaktiviert.</translation>
 <translation id="2025115093177348061">Augmented Reality</translation>
 <translation id="2025186561304664664">Proxy ist auf automatische Konfiguration eingestellt.</translation>
-<translation id="2030481566774242610">Meinten Sie <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Proxy und Firewall prüfen<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Fach 7</translation>
 <translation id="204357726431741734">Anmelden, um die in Ihrem Google-Konto gespeicherten Passwörter zu verwenden</translation>
@@ -330,6 +330,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="2289385804009217824">Zuschneiden</translation>
 <translation id="2292556288342944218">Ihre Internetverbindung ist gesperrt</translation>
 <translation id="2293443924986248631">Wenn diese Funktion aktiviert ist, können Websites keine Cookies verwenden, die Ihre Browserdaten über mehrere Websites hinweg erfassen. Einige Websites funktionieren dann möglicherweise nicht mehr richtig.</translation>
+<translation id="2295290966866883927">URLs von Seiten, die Sie besuchen, werden zur Analyse an Google Cloud oder Dritte gesendet. Sie werden beispielsweise gescannt, um unsichere Websites zu identifizieren.</translation>
 <translation id="2297722699537546652">B5 (Umschlag)</translation>
 <translation id="2300306941146563769">Nicht hochgeladen</translation>
 <translation id="2310021320168182093">Chou2 (Umschlag)</translation>
@@ -1033,6 +1034,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="5308380583665731573">Verbinden</translation>
 <translation id="5308689395849655368">Die Absturzberichtsfunktion ist deaktiviert.</translation>
 <translation id="5314967030527622926">Falzmaschine</translation>
+<translation id="5316812925700871227">Gegen den Uhrzeigersinn drehen</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> von <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Kontaktdaten auswählen</translation>
@@ -1056,7 +1058,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="5421136146218899937">Browserdaten löschen...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> möchte Ihnen Benachrichtigungen senden</translation>
 <translation id="5430298929874300616">Lesezeichen löschen</translation>
-<translation id="5431657950005405462">Ihre Datei wurde nicht gefunden</translation>
 <translation id="5439770059721715174">Schemavalidierungsfehler in "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Umgekehrte Reihenfolge mit der Vorderseite nach oben</translation>
 <translation id="5447765697759493033">Diese Website wird nicht übersetzt</translation>
@@ -1165,6 +1166,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="5869405914158311789">Die Website ist nicht erreichbar</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
 <translation id="5887400589839399685">Karte gespeichert</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> erfordert, dass Sie Ihre Daten sichern und dieses Gerät zurückgeben.</translation>
 <translation id="5895138241574237353">Neu starten</translation>
 <translation id="5895187275912066135">Ausgestellt am</translation>
 <translation id="5901630391730855834">Gelb</translation>
@@ -1429,7 +1431,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="7083258188081898530">Fach 9</translation>
 <translation id="7086090958708083563">Upload vom Nutzer angefordert</translation>
 <translation id="7087282848513945231">Landkreis</translation>
-<translation id="7090678807593890770">Auf Google nach <ph name="LINK" /> suchen</translation>
 <translation id="7108338896283013870">Ausblenden</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> möchte Ihre Kamera verwenden</translation>
 <translation id="7108819624672055576">Von einer Erweiterung zugelassen</translation>
@@ -1866,7 +1867,6 @@ Weitere Details:
 <translation id="893332455753468063">Namen hinzufügen</translation>
 <translation id="8943282376843390568">Limone</translation>
 <translation id="8957210676456822347">Erfassungsportal-Autorisierung</translation>
-<translation id="8958582951173503172">Wenn Chrome Enterprise Connectors Sicherheitshinweise melden, werden relevante Informationen an Ihren Administrator gesendet. Dazu gehören z. B. URLs der von Ihnen in Chrome besuchten Seiten, Dateinamen oder Metadaten sowie der Nutzername, den Sie zum Anmelden auf Ihrem Gerät und in Chrome verwenden.</translation>
 <translation id="8962950042226115166">Verdächtige Website</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Vorschläge:<ph name="MARKUP_2" />Vergewissern Sie sich, dass Sie über eine Datenverbindung verfügen.<ph name="MARKUP_3" />Laden Sie diese Webseite später neu.<ph name="MARKUP_4" />Überprüfen Sie die von Ihnen eingegebene Adresse.<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Karte speichern</translation>

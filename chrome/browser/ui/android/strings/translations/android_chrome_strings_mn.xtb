@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">Таны интернэт холболтыг шалгаж байна</translation>
 <translation id="2359808026110333948">Цааш</translation>
 <translation id="2369533728426058518">чихтэй хуудас нээх</translation>
-<translation id="2377295302146152376">Chrome шинэчлэлт байгаа эсэхийг шалгаж чадсангүй</translation>
 <translation id="2387895666653383613">Текстийн хэмжээс</translation>
 <translation id="2394602618534698961">Таны татсан файлууд энд харагддаг</translation>
 <translation id="2407481962792080328">Таныг Google Бүртгэлдээ нэвтрэхэд энэ онцлог асна</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Тусламж авах<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Байршил идэвхгүй, үүнийг <ph name="BEGIN_LINK" />Андройд Тохиргоо<ph name="END_LINK" /> дотроос асаана уу.</translation>
 <translation id="3058498974290601450">Та синкийг хүссэн үедээ тохиргоонд асааж болно</translation>
-<translation id="3059710691562604940">Аюулгүй үзэх онцлог унтраалттай байна. Chrome түүнийг асаахыг зөвлөж байна.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> хавчуурга}other{<ph name="BOOKMARKS_COUNT_MANY" /> хавчуурга}}</translation>
 <translation id="3089395242580810162">Нууцлалтай таб дээр нээх</translation>
 <translation id="3114012059975132928">Видео тоглуулагч</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">Шинэчлэх боломжтой. Бусад сонголт</translation>
 <translation id="3524138585025253783">Хөгжүүлэгчийн UI</translation>
 <translation id="3527085408025491307">Хавтас</translation>
-<translation id="3533694711092285624">Хадгалсан ямар ч нууц үг байхгүй байна. Таныг нууц үгсээ хадгалах үед Chrome тэднийг шалгах боломжтой.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> килобайт боломжтой</translation>
 <translation id="3549657413697417275">Түүхээ хайх</translation>
 <translation id="3557336313807607643">Харилцагчид нэмэх</translation>
@@ -360,6 +357,7 @@
 <translation id="3892148308691398805">Текстийг хуулах</translation>
 <translation id="3894427358181296146">Хавтас нэмэх</translation>
 <translation id="3895926599014793903">Ямар ч тохиолдолд томруулан харуулах</translation>
+<translation id="3909763690984331376">Аюулгүй байдлын шалгалт <ph name="BEGIN_NEW" />Шинэ<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Вэбээс шилдэг илэрцийг хайж байна…</translation>
 <translation id="3927692899758076493">Санс сериф</translation>
 <translation id="3928666092801078803">Миний өгөгдлийг нэгтгэх</translation>
@@ -569,6 +567,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="5581519193887989363">Та синк хийх зүйлээ хүссэн үедээ <ph name="BEGIN_LINK1" />тохиргооноос<ph name="END_LINK1" /> сонгож болно.</translation>
 <translation id="5595485650161345191">Хаягийг засах</translation>
 <translation id="5599455543593328020">нууцлалын горим</translation>
+<translation id="5620163320393916465">Хадгалсан ямар ч нууц үг байхгүй байна</translation>
 <translation id="5620928963363755975">Файл, хуудсаа Бусад сонголт товчлуурын Таталт хэсгээс хайна уу</translation>
 <translation id="5626134646977739690">Нэр:</translation>
 <translation id="5639724618331995626">Бүх сайтыг зөвшөөрөх</translation>
@@ -580,6 +579,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="5686790454216892815">Файлын нэр хэт урт байна</translation>
 <translation id="5694049548840660018">Нүүр хуудас руугаа амархан буцаарай</translation>
 <translation id="569536719314091526">Энэ хуудсыг Бусад сонголт гэсэн товчлуураас дурын хэл рүү орчуулна уу</translation>
+<translation id="5696597120588531049">Chrome таныг өгөгдлийн зөрчил, аюултай вэб сайт болон бусад зүйлээс хамгаалахад туслах боломжтой</translation>
 <translation id="5697688514913266141">Таны файлыг <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />-д хадгална. <ph name="BEGIN_LINK2" />Засах<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Таб руу сэлгэх</translation>
 <translation id="572328651809341494">Саяхан нээсэн цонх</translation>
@@ -713,6 +713,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="6656545060687952787">Төхөөрөмжийг хайхын тулд Chrome-д байршлын хандалт шаардлагатай. <ph name="BEGIN_LINK" />Шинэчлэлтийн зөвшөөрөл<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Нууц үг</translation>
 <translation id="6659594942844771486">Цонх</translation>
+<translation id="6663079968236414793">Текст рүү очих холбоос</translation>
 <translation id="666573598175432848">Chrome-н шинэ хувилбар боломжтой боллоо. Play Store руу очихын тулд энэ элементийг товшино уу.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> дотор нээ</translation>
 <translation id="666981079809192359">Chrome-н нууцлалын мэдэгдэл</translation>

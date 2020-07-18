@@ -40,7 +40,6 @@
 <translation id="1131264053432022307">Picha Uliyonakili</translation>
 <translation id="1150979032973867961">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama hakiaminiwi na mfumo wa uendeshaji wa kompyuta yako. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
 <translation id="1151972924205500581">Nenosiri linahitajika</translation>
-<translation id="1152921474424827756">Fikia <ph name="BEGIN_LINK" />nakala iliyowekwa kwenye akiba<ph name="END_LINK" /> ya <ph name="URL" /></translation>
 <translation id="1156303062776767266">Unaangalia faili ya mfumo au iliyoshirikiwa</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> imefunga muunganisho bila kutarajiwa.</translation>
 <translation id="115926840831309955">Angalia CVC yako kisha ujaribu tena au badilisha tarehe ya mwisho wa matumizi</translation>
@@ -247,7 +246,6 @@
 <translation id="1919345977826869612">Matangazo</translation>
 <translation id="1919367280705858090">Pata usaidizi kwa kutumia ujumbe mahususi kuhusu hitilafu</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Hamna}=1{Tovuti 1}other{Tovuti #}}</translation>
-<translation id="194030505837763158">Nenda kwenye <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Unaweza kupoteza uwezo wa kufikia akaunti ya shirika lako au kuibiwa utambulisho. Chromium inapendekeza ubadilishe nenosiri lako sasa.</translation>
 <translation id="1947454675006758438">Bana juu kulia</translation>
 <translation id="1959001866257244765">Tusaidie kuboresha usalama kwa kila mtu kwenye wavuti kwa kutuma <ph name="BEGIN_WHITEPAPER_LINK" />URL za baadhi ya kurasa unazotembelea, maelezo machache ya mfumo na baadhi ya maudhui ya ukurasa<ph name="END_WHITEPAPER_LINK" /> kwa Google. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Sera ya faragha<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -270,7 +268,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="202072848677994234">Fomu hii inatumwa kupitia muunganisho ambao si salama. Kipengele cha kujaza kiotomatiki kimezimwa.</translation>
 <translation id="2025115093177348061">Uhalisia ulioboreshwa</translation>
 <translation id="2025186561304664664">Proksi imewekwa katika usanidi otomatiki.</translation>
-<translation id="2030481566774242610">Je, ulimaanisha <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kuangalia seva mbadala na kinga mtandao<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Trei ya saba</translation>
 <translation id="204357726431741734">Ingia katika akaunti ili utumie manenosiri uliyohifadhi kwenye Akaunti yako ya Google</translation>
@@ -1049,6 +1046,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="5308380583665731573">Unganisha</translation>
 <translation id="5308689395849655368">Kuripoti uharibifu kumelemazwa.</translation>
 <translation id="5314967030527622926">Kialamishi cha kijitabu</translation>
+<translation id="5316812925700871227">Zungusha kinyume cha mwendo wa saa</translation>
 <translation id="5317780077021120954">Hifadhi</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> kati ya <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Chagua Maelezo ya Mawasiliano</translation>
@@ -1072,7 +1070,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="5421136146218899937">Futa data ya kuvinjari...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> inataka kukutumia arifa</translation>
 <translation id="5430298929874300616">Ondoa alamisho</translation>
-<translation id="5431657950005405462">Faili yako haikupatikana</translation>
 <translation id="5439770059721715174">Hitilafu katika uhalalishaji wa Skima " <ph name="ERROR_PATH" /> ": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Kinyume cha mpangilio wa kuangalia juu</translation>
 <translation id="5447765697759493033">Tovuti hii haitatafsiriwa</translation>
@@ -1446,7 +1443,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="7083258188081898530">Trei ya tisa</translation>
 <translation id="7086090958708083563">Mtumiaji ameomba kupakia</translation>
 <translation id="7087282848513945231">Jimbo</translation>
-<translation id="7090678807593890770">Tafuta <ph name="LINK" /> kwenye Google</translation>
 <translation id="7108338896283013870">Ficha</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> inataka kutumia kamera yako</translation>
 <translation id="7108819624672055576">Imeruhusiwa na kiendelezi</translation>
@@ -1879,7 +1875,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="893332455753468063">Ongeza Jina</translation>
 <translation id="8943282376843390568">Chokaa</translation>
 <translation id="8957210676456822347">Uidhinishaji wa Ukurasa wa Wavuti</translation>
-<translation id="8958582951173503172">Matukio ya usalama yanaporipotiwa na Viunganishi vya Chrome Enterprise, data inayofaa kuhusu tukio hilo hutumwa kwa msimamizi wako. Data hii inaweza kujumuisha URL za kurasa ambazo umetembelea kwenye Chrome, metadata au majina ya faili na jina la mtumiaji unalotumia kuingia katika kifaa chako na Chrome.</translation>
 <translation id="8962950042226115166">Tovuti inayotiliwa shaka</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Mapendekezo:<ph name="MARKUP_2" />Hakikisha kuwa una muunganisho wa data<ph name="MARKUP_3" />Pakia upya ukurasa huu wa wavuti baadaye<ph name="MARKUP_4" />Kagua anwani uliyoweka<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Hifadhi kadi</translation>

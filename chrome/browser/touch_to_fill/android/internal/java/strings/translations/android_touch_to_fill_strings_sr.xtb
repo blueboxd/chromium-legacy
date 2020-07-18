@@ -1,15 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
-<translation id="1334465099090928258">Пружа <ph name="APP_NAME" /></translation>
 <translation id="1717486229951421299">Листа акредитива који треба да се унесу на додир се отворила до половине екрана.</translation>
 <translation id="207576718733492531">Листа акредитива који треба да се унесу на додир је затворена.</translation>
 <translation id="2359808026110333948">Наставите</translation>
 <translation id="2410754283952462441">Изаберите налог</translation>
 <translation id="3399357656427473483">Листа акредитива који треба да се унесу на додир.</translation>
-<translation id="496501580515239715">Ново у: <ph name="APP_NAME" />! Контролишите како се пријављујете једним додиром</translation>
 <translation id="5441504010984421144">Листа акредитива који треба да се унесу на додир се отворила на целом екрану,</translation>
 <translation id="5624120631404540903">Управљај лозинкама</translation>
-<translation id="765102084632356159">Ново у: <ph name="APP_NAME" />! Додирните да бисте се пријавили</translation>
 <translation id="804577341878669140">Наставите са налогом</translation>
 </translationbundle>

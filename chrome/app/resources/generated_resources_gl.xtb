@@ -255,6 +255,7 @@
 <translation id="1306606229401759371">Cambiar configuración</translation>
 <translation id="1307165550267142340">Creouse o teu PIN</translation>
 <translation id="1307559529304613120">O sistema non puido almacenar o token de acceso á API de longo prazo para este dispositivo.</translation>
+<translation id="1313162974556054106">Nome do dispositivo</translation>
 <translation id="1313405956111467313">Configuración do proxy automática</translation>
 <translation id="131364520783682672">Bloqueo de maiúsculas</translation>
 <translation id="1313660246522271310">Pecharase a túa sesión en todos os sitios, mesmo nas pestanas abertas</translation>
@@ -704,7 +705,6 @@
 <translation id="184273675144259287">Substitúe as aplicacións e os ficheiros de Linux por unha copia de seguranza creada anteriormente</translation>
 <translation id="1842766183094193446">Seguro que queres activar o modo de demostración?</translation>
 <translation id="1846308012215045257">Fai clic mentres mantés premida a tecla Control para executar <ph name="PLUGIN_NAME" />.</translation>
-<translation id="1846880379134204029">Grupo <ph name="GROUP_NAME" />: <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Activar modo ambiente</translation>
 <translation id="1849186935225320012">Esta páxina ten control total sobre os dispositivos MIDI.</translation>
 <translation id="1850508293116537636">Xirar á &amp;dereita</translation>
@@ -1722,6 +1722,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3103941660000130485">Produciuse un erro ao actualizar Linux</translation>
 <translation id="3105796011181310544">Queres volver cambiar a Google?</translation>
 <translation id="310671807099593501">O sitio está usando o Bluetooth</translation>
+<translation id="3109724472072898302">Contraído</translation>
 <translation id="3115147772012638511">Agardando pola caché...</translation>
 <translation id="3115580024857770654">Contraer todo</translation>
 <translation id="3116968597797150452">Perfil do certificado</translation>
@@ -1789,7 +1790,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3192947282887913208">Ficheiros de audio</translation>
 <translation id="3199127022143353223">Servidores</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome recomenda comprobar este contrasinal agora}other{Chrome recomenda comprobar estes contrasinais agora}}</translation>
-<translation id="3200941271596533635">Activar/desactivar modo de lector</translation>
 <translation id="3201422919974259695">Os dispositivos USB dispoñibles aparecerán aquí.</translation>
 <translation id="3202131003361292969">Ruta</translation>
 <translation id="3202173864863109533">Estase silenciando o audio desta pestana.</translation>
@@ -4209,7 +4209,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6270770586500173387">Enviar <ph name="BEGIN_LINK1" />información sobre o sistema e as aplicacións<ph name="END_LINK1" />, así como <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Produciuse un erro (<ph name="ERROR" />) ao descargar o plugin</translation>
 <translation id="6273677812470008672">Calidade</translation>
-<translation id="6273979226236203550">O contrasinal está almacenado neste dispositivo e na túa Conta de Google. Que versión queres eliminar?</translation>
 <translation id="6277105963844135994">Tempo de espera da rede</translation>
 <translation id="6277518330158259200">F&amp;acer captura de pantalla</translation>
 <translation id="6278057325678116358">Utilizar GTK+</translation>
@@ -4856,7 +4855,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7099337801055912064">Non se poden cargar PPD grandes. O tamaño máximo é de 250 kB.</translation>
 <translation id="7102687220333134671">As actualizacións automáticas están activadas</translation>
 <translation id="7102832101143475489">Esgotouse o tempo de espera da solicitude</translation>
-<translation id="7102928824073746774">Grupo sen nome: <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Preferencias de USB</translation>
 <translation id="710640343305609397">Abrir configuración de rede</translation>
 <translation id="7108338896283013870">Ocultar</translation>
@@ -4932,6 +4930,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="720110658997053098">Manter este dispositivo permanentemente no modo de quiosco</translation>
 <translation id="7201118060536064622">Eliminouse "<ph name="DELETED_ITEM_NAME" />"</translation>
 <translation id="7201420661433230412">Ver ficheiros</translation>
+<translation id="7203150201908454328">Ampliado</translation>
 <translation id="7203826966018112936">Se lle engades unha conta de centro educativo a un perfil, o usuario poderá iniciar sesión como estudante de forma sinxela en determinados sitios web e extensións sen que deixen de aplicarse os controis parentais. O teu fillo ou filla non obterá acceso aos marcadores, aos contrasinais nin a outros datos do navegador sincronizados coa conta do centro educativo.&lt;br&gt;&lt;br&gt;
     Se o neno ou nena utiliza un Chromebook na clase e queres recrear a experiencia escolar na casa para asegurarte de que teña acceso a todas as tarefas escolares necesarias, pecha sesión nesta conta de Family Link e inicia sesión na conta do centro educativo desde a páxina de contas de Chrome OS (non esquezas que non se aplicarán os controis parentais de Family Link).&lt;br&gt;&lt;br&gt;
     Se o teu fillo ou filla non utiliza un Chromebook na clase ou se prefires xestionar a súa experiencia na casa con Family Link, fai clic no botón Seguinte que aparece a continuación para engadir unha conta de centro escolar a este perfil.</translation>
@@ -4941,7 +4940,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7207631048330366454">Buscar aplicacións</translation>
 <translation id="7210499381659830293">Impresoras da extensión</translation>
 <translation id="7212097698621322584">Introduce o teu PIN actual para cambialo. Se non sabes cal é, deberás restablecer a chave de seguranza e, despois, crear un novo.</translation>
-<translation id="7216409898977639127">Provedor móbil</translation>
+<translation id="7216409898977639127">Provedor de rede móbil</translation>
 <translation id="7216595297012131718">Ordena os idiomas en función das túas preferencias</translation>
 <translation id="7220019174139618249">Non se puideron exportar os contrasinais en "<ph name="FOLDER" />"</translation>
 <translation id="722055596168483966">Personalizar os servizos de Google</translation>
@@ -5327,7 +5326,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7704521324619958564">Abrir Play Store</translation>
 <translation id="7705276765467986571">Erro ao cargar o modelo do marcador.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Activar/desactivar modo de lector</translation>
 <translation id="7707108266051544351">Bloqueouse o uso dos sensores de movemento por parte deste sitio.</translation>
 <translation id="7707922173985738739">Utilizaranse datos móbiles</translation>
 <translation id="7709152031285164251">Erro: <ph name="INTERRUPT_REASON" /></translation>

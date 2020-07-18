@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">நீங்கள் நகலெடுத்த படம்</translation>
 <translation id="1150979032973867961">இது <ph name="DOMAIN" /> தான் என்பதை இந்தச் சேவையகம் உறுதிப்படுத்தவில்லை; இதன் பாதுகாப்புச் சான்றிதழை உங்கள் கம்ப்யூட்டரின் ஆப்ரேட்டிங் சிஸ்டம் நம்பவில்லை. இது தவறான உள்ளமைவால் ஏற்பட்டிருக்கலாம் அல்லது தீங்கிழைப்பவர் உங்கள் இணைப்பில் குறுக்கிட்டிருக்கலாம்.</translation>
 <translation id="1151972924205500581">கடவுச்சொல் தேவை</translation>
-<translation id="1152921474424827756"><ph name="URL" /> இன் <ph name="BEGIN_LINK" />தற்காலிகச் சேமிப்பு நகலை<ph name="END_LINK" /> அணுகவும்</translation>
 <translation id="1156303062776767266">அகக் கோப்பு அல்லது பகிரப்பட்ட கோப்பைப் பார்க்கிறீர்கள்</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> எதிர்பாராத விதமாக இணைப்பை நிறுத்தியது.</translation>
 <translation id="115926840831309955">உங்கள் CVCயைச் சரிபார்த்து மீண்டும் முயலவும் அல்லது காலாவதித் தேதியை மாற்றவும்</translation>
 <translation id="1161325031994447685">வைஃபையுடன் மீண்டும் இணைத்தல்</translation>
 <translation id="1165039591588034296">பிழை</translation>
+<translation id="1165174597379888365">பக்கத்தைப் பார்வையிடுவது</translation>
 <translation id="1175364870820465910">&amp;அச்சிடு...</translation>
 <translation id="1175875016430184367">டிரிப்பில் ஸ்டேப்பில் ரைட்</translation>
 <translation id="1178581264944972037">இடைநிறுத்து</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">விளம்பரங்கள்</translation>
 <translation id="1919367280705858090">குறிப்பிட்ட பிழைச் செய்திக்கான உதவியைப் பெறுங்கள்</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{ஏதுமில்லை}=1{1 தளம்}other{# தளங்கள்}}</translation>
-<translation id="194030505837763158"><ph name="LINK" /> க்குச் செல்க</translation>
 <translation id="1945968466830820669">உங்கள் நிறுவனத்தின் கணக்கிற்கான அணுகலை நீங்கள் இழக்கக்கூடும் அல்லது அடையாளத் திருட்டை எதிர்கொள்ளக்கூடும். இப்போதே உங்கள் கடவுச்சொல்லை மாற்றும்படி Chromium பரிந்துரைக்கிறது.</translation>
 <translation id="1947454675006758438">ஸ்டேப்பில் டாப் ரைட்</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />நீங்கள் பார்வையிட்ட சில பக்கங்களின் URLகளையும் வரம்பிற்குட்பட்ட சிஸ்டம் தகவல்களையும் சில பக்கங்களின் உள்ளடக்கத்தையும்<ph name="END_WHITEPAPER_LINK" /> Googleளுக்கு அனுப்பி இணையத்தில் உள்ள அனைவரின் பாதுகாப்பையும் மேம்படுத்த உதவுங்கள். <ph name="BEGIN_PRIVACY_PAGE_LINK" />தனியுரிமைக் கொள்கை<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,9 +266,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{மேலும் 1}other{மேலும் #}}</translation>
 <translation id="2003709556000175978">உங்கள் கடவுச்சொல்லை இப்போதே மீட்டமைக்கவும்</translation>
 <translation id="2003775180883135320">குவாட் பஞ்ச் டாப்</translation>
+<translation id="202072848677994234">இந்தப் படிவம் பாதுகாப்பற்ற இணைப்பின் வழியாகச் சமர்ப்பிக்கப்படுகிறது. தானியங்கு நிரப்புதல் முடக்கப்பட்டுள்ளது.</translation>
 <translation id="2025115093177348061">ஆக்மென்ட்டட் ரியாலிட்டி</translation>
 <translation id="2025186561304664664">ப்ராக்ஸி, தானியங்கி உள்ளமைவுக்கு அமைக்கப்பட்டுள்ளது</translation>
-<translation id="2030481566774242610"><ph name="LINK" /> ஐக் குறிப்பிடுகிறீர்களா?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />ப்ராக்ஸி மற்றும் ஃபயர்வாலைச் சரிபார்த்தல்<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">தட்டு 7</translation>
 <translation id="204357726431741734">உங்கள் Google கணக்கில் சேமிக்கப்பட்டுள்ள கடவுச்சொற்களைப் பயன்படுத்த உள்நுழைக</translation>
@@ -335,6 +334,7 @@
 <translation id="2289385804009217824">டிரிம்</translation>
 <translation id="2292556288342944218">உங்கள் இணைய அணுகல் தடுக்கப்பட்டது</translation>
 <translation id="2293443924986248631">இது இயக்கப்பட்டிருக்கும்போது உங்கள் இணைய நடவடிக்கைகளைக் கண்காணிக்கும் குக்கீகளைத் தளங்களால் பயன்படுத்த முடியாது. சில வலைதளங்களிலுள்ள அம்சங்கள் சிதைவடையக்கூடும்.</translation>
+<translation id="2295290966866883927">நீங்கள் பார்வையிடும் பக்கங்களின் URLகள் Google கிளவுடுக்கோ மூன்றாம் தரப்பினருக்கோ பகுப்பாய்வு செய்வதற்காக அனுப்பப்படும். எடுத்துக்காட்டாக, பாதுகாப்பற்ற இணைய தளங்களைக் கண்டறிய அவை ஸ்கேன் செய்யப்படலாம்.</translation>
 <translation id="2297722699537546652">B5 (என்வலப்)</translation>
 <translation id="2300306941146563769">பதிவேற்றப்படவில்லை</translation>
 <translation id="2310021320168182093">Chou2 (என்வலப்)</translation>
@@ -1041,6 +1041,7 @@
 <translation id="5308380583665731573">இணை</translation>
 <translation id="5308689395849655368">செயலிழப்பு புகாரளித்தல் முடக்கப்பட்டுள்ளது.</translation>
 <translation id="5314967030527622926">புக்லெட் மேக்கர்</translation>
+<translation id="5316812925700871227">கடிகார எதிர்த்திசையில் சுழற்று</translation>
 <translation id="5317780077021120954">சேமி</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="NUM_MATCHES" /> இல் <ph name="MATCH_POSITION" /></translation>
 <translation id="5324080437450482387">தொடர்புத் தகவலைத் தேர்வு செய்</translation>
@@ -1064,7 +1065,6 @@
 <translation id="5421136146218899937">உலாவிய தரவை அழி...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> உங்களுக்கு அறிவிப்புகளை அனுப்ப விரும்புகிறது</translation>
 <translation id="5430298929874300616">புத்தகக்குறியை அகற்று</translation>
-<translation id="5431657950005405462">உங்கள் கோப்பு இல்லை</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" திட்டமுறை சரிபார்ப்புப் பிழை: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">பின்னோக்கிய வரிசையில் மேல் நோக்கிய பாணி</translation>
 <translation id="5447765697759493033">இந்தத் தளம் மொழிபெயர்க்கப்படாது</translation>
@@ -1437,7 +1437,6 @@
 <translation id="7083258188081898530">தட்டு 9</translation>
 <translation id="7086090958708083563">பயனர் கோரிய பதிவேற்றம்</translation>
 <translation id="7087282848513945231">மாகாணம்</translation>
-<translation id="7090678807593890770">Googleளில் <ph name="LINK" />ஐத் தேடவும்</translation>
 <translation id="7108338896283013870">மறை</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> உங்கள் கேமராவைப் பயன்படுத்த விரும்புகிறது</translation>
 <translation id="7108819624672055576">நீட்டிப்பு அனுமதித்தது</translation>
@@ -1873,7 +1872,6 @@
 <translation id="893332455753468063">பெயரைச் சேர்க்கவும்</translation>
 <translation id="8943282376843390568">சுண்ணாம்பு நிறம்</translation>
 <translation id="8957210676456822347">கேப்டிவ் போர்டல் அங்கீகாரம்</translation>
-<translation id="8958582951173503172">பாதுகாப்பு தொடர்பான நிகழ்வுகளை Chrome Enterprise Connectors கொடியிடும்போது, அந்நிகழ்வு பற்றிய தரவு உங்கள் நிர்வாகியுடன் பகிரப்படும். Chromeமில் நீங்கள் பார்க்கும் பக்கங்களின் URLகள், கோப்பின் பெயர்கள்/தரவுத்தகவல் மற்றும் உங்கள் சாதனத்திலும் Chromeமிலும் உள்நுழையப் பயன்படுத்தும் பயனர்பெயர் ஆகியவை இதில் அடங்கக்கூடும்.</translation>
 <translation id="8962950042226115166">சந்தேகத்திற்குரிய தளம்</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />பரிந்துரைகள்:<ph name="MARKUP_2" />உங்களுடைய டேட்டா இணைப்பைச் சரிபார்க்கவும்<ph name="MARKUP_3" />இந்த இணையப்பக்கத்தைப் பின்னர் ஏற்றவும்<ph name="MARKUP_4" />நீங்கள் உள்ளிட்ட முகவரியைச் சரிபார்க்கவும்<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">கார்டைச் சேமி</translation>

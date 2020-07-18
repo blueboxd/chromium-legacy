@@ -170,7 +170,6 @@ Gusa neno lolote ili utafute. Ili uchuje utafutaji wako, gusa na ushikilie ili u
 <translation id="2353636109065292463">Inaangalia muunganisho wako wa intaneti</translation>
 <translation id="2359808026110333948">Endelea</translation>
 <translation id="2369533728426058518">vichupo vilivyo wazi</translation>
-<translation id="2377295302146152376">Chrome imeshindwa kukagua masasisho</translation>
 <translation id="2387895666653383613">Upimaji wa maandishi</translation>
 <translation id="2394602618534698961">Faili unazopakua zinaonekana hapa</translation>
 <translation id="2407481962792080328">Ukiingia katika Akaunti ya Google, kipengele hiki kitawashwa</translation>
@@ -259,7 +258,6 @@ Gusa na ushikilie neno lolote ili utafute. Ili uchuje utafutaji wako, chagua man
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Pata usaidizi<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Kipengele cha mahali kimezimwa; kiwashe katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Unaweza kuwasha kipengele cha kusawazisha wakati wowote katika mipangilio</translation>
-<translation id="3059710691562604940">Kipengele cha Kuvinjari Salama kimezimwa. Chrome inapendekeza ukiwashe.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{Alamisho <ph name="BOOKMARKS_COUNT_ONE" />}other{Alamisho <ph name="BOOKMARKS_COUNT_MANY" />}}</translation>
 <translation id="3089395242580810162">Fungua katika kichupo fiche</translation>
 <translation id="3114012059975132928">Kicheza video</translation>
@@ -320,7 +318,6 @@ Gusa na ushikilie neno lolote ili utafute. Ili uchuje utafutaji wako, chagua man
 <translation id="3522247891732774234">Kuna toleo jipya. Chaguo zaidi</translation>
 <translation id="3524138585025253783">Kiolesura cha Msanidi Programu</translation>
 <translation id="3527085408025491307">Folda</translation>
-<translation id="3533694711092285624">Hakuna manenosiri yaliyohifadhiwa. Chrome inaweza kukagua manenosiri yako unapoyahifadhi.</translation>
 <translation id="3542235761944717775">KB <ph name="KILOBYTES" /> zinapatikana</translation>
 <translation id="3549657413697417275">Tafuta katika historia yako</translation>
 <translation id="3557336313807607643">Ongeza kwenye anwani</translation>
@@ -571,6 +568,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5581519193887989363">Unaweza kuchagua utakachosawazisha wakati wowote katika <ph name="BEGIN_LINK1" />mipangilio<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Badilisha anwani</translation>
 <translation id="5599455543593328020">Hali fiche</translation>
+<translation id="5620163320393916465">Hakuna manenosiri yaliyohifadhiwa</translation>
 <translation id="5620928963363755975">Tafuta faili na kurasa zako katika Vipakuliwa kwenye kitufe cha Chaguo Nyingine</translation>
 <translation id="5626134646977739690">Jina:</translation>
 <translation id="5639724618331995626">Ruhusu tovuti zote</translation>

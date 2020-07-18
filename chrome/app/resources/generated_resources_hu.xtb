@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Csak titkosítás</translation>
 <translation id="1038462104119736705">Ajánlott legalább <ph name="INSTALL_SIZE" /> méretű területet szánni a Linuxra. Tárhely felszabadításához töröljön fájlokat az eszközről.</translation>
 <translation id="1039337018183941703">Érvénytelen vagy sérült fájl</translation>
+<translation id="104086161873270383">Új profil</translation>
 <translation id="1041175011127912238">Az oldal nem válaszol</translation>
 <translation id="1041263367839475438">Rendelkezésre álló eszközök</translation>
 <translation id="1042174272890264476">Számítógépe a <ph name="SHORT_PRODUCT_NAME" /> RLZ-könyvtárát is tartalmazza beépítve. Az RLZ egy nem egyedi, személy szerinti azonosításra nem alkalmas címkét rendel hozzá a keresések és a <ph name="SHORT_PRODUCT_NAME" /> használatának egy adott promóciós kampány keretein belüli felméréséhez. Ezek a címkék időnként a <ph name="PRODUCT_NAME" /> Google-keresési lekérdezéseiben is feltűnnek.</translation>
@@ -232,6 +233,7 @@
 <translation id="1274997165432133392">Cookie-k és egyéb webhelyadatok</translation>
 <translation id="1275718070701477396">Kijelölt</translation>
 <translation id="1276994519141842946">A(z) <ph name="APP_NAME" /> eltávolítása nem sikerült</translation>
+<translation id="127946606521051357">Egy közeli eszköz megosztást végez</translation>
 <translation id="1280820357415527819">Mobilhálózatok keresése…</translation>
 <translation id="1280965841156951489">Fájlok szerkesztése</translation>
 <translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
@@ -254,6 +256,7 @@
 <translation id="1306606229401759371">Beállítások módosítása</translation>
 <translation id="1307165550267142340">Sikerült a PIN-kód létrehozása</translation>
 <translation id="1307559529304613120">Hoppá! A rendszer nem tudta tárolni az eszköz hosszú távú API hozzáférési tokenjét.</translation>
+<translation id="1313162974556054106">Eszköz neve</translation>
 <translation id="1313405956111467313">Automatikus proxykonfiguráció</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">A rendszer kijelentkezteti ezekről a webhelyekről (a megnyitott lapok esetében is).</translation>
@@ -704,7 +707,6 @@
 <translation id="184273675144259287">A Linux-alkalmazások és -fájlok lecserélése a korábbi biztonsági másolat tartalmával</translation>
 <translation id="1842766183094193446">Biztosan engedélyezi a demó módot?</translation>
 <translation id="1846308012215045257">A Control billentyű lenyomása mellett kattintson ide a(z) <ph name="PLUGIN_NAME" /> futtatásához.</translation>
-<translation id="1846880379134204029"><ph name="GROUP_NAME" /> csoport – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Ambient-mód engedélyezése</translation>
 <translation id="1849186935225320012">Ez az oldal teljes hozzáféréssel rendelkezik a MIDI-eszközökhöz.</translation>
 <translation id="1850508293116537636">Forgatás &amp;jobbra</translation>
@@ -1220,6 +1222,7 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2489918096470125693">Mappa &amp;hozzáadása...</translation>
 <translation id="2490481887078769936">„<ph name="FILE_NAME" />” eltávolítva a listából</translation>
 <translation id="249113932447298600">Elnézést kérünk, de a(z) <ph name="DEVICE_LABEL" /> eszköz jelenleg nem támogatott.</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> <ph name="ATTACHMENTS" /> Önnel való megosztására készül.</translation>
 <translation id="2492461744635776704">Tanúsítvány-aláírási kérés előkészítése</translation>
 <translation id="249303669840926644">Nem sikerült befejezni a regisztrációt</translation>
 <translation id="2495777824269688114">További funkciókat fedezhet fel, illetve válaszokat kaphat. Ha segítségre van szüksége, válassza a „?” gombot.</translation>
@@ -1721,6 +1724,7 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3103941660000130485">Hiba a Linux frissítése során</translation>
 <translation id="3105796011181310544">Visszaállítja a Google-t?</translation>
 <translation id="310671807099593501">A webhely Bluetooth-t használ</translation>
+<translation id="3109724472072898302">Összecsukott</translation>
 <translation id="3115147772012638511">Betöltés a gyorsítótárból folyamatban...</translation>
 <translation id="3115580024857770654">Az összes összecsukása</translation>
 <translation id="3116968597797150452">Tanúsítványprofil</translation>
@@ -1788,7 +1792,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3192947282887913208">Audiofájlok</translation>
 <translation id="3199127022143353223">Szerverek</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{A Chrome azt javasolja, hogy azonnal ellenőrizze ezt a jelszót}other{A Chrome azt javasolja, hogy azonnal ellenőrizze ezeket a jelszavakat}}</translation>
-<translation id="3200941271596533635">Olvasási mód be- és kikapcsolása</translation>
 <translation id="3201422919974259695">A rendelkezésre álló USB-eszközök itt jelennek meg.</translation>
 <translation id="3202131003361292969">Útvonal</translation>
 <translation id="3202173864863109533">A lap hangja némítva van.</translation>
@@ -4152,6 +4155,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6212039847102026977">Speciális hálózati tulajdonságok megjelenítése</translation>
 <translation id="6212168817037875041">A kijelző kikapcsol</translation>
 <translation id="6212752530110374741">Link küldése e-mailben</translation>
+<translation id="6213230117190778270">Fogadás</translation>
 <translation id="6216696360484424239">Automatikus bejelentkezés</translation>
 <translation id="6218058416316985984">A(z) <ph name="DEVICE_TYPE" /> offline. Csatlakozzon az internethez, és próbálja újra.</translation>
 <translation id="6220413761270491930">Hiba a bővítmény betöltésekor</translation>
@@ -4208,7 +4212,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />Redszer- és alkalmazásadatok<ph name="END_LINK1" />, valamint <ph name="BEGIN_LINK2" />mutatószámok<ph name="END_LINK2" /> küldése</translation>
 <translation id="6272643420381259437">Hiba (<ph name="ERROR" />) történt a beépülő modul letöltése során</translation>
 <translation id="6273677812470008672">Minőség</translation>
-<translation id="6273979226236203550">A jelszót ez az eszköz és Google-fiókja is tárolja. Honnan szeretné törölni?</translation>
 <translation id="6277105963844135994">Hálózati időtúllépés</translation>
 <translation id="6277518330158259200">&amp;Képernyőkép készítése</translation>
 <translation id="6278057325678116358">GTK+ használata</translation>
@@ -4252,6 +4255,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6322653941595359182">Szöveges üzenetet küldhet és fogadhat a Chromebookon.</translation>
 <translation id="6324916366299863871">Billentyűparancs szerkesztése</translation>
 <translation id="6325191661371220117">Automatikus indítás tiltása</translation>
+<translation id="6325525973963619867">Nem sikerült</translation>
 <translation id="6326175484149238433">Eltávolítás a Chrome-ból</translation>
 <translation id="6326855256003666642">Életben tartási számláló</translation>
 <translation id="632707535499064463">A(z) <ph name="ORGANIZATION_NAME" /> előírja, hogy frissítse eszközét a határidőig.</translation>
@@ -4279,6 +4283,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6362853299801475928">&amp;Hibabejelentés...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Családtagok és ismerősök hozzáadása</translation>
+<translation id="6367985768157257101">Fogadja a Közeli megosztás segítségével?</translation>
 <translation id="636850387210749493">Vállalat rögzítése</translation>
 <translation id="6370021412472292592">Nem sikerült a jegyzék betöltése.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4854,7 +4859,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7099337801055912064">Nem használható túl nagy PPD. A maximális méret 250 kB.</translation>
 <translation id="7102687220333134671">Az automatikus frissítések be vannak kapcsolva</translation>
 <translation id="7102832101143475489">A kérelem lejárt</translation>
-<translation id="7102928824073746774">Név nélküli csoport – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">USB-beállítások</translation>
 <translation id="710640343305609397">Hálózati beállítások megnyitása</translation>
 <translation id="7108338896283013870">Elrejtés</translation>
@@ -4930,6 +4934,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="720110658997053098">Az eszköz állandó kioszk módban tartása</translation>
 <translation id="7201118060536064622">„<ph name="DELETED_ITEM_NAME" />” törölve</translation>
 <translation id="7201420661433230412">Fájlok megtekintése</translation>
+<translation id="7203150201908454328">Kibontott</translation>
 <translation id="7203826966018112936">A profilhoz adott iskolai fiók egyszerű bejelentkezést tesz lehetővé a webhelyeken és a bővítményekben tanulóként, és a szülői felügyeleti vezérlők szerint működik. Gyermeke nem fér hozzá a könyvjelzőkhöz, jelszavakhoz és más adatokhoz, amelyek az iskolai fiókkal szinkronizálódnak.&lt;br&gt;&lt;br&gt;
     Ha gyermeke Chromebook eszközt használ az iskolában, és az iskolaival megegyező környezetet teremtene otthon, hogy minden iskolai anyag biztosan hozzáférhető legyen, akkor jelentkezzen ki ebből a Family Link-fiókból, majd jelentkezzen be az iskolai fiókba a Chrome OS fiókkezelő képernyőjén (megjegyzés: így a Family Link szülői felügyeleti vezérlői nem működnek).&lt;br&gt;&lt;br&gt;
     Ha gyermeke nem használ Chromebook eszközt az iskolában, vagy ha Ön a Family Link segítségével felügyelni szeretné az eszköz használatát, az alábbi Tovább gombra kattintva adjon a profilhoz iskolai fiókot.</translation>
@@ -5325,7 +5330,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7704521324619958564">A Play Áruház megnyitása</translation>
 <translation id="7705276765467986571">Nem sikerült betölteni a könyvjelzőmodellt.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Olvasási mód be- és kikapcsolása</translation>
 <translation id="7707108266051544351">Ennél a webhelynél le van tiltva a mozgásérzékelők használata.</translation>
 <translation id="7707922173985738739">Mobiladat-kapcsolat használata</translation>
 <translation id="7709152031285164251">Meghiúsult – <ph name="INTERRUPT_REASON" /></translation>
@@ -6582,6 +6586,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Összetett jelszó megadása</translation>
 <translation id="939736085109172342">Új mappa</translation>
+<translation id="941070664607309480">A megosztás kattintásra láthatóvá válik, így a megosztás végrehajtható lesz</translation>
 <translation id="942532530371314860">A(z) <ph name="APP_NAME" /> megosztja a Chrome egy lapját és a hangot.</translation>
 <translation id="945522503751344254">Visszajelzés küldése</translation>
 <translation id="947329552760389097">&amp;Elemek vizsgálata</translation>

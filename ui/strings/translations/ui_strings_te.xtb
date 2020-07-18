@@ -37,6 +37,7 @@
 <translation id="1842960171412779397">ఎంచుకోండి</translation>
 <translation id="1859234291848436338">వ్రాసే దిశ</translation>
 <translation id="1860796786778352021">నోటిఫికేషన్‌ను మూసివేయి</translation>
+<translation id="186476001994626254">వెబ్ స్మార్ట్ పేస్ట్ కంటెంట్</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;అన్నీ ఎంచుకోండి</translation>
@@ -75,6 +76,7 @@
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">ఫోల్డర్‌ను తెరవండి</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 సంవత్సరం క్రితం}other{# సంవత్సరాల క్రితం}}</translation>
+<translation id="2878511608894704031">అన్నీ తొలగించు</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 రోజులో}other{# రోజులో}}</translation>
 <translation id="2931838996092594335">క్లిక్ చేయి</translation>
 <translation id="2981684127883932071">సూచనలను ప్రదర్శిస్తోంది</translation>
@@ -172,6 +174,7 @@
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6430678249303439055">ఈ యాప్ నుండి నోటిఫికేషన్‌లు అన్ని బ్లాక్ చేయండి</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 సెకను క్రితం}other{# సెకన్ల క్రితం}}</translation>
+<translation id="6503257047630241175">RTF కంటెంట్</translation>
 <translation id="6539092367496845964">ఏదో తప్పు జరిగింది. తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="654149438358937226">అన్ని నోటిఫికేషన్‌లను బ్లాక్ చేయి</translation>
 <translation id="6567071839949112727">క్లిక్ మూలకం</translation>

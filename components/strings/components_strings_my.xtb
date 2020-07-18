@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">သင်မိတ္တူကူးထားသော ပုံ</translation>
 <translation id="1150979032973867961">ဒီဆာဗာက <ph name="DOMAIN" /> ဖြစ်တာကို သက်သေထူ မပြနိုင်ခဲ့ပါ၊ ၎င်း၏ လုံခြုံရေး လက်မှတ်ကို သင့်ကွန်ပျူတာ၏ လည်ပတ်မှု  စနစ် ဘက်မှ မယုံကြည်ပါ။ ဖွဲ့စည်းစီစဉ်မှု အမှားကြောင့် သို့မဟုတ် တိုက်ခိုက်လိုသူက သင်၏ ချိတ်ဆက်မှုကို ကြားဖြတ်ယူနေ၍ ထိုသို့ ဖြစ်လာနိုင်ခဲ့ပါသည်။</translation>
 <translation id="1151972924205500581">စကားဝှက် လိုအပ်</translation>
-<translation id="1152921474424827756"><ph name="URL" />၏ <ph name="BEGIN_LINK" />ကက်ရှ ကော်ပီ<ph name="END_LINK" />ကို ရယူရန်</translation>
 <translation id="1156303062776767266">သင်သည် စက်အတွင်း သို့မဟုတ် မျှဝေထားသည့် ဖိုင်ကို ကြည့်နေသည်</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> သည်ချိတ်ဆက်မှုကို ရုတ်တရက် ပိတ်ပစ်ခဲ့သည်။</translation>
 <translation id="115926840831309955">သင့် CVC ကို စစ်ဆေးပြီး ထပ်စမ်းကြည့်ပါ သို့မဟုတ် ကုန်ဆုံးရက်ကို အပ်ဒိတ်လုပ်ပါ</translation>
 <translation id="1161325031994447685">Wi-Fi သို့ပြန်လည်ချိတ်ဆက်နေသည်</translation>
 <translation id="1165039591588034296">အမှား</translation>
+<translation id="1165174597379888365">စာမျက်နှာကို ဝင်ကြည့်ခဲ့သည်</translation>
 <translation id="1175364870820465910">&amp;ပရင့်ထုတ်ရန်...</translation>
 <translation id="1175875016430184367">ညာဘက်တွင် ချုပ်စက်ဖြင့် သုံးချက်ချုပ်ရန်</translation>
 <translation id="1178581264944972037">ဆိုင်းငံ့ထားရန်</translation>
@@ -249,7 +249,6 @@
 <translation id="1919345977826869612">ကြော်ငြာများ</translation>
 <translation id="1919367280705858090">မှားယွင်းကြောင်း မက်ဆေ့ဂျ်အချို့အတွက် အကူအညီ ရယူရန်</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{တစ်ခုမျှမရှိပါ}=1{ဝဘ်ဆိုက် ၁ ခု}other{ဝဘ်ဆိုက် # ခု}}</translation>
-<translation id="194030505837763158">G<ph name="LINK" /> သို့သွားပါ</translation>
 <translation id="1945968466830820669">သင်သည် သင့်အဖွဲ့အစည်း၏ အကောင့်ကို အသုံးပြုခွင့် ဆုံးရှုံးနိုင်သည် သို့မဟုတ် အထောက်အထား အခိုးခံရနိုင်သည်။ သင့်စကားဝှက်ကို ယခုပင်ပြောင်းလဲရန် Chromium က အကြံပြုပါသည်။</translation>
 <translation id="1947454675006758438">ညာဘက်ထိပ်တွင် ချုပ်စက်ဖြင့် ချုပ်ရန်</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />သင်ဝင်ကြည့်သည့် စာမျက်နှာအချို့၏ URL များ၊ ကန့်သတ်ထားသည့် စနစ်အချက်အလက်များနှင့် အချို့သောစာမျက်နှာပါ အကြောင်းအရာများ<ph name="END_WHITEPAPER_LINK" /> ကို Google သို့ ပို့ပေးခြင်းဖြင့် လူတိုင်းအတွက် ဝဘ်ပေါ်တွင် လုံခြုံရေး ကောင်းမွန်လာအောင် ကူညီပါ။ <ph name="BEGIN_PRIVACY_PAGE_LINK" />ပုဂ္ဂိုလ်ရေးဆိုင်ရာ မူဝါဒ<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -269,9 +268,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{နှင့် နောက်ထပ် ၁ ခု}other{နှင့် နောက်ထပ် # ခု}}</translation>
 <translation id="2003709556000175978">သင့်စကားဝှက်ကို ယခု ပြင်ဆင်သတ်မှတ်ရန်</translation>
 <translation id="2003775180883135320">ထိပ်တွင် လေးချက်ဖောက်ရန်</translation>
+<translation id="202072848677994234">လုံခြုံမှုမရှိသော ချိတ်ဆက်မှုမှတစ်ဆင့် ဤဖောင်ကို ပို့ခဲ့သည်။ အော်တိုဖြည့်ခြင်းကို ပိတ်ထားသည်။</translation>
 <translation id="2025115093177348061">လွန်ကဲပကတိအသွင်</translation>
 <translation id="2025186561304664664">ပရောက်စီအား အလိုအလျောက် ပြုပြင်ခြင်း သတ်မှတ်ထားသည်။</translation>
-<translation id="2030481566774242610">သင် ဆိုလိုတာက <ph name="LINK" />လား?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />ပရော်စီနှင့် firewall ကိုစစ်ဆေးနေသည်<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">ဗန်း ၇</translation>
 <translation id="204357726431741734">သင့် Google Account တွင် သိမ်းထားသောစကားဝှက်များ အသုံးပြုရန် လက်မှတ်ထိုးဝင်ပါ</translation>
@@ -337,6 +336,7 @@
 <translation id="2289385804009217824">ဖြတ်ထုတ်ရန်</translation>
 <translation id="2292556288342944218">သင့်အင်တာနက် အသုံးပြုမှုကို ပိတ်ဆို့ထားသည်</translation>
 <translation id="2293443924986248631">ဖွင့်ထားသည့်အခါ ဝဘ်တစ်လျှောက် သင့်အားခြေရာခံသည့် ကွတ်ကီးများကို ဝဘ်ဆိုက်များက အသုံးမပြုနိုင်ပါ။ အချို့ဝဘ်ဆိုက်များပေါ်ရှိ ဝန်ဆောင်မှုများ ရပ်သွားနိုင်ပါသည်။</translation>
+<translation id="2295290966866883927">သင်ကြည့်ရှုခဲ့သည့် စာမျက်နှာများ၏ URL များကို လေ့လာဆန်းစစ်ရန်အတွက် Google Cloud သို့မဟုတ် ပြင်ပအဖွဲ့များသို့ ပို့သည်။ ဥပမာ - မလုံခြုံသောဝဘ်ဆိုက်များကို ရှာရန်အတွက် ၎င်းတို့ကို စကင်ဖတ်နိုင်ပါသည်။</translation>
 <translation id="2297722699537546652">B5 (စာအိတ်)</translation>
 <translation id="2300306941146563769">အပ်လုဒ်လုပ်မထားပါ</translation>
 <translation id="2310021320168182093">Chou2 (စာအိတ်)</translation>
@@ -1047,6 +1047,7 @@
 <translation id="5308380583665731573">ချိတ်ဆက်ရန်</translation>
 <translation id="5308689395849655368">ပျက်စီးမှု အစီရင်ခံခြင်းကို ပိတ်ထားသည်။</translation>
 <translation id="5314967030527622926">စာစောင် ပြုလုပ်စနစ်</translation>
+<translation id="5316812925700871227">လက်ဝဲရစ် လှည့်ရန်</translation>
 <translation id="5317780077021120954">သိမ်းရန်</translation>
 <translation id="5323105697514565458"><ph name="NUM_MATCHES" /> အနက်မှ <ph name="FRIENDLY_MATCH_TEXT" />၊ <ph name="MATCH_POSITION" /></translation>
 <translation id="5324080437450482387">အဆက်အသွယ်အချက်အလက် ရွေးရန်</translation>
@@ -1070,7 +1071,6 @@
 <translation id="5421136146218899937">ဘရောင်ဇာ ဒေတာကို ရှင်းရန်...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> သည် သင့်ထံသို့ အကြောင်းကြားချက်များ ပို့လိုသည်</translation>
 <translation id="5430298929874300616">စာညှပ် ဖယ်ရှားရန်</translation>
-<translation id="5431657950005405462">သင့်ဖိုင်ကို မတွေ့ပါ</translation>
 <translation id="5439770059721715174">Schema မှန်ကန်ကြောင်းအတည်ပြုမှု မှားယွင်းခြင်း "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">ပြောင်းပြန်အစဉ်ဖြင့် အပေါ်လှန်ထားရန်</translation>
 <translation id="5447765697759493033">ဤဝဘ်ဆိုက်ကို ဘာသာပြန်မည် မဟုတ်ပါ</translation>
@@ -1443,7 +1443,6 @@
 <translation id="7083258188081898530">ဗန်း ၉</translation>
 <translation id="7086090958708083563">အသုံးပြုသူက အပ်လုဒ်လုပ်ရန် တောင်းဆိုထားသည်</translation>
 <translation id="7087282848513945231">ကောင်တီ</translation>
-<translation id="7090678807593890770"><ph name="LINK" /> ကို Google တွင်ရှာပါ</translation>
 <translation id="7108338896283013870">ဝှက်ထားရန်</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> သည် သင်၏ကင်မရာကို အသုံးပြုလိုသည်</translation>
 <translation id="7108819624672055576">နောက်ဆက်တွဲတစ်ခုက ခွင့်ပြုထားခြင်းဖြစ်သည်</translation>
@@ -1880,7 +1879,6 @@
 <translation id="893332455753468063">အမည် ထည့်သွင်းခြင်း</translation>
 <translation id="8943282376843390568">သံပုရာ</translation>
 <translation id="8957210676456822347">ထွက်ပေါက်မရှိသော မူလအင်တာနက်စာမျက်နှာ ခွင့်ပြူချက်</translation>
-<translation id="8958582951173503172">လုံခြုံရေးဆိုင်ရာ ဖြစ်ရပ်များကို Chrome Enterprise Connectors က အလံပြသည့်အခါ ဖြစ်ရပ်နှင့်ပတ်သက်သော သက်ဆိုင်ရာဒေတာကို သင့်စီမံခန့်ခွဲသူထံ ပို့သည်။ ၎င်းတွင် Chrome ပေါ်တွင် သင်ဝင်ကြည့်သော စာမျက်နှာများ၏ URL များ၊ ဖိုင်အမည်များ (သို့) မက်တာဒေတာ၊ သင့်စက်နှင့် Chrome သို့ လက်မှတ်ထိုးဝင်သည့် အသုံးပြုသူအမည်တို့ ပါဝင်နိုင်သည်။</translation>
 <translation id="8962950042226115166">သံသယဖြစ်ဖွယ် ဝဘ်ဆိုက်</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />အကြံပေးချက်များ:<ph name="MARKUP_2" />သင့်ဆီတွင် ဒေတာ ချိတ်ဆက်မှု ရှိနေတာ စစ်ကြည့်ပါ<ph name="MARKUP_3" />ဒီဝက်ဘ်စာမျက်နှာကို နောက်မှာ ပြန်တင်ပါ<ph name="MARKUP_4" />သင် ထည့်ပေးခဲ့တဲ့ လိပ်စာကို စစ်ကြည့်ပါ<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">ကတ်သိမ်းရန်</translation>

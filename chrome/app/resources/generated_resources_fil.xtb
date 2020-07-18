@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Encipher Lamang</translation>
 <translation id="1038462104119736705">Hindi bababa sa <ph name="INSTALL_SIZE" /> na espasyo ang inirerekomenda para sa Linux. Para madagdagan ang bakanteng espasyo, mag-delete ng mga file sa iyong device.</translation>
 <translation id="1039337018183941703">Di-wasto o sira ang file</translation>
+<translation id="104086161873270383">Bagong Profile</translation>
 <translation id="1041175011127912238">Hindi tumutugon ang page na ito</translation>
 <translation id="1041263367839475438">Mga available na device</translation>
 <translation id="1042174272890264476">Ang iyong computer ay may naka-built in din na RLZ library ng <ph name="SHORT_PRODUCT_NAME" />. Nagtatalaga ang RLZ ng hindi natatangi at hindi personal na nakakapagpakilalang tag upang sukatin ang mga paghahanap at paggamit ng <ph name="SHORT_PRODUCT_NAME" /> na nahimok ng isang partikular na kampanya sa pag-promote. Lumalabas minsan ang mga label na ito sa mga query sa Paghahanap sa Google sa <ph name="PRODUCT_NAME" />.</translation>
@@ -232,6 +233,7 @@
 <translation id="1274997165432133392">Cookies at iba pang data ng site</translation>
 <translation id="1275718070701477396">Pinili</translation>
 <translation id="1276994519141842946">Hindi ma-uninstall ang <ph name="APP_NAME" /></translation>
+<translation id="127946606521051357">Nagbabahagi ang device sa malapit</translation>
 <translation id="1280820357415527819">Naghahanap ng mga mobile network</translation>
 <translation id="1280965841156951489">I-edit ang mga file</translation>
 <translation id="1285320974508926690">Huwag isalin kailanman ang site na ito</translation>
@@ -254,6 +256,7 @@
 <translation id="1306606229401759371">Baguhin ang mga setting</translation>
 <translation id="1307165550267142340">Nagawa ang iyong PIN</translation>
 <translation id="1307559529304613120">Oops!  Nabigo ang system na i-imbak ang pangmatagalang token sa pag-access sa API para sa device na ito.</translation>
+<translation id="1313162974556054106">Pangalan ng Device</translation>
 <translation id="1313405956111467313">Awtomatikong proxy configuration</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">Masa-sign out ka sa lahat ng site, pati na rin sa mga nakabukas na tab</translation>
@@ -704,7 +707,6 @@
 <translation id="184273675144259287">Palitan ang iyong mga app at file ng Linux ng isang nakaraang backup</translation>
 <translation id="1842766183094193446">Sigurado ka bang gusto mong i-enable ang demo mode?</translation>
 <translation id="1846308012215045257">Pindutin ang control at i-click upang patakbuhin ang <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">Grupong <ph name="GROUP_NAME" /> - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">I-enable ang Ambient mode</translation>
 <translation id="1849186935225320012">May buong kontrol sa mga MIDI device ang pahinang ito.</translation>
 <translation id="1850508293116537636">I-rotate &amp;pakanan</translation>
@@ -1220,6 +1222,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2489918096470125693">Magdagdag ng &amp;Folder...</translation>
 <translation id="2490481887078769936">Inalis ang '<ph name="FILE_NAME" />' sa listahan</translation>
 <translation id="249113932447298600">Paumanhin, hindi sinusuportahan ang device na <ph name="DEVICE_LABEL" /> sa oras na ito.</translation>
+<translation id="2492308681814209210">Nagbabahagi sa iyo ang <ph name="DEVICE_NAME" /> ng <ph name="ATTACHMENTS" />.</translation>
 <translation id="2492461744635776704">Inihahanda ang certificate signing request</translation>
 <translation id="249303669840926644">Hindi makumpleto ang pagpaparehistro</translation>
 <translation id="2495777824269688114">Tumuklas ng higit pang feature o makakuha ng mga sagot. Piliin ang “?” para sa tulong.</translation>
@@ -1721,6 +1724,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3103941660000130485">Error sa pag-upgrade ng Linux</translation>
 <translation id="3105796011181310544">Bumalik sa Google?</translation>
 <translation id="310671807099593501">Gumagamit ng bluetooth ang site</translation>
+<translation id="3109724472072898302">Naka-collapse</translation>
 <translation id="3115147772012638511">Naghihintay para sa cache...</translation>
 <translation id="3115580024857770654">I-collapse lahat</translation>
 <translation id="3116968597797150452">Profile ng Certificate</translation>
@@ -1788,7 +1792,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3192947282887913208">Mga Audio File</translation>
 <translation id="3199127022143353223">Mga Server</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Inirerekomenda ng Chrome na suriin ngayon ang password na ito}one{Inirerekomenda ng Chrome na suriin ngayon ang mga password na ito}other{Inirerekomenda ng Chrome na suriin ngayon ang mga password na ito}}</translation>
-<translation id="3200941271596533635">I-toggle ang reader mode</translation>
 <translation id="3201422919974259695">Lalabas dito ang mga available na USB device.</translation>
 <translation id="3202131003361292969">Path</translation>
 <translation id="3202173864863109533">Iminu-mute ang audio ng tab na ito.</translation>
@@ -4151,6 +4154,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6212039847102026977">Ipakita ang mga advanced na property ng network</translation>
 <translation id="6212168817037875041">I-off ang display</translation>
 <translation id="6212752530110374741">I-email ang Link</translation>
+<translation id="6213230117190778270">Tanggapin</translation>
 <translation id="6216696360484424239">Awtomatikong mag-sign in</translation>
 <translation id="6218058416316985984">Offline ang <ph name="DEVICE_TYPE" />. Kumonekta sa Internet at subukang muli.</translation>
 <translation id="6220413761270491930">Error sa Paglo-load ng Extension</translation>
@@ -4207,7 +4211,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6270770586500173387">Ipadala ang <ph name="BEGIN_LINK1" />impormasyon ng system at app<ph name="END_LINK1" />, at <ph name="BEGIN_LINK2" />mga sukatan<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Nagkaroon ng error (<ph name="ERROR" />) habang dina-download ang plugin</translation>
 <translation id="6273677812470008672">Kalidad</translation>
-<translation id="6273979226236203550">Naka-store ang iyong password sa device na ito at sa Google Account mo. Alin ang gusto mong i-delete?</translation>
 <translation id="6277105963844135994">Nag-timeout ang network</translation>
 <translation id="6277518330158259200">Kumuha ng Screenshot</translation>
 <translation id="6278057325678116358">Gamitin ang GTK+</translation>
@@ -4251,6 +4254,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6322653941595359182">Magpadala at makatanggap ng mga text message mula sa iyong Chromebook</translation>
 <translation id="6324916366299863871">I-edit ang shortcut</translation>
 <translation id="6325191661371220117">I-disable ang awtomatikong paglulunsad</translation>
+<translation id="6325525973963619867">Nabigo</translation>
 <translation id="6326175484149238433">Alisin sa Chrome</translation>
 <translation id="6326855256003666642">Bilang ng Keepalive</translation>
 <translation id="632707535499064463">Hinihiling sa iyo ng <ph name="ORGANIZATION_NAME" /> na i-update ang device na ito bago ang deadline.</translation>
@@ -4278,6 +4282,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6362853299801475928">&amp;Mag-ulat ng isang isyu...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Magdagdag ng pamilya at mga kaibigan</translation>
+<translation id="6367985768157257101">Tanggapin gamit ang Nearby Share?</translation>
 <translation id="636850387210749493">Pagpapatala ng negosyo</translation>
 <translation id="6370021412472292592">Hindi mai-load ang manifest.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4853,7 +4858,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7099337801055912064">Hindi makapag-load ng malaking PPD. 250kB ang maximum na laki.</translation>
 <translation id="7102687220333134671">Naka-on ang mga awtomatikong update</translation>
 <translation id="7102832101143475489">Nag-time out ang kahilingan</translation>
-<translation id="7102928824073746774">Grupong walang pangalan - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Mga kagustuhans sa USB</translation>
 <translation id="710640343305609397">Buksan ang mga network setting</translation>
 <translation id="7108338896283013870">Itago</translation>
@@ -4929,6 +4933,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="720110658997053098">Permanenteng panatilihin sa kiosk mode ang device na ito</translation>
 <translation id="7201118060536064622">Na-delete ang '<ph name="DELETED_ITEM_NAME" />'</translation>
 <translation id="7201420661433230412">Tingnan ang mga file</translation>
+<translation id="7203150201908454328">Pinalawak</translation>
 <translation id="7203826966018112936">Kapag nagdagdag ng pampaaralang account sa isang profile, madaling makakapag-sign in sa mga website at extension bilang mag-aaral habang tumatakbo sa ilalim ng parental controls. Hindi ito nagbibigay sa isang bata ng access sa mga bookmark, password, o iba pang data ng browser na naka-sync sa pampaaralang account.&lt;br&gt;&lt;br&gt;
     Kung gumagamit ng Chromebook sa paaralan ang iyong anak at gusto mong ipareho ang karanasan sa bahay sa karanasan sa paaralan para matiyak na may access ang iyong anak sa lahat ng kinakailangang gawaing pampaaralan, mag-sign out sa Family Link account na ito at mag-sign in sa pampaaralang account mula sa page ng mga Chrome OS account (tandaan: hindi malalapat ang parental controls ng Family Link).&lt;br&gt;&lt;br&gt;
     Kung hindi gumagamit ng Chromebook sa paaralan ang iyong anak o kung mas gusto mong pamahalaan ang karanasan ng iyong anak sa bahay gamit ang Family Link, paki-click ang button na Susunod sa ibaba para magdagdag ng pampaaralang account sa profile na ito.</translation>
@@ -5324,7 +5329,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7704521324619958564">Buksan ang Play Store</translation>
 <translation id="7705276765467986571">Hindi ma-load ang modelo ng bookmark.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">I-toggle ang Reader Mode</translation>
 <translation id="7707108266051544351">Na-block ang site na ito sa paggamit ng mga sensor ng paggalaw.</translation>
 <translation id="7707922173985738739">Gumamit ng mobile data</translation>
 <translation id="7709152031285164251">Nabigo - <ph name="INTERRUPT_REASON" /></translation>
@@ -6583,6 +6587,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Ilagay ang passphrase</translation>
 <translation id="939736085109172342">Bagong folder</translation>
+<translation id="941070664607309480">I-click para maging visible para makapagbahagi ito sa iyo</translation>
 <translation id="942532530371314860">Nagbabahagi ng tab ng Chrome at audio ang <ph name="APP_NAME" />.</translation>
 <translation id="945522503751344254">Magpadala ng feedback...</translation>
 <translation id="947329552760389097">&amp;Siyasatin ang Mga Element</translation>

@@ -170,7 +170,6 @@ Toque em qualquer palavra para pesquisar. Para refinar a sua pesquisa, tocar sem
 <translation id="2353636109065292463">A verificar a sua ligação à Internet...</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2369533728426058518">abrir separadores</translation>
-<translation id="2377295302146152376">O Chrome não conseguiu verificar se existem atualizações.</translation>
 <translation id="2387895666653383613">Escala do texto</translation>
 <translation id="2394602618534698961">Os ficheiros que transferir aparecem aqui.</translation>
 <translation id="2407481962792080328">Quando inicia sessão na sua Conta Google, esta funcionalidade está ativada.</translation>
@@ -259,7 +258,6 @@ Toque sem soltar em qualquer palavra para pesquisar. Para refinar a sua pesquisa
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obter ajuda<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">A localização está desativada. Ative-a nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Pode ativar a sincronização em qualquer altura nas definições.</translation>
-<translation id="3059710691562604940">A Navegação segura está desativada. O Chrome recomenda que a ative.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> marcador}other{<ph name="BOOKMARKS_COUNT_MANY" /> marcadores}}</translation>
 <translation id="3089395242580810162">Abrir no separador anónimo</translation>
 <translation id="3114012059975132928">Leitor de vídeo</translation>
@@ -320,7 +318,6 @@ Toque sem soltar em qualquer palavra para pesquisar. Para refinar a sua pesquisa
 <translation id="3522247891732774234">Atualização disponível. Mais opções</translation>
 <translation id="3524138585025253783">IU do programador</translation>
 <translation id="3527085408025491307">Pasta</translation>
-<translation id="3533694711092285624">Não existem palavras-passe guardadas. O Chrome consegue verificar as suas palavras-passe quando as guarda.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB disponível(eis)</translation>
 <translation id="3549657413697417275">Pesquisar no histórico</translation>
 <translation id="3557336313807607643">Adicionar aos contactos</translation>
@@ -571,6 +568,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5581519193887989363">Pode escolher o que pretende sincronizar nas <ph name="BEGIN_LINK1" />definições<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Editar morada</translation>
 <translation id="5599455543593328020">Modo de navegação anónima</translation>
+<translation id="5620163320393916465">Não existem palavras-passe guardadas.</translation>
 <translation id="5620928963363755975">Encontre os seus ficheiros e páginas nas Transferências através do botão Mais opções.</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5639724618331995626">Permitir todos os sites</translation>

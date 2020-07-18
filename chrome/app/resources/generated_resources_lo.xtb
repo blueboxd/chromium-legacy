@@ -232,6 +232,7 @@
 <translation id="1274997165432133392">ສະແດງຄຸກກີ້ ແລະຂໍ້ມູນເວັບໄຊທ໌ອື່ນ...</translation>
 <translation id="1275718070701477396">​ເລືອກແລ້ວ</translation>
 <translation id="1276994519141842946">ບໍ່ສາມາດຖອນຕິດຕັ້ງ <ph name="APP_NAME" /> ໄດ້</translation>
+<translation id="127946606521051357">ອຸປະກອນໃກ້ຄຽງກຳລັງແບ່ງປັນຢູ່</translation>
 <translation id="1280820357415527819">ກຳລັງຊອກຫາເຄືອຂ່າຍມືຖື</translation>
 <translation id="1280965841156951489">ແກ້ໄຂໄຟລ໌</translation>
 <translation id="1285320974508926690">ຢ່າແປເວັບ​ໄຊ​ທ໌ນີ້</translation>
@@ -254,6 +255,7 @@
 <translation id="1306606229401759371">ປ່ຽນການຕັ້ງຄ່າ</translation>
 <translation id="1307165550267142340">ສ້າງ PIN ຂອງທ່ານແລ້ວ</translation>
 <translation id="1307559529304613120">ອຸ້ຍ!  ລະບົບເກັບຮັກສາເຄື່ອງໝາຍການເຂົ້າ​ຫາ API ໄລຍະຍາວສໍາລັບອຸປະກອນນີ້ບໍ່ໄດ້.</translation>
+<translation id="1313162974556054106">ຊື່​ອຸ​ປະ​ກອນ</translation>
 <translation id="1313405956111467313">ການປັບຕັ້ງພຣັອກຊີອັດຕະໂນມັດ</translation>
 <translation id="131364520783682672">ປຸ່ມ Caps Lock</translation>
 <translation id="1313660246522271310">ທ່ານຈະຖືກນຳອອກຈາກລະບົບເວັບໄຊທັງໝົດ, ຮວມທັງໃນແຖບທີ່ເປີດຢູ່</translation>
@@ -702,7 +704,6 @@
 <translation id="184273675144259287">ປ່ຽນແທນແອັບ ແລະ ໄຟລ໌ Linux ຂອງທ່ານດ້ວຍຂໍ້ມູນທີ່ສຳຮອງໄວ້ກ່ອນນີ້</translation>
 <translation id="1842766183094193446">ທ່ານແນ່ໃຈບໍ່ວ່າທ່ານຕ້ອງການເປີດນຳໃຊ້ໂໝດສາທິດ?</translation>
 <translation id="1846308012215045257">ກົດ Control ແລ້ວຄລິກເພື່ອເປີດໃຊ້ <ph name="PLUGIN_NAME" />.</translation>
-<translation id="1846880379134204029">ກຸ່ມ <ph name="GROUP_NAME" /> - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">ເປີດການນຳໃຊ້ໂໝດແວດລ້ອມອ້ອມຂ້າງ</translation>
 <translation id="1849186935225320012">ຫນ້າ​ນີ້​ມີ​ການ​ຄວບ​ຄຸມ​ອຸປະກອນ MIDI ເຕັມ​.</translation>
 <translation id="1850508293116537636">ໝຸນຕາມເຂັມໂມງ</translation>
@@ -1218,6 +1219,7 @@
 <translation id="2489918096470125693">ເພີ່ມ​ໂຟລເດີ...</translation>
 <translation id="2490481887078769936">ລຶບ '<ph name="FILE_NAME" />' ອອກຈາກລາຍການແລ້ວ</translation>
 <translation id="249113932447298600">ຂໍອະໄພ, ອຸປະກອນ <ph name="DEVICE_LABEL" /> ບໍ່ຮອງຮັບໃນເວລານີ້.</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> ກຳລັງແບ່ງປັນ <ph name="ATTACHMENTS" /> ກັບທ່ານ.</translation>
 <translation id="2492461744635776704">ກຳລັງກະກຽມຄຳຂໍເຊັນໃບຮັບຮອງ</translation>
 <translation id="249303669840926644">ບໍ່ສາມາດລົງທະບຽນໄດ້ສໍາເັລດ</translation>
 <translation id="2495777824269688114">ເບິ່ງຄຸນສົມບັດເພີ່ມເຕີມ ຫຼື ຂໍຄຳຕອບໄດ້. ເລືອກ “?” ສຳລັບຄວາມຊ່ວຍເຫຼືອ.</translation>
@@ -1719,6 +1721,7 @@
 <translation id="3103941660000130485">ເກີດຄວາມຜິດພາດໃນການອັບເກຣດ Linux</translation>
 <translation id="3105796011181310544">ປ່ຽນກັບຄືນເປັນ Google ບໍ?</translation>
 <translation id="310671807099593501">ເວັບໄຊກຳລັງໃຊ້ bluetooth</translation>
+<translation id="3109724472072898302">ຫຍໍ້ລົງ</translation>
 <translation id="3115147772012638511">ກໍາລັງລໍຖ້າແຄຊ໌...</translation>
 <translation id="3115580024857770654">ຫຍໍ້ທັງໝົດເຂົ້າ</translation>
 <translation id="3116968597797150452">ໂປຣໄຟລ໌ໃບຮັບຮອງ</translation>
@@ -1786,7 +1789,6 @@
 <translation id="3192947282887913208">ໄຟລ໌ສຽງ</translation>
 <translation id="3199127022143353223">ເຊີບເວີ</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome ແນະນຳໃຫ້ກວດເບິ່ງລະຫັດຜ່ານນີ້ໃນຕອນນີ້ເລີຍ}other{Chrome ແນະນຳໃຫ້ກວດເບິ່ງລະຫັດຜ່ານເຫຼົ່ານີ້ໃນຕອນນີ້ເລີຍ}}</translation>
-<translation id="3200941271596533635">ສະຫຼັບໂໝດໂປຣແກຣມອ່ານ</translation>
 <translation id="3201422919974259695">ອຸປະກອນ USB ທີ່ສາມາດໃຊ້ໄດ້ຈະປາກົດຢູ່ບ່ອນນີ້.</translation>
 <translation id="3202131003361292969">ເສັ້ນທາງ</translation>
 <translation id="3202173864863109533">ສຽງ​ແຖບ​ຂອງ​ນີ້​ກໍາລັງຖືກປິດ.</translation>
@@ -4149,6 +4151,7 @@
 <translation id="6212039847102026977">ສະແດງຄຸນລັກສະນະເຄືອຂ່າຍຂັ້ນສູງ</translation>
 <translation id="6212168817037875041">ປິດໜ້າຈໍ</translation>
 <translation id="6212752530110374741">ອີເມວລິ້ງ</translation>
+<translation id="6213230117190778270">ຮັບ</translation>
 <translation id="6216696360484424239">ເຂົ້າສູ່ລະບົບອັດຕະໂນມັດ</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> ອອບລາຍຢູ່. ກະລຸນາເຊື່ອມຕໍ່ອິນເຕີເນັດ ແລ້ວລອງໃໝ່.</translation>
 <translation id="6220413761270491930">ການໂຫຼດສ່ວນຂະຫຍາຍຜິດ​ພາດ</translation>
@@ -4205,7 +4208,6 @@
 <translation id="6270770586500173387">ສົ່ງ <ph name="BEGIN_LINK1" />ຂໍ້ມູນລະບົບ ແລະ ແອັບ<ph name="END_LINK1" />, ແລະ <ph name="BEGIN_LINK2" />ເມຕຣິກ<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">ມີຄວາມຜິດພາດ (<ph name="ERROR" />) ໃນຂະນະທີ່ດາວໂຫຼດປລັກອິນ</translation>
 <translation id="6273677812470008672">ຄຸນນະພາບ</translation>
-<translation id="6273979226236203550">ລະຫັດຜ່ານຂອງທ່ານຖືກເກັບໄວ້ໃນອຸປະກອນນີ້ ແລະ ໃນບັນຊີ Google ຂອງທ່ານ. ທ່ານຕ້ອງການລຶບອັນໃດ?</translation>
 <translation id="6277105963844135994">ການໝົດເວລາເຄືອ​ຂ່າຍ</translation>
 <translation id="6277518330158259200">ຖ່າຍຮູບໜ້າຈໍ</translation>
 <translation id="6278057325678116358">ໃຊ້ GTK+</translation>
@@ -4276,6 +4278,7 @@
 <translation id="6362853299801475928">ລາຍ​ງານ​ບັນ​ຫາ...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">ເພີ່ມຄອບ​ຄົວ​ ແລະ​ຫມູ່​ເພື່ອນ</translation>
+<translation id="6367985768157257101">ຮັບດ້ວຍການແບ່ງປັນໃກ້ຄຽງບໍ?</translation>
 <translation id="636850387210749493">ການລົງທະບຽນວິສາຫະກິດ</translation>
 <translation id="6370021412472292592">ບໍ່​ສາ​ມາດ​ໂຫຼດໃບລາຍການໄດ້​.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4851,7 +4854,6 @@
 <translation id="7099337801055912064">ບໍ່ສາມາດໂຫຼດ PPD ທີ່ມີຂະໜາດໃຫຍ່ໄດ້. ຂະໜາດສູງສຸດແມ່ນ 250 kB.</translation>
 <translation id="7102687220333134671">ການອັບເດດອັດຕະໂນມັດເປີດຢູ່</translation>
 <translation id="7102832101143475489">ຄຳຂໍໝົດເວລາແລ້ວ</translation>
-<translation id="7102928824073746774">ກຸ່ມທີ່ບໍ່ໄດ້ຕັ້ງຊື່ - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">ການຕັ້ງຄ່າ USB</translation>
 <translation id="710640343305609397">ເປີດການຕັ້ງຄ່າເຄືອຂ່າຍ</translation>
 <translation id="7108338896283013870">ເຊື່ອງ</translation>
@@ -4927,6 +4929,7 @@
 <translation id="720110658997053098">ຮັກສາອຸປະກອນນີ້ຢູ່ໃນໂໝດ kiosk ຢ່າງຖາວອນ</translation>
 <translation id="7201118060536064622">ລຶບ '<ph name="DELETED_ITEM_NAME" />' ແລ້ວ</translation>
 <translation id="7201420661433230412">ເບິ່ງໄຟລ໌</translation>
+<translation id="7203150201908454328">ຂະ​ຫຍາຍ​ແລ້ວ</translation>
 <translation id="7203826966018112936">ການເພີ່ມບັນຊີໂຮງຮຽນເຮັດໃຫ້ສາມາດເຂົ້າສູ່ລະບົບເວັບໄຊ ແລະ ສ່ວນຂະຫຍາຍເປັນນັກຮຽນໄດ້ຢ່າງງ່າຍດາຍໃນຂະນະທີ່ນຳໃຊ້ພາຍໃຕ້ການຄວບຄຸມຂອງພໍ່ແມ່. ມັນບໍ່ໃຫ້ສິດເຂົ້າເຖິງບຸກມາກ, ລະຫັດຜ່ານ ຫຼື ຂໍ້ມູນໂປຣແກຣມທ່ອງເວັບອື່ນຂອງເດັກທີ່ຊິ້ງຂໍ້ມູນກັບບັນຊີໂຮງຮຽນ.&lt;br&gt;&lt;br&gt;
     ຖ້າລູກຂອງທ່ານໃຊ້ Chromebook ຢູ່ໂຮງຮຽນ ແລະ ທ່ານຕ້ອງການສະແດງປະສົບການຢູ່ໂຮງຮຽນຢູ່ເຮືອນເພື່ອໃຫ້ແນ່ໃຈວ່າລູກຂອງທ່ານມີສິດເຂົ້າເຖິງການຮຽນທີ່ຈຳເປັນທັງໝົດຢູ່ໂຮງຮຽນ, ກະລຸນາອອກຈາກລະບົບບັນຊີ Family Link ນີ້ ແລ້ວເຂົ້າສູ່ລະບົບບັນຊີໂຮງຮຽນຈາກໜ້າບັນຊີ Chrome OS (ໝາຍເຫດ: ການຄວບຄຸມຂອງພໍ່ແມໃນ Family Link ຈະບໍ່ນຳໃຊ້).&lt;br&gt;&lt;br&gt;
     ຖ້າລູກຂອງທ່ານບໍ່ໄດ້ໃຊ້ Chromebook ຢູ່ໂຮງຮຽນ ຫຼື ຖ້າທ່ານຕ້ອງການຈັດການປະສົບການຂອງລູກທ່ານຢູ່ເຮືອນໂດຍໃຊ້ Family Link, ກະລຸນາຄລິກປຸ່ມຕໍ່ໄປຢູ່ຂ້າງລຸ່ມເພື່ອເພີ່ມບັນຊີໂຮງຮຽນໃສ່ໂປຣໄຟລ໌ນີ້.</translation>
@@ -5322,7 +5325,6 @@
 <translation id="7704521324619958564">ເປີດ Play Store</translation>
 <translation id="7705276765467986571">ບໍ່​ສາ​ມາດ​ໂຫຼດ​ລຸ້ນບຸກມາກຄ໌ໄດ້.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">ສະຫຼັບໂໝດໂປຣແກຣມອ່ານ</translation>
 <translation id="7707108266051544351">ເວັບໄຊນີ້ໄດ້ຖືກບລັອກບໍ່ໃຫ້ໃຊ້ເຊັນເຊີກວດຈັບການເຄື່ອນໄຫວແລ້ວ.</translation>
 <translation id="7707922173985738739">ໃຊ້ຂໍ້ມູນມືຖື</translation>
 <translation id="7709152031285164251">ບໍ່ສໍາເລັດ - <ph name="INTERRUPT_REASON" /></translation>
@@ -6577,6 +6579,7 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">ປ້ອນວະລີຜ່ານໃສ່</translation>
 <translation id="939736085109172342">ໂຟລເດີ​ໃຫມ່</translation>
+<translation id="941070664607309480">ຄລິກເພື່ອໃຫ້ສາມາດເບິ່ງເຫັນ ເພື່ອໃຫ້ມັນສາມາດແບ່ງປັນກັບທ່ານໄດ້</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> ກຳລັງແບ່ງປັນແຖບ Chrome ແລະ ສຽງ.</translation>
 <translation id="945522503751344254">ສົ່ງ​ຄໍາ​ຄິດ​​ເຫັນ</translation>
 <translation id="947329552760389097">&amp;ກວດກາອົງປະກອບ</translation>

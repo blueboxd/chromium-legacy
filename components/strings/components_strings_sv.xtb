@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Bilden som du kopierade</translation>
 <translation id="1150979032973867961">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom datorns operativsystem inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="1151972924205500581">Lösenord krävs</translation>
-<translation id="1152921474424827756">Öppna en <ph name="BEGIN_LINK" />cachad kopia<ph name="END_LINK" /> av <ph name="URL" /></translation>
 <translation id="1156303062776767266">Detta är en lokal eller delad fil</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> stängde oväntat ner anslutningen.</translation>
 <translation id="115926840831309955">Kontrollera CVC-koden och försök igen eller uppdatera sista giltighetsdatum</translation>
 <translation id="1161325031994447685">återansluta till Wi-Fi</translation>
 <translation id="1165039591588034296">Fel</translation>
+<translation id="1165174597379888365">En sida besöks</translation>
 <translation id="1175364870820465910">Skriv &amp;ut...</translation>
 <translation id="1175875016430184367">Tre häftklamrar till höger</translation>
 <translation id="1178581264944972037">Paus</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">Annonser</translation>
 <translation id="1919367280705858090">Få hjälp med ett specifikt felmeddelande</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Ingen}=1{1 webbplats}other{# webbplatser}}</translation>
-<translation id="194030505837763158">Öppna <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Du kan förlora åtkomsten till organisationens konto eller bli utsatt för identitetsstöld. Du rekommenderas att ändra lösenordet nu.</translation>
 <translation id="1947454675006758438">Häfta uppe till höger</translation>
 <translation id="1959001866257244765">Hjälp oss att göra webben säkrare för alla genom att skicka <ph name="BEGIN_WHITEPAPER_LINK" />webbadresser till vissa sidor som du besöker, vissa systemuppgifter och visst sidinnehåll<ph name="END_WHITEPAPER_LINK" /> till Google <ph name="BEGIN_PRIVACY_PAGE_LINK" />Sekretesspolicy<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,9 +266,9 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="2001146170449793414">{COUNT,plural, =1{och 1 till}other{och # till}}</translation>
 <translation id="2003709556000175978">Återställ lösenordet nu</translation>
 <translation id="2003775180883135320">Fyra hål högst upp</translation>
+<translation id="202072848677994234">Formuläret skickas via en osäker anslutning. Autofyll har inaktiverats.</translation>
 <translation id="2025115093177348061">Förstärkt verklighet</translation>
 <translation id="2025186561304664664">Proxyn är inställd på automatisk konfiguration.</translation>
-<translation id="2030481566774242610">Menade du <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />kontrollera proxyn och brandväggen<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Fack 7</translation>
 <translation id="204357726431741734">Logga in om du vill använda lösenord som har sparats i Google-kontot</translation>
@@ -335,6 +334,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="2289385804009217824">Beskär</translation>
 <translation id="2292556288342944218">Internetanslutningen har blockerats</translation>
 <translation id="2293443924986248631">När detta har aktiverats kan en webbplats inte använda cookies som spårar dig på webben. Funktioner på vissa webbplatser kan sluta fungera.</translation>
+<translation id="2295290966866883927">Webbadressen till sidor som du besöker skickas till Google Cloud eller tredje part för analys. Till exempel kan de genomsökas i syfte att upptäcka osäkra webbplatser.</translation>
 <translation id="2297722699537546652">B5 (kuvert)</translation>
 <translation id="2300306941146563769">Inte uppladdad</translation>
 <translation id="2310021320168182093">Chou2 (kuvert)</translation>
@@ -1047,6 +1047,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="5308380583665731573">Anslut</translation>
 <translation id="5308689395849655368">Krashrapportering har  inaktiverats.</translation>
 <translation id="5314967030527622926">Broschyrenhet</translation>
+<translation id="5316812925700871227">Rotera moturs</translation>
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> av <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Välj kontaktuppgifter</translation>
@@ -1070,7 +1071,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="5421136146218899937">Ta bort webbinformation...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> vill skicka aviseringar</translation>
 <translation id="5430298929874300616">Ta bort bokmärke</translation>
-<translation id="5431657950005405462">Filen hittades inte</translation>
 <translation id="5439770059721715174">Schemavalideringsfel i <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Omvänd ordning – framsidan uppåt</translation>
 <translation id="5447765697759493033">Den här webbplatsen översätts inte</translation>
@@ -1444,7 +1444,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="7083258188081898530">Fack 9</translation>
 <translation id="7086090958708083563">Uppladdningsbegäran från användare</translation>
 <translation id="7087282848513945231">Kommun</translation>
-<translation id="7090678807593890770">Sök efter <ph name="LINK" /> på Google</translation>
 <translation id="7108338896283013870">Dölj</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> vill använda kameran</translation>
 <translation id="7108819624672055576">Beviljades av ett tillägg</translation>
@@ -1881,7 +1880,6 @@ Mer information:
 <translation id="893332455753468063">Lägg till namn</translation>
 <translation id="8943282376843390568">Limegrön</translation>
 <translation id="8957210676456822347">Auktorisering av infångstportal</translation>
-<translation id="8958582951173503172">När säkerhetshändelser flaggas av Chrome Enterprise Connectors skickas relevant data om händelsen till administratören. Exempel på sådan data är webbadresser till sidor du besöker i Chrome, filnamn eller metadata och användarnamnet du loggar in med på dina enheter och i Chrome.</translation>
 <translation id="8962950042226115166">Misstänkt webbplats</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Förslag:<ph name="MARKUP_2" />Kontrollera att du använder en dataanslutning<ph name="MARKUP_3" />Läs in den här webbsidan igen senare<ph name="MARKUP_4" />Kontrollera att du har angett rätt adress<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Spara kortet</translation>

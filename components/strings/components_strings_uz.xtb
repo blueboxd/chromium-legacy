@@ -40,7 +40,6 @@
 <translation id="1131264053432022307">Nusxalangan rasm</translation>
 <translation id="1150979032973867961">Bu <ph name="DOMAIN" /> serveri ekanligini tasdiqlab bo‘lmadi. Uning havfsizlik sertifikati kompyuteringizdagi operatsion tizimga ishonchli tuyulmayapti. Balki, server noto‘g‘ri sozlangan yoki kimdir ma’lumotlaringizni o‘g‘rilashga urinayotgan bo‘lishi mumkin.</translation>
 <translation id="1151972924205500581">Parol kiritish zarur</translation>
-<translation id="1152921474424827756"><ph name="URL" /> manzilining <ph name="BEGIN_LINK" />keshdagi nusxasiga<ph name="END_LINK" /> kirish</translation>
 <translation id="1156303062776767266">Bu – mahalliy yoki ulashilgan fayl</translation>
 <translation id="1158211211994409885">Kutilmaganda <ph name="HOST_NAME" /> bilan aloqa uzilib qoldi.</translation>
 <translation id="115926840831309955">CVC-kodni tekshiring va qaytadan urining yoki amal qilish muddatini yangilang</translation>
@@ -247,7 +246,6 @@
 <translation id="1919345977826869612">Reklamalar</translation>
 <translation id="1919367280705858090">Maxsus turdagi xato xabarlari asosida yordam olish</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Yo‘q}=1{1 ta sayt}other{# ta sayt}}</translation>
-<translation id="194030505837763158"><ph name="LINK" /> sahifasiga o‘tish</translation>
 <translation id="1945968466830820669">Tashkilot hisobingiz xavf ostida va o‘g‘irlanishi mumkin. Chromium parolingizni hoziroq o‘zgartirishni tavsiya etadi.</translation>
 <translation id="1947454675006758438">Yuqori oʻngdan steplerlash</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />Ochilgan sahifalar manzillari, tizim va sahifalar<ph name="END_WHITEPAPER_LINK" /> haqidagi ayrim maʼlumotlarni Google serverlariga yuborish orqali internetdagi xavfsizlik tizimini hamma uchun yaxshilashga yordam berasiz. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Maxfiylik siyosati<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -270,7 +268,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="202072848677994234">Bu shakldagi axborotlar himoyalanmagan ulanish orqali yuborilmoqda. Avtomatik kiritish yoqilmagan.</translation>
 <translation id="2025115093177348061">Boyitilgan reallik</translation>
 <translation id="2025186561304664664">Proksi-server avtomatik sozlanadi.</translation>
-<translation id="2030481566774242610"><ph name="LINK" /> manzilini nazarda tutdingizmi?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Proksi va himoya devorini tekshiring<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Tarnov 7</translation>
 <translation id="204357726431741734">Google hisobingizda saqlangan parollardan foydalanish uchun hisobingizga kiring</translation>
@@ -1045,6 +1042,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="5308380583665731573">Ulanish</translation>
 <translation id="5308689395849655368">Xatoliklar haqidagi hisobotlar o‘chiq.</translation>
 <translation id="5314967030527622926">Buklet yasash vositasi</translation>
+<translation id="5316812925700871227">Soat miliga teskari yo‘nalishda burish</translation>
 <translation id="5317780077021120954">Saqlash</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" />/<ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Aloqa axborotini tanlang</translation>
@@ -1068,7 +1066,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="5421136146218899937">Brauzer tarixini tozalash...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> sayti bildirishnoma yuborishga ruxsat so‘ramoqda.</translation>
 <translation id="5430298929874300616">Xatcho‘pni o‘chirish</translation>
-<translation id="5431657950005405462">So‘ralgan fayl topilmadi</translation>
 <translation id="5439770059721715174">Atributlar tekshiruvida xatolik, <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Teskari tartibda old tomonida</translation>
 <translation id="5447765697759493033">Bu sayt tarjima qilinmaydi</translation>
@@ -1441,7 +1438,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="7083258188081898530">Tarnov 9</translation>
 <translation id="7086090958708083563">Foydalanuvchi hisobot yuklanishini talab qilgan</translation>
 <translation id="7087282848513945231">Okrug</translation>
-<translation id="7090678807593890770">Google orqali qidiring: <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Berkitish</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> kamerangizdan foydalanmoqchi</translation>
 <translation id="7108819624672055576">Kengaytma ruxsat bergan</translation>
@@ -1877,7 +1873,6 @@ Batafsil axborot:
 <translation id="893332455753468063">Ism qo‘shing</translation>
 <translation id="8943282376843390568">Laym</translation>
 <translation id="8957210676456822347">Tegishli portalga kirish</translation>
-<translation id="8958582951173503172">Chrome Enterprise Connectors xavfsizlikka oid amallarni aniqlasa, xodisaga tegishli maʼlumotlar administratorga yuboriladi. Bu ochilgan sahifalarning URL manzillari, fayl nomlari yoki meta-axborotlar, qurilma va Chrome foydalanuvchilari nomlaridan iborat boʻlishi mumkin.</translation>
 <translation id="8962950042226115166">Shubhali sayt</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Takliflar:<ph name="MARKUP_2" />Internetga ulanishni tekshirib ko‘ring<ph name="MARKUP_3" />Keyinroq veb-sahifani yangilang<ph name="MARKUP_4" />Kiritlgan manzilni tekshirib ko‘ring<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Karta eslab qolinsin</translation>

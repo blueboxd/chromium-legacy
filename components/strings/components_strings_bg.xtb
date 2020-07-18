@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Копирано от вас изображение</translation>
 <translation id="1150979032973867961">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; операционната система на компютъра ви няма доверие на сертификата му за сигурност. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="1151972924205500581">Изисква се парола</translation>
-<translation id="1152921474424827756">Вижте <ph name="BEGIN_LINK" />кеширано копие<ph name="END_LINK" /> на <ph name="URL" /></translation>
 <translation id="1156303062776767266">Преглеждате локален или споделен файл</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> неочаквано прекрати връзката.</translation>
 <translation id="115926840831309955">Прегледайте кода за проверка и опитайте отново или актуализирайте датата на валидност</translation>
 <translation id="1161325031994447685">Свържете се отново с Wi-Fi.</translation>
 <translation id="1165039591588034296">Грешка</translation>
+<translation id="1165174597379888365">Страницата е посетена</translation>
 <translation id="1175364870820465910">&amp;Печат...</translation>
 <translation id="1175875016430184367">Триточково телбодиране отдясно</translation>
 <translation id="1178581264944972037">Пауза</translation>
@@ -245,7 +245,6 @@
 <translation id="1919345977826869612">Реклами</translation>
 <translation id="1919367280705858090">Получаване на помощ за конкретно съобщение за грешка</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Няма}=1{1 сайт}other{# сайта}}</translation>
-<translation id="194030505837763158">Към <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Възможно е да загубите достъп до профила си в организацията или самоличността ви да бъде открадната. Chromium препоръчва да промените паролата си сега.</translation>
 <translation id="1947454675006758438">Телбодиране горе вдясно</translation>
 <translation id="1959001866257244765">Помогнете за всеобщото подобряване на сигурността в мрежата, като изпращате до Google <ph name="BEGIN_WHITEPAPER_LINK" />URL адресите на някои от страниците, които посещавате, ограничена системна информация и част от съдържанието на страниците<ph name="END_WHITEPAPER_LINK" />. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Декларация за поверителност<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -265,9 +264,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{и още 1}other{и още #}}</translation>
 <translation id="2003709556000175978">Задайте повторно паролата си сега</translation>
 <translation id="2003775180883135320">Четворно перфориране в горната част</translation>
+<translation id="202072848677994234">Този формуляр ще бъде изпратен през незащитена връзка. Автоматичното попълване е деактивирано.</translation>
 <translation id="2025115093177348061">Обогатена реалност</translation>
 <translation id="2025186561304664664">За прокси сървъра е зададена автоматична конфигурация.</translation>
-<translation id="2030481566774242610">Може би имахте предвид <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Проверете прокси сървъра и защитната стена<ph name="END_LINK" />.</translation>
 <translation id="2042213636306070719">Тава 7</translation>
 <translation id="204357726431741734">Влезте в профила си в Google, за да използвате запазените в него пароли</translation>
@@ -333,6 +332,7 @@
 <translation id="2289385804009217824">Отрязване</translation>
 <translation id="2292556288342944218">Достъпът ви до интернет е блокиран</translation>
 <translation id="2293443924986248631">Когато тази функция е включена, сайтовете не могат да използват „бисквитки“, които проследяват активността ви в мрежата. Функциите в някои сайтове може да не работят правилно.</translation>
+<translation id="2295290966866883927">URL адресите на страниците, които посещавате, се изпращат до Google Cloud или до трети страни за анализ. Възможно е например да бъдат сканирани за откриване на опасни уебсайтове.</translation>
 <translation id="2297722699537546652">B5 (плик)</translation>
 <translation id="2300306941146563769">Не е качено</translation>
 <translation id="2310021320168182093">Chou2 (плик)</translation>
@@ -1043,6 +1043,7 @@
 <translation id="5308380583665731573">Свързване</translation>
 <translation id="5308689395849655368">Изпращането на сигнали за сривове е деактивирано.</translation>
 <translation id="5314967030527622926">Дизайнер на брошури</translation>
+<translation id="5316812925700871227">Завъртане обратно на часовниковата стрелка</translation>
 <translation id="5317780077021120954">Запазване</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> от <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Избиране на информация за връзка</translation>
@@ -1066,7 +1067,6 @@
 <translation id="5421136146218899937">Изчистване на данните за сърфирането...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> иска да ви изпраща известия</translation>
 <translation id="5430298929874300616">Премахване на отметката</translation>
-<translation id="5431657950005405462">Файлът ви не бе намерен</translation>
 <translation id="5439770059721715174">При потвърждаване на схемата възникна грешка в/ъв „<ph name="ERROR_PATH" />“: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">В обратен ред с отпечатаната страна нагоре</translation>
 <translation id="5447765697759493033">Този сайт няма да се превежда</translation>
@@ -1440,7 +1440,6 @@
 <translation id="7083258188081898530">Тава 9</translation>
 <translation id="7086090958708083563">Качване, заявено от потребител</translation>
 <translation id="7087282848513945231">Област</translation>
-<translation id="7090678807593890770">Потърсете „<ph name="LINK" />“ с Google</translation>
 <translation id="7108338896283013870">Скриване</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> иска да използва камерата ви</translation>
 <translation id="7108819624672055576">Разрешено от разширение</translation>
@@ -1876,7 +1875,6 @@
 <translation id="893332455753468063">Добавяне на име</translation>
 <translation id="8943282376843390568">лимоненозелено</translation>
 <translation id="8957210676456822347">Упълномощаване в портал за удостоверяване</translation>
-<translation id="8958582951173503172">При откриване на събитие, свързано със сигурността, от Chrome Enterprise Connectors, данните за него се изпращат до администратора ви. Те могат да включват URL адресите на посещаваните от вас страници в Chrome, имената на файловете или метаданните, както и потребителското име, с което влизате в профила си на устройството си и в браузъра.</translation>
 <translation id="8962950042226115166">Подозрителен сайт</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Предложения:<ph name="MARKUP_2" />Уверете се, че имате връзка за данни.<ph name="MARKUP_3" />Презаредете тази уеб страница по-късно.<ph name="MARKUP_4" />Проверете въведения от вас адрес.<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Запазване на картата</translation>

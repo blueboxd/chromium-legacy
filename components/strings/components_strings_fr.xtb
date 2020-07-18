@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
 <translation id="1008557486741366299">Pas maintenant</translation>
+<translation id="100957008357583611">Utiliser votre position ?</translation>
 <translation id="1010200102790553230">Charger la page plus tard</translation>
 <translation id="1015730422737071372">Fournir des informations supplémentaires</translation>
 <translation id="1019413721762100891">Désactivé</translation>
@@ -39,12 +40,12 @@
 <translation id="1131264053432022307">Image copiée</translation>
 <translation id="1150979032973867961">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre ordinateur. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1151972924205500581">Veuillez saisir un mot de passe</translation>
-<translation id="1152921474424827756">Accédez à une <ph name="BEGIN_LINK" />copie mise en cache<ph name="END_LINK" /> de <ph name="URL" />.</translation>
 <translation id="1156303062776767266">Vous consultez un fichier local ou partagé</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> a mis fin à la connexion de manière inattendue.</translation>
 <translation id="115926840831309955">Vérifiez votre code CVC et réessayez, ou mettez à jour la date d'expiration</translation>
 <translation id="1161325031994447685">Reconnectez-vous au réseau Wi-Fi</translation>
 <translation id="1165039591588034296">Erreur</translation>
+<translation id="1165174597379888365">Page consultée</translation>
 <translation id="1175364870820465910">Im&amp;primer...</translation>
 <translation id="1175875016430184367">Triple agrafe à droite</translation>
 <translation id="1178581264944972037">Suspendre</translation>
@@ -246,7 +247,6 @@
 <translation id="1919345977826869612">Annonces</translation>
 <translation id="1919367280705858090">Obtenir de l'aide pour un message d'erreur spécifique</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Aucun}=1{1 site}one{# site}other{# sites}}</translation>
-<translation id="194030505837763158">Accédez à <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Vous risquez de perdre l'accès au compte de votre organisation ou d'être victime d'usurpation d'identité. L'équipe Chromium vous recommande de modifier votre mot de passe maintenant.</translation>
 <translation id="1947454675006758438">Agrafe en haut à droite</translation>
 <translation id="1959001866257244765">Contribuez à renforcer la sécurité sur le Web pour tous en envoyant à Google les <ph name="BEGIN_WHITEPAPER_LINK" />URL de certaines pages que vous consultez, ainsi que des informations système limitées et une partie du contenu de certaines pages<ph name="END_WHITEPAPER_LINK" />. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Règles de confidentialité<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -266,9 +266,9 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="2001146170449793414">{COUNT,plural, =1{et 1 autre}one{et # autre}other{et # autres}}</translation>
 <translation id="2003709556000175978">Réinitialiser votre mot de passe maintenant</translation>
 <translation id="2003775180883135320">Quadruple perforation en haut</translation>
+<translation id="202072848677994234">Ce formulaire étant envoyé via une connexion non sécurisée, la saisie automatique est désactivée.</translation>
 <translation id="2025115093177348061">Réalité augmentée</translation>
 <translation id="2025186561304664664">Le proxy est défini sur la configuration automatique.</translation>
-<translation id="2030481566774242610">Essayez avec <ph name="LINK" /></translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Vérifier le proxy et le pare-feu<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Bac 7</translation>
 <translation id="204357726431741734">Connectez-vous pour utiliser les mots de passe enregistrés dans votre compte Google</translation>
@@ -334,6 +334,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="2289385804009217824">Couper</translation>
 <translation id="2292556288342944218">Votre accès à Internet est bloqué</translation>
 <translation id="2293443924986248631">Lorsque cette option est activée, les sites ne peuvent pas utiliser de cookies pour suivre votre activité sur le Web. Les fonctionnalités de certains sites peuvent être bloquées.</translation>
+<translation id="2295290966866883927">Les URL des pages que vous consultez sont envoyées dans Google Cloud ou à des tiers pour être analysées (par exemple, dans le but de détecter les sites Web dangereux).</translation>
 <translation id="2297722699537546652">B5 (enveloppe)</translation>
 <translation id="2300306941146563769">Non importé</translation>
 <translation id="2310021320168182093">Chou2 (enveloppe)</translation>
@@ -1044,6 +1045,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5308380583665731573">Connexion</translation>
 <translation id="5308689395849655368">L'envoi de rapports d'erreur est désactivé.</translation>
 <translation id="5314967030527622926">Créateur de brochures</translation>
+<translation id="5316812925700871227">Faire pivoter vers la gauche</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> sur <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Sélectionner les coordonnées</translation>
@@ -1067,7 +1069,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5421136146218899937">Effacer les données de navigation...</translation>
 <translation id="5426179911063097041">"<ph name="SITE" />" souhaite vous envoyer des notifications</translation>
 <translation id="5430298929874300616">Supprimer le favori</translation>
-<translation id="5431657950005405462">Votre fichier est introuvable</translation>
 <translation id="5439770059721715174">Erreur de validation du schéma au niveau de "<ph name="ERROR_PATH" />" : <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Ordre inverse, face vers le haut</translation>
 <translation id="5447765697759493033">Ce site ne sera pas traduit</translation>
@@ -1176,6 +1177,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5869405914158311789">Ce site est inaccessible</translation>
 <translation id="5869522115854928033">Mots de passe enregistrés</translation>
 <translation id="5887400589839399685">Carte enregistrée</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> vous demande de sauvegarder vos données et de retourner cet appareil.</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
 <translation id="5895187275912066135">Émis le</translation>
 <translation id="5901630391730855834">Jaune</translation>
@@ -1440,7 +1442,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="7083258188081898530">Bac 9</translation>
 <translation id="7086090958708083563">Importation demandée par l'utilisateur</translation>
 <translation id="7087282848513945231">Comté</translation>
-<translation id="7090678807593890770">Effectuez une recherche Google sur <ph name="LINK" />.</translation>
 <translation id="7108338896283013870">Masquer</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> souhaite utiliser votre appareil photo</translation>
 <translation id="7108819624672055576">Autorisé par une extension</translation>
@@ -1876,7 +1877,6 @@ Informations supplémentaires :
 <translation id="893332455753468063">Ajouter un nom</translation>
 <translation id="8943282376843390568">Citron vert</translation>
 <translation id="8957210676456822347">Autorisation du portail captif</translation>
-<translation id="8958582951173503172">Lorsque les connecteurs Chrome Enterprise signalent des événements liés à la sécurité, votre administrateur reçoit des données relatives à ces événements (par exemple, les URL des pages que vous consultez dans Chrome, les métadonnées ou les noms des fichiers concernés, ainsi que le nom d'utilisateur avec lequel vous vous connectez à votre appareil et à Chrome).</translation>
 <translation id="8962950042226115166">Site suspect</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Suggestions :<ph name="MARKUP_2" />Assurez-vous que vous disposez d'une connexion de données.<ph name="MARKUP_3" />Actualisez cette page ultérieurement.<ph name="MARKUP_4" />Vérifiez l'adresse que vous avez saisie.<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Enregistrer la carte</translation>

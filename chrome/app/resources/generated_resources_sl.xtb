@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Le šifriranje</translation>
 <translation id="1038462104119736705">Za Linux priporočamo najmanj <ph name="INSTALL_SIZE" /> prostora. Če želite povečati nezasedeni prostor, izbrišite datoteke iz naprave.</translation>
 <translation id="1039337018183941703">Neveljavna ali poškodovana datoteka</translation>
+<translation id="104086161873270383">Nov profil</translation>
 <translation id="1041175011127912238">Ta stran se ne odziva</translation>
 <translation id="1041263367839475438">Razpoložljive naprave</translation>
 <translation id="1042174272890264476">V vašem računalniku je tudi vgrajena knjižnica RLZ izdelka <ph name="SHORT_PRODUCT_NAME" />. RLZ za merjenje iskanj in uporabe izdelka <ph name="SHORT_PRODUCT_NAME" /> v okviru določene promocijske akcije dodeli neenolično oznako, ki ne omogoča osebne prepoznave. Te oznake so včasih v izdelku <ph name="PRODUCT_NAME" /> prikazane v iskalnih poizvedbah v Googlu.</translation>
@@ -255,6 +256,7 @@
 <translation id="1306606229401759371">Spremeni nastavitve</translation>
 <translation id="1307165550267142340">Koda PIN je bila ustvarjena</translation>
 <translation id="1307559529304613120">Ojoj, sistem za to napravo ni shranil žetona za dolgoročni dostop do API-ja.</translation>
+<translation id="1313162974556054106">Ime naprave</translation>
 <translation id="1313405956111467313">Samodejna konfiguracija strežnika proxy</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">Odjavljeni boste z vseh spletnih mest, vključno s tistimi na odprtih zavihkih.</translation>
@@ -705,7 +707,6 @@
 <translation id="184273675144259287">Nadomestite aplikacije in datoteke za Linux s prejšnjo varnostno kopijo</translation>
 <translation id="1842766183094193446">Ali ste prepričani, da želite omogočiti predstavitveni način?</translation>
 <translation id="1846308012215045257">Pridržite tipko »control« in kliknite za zagon vtičnika <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">Skupina <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Omogočanje ambientalnega načina</translation>
 <translation id="1849186935225320012">To spletno mesto ima popolni nadzor nad napravami MIDI.</translation>
 <translation id="1850508293116537636">&amp;Zasukaj v smeri urinega kazalca</translation>
@@ -1723,6 +1724,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3103941660000130485">Napaka pri nadgradnji Linuxa</translation>
 <translation id="3105796011181310544">Želite preklopiti nazaj na Google?</translation>
 <translation id="310671807099593501">Spletno mesto uporablja Bluetooth</translation>
+<translation id="3109724472072898302">Strnjeno</translation>
 <translation id="3115147772012638511">Čakam predpomnilnik ...</translation>
 <translation id="3115580024857770654">Strni vse</translation>
 <translation id="3116968597797150452">Profil potrdila</translation>
@@ -1790,7 +1792,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3192947282887913208">Zvočne datoteke</translation>
 <translation id="3199127022143353223">Strežniki</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome priporoča, da preverite to geslo}one{Chrome priporoča, da preverite ta gesla}two{Chrome priporoča, da preverite ta gesla}few{Chrome priporoča, da preverite ta gesla}other{Chrome priporoča, da preverite ta gesla}}</translation>
-<translation id="3200941271596533635">Preklop načina bralnika</translation>
 <translation id="3201422919974259695">Razpoložljive naprave USB bodo prikazane tukaj.</translation>
 <translation id="3202131003361292969">Pot</translation>
 <translation id="3202173864863109533">Zvok tega zavihka je izklopljen.</translation>
@@ -4212,7 +4213,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6270770586500173387">Pošiljanje <ph name="BEGIN_LINK1" />podatkov o sistemu in aplikacijah<ph name="END_LINK1" /> ter <ph name="BEGIN_LINK2" />meritev<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Napaka (<ph name="ERROR" />) pri prenosu vtičnika</translation>
 <translation id="6273677812470008672">Kakovost</translation>
-<translation id="6273979226236203550">Geslo je shranjeno v tej napravi in v računu Google. Katerega želite izbrisati?</translation>
 <translation id="6277105963844135994">Potek časovne omejitve omrežja</translation>
 <translation id="6277518330158259200">N&amp;aredi posnetek zaslona</translation>
 <translation id="6278057325678116358">Uporaba teme GTK+</translation>
@@ -4256,6 +4256,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6322653941595359182">Prejemanje in pošiljanje sporočil SMS s Chromebookom</translation>
 <translation id="6324916366299863871">Urejanje bližnjice</translation>
 <translation id="6325191661371220117">Onemogoči samodejni zagon</translation>
+<translation id="6325525973963619867">Ni uspelo</translation>
 <translation id="6326175484149238433">Odstrani iz Chroma</translation>
 <translation id="6326855256003666642">Štetje ohranjanja dejavnosti</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> zahteva, da pred rokom posodobite to napravo.</translation>
@@ -4859,7 +4860,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7099337801055912064">Velikih datotek PPD ni mogoče naložiti. Največja dovoljena velikost je 250 KB.</translation>
 <translation id="7102687220333134671">Samodejne posodobitve so vklopljene</translation>
 <translation id="7102832101143475489">Časovna omejitev zahteve je potekla</translation>
-<translation id="7102928824073746774">Neimenovana skupina – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Nastavitve naprav USB</translation>
 <translation id="710640343305609397">Odpri nastavitve omrežja</translation>
 <translation id="7108338896283013870">Skrij</translation>
@@ -4935,6 +4935,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="720110658997053098">Ta naprava naj bo trajno v načinu kioska</translation>
 <translation id="7201118060536064622">Element »<ph name="DELETED_ITEM_NAME" />« je izbrisan</translation>
 <translation id="7201420661433230412">Prikaz datotek</translation>
+<translation id="7203150201908454328">Razširjeno</translation>
 <translation id="7203826966018112936">Če profilu dodate šolski račun, omogočite preprosto prijavo kot učenca na spletnih mestih in v razširitvah, medtem ko račun še vedno deluje pod starševskim nadzorom. Otroku ne omogoča dostopa do zaznamkov, gesel ali drugih podatkov brskalnika, sinhroniziranih s šolskim računom.&lt;br&gt;&lt;br&gt;
     Če otrok uporablja Chromebook v šoli in želite poustvariti šolsko izkušnjo doma ter s tem zagotoviti, da bo imel otrok dostop do vseh potrebnih šolskih gradiv, se odjavite iz tega računa za Family Link in se na strani z računi za Chrome OS prijavite v šolski račun (opomba: starševski nadzor Family Linka se ne bo uporabil).&lt;br&gt;&lt;br&gt;
     Če otrok ne uporablja Chromebooka v šoli ali če želite otrokovo izkušnjo doma upravljati s Family Linkom, spodaj kliknite gumb »Naprej«, če želite temu profilu dodati šolski račun.</translation>
@@ -5330,7 +5331,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7704521324619958564">Odpri Trgovino Play</translation>
 <translation id="7705276765467986571">Modela zaznamka ni bilo mogoče naložiti.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Preklop načina bralnika</translation>
 <translation id="7707108266051544351">Temu spletnemu mestu je preprečena uporaba tipal gibanja.</translation>
 <translation id="7707922173985738739">Uporaba prenosa podatkov v mobilnem omrežju</translation>
 <translation id="7709152031285164251">Ni uspelo – <ph name="INTERRUPT_REASON" /></translation>

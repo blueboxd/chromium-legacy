@@ -373,6 +373,7 @@ group("closure_compile") {
     "nearby_share:closure_compile",
     "print_preview:closure_compile",
     "settings:closure_compile",
+    "signin:closure_compile",
     "tab_strip:closure_compile",
 
     # TODO(crbug.com/1000989): Add page specific targets here.

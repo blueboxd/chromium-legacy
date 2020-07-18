@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="2359808026110333948">ต่อไป</translation>
 <translation id="2369533728426058518">แท็บที่เปิดอยู่</translation>
-<translation id="2377295302146152376">Chrome ตรวจหาอัปเดตไม่ได้</translation>
 <translation id="2387895666653383613">อัตราส่วนข้อความ</translation>
 <translation id="2394602618534698961">ไฟล์ที่คุณดาวน์โหลดจะแสดงที่นี่</translation>
 <translation id="2407481962792080328">ฟีเจอร์นี้จะเปิดเมื่อคุณลงชื่อเข้าใช้บัญชี Google</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ขอความช่วยเหลือ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">ตอนนี้ตำแหน่งปิดอยู่ เปิดตำแหน่งได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="3058498974290601450">คุณเปิดการซิงค์ได้ทุกเมื่อในการตั้งค่า</translation>
-<translation id="3059710691562604940">Google Safe Browsing ปิดอยู่ Chrome ขอแนะนำให้เปิด</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{บุ๊กมาร์ก <ph name="BOOKMARKS_COUNT_ONE" /> รายการ}other{บุ๊กมาร์ก <ph name="BOOKMARKS_COUNT_MANY" /> รายการ}}</translation>
 <translation id="3089395242580810162">เปิดในแท็บไม่ระบุตัวตน</translation>
 <translation id="3114012059975132928">โปรแกรมเล่นวิดีโอ</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">มีการอัปเดตให้บริการ ตัวเลือกเพิ่มเติม</translation>
 <translation id="3524138585025253783">UI นักพัฒนาซอฟต์แวร์</translation>
 <translation id="3527085408025491307">โฟลเดอร์</translation>
-<translation id="3533694711092285624">ไม่มีรหัสผ่านที่บันทึกไว้ Chrome จะตรวจสอบรหัสผ่านได้เมื่อคุณบันทึกรหัสผ่านไว้</translation>
 <translation id="3542235761944717775">ใช้ได้ <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">ค้นหาประวัติการเข้าชม</translation>
 <translation id="3557336313807607643">เพิ่มในรายชื่อติดต่อ</translation>
@@ -360,6 +357,7 @@
 <translation id="3892148308691398805">คัดลอกข้อความ</translation>
 <translation id="3894427358181296146">เพิ่มโฟลเดอร์</translation>
 <translation id="3895926599014793903">บังคับให้เปิดใช้การซูม</translation>
+<translation id="3909763690984331376">การตรวจสอบความปลอดภัย <ph name="BEGIN_NEW" />ใหม่<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">กำลังหาข้อมูลที่ดีที่สุดจากเว็บ…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">รวมข้อมูลของฉัน</translation>
@@ -570,6 +568,7 @@
 <translation id="5581519193887989363">คุณเลือกสิ่งที่ต้องการซิงค์ได้เสมอใน<ph name="BEGIN_LINK1" />การตั้งค่า<ph name="END_LINK1" /></translation>
 <translation id="5595485650161345191">แก้ไขที่อยู่</translation>
 <translation id="5599455543593328020">โหมดไม่ระบุตัวตน</translation>
+<translation id="5620163320393916465">ไม่มีรหัสผ่านที่บันทึกไว้</translation>
 <translation id="5620928963363755975">หาไฟล์และหน้าในโฟลเดอร์ดาวน์โหลดจากปุ่มตัวเลือกเพิ่มเติม</translation>
 <translation id="5626134646977739690">ชื่อ:</translation>
 <translation id="5639724618331995626">อนุญาตทุกไซต์</translation>
@@ -581,6 +580,7 @@
 <translation id="5686790454216892815">ชื่อไฟล์ยาวเกินไป</translation>
 <translation id="5694049548840660018">กลับสู่หน้าแรกได้ง่ายๆ</translation>
 <translation id="569536719314091526">แปลหน้านี้เป็นภาษาใดก็ได้จากปุ่มตัวเลือกเพิ่มเติม</translation>
+<translation id="5696597120588531049">Chrome ช่วยให้คุณปลอดภัยจากการละเมิดข้อมูล เว็บไซต์ที่ไม่ปลอดภัย และอื่นๆ ได้</translation>
 <translation id="5697688514913266141">ระบบจะบันทึกไฟล์ลงใน<ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" /> <ph name="BEGIN_LINK2" />แก้ไข<ph name="END_LINK2" /></translation>
 <translation id="570347048394355941">เปลี่ยนเป็นแท็บ</translation>
 <translation id="572328651809341494">แท็บล่าสุด</translation>
@@ -714,6 +714,7 @@
 <translation id="6656545060687952787">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ โปรด<ph name="BEGIN_LINK" />อัปเดตสิทธิ์<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">รหัสผ่าน</translation>
 <translation id="6659594942844771486">แท็บ</translation>
+<translation id="6663079968236414793">ลิงก์มายังข้อความ</translation>
 <translation id="666573598175432848">Chrome เวอร์ชันใหม่พร้อมให้บริการแล้ว แตะเอลิเมนต์นี้เพื่อไปที่ Play Store</translation>
 <translation id="666731172850799929">เปิดใน <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวของ Chrome</translation>

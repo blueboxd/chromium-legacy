@@ -170,7 +170,6 @@ Tap any word to search. To refine your search, touch and hold to select more or 
 <translation id="2353636109065292463">Checking your Internet connection</translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="2369533728426058518">open tabs</translation>
-<translation id="2377295302146152376">Chrome could not check for updates</translation>
 <translation id="2387895666653383613">Text scaling</translation>
 <translation id="2394602618534698961">Files that you download appear here</translation>
 <translation id="2407481962792080328">When you sign in to your Google account, this feature is turned on</translation>
@@ -259,7 +258,6 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Location is off; turn it on in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">You can turn on sync at any time in settings</translation>
-<translation id="3059710691562604940">Safe Browsing is off. Chrome recommends turning it on.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bookmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> bookmarks}}</translation>
 <translation id="3089395242580810162">Open in incognito tab</translation>
 <translation id="3114012059975132928">Video player</translation>
@@ -320,7 +318,6 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="3522247891732774234">Update available. More options</translation>
 <translation id="3524138585025253783">Developer UI</translation>
 <translation id="3527085408025491307">Folder</translation>
-<translation id="3533694711092285624">No saved passwords. Chrome can check your passwords when you save them.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB available</translation>
 <translation id="3549657413697417275">Search your history</translation>
 <translation id="3557336313807607643">Add to contacts</translation>
@@ -571,6 +568,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5581519193887989363">You can always choose what to sync in <ph name="BEGIN_LINK1" />settings<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Edit address</translation>
 <translation id="5599455543593328020">Incognito mode</translation>
+<translation id="5620163320393916465">No saved passwords</translation>
 <translation id="5620928963363755975">Find your files and pages in Downloads from the More Options button</translation>
 <translation id="5626134646977739690">Name:</translation>
 <translation id="5639724618331995626">Allow all sites</translation>

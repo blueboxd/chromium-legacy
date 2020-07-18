@@ -1,0 +1,375 @@
+This test verifies the names and positions of named grid lines are generated correctly.
+
+grid-with-line-names{
+  "paths": [
+    {
+      "path": [
+        "M",
+        0,
+        0,
+        "L",
+        640,
+        0,
+        "L",
+        640,
+        830,
+        "L",
+        0,
+        830,
+        "Z"
+      ],
+      "fillColor": "rgba(255, 0, 0, 0)",
+      "outlineColor": "rgba(128, 0, 0, 0)",
+      "name": "content"
+    },
+    {
+      "path": [
+        "M",
+        0,
+        0,
+        "L",
+        640,
+        0,
+        "L",
+        640,
+        830,
+        "L",
+        0,
+        830,
+        "Z"
+      ],
+      "fillColor": "rgba(0, 255, 0, 0)",
+      "name": "padding"
+    },
+    {
+      "path": [
+        "M",
+        0,
+        0,
+        "L",
+        640,
+        0,
+        "L",
+        640,
+        830,
+        "L",
+        0,
+        830,
+        "Z"
+      ],
+      "fillColor": "rgba(0, 0, 255, 0)",
+      "name": "border"
+    },
+    {
+      "path": [
+        "M",
+        0,
+        0,
+        "L",
+        640,
+        0,
+        "L",
+        640,
+        830,
+        "L",
+        0,
+        830,
+        "Z"
+      ],
+      "fillColor": "rgba(255, 255, 255, 0)",
+      "name": "margin"
+    }
+  ],
+  "showRulers": true,
+  "showExtensionLines": true,
+  "showAccessibilityInfo": true,
+  "colorFormat": "hex",
+  "elementInfo": {
+    "tagName": "div",
+    "idValue": "grid-with-line-names",
+    "nodeWidth": "640",
+    "nodeHeight": "830",
+    "isKeyboardFocusable": false,
+    "accessibleName": "",
+    "accessibleRole": "generic",
+    "layoutObjectName": "LayoutGrid",
+    "showAccessibilityInfo": true
+  },
+  "gridInfo": [
+    {
+      "rows": [
+        "M",
+        0,
+        0,
+        "L",
+        640,
+        0,
+        "M",
+        640,
+        200,
+        "L",
+        0,
+        200,
+        "M",
+        0,
+        210,
+        "L",
+        640,
+        210,
+        "M",
+        640,
+        410,
+        "L",
+        0,
+        410,
+        "M",
+        0,
+        420,
+        "L",
+        640,
+        420,
+        "M",
+        640,
+        620,
+        "L",
+        0,
+        620,
+        "M",
+        0,
+        630,
+        "L",
+        640,
+        630,
+        "M",
+        640,
+        830,
+        "L",
+        0,
+        830
+      ],
+      "rowGaps": [
+        "M",
+        0,
+        200,
+        "L",
+        640,
+        200,
+        "L",
+        640,
+        210,
+        "L",
+        0,
+        210,
+        "Z",
+        "M",
+        0,
+        410,
+        "L",
+        640,
+        410,
+        "L",
+        640,
+        420,
+        "L",
+        0,
+        420,
+        "Z",
+        "M",
+        0,
+        620,
+        "L",
+        640,
+        620,
+        "L",
+        640,
+        630,
+        "L",
+        0,
+        630,
+        "Z"
+      ],
+      "columns": [
+        "M",
+        0,
+        0,
+        "L",
+        0,
+        830,
+        "M",
+        100,
+        830,
+        "L",
+        100,
+        0,
+        "M",
+        110,
+        0,
+        "L",
+        110,
+        830,
+        "M",
+        610,
+        830,
+        "L",
+        610,
+        0,
+        "M",
+        620,
+        0,
+        "L",
+        620,
+        830,
+        "M",
+        640,
+        830,
+        "L",
+        640,
+        0
+      ],
+      "columnGaps": [
+        "M",
+        100,
+        0,
+        "L",
+        110,
+        0,
+        "L",
+        110,
+        830,
+        "L",
+        100,
+        830,
+        "Z",
+        "M",
+        610,
+        0,
+        "L",
+        620,
+        0,
+        "L",
+        620,
+        830,
+        "L",
+        610,
+        830,
+        "Z"
+      ],
+      "positiveRowLineNumberOffsets": [
+        0,
+        205,
+        415,
+        625,
+        830
+      ],
+      "positiveColumnLineNumberOffsets": [
+        0,
+        105,
+        615,
+        640
+      ],
+      "negativeRowLineNumberOffsets": [
+        0,
+        205,
+        415,
+        625,
+        830
+      ],
+      "negativeColumnLineNumberOffsets": [
+        0,
+        105,
+        615,
+        640
+      ],
+      "areaNames": {},
+      "rowLineNameOffsets": [
+        {
+          "name": "article",
+          "offset": 205
+        },
+        {
+          "name": "header",
+          "offset": 0
+        },
+        {
+          "name": "main",
+          "offset": 205
+        },
+        {
+          "name": "end",
+          "offset": 830
+        },
+        {
+          "name": "section",
+          "offset": 205
+        },
+        {
+          "name": "section",
+          "offset": 415
+        },
+        {
+          "name": "section",
+          "offset": 625
+        },
+        {
+          "name": "images",
+          "offset": 205
+        }
+      ],
+      "columnLineNameOffsets": [
+        {
+          "name": "header",
+          "offset": 105
+        },
+        {
+          "name": "content-start",
+          "offset": 105
+        },
+        {
+          "name": "fullpage-end",
+          "offset": 640
+        },
+        {
+          "name": "fullpage-start",
+          "offset": 0
+        },
+        {
+          "name": "content-end",
+          "offset": 615
+        }
+      ],
+      "gridBorder": [
+        "M",
+        0,
+        0,
+        "L",
+        640,
+        0,
+        "L",
+        640,
+        830,
+        "L",
+        0,
+        830,
+        "Z"
+      ],
+      "gridHighlightConfig": {
+        "gridBorderDash": false,
+        "cellBorderDash": true,
+        "showGridExtensionLines": true,
+        "showPositiveLineNumbers": true,
+        "showNegativeLineNumbers": true,
+        "showAreaNames": true,
+        "showLineNames": true,
+        "gridBorderColor": "rgba(255, 0, 0, 0)",
+        "cellBorderColor": "rgba(128, 0, 0, 0)",
+        "rowGapColor": "rgba(0, 255, 0, 0)",
+        "columnGapColor": "rgba(0, 0, 255, 0)",
+        "rowHatchColor": "rgba(255, 255, 255, 0)",
+        "columnHatchColor": "rgba(128, 128, 128, 0)",
+        "areaBorderColor": "rgba(255, 0, 0, 0)"
+      },
+      "isPrimaryGrid": true
+    }
+  ]
+}
+

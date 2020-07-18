@@ -40,7 +40,6 @@
 <translation id="1131264053432022307">ನೀವು ನಕಲಿಸಿದ ಚಿತ್ರ</translation>
 <translation id="1150979032973867961">ಈ ಸರ್ವರ್ <ph name="DOMAIN" /> ಆಗಿದೆ ಎಂಬುದನ್ನು ಸಾಬೀತುಪಡಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ; ಅದರ ಸುರಕ್ಷತಾ ಪ್ರಮಾಣಪತ್ರವು ನಿಮ್ಮ ಸಾಧನದ ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಂ‌ ಪ್ರಕಾರ ವಿಶ್ವಾಸಾರ್ಹವಾಗಿಲ್ಲ. ಇದು ತಪ್ಪು ಕಾನ್ಫಿಗರೇಶನ್‌ನಿಂದ ಅಥವಾ ಆಕ್ರಮಣಕಾರರು ನಿಮ್ಮ ಸಂಪರ್ಕದಲ್ಲಿ ಒಳನುಸುಳಿರುವುದರಿಂದ ಆಗಿರಬಹುದು.</translation>
 <translation id="1151972924205500581">ಪಾಸ್‌ವರ್ಡ್ ಅಗತ್ಯವಿದೆ</translation>
-<translation id="1152921474424827756"><ph name="URL" /> ನ <ph name="BEGIN_LINK" />ಸಂಗ್ರಹಿಸಲಾಗಿರುವ ನಕಲನ್ನು<ph name="END_LINK" /> ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="1156303062776767266">ನೀವು ಸ್ಥಳೀಯ ಅಥವಾ ಹಂಚಿದ ಫೈಲ್‌ ಅನ್ನು ವೀಕ್ಷಿಸುತ್ತಿದ್ದೀರಿ</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ಅನಿರೀಕ್ಷಿತವಾಗಿ ಸಂಪರ್ಕವನ್ನು ಮುಚ್ಚಿದೆ.</translation>
 <translation id="115926840831309955">ನಿಮ್ಮ CVC ಯನ್ನು ಪರಿಶೀಲಿಸಿ, ಪುನಃ ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ಅವಧಿ ಮುಗಿಯುವ ದಿನಾಂಕವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ</translation>
@@ -246,7 +245,6 @@
 <translation id="1919345977826869612">ಜಾಹೀರಾತುಗಳು</translation>
 <translation id="1919367280705858090">ನಿರ್ದಿಷ್ಟ ದೋಷ ಸಂದೇಶಕ್ಕೆ ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{ಯಾವುದೂ ಇಲ್ಲ}=1{1 ಸೈಟ್}one{# ಸೈಟ್‌ಗಳು}other{# ಸೈಟ್‌ಗಳು}}</translation>
-<translation id="194030505837763158"><ph name="LINK" /> ಗೆ ಹೋಗಿ</translation>
 <translation id="1945968466830820669">ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಖಾತೆಗೆ ನೀವು ಪ್ರವೇಶವನ್ನು ಕಳೆದುಕೊಳ್ಳಬಹುದು ಅಥವಾ ಗುರುತು ಕಳ್ಳತನಕ್ಕೆ ಒಳಗಾಗಬಹುದು. ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಇದೀಗ ಬದಲಾಯಿಸುವಂತೆ Chromium ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="1947454675006758438">ಮೇಲಿನ ಬಲಭಾಗದಲ್ಲಿ ಸ್ಟೇಪಲ್ ಹಾಕಿ</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />ನೀವು ಭೇಟಿ ನೀಡುವ ಕೆಲವೊಂದು ಪುಟಗಳ URL ಗಳು, ಸಿಸ್ಟಂಗೆ ಸಂಬಂಧಿಸಿದ ಸೀಮಿತ ಮಾಹಿತಿ ಹಾಗೂ ಪುಟದಲ್ಲಿನ ಕೆಲವು ವಿಷಯ<ph name="END_WHITEPAPER_LINK" /> ಮುಂತಾದವುಗಳನ್ನು Google ಗೆ ಕಳುಹಿಸುವ ಮೂಲಕ ಎಲ್ಲರಿಗಾಗಿ ವೆಬ್‌ನ ಸುರಕ್ಷತೆಯನ್ನು ಸುಧಾರಿಸಲು ಸಹಾಯ ಮಾಡಿ. <ph name="BEGIN_PRIVACY_PAGE_LINK" />ಗೌಪ್ಯತೆ ನೀತಿ<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -269,7 +267,6 @@
 <translation id="202072848677994234">ಸುರಕ್ಷಿತವಲ್ಲದ ಕನೆಕ್ಷನ್‌ನ ಮೂಲಕ ಈ ಫಾರ್ಮ್ ಅನ್ನು ಸಲ್ಲಿಸಲಾಗಿದೆ. ಸ್ವಯಂಚಾಲಿತ ಭರ್ತಿಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="2025115093177348061">ಆಗ್‌ಮೆಂಟೆಡ್ ರಿಯಾಲಿಟಿ</translation>
 <translation id="2025186561304664664">ಪ್ರಾಕ್ಸಿಯನ್ನು ಸ್ವಯಂ ಕಾನ್ಫಿಗರ್ ಆಗಿ ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
-<translation id="2030481566774242610">ನಿಮ್ಮ ಮಾತಿನ ಅರ್ಥ <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />ಪ್ರಾಕ್ಸಿ ಮತ್ತು ಫೈರ್‌ವಾಲ್ ಅನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">ಟ್ರೇ 7</translation>
 <translation id="204357726431741734">ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಬಳಸಲು ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
@@ -1038,6 +1035,7 @@
 <translation id="5308380583665731573">ಸಂಪರ್ಕಿಸು</translation>
 <translation id="5308689395849655368">ಕ್ರ‍್ಯಾಶ್‌‌ ವರದಿಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="5314967030527622926">ಬುಕ್‌ಲೆಟ್ ಮೇಕರ್</translation>
+<translation id="5316812925700871227">ಅಪ್ರದಕ್ಷಿಣವಾಗಿ ತಿರುಗಿಸು</translation>
 <translation id="5317780077021120954">ಉಳಿಸು</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="NUM_MATCHES" /> ಗಳ <ph name="MATCH_POSITION" /></translation>
 <translation id="5324080437450482387">ಸಂಪರ್ಕ ಮಾಹಿತಿ ಆಯ್ಕೆಮಾಡಿ</translation>
@@ -1061,7 +1059,6 @@
 <translation id="5421136146218899937">ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ...</translation>
 <translation id="5426179911063097041">ನಿಮಗೆ ಅಧಿಸೂಚನೆಗಳನ್ನು ಕಳುಹಿಸಲು <ph name="SITE" /> ಬಯಸುತ್ತದೆ</translation>
 <translation id="5430298929874300616">ಬುಕ್‌ಮಾರ್ಕ್‌ ತೆಗೆದುಹಾಕಿ</translation>
-<translation id="5431657950005405462">ನಿಮ್ಮ ಫೈಲ್ ಕಂಡುಬಂದಿಲ್ಲ</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" ನಲ್ಲಿ ಸ್ಕೀಮಾ ಮೌಲ್ವೀಕರಣ ದೋಷ: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">ಹಿಮ್ಮುಖ ಆರ್ಡರ್ ಮುಖ ಮೇಲಕ್ಕೆ</translation>
 <translation id="5447765697759493033">ಈ ಸೈಟ್ ಅನ್ನು ಅನುವಾದಿಸಲಾಗುವುದಿಲ್ಲ</translation>
@@ -1434,7 +1431,6 @@
 <translation id="7083258188081898530">ಟ್ರೇ 9</translation>
 <translation id="7086090958708083563">ಬಳಕೆದಾರರು ಅಪ್‌ಲೋಡ್ ಮಾಡಲು ವಿನಂತಿಸಿದ್ದಾರೆ</translation>
 <translation id="7087282848513945231">ರಾಷ್ಟ್ರ</translation>
-<translation id="7090678807593890770"><ph name="LINK" /> ಗಾಗಿ Google ಹುಡುಕಾಟ ನಡೆಸಿ</translation>
 <translation id="7108338896283013870">ಮರೆಮಾಡಿ</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಬಳಸಲು ಬಯಸುತ್ತದೆ</translation>
 <translation id="7108819624672055576">ವಿಸ್ತರಣೆಯ ಮೂಲಕ ಅನುಮತಿಸಲಾಗಿದೆ</translation>
@@ -1870,7 +1866,6 @@
 <translation id="893332455753468063">ಹೆಸರು ಸೇರಿಸಿ</translation>
 <translation id="8943282376843390568">ನಿಂಬೆ ಹಳದಿ</translation>
 <translation id="8957210676456822347">ಕ್ಯಾಪ್ಟಿವ್ ಪೋರ್ಟಲ್ ದೃಢೀಕರಣ</translation>
-<translation id="8958582951173503172">Chrome Enterprise ಕನೆಕ್ಟರ್‌ಗಳ ಮೂಲಕ ಭದ್ರತೆಗೆ ಸಂಬಂಧಿಸಿದ ಘಟನೆಗಳ ಕುರಿತು ಫ್ಲ್ಯಾಗ್ ಮಾಡಿದಾಗ, ಆ ಘಟನೆಯ ಕುರಿತ ಸಂಬಂಧಿತ ಡೇಟಾವನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ. ಇದು ನೀವು ಭೇಟಿ ನೀಡುವ ಪುಟಗಳ URL ಗಳು, ಫೈಲ್ ಹೆಸರುಗಳು ಅಥವಾ ಮೆಟಾಡೇಟಾ ಮತ್ತು ನಿಮ್ಮ ಸಾಧನ ಮತ್ತು Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ಬಳಸುವ ಬಳಕೆದಾರರ ಹೆಸರನ್ನು ಒಳಗೊಂಡಿರಬಹುದು.</translation>
 <translation id="8962950042226115166">ಅನುಮಾನಾಸ್ಪದ ಸೈಟ್</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />ಸಲಹೆಗಳು:<ph name="MARKUP_2" />ನೀವು ಡೇಟಾ ಸಂಪರ್ಕ ಹೊಂದಿರುವಿರಾ ಎಂದು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ<ph name="MARKUP_3" />ಈ ವೆಬ್ ಪುಟವನ್ನು ನಂತರ ಮರುಲೋಡ್ ಮಾಡಿ<ph name="MARKUP_4" />ನೀವು ನಮೂದಿಸಿದ ವಿಳಾಸವನ್ನು ಪರಿಶೀಲಿಸಿ<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">ಕಾರ್ಡ್‌ ಉಳಿಸಿ</translation>

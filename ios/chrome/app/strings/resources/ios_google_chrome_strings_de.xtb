@@ -2,15 +2,19 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1282031177488366470">Helfen, die Funktionen und die Leistung von Chrome zu verbessern</translation>
+<translation id="1479202195792305274">Chrome kann Ihre Passwörter prüfen, wenn Sie sich mit Ihrem Google-Konto anmelden.</translation>
+<translation id="1647024380514430932">Chrome konnte nicht alle Passwörter prüfen. Versuchen Sie es noch einmal.</translation>
 <translation id="1682483655351012182">Chrome-Daten synchronisieren</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1917964099031477364">Dieses Konto und alle nicht gespeicherten Daten werden aus Chrome und anderen Google Apps auf diesem Gerät entfernt.</translation>
+<translation id="2009224836393115614">Chrome konnte Ihre Passwörter nicht prüfen. Prüfen Sie Ihre Internetverbindung.</translation>
 <translation id="2147651015520127414">Chrome hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat.</translation>
 <translation id="2199719347983604670">Daten aus der Chrome-Synchronisierung</translation>
 <translation id="2347208864470321755">Wenn diese Funktion aktiviert ist, bietet Chrome an, Seiten in anderen Sprachen mithilfe von Google Übersetzer zu übersetzen. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="2574249610672786438">Melden Sie sich auf allen Ihren Geräten an, um Ihre Tabs überall dort aufzurufen, wo Sie Chrome verwenden</translation>
 <translation id="2576431527583832481">Chrome ist jetzt noch besser! Es ist eine neue Version verfügbar.</translation>
 <translation id="257708665678654955">Soll Google Chrome beim nächsten Mal eine Übersetzung von Seiten dieser Website anbieten, die auf <ph name="LANGUAGE_NAME" /> sind?</translation>
+<translation id="2732745070297234559">Chrome konnte nicht alle Passwörter prüfen. Versuchen Sie es morgen noch einmal.</translation>
 <translation id="2919738076569633423">Wenn Sie Chrome nutzen, stimmen Sie damit den <ph name="BEGIN_LINK_TOS" />Nutzungsbedingungen<ph name="END_LINK_TOS" /> zu.</translation>
 <translation id="3030414234702425231">Sie melden sich von einem Konto ab, das von <ph name="SIGNOUT_MANAGED_DOMAIN" /> verwaltet wird. Dadurch werden Ihre Chrome-Daten von diesem Gerät gelöscht. Sie bleiben jedoch in Ihrem Google-Konto erhalten.</translation>
 <translation id="3148688391461398285">Profitieren Sie von einer besseren Nutzererfahrung in Chrome auf Grundlage Ihres Standorts.</translation>
@@ -28,6 +32,7 @@
 <translation id="424864128008805179">Von Chrome abmelden?</translation>
 <translation id="4249068189593983585">Chrome-Tipp: Wenn Sie weitere Tab-Optionen sehen möchten, berühren und halten Sie die Schaltfläche "Tabs anzeigen" in der Symbolleiste. Sie befindet sich unten oder oben auf dem Bildschirm.</translation>
 <translation id="4523886039239821078">Einige Add-ons führen zum Ausfall von Chrome. Bitte deinstallieren Sie:</translation>
+<translation id="4698415050768537821">Chrome konnte nicht alle Passwörter prüfen. Versuchen Sie es morgen noch einmal oder <ph name="BEGIN_LINK" />prüfen Sie die Passwörter in Ihrem Google-Konto<ph name="END_LINK" />.</translation>
 <translation id="5389212809648216794">Google Chrome kann nicht auf die Kamera zugreifen, da diese gerade von einer anderen App verwendet wird</translation>
 <translation id="5639704535586432836">Öffnen Sie "Einstellungen" &gt; "Datenschutz" &gt; "Kamera" &gt; "Google Chrome" und aktivieren Sie die Kamera.</translation>
 <translation id="5642200033778930880">Google Chrome kann die Kamera nicht im Modus "Geteilte Ansicht" nutzen</translation>
@@ -42,6 +47,7 @@
 <translation id="7165736900384873061">Google Chrome QR-Scanner nutzen</translation>
 <translation id="7172660552945675509">Tipp: <ph name="BEGIN_LINK" />Ziehen Sie Chrome in Ihr Dock<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome verwendet Face ID, um den autorisierten Zugriff auf Ihre Passwörter zu gewährleisten.</translation>
+<translation id="7261678641327190792">Chrome kann Ihre Passwörter nicht prüfen</translation>
 <translation id="7265369419224458312">Greifen Sie hier auf die Tabs zu, die Sie auf Ihrem Computer geöffnet haben. Öffnen Sie dazu Chrome auf Ihrem Computer und wählen Sie im Menü "In Chrome anmelden…" aus.</translation>
 <translation id="7272930098487145294">Um Bilder zu speichern, geben Sie Chrome unter "Einstellungen" die Berechtigung zum Hinzufügen von Fotos</translation>
 <translation id="7400722733683201933">Über Google Chrome</translation>

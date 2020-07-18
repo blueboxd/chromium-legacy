@@ -40,7 +40,6 @@
 <translation id="1131264053432022307">እርስዎ የቀዱት ምስል</translation>
 <translation id="1150979032973867961">ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ሊያረጋግጥ አልቻለም፤ የደህንነት እውቅና ማረጋገጫው በኮምፒውተርዎ ስርዓተ ክወና የሚታመን አይደለም። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል።</translation>
 <translation id="1151972924205500581">የይለፍ ቃል ያስፈልጋል</translation>
-<translation id="1152921474424827756">የ<ph name="URL" /> <ph name="BEGIN_LINK" />የተሸጎጠ ቅጂ<ph name="END_LINK" /> ይድረሱ</translation>
 <translation id="1156303062776767266">አካባቢያዊ ወይም የተጋራ ፋይል እየተመለከቱ ነው</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ሳይታሰብ ግንኙነቱን ዘግቷል።</translation>
 <translation id="115926840831309955">የእርስዎን CVC ይፈትሹ እና እንደገና ይሞክሩ ወይም የአገልግሎት ማብቂያ ቀኑን ያዘምኑ</translation>
@@ -244,7 +243,6 @@
 <translation id="1919345977826869612">ማስታወቂያዎች</translation>
 <translation id="1919367280705858090">በአንድ የተወሰነ የስህተት መልዕክት ላይ እገዛ ያግኙ</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{ምንም}=1{1 ጣቢያ}one{# ጣቢያዎች}other{# ጣቢያዎች}}</translation>
-<translation id="194030505837763158">ወደ <ph name="LINK" /> ሂድ</translation>
 <translation id="1945968466830820669">የድርጅት መለያዎን መዳረሻ ሊያጡ ወይም የማንነት ስርቆት ሊያጋጥመዎት ይችላሉ። Chromium የይለፍ ቃልዎን አሁን እንዲቀይሩ ይመክራል።</translation>
 <translation id="1947454675006758438">በቀኝ በኩል ስቴፕለር ምታ</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />የጎበኙትን የአንዳንድ ገጾች ዩአርኤልዎች፣ የተገደበ የስርዓት መረጃ እና አንዳንድ የገጽ ይዘት<ph name="END_WHITEPAPER_LINK" /> ወደ Google በመላክ ለሁሉም ሰው ድር ላይ ደህንነት እንዲሻሻል ያግዙ። <ph name="BEGIN_PRIVACY_PAGE_LINK" />የግላዊነት መመሪያ<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,7 +265,6 @@
 <translation id="202072848677994234">ይህ ቅጽ ደህንነቱ ባልተጠበቀ ግንኙነት ገብቷል። ራስ-መሙያ ተሰናክሏል</translation>
 <translation id="2025115093177348061">የላቀ እውነታ</translation>
 <translation id="2025186561304664664">ተኪ ወደ ራስ-ውቅር ተዋቅሯል።</translation>
-<translation id="2030481566774242610"><ph name="LINK" />ን ማለትዎ ነው?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />ወኪሉን እና ኬላውን መፈተሽ<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">መሳቢያ 7</translation>
 <translation id="204357726431741734">በእርስዎ Google መለያ ውስጥ የተከማቹ የይለፍ ቃላትን ለመጠቀም ይግቡ</translation>
@@ -333,7 +330,7 @@
 <translation id="2289385804009217824">ከርክም</translation>
 <translation id="2292556288342944218">የእርስዎ የበየነመረብ መዳረሻ ታግዷል</translation>
 <translation id="2293443924986248631">ሲበራ ጣቢያዎች እርስዎን በመላው ድር ላይ የሚከታተሉ ኩኪዎችን መጠቀም አይችሉም። በአንዳንድ ጣቢያዎች ላይ ያሉ ባህሪያት ሊሰበሩ ይችላሉ።</translation>
-<translation id="2295290966866883927">የጎበኟቸው ገጾች ዩአርኤል ወደ Google ደመና ወይም ሦስተኛ ወገኖች ለትንታኔ ይላካሉ። ለምሳሌ፣ ደህንነታቸው ያልተጠበቀ ድር ጣቢያዎችን ለመቃኘት ሊቃኙ ይችላሉ።</translation>
+<translation id="2295290966866883927">የጎበኟቸው ገጾች ዩአርኤል ወደ Google ደመና ወይም ሦስተኛ ወገኖች ለትንታኔ ይላካሉ። ለምሳሌ፣ ደህንነታቸው ያልተጠበቀ ድር ጣቢያዎችን ለመለየት ሊቃኙ ይችላሉ።</translation>
 <translation id="2297722699537546652">B5 (የደብዳቤ ፖስታ)</translation>
 <translation id="2300306941146563769">አልተሰቀለም</translation>
 <translation id="2310021320168182093">Chou2 (የደብዳቤ ፖስታ)</translation>
@@ -491,6 +488,7 @@
 <translation id="3005723025932146533">የተቀመጠ ቅጂ አሳይ</translation>
 <translation id="3008447029300691911">የ<ph name="CREDIT_CARD" /> ሲቪሲ ያስገቡ። አንዴ ካረጋገጡ በኋላ የካርድ ዝርዝሮችዎ ለዚህ ጣቢያ ይጋራሉ።</translation>
 <translation id="3010559122411665027">የዝርዝር ግቤት «<ph name="ENTRY_INDEX" />»፦ <ph name="ERROR" /></translation>
+<translation id="3013266782169695070"><ph name="APP_NAME" /> የምርት ተሞክሮን ለማሻሻል የምርመራ ውሂብን ይሰበስባል። ተጨማሪ መረጃ ለማግኘት <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />ን ይመልከቱ።</translation>
 <translation id="301521992641321250">በራስ-ሰር ታግዷል</translation>
 <translation id="3016780570757425217">የእርስዎን መገኛ አካባቢ ይወቁ</translation>
 <translation id="3023071826883856138">You4 (የደብዳቤ ፖስታ)</translation>
@@ -1039,6 +1037,7 @@
 <translation id="5308380583665731573">ይገናኙ</translation>
 <translation id="5308689395849655368">የብልሽት ሪፖርት ማድረግ ተሰናክሏል።</translation>
 <translation id="5314967030527622926">የአነሰተኛ መጽሐፍ መሥሪያ</translation>
+<translation id="5316812925700871227">በተቃራኒ ሰዓት አቅጣጫ አሽከርክር</translation>
 <translation id="5317780077021120954">አስቀምጥ</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />፣ <ph name="MATCH_POSITION" /> ከ<ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">የእውቂያ መረጃ ይምረጡ</translation>
@@ -1062,7 +1061,6 @@
 <translation id="5421136146218899937">የአሰሳ ውሂብ አጽዳ…</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> ማሳወቂያዎችን ለእርስዎ መላክ ይፈልጋል</translation>
 <translation id="5430298929874300616">ዕልባት አስወግድ</translation>
-<translation id="5431657950005405462">የእርስዎ ፋይል አልተገኘም</translation>
 <translation id="5439770059721715174">«<ph name="ERROR_PATH" />» ላይ የብያኔ ማረጋገጥ ስህተት፦ <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">ተቃራኒ ቅደም-ተከተል ፊቱ ወደ ላይ</translation>
 <translation id="5447765697759493033">ይህ ጣቢያ አይተረጎምም</translation>
@@ -1436,7 +1434,6 @@
 <translation id="7083258188081898530">መሳቢያ 9</translation>
 <translation id="7086090958708083563">ሰቀላ በተጠቃሚ ተጠይቋል</translation>
 <translation id="7087282848513945231">ክፍለ ሀገር</translation>
-<translation id="7090678807593890770"><ph name="LINK" />ን በGoogle ላይ ይፈልጉ</translation>
 <translation id="7108338896283013870">ደብቅ</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> ካሜራዎን መጠቀም ይፈልጋል</translation>
 <translation id="7108819624672055576">በቅጥያ የተፈቀደ</translation>
@@ -1873,7 +1870,6 @@
 <translation id="893332455753468063">ስም ያክሉ</translation>
 <translation id="8943282376843390568">ሎሚ ቀለም</translation>
 <translation id="8957210676456822347">የተያዥ መግቢያ ፈቀዳ</translation>
-<translation id="8958582951173503172">በChrome Enterprise አገናኞች አማካይነት የደህንነት ስጋት ክስተቶች ሲጠቆሙ ክስተቱን የሚመለከት ውሂብ ወደ የእርስዎ አስተዳዳሪ ይላካል። ይህ እርስዎ በChrome ውስጥ የጎበኟቸውን የገጾች ዩአርኤሎች፣ የፋይል ስሞችን ወይም ዲበ ውሂብን እና ወደ የእርስዎ መሣሪያ እና Chrome ለመግባት የተጠቀሙበትን የተጠቃሚ ስም ሊያካትት ይችላል።</translation>
 <translation id="8962950042226115166">አጠራጣሪ ጣቢያ</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />አስተያየቶች፦<ph name="MARKUP_2" /> የውሂብ ግንኙነት እንዳለዎት እርግጠኛ ይሁኑ<ph name="MARKUP_3" />ይህንን ድረ-ገጽ ቆይተው ዳግም ይጫኑት<ph name="MARKUP_4" /> ያስገቡትን አድራሻ ይፈትሹ<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">ካርድ አስቀምጥ</translation>

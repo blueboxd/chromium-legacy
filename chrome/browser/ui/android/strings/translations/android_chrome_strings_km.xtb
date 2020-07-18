@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">កំពុងពិនិត្យមើល​ការតភ្ជាប់អ៊ីនធឺណិត​របស់អ្នក</translation>
 <translation id="2359808026110333948">បន្ត</translation>
 <translation id="2369533728426058518">បើកផ្ទាំង</translation>
-<translation id="2377295302146152376">Chrome មិនអាច​ពិនិត្យរក​កំណែថ្មីបានទេ</translation>
 <translation id="2387895666653383613">ការសម្រួលមាត្រដ្ឋានអត្ថបទ</translation>
 <translation id="2394602618534698961">ឯកសារ​ដែលអ្នកទាញយក​បង្ហាញ​នៅទីនេះ</translation>
 <translation id="2407481962792080328">នៅពេលអ្នក​ចូលគណនី Google របស់អ្នក មុខងារនេះ​ត្រូវបានបើក</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ទទួលជំនួយ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">ទីតាំង​ត្រូវ​បាន​បិទ សូម​បើក​វា​នៅ​ក្នុង <ph name="BEGIN_LINK" />ការ​កំណត់ Android<ph name="END_LINK" /> ។</translation>
 <translation id="3058498974290601450">អ្នកអាចបើក​សមកាលកម្ម​បានគ្រប់ពេល​នៅក្នុងការកំណត់</translation>
-<translation id="3059710691562604940">បានបិទមុខងាររុករក​ដោយសុវត្ថិភាព​។ Chrome ណែនាំឱ្យបើក​មុខងារនេះ។</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{ចំណាំ <ph name="BOOKMARKS_COUNT_ONE" />}other{ចំណាំ <ph name="BOOKMARKS_COUNT_MANY" />}}</translation>
 <translation id="3089395242580810162">បើកនៅក្នុងផ្ទាំងអនាមិក</translation>
 <translation id="3114012059975132928">កម្មវិធី​ចាក់​វីដេអូ</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">មានផ្តល់ជូនការអាប់ដេត។ ជម្រើសច្រើនទៀត</translation>
 <translation id="3524138585025253783">UI អ្នកអភិវឌ្ឍន៍</translation>
 <translation id="3527085408025491307">ថតឯកសារ</translation>
-<translation id="3533694711092285624">គ្មានពាក្យសម្ងាត់ដែលបានរក្សាទុកទេ។ Chrome អាចពិនិត្យពាក្យសម្ងាត់របស់អ្នក នៅពេលអ្នករក្សាទុកពាក្យសម្ងាត់ទាំងនោះ។</translation>
 <translation id="3542235761944717775">ទំនេរ <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">ស្វែងរក​ប្រវត្តិ​របស់អ្នក</translation>
 <translation id="3557336313807607643">បញ្ចូល​ទៅ​ក្នុង​ទំនាក់ទំនង</translation>
@@ -360,6 +357,7 @@
 <translation id="3892148308691398805">ចម្លង​អត្ថបទ</translation>
 <translation id="3894427358181296146">បន្ថែមថតឯកសារ</translation>
 <translation id="3895926599014793903">បង្ខំបើកដំណើរការពង្រីក</translation>
+<translation id="3909763690984331376">ការពិនិត្យសុវត្ថិភាព <ph name="BEGIN_NEW" />ថ្មី<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">កំពុង​ស្វែងរក​អ្វីដែលល្អបំផុត​ពីបណ្ដាញ…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">រួមបញ្ចូលទិន្នន័យរបស់ខ្ញុំ</translation>
@@ -570,6 +568,7 @@
 <translation id="5581519193887989363">អ្នកអាចជ្រើសរើស​អ្វីដែលត្រូវធ្វើសមកាលកម្ម​នៅក្នុង<ph name="BEGIN_LINK1" />ការកំណត់<ph name="END_LINK1" />បានជានិច្ច។</translation>
 <translation id="5595485650161345191">កែសម្រួលអាសយដ្ឋាន</translation>
 <translation id="5599455543593328020">មុខងារ​ឯកជន</translation>
+<translation id="5620163320393916465">គ្មានពាក្យសម្ងាត់ដែលបានរក្សាទុកទេ</translation>
 <translation id="5620928963363755975">ស្វែងរក​ឯកសារ​ និងទំព័ររបស់អ្នកនៅក្នុង ទាញយក ពីប៊ូតុងជម្រើសច្រើនទៀត</translation>
 <translation id="5626134646977739690">ឈ្មោះ៖</translation>
 <translation id="5639724618331995626">អនុញ្ញាត​ទំព័រ​ទាំងអស់</translation>
@@ -581,6 +580,7 @@
 <translation id="5686790454216892815">ឈ្មោះ​ឯកសារ​វែងពេក</translation>
 <translation id="5694049548840660018">ត្រឡប់ទៅ​ទំព័រដើមវិញ​បានយ៉ាង​ងាយស្រួល</translation>
 <translation id="569536719314091526">បកប្រែ​ទំព័រនេះ​ទៅជាភាសា​ណាមួយពី​ប៊ូតុងជម្រើស​ច្រើនទៀត</translation>
+<translation id="5696597120588531049">Chrome អាចជួយរក្សាសុវត្ថិភាពរបស់អ្នកពីការបែកធ្លាយទិន្នន័យ គេហទំព័រដែលគ្មានសុវត្ថិភាព និងអ្វីៗជាច្រើនទៀត</translation>
 <translation id="5697688514913266141">ឯកសារ​របស់អ្នក​នឹងត្រូវរក្សាទុក​ទៅក្នុង <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />។ <ph name="BEGIN_LINK2" />កែ<ph name="END_LINK2" />។</translation>
 <translation id="570347048394355941">ប្ដូរ​ទៅ​ផ្ទាំង</translation>
 <translation id="572328651809341494">ផ្ទាំងកន្លងទៅថ្មីៗ</translation>
@@ -714,6 +714,7 @@
 <translation id="6656545060687952787">Chrome ត្រូវការចូលប្រើទីតាំងដើម្បីស្កេនរកឧបករណ៍។ <ph name="BEGIN_LINK" />អាប់ដេតសិទ្ធិអនុញ្ញាត<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">ពាក្យសម្ងាត់</translation>
 <translation id="6659594942844771486">ផ្ទាំង</translation>
+<translation id="6663079968236414793">តំណទៅ​អត្ថបទ</translation>
 <translation id="666573598175432848">មានកំណែ Chrome ថ្មី​ជាងនេះហើយ។ ចុច​ធាតុនេះ ដើម្បីចូលទៅកាន់ Play Store។</translation>
 <translation id="666731172850799929">បើកក្នុង <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">ការជូនដំណឹងឯកជនភាព Chrome</translation>

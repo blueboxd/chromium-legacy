@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Skopírovaný obrázok</translation>
 <translation id="1150979032973867961">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, operačný systém vášho počítača nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="1151972924205500581">Vyžaduje sa heslo</translation>
-<translation id="1152921474424827756">Prístup ku <ph name="BEGIN_LINK" />kópii vo vyrovnávacej pamäti<ph name="END_LINK" /> stránky <ph name="URL" /></translation>
 <translation id="1156303062776767266">Prezeráte si miestny alebo zdieľaný súbor</translation>
 <translation id="1158211211994409885">Hostiteľský web <ph name="HOST_NAME" /> neočakávane ukončil pripojenie.</translation>
 <translation id="115926840831309955">Skontrolujte overovací kód karty a skúste to znova alebo aktualizujte dátum vypršania platnosti</translation>
 <translation id="1161325031994447685">Znovu sa pripojiť k sieti Wi‑Fi</translation>
 <translation id="1165039591588034296">Chyba</translation>
+<translation id="1165174597379888365">Navštívenie stránky</translation>
 <translation id="1175364870820465910">&amp;Tlačiť...</translation>
 <translation id="1175875016430184367">Tri spinky vpravo</translation>
 <translation id="1178581264944972037">Pozastaviť</translation>
@@ -243,7 +243,6 @@
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1919367280705858090">Pomoc s konkrétnym chybovým hlásením</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Žiadne}=1{1 web}few{# weby}many{# webu}other{# webov}}</translation>
-<translation id="194030505837763158">Prejdite na stránku <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Môžete stratiť prístup do účtu svojej organizácie alebo vám niekto môže ukradnúť totožnosť. Chromium odporúča, aby ste si ihneď zmenili heslo.</translation>
 <translation id="1947454675006758438">Zošiť spinkou vpravo hore</translation>
 <translation id="1959001866257244765">Pomôžte zlepšovať bezpečnosť na internete pre všetkých odosielaním <ph name="BEGIN_WHITEPAPER_LINK" />webových adries a obsahu niektorých stránok, ktoré navštevujete, ako aj obmedzených informácií o systéme<ph name="END_WHITEPAPER_LINK" /> Googlu. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Pravidlá ochrany súkromia<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -263,9 +262,9 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="2001146170449793414">{COUNT,plural, =1{a 1 ďalšia}few{a # ďalšie}many{a # ďalšej}other{a # ďalších}}</translation>
 <translation id="2003709556000175978">Obnovte heslo</translation>
 <translation id="2003775180883135320">Štyri dierky hore</translation>
+<translation id="202072848677994234">Tento formulár sa odosiela cez nezabezpečené pripojenie. Automatické dopĺňanie je vypnuté.</translation>
 <translation id="2025115093177348061">Rozšírená realita</translation>
 <translation id="2025186561304664664">Proxy je nastavené na automatickú konfiguráciu.</translation>
-<translation id="2030481566774242610">Mysleli ste stránku <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Skontrolovať proxy server a bránu firewall<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Priehradka č. 7</translation>
 <translation id="204357726431741734">Prihlásiť sa a používať heslá uložené vo vašom účte Google</translation>
@@ -331,6 +330,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="2289385804009217824">Orezať</translation>
 <translation id="2292556288342944218">Váš prístup k internetu je blokovaný</translation>
 <translation id="2293443924986248631">Keď toto nastavenie zapnete, weby nebudú môcť používať súbory cookie, ktoré vás sledujú na internete. Funkcie na niektorých weboch môžu zlyhávať.</translation>
+<translation id="2295290966866883927">Webové adresy stránok, ktoré navštívite, sa odosielajú na analýzu do služby Google Cloud alebo tretím stranám. Môžu sa napríklad kontrolovať s cieľom zistiť nebezpečné weby.</translation>
 <translation id="2297722699537546652">B5 (obálka)</translation>
 <translation id="2300306941146563769">Nenahrané</translation>
 <translation id="2310021320168182093">Chou2 (obálka)</translation>
@@ -1032,6 +1032,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="5308380583665731573">Pripojenie</translation>
 <translation id="5308689395849655368">Hlásenie zlyhaní je zakázané.</translation>
 <translation id="5314967030527622926">Nástroj na vytvorenie bookletu</translation>
+<translation id="5316812925700871227">Otočiť proti smeru hodinových ručičiek</translation>
 <translation id="5317780077021120954">Uložiť</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> z <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Vybrať kontaktné informácie</translation>
@@ -1055,7 +1056,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="5421136146218899937">Vymazať dáta prehliadania…</translation>
 <translation id="5426179911063097041">Web <ph name="SITE" /> vám chce posielať upozornenia</translation>
 <translation id="5430298929874300616">Odstrániť záložku</translation>
-<translation id="5431657950005405462">Súbor sa nenašiel</translation>
 <translation id="5439770059721715174">Pri overení schémy sa vyskytla chyba na mieste <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">V opačnom poradí lícom nahor</translation>
 <translation id="5447765697759493033">Tento web nebude preložený</translation>
@@ -1428,7 +1428,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="7083258188081898530">Priehradka č. 9</translation>
 <translation id="7086090958708083563">O nahranie požiadal používateľ</translation>
 <translation id="7087282848513945231">Okres</translation>
-<translation id="7090678807593890770">Vyhľadajte na Googli výraz <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Skryť</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> chce použiť váš fotoaparát</translation>
 <translation id="7108819624672055576">Povolené rozšírením</translation>
@@ -1865,7 +1864,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="893332455753468063">Pridanie mena</translation>
 <translation id="8943282376843390568">Limetková</translation>
 <translation id="8957210676456822347">Autorizácia portálu na prihlásenie do siete</translation>
-<translation id="8958582951173503172">Pri nahlásení bezpečnostných udalostí konektormi Chrome Enterprise Connectors sa vášmu správcovi odošlú relevantné údaje o príslušnej udalosti. Môžu zahŕňať webové adresy navštívených stránok v Chrome, názvy súborov alebo metadáta a používateľské meno, pomocou ktorého sa prihlasujete do zariadenia aj Chromu.</translation>
 <translation id="8962950042226115166">Podozrivý web</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Návrhy:<ph name="MARKUP_2" />Skontrolujte, či máte dátové pripojenie<ph name="MARKUP_3" />Načítajte túto webovú stránku znova neskôr<ph name="MARKUP_4" />Skontrolujte zadanú adresu<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Uložiť kartu</translation>

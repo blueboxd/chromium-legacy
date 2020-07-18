@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">ਤੁਹਾਡੇ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਦੀ ਜਾਂਚ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
 <translation id="2359808026110333948">ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="2369533728426058518">ਟੈਬਾਂ ਖੋਲ੍ਹੋ</translation>
-<translation id="2377295302146152376">Chrome ਅੱਪਡੇਟਾਂ ਲਈ ਜਾਂਚ ਨਹੀਂ ਕਰ ਸਕਿਆ</translation>
 <translation id="2387895666653383613">ਟੈਕਸਟ ਸਕੇਲਿੰਗ</translation>
 <translation id="2394602618534698961">ਤੁਹਾਡੇ ਵੱਲੋਂ ਡਾਊਨਲੋਡ ਕੀਤੀਆਂ ਫ਼ਾਈਲਾਂ ਇੱਥੇ ਦਿਸਦੀਆਂ ਹਨ</translation>
 <translation id="2407481962792080328">ਜਦੋਂ ਤੁਸੀਂ ਆਪਣੇ Google ਖਾਤੇ ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕਰਦੇ ਹੋ, ਤਾਂ ਇਹ ਵਿਸ਼ੇਸ਼ਤਾ ਚਾਲੂ ਹੋ ਜਾਂਦੀ ਹੈ</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ਮਦਦ ਪ੍ਰਾਪਤ ਕਰੋ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">ਟਿਕਾਣਾ ਸੇਵਾ ਬੰਦ ਹੈ; ਇਸਨੂੰ <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਚਾਲੂ ਕਰੋ।</translation>
 <translation id="3058498974290601450">ਤੁਸੀਂ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਕਿਸੇ ਵੇਲੇ ਵੀ ਸਮਕਾਲੀਕਰਨ ਚਾਲੂ ਕਰ ਸਕਦੇ ਹੋ</translation>
-<translation id="3059710691562604940">ਸੁਰੱਖਿਅਤ ਬ੍ਰਾਊਜ਼ਿੰਗ ਬੰਦ ਹੈ। Chrome ਇਸਨੂੰ ਚਾਲੂ ਕਰਨ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕਰਦਾ ਹੈ।</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ਬੁੱਕਮਾਰਕ}one{<ph name="BOOKMARKS_COUNT_MANY" /> ਬੁੱਕਮਾਰਕ}other{<ph name="BOOKMARKS_COUNT_MANY" /> ਬੁੱਕਮਾਰਕ}}</translation>
 <translation id="3089395242580810162">ਇਨਕੋਗਨਿਟੋ ਟੈਬ ਵਿੱਚ ਖੋਲ੍ਹੋ</translation>
 <translation id="3114012059975132928">ਵੀਡੀਓ ਪਲੇਅਰ</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">ਅੱਪਡੇਟ ਉਪਲਬਧ ਹੈ। ਹੋਰ ਵਿਕਲਪ</translation>
 <translation id="3524138585025253783">ਵਿਕਾਸਕਾਰ UI</translation>
 <translation id="3527085408025491307">ਫੋਲਡਰ</translation>
-<translation id="3533694711092285624">ਕੋਈ ਰੱਖਿਅਤ ਕੀਤੇ ਪਾਸਵਰਡ ਨਹੀਂ। ਤੁਹਾਡੇ ਵੱਲੋਂ ਆਪਣੇ ਪਾਸਵਰਡ ਰੱਖਿਅਤ ਕਰਨ 'ਤੇ Chrome ਉਹਨਾਂ ਦੀ ਜਾਂਚ ਕਰ ਸਕਦਾ ਹੈ।</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB ਉਪਲਬਧ ਹੈ</translation>
 <translation id="3549657413697417275">ਆਪਣਾ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ ਖੋਜੋ</translation>
 <translation id="3557336313807607643">ਸੰਪਰਕਾਂ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ</translation>
@@ -360,6 +357,7 @@
 <translation id="3892148308691398805">ਲਿਖਤ ਕਾਪੀ ਕਰੋ</translation>
 <translation id="3894427358181296146">ਫੋਲਡਰ ਜੋੜੋ</translation>
 <translation id="3895926599014793903">ਜ਼ੂਮ ਨੂੰ ਚਾਲੂ ਕਰਨ 'ਤੇ ਜ਼ੋਰ ਦਿਓ</translation>
+<translation id="3909763690984331376">ਸੁਰੱਖਿਆ ਜਾਂਚ <ph name="BEGIN_NEW" />ਨਵਾਂ<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">ਵੈੱਬ ਤੋਂ ਬਿਹਤਰੀਨ ਜਾਣਕਾਰੀ ਲੱਭ ਰਹੇ ਹਾਂ…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">ਮੇਰੇ ਡਾਟੇ ਨੂੰ ਮਿਲਾਓ</translation>
@@ -570,6 +568,7 @@
 <translation id="5581519193887989363">ਤੁਸੀਂ <ph name="BEGIN_LINK1" />ਸੈਟਿੰਗਾਂ<ph name="END_LINK1" /> ਵਿੱਚ ਹਮੇਸ਼ਾਂ ਇਹ ਚੁਣ ਸਕਦੇ ਹੋ ਕਿ ਕਿਸਦਾ ਸਮਕਾਲੀਕਰਨ ਕਰਨਾ ਹੈ।</translation>
 <translation id="5595485650161345191">ਪਤਾ ਸੰਪਾਦਿਤ ਕਰੋ</translation>
 <translation id="5599455543593328020">ਇਨਕੋਗਨਿਟੋ ਮੋਡ</translation>
+<translation id="5620163320393916465">ਕੋਈ ਰੱਖਿਅਤ ਕੀਤੇ ਪਾਸਵਰਡ ਨਹੀਂ</translation>
 <translation id="5620928963363755975">'ਹੋਰ ਵਿਕਲਪ' ਬਟਨ ਤੋਂ ਡਾਊਨਲੋਡਾਂ ਵਿੱਚ ਆਪਣੀਆਂ ਫ਼ਾਈਲਾਂ ਅਤੇ ਪੰਨਿਆਂ ਨੂੰ ਲੱਭੋ</translation>
 <translation id="5626134646977739690">ਨਾਮ:</translation>
 <translation id="5639724618331995626">ਸਭ ਸਾਈਟਾਂ ਦੀ ਮਨਜ਼ੂਰੀ ਦਿਓ</translation>
@@ -581,6 +580,7 @@
 <translation id="5686790454216892815">ਫ਼ਾਈਲ ਨਾਮ ਬਹੁਤ ਜ਼ਿਆਦਾ ਵੱਡਾ ਹੈ</translation>
 <translation id="5694049548840660018">ਆਸਾਨੀ ਨਾਲ ਹੋਮਪੇਜ 'ਤੇ ਵਾਪਸ ਜਾਓ</translation>
 <translation id="569536719314091526">'ਹੋਰ ਵਿਕਲਪ' ਬਟਨ ਤੋਂ ਇਸ ਪੰਨੇ ਦਾ ਕਿਸੇ ਵੀ ਭਾਸ਼ਾ ਵਿੱਚ ਅਨੁਵਾਦ ਕਰੋ</translation>
+<translation id="5696597120588531049">ਡਾਟਾ ਉਲੰਘਣਾਵਾਂ, ਅਸੁਰੱਖਿਅਤ ਵੈੱਬਸਾਈਟਾਂ ਅਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਤੋਂ ਸੁਰੱਖਿਅਤ ਰਹਿਣ ਵਿੱਚ Chrome ਤੁਹਾਡੀ ਮਦਦ ਕਰ ਸਕਦਾ ਹੈ</translation>
 <translation id="5697688514913266141">ਤੁਹਾਡੀ ਫ਼ਾਈਲ <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" /> ਵਿੱਚ ਰੱਖਿਅਤ ਕੀਤੀ ਜਾਵੇਗੀ। <ph name="BEGIN_LINK2" />ਸੰਪਾਦਨ ਕਰੋ<ph name="END_LINK2" />।</translation>
 <translation id="570347048394355941">ਟੈਬ 'ਤੇ ਜਾਓ</translation>
 <translation id="572328651809341494">ਹਾਲੀਆ ਟੈਬਸ</translation>
@@ -714,6 +714,7 @@
 <translation id="6656545060687952787">ਡੀਵਾਈਸਾਂ ਲਈ ਸਕੈਨ ਕਰਨ ਲਈ Chrome ਨੂੰ ਟਿਕਾਣਾ ਪਹੁੰਚ ਦੀ ਲੋੜ ਹੈ। <ph name="BEGIN_LINK" />ਇਜਾਜ਼ਤਾਂ ਅੱਪਡੇਟ ਕਰੋ<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">ਪਾਸਵਰਡ</translation>
 <translation id="6659594942844771486">ਟੈਬ</translation>
+<translation id="6663079968236414793">ਲਿਖਤ ਨਾਲ ਲਿੰਕ ਕਰੋ</translation>
 <translation id="666573598175432848">Chrome ਦਾ ਨਵਾਂ ਵਰਜਨ ਉਪਲਬਧ ਹੈ। Play ਸਟੋਰ 'ਤੇ ਜਾਣ ਲਈ ਇਸ ਤੱਤ 'ਤੇ ਟੈਪ ਕਰੋ।</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> ਵਿੱਚ ਖੋਲ੍ਹੋ</translation>
 <translation id="666981079809192359">Chrome ਪਰਦੇਦਾਰੀ ਨੋਟਿਸ</translation>

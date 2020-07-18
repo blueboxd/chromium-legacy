@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">તમારું ઇન્ટરનેટ કનેક્શન તપાસી રહ્યાં છીએ</translation>
 <translation id="2359808026110333948">આગળ વધો</translation>
 <translation id="2369533728426058518">ટૅબ્સ ખોલો</translation>
-<translation id="2377295302146152376">Chrome બધા અપડેટ ચેક કરી શક્યું નથી</translation>
 <translation id="2387895666653383613">ટેક્સ્ટ માપન</translation>
 <translation id="2394602618534698961">તમે ડાઉનલોડ કરો તે ફાઇલો અહીં દેખાશે</translation>
 <translation id="2407481962792080328">જ્યારે તમે તમારા Google એકાઉન્ટમાં સાઇન ઇન કરો છો, ત્યારે આ સુવિધા ચાલુ કરવામાં આવે છે</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />સહાય મેળવો<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">સ્થાન બંધ છે, તેને <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં ચાલુ કરો.</translation>
 <translation id="3058498974290601450">તમે કોઈ પણ સમયે સેટિંગમાં 'સિંક કરો' ચાલુ કરી શકો છો</translation>
-<translation id="3059710691562604940">Safe Browsingની સુવિધા બંધ છે. Chrome તેને ચાલુ રાખવાનો સુઝાવ આપે છે.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> બુકમાર્ક}one{<ph name="BOOKMARKS_COUNT_MANY" /> બુકમાર્ક}other{<ph name="BOOKMARKS_COUNT_MANY" /> બુકમાર્ક}}</translation>
 <translation id="3089395242580810162">છુપા ટેબમાં ખોલો</translation>
 <translation id="3114012059975132928">વીડિયો પ્લેયર</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">અપડેટ ઉપલબ્ધ છે. વધુ વિકલ્પો</translation>
 <translation id="3524138585025253783">ડેવલપર UI</translation>
 <translation id="3527085408025491307">ફોલ્ડર</translation>
-<translation id="3533694711092285624">કોઈ સાચવેલો પાસવર્ડ નથી. જ્યારે તમે તમારા પાસવર્ડ સાચવો ત્યારે Chrome તેને ચેક કરી શકે છે.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB ઉપલબ્ધ</translation>
 <translation id="3549657413697417275">તમારો ઇતિહાસ શોધો</translation>
 <translation id="3557336313807607643">સંપર્કોમાં ઉમેરો</translation>
@@ -460,6 +457,7 @@
 <translation id="4749960740855309258">એક નવું ટૅબ ખોલો</translation>
 <translation id="4759238208242260848">ડાઉનલોડ્સ</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ડાઉનલોડ પૂર્ણ થયું.}one{# ડાઉનલોડ પૂર્ણ થયું.}other{# ડાઉનલોડ પૂર્ણ થયાં.}}</translation>
+<translation id="4766678251456904326">ડિવાઇસમાં એકાઉન્ટ ઉમેરો</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 ડાઉનલોડ શેડ્યૂલ થયું છે.}one{# ડાઉનલોડ શેડ્યૂલ થયાં છે.}other{# ડાઉનલોડ શેડ્યૂલ થયાં છે.}}</translation>
 <translation id="478981486571169252">તમને Chromeમાં તમારું <ph name="SITE_NAME" /> સાઇન ઇન સ્ટેટસ, બ્રાઉઝિંગ ડેટા અને સાઇટ ડેટા દેખાશે.</translation>
 <translation id="4802417911091824046">પાસફ્રેઝ એન્ક્રિપ્શનમાં Google Payની ચુકવણી પદ્ધતિઓ અને ઍડ્રેસ સામેલ હોતા નથી. 
@@ -569,6 +567,7 @@
 <translation id="5581519193887989363">શું સિંક કરવું તે હંમેશાં તમે <ph name="BEGIN_LINK1" />સેટિંગ<ph name="END_LINK1" />માં પસંદ કરી શકો છો.</translation>
 <translation id="5595485650161345191">ઍડ્રેસમાં ફેરફાર કરો</translation>
 <translation id="5599455543593328020">છૂપો મોડ</translation>
+<translation id="5620163320393916465">કોઈ સાચવેલો પાસવર્ડ નથી</translation>
 <translation id="5620928963363755975">વધુ વિકલ્પો બટનની મદદથી ડાઉનલોડ કરેલમાંથી તમારી ફાઇલો અને પેજ શોધો</translation>
 <translation id="5626134646977739690">નામ:</translation>
 <translation id="5639724618331995626">તમામ સાઇટની મંજૂરી આપો</translation>

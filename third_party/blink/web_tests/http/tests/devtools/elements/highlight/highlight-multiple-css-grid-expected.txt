@@ -104,6 +104,8 @@ This test verifies the position and size of the highlight rectangles overlayed o
         275
       ],
       "areaNames": {},
+      "rowLineNameOffsets": [],
+      "columnLineNameOffsets": [],
       "gridBorder": [
         "M",
         173,
@@ -126,6 +128,7 @@ This test verifies the position and size of the highlight rectangles overlayed o
         "showPositiveLineNumbers": true,
         "showNegativeLineNumbers": true,
         "showAreaNames": true,
+        "showLineNames": true,
         "gridBorderColor": "rgba(255, 0, 0, 0)",
         "cellBorderColor": "rgba(128, 0, 0, 0)",
         "rowGapColor": "rgba(0, 255, 0, 0)",
@@ -238,6 +241,8 @@ This test verifies the position and size of the highlight rectangles overlayed o
         1300
       ],
       "areaNames": {},
+      "rowLineNameOffsets": [],
+      "columnLineNameOffsets": [],
       "gridBorder": [
         "M",
         108,
@@ -260,6 +265,7 @@ This test verifies the position and size of the highlight rectangles overlayed o
         "showPositiveLineNumbers": true,
         "showNegativeLineNumbers": true,
         "showAreaNames": true,
+        "showLineNames": true,
         "gridBorderColor": "rgba(255, 0, 0, 0)",
         "cellBorderColor": "rgba(128, 0, 0, 0)",
         "rowGapColor": "rgba(0, 255, 0, 0)",

@@ -232,6 +232,7 @@
 <translation id="1274997165432133392">Cookies болон бусад цахим хуудсын мэдээлэл</translation>
 <translation id="1275718070701477396">Сонгогдсон</translation>
 <translation id="1276994519141842946"><ph name="APP_NAME" />-г суулгаж чадсангүй</translation>
+<translation id="127946606521051357">Ойролцоо байгаа төхөөрөмж хуваалцаж байна</translation>
 <translation id="1280820357415527819">Мобайл сүлжээг хайж байна</translation>
 <translation id="1280965841156951489">Файлуудыг засах</translation>
 <translation id="1285320974508926690">Энэ сайтыг хэзээ ч бүү хөрвүүл</translation>
@@ -254,6 +255,7 @@
 <translation id="1306606229401759371">Тохиргоог өөрчлөх</translation>
 <translation id="1307165550267142340">Таны ПИН-г үүсгэлээ</translation>
 <translation id="1307559529304613120">Өө! Систем нь энэ төхөөрөмжид урт хугацааны API нэвтрэх түлхүүрийг хадгалж чадсангүй.</translation>
+<translation id="1313162974556054106">Төхөөрөмжийн нэр</translation>
 <translation id="1313405956111467313">Автомат прокси тохиргоо</translation>
 <translation id="131364520783682672">Үсгийн хэмжээг түгжин тогтоох</translation>
 <translation id="1313660246522271310">Таныг бүх сайтаас гаргах бөгөөд үүнд нээлттэй табын сайтууд мөн багтана</translation>
@@ -700,7 +702,6 @@
 <translation id="184273675144259287">Linux аппууд болон файлуудаа өмнөх нөөцлөлтөөр солих</translation>
 <translation id="1842766183094193446">Та туршилтын горимыг идэвхжүүлэх үү?</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" />-г ажиллуулахын тулд control товчлуурыг дарна уу</translation>
-<translation id="1846880379134204029">Бүлэг <ph name="GROUP_NAME" /> - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Орчиндоо зохицох горимыг идэвхжүүлэх</translation>
 <translation id="1849186935225320012">Энэ хуудас нь MIDI төхөөрөмжүүдийг бүрэн хянаж байна.</translation>
 <translation id="1850508293116537636">Цагийн зүүний дагуу эргүүлэх</translation>
@@ -1215,6 +1216,7 @@
 <translation id="2489918096470125693">Хавтас нэмэх...</translation>
 <translation id="2490481887078769936">'<ph name="FILE_NAME" />'-г жагсаалтаас устгалаа</translation>
 <translation id="249113932447298600">Уучлаарай, яг одоо энэ цагт <ph name="DEVICE_LABEL" /> төхөөрөмжийг дэмжиж ажиллаж чадахгүй байна.</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> <ph name="ATTACHMENTS" />-г тантай хуваалцаж байна.</translation>
 <translation id="2492461744635776704">Гэрчилгээнд гарын үсэг зурах хүсэлтийг бэлтгэж байна</translation>
 <translation id="249303669840926644">Бүртгэлийг дуусгах боломжгүй байна.</translation>
 <translation id="2495777824269688114">Бусад онцлогийг хайх эсвэл хариулт авна уу. "?"-г сонгож тусламж авна уу.</translation>
@@ -1716,6 +1718,7 @@
 <translation id="3103941660000130485">Linux-г дэвшүүлэхэд алдаа гарлаа</translation>
 <translation id="3105796011181310544">Google рүү буцааж өөрчлөх үү?</translation>
 <translation id="310671807099593501">Сайт bluetooth-г ашиглаж байна</translation>
+<translation id="3109724472072898302">Задарсан</translation>
 <translation id="3115147772012638511">Кэш хүлээж байна...</translation>
 <translation id="3115580024857770654">Бүгдийг буулгах</translation>
 <translation id="3116968597797150452">Гэрчилгээний профайл</translation>
@@ -1783,7 +1786,6 @@
 <translation id="3192947282887913208">Аудио файлууд</translation>
 <translation id="3199127022143353223">Серверүүд</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome энэ нууц үгийг одоо шалгахыг зөвлөж байна}other{Chrome эдгээр нууц үгийг одоо шалгахыг зөвлөж байна}}</translation>
-<translation id="3200941271596533635">Уншигчийн горимыг унтраах/асаах</translation>
 <translation id="3201422919974259695">Боломжтой USB төхөөрөмжүүд энд харагдана.</translation>
 <translation id="3202131003361292969">Зам</translation>
 <translation id="3202173864863109533">Энэ табны дууг хаасан байна.</translation>
@@ -3775,7 +3777,7 @@
 <translation id="5739017626473506901"><ph name="USER_NAME" />-д сургуулийн бүртгэл нэмэхэд нь туслахын тулд нэвтэрнэ үү</translation>
 <translation id="5739235828260127894">Баталгаажуулалтыг хүлээж байна. <ph name="LINK_BEGIN" />Нэмэлт мэдээлэл авах<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Маш том</translation>
-<translation id="5740328398383587084">Ойролцоо хуваалцах онцлог</translation>
+<translation id="5740328398383587084">Ойролцоо хуваалцах</translation>
 <translation id="574104302965107104">Дэлгэцийн тусгал үүсгэх</translation>
 <translation id="574209121243317957">Авиа</translation>
 <translation id="5746169159649715125">PDF хэлбэрээр хадгалах</translation>
@@ -4145,6 +4147,7 @@
 <translation id="6212039847102026977">Дэвшилтэт сүлжээний сонголтыг харуулах</translation>
 <translation id="6212168817037875041">Дэлгэцийг унтраах</translation>
 <translation id="6212752530110374741">Имэйлийн холбоос</translation>
+<translation id="6213230117190778270">Хүлээн авах</translation>
 <translation id="6216696360484424239">Автоматаар нэвтрэх</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> офлайн байна. Интернэтэд холбогдоод дахин оролдоно уу</translation>
 <translation id="6220413761270491930">Өргөтгөлийг ачаалахад алдаа гарлаа</translation>
@@ -4201,7 +4204,6 @@
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />Систем, апп-ын мэдээлэл<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />хэмжигдэхүүн<ph name="END_LINK2" />-г илгээх</translation>
 <translation id="6272643420381259437">Залгаасыг татахад алдаа (<ph name="ERROR" />) гарлаа</translation>
 <translation id="6273677812470008672">Чанар</translation>
-<translation id="6273979226236203550">Таны нууц үгийг энэ төхөөрөмж болон таны Google Бүртгэлд хадгалсан. Та алийг нь устгахыг хүсэж байна вэ?</translation>
 <translation id="6277105963844135994">Сүлжээний завсарлагаа</translation>
 <translation id="6277518330158259200">Дэлгэцийн зураг авах</translation>
 <translation id="6278057325678116358">GTK+-г ашиглах</translation>
@@ -4272,6 +4274,7 @@
 <translation id="6362853299801475928">&amp; Асуудлыг мэдэгдэх ...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Гэр бүл болон найз нөхөдөө нэмэх</translation>
+<translation id="6367985768157257101">Ойролцоо хуваалцах онцлогоор хүлээн авах уу?</translation>
 <translation id="636850387210749493">Байгууллагын бүртгэл</translation>
 <translation id="6370021412472292592">Мэдүүлгийг ачаалж чадсангүй.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4847,7 +4850,6 @@
 <translation id="7099337801055912064">Том PPD-г ачааллах боломжгүй байна. Хамгийн дээд хэмжээ нь 250 kB болно.</translation>
 <translation id="7102687220333134671">Автомат шинэчлэлтийг асаасан</translation>
 <translation id="7102832101143475489">Хүсэлтийн хугацаа хэтэрлээ</translation>
-<translation id="7102928824073746774">Нэргүй бүлэг - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">USB-н сонголт</translation>
 <translation id="710640343305609397">Сүлжээний тохиргоог нээх</translation>
 <translation id="7108338896283013870">Нуух</translation>
@@ -4923,6 +4925,7 @@
 <translation id="720110658997053098">Энэ төхөөрөмжийг kiosk горимоор бүрмөсөн тохируулах</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />'-г устгасан</translation>
 <translation id="7201420661433230412">Файл харах</translation>
+<translation id="7203150201908454328">Өргөтгөсөн</translation>
 <translation id="7203826966018112936">Профайлд сургуулийн бүртгэл нэмснээр сурагч вэб сайтууд болон өргөтгөлүүдэд хялбар нэвтрэх боломжтой болох бөгөөд тэдний үйлдэл эцэг эхийн хяналтад хэвээр байх болно. Энэ нь хүүхдэд хавчуурга, нууц үг эсвэл сургуулийн бүртгэлтэй синк хийсэн хөтчийн бусад өгөгдөлд хандах эрх өгдөггүй.&lt;br&gt;&lt;br&gt;
     Хэрэв танай хүүхэд сургуульдаа Chromebook-г ашигладаг бөгөөд та хүүхдээ шаардлагатай бүх хичээлдээ хандах эрхтэй эсэхийг баталгаажуулах зорилгоор сургуулийн туршлагыг гэртээ тусгахыг хүсэж байвал энэ Family Link-н бүртгэлээс гарч, Chrome үйлдлийн системийн бүртгэлийн хуудаснаас сургуулийн бүртгэлд нэвтэрнэ үү (санамж: Family Link-н эцэг эхийн хяналт хэрэгжихгүй).&lt;br&gt;&lt;br&gt;
     Хэрэв танай хүүхэд сургуульдаа Chromebook-г ашигладаггүй буюу эсхүл та хүүхдийнхээ туршлагыг гэрээсээ Family Link ашиглан удирдахыг илүүд үзвэл сургуулийн бүртгэлийг энэ профайлд нэмэхийн тулд доорх "Дараах" товчлуурыг товшино уу.</translation>
@@ -5318,7 +5321,6 @@
 <translation id="7704521324619958564">Play Store-г нээх</translation>
 <translation id="7705276765467986571">Хайлтын жагсаалтын загварыг ачаалж чадсангүй.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Уншигчийн горимыг унтраах/асаах</translation>
 <translation id="7707108266051544351">Энэ сайтад хөдөлгөөн мэдрэгч ашиглахыг хориглосон.</translation>
 <translation id="7707922173985738739">Мобайл дата ашиглах</translation>
 <translation id="7709152031285164251">Амжилтгүй боллоо - <ph name="INTERRUPT_REASON" /></translation>
@@ -6569,6 +6571,7 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Нэвтрэх үгүүдийг оруулна уу</translation>
 <translation id="939736085109172342">Шинэ хавтас</translation>
+<translation id="941070664607309480">Харагдахын тулд товшсоноор энэ нь тантай хуваалцах боломжтой</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> нь Chrome-н чихтэй хуудас болон дууг хуваалцаж байна.</translation>
 <translation id="945522503751344254">Санал хүсэлт илгээх</translation>
 <translation id="947329552760389097">&amp;Элементүүдийг шалгах</translation>

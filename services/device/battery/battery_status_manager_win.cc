@@ -133,7 +133,7 @@ class BatteryStatusObserver {
     if (!window_->CreateNamed(
             base::BindRepeating(&BatteryStatusObserver::HandleMessage,
                                 base::Unretained(this)),
-            base::string16(kWindowClassName))) {
+            kWindowClassName)) {
       LOG(ERROR) << "Failed to create message window: " << kWindowClassName;
       window_.reset();
       return false;

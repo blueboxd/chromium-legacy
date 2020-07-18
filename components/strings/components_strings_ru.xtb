@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="1008557486741366299">Не сейчас</translation>
+<translation id="100957008357583611">Использовать данные о местоположении?</translation>
 <translation id="1010200102790553230">Загрузить страницу позже</translation>
 <translation id="1015730422737071372">Сообщить дополнительную информацию</translation>
 <translation id="1019413721762100891">ВЫКЛ</translation>
@@ -39,12 +40,12 @@
 <translation id="1131264053432022307">Скопированное изображение</translation>
 <translation id="1150979032973867961">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Операционная система компьютера не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="1151972924205500581">Необходимо ввести пароль</translation>
-<translation id="1152921474424827756">Открыть <ph name="BEGIN_LINK" />кешированную версию<ph name="END_LINK" /> страницы <ph name="URL" /></translation>
 <translation id="1156303062776767266">Вы просматриваете локальный или общий файл</translation>
 <translation id="1158211211994409885">Сайт <ph name="HOST_NAME" /> неожиданно разорвал соединение.</translation>
 <translation id="115926840831309955">Проверьте CVC-код и повторите попытку или измените дату окончания срока действия.</translation>
 <translation id="1161325031994447685">Подключитесь к сети Wi-Fi ещё раз.</translation>
 <translation id="1165039591588034296">Ошибка</translation>
+<translation id="1165174597379888365">Посещена страница</translation>
 <translation id="1175364870820465910">&amp;Печать...</translation>
 <translation id="1175875016430184367">Три скобы справа</translation>
 <translation id="1178581264944972037">Пауза</translation>
@@ -242,7 +243,6 @@
 <translation id="1919345977826869612">Реклама</translation>
 <translation id="1919367280705858090">Как устранить определенные виды ошибок</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Нет}=1{1 сайт}one{# сайт}few{# сайта}many{# сайтов}other{# сайта}}</translation>
-<translation id="194030505837763158">Перейдите по ссылке: <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Возможно, кто-то пытается получить доступ к вашим личным данным или корпоративному аккаунту. Рекомендуем немедленно сменить пароль.</translation>
 <translation id="1947454675006758438">Скоба в правом верхнем углу</translation>
 <translation id="1959001866257244765">Помогите сделать Интернет безопаснее для всех, разрешив Chrome отправлять в Google <ph name="BEGIN_WHITEPAPER_LINK" />URL и содержимое некоторых посещенных страниц, а также ограниченную информацию о системе<ph name="END_WHITEPAPER_LINK" />. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Политика конфиденциальности<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -262,9 +262,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{и ещё 1}one{и ещё #}few{и ещё #}many{и ещё #}other{и ещё #}}</translation>
 <translation id="2003709556000175978">Сброс пароля</translation>
 <translation id="2003775180883135320">Четыре отверстия сверху</translation>
+<translation id="202072848677994234">Форма отправляется через незащищенное соединение. Автоматическое заполнение отключено.</translation>
 <translation id="2025115093177348061">Дополненная реальность</translation>
 <translation id="2025186561304664664">Прокси-сервер настраивается автоматически.</translation>
-<translation id="2030481566774242610">Возможно, вы имели в виду <ph name="LINK" />.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Проверьте настройки прокси-сервера и брандмауэра<ph name="END_LINK" />.</translation>
 <translation id="2042213636306070719">Лоток 7</translation>
 <translation id="204357726431741734">Войти, чтобы использовать пароли, сохраненные в аккаунте Google</translation>
@@ -330,6 +330,7 @@
 <translation id="2289385804009217824">Подрезание</translation>
 <translation id="2292556288342944218">Доступ в Интернет закрыт</translation>
 <translation id="2293443924986248631">Когда эта настройка включена, сайты не могут использовать файлы cookie, которые отслеживают ваши действия в Интернете. Из-за этого некоторые функции на сайтах могут работать некорректно.</translation>
+<translation id="2295290966866883927">URL страниц, которые вы посещаете, передаются на проверку в Google Cloud или сторонние сервисы. Страницы могут быть просканированы на предмет безопасности.</translation>
 <translation id="2297722699537546652">B5 (конверт)</translation>
 <translation id="2300306941146563769">Не загружен</translation>
 <translation id="2310021320168182093">Chou2 (конверт)</translation>
@@ -1034,6 +1035,7 @@
 <translation id="5308380583665731573">Подключение</translation>
 <translation id="5308689395849655368">Отчеты о сбоях отключены.</translation>
 <translation id="5314967030527622926">Изготовление буклета</translation>
+<translation id="5316812925700871227">Повернуть против часовой стрелки</translation>
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> из <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Выбрать контактные данные</translation>
@@ -1057,7 +1059,6 @@
 <translation id="5421136146218899937">Очистить историю...</translation>
 <translation id="5426179911063097041">С сайта <ph name="SITE" /> поступил запрос на отправку уведомлений.</translation>
 <translation id="5430298929874300616">Удалить закладку</translation>
-<translation id="5431657950005405462">Файл не найден</translation>
 <translation id="5439770059721715174">Ошибка проверки схемы, <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">В обратном порядке лицевой стороной вверх</translation>
 <translation id="5447765697759493033">Этот сайт не будет переводиться автоматически</translation>
@@ -1166,6 +1167,7 @@
 <translation id="5869405914158311789">Не удается получить доступ к сайту</translation>
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
 <translation id="5887400589839399685">Карта сохранена</translation>
+<translation id="589006512797629854">По правилам домена <ph name="ENROLLMENT_DOMAIN" /> вам нужно выполнить резервное копирование данных и вернуть это устройство.</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
 <translation id="5895187275912066135">Дата выдачи</translation>
 <translation id="5901630391730855834">Желтый</translation>
@@ -1430,7 +1432,6 @@
 <translation id="7083258188081898530">Лоток 9</translation>
 <translation id="7086090958708083563">Загрузка запрошена пользователем</translation>
 <translation id="7087282848513945231">Округ</translation>
-<translation id="7090678807593890770">Выполните поиск по запросу <ph name="LINK" /> в Google</translation>
 <translation id="7108338896283013870">Скрыть</translation>
 <translation id="7108634116785509031">Сайт <ph name="HOST" /> запрашивает доступ к камере.</translation>
 <translation id="7108819624672055576">Разрешено расширением</translation>
@@ -1866,7 +1867,6 @@
 <translation id="893332455753468063">Добавьте имя</translation>
 <translation id="8943282376843390568">Лаймовый</translation>
 <translation id="8957210676456822347">Авторизация через адаптивный портал</translation>
-<translation id="8958582951173503172">Когда коннекторы Chrome Enterprise Connectors сигнализируют о событиях безопасности, вашему администратору направляются данные об этих событиях, в частности URL страниц, которые вы посещаете в браузере Chrome, названия файлов и метаданные, а также ваше имя пользователя для входа в систему на устройстве и в Chrome.</translation>
 <translation id="8962950042226115166">Подозрительный сайт</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Что делать?<ph name="MARKUP_2" />Убедитесь, что вы подключены к Интернету.<ph name="MARKUP_3" />Через некоторое время обновите страницу.<ph name="MARKUP_4" />Проверьте, правильно ли указан веб-адрес.<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Сохранить карту</translation>

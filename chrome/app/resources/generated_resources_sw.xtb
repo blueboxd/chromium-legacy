@@ -255,6 +255,7 @@
 <translation id="1306606229401759371">Badilisha mipangilio</translation>
 <translation id="1307165550267142340">Umeunda PIN</translation>
 <translation id="1307559529304613120">Lo!  Mfumo umeshindwa kuhifadhi data ya ufikiaji wa API ya muda mrefu kwa kifaa hiki.</translation>
+<translation id="1313162974556054106">Jina la Kifaa</translation>
 <translation id="1313405956111467313">Usanidi wa proksi kiotomatiki</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">Utaondolewa kwenye akaunti za tovuti zote, ikiwa ni pamoja na vichupo ulivyofungua</translation>
@@ -702,7 +703,6 @@ Hatua hii haiathiri programu au maudhui kwenye vifaa vingine.</translation>
 <translation id="184273675144259287">Badilisha programu na faili zako za Linux utumie nakala za programu na faili ulizohifadhi awali</translation>
 <translation id="1842766183094193446">Una hakika kuwa ungependa kuwasha hali ya onyesho?</translation>
 <translation id="1846308012215045257">Shikilia kitufe cha 'Control' ukibofya programu jalizi ya <ph name="PLUGIN_NAME" /> ili kuitimia</translation>
-<translation id="1846880379134204029">Kikundi cha <ph name="GROUP_NAME" /> - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Washa Hali Tulivu</translation>
 <translation id="1849186935225320012">Ukurasa huu una udhibiti kamili wa vifaa vya MIDI.</translation>
 <translation id="1850508293116537636">Zungusha kisaa</translation>
@@ -1720,6 +1720,7 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="3103941660000130485">Hitilafu imetokea wakati wa kupata toleo jipya la Linux</translation>
 <translation id="3105796011181310544">Ungependa kubadilisha ili urudi kwenye Google?</translation>
 <translation id="310671807099593501">Tovuti inatumia bluetooth</translation>
+<translation id="3109724472072898302">Imekunjwa</translation>
 <translation id="3115147772012638511">Inasubiri akiba...</translation>
 <translation id="3115580024857770654">Kunja zote</translation>
 <translation id="3116968597797150452">Wasifu wa Cheti</translation>
@@ -1787,7 +1788,6 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="3192947282887913208">Faili za Sauti</translation>
 <translation id="3199127022143353223">Seva</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome inapendekeza ukague nenosiri hili sasa}other{Chrome inapendekeza ukague manenosiri haya sasa}}</translation>
-<translation id="3200941271596533635">Washa hali ya msomaji</translation>
 <translation id="3201422919974259695">Vifaa vya USB vinavyopatikana vitaonekana hapa.</translation>
 <translation id="3202131003361292969">Njia</translation>
 <translation id="3202173864863109533">Sauti ya kichupo hiki inazimwa.</translation>
@@ -4205,7 +4205,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6270770586500173387">Tuma <ph name="BEGIN_LINK1" />maelezo ya mfumo na programu<ph name="END_LINK1" />, na <ph name="BEGIN_LINK2" />metriki<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Hitilafu imetokea <ph name="ERROR" /> wakati wa kupakua programu jalizi</translation>
 <translation id="6273677812470008672">Ubora</translation>
-<translation id="6273979226236203550">Nenosiri lako limehifadhiwa kwenye kifaa hiki na kwenye Akaunti yako ya Google. Ungependa kufuta lipi?</translation>
 <translation id="6277105963844135994">Muda wa Mtandao Umekwisha</translation>
 <translation id="6277518330158259200">Piga Picha ya Skrini</translation>
 <translation id="6278057325678116358">Tumia GTK+</translation>
@@ -4249,6 +4248,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6322653941595359182">Tuma na upokee SMS kupitia Chromebook yako</translation>
 <translation id="6324916366299863871">Badilisha njia ya mkato</translation>
 <translation id="6325191661371220117">Zima uzinduzi wa otomatiki</translation>
+<translation id="6325525973963619867">Imeshindwa</translation>
 <translation id="6326175484149238433">Ondoa kwenye Chrome</translation>
 <translation id="6326855256003666642">Shughuli Zinazotumia Kiendelezi</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> inahitaji usasishe kifaa hiki kabla ya tarehe ya mwisho.</translation>
@@ -4852,7 +4852,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7099337801055912064">Imeshindwa kupakia PPD kubwa. Kima cha juu kinachoruhusiwa ni KB 250.</translation>
 <translation id="7102687220333134671">Masasisho ya kiotomatiki yamewashwa</translation>
 <translation id="7102832101143475489">Muda wa ombi umekwisha</translation>
-<translation id="7102928824073746774">Kikundi kisicho na jina - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Mapendeleo ya USB</translation>
 <translation id="710640343305609397">Fungua mipangilio ya mtandao</translation>
 <translation id="7108338896283013870">Ficha</translation>
@@ -4928,6 +4927,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="720110658997053098">Weka kifaa hiki katika hali ya skrini nzima kila wakati</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' imefutwa</translation>
 <translation id="7201420661433230412">Angalia faili</translation>
+<translation id="7203150201908454328">Imepanuliwa</translation>
 <translation id="7203826966018112936">Hatua ya kuweka akaunti ya shuleni kwenye wasifu hurahisisha shughuli ya kuingia katika akaunti za tovuti na viendelezi kama mwanafunzi huku vidhibiti vya wazazi vikiendelea kutumika. Haimruhusu mtoto kufikia alamisho, manenosiri au data nyingine ya kivinjari iliyosawazishwa na akaunti ya shuleni.&lt;br&gt;&lt;br&gt;
     Iwapo mtoto wako hutumia Chromebook shuleni na ungependelea kuakisi mazingira ya shuleni ukiwa nyumbani ili uhakikishe kuwa mtoto wako ana uwezo wa kufikia kazi zote za shuleni zinazohitajika, tafadhali ondoka katika akaunti hii ya Family Link na uingie katika akaunti ya shuleni kupitia ukurasa wa akaunti za Mfumo wa Uendeshaji wa Chrome (kumbuka: Vidhibiti vya wazazi kwenye Family Link havitatumika).&lt;br&gt;&lt;br&gt;
     Iwapo mtoto wako hatumii Chromebook shuleni au iwapo unapendelea kudhibiti hali ya utumiaji ya mtoto wako nyumbani ukitumia Family Link, tafadhali bofya kitufe cha 'Endelea' hapa chini ili uweke akaunti ya shuleni kwenye wasifu huu.</translation>
@@ -5323,7 +5323,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7704521324619958564">Fungua Duka la Google Play</translation>
 <translation id="7705276765467986571">Isingeweza kupakia muundo wa alamisho.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Weka Hali ya Kisomaji</translation>
 <translation id="7707108266051544351">Tovuti hii imezuiwa ili isitumie vitambuzi vya mwendo.</translation>
 <translation id="7707922173985738739">Tumia data ya mtandao wa simu</translation>
 <translation id="7709152031285164251">Imeshindwa - <ph name="INTERRUPT_REASON" /></translation>

@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">কেবলমাত্র চিহ্ন প্রদান</translation>
 <translation id="1038462104119736705">Linux-এর জন্য কমপক্ষে <ph name="INSTALL_SIZE" /> জায়গা খালি রাখার জন্য সাজেস্ট করা হচ্ছে। খালি জায়গা বাড়াতে, আপনার ডিভাইস থেকে ফাইল মুছে দিন।</translation>
 <translation id="1039337018183941703">ভুল বা দূষিত ফাইল</translation>
+<translation id="104086161873270383">নতুন প্রোফাইল</translation>
 <translation id="1041175011127912238">এই পৃষ্ঠা সাড়া দিচ্ছে না</translation>
 <translation id="1041263367839475438">উপলভ্য ডিভাইস</translation>
 <translation id="1042174272890264476">আপনার কম্পিউটারও <ph name="SHORT_PRODUCT_NAME" /> এর RLZ লাইব্রেরি বিল্ট ইনের সাথে আসে৷ RLZ সার্চগুলি পরিমাপ করার জন্য একটি সাধারণ, ব্যক্তিগতভাবে সনাক্তকরণযোগ্য নয় এমন ট্যাগ নির্ধারণ করে এবং <ph name="SHORT_PRODUCT_NAME" /> এর ব্যবহার একটি নির্দিষ্ট প্রচারাভিযানের মাধ্যমে চালিত হয়৷ এই লেবেলগুলি কখনো কখনো <ph name="PRODUCT_NAME" /> এ Google সার্চ ক্যোয়ারিগুলিতে প্রদর্শিত হয়৷</translation>
@@ -254,6 +255,7 @@
 <translation id="1306606229401759371">সেটিংস পরিবর্তন করুন</translation>
 <translation id="1307165550267142340">আপনার পিন তৈরি করা হয়েছে</translation>
 <translation id="1307559529304613120">ওহো! সিস্টেমটি এই ডিভাইসের জন্য দীর্ঘমেয়াদি এপিআই অ্যাক্সেস টোকেন সঞ্চয় করতে ব্যর্থ হয়েছে৷</translation>
+<translation id="1313162974556054106">ডিভাইসের নাম</translation>
 <translation id="1313405956111467313">স্বয়ংক্রিয় প্রক্সি কনফিগারেশন</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">স্ক্রিনে খুলে রাখা ট্যাব সহ সমস্ত সাইট থেকে আপনি সাইন-আউট হয়ে যাবেন</translation>
@@ -704,7 +706,6 @@
 <translation id="184273675144259287">আপনার Linux অ্যাপ ও ফাইল পুরনো ব্যাক-আপ দিয়ে প্রতিস্থাপিত করুন</translation>
 <translation id="1842766183094193446">আপনি কি ডেমো মোড চালু করতে চান?</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" /> চালানোর জন্য Control-ক্লিক করুন</translation>
-<translation id="1846880379134204029">গ্রুপ <ph name="GROUP_NAME" /> - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">অ্যাম্বিয়েন্ট মোড চালু করুন</translation>
 <translation id="1849186935225320012">এই পৃষ্ঠাটির MIDI ডিভাইসগুলির উপর সম্পূর্ণ নিয়ন্ত্রণ আছে৷</translation>
 <translation id="1850508293116537636">&amp;ঘড়ির কাঁটার দিকে ঘোরান</translation>
@@ -1720,6 +1721,7 @@
 <translation id="3103941660000130485">Linux আপগ্রেড করতে সমস্যা হচ্ছে</translation>
 <translation id="3105796011181310544">আবার পরিবর্তন করে Google-এ ফিরে যেতে চান?</translation>
 <translation id="310671807099593501">সাইটটি ব্লুটুথ ব্যবহার করছে</translation>
+<translation id="3109724472072898302">সঙ্কুচিত</translation>
 <translation id="3115147772012638511">ক্যাশের অপেক্ষা করা হচ্ছে...</translation>
 <translation id="3115580024857770654">সবগুলি আড়াল করুন</translation>
 <translation id="3116968597797150452">সার্টিফিকেট প্রোফাইল</translation>
@@ -1787,7 +1789,6 @@
 <translation id="3192947282887913208">অডিও ফাইল</translation>
 <translation id="3199127022143353223">সার্ভারসমূহ</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome আপনাকে এই পাসওয়ার্ড এখনই চেক করতে সাজেস্ট করছে}one{Chrome আপনাকে এই পাসওয়ার্ড এখনই চেক করতে সাজেস্ট করছে}other{Chrome আপনাকে এই পাসওয়ার্ডগুলি এখনই চেক করতে সাজেস্ট করছে}}</translation>
-<translation id="3200941271596533635">রিডার মোডে টগল করুন</translation>
 <translation id="3201422919974259695">উপলভ্য ইউএসবি ডিভাইসগুলি এখানে দেখা যাবে।</translation>
 <translation id="3202131003361292969">পাথ</translation>
 <translation id="3202173864863109533">এই ট্যাবের অডিও মিউট করা হচ্ছে৷</translation>
@@ -4207,7 +4208,6 @@
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />সিস্টেম ও অ্যাপ্লিকেশান তথ্য<ph name="END_LINK1" />, এবং <ph name="BEGIN_LINK2" />মেট্রিক্স<ph name="END_LINK2" /> পাঠান</translation>
 <translation id="6272643420381259437">প্লাগ-ইনটি ডাউনলোড করার সময় একটি ত্রুটি (<ph name="ERROR" />) ঘটেছে</translation>
 <translation id="6273677812470008672">গুণমান</translation>
-<translation id="6273979226236203550">এই ডিভাইসে এবং আপনার Google অ্যাকাউন্টে পাসওয়ার্ড সেভ করা আছে। আপনি কোনটা মুছে দিতে চান?</translation>
 <translation id="6277105963844135994">নেটওয়ার্কের সময় শেষ হয়েছে</translation>
 <translation id="6277518330158259200">স্ক্রিনশট নিন</translation>
 <translation id="6278057325678116358">GTK+ ব্যবহার করুন</translation>
@@ -4251,6 +4251,7 @@
 <translation id="6322653941595359182">Chromebook থেকে টেক্সট মেসেজ পাঠান ও পান</translation>
 <translation id="6324916366299863871">শর্টকার্ট এডিট করুন</translation>
 <translation id="6325191661371220117">স্বয়ংক্রিয় লঞ্চ অক্ষম করুন</translation>
+<translation id="6325525973963619867">ব্যর্থ</translation>
 <translation id="6326175484149238433">Chrome থেকে সরান</translation>
 <translation id="6326855256003666642">সক্রিয়-রাখার সংখ্যা</translation>
 <translation id="632707535499064463">নির্ধারিত সময়সীমা শেষ হওয়ার আগে, <ph name="ORGANIZATION_NAME" /> আপনাকে এই ডিভাইস আপডেট করতে বলছে।</translation>
@@ -4853,7 +4854,6 @@
 <translation id="7099337801055912064">বড় পিপিডি লোড করা যাবে না। সর্বাধিক সাইজ ২৫০ কেবি।</translation>
 <translation id="7102687220333134671">অটোমেটিক আপডেট চালু করা হয়েছে</translation>
 <translation id="7102832101143475489">অনুরোধের সময় শেষ হয়ে গেছে</translation>
-<translation id="7102928824073746774">নামহীন গ্রুপ - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">ইউএসবি সংক্রান্ত পছন্দ</translation>
 <translation id="710640343305609397">নেটওয়ার্ক সেটিংস খুলুন</translation>
 <translation id="7108338896283013870">লুকান</translation>
@@ -4929,6 +4929,7 @@
 <translation id="720110658997053098">স্থায়ীভাবে এই ডিভাইসটিকে কিয়স্ক মোডে রাখুন</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' মুছে ফেলা হয়েছে</translation>
 <translation id="7201420661433230412">ফাইলগুলি দেখুন</translation>
+<translation id="7203150201908454328">প্রসারিত</translation>
 <translation id="7203826966018112936">একটি স্কুল অ্যাকাউন্ট যোগ করলে সহজে একজন স্টুডেন্ট হিসেবে ওয়েবসাইটে ও এক্সটেনশনে সাইন-ইন করা যায়, যদিও তখনও অভিভাবকীয় নিয়ন্ত্রণের অধীনেই তাকে কাজ করতে হয়। এটি কোনও বাচ্চাকে স্কুল অ্যাকাউন্টের সাথে সিঙ্ক করা বুকমার্ক, পাসওয়ার্ড বা অন্যান্য ব্রাউজ করা ডেটা অ্যাক্সেস করতে দেয় না।&lt;br&gt;&lt;br&gt;
     যদি আপনার বাচ্চা তার স্কুলে Chromebook ব্যবহার করে এবং সে যাতে সমস্ত প্রয়োজনীয় স্কুলের কাজের অ্যাক্সেস তার বাড়িতে পায় তা সুনিশ্চিত করার জন্য আপনি যদি চান যে একই অভিজ্ঞতা সে তার বাড়িতেও পাক, তাহলে এই Family Link অ্যাকাউন্ট থেকে সাইন-আউট করুন এবং Chrome OS অ্যাকাউন্টের পৃষ্ঠা থেকে স্কুল অ্যাকাউন্টে সাইন-ইন করুন (মনে রাখবেন: Family Link-এর অভিভাবকীয় নিয়ন্ত্রণ এখানে প্রযোজ্য হবে না)।&lt;br&gt;&lt;br&gt;
     যদি আপনার বাচ্চা তার স্কুলে Chromebook ব্যবহার না করে অথবা আপনি যদি বাড়িতে আপনার বাচ্চার অভিজ্ঞতাকে Family Link ব্যবহার করে ম্যানেজ করতে চান, তাহলে এই প্রোফাইলে একটি স্কুল অ্যাকাউন্ট যোগ করার জন্য নিচে দেওয়া 'পরবর্তী পৃষ্ঠাতে যান' বোতামে ক্লিক করুন।</translation>
@@ -5324,7 +5325,6 @@
 <translation id="7704521324619958564">Play স্টোর খুলুন</translation>
 <translation id="7705276765467986571">বুকমার্ক মডেল লোড করা যায়নি৷</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">রিডার মোডে টগল করুন</translation>
 <translation id="7707108266051544351">এই সাইটকে মোশন সেন্সর ব্যবহার করা থেকে ব্লক করা হয়েছে।</translation>
 <translation id="7707922173985738739">মোবাইল ডেটা ব্যবহার করুন</translation>
 <translation id="7709152031285164251">ব্যর্থ হয়েছে - <ph name="INTERRUPT_REASON" /></translation>

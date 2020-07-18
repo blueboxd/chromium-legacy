@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Tylko szyfrowanie</translation>
 <translation id="1038462104119736705">Do korzystania z Linuksa zalecane jest co najmniej <ph name="INSTALL_SIZE" /> wolnego miejsca. Aby zwolnić miejsce, usuń pliki z urządzenia.</translation>
 <translation id="1039337018183941703">Nieprawidłowy lub uszkodzony plik</translation>
+<translation id="104086161873270383">Nowy profil</translation>
 <translation id="1041175011127912238">Ta strona nie odpowiada</translation>
 <translation id="1041263367839475438">Dostępne urządzenia</translation>
 <translation id="1042174272890264476">Twój komputer zawiera również wbudowaną bibliotekę RLZ <ph name="SHORT_PRODUCT_NAME" />. Przypisuje ona powtarzalny, nieumożliwiający identyfikacji użytkownika tag służący do monitorowania wyszukiwań i używania <ph name="SHORT_PRODUCT_NAME" /> w ramach określonej kampanii promocyjnej. Etykiety te czasami pojawiają się w zapytaniach wyszukiwarki Google w <ph name="PRODUCT_NAME" />.</translation>
@@ -104,7 +105,7 @@
 <translation id="1124772482545689468">Użytkownik</translation>
 <translation id="1125550662859510761">Wygląda na <ph name="WIDTH" /> × <ph name="HEIGHT" /> (natywna)</translation>
 <translation id="1126809382673880764">Nie chroni przed niebezpiecznymi stronami, pobieranymi plikami ani rozszerzeniami. Funkcja Bezpieczne przeglądanie nadal będzie chronić Cię w innych usługach Google, w których jest dostępna (takich jak Gmail i wyszukiwarka).</translation>
-<translation id="112752777279960360">Aby po raz pierwszy użyć na tym komputerze telefonu z Androidem jako klucza bezpieczeństwa, na telefonie otwórz Chrome i wybierz „Ustawienia &gt; Hasła &gt; Używaj telefonu jako klucza bezpieczeństwa”. Potem kliknij „Połącz z nowym urządzeniem” i zeskanuj kod QR.</translation>
+<translation id="112752777279960360">Aby po raz pierwszy użyć na tym komputerze telefonu z Androidem jako klucza bezpieczeństwa, na telefonie otwórz Chrome i wybierz „Ustawienia &gt; Hasła &gt; Używaj telefonu jako klucza bezpieczeństwa”. Potem kliknij „Połącz z nowym urządzeniem” i zeskanuj ten kod QR.</translation>
 <translation id="1128109161498068552">Nie zezwalaj żadnym witrynom na używanie wiadomości zarezerwowanych dla systemu w celu uzyskania dostępu do urządzeń MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Edytuj wyszukiwarkę</translation>
@@ -255,6 +256,7 @@
 <translation id="1306606229401759371">Zmień ustawienia</translation>
 <translation id="1307165550267142340">Kod PIN został utworzony</translation>
 <translation id="1307559529304613120">Ups. System nie może zapisać długoterminowego tokena dostępu API dla tego urządzenia.</translation>
+<translation id="1313162974556054106">Nazwa urządzenia</translation>
 <translation id="1313405956111467313">Automatyczna konfiguracja serwera proxy</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">Wylogujemy Cię ze wszystkich stron – także na otwartych kartach</translation>
@@ -701,7 +703,6 @@
 <translation id="184273675144259287">Zastąp obecne aplikacje i pliki Linuksa ich poprzednią kopią zapasową</translation>
 <translation id="1842766183094193446">Czy na pewno chcesz włączyć tryb demonstracyjny?</translation>
 <translation id="1846308012215045257">Naciśnij klawisz Control i kliknij, by uruchomić wtyczkę <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">Grupa <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Włącz tryb nieaktywny</translation>
 <translation id="1849186935225320012">Ta strona ma pełny dostęp do sterowania urządzeniami MIDI.</translation>
 <translation id="1850508293116537636">Obróć w &amp;prawo</translation>
@@ -1719,6 +1720,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3103941660000130485">Błąd uaktualniania Linuksa</translation>
 <translation id="3105796011181310544">Zmienić z powrotem na Google?</translation>
 <translation id="310671807099593501">Strona używa Bluetootha</translation>
+<translation id="3109724472072898302">Zwinięty</translation>
 <translation id="3115147772012638511">Czekam na pamięć podręczną...</translation>
 <translation id="3115580024857770654">Zwiń wszystko</translation>
 <translation id="3116968597797150452">Certyfikowany profil</translation>
@@ -1786,7 +1788,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3192947282887913208">Pliki dźwiękowe</translation>
 <translation id="3199127022143353223">Serwery</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome zaleca, by jak najszybciej sprawdzić to hasło}few{Chrome zaleca, by jak najszybciej sprawdzić te hasła}many{Chrome zaleca, by jak najszybciej sprawdzić te hasła}other{Chrome zaleca, by jak najszybciej sprawdzić te hasła}}</translation>
-<translation id="3200941271596533635">Przełącz tryb czytnika</translation>
 <translation id="3201422919974259695">Tutaj będą widoczne dostępne urządzenia USB.</translation>
 <translation id="3202131003361292969">Ścieżka</translation>
 <translation id="3202173864863109533">Dźwięk z karty został wyciszony.</translation>
@@ -4206,7 +4207,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6270770586500173387">Wysyłaj <ph name="BEGIN_LINK1" />informacje o systemie i aplikacjach<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />dane<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Podczas pobierania wtyczki wystąpił błąd (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">Jakość</translation>
-<translation id="6273979226236203550">Twoje hasło jest zapisane na urządzeniu i na koncie Google. Skąd chcesz je usunąć?</translation>
 <translation id="6277105963844135994">Przekroczono czas oczekiwania na sieć</translation>
 <translation id="6277518330158259200">Wykon&amp;aj zrzut ekranu</translation>
 <translation id="6278057325678116358">Użyj motywu GTK+</translation>
@@ -4250,6 +4250,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6322653941595359182">Wysyłanie i odbieranie SMS-ów na Chromebooku</translation>
 <translation id="6324916366299863871">Edytuj skrót</translation>
 <translation id="6325191661371220117">Wyłącz automatyczne uruchamianie</translation>
+<translation id="6325525973963619867">Niepowodzenie</translation>
 <translation id="6326175484149238433">Usuń z Chrome</translation>
 <translation id="6326855256003666642">Liczba elementów wymuszających aktywność</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> wymaga zaktualizowania tego urządzenia przed podanym terminem.</translation>
@@ -4853,7 +4854,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7099337801055912064">Nie można załadować pliku PPD, bo jest zbyt duży. Maksymalny rozmiar to 250 kB.</translation>
 <translation id="7102687220333134671">Automatyczne aktualizacje są włączone</translation>
 <translation id="7102832101143475489">Żądanie przekroczyło limit czasu</translation>
-<translation id="7102928824073746774">Grupa bez nazwy – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Ustawienia USB</translation>
 <translation id="710640343305609397">Otwórz ustawienia sieci</translation>
 <translation id="7108338896283013870">Ukryj</translation>
@@ -4929,6 +4929,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="720110658997053098">Trwale utrzymuj to urządzenie w trybie kiosku</translation>
 <translation id="7201118060536064622">Element „<ph name="DELETED_ITEM_NAME" />” został usunięty</translation>
 <translation id="7201420661433230412">Wyświetl pliki</translation>
+<translation id="7203150201908454328">Rozwinięty</translation>
 <translation id="7203826966018112936">Po dodaniu konta szkolnego do profilu uczeń może łatwo logować się pod kontrolą rodzicielską na stronach i w rozszerzeniach. Nie daje to dziecku dostępu do zakładek, haseł ani innych danych przeglądania zsynchronizowanych z kontem szkolnym.&lt;br&gt;&lt;br&gt;
 Jeśli Twoje dziecko używa w szkole Chromebooka i chcesz mu zapewnić w domu środowisko podobne do szkolnego oraz dostęp do niezbędnych materiałów edukacyjnych, wyloguj się z konta Family Link i zaloguj się na konto szkolne ze strony kont Chrome OS (uwaga: ustawienia kontroli rodzicielskiej w Family Link nie będą stosowane).&lt;br&gt;&lt;br&gt;
 Jeśli Twoje dziecko nie używa w szkole Chromebooka lub jeśli wolisz zarządzać pracą dziecka z domu za pomocą konta Family Link, kliknij przycisk Dalej, by dodać konto szkolne do tego profilu.</translation>
@@ -5324,7 +5325,6 @@ Jeśli Twoje dziecko nie używa w szkole Chromebooka lub jeśli wolisz zarządz
 <translation id="7704521324619958564">Otwórz Sklep Play</translation>
 <translation id="7705276765467986571">Nie można wczytać modelu zakładek.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Przełącz tryb czytnika</translation>
 <translation id="7707108266051544351">Tej stronie zablokowano używanie czujników ruchu.</translation>
 <translation id="7707922173985738739">Użycie mobilnej transmisji danych</translation>
 <translation id="7709152031285164251">Niepowodzenie – <ph name="INTERRUPT_REASON" /></translation>

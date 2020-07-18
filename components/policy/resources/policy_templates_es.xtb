@@ -1497,11 +1497,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="3184161739683646075">Controla el modo DNS-over-HTTPS</translation>
 <translation id="3185009703220253572">desde la versión <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Las aplicaciones para Android no pueden acceder a las claves corporativas. Esta política no les afecta.</translation>
-<translation id="3190338425427039045">Si se asigna el valor "Habilitada" a esta política o no se le asigna ninguno, se permitirán todas las salidas de audio compatibles en los dispositivos de los usuarios.
-
-      Si se le asigna el valor "Inhabilitada", no se permitirá ninguna salida de audio mientras los usuarios hayan iniciado sesión.
-
-      Nota: Esta política afecta a todas las entradas de audio (no solo al micrófono integrado), incluidas las funciones de accesibilidad de audio. No debes activarla si un usuario necesita un lector de pantalla.</translation>
 <translation id="3196585866522778760">Ten en cuenta que esta política está obsoleta y se eliminará de la versión 85 de <ph name="PRODUCT_OS_NAME" />. Utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> en su lugar.
 
           Permite especificar el tiempo que debe transcurrir sin que el usuario realice ninguna acción antes de que se habilite el modo de inactividad (con batería).
@@ -1536,9 +1531,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
       Los sitios web configurados se abrirán automáticamente en un navegador diferente a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3264793472749429012">Codificaciones del proveedor de búsquedas predeterminadas</translation>
 <translation id="3273221114520206906">Configuración de JavaScript predeterminada</translation>
-<translation id="328108936611091281">Si <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> está activada y se asigna un valor a <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POLICY_NAME" />, se especificará la URL del buscador usada durante una búsqueda predeterminada. La URL debe incluir la cadena <ph name="SEARCH_TERM_MARKER" />, que en la consulta se sustituirá por los términos de búsqueda del usuario.
-
-      Puedes especificar la URL de la Búsqueda de Google introduciendo lo siguiente: <ph name="GOOGLE_SEARCH_URL" />.</translation>
 <translation id="3284094172359247914">Controlar el uso de la API WebUSB</translation>
 <translation id="3288595667065905535">Versión</translation>
 <translation id="3292147213643666827">Permite que <ph name="PRODUCT_NAME" /> actúe como proxy entre <ph name="CLOUD_PRINT_NAME" /> y las impresoras anteriores conectadas al ordenador.
@@ -1555,9 +1547,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
       Esta política se eliminará de la versión 88 de Chrome.
 
       Consulta https://www.chromestatus.com/feature/4664843055398912</translation>
-<translation id="3303653927512453822">Te permite restablecer la antigua configuración de comportamiento de cookies de <ph name="ATTRIBUTE_SAMESITE_NAME" />. Si restableces la configuración de comportamiento antigua, las cookies que no especifiquen ningún atributo <ph name="ATTRIBUTE_SAMESITE_NAME" /> se tratarán como si tuvieran "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" y las cookies "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" no necesitarán tener el atributo "<ph name="ATTRIBUTE_SECURE_NAME" />". Para ver la descripción completa, consulta https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies
-
-          Si no se define esta política, el comportamiento predeterminado de <ph name="ATTRIBUTE_SAMESITE_NAME" /> para las cookies que no especifiquen ningún atributo <ph name="ATTRIBUTE_SAMESITE_NAME" /> dependerá de la configuración personal del usuario para la función <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, que puede definirse mediante una prueba pública o bien habilitando o inhabilitando el indicador <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />.</translation>
 <translation id="3303911765031636277">Política de configuración para el conector OnFileAttached de Chrome Enterprise Connectors</translation>
 <translation id="3304662785258434098">Permite especificar si los usuarios pueden añadir excepciones para permitir el contenido mixto en determinados sitios web.
 
@@ -3188,17 +3177,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       Si no se le asigna ningún valor, el cliente DNS integrado estará habilitado de forma predeterminada en macOS, Android (si no se ha habilitado un DNS privado o una VPN) y Chrome OS, y los usuarios podrán especificar si se utiliza el cliente DNS integrado editando chrome://flags o especificando un indicador de línea de comandos.</translation>
 <translation id="5630352020869108293">Restaurar la última sesión</translation>
 <translation id="5633871703004128675">Habilitar la función de accesibilidad de resaltado del símbolo de intercalación de texto</translation>
-<translation id="5643906875497889108">Controla qué tipos de aplicaciones y extensiones pueden instalarse y limita el acceso en tiempo de ejecución.
-
-          Esta opción añade a la lista blanca los tipos de extensiones y aplicaciones que pueden instalarse en <ph name="PRODUCT_NAME" /> y con qué hosts pueden interactuar. El valor es una lista de cadenas. Cada cadena debe ser de uno de los siguientes tipos: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app" o "platform_app". Consulta la documentación de las extensiones de <ph name="PRODUCT_NAME" /> para obtener más información sobre estos tipos.
-
-          Ten en cuenta que esta política también afecta a las extensiones y aplicaciones que se deban instalar de forma forzada mediante ExtensionInstallForcelist.
-
-          Si se configura esta opción, no se instalarán las extensiones ni las aplicaciones que sean de un tipo que no esté incluido en la lista.
-
-          Si no se configura esta opción, no se implementará ninguna restricción en los tipos aceptables de extensiones y aplicaciones.
-
-          Antes de la versión 75, no se admite separar los ID de las extensiones con comas y se omitirá. El resto de la política seguirá siendo aplicable.</translation>
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
 <translation id="5646234199535103501">Política de configuración del conector OnBulkDataEntry de Chrome Enterprise Connectors</translation>
 <translation id="5656177735561364047">Habilita la función de portapapeles compartido</translation>
@@ -3845,15 +3823,6 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 
       Esta política controla si a los usuarios registrados en el Programa de Protección Avanzada se les permite enviar a Google el contenido descargado para realizar un análisis de software malicioso. Si se asigna el valor "True" a esta política o no se le asigna ningún valor, se le pedirá al usuario que envíe los archivos descargados a Google para realizar un análisis profundo. Si el usuario selecciona "Analizar", los archivos descargados se enviarán a Google. Si se le asigna el valor "False", no se le pedirá nada al usuario y los archivos descargados no se enviarán a Google.</translation>
 <translation id="670597451099978576">Concede permiso automáticamente a estos sitios web para conectarse a dispositivos USB con los ID de proveedor y producto facilitados en la pantalla de inicio de sesión.</translation>
-<translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> proporciona una instalación y actualización seguras de las extensiones. Sin embargo, el contenido de algunas extensiones alojadas fuera de Chrome Web Store solo lo pueden proteger algoritmos de hash o de firma no seguros, como SHA1. Si esta política no está habilitada, Chrome no permitirá la instalación ni las actualizaciones de esas extensiones hasta que sus desarrolladores modifiquen su diseño e incluyan algoritmos más seguros. Si esta política está habilitada, se permitirá la instalación y las actualizaciones de esas extensiones.
-
-          Si esta política no está configurada, el comportamiento será como si estuviera habilitada.
-          A partir de la versión 76 de <ph name="PRODUCT_NAME" />, si la política no está configurada, el comportamiento será como si no estuviera habilitada.
-
-          A partir de la versión 78 de <ph name="PRODUCT_NAME" />, esta política se ignorará y se tratará como si estuviera inhabilitada.</translation>
-<translation id="6724116921710627162">Si <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> está activada y se asigna un valor a <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" />, se especificará la URL que utilizará un buscador para mostrar una página Nueva pestaña.
-
-      Si no se asigna ningún valor a <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" />, no se mostrará ninguna página Nueva pestaña.</translation>
 <translation id="672496466524161417">Si se asigna el valor "Ninguno" a la política o no se le asigna ninguno, permitirá a los usuarios gestionar certificados. Si se le asigna el valor "2", los usuarios solo podrán ver los certificados, pero no gestionarlos.
 
       Si se le asigna el valor "1", los usuarios podrán gestionar los certificados de usuario, pero no los certificados que se apliquen a todo el dispositivo.</translation>
@@ -4409,11 +4378,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Si no se le asigna ningún valor o el valor es 0, al ir a una URL designada se abrirá inmediatamente en un navegador alternativo.
 
       Si a esta política se le asigna un número como valor, Chrome mostrará un mensaje durante ese número de milisegundos y después abrirá un navegador alternativo.</translation>
-<translation id="7586477707097444774">Las cookies establecidas para los dominios que coincidan con estos patrones recuperarán la antigua configuración de comportamiento de <ph name="ATTRIBUTE_SAMESITE_NAME" />. Si restableces la configuración de comportamiento antigua, las cookies que no especifiquen ningún atributo <ph name="ATTRIBUTE_SAMESITE_NAME" /> se tratarán como si tuvieran "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" y las cookies "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" no necesitarán tener el atributo "<ph name="ATTRIBUTE_SECURE_NAME" />". Para ver la descripción completa, consulta https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies
-
-          Para las cookies de dominios que no coincidan con los patrones indicados, o para todas las cookies si no se define esta política, se usará el valor global predeterminado de la política <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" />, si se ha definido, y si no, la configuración personal del usuario.
-
-          Nota: Los patrones que indiques aquí se tratarán como dominios, no como URLs, así que no especifiques esquemas ni puertos.</translation>
 <translation id="7590188804371204512">Controla la instalación de extensiones externas.
 
       Si se habilita esta opción, las extensiones externas se bloquearán para que no puedan instalarse.
@@ -4869,9 +4833,6 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
       Nota: La reproducción automática solo está disponible en los dominios indicados explícitamente en la política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Para activar la reproducción automática en todos los sitios web, añade http://* y https://* a esta lista.</translation>
 <translation id="8274603902181597201">Borrar los eCryptfs del directorio principal del usuario y empezar con un nuevo directorio principal cifrado con ext4.</translation>
 <translation id="8285435910062771358">Lupa de pantalla completa habilitada</translation>
-<translation id="8286955010912199104">Si se asigna el valor "True" a esta política, las páginas podrán mostrar ventanas emergentes mientras se descargan.
-
-      Si se le asigna el valor "False" o no se le asigna ningún valor, las páginas no podrán mostrar ventanas emergentes mientras se descargan.</translation>
 <translation id="8288199156259560552">Habilitar los servicios de ubicación de Google para aplicaciones de Android</translation>
 <translation id="8290875622178450531">Habilita la función de accesibilidad de dictado.
 
@@ -5077,9 +5038,6 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
       "1412.24.34": actualiza solo a esta versión específica
 
       Advertencia: No se recomienda configurar restricciones de versiones porque pueden evitar que los usuarios reciban actualizaciones de software y correcciones de seguridad muy importantes. Restringir las actualizaciones al prefijo de una versión específica podría suponer un riesgo para los usuarios.</translation>
-<translation id="8516298370361397304">Si <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> está activada y se asigna un valor a <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POLICY_NAME" />, se especificará la URL que utilizará el buscador para mostrar sugerencias de búsqueda. La URL debe incluir la cadena <ph name="SEARCH_TERM_MARKER" />, que en la consulta se sustituirá por los términos de búsqueda del usuario.
-
-      Puedes especificar la URL de la Búsqueda de Google introduciendo lo siguiente: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.</translation>
 <translation id="8519264904050090490">URLs de excepción manual de usuario administrado</translation>
 <translation id="8519516251436131647">Esta política habilita las combinaciones de teclas para las funciones de accesibilidad.
 
@@ -5381,14 +5339,6 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
       Si se le asigna el valor "False", Sync Consent no se mostrará.
       Si se le asigna el valor "True" o no se le asigna ningún valor, Sync Consent no se puede mostrar.</translation>
 <translation id="8943934315109955032">No comprueba si se infringen las normas de protección de datos sensibles</translation>
-<translation id="894510252300143386">Configura las opciones de gestión de extensiones para <ph name="PRODUCT_NAME" />.
-
-          Esta política controla varias opciones, incluidas las opciones controladas por cualquier política relacionada con las extensiones. Además, anula cualquier política anterior si se establecen ambas.
-
-          Esta política asigna un ID de extensión o una URL de actualización a su configuración. Si se utiliza un ID de extensión, la configuración solo se aplicará a la extensión especificada. Se puede definir una configuración predeterminada para el ID especial <ph name="DEFAULT_SCOPE" />, que se aplicará a todas las extensiones para las que no se haya definido una configuración personalizada en esta política. Si se utiliza una URL de actualización, la configuración se aplicará a todas las extensiones que incluyan la misma URL de actualización en su archivo de manifiesto, como se indica en <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Para las instancias de Windows que no estén vinculadas a un dominio de <ph name="MS_AD_NAME" />, la instalación forzada se limitará a las aplicaciones y extensiones disponibles en Chrome Web Store.
-          </translation>
 <translation id="8947415621777543415">Informar de ubicación del dispositivo</translation>
 <translation id="8949552982791839607">Si se inhabilita esta política, no se mostrará ninguna advertencia de seguridad cuando se inicie Chrome con algunas instrucciones de línea de comandos potencialmente peligrosas.
 

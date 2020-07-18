@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Només encriptar</translation>
 <translation id="1038462104119736705">Es recomana tenir almenys <ph name="INSTALL_SIZE" /> d'espai lliure per a Linux. Per augmentar l'espai lliure, suprimeix fitxers del dispositiu.</translation>
 <translation id="1039337018183941703">Fitxer no vàlid o malmès</translation>
+<translation id="104086161873270383">Perfil nou</translation>
 <translation id="1041175011127912238">Aquesta pàgina no respon</translation>
 <translation id="1041263367839475438">Dispositius disponibles</translation>
 <translation id="1042174272890264476">L'ordinador també incorpora la biblioteca RLZ de <ph name="SHORT_PRODUCT_NAME" />. La biblioteca RLZ assigna una etiqueta no única i sense identificació personal per mesurar les cerques i l'ús de <ph name="SHORT_PRODUCT_NAME" /> derivats d'una campanya promocional concreta. De vegades, aquestes etiquetes apareixen a les consultes de la Cerca de Google a <ph name="PRODUCT_NAME" />.</translation>
@@ -255,6 +256,7 @@
 <translation id="1306606229401759371">Canvia la configuració</translation>
 <translation id="1307165550267142340">El PIN s'ha creat</translation>
 <translation id="1307559529304613120">El sistema no ha pogut emmagatzemar un testimoni d'accés a l'API de llarg termini per a aquest dispositiu.</translation>
+<translation id="1313162974556054106">Nom del dispositiu</translation>
 <translation id="1313405956111467313">Configuració automàtica del servidor intermediari</translation>
 <translation id="131364520783682672">Bloq Maj</translation>
 <translation id="1313660246522271310">Se't tancarà la sessió de tots els llocs web, també de les pestanyes obertes</translation>
@@ -705,7 +707,6 @@
 <translation id="184273675144259287">Substitueix els fitxers i les aplicacions de Linux per una còpia de seguretat anterior</translation>
 <translation id="1842766183094193446">Confirmes que vols activar el mode de demostració?</translation>
 <translation id="1846308012215045257">Prem Ctrl+clic per executar <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">Grup <ph name="GROUP_NAME" /> (<ph name="GROUP_CONTENTS" />)</translation>
 <translation id="184715642345428649">Activa el mode ambient</translation>
 <translation id="1849186935225320012">Aquesta pàgina té un control total dels dispositius MIDI.</translation>
 <translation id="1850508293116537636">Gira en el sentit de les &amp;agulles del rellotge</translation>
@@ -1722,6 +1723,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="3103941660000130485">S'ha produït un error en actualitzar Linux</translation>
 <translation id="3105796011181310544">Vols tornar a utilitzar Google?</translation>
 <translation id="310671807099593501">El lloc web està utilitzant el Bluetooth</translation>
+<translation id="3109724472072898302">Reduït</translation>
 <translation id="3115147772012638511">Esperant la memòria cau...</translation>
 <translation id="3115580024857770654">Replega-ho tot</translation>
 <translation id="3116968597797150452">Perfil del certificat</translation>
@@ -1789,7 +1791,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="3192947282887913208">Fitxers d'àudio</translation>
 <translation id="3199127022143353223">Servidors</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome et recomana que comprovis aquesta contrasenya ara}other{Chrome et recomana que comprovis aquestes contrasenyes ara}}</translation>
-<translation id="3200941271596533635">Commuta el mode de lector</translation>
 <translation id="3201422919974259695">Els dispositius USB disponibles es mostraran aquí.</translation>
 <translation id="3202131003361292969">Camí</translation>
 <translation id="3202173864863109533">S'està silenciant l'àudio d'aquesta pestanya.</translation>
@@ -4210,7 +4211,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6270770586500173387">Envia <ph name="BEGIN_LINK1" />informació del sistema i de l'aplicació<ph name="END_LINK1" />, així com <ph name="BEGIN_LINK2" />mètriques<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">S'ha produït un error (<ph name="ERROR" />) en baixar el connector</translation>
 <translation id="6273677812470008672">Qualitat</translation>
-<translation id="6273979226236203550">La contrasenya està emmagatzemada en aquest dispositiu i al teu Compte de Google. D'on la vols suprimir?</translation>
 <translation id="6277105963844135994">Temps d'espera de la xarxa</translation>
 <translation id="6277518330158259200">Fes una c&amp;aptura de pantalla</translation>
 <translation id="6278057325678116358">Utilitza GTK+</translation>
@@ -4254,6 +4254,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6322653941595359182">Envia i rep missatges de text amb Chromebook</translation>
 <translation id="6324916366299863871">Edita la drecera</translation>
 <translation id="6325191661371220117">Desactiva l'inici automàtic</translation>
+<translation id="6325525973963619867">Error</translation>
 <translation id="6326175484149238433">Suprimeix de Chrome</translation>
 <translation id="6326855256003666642">Nombre de processos actius</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> requereix que actualitzis aquest dispositiu abans del termini establert.</translation>
@@ -4857,7 +4858,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7099337801055912064">No es poden carregar fitxers PPD grans. La mida màxima és de 250 kB.</translation>
 <translation id="7102687220333134671">Les actualitzacions automàtiques estan activades</translation>
 <translation id="7102832101143475489">S'ha esgotat el temps d'espera de la sol·licitud</translation>
-<translation id="7102928824073746774">Grup sense nom (<ph name="GROUP_CONTENTS" />)</translation>
 <translation id="7105390788077117391">Preferències d'USB</translation>
 <translation id="710640343305609397">Obre la configuració de la xarxa</translation>
 <translation id="7108338896283013870">Amaga</translation>
@@ -4933,6 +4933,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="720110658997053098">Activa permanentment el mode quiosc en aquest dispositiu</translation>
 <translation id="7201118060536064622">S'ha suprimit <ph name="DELETED_ITEM_NAME" /></translation>
 <translation id="7201420661433230412">Visualitza els fitxers</translation>
+<translation id="7203150201908454328">Ampliat</translation>
 <translation id="7203826966018112936">Afegir el compte d'un centre educatiu a un perfil permet iniciar fàcilment la sessió en llocs web i extensions com a alumne alhora que els controls parentals s'apliquen. No dona accés al nen a adreces d'interès, contrasenyes ni altres dades de navegació sincronitzades amb el compte de centre educatiu.&lt;br&gt;&lt;br&gt;
     Si el teu fill fa servir un Chromebook a l'escola i vols replicar-ne l'experiència a casa per assegurar-te que tingui accés a tots els deures necessaris, tanca la sessió en aquest compte de Family Link i inicia-la al compte de centre educatiu des de la pàgina de comptes de Chrome OS. Nota: no s'aplicaran els controls parentals de Family Link.&lt;br&gt;&lt;br&gt;
     Si el teu fill no fa servir un Chromebook a l'escola o si prefereixes gestionar l'experiència del teu fill a casa mitjançant Family Link, fes clic al botó Següent de sota per afegir un compte de centre educatiu a aquest perfil.</translation>
@@ -5328,7 +5329,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7704521324619958564">Obre Play Store</translation>
 <translation id="7705276765467986571">No s'ha pogut carregar el model d'adreça d'interès.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Commuta el mode de lector</translation>
 <translation id="7707108266051544351">No es permet que aquest lloc web utilitzi els sensors de moviment.</translation>
 <translation id="7707922173985738739">Utilitza dades mòbils</translation>
 <translation id="7709152031285164251">Error: <ph name="INTERRUPT_REASON" /></translation>

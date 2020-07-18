@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Imagem que você copiou</translation>
 <translation id="1150979032973867961">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o sistema operacional do seu computador. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="1151972924205500581">Senha obrigatória</translation>
-<translation id="1152921474424827756">Acessar uma <ph name="BEGIN_LINK" />cópia em cache<ph name="END_LINK" /> de <ph name="URL" /></translation>
 <translation id="1156303062776767266">Você está vendo um arquivo local ou compartilhado</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> encerrou a conexão inesperadamente.</translation>
 <translation id="115926840831309955">Verifique o CVC e tente novamente ou atualize a data de validade</translation>
 <translation id="1161325031994447685">Conectar à rede Wi-Fi novamente</translation>
 <translation id="1165039591588034296">Erro</translation>
+<translation id="1165174597379888365">Uma página é acessada</translation>
 <translation id="1175364870820465910">&amp;Imprimir...</translation>
 <translation id="1175875016430184367">Três grampos no lado direito</translation>
 <translation id="1178581264944972037">Pausar</translation>
@@ -243,7 +243,6 @@
 <translation id="1919345977826869612">Anúncios</translation>
 <translation id="1919367280705858090">Receber ajuda com uma mensagem de erro específica</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Nenhum}=1{1 site}one{# site}other{# sites}}</translation>
-<translation id="194030505837763158">Ir para <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Você pode perder o acesso à conta da sua organização ou sofrer roubo de identidade. O Chromium recomenda que você altere sua senha agora.</translation>
 <translation id="1947454675006758438">Grampo na parte superior direita</translation>
 <translation id="1959001866257244765">Ajude a melhorar a segurança na Web para todos, enviando ao Google <ph name="BEGIN_WHITEPAPER_LINK" />URLs de algumas das páginas que você acessou, informações limitadas do sistema e parte do conteúdo da página<ph name="END_WHITEPAPER_LINK" />. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Política de Privacidade<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -263,9 +262,9 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2001146170449793414">{COUNT,plural, =1{e mais um}one{e mais #}other{e mais #}}</translation>
 <translation id="2003709556000175978">Redefinir sua senha agora</translation>
 <translation id="2003775180883135320">Perfuração quádrupla na parte superior</translation>
+<translation id="202072848677994234">Este formulário é enviado por uma conexão não segura. O preenchimento automático foi desativado.</translation>
 <translation id="2025115093177348061">Realidade aumentada</translation>
 <translation id="2025186561304664664">O proxy está configurado em configuração automática.</translation>
-<translation id="2030481566774242610">Você quis dizer <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Verificar o proxy e o firewall<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Bandeja 7</translation>
 <translation id="204357726431741734">Faça login para usar as senhas salvas na sua Conta do Google</translation>
@@ -331,6 +330,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2289385804009217824">Cortar</translation>
 <translation id="2292556288342944218">O seu acesso à Internet está bloqueado</translation>
 <translation id="2293443924986248631">Quando ativado, os sites não podem usar cookies que rastreiem você pela Web. Os recursos de alguns sites podem falhar.</translation>
+<translation id="2295290966866883927">Os URLs das páginas que você acessa são enviados ao Google Cloud ou a terceiros para análise. Por exemplo, eles podem ser verificados para detectar sites perigosos.</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2300306941146563769">Não enviado</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
@@ -1036,6 +1036,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="5308689395849655368">O relatório de erros está desativado.</translation>
 <translation id="5314967030527622926">Criador de folhetos</translation>
+<translation id="5316812925700871227">Girar no sentido anti-horário</translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> de <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Escolher informações de contato</translation>
@@ -1059,7 +1060,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5421136146218899937">Limpar dados de navegação...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> quer enviar notificações a você</translation>
 <translation id="5430298929874300616">Remover favorito</translation>
-<translation id="5431657950005405462">O arquivo não foi encontrado</translation>
 <translation id="5439770059721715174">Erro de validação de esquema em "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Ordem reversa virada para cima</translation>
 <translation id="5447765697759493033">Este site não será traduzido</translation>
@@ -1433,7 +1433,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="7083258188081898530">Bandeja 9</translation>
 <translation id="7086090958708083563">Upload solicitado pelo usuário</translation>
 <translation id="7087282848513945231">Condado</translation>
-<translation id="7090678807593890770">Pesquise <ph name="LINK" /> no Google</translation>
 <translation id="7108338896283013870">Ocultar</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> quer usar sua câmera</translation>
 <translation id="7108819624672055576">Permitida por uma extensão</translation>
@@ -1870,7 +1869,6 @@ Mais detalhes:
 <translation id="893332455753468063">Adicione um Nome</translation>
 <translation id="8943282376843390568">Verde-limão</translation>
 <translation id="8957210676456822347">Autorização de portal cativo</translation>
-<translation id="8958582951173503172">Quando ocorrências de segurança são sinalizadas pelos Chrome Enterprise Connectors, dados relevantes sobre elas são enviados para seu administrador. Isso pode incluir URLs de páginas visitadas no Chrome, metadados ou nomes de arquivos e o nome de usuário usado para fazer login no dispositivo e no Chrome.</translation>
 <translation id="8962950042226115166">Site suspeito</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Sugestões:<ph name="MARKUP_2" />certifique-se de que você tenha uma conexão de dados<ph name="MARKUP_3" />atualize esta página da Web mais tarde<ph name="MARKUP_4" />verifique o endereço que digitou<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Salvar cartão</translation>

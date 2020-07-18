@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">检查互联网连接状况</translation>
 <translation id="2359808026110333948">继续</translation>
 <translation id="2369533728426058518">打开的标签页</translation>
-<translation id="2377295302146152376">Chrome 无法检查是否有更新</translation>
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="2394602618534698961">您下载的文件会显示在此处</translation>
 <translation id="2407481962792080328">当您登录自己的 Google 帐号后，系统即会启用此功能</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />获取帮助<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">位置信息功能现处于关闭状态；请在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启此项功能。</translation>
 <translation id="3058498974290601450">您随时可在“设置”中开启同步功能</translation>
-<translation id="3059710691562604940">“安全浏览”功能已关闭。Chrome 建议开启此功能。</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> 个书签}other{<ph name="BOOKMARKS_COUNT_MANY" /> 个书签}}</translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="3114012059975132928">视频播放器</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">有更新。更多选项</translation>
 <translation id="3524138585025253783">开发者界面</translation>
 <translation id="3527085408025491307">文件夹</translation>
-<translation id="3533694711092285624">尚未保存任何密码。您需要先保存密码才能使用 Chrome 的密码检查功能。</translation>
 <translation id="3542235761944717775">可用空间：<ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">搜索您的历史记录</translation>
 <translation id="3557336313807607643">添加到通讯录</translation>
@@ -460,6 +457,7 @@
 <translation id="4749960740855309258">打开新标签页</translation>
 <translation id="4759238208242260848">下载内容</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{已完成 1 项下载。}other{已完成 # 项下载。}}</translation>
+<translation id="4766678251456904326">向设备添加帐号</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{已排定 1 项下载。}other{已排定 # 项下载。}}</translation>
 <translation id="478981486571169252">您会在 Chrome 中看到自己的 <ph name="SITE_NAME" /> 登录状态、浏览数据和网站数据。</translation>
 <translation id="4802417911091824046">密码加密不包括 Google Pay 中的付款方式和地址。
@@ -569,6 +567,7 @@
 <translation id="5581519193887989363">您始终可在<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />中选择要同步的内容。</translation>
 <translation id="5595485650161345191">修改地址</translation>
 <translation id="5599455543593328020">无痕模式</translation>
+<translation id="5620163320393916465">尚未保存任何密码</translation>
 <translation id="5620928963363755975">通过“更多选项”按钮在“下载内容”中查找您的文件和网页</translation>
 <translation id="5626134646977739690">名字：</translation>
 <translation id="5639724618331995626">允许访问所有网站</translation>

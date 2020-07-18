@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Kopioimasi kuva</translation>
 <translation id="1150979032973867961">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; tietokoneesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="1151972924205500581">Salasana vaaditaan</translation>
-<translation id="1152921474424827756">Käytä osoitteen <ph name="URL" /> <ph name="BEGIN_LINK" />välimuistiversiota<ph name="END_LINK" /></translation>
 <translation id="1156303062776767266">Katselet paikallista tai jaettua tiedostoa</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> katkaisi yhteyden yllättäen.</translation>
 <translation id="115926840831309955">Tarkista CVC ja yritä uudelleen tai korjaa viimeinen voimassaolopäivä</translation>
 <translation id="1161325031994447685">Muodosta yhteys Wi-Fi-verkkoon uudelleen.</translation>
 <translation id="1165039591588034296">Virhe</translation>
+<translation id="1165174597379888365">Sivulla on käyty</translation>
 <translation id="1175364870820465910">Tulo&amp;sta...</translation>
 <translation id="1175875016430184367">Kolme niittiä oikealla</translation>
 <translation id="1178581264944972037">Tauko</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">Mainokset</translation>
 <translation id="1919367280705858090">Tiettyjen virheiden korjaaminen</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Ei mitään}=1{1 sivusto}other{# sivustoa}}</translation>
-<translation id="194030505837763158">Siirry osoitteeseen <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Voit menettää organisaatiosi tilin käyttöoikeuden tai joutua identiteettivarkauden uhriksi. Chromium suosittelee vaihtamaan salasanan välittömästi.</translation>
 <translation id="1947454675006758438">Niitti oikeassa yläkulmassa</translation>
 <translation id="1959001866257244765">Auta parantamaan kaikkien verkkoturvallisuutta lähettämällä Googlelle <ph name="BEGIN_WHITEPAPER_LINK" />joidenkin avaamiesi sivujen URL-osoitteita, rajallisia järjestelmätietoja ja osia sivujen sisällöstä<ph name="END_WHITEPAPER_LINK" />. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Tietosuojakäytäntö<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,9 +266,9 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="2001146170449793414">{COUNT,plural, =1{ja 1 muu}other{ja # muuta}}</translation>
 <translation id="2003709556000175978">Pyydä uusi salasana</translation>
 <translation id="2003775180883135320">Neljä reikää yläreunassa</translation>
+<translation id="202072848677994234">Tämä lomake lähetetään suojaamattomalla yhteydellä. Automaattinen täyttö on poistettu käytöstä.</translation>
 <translation id="2025115093177348061">Lisätty todellisuus</translation>
 <translation id="2025186561304664664">Välityspalvelimen asetus: automaattisesti määritetty.</translation>
-<translation id="2030481566774242610">Tarkoititko: <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Tarkista välityspalvelimen ja palomuurin määritykset.<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Lokero 7</translation>
 <translation id="204357726431741734">Kirjaudu sisään käyttääksesi Google-tilillesi tallennettuja salasanoja</translation>
@@ -335,6 +334,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="2289385804009217824">Leikkaus</translation>
 <translation id="2292556288342944218">Internetyhteytesi on estetty</translation>
 <translation id="2293443924986248631">Kun tämä on päällä, sivustot eivät voi seurata sinua verkossa evästeiden avulla. Joidenkin sivustojen ominaisuudet saattavat lakata toimimasta.</translation>
+<translation id="2295290966866883927">Avaamiesi sivujen URL-osoitteet lähetetään Google Cloudiin tai kolmansille osapuolille analysoitaviksi. Ne voidaan esimerkiksi skannata riskialttiiden verkkosivustojen varalta.</translation>
 <translation id="2297722699537546652">B5 (kirjekuori)</translation>
 <translation id="2300306941146563769">Ei lähetetty</translation>
 <translation id="2310021320168182093">Chou2 (kirjekuori)</translation>
@@ -1048,6 +1048,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="5308380583665731573">Muodosta yhteys</translation>
 <translation id="5308689395849655368">Kaatumisraportit on poistettu käytöstä.</translation>
 <translation id="5314967030527622926">Vihko</translation>
+<translation id="5316812925700871227">Käännä vastapäivään</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" />/<ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Valitse yhteystiedot</translation>
@@ -1071,7 +1072,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="5421136146218899937">Poista selaustiedot...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> haluaa lähettää sinulle ilmoituksia</translation>
 <translation id="5430298929874300616">Poista kirjanmerkki</translation>
-<translation id="5431657950005405462">Tiedostoasi ei löydy</translation>
 <translation id="5439770059721715174">Mallin todennusvirhe kohdassa <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Käänteinen järjestys tulostuspuoli ylöspäin</translation>
 <translation id="5447765697759493033">Sivustoa ei käännetä.</translation>
@@ -1445,7 +1445,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="7083258188081898530">Lokero 9</translation>
 <translation id="7086090958708083563">Käyttäjä pyysi lataamista</translation>
 <translation id="7087282848513945231">Piirikunta</translation>
-<translation id="7090678807593890770">Tee Google-haku: <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Piilota</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> haluaa käyttää kameraasi.</translation>
 <translation id="7108819624672055576">Laajennuksen sallima</translation>
@@ -1882,7 +1881,6 @@ Lisätietoja:
 <translation id="893332455753468063">Lisää nimi</translation>
 <translation id="8943282376843390568">Lime</translation>
 <translation id="8957210676456822347">Captive portal -valtuutus</translation>
-<translation id="8958582951173503172">Kun Chrome Enterprise Connectors merkitsee tietoturvatapahtuman, tapahtumasta lähetetään olennaisia tietoja järjestelmänvalvojallesi. Tiedot voivat olla Chromessa avaamiesi sivujen URL-osoitteita, tiedostonimiä tai sisällönkuvaustietoja ja käyttäjänimi, jolla kirjaudut sisään laitteellesi ja Chromeen.</translation>
 <translation id="8962950042226115166">Epäilyttävä sivusto</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Ehdotuksia:<ph name="MARKUP_2" />Varmista tiedonsiirtoyhteyden saatavuus.<ph name="MARKUP_3" />Lataa verkkosivu uudelleen.<ph name="MARKUP_4" />Tarkista syöttämäsi osoite.<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Tallenna kortti</translation>

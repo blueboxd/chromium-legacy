@@ -232,6 +232,7 @@
 <translation id="1274997165432133392">Fótspor og önnur gögn vefsvæðis</translation>
 <translation id="1275718070701477396">Valið</translation>
 <translation id="1276994519141842946">Ekki tókst að fjarlægja <ph name="APP_NAME" /></translation>
+<translation id="127946606521051357">Nálægt tæki er að deila</translation>
 <translation id="1280820357415527819">Leitar að farsímakerfum</translation>
 <translation id="1280965841156951489">Breyta skrám</translation>
 <translation id="1285320974508926690">Aldrei þýða þetta vefsvæði</translation>
@@ -254,6 +255,7 @@
 <translation id="1306606229401759371">Breyta stillingum</translation>
 <translation id="1307165550267142340">PIN-númerið þitt var búið til</translation>
 <translation id="1307559529304613120">Úbbs! Kerfinu tókst ekki að vista langtímaaðgangslykil forritaskila fyrir þetta tæki.</translation>
+<translation id="1313162974556054106">Heiti tækis</translation>
 <translation id="1313405956111467313">Sjálfvirk proxy-stilling</translation>
 <translation id="131364520783682672">Hástafalás</translation>
 <translation id="1313660246522271310">Þú verður skráð(ur) út af öllum vefsvæðum, þar á meðal opnum flipum</translation>
@@ -704,7 +706,6 @@
 <translation id="184273675144259287">Skipta Linux-forritunum og -skránum út fyrir eldra afrit</translation>
 <translation id="1842766183094193446">Ertu viss um að þú viljir kveikja á kynningarstillingu?</translation>
 <translation id="1846308012215045257">Ýttu á Ctrl og smelltu til að keyra <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">Hópurinn <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Virkja biðstillingu</translation>
 <translation id="1849186935225320012">Þessi síða hefur fulla stjórn yfir MIDI-tækjum.</translation>
 <translation id="1850508293116537636">Snúa réttsælis</translation>
@@ -1220,6 +1221,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2489918096470125693">Bæta við möppu</translation>
 <translation id="2490481887078769936">Skráin „<ph name="FILE_NAME" />“ var fjarlægð af lista</translation>
 <translation id="249113932447298600">Því miður er tækið <ph name="DEVICE_LABEL" /> ekki stutt á þessari stundu.</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> deilir <ph name="ATTACHMENTS" /> með þér.</translation>
 <translation id="2492461744635776704">Undirbýr beiðni um undirskrift vottorðs</translation>
 <translation id="249303669840926644">Ekki var hægt að ljúka við skráningu</translation>
 <translation id="2495777824269688114">Skoðaðu fleiri eiginleika eða fáðu svör. Veldu „?“ til að fá aðstoð.</translation>
@@ -1721,6 +1723,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3103941660000130485">Villa við að uppfæra Linux</translation>
 <translation id="3105796011181310544">Skipta aftur yfir í Google?</translation>
 <translation id="310671807099593501">Vefsvæði er að nota Bluetooth</translation>
+<translation id="3109724472072898302">Minnkað</translation>
 <translation id="3115147772012638511">Bíður eftir skyndiminni...</translation>
 <translation id="3115580024857770654">Draga allt saman</translation>
 <translation id="3116968597797150452">Vottorðsprófíll</translation>
@@ -1788,7 +1791,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3192947282887913208">Hljóðskrár</translation>
 <translation id="3199127022143353223">Netþjónar</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome mælir með að þú athugir þetta aðgangsorð núna}one{Chrome mælir með að þú athugir þessi aðgangsorð núna}other{Chrome mælir með að þú athugir þessi aðgangsorð núna}}</translation>
-<translation id="3200941271596533635">Kveikja/slökkva á lestrarstillingu</translation>
 <translation id="3201422919974259695">USB-tæki í boði birtast hér.</translation>
 <translation id="3202131003361292969">Slóð</translation>
 <translation id="3202173864863109533">Slökkt er á hljóði þessa flipa.</translation>
@@ -4151,6 +4153,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6212039847102026977">Sýna ítarlega neteiginleika</translation>
 <translation id="6212168817037875041">Slökkva á skjá</translation>
 <translation id="6212752530110374741">Tengill í tölvupósti</translation>
+<translation id="6213230117190778270">Taka á móti</translation>
 <translation id="6216696360484424239">Sjálfvirk innskráning</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> er án nettengingar. Tengdu við internetið og reyndu aftur.</translation>
 <translation id="6220413761270491930">Villa við að hlaða viðbót</translation>
@@ -4207,7 +4210,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6270770586500173387">Senda <ph name="BEGIN_LINK1" />kerfis- og forritsupplýsingar<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />mælingar<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Villa kom upp (<ph name="ERROR" />) við að sækja viðbótina</translation>
 <translation id="6273677812470008672">Gæði</translation>
-<translation id="6273979226236203550">Aðgangsorðið þitt er vistað í þessu tæki og á Google reikningnum þínum. Hverju þeirra viltu eyða?</translation>
 <translation id="6277105963844135994">Tímamörk nets útrunnin</translation>
 <translation id="6277518330158259200">T&amp;aka skjámynd</translation>
 <translation id="6278057325678116358">Nota GTK+</translation>
@@ -4278,6 +4280,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6362853299801475928">Tilkynna um vandamál...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Bættu fjölskyldu og vinum við</translation>
+<translation id="6367985768157257101">Viltu taka á móti með nærdeilingu?</translation>
 <translation id="636850387210749493">Fyrirtækjaskráning</translation>
 <translation id="6370021412472292592">Ekki var hægt að hlaða upplýsingaskrá.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4853,7 +4856,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7099337801055912064">Ekki er hægt að hlaða inn stórri PPD-skrá. Hámarksstærð er 250 kB.</translation>
 <translation id="7102687220333134671">Nú er kveikt á sjálfvirkum uppfærslum</translation>
 <translation id="7102832101143475489">Beiðnin rann út á tíma</translation>
-<translation id="7102928824073746774">Ónefndur hópur – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">USB-stillingar</translation>
 <translation id="710640343305609397">Opna netstillingar</translation>
 <translation id="7108338896283013870">Fela</translation>
@@ -4929,6 +4931,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="720110658997053098">Halda þessu tæki varanlega í sjálfsalastillingu</translation>
 <translation id="7201118060536064622">„<ph name="DELETED_ITEM_NAME" />“ var eytt</translation>
 <translation id="7201420661433230412">Skoða skrár</translation>
+<translation id="7203150201908454328">Stækkað</translation>
 <translation id="7203826966018112936">Ef skólareikningi er bætt við notandasnið geta notendur á auðveldan hátt skráð sig inn á vefsvæði og viðbætur sem nemendur þar sem slík innskráning er enn undir stjórn foreldra. Það gefur barni ekki aðgang að bókamerkjum, aðgangsorðum eða öðrum vafragögnum sem eru samstillt við skólareikning.&lt;br&gt;&lt;br&gt;
     Ef barnið þitt notar Chromebook í skólanum og þú vilt spegla skólareikning heima til að tryggja að barnið þitt hafi aðgang að öllu nauðsynlegu efni skaltu skrá þig út úr þessum Family Link reikningi og skrá þig inn á skólareikninginn af Chrome OS reikningssíðunni (athugið: barnalæsingar Family Link munu ekki gilda).&lt;br&gt;&lt;br&gt;
     Ef barnið þitt notar ekki Chromebook í skólanum eða ef þú vilt stjórna aðgangi barnsins heima með Family Link skaltu smella á hnappinn „Áfram“ hér að neðan til að bæta skólareikningi við þennan prófíl.</translation>
@@ -5324,7 +5327,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7704521324619958564">Opna Play Store</translation>
 <translation id="7705276765467986571">Ekki var hægt að hlaða bókamerkjalíkan.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Kveikja/slökkva á lestrarstillingu</translation>
 <translation id="7707108266051544351">Lokað hefur verið á aðgang þessa vefsvæðis að hreyfiskynjurum.</translation>
 <translation id="7707922173985738739">Nota farsímagögn</translation>
 <translation id="7709152031285164251">Mistókst – <ph name="INTERRUPT_REASON" /></translation>
@@ -6580,6 +6582,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Sláðu inn aðgangsorð</translation>
 <translation id="939736085109172342">Ný mappa</translation>
+<translation id="941070664607309480">Smelltu til að gera þig sýnilega(n) svo það geti deilt með þér</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> deilir flipa og hljóði í Chrome.</translation>
 <translation id="945522503751344254">Senda ábendingu</translation>
 <translation id="947329552760389097">&amp;Kanna einingar</translation>

@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">只有 Encipher</translation>
 <translation id="1038462104119736705">Linux 需要至少 <ph name="INSTALL_SIZE" /> 的空間。如要增加可用空間，請刪除裝置內的檔案。</translation>
 <translation id="1039337018183941703">檔案無效或損毀</translation>
+<translation id="104086161873270383">新增設定檔</translation>
 <translation id="1041175011127912238">此網頁沒有回應</translation>
 <translation id="1041263367839475438">可用的裝置</translation>
 <translation id="1042174272890264476">您的電腦也內置了 <ph name="SHORT_PRODUCT_NAME" /> 的 RLZ 資料庫。RLZ 可指定非重複、非個人的可識別標記，以評估特定宣傳廣告活動所提升的搜尋數量與 <ph name="SHORT_PRODUCT_NAME" /> 使用量。這些標籤有時也會顯示在 <ph name="PRODUCT_NAME" /> 的 Google 搜尋查詢中。</translation>
@@ -255,6 +256,7 @@
 <translation id="1306606229401759371">變更設定</translation>
 <translation id="1307165550267142340">已建立 PIN</translation>
 <translation id="1307559529304613120">糟糕！系統無法為這部裝置儲存長期 API 存取憑證。</translation>
+<translation id="1313162974556054106">裝置名稱</translation>
 <translation id="1313405956111467313">自動 Proxy 設定</translation>
 <translation id="131364520783682672">Caps Lock 鍵</translation>
 <translation id="1313660246522271310">您將會從所有網站 (包括已開啟的分頁) 登出</translation>
@@ -705,7 +707,6 @@
 <translation id="184273675144259287">以先前的備份取代您的 Linux 應用程式和檔案</translation>
 <translation id="1842766183094193446">您確定要啟用示範模式嗎？</translation>
 <translation id="1846308012215045257">按住 Ctrl 鍵並按一下即可執行 <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">「<ph name="GROUP_NAME" />」群組 - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">啟用「氛圍模式」</translation>
 <translation id="1849186935225320012">這個網頁可全權控制 MIDI 裝置。</translation>
 <translation id="1850508293116537636">順時針旋轉(&amp;C)</translation>
@@ -1722,6 +1723,7 @@
 <translation id="3103941660000130485">升級 Linux 時發生錯誤</translation>
 <translation id="3105796011181310544">要改回使用 Google 嗎？</translation>
 <translation id="310671807099593501">網站正在使用藍牙</translation>
+<translation id="3109724472072898302">已收合</translation>
 <translation id="3115147772012638511">等候快取…</translation>
 <translation id="3115580024857770654">收合全部</translation>
 <translation id="3116968597797150452">憑證設定檔</translation>
@@ -1789,7 +1791,6 @@
 <translation id="3192947282887913208">音效檔案</translation>
 <translation id="3199127022143353223">伺服器</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome 建議您立即檢查此密碼}other{Chrome 建議您立即檢查這些密碼}}</translation>
-<translation id="3200941271596533635">切換閱讀器模式</translation>
 <translation id="3201422919974259695">可用的 USB 裝置將會在這裡顯示。</translation>
 <translation id="3202131003361292969">路徑</translation>
 <translation id="3202173864863109533">此分頁的音效已設為靜音。</translation>
@@ -4209,7 +4210,6 @@
 <translation id="6270770586500173387">傳送<ph name="BEGIN_LINK1" />系統和應用程式資訊<ph name="END_LINK1" />，以及<ph name="BEGIN_LINK2" />指標數據<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">下載外掛程式時發生錯誤 (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">品質</translation>
-<translation id="6273979226236203550">您的密碼已儲存在此裝置和 Google 帳戶中。您要刪除哪一個密碼？</translation>
 <translation id="6277105963844135994">網絡逾時</translation>
 <translation id="6277518330158259200">擷取螢幕畫面(&amp;A)</translation>
 <translation id="6278057325678116358">使用 GTK+</translation>
@@ -4253,6 +4253,7 @@
 <translation id="6322653941595359182">在 Chomebook 上發送和接收短訊</translation>
 <translation id="6324916366299863871">編輯捷徑</translation>
 <translation id="6325191661371220117">停用自動啟動功能</translation>
+<translation id="6325525973963619867">失敗</translation>
 <translation id="6326175484149238433">從 Chrome 中移除</translation>
 <translation id="6326855256003666642">Keepalive 數量</translation>
 <translation id="632707535499064463">「<ph name="ORGANIZATION_NAME" />」要求您在期限前更新此裝置。</translation>
@@ -4856,7 +4857,6 @@
 <translation id="7099337801055912064">無法載入大型 PPD。檔案上限為 250KB。</translation>
 <translation id="7102687220333134671">已開啟自動更新功能</translation>
 <translation id="7102832101143475489">要求逾時</translation>
-<translation id="7102928824073746774">未命名嘅群組 - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">USB 偏好設定</translation>
 <translation id="710640343305609397">開啟網絡設定</translation>
 <translation id="7108338896283013870">隱藏</translation>
@@ -4932,6 +4932,7 @@
 <translation id="720110658997053098">讓此裝置永久使用 Kiosk 模式</translation>
 <translation id="7201118060536064622">已刪除「<ph name="DELETED_ITEM_NAME" />」</translation>
 <translation id="7201420661433230412">查看檔案</translation>
+<translation id="7203150201908454328">已展開</translation>
 <translation id="7203826966018112936">只需新增學校帳戶到設定檔，即可讓您在家長監控設定下，以學生身份輕鬆登入網站和擴充程式。此操作不會向子女授予與學校帳戶同步的書籤、密碼或其他瀏覽資料的存取權。&lt;br&gt;&lt;br&gt;
     如果您的子女在學校使用 Chromebook，而您想將學校體驗完整複製至家中，以確保子女女可存取所有與學校作業相關的必要內容，請登出此 Family Link 帳戶，並從 Chrome 作業系統帳戶頁面登入學校帳戶 (注意：系統不會套用 Family Link 家長監控設定)。&lt;br&gt;&lt;br&gt;
     如果您的子女在學校不使用 Chromebook，或您想透過 Family Link 管理子女的在家體驗，請按下方的 [下一步] 按鈕，將學校帳戶新增至此設定檔。</translation>
@@ -5327,7 +5328,6 @@
 <translation id="7704521324619958564">開啟 Play 商店</translation>
 <translation id="7705276765467986571">無法載入書籤模型。</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">切換閱讀器模式</translation>
 <translation id="7707108266051544351">系統已封鎖此網站使用動作感應器。</translation>
 <translation id="7707922173985738739">使用流動數據</translation>
 <translation id="7709152031285164251">失敗 - <ph name="INTERRUPT_REASON" /></translation>

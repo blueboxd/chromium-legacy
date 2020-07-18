@@ -232,6 +232,7 @@
 <translation id="1274997165432133392">ខុកឃី និងទិន្នន័យគេហទំព័រដ៏ទៃទៀត</translation>
 <translation id="1275718070701477396">បានជ្រើសរើស</translation>
 <translation id="1276994519141842946">មិនអាច​លុប <ph name="APP_NAME" /> បានទេ</translation>
+<translation id="127946606521051357">ឧបករណ៍​នៅជិតកំពុង​ចែករំលែក</translation>
 <translation id="1280820357415527819">កំពុង​ស្វែងរក​បណ្ដាញ​ទូរសព្ទ​ចល័ត</translation>
 <translation id="1280965841156951489">កែ​ឯកសារ</translation>
 <translation id="1285320974508926690">មិនបកប្រែគេហទំព័រនេះទៀតឡើយ</translation>
@@ -254,6 +255,7 @@
 <translation id="1306606229401759371">ប្ដូរ​ការកំណត់</translation>
 <translation id="1307165550267142340">បាន​បង្កើតកូដ PIN ហើយ</translation>
 <translation id="1307559529304613120">អូយ! ប្រព័ន្ធបានបរាជ័យក្នុងផ្ទុកសញ្ញាដំណាងការចូលប្រើ API រយៈពេលវែងសម្រាប់ឧបករណ៍នេះ។</translation>
+<translation id="1313162974556054106">ឈ្មោះឧបករណ៍</translation>
 <translation id="1313405956111467313">ការតំឡើងប្រូកស៊ីដោយស្វ័យប្រវត្តិ</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">អ្នក​នឹង​ត្រូវនាំចេញ​ពី​គេហទំព័រ​ទាំងអស់ រួមទាំង​នៅក្នុង​ផ្ទាំងដែលបានបើក​ផងដែរ</translation>
@@ -704,7 +706,6 @@
 <translation id="184273675144259287">ជំនួសកម្មវិធី និងឯកសារ Linux ដោយប្រើ​ការបម្រុងទុកពីមុន</translation>
 <translation id="1842766183094193446">តើអ្នក​ប្រាកដ​ថាចង់​បើក​មុខងារ​សាកល្បង​មែនឬ?</translation>
 <translation id="1846308012215045257">ចុច Control-click ដើម្បីដំណើរការ <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">ក្រុម <ph name="GROUP_NAME" /> - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">បើក​មុខងារ​សម្ងំ</translation>
 <translation id="1849186935225320012">ទំព័រនេះមានការគ្រប់គ្រងឧបករណ៍ MIDI ទាំងស្រុង។</translation>
 <translation id="1850508293116537636">បង្វិលបញ្ច្រាសទ្រនិចនាឡិកា</translation>
@@ -1220,6 +1221,7 @@
 <translation id="2489918096470125693">បន្ថែមថតឯកសារ...</translation>
 <translation id="2490481887078769936">បានលុប '<ph name="FILE_NAME" />' ចេញពីបញ្ជី</translation>
 <translation id="249113932447298600">សូមទោស <ph name="DEVICE_LABEL" /> មិនត្រូវបានគាំទ្រទេនៅពេលនេះ។</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> កំពុង​ចែករំលែក <ph name="ATTACHMENTS" /> ជាមួយ​អ្នក។</translation>
 <translation id="2492461744635776704">កំពុងរៀបចំ​សំណើសុំ​ចុះហត្ថលេខា​លើវិញ្ញាបនបត្រ</translation>
 <translation id="249303669840926644">មិនអាចបញ្ចប់ការចុះឈ្មោះទេ</translation>
 <translation id="2495777824269688114">ស្វែងយល់អំពី​មុខងារថ្មីៗ ឬទទួលចម្លើយច្រើនទៀត។ សូមជ្រើសរើស “?” ដើម្បីទទួលបានជំនួយ។</translation>
@@ -1721,6 +1723,7 @@
 <translation id="3103941660000130485">មានបញ្ហា​ក្នុងការ​ដំឡើងកំណែ Linux</translation>
 <translation id="3105796011181310544">ប្ដូរទៅ Google វិញឬ?</translation>
 <translation id="310671807099593501">ទំព័រ​កំពុងប្រើ​ប៊្លូធូស</translation>
+<translation id="3109724472072898302">បានបង្រួមចូល</translation>
 <translation id="3115147772012638511">កំពុងរង់ចាំឃ្លាំងសម្ងាត់...</translation>
 <translation id="3115580024857770654">បង្រួម​ទាំងអស់</translation>
 <translation id="3116968597797150452">កម្រងព័ត៌មាន​វិញ្ញាបនបត្រ</translation>
@@ -1788,7 +1791,6 @@
 <translation id="3192947282887913208">ឯកសារសម្លេង</translation>
 <translation id="3199127022143353223">ម៉ាស៊ីនមេ</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome ណែនាំឱ្យ​ពិនិត្យមើល​ពាក្យសម្ងាត់នេះ​ឥឡូវនេះ}other{Chrome ណែនាំឱ្យ​ពិនិត្យមើល​ពាក្យសម្ងាត់ទាំងនេះ​ឥឡូវនេះ}}</translation>
-<translation id="3200941271596533635">បិទ/បើកមុខងារអាន</translation>
 <translation id="3201422919974259695">ឧបករណ៍ USB ដែលអាចប្រើបាននឹងបង្ហាញនៅទីនេះ។</translation>
 <translation id="3202131003361292969">ផ្លូវ</translation>
 <translation id="3202173864863109533">សម្លេងរបស់ផ្ទាំងនេះកំពុងត្រូវបានបិទ។</translation>
@@ -4152,6 +4154,7 @@
 <translation id="6212039847102026977">បង្ហាញ​លក្ខណៈសម្បត្តិ​បណ្តាញ​កម្រិត​ខ្ពស់</translation>
 <translation id="6212168817037875041">បិទ​អេក្រង់</translation>
 <translation id="6212752530110374741">តំណ​អ៊ីមែល</translation>
+<translation id="6213230117190778270">ទទួល</translation>
 <translation id="6216696360484424239">ចូល​ដោយ​ស្វ័យ​ប្រវត្តិ</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> គ្មាន​អ៊ីនធឺណិត​ទេ។ សូមភ្ជាប់​អ៊ីនធឺណិត រួច​ព្យាយាម​ម្តងទៀត។</translation>
 <translation id="6220413761270491930">កំហុសឆ្គងការដំណើរការកម្មវិធីបន្ថែម</translation>
@@ -4208,7 +4211,6 @@
 <translation id="6270770586500173387">ផ្ញើ <ph name="BEGIN_LINK1" />ព័ត៌មានប្រព័ន្ធ និងកម្មវិធី<ph name="END_LINK1" /> និង<ph name="BEGIN_LINK2" />ប្រព័ន្ធវាស់វែង<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">មានបញ្ហា (<ph name="ERROR" />) ខណៈពេលទាញយកកម្មវិធីជំនួយនេះ</translation>
 <translation id="6273677812470008672">គុណភាព</translation>
-<translation id="6273979226236203550">ពាក្យសម្ងាត់របស់អ្នកត្រូវបានរក្សាទុកនៅលើឧបករណ៍នេះ និងនៅក្នុងគណនី Google របស់អ្នក។ តើអ្នកចង់លុបពាក្យសម្ងាត់មួយណា?</translation>
 <translation id="6277105963844135994">បណ្តាញអស់ពេល</translation>
 <translation id="6277518330158259200">ថតអេក្រង់</translation>
 <translation id="6278057325678116358">ប្រើ GTK+</translation>
@@ -4279,6 +4281,7 @@
 <translation id="6362853299801475928">រាយការណ៍បញ្ហា...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">បន្ថែមគ្រួសារ និងមិត្តភ័ក្ត</translation>
+<translation id="6367985768157257101">ទទួលដោយប្រើការ​ចែករំលែកនៅ​ជិតឬ?</translation>
 <translation id="636850387210749493">ការចុះឈ្មោះសហគ្រាស</translation>
 <translation id="6370021412472292592">មិនអាចដំណើរការមេនីហ្វេសទេ។</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4854,7 +4857,6 @@
 <translation id="7099337801055912064">មិន​អាចផ្ទុក PPD ទំហំធំ​បានទេ។ ទំហំ​អតិបរមា​គឺ 250 គីឡូបៃ។</translation>
 <translation id="7102687220333134671">ការ​ធ្វើបច្ចុប្បន្នភាព​ដោយ​ស្វ័យប្រវត្តិ​បានបើក​ហើយ</translation>
 <translation id="7102832101143475489">សំណើ​បាន​អស់ម៉ោង</translation>
-<translation id="7102928824073746774">ក្រុមដែលមិនបានដាក់ឈ្មោះ - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">ចំណូលចិត្ត USB</translation>
 <translation id="710640343305609397">បើក​ការកំណត់​បណ្ដាញ</translation>
 <translation id="7108338896283013870">លាក់</translation>
@@ -4930,6 +4932,7 @@
 <translation id="720110658997053098">កំណត់ឧបករណ៍នេះឱ្យដំណើរការមុខងារបញ្ជរជាអចិន្ត្រៃយ៍</translation>
 <translation id="7201118060536064622">បានលុប '<ph name="DELETED_ITEM_NAME" />'</translation>
 <translation id="7201420661433230412">មើល​ឯកសារ</translation>
+<translation id="7203150201908454328">បានពង្រីក</translation>
 <translation id="7203826966018112936">ការបញ្ចូល​គណនីសាលារៀន​ទៅក្នុង​កម្រងព័ត៌មាន​ធ្វើឱ្យ​មានភាពងាយស្រួលក្នុងការ​ចូលគេហទំព័រ និង​កម្មវិធីបន្ថែម​ក្នុងនាម​ជាសិស្ស ដោយ​ធ្វើប្រតិបត្តិការ​ក្រោមការគ្រប់គ្រង​ដោយមាតាបិតា​។ ការបញ្ចូលនេះ​មិនផ្ដល់សិទ្ធ​ឱ្យកូនចូលប្រើ​ចំណាំ ពាក្យសម្ងាត់ ឬ​ទិន្នន័យរុករក​ផ្សេងទៀត​ដែលធ្វើសមកាលកម្ម​ជាមួយគណនី​សាលារៀនទេ​។&lt;br&gt;&lt;br&gt;
     ប្រសិនបើ​កូនរបស់អ្នក​ប្រើ Chromebook នៅសាលារៀន ហើយ​អ្នកចង់​បញ្ចាំង​បទពិសោធន៍ប្រើប្រាស់​នៅសាលារៀន​នៅផ្ទះ ដើម្បីប្រាកដថា​កូនរបស់អ្នក​មានសិទ្ធិចូលប្រើ​កិច្ចការសាលា​ដែលចាំបាច់​ទាំងអស់ សូម​ចេញពីគណនី Family Link នេះ ហើយ​ចូលគណនី​សាលារៀន​ពីទំព័រ​គណនី Chrome OS (ចំណាំ៖ ការគ្រប់គ្រង​ដោយមាតាបិតារបស់ Family Link នឹងមិនត្រូវបាន​អនុវត្តទេ)។&lt;br&gt;&lt;br&gt;
     ប្រសិនបើ​កូនរបស់អ្នក​មិនប្រើ Chromebook នៅសាលារៀន ឬ​ប្រសិនបើ​អ្នកចង់​គ្រប់គ្រង​បទពិសោធន៍ប្រើប្រាស់​របស់កូនអ្នក​នៅផ្ទះ​ដោយប្រើ Family Link ជាង សូម​ចុច​ប៊ូតុង "បន្ទាប់" ខាងក្រោម ដើម្បី​បញ្ចូល​គណនីសាលារៀន​ទៅក្នុង​កម្រងព័ត៌មាន​នេះ។</translation>
@@ -5325,7 +5328,6 @@
 <translation id="7704521324619958564">បើកហាង Play</translation>
 <translation id="7705276765467986571">មិនអាចដំណើរការម៉ូដែលចំណាំទេ។</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">បិទ/បើក​មុខងារអាន</translation>
 <translation id="7707108266051544351">គេហទំព័រ​នេះ​ត្រូវបាន​ទប់ស្កាត់​មិនឱ្យ​ប្រើប្រាស់​ឧបករណ៍​ចាប់ចលនា។</translation>
 <translation id="7707922173985738739">ប្រើ​ទិន្នន័យ​ទូរសព្ទចល័ត</translation>
 <translation id="7709152031285164251">បានបរាជ័យ - <ph name="INTERRUPT_REASON" /></translation>
@@ -6581,6 +6583,7 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">បញ្ចូលឃ្លាសម្ងាត់</translation>
 <translation id="939736085109172342">ថតឯកសារថ្មី</translation>
+<translation id="941070664607309480">ចុចដើម្បីអាចឱ្យ​មើលឃើញ ដើម្បីឱ្យឧបករណ៍នោះអាចចែករំលែក​ជាមួយអ្នក</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> កំពុងចែករំលែកផ្ទាំង និងសម្លេង Chrome</translation>
 <translation id="945522503751344254">ផ្ញើមតិ</translation>
 <translation id="947329552760389097">ត្រួតពិនិត្យ​ធាតុ</translation>

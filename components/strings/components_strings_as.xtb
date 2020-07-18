@@ -40,7 +40,6 @@
 <translation id="1131264053432022307">আপুনি প্ৰতিলিপি কৰা প্ৰতিচ্ছবি</translation>
 <translation id="1150979032973867961">এই ছার্ভাৰে নিজকে <ph name="DOMAIN" /> বুলি প্ৰমাণ কৰিব নোৱাৰিলে আৰু আপোনাৰ কম্পিউটাৰৰ অপাৰেটিং ছিষ্টেমে ইয়াৰ সুৰক্ষাৰ প্ৰমাণপত্ৰ বিশ্বাস নকৰে। এয়া কোনো ভুল কনফিগাৰেশ্বনৰ বাবে বা কোনো আক্ৰমণকাৰীয়ে আপোনাৰ সংযোগ অৱৰোধ কৰাৰ বাবে হ'ব পাৰে।</translation>
 <translation id="1151972924205500581">পাছৱৰ্ড প্ৰয়োজনীয়</translation>
-<translation id="1152921474424827756"><ph name="URL" />ৰ <ph name="BEGIN_LINK" />কেশ্ব কৰা প্ৰতিলিপি<ph name="END_LINK" /> এক্সেছ কৰক</translation>
 <translation id="1156303062776767266">আপুনি কোনো স্থানীয় বা শ্বেয়াৰ কৰা ফাইল চাই আছে</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" />এ অপ্ৰত্যাশিতভাৱে সংযোগ বন্ধ কৰিছে।</translation>
 <translation id="115926840831309955">আপোনাৰ CVC পৰীক্ষা কৰি পুনৰ চেষ্টা কৰক অথবা ম্যাদ উকলাৰ তাৰিখটো আপডে’ট কৰক</translation>
@@ -247,7 +246,6 @@
 <translation id="1919345977826869612">বিজ্ঞাপনসমূহ</translation>
 <translation id="1919367280705858090">কোনো নির্দিষ্ট আসোঁৱাহ বার্তাৰ জৰিয়তে সহায় পাওক</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{এটাও নহয়}=1{১টা ছাইট}one{#টা ছাইট}other{#টা ছাইট}}</translation>
-<translation id="194030505837763158"><ph name="LINK" />লৈ যাওক</translation>
 <translation id="1945968466830820669">আপুনি আপোনাৰ প্ৰতিষ্ঠানৰ একাউণ্টটো এক্সেছ কৰিব নোৱাৰা হ‘ব পাৰে বা আপোনাৰ পৰিচয় চুৰি হোৱাৰ নিচিনা ঘটনাৰ মুখামুখী হ‘ব পাৰে। Chromiumএ আপোনাৰ পাছৱৰ্ডটো এতিয়াই সলনি কৰাটো চুপাৰিছ কৰিছে।</translation>
 <translation id="1947454675006758438">সোঁফালে ওপৰৰ অংশত ষ্টে'পল কৰক</translation>
 <translation id="1959001866257244765">Googleলৈ <ph name="BEGIN_WHITEPAPER_LINK" />আপুনি চোৱা কিছুমান পৃষ্ঠাৰ URLসমূহ, ছিষ্টেমৰ সীমিত তথ্য আৰু পৃষ্ঠাৰ কিছু সমল<ph name="END_WHITEPAPER_LINK" /> পঠিয়াই ৱেবত সকলোৰে বাবে সুৰক্ষা উন্নত কৰাত সহায় কৰক। <ph name="BEGIN_PRIVACY_PAGE_LINK" />গোপনীয়তাৰ নীতি<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -269,7 +267,6 @@
 <translation id="2003775180883135320">ওপৰৰ অংশত চতুর্ভূজ আকাৰত পাঞ্চ কৰক</translation>
 <translation id="2025115093177348061">পৰিৱৰ্ধিত বাস্তৱিকতা</translation>
 <translation id="2025186561304664664">প্ৰক্সী স্বয়ংক্ৰিয়ভাৱে কনফিগাৰ কৰা হিচাপে ছেট কৰা আছে।</translation>
-<translation id="2030481566774242610">আপুনি <ph name="LINK" />ৰ কথা কৈছে নেকি?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />প্ৰক্সি আৰু ফায়াৰৱাল পৰীক্ষা কৰি থকা হৈছে<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">ট্ৰে’ ৭</translation>
 <translation id="204357726431741734">আপোনাৰ Google একাউণ্টত ষ্ট’ৰ হৈ থকা পাছৱৰ্ডসমূহ ব্যৱহাৰ কৰিবলৈ ছাইন ইন কৰক</translation>
@@ -1065,7 +1062,6 @@
 <translation id="5421136146218899937">ব্ৰাউজিং ডেটা মচক...</translation>
 <translation id="5426179911063097041"><ph name="SITE" />এ আপোনালৈ জাননী পঠিয়াব বিচাৰে</translation>
 <translation id="5430298929874300616">বুকমার্ক আঁতৰাওক</translation>
-<translation id="5431657950005405462">আপোনাৰ ফাইল বিচাৰি পোৱা নাই</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />"ৰ স্কীমা সত্যাপনৰ আসোঁৱাহ : <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">ওপৰমুখীয়াকৈ বিপৰীত ক্ৰম</translation>
 <translation id="5447765697759493033">এই ছাইটটো অনুবাদ কৰা নহ’ব</translation>
@@ -1437,7 +1433,6 @@
 <translation id="7083258188081898530">ট্ৰে’ ৯</translation>
 <translation id="7086090958708083563">ব্যৱহাৰকাৰীয়ে অনুৰোধ কৰা আপল'ড</translation>
 <translation id="7087282848513945231">জিলা</translation>
-<translation id="7090678807593890770">Googleত <ph name="LINK" /> সন্ধান কৰক</translation>
 <translation id="7108634116785509031"><ph name="HOST" />এ আপোনাৰ কেমেৰা ব্যৱহাৰ কৰিব বিচাৰিছে</translation>
 <translation id="7108819624672055576">এটা এক্সটেনশ্বনে অনুমতি দিছে</translation>
 <translation id="7111012039238467737">(মান্য)</translation>
@@ -1870,7 +1865,6 @@
 <translation id="893332455753468063">নাম যোগ কৰক</translation>
 <translation id="8943282376843390568">নেমুৰঙী</translation>
 <translation id="8957210676456822347">কেপটিভ পর্টেল বিশ্বাসযোগ্যতাৰ প্ৰমাণীকৰণ</translation>
-<translation id="8958582951173503172">Chrome এণ্টাৰপ্ৰাইজ কানেক্টৰসমূহে সুৰক্ষা সম্পৰ্কীয় ঘটনা ফ্লেগ কৰিলে ঘটনাটোৰ বিষয়ে প্ৰাসংগিক ডেটা আপোনাৰ প্ৰশাসকলৈ পঠিওৱা হয়। ইয়াত আপুনি Chromeত চোৱা পৃষ্ঠাসমূহৰ URL, ফাইলৰ নাম অথবা মেটাডেটা আৰু আপুনি নিজৰ ডিভাইচ আৰু Chromeত ছাইন ইন কৰিবলৈ ব্যৱহাৰ কৰা ব্যৱহাৰকাৰীৰ নামটো থাকিব পাৰে।</translation>
 <translation id="8962950042226115166">সন্দেহজনক ছাইট</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />পৰামৰ্শ:<ph name="MARKUP_2" />আপোনাৰ এটা ডেটা সংযোগ থকাটো নিশ্চিত কৰক<ph name="MARKUP_3" />এই ৱেবপে‘জটো পিছত ৰিল‘ড কৰক<ph name="MARKUP_4" />আপুনি দিয়া ঠিকনাটো পৰীক্ষা কৰক<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">কার্ড ছেভ কৰক</translation>

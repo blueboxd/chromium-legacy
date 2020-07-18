@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">మీ ఇంటర్నెట్ కనెక్షన్‌ను తనిఖీ చేస్తోంది</translation>
 <translation id="2359808026110333948">కొనసాగించు</translation>
 <translation id="2369533728426058518">తెరిచిన ట్యాబ్‌లు</translation>
-<translation id="2377295302146152376">అప్‌డేట్‌ల కోసం చెక్ చేయడం Chromeకు సాధ్యపడలేదు</translation>
 <translation id="2387895666653383613">వచన ప్రమాణం</translation>
 <translation id="2394602618534698961">మీరు డౌన్‌లోడ్ చేసే ఫైల్‌లు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="2407481962792080328">మీ Google ఖాతాకు మీరు సైన్ ఇన్ చేసినప్పుడు, ఈ ఫీచర్ ఆన్ చేయబడుతుంది</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />సహాయం పొందండి<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">స్థానం ఆఫ్ చేయబడింది; దీనిని <ph name="BEGIN_LINK" />Android సెట్టింగ్‌లు<ph name="END_LINK" />లో ఆన్ చేయండి.</translation>
 <translation id="3058498974290601450">సెట్టింగ్‌లలో ఎప్పుడైనా మీరు సింక్‌ను ఆన్ చేయవచ్చు</translation>
-<translation id="3059710691562604940">సురక్షిత బ్రౌజింగ్ ఆఫ్ చేయబడింది. దాన్ని ఆన్ చేయమని Chrome సిఫార్సు చేస్తోంది.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> బుక్‌మార్క్}other{<ph name="BOOKMARKS_COUNT_MANY" /> బుక్‌మార్క్‌లు}}</translation>
 <translation id="3089395242580810162">అజ్ఞాత ట్యాబ్‌లో తెరువు</translation>
 <translation id="3114012059975132928">వీడియో ప్లేయర్</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">అప్‌డేట్‌ అందుబాటులో ఉంది. మరిన్ని ఎంపికలు</translation>
 <translation id="3524138585025253783">డెవలపర్ UI</translation>
 <translation id="3527085408025491307">ఫోల్డర్</translation>
-<translation id="3533694711092285624">సేవ్ చేసిన పాస్‌వర్డ్‌లు లేవు. మీరు మీ పాస్‌వర్డ్‌లను సేవ్ చేసినప్పుడు Chrome వాటిని చెక్ చేయగలదు.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB అందుబాటులో ఉంది</translation>
 <translation id="3549657413697417275">మీ చరిత్రను వెతకండి</translation>
 <translation id="3557336313807607643">పరిచయాలకు జోడించు</translation>
@@ -360,6 +357,7 @@
 <translation id="3892148308691398805">టెక్స్ట్‌ను కాపీ చేయి</translation>
 <translation id="3894427358181296146">ఫోల్డర్‌ను జోడించండి</translation>
 <translation id="3895926599014793903">జూమ్ చేయడాన్ని నిర్బంధంగా ప్రారంభించు</translation>
+<translation id="3909763690984331376">భద్రతా తనిఖీ <ph name="BEGIN_NEW" />కొత్తది<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">వెబ్ నుండి ఉత్తమమైనది కనుగొంటోంది…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">నా డేటాను కలపండి</translation>
@@ -460,6 +458,7 @@
 <translation id="4749960740855309258">కొత్త ట్యాబ్‌ను తెరవండి</translation>
 <translation id="4759238208242260848">డౌన్‌లోడ్‌లు</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 డౌన్‌లోడ్ పూర్తయింది.}other{# డౌన్‌లోడ్‌లు పూర్తయ్యాయి.}}</translation>
+<translation id="4766678251456904326">పరికరానికి మరొక ఖాతాను జోడించండి</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 డౌన్‌లోడ్ షెడ్యూల్ చేయబడింది.}other{# డౌన్‌లోడ్‌లు షెడ్యూల్ చేయబడ్డాయి.}}</translation>
 <translation id="478981486571169252">మీరు Chromeలో మీ <ph name="SITE_NAME" /> సైన్ ఇన్ స్టేటస్, బ్రౌజింగ్ డేటా, సైట్ డేటాను చూస్తారు.</translation>
 <translation id="4802417911091824046">Google Payకి సంబంధించిన చెల్లింపు పద్ధతులు మరియు చిరునామాలు రహస్య పదబంధం ఎన్‌క్రిప్షన్‌లో ఉండవు.
@@ -569,6 +568,7 @@
 <translation id="5581519193887989363">మీరు ఎప్పుడైనా <ph name="BEGIN_LINK1" />సెట్టింగ్‌ల<ph name="END_LINK1" /> ద్వారా వేటిని సింక్ చేయాలో ఎంచుకోవచ్చు.</translation>
 <translation id="5595485650161345191">చిరునామాను సవరించు</translation>
 <translation id="5599455543593328020">అజ్ఞాత మోడ్</translation>
+<translation id="5620163320393916465">సేవ్ చేసిన పాస్‌వర్డ్‌లు ఏవీ లేవు</translation>
 <translation id="5620928963363755975">'మరిన్ని ఎంపికలు' బటన్ నొక్కి, డౌన్‌లోడ్‌లలో మీ ఫైల్‌లు మరియు పేజీలను కనుగొనండి</translation>
 <translation id="5626134646977739690">పేరు:</translation>
 <translation id="5639724618331995626">అన్ని సైట్‌లను అనుమతించండి</translation>
@@ -580,6 +580,7 @@
 <translation id="5686790454216892815">ఫైల్ పేరు చాలా పొడవుగా ఉంది</translation>
 <translation id="5694049548840660018">ఇంటికి సులభంగా తిరిగి రండి</translation>
 <translation id="569536719314091526">మరిన్ని ఎంపికలు బటన్‌ని ఉపయోగించి ఈ పేజీని ఏ భాషలోకైనా అనువదించుకోవచ్చు</translation>
+<translation id="5696597120588531049">డేటా ఉల్లంఘనలు, సురక్షితం కాని వెబ్‌సైట్‌లు, మరిన్నింటి నుండి మిమ్మల్ని సురక్షితంగా ఉంచడంలో Chrome సహాయపడగలదు</translation>
 <translation id="5697688514913266141">మీ ఫైల్ <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />లో సేవ్ చేయబడుతుంది. <ph name="BEGIN_LINK2" />ఎడిట్<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">ట్యాబ్‌కు మారండి</translation>
 <translation id="572328651809341494">ఇటీవలి ట్యాబ్‌లు</translation>
@@ -713,6 +714,7 @@
 <translation id="6656545060687952787">పరికరాల కోసం స్కాన్ చేయడానికి Chromeకు స్థాన యాక్సెస్ అవసరం. <ph name="BEGIN_LINK" />అనుమతులను అప్‌డేట్ చేయండి<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">పాస్‌వర్డ్</translation>
 <translation id="6659594942844771486">ట్యాబ్</translation>
+<translation id="6663079968236414793">టెక్స్ట్‌కు లింక్</translation>
 <translation id="666573598175432848">Chrome క్రొత్త వెర్షన్ అందుబాటులో ఉంది. Play స్టోర్‌కు వెళ్లడానికి ఈ ఎలిమెంట్‌ను ట్యాప్ చేయండి.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" />లో తెరువు</translation>
 <translation id="666981079809192359">Chrome గోప్యతా నోటీసు</translation>

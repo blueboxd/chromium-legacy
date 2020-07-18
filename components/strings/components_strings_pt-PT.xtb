@@ -40,7 +40,6 @@
 <translation id="1131264053432022307">Imagem que copiou</translation>
 <translation id="1150979032973867961">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o sistema operativo do seu computador não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="1151972924205500581">É necessária a palavra-passe</translation>
-<translation id="1152921474424827756">Aceda a uma <ph name="BEGIN_LINK" />cópia em cache<ph name="END_LINK" /> de <ph name="URL" /></translation>
 <translation id="1156303062776767266">Está a visualizar um ficheiro local ou partilhado</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> fechou a ligação inesperadamente.</translation>
 <translation id="115926840831309955">Verifique o Código de Segurança/CVC e tente novamente ou atualize a data de validade.</translation>
@@ -248,7 +247,6 @@
 <translation id="1919345977826869612">Anúncios</translation>
 <translation id="1919367280705858090">Obter ajuda relativamente a uma mensagem de erro específica</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Nenhum}=1{1 site}other{# sites}}</translation>
-<translation id="194030505837763158">Aceder a <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Pode perder o acesso à conta da sua entidade ou ser vítima de roubo de identidade. O Chromium recomenda a alteração da palavra-passe agora.</translation>
 <translation id="1947454675006758438">Agrafo na parte superior direita</translation>
 <translation id="1959001866257244765">Ajude a melhorar a segurança na Web para todos ao enviar <ph name="BEGIN_WHITEPAPER_LINK" />os URLs de algumas páginas que visita, informações limitadas do sistema e algum conteúdo das páginas<ph name="END_WHITEPAPER_LINK" /> para a Google. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Política de Privacidade<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -271,7 +269,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="202072848677994234">Este formulário é enviado através de uma ligação insegura. O preenchimento automático está desativado.</translation>
 <translation id="2025115093177348061">Realidade aumentada</translation>
 <translation id="2025186561304664664">O proxy está definido para configuração automática.</translation>
-<translation id="2030481566774242610">Será que quis dizer <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Verificar o proxy e a firewall<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Tabuleiro 7</translation>
 <translation id="204357726431741734">Iniciar sessão para utilizar palavras-passe guardadas na sua Conta Google</translation>
@@ -1050,6 +1047,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5308380583665731573">Ligar</translation>
 <translation id="5308689395849655368">O relatório de falha está desativado.</translation>
 <translation id="5314967030527622926">Criador de folhetos</translation>
+<translation id="5316812925700871227">Rodar para a esquerda</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> de <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Escolher informações de contacto</translation>
@@ -1073,7 +1071,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5421136146218899937">Limpar dados de navegação...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> pretende enviar-lhe notificações.</translation>
 <translation id="5430298929874300616">Remover marcador</translation>
-<translation id="5431657950005405462">O ficheiro não foi encontrado</translation>
 <translation id="5439770059721715174">Erro de validação de esquema em "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Ordem inversa, com orientação para cima</translation>
 <translation id="5447765697759493033">Este site não será traduzido.</translation>
@@ -1447,7 +1444,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="7083258188081898530">Tabuleiro 9</translation>
 <translation id="7086090958708083563">Carregamento solicitado pelo utilizador</translation>
 <translation id="7087282848513945231">Município</translation>
-<translation id="7090678807593890770">Pesquisar <ph name="LINK" /> no Google</translation>
 <translation id="7108338896283013870">Ocultar</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> pretende utilizar a câmara.</translation>
 <translation id="7108819624672055576">Permitida por uma extensão</translation>
@@ -1883,7 +1879,6 @@ Detalhes adicionais:
 <translation id="893332455753468063">Adicionar nome</translation>
 <translation id="8943282376843390568">Lima</translation>
 <translation id="8957210676456822347">Autorização de portal cativo</translation>
-<translation id="8958582951173503172">Quando os Chrome Enterprise Connectors sinalizam eventos de segurança, são enviados dados relevantes acerca do evento para o seu administrador. Estes podem incluir os URLs das páginas que visita no Chrome, os metadados ou os nomes de ficheiros e o nome de utilizador que utiliza para iniciar sessão no dispositivo e no Chrome.</translation>
 <translation id="8962950042226115166">Site suspeito</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Sugestões:<ph name="MARKUP_2" />Assegure-se de que tem uma ligação de dados<ph name="MARKUP_3" />Recarregue esta página Web mais tarde<ph name="MARKUP_4" />Verifique o endereço que introduziu<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Guardar cartão</translation>

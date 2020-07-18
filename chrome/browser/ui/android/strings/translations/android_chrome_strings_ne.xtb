@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">तपाईंको इन्टरनेट जडानको जाँच गर्दै</translation>
 <translation id="2359808026110333948">जारी राख्नुहोस्</translation>
 <translation id="2369533728426058518">ट्याबहरू खोल्नुहोस्</translation>
-<translation id="2377295302146152376">Chrome ले अपडेट उपलब्ध छ कि छैन भनी जाँच गर्न सकेन</translation>
 <translation id="2387895666653383613">पाठ स्केलिङ</translation>
 <translation id="2394602618534698961">तपाईंले डाउनलोड गर्ने फाइलहरू यहाँ देखिन्छन्</translation>
 <translation id="2407481962792080328">तपाईंले आफ्नो Google खातामा साइन इन गर्दा यो सुविधा सक्रिय हुन्छ</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />मद्दत प्राप्त गर्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">स्थानसम्बन्धी सुविधा निष्क्रिय छ; <ph name="BEGIN_LINK" />Android का सेटिङहरू<ph name="END_LINK" /> मा गई यसलाई सक्रिय गर्नुहोस्।</translation>
 <translation id="3058498974290601450">तपाईं सेटिङहरूमा गई जुनसुकै बेला सिंक सक्रिय गर्न सक्नुहुन्छ</translation>
-<translation id="3059710691562604940">सुरक्षित ब्राउजिङ निष्क्रिय छ। Chrome ले यो सेवा सक्रिय गर्न सिफारिस गर्छ।</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> पुस्तक चिन्ह}other{<ph name="BOOKMARKS_COUNT_MANY" /> पुस्तक चिन्हहरू}}</translation>
 <translation id="3089395242580810162">इन्कोग्निटो ट्याबमा खोल्नुहोस्</translation>
 <translation id="3114012059975132928">भिडियो प्लेयर</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">अद्यावधिक उपलब्ध छ। थप विकल्पहरू</translation>
 <translation id="3524138585025253783">विकासकर्ताको UI</translation>
 <translation id="3527085408025491307">फोल्डर</translation>
-<translation id="3533694711092285624">कुनै पनि सुरक्षित गरिएको पासवर्ड छैन। तपाईंले आफ्ना पासवर्डहरू सुरक्षित गर्नुभएको छ भने मात्र Chrome ले तिनको जाँच गर्न सक्छ।</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> के.बि. उपलब्ध छ</translation>
 <translation id="3549657413697417275">आफ्नो ब्राउजिङको इतिहासमा खोज्नुहोस्।</translation>
 <translation id="3557336313807607643">सम्पर्क ठेगानामा थप्नुहोस्</translation>
@@ -459,6 +456,7 @@
 <translation id="4749960740855309258">एउटा नयाँ ट्याब खोल्नुहोस्</translation>
 <translation id="4759238208242260848">डाउनलोडहरू</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{१ डाउनलोड सम्पन्न भयो।}other{# डाउनलोडहरू सम्पन्न भए।}}</translation>
+<translation id="4766678251456904326">यन्त्रमा खाता जोड्नुहोस्</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{एउटा डाउनलोडको समयतालिका निर्धारण गरियो।}other{# वटा डाउनलोडको समयतालिका निर्धारण गरियो।}}</translation>
 <translation id="478981486571169252">तपाईं Chrome मा आफ्नो <ph name="SITE_NAME" /> को साइन इनसम्बन्धी अवस्था, ब्राउजिङ डेटा र साइट डेटा देख्नु हुने छ।</translation>
 <translation id="4802417911091824046">पासफ्रेजमार्फत इन्क्रिप्सन गर्ने कार्यअन्तर्गत Google Pay का भुक्तानी विधि र ठेगानाहरू समावेश हुँदैनन्।
@@ -568,6 +566,7 @@
 <translation id="5581519193887989363">तपाईं जुनसुकै बेला <ph name="BEGIN_LINK1" />सेटिङहरू<ph name="END_LINK1" /> मा गई सिंक गर्ने कुरा छनौट गर्न सक्नुहुन्छ।</translation>
 <translation id="5595485650161345191">ठेगाना सम्पादन गर्नुहोस्</translation>
 <translation id="5599455543593328020">इन्कोग्निटो मोड</translation>
+<translation id="5620163320393916465">कुनै पनि पासवर्ड सुरक्षित गरिएको छैन</translation>
 <translation id="5620928963363755975">थप विकल्पहरू नामक बटनमार्फत डाउनलोडरू नाम फोल्डरमा भएका आफ्ना फाइल र पृष्ठहरू भेट्टाउनुहोस्</translation>
 <translation id="5626134646977739690">नाम:</translation>
 <translation id="5639724618331995626">सबै साइटहरूलाई अनुमति दिनुहोस्</translation>

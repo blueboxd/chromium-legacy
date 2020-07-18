@@ -232,6 +232,7 @@
 <translation id="1274997165432133392">Webkoekies en ander werfdata</translation>
 <translation id="1275718070701477396">Gekies</translation>
 <translation id="1276994519141842946">Kon nie <ph name="APP_NAME" /> deïnstalleer nie</translation>
+<translation id="127946606521051357">Toestel naby aan jou deel tans</translation>
 <translation id="1280820357415527819">Soek tans vir mobiele netwerke …</translation>
 <translation id="1280965841156951489">Wysig lêers</translation>
 <translation id="1285320974508926690">Moet nooit hierdie werf vertaal nie</translation>
@@ -254,6 +255,7 @@
 <translation id="1306606229401759371">Verander instellings</translation>
 <translation id="1307165550267142340">Jou PIN is geskep</translation>
 <translation id="1307559529304613120">Oeps! Die stelsel kon nie die langtermyn-API-toegangtoken vir hierdie toestel stoor nie.</translation>
+<translation id="1313162974556054106">Toestelnaam</translation>
 <translation id="1313405956111467313">Outomatiese instaanbedieneropstelling</translation>
 <translation id="131364520783682672">Hoofletterslot</translation>
 <translation id="1313660246522271310">Jy sal op alle werwe afgemeld word, insluitend in oop oortjies</translation>
@@ -704,7 +706,6 @@
 <translation id="184273675144259287">Vervang Linux-programme en -lêers met 'n vorige rugsteun</translation>
 <translation id="1842766183094193446">Is jy seker jy wil demonstrasiemodus aktiveer?</translation>
 <translation id="1846308012215045257">Control-klik om <ph name="PLUGIN_NAME" /> te laat loop</translation>
-<translation id="1846880379134204029">Groep <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Aktiveer Rusmodus</translation>
 <translation id="1849186935225320012">Hierdie bladsy het volle beheer oor MIDI-toestelle.</translation>
 <translation id="1850508293116537636">Draai kloksgewys</translation>
@@ -1220,6 +1221,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2489918096470125693">Voeg vouer by …</translation>
 <translation id="2490481887078769936">"<ph name="FILE_NAME" />" is van lys verwyder</translation>
 <translation id="249113932447298600">Jammer, die toestel <ph name="DEVICE_LABEL" /> word nie op hierdie tydstip gesteun nie.</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> deel tans <ph name="ATTACHMENTS" /> met jou.</translation>
 <translation id="2492461744635776704">Berei tans sertifikaatondertekeningversoek voor</translation>
 <translation id="249303669840926644">Kon nie registrasie voltooi nie</translation>
 <translation id="2495777824269688114">Ontdek nog kenmerke of kry antwoorde. Kies "?" vir hulp.</translation>
@@ -1721,6 +1723,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3103941660000130485">Kon nie Linux opgradeer nie</translation>
 <translation id="3105796011181310544">Verander terug na Google?</translation>
 <translation id="310671807099593501">Werf gebruik tans Bluetooth</translation>
+<translation id="3109724472072898302">Ingevou</translation>
 <translation id="3115147772012638511">Wag tans vir kas …</translation>
 <translation id="3115580024857770654">Vou alles in</translation>
 <translation id="3116968597797150452">Sertifikaatprofiel</translation>
@@ -1788,7 +1791,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3192947282887913208">Oudiolêers</translation>
 <translation id="3199127022143353223">Bedieners</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome beveel aan dat jy hierdie wagwoord nou nagaan}other{Chrome beveel aan dat jy hierdie wagwoorde nou nagaan}}</translation>
-<translation id="3200941271596533635">Wissel lesermodus</translation>
 <translation id="3201422919974259695">Beskikbare USB-toestelle sal hier verskyn.</translation>
 <translation id="3202131003361292969">Pad</translation>
 <translation id="3202173864863109533">Hierdie oortjie se klank word gedemp.</translation>
@@ -4152,6 +4154,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6212039847102026977">Wys gevorderde netwerkeienskappe</translation>
 <translation id="6212168817037875041">Skakel skerm af</translation>
 <translation id="6212752530110374741">E-posskakel</translation>
+<translation id="6213230117190778270">Ontvang</translation>
 <translation id="6216696360484424239">Meld outomaties aan</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> is vanlyn. Koppel aan die internet en probeer weer.</translation>
 <translation id="6220413761270491930">Kon nie uitbreiding laai nie</translation>
@@ -4208,7 +4211,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6270770586500173387">Stuur <ph name="BEGIN_LINK1" />stelsel- en programinligting<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />maatstawwe<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Kon nie die inprop aflaai nie (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">Gehalte</translation>
-<translation id="6273979226236203550">Jou wagwoord is op hierdie toestel en in jou Google-rekening geberg. Watter een wil jy uitvee?</translation>
 <translation id="6277105963844135994">Netwerk-tyduittelling</translation>
 <translation id="6277518330158259200">Neem skermkiekie</translation>
 <translation id="6278057325678116358">Gebruik GTK+</translation>
@@ -4279,6 +4281,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6362853299801475928">Gee 'n kwessie aan …</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Voeg familie en vriende by</translation>
+<translation id="6367985768157257101">Ontvang met Nabydeling?</translation>
 <translation id="636850387210749493">Onderneminginskrywing</translation>
 <translation id="6370021412472292592">Kon nie manifes laai nie.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4854,7 +4857,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7099337801055912064">Kan nie groot PPD laai nie. Maksimum grootte is 250 KB.</translation>
 <translation id="7102687220333134671">Outomatiese opdaterings is aangeskakel</translation>
 <translation id="7102832101143475489">Die versoek het uitgetel</translation>
-<translation id="7102928824073746774">Naamlose groep – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">USB-voorkeure</translation>
 <translation id="710640343305609397">Maak netwerkinstellings oop</translation>
 <translation id="7108338896283013870">Versteek</translation>
@@ -4930,6 +4932,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="720110658997053098">Hou hierdie toestel permanent in kioskmodus</translation>
 <translation id="7201118060536064622">"<ph name="DELETED_ITEM_NAME" />" is uitgevee</translation>
 <translation id="7201420661433230412">Bekyk lêers</translation>
+<translation id="7203150201908454328">Uitgevou</translation>
 <translation id="7203826966018112936">As 'n skoolrekening bygevoeg word, is dit vir 'n student makliker om by webwerwe en uitbreidings aan te meld terwyl hulle steeds onder ouertoesig is. Dit gee nie vir 'n kind toegang tot boekmerke, wagwoorde of ander blaaierdata wat met die skoolrekening geassosieer word nie.&lt;br&gt;&lt;br&gt;
     As jou kind 'n Chromebook by die skool gebruik en jy die skoolervaring by die huis wil weerspieël om seker te maak dat jou kind toegang tot al die nodige skoolwerk het, moet jy asseblief by hierdie Family Link-rekening afmeld en van die Chrome-bedryfstelsel se rekeningebladsy af by die skoolrekening aanmeld (Let wel: Family Link-ouerkontroles sal nie van toepassing wees nie).&lt;br&gt;&lt;br&gt;
     As jou kind nie 'n Chromebook by die skool gebruik nie of as jy verkies om Family Link te gebruik om jou kind se ervaring by die huis te bestuur, moet jy asseblief die Volgende-knoppie hieronder klik om 'n skoolrekening by hierdie profiel te voeg.</translation>
@@ -5325,7 +5328,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7704521324619958564">Maak Play Winkel oop</translation>
 <translation id="7705276765467986571">Kon nie boekmerkmodel laai nie.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Wissel lesermodus</translation>
 <translation id="7707108266051544351">Hierdie werf is geblokkeer om bewegingsensors te gebruik.</translation>
 <translation id="7707922173985738739">Gebruik mobiele data</translation>
 <translation id="7709152031285164251">Het misluk – <ph name="INTERRUPT_REASON" /></translation>
@@ -6581,6 +6583,7 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Tik wagfrase in</translation>
 <translation id="939736085109172342">Nuwe vouer</translation>
+<translation id="941070664607309480">Klik om sigbaar te word sodat dit met jou kan deel</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> deel tans 'n Chrome-oortjie en oudio.</translation>
 <translation id="945522503751344254">Stuur terugvoer</translation>
 <translation id="947329552760389097">&amp;Ondersoek elemente</translation>

@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">日语输入法（适用于美式键盘）</translation>
 <translation id="1047956942837015229">正在删除<ph name="COUNT" />项内容…</translation>
 <translation id="1049926623896334335">Word 文档</translation>
+<translation id="1060368002126861100">若要使用 <ph name="APP_NAME" /> 打开文件，请先将文件移至“Windows 文件”文件夹。</translation>
 <translation id="1062407476771304334">替换</translation>
 <translation id="1065449928621190041">法语（加拿大）键盘</translation>
 <translation id="1119069657431255176">bzip2 压缩的 tar 归档</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">警告：这些都是临时文件，可能会被系统自动删除以释放磁盘空间。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">文件夹</translation>
 <translation id="3549797760399244642">转到 drive.google.com...</translation>
+<translation id="3553048479571901246">若要使用 <ph name="APP_NAME" /> 打开文件，请先将文件复制到“Windows 文件”文件夹。</translation>
 <translation id="357479282490346887">立陶宛语</translation>
 <translation id="3583509704582854624">字母数字输入法（适用于日语键盘）</translation>
 <translation id="3603385196401704894">加拿大法语</translation>

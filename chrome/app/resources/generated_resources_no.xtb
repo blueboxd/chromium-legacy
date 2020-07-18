@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Kun chiffrering</translation>
 <translation id="1038462104119736705">Minst <ph name="INSTALL_SIZE" /> ledig plass anbefales for Linux. For å få mer ledig plass, slett filer fra enheten.</translation>
 <translation id="1039337018183941703">Ugyldig eller skadet fil.</translation>
+<translation id="104086161873270383">Ny profil</translation>
 <translation id="1041175011127912238">Denne siden svarer ikke</translation>
 <translation id="1041263367839475438">Tilgjengelige enheter</translation>
 <translation id="1042174272890264476">Datamaskinen din har <ph name="SHORT_PRODUCT_NAME" />s RLZ-bibliotek innebygget. RLZ tildeler en ikke-unik, ikke-personlig tagg for å måle søk og <ph name="SHORT_PRODUCT_NAME" />-bruk drevet av en bestemt markedsføringskampanje. Disse etikettene vises noen ganger i Google-søk i <ph name="PRODUCT_NAME" />.</translation>
@@ -255,6 +256,7 @@
 <translation id="1306606229401759371">Endre innstillingene</translation>
 <translation id="1307165550267142340">PIN-koden er opprettet</translation>
 <translation id="1307559529304613120">Beklager. Systemet kunne ikke lagre noe langvarig API-tilgangstoken for denne enheten.</translation>
+<translation id="1313162974556054106">Enhetsnavn</translation>
 <translation id="1313405956111467313">Automatisk konfigurasjon av proxy-tjener</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">Du blir logget av alle nettsteder, inkludert i åpne faner</translation>
@@ -702,7 +704,6 @@
 <translation id="184273675144259287">Erstatt Linux-appene og -filene dine med en tidligere sikkerhetskopi</translation>
 <translation id="1842766183094193446">Er du sikker på at du vil slå på demomodus?</translation>
 <translation id="1846308012215045257">Control-klikk for å kjøre <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">Gruppe <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Slå på passiv modus</translation>
 <translation id="1849186935225320012">Denne siden har full kontroll over MIDI-enheter.</translation>
 <translation id="1850508293116537636">Rotér &amp;med klokken</translation>
@@ -1720,6 +1721,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3103941660000130485">Feil under oppgradering av Linux</translation>
 <translation id="3105796011181310544">Vil du bytte tilbake til Google?</translation>
 <translation id="310671807099593501">Nettstedet bruker Bluetooth</translation>
+<translation id="3109724472072898302">Skjult</translation>
 <translation id="3115147772012638511">Venter på buffer...</translation>
 <translation id="3115580024857770654">Skjul alle</translation>
 <translation id="3116968597797150452">Sertifikatprofil</translation>
@@ -1787,7 +1789,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3192947282887913208">Lydfiler</translation>
 <translation id="3199127022143353223">Tjenere</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome anbefaler at du sjekker dette passordet nå}other{Chrome anbefaler at du sjekker disse passordene nå}}</translation>
-<translation id="3200941271596533635">Slå av/på lesermodus</translation>
 <translation id="3201422919974259695">Tilgjengelige USB-enheter vises her.</translation>
 <translation id="3202131003361292969">Bane</translation>
 <translation id="3202173864863109533">Lyden er slått av for denne fanen.</translation>
@@ -4205,7 +4206,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6270770586500173387">Send <ph name="BEGIN_LINK1" />system- og appinformasjon<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />beregninger<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Det oppsto en feil (<ph name="ERROR" />) under nedlasting av programtillegget</translation>
 <translation id="6273677812470008672">Kvalitet</translation>
-<translation id="6273979226236203550">Passordet er lagret på denne enheten og i Google-kontoen din. Hvilket vil du slette?</translation>
 <translation id="6277105963844135994">Tidsavbrudd for nettverket</translation>
 <translation id="6277518330158259200">Ta en skjermdump</translation>
 <translation id="6278057325678116358">Bruk GTK+</translation>
@@ -4249,6 +4249,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6322653941595359182">Send og motta tekstmeldinger fra Chromebooken</translation>
 <translation id="6324916366299863871">Endre snarvei</translation>
 <translation id="6325191661371220117">Deaktiver automatisk oppstart</translation>
+<translation id="6325525973963619867">Mislykket</translation>
 <translation id="6326175484149238433">Fjern fra Chrome</translation>
 <translation id="6326855256003666642">Keepalive-teller</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> krever at du oppdaterer denne enheten før tidsfristen.</translation>
@@ -4852,7 +4853,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7099337801055912064">Kan ikke laste inn stor PPD. Maksimal størrelse er 250 kB.</translation>
 <translation id="7102687220333134671">Automatiske oppdateringer er slått på</translation>
 <translation id="7102832101143475489">Forespørselen ble tidsavbrutt</translation>
-<translation id="7102928824073746774">Gruppe uten navn – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">USB-innstillinger</translation>
 <translation id="710640343305609397">Åpne nettverksinnstillingene</translation>
 <translation id="7108338896283013870">Skjul</translation>
@@ -4928,6 +4928,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="720110658997053098">Behold denne enheten permanent i kioskmodus</translation>
 <translation id="7201118060536064622">«<ph name="DELETED_ITEM_NAME" />» er slettet</translation>
 <translation id="7201420661433230412">Se filer</translation>
+<translation id="7203150201908454328">Utvidet</translation>
 <translation id="7203826966018112936">Du kan legge til en skolekonto på en profil for å gjøre det enkelt å logge på nettsteder og utvidelser som elev mens du er underlagt foreldrekontroll. Dette gir ikke barnet tilgang til bokmerker, passord eller andre nettleserdata som er synkronisert med skolekontoen.&lt;br&gt;&lt;br&gt;
     Hvis barnet bruker Chromebook på skolen og du vil gjenskape skoleopplevelsen hjemme for å sikre at barnet har tilgang til alt nødvendig skolearbeid, logger du av denne Family Link-kontoen og logger på skolekontoen på Chrome OS-kontosiden. (Merk: Family Link-foreldrekontroll kommer ikke til å være aktiv.)&lt;br&gt;&lt;br&gt;
     Hvis barnet ikke bruker Chromebook på skolen, eller hvis du foretrekker å administrere barnets opplevelse hjemme ved å bruke Family Link, klikker du på Neste-knappen under for å legge til en skolekonto på denne profilen.</translation>
@@ -5323,7 +5324,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7704521324619958564">Åpne Play Butikk</translation>
 <translation id="7705276765467986571">Kan ikke laste inn bokmerkemodell.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Slå av/på lesermodus</translation>
 <translation id="7707108266051544351">Dette nettstedet er blokkert fra å bruke bevegelsessensorer.</translation>
 <translation id="7707922173985738739">Bruk mobildata</translation>
 <translation id="7709152031285164251">Mislykket – <ph name="INTERRUPT_REASON" /></translation>

@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">Ինտերնետ կապի ստուգում</translation>
 <translation id="2359808026110333948">Շարունակել</translation>
 <translation id="2369533728426058518">բաց ներդիրներ</translation>
-<translation id="2377295302146152376">Chrome-ը չկարողացավ ստուգել թարմացումների առկայությունը։</translation>
 <translation id="2387895666653383613">Տեքստի չափափոխում</translation>
 <translation id="2394602618534698961">Ձեր ներբեռնած ֆայլերը ցուցադրվում են այստեղ</translation>
 <translation id="2407481962792080328">Այս գործառույթը միանում է, երբ դուք մտնում եք Google հաշիվ</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Ստացեք օգնություն<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Տեղորոշումն անջատված է: Միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />:</translation>
 <translation id="3058498974290601450">Համաժամացումը կարող եք ցանկացած ժամանակ միացնել կարգավորումներում:</translation>
-<translation id="3059710691562604940">Անվտանգ դիտարկումն անջատված է։ Chrome-ը խորհուրդ է տալիս միացնել այն։</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> էջանիշ}one{<ph name="BOOKMARKS_COUNT_MANY" /> էջանիշ}other{<ph name="BOOKMARKS_COUNT_MANY" /> էջանիշ}}</translation>
 <translation id="3089395242580810162">Բացել ինկոգնիտո ներդիրում</translation>
 <translation id="3114012059975132928">Տեսանվագարկիչ</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">Առկա է թարմացում: Լրացուցիչ ընտրանքներ</translation>
 <translation id="3524138585025253783">Մշակողի միջերես</translation>
 <translation id="3527085408025491307">Պանակ</translation>
-<translation id="3533694711092285624">Պահված գաղտնաբառեր չկան։ Chrome-ը կարող է ստուգել ձեր գաղտնաբառերը, երբ պահում եք դրանք։</translation>
 <translation id="3542235761944717775">Հասանելի է <ph name="KILOBYTES" /> ԿԲ</translation>
 <translation id="3549657413697417275">Որոնեք պատմության մեջ</translation>
 <translation id="3557336313807607643">Ավելացնել կոնտակտներում</translation>
@@ -360,6 +357,7 @@
 <translation id="3892148308691398805">Պատճենել տեքստը</translation>
 <translation id="3894427358181296146">Պանակի ավելացում</translation>
 <translation id="3895926599014793903">Հարկադրաբար միացնել չափափոխումը</translation>
+<translation id="3909763690984331376">Անվտանգության ստուգում <ph name="BEGIN_NEW" />Նորույթ<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Տվյալների բեռնում համացանցից…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Իմ տվյալների միավորում</translation>
@@ -570,6 +568,7 @@
 <translation id="5581519193887989363">Ցանկացած ժամանակ կարող եք անցնել <ph name="BEGIN_LINK1" />կարգավորումներ<ph name="END_LINK1" /> և ընտրել, թե ինչն եք ուզում համաժամացնել:</translation>
 <translation id="5595485650161345191">Փոխել հասցեն</translation>
 <translation id="5599455543593328020">Ինկոգնիտո ռեժիմ</translation>
+<translation id="5620163320393916465">Պահված գաղտնաբառեր չկան</translation>
 <translation id="5620928963363755975">«Այլ տարբերակներ» կոճակի օգնությամբ որոնեք ձեր ֆայլերն ու էջերը «Ներբեռնումներ» պանակում</translation>
 <translation id="5626134646977739690">Անուն՝</translation>
 <translation id="5639724618331995626">Թույլատրել բոլոր կայքերը</translation>
@@ -581,6 +580,7 @@
 <translation id="5686790454216892815">Ֆայլի անունը չափազանց երկար է</translation>
 <translation id="5694049548840660018">Արագ անցում գլխավոր էջ</translation>
 <translation id="569536719314091526">Թարգմանեք այս կայքը «Այլ ընտրանքներ» կոճակի միջոցով</translation>
+<translation id="5696597120588531049">Chrome-ը կարող է պաշտպանել տվյալների արտահոսքից, վտանգավոր կայքերից և այլ խնդիրներից</translation>
 <translation id="5697688514913266141">Ձեր ֆայլը կպահվի <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" /> պանակում։ <ph name="BEGIN_LINK2" />Փոխել<ph name="END_LINK2" /></translation>
 <translation id="570347048394355941">Անցնել ներդիր</translation>
 <translation id="572328651809341494">Վերջերս բացված ներդիրներ</translation>
@@ -714,6 +714,7 @@
 <translation id="6656545060687952787">Սարքեր գտնելու համար Chrome-ին անհրաժեշտ է տեղադրության հասանելիություն: <ph name="BEGIN_LINK" />Թարմացնել թույլտվությունները<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Գաղտնաբառ</translation>
 <translation id="6659594942844771486">Ներդիր</translation>
+<translation id="6663079968236414793">Հղում տեքստին</translation>
 <translation id="666573598175432848">Հասանելի է Chrome-ի նոր տարբերակը։ Հպեք այս տարրին՝ Play Խանութ անցնելու համար։</translation>
 <translation id="666731172850799929">Բացել <ph name="APP_NAME" /> հավելվածում</translation>
 <translation id="666981079809192359">Chrome-ի Գաղտնիության ծանուցում</translation>

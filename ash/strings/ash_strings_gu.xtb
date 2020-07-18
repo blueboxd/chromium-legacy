@@ -98,6 +98,7 @@
 <translation id="1995660704900986789">પાવર બંધ કરો</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">એક સંદેશ લખો</translation>
+<translation id="2018630726571919839">મને કોઈ જોક સંભળાવો</translation>
 <translation id="2050339315714019657">પોર્ટ્રેટ</translation>
 <translation id="2067602449040652523">કીબોર્ડનું તેજ</translation>
 <translation id="209965399369889474">નેટવર્કથી કનેક્ટ કરેલું નથી</translation>
@@ -125,6 +126,7 @@
 <translation id="2354174487190027830"><ph name="NAME" /> ને સક્રિય કરી રહ્યું છે</translation>
 <translation id="2359808026110333948">આગળ વધો</translation>
 <translation id="2365393535144473978">મોબાઇલ ડેટા ચાલુ કરવાથી બ્લૂટૂથ ચાલુ થશે.</translation>
+<translation id="2369165858548251131">ચીની ભાષામાં "નમસ્કાર"</translation>
 <translation id="2390318262976603432">લોકેલ સેટિંગ</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">અપડેટ ઉપલબ્ધ છે</translation>
@@ -142,6 +144,7 @@
 <translation id="256712445991462162">ડૉક કરેલું મૅગ્નિફાયર</translation>
 <translation id="2575685495496069081">એકથી વધુ સાઇન ઇનને બંધ કરવામાં આવેલ છે</translation>
 <translation id="2582112259361606227">અપડેટ કરવા માટે ફરી શરૂ કરો</translation>
+<translation id="2595239820337756193">5,000 કિલોમીટર એટલે કેટલા માઇલ?</translation>
 <translation id="2617342710774726426">SIM કાર્ડ લૉક કરેલ છે</translation>
 <translation id="2621713457727696555">સુરક્ષિત</translation>
 <translation id="2653659639078652383">સબમિટ કરો</translation>
@@ -195,6 +198,7 @@
 <translation id="3154351730702813399">ડિવાઇસ વ્યવસ્થાપક તમારી બ્રાઉઝિંગ પ્રવૃત્તિને મોનિટર કરી શકે છે.</translation>
 <translation id="3181441307743005334">ફરી શરૂ થવામાં થોડો સમય લાગી શકે છે</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{ઉપકરણ સાથે કનેક્ટ કર્યું}one{# ઉપકરણો સાથે કનેક્ટ કર્યું}other{# ઉપકરણો સાથે કનેક્ટ કર્યું}}</translation>
+<translation id="320207200541803018">ટાઇમર સેટ કરો</translation>
 <translation id="3203405173652969239">સ્વિચ ઍક્સેસ ચાલુ કર્યો</translation>
 <translation id="3207953481422525583">વપરાશકર્તા સેટિંગ</translation>
 <translation id="3217205077783620295">વૉલ્યૂમ ચાલુ છે, ટૉગલ કરવાથી ઑડિયો મ્યૂટ થશે.</translation>
@@ -207,6 +211,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> હજીએ થોડા સમય પછી સાઇન ઇન કરી શકશે.</translation>
 <translation id="3321628682574733415">માતાપિતાનો કોડ ખોટો</translation>
 <translation id="332587331255250389">કૃપા કરીને બૅટરી બદલો</translation>
+<translation id="334252345105450327">સ્ક્રીનશૉટ લો</translation>
 <translation id="3351879221545518001">તમે હાલમાં સ્ક્રીનને કાસ્ટ કરી રહ્યા છો.</translation>
 <translation id="3364721542077212959">સ્ટાઇલસનાં સાધનો</translation>
 <translation id="3368922792935385530">કનેક્ટેડ</translation>
@@ -239,6 +244,7 @@
 <translation id="3631369015426612114">નીચેના પરથી સૂચનાઓને મંજૂરી આપો</translation>
 <translation id="3638400994746983214">પ્રાઇવસી સ્ક્રીનને ટૉગલ કરો. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> મેનેજ કરાયેલા વપરાશકર્તા</translation>
+<translation id="3702846122927433391">નાઇજીરીયાની વસ્તી</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">પ્રદેશને કૅપ્ચર કરો</translation>
 <translation id="371370241367527062">આગળનો માઇક્રોફોન</translation>
@@ -519,6 +525,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">જૂના રિઝોલ્યુશન પર પાછા ફરી રહ્યાં છે <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">મેનૂને સ્ક્રીનની ઉપરના ડાબા ખૂણામાં ખસેડ્યું.</translation>
+<translation id="7189412385142492784">શુક્રનો ગ્રહ પૃથ્વીથી કેટલી દૂરીએ?</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. અપડેટ લાગુ કરવા માટે આ Chromebookને ફરી શરૂ કરવાની જરૂર છે. આમાં 1 મિનિટ જેટલો સમય લાગી શકે છે.</translation>
 <translation id="7256634071279256947">પાછળનો માઇક્રોફોન</translation>
 <translation id="726276584504105859">વિભાજિત સ્ક્રીનનો ઉપયોગ કરવા માટે અહીં ખેંચો</translation>
@@ -645,6 +652,7 @@
 <translation id="8649101189709089199">બોલીને-પસંદ-કરો</translation>
 <translation id="8652175077544655965">સેટિંગ બંધ કરો</translation>
 <translation id="8653151467777939995">નોટિફિકેશન સેટિંગ બતાવો. નોટિફિકેશન ચાલુ છે</translation>
+<translation id="8660331759611631213">71નું વર્ગમૂળ</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, સિગ્નલની સશક્તતા <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">નેટવર્ક સૂચિ બતાવો. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

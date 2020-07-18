@@ -36,7 +36,6 @@
 <translation id="1323735185997015385">Hapus</translation>
 <translation id="132683371494960526">Ketuk dua kali untuk mengubah folder induk.</translation>
 <translation id="1340643665687018190">Tutup Menu</translation>
-<translation id="1345319103680304157">Tidak ada sandi yang dibobol</translation>
 <translation id="1358214951266274152">Buka Link yang Anda Salin</translation>
 <translation id="1360432990279830238">Logout dan nonaktifkan sinkronisasi?</translation>
 <translation id="1375321115329958930">Sandi Tersimpan</translation>
@@ -510,7 +509,7 @@ Situs tidak dapat menggunakan cookie untuk melihat aktivitas penjelajahan Anda d
 <translation id="6973630695168034713">Folder</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Kelola Akun Google Anda</translation>
-<translation id="6995899638241819463">Berikan peringatan jika sandi terungkap saat terjadi pelanggaran data</translation>
+<translation id="6995899638241819463">Berikan peringatan jika sandi Anda terekspos saat terjadi pelanggaran data</translation>
 <translation id="6998989275928107238">Kepada</translation>
 <translation id="7004499039102548441">Tab Terbaru</translation>
 <translation id="7006788746334555276">Setelan Konten</translation>
@@ -619,7 +618,6 @@ Situs dapat menggunakan cookie untuk melihat aktivitas penjelajahan Anda di berb
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8458397775385147834">1 item dihapus</translation>
 <translation id="8459333855531264009">Tidak Aman</translation>
-<translation id="8484911814435057959">Sandi telah dibobol</translation>
 <translation id="8487667956631253959">Aktif</translation>
 <translation id="8487700953926739672">Tersedia secara offline</translation>
 <translation id="8490978609246021741">Simpan Perubahan</translation>

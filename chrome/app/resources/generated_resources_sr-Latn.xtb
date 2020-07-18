@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Samo šifruj</translation>
 <translation id="1038462104119736705">Za Linux se preporučuje najmanje <ph name="INSTALL_SIZE" /> prostora. Da biste oslobodili prostor, izbrišite datoteke sa uređaja.</translation>
 <translation id="1039337018183941703">Nevažeća ili oštećena datoteka</translation>
+<translation id="104086161873270383">Novi profil</translation>
 <translation id="1041175011127912238">Ova stranica ne reaguje</translation>
 <translation id="1041263367839475438">Dostupni uređaji</translation>
 <translation id="1042174272890264476">Uz računar takođe dobijate ugrađenu RLZ biblioteku proizvoda <ph name="SHORT_PRODUCT_NAME" />. RLZ dodeljuje nejedinstvenu oznaku pomoću koje vas nije moguće lično identifikovati da bi izmerio pretrage i korišćenje proizvoda <ph name="SHORT_PRODUCT_NAME" /> koji su podstaknuti određenom promotivnom kampanjom. Te oznake se ponekad prikazuju u upitima Google pretrage u proizvodu <ph name="PRODUCT_NAME" />.</translation>
@@ -255,6 +256,7 @@
 <translation id="1306606229401759371">Promeni podešavanja</translation>
 <translation id="1307165550267142340">Napravili ste PIN</translation>
 <translation id="1307559529304613120">Ups! Sistem nije uspeo da sačuva oznaku dugoročnog pristupa API-ju za ovaj uređaj.</translation>
+<translation id="1313162974556054106">Naziv uređaja</translation>
 <translation id="1313405956111467313">Automatska konfiguracija proksija</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">Odjavićete se sa svih sajtova, uključujući i instance na otvorenim karticama</translation>
@@ -702,7 +704,6 @@
 <translation id="184273675144259287">Zamenite Linux aplikacije i datoteke prethodnom rezervnom kopijom</translation>
 <translation id="1842766183094193446">Želite li stvarno da omogućite režim demonstracije?</translation>
 <translation id="1846308012215045257">Kliknite i zadržite taster Control da biste pokrenuli <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">Grupa <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Omogućite ambijentalni režim</translation>
 <translation id="1849186935225320012">Ova stranica u potpunosti kontroliše MIDI uređaje.</translation>
 <translation id="1850508293116537636">Okreći &amp;u smeru kretanja kazaljke na satu</translation>
@@ -1720,6 +1721,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="3103941660000130485">Greška pri nadograđivanju Linux-a</translation>
 <translation id="3105796011181310544">Želite li da se vratite na Google?</translation>
 <translation id="310671807099593501">Sajt koristi Bluetooth</translation>
+<translation id="3109724472072898302">Skupljeno</translation>
 <translation id="3115147772012638511">Čeka se keš memorija...</translation>
 <translation id="3115580024857770654">Skupi sve</translation>
 <translation id="3116968597797150452">Profil sertifikata</translation>
@@ -1787,7 +1789,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="3192947282887913208">Audio datoteke</translation>
 <translation id="3199127022143353223">Serveri</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome vam preporučuje da odmah proverite ovu lozinku}one{Chrome vam preporučuje da odmah proverite ove lozinke}few{Chrome vam preporučuje da odmah proverite ove lozinke}other{Chrome vam preporučuje da odmah proverite ove lozinke}}</translation>
-<translation id="3200941271596533635">Uključi/isključi režim čitača</translation>
 <translation id="3201422919974259695">Dostupni USB uređaji će se prikazivati ovde.</translation>
 <translation id="3202131003361292969">Putanja</translation>
 <translation id="3202173864863109533">Zvuk ove kartice je isključen.</translation>
@@ -4208,7 +4209,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="6270770586500173387">Šalji <ph name="BEGIN_LINK1" />informacije o sistemu i aplikacijama<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />pokazatelje<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Došlo je do greške (<ph name="ERROR" />) pri preuzimanju dodatne komponente</translation>
 <translation id="6273677812470008672">Kvalitet</translation>
-<translation id="6273979226236203550">Lozinka se čuva na ovom uređaju i na vašem Google nalogu. Gde želite da je izbrišete?</translation>
 <translation id="6277105963844135994">Vremensko ograničenje mreže</translation>
 <translation id="6277518330158259200">S&amp;nimi ekran</translation>
 <translation id="6278057325678116358">Koristi GTK+</translation>
@@ -4252,6 +4252,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="6322653941595359182">Šaljite i primajte SMS-ove pomoću Chromebook-a</translation>
 <translation id="6324916366299863871">Izmeni prečicu</translation>
 <translation id="6325191661371220117">Onemogući automatsko pokretanje</translation>
+<translation id="6325525973963619867">Neuspešno</translation>
 <translation id="6326175484149238433">Ukloni iz Chrome-a</translation>
 <translation id="6326855256003666642">Broj keepalive signala</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> traži da ažurirate ovaj uređaj pre isteka roka.</translation>
@@ -4855,7 +4856,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7099337801055912064">Veliki PPD ne može da se učita. Maksimalna veličina je 250 kB.</translation>
 <translation id="7102687220333134671">Automatska ažuriranja su uključena</translation>
 <translation id="7102832101143475489">Zahtev je istekao</translation>
-<translation id="7102928824073746774">Grupa bez naziva – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Podešavanja USB-a</translation>
 <translation id="710640343305609397">Otvori podešavanja mreže</translation>
 <translation id="7108338896283013870">Sakrij</translation>
@@ -4931,6 +4931,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="720110658997053098">Trajno zadrži ovaj uređaj u režimu kioska</translation>
 <translation id="7201118060536064622">Stavka „<ph name="DELETED_ITEM_NAME" />“ je izbrisana</translation>
 <translation id="7201420661433230412">Prikaži datoteke</translation>
+<translation id="7203150201908454328">Prošireno</translation>
 <translation id="7203826966018112936">Dodavanje školskog naloga na profil omogućava da se dete lako prijavljuje na veb-sajtove i u dodatke kao učenik, a da i dalje radi pod roditeljskim nadzorom. Time se detetu ne daje pristup obeleživačima, lozinkama ili drugim podacima pregledača koji se sinhronizuju sa školskim nalogom.&lt;br&gt;&lt;br&gt;
     Ako dete koristi Chromebook u školi i želite da preslikate taj doživljaj kod kuće kako biste osigurali da ono ima pristup svim neophodnim školskim zadacima, odjavite se sa ovog Family Link naloga i prijavite se na školski nalog sa stranice Chrome OS naloga (napomena: Family Link roditeljski nadzor se neće primenjivati).&lt;br&gt;&lt;br&gt;
     Ako dete ne koristi Chromebook u školi ili biste radije da upravljate detetovim doživljajem kod kuće koristeći Family Link, kliknite na dugme Dalje u nastavku da biste dodali školski nalog ovom profilu.</translation>
@@ -5326,7 +5327,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7704521324619958564">Otvori Play prodavnicu</translation>
 <translation id="7705276765467986571">Nije moguće učitati model obeleživača.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Uključi/isključi režim čitača</translation>
 <translation id="7707108266051544351">Ovom sajtu je zabranjeno da koristi senzore za pokret.</translation>
 <translation id="7707922173985738739">Koristi mobilne podatke</translation>
 <translation id="7709152031285164251">Nije uspelo – <ph name="INTERRUPT_REASON" /></translation>

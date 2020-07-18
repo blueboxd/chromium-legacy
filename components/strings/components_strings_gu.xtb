@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
 <translation id="1008557486741366299">હમણાં નહીં</translation>
+<translation id="100957008357583611">શું તમારા સ્થાનનો ઉપયોગ કરવા માગો છો?</translation>
 <translation id="1010200102790553230">પેજ પછીથી લોડ કરો</translation>
 <translation id="1015730422737071372">અતિરિક્ત વિગતો પ્રદાન કરો</translation>
 <translation id="1019413721762100891">બંધ</translation>
@@ -39,7 +40,6 @@
 <translation id="1131264053432022307">તમે કૉપિ કરેલી છબી</translation>
 <translation id="1150979032973867961">આ સર્વર સાબિત કરી શક્યું નથી કે એ <ph name="DOMAIN" /> છે; એનું સુરક્ષા પ્રમાણપત્ર તમારા કમ્પ્યુટરની ઑપરેટિંગ સિસ્ટમ દ્વારા વિશ્વસનીય નથી. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="1151972924205500581">પાસવર્ડ આવશ્યક છે</translation>
-<translation id="1152921474424827756"><ph name="URL" /> ની <ph name="BEGIN_LINK" />કેશ કરેલ કૉપિ<ph name="END_LINK" /> ઍક્સેસ કરો</translation>
 <translation id="1156303062776767266">તમે સ્થાનિક અથવા શેર કરેલી ફાઇલ જોઈ રહ્યાં છો</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> એ અનપેક્ષિત રીતે કનેક્શન બંધ કર્યું.</translation>
 <translation id="115926840831309955">તમારું CVC ચેક કરો અને ફરીથી પ્રયાસ કરો અથવા સમાપ્તિ તારીખ અપડેટ કરો</translation>
@@ -246,7 +246,6 @@
 <translation id="1919345977826869612">જાહેરાતો</translation>
 <translation id="1919367280705858090">ભૂલના ચોક્કસ સંદેશ વડે સહાય મેળવો</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{કોઈ નહીં}=1{1 સાઇટ}one{# સાઇટ}other{# સાઇટ}}</translation>
-<translation id="194030505837763158"><ph name="LINK" /> પર જાઓ</translation>
 <translation id="1945968466830820669">તમે તમારી સંસ્થાના એકાઉન્ટ માટે ઍક્સેસ ગુમાવી શકો છો અથવા તમને ઓળખ ચોરીનો અનુભવ થઈ શકે છે. Chromium તમને હમણાં જ તમારો પાસવર્ડ બદલવાની ભલામણ કરે છે.</translation>
 <translation id="1947454675006758438">ઉપર જમણી બાજુએ સ્ટેપલ લગાવો</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />તમે મુલાકાત લો તે કેટલાક પેજના URLs, સિસ્ટમ વિશેની સીમિત માહિતી અને પેજનું કેટલુંક કન્ટેન્ટ<ph name="END_WHITEPAPER_LINK" /> Googleને મોકલીને વેબ પર દરેક જણ માટે સુરક્ષા વધુ સારી બનાવવામાં સહાય કરો. <ph name="BEGIN_PRIVACY_PAGE_LINK" />પ્રાઇવસી પૉલિસી<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -268,7 +267,6 @@
 <translation id="2003775180883135320">ઉપરની બાજુએ ચતુષ્કોણ કાણું પાડો</translation>
 <translation id="2025115093177348061">ઑગ્મેન્ટેડ રિયાલિટી</translation>
 <translation id="2025186561304664664">પ્રૉક્સીને ઑટો ગોઠવણી મોડ પર સેટ કરાઈ છે.</translation>
-<translation id="2030481566774242610">શું તમારો અર્થ <ph name="LINK" /> છે?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />પ્રૉક્સી અને ફાયરવૉલ ચેક કરવાનો પ્રયાસ કરો<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">ટ્રે 7</translation>
 <translation id="204357726431741734">તમારા Google એકાઉન્ટમાં સ્ટોર કરેલા પાસવર્ડનો ઉપયોગ કરવા માટે સાઇન ઇન કરો</translation>
@@ -1046,6 +1044,7 @@
 <translation id="5308380583665731573">કનેક્ટ કરો</translation>
 <translation id="5308689395849655368">ક્રૅશની જાણ કરવાનું બંધ કર્યું છે.</translation>
 <translation id="5314967030527622926">બુકલેટ માર્કર</translation>
+<translation id="5316812925700871227">ઘડિયાળની વિપરિત દિશામાં ફેરવો</translation>
 <translation id="5317780077021120954">સાચવો</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="NUM_MATCHES" /> માંથી <ph name="MATCH_POSITION" /></translation>
 <translation id="5324080437450482387">સંપર્કની માહિતી પસંદ કરો</translation>
@@ -1069,7 +1068,6 @@
 <translation id="5421136146218899937">બ્રાઉઝિંગ ડેટા સાફ કરો...</translation>
 <translation id="5426179911063097041"><ph name="SITE" />તમને નોટિફિકેશનો મોકલવા માગે છે</translation>
 <translation id="5430298929874300616">બુકમાર્ક દૂર કરો</translation>
-<translation id="5431657950005405462">તમારી ફાઇલ મળી ન હતી</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" પર સ્કીમા માન્યતા ભૂલ: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">ઉલટા ક્રમમાં ઉપર તરફ</translation>
 <translation id="5447765697759493033">આ સાઇટનો અનુવાદ થશે નહીં</translation>
@@ -1178,6 +1176,7 @@
 <translation id="5869405914158311789">આ સાઇટ પર પહોંચી શકાતું નથી</translation>
 <translation id="5869522115854928033">સાચવેલા પાસવર્ડ્સ</translation>
 <translation id="5887400589839399685">કાર્ડ સાચવ્યું</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> માટે જરૂરી છે કે તમે તમારા ડેટાનું બૅકઅપ લઈને આ ડિવાઇસ પરત કરો.</translation>
 <translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
 <translation id="5895187275912066135">ના રોજ રજૂ કરાયું</translation>
 <translation id="5901630391730855834">પીળો</translation>
@@ -1442,7 +1441,6 @@
 <translation id="7083258188081898530">ટ્રે 9</translation>
 <translation id="7086090958708083563">વપરાશકર્તાએ અપલોડની વિનંતી કરી છે</translation>
 <translation id="7087282848513945231">કાઉન્ટિ</translation>
-<translation id="7090678807593890770"><ph name="LINK" /> માટે Google પર શોધો</translation>
 <translation id="7108338896283013870">છુપાવો</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> તમારા કૅમેરાનો ઉપયોગ કરવા માગે છે</translation>
 <translation id="7108819624672055576">એક્સટેન્શન દ્વારા મંજૂર</translation>
@@ -1878,7 +1876,6 @@
 <translation id="893332455753468063">નામ ઉમેરો</translation>
 <translation id="8943282376843390568">લાઇમ</translation>
 <translation id="8957210676456822347">કૅપ્ટિવ પોર્ટલ પ્રમાણિત</translation>
-<translation id="8958582951173503172">જ્યારે Chrome Enterprise Connectors દ્વારા સુરક્ષા ઇવેન્ટ ચિહ્નિત કરવામાં આવે, ત્યારે તમારા વ્યવસ્થાપકને ઇવેન્ટ વિશેનો ડેટા મોકલવામાં આવે છે. આમાં તમે Chromeમાં મુલાકાત લીધી હોય તે પેજના URLs, ફાઇલના નામ અને મેટાડેટાનો તેમજ તમે તમારા ડિવાઇસ અને Chromeમાં સાઇન ઇન કરવા માટે ઉપયોગ કરો છો તે વપરાશકર્તાનાં નામનો સમાવેશ થઈ શકે છે.</translation>
 <translation id="8962950042226115166">શંકાસ્પદ સાઇટ</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />સૂચનો:<ph name="MARKUP_2" />ખાતરી કરો કે તમારી પાસે ડેટા કનેક્શન છે<ph name="MARKUP_3" />આ વેબપેજને પછીથી ફરી લોડ કરો<ph name="MARKUP_4" />તમે દાખલ કરેલું ઍડ્રેસ તપાસો<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">કાર્ડ સાચવો</translation>

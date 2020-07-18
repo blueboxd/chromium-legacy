@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Kopyalanmış Şəkil</translation>
 <translation id="1150979032973867961">Bu server <ph name="DOMAIN" /> domenini təsdiqləyə bilmədi; onun güvənlik sertifikatı kompüterinizin əməliyyat sistemi tərəfindən doğrulanmayıb. Buna səbəb yanlış konfiqurasiya və ya hücumçu tərəfindən bağlantınızın ələ keçirilməsi ola bilər.</translation>
 <translation id="1151972924205500581">Parol tələb olunur</translation>
-<translation id="1152921474424827756"><ph name="URL" /> ünvanının <ph name="BEGIN_LINK" />keşlənmiş kopyasını<ph name="END_LINK" /> əldə edin</translation>
 <translation id="1156303062776767266">Lokal və ya paylaşılmış fayla baxırsınız</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> gözlənilmədən bağlantını kəsdi.</translation>
 <translation id="115926840831309955">CVC-i yoxlayıb yenidən cəhd edin və ya bitmə müddətini yeniləyin</translation>
 <translation id="1161325031994447685">Wi-Fi şəbəkəsinə təkrar qoşulur</translation>
 <translation id="1165039591588034296">Xəta</translation>
+<translation id="1165174597379888365">Səhifə ziyarət edilib</translation>
 <translation id="1175364870820465910">&amp;Çap edin...</translation>
 <translation id="1175875016430184367">Sağdan üçlü ştapel vurun</translation>
 <translation id="1178581264944972037">Durdurun</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">Reklamlar</translation>
 <translation id="1919367280705858090">Spesifik xəta mesajı ilə bağlı yardım əldə edin</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Yoxdur}=1{1 sayt}other{# sayt}}</translation>
-<translation id="194030505837763158"><ph name="LINK" /> linkinə keçin</translation>
 <translation id="1945968466830820669">Təşkilat hesabına girişi itirə və ya kimlik oğurluğu ilə üzləşə bilərsiniz. Chromium parollarınızı indi dəyişməyi məsləhət görür.</translation>
 <translation id="1947454675006758438">Yuxarı sağ tərəfdən ştapel vurun</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />Daxil olduğunuz bəzi səhifələrin keçidlərini, məhdud sistem məlumatlarını və bəzi səhifə məzmununu<ph name="END_WHITEPAPER_LINK" /> Google'a göndərməklə vebdə hər kəs üçün təhlükəsizliyi artırmağa yardım edin. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Məxfilik siyasəti<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,9 +266,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{və daha 1}other{və daha #}}</translation>
 <translation id="2003709556000175978">Parolu indi sıfırlayın</translation>
 <translation id="2003775180883135320">Yuxarıdan dördlü deşik açın</translation>
+<translation id="202072848677994234">Bu forma güvənsiz bağlantı üzərindən göndərilir. Avtomatik doldurma deaktiv edilib.</translation>
 <translation id="2025115093177348061">Artırılmış reallıq</translation>
 <translation id="2025186561304664664">Proksi avtomatik konfiqurasiyaya ayarlandı.</translation>
-<translation id="2030481566774242610"><ph name="LINK" /> saytına keçməyi nəzərdə tuturdunuz?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Proksi və güvənlik divarı yoxlanılır<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Qab 7</translation>
 <translation id="204357726431741734">Google Hesabınızda saxlanılan parollardan istifadə etmək üçün daxil olun</translation>
@@ -335,6 +334,7 @@
 <translation id="2289385804009217824">Kəsin</translation>
 <translation id="2292556288342944218">İnternet girişiniz blok edilib</translation>
 <translation id="2293443924986248631">Aktiv edildiyi zaman saytlar vebdə sizi izləyən kukilərdən istifadə edə bilmir. Bəzi saytlardakı funksiyalar dayandırıla bilər.</translation>
+<translation id="2295290966866883927">Ziyarət etdiyiniz səhifələrin keçidləri təhlil üçün Google Cloud'a və ya üçüncü tərəflərə göndərilir. Məsələn, onlar güvənli olmayan vebsaytları aşkarlamaq üçün skanlana bilər.</translation>
 <translation id="2297722699537546652">B5 (Zərf)</translation>
 <translation id="2300306941146563769">Yüklənməyib</translation>
 <translation id="2310021320168182093">Chou2 (Zərf)</translation>
@@ -1042,6 +1042,7 @@
 <translation id="5308380583665731573">Qoşun</translation>
 <translation id="5308689395849655368">Xəta hesabatı deaktiv edildi.</translation>
 <translation id="5314967030527622926">Buklet düzəldən</translation>
+<translation id="5316812925700871227">Saat əqrəbinin əksi istiqamətində fırladın</translation>
 <translation id="5317780077021120954">Yadda saxlayın</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" />/<ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Kontakt Məlumatı seçin</translation>
@@ -1065,7 +1066,6 @@
 <translation id="5421136146218899937">Baxış datasını silin...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> Sizə bildiriş göndərmək istəyir</translation>
 <translation id="5430298929874300616">Əlfəcini silin</translation>
-<translation id="5431657950005405462">Faylınız tapılmadı</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" yolunda sxem doğrulama xətası: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Tərs sıra ilə üzü yuxarı</translation>
 <translation id="5447765697759493033">Bu sayt tərcümə edilməyəcək</translation>
@@ -1439,7 +1439,6 @@
 <translation id="7083258188081898530">Qab 9</translation>
 <translation id="7086090958708083563">Yükləmə istifadəçi tərəfindən tələb edildi</translation>
 <translation id="7087282848513945231">Ölkə</translation>
-<translation id="7090678807593890770">Google'da <ph name="LINK" /> axtarın</translation>
 <translation id="7108338896283013870">Gizlədin</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> kameranızı istifadə etmək istəyir</translation>
 <translation id="7108819624672055576">Artırma tərəfindən icazə verildi</translation>
@@ -1875,7 +1874,6 @@
 <translation id="893332455753468063">Ad əlavə edin</translation>
 <translation id="8943282376843390568">Yaşıl Limon</translation>
 <translation id="8957210676456822347">Kaptiv Portal Doğrulanması</translation>
-<translation id="8958582951173503172">Chrome Enterprise Connectors tərəfindən təhlükəsizliklə bağlı hadisələr işarələndikdə hadisə haqqında uyğun data administratorunuza göndərilir. Buraya Chrome'da daxil olduğunuz səhifələrin URL'ləri, fayl adları və ya metadatası, habelə cihazınıza və Chrome'a daxil olmaq üçün istifadə etdiyiniz istifadəçi adı daxil ola bilər.</translation>
 <translation id="8962950042226115166">Şübhəli sayt</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Təkliflər:<ph name="MARKUP_2" />Data bağlantınızın olduğuna əmin olun<ph name="MARKUP_3" />Bu veb səhifəni daha sonra yenidən yükləyin<ph name="MARKUP_4" />Daxil etdiyiniz ünvanları yoxlayın<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Kartı yadda saxlayın</translation>

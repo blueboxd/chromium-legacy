@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Billede, du har kopieret</translation>
 <translation id="1150979032973867961">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din computer ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1151972924205500581">En adgangskode er påkrævet</translation>
-<translation id="1152921474424827756">Få adgang til en <ph name="BEGIN_LINK" />cachelagret kopi<ph name="END_LINK" /> af <ph name="URL" /></translation>
 <translation id="1156303062776767266">Du får vist en lokal eller delt fil</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> lukkede forbindelsen uventet.</translation>
 <translation id="115926840831309955">Tjek din kontrolkode, og prøv igen, eller opdater udløbsdatoen</translation>
 <translation id="1161325031994447685">Genoprette forbindelse til Wi-Fi</translation>
 <translation id="1165039591588034296">Fejl</translation>
+<translation id="1165174597379888365">En side besøges</translation>
 <translation id="1175364870820465910">&amp;Udskriv...</translation>
 <translation id="1175875016430184367">Trehæftning i højre side</translation>
 <translation id="1178581264944972037">Pause</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">Annoncer</translation>
 <translation id="1919367280705858090">Få hjælp til en specifik fejlmeddelelse</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Ingen}=1{1 website}one{# website}other{# websites}}</translation>
-<translation id="194030505837763158">Gå til <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Du kan miste adgangen til din organisations konto eller udsættes for identitetstyveri. Chromium anbefaler, at du skifter din adgangskode nu.</translation>
 <translation id="1947454675006758438">Hæftning øverst til højre</translation>
 <translation id="1959001866257244765">Hjælp med at forbedre sikkerheden på nettet for alle brugere ved at sende <ph name="BEGIN_WHITEPAPER_LINK" />webadresserne for nogle af de sider, du besøger, begrænsede systemoplysninger og noget sideindhold<ph name="END_WHITEPAPER_LINK" /> til Google. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Privatlivspolitik<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,9 +266,9 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="2001146170449793414">{COUNT,plural, =1{og 1 mere}one{og # mere}other{og # mere}}</translation>
 <translation id="2003709556000175978">Nulstil din adgangskode nu</translation>
 <translation id="2003775180883135320">Fire huller øverst</translation>
+<translation id="202072848677994234">Denne formular indsendes via en usikker forbindelse. Automatisk udfyldning er deaktiveret.</translation>
 <translation id="2025115093177348061">Augmented reality</translation>
 <translation id="2025186561304664664">Proxyen konfigureres automatisk.</translation>
-<translation id="2030481566774242610">Mente du <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Tjekke din proxy og din firewall<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Bakke 7</translation>
 <translation id="204357726431741734">Log ind for at bruge de adgangskoder, du har gemt på din Google-konto</translation>
@@ -335,6 +334,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="2289385804009217824">Beskær</translation>
 <translation id="2292556288342944218">Din internetadgang er blokeret</translation>
 <translation id="2293443924986248631">Når denne indstilling er aktiveret, kan websites ikke anvende cookies, der sporer din aktivitet på nettet. Funktioner på visse websites virker muligvis ikke.</translation>
+<translation id="2295290966866883927">Webadresserne for de sider, du besøger, sendes til Google Cloud eller tredjeparter, hvor de analyseres. De kan f.eks. undersøge, om nogen af de tilhørende websites er usikre.</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2300306941146563769">Ikke uploadet</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
@@ -1047,6 +1047,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="5308380583665731573">Få forbindelse</translation>
 <translation id="5308689395849655368">Rapportering af nedbrud er deaktiveret.</translation>
 <translation id="5314967030527622926">Brochureværktøj</translation>
+<translation id="5316812925700871227">Rotér mod uret</translation>
 <translation id="5317780077021120954">Gem</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> af <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Vælg kontaktoplysninger</translation>
@@ -1070,7 +1071,6 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="5421136146218899937">Ryd browserdata...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> vil gerne sende notifikationer til dig</translation>
 <translation id="5430298929874300616">Fjern bogmærke</translation>
-<translation id="5431657950005405462">Din fil blev ikke fundet</translation>
 <translation id="5439770059721715174">Skemavalideringsfejl på "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Omvendt rækkefølge med forside opad</translation>
 <translation id="5447765697759493033">Dette website kan ikke oversættes</translation>
@@ -1444,7 +1444,6 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="7083258188081898530">Bakke 9</translation>
 <translation id="7086090958708083563">Brugeren anmodede om upload</translation>
 <translation id="7087282848513945231">Amt/region</translation>
-<translation id="7090678807593890770">Søg efter <ph name="LINK" /> på Google</translation>
 <translation id="7108338896283013870">Skjul</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> anmoder om at bruge dit kamera</translation>
 <translation id="7108819624672055576">Tilladt med en udvidelse</translation>
@@ -1881,7 +1880,6 @@ Yderligere oplysninger:
 <translation id="893332455753468063">Tilføj navn</translation>
 <translation id="8943282376843390568">Limegrøn</translation>
 <translation id="8957210676456822347">Godkendelse af captive portal</translation>
-<translation id="8958582951173503172">Når sikkerhedshændelser rapporteres af Chrome Enterprise Connectors, sendes der relevante data om hændelserne til din administrator. Disse data kan omfatte webadresserne til de sider, du besøger i Chrome, filnavne eller metadata samt det brugernavn, du brugte til at logge ind på din enhed og i Chrome.</translation>
 <translation id="8962950042226115166">Mistænkeligt website</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Forslag:<ph name="MARKUP_2" />Kontrollér, at du har en dataforbindelse<ph name="MARKUP_3" />Genindlæs denne webside senere<ph name="MARKUP_4" />Kontrollér den indtastede adresse<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Gem kort</translation>

@@ -206,6 +206,11 @@
 <translation id="1376119291123231789">Geavanceerde batterijoplaadmodus inschakelen</translation>
 <translation id="1384459581748403878">Referentie: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">OS-updatestatus rapporten</translation>
+<translation id="1390901586107713894">Hiermee kun je aangeven welke extensies gebruikers NIET kunnen installeren. Extensies die al zijn geïnstalleerd, worden uitgeschakeld als ze op de blokkeringslijst staan. De gebruiker kan ze niet weer inschakelen. Als een extensie die is uitgeschakeld op basis van de blokkeringslijst, van die lijst wordt verwijderd, wordt de extensie automatisch weer ingeschakeld.
+
+          De waarde '*' op de blokkeringslijst betekent dat alle extensies worden geblokkeerd, tenzij ze expliciet worden vermeld op de toelatingslijst.
+
+          Als je dit beleid niet instelt, kan de gebruiker elke extensie installeren in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1393485621820363363">Zakelijke apparaatprinters ingeschakeld</translation>
 <translation id="1397855852561539316">Voorgestelde URL voor standaardzoekprovider</translation>
 <translation id="1404043648050567997">De service Safe Browsing geeft een waarschuwingspagina weer wanneer gebruikers naar sites gaan die als potentieel schadelijk zijn gemarkeerd. Als je deze instelling inschakelt, voorkom je dat gebruikers vanaf de waarschuwingspagina toch doorgaan naar de schadelijke site.
@@ -1021,6 +1026,13 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 <translation id="253135976343875019">Inactieve waarschuwingsvertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2536525645274582300">De gebruiker beslist of Locatieservices van Google moeten worden ingeschakeld</translation>
 <translation id="254653220329944566">Schakelt cloudrapportage voor <ph name="PRODUCT_NAME" /> in</translation>
+<translation id="2547854230073316008">Als je het beleid instelt, worden de resolutie en schaalfactor voor elk scherm ingesteld. De instellingen voor externe schermen worden toegepast op aangesloten schermen. (Het beleid wordt niet toegepast als een scherm de opgegeven resolutie of schaal niet ondersteund.)
+
+      Als je <ph name="EXTERNAL_USE_NATIVE" /> instelt op True, negeert het beleid <ph name="EXTERNAL_WIDTH" /> en <ph name="EXTERNAL_HEIGHT" /> en worden externe schermen ingesteld op hun systeemeigen resolutie. Als je <ph name="EXTERNAL_USE_NATIVE" /> instelt op False of dit en <ph name="EXTERNAL_WIDTH" /> of <ph name="EXTERNAL_HEIGHT" /> niet instelt, is het beleid niet van toepassing op externe schermen.
+
+      Als je de aanbevolen markering instelt op True, kunnen gebruikers de resolutie en schaalfactor van een scherm wijzigen via de instellingenpagina. Hun instellingen worden echter teruggezet bij de volgende keer opnieuw opstarten. Als je de aanbevolen markering instelt op False of niet instelt, kunnen gebruikers de scherminstellingen niet wijzigen.
+
+      Opmerking: Stel <ph name="EXTERNAL_WIDTH" /> en <ph name="EXTERNAL_HEIGHT" /> in pixels in en <ph name="EXTERNAL_SCALE_PERCENTAGE" /> en <ph name="INTERNAL_SCALE_PERCENTAGE" /> in procenten.</translation>
 <translation id="2548397295248733155">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Specificeert de tijdsduur zonder gebruikersinvoer waarna het scherm wordt uitgeschakeld als er op de batterij wordt gewerkt.
@@ -1469,11 +1481,6 @@ Dit beleid kan alleen worden ingesteld via de Google Beheerdersconsole.</transla
 <translation id="3184161739683646075">Hiermee wordt de modus voor DNS-over-HTTPS bepaald</translation>
 <translation id="3185009703220253572">sinds versie <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-apps hebben geen toegang tot zakelijke sleutels. Dit beleid is niet van invloed op deze apps.</translation>
-<translation id="3190338425427039045">Als je het beleid inschakelt of niet instelt, is alle ondersteunde audio-uitvoer op de apparaten van gebruikers toegestaan.
-
-      Als je het beleid uitschakelt, is er geen audio-uitvoer toegestaan terwijl gebruikers zijn ingelogd.
-
-      Opmerking: Dit beleid is van invloed op alle audio-invoer (en niet alleen op de ingebouwde microfoon), waaronder audiotoegankelijkheidsfuncties. Schakel het beleid niet in als de gebruiker een schermlezer nodig heeft.</translation>
 <translation id="3196585866522778760">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Specificeert de tijdsduur zonder gebruikersinvoer waarna de actie voor inactiviteit wordt uitgevoerd als er op de batterij wordt gewerkt.
@@ -1506,11 +1513,11 @@ Dit beleid kan alleen worden ingesteld via de Google Beheerdersconsole.</transla
 <translation id="3251500716404598358">Configureer de beleidsregels om te schakelen tussen browsers.
 
       Geconfigureerde websites worden automatisch geopend in een andere browser dan <ph name="PRODUCT_NAME" />.</translation>
+<translation id="3255762580838224124">Als je het beleid instelt, wordt elk scherm naar de opgegeven stand gedraaid elke keer dat er opnieuw wordt opgestart en de eerste keer dat het scherm wordt verbonden nadat de beleidswaarde is gewijzigd. Gebruikers kunnen na inloggen de rotatie van het scherm wijzigen op de pagina met instellingen, maar de rotatie wordt bij de volgende keer opnieuw opstarten weer teruggezet. Dit beleid is van toepassing op primaire en secundaire schermen.
+
+      Als je het beleid niet instelt, is de standaardwaarde 0 graden en kunnen gebruikers dit wijzigen. In dat geval wordt de standaardwaarde niet opnieuw toegepast bij opnieuw opstarten.</translation>
 <translation id="3264793472749429012">Coderingen voor standaardzoekprovider</translation>
 <translation id="3273221114520206906">Standaardinstelling voor JavaScript</translation>
-<translation id="328108936611091281">Als <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> is ingeschakeld en je <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POLICY_NAME" /> instelt, wordt de URL gespecificeerd van de zoekmachine die tijdens een standaard zoekopdracht wordt gebruikt. De URL moet de tekenreeks <ph name="SEARCH_TERM_MARKER" /> bevatten. Deze tekenreeks wordt tijdens de zoekopdracht vervangen door de zoektermen van de gebruiker.
-
-      Je kunt de zoek-URL van Google opgeven als: <ph name="GOOGLE_SEARCH_URL" />.</translation>
 <translation id="3284094172359247914">Gebruik van de WebUSB API beheren</translation>
 <translation id="3288595667065905535">Releasekanaal</translation>
 <translation id="3292147213643666827">Met deze instelling kan <ph name="PRODUCT_NAME" /> als proxy worden ingesteld tussen <ph name="CLOUD_PRINT_NAME" /> en printers die zijn aangesloten op het apparaat.
@@ -1527,9 +1534,6 @@ Dit beleid kan alleen worden ingesteld via de Google Beheerdersconsole.</transla
       Dit beleid wordt verwijderd in Chrome 88.
 
       Zie https://www.chromestatus.com/feature/4664843055398912 .</translation>
-<translation id="3303653927512453822">Hiermee kun je alle cookies terugzetten op het verouderde gedrag van <ph name="ATTRIBUTE_SAMESITE_NAME" />. Als je het verouderde gedrag terugzet, worden cookies waarin geen <ph name="ATTRIBUTE_SAMESITE_NAME" />-kenmerk is opgegeven, als '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' behandeld en wordt de vereiste weggenomen dat cookies van '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' het kenmerk '<ph name="ATTRIBUTE_SECURE_NAME" />' bevatten. Zie https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies voor een volledige beschrijving.
-
-          Als dit beleid niet is ingesteld, is het standaardgedrag van <ph name="ATTRIBUTE_SAMESITE_NAME" /> voor cookies waarin het kenmerk <ph name="ATTRIBUTE_SAMESITE_NAME" /> niet is opgegeven afhankelijk van de configuratie van de gebruiker voor de <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />-functie. Deze functie kan worden ingesteld via een online test of door de markering <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> in of uit te schakelen.</translation>
 <translation id="3303911765031636277">Configuratiebeleid voor de Chrome Enterprise-connector OnFileAttached</translation>
 <translation id="3304662785258434098">Hiermee kun je instellen of gebruikers uitzonderingen kunnen toevoegen om gecombineerde content toe te staan voor specifieke sites.
 
@@ -1860,6 +1864,17 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="382476126209906314">Het voorvoegsel voor het TalkGadget configureren voor hosts voor externe toegang</translation>
 <translation id="3824972131618513497">Beheert instellingen met betrekking tot energiebeheer en opnieuw opstarten.</translation>
 <translation id="3826475866868158882">Google-locatieservices ingeschakeld</translation>
+<translation id="383002993919016993">Dit beleid voorkomt dat de gebruiker webpagina's van geblokkeerde URL's laadt. De blokkeringslijst biedt een lijst met URL-patronen waarin wordt aangegeven welke URL's worden geblokkeerd.
+
+      Een URL-patroon moet worden ingedeeld volgens https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Uitzonderingen kunnen worden gedefinieerd in het beleid voor de toelatingslijst voor URL's. Dit beleid is beperkt tot 1000 items. Daaropvolgende items worden genegeerd.
+
+      Het wordt niet aanbevolen om interne URL's met 'chrome://*' te blokkeren, aangezien dit kan leiden tot onverwachte fouten.
+
+      Je kunt URL's met 'javascript://*' blokkeren. Dit heeft alleen gevolgen voor JavaScript die in de adresbalk is getypt (of bijvoorbeeld bookmarklets). In-page JavaScript-URL's vallen niet onder dit beleid zolang de gegevens dynamisch worden geladen. Als je bijvoorbeeld 'example.com/abc' blokkeert, kan de pagina 'example.com' nog steeds 'example.com/abc' laden via XMLHTTPRequest.
+
+      Als je dit beleid niet instelt, wordt geen enkele URL geblokkeerd in de browser.</translation>
 <translation id="3831376478177535007">Wanneer deze instelling is ingeschakeld, staat <ph name="PRODUCT_NAME" /> toe dat certificaten die zijn uitgegeven via de verouderde PKI-bewerkingen van Symantec Corporation worden vertrouwd als deze correct worden gevalideerd en zijn gekoppeld aan een herkend CA-certificaat.
 
       Houd er rekening mee dat dit beleid afhankelijk is van het feit of de certificaten van de verouderde infrastructuur van Symantec nog door het besturingssysteem worden herkend. Als door een update van het besturingssysteem de verwerking van dergelijke certificaten door het besturingssysteem verandert, is dit beleid niet meer van toepassing. Daarnaast is dit beleid bedoeld als tijdelijke oplossing om bedrijven meer tijd te geven om af te stappen van de verouderde Symantec-certificaten. Dit beleid wordt op of rond 1 januari 2019 verwijderd.
@@ -2530,6 +2545,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als je het beleid instelt, kunnen gebruikers het niet wijzigen. Als je het beleid niet instelt, kunnen gebruikers zelf aangeven of de plank automatisch moet worden verborgen.</translation>
 <translation id="4816674326202173458">Toestaan dat Enterprise-gebruiker zowel primair als secundair is (standaardgedrag voor niet-beheerde gebruikers)</translation>
 <translation id="4826326557828204741">Actie die moet worden ondernomen wanneer de vertraging voor inactief wordt bereikt bij gebruik op accuvermogen</translation>
+<translation id="482803100714220060">Volledige URL's weergeven</translation>
 <translation id="4830531683854509779">Hiermee worden hardwarestatistieken gerapporteerd voor SoC-componenten.
 
       Als het beleid is ingesteld op False of niet is ingesteld, worden de statistieken niet gerapporteerd.
@@ -2558,6 +2574,11 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       </translation>
 <translation id="489803897780524242">Parameter die plaatsing van zoektermen beheert voor de standaardzoekprovider</translation>
 <translation id="4899708173828500852">Safe Browsing inschakelen</translation>
+<translation id="4902163780937592202">Hiermee worden de lijstbeleidsregels <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME" /> en <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> voor installatie van extensies samengevoegd.
+
+      Als je deze instelling inschakelt, worden de waarden van de beleidsregels voor het machineplatform, de machinecloud en het gebruikersplatform samengevoegd tot één lijst. Bovendien worden ze als één geheel gebruikt in plaats van alleen de waarden van de bron met de hoogste prioriteit te gebruiken.
+
+      Als je deze instelling uitschakelt of niet instelt, worden alleen lijstitems uit de bron met de hoogste prioriteit meegenomen. Alle andere bronnen worden wel als conflicten weergegeven, maar worden genegeerd.</translation>
 <translation id="4906194810004762807">Vernieuwingsfrequentie voor apparaatbeleid</translation>
 <translation id="4917385247580444890">Sterk</translation>
 <translation id="4919122295221518724">Strengere behandeling van gecombineerde content inschakelen</translation>
@@ -2664,6 +2685,19 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
           Als dit beleid niet is ingesteld, wordt een minimale pincodelengte van zes cijfers
           afgedwongen. Dit is het aanbevolen minimum.</translation>
+<translation id="5077993112092904096">Dit beleid is beëindigd. Gebruik in plaats daarvan het beleid '<ph name="URL_BLOCKLIST_POLICY_NAME" />'.
+
+      Dit beleid voorkomt dat de gebruiker webpagina's van geblokkeerde URL's laadt. De blokkeringslijst biedt een lijst met URL-patronen waarin wordt aangegeven welke URL's worden geblokkeerd.
+
+      Een URL-patroon moet worden ingedeeld volgens https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Uitzonderingen kunnen worden gedefinieerd in het beleid voor de toelatingslijst voor URL's. Dit beleid is beperkt tot 1000 items. Daaropvolgende items worden genegeerd.
+
+      Het wordt niet aanbevolen om interne URL's met 'chrome://*' te blokkeren, aangezien dit kan leiden tot onverwachte fouten.
+
+      Vanaf Chrome 73 kun je URL's met 'javascript://*' blokkeren. Dit heeft alleen gevolgen voor JavaScript die in de adresbalk is getypt (of bijvoorbeeld bookmarklets). In-page JavaScript-URL's vallen niet onder dit beleid zolang de gegevens dynamisch worden geladen. Als je bijvoorbeeld 'example.com/abc' blokkeert, kan de pagina 'example.com' nog steeds 'example.com/abc' laden via XMLHTTPRequest.
+
+      Als je dit beleid niet instelt, wordt geen enkele URL geblokkeerd in de browser.</translation>
 <translation id="5085647276663819155">Afdrukvoorbeeld uitschakelen</translation>
 <translation id="5090209345759901501">Instelling voor Flash-content uitbreiden naar alle content</translation>
 <translation id="5090791951240382356">Toestaan dat woordenboekbeleid van verschillende bronnen wordt samengevoegd</translation>
@@ -3147,17 +3181,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als dit beleid niet wordt ingesteld, wordt de ingebouwde DNS-client standaard ingeschakeld op macOS, Android (als Privé-DNS en VPN niet zijn ingeschakeld) en Chrome OS en kunnen de gebruikers bepalen of de ingebouwde DNS-client wordt gebruikt door chrome://flags te bewerken of door een opdrachtregelmarkering op te geven.</translation>
 <translation id="5630352020869108293">De laatste sessie herstellen</translation>
 <translation id="5633871703004128675">De toegankelijkheidsfunctie voor markering van het caret-teken inschakelen</translation>
-<translation id="5643906875497889108">Bepaalt welke typen apps/extensies mogen worden geïnstalleerd en beperkt runtime-toegang.
-
-          Met deze instelling worden typen extensies/apps die mogen worden geïnstalleerd in <ph name="PRODUCT_NAME" />, op de witte lijst geplaatst. Hosts waarmee ze interactie kunnen hebben, worden ook op de witte lijst geplaatst. De waarde bestaat uit een lijst met tekenreeksen. Elke tekenreeks moet een van de volgende zijn: 'extension', 'theme', 'user_script', 'hosted_app', 'legacy_packaged_app', 'platform_app'. Raadpleeg de documentatie van de <ph name="PRODUCT_NAME" />-extensies voor meer informatie over deze typen.
-
-          Dit beleid is ook van toepassing op extensies en apps die afgedwongen worden geïnstalleerd via ExtensionInstallForcelist.
-
-          Als dit is ingesteld, worden extensies/apps met een ander type dan de typen in de lijst niet geïnstalleerd.
-
-          Als dit niet is ingesteld, gelden er geen beperkingen voor welke typen extensies/apps zijn toegestaan.
-
-          Het gebruik van meerdere door komma's gescheiden extensie-ID's wordt vóór versie 75 niet ondersteund en wordt overgeslagen. De rest van het beleid geldt nog wel.</translation>
 <translation id="5645779841392247734">Cookies toestaan op deze sites</translation>
 <translation id="5646234199535103501">Configuratiebeleid voor de Chrome Enterprise Connector OnBulkDataEntry</translation>
 <translation id="5656177735561364047">De functie voor gedeeld klembord inschakelen</translation>
@@ -3604,6 +3627,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="6394350458541421998">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_OS_NAME" /> versie 29. Gebruik het beleid PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">De gebruiker uitloggen</translation>
 <translation id="640244877779556713">Suggestie voor emoji's inschakelen</translation>
+<translation id="6407093060083181305">Blokkeringslijst voor installatie van extensies configureren</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
 <translation id="6422575351619065453">In de kioskmodus beheert dit of het zwevende toegankelijkheidsmenu wordt weergegeven.
 
@@ -3781,6 +3805,11 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="6658245400435704251">Bepaalt het maximaal aantal seconden dat een apparaat willekeurig de download van een update mag uitstellen vanaf het moment dat de update voor het eerst naar de server werd gepusht. Het apparaat kan een deel van deze tijd wachten in termen van kloktijd en het resterende deel in termen van het aantal updatecontroles. De maximale spreiding is in elk geval begrensd door een constante periode zodat een apparaat nooit vastloopt tijdens het wachten tot een update kan worden gedownload.</translation>
 <translation id="6665670272107384733">Instellen hoe vaak een gebruiker het wachtwoord moet opgeven om de functie voor snel ontgrendelen te kunnen gebruiken</translation>
 <translation id="6667586534922258705">De knop 'Wachtwoord weergeven' weergeven op het inlog- en vergrendelscherm.</translation>
+<translation id="6669700740683748046">Met deze functie wordt de weergave van de volledige URL in de adresbalk ingeschakeld.
+      Als je dit beleid instelt op True, wordt de volledige URL weergegeven in de adresbalk, inclusief schema's en subdomeinen.
+      Als je dit beleid instelt op False, wordt de standaard URL-weergave toegepast.
+      Als je dit beleid niet instelt, wordt de standaard URL-weergave toegepast. Via een optie in het contextmenu kan de gebruiker schakelen tussen de standaard en volledige URL-weergave.
+      </translation>
 <translation id="6672070613706645316">Gebruikers toestaan de achtergrond van de pagina 'Nieuw tabblad' aan te passen</translation>
 <translation id="6672630473862787247">Ambient-verificatie inschakelen in normale, incognito- en gastsessies.</translation>
 <translation id="6685903773201985073">Ambient-verificatie inschakelen in normale en gastsessies.</translation>
@@ -3802,15 +3831,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Met dit beleid wordt bepaald of gebruikers die zijn ingeschreven bij 'Geavanceerde beveiliging' hun downloads naar Google mogen sturen om ze te laten scannen. Als dit beleid is ingesteld op True of niet is ingesteld, wordt ingeschreven gebruikers gevraagd hun bestanden naar Google te sturen voor een uitgebreide scan. Als gebruikers 'Scannen' selecteren, worden hun downloads naar Google gestuurd. Als dit beleid is ingesteld op False, ontvangen gebruikers geen melding en worden hun downloads niet naar Google gestuurd.</translation>
 <translation id="670597451099978576">Automatisch rechten verlenen aan deze sites om verbinding te maken met USB-apparaten met de opgegeven leveranciers- en product-ID's op het inlogscherm.</translation>
-<translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> zorgt ervoor dat extensies veilig kunnen worden geüpdatet en geïnstalleerd. De content van sommige extensies die buiten de Chrome Web Store worden gehost, wordt echter mogelijk alleen beschermd door onbeveiligde ondertekening of hashingalgoritmen zoals SHA1. Wanneer dit beleid is uitgeschakeld, wordt het door Chrome niet toegestaan om dergelijke extensies opnieuw te installeren of te updaten (totdat de ontwerpers van die extensie deze opnieuw samenstellen met krachtigere algoritmen). Wanneer dit beleid is ingeschakeld, is het toegestaan om dergelijke extensies te installeren en te updaten.
-
-          Het ingeschakelde gedrag wordt standaard gebruikt wanneer het beleid niet is ingesteld.
-          Vanaf <ph name="PRODUCT_NAME" /> 76 wordt het uitgeschakelde gedrag standaard gebruikt wanneer het beleid niet is ingesteld.
-
-          Vanaf <ph name="PRODUCT_NAME" /> 78 wordt dit beleid genegeerd en behandeld alsof het is uitgeschakeld.</translation>
-<translation id="6724116921710627162">Als <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> is ingeschakeld en je <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" /> instelt, wordt de URL gespecificeerd van de zoekmachine die wordt gebruikt om een nieuwe tabbladpagina te openen.
-
-      Als je <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" /> niet instelt, wordt er geen nieuwe tabbladpagina geopend.</translation>
 <translation id="672496466524161417">Als je het beleid instelt op 'None' of niet instelt, kunnen gebruikers certificaten beheren. Als je het beleid instelt op '2', kunnen gebruikers de certificaten alleen bekijken (en niet beheren).
 
       Als je het beleid instelt op '1', kunnen gebruikers gebruikerscertificaten beheren, maar geen certificaten voor het hele apparaat.</translation>
@@ -4364,11 +4384,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Wanneer dit beleid niet wordt ingesteld, of wordt ingesteld op '0', wordt de URL onmiddellijk in een alternatieve browser geopend als je naar de URL navigeert.
 
       Wanneer dit beleid is ingesteld op een getal, toont Chrome gedurende dat aantal milliseconden een melding en wordt vervolgens de alternatieve browser geopend.</translation>
-<translation id="7586477707097444774">Cookies die zijn ingesteld voor domeinen die met deze patronen overeenkomen, worden teruggezet naar het verouderde gedrag van <ph name="ATTRIBUTE_SAMESITE_NAME" />. Als je het verouderde gedrag terugzet, worden cookies waarin geen <ph name="ATTRIBUTE_SAMESITE_NAME" />-kenmerk is opgegeven, als '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' behandeld en wordt de vereiste weggenomen dat cookies van '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' het kenmerk '<ph name="ATTRIBUTE_SECURE_NAME" />' bevatten. Zie https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies voor een volledige beschrijving.
-
-          Voor cookies op domeinen die niet overeenkomen met de hier genoemde patronen, of voor alle cookies als dit beleid niet is ingesteld, wordt de algemene standaardinstelling gebruikt op basis van het <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" />-beleid (als dit is ingesteld), of anders op basis van de configuratie van de gebruiker.
-
-          Houd er rekening mee dat de patronen die je hier opgeeft, worden behandeld als domeinen (en niet als URL's). Geef daarom geen schema of poort op.</translation>
 <translation id="7590188804371204512">Beheert de installatie van externe extensies.
 
       Als je deze instelling inschakelt, wordt de installatie van externe extensies geblokkeerd.
@@ -4823,9 +4838,6 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
       Opmerking: Automatisch afspelen werkt alleen voor domeinen die expliciet in het beleid <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> worden vermeld. Als je automatisch afspelen wilt inschakelen voor alle sites, voeg je http://* en https://* toe aan deze lijst.</translation>
 <translation id="8274603902181597201">De eCryptfs-hoofdmap van de gebruiker wissen en beginnen met een nieuwe hoofdmap die is versleuteld met ext4</translation>
 <translation id="8285435910062771358">Vergrootglas van volledig scherm ingeschakeld</translation>
-<translation id="8286955010912199104">Als je het beleid instelt op True, kunnen pagina's pop-ups weergeven terwijl het laden van de pagina's ongedaan wordt gemaakt.
-
-      Als je het beleid instelt op False of niet instelt, kunnen pagina's geen pop-ups weergeven terwijl het laden van de pagina's ongedaan wordt gemaakt.</translation>
 <translation id="8288199156259560552">Google-locatieservice voor Android inschakelen</translation>
 <translation id="8290875622178450531">De toegankelijkheidsfunctie voor dicteren inschakelen.
 
@@ -5027,9 +5039,6 @@ Dit beleid wordt verwijderd in M75.</translation>
       '1412.24.34': alleen een update uitvoeren naar deze specifieke versie
 
       Waarschuwing: Het wordt niet aanbevolen versiebeperkingen te configureren, omdat gebruikers hierdoor mogelijk geen software-updates en essentiële beveiligingsoplossingen ontvangen. Als je updates beperkt tot een specifiek versievoorvoegsel, kunnen gebruikers gevaar lopen.</translation>
-<translation id="8516298370361397304">Als <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> is ingeschakeld en je <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POLICY_NAME" /> instelt, wordt de URL gespecificeerd van de zoekmachine die wordt gebruikt om zoeksuggesties te bieden. De URL moet de tekenreeks <ph name="SEARCH_TERM_MARKER" /> bevatten. Deze tekenreeks wordt tijdens de zoekopdracht vervangen door de zoektermen van de gebruiker.
-
-      Je kunt de zoek-URL van Google opgeven als: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.</translation>
 <translation id="8519264904050090490">URL's van handmatige uitzonderingen voor beheerde gebruikers</translation>
 <translation id="8519516251436131647">Schakel snelkoppelingen voor toegankelijkheidsfuncties in.
 
@@ -5329,14 +5338,6 @@ Dit beleid wordt verwijderd in M75.</translation>
       Als dit is ingesteld op 'False', wordt er geen informatie over toestemming voor synchronisatie weergegeven.
       Als dit is ingesteld op 'True' of als dit niet is ingesteld, kan er informatie over toestemming voor synchronisatie worden weergegeven.</translation>
 <translation id="8943934315109955032">Niet controleren op schendingen van de beveiligingsregels voor gevoelige gegevens</translation>
-<translation id="894510252300143386">Hiermee worden extensiebeheerinstellingen voor <ph name="PRODUCT_NAME" /> geconfigureerd.
-
-          Met dit beleid worden meerdere instellingen beheerd, waaronder instellingen die worden beheerd door bestaande, aan extensies gerelateerde beleidsregels. Dit beleid overschrijft alle oudere beleidsregels als beide zijn ingesteld.
-
-          Met dit beleid wordt een extensie-ID of een update-URL toegewezen aan de bijbehorende configuratie. Bij een extensie-ID wordt de configuratie uitsluitend op de opgegeven configuratie toegepast. Er kan een standaardconfiguratie worden ingesteld voor de speciale ID <ph name="DEFAULT_SCOPE" />, die wordt toegepast op alle extensies waarvoor geen aangepaste configuratie is ingesteld in dit beleid. Bij een update-URL wordt de configuratie toegepast op alle extensies met de exacte update-URL in het manifest van deze extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Voor Windows-instanties die niet zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein, is gedwongen installatie beperkt tot apps en extensies die worden vermeld in de Chrome Web Store.
-          </translation>
 <translation id="8947415621777543415">Apparaatlocatie rapporteren</translation>
 <translation id="8949552982791839607">Als dit beleid is uitgeschakeld, worden er geen beveiligingswaarschuwingen weergegeven als Chrome wordt gestart met bepaalde mogelijk schadelijke opdrachtregelmarkeringen.
 

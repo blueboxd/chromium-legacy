@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">თქვენ მიერ კოპირებული სურათი</translation>
 <translation id="1150979032973867961">ეს სერვერი ვერ ამტკიცებს, რომ ის არის <ph name="DOMAIN" />; მისი უსაფრთხოების სერთიფიკატი არ ენდობა თქვენი კომპიუტერის ოპერაციულ სისტემას. ეს შეიძლება იყოს გამოწვეული არასწორი კონფიგურაციით ან თავდამსხმელის მიერ თქვენი კავშირის გადაჭრით.</translation>
 <translation id="1151972924205500581">საჭიროა პაროლი</translation>
-<translation id="1152921474424827756">წვდომა <ph name="BEGIN_LINK" />ქეშირებულ ასლზე<ph name="END_LINK" /> სულ: <ph name="URL" /></translation>
 <translation id="1156303062776767266">თქვენ ათვალიერებთ ადგილობრივ ან გაზიარებულ ფაილს</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" />-მა მოულოდნელად გაწყვიტა კავშირი.</translation>
 <translation id="115926840831309955">შეამოწმეთ CVC და ცადეთ ხელახლა, ან განაახლეთ მოქმედების ვადის გასვლის თარიღი</translation>
 <translation id="1161325031994447685">Wi-Fi-სთან ხელახლა დაკავშირება</translation>
 <translation id="1165039591588034296">შეცდომა</translation>
+<translation id="1165174597379888365">მონახულებულია გვერდი</translation>
 <translation id="1175364870820465910">&amp;ბეჭდვა…</translation>
 <translation id="1175875016430184367">სამმაგად დასტეპლერება მარჯვნივ</translation>
 <translation id="1178581264944972037">პაუზა</translation>
@@ -243,7 +243,6 @@
 <translation id="1919345977826869612">რეკლამა</translation>
 <translation id="1919367280705858090">შეცდომის შესახებ კონკრეტულ შეტყობინებებთან დაკავშირებული დახმარება</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{არცერთი}=1{1 საიტი}other{# საიტი}}</translation>
-<translation id="194030505837763158">გადასვლა <ph name="LINK" />-ზე</translation>
 <translation id="1945968466830820669">თქვენ შეიძლება მოგპარონ პერსონალური მონაცემები, ან დაკარგოთ წვდომა თქვენი ორგანიზაციის ანგარიშზე. Chromium გირჩევთ, ახლავე შეცვალოთ პაროლი.</translation>
 <translation id="1947454675006758438">ზედა მარჯვენა ნაწილის დასტეპლერება</translation>
 <translation id="1959001866257244765">შეუწყვეთ ხელი ვების უსაფრთხოების ყველასთვის გაუმჯობესებას <ph name="BEGIN_WHITEPAPER_LINK" />თქვენ მიერ მონახულებული ზოგიერთი გვერდის URL-ების, სისტემის შეზღუდული ინფორმაციისა და გვერდების გარკვეული კონტენტის<ph name="END_WHITEPAPER_LINK" /> Google-ისთვის გაგზავნით. <ph name="BEGIN_PRIVACY_PAGE_LINK" />კონფიდენციალურობის დებულება<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -263,9 +262,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{და 1 სხვა}other{და # სხვა}}</translation>
 <translation id="2003709556000175978">გადააყენეთ პაროლი ახლავე</translation>
 <translation id="2003775180883135320">ოთხმაგად გახვრეტა ზემოთ</translation>
+<translation id="202072848677994234">ეს ფორმა იგზავნება დაუცველი კავშირის მეშვეობით. ავტომატური შევსება გათიშულია.</translation>
 <translation id="2025115093177348061">აუგმენტური რეალობა</translation>
 <translation id="2025186561304664664">პროქსი დაყენებულია ავტომატურ კონფიგურაციაზე.</translation>
-<translation id="2030481566774242610">ხომ არ იგულისხმეთ <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />პროქსისა და ქსელის დაცვის შემოწმება<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">ლანგარი 7</translation>
 <translation id="204357726431741734">თქვენს Google ანგარიშში შენახული პაროლების გამოსაყენებლად შედით სისტემაში</translation>
@@ -331,6 +330,7 @@
 <translation id="2289385804009217824">შემოჭრა</translation>
 <translation id="2292556288342944218">თქვენი კავშირი ინტერნეტთან დაბლოკილია</translation>
 <translation id="2293443924986248631">ჩართვის შემთხვევაში ვებსაიტებს აეკრძალება თქვენთვის თვალის მიდევნება ქუქი-ჩანაწერების მეშვეობით. ზოგიერთი საიტის ფუნქციებმა შეიძლება არასათანადოდ იმუშაოს.</translation>
+<translation id="2295290966866883927">თქვენ მიერ მონახულებული გვერდების URL-ები გასაანალიზებლად გაეგზავნება Google Cloud-ს ან მესამე მხარეს. მაგალითად, შეიძლება შესრულდეს მათი სკანირება არაუსაფრთხო ვებსაიტების აღმოსაჩენად.</translation>
 <translation id="2297722699537546652">B5 (კონვერტი)</translation>
 <translation id="2300306941146563769">აუტვირთავია</translation>
 <translation id="2310021320168182093">Chou2 (კონვერტი)</translation>
@@ -1036,6 +1036,7 @@
 <translation id="5308380583665731573">დაკავშირება</translation>
 <translation id="5308689395849655368">შეცდომების შესახებ მოხსენებების გაგზავნა გამორთულია.</translation>
 <translation id="5314967030527622926">ბუკლეტის შემქმნელი</translation>
+<translation id="5316812925700871227">საათის ისრის საწინააღმდეგოდ შემოტრიალება</translation>
 <translation id="5317780077021120954">შენახვა</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> / <ph name="NUM_MATCHES" />-დან</translation>
 <translation id="5324080437450482387">საკონტაქტო ინფორმაციის არჩევა</translation>
@@ -1059,7 +1060,6 @@
 <translation id="5421136146218899937">დათვალიერების მონაცემების გასუფთავება…</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> ითხოვს თქვენთვის შეტყობინებების გამოგზავნას</translation>
 <translation id="5430298929874300616">სანიშნის ამოშლა</translation>
-<translation id="5431657950005405462">თქვენი ფაილი ვერ მოიძებნა</translation>
 <translation id="5439770059721715174">ქსემის გადამოწმევის შეცდომა „<ph name="ERROR_PATH" />“: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">უკუმიმდევრობა ნაბეჭდი მხარით აღმა</translation>
 <translation id="5447765697759493033">ეს გვერდი არ ითარგმნება</translation>
@@ -1433,7 +1433,6 @@
 <translation id="7083258188081898530">ლანგარი 9</translation>
 <translation id="7086090958708083563">ატვირთვა მოთხოვნილია მომხმარებლის მიერ</translation>
 <translation id="7087282848513945231">საგრაფო</translation>
-<translation id="7090678807593890770">მოიძიეთ „<ph name="LINK" />“ Google-ში</translation>
 <translation id="7108338896283013870">დამალვა</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> ითხოვს თქვენი კამერის გამოყენების ნებართვას</translation>
 <translation id="7108819624672055576">დაშვებულია გაფართოების მიერ</translation>
@@ -1869,7 +1868,6 @@
 <translation id="893332455753468063">დაამატეთ სახელი</translation>
 <translation id="8943282376843390568">ლაიმისფერი</translation>
 <translation id="8957210676456822347">დაკავებული პორტალების ავტორიზაცია</translation>
-<translation id="8958582951173503172">Chrome Enterprise Connectors-ის მიერ უსაფრთხოებასთან დაკავშირებული მოვლენების ალმით მონიშვნის შემთხვევაში მოვლენის შესაბამისი მონაცემები გაეგზავნება თქვენს ადმინისტრატორს. აღნიშნული შეიძლება მოიცავდეს თქვენ მიერ Chrome-ში მონახულებული გვერდების URL-ებს, ფაილების სახელებსა ან მეტამონაცემებს, ასევე მომხმარებლის სახელს, რომელსაც თქვენს მოწყობილობაში და Chrome-ში შესასვლელად იყენებთ.</translation>
 <translation id="8962950042226115166">საეჭვო საიტი</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />მითითებები:<ph name="MARKUP_2" />დარწმუნდით, რომ მონაცემთა კავშირი გაქვთ<ph name="MARKUP_3" />ხელახლა ჩატვირთეთ გვერდი მოგვიანებით<ph name="MARKUP_4" />შეამოწმეთ თქვენ მიერ შეყვანილი მისამართი<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">ბარათის შენახვა</translation>

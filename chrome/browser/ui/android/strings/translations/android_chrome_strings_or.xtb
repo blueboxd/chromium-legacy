@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">ଆପଣଙ୍କ ଇଣ୍ଟର୍ନେଟ୍ ସଂଯୋଗ ଯାଞ୍ଚ କରାଯାଉଛି</translation>
 <translation id="2359808026110333948">ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="2369533728426058518">ଖୋଲାଥିବା ଟାବ୍</translation>
-<translation id="2377295302146152376">ଅପଡେଟଗୁଡ଼ିକ ଅଛି ନା ନାହିଁ ତାହା Chrome ଯାଞ୍ଚ କରିପାରିଲା ନାହିଁ</translation>
 <translation id="2387895666653383613">ଟେକ୍ସଟ୍‌ ସ୍କେଲିଂ</translation>
 <translation id="2394602618534698961">ଆପଣ ଡାଉନ୍‌ଲୋଡ୍ କରିଥିବା ଫାଇଲ୍‌ଗୁଡ଼ିକ ଏଠାରେ ଦେଖାଯିବ</translation>
 <translation id="2407481962792080328">ଆପଣ ଆପଣଙ୍କର Google ଆକାଉଣ୍ଟରେ ସାଇନ୍ ଇନ୍ କଲେ ଏହି ଫିଚର୍ ଚାଲୁ ହୁଏ</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ସାହାଯ୍ୟ ପାଆନ୍ତୁ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">ଲୋକେସନ୍‍ ବନ୍ଦ ଅଛି; ଏହାକୁ <ph name="BEGIN_LINK" />Android ସେଟିଂସ୍‌<ph name="END_LINK" />ରେ ଚାଲୁ କରନ୍ତୁ।</translation>
 <translation id="3058498974290601450">ଯେକୌଣସି ସମୟରେ ସେଟିଂସ୍‌ରେ ଆପଣ ସିଙ୍କ୍‌ ଚାଲୁ କରିପାରିବେ</translation>
-<translation id="3059710691562604940">ସେଫ୍ ବ୍ରାଉଜିଂ ବନ୍ଦ ଅଛି। Chrome ଏହାକୁ ଚାଲୁ କରିବାକୁ ସୁପାରିଶ କରେ।</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" />ଟି ବୁକ୍‌ମାର୍କ}other{<ph name="BOOKMARKS_COUNT_MANY" />ଟି ବୁକ୍‌ମାର୍କ}}</translation>
 <translation id="3089395242580810162">ଇନ୍‌କଗ୍‌ନିଟୋ ଟାବ୍‌ରେ ଖୋଲନ୍ତୁ</translation>
 <translation id="3114012059975132928">ଭିଡିଓ ପ୍ଲେଆର୍</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">ଅପ୍‍‍‍‍‍ଡେଟ୍‌ ଉପଲବ୍ଧ ଅଟେ। ଅଧିକ ବିକଳ୍ପ</translation>
 <translation id="3524138585025253783">ଡେଭଲପର୍ UI</translation>
 <translation id="3527085408025491307">ଫୋଲ୍ଡର୍</translation>
-<translation id="3533694711092285624">ସେଭ୍ କରାଯାଇଥିବା କୌଣସି ପାସୱାର୍ଡ ନାହିଁ। ଆପଣ ପାସୱାର୍ଡଗୁଡ଼ିକୁ ସେଭ୍ କଲେ Chrome ସେଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରିପାରିବ।</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB ଉପଲବ୍ଧ ଅଛି</translation>
 <translation id="3549657413697417275">ଆପଣଙ୍କର ଇତିବୃତ୍ତି ସନ୍ଧାନ କରନ୍ତୁ</translation>
 <translation id="3557336313807607643">ଯୋଗାଯୋଗରେ ଯୋଗ କରନ୍ତୁ</translation>
@@ -360,6 +357,7 @@
 <translation id="3892148308691398805">ଟେକ୍ସଟ୍ କପି କରନ୍ତୁ</translation>
 <translation id="3894427358181296146">ଫୋଲ୍ଡର୍‍‍ରେ ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="3895926599014793903">ଜୁମ୍ ସକ୍ଷମ କରିବା ପାଇଁ ବାଧ୍ୟ କରନ୍ତୁ</translation>
+<translation id="3909763690984331376">ସୁରକ୍ଷା ଯାଞ୍ଚ <ph name="BEGIN_NEW" />ନୂଆ<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">ୱେବ୍‍ରୁ ସର୍ବୋତ୍ତମ ଆଇଟମ୍ ଖୋଜିବା…</translation>
 <translation id="3927692899758076493">ସାନ୍ସ-ସେରିଫ୍‌</translation>
 <translation id="3928666092801078803">ମୋର ଡାଟା ଏକାଠି କରନ୍ତୁ</translation>
@@ -570,6 +568,7 @@
 <translation id="5581519193887989363"><ph name="BEGIN_LINK1" />ସେଟିଂସ୍<ph name="END_LINK1" />ରେ କ’ଣ ସିଙ୍କ୍ କରିବାକୁ ହେବ ତାହା ଆପଣ ସର୍ବଦା ବାଛି ପାରିବେ।</translation>
 <translation id="5595485650161345191">ଠିକଣା ଏଡିଟ୍ କରନ୍ତୁ</translation>
 <translation id="5599455543593328020">ଇନ୍‍କଗ୍ନିଟୋ ମୋଡ୍</translation>
+<translation id="5620163320393916465">କୌଣସି ସେଭ୍ କରାଯାଇଥିବା ପାସୱାର୍ଡ ନାହିଁ</translation>
 <translation id="5620928963363755975">ଅଧିକ ବିକଳ୍ପ ବଟନ୍‌ ମଧ୍ୟରେ ଥିବା ଡାଉନ୍‍‍‍ଲୋଡ୍ରୁ ଆପଣଙ୍କର ଫାଇଲ୍ ଏବଂ ପୃଷ୍ଠାଗୁଡ଼ିକୁ ଖୋଜନ୍ତୁ</translation>
 <translation id="5626134646977739690">ନାମ:</translation>
 <translation id="5639724618331995626">ସମସ୍ତ ସାଇଟ୍‌କୁ ଅନୁମତି ଦିଅନ୍ତୁ</translation>
@@ -581,6 +580,7 @@
 <translation id="5686790454216892815">ଫାଇଲ୍‍ର ନାମ ବହୁତ ଲମ୍ବା ଅଟେ</translation>
 <translation id="5694049548840660018">ମୂଳପୃଷ୍ଠାକୁ ସହଜରେ ଫେରନ୍ତୁ</translation>
 <translation id="569536719314091526">ଅଧିକ ବିକଳ୍ପ ବଟନ୍‍ରୁ ଏହି ପୃଷ୍ଠାର ଅନୁବାଦ ଯେକୌଣସି ଭାଷାରେ କରନ୍ତୁ</translation>
+<translation id="5696597120588531049">ଡାଟା ଉଲ୍ଲଙ୍ଘନ, ଅସୁରକ୍ଷିତ ୱେବସାଇଟ୍ କିମ୍ବା ଆହୁରି ଅନେକ କିଛିରୁ Chrome ଆପଣଙ୍କୁ ସୁରକ୍ଷିତ ରଖିବାରେ ସାହାଯ୍ୟ କରିପାରିବ</translation>
 <translation id="5697688514913266141">ଆପଣଙ୍କ ଫାଇଲ୍ <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />ରେ ସେଭ୍ କରାଯିବ। <ph name="BEGIN_LINK2" />ସମ୍ପାଦନ କରନ୍ତୁ<ph name="END_LINK2" />।</translation>
 <translation id="570347048394355941">ଟାବକୁ ସ୍ୱିଚ୍ କରନ୍ତୁ</translation>
 <translation id="572328651809341494">ନିକଟର ଟାବ୍‌ଗୁଡ଼ିକ</translation>
@@ -714,6 +714,7 @@
 <translation id="6656545060687952787">ଡିଭାଇସ୍ ପାଇଁ ସ୍କାନ୍ କରିବାକୁ Chrome ଲୋକେସନ୍ ଆକ୍ସେସ୍ ଆବଶ୍ୟକ କରେ। <ph name="BEGIN_LINK" />ଅପ୍‌ଡେଟ୍ ଅନୁମତି<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">ପାସ୍‌ୱର୍ଡ</translation>
 <translation id="6659594942844771486">ଟାବ୍</translation>
+<translation id="6663079968236414793">ଟେକ୍ସଟର ଲିଙ୍କ୍</translation>
 <translation id="666573598175432848">Chromeର ଏକ ନୂଆ ସଂସ୍କରଣ ଉପଲବ୍ଧ ଅଛି। Play Storeକୁ ଯିବାକୁ ଏହି ଉପାଦାନରେ ଟାପ୍ କରନ୍ତୁ।</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" />ରେ ଖୋଲନ୍ତୁ</translation>
 <translation id="666981079809192359">Chrome ଗୋପନୀୟତା ବିଜ୍ଞପ୍ତି</translation>

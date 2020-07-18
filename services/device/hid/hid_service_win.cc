@@ -62,7 +62,7 @@ bool GetDeviceInfoAndPathFromInterface(
     HDEVINFO device_info_set,
     SP_DEVICE_INTERFACE_DATA& device_interface_data,
     SP_DEVINFO_DATA* device_info_data,
-    base::string16* device_path) {
+    std::wstring* device_path) {
   // Get the required buffer size. When called with
   // DeviceInterfaceDetailData == nullptr and DeviceInterfaceDetailSize == 0,
   // SetupDiGetDeviceInterfaceDetail returns the required buffer size at
@@ -93,8 +93,7 @@ bool GetDeviceInfoAndPathFromInterface(
 
   // Windows uses case-insensitive paths and may return paths that differ only
   // by case. Canonicalize the device path by converting to lowercase.
-  base::string16 path =
-      base::string16(device_interface_detail_data->DevicePath);
+  std::wstring path = device_interface_detail_data->DevicePath;
   DCHECK(base::IsStringASCII(path));
   *device_path = base::ToLowerASCII(path);
   return true;
@@ -104,7 +103,7 @@ bool GetDeviceInfoAndPathFromInterface(
 // |device_path|, or an invalid ScopedDevInfo if there was an error while
 // creating the device set. The device info is returned in |device_info_data|.
 base::win::ScopedDevInfo GetDeviceInfoFromPath(
-    const base::string16& device_path,
+    const std::wstring& device_path,
     SP_DEVINFO_DATA* device_info_data) {
   base::win::ScopedDevInfo device_info_set(SetupDiGetClassDevs(
       &GUID_DEVINTERFACE_HID, /*Enumerator=*/nullptr,
@@ -119,7 +118,7 @@ base::win::ScopedDevInfo GetDeviceInfoFromPath(
     return base::win::ScopedDevInfo();
   }
 
-  base::string16 intf_device_path;
+  std::wstring intf_device_path;
   GetDeviceInfoAndPathFromInterface(device_info_set.get(),
                                     device_interface_data, device_info_data,
                                     &intf_device_path);
@@ -193,7 +192,7 @@ void HidServiceWin::EnumerateBlocking(
          ++device_index) {
       SP_DEVINFO_DATA dev_info_data = {0};
       dev_info_data.cbSize = sizeof(dev_info_data);
-      base::string16 device_path;
+      std::wstring device_path;
       if (!GetDeviceInfoAndPathFromInterface(dev_info.get(),
                                              device_interface_data,
                                              &dev_info_data, &device_path)) {
@@ -207,7 +206,7 @@ void HidServiceWin::EnumerateBlocking(
         continue;
       }
       std::string physical_device_id =
-          base::UTF16ToUTF8(base::win::String16FromGUID(container_id));
+          base::WideToUTF8(base::win::String16FromGUID(container_id));
 
       AddDeviceBlocking(service, task_runner, device_path, physical_device_id);
     }
@@ -264,7 +263,7 @@ void HidServiceWin::CollectInfoFromValueCaps(
 void HidServiceWin::AddDeviceBlocking(
     base::WeakPtr<HidServiceWin> service,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const base::string16& device_path,
+    const std::wstring& device_path,
     const std::string& physical_device_id) {
   base::win::ScopedHandle device_handle(OpenDevice(device_path));
   if (!device_handle.IsValid()) {
@@ -361,7 +360,7 @@ void HidServiceWin::AddDeviceBlocking(
 }
 
 void HidServiceWin::OnDeviceAdded(const GUID& class_guid,
-                                  const base::string16& device_path) {
+                                  const std::wstring& device_path) {
   SP_DEVINFO_DATA device_info_data = {0};
   device_info_data.cbSize = sizeof(device_info_data);
   auto device_info_set = GetDeviceInfoFromPath(device_path, &device_info_data);
@@ -374,7 +373,7 @@ void HidServiceWin::OnDeviceAdded(const GUID& class_guid,
     return;
   }
   std::string physical_device_id =
-      base::UTF16ToUTF8(base::win::String16FromGUID(container_id));
+      base::WideToUTF8(base::win::String16FromGUID(container_id));
 
   blocking_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&HidServiceWin::AddDeviceBlocking,
@@ -383,7 +382,7 @@ void HidServiceWin::OnDeviceAdded(const GUID& class_guid,
 }
 
 void HidServiceWin::OnDeviceRemoved(const GUID& class_guid,
-                                    const base::string16& device_path) {
+                                    const std::wstring& device_path) {
   // Execute a no-op closure on the file task runner to synchronize with any
   // devices that are still being enumerated.
   blocking_task_runner_->PostTaskAndReply(
@@ -394,7 +393,7 @@ void HidServiceWin::OnDeviceRemoved(const GUID& class_guid,
 
 // static
 base::win::ScopedHandle HidServiceWin::OpenDevice(
-    const base::string16& device_path) {
+    const std::wstring& device_path) {
   base::win::ScopedHandle file(
       CreateFile(device_path.c_str(), GENERIC_WRITE | GENERIC_READ,
                  FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,

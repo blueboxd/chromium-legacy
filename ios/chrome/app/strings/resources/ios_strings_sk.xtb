@@ -36,7 +36,6 @@
 <translation id="1323735185997015385">Odstrániť</translation>
 <translation id="132683371494960526">Dvojitým klepnutím zmeníte nadradený priečinok.</translation>
 <translation id="1340643665687018190">Zavrieť ponuku</translation>
-<translation id="1345319103680304157">Žiadne heslá neboli napadnuté</translation>
 <translation id="1358214951266274152">Navštíviť skopírovaný odkaz</translation>
 <translation id="1360432990279830238">Odhlásiť sa a vypnúť synchronizáciu?</translation>
 <translation id="1375321115329958930">Uložené heslá</translation>
@@ -216,7 +215,7 @@ Weby v anonymnom režime nemôžu pomocou súborov cookie zobraziť vašu aktiv
 <translation id="3474624961160222204">Pokračovať ako <ph name="NAME" /></translation>
 <translation id="3478058380795961209">Mesiac vypršania platnosti</translation>
 <translation id="3482959374254649722">Synchronizujú sa záložky...</translation>
-<translation id="3484946776651937681">Otvoriť v priečinku Stiahnuté súbory</translation>
+<translation id="3484946776651937681">Otvoriť v priečinku Stiahnuté</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /> o návrhoch obsahu</translation>
 <translation id="3494788280727468875">Potvrdiť vymazanie dát prehliadania</translation>
 <translation id="35083190962747987">Otvoriť ${url}</translation>
@@ -619,7 +618,6 @@ Na základe súborov cookie si môžu zobraziť vašu históriu prehliadania v 
 <translation id="8428213095426709021">Nastavenia</translation>
 <translation id="8458397775385147834">Počet odstránených záložiek: 1</translation>
 <translation id="8459333855531264009">Nezabezpečené</translation>
-<translation id="8484911814435057959">Heslá boli napadnuté</translation>
 <translation id="8487667956631253959">Zapnúť</translation>
 <translation id="8487700953926739672">K dispozícii offline</translation>
 <translation id="8490978609246021741">Uložiť zmeny</translation>

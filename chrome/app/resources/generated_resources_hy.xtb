@@ -232,6 +232,7 @@
 <translation id="1274997165432133392">Cookie ֆայլեր և կայքի այլ տվյալներ</translation>
 <translation id="1275718070701477396">Ընտրված</translation>
 <translation id="1276994519141842946">Չհաջողվեց հեռացնել <ph name="APP_NAME" /> հավելվածը</translation>
+<translation id="127946606521051357">Մոտակա սարքերից մեկը տվյալներ է ուղարկում</translation>
 <translation id="1280820357415527819">Բջջային ցանցերի որոնում</translation>
 <translation id="1280965841156951489">Փոփոխել ֆայլերը</translation>
 <translation id="1285320974508926690">Երբեք չթարգմանել այս կայքը</translation>
@@ -254,6 +255,7 @@
 <translation id="1306606229401759371">Փոխել կարգավորումները</translation>
 <translation id="1307165550267142340">PIN կոդն ավելացվեց</translation>
 <translation id="1307559529304613120">Համակարգին չհաջողվեց պահել այս սարքի երկարաժամկետ API մուտքի հետքանշիչը:</translation>
+<translation id="1313162974556054106">Սարքի անվանումը</translation>
 <translation id="1313405956111467313">Պրոքսի-սերվերի ինքնակազմաձևում</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">Դուք դուրս կգաք հաշվից բոլոր կայքերում, այդ թվում բաց ներդիրներում։</translation>
@@ -704,7 +706,6 @@
 <translation id="184273675144259287">Փոխարինեք ձեր Լինուքսի հավելվածներն ու ֆայլերը նախորդ կրկնօրինակներով</translation>
 <translation id="1842766183094193446">Միացնե՞լ ցուցադրական ռեժիմը</translation>
 <translation id="1846308012215045257">Ctrl ստեղնը պահեք և մկնիկով սեղմեք՝ <ph name="PLUGIN_NAME" />-ն աշխատեցնելու համար</translation>
-<translation id="1846880379134204029">Խումբ <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Միացնել անգործուն ռեժիմը</translation>
 <translation id="1849186935225320012">Այս էջն ամբողջովին վերահսկում է MIDI սարքերը:</translation>
 <translation id="1850508293116537636">Պտտել &amp;ժամացույցի սլաքի ուղղությամբ</translation>
@@ -1220,6 +1221,7 @@
 <translation id="2489918096470125693">Հավելել &amp;թղթապանակ...</translation>
 <translation id="2490481887078769936">«<ph name="FILE_NAME" />» ֆայլը հեռացվեց ցանկից</translation>
 <translation id="249113932447298600"><ph name="DEVICE_LABEL" /> սարքը չի աջակցվում:</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> սարքը ձեզ է ուղարկում <ph name="ATTACHMENTS" />։</translation>
 <translation id="2492461744635776704">Հավաստագրի ստորագրման հայտի նախապատրաստում</translation>
 <translation id="249303669840926644">Չհաջողվեց ավարտել գրանցումը</translation>
 <translation id="2495777824269688114">Բացահայտեք ավելի շատ գործառույթներ կամ ստացեք պատասխաններ: Օգնության համար սեղմեք «?» կոճակը:</translation>
@@ -1721,6 +1723,7 @@
 <translation id="3103941660000130485">Չհաջողվեց նորացնել Լինուքսը</translation>
 <translation id="3105796011181310544">Վերադառնա՞լ Google-ին</translation>
 <translation id="310671807099593501">Կայքն օգտագործում է Bluetooth-ը</translation>
+<translation id="3109724472072898302">Կոծկված</translation>
 <translation id="3115147772012638511">Սպասում է քեշին…</translation>
 <translation id="3115580024857770654">Ծալել բոլորը</translation>
 <translation id="3116968597797150452">Հավաստագրման պրոֆիլ</translation>
@@ -1788,7 +1791,6 @@
 <translation id="3192947282887913208">Աուդիո ֆայլեր</translation>
 <translation id="3199127022143353223">Սերվերներ</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome-ը խորհուրդ է տալիս անհապաղ ստուգել այս գաղտնաբառը}one{Chrome-ը խորհուրդ է տալիս անհապաղ ստուգել այս գաղտնաբառերը}other{Chrome-ը խորհուրդ է տալիս անհապաղ ստուգել այս գաղտնաբառերը}}</translation>
-<translation id="3200941271596533635">Միացնել ընթերցման ռեժիմը</translation>
 <translation id="3201422919974259695">Հասանելի USB սարքերը կցուցադրվեն այստեղ:</translation>
 <translation id="3202131003361292969">Ուղի</translation>
 <translation id="3202173864863109533">Այս ներդիրի ձայնն անջատված է:</translation>
@@ -4154,6 +4156,7 @@
 <translation id="6212039847102026977">Ցուցադրել ցանցի լրացուցիչ հատկությունները</translation>
 <translation id="6212168817037875041">Անջատել էկրանը</translation>
 <translation id="6212752530110374741">Ուղարկել հղումը էլփոստով</translation>
+<translation id="6213230117190778270">Ստանալ</translation>
 <translation id="6216696360484424239">Ավտոմատ մուտք գործել</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> սարքը միացված չէ համացանցին: Միացրեք այն համացանցին և նորից փորձեք:</translation>
 <translation id="6220413761270491930">Ընդլայնումը բեռնելիս սխալ առաջացավ</translation>
@@ -4210,7 +4213,6 @@
 <translation id="6270770586500173387">Ուղարկել <ph name="BEGIN_LINK1" />համակարգի և հավելվածների մասին տեղեկությունները<ph name="END_LINK1" /> և այլ <ph name="BEGIN_LINK2" />ցուցանիշները<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Փլագինը ներբեռնելիս սխալ առաջացավ (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">Որակյալ</translation>
-<translation id="6273979226236203550">Ձեր գաղտնաբառը պահվել է այս սարքում և ձեր Google հաշվում։ Ո՞րն եք ուզում ջնջել։</translation>
 <translation id="6277105963844135994">Ցանցի ժամասպառում</translation>
 <translation id="6277518330158259200">Ստեղ&amp;ծել սքրինշոթ</translation>
 <translation id="6278057325678116358">Օգտագործել GTK+ թեման</translation>
@@ -4281,6 +4283,7 @@
 <translation id="6362853299801475928">&amp;Հաղորդել խնդրի մասին…</translation>
 <translation id="6365069501305898914">Ֆեյսբուք</translation>
 <translation id="6365411474437319296">Ավելացրեք հարազատներին և ընկերներին</translation>
+<translation id="6367985768157257101">Ստանա՞լ «Փոխանակում մոտակա սարքերի հետ» գործառույթի միջոցով</translation>
 <translation id="636850387210749493">Ձեռնարկության գրանցում</translation>
 <translation id="6370021412472292592">Չհաջողվեց բեռնել մանիֆեստը:</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4856,7 +4859,6 @@
 <translation id="7099337801055912064">Չհաջողվեց բեռնել PPD ֆայլը: Այն չպետք է գերազանցի 250 ԿԲ-ը:</translation>
 <translation id="7102687220333134671">Ինքնաթարմացումը միացված է</translation>
 <translation id="7102832101143475489">Հարցումը մշակելու ժամանակը սպառվել է</translation>
-<translation id="7102928824073746774">Անանուն խումբ – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">USB-ի կարգավորումներ</translation>
 <translation id="710640343305609397">Բացել ցանցի կարգավորումները</translation>
 <translation id="7108338896283013870">Թաքցնել</translation>
@@ -4932,6 +4934,7 @@
 <translation id="720110658997053098">Մշտապես պահել այս սարքը կրպակի ռեժիմում</translation>
 <translation id="7201118060536064622">«<ph name="DELETED_ITEM_NAME" />» տարրը ջնջվեց</translation>
 <translation id="7201420661433230412">Դիտել ֆայլերը</translation>
+<translation id="7203150201908454328">Ընդլայնված</translation>
 <translation id="7203826966018112936">Պրոֆիլում ոսումնական հաշիվ ավելացնելը հնարավորություն է տալիս հեշտությամբ մուտք գործել կայքեր և ընդլայնումներ որպես աշակերտ՝ ծնողական վերահսկողության տակ լինելով հանդերձ։ Ուսումնական հաշվի հետ համաժամացված էջանիշները, գաղտնաբառերը և դիտարկիչի մյուս տվյալները երեխային հասանելի չեն դառնա։&lt;br&gt;&lt;br&gt;
     Եթե ձեր երեխան դպրոցում օգտագործում է Chromebook, և դուք ուզում եք, որ նրա դպրոցական հանձնարարությունները հասանելի լինեն նաև տնից, դուրս եկեք այս Family Link հաշվից և մտեք ուսումնական հաշիվ Chrome OS-ի հաշիվների էջից (նկատի առեք, որ Family Link-ի ծնողական վերահսկողության կառավարները չեն գործի)։&lt;br&gt;&lt;br&gt;
     Եթե ձեր երեխան դպրոցում չի օգտագործում Chromebook, կամ եթե նախընտրում եք ձեր երեխայի գործողությունները տնից կառավարել Family Link-ի միջոցով, սեղմեք ներքևի «Առաջ» կոճակը՝ այս պրոֆիլում ուսումնական հաշիվ ավելացնելու համար։</translation>
@@ -5327,7 +5330,6 @@
 <translation id="7704521324619958564">Բացել Play Խանութը</translation>
 <translation id="7705276765467986571">Չհաջողվեց բեռնել էջանիշի մոդելը:</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Միացնել ընթերցման ռեժիմը</translation>
 <translation id="7707108266051544351">Այս կայքին արգելվել է օգտագործել շարժման տվիչները:</translation>
 <translation id="7707922173985738739">Օգտագործել բջջային ինտերնետ</translation>
 <translation id="7709152031285164251">Չհաջողվեց՝ <ph name="INTERRUPT_REASON" /></translation>
@@ -6582,6 +6584,7 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Մուտքագրեք անցաբառը</translation>
 <translation id="939736085109172342">Նոր պանակ</translation>
+<translation id="941070664607309480">Սեղմեք, որպեսզի միացնեք տեսանելիությունը, և որ սարքը կարողանա կիսվել ձեզ հետ տվյալներով</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> հավելվածը կիսվում է Chrome-ի ներդիրով ու ձայնով:</translation>
 <translation id="945522503751344254">Կարծիք հայտնել</translation>
 <translation id="947329552760389097">&amp;Ստուգել տարրերը</translation>

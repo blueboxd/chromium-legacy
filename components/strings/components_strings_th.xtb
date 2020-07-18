@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">รูปภาพที่คุณคัดลอก</translation>
 <translation id="1150979032973867961">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะระบบปฏิบัติการของคอมพิวเตอร์ของคุณไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="1151972924205500581">ต้องมีรหัสผ่าน</translation>
-<translation id="1152921474424827756">เข้าถึง<ph name="BEGIN_LINK" />สำเนาแคช<ph name="END_LINK" />ของ <ph name="URL" /></translation>
 <translation id="1156303062776767266">คุณกำลังดูไฟล์ในเครื่องหรือไฟล์ที่แชร์</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ปิดการเชื่อมต่อโดยไม่คาดคิด</translation>
 <translation id="115926840831309955">ตรวจสอบ CVC แล้วลองอีกครั้งหรืออัปเดตวันที่หมดอายุ</translation>
 <translation id="1161325031994447685">เชื่อมต่อ Wi-Fi ใหม่</translation>
 <translation id="1165039591588034296">ข้อผิดพลาด</translation>
+<translation id="1165174597379888365">มีการเข้าชมหน้าเว็บ</translation>
 <translation id="1175364870820465910">&amp;พิมพ์...</translation>
 <translation id="1175875016430184367">เย็บด้วยลวดเย็บกระดาษด้านขวา 3 ครั้ง</translation>
 <translation id="1178581264944972037">หยุดชั่วคราว</translation>
@@ -243,7 +243,6 @@
 <translation id="1919345977826869612">โฆษณา</translation>
 <translation id="1919367280705858090">ขอความช่วยเหลือเกี่ยวกับข้อความแสดงข้อผิดพลาดที่เจาะจง</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{ไม่มี}=1{เว็บไซต์ 1 แห่ง}other{เว็บไซต์ # แห่ง}}</translation>
-<translation id="194030505837763158">ไปที่ <ph name="LINK" /></translation>
 <translation id="1945968466830820669">คุณอาจเข้าถึงบัญชีขององค์กรไม่ได้หรือถูกโจรกรรมข้อมูลประจำตัว Chromium ขอแนะนำให้เปลี่ยนรหัสผ่านตอนนี้เลย</translation>
 <translation id="1947454675006758438">เย็บด้วยลวดเย็บกระดาษด้านขวาบน</translation>
 <translation id="1959001866257244765">ช่วยปรับปรุงความปลอดภัยในอินเทอร์เน็ตสำหรับทุกคนโดยการส่ง <ph name="BEGIN_WHITEPAPER_LINK" />URL ของหน้าเว็บบางหน้าที่คุณเข้าชม ข้อมูลระบบที่จำกัด และเนื้อหาบางส่วนของหน้า<ph name="END_WHITEPAPER_LINK" />ให้ Google <ph name="BEGIN_PRIVACY_PAGE_LINK" />นโยบายความเป็นส่วนตัว<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -263,9 +262,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{และอีก 1 แอป}other{และอีก # แอป}}</translation>
 <translation id="2003709556000175978">รีเซ็ตรหัสผ่านเลย</translation>
 <translation id="2003775180883135320">เจาะรูด้านบน 4 รู</translation>
+<translation id="202072848677994234">คุณกำลังจะส่งฟอร์มนี้ผ่านการเชื่อมต่อที่ไม่ปลอดภัย ระบบจะปิดใช้การกรอกข้อมูลโดยอัตโนมัติ</translation>
 <translation id="2025115093177348061">Augmented Reality</translation>
 <translation id="2025186561304664664">พร็อกซีถูกตั้งค่าให้ทำการกำหนดค่าโดยอัตโนมัติ</translation>
-<translation id="2030481566774242610">หรือคุณหมายถึง <ph name="LINK" /></translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />ตรวจสอบพร็อกซีและไฟร์วอลล์<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">ถาด 7</translation>
 <translation id="204357726431741734">ลงชื่อเข้าใช้เพื่อใช้รหัสผ่านที่บันทึกไว้ในบัญชี Google</translation>
@@ -331,6 +330,7 @@
 <translation id="2289385804009217824">ตัด</translation>
 <translation id="2292556288342944218">การเข้าถึงอินเทอร์เน็ตของคุณถูกบล็อก</translation>
 <translation id="2293443924986248631">เมื่อเปิดใช้ เว็บไซต์ต่างๆ จะใช้คุกกี้ที่ติดตามคุณในอินเทอร์เน็ตไม่ได้ ฟีเจอร์ในเว็บไซต์บางแห่งอาจใช้งานไม่ได้</translation>
+<translation id="2295290966866883927">URL ของหน้าเว็บที่คุณเข้าชมจะส่งไปยัง Google Cloud หรือบุคคลที่สามเพื่อทำการวิเคราะห์ เช่น อาจสแกนเพื่อตรวจหาเว็บไซต์ที่ไม่ปลอดภัย</translation>
 <translation id="2297722699537546652">B5 (ซองจดหมาย)</translation>
 <translation id="2300306941146563769">ไม่ได้อัปโหลด</translation>
 <translation id="2310021320168182093">Chou2 (ซองจดหมาย)</translation>
@@ -1035,6 +1035,7 @@
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
 <translation id="5308689395849655368">การรายงานข้อขัดข้องถูกปิดใช้งาน</translation>
 <translation id="5314967030527622926">เครื่องทำจุลสาร</translation>
+<translation id="5316812925700871227">หมุนทวนเข็มนาฬิกา</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" /> <ph name="MATCH_POSITION" /> จาก <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">เลือกข้อมูลติดต่อ</translation>
@@ -1058,7 +1059,6 @@
 <translation id="5421136146218899937">ล้างข้อมูลการท่องเว็บ...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> ต้องการส่งการแจ้งเตือนให้คุณ</translation>
 <translation id="5430298929874300616">นำบุ๊กมาร์กออก</translation>
-<translation id="5431657950005405462">ไม่พบไฟล์ของคุณ</translation>
 <translation id="5439770059721715174">ข้อผิดพลาดในการตรวจสอบรูปแบบที่ "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">ลำดับย้อนกลับหงายหน้าขึ้น</translation>
 <translation id="5447765697759493033">ระบบจะไม่แปลไซต์นี้</translation>
@@ -1432,7 +1432,6 @@
 <translation id="7083258188081898530">ถาด 9</translation>
 <translation id="7086090958708083563">ผู้ใช้ขอการอัปโหลด</translation>
 <translation id="7087282848513945231">ประเทศ</translation>
-<translation id="7090678807593890770">ค้นหา <ph name="LINK" /> จาก Google</translation>
 <translation id="7108338896283013870">ซ่อน</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> ต้องการใช้กล้องถ่ายรูปของคุณ</translation>
 <translation id="7108819624672055576">อนุญาตโดยส่วนขยาย</translation>
@@ -1869,7 +1868,6 @@
 <translation id="893332455753468063">เพิ่มชื่อ</translation>
 <translation id="8943282376843390568">เหลืองมะนาว</translation>
 <translation id="8957210676456822347">การให้สิทธิ์แคปทีฟพอร์ทัล</translation>
-<translation id="8958582951173503172">เมื่อเครื่องมือเชื่อมต่อ Chrome Enterprise ติดธงการดำเนินการด้านความปลอดภัย ระบบจะส่งข้อมูลที่เกี่ยวข้องกับการดำเนินการนั้นไปให้ผู้ดูแลระบบ ข้อมูลนี้อาจมี URL ของหน้าที่คุณเข้าชมใน Chrome, ชื่อหรือข้อมูลเมตาของไฟล์ และชื่อผู้ใช้ที่คุณลงชื่อเข้าใช้อุปกรณ์และ Chrome</translation>
 <translation id="8962950042226115166">เว็บไซต์ที่น่าสงสัย</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />คำแนะนำ:<ph name="MARKUP_2" />ตรวจสอบว่าคุณมีการเชื่อมต่ออินเทอร์เน็ต<ph name="MARKUP_3" />โหลดหน้าเว็บนี้อีกครั้งในภายหลัง<ph name="MARKUP_4" />ตรวจสอบที่อยู่ที่คุณป้อน<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">บันทึกบัตร</translation>

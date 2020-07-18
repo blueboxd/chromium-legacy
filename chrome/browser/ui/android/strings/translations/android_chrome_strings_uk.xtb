@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">Перевірка інтернет-з’єднання</translation>
 <translation id="2359808026110333948">Продовжити</translation>
 <translation id="2369533728426058518">відкриті вкладки</translation>
-<translation id="2377295302146152376">Chrome не може перевірити наявність оновлень</translation>
 <translation id="2387895666653383613">Масштаб тексту</translation>
 <translation id="2394602618534698961">Завантажені файли з’являться тут</translation>
 <translation id="2407481962792080328">Ця функція вмикається, коли ви входите в обліковий запис Google</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Довідка<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Геодані вимкнено. Увімкніть їх у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Ви можете будь-коли ввімкнути синхронізацію в налаштуваннях</translation>
-<translation id="3059710691562604940">Безпечний перегляд вимкнено. Chrome радить увімкнути його.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> закладка}one{<ph name="BOOKMARKS_COUNT_MANY" /> закладка}few{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}many{<ph name="BOOKMARKS_COUNT_MANY" /> закладок}other{<ph name="BOOKMARKS_COUNT_MANY" /> закладки}}</translation>
 <translation id="3089395242580810162">Відкрити в анонімній вкладці</translation>
 <translation id="3114012059975132928">Відеопрогравач</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">Доступне оновлення. Більше опцій</translation>
 <translation id="3524138585025253783">Інтерфейс розробника</translation>
 <translation id="3527085408025491307">Папка</translation>
-<translation id="3533694711092285624">Немає збережених паролів. Chrome зможе перевірити ваші паролі, коли ви їх збережете.</translation>
 <translation id="3542235761944717775">Доступно <ph name="KILOBYTES" /> КБ</translation>
 <translation id="3549657413697417275">Пошук в історії</translation>
 <translation id="3557336313807607643">Додати до контактів</translation>
@@ -360,6 +357,7 @@
 <translation id="3892148308691398805">Копіювати текст</translation>
 <translation id="3894427358181296146">Додати папку</translation>
 <translation id="3895926599014793903">Примусово ввімкнути масштабування</translation>
+<translation id="3909763690984331376">Перевірка безпеки <ph name="BEGIN_NEW" />Новинка<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Шукаємо найкраще в Інтернеті…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Об’єднати мої дані</translation>
@@ -570,6 +568,7 @@
 <translation id="5581519193887989363">Ви можете будь-коли вибрати дані для синхронізації в <ph name="BEGIN_LINK1" />налаштуваннях<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Редагувати адресу</translation>
 <translation id="5599455543593328020">Режим анонімного перегляду</translation>
+<translation id="5620163320393916465">Немає збережених паролів</translation>
 <translation id="5620928963363755975">Знаходьте свої файли та сторінки в розділі "Завантаження", натиснувши кнопку "Більше опцій"</translation>
 <translation id="5626134646977739690">Ім'я:</translation>
 <translation id="5639724618331995626">Дозволити всі сайти</translation>
@@ -581,6 +580,7 @@
 <translation id="5686790454216892815">Назва файлу задовга</translation>
 <translation id="5694049548840660018">Легко повертайтеся на головну сторінку</translation>
 <translation id="569536719314091526">Перекладіть цю сторінку будь-якою мовою, натиснувши кнопку "Більше опцій"</translation>
+<translation id="5696597120588531049">Chrome може захищати вас від порушень безпеки даних, ненадійних веб-сайтів тощо</translation>
 <translation id="5697688514913266141">Файл буде збережено в каталозі <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Змінити<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Перейти на вкладку</translation>
 <translation id="572328651809341494">Останні вкладки</translation>
@@ -714,6 +714,7 @@
 <translation id="6656545060687952787">Щоб знаходити пристрої, Chrome потрібний доступ до геоданих. <ph name="BEGIN_LINK" />Оновлити дозволи<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="6659594942844771486">Вкладка</translation>
+<translation id="6663079968236414793">Посилання на текст</translation>
 <translation id="666573598175432848">Доступна новіша версія Chrome. Натисніть цей елемент, щоб перейти в Google Play.</translation>
 <translation id="666731172850799929">Відкрити в програмі <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Примітка про конфіденційність Chrome</translation>

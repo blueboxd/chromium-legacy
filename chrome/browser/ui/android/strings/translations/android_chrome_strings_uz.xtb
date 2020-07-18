@@ -170,7 +170,6 @@ Qidiruvni boshlash uchun istalgan soʻz ustiga bosing. Soʻrovni aniqlashtirish 
 <translation id="2353636109065292463">Internet aloqasini tekshirish</translation>
 <translation id="2359808026110333948">Davom etish</translation>
 <translation id="2369533728426058518">ochiq varaqlar</translation>
-<translation id="2377295302146152376">Chrome yangilanishlar chiqqanini tekshira olmadi</translation>
 <translation id="2387895666653383613">Matn o‘lchami</translation>
 <translation id="2394602618534698961">Yuklab olingan fayllar shu yerda chiqadi</translation>
 <translation id="2407481962792080328">Bu funksiya Google hisobingizga kirganingizda yoqiladi</translation>
@@ -259,7 +258,6 @@ Qidiruvni boshlash uchun istalgan soʻzni bosib turing. Qidruvni aniqlashtirish 
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Yordam markazi<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Joylashuvni aniqlash xizmati yoqilmagan, uni <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali yoqing.</translation>
 <translation id="3058498974290601450">Istalgan vaqt sozlamalar orqali sinxronizatsiyani yoqish mumkin</translation>
-<translation id="3059710691562604940">Saytlarni xavfsiz kezish yoniq emas. Chrome uni yoqishingizni tavsiya qiladi.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ta bukmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> ta bukmark}}</translation>
 <translation id="3089395242580810162">Inkognito rejimida ochish</translation>
 <translation id="3114012059975132928">Video pleyer</translation>
@@ -320,7 +318,6 @@ Qidiruvni boshlash uchun istalgan soʻzni bosib turing. Qidruvni aniqlashtirish 
 <translation id="3522247891732774234">Yangilanish mavjud. Qo‘shimcha parametrlarni ko‘rish</translation>
 <translation id="3524138585025253783">Dastur ishlab chiquvchi interfeysi</translation>
 <translation id="3527085408025491307">Jild</translation>
-<translation id="3533694711092285624">Hech qanday parol saqlanmagan. Chrome faqat saqlangan parollaringizni tekshira oladi.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB bo‘sh</translation>
 <translation id="3549657413697417275">Tarix ichidan qidirish</translation>
 <translation id="3557336313807607643">Kontaktlarga saqlash</translation>
@@ -571,6 +568,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5581519193887989363">Nimani sinxronlashni istalgan vaqtda <ph name="BEGIN_LINK1" />sozlamalar<ph name="END_LINK1" /> orqali tanlash mumkin.</translation>
 <translation id="5595485650161345191">Manzilni o‘zgartirish</translation>
 <translation id="5599455543593328020">Inkognito rejimidasiz</translation>
+<translation id="5620163320393916465">Hech qanday parol saqlanmagan</translation>
 <translation id="5620928963363755975">“Yuklanmalar” jildidagi fayl va sahiflarni “Boshqa parametrlar” tugmasidan topish mumkin</translation>
 <translation id="5626134646977739690">Ism:</translation>
 <translation id="5639724618331995626">Barcha saytlarni ochishga ruxsat berish</translation>

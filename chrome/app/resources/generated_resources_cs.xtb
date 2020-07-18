@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Pouze šifrování</translation>
 <translation id="1038462104119736705">Pro Linux je doporučeno alespoň <ph name="INSTALL_SIZE" /> místa. Místo uvolníte smazáním souborů ze zařízení.</translation>
 <translation id="1039337018183941703">Neplatný nebo poškozený soubor</translation>
+<translation id="104086161873270383">Nový profil</translation>
 <translation id="1041175011127912238">Tato stránka nereaguje</translation>
 <translation id="1041263367839475438">Dostupná zařízení</translation>
 <translation id="1042174272890264476">Počítač je dodáván s integrovanou knihovnou RLZ prohlížeče <ph name="SHORT_PRODUCT_NAME" />. RLZ přiřadí značku, která slouží k vyhodnocení vyhledávání a využití prohlížečů <ph name="SHORT_PRODUCT_NAME" />, které pocházejí z konkrétní propagační kampaně. Tato značka není jedinečná a neumožňuje osobní identifikaci. Tyto značky jsou někdy v prohlížeči <ph name="PRODUCT_NAME" /> uváděny v dotazech ve Vyhledávání Google.</translation>
@@ -255,6 +256,7 @@
 <translation id="1306606229401759371">Změnit nastavení</translation>
 <translation id="1307165550267142340">Váš kód PIN byl vytvořen</translation>
 <translation id="1307559529304613120">Jejda! Systému se pro toto zařízení nepodařilo uložit token dlouhodobého přístupu k rozhraní API.</translation>
+<translation id="1313162974556054106">Název zařízení</translation>
 <translation id="1313405956111467313">Automatické nastavení proxy serveru</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">Budete odhlášeni ze všech webů, včetně webů na otevřených kartách</translation>
@@ -705,7 +707,6 @@ Na aplikace a obsah v jiných zařízeních tato akce nemá vliv.</translation
 <translation id="184273675144259287">Nahradit aplikace a soubory systému Linux verzemi z předchozí zálohy</translation>
 <translation id="1842766183094193446">Opravdu chcete zapnout ukázkový režim?</translation>
 <translation id="1846308012215045257">Plugin <ph name="PLUGIN_NAME" /> spustíte kliknutím se stisknutou klávesou CTRL</translation>
-<translation id="1846880379134204029">Skupina <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Povolit ambientní režim</translation>
 <translation id="1849186935225320012">Tato stránka má úplnou kontrolu nad zařízeními MIDI.</translation>
 <translation id="1850508293116537636">Otočit &amp;ve směru hodinových ručiček</translation>
@@ -1722,6 +1723,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3103941660000130485">Při upgradování Linuxu došlo k chybě</translation>
 <translation id="3105796011181310544">Změnit zpět na Google?</translation>
 <translation id="310671807099593501">Web používá Bluetooth</translation>
+<translation id="3109724472072898302">Sbaleno</translation>
 <translation id="3115147772012638511">Čekání na mezipaměť</translation>
 <translation id="3115580024857770654">Sbalit vše</translation>
 <translation id="3116968597797150452">Profil certifikátu</translation>
@@ -1789,7 +1791,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3192947282887913208">Zvukové soubory</translation>
 <translation id="3199127022143353223">Servery</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome doporučuje toto heslo okamžitě zkontrolovat}few{Chrome doporučuje tato hesla okamžitě zkontrolovat}many{Chrome doporučuje tato hesla okamžitě zkontrolovat}other{Chrome doporučuje tato hesla okamžitě zkontrolovat}}</translation>
-<translation id="3200941271596533635">Přepnout režim čtečky</translation>
 <translation id="3201422919974259695">Zde se budou zobrazovat dostupná zařízení USB.</translation>
 <translation id="3202131003361292969">Cesta</translation>
 <translation id="3202173864863109533">Zvuk této karty je vypnut.</translation>
@@ -4208,7 +4209,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6270770586500173387">Posílat <ph name="BEGIN_LINK1" />informace o systému a aplikacích<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />metriky<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Při stahování pluginu došlo k chybě (<ph name="ERROR" />).</translation>
 <translation id="6273677812470008672">Kvalita</translation>
-<translation id="6273979226236203550">Heslo je uloženo v zařízení i v účtu Google. Odkud ho chcete smazat?</translation>
 <translation id="6277105963844135994">Vypršel časový limit sítě</translation>
 <translation id="6277518330158259200">&amp;Pořídit snímek obrazovky</translation>
 <translation id="6278057325678116358">Použít motiv GTK+</translation>
@@ -4252,6 +4252,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6322653941595359182">Odesílejte a přijímejte na Chromebooku textové zprávy</translation>
 <translation id="6324916366299863871">Upravit zkratku</translation>
 <translation id="6325191661371220117">Deaktivovat automatické spouštění</translation>
+<translation id="6325525973963619867">Došlo k selhání</translation>
 <translation id="6326175484149238433">Odstranit z Chromu</translation>
 <translation id="6326855256003666642">Aktivity zabraňující ukončení</translation>
 <translation id="632707535499064463">Organizace <ph name="ORGANIZATION_NAME" /> vyžaduje, abyste toto zařízení do stanoveného termínu aktualizovali.</translation>
@@ -4855,7 +4856,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7099337801055912064">Soubor PPD nelze načíst, protože je příliš velký. Maximální povolená velikost je 250 kB.</translation>
 <translation id="7102687220333134671">Automatické aktualizace jsou zapnuté</translation>
 <translation id="7102832101143475489">Časový limit požadavku vypršel</translation>
-<translation id="7102928824073746774">Skupina bez názvu – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Předvolby USB</translation>
 <translation id="710640343305609397">Otevřít nastavení sítě</translation>
 <translation id="7108338896283013870">Skrýt</translation>
@@ -4931,6 +4931,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="720110658997053098">Trvale toto zařízení ponechat v režimu veřejného terminálu</translation>
 <translation id="7201118060536064622">Položka „<ph name="DELETED_ITEM_NAME" />“ byla smazána</translation>
 <translation id="7201420661433230412">Zobrazit soubory</translation>
+<translation id="7203150201908454328">Rozbaleno</translation>
 <translation id="7203826966018112936">Po přidání školního účtu se dítě bude moci přihlašovat na weby a do rozšíření jako student, přičemž zůstane aktivní rodičovská kontrola. Dítě nebude mít přístup k záložkám, heslům ani jiným datům prohlížeče, která se synchronizují se školním účtem.&lt;br&gt;&lt;br&gt;
     Pokud dítě používá Chromebook ve škole a chcete, aby doma mělo stejné prostředí a přístup ke všem školním úlohám, odhlaste se z účtu Family Link a na stránce systému Chrome OS s účty se přihlaste ke školnímu účtu. (Poznámka: Na účet se nebude vztahovat rodičovská kontrola Family Link.)&lt;br&gt;&lt;br&gt;
     Pokud dítě ve škole Chromebook nepoužívá, nebo mu doma prostředí chcete spravovat pomocí služby Family Link, klikněte níže na tlačítko Další a přidejte do tohoto profilu školní účet.</translation>
@@ -5326,7 +5327,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7704521324619958564">Otevřít Obchod Play</translation>
 <translation id="7705276765467986571">Model záložky nelze načíst.</translation>
 <translation id="7705524343798198388">Síť VPN</translation>
-<translation id="7706963867324547089">Přepnout režim čtečky</translation>
 <translation id="7707108266051544351">Tomuto webu bylo zablokováno používání senzorů pohybu.</translation>
 <translation id="7707922173985738739">Používat mobilní data</translation>
 <translation id="7709152031285164251">Chyba – <ph name="INTERRUPT_REASON" /></translation>

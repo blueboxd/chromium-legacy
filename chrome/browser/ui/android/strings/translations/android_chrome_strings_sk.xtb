@@ -170,7 +170,6 @@ Vyhľadávanie spustíte klepnutím na ľubovoľné slovo. Spresníte ho pridrž
 <translation id="2353636109065292463">Kontroluje sa internetové pripojenie</translation>
 <translation id="2359808026110333948">Pokračovať</translation>
 <translation id="2369533728426058518">otvorené karty</translation>
-<translation id="2377295302146152376">Chrome nemohol skontrolovať dostupnosť aktualizácií</translation>
 <translation id="2387895666653383613">Mierka textu</translation>
 <translation id="2394602618534698961">Tu sa zobrazia stiahnuté súbory</translation>
 <translation id="2407481962792080328">Keď sa prihlásite do svojho účtu Google, táto funkcia je zapnutá</translation>
@@ -259,7 +258,6 @@ Vyhľadávanie spustíte pridržaním ľubovoľného slova. Spresníte ho výber
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Získať pomoc<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Poloha je vypnutá. Zapnite ju v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Synchronizáciu môžete kedykoľvek zapnúť v nastaveniach</translation>
-<translation id="3059710691562604940">Bezpečné prehliadanie je vypnuté. Chrome ho odporúča zapnúť.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> záložka}few{<ph name="BOOKMARKS_COUNT_MANY" /> záložky}many{<ph name="BOOKMARKS_COUNT_MANY" /> bookmarks}other{<ph name="BOOKMARKS_COUNT_MANY" /> záložiek}}</translation>
 <translation id="3089395242580810162">Otvoriť na karte inkognito</translation>
 <translation id="3114012059975132928">Prehrávač videa</translation>
@@ -320,7 +318,6 @@ Vyhľadávanie spustíte pridržaním ľubovoľného slova. Spresníte ho výber
 <translation id="3522247891732774234">K dispozícii je aktualizácia. Ďalšie možnosti</translation>
 <translation id="3524138585025253783">Používateľské rozhranie vývojára</translation>
 <translation id="3527085408025491307">Priečinok</translation>
-<translation id="3533694711092285624">Žiadne uložené heslá. Chrome môže skontrolovať heslá, keď ich uložíte.</translation>
 <translation id="3542235761944717775">Voľné miesto: <ph name="KILOBYTES" /> kB</translation>
 <translation id="3549657413697417275">Prehľadať históriu</translation>
 <translation id="3557336313807607643">Pridať do kontaktov</translation>
@@ -360,6 +357,7 @@ Vyhľadávanie spustíte pridržaním ľubovoľného slova. Spresníte ho výber
 <translation id="3892148308691398805">Kopírovať text</translation>
 <translation id="3894427358181296146">Pridanie priečinka</translation>
 <translation id="3895926599014793903">Vynútiť povolenie priblíženia</translation>
+<translation id="3909763690984331376">Kontrola bezpečnosti <ph name="BEGIN_NEW" />Novinka<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Vyhľadáva sa to najlepšie z internetu…</translation>
 <translation id="3927692899758076493">Bezpätkové</translation>
 <translation id="3928666092801078803">Spojiť moje dáta</translation>
@@ -570,6 +568,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5581519193887989363">Položky, ktoré chcete synchronizovať, môžete vybrať v <ph name="BEGIN_LINK1" />nastaveniach<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Upraviť adresu</translation>
 <translation id="5599455543593328020">Režim inkognito</translation>
+<translation id="5620163320393916465">Žiadne uložené heslá</translation>
 <translation id="5620928963363755975">Stiahnuté súbory a stránky nájdete po použití tlačidla Ďalšie možnosti</translation>
 <translation id="5626134646977739690">Názov:</translation>
 <translation id="5639724618331995626">Povoliť všetky weby</translation>
@@ -581,6 +580,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5686790454216892815">Názov súboru je príliš dlhý</translation>
 <translation id="5694049548840660018">Prechádzajte ľahko na domovskú stránku</translation>
 <translation id="569536719314091526">Preložte si túto stránku do ľubovoľného jazyka pomocou tlačidla Ďalšie možnosti</translation>
+<translation id="5696597120588531049">Chrome vás môže chrániť pred porušeniami ochrany údajov, nebezpečnými webmi a ďalšími hrozbami</translation>
 <translation id="5697688514913266141">Váš súbor bude uložený do adresára <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Upraviť<ph name="END_LINK2" /></translation>
 <translation id="570347048394355941">Prepnúť na kartu</translation>
 <translation id="572328651809341494">Nedávne karty</translation>
@@ -714,6 +714,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6656545060687952787">Na to, aby mohol Chrome hľadať zariadenia, musí mať prístup k polohe. <ph name="BEGIN_LINK" />Aktualizovať povolenia<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Heslo</translation>
 <translation id="6659594942844771486">Karta</translation>
+<translation id="6663079968236414793">Odkaz na text</translation>
 <translation id="666573598175432848">K dispozícii je nová verzia Chromu. Klepnutím na tento prvok prejdite do Obchodu Play.</translation>
 <translation id="666731172850799929">Otvoriť v aplikácii <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Oznámenie o ochrane súkromia prehliadača Chrome</translation>

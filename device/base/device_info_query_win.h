@@ -26,7 +26,7 @@ class DEVICE_BASE_EXPORT DeviceInfoQueryWin {
 
   // Add a device to |device_info_list_| using its |device_path| so that
   // its device info can be retrieved.
-  bool AddDevice(const base::string16& device_path);
+  bool AddDevice(const std::wstring& device_path);
   // Get the device info and store it into |device_info_data_|, this function
   // should be called at most once.
   bool GetDeviceInfo();

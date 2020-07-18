@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
 <translation id="1008557486741366299">ఇప్పుడు కాదు</translation>
+<translation id="100957008357583611">మీ లొకేషన్‌ను ఉపయోగించాలా?</translation>
 <translation id="1010200102790553230">పేజీని తర్వాత లోడ్ చేయి</translation>
 <translation id="1015730422737071372">అదనపు వివరాలను అందించండి</translation>
 <translation id="1019413721762100891">ఆఫ్ చేయబడ్డాయి</translation>
@@ -39,12 +40,12 @@
 <translation id="1131264053432022307">మీరు కాపీ చేసిన చిత్రం</translation>
 <translation id="1150979032973867961">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రాన్ని మీ కంప్యూటర్ ఆపరేటింగ్ సిస్టమ్ విశ్వసించలేదు. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కు అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
 <translation id="1151972924205500581">పాస్‌వర్డ్ అవసరం</translation>
-<translation id="1152921474424827756"><ph name="URL" /> యొక్క <ph name="BEGIN_LINK" />కాష్ చేయబడిన కాపీ<ph name="END_LINK" />ని యాక్సెస్‌ చేయండి</translation>
 <translation id="1156303062776767266">మీరు స్థానిక లేదా షేర్ చేసిన ఫైల్‌ను చూస్తున్నారు</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ఊహించని విధంగా కనెక్షన్‌ను మూసివేసింది.</translation>
 <translation id="115926840831309955">మీ CVCని తనిఖీ చేసి మళ్ళీ ప్రయత్నించండి లేదా గడువు ముగింపు తేదీని అప్‌డేట్ చేయండి</translation>
 <translation id="1161325031994447685">Wi-Fiకి మళ్లీ కనెక్ట్ చేయడం</translation>
 <translation id="1165039591588034296">ఎర్రర్</translation>
+<translation id="1165174597379888365">పేజీని సందర్శించినప్పుడు</translation>
 <translation id="1175364870820465910">&amp;ముద్రించు...</translation>
 <translation id="1175875016430184367">కుడివైపు ట్రిపుల్ స్టేపుల్</translation>
 <translation id="1178581264944972037">పాజ్ చేయి</translation>
@@ -248,7 +249,6 @@
 <translation id="1919345977826869612">ప్రకటనలు</translation>
 <translation id="1919367280705858090">నిర్దిష్ట ఎర్రర్ సందేశానికి సంబంధించిన సహాయం పొందండి</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{ఏమీ లేవు}=1{1 సైట్}other{# సైట్‌లు}}</translation>
-<translation id="194030505837763158"><ph name="LINK" />కి వెళ్లండి</translation>
 <translation id="1945968466830820669">మీరు మీ సంస్థ ఖాతాకు యాక్సెస్‌ను కోల్పోవచ్చు. లేదా గుర్తింపు స‌మాచారం చౌర్యానికి గురికావచ్చు. Chromium మీరు ఇప్పుడే మీ పాస్‌వర్డ్‌ను మార్చాల్సిందిగా సిఫార్సు చేస్తోంది.</translation>
 <translation id="1947454675006758438">కుడివైపు ఎగువ భాగంలో స్టేపుల్</translation>
 <translation id="1959001866257244765">Googleకు <ph name="BEGIN_WHITEPAPER_LINK" />మీరు సందర్శించిన కొన్ని పేజీల URLలు, పరిమిత సిస్టమ్ సమాచారం, కొంత పేజీ కంటెంట్<ph name="END_WHITEPAPER_LINK" />ను పంపడం ద్వారా వెబ్‌లో ప్రతిఒక్కరికీ భద్రతను మెరుగుపరచడంలో సహాయం చేయండి. <ph name="BEGIN_PRIVACY_PAGE_LINK" />గోప్యతా పాలసీ<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -268,9 +268,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{మరియు మరొకటి}other{మరియు మరో #}}</translation>
 <translation id="2003709556000175978">ఇప్పుడే మీ పాస్‌వర్డ్‌ని రీసెట్ చేయండి</translation>
 <translation id="2003775180883135320">ఎగువ భాగంలో నాలుగు రంధ్రాలు</translation>
+<translation id="202072848677994234">సురక్షితం కాని కనెక్షన్ ద్వారా ఈ ఫారమ్ సమర్పించబడింది. ఆటోమేటిక్‌గా పూరించడం డిజేబుల్ చేయబడింది.</translation>
 <translation id="2025115093177348061">అగ్‌మెంటెడ్ రియాలిటీ</translation>
 <translation id="2025186561304664664">ప్రాక్సీ ఆటోమేటిక్‌గా కాన్ఫిగర్ చేయబడేలా సెట్ చేయబడింది.</translation>
-<translation id="2030481566774242610">మీ ఉద్దేశ్యం <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />ప్రాక్సీ మరియు ఫైర్‌వాల్‌ను తనిఖీ చేయడం<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">ట్రే 7</translation>
 <translation id="204357726431741734">మీ Google ఖాతాలో సేవ్ చేయబడిన పాస్‌వర్డ్‌లను ఉపయోగించడానికి సైన్ ఇన్ చేయండి</translation>
@@ -336,6 +336,7 @@
 <translation id="2289385804009217824">కత్తిరించండి</translation>
 <translation id="2292556288342944218">మీ ఇంటర్నెట్ యాక్సెస్ బ్లాక్ చేయబడింది</translation>
 <translation id="2293443924986248631">ఆన్‌లో ఉన్నప్పుడు, వెబ్ అంతటా మిమ్మల్ని ట్రాక్ చేయడానికి ఉపయోగించే కుక్కీలను సైట్‌లు ఉపయోగించడం సాధ్యం కాదు. కొన్ని సైట్‌లలోని ఫీచర్‌లు సరిగ్గా పని చేయకపోవచ్చు.</translation>
+<translation id="2295290966866883927">మీరు సందర్శించే పేజీల URLలు విశ్లేషణ కోసం Google క్లౌడ్ లేదా థర్డ్ పార్టీలకు పంపబడతాయి. ఉదాహరణకు, సురక్షితం కాని వెబ్‌సైట్‌లను గుర్తించడానికి అవి స్కాన్ చేయబడతాయి.</translation>
 <translation id="2297722699537546652">B5 (ఎన్వలప్)</translation>
 <translation id="2300306941146563769">అప్‌లోడ్ చేయలేదు</translation>
 <translation id="2310021320168182093">Chou2 (ఎన్వలప్)</translation>
@@ -1046,6 +1047,7 @@
 <translation id="5308380583665731573">కనెక్ట్ చేయండి</translation>
 <translation id="5308689395849655368">క్రాష్ నివేదిక నిలిపివేయ‌బడింది.</translation>
 <translation id="5314967030527622926">బుక్‌లెట్ తయారీ దారు</translation>
+<translation id="5316812925700871227">అపసవ్య దిశలో తిప్పు</translation>
 <translation id="5317780077021120954">సేవ్ చేయి</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="NUM_MATCHES" />లో <ph name="MATCH_POSITION" /></translation>
 <translation id="5324080437450482387">సంప్రదింపు సమాచారాన్ని ఎంచుకోండి</translation>
@@ -1069,7 +1071,6 @@
 <translation id="5421136146218899937">బ్రౌజింగ్ డేటాను క్లియర్ చేయి...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> మీకు నోటిఫికేషన్‌లను పంపాలనుకుంటోంది</translation>
 <translation id="5430298929874300616">బుక్‌మార్క్‌ను తీసివేయండి</translation>
-<translation id="5431657950005405462">మీ ఫైల్ కనుగొనబడలేదు</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />"లో స్కీమా ప్రామాణీకరణ ఎర్రర్: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">వ్యతిరేక క్రమంలో ఉన్న ఫేస్ అప్</translation>
 <translation id="5447765697759493033">ఈ సైట్ అనువదించబడదు</translation>
@@ -1178,6 +1179,7 @@
 <translation id="5869405914158311789">ఈ సైట్‌ను చేరుకోలేకపోయాము</translation>
 <translation id="5869522115854928033">సేవ్  చేసిన పాస్‌వర్డ్‌లు</translation>
 <translation id="5887400589839399685">కార్డ్ సేవ్ చేయబడింది</translation>
+<translation id="589006512797629854">మీ డేటాను బ్యాకప్ చేసి, ఈ పరికరాన్ని రిటర్న్ చేయాలని <ph name="ENROLLMENT_DOMAIN" /> తెలియజేస్తోంది.</translation>
 <translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
 <translation id="5895187275912066135">జారీ చేయబడినది</translation>
 <translation id="5901630391730855834">పసుపు</translation>
@@ -1442,7 +1444,6 @@
 <translation id="7083258188081898530">ట్రే 9</translation>
 <translation id="7086090958708083563">అప్‌లోడ్‌ను యూజర్ అభ్యర్థించారు</translation>
 <translation id="7087282848513945231">కౌంటి</translation>
-<translation id="7090678807593890770"><ph name="LINK" /> కోసం Googleలో వెతకండి</translation>
 <translation id="7108338896283013870">దాచిపెట్టు</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> మీ కెమెరాను ఉపయోగించాలనుకుంటోంది</translation>
 <translation id="7108819624672055576">పొడిగింపు ద్వారా అనుమతించబడింది</translation>
@@ -1878,7 +1879,6 @@
 <translation id="893332455753468063">పేరుని జోడించండి</translation>
 <translation id="8943282376843390568">నిమ్మపండు రంగు</translation>
 <translation id="8957210676456822347">క్యాప్టివ్ పోర్టల్ ప్రామాణీకరణ</translation>
-<translation id="8958582951173503172">భద్రతా ఈవెంట్‌లను Chrome Enterprise కనెక్టర్స్ ద్వారా ఫ్లాగ్ చేసినప్పుడు, ఈవెంట్ గురించి సంబంధిత డేటా మీ అడ్మినిస్ట్రేట‌ర్‌కు పంపబడుతుంది. ఇందులో మీరు Chromeలో సందర్శించే పేజీల URLలు, ఫైల్ పేర్లు లేదా మెటాడేటా, మీ పరికరం, Chromeకు సైన్ ఇన్ చేయడానికి మీరు ఉపయోగించే యూజర్‌నేమ్ ఉండవచ్చు.</translation>
 <translation id="8962950042226115166">అనుమానాస్పద సైట్</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />సూచనలు:<ph name="MARKUP_2" />మీకు డేటా కనెక్షన్ ఉందని నిర్ధారించుకోండి<ph name="MARKUP_3" />ఈ వెబ్‌పేజీని తర్వాత మళ్లీ లోడ్ చేయండి<ph name="MARKUP_4" />మీరు నమోదు చేసిన చిరునామా తనిఖీ చేయండి<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">కార్డ్‌ని సేవ్ చేయండి</translation>

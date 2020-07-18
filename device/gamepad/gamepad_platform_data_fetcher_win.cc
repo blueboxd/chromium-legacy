@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
 
@@ -44,30 +45,30 @@ float NormalizeXInputAxis(SHORT value) {
   return ((value + 32768.f) / 32767.5f) - 1.f;
 }
 
-const base::char16* GamepadSubTypeName(BYTE sub_type) {
+const wchar_t* GamepadSubTypeName(BYTE sub_type) {
   switch (sub_type) {
     case kDeviceSubTypeGamepad:
-      return STRING16_LITERAL("GAMEPAD");
+      return L"GAMEPAD";
     case kDeviceSubTypeWheel:
-      return STRING16_LITERAL("WHEEL");
+      return L"WHEEL";
     case kDeviceSubTypeArcadeStick:
-      return STRING16_LITERAL("ARCADE_STICK");
+      return L"ARCADE_STICK";
     case kDeviceSubTypeFlightStick:
-      return STRING16_LITERAL("FLIGHT_STICK");
+      return L"FLIGHT_STICK";
     case kDeviceSubTypeDancePad:
-      return STRING16_LITERAL("DANCE_PAD");
+      return L"DANCE_PAD";
     case kDeviceSubTypeGuitar:
-      return STRING16_LITERAL("GUITAR");
+      return L"GUITAR";
     case kDeviceSubTypeGuitarAlternate:
-      return STRING16_LITERAL("GUITAR_ALTERNATE");
+      return L"GUITAR_ALTERNATE";
     case kDeviceSubTypeDrumKit:
-      return STRING16_LITERAL("DRUM_KIT");
+      return L"DRUM_KIT";
     case kDeviceSubTypeGuitarBass:
-      return STRING16_LITERAL("GUITAR_BASS");
+      return L"GUITAR_BASS";
     case kDeviceSubTypeArcadePad:
-      return STRING16_LITERAL("ARCADE_PAD");
+      return L"ARCADE_PAD";
     default:
-      return STRING16_LITERAL("<UNKNOWN>");
+      return L"<UNKNOWN>";
   }
 }
 
@@ -139,9 +140,9 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices() {
         pad.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
         pad.vibration_actuator.not_null = true;
 
-        pad.SetID(
+        pad.SetID(base::WideToUTF16(
             base::StringPrintf(L"Xbox 360 Controller (XInput STANDARD %ls)",
-                               GamepadSubTypeName(caps.SubType)));
+                               GamepadSubTypeName(caps.SubType))));
         pad.mapping = GamepadMapping::kStandard;
       }
     }

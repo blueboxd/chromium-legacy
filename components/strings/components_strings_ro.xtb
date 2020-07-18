@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Imaginea copiată de tine</translation>
 <translation id="1150979032973867961">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; sistemul de operare al computerului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="1151972924205500581">Trebuie să introduceți o parolă</translation>
-<translation id="1152921474424827756">Accesați o <ph name="BEGIN_LINK" />copie păstrată în memoria cache<ph name="END_LINK" /> a site-ului <ph name="URL" /></translation>
 <translation id="1156303062776767266">Se afișează un fișier local sau comun</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> a închis conexiunea în mod neașteptat.</translation>
 <translation id="115926840831309955">Verifică codul CVC și încearcă din nou sau actualizează data expirării</translation>
 <translation id="1161325031994447685">să te reconectezi la Wi-Fi</translation>
 <translation id="1165039591588034296">Eroare</translation>
+<translation id="1165174597379888365">Este accesată o pagină</translation>
 <translation id="1175364870820465910">&amp;Printează...</translation>
 <translation id="1175875016430184367">Capsare triplă în dreapta</translation>
 <translation id="1178581264944972037">Întrerupe</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">Anunțuri</translation>
 <translation id="1919367280705858090">Obține ajutor în privința unui anumit mesaj de eroare</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Niciunul}=1{1 site}few{# site-uri}other{# de site-uri}}</translation>
-<translation id="194030505837763158">Accesați <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Este posibil să pierzi accesul la contul organizației sau să fii victima unui furt de identitate. Chromium îți recomandă să îți schimbi acum parola.</translation>
 <translation id="1947454675006758438">Capsare în dreapta sus</translation>
 <translation id="1959001866257244765">Contribuie la îmbunătățirea securității pe web pentru toată lumea trimițând la Google <ph name="BEGIN_WHITEPAPER_LINK" />adresele URL ale unor pagini pe care le accesezi, informații de sistem limitate și părți din conținutul paginilor<ph name="END_WHITEPAPER_LINK" />. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Politică de confidențialitate<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,9 +266,9 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="2001146170449793414">{COUNT,plural, =1{și încă una}few{și încă #}other{și încă #}}</translation>
 <translation id="2003709556000175978">Resetează parola acum</translation>
 <translation id="2003775180883135320">Perforare cvadruplă în partea de sus</translation>
+<translation id="202072848677994234">Acest formular este trimis printr-o conexiune nesecurizată. Completarea automată este dezactivată.</translation>
 <translation id="2025115093177348061">Realitate augmentată</translation>
 <translation id="2025186561304664664">Proxy-ul este setat la Configurat automat.</translation>
-<translation id="2030481566774242610">Ați dorit să scrieți <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />să verifici proxy-ul și firewallul;<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Tava 7</translation>
 <translation id="204357726431741734">Conectează-te pentru a folosi parolele salvate în Contul Google</translation>
@@ -335,6 +334,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="2289385804009217824">Decupare</translation>
 <translation id="2292556288342944218">Accesul la internet este blocat</translation>
 <translation id="2293443924986248631">Dacă opțiunea este activată, site-urile nu pot folosi cookie-uri care te urmăresc pe web. Este posibil ca funcțiile de pe anumite site-uri să fie întrerupte.</translation>
+<translation id="2295290966866883927">Adresele URL ale paginilor pe care le accesezi sunt trimise la Google Cloud sau la terți spre analiză. De exemplu, pot fi verificate pentru a detecta site-urile nesigure.</translation>
 <translation id="2297722699537546652">B5 (Plic)</translation>
 <translation id="2300306941146563769">Nu s-a încărcat</translation>
 <translation id="2310021320168182093">Chou2 (Plic)</translation>
@@ -1045,6 +1045,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="5308380583665731573">Conectează-te</translation>
 <translation id="5308689395849655368">Raportarea blocărilor este dezactivată.</translation>
 <translation id="5314967030527622926">Broșator</translation>
+<translation id="5316812925700871227">Rotește în sens invers acelor de ceasornic</translation>
 <translation id="5317780077021120954">Salvează</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> din <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Alege informațiile de contact</translation>
@@ -1068,7 +1069,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="5421136146218899937">Șterge datele de navigare...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> dorește să îți trimită notificări</translation>
 <translation id="5430298929874300616">Elimină marcajul</translation>
-<translation id="5431657950005405462">Fișierul nu a fost găsit</translation>
 <translation id="5439770059721715174">Eroare de validare a schemei la „<ph name="ERROR_PATH" />”: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">În ordine inversă, cu fața în sus</translation>
 <translation id="5447765697759493033">Acest site nu va fi tradus</translation>
@@ -1442,7 +1442,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="7083258188081898530">Tava 9</translation>
 <translation id="7086090958708083563">Utilizatorul a solicitat încărcarea</translation>
 <translation id="7087282848513945231">Comitat</translation>
-<translation id="7090678807593890770">Caută <ph name="LINK" /> pe Google</translation>
 <translation id="7108338896283013870">Ascunde</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> dorește să utilizeze camera foto</translation>
 <translation id="7108819624672055576">Permisă de o extensie</translation>
@@ -1879,7 +1878,6 @@ Detalii suplimentare:
 <translation id="893332455753468063">Adaugă un nume</translation>
 <translation id="8943282376843390568">Verde-gălbui</translation>
 <translation id="8957210676456822347">Autorizarea prin portalul captiv</translation>
-<translation id="8958582951173503172">Când Chrome Enterprise Connectors semnalează evenimente de securitate, datele relevante despre acele evenimente sunt trimise administratorului tău. Aici pot fi incluse adresele URL ale paginilor pe care le accesezi în Chrome, nume de fișiere sau metadate și numele de utilizator cu care te conectezi pe dispozitiv și la Chrome.</translation>
 <translation id="8962950042226115166">Site suspect</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Sugestii:<ph name="MARKUP_2" />asigură-te că ai o conexiune de date;<ph name="MARKUP_3" />reîncarcă mai târziu această pagină web;<ph name="MARKUP_4" />verifică adresa pe care ai introdus-o.<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Salvează cardul</translation>

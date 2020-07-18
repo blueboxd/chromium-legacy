@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Kopiatu duzun irudia</translation>
 <translation id="1150979032973867961">Zerbitzari honek ezin izan du egiaztatu <ph name="DOMAIN" /> domeinua denik. Zure ordenagailuaren sistema eragilea ez da bere segurtasun-ziurtagiriaz fidatzen. Baliteke gaizki konfiguratuta dagoelako izatea edo erasotzaile batek zure konexioa atzeman duelako izatea.</translation>
 <translation id="1151972924205500581">Pasahitza behar da</translation>
-<translation id="1152921474424827756">Atzitu <ph name="BEGIN_LINK" />cachean gordetako<ph name="END_LINK" /> <ph name="URL" /> webgunearen kopia</translation>
 <translation id="1156303062776767266">Fitxategi lokal edo partekatu bat ari zara ikusten</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> webguneak konexioa eten du ustekabean.</translation>
 <translation id="115926840831309955">Egiaztatu CVC kodea eta saiatu berriro, edo eguneratu iraungitze-data</translation>
 <translation id="1161325031994447685">Wifi-sarera berriro konektatu.</translation>
 <translation id="1165039591588034296">Errorea</translation>
+<translation id="1165174597379888365">Orri bat bisitatu da</translation>
 <translation id="1175364870820465910">In&amp;primatu…</translation>
 <translation id="1175875016430184367">Hiru grapa eskuinean</translation>
 <translation id="1178581264944972037">Pausatu</translation>
@@ -243,7 +243,6 @@
 <translation id="1919345977826869612">Iragarkiak</translation>
 <translation id="1919367280705858090">Lortu errore-mezu jakin bati buruzko laguntza</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Bat ere ez}=1{1 webgune}other{# webgune}}</translation>
-<translation id="194030505837763158">Joan <ph name="LINK" /> webgunera</translation>
 <translation id="1945968466830820669">Erakundearen konturako sarbidea gal zenezake, edo nortasuna lapur liezazukete. Pasahitza aldatzea gomendatzen dizu Chromium-ek.</translation>
 <translation id="1947454675006758438">Grapa bat goian, eskuinetara</translation>
 <translation id="1959001866257244765">Sareko segurtasuna hobetzen laguntzeko, bidali <ph name="BEGIN_WHITEPAPER_LINK" />ireki dituzun orrietako batzuen URLak, sistemari buruzko informazio mugatua eta orrietako edukiaren zati bat<ph name="END_WHITEPAPER_LINK" /> Google-ri. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Pribatutasun-gidalerroak<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -263,9 +262,9 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="2001146170449793414">{COUNT,plural, =1{eta beste 1}other{eta beste #}}</translation>
 <translation id="2003709556000175978">Berrezarri pasahitza orain</translation>
 <translation id="2003775180883135320">Lau zulo goian</translation>
+<translation id="202072848677994234">Segurua ez den konexio baten bidez bidaliko da inprimakia. Desgaituta dago betetze automatikoa.</translation>
 <translation id="2025115093177348061">Errealitate areagotua</translation>
 <translation id="2025186561304664664">Proxya automatikoki konfiguratzeko ezarrita dago.</translation>
-<translation id="2030481566774242610"><ph name="LINK" /> esan nahi al zenuen?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Proxya eta suebakia egiaztatu<ph name="END_LINK" />.</translation>
 <translation id="2042213636306070719">7. erretilua</translation>
 <translation id="204357726431741734">Hasi saioa Google-ko kontuan gordetako pasahitzak erabiltzeko</translation>
@@ -331,6 +330,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="2289385804009217824">Moztu</translation>
 <translation id="2292556288342944218">Blokeatuta duzu Interneteko konexioa</translation>
 <translation id="2293443924986248631">Aktibatzen bada, webguneek ezingo dituzte erabili sarean jarraipena egiten dizuten cookieak. Baliteke webgune batzuetako eginbideek ez funtzionatzea.</translation>
+<translation id="2295290966866883927">Bisitatzen dituzun orrien URLak Google Cloud-era edo hirugarrenetara bidaltzen dira analizatzeko. Adibidez, seguruak ez diren webguneak hautemateko aztertuko dira, agian.</translation>
 <translation id="2297722699537546652">B5 (gutun-azala)</translation>
 <translation id="2300306941146563769">Kargatu gabe</translation>
 <translation id="2310021320168182093">Chou2 (gutun-azala)</translation>
@@ -1032,6 +1032,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="5308380583665731573">Konektatu</translation>
 <translation id="5308689395849655368">Hutsegite-txostenak bidaltzeko aukera desgaituta dago.</translation>
 <translation id="5314967030527622926">Koadernagailua</translation>
+<translation id="5316812925700871227">Biratu ezkerrera</translation>
 <translation id="5317780077021120954">Gorde</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="NUM_MATCHES" /> partidatik <ph name="MATCH_POSITION" />garrena</translation>
 <translation id="5324080437450482387">Aukeratu harremanetarako informazioa</translation>
@@ -1055,7 +1056,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="5421136146218899937">Garbitu arakatze-datuak…</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> webguneak jakinarazpenak bidali nahi dizkizu</translation>
 <translation id="5430298929874300616">Kendu laster-marka</translation>
-<translation id="5431657950005405462">Ez da aurkitu fitxategia</translation>
 <translation id="5439770059721715174">Eskemaren balidazio-errorea gertatu da ("<ph name="ERROR_PATH" />"): <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Alderantzizko ordenan, ahoz gora</translation>
 <translation id="5447765697759493033">Webgune hau ez da itzuliko</translation>
@@ -1428,7 +1428,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="7083258188081898530">9. erretilua</translation>
 <translation id="7086090958708083563">Erabiltzaileak eskatutako kargatzea</translation>
 <translation id="7087282848513945231">Konderria</translation>
-<translation id="7090678807593890770">Bilatu <ph name="LINK" /> Google-n</translation>
 <translation id="7108338896283013870">Ezkutatu</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> webguneak kamera erabili nahi du</translation>
 <translation id="7108819624672055576">Luzapen batek baimendu du</translation>
@@ -1864,7 +1863,6 @@ Xehetasun gehiago:
 <translation id="893332455753468063">Gehitu izena</translation>
 <translation id="8943282376843390568">Lima</translation>
 <translation id="8957210676456822347">Atari gatibuetako baimena</translation>
-<translation id="8958582951173503172">Chrome Enterprise zerbitzuaren konektoreak segurtasun-gertaerak markatzen baditu, gertaerari buruzko datu garrantzitsuak bidaliko zaizkio administratzaileari. Datu horien artean baliteke hauek agertzea: Chrome-n bisitatzen dituzun orrien URLak, fitxategien izenak edo metadatuak, eta gailuan nahiz Chrome-n saioa hasteko erabiltzen duzun erabiltzaile-izena.</translation>
 <translation id="8962950042226115166">Webgune susmagarria</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Iradokizunak:<ph name="MARKUP_2" />Ziurtatu datu-konexioa duzula.<ph name="MARKUP_3" />Kargatu web-orria berriro geroago<ph name="MARKUP_4" />Egiaztatu idatzitako helbidea zuzena dela.<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Gorde txartela</translation>

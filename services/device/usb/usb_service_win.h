@@ -35,20 +35,20 @@ class UsbServiceWin final : public DeviceMonitorWin::Observer,
 
   // device::DeviceMonitorWin::Observer implementation
   void OnDeviceAdded(const GUID& class_guid,
-                     const base::string16& device_path) override;
+                     const std::wstring& device_path) override;
   void OnDeviceRemoved(const GUID& class_guid,
-                       const base::string16& device_path) override;
+                       const std::wstring& device_path) override;
 
   // Methods called by BlockingThreadHelper
   void HelperStarted();
   void CreateDeviceObject(
-      const base::string16& device_path,
-      const base::string16& hub_path,
+      const std::wstring& device_path,
+      const std::wstring& hub_path,
       const base::flat_map<int, UsbDeviceWin::FunctionInfo>& functions,
       uint32_t bus_number,
       uint32_t port_number,
-      const base::string16& driver_name);
-  void UpdateFunction(const base::string16& device_path,
+      const std::wstring& driver_name);
+  void UpdateFunction(const std::wstring& device_path,
                       int interface_number,
                       const UsbDeviceWin::FunctionInfo& function_info);
 
@@ -65,7 +65,7 @@ class UsbServiceWin final : public DeviceMonitorWin::Observer,
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   std::unique_ptr<BlockingTaskRunnerHelper, base::OnTaskRunnerDeleter> helper_;
-  std::unordered_map<base::string16, scoped_refptr<UsbDeviceWin>>
+  std::unordered_map<std::wstring, scoped_refptr<UsbDeviceWin>>
       devices_by_path_;
 
   ScopedObserver<DeviceMonitorWin, DeviceMonitorWin::Observer> device_observer_;

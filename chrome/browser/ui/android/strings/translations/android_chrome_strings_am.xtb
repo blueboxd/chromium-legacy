@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">የበይነመረብ ግንኙነትዎን ይፈትሹ</translation>
 <translation id="2359808026110333948">ቀጥል</translation>
 <translation id="2369533728426058518">ክፍት ትሮች</translation>
-<translation id="2377295302146152376">Chrome ዝማኔዎችን መፈተሽ አልቻለም</translation>
 <translation id="2387895666653383613">የጽሑፍ ልኬት</translation>
 <translation id="2394602618534698961">የሚያወርዷቸው ፋይሎች እዚህ ይታያሉ</translation>
 <translation id="2407481962792080328">ወደ የእርስዎ የ Google መለያ ሲገቡ፣ ይህ ባህሪ ይበራል</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />እገዛ ያግኙ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">አካባቢ ጠፍቷል፤ በ<ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ያብሩት።</translation>
 <translation id="3058498974290601450">ስምረትን በማንኛውም ጊዜ በቅንብሮች ውስጥ ማብራት ይችላሉ።</translation>
-<translation id="3059710691562604940">የጥንቃቄ አሰሳ ጠፍቷል። Chrome እንዲያበሩት ይመክራል።</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ዕልባት}one{<ph name="BOOKMARKS_COUNT_MANY" /> ዕልባቶች}other{<ph name="BOOKMARKS_COUNT_MANY" /> ዕልባቶች}}</translation>
 <translation id="3089395242580810162">ማንነትን በማያሳውቅ ትር ክፈት</translation>
 <translation id="3114012059975132928">ቪዲዮ ማጫወቻ</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">ዝማኔ ይገኛል። ተጨማሪ አማራጮች</translation>
 <translation id="3524138585025253783">የገንቢ ዩአይ</translation>
 <translation id="3527085408025491307">አቃፊ</translation>
-<translation id="3533694711092285624">ምንም የተቀመጡ የይለፍ ቃላት የሉም። Chrome እርስዎ ሲያስቀምጧቸው የእርስዎን የይለፍ ቃላት መፈተሽ ይችላል።</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> ኪባ ይገኛል</translation>
 <translation id="3549657413697417275">የራስዎን ታሪክ ይፈልጉ</translation>
 <translation id="3557336313807607643">ወደ እውቂያዎች አክል</translation>
@@ -571,6 +568,7 @@
 <translation id="5581519193887989363">በማንኛውም ጊዜ ምን እንደሚያሰምሩ በ<ph name="BEGIN_LINK1" />ቅንብሮች<ph name="END_LINK1" /> ውስጥ መምረጥ ይችላሉ።</translation>
 <translation id="5595485650161345191">አድራሻ አርትዕ</translation>
 <translation id="5599455543593328020">ማንነት የማያሳውቅ ሁነታ</translation>
+<translation id="5620163320393916465">ምንም የተቀመጡ የይለፍ ቃላት የሉም</translation>
 <translation id="5620928963363755975">ከተጨማሪ አማራጮች አዝራር ሆነው የእርስዎን ፋይሎች እና ገጾች በውርዶች ውስጥ ያግኙ</translation>
 <translation id="5626134646977739690">ስም፦</translation>
 <translation id="5639724618331995626">ሁሉንም ጣቢያዎች ፍቀድ</translation>
@@ -881,6 +879,7 @@
 <translation id="8013372441983637696">በተጨማሪ ከዚህ መሣሪያ ላይ የእርስዎን Chrome ውሂብ ያጽዱት</translation>
 <translation id="8015452622527143194">በገጹ ላይ ያለውን ሁሉንም ነገር ወደ ነባሪ መጠን መልስ</translation>
 <translation id="8026334261755873520">የአሰሳ ውሂብ አጽዳ</translation>
+<translation id="8027863900915310177">የት እንደሚያወርዱ ይምረጡ</translation>
 <translation id="8035133914807600019">አዲስ አቃፊ…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ቀኖች ይቀራሉ</translation>
 <translation id="804335162455518893">ኤስዲ ካርድ አልተገኘም</translation>

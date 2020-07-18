@@ -36,7 +36,6 @@
 <translation id="1323735185997015385">წაშლა</translation>
 <translation id="132683371494960526">ზედა საქაღალდის შესაცვლელად, შეეხეთ ორმაგად.</translation>
 <translation id="1340643665687018190">მენიუს დახურვა</translation>
-<translation id="1345319103680304157">პაროლები არ გატეხილა</translation>
 <translation id="1358214951266274152">თქვენ მიერ კოპირებულ ბმულზე გადასვლა</translation>
 <translation id="1360432990279830238">გსურთ გამოსვლა და სინქრონიზაციის გამორთვა?</translation>
 <translation id="1375321115329958930">შენახული პაროლები</translation>
@@ -619,7 +618,6 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="8428213095426709021">პარამეტრები</translation>
 <translation id="8458397775385147834">1 ელემენტი წაშლილია</translation>
 <translation id="8459333855531264009">დაუცველი</translation>
-<translation id="8484911814435057959">პაროლები გატეხილია</translation>
 <translation id="8487667956631253959">ჩართულია</translation>
 <translation id="8487700953926739672">ოფლაინში ხელმისაწვდომი</translation>
 <translation id="8490978609246021741">ცვლილებების შენახვა</translation>

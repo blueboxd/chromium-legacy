@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">暗号化のみ</translation>
 <translation id="1038462104119736705">Linux 用の推奨される空き容量は <ph name="INSTALL_SIZE" /> 以上です。空き容量を増やすには、デバイスからファイルを削除してください。</translation>
 <translation id="1039337018183941703">ファイルが無効であるか壊れています</translation>
+<translation id="104086161873270383">新しいプロフィール</translation>
 <translation id="1041175011127912238">このページは応答していません</translation>
 <translation id="1041263367839475438">使用可能なデバイス</translation>
 <translation id="1042174272890264476">お使いのパソコンには <ph name="SHORT_PRODUCT_NAME" /> の RLZ ライブラリも組み込まれています。RLZ は、個人を特定できないタグを割り当てて、特定の販促キャンペーンで生じた検索や <ph name="SHORT_PRODUCT_NAME" /> の利用状況を計測します。これらのラベルは <ph name="PRODUCT_NAME" /> で Google 検索キーワード内に表示されることがあります。</translation>
@@ -253,6 +254,7 @@
 <translation id="1306606229401759371">設定を変更</translation>
 <translation id="1307165550267142340">PIN が作成されました</translation>
 <translation id="1307559529304613120">このデバイスの長期 API アクセス トークンを保存できませんでした。</translation>
+<translation id="1313162974556054106">デバイス名</translation>
 <translation id="1313405956111467313">自動プロキシ設定</translation>
 <translation id="131364520783682672">CapsLock</translation>
 <translation id="1313660246522271310">タブで表示中のサイトも含め、すべてのサイトからログアウトします</translation>
@@ -702,7 +704,6 @@
 <translation id="184273675144259287">Linux のアプリとファイルを以前のバックアップで置き換えます</translation>
 <translation id="1842766183094193446">デモモードを有効にしてもよろしいですか？</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" /> を実行するには Control キーを押しながらクリックします</translation>
-<translation id="1846880379134204029">グループ <ph name="GROUP_NAME" /> - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">背景モードの有効化</translation>
 <translation id="1849186935225320012">このページは MIDI デバイスのフル コントロールが許可されています。</translation>
 <translation id="1850508293116537636">時計回りに回転(&amp;C)</translation>
@@ -1718,6 +1719,7 @@
 <translation id="3103941660000130485">Linux のアップグレード中にエラーが発生しました</translation>
 <translation id="3105796011181310544">Google に戻しますか？</translation>
 <translation id="310671807099593501">サイトで Bluetooth が使用されています</translation>
+<translation id="3109724472072898302">折りたたみ表示中</translation>
 <translation id="3115147772012638511">キャッシュを待機しています...</translation>
 <translation id="3115580024857770654">すべて折りたたむ</translation>
 <translation id="3116968597797150452">証明書プロフィール</translation>
@@ -1785,7 +1787,6 @@
 <translation id="3192947282887913208">音声ファイル</translation>
 <translation id="3199127022143353223">サーバー</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{このパスワードを今すぐ確認することをおすすめします}other{これらのパスワードを今すぐ確認することをおすすめします}}</translation>
-<translation id="3200941271596533635">リーダーモードの切り替え</translation>
 <translation id="3201422919974259695">使用可能な USB デバイスがここに表示されます。</translation>
 <translation id="3202131003361292969">パス</translation>
 <translation id="3202173864863109533">このタブの音声はミュートされています。</translation>
@@ -4244,6 +4245,7 @@
 <translation id="6322653941595359182">Chromebook でテキスト メッセージを送受信します</translation>
 <translation id="6324916366299863871">ショートカットの編集</translation>
 <translation id="6325191661371220117">自動起動を無効にする</translation>
+<translation id="6325525973963619867">失敗しました</translation>
 <translation id="6326175484149238433">Chrome から削除</translation>
 <translation id="6326855256003666642">キープアライブ カウント</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> が期限までにこのデバイスを更新するよう求めています。</translation>
@@ -4844,7 +4846,6 @@
 <translation id="7099337801055912064">サイズの大きい PPD は読み込めません。最大サイズは 250 KB です。</translation>
 <translation id="7102687220333134671">自動更新が有効です</translation>
 <translation id="7102832101143475489">リクエストがタイムアウトになりました</translation>
-<translation id="7102928824073746774">名前のないグループ - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">USB の設定</translation>
 <translation id="710640343305609397">ネットワーク設定を開く</translation>
 <translation id="7108338896283013870">非表示</translation>
@@ -4920,6 +4921,7 @@
 <translation id="720110658997053098">このデバイスをキオスクモードに固定する</translation>
 <translation id="7201118060536064622">「<ph name="DELETED_ITEM_NAME" />」が削除されました</translation>
 <translation id="7201420661433230412">ファイルを表示する</translation>
+<translation id="7203150201908454328">展開表示中</translation>
 <translation id="7203826966018112936">学校用アカウントをプロフィールに追加すると、保護者による使用制限の適用を受けながら、生徒としてウェブサイトや拡張機能に簡単にログインできるようになります。学校用アカウントと同期しているブックマークやパスワードなどのブラウザデータへのアクセス権がお子様に付与されることはありません。&lt;br&gt;&lt;br&gt;
     お子様が学校で Chromebook を使用している場合に、自宅で学校の使用環境を再現して、お子様が必要な学習用コンテンツすべてにアクセスできるようにするには、このファミリー リンク アカウントからログアウトしてください。その後、Chrome OS のアカウント ページから学校用アカウントにログインしてください（注: ファミリー リンクの保護者による使用制限は適用されなくなります）。&lt;br&gt;&lt;br&gt;
     お子様が学校で Chromebook を使用していない場合、またはファミリー リンクを使用してお子様の自宅での使用環境を管理したい場合は、下の [次へ] ボタンをクリックして、学校用アカウントをこのプロフィールに追加してください。</translation>
@@ -5315,7 +5317,6 @@
 <translation id="7704521324619958564">Play ストアを開く</translation>
 <translation id="7705276765467986571">ブックマーク モデルを読み込むことができませんでした。</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">リーダーモードの切り替え</translation>
 <translation id="7707108266051544351">このサイトではモーション センサーの使用がブロックされています。</translation>
 <translation id="7707922173985738739">モバイルデータを使用します</translation>
 <translation id="7709152031285164251">失敗 - <ph name="INTERRUPT_REASON" /></translation>

@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">કૅમેરો</translation>
 <translation id="1647391597548383849">તમારા કૅમેરાની ઍક્સેસ</translation>
 <translation id="1660204651932907780">સાઇટને અવાજ ચલાવવાની મંજૂરી આપો (સુઝાવ આપેલ)</translation>
+<translation id="1677097821151855053">કુકી અને અન્ય સાઇટ ડેટાનો ઉપયોગ તમને યાદ રાખવા માટે કરવામાં આવે છે, ઉદાહરણ તરીકે, તમને સાઇન ઇન કરવા માટે અથવા જાહેરાતો મનગમતી બનાવવા માટે. બધી સાઇટ માટે કુકી મેનેજ કરવા, <ph name="BEGIN_LINK" />સેટિંગ<ph name="END_LINK" /> જુઓ.</translation>
 <translation id="1688867105868176567">સાઇટનો ડેટા સાફ કરીએ?</translation>
 <translation id="169515064810179024">સાઇટને મોશન સેન્સરને ઍક્સેસ કરવાથી બ્લૉક કરો</translation>
 <translation id="1717218214683051432">મોશન સેન્સર</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">કોઈ ચોક્કસ સાઇટ માટે કુકીને મંજૂરી આપો.</translation>
 <translation id="4046123991198612571">આગલો ટ્રૅક</translation>
 <translation id="4165986682804962316">સાઇટ સેટિંગ્સ</translation>
+<translation id="4200726100658658164">સ્થાન સેટિંગ ખોલો</translation>
 <translation id="4226663524361240545">સૂચનાઓ ઉપકરણને વાઇબ્રેટ કરી શકે છે</translation>
 <translation id="4242533952199664413">સેટિંગ્સ ખોલો</translation>
 <translation id="4259722352634471385">નેવિગેશન અવરોધિત છે: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">બધી સાઇટ્સ</translation>
 <translation id="6320088164292336938">વાઇબ્રેટ</translation>
 <translation id="6388207532828177975">સાફ કરો અને ફરીથી સેટ કરો</translation>
+<translation id="6423924377271166037">કુકી સાફ કરો</translation>
 <translation id="6439114592976064011">સાઇટને તમારું વર્ચ્યુઅલ રિયાલિટી ડિવાઇસ અને ડેટાનો ઉપયોગ કરવાથી બ્લૉક કરો</translation>
 <translation id="6447842834002726250">કૂકીઝ</translation>
 <translation id="6527303717912515753">શેર કરો</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">પાછળ કરો</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> તમારું સ્થાન ઍક્સેસ કરી શકે તે માટે, <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં પણ સ્થાન ચાલુ કરો.</translation>
 <translation id="8447861592752582886">ઉપકરણની પરવાનગી રદબાતલ કરો</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{વપરાશમાંની 1 કુકી}one{વપરાશમાંની # કુકી}other{વપરાશમાંની # કુકી}}</translation>
 <translation id="8463851957836045671">સાઇટ ઝડપી છે</translation>
 <translation id="851751545965956758">સાઇટને ઉપકરણો સાથે કનેક્ટ થવાથી બ્લૉક કરો</translation>
 <translation id="857943718398505171">મંજૂર (ભલામણ કરેલ)</translation>

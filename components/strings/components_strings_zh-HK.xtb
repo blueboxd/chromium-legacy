@@ -40,7 +40,6 @@
 <translation id="1131264053432022307">您複製的圖片</translation>
 <translation id="1150979032973867961">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您電腦的操作系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線。</translation>
 <translation id="1151972924205500581">請輸入密碼</translation>
-<translation id="1152921474424827756">存取 <ph name="URL" /> 的<ph name="BEGIN_LINK" />頁庫存檔副本<ph name="END_LINK" /></translation>
 <translation id="1156303062776767266">您正在查看本機或共用檔案</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> 意外中斷連線。</translation>
 <translation id="115926840831309955">請檢查信用卡驗證碼或更新到期日，然後再試一次</translation>
@@ -244,7 +243,6 @@
 <translation id="1919345977826869612">廣告</translation>
 <translation id="1919367280705858090">瞭解如何修正特定錯誤訊息指出的錯誤</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{無}=1{1 個網站}other{# 個網站}}</translation>
-<translation id="194030505837763158">前往 <ph name="LINK" /></translation>
 <translation id="1945968466830820669">您有可能會失去機構帳戶存取權，或會遭身份盜用。Chromium 建議您立即變更密碼。</translation>
 <translation id="1947454675006758438">釘裝 (右上方)</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />將您瀏覽的部分網頁網址、有限的系統資料以及部分網頁內容<ph name="END_WHITEPAPER_LINK" />傳送給 Google，以協助改善其他使用者的網絡安全性。<ph name="BEGIN_PRIVACY_PAGE_LINK" />私隱權政策<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -266,7 +264,6 @@
 <translation id="202072848677994234">此表格將透過不安全的連線提交，因此系統已停用自動填入功能。</translation>
 <translation id="2025115093177348061">擴張實境</translation>
 <translation id="2025186561304664664">Proxy 已設為自動設定。</translation>
-<translation id="2030481566774242610">您要找的是 <ph name="LINK" /> 嗎？</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />檢查 Proxy和防火牆<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">紙匣 7</translation>
 <translation id="204357726431741734">登入即可使用儲存在 Google 帳戶中的密碼</translation>
@@ -1037,6 +1034,7 @@
 <translation id="5308380583665731573">連線</translation>
 <translation id="5308689395849655368">當機報告功能已停用。</translation>
 <translation id="5314967030527622926">手冊製作工具</translation>
+<translation id="5316812925700871227">逆時針方向旋轉</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />，<ph name="NUM_MATCHES" /> 個入面嘅第 <ph name="MATCH_POSITION" /> 個</translation>
 <translation id="5324080437450482387">選擇聯絡人資料</translation>
@@ -1060,7 +1058,6 @@
 <translation id="5421136146218899937">清除瀏覽數據…</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> 要求傳送通知給您</translation>
 <translation id="5430298929874300616">移除書籤</translation>
-<translation id="5431657950005405462">找不到您的檔案</translation>
 <translation id="5439770059721715174">「<ph name="ERROR_PATH" />」發生綱要驗證錯誤：<ph name="ERROR" /></translation>
 <translation id="5443468954631487277">相反順序 (正面朝上)</translation>
 <translation id="5447765697759493033">系統不會翻譯此網站</translation>
@@ -1434,7 +1431,6 @@
 <translation id="7083258188081898530">紙匣 9</translation>
 <translation id="7086090958708083563">使用者已要求上載</translation>
 <translation id="7087282848513945231">郡</translation>
-<translation id="7090678807593890770">請透過 Google 搜尋「<ph name="LINK" />」</translation>
 <translation id="7108338896283013870">隱藏</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> 要求使用相機</translation>
 <translation id="7108819624672055576">根據擴充程式設定允許</translation>
@@ -1870,7 +1866,6 @@
 <translation id="893332455753468063">新增名稱</translation>
 <translation id="8943282376843390568">青檸色</translation>
 <translation id="8957210676456822347">網頁驗證入口授權</translation>
-<translation id="8958582951173503172">當 Chrome Enterprise Connectors 標示安全性事件時，系統會向您的管理員發送該事件的相關資料。這些資料可包括您在 Chrome 瀏覽的網址、檔案名稱或元數據，以及用於登入裝置和 Chrome 的使用者名稱。</translation>
 <translation id="8962950042226115166">可疑網站</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />建議：<ph name="MARKUP_2" />請確保您已建立數據連線<ph name="MARKUP_3" />請稍後重新載入此網頁<ph name="MARKUP_4" />請檢查您輸入的網址<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">儲存付款卡</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1008557486741366299">以后再说</translation>
+<translation id="100957008357583611">使用您的位置信息？</translation>
 <translation id="1010200102790553230">保存网页以供日后加载</translation>
 <translation id="1015730422737071372">提供其他详细信息</translation>
 <translation id="1019413721762100891">已关闭</translation>
@@ -39,7 +40,6 @@
 <translation id="1131264053432022307">您复制的图片</translation>
 <translation id="1150979032973867961">此服务器无法证明它是<ph name="DOMAIN" />；您计算机的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1151972924205500581">需要密码</translation>
-<translation id="1152921474424827756">访问<ph name="URL" />的<ph name="BEGIN_LINK" />缓存副本<ph name="END_LINK" /></translation>
 <translation id="1156303062776767266">您正在查看一个本地文件或共享文件</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> 意外终止了连接。</translation>
 <translation id="115926840831309955">请检查您的银行卡验证码 (CVC) 并重试，或者更新失效日期</translation>
@@ -242,7 +242,6 @@
 <translation id="1919345977826869612">广告</translation>
 <translation id="1919367280705858090">了解如何解决特定错误消息指出的错误</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{无}=1{1 个网站}other{# 个网站}}</translation>
-<translation id="194030505837763158">请访问<ph name="LINK" /></translation>
 <translation id="1945968466830820669">您可能会无法再访问所属组织的帐号，或被他人盗用身份信息。Chromium 建议您立即更改密码。</translation>
 <translation id="1947454675006758438">钉装（右上角）</translation>
 <translation id="1959001866257244765">向 Google 发送<ph name="BEGIN_WHITEPAPER_LINK" />您访问的部分网页的网址、有限的系统信息以及部分网页内容<ph name="END_WHITEPAPER_LINK" />，帮助我们为所有人改善网络安全环境。<ph name="BEGIN_PRIVACY_PAGE_LINK" />隐私权政策<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -264,7 +263,6 @@
 <translation id="2003775180883135320">四孔（顶部）</translation>
 <translation id="2025115093177348061">增强现实</translation>
 <translation id="2025186561304664664">代理已设为自动配置。</translation>
-<translation id="2030481566774242610">您是想访问<ph name="LINK" />吗？</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />检查代理服务器和防火墙<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">纸匣 7</translation>
 <translation id="204357726431741734">登录后即可使用您 Google 帐号中保存的密码</translation>
@@ -1031,6 +1029,7 @@
 <translation id="5308380583665731573">连接</translation>
 <translation id="5308689395849655368">已停用崩溃报告。</translation>
 <translation id="5314967030527622926">手册制作工具</translation>
+<translation id="5316812925700871227">逆时针旋转</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />，第 <ph name="MATCH_POSITION" /> 个（共 <ph name="NUM_MATCHES" /> 个）</translation>
 <translation id="5324080437450482387">选择联系信息</translation>
@@ -1054,7 +1053,6 @@
 <translation id="5421136146218899937">清除浏览数据...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> 想向您发送通知</translation>
 <translation id="5430298929874300616">移除书签</translation>
-<translation id="5431657950005405462">找不到您的文件</translation>
 <translation id="5439770059721715174">“<ph name="ERROR_PATH" />”中存在模式验证错误：<ph name="ERROR" /></translation>
 <translation id="5443468954631487277">逆转顺序，正面朝上</translation>
 <translation id="5447765697759493033">系统不会翻译此网站</translation>
@@ -1163,6 +1161,7 @@
 <translation id="5869405914158311789">无法访问此网站</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
 <translation id="5887400589839399685">已保存卡片</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> 要求您备份自己的数据并退还此设备。</translation>
 <translation id="5895138241574237353">重新启动</translation>
 <translation id="5895187275912066135">颁发日期</translation>
 <translation id="5901630391730855834">黄色</translation>
@@ -1426,7 +1425,6 @@
 <translation id="7083258188081898530">纸匣 9</translation>
 <translation id="7086090958708083563">用户已请求上传</translation>
 <translation id="7087282848513945231">县</translation>
-<translation id="7090678807593890770">请在 Google 中搜索“<ph name="LINK" />”</translation>
 <translation id="7108338896283013870">隐藏</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> 想使用您的摄像头</translation>
 <translation id="7108819624672055576">某款扩展程序允许</translation>
@@ -1863,7 +1861,6 @@
 <translation id="893332455753468063">添加名称</translation>
 <translation id="8943282376843390568">绿黄色</translation>
 <translation id="8957210676456822347">强制门户授权</translation>
-<translation id="8958582951173503172">当 Chrome 企业版接口标记了安全性事件时，系统会向您的管理员发送与相应事件有关的数据。这些数据可能包括您在 Chrome 中访问的网页的网址、文件名或元数据，以及您在登录设备和 Chrome 时使用的用户名。</translation>
 <translation id="8962950042226115166">可疑网站</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />建议：<ph name="MARKUP_2" />确保有数据网络连接<ph name="MARKUP_3" />稍后重新加载此网页<ph name="MARKUP_4" />检查您输入的地址是否正确<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">保存卡片</translation>

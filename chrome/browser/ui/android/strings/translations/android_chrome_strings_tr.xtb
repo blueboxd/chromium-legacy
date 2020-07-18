@@ -170,7 +170,6 @@ Arama yapmak için herhangi bir kelimeye dokunun. Aramanızı hassaslaştırmak 
 <translation id="2353636109065292463">İnternet bağlantınızı kontrol etme</translation>
 <translation id="2359808026110333948">Devam et</translation>
 <translation id="2369533728426058518">sekmeleri aç</translation>
-<translation id="2377295302146152376">Chrome, güncellemeleri denetleyemedi</translation>
 <translation id="2387895666653383613">Metin ölçekleme</translation>
 <translation id="2394602618534698961">İndirdiğiniz dosyalar burada görünür</translation>
 <translation id="2407481962792080328">Google Hesabınızda oturum açtığınızda bu özellik devreye girer</translation>
@@ -259,7 +258,6 @@ Arama yapmak için herhangi bir kelimeye dokunup basılı tutun. Aramanızı has
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Yardım alın<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Konum özelliği kapalı. <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ndan açın.</translation>
 <translation id="3058498974290601450">Senkronizasyonu istediğiniz zaman ayarlardan açabilirsiniz</translation>
-<translation id="3059710691562604940">Güvenli Tarama kapalı. Chrome bunun açılmasını öneriyor.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> yer işareti}other{<ph name="BOOKMARKS_COUNT_MANY" /> yer işareti}}</translation>
 <translation id="3089395242580810162">Gizli sekmede aç</translation>
 <translation id="3114012059975132928">Video oynatıcı</translation>
@@ -320,7 +318,6 @@ Arama yapmak için herhangi bir kelimeye dokunup basılı tutun. Aramanızı has
 <translation id="3522247891732774234">Güncelleme mevcut. Diğer seçenekler</translation>
 <translation id="3524138585025253783">Geliştirici Kullanıcı Arayüzü</translation>
 <translation id="3527085408025491307">Klasör</translation>
-<translation id="3533694711092285624">Kaydedilen şifre yok. Kaydetmeniz halinde Chrome, şifrelerinizi kontrol edebilir.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB kullanılabilir</translation>
 <translation id="3549657413697417275">Geçmişinizde arayın</translation>
 <translation id="3557336313807607643">Kişilere ekle</translation>
@@ -360,6 +357,7 @@ Arama yapmak için herhangi bir kelimeye dokunup basılı tutun. Aramanızı has
 <translation id="3892148308691398805">Metni kopyala</translation>
 <translation id="3894427358181296146">Klasör ekleyin</translation>
 <translation id="3895926599014793903">Yakınlaştırmayı etkinleştirmeye zorla</translation>
+<translation id="3909763690984331376">Güvenlik kontrolü <ph name="BEGIN_NEW" />Yeni<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Web'in en iyilerini buluyoruz…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Verilerimi birleştir</translation>
@@ -460,6 +458,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4749960740855309258">Yeni sekme açar</translation>
 <translation id="4759238208242260848">İndirilenler</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 indirme işlemi tamamlandı.}other{# indirme işlemi tamamlandı.}}</translation>
+<translation id="4766678251456904326">Hesabı cihaza ekleyin</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 indirme işlemi programlandı.}other{# indirme işlemi programlandı.}}</translation>
 <translation id="478981486571169252"><ph name="SITE_NAME" /> sitenizin oturum açma durumunu, tarama verilerini ve site verilerini Chrome'da görürsünüz.</translation>
 <translation id="4802417911091824046">Parolayla şifreleme, Google Pay'deki adresleri ve ödeme yöntemlerini kapsamaz.
@@ -569,6 +568,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5581519193887989363">Neyin senkronize edileceğini istediğiniz zaman <ph name="BEGIN_LINK1" />ayarlardan<ph name="END_LINK1" /> seçebilirsiniz.</translation>
 <translation id="5595485650161345191">Adresi düzenle</translation>
 <translation id="5599455543593328020">Gizli mod</translation>
+<translation id="5620163320393916465">Kaydedilen şifre yok</translation>
 <translation id="5620928963363755975">Diğer Seçenekler düğmesini kullanarak İndirilenler bölümünden dosyalarınızı ve sayfalarınızı bulabilirsiniz</translation>
 <translation id="5626134646977739690">Adı:</translation>
 <translation id="5639724618331995626">Tüm sitelere izin ver</translation>
@@ -580,6 +580,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5686790454216892815">Dosya adı çok uzun</translation>
 <translation id="5694049548840660018">Ana sayfaya kolayca geri dönün</translation>
 <translation id="569536719314091526">Diğer seçenekler düğmesini kullanarak bu sayfayı istediğiniz dile çevirin</translation>
+<translation id="5696597120588531049">Chrome, veri ihlallerine, güvenli olmayan web sitelerine ve diğer tehditlere karşı güvende kalmanıza yardımcı olabilir</translation>
 <translation id="5697688514913266141">Dosyanız <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" /> konumuna kaydedilecek. <ph name="BEGIN_LINK2" />Düzenle<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Sekmeye Geç</translation>
 <translation id="572328651809341494">Son sekmeler</translation>
@@ -713,6 +714,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6656545060687952787">Chrome'un cihazları taraması için konuma erişmesi gerekiyor. <ph name="BEGIN_LINK" />İzinleri güncelleyin<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Şifre</translation>
 <translation id="6659594942844771486">Sekme</translation>
+<translation id="6663079968236414793">Metne bağlantı oluştur</translation>
 <translation id="666573598175432848">Chrome'un yeni bir sürümü mevcut. Play Store'a gitmek için bu öğeye dokunun.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> uygulamasında aç</translation>
 <translation id="666981079809192359">Chrome Gizlilik Uyarısı</translation>

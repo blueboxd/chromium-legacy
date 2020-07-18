@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">Saisie en japonais (pour le clavier américain)</translation>
 <translation id="1047956942837015229">Suppression de <ph name="COUNT" /> éléments en cours…</translation>
 <translation id="1049926623896334335">Document Word</translation>
+<translation id="1060368002126861100">Pour ouvrir des fichiers avec <ph name="APP_NAME" />, déplacez-les d'abord vers le dossier "Fichiers Windows".</translation>
 <translation id="1062407476771304334">Remplacer</translation>
 <translation id="1065449928621190041">Clavier franco-canadien</translation>
 <translation id="1119069657431255176">Archive TAR compressée avec Bzip2</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">Attention : Ces fichiers sont temporaires et peuvent être automatiquement supprimés pour libérer de l'espace disque.  <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Dossier</translation>
 <translation id="3549797760399244642">Accéder à drive.google.com…</translation>
+<translation id="3553048479571901246">Pour ouvrir des fichiers avec <ph name="APP_NAME" />, copiez-les d'abord dans le dossier "Fichiers Windows".</translation>
 <translation id="357479282490346887">Lituanien</translation>
 <translation id="3583509704582854624">Saisie alphanumérique (pour le clavier japonais)</translation>
 <translation id="3603385196401704894">Français canadien</translation>

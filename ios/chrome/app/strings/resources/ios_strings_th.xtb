@@ -36,7 +36,6 @@
 <translation id="1323735185997015385">ลบ</translation>
 <translation id="132683371494960526">แตะ 2 ครั้งเพื่อเปลี่ยนโฟลเดอร์ระดับบนสุด</translation>
 <translation id="1340643665687018190">ปิดเมนู</translation>
-<translation id="1345319103680304157">ไม่มีรหัสผ่านที่ไม่รัดกุม</translation>
 <translation id="1358214951266274152">เข้าชมลิงก์ที่คุณคัดลอก</translation>
 <translation id="1360432990279830238">ออกจากระบบและปิดการซิงค์ไหม</translation>
 <translation id="1375321115329958930">รหัสผ่านที่บันทึกไว้</translation>
@@ -619,7 +618,6 @@
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8458397775385147834">ลบแล้ว 1 รายการ</translation>
 <translation id="8459333855531264009">ไม่ปลอดภัย</translation>
-<translation id="8484911814435057959">มีรหัสผ่านที่ไม่รัดกุม</translation>
 <translation id="8487667956631253959">เปิด</translation>
 <translation id="8487700953926739672">ใช้งานแบบออฟไลน์ได้</translation>
 <translation id="8490978609246021741">บันทึกการเปลี่ยนแปลง</translation>

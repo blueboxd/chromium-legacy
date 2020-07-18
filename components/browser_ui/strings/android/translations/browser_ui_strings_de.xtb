@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1647391597548383849">Kamerazugriff</translation>
 <translation id="1660204651932907780">Wiedergabe von Ton auf Websites zulassen (empfohlen)</translation>
+<translation id="1677097821151855053">Durch Cookies und andere Websitedaten erinnert sich die Website an Sie, z. B. bei der Anmeldung oder für personalisierte Werbung. Sie können Cookies für alle Websites <ph name="BEGIN_LINK" />in den Einstellungen verwalten<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Websitedaten löschen?</translation>
 <translation id="169515064810179024">Zugriff auf Bewegungssensoren für Websites blockieren</translation>
 <translation id="1717218214683051432">Bewegungssensoren</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Cookies für eine bestimmte Website werden zugelassen.</translation>
 <translation id="4046123991198612571">Nächster Titel</translation>
 <translation id="4165986682804962316">Website-Einstellungen</translation>
+<translation id="4200726100658658164">Standorteinstellungen öffnen</translation>
 <translation id="4226663524361240545">Bei Benachrichtigungen kann das Gerät vibrieren</translation>
 <translation id="4242533952199664413">Einstellungen öffnen</translation>
 <translation id="4259722352634471385">Die Navigation zu <ph name="URL" /> ist blockiert.</translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Alle Websites</translation>
 <translation id="6320088164292336938">Vibrieren</translation>
 <translation id="6388207532828177975">Löschen &amp; zurücksetzen</translation>
+<translation id="6423924377271166037">Cookies löschen</translation>
 <translation id="6439114592976064011">Websites daran hindern, mein Virtual-Reality-Gerät und meine Virtual-Reality-Daten zu verwenden</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6527303717912515753">Teilen</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Zurück navigieren</translation>
 <translation id="8444433999583714703">Um <ph name="APP_NAME" /> Zugriff auf Ihren Standort zu gewähren, müssen Sie die Standortberechtigung auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
 <translation id="8447861592752582886">Zugriffsberechtigung auf Gerät widerrufen</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 verwendeter Cookie}other{# verwendete Cookies}}</translation>
 <translation id="8463851957836045671">Website ist schnell</translation>
 <translation id="851751545965956758">Verhindern, dass Websites eine Verbindung zu Geräten herstellen</translation>
 <translation id="857943718398505171">Zugelassen (empfohlen)</translation>

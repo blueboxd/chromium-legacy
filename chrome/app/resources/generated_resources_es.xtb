@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Solo cifrar</translation>
 <translation id="1038462104119736705">Se recomienda un mínimo de <ph name="INSTALL_SIZE" /> de espacio para Linux. Para liberar espacio, elimina archivos de tu dispositivo.</translation>
 <translation id="1039337018183941703">El archivo no es válido o está dañado</translation>
+<translation id="104086161873270383">Nuevo perfil</translation>
 <translation id="1041175011127912238">La página no responde</translation>
 <translation id="1041263367839475438">Dispositivos disponibles</translation>
 <translation id="1042174272890264476">El ordenador también incluye la biblioteca RLZ de <ph name="SHORT_PRODUCT_NAME" />. RLZ asigna una etiqueta identificable, no exclusiva y no personal para medir las búsquedas y el uso de <ph name="SHORT_PRODUCT_NAME" /> derivados de una determinada campaña promocional. Estas etiquetas aparecen a veces en las consultas de la Búsqueda de Google realizadas en <ph name="PRODUCT_NAME" />.</translation>
@@ -104,6 +105,7 @@
 <translation id="1124772482545689468">Usuario</translation>
 <translation id="1125550662859510761">Resolución de <ph name="WIDTH" />x<ph name="HEIGHT" /> (nativa)</translation>
 <translation id="1126809382673880764">No te protege frente a descargas, extensiones ni sitios web peligrosos. Seguirás disfrutando de protección con la función Navegación Segura, si está disponible, en otros servicios de Google, como Gmail y la Búsqueda.</translation>
+<translation id="112752777279960360">Para configurar por primera vez un teléfono Android como llave de seguridad de este ordenador, abre Chrome en tu teléfono y ve a Configuración &gt; Contraseñas &gt; Usar teléfono como llave de seguridad. A continuación, toca Conectar nuevo dispositivo y escanea este código QR.</translation>
 <translation id="1128109161498068552">No permitir que ningún sitio utilice mensajes exclusivos del sistema para acceder a los dispositivos MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Editar motor de búsqueda</translation>
@@ -253,6 +255,7 @@
 <translation id="1306606229401759371">Cambiar configuración</translation>
 <translation id="1307165550267142340">Se ha creado el PIN</translation>
 <translation id="1307559529304613120">¡Vaya! El sistema no ha podido almacenar el token de acceso a la API a largo plazo para este dispositivo.</translation>
+<translation id="1313162974556054106">Nombre del dispositivo</translation>
 <translation id="1313405956111467313">Configuración de proxy automática</translation>
 <translation id="131364520783682672">Bloq Mayús</translation>
 <translation id="1313660246522271310">Se cerrarán tus sesiones en todos los sitios web, incluidas las que estén en pestañas abiertas</translation>
@@ -509,6 +512,7 @@
 <translation id="1622054403950683339">Olvidar red Wi-Fi</translation>
 <translation id="1623132449929929218">Las imágenes no están disponibles en este momento. Vuelve a conectarte a Internet para ver colecciones de fondos de pantalla.</translation>
 <translation id="1623723619460186680">Reducción de luz azul</translation>
+<translation id="1624012933569991823">Configuración</translation>
 <translation id="1627276047960621195">Descriptores de archivo</translation>
 <translation id="1627408615528139100">Ya se ha descargado</translation>
 <translation id="1628948239858170093">¿Analizar archivo antes de abrirlo?</translation>
@@ -702,7 +706,6 @@
 <translation id="184273675144259287">Sustituye tus aplicaciones y archivos de Linux por una copia de seguridad anterior</translation>
 <translation id="1842766183094193446">¿Seguro que quieres habilitar el modo de demostración?</translation>
 <translation id="1846308012215045257">Pulsa la tecla Ctrl y haz clic para ejecutar <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">Grupo <ph name="GROUP_NAME" />: <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Habilitar modo ambiente</translation>
 <translation id="1849186935225320012">Esta página tiene un control absoluto de los dispositivos MIDI.</translation>
 <translation id="1850508293116537636">Girar a la &amp;derecha</translation>
@@ -745,6 +748,7 @@
 <translation id="1887850431809612466">Revisión de hardware</translation>
 <translation id="1888523338879380247">{0,plural, =1{Último día para actualizar el dispositivo}other{Actualizar dispositivo dentro de # días}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783">Recibiendo <ph name="ATTACHMENTS" /> de <ph name="DEVICE_NAME" /></translation>
 <translation id="189210018541388520">Abrir en pantalla completa</translation>
 <translation id="1892341345406963517">Hola, <ph name="PARENT_NAME" />:</translation>
 <translation id="189358972401248634">Otros idiomas</translation>
@@ -1718,6 +1722,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3103941660000130485">No se ha podido actualizar Linux</translation>
 <translation id="3105796011181310544">¿Cambiar de nuevo a Google?</translation>
 <translation id="310671807099593501">El sitio web está usando el Bluetooth</translation>
+<translation id="3109724472072898302">Contraído</translation>
 <translation id="3115147772012638511">Esperando caché...</translation>
 <translation id="3115580024857770654">Ocultar todo</translation>
 <translation id="3116968597797150452">Perfil del certificado</translation>
@@ -1785,7 +1790,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3192947282887913208">Archivos de audio</translation>
 <translation id="3199127022143353223">Servidores</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome te recomienda que compruebes esta contraseña ahora}other{Chrome te recomienda que compruebes estas contraseñas ahora}}</translation>
-<translation id="3200941271596533635">Activar/Desactivar modo de lectura</translation>
 <translation id="3201422919974259695">Los dispositivos USB disponibles se mostrarán aquí.</translation>
 <translation id="3202131003361292969">Ruta</translation>
 <translation id="3202173864863109533">El audio de esta pestaña se está silenciando.</translation>
@@ -1817,6 +1821,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3253225298092156258">No disponible</translation>
 <translation id="3253448572569133955">Cuenta desconocida</translation>
 <translation id="3254516606912442756">Se ha inhabilitado la detección automática de la zona horaria</translation>
+<translation id="3254715652085014625">En tu teléfono Android, abre Chrome y ve a Configuración &gt; Contraseñas &gt; Usar teléfono como llave de seguridad. Después, sigue las instrucciones que se indican.</translation>
 <translation id="3255355328033513170">Se eliminarán todos los datos guardados por <ph name="SITE_GROUP_NAME" /> y los sitios web que contenga, incluidas las cookies. Se cerrarán tus sesiones en esos sitios web, incluidas las que están en pestañas abiertas.</translation>
 <translation id="3259723213051400722">Vuelve a intentarlo.</translation>
 <translation id="3264544094376351444">Fuente Sans-serif</translation>
@@ -3491,6 +3496,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5390677308841849479">Rojo oscuro y naranja</translation>
 <translation id="5390743329570580756">Enviar para</translation>
 <translation id="5397794290049113714">Tú</translation>
+<translation id="5398497406011404839">Marcadores ocultos</translation>
 <translation id="5398572795982417028">La referencia de página está fuera de los límites admitidos, el límite es <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Anuncios bloqueados</translation>
 <translation id="5402815541704507626">Descargar la actualización con datos móviles</translation>
@@ -3576,6 +3582,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5496587651328244253">Organizar</translation>
 <translation id="5497251278400702716">Este archivo</translation>
 <translation id="5499313591153584299">Este archivo puede ser dañino para tu ordenador.</translation>
+<translation id="5499453227627332024">Hay una actualización disponible para tu contenedor de Linux. También puedes actualizarlo más tarde en la aplicación Ajustes.</translation>
 <translation id="5500709606820808700">La comprobación de seguridad se ha ejecutado hoy</translation>
 <translation id="5502500733115278303">Importado desde Firefox</translation>
 <translation id="5503982651688210506">Permitir que <ph name="HOST" /> siga usando y moviendo tu cámara y usando tu micrófono</translation>
@@ -4243,6 +4250,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6322653941595359182">Envía y recibe mensajes de texto desde tu Chromebook</translation>
 <translation id="6324916366299863871">Editar acceso directo</translation>
 <translation id="6325191661371220117">Inhabilitar inicio automático</translation>
+<translation id="6325525973963619867">Se ha producido un error.</translation>
 <translation id="6326175484149238433">Desinstalar de Chrome</translation>
 <translation id="6326855256003666642">Número de actividades en curso</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> necesita que actualices este dispositivo antes de la fecha límite.</translation>
@@ -4560,6 +4568,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6758056191028427665">Envíanos tu opinión sobre nuestro servicio.</translation>
 <translation id="6759193508432371551">Restablecer estado de fábrica</translation>
 <translation id="6762833852331690540">Activado</translation>
+<translation id="676560328519657314">Tus métodos de pago en Google Pay</translation>
 <translation id="6767566652486411142">Elegir otro idioma...</translation>
 <translation id="6767639283522617719">No se puede vincular el dominio. Comprueba que la configuración de la unidad organizativa sea correcta.</translation>
 <translation id="6769557323306147204"><ph name="ORGANIZATION_NAME" /> recomienda que actualices este dispositivo</translation>
@@ -4732,6 +4741,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6972553992270299730"><ph name="ORIGIN" /> no puede abrir los archivos de esta carpeta porque son archivos del sistema</translation>
 <translation id="6972629891077993081">Dispositivos HID</translation>
 <translation id="6972754398087986839">Empezar</translation>
+<translation id="6972887130317925583">Contraseña vulnerada cambiada correctamente. Comprueba tus contraseñas en cualquier momento en <ph name="SETTINGS" />.</translation>
 <translation id="6973611239564315524">Actualización a Debian 10 (Buster) disponible</translation>
 <translation id="6974609594866392343">Modo de demostración sin conexión</translation>
 <translation id="6977381486153291903">Revisión del firmware</translation>
@@ -4843,7 +4853,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7099337801055912064">No se pueden cargar archivos PPD grandes. El tamaño máximo es 250 kB.</translation>
 <translation id="7102687220333134671">Las actualizaciones automáticas están activadas</translation>
 <translation id="7102832101143475489">Se ha agotado el tiempo de espera de la solicitud</translation>
-<translation id="7102928824073746774">Grupo sin nombre: <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Preferencias de USB</translation>
 <translation id="710640343305609397">Abrir configuración de red</translation>
 <translation id="7108338896283013870">Ocultar</translation>
@@ -4919,6 +4928,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="720110658997053098">Mantener este dispositivo en modo kiosco de forma permanente</translation>
 <translation id="7201118060536064622">Se ha eliminado "<ph name="DELETED_ITEM_NAME" />"</translation>
 <translation id="7201420661433230412">Ver archivos</translation>
+<translation id="7203150201908454328">Ampliado</translation>
 <translation id="7203826966018112936">Añadir una cuenta de centro educativo a un perfil permite iniciar sesión fácilmente en sitios web y extensiones como alumno a la vez que sigue aplicándose el control parental. Esta acción no da acceso al menor a marcadores, contraseñas u otros datos del navegador sincronizados con la cuenta de centro educativo.&lt;br&gt;&lt;br&gt;
     Si tu hijo/a usa un Chromebook en su centro educativo y quieres replicar la experiencia escolar en casa para asegurarte de que tenga acceso a todo el material necesario, cierra la sesión de esta cuenta de Family Link e inicia sesión en la cuenta de centro educativo en la página de cuentas de Chrome OS (ten en cuenta que no se aplicará el control parental que hayas configurado en Family Link).&lt;br&gt;&lt;br&gt;
     Si tu hijo/a no usa un Chromebook en su centro educativo, o si prefieres gestionar su experiencia en casa a través de Family Link, haz clic en el botón Siguiente a continuación para añadir una cuenta de centro educativo a este perfil.</translation>
@@ -5314,7 +5324,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7704521324619958564">Abrir Play Store</translation>
 <translation id="7705276765467986571">No se ha podido cargar el modelo de marcador.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Activar/Desactivar modo de lectura</translation>
 <translation id="7707108266051544351">Este sitio web no tiene permiso para usar los sensores de movimiento.</translation>
 <translation id="7707922173985738739">Se utilizarán datos móviles</translation>
 <translation id="7709152031285164251">Error: <ph name="INTERRUPT_REASON" /></translation>
@@ -5591,6 +5600,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Se ha editado el acceso directo</translation>
 <translation id="8018313076035239964">Controla la información que pueden utilizar los sitios web y el contenido que pueden mostrarte</translation>
+<translation id="8022688469248132790">Revisar detalles del error</translation>
 <translation id="8023801379949507775">Actualizar extensiones ahora</translation>
 <translation id="8026334261755873520">Borrar datos de navegación</translation>
 <translation id="8028060951694135607">Recuperación de claves de Microsoft</translation>
@@ -6530,6 +6540,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="9180380851667544951">El sitio web puede compartir tu pantalla</translation>
 <translation id="9188732951356337132">Enviar datos de uso y diagnóstico. Este dispositivo envía automáticamente a Google datos de diagnóstico, del dispositivo y del uso de las aplicaciones. Los datos no se usarán para identificar a tu hijo, sino para aumentar la estabilidad de las aplicaciones y del sistema y realizar otras mejoras. Parte de los datos recogidos también ayudarán a las aplicaciones y los colaboradores de Google, como los desarrolladores de Android. Si la opción Actividad en la Web y en Aplicaciones Adicional está activada, es posible que estos datos se guarden en la cuenta de Google de tu hijo. <ph name="BEGIN_LINK2" />Más información<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + Clave precompartida</translation>
+<translation id="9198090666959937775">Usar un teléfono Android como llave de seguridad</translation>
 <translation id="920045321358709304">Buscar con <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Se borrarán todos los datos offline</translation>
 <translation id="9201220332032049474">Opciones de bloqueo de pantalla</translation>

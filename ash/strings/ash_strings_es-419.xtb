@@ -98,6 +98,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1995660704900986789">Apagar</translation>
 <translation id="2012624427112548395">Ctrl+Buscar+H</translation>
 <translation id="2016340657076538683">Escribe un mensaje</translation>
+<translation id="2018630726571919839">Cuéntame un chiste</translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2067602449040652523">Brillo del teclado</translation>
 <translation id="209965399369889474">Sin conexión a la red</translation>
@@ -125,6 +126,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="2354174487190027830">Activación de <ph name="NAME" /></translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2365393535144473978">Si habilitas los datos móviles, se habilitará Bluetooth.</translation>
+<translation id="2369165858548251131">"Hola" en chino</translation>
 <translation id="2390318262976603432">Configuración regional</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Actualización disponible</translation>
@@ -142,6 +144,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="256712445991462162">la lupa con vista acoplada</translation>
 <translation id="2575685495496069081">Se inhabilitó el acceso múltiple</translation>
 <translation id="2582112259361606227">Reiniciar para actualizar</translation>
+<translation id="2595239820337756193">5 km en millas</translation>
 <translation id="2617342710774726426">La tarjeta SIM está bloqueada</translation>
 <translation id="2621713457727696555">Bloqueada</translation>
 <translation id="2653659639078652383">Enviar</translation>
@@ -195,6 +198,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="3154351730702813399">Es posible que el administrador de dispositivos supervise tu actividad de navegación.</translation>
 <translation id="3181441307743005334">El reinicio puede tardar unos minutos</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectado a un dispositivo}other{Conectado a # dispositivos}}</translation>
+<translation id="320207200541803018">Establecer temporizador</translation>
 <translation id="3203405173652969239">Se habilitó la accesibilidad mejorada</translation>
 <translation id="3207953481422525583">Configuración del usuario</translation>
 <translation id="3217205077783620295">El volumen está activado. Si lo desactivas, se silenciará.</translation>
@@ -207,6 +211,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> podrá acceder más tarde.</translation>
 <translation id="3321628682574733415">Código parental incorrecto</translation>
 <translation id="332587331255250389">Reemplaza la batería</translation>
+<translation id="334252345105450327">Toma una captura de pantalla</translation>
 <translation id="3351879221545518001">Estás transmitiendo la pantalla.</translation>
 <translation id="3364721542077212959">Herramientas de la pluma stylus</translation>
 <translation id="3368922792935385530">Conectado</translation>
@@ -239,6 +244,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="3631369015426612114">Permitir notificaciones de las siguientes fuentes</translation>
 <translation id="3638400994746983214">Activa o desactiva la pantalla de privacidad. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" />, usuario administrado</translation>
+<translation id="3702846122927433391">Población de Nigeria</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Captura parcial de pantalla</translation>
 <translation id="371370241367527062">Micrófono delantero</translation>
@@ -520,6 +526,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7165278925115064263">Alt+mayúscula+K</translation>
 <translation id="7168224885072002358">Se revertirá a la resolución anterior en <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="7188494361780961876">El menú se movió a la esquina superior izquierda de la pantalla.</translation>
+<translation id="7189412385142492784">A qué distancia está Venus</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Debes reiniciar esta Chromebook para aplicar una actualización. Este proceso puede tardar 1 minuto.</translation>
 <translation id="7256634071279256947">Micrófono posterior</translation>
 <translation id="726276584504105859">Arrastra hasta aquí para usar la pantalla dividida</translation>
@@ -646,6 +653,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8649101189709089199">Seleccionar para pronunciar</translation>
 <translation id="8652175077544655965">Cerrar configuración</translation>
 <translation id="8653151467777939995">Mostrar la configuración de las notificaciones: Están activadas</translation>
+<translation id="8660331759611631213">Raíz cuadrada de 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Mostrar la lista de redes: <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

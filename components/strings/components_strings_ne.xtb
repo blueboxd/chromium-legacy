@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ne">
 <translation id="1008557486741366299">अहिले होइन</translation>
+<translation id="100957008357583611">यो वेबसाइटलाई आफ्नो यन्त्रको स्थान प्रयोग गर्न दिने हो?</translation>
 <translation id="1010200102790553230">पृष्ठ पछि लोड गर्नुहोस्</translation>
 <translation id="1015730422737071372">थप विवरणहरू उपलब्ध गराउनुहोस्</translation>
 <translation id="1019413721762100891">निष्क्रिय छ</translation>
@@ -39,7 +40,6 @@
 <translation id="1131264053432022307">तपाईंले प्रतिलिपि गर्नुभएको छवि</translation>
 <translation id="1150979032973867961">यो सर्भर हो भनेर प्रमाणित गर्न सकेन <ph name="DOMAIN" />; यसको सुरक्षा प्रमाणपत्रलाई तपाईंको कम्प्युटरको अपरेटिङ सिस्टमले विश्वास गरेन। यो एक गलत कन्फिगुरेसन वा तपाईंको जडान अवरोध गर्न खोज्ने आक्रमणकारीको हुनसक्छ।</translation>
 <translation id="1151972924205500581">पासवर्ड आवश्यक छ</translation>
-<translation id="1152921474424827756"><ph name="URL" /> को एक <ph name="BEGIN_LINK" />क्यास्ड प्रतिलिपि<ph name="END_LINK" /> पहुँच गर्नुहोस्</translation>
 <translation id="1156303062776767266">तपाईं स्थानीय वा साझा फाइल हेर्दै हुनुहुन्छ</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ले अप्रत्याशित रूपमा जडान बन्द गर्यो।</translation>
 <translation id="115926840831309955">आफ्नो CVC जाँच गरी फेरि प्रयास गर्नुहोस् वा म्याद सकिने मिति अपडेट गर्नुहोस्</translation>
@@ -246,7 +246,6 @@
 <translation id="1919345977826869612">विज्ञापनहरू</translation>
 <translation id="1919367280705858090">निर्दिष्ट त्रुटिसम्बन्धी सन्देशमार्फत मद्दत प्राप्त गर्नुहोस्।</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{कुनै पनि होइन}=1{१ साइट}other{# साइटहरू}}</translation>
-<translation id="194030505837763158"><ph name="LINK" /> मा जानुहोस्</translation>
 <translation id="1945968466830820669">तपाईं आफ्नो सङ्गठनको खातामाथिको पहुँच गुमाउन सक्नुहुन्छ वा तपाईंको पहिचान चोरी हुन सक्छ। Chromium तपाईंलाई आफ्नो पासवर्ड अहिले नै परिवर्तन गर्न सिफारिस गर्छ।</translation>
 <translation id="1947454675006758438">सिरानको दायाँपट्टि स्टिच</translation>
 <translation id="1959001866257244765">Google लाई आफूले हेर्ने केही पृष्ठका <ph name="BEGIN_WHITEPAPER_LINK" />URL, प्रणालीसम्बन्धी निश्चित जानकारी र पृष्ठका केही सामग्रीहरू<ph name="END_WHITEPAPER_LINK" /> पठाएर वेब प्रयोग गर्ने सम्पूर्ण प्रयोगकर्ताहरूलाई झन् सुरक्षित राख्न मद्दत गर्नुहोस्। <ph name="BEGIN_PRIVACY_PAGE_LINK" />गोपनीयता नीति<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -268,7 +267,6 @@
 <translation id="2003775180883135320">सिरानमा चार प्वाल</translation>
 <translation id="2025115093177348061">अग्मेन्टेड रियालिटी</translation>
 <translation id="2025186561304664664">प्रोक्सीलाई स्वत: कन्फिगरमा सेट गरिएको छ।</translation>
-<translation id="2030481566774242610">के तपाइँले <ph name="LINK" /> भन्न चाहनुभएको हो?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />प्रोक्सी र फायरवाललाई जाँच गर्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">ट्रे ७</translation>
 <translation id="204357726431741734">आफ्नो Google खातामा सुरक्षित गरिएका पासवर्डहरू प्रयोग गर्न साइन इन गर्नुहोस्</translation>
@@ -1042,6 +1040,7 @@
 <translation id="5308380583665731573">जडान गर्नुहोस्</translation>
 <translation id="5308689395849655368">क्र्यास रिपोर्ट अक्षम छ।</translation>
 <translation id="5314967030527622926">पुस्तिका निर्माता</translation>
+<translation id="5316812925700871227">घडीको विपरीत दिशामा घुमाउनुहोस्</translation>
 <translation id="5317780077021120954">बचत गर्नुहोस्</translation>
 <translation id="5323105697514565458"><ph name="NUM_MATCHES" /> मध्ये <ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /></translation>
 <translation id="5324080437450482387">सम्पर्कसम्बन्धी जानकारी छनौट गर्नुहोस्</translation>
@@ -1065,7 +1064,6 @@
 <translation id="5421136146218899937">ब्राउजिङ डाटा खाली गर्नुहोस्...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> तपाईंलाई सूचनाहरू पठाउन चाहन्छ</translation>
 <translation id="5430298929874300616">पुस्तकचिनो हटाउनुहोस्</translation>
-<translation id="5431657950005405462">तपाईंको फाइल फेला परेन</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />":<ph name="ERROR" /> मा स्किमा रुजू त्रुटि</translation>
 <translation id="5443468954631487277">विपरीत क्रम तर माथितिर फर्काएर</translation>
 <translation id="5447765697759493033">यो साइटलाई अनुवाद गरिने छैन</translation>
@@ -1174,6 +1172,7 @@
 <translation id="5869405914158311789">यो साइटमा पहुँच गर्न सकिँदैन</translation>
 <translation id="5869522115854928033">बचत गरिएका पासवर्डहरू</translation>
 <translation id="5887400589839399685">कार्ड सुरक्षित गरियो</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> का अनुसार तपाईंले आफ्ना डेटा ब्याकअप गरी यो यन्त्र फिर्ता गर्नु पर्ने हुन्छ।</translation>
 <translation id="5895138241574237353">पुन: शुरू गर्नुहोस्</translation>
 <translation id="5895187275912066135">मा प्रकाशित</translation>
 <translation id="5901630391730855834">पहेँलो</translation>
@@ -1438,7 +1437,6 @@
 <translation id="7083258188081898530">ट्रे ९</translation>
 <translation id="7086090958708083563">प्रयोगकर्ताले अनुरोध गरेको अपलोड</translation>
 <translation id="7087282848513945231">काउन्टी</translation>
-<translation id="7090678807593890770"><ph name="LINK" /> बारे Google मा खोज्नुहोस्</translation>
 <translation id="7108338896283013870">लुकाउनुहोस्</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> तपाईंको क्यामेरा प्रयोग गर्न चाहन्छ</translation>
 <translation id="7108819624672055576">कुनै विस्तारले अनुमति दिएको</translation>
@@ -1874,7 +1872,6 @@
 <translation id="893332455753468063">नाम थप्नुहोस्</translation>
 <translation id="8943282376843390568">हल्का पहेँलो</translation>
 <translation id="8957210676456822347">क्याप्टिभ पोर्टल प्राधिकरण</translation>
-<translation id="8958582951173503172">Chrome Enterprise Connectors ले सुरक्षासम्बन्धी घटनाहरू फ्ल्याग गर्दा उक्त घटनासँग सम्बन्धित डेटा तपाईंका एड्मिन‌लाई पठाइन्छ। यो डेटाअन्तर्गत तपाईंले Chrome मा हेर्नुभएका पृष्ठका URL, फाइलका नाम वा मेटाडेटा तथा तपाईंले आफ्नो यन्त्र र Chrome मा साइन इन गर्न प्रयोग गर्ने युजरनेम समावेश हुन सक्छन्।</translation>
 <translation id="8962950042226115166">शङ्कास्पद साइट</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />सुझावहरू:<ph name="MARKUP_2" />तपाईँसँग डेटा जडान रहेको निश्चित गर्नुहोस्<ph name="MARKUP_3" />यो वेबपृष्ठ पछि पुन:लोड गर्नुहोस्<ph name="MARKUP_4" />तपाईँले प्रविष्ट गर्नुभएको ठेगानाको जाँच गर्नुहोस्<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">कार्ड सुरक्षित गर्नुहोस्</translation>

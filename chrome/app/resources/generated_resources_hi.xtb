@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">केवल कूटलेखन</translation>
 <translation id="1038462104119736705">Linux के लिए कम से कम <ph name="INSTALL_SIZE" /> खाली जगह का सुझाव दिया जाता है. खाली जगह बढ़ाने के लिए अपने डिवाइस से फ़ाइलें मिटाएं.</translation>
 <translation id="1039337018183941703">अमान्‍य या खराब फ़ाइल</translation>
+<translation id="104086161873270383">नई प्रोफ़ाइल</translation>
 <translation id="1041175011127912238">इस पेज से जवाब नहीं मिल रहा है</translation>
 <translation id="1041263367839475438">उपलब्ध डिवाइस</translation>
 <translation id="1042174272890264476">आपके कंप्यूटर में पहले से ही <ph name="SHORT_PRODUCT_NAME" /> की RLZ लाइब्रेरी होती है. किसी खास प्रचार कैंपेन में इस्तेमाल हुई खोजों और <ph name="SHORT_PRODUCT_NAME" /> के इस्तेमाल को मापने के लिए, RLZ एक बिना-विशिष्ट, बिना निजी तौर वाला टैग तय करता है. कभी-कभी ये लेबल <ph name="PRODUCT_NAME" /> में 'Google सर्च' क्वेरी में दिखाई देते हैं.</translation>
@@ -232,6 +233,7 @@
 <translation id="1274997165432133392">कुकी और साइट का अन्य डेटा</translation>
 <translation id="1275718070701477396">चयनित</translation>
 <translation id="1276994519141842946"><ph name="APP_NAME" /> अनइंस्टॉल नहीं हो सका</translation>
+<translation id="127946606521051357">आस-पास मौजूद डिवाइस डेटा शेयर कर रहा है</translation>
 <translation id="1280820357415527819">मोबाइल नेटवर्क खोजे जा रहे हैं</translation>
 <translation id="1280965841156951489">फ़ाइलों में बदलाव करें</translation>
 <translation id="1285320974508926690">कभी भी इस साइट का अनुवाद न करें</translation>
@@ -254,6 +256,7 @@
 <translation id="1306606229401759371">सेटिंग बदलें</translation>
 <translation id="1307165550267142340">आपका पिन बनाया गया था</translation>
 <translation id="1307559529304613120">ओह!  सिस्टम इस डिवाइस के लिए, लंबे समय तक चलने वाला API (एपीआई) एक्सेस टोकन सेव नहीं कर सका.</translation>
+<translation id="1313162974556054106">डिवाइस का नाम</translation>
 <translation id="1313405956111467313">स्‍वचालित प्रॉक्सी कॉन्फ़िगरेशन</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">आप सभी साइटों और खुले हुए टैब से साइन आउट हो जाएंगे</translation>
@@ -704,7 +707,6 @@
 <translation id="184273675144259287">अपने Linux ऐप्लिकेशन और फ़ाइलों को पिछले बैकअप से बदलें</translation>
 <translation id="1842766183094193446">क्या आप वाकई 'डेमो मोड' चालू करना चाहते हैं?</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" /> को चलाने के लिए कंट्रोल दबाए रखते हुए क्लिक करें</translation>
-<translation id="1846880379134204029">ग्रुप <ph name="GROUP_NAME" /> - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">'हमेशा चालू स्क्रीन मोड' चालू करें</translation>
 <translation id="1849186935225320012">इस पेज के पास MIDI डिवाइस का पूरा नियंत्रण है.</translation>
 <translation id="1850508293116537636">&amp;घड़ी की दिशा में घुमाएं</translation>
@@ -1220,6 +1222,7 @@
 <translation id="2489918096470125693">&amp;फ़ोल्डर जोड़ें...</translation>
 <translation id="2490481887078769936">'<ph name="FILE_NAME" />' को सूची से हटाया गया</translation>
 <translation id="249113932447298600">क्षमा करें, डिवाइस <ph name="DEVICE_LABEL" /> इस समय समर्थित नहीं है.</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> आपके साथ <ph name="ATTACHMENTS" /> शेयर कर रहा है.</translation>
 <translation id="2492461744635776704">अनुरोध किए गए प्रमाणपत्र पर हस्ताक्षर की तैयारी हो रही है</translation>
 <translation id="249303669840926644">पंजीकरण पूरा नहीं किया जा सका</translation>
 <translation id="2495777824269688114">ज़्यादा सुविधाएं खोजें या उत्तर पाएं. सहायता के लिए “?” चुनें.</translation>
@@ -1721,6 +1724,7 @@
 <translation id="3103941660000130485">Linux को बेहतर बनाने में गड़बड़ी हुई</translation>
 <translation id="3105796011181310544">इसे बदलकर फिर से Google करें?</translation>
 <translation id="310671807099593501">साइट ब्लूटूथ का इस्तेमाल कर रही है</translation>
+<translation id="3109724472072898302">संक्षिप्त</translation>
 <translation id="3115147772012638511">कैश मेमोरी का इंतज़ार कर रहे हैं...</translation>
 <translation id="3115580024857770654">सभी छिपाएं</translation>
 <translation id="3116968597797150452">प्रमाणपत्र वाला प्रोफ़ाइल</translation>
@@ -1788,7 +1792,6 @@
 <translation id="3192947282887913208">ऑडियो फ़ाइलें</translation>
 <translation id="3199127022143353223">सर्वर</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome अभी इस पासवर्ड की जांच करने का सुझाव देता है}one{Chrome अभी इस पासवर्ड की जांच करने का सुझाव देता है}other{Chrome अभी इन पासवर्ड की जांच करने का सुझाव देता है}}</translation>
-<translation id="3200941271596533635">रीडर मोड टॉगल करें</translation>
 <translation id="3201422919974259695">उपलब्ध यूएसबी डिवाइस यहां दिखाई देंगे.</translation>
 <translation id="3202131003361292969">पाथ</translation>
 <translation id="3202173864863109533">इस टैब का ऑडियो म्‍यूट किया जा रहा है.</translation>
@@ -4150,6 +4153,7 @@
 <translation id="6212039847102026977">बेहतर नेटवर्क प्रॉपर्टी दिखाएं</translation>
 <translation id="6212168817037875041">डिसप्ले बंद करें</translation>
 <translation id="6212752530110374741">लिंक ईमेल करें</translation>
+<translation id="6213230117190778270">पाएं</translation>
 <translation id="6216696360484424239">अपने आप साइन इन करें</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> ऑफ़लाइन है. इंटरनेट से कनेक्ट करें और फिर से कोशिश करें.</translation>
 <translation id="6220413761270491930">एक्सटेंशन लोड करने में गड़बड़ी</translation>
@@ -4206,7 +4210,6 @@
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />सिस्टम और ऐप्लिकेशन की जानकारी<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />मेट्रिक<ph name="END_LINK2" /> भेजें</translation>
 <translation id="6272643420381259437">प्लग इन को डाउनलोड करते समय एक गड़बड़ी (<ph name="ERROR" />) हुई थी</translation>
 <translation id="6273677812470008672">गुणवत्ता</translation>
-<translation id="6273979226236203550">आपका पासवर्ड इस डिवाइस और आपके Google खाते में सेव है. आप इनमें से किसे मिटाना चाहते हैं?</translation>
 <translation id="6277105963844135994">नेटवर्क समय खत्म</translation>
 <translation id="6277518330158259200">स्क्री&amp;नशॉट लें</translation>
 <translation id="6278057325678116358">GTK+ का उपयोग करें</translation>
@@ -4250,6 +4253,7 @@
 <translation id="6322653941595359182">अपने Chromebook से मैसेज भेजें और पाएं</translation>
 <translation id="6324916366299863871">शॉर्टकट में बदलाव करें</translation>
 <translation id="6325191661371220117">ऑटो-लॉन्च बंद करें</translation>
+<translation id="6325525973963619867">विफल</translation>
 <translation id="6326175484149238433">Chrome से नि‍कालें</translation>
 <translation id="6326855256003666642">कीपअलाइव की गणना</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> ने कहा है कि आप तय समय से पहले इस डिवाइस को अपडेट करें.</translation>
@@ -4277,6 +4281,7 @@
 <translation id="6362853299801475928">किसी समस्या की &amp;रिपोर्ट करें...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">परिवार और मित्रों को जोड़ें</translation>
+<translation id="6367985768157257101">क्या आप 'आस-पास शेयर करना' सुविधा की मदद से चीज़ें पाना चाहते हैं?</translation>
 <translation id="636850387210749493">एंटरप्राइज़ नामांकन</translation>
 <translation id="6370021412472292592">मेनिफ़ेस्‍ट लोड नहीं किया जा सका.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4852,7 +4857,6 @@
 <translation id="7099337801055912064">बड़ा पीपीडी लोड नहीं किया जा सकता. आकार 250 केबी से ज़्यादा नहीं होना चाहिए.</translation>
 <translation id="7102687220333134671">ऑटोमैटिक अपडेट चालू हैं</translation>
 <translation id="7102832101143475489">अनुरोध का समय खत्म हो गया</translation>
-<translation id="7102928824073746774">बिना नाम वाला ग्रुप - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">यूएसबी प्राथमिकताएं</translation>
 <translation id="710640343305609397">नेटवर्क सेटिंग खोलें</translation>
 <translation id="7108338896283013870">छुपाएं</translation>
@@ -4928,6 +4932,7 @@
 <translation id="720110658997053098">इस डिवाइस को हमेशा के लिए किओस्क मोड में रखें</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' मिटाया गया</translation>
 <translation id="7201420661433230412">फ़ाइलें देखें</translation>
+<translation id="7203150201908454328">विस्तृत</translation>
 <translation id="7203826966018112936">एक प्रोफ़ाइल से स्कूल वाले खाते को जोड़ने पर वेबसाइट और एक्सटेंशन पर साइन-इन करने में आसानी होगी. हालांकि, वे अब भी इसे 'माता-पिता के नियंत्रण में' सुविधा की मदद से ही चला सकेंगे. यह स्कूल वाले खाते के साथ सिंक किए गए बुकमार्क, पासवर्ड या दूसरे ब्राउज़र डेटा के लिए बच्चे को ऐक्सेस नहीं देता है.&lt;br&gt;&lt;br&gt;
     अगर आपका बच्चा स्कूल में Chromebook का इस्तेमाल करता है और आप घर बैठे स्क्रीन शेयर की मदद से यह पक्का करना चाहते हैं कि आपका बच्चा स्कूल के सभी ज़रूरी काम कर सकता है, तो कृपया इस Family Link खाते से साइन आउट करें. साथ ही, Chrome OS खातों के पेज से स्कूल खाते में साइन इन करें (ध्यान दें: Family Link की 'माता-पिता के नियंत्रण में' सुविधा लागू नहीं होगी).&lt;br&gt;&lt;br&gt;
     अगर आपका बच्चा स्कूल में Chromebook का इस्तेमाल नहीं करता है या अगर आप Family Link का इस्तेमाल करके अपने बच्चे के काम को घर पर प्रबंधित करना चाहते हैं, तो कृपया इस प्रोफ़ाइल में एक स्कूल वाला खाता जोड़ने के लिए, अगला बटन पर क्लिक करें.</translation>
@@ -5323,7 +5328,6 @@
 <translation id="7704521324619958564">Play स्टोर खोलें</translation>
 <translation id="7705276765467986571">बुकमार्क मॉडल लोड नहीं कर सका.</translation>
 <translation id="7705524343798198388">वीपीएन</translation>
-<translation id="7706963867324547089">रीडर मोड टॉगल करें</translation>
 <translation id="7707108266051544351">इस साइट को हलचल वाले सेंसर का इस्तेमाल करने से रोक दिया गया है.</translation>
 <translation id="7707922173985738739">मोबाइल डेटा का उपयोग करें</translation>
 <translation id="7709152031285164251">विफल - <ph name="INTERRUPT_REASON" /></translation>
@@ -6579,6 +6583,7 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">'पासफ़्रेज़' दर्ज करें</translation>
 <translation id="939736085109172342">नया फ़ोल्डर</translation>
+<translation id="941070664607309480">आपको दिखाई दे, इसके लिए क्लिक करें. ऐसा करने से आपके साथ डेटा शेयर किया जा सकेगा</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> एक Chrome टैब और ऑडियो शेयर कर रहा है.</translation>
 <translation id="945522503751344254">सुझाव भेजें</translation>
 <translation id="947329552760389097">&amp;एलिमेंट जाँचें</translation>

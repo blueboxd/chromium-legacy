@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">क्यामेरा</translation>
 <translation id="1647391597548383849">आफ्नो क्यामेरा पहुँच गर्नुहोस्</translation>
 <translation id="1660204651932907780">साइटहरूलाई आवाज प्ले गर्न अनुमति दिनुहोस् (सिफारिस गरिएको)</translation>
+<translation id="1677097821151855053">कुकी र साइटका अन्य डेटा तपाईंको जानकारी याद राख्न प्रयोग गरिन्छन्। जस्तै, कुकी र साइटका अन्य डेटा तपाईंलाई साइन इन गराउन वा तपाईंको चाखअनुसारका विज्ञापन देखाउन प्रयोग गरिन्छन्। सबै साइटका कुकीहरू व्यवस्थापन गर्न <ph name="BEGIN_LINK" />सेटिङ<ph name="END_LINK" />मा जानुहोस्।</translation>
 <translation id="1688867105868176567">साइटको डेटा खाली गर्ने हो?</translation>
 <translation id="169515064810179024">साइटहरूलाई चालसम्बन्धी सेन्सरहरूमाथि पहुँच राख्नबाट रोक्नुहोस्‌</translation>
 <translation id="1717218214683051432">चालसम्बन्धी सेन्सरहरू</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">कुनै खास साइटमा कुकीहरूलाई अनुमति दिनुहोस्।</translation>
 <translation id="4046123991198612571">अर्को ट्र्याक</translation>
 <translation id="4165986682804962316">साइट सेटिङहरू</translation>
+<translation id="4200726100658658164">स्थानसम्बन्धी सेटिङ खोल्नुहोस्</translation>
 <translation id="4226663524361240545">सूचनाहरूले गर्दा यन्त्र कम्पन गर्न सक्छ</translation>
 <translation id="4242533952199664413">सेटिङहरू खोल्नुहोस्</translation>
 <translation id="4259722352634471385">नेभिगेशन रोकियो: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">सबै साइटहरू</translation>
 <translation id="6320088164292336938">कम्पन</translation>
 <translation id="6388207532828177975">खाली गरेर रिसेट गर्नुहोस्</translation>
+<translation id="6423924377271166037">कुकीहरू मेटाउनुहोस्</translation>
 <translation id="6439114592976064011">साइटहरूलाई भर्चुअल रियालिटी चल्ने तपाईंको यन्त्र र त्यसमा भएको डेटा प्रयोग गर्न रोक लगाउनुहोस्</translation>
 <translation id="6447842834002726250">कुकीहरू</translation>
 <translation id="6527303717912515753">साझा गर्नुहोस्</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">पछाडि खोज्नुहोस्</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> लाई आफ्नो स्थान प्रयोग गर्न दिन <ph name="BEGIN_LINK" />Android का सेटिङ<ph name="END_LINK" />मा गई स्थानसम्बन्धी सेवा पनि अन गर्नुहोस्।</translation>
 <translation id="8447861592752582886">यन्त्र सम्बन्धी अनुमतिलाई उल्टाउनुहोस्</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{एउटा कुकी प्रयोग भइरहेको छ}other{# वटा कुकी प्रयोग भइरहेका छन्}}</translation>
 <translation id="8463851957836045671">साइट द्रूत छ</translation>
 <translation id="851751545965956758">साइटहरूलाई यन्त्रमा जडान गर्नबाट रोक लगाउनुहोस्</translation>
 <translation id="857943718398505171">(सिफारिस गरिएको) अनुमति दिएको</translation>

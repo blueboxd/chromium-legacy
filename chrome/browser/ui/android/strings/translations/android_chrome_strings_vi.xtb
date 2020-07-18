@@ -170,7 +170,6 @@ Nhấn vào từ bất kỳ để tìm kiếm. Để điều chỉnh nội dung 
 <translation id="2353636109065292463">Kiểm tra kết nối Internet</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
 <translation id="2369533728426058518">tab đang mở</translation>
-<translation id="2377295302146152376">Chrome không thể kiểm tra các bản cập nhật</translation>
 <translation id="2387895666653383613">Chia tỷ lệ văn bản</translation>
 <translation id="2394602618534698961">Các tệp bạn tải xuống sẽ xuất hiện ở đây</translation>
 <translation id="2407481962792080328">Khi bạn đăng nhập vào Tài khoản Google của mình, tính năng này sẽ được bật</translation>
@@ -259,7 +258,6 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Đã tắt vị trí; hãy bật vị trí trong mục <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Bạn có thể bật tính năng đồng bộ hóa bất cứ lúc nào trong phần cài đặt</translation>
-<translation id="3059710691562604940">Tính năng Duyệt web an toàn đang tắt. Bạn nên bật tính năng này trên Chrome.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> dấu trang}other{<ph name="BOOKMARKS_COUNT_MANY" /> dấu trang}}</translation>
 <translation id="3089395242580810162">Mở trong tab ẩn danh</translation>
 <translation id="3114012059975132928">Trình phát video</translation>
@@ -320,7 +318,6 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="3522247891732774234">Bản cập nhật có sẵn. Tùy chọn khác</translation>
 <translation id="3524138585025253783">Giao diện người dùng dành cho nhà phát triển</translation>
 <translation id="3527085408025491307">Thư mục</translation>
-<translation id="3533694711092285624">Bạn chưa lưu mật khẩu nào. Chrome có thể kiểm tra các mật khẩu của bạn khi bạn lưu các mật khẩu đó.</translation>
 <translation id="3542235761944717775">Còn <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">Tìm kiếm trong lịch sử duyệt web</translation>
 <translation id="3557336313807607643">Thêm vào danh bạ</translation>
@@ -570,6 +567,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5581519193887989363">Bạn luôn có thể chọn nội dung muốn đồng bộ hóa trong phần <ph name="BEGIN_LINK1" />cài đặt<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Chỉnh sửa địa chỉ</translation>
 <translation id="5599455543593328020">Chế độ ẩn danh</translation>
+<translation id="5620163320393916465">Bạn chưa lưu mật khẩu nào</translation>
 <translation id="5620928963363755975">Tìm tệp và trang của bạn trong Tài nguyên đã tải xuống từ nút Tùy chọn khác</translation>
 <translation id="5626134646977739690">Tên:</translation>
 <translation id="5639724618331995626">Cho phép tất cả trang web</translation>

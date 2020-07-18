@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">আপনার ইন্টারনেট কানেকশন ঠিক আছে কিনা সেটি দেখা হচ্ছে</translation>
 <translation id="2359808026110333948">চালিয়ে যান</translation>
 <translation id="2369533728426058518">খোলা ট্যাবগুলি</translation>
-<translation id="2377295302146152376">কোনও আপডেট আছে কিনা Chrome তা চেক করতে পারেনি</translation>
 <translation id="2387895666653383613">পাঠ্য স্কেলিং</translation>
 <translation id="2394602618534698961">আপনার ডাউনলোড করা ফাইল এখানে দেখানো হয়</translation>
 <translation id="2407481962792080328">আপনার Google অ্যাকাউন্টে সাইন-ইন করলে এই ফিচারটি চালু হয়ে যাবে</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />সহায়তা পান<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">লোকেশনটি বন্ধ, <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" /> থেকে এটি চালু করুন।</translation>
 <translation id="3058498974290601450">যেকোনও সময় সেটিংস থেকে আপনি সিঙ্ক চালু করতে পারেন</translation>
-<translation id="3059710691562604940">'Safe Browsing'-এর সুবিধা বন্ধ করা আছে। তবে Chrome আপনাকে এটি চালু রাখার জন্য সাজেস্ট করছে।</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" />টি বুকমার্ক}one{<ph name="BOOKMARKS_COUNT_MANY" />টি বুকমার্ক}other{<ph name="BOOKMARKS_COUNT_MANY" />টি বুকমার্ক}}</translation>
 <translation id="3089395242580810162">ছদ্মবেশী ট্যাবে খুলুন</translation>
 <translation id="3114012059975132928">ভিডিও প্লেয়ার</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">আপডেট উপলব্ধ। আরও বিকল্প</translation>
 <translation id="3524138585025253783">ডেভেলপার UI</translation>
 <translation id="3527085408025491307">ফোল্ডার</translation>
-<translation id="3533694711092285624">কোনও পাসওয়ার্ড সেভ করা নেই। আপনি পাসওয়ার্ড সেভ করলে Chrome সেটি চেক করতে পারবে।</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> কেবি available</translation>
 <translation id="3549657413697417275">আপনার ইতিহাস খুঁজুন</translation>
 <translation id="3557336313807607643">পরিচিতিতে যোগ করুন</translation>
@@ -572,6 +569,7 @@
 <translation id="5581519193887989363"><ph name="BEGIN_LINK1" />সেটিংসে<ph name="END_LINK1" /> কী সিঙ্ক করা হবে তা আপনি সবসময় বেছে নিতে পারেন।</translation>
 <translation id="5595485650161345191">ঠিকানা সম্পাদনা করুন</translation>
 <translation id="5599455543593328020">ছদ্মবেশী মোড</translation>
+<translation id="5620163320393916465">কোনও পাসওয়ার্ড সেভ করা নেই</translation>
 <translation id="5620928963363755975">আরও বিকল্প বোতামের ডাউনলোড বিকল্প থেকে আপনার সমস্ত ফাইল ও পৃষ্ঠাগুলি খুঁজে পান</translation>
 <translation id="5626134646977739690">নাম:</translation>
 <translation id="5639724618331995626">সমস্ত সাইটকে অনুমতি দিন</translation>

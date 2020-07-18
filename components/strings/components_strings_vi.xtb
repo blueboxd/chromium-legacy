@@ -40,7 +40,6 @@
 <translation id="1131264053432022307">Hình ảnh bạn đã sao chép</translation>
 <translation id="1150979032973867961">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành máy tính của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="1151972924205500581">Mật khẩu bắt buộc</translation>
-<translation id="1152921474424827756">Truy cập <ph name="BEGIN_LINK" />bản sao được lưu trong bộ nhớ đệm<ph name="END_LINK" /> của <ph name="URL" /></translation>
 <translation id="1156303062776767266">Bạn đang xem tệp trên máy hoặc tệp được chia sẻ</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> đã bất ngờ đóng kết nối.</translation>
 <translation id="115926840831309955">Hãy kiểm tra CVC của bạn rồi thử lại hoặc cập nhật ngày hết hạn</translation>
@@ -247,7 +246,6 @@
 <translation id="1919345977826869612">Quảng cáo</translation>
 <translation id="1919367280705858090">Nhận trợ giúp về thông báo lỗi cụ thể</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Không có}=1{1 trang web}other{# trang web}}</translation>
-<translation id="194030505837763158">Truy cập <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Bạn có thể mất quyền truy cập vào tài khoản của tổ chức mình hoặc bị đánh cắp danh tính. Chromium khuyên bạn nên thay đổi mật khẩu ngay bây giờ.</translation>
 <translation id="1947454675006758438">Dập ghim trên cùng bên phải</translation>
 <translation id="1959001866257244765">Giúp tăng cường khả năng bảo mật trên web cho mọi người bằng cách gửi cho Google <ph name="BEGIN_WHITEPAPER_LINK" />các URL của một số trang mà bạn truy cập, thông tin hệ thống có giới hạn và một số nội dung trang<ph name="END_WHITEPAPER_LINK" />. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Chính sách quyền riêng tư<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -269,7 +267,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="2003775180883135320">Đục 4 lỗ trên cùng</translation>
 <translation id="2025115093177348061">Thực tế tăng cường</translation>
 <translation id="2025186561304664664">Proxy được đặt thành định cấu hình tự động.</translation>
-<translation id="2030481566774242610">Ý của bạn là <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kiểm tra proxy và tường lửa<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Khay 7</translation>
 <translation id="204357726431741734">Đăng nhập để sử dụng mật khẩu đã lưu trong Tài khoản Google của bạn</translation>
@@ -1047,6 +1044,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="5308380583665731573">Kết nối</translation>
 <translation id="5308689395849655368">Báo cáo sự cố bị tắt.</translation>
 <translation id="5314967030527622926">Máy tạo cuốn sách nhỏ</translation>
+<translation id="5316812925700871227">Xoay ngược chiều kim đồng hồ</translation>
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> / <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Chọn thông tin liên hệ</translation>
@@ -1070,7 +1068,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="5421136146218899937">Xóa dữ liệu duyệt web...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> muốn gửi thông báo cho bạn</translation>
 <translation id="5430298929874300616">Xóa dấu trang</translation>
-<translation id="5431657950005405462">Không tìm thấy tệp của bạn</translation>
 <translation id="5439770059721715174">Lỗi xác thực lược đồ tại "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Thứ tự đảo ngược hướng lên</translation>
 <translation id="5447765697759493033">Trang web này sẽ không được dịch</translation>
@@ -1444,7 +1441,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="7083258188081898530">Khay 9</translation>
 <translation id="7086090958708083563">Người dùng yêu cầu tải lên</translation>
 <translation id="7087282848513945231">Hạt</translation>
-<translation id="7090678807593890770">Tìm kiếm <ph name="LINK" /> trên Google</translation>
 <translation id="7108338896283013870">Ẩn</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> muốn sử dụng máy ảnh của bạn</translation>
 <translation id="7108819624672055576">Được một tiện ích cho phép</translation>
@@ -1881,7 +1877,6 @@ Thông tin chi tiết bổ sung:
 <translation id="893332455753468063">Thêm tên</translation>
 <translation id="8943282376843390568">Vàng chanh</translation>
 <translation id="8957210676456822347">Ủy quyền cổng bị khóa</translation>
-<translation id="8958582951173503172">Khi Chrome Enterprise Connectors gắn cờ các sự kiện bảo mật, quản trị viên của bạn sẽ nhận được dữ liệu liên quan đến sự kiện đó. Dữ liệu này có thể bao gồm URL của những trang bạn truy cập trong Chrome, tên tệp hoặc siêu dữ liệu, cũng như tên người dùng mà bạn sử dụng để đăng nhập vào thiết bị của bạn và Chrome.</translation>
 <translation id="8962950042226115166">Trang web đáng ngờ</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Đề xuất:<ph name="MARKUP_2" />Đảm bảo bạn có kết nối dữ liệu<ph name="MARKUP_3" />Tải lại trang web này sau<ph name="MARKUP_4" />Kiểm tra địa chỉ bạn đã nhập<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Lưu thẻ</translation>

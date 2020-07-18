@@ -170,7 +170,6 @@ Norėdami ieškoti, palieskite bet kurį žodį. Jei norite patikslinti paiešk�
 <translation id="2353636109065292463">Tikrinamas interneto ryšys</translation>
 <translation id="2359808026110333948">Tęskite</translation>
 <translation id="2369533728426058518">atidaryti skirtukus</translation>
-<translation id="2377295302146152376">„Chrome“ nepavyko patikrinti, ar yra naujinių</translation>
 <translation id="2387895666653383613">Teksto mastelio keitimas</translation>
 <translation id="2394602618534698961">Čia rodomi atsisiųsti failai</translation>
 <translation id="2407481962792080328">Prisijungus prie „Google“ paskyros, ši funkcija yra įjungta</translation>
@@ -259,7 +258,6 @@ Norėdami ieškoti, palieskite ir palaikykite bet kurį žodį. Jei norite patik
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Gaukite pagalbos<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Vieta išjungta; įjunkite <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Galite bet kada įjungti sinchronizavimą „Nustatymų“ skiltyje</translation>
-<translation id="3059710691562604940">Saugaus naršymo funkcija išjungta. „Chrome“ rekomenduoja ją įjungti.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> žymė}one{<ph name="BOOKMARKS_COUNT_MANY" /> žymė}few{<ph name="BOOKMARKS_COUNT_MANY" /> žymės}many{<ph name="BOOKMARKS_COUNT_MANY" /> žymės}other{<ph name="BOOKMARKS_COUNT_MANY" /> žymių}}</translation>
 <translation id="3089395242580810162">Atidaryti inkognito skirtuko lape</translation>
 <translation id="3114012059975132928">Vaizdo įrašų leistuvė</translation>
@@ -320,7 +318,6 @@ Norėdami ieškoti, palieskite ir palaikykite bet kurį žodį. Jei norite patik
 <translation id="3522247891732774234">Pasiekiamas naujinys. Daugiau parinkčių</translation>
 <translation id="3524138585025253783">Kūrėjo NS</translation>
 <translation id="3527085408025491307">Aplankas</translation>
-<translation id="3533694711092285624">Nėra išsaugotų slaptažodžių. „Chrome“ gali tikrinti jūsų slaptažodžius, kai juos išsaugote.</translation>
 <translation id="3542235761944717775">Pasiekiama <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">Ieškokite savo istorijoje</translation>
 <translation id="3557336313807607643">Pridėti prie kontaktų</translation>
@@ -360,6 +357,7 @@ Norėdami ieškoti, palieskite ir palaikykite bet kurį žodį. Jei norite patik
 <translation id="3892148308691398805">Kopijuoti tekstą</translation>
 <translation id="3894427358181296146">Aplanko pridėjimas</translation>
 <translation id="3895926599014793903">Priverstinai įgalinti mastelio keitimą</translation>
+<translation id="3909763690984331376">Saugos patikra <ph name="BEGIN_NEW" />Naujiena<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Ieškoma geriausio žiniatinklio turinio…</translation>
 <translation id="3927692899758076493">Be užraitų</translation>
 <translation id="3928666092801078803">Sujungti duomenis</translation>
@@ -570,6 +568,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5581519193887989363">Bet kada galite pasirinkti, ką norite sinchronizuoti, skiltyje <ph name="BEGIN_LINK1" />„Nustatymai“<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Adreso redagavimas</translation>
 <translation id="5599455543593328020">Inkognito režimas</translation>
+<translation id="5620163320393916465">Nėra išsaugotų slaptažodžių</translation>
 <translation id="5620928963363755975">Suraskite failus ir puslapius „Atsisiuntimų“ skiltyje spustelėję mygtuką „Daugiau parinkčių“</translation>
 <translation id="5626134646977739690">Pavadinimas:</translation>
 <translation id="5639724618331995626">Leisti visas svetaines</translation>
@@ -581,6 +580,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5686790454216892815">Failo pavadinimas per ilgas</translation>
 <translation id="5694049548840660018">Lengvai grįžkite į pagrindinį ekraną</translation>
 <translation id="569536719314091526">Išverskite šį puslapį į bet kokią kalbą spustelėję mygtuką „Daugiau parinkčių“</translation>
+<translation id="5696597120588531049">„Chrome“ gali padėti apsisaugoti nuo duomenų saugos pažeidimų, nesaugių svetainių ir daugiau</translation>
 <translation id="5697688514913266141">Jūsų failas bus išsaugotas kataloge <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Redaguoti<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Perjungti skirtuką</translation>
 <translation id="572328651809341494">Naujausi skirtukai</translation>
@@ -714,6 +714,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6656545060687952787">„Chrome“ reikalinga prieiga prie vietos, kad galėtų nuskaityti įrenginius. <ph name="BEGIN_LINK" />Atnaujinkite leidimus<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Slaptažodis</translation>
 <translation id="6659594942844771486">Skirtukas</translation>
+<translation id="6663079968236414793">Nuoroda į tekstą</translation>
 <translation id="666573598175432848">Yra naujesnė „Chrome“ versija. Palieskite šį elementą, kad nueitumėte į „Play“ parduotuvę.</translation>
 <translation id="666731172850799929">Atidaryti naudojant „<ph name="APP_NAME" />“</translation>
 <translation id="666981079809192359">„Chrome“ privatumo pranešimas</translation>

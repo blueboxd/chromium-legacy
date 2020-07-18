@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1647391597548383849">Acceder a la cámara</translation>
 <translation id="1660204651932907780">Permitir que los sitios web reproduzcan sonidos (recomendado)</translation>
+<translation id="1677097821151855053">Las cookies y otros datos de los sitios web se usan para recordarte. Así, podrás iniciar sesión o ver anuncios personalizados, entre otras cosas. Para gestionar las cookies de todos los sitios web, ve a <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">¿Quieres borrar los datos del sitio web?</translation>
 <translation id="169515064810179024">No permitir que los sitios web accedan a los sensores de movimiento</translation>
 <translation id="1717218214683051432">Sensores de movimiento</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Permitir cookies en un sitio web específico.</translation>
 <translation id="4046123991198612571">Pista siguiente</translation>
 <translation id="4165986682804962316">Configuración del sitio web</translation>
+<translation id="4200726100658658164">Abrir Ajustes de ubicación</translation>
 <translation id="4226663524361240545">Es posible que las notificaciones hagan que el dispositivo vibre</translation>
 <translation id="4242533952199664413">Abrir Configuración</translation>
 <translation id="4259722352634471385">Se ha bloqueado la navegación: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Todos los sitios</translation>
 <translation id="6320088164292336938">Vibrar</translation>
 <translation id="6388207532828177975">Borrar y restablecer</translation>
+<translation id="6423924377271166037">Borrar cookies</translation>
 <translation id="6439114592976064011">Impedir que los sitios web usen tu dispositivo y tus datos de realidad virtual</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6527303717912515753">Compartir</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Buscar hacia atrás</translation>
 <translation id="8444433999583714703">Para que <ph name="APP_NAME" /> tenga acceso a tu ubicación, actívala también en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Revocar permiso de dispositivo</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie en uso}other{# cookies en uso}}</translation>
 <translation id="8463851957836045671">El sitio web es rápido</translation>
 <translation id="851751545965956758">No permitir que los sitios web se conecten a dispositivos</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>

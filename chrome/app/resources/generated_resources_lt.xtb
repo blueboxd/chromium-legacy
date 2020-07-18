@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Tik šifruoti</translation>
 <translation id="1038462104119736705">„Linux“ rekomenduojama turėti bent <ph name="INSTALL_SIZE" /> vietos. Kad padidintumėte nemokamos saugyklos vietos, ištrinkite failus iš įrenginio.</translation>
 <translation id="1039337018183941703">Netinkamas arba sugadintas failas</translation>
+<translation id="104086161873270383">Naujas profilis</translation>
 <translation id="1041175011127912238">Šis puslapis neatsako</translation>
 <translation id="1041263367839475438">Pasiekiami įrenginiai</translation>
 <translation id="1042174272890264476">Jūsų kompiuteryje taip pat įdiegta „<ph name="SHORT_PRODUCT_NAME" />“ RLZ biblioteka. RLZ priskiria neunikalią, asmens neidentifikuojančią žymą, kad įvertintų tam tikros reklamos kampanijos paieškas ir „<ph name="SHORT_PRODUCT_NAME" />“ naudojimą. Šios etiketės kartais rodomos „Google“ paieškos užklausose „<ph name="PRODUCT_NAME" />“.</translation>
@@ -232,6 +233,7 @@
 <translation id="1274997165432133392">Slapukai ir kiti svetainių duomenys</translation>
 <translation id="1275718070701477396">Pasirinkta</translation>
 <translation id="1276994519141842946">Nepavyko įdiegti programos „<ph name="APP_NAME" />“</translation>
+<translation id="127946606521051357">Netoliese esantis įrenginys bendrina</translation>
 <translation id="1280820357415527819">Ieškoma mobiliojo ryšio tinklų</translation>
 <translation id="1280965841156951489">Redaguoti failus</translation>
 <translation id="1285320974508926690">Niekada neversti šios svetainės</translation>
@@ -254,6 +256,7 @@
 <translation id="1306606229401759371">Keisti nustatymus</translation>
 <translation id="1307165550267142340">PIN kodas sukurtas</translation>
 <translation id="1307559529304613120">Oi, sistemai nepavyko išsaugoti šio įrenginio ilgalaikio API prieigos kodo.</translation>
+<translation id="1313162974556054106">Įrenginio pavadinimas</translation>
 <translation id="1313405956111467313">Automatinė tarpinio serverio konfigūracija</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">Būsite atjungti nuo visų svetainių, įskaitant atidarytus skirtukus</translation>
@@ -704,7 +707,6 @@
 <translation id="184273675144259287">Pakeisti „Linux“ programas ir failus ankstesne atsargine kopija</translation>
 <translation id="1842766183094193446">Ar tikrai norite įgalinti demonstracinį režimą?</translation>
 <translation id="1846308012215045257">Spustelėkite „Ctrl“, kad paleistumėte „<ph name="PLUGIN_NAME" />“</translation>
-<translation id="1846880379134204029">Grupė „<ph name="GROUP_NAME" />“ – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Įgalinti adaptyvųjį režimą</translation>
 <translation id="1849186935225320012">Šiame puslapyje visiškai valdomi MIDI įrenginiai.</translation>
 <translation id="1850508293116537636">Sukti pagal &amp;laikrodžio rodyklę</translation>
@@ -1220,6 +1222,7 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2489918096470125693">Pridėti &amp;aplanką...</translation>
 <translation id="2490481887078769936">„<ph name="FILE_NAME" />“ pašalintas iš sąrašo</translation>
 <translation id="249113932447298600">Apgailestaujame, tačiau įrenginys <ph name="DEVICE_LABEL" /> šiuo metu nepalaikomas.</translation>
+<translation id="2492308681814209210">„<ph name="DEVICE_NAME" />“ įrenginys bendrina su jumis turinį (<ph name="ATTACHMENTS" />).</translation>
 <translation id="2492461744635776704">Ruošiama sertifikato pasirašymo užklausa</translation>
 <translation id="249303669840926644">Nepavyko užbaigti registracijos</translation>
 <translation id="2495777824269688114">Atraskite daugiau funkcijų arba gaukite atsakymus. Pasirinkite „?“, kad gautumėte pagalbos.</translation>
@@ -1721,6 +1724,7 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="3103941660000130485">Naujovinant „Linux“ įvyko klaida</translation>
 <translation id="3105796011181310544">Pakeisti atgal į „Google“?</translation>
 <translation id="310671807099593501">Svetainė naudoja „Bluetooth“</translation>
+<translation id="3109724472072898302">Suskleista</translation>
 <translation id="3115147772012638511">Laukiama talpyklos...</translation>
 <translation id="3115580024857770654">Sutraukti viską</translation>
 <translation id="3116968597797150452">Sertifikuojamas profilis</translation>
@@ -1788,7 +1792,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="3192947282887913208">Garso įrašų failai</translation>
 <translation id="3199127022143353223">Serveriai</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{„Chrome“ rekomenduoja patikrinti šį slaptažodį dabar}one{„Chrome“ rekomenduoja patikrinti šiuos slaptažodžius dabar}few{„Chrome“ rekomenduoja patikrinti šiuos slaptažodžius dabar}many{„Chrome“ rekomenduoja patikrinti šiuos slaptažodžius dabar}other{„Chrome“ rekomenduoja patikrinti šiuos slaptažodžius dabar}}</translation>
-<translation id="3200941271596533635">Perjungti skaitytojo režimą</translation>
 <translation id="3201422919974259695">Čia bus rodomi pasiekiami USB įrenginiai.</translation>
 <translation id="3202131003361292969">Kelias</translation>
 <translation id="3202173864863109533">Šio skirtuko garsas nutildytas.</translation>
@@ -4152,6 +4155,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6212039847102026977">Rodyti išplėstines tinklo nuosavybes</translation>
 <translation id="6212168817037875041">Išjungti ekraną</translation>
 <translation id="6212752530110374741">Siųsti nuorodą el. paštu</translation>
+<translation id="6213230117190778270">Gauti</translation>
 <translation id="6216696360484424239">Automatiškai prisijungti</translation>
 <translation id="6218058416316985984">„<ph name="DEVICE_TYPE" />“ įrenginyje neįjungtas internetas. Prisijunkite prie interneto ir bandykite dar kartą.</translation>
 <translation id="6220413761270491930">Klaida įkeliant plėtinį</translation>
@@ -4208,7 +4212,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6270770586500173387">Siųsti <ph name="BEGIN_LINK1" />sistemos ir programos informaciją<ph name="END_LINK1" /> ir <ph name="BEGIN_LINK2" />metriką<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Atsisiunčiant papildinį įvyko klaida (<ph name="ERROR" />).</translation>
 <translation id="6273677812470008672">Kokybė</translation>
-<translation id="6273979226236203550">Slaptažodis saugomas šiame įrenginyje ir „Google“ paskyroje. Kurį norite ištrinti?</translation>
 <translation id="6277105963844135994">Baigėsi tinklo skirtasis laikas</translation>
 <translation id="6277518330158259200">S&amp;ukurti ekrano kopiją</translation>
 <translation id="6278057325678116358">Naudoti GTK+</translation>
@@ -4252,6 +4255,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6322653941595359182">Siųskite ir gaukite teksto pranešimus „Chromebook“ įrenginiu</translation>
 <translation id="6324916366299863871">Redaguoti spartųjį klavišą</translation>
 <translation id="6325191661371220117">Neleisti automatinio paleidimo</translation>
+<translation id="6325525973963619867">Nepavyko</translation>
 <translation id="6326175484149238433">Pašalinti iš „Chrome“</translation>
 <translation id="6326855256003666642">Aktyvumą palaikančių elementų skaičius</translation>
 <translation id="632707535499064463">Organizacijai „<ph name="ORGANIZATION_NAME" />“ reikia, kad atnaujintumėte šį įrenginį iki termino.</translation>
@@ -4279,6 +4283,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6362853299801475928">&amp;Pateikti ataskaitą apie problemą...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Pridėti šeimos narius ir draugus</translation>
+<translation id="6367985768157257101">Gauti naudojant Bendrinimą netoliese?</translation>
 <translation id="636850387210749493">Įmonės registracija</translation>
 <translation id="6370021412472292592">Nepavyko įkelti aprašo.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4854,7 +4859,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7099337801055912064">Nepavyko įkelti didelio PPD. Didžiausias galimas dydis yra 250 KB.</translation>
 <translation id="7102687220333134671">Automatiniai naujiniai įjungti</translation>
 <translation id="7102832101143475489">Baigėsi skirtasis užklausos laikas</translation>
-<translation id="7102928824073746774">Grupė be pavadinimo – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">USB nuostatos</translation>
 <translation id="710640343305609397">Atidaryti tinklo nustatymus</translation>
 <translation id="7108338896283013870">Slėpti</translation>
@@ -4930,6 +4934,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="720110658997053098">Įgalinti nuolatinį šio įrenginio veikimą viešojo terminalo režimu</translation>
 <translation id="7201118060536064622">„<ph name="DELETED_ITEM_NAME" />“ ištrintas (-a)</translation>
 <translation id="7201420661433230412">Peržiūrėti failus</translation>
+<translation id="7203150201908454328">Išskleista</translation>
 <translation id="7203826966018112936">Pridėję mokyklos paskyrą prie profilio galėsite lengvai prisijungti prie svetainių ir plėtinių kaip mokinys, bet vis tiek bus galima taikyti tėvų kontrolę. Nesuteikiama vaiko prieiga prie žymių, slaptažodžių ar kitų naršyklės duomenų, sinchronizuojamų su mokyklos paskyra.&lt;br&gt;&lt;br&gt;
     Jei vaikas naudoja „Chromebook“ mokykloje ir norite namuose naudoti mokykloje teikiamas funkcijas, kad vaikas galėtų pasiekti visus reikiamus mokyklos darbus, atsijunkite nuo šios „Family Link“ paskyros ir prisijunkite prie mokyklos paskyros apsilankę „Chrome“ OS paskyrų puslapyje (pastaba: „Family Link“ tėvų kontrolė netaikoma).&lt;br&gt;&lt;br&gt;
     Jei vaikas nenaudoja „Chromebook“ mokykloje arba norite valdyti vaiko funkcijas namuose naudodami „Family Link“, spustelėkite toliau pateiktą mygtuką „Kitas“, kad pridėtumėte mokyklos paskyrą prie šio profilio.</translation>
@@ -5325,7 +5330,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7704521324619958564">Atidaryti „Google Play“ parduotuvę</translation>
 <translation id="7705276765467986571">Žymių modelio įkelti nepavyko.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Perjungti skaitytojo režimą</translation>
 <translation id="7707108266051544351">Ši svetainė užblokuota, kad nebūtų naudojami judesio jutikliai.</translation>
 <translation id="7707922173985738739">Naudoti mobiliojo ryšio duomenis</translation>
 <translation id="7709152031285164251">Įvyko klaida – <ph name="INTERRUPT_REASON" /></translation>
@@ -6582,6 +6586,7 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Įvesti slaptafrazę</translation>
 <translation id="939736085109172342">Naujas aplankas</translation>
+<translation id="941070664607309480">Spustelėkite, kad taptumėte matomais ir jis galėtų su jumis bendrinti</translation>
 <translation id="942532530371314860">„<ph name="APP_NAME" />“ bendrina „Chrome“ skirtuką ir garsą.</translation>
 <translation id="945522503751344254">Siųsti atsiliepimą</translation>
 <translation id="947329552760389097">&amp;Tikrinti elementus</translation>

@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">檢查你的網際網路連線</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2369533728426058518">開啟的分頁</translation>
-<translation id="2377295302146152376">Chrome 無法檢查更新</translation>
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="2394602618534698961">你下載的檔案會顯示在這裡</translation>
 <translation id="2407481962792080328">登入 Google 帳戶時，系統會啟用這項功能</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />取得說明<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">定位功能已關閉，請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟這項功能。</translation>
 <translation id="3058498974290601450">你隨時可以在設定中開啟同步功能</translation>
-<translation id="3059710691562604940">安全瀏覽功能已停用。Chrome 建議啟用這項功能。</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> 個書籤}other{<ph name="BOOKMARKS_COUNT_MANY" /> 個書籤}}</translation>
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
 <translation id="3114012059975132928">影片播放器</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">有可用的更新。更多選項</translation>
 <translation id="3524138585025253783">開發人員 UI</translation>
 <translation id="3527085408025491307">資料夾</translation>
-<translation id="3533694711092285624">未儲存任何密碼。你必須先儲存密碼，才能使用 Chrome 的密碼檢查功能。</translation>
 <translation id="3542235761944717775">可用空間：<ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">搜尋你的記錄</translation>
 <translation id="3557336313807607643">新增為聯絡人</translation>
@@ -360,6 +357,7 @@
 <translation id="3892148308691398805">複製文字</translation>
 <translation id="3894427358181296146">新增資料夾</translation>
 <translation id="3895926599014793903">強制啟用縮放功能</translation>
+<translation id="3909763690984331376">安全檢查<ph name="BEGIN_NEW" />新功能<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">正在從網路上尋找最佳內容…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">合併我的資料</translation>
@@ -570,6 +568,7 @@
 <translation id="5581519193887989363">你隨時可以在<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />中選擇要同步處理的資料。</translation>
 <translation id="5595485650161345191">編輯地址</translation>
 <translation id="5599455543593328020">無痕模式</translation>
+<translation id="5620163320393916465">未儲存任何密碼</translation>
 <translation id="5620928963363755975">透過「更多選項」按鈕前往「下載」主畫面尋找你的檔案和網頁</translation>
 <translation id="5626134646977739690">名稱：</translation>
 <translation id="5639724618331995626">允許所有網站</translation>
@@ -581,6 +580,7 @@
 <translation id="5686790454216892815">檔案名稱過長</translation>
 <translation id="5694049548840660018">輕鬆返回首頁</translation>
 <translation id="569536719314091526">透過 [更多選項] 按鈕將這個網頁翻譯成任何語言</translation>
+<translation id="5696597120588531049">Chrome 可確保安全性，例如防範資料侵害事件或封鎖不安全的網站等等</translation>
 <translation id="5697688514913266141">檔案會儲存至「<ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />」。<ph name="BEGIN_LINK2" />編輯<ph name="END_LINK2" />。</translation>
 <translation id="570347048394355941">切換至分頁</translation>
 <translation id="572328651809341494">最近開啟的分頁</translation>
@@ -714,6 +714,7 @@
 <translation id="6656545060687952787">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK" />更新權限<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">密碼</translation>
 <translation id="6659594942844771486">分頁</translation>
+<translation id="6663079968236414793">文字連結</translation>
 <translation id="666573598175432848">已推出新版本的 Chrome。輕觸這個元素即可前往 Play 商店。</translation>
 <translation id="666731172850799929">在「<ph name="APP_NAME" />」中開啟</translation>
 <translation id="666981079809192359">Chrome 隱私權聲明</translation>

@@ -8,6 +8,7 @@
 #include <setupapi.h>
 #include <stdint.h>
 #include <usbiodef.h>
+#include "base/strings/string_piece_forward.h"
 
 #define INITGUID
 #include <devpkey.h>
@@ -59,7 +60,7 @@ base::Optional<uint32_t> GetDeviceUint32Property(HDEVINFO dev_info,
   return buffer;
 }
 
-base::Optional<base::string16> GetDeviceStringProperty(
+base::Optional<std::wstring> GetDeviceStringProperty(
     HDEVINFO dev_info,
     SP_DEVINFO_DATA* dev_info_data,
     const DEVPROPKEY& property) {
@@ -76,7 +77,7 @@ base::Optional<base::string16> GetDeviceStringProperty(
     return base::nullopt;
   }
 
-  base::string16 buffer;
+  std::wstring buffer;
   if (!SetupDiGetDeviceProperty(
           dev_info, dev_info_data, &property, &property_type,
           reinterpret_cast<PBYTE>(base::WriteInto(&buffer, required_size)),
@@ -87,7 +88,7 @@ base::Optional<base::string16> GetDeviceStringProperty(
   return buffer;
 }
 
-base::Optional<std::vector<base::string16>> GetDeviceStringListProperty(
+base::Optional<std::vector<std::wstring>> GetDeviceStringListProperty(
     HDEVINFO dev_info,
     SP_DEVINFO_DATA* dev_info_data,
     const DEVPROPKEY& property) {
@@ -104,7 +105,7 @@ base::Optional<std::vector<base::string16>> GetDeviceStringListProperty(
     return base::nullopt;
   }
 
-  base::string16 buffer;
+  std::wstring buffer;
   if (!SetupDiGetDeviceProperty(
           dev_info, dev_info_data, &property, &property_type,
           reinterpret_cast<PBYTE>(base::WriteInto(&buffer, required_size)),
@@ -113,33 +114,32 @@ base::Optional<std::vector<base::string16>> GetDeviceStringListProperty(
   }
 
   // Windows string list properties use a NUL character as the delimiter.
-  return base::SplitString(buffer, base::StringPiece16(L"\0", 1),
+  return base::SplitString(buffer, base::WStringPiece(L"\0", 1),
                            base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 }
 
-base::string16 GetServiceName(HDEVINFO dev_info,
-                              SP_DEVINFO_DATA* dev_info_data) {
-  base::Optional<base::string16> property =
+std::wstring GetServiceName(HDEVINFO dev_info, SP_DEVINFO_DATA* dev_info_data) {
+  base::Optional<std::wstring> property =
       GetDeviceStringProperty(dev_info, dev_info_data, DEVPKEY_Device_Service);
   if (!property.has_value())
-    return base::string16();
+    return std::wstring();
 
   // Windows pads this string with a variable number of NUL bytes for no
   // discernible reason.
-  return base::TrimString(*property, base::StringPiece16(L"\0", 1),
+  return base::TrimString(*property, base::WStringPiece(L"\0", 1),
                           base::TRIM_TRAILING)
       .as_string();
 }
 
 bool GetDeviceInterfaceDetails(HDEVINFO dev_info,
                                SP_DEVICE_INTERFACE_DATA* device_interface_data,
-                               base::string16* device_path,
+                               std::wstring* device_path,
                                uint32_t* bus_number,
                                uint32_t* port_number,
-                               base::string16* instance_id,
-                               base::string16* parent_instance_id,
-                               std::vector<base::string16>* child_instance_ids,
-                               base::string16* service_name) {
+                               std::wstring* instance_id,
+                               std::wstring* parent_instance_id,
+                               std::vector<std::wstring>* child_instance_ids,
+                               std::wstring* service_name) {
   SP_DEVINFO_DATA dev_info_data = {};
   dev_info_data.cbSize = sizeof(dev_info_data);
 
@@ -175,7 +175,7 @@ bool GetDeviceInterfaceDetails(HDEVINFO dev_info,
   }
 
   if (device_path)
-    *device_path = base::string16(device_interface_detail_data->DevicePath);
+    *device_path = std::wstring(device_interface_detail_data->DevicePath);
 
   if (bus_number) {
     auto result = GetDeviceUint32Property(dev_info, &dev_info_data,
@@ -242,14 +242,14 @@ bool GetDeviceInterfaceDetails(HDEVINFO dev_info,
   return true;
 }
 
-base::string16 GetDevicePath(const base::string16& instance_id,
-                             const GUID& device_interface_guid) {
+std::wstring GetDevicePath(const std::wstring& instance_id,
+                           const GUID& device_interface_guid) {
   base::win::ScopedDevInfo dev_info(
       SetupDiGetClassDevs(&device_interface_guid, instance_id.c_str(), 0,
                           DIGCF_DEVICEINTERFACE | DIGCF_PRESENT));
   if (!dev_info.is_valid()) {
     USB_PLOG(ERROR) << "SetupDiGetClassDevs";
-    return base::string16();
+    return std::wstring();
   }
 
   SP_DEVICE_INTERFACE_DATA device_interface_data = {};
@@ -258,28 +258,28 @@ base::string16 GetDevicePath(const base::string16& instance_id,
                                    &device_interface_guid, 0,
                                    &device_interface_data)) {
     USB_PLOG(ERROR) << "SetupDiEnumDeviceInterfaces";
-    return base::string16();
+    return std::wstring();
   }
 
-  base::string16 device_path;
+  std::wstring device_path;
   if (!GetDeviceInterfaceDetails(
           dev_info.get(), &device_interface_data, &device_path,
           /*bus_number=*/nullptr, /*port_number=*/nullptr,
           /*instance_id=*/nullptr, /*parent_instance_id=*/nullptr,
           /*child_instance_ids=*/nullptr, /*service_name=*/nullptr)) {
-    return base::string16();
+    return std::wstring();
   }
 
   return device_path;
 }
 
-int GetInterfaceNumber(const base::string16& instance_id) {
+int GetInterfaceNumber(const std::wstring& instance_id) {
   // According to MSDN the instance IDs for the device nodes created by the
   // composite driver is in the form "USB\VID_vvvv&PID_dddd&MI_zz" where "zz"
   // is the interface number.
   //
   // https://docs.microsoft.com/en-us/windows-hardware/drivers/install/standard-usb-identifiers#multiple-interface-usb-devices
-  std::string instance_id_ascii = base::UTF16ToASCII(instance_id);
+  std::string instance_id_ascii = base::WideToASCII(instance_id);
   std::string interface_number_str;
   if (!RE2::PartialMatch(instance_id_ascii, "MI_([0-9a-fA-F]{2})",
                          &interface_number_str)) {
@@ -292,7 +292,7 @@ int GetInterfaceNumber(const base::string16& instance_id) {
   return interface_number;
 }
 
-UsbDeviceWin::FunctionInfo GetFunctionInfo(const base::string16& instance_id) {
+UsbDeviceWin::FunctionInfo GetFunctionInfo(const std::wstring& instance_id) {
   UsbDeviceWin::FunctionInfo info;
 
   base::win::ScopedDevInfo dev_info(
@@ -404,7 +404,7 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
         FROM_HERE, base::BindOnce(&UsbServiceWin::HelperStarted, service_));
   }
 
-  void OnDeviceAdded(const GUID& guid, const base::string16& device_path) {
+  void OnDeviceAdded(const GUID& guid, const std::wstring& device_path) {
     // Boost priority while potentially loading SetupAPI.dll and Ole32.dll on a
     // background thread for the following functions.
     SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
@@ -435,9 +435,9 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
  private:
   void EnumerateDevice(HDEVINFO dev_info,
                        SP_DEVICE_INTERFACE_DATA* device_interface_data,
-                       const base::Optional<base::string16>& opt_device_path) {
-    base::string16 device_path;
-    base::string16* device_path_ptr = &device_path;
+                       const base::Optional<std::wstring>& opt_device_path) {
+    std::wstring device_path;
+    std::wstring* device_path_ptr = &device_path;
     if (opt_device_path) {
       device_path = *opt_device_path;
       device_path_ptr = nullptr;
@@ -445,9 +445,9 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
 
     uint32_t bus_number;
     uint32_t port_number;
-    base::string16 parent_instance_id;
-    std::vector<base::string16> child_instance_ids;
-    base::string16 service_name;
+    std::wstring parent_instance_id;
+    std::vector<std::wstring> child_instance_ids;
+    std::wstring service_name;
     if (!GetDeviceInterfaceDetails(dev_info, device_interface_data,
                                    device_path_ptr, &bus_number, &port_number,
                                    /*instance_id=*/nullptr, &parent_instance_id,
@@ -461,7 +461,7 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
       // child device nodes for each of the device functions. It is these device
       // paths for these children which must be opened in order to communicate
       // with the WinUSB driver.
-      for (const base::string16& instance_id : child_instance_ids) {
+      for (const std::wstring& instance_id : child_instance_ids) {
         int interface_number = GetInterfaceNumber(instance_id);
         if (interface_number != -1) {
           functions.emplace_back(interface_number,
@@ -477,7 +477,7 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
       functions.emplace_back(/*interface_number=*/0, info);
     }
 
-    base::string16& hub_path = hub_paths_[parent_instance_id];
+    std::wstring& hub_path = hub_paths_[parent_instance_id];
     if (hub_path.empty()) {
       hub_path = GetDevicePath(parent_instance_id, GUID_DEVINTERFACE_USB_HUB);
       if (hub_path.empty())
@@ -494,10 +494,10 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
   void EnumeratePotentialFunction(
       HDEVINFO dev_info,
       SP_DEVICE_INTERFACE_DATA* device_interface_data,
-      const base::string16& device_path) {
-    base::string16 instance_id;
-    base::string16 parent_instance_id;
-    base::string16 service_name;
+      const std::wstring& device_path) {
+    std::wstring instance_id;
+    std::wstring parent_instance_id;
+    std::wstring service_name;
     if (!GetDeviceInterfaceDetails(
             dev_info, device_interface_data,
             /*device_path=*/nullptr, /*bus_number=*/nullptr,
@@ -510,7 +510,7 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
     if (interface_number == -1)
       return;
 
-    base::string16 parent_path =
+    std::wstring parent_path =
         GetDevicePath(parent_instance_id, GUID_DEVINTERFACE_USB_DEVICE);
     if (parent_path.empty())
       return;
@@ -525,7 +525,7 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
                        std::move(parent_path), interface_number, info));
   }
 
-  std::unordered_map<base::string16, base::string16> hub_paths_;
+  std::unordered_map<std::wstring, std::wstring> hub_paths_;
 
   // Calls back to |service_| must be posted to |service_task_runner_|, which
   // runs tasks on the thread where that object lives.
@@ -561,7 +561,7 @@ void UsbServiceWin::GetDevices(GetDevicesCallback callback) {
 }
 
 void UsbServiceWin::OnDeviceAdded(const GUID& class_guid,
-                                  const base::string16& device_path) {
+                                  const std::wstring& device_path) {
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&BlockingTaskRunnerHelper::OnDeviceAdded,
@@ -569,7 +569,7 @@ void UsbServiceWin::OnDeviceAdded(const GUID& class_guid,
 }
 
 void UsbServiceWin::OnDeviceRemoved(const GUID& class_guid,
-                                    const base::string16& device_path) {
+                                    const std::wstring& device_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto by_path_it = devices_by_path_.find(device_path);
   if (by_path_it == devices_by_path_.end())
@@ -604,12 +604,12 @@ void UsbServiceWin::HelperStarted() {
 }
 
 void UsbServiceWin::CreateDeviceObject(
-    const base::string16& device_path,
-    const base::string16& hub_path,
+    const std::wstring& device_path,
+    const std::wstring& hub_path,
     const base::flat_map<int, UsbDeviceWin::FunctionInfo>& functions,
     uint32_t bus_number,
     uint32_t port_number,
-    const base::string16& driver_name) {
+    const std::wstring& driver_name) {
   // Devices that appear during initial enumeration are gathered into the first
   // result returned by GetDevices() and prevent device add/remove notifications
   // from being sent.
@@ -624,7 +624,7 @@ void UsbServiceWin::CreateDeviceObject(
 }
 
 void UsbServiceWin::UpdateFunction(
-    const base::string16& device_path,
+    const std::wstring& device_path,
     int interface_number,
     const UsbDeviceWin::FunctionInfo& function_info) {
   auto it = devices_by_path_.find(device_path);

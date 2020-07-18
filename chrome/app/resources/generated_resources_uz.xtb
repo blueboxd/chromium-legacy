@@ -256,6 +256,7 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1306606229401759371">Sozlamalarni o‘zgartirish</translation>
 <translation id="1307165550267142340">PIN kod yaratildi</translation>
 <translation id="1307559529304613120">Tizim bu qurilmada API uchun ruxsat tokenini saqlay olmadi.</translation>
+<translation id="1313162974556054106">Qurilma nomi</translation>
 <translation id="1313405956111467313">Proksi-server avtomatik sozlanishi</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">Barcha saytlardagi hisobingizdan avtomatik chiqarilasiz (shuningdek, ochiq varaqlardan ham)</translation>
@@ -703,7 +704,6 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="184273675144259287">Linux ilova va fayllarining oldingi nusxalarini tiklash</translation>
 <translation id="1842766183094193446">Demo rejim yoqilsinmi?</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" /> plaginini ishga tushirish uchun CTRL tugmasini bosib turgan holda sichqoncha tugmasini bosing</translation>
-<translation id="1846880379134204029"><ph name="GROUP_NAME" /> guruhi – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Uyqu rejimini yoqish</translation>
 <translation id="1849186935225320012">Bu sahifa MIDI qurilmalarini to‘liq boshqaradi.</translation>
 <translation id="1850508293116537636">Soat mili yo‘nalishida burish</translation>
@@ -1721,6 +1721,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3103941660000130485">Linux yangilanmadi</translation>
 <translation id="3105796011181310544">Googlega qaytarilsinmi?</translation>
 <translation id="310671807099593501">Sayt Bluetooth aloqasidan foydalanmoqda</translation>
+<translation id="3109724472072898302">Yig‘ilgan</translation>
 <translation id="3115147772012638511">Kesh kutilmoqda...</translation>
 <translation id="3115580024857770654">Hammasini yigʻish</translation>
 <translation id="3116968597797150452">Sertifikat profili</translation>
@@ -1788,7 +1789,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3192947282887913208">Audio fayllar</translation>
 <translation id="3199127022143353223">Serverlar</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome hoziroq bu parolingizni tekshirishni tavsiya qiladi}other{Chrome hoziroq bu parollaringizni tekshirishni tavsiya qiladi}}</translation>
-<translation id="3200941271596533635">Mutolaa rejimiga kirish/chiqish</translation>
 <translation id="3201422919974259695">Mavjud USB qurilmalar bu yerda chiqadi.</translation>
 <translation id="3202131003361292969">Fayl yo‘lagi</translation>
 <translation id="3202173864863109533">Bu ichki oyna ovozi o‘chirib qo‘yilgan</translation>
@@ -4208,7 +4208,6 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />Tizim, ilovalar<ph name="END_LINK1" /> va <ph name="BEGIN_LINK2" />statistika<ph name="END_LINK2" /> haqidagi axborotni yuborish</translation>
 <translation id="6272643420381259437">Plaginni yuklab olishda xatolik (<ph name="ERROR" />) yuz berdi</translation>
 <translation id="6273677812470008672">Sifat</translation>
-<translation id="6273979226236203550">Parolingiz shu qurilma va Google hisobingizga saqlandi. Qaysi biri olib tashlansin?</translation>
 <translation id="6277105963844135994">Tarmoqni kutish vaqti tugadi</translation>
 <translation id="6277518330158259200">E&amp;kranni suratga olish</translation>
 <translation id="6278057325678116358">GTK+ mavzusi ishlatilsin</translation>
@@ -4855,7 +4854,6 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7099337801055912064">Katta hajmli PPD yuklanmadi. Maksimal hajm: 250KB.</translation>
 <translation id="7102687220333134671">Avtomatik yangilash funksiyasi yoniq</translation>
 <translation id="7102832101143475489">So‘rov uchun ajratilgan vaqt tugadi</translation>
-<translation id="7102928824073746774">Nomsiz guruh – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">USB sozlamalari</translation>
 <translation id="710640343305609397">Tarmoq sozlamalarini ochish</translation>
 <translation id="7108338896283013870">Berkitish</translation>
@@ -4931,6 +4929,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="720110658997053098">Qurilmani har doim kiosk rejimida ishga tushirish</translation>
 <translation id="7201118060536064622">“<ph name="DELETED_ITEM_NAME" />” o‘chirildi</translation>
 <translation id="7201420661433230412">Fayllarni ochish</translation>
+<translation id="7203150201908454328">Yoyilgan</translation>
 <translation id="7203826966018112936">Profilga maktab hisobi kiritilsa, ota-ona nazorati ostida sayt va kengaytmalarga oʻquvchi sifatida oson kirish mumkin. Bunda farzandingiz maktab hisobi bilan sinxronlangan bukmark, parol va boshqa brauzer maʼlumotlarini ishlata olmaydi.&lt;br&gt;&lt;br&gt;
     Agar farzandingiz Chromebookni maktabda ishlatsa va uyda ham shunday sharoit yaratmoqchi boʻlsangiz, Chrome OS hisoblar sahifasida joriy Family Link hisobidan chiqib, maktab hisobiga kiring (eslatma: Family Link ota-ona nazorati maktab hisobida ishlamaydi).&lt;br&gt;&lt;br&gt;
     Agar farzandingiz Chromebookni maktabda ishlatmasa yoki farzandingiz undan faqat uyda Family Link orqali foydalanishini istasangiz, quyidagi Keyingisi tugmasini bosing va bu profilga maktab hisobini kiriting.</translation>
@@ -5326,7 +5325,6 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7704521324619958564">Play Marketni ochish</translation>
 <translation id="7705276765467986571">Xatcho‘plar modelini yuklab bo‘lmadi.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Mutolaa rejimiga kirish/chiqish</translation>
 <translation id="7707108266051544351">Bu sayt uchun harakat sensorlaridan foydalanish taqiqlandi</translation>
 <translation id="7707922173985738739">Mobil internetdan foydalanish</translation>
 <translation id="7709152031285164251">Xatolik: <ph name="INTERRUPT_REASON" /></translation>

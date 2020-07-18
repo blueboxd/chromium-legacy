@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">Интернет байланысы тексерілуде.</translation>
 <translation id="2359808026110333948">Жалғастыру</translation>
 <translation id="2369533728426058518">қойындыларды ашу</translation>
-<translation id="2377295302146152376">Chrome жаңа нұсқалардың бар-жоғын тексере алмады.</translation>
 <translation id="2387895666653383613">Мәтін масштабтау</translation>
 <translation id="2394602618534698961">Жүктеп алынған файлдар осы жерде тұрады.</translation>
 <translation id="2407481962792080328">Google есептік жазбаңызға кіргенде, бұл функция қосылады.</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Анықтама алу<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Орынды анықтау қызметі өшірулі; оны <ph name="BEGIN_LINK" />Android параметрлері<ph name="END_LINK" /> ішінен қосыңыз.</translation>
 <translation id="3058498974290601450">Синхрондау функциясын кез келген уақытта "Параметрлер" бөлімінен қоса аласыз.</translation>
-<translation id="3059710691562604940">"Қауіпсіз шолу" функциясы өшірулі. Chrome браузері оны қосуды ұсынады.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> бетбелгі}other{<ph name="BOOKMARKS_COUNT_MANY" /> бетбелгі}}</translation>
 <translation id="3089395242580810162">Инкогнито қойындысында ашу</translation>
 <translation id="3114012059975132928">Бейне ойнатқыш</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">Жаңа нұсқа қолжетімді. Қосымша опциялар</translation>
 <translation id="3524138585025253783">Әзірлеушіге арналған интерфейс</translation>
 <translation id="3527085408025491307">Қалта</translation>
-<translation id="3533694711092285624">Ешқандай құпия сөз сақталмаған. Құпия сөздер сақталған кезде, Chrome оларды тексере алады.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> КБ бос орын бар</translation>
 <translation id="3549657413697417275">Тарихтан іздеу</translation>
 <translation id="3557336313807607643">Контактілерге енгізу</translation>
@@ -360,6 +357,7 @@
 <translation id="3892148308691398805">Мәтінді көшіру</translation>
 <translation id="3894427358181296146">Қалта қосу</translation>
 <translation id="3895926599014793903">Масштабтауды мәжбүрлі түрде қосу</translation>
+<translation id="3909763690984331376">Қауіпсіздік шарасы <ph name="BEGIN_NEW" />Жаңа<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Интернеттен деректер жүктелуде…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Деректерімді аралас пайдалану</translation>
@@ -570,6 +568,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5581519193887989363">Синхрондалатын мазмұндарды <ph name="BEGIN_LINK1" />Параметрлер<ph name="END_LINK1" /> бөлімінде кез келген уақытта таңдай аласыз.</translation>
 <translation id="5595485650161345191">Мекенжайды өзгерту</translation>
 <translation id="5599455543593328020">Инкогнито режимі</translation>
+<translation id="5620163320393916465">Ешқандай құпия сөз сақталмаған.</translation>
 <translation id="5620928963363755975">"Қосымша опциялар" түймесі арқылы "Жүктеп алулар" ішінен файлдар мен беттерді табыңыз</translation>
 <translation id="5626134646977739690">Аты:</translation>
 <translation id="5639724618331995626">Барлық сайттарға рұқсат беру</translation>
@@ -581,6 +580,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5686790454216892815">Файлдың аты тым ұзын</translation>
 <translation id="5694049548840660018">Негізгі экранға оңай өту</translation>
 <translation id="569536719314091526">"Қосымша опциялар" түймесі арқылы осы бетті кез келген тілге аударыңыз</translation>
+<translation id="5696597120588531049">Chrome деректердің қолды болуынан, қауіпті веб-сайттардан және басқа зиянды нәрселерден қорғайды.</translation>
 <translation id="5697688514913266141">Файлыңыз <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" /> қалтасына сақталады. <ph name="BEGIN_LINK2" />Өзгерту<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Қойындыға ауысу</translation>
 <translation id="572328651809341494">Соңғы қойындылар</translation>
@@ -714,6 +714,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6656545060687952787">Құрылғыларды тексеру үшін Chrome орналасқан жер мәліметтерін пайдалануы қажет. <ph name="BEGIN_LINK" />Рұқсаттарды жаңарту<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Құпия сөз</translation>
 <translation id="6659594942844771486">Қойынды</translation>
+<translation id="6663079968236414793">Мәтіннің сілтемесі</translation>
 <translation id="666573598175432848">Chrome браузерінің жаңа нұсқасы қолжетімді. Play Store дүкеніне өту үшін осы элементті түртіңіз.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> арқылы ашу</translation>
 <translation id="666981079809192359">Chrome құпиялылық ескертпесі</translation>

@@ -21,9 +21,9 @@ class DEVICE_BASE_EXPORT DeviceMonitorWin {
   class DEVICE_BASE_EXPORT Observer {
    public:
     virtual void OnDeviceAdded(const GUID& class_guid,
-                               const base::string16& device_path);
+                               const std::wstring& device_path);
     virtual void OnDeviceRemoved(const GUID& class_guid,
-                                 const base::string16& device_path);
+                                 const std::wstring& device_path);
   };
 
   ~DeviceMonitorWin();
@@ -40,9 +40,9 @@ class DEVICE_BASE_EXPORT DeviceMonitorWin {
   DeviceMonitorWin();
 
   void NotifyDeviceAdded(const GUID& class_guid,
-                         const base::string16& device_path);
+                         const std::wstring& device_path);
   void NotifyDeviceRemoved(const GUID& class_guid,
-                           const base::string16& device_path);
+                           const std::wstring& device_path);
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 };

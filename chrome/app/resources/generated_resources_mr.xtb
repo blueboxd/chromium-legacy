@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">केवळ एनसिफर</translation>
 <translation id="1038462104119736705">Linux साठी किमान <ph name="INSTALL_SIZE" /> जागेची शिफारस केली जाते. मोकळी जागा वाढवण्यासाठी, तुमच्या डिव्हाइसमधून फाइल हटवा.</translation>
 <translation id="1039337018183941703">चुकीची किंवा दूषित फाइल</translation>
+<translation id="104086161873270383">नवीन प्रोफाइल</translation>
 <translation id="1041175011127912238">हे पेज प्रतिसाद देत नाही</translation>
 <translation id="1041263367839475438">उपलब्ध असलेली डिव्हाइस</translation>
 <translation id="1042174272890264476">तुमचा कॉंप्युटर देखील <ph name="SHORT_PRODUCT_NAME" />च्या RLZ वाचनालयासह बिल्ट-इन आला आहे. एका विशिष्ट जाहिरात मोहीमेद्वारे चालविलेला शोध आणि <ph name="SHORT_PRODUCT_NAME" /> वापर मोजण्यासाठी RLZ एक अद्वितीय-नसलेला, वैयक्तिकरित्या-ओळखता न येणारा टॅग नियुक्त करते. <ph name="PRODUCT_NAME" /> मधील Google Search क्वेरींमध्ये ही लेबल काहीवेळा दिसतात.</translation>
@@ -254,6 +255,7 @@
 <translation id="1306606229401759371">सेटिंग्ज बदला</translation>
 <translation id="1307165550267142340">तुमचा पिन तयार केला गेला आहे</translation>
 <translation id="1307559529304613120">अरेरे! या डिव्हाइसाठी दीर्घ-मुदतीचे API ॲक्सेस टोकन स्टोअर करण्यात सिस्टम अयशस्वी झाली.</translation>
+<translation id="1313162974556054106">डिव्हाइसचे नाव</translation>
 <translation id="1313405956111467313">स्वयंचलित प्रॉक्सी कॉन्फिगरेशन</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">तुम्हाला उघड्या असलेल्या टॅबसह सर्व साइटमधून साइन आउट केले जाईल</translation>
@@ -703,7 +705,6 @@
 <translation id="184273675144259287">तुमची Linux अ‍ॅप्स आणि फाइल मागील बॅकअपसह बदला</translation>
 <translation id="1842766183094193446">तुम्हाला खरंच डेमो मोड सुरू करायचा आहे का?</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" /> चालवण्‍यासाठी Control-क्लिक करा</translation>
-<translation id="1846880379134204029">गट <ph name="GROUP_NAME" /> - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">अ‍ॅंबियंट मोड सुरू करा</translation>
 <translation id="1849186935225320012">या पृष्ठास MIDI डिव्हाइसचे पूर्ण नियंत्रण आहे.</translation>
 <translation id="1850508293116537636">&amp;घड्याळाच्या दिशेने फिरवा</translation>
@@ -1720,6 +1721,7 @@
 <translation id="3103941660000130485">Linux अपग्रेड करताना एरर आली</translation>
 <translation id="3105796011181310544">Google वर परत बदलायचे आहे का?</translation>
 <translation id="310671807099593501">साइट ब्लूटूथ वापरत आहे</translation>
+<translation id="3109724472072898302">संकुचित केलेले</translation>
 <translation id="3115147772012638511">कॅशेसाठी प्रतीक्षा करत आहे...</translation>
 <translation id="3115580024857770654">सर्व कोलॅप्‍स करा</translation>
 <translation id="3116968597797150452">सर्टिफिकेट प्रोफाइल</translation>
@@ -1787,7 +1789,6 @@
 <translation id="3192947282887913208">ऑडिओ फाइल</translation>
 <translation id="3199127022143353223">सर्व्हर</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome हा पासवर्ड आता तपासण्याची शिफारस करते}other{Chrome हे पासवर्ड आता तपासण्याची शिफारस करते}}</translation>
-<translation id="3200941271596533635">वाचक मोड टॉगल करा</translation>
 <translation id="3201422919974259695">उपलब्ध असलेली USB डिव्हाइस येथे दिसतील.</translation>
 <translation id="3202131003361292969">पथ</translation>
 <translation id="3202173864863109533">या टॅबचा ऑडिओ निःशब्द करण्यात येत आहे.</translation>
@@ -4205,7 +4206,6 @@
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />सिस्टम आणि ॲप माहिती<ph name="END_LINK1" /> आणि <ph name="BEGIN_LINK2" />मेट्रिक्स<ph name="END_LINK2" /> पाठवा</translation>
 <translation id="6272643420381259437">प्लग-इन डाउनलोड करताना (<ph name="ERROR" />) एरर आली</translation>
 <translation id="6273677812470008672">गुणवत्ता</translation>
-<translation id="6273979226236203550">तुमचा पासवर्ड या डिव्हाइसवर आणि तुमच्या Google खाते मध्ये स्टोअर केला गेला. तुम्हाला कोणता पासवर्ड हटवायचा आहे?</translation>
 <translation id="6277105963844135994">नेटवर्क कालबाह्य</translation>
 <translation id="6277518330158259200">स्क्रीनशॉट घ्या</translation>
 <translation id="6278057325678116358">GTK+ वापरा</translation>
@@ -4249,6 +4249,7 @@
 <translation id="6322653941595359182">तुमच्या Chromebook वरून एसएमएस पाठवा आणि मिळवा</translation>
 <translation id="6324916366299863871">शॉर्टकट संपादित करा</translation>
 <translation id="6325191661371220117">स्वयं-लाँच अक्षम करा</translation>
+<translation id="6325525973963619867">अयशस्वी</translation>
 <translation id="6326175484149238433">Chrome मधून काढून टाका</translation>
 <translation id="6326855256003666642">Keepalive गणना</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> ला तुम्ही हे डिव्हाइस डेडलाइनच्या आधी अपडेट करणे आवश्यक आहे.</translation>
@@ -4851,7 +4852,6 @@
 <translation id="7099337801055912064">मोठ्या PPD लोड करू शकत नाही. कमाल आकार 250kB आहे.</translation>
 <translation id="7102687220333134671">स्वयंचलित अपडेट सुरू केली आहेत</translation>
 <translation id="7102832101143475489">विनंतीची वेळ संपली</translation>
-<translation id="7102928824073746774">नाव नसलेला गट - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">USB प्राधान्ये</translation>
 <translation id="710640343305609397">नेटवर्क सेटिंग्ज उघडा</translation>
 <translation id="7108338896283013870">लपवा</translation>
@@ -4927,6 +4927,7 @@
 <translation id="720110658997053098">हे डिव्हाइस कायमचे कियोस्क मोडमध्ये ठेवा</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' हटवले</translation>
 <translation id="7201420661433230412">फाइल पहा</translation>
+<translation id="7203150201908454328">विस्‍तृत केलेले</translation>
 <translation id="7203826966018112936">प्रोफाइलवर शाळा खाते जोडल्याने पालक नियंत्रणाखाली ऑपरेट करत असताना विद्यार्थी म्हणून वेबसाइट आणि एक्स्टेंशनमध्ये सहजपणे साइन इन करता येते. ते तुमच्या मुलाला बुकमार्क, पासवर्ड किंवा शाळा खात्याशी सिंक केलेल्या इतर ब्राउझर डेटाचा अ‍ॅक्सेस देत नाही.&lt;br&gt;&lt;br&gt;
     तुमचे मूल शाळेत Chromebook वापरत असल्यास आणि तुमच्या मुलाला सर्व आवश्यक शालेय कामाचा अ‍ॅक्सेस असेल याची खात्री करण्यासाठी तुम्हाला शाळेतील अनुभव घरात प्रतिबिंबित करायचा असल्यास, कृपया या Family Link खात्यामधून साइन आउट करा आणि Chrome OS खाती पेजमधून शाळा खात्यामध्ये साइन इन करा (टीप: Family Link पालक नियंत्रणे लागू होणार नाहीत).&lt;br&gt;&lt;br&gt;
     तुमचे मूल शाळेत Chromebook वापरत नसल्यास किंवा तुम्हाला घरीच Family Link वापरून तुमच्या मुलाचा अनुभव व्यवस्थापित करण्यास प्राधान्य द्यायचे असल्यास, या प्रोफाइलवर शाळा खाते जोडण्यासाठी खाली दिलेल्या पुढील बटणावर क्लिक करा.</translation>
@@ -5322,7 +5323,6 @@
 <translation id="7704521324619958564">Play स्टोअर उघडा</translation>
 <translation id="7705276765467986571">बुकमार्क मॉडेल लोड करणे शक्य नव्हते. </translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">वाचक मोड टॉगल करा</translation>
 <translation id="7707108266051544351">या साइटला मोशन सेन्सर वापरण्यापासून ब्लॉक केले आहे.</translation>
 <translation id="7707922173985738739">मोबाइल डेटा वापरा</translation>
 <translation id="7709152031285164251">अयशस्वी - <ph name="INTERRUPT_REASON" /></translation>

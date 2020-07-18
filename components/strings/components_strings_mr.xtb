@@ -40,7 +40,6 @@
 <translation id="1131264053432022307">तुम्ही कॉपी केलेली इमेज</translation>
 <translation id="1150979032973867961">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता प्रमाणपत्र तुमच्या कॉंप्युटरच्या ऑपरेटिंग प्रणालीद्वारे विश्वसनीय नाही. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने तुमचे कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते.</translation>
 <translation id="1151972924205500581">पासवर्ड आवश्यक</translation>
-<translation id="1152921474424827756"><ph name="URL" /> च्या <ph name="BEGIN_LINK" />कॅशे  केलेली कॉपी<ph name="END_LINK" /> ॲक्सेस करा</translation>
 <translation id="1156303062776767266">तुम्ही स्थानिक किंवा शेअर केलेली फाइल पाहत आहात</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> नी कनेक्शन अनपेक्षितरित्या बंद केले.</translation>
 <translation id="115926840831309955">तुमचे CVC तपासा आणि पुन्हा प्रयत्न करा किंवा एक्स्पायरीची तारीख अपडेट करा</translation>
@@ -247,7 +246,6 @@
 <translation id="1919345977826869612">जाहिराती</translation>
 <translation id="1919367280705858090">विशिष्ट एरर मेसेजच्या बाबतीत मदत मिळवा</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{काहीही नाही}=1{1 साइट}other{# साइट}}</translation>
-<translation id="194030505837763158"><ph name="LINK" /> दुव्याकडे जा</translation>
 <translation id="1945968466830820669">तुम्ही तुमच्या संस्थेच्या खात्याचा ॲक्सेस गमावू शकता किंवा तुमची संवेदनशील माहिती चोरीला जाऊ शकते. Chromium तुमचा पासवर्ड लगेच बदलण्याची शिफारस करत आहे.</translation>
 <translation id="1947454675006758438">स्टेपल टॉप राइट</translation>
 <translation id="1959001866257244765">Google ला <ph name="BEGIN_WHITEPAPER_LINK" />तुम्ही भेट देत असलेल्या काही पेजच्या URL, मर्यादित सिस्टम माहिती आणि पेजवरील काही आशय<ph name="END_WHITEPAPER_LINK" /> पाठवून वेबवरील प्रत्येकासाठी सुरक्षिततेत सुधारणा करण्यात मदत करा. <ph name="BEGIN_PRIVACY_PAGE_LINK" />गोपनीयता धोरण<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -269,7 +267,6 @@
 <translation id="2003775180883135320">क्वाड पंच टॉप</translation>
 <translation id="2025115093177348061">ऑगमेंटेड रीअ‍ॅलिटी</translation>
 <translation id="2025186561304664664">प्रॉक्सी स्वयंचलित ‍कॉन्फिगरेशनवर सेट करण्‍यात आली.</translation>
-<translation id="2030481566774242610">तुम्हाला असे म्हणायचे होते <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />प्रॉक्सी आणि फायरवॉल तपासणे<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">ट्रे ७</translation>
 <translation id="204357726431741734">तुमच्या Google खाते मध्ये सेव्ह केलेले पासवर्ड वापरण्यासाठी साइन इन करा</translation>
@@ -1046,6 +1043,7 @@
 <translation id="5308380583665731573">कनेक्‍ट करा</translation>
 <translation id="5308689395849655368">क्रॅश अहवाल अक्षम केला गेला आहे.</translation>
 <translation id="5314967030527622926">बुकलेट मेकर</translation>
+<translation id="5316812925700871227">घड्याळाच्या विरुद्ध दिशेने फिरवा</translation>
 <translation id="5317780077021120954">सेव्ह करा</translation>
 <translation id="5323105697514565458"><ph name="NUM_MATCHES" /> पैकी <ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /></translation>
 <translation id="5324080437450482387">संपर्क माहिती निवडा</translation>
@@ -1069,7 +1067,6 @@
 <translation id="5421136146218899937">ब्राउझिंग डेटा साफ करा...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> ला तुम्हाला सूचना पाठवायची आहे</translation>
 <translation id="5430298929874300616">बुकमार्क काढून टाका</translation>
-<translation id="5431657950005405462">तुमची फाईल आढळली नाही</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" वर स्कीमा ऑथेंटिकेशन एरर: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">उलट्या क्रमाने फेस अप</translation>
 <translation id="5447765697759493033">या साइटचे भाषांतर होणार नाही</translation>
@@ -1444,7 +1441,6 @@
 <translation id="7083258188081898530">ट्रे ९</translation>
 <translation id="7086090958708083563">वापरकर्त्याने अपलोडची विनंती केली आहे</translation>
 <translation id="7087282848513945231">परगणा</translation>
-<translation id="7090678807593890770">Google वर <ph name="LINK" /> शोधा</translation>
 <translation id="7108338896283013870">लपवा</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> ला तुमचा कॅमेरा वापरायचा आहे</translation>
 <translation id="7108819624672055576">एका एक्स्टेंशनने परवानगी दिलेले</translation>
@@ -1880,7 +1876,6 @@
 <translation id="893332455753468063">नाव जोडा</translation>
 <translation id="8943282376843390568">लिंबू</translation>
 <translation id="8957210676456822347">बंद पोर्टल प्राधिकृतता</translation>
-<translation id="8958582951173503172">Chrome एंटरप्राइझ कनेक्टर्स यांनी सुरक्षा इव्हेंट फ्लॅग केल्यावर, इव्हेंटबद्दलचा सुसंगत डेटा तुमच्या अ‍ॅडमिनिस्ट्रेटरकडे पाठवला जातो. यात तुम्ही Chrome मध्ये भेट देत असलेल्या पेजच्या URL, फाइलची नावे किंवा मेटाडेटा आणि तुम्ही तुमच्या डिव्हाइस व Chrome वर साइन इन करण्यासाठी वापरत असलेले वापरकर्ता नाव असू शकते.</translation>
 <translation id="8962950042226115166">संशयास्पद साइट</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />सूचना:<ph name="MARKUP_2" />आपल्याकडे डेटा कनेक्शन असल्याचे निश्चित करा<ph name="MARKUP_3" />हे वेबपेज नंतर रीलोड करा<ph name="MARKUP_4" />तुम्ही एंटर केलेला ॲड्रेस तपासा<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">कार्ड सेव्ह करा</translation>

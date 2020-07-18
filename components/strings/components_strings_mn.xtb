@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Таны хуулсан зураг</translation>
 <translation id="1150979032973867961">Энэ сервер нь <ph name="DOMAIN" />-аа баталж чадсангүй; учир нь энэхүү сертификатыг таны компьютерийн үйлдлийн систем дэмждэггүй. Энэ нь тохиргоо буруу хийгдсэнээс эсвэл халдагч таны холболтонд саад учруулж байгаагаас шалтгаалж болох юм.</translation>
 <translation id="1151972924205500581">Нууц үг шаардлагатай</translation>
-<translation id="1152921474424827756"><ph name="BEGIN_LINK" /> кэш <ph name="END_LINK" />  <ph name="URL" /> руу нэвтэр</translation>
 <translation id="1156303062776767266">Та дотоод эсвэл хуваалцсан файлыг харж байна</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> холболтыг гэнэт зогсоосон байна.</translation>
 <translation id="115926840831309955">Карт баталгаажуулалтын кодоо шалгаад дахин оролдох эсвэл дуусах огноог шинэчилнэ үү</translation>
 <translation id="1161325031994447685">Wi-Fi-д дахин холбогдож байна</translation>
 <translation id="1165039591588034296">Алдаа</translation>
+<translation id="1165174597379888365">Хуудсанд зочилдог</translation>
 <translation id="1175364870820465910">&amp;Хэвлэх ...</translation>
 <translation id="1175875016430184367">Баруун талд гурван удаа үдэх</translation>
 <translation id="1178581264944972037">Түр зогсоох</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">Зар</translation>
 <translation id="1919367280705858090">Тодорхой алдаатай зурвасаар тусламж авах</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Байхгүй}=1{1 сайт}other{# сайт}}</translation>
-<translation id="194030505837763158"><ph name="LINK" /> рүү оч</translation>
 <translation id="1945968466830820669">Та байгууллагынхаа бүртгэлд хандах эрх эсвэл нууц үгээ бусдад алдаж болзошгүй. Chromium-с таныг нууц үгээ өөрчлөхийг зөвлөж байна.</translation>
 <translation id="1947454675006758438">Баруун дээд буланд үдэх</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />Зарим зочилдог хуудасныхаа URL, системийн хязгаарлагдмал мэдээлэл болон зарим хуудасны контент<ph name="END_WHITEPAPER_LINK" />-ыг Google-д илгээж, хүн бүрд вэбийн аюулгүй байдлыг сайжруулахад тусална уу. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Нууцлалын бодлого<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,9 +266,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{болон 1 бусад}other{болон # бусад}}</translation>
 <translation id="2003709556000175978">Нууц үгээ одоо шинэчлэх</translation>
 <translation id="2003775180883135320">Дээд буланд дөрвөн нүх цоолох</translation>
+<translation id="202072848677994234">Энэхүү маягтыг аюултай холболтоор илгээдэг. Автоматаар бөглөх хэсгийг идэвхгүй болгосон.</translation>
 <translation id="2025115093177348061">Өргөтгөсөн бодит орчин</translation>
 <translation id="2025186561304664664">Поксиг авто-тохиргоонд тохируулсан.</translation>
-<translation id="2030481566774242610">Та <ph name="LINK" /> рүү холбогдох гэсэн үү?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Прокси болон галт ханыг шалгаж байна<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Гарах цаасны тавиур 7</translation>
 <translation id="204357726431741734">Google Бүртгэлдээ хадгалсан нууц үгсийг ашиглахын тулд нэвтрэх</translation>
@@ -335,6 +334,7 @@
 <translation id="2289385804009217824">Тайрах</translation>
 <translation id="2292556288342944218">Таны интернэт холболтыг блоклосон байна</translation>
 <translation id="2293443924986248631">Асаасан үед сайтууд нь таныг вэб дээр хянадаг күүкиг ашиглах боломжгүй байна. Зарим сайтын онцлогууд ажиллахгүй байж болзошгүй.</translation>
+<translation id="2295290966866883927">Таны зочилсон хуудаснуудын URL-г дүн шинжилгээ хийлгэхээр Google Cloud эсвэл гуравдагч тал руу илгээдэг. Жишээ нь тэдгээрийг аюултай вэб сайт илрүүлэхийн тулд скан хийж болно.</translation>
 <translation id="2297722699537546652">B5 (Дугтуй)</translation>
 <translation id="2300306941146563769">Байршуулаагүй</translation>
 <translation id="2310021320168182093">Chou2 (Дугтуй)</translation>
@@ -1048,6 +1048,7 @@
 <translation id="5308380583665731573">Холбо</translation>
 <translation id="5308689395849655368">Гарсан доголдлын талаарх мэдэгдлийг идэвхгүй болгосон байна.</translation>
 <translation id="5314967030527622926">Товхимол бэлдэгч</translation>
+<translation id="5316812925700871227">Цагийн зүүний эсрэг эргүүлэх</translation>
 <translation id="5317780077021120954">Хадгалах</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="NUM_MATCHES" />-с <ph name="MATCH_POSITION" /></translation>
 <translation id="5324080437450482387">Холбоо барих мэдээлэл сонгох</translation>
@@ -1071,7 +1072,6 @@
 <translation id="5421136146218899937">Хайлт хийсэн тухай мэдээллийг арилгах...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> танд мэдэгдэл илгээх хүсэлтэй байна</translation>
 <translation id="5430298929874300616">Хавчуургыг устга</translation>
-<translation id="5431657950005405462">Таны файл олдсонгүй</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />":<ph name="ERROR" /> дэх схемийн баталгаажуулахад гарсан алдаа</translation>
 <translation id="5443468954631487277">Нүүрээр нь дээш харуулж, хуудасны урвуу дарааллаар</translation>
 <translation id="5447765697759493033">Энэ сайтыг орчуулахгүй</translation>
@@ -1444,7 +1444,6 @@
 <translation id="7083258188081898530">Гарах цаасны тавиур 9</translation>
 <translation id="7086090958708083563">Хэрэглэгч байршуулах хүсэлт тавьсан</translation>
 <translation id="7087282848513945231">Муж</translation>
-<translation id="7090678807593890770"><ph name="LINK" />-д Google-г хайх</translation>
 <translation id="7108338896283013870">Нуух</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> таны камерыг ашиглах хүсэлтэй байна</translation>
 <translation id="7108819624672055576">Өргөтгөл зөвшөөрсөн</translation>
@@ -1880,7 +1879,6 @@
 <translation id="893332455753468063">Нэр нэмэх</translation>
 <translation id="8943282376843390568">Нимбэгний ногоон</translation>
 <translation id="8957210676456822347">Captive Portal Authorization</translation>
-<translation id="8958582951173503172">Chrome Enterprise Connectors нь аюулгүй байдлын үйлдлүүдийг дарцаглахад арга хэмжээний тухай холбогдох өгөгдлийг таны администратор луу илгээдэг. Энэ нь таны Chrome-р зочилдог хуудаснуудын URL-ууд, файлын нэрүүд эсвэл мета өгөгдөл, таны төхөөрөмждөө болон Chrome-д нэвтрэхдээ ашигладаг хэрэглэгчийн нэрийг агуулж болно.</translation>
 <translation id="8962950042226115166">Сэжигтэй сайт</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Зөвлөмж:<ph name="MARKUP_2" />Ta датанд холбогдсон эсэхээ шалгана уу<ph name="MARKUP_3" />Энэ вэв хуудсыг дараа дахин ачаална уу<ph name="MARKUP_4" />Оруулсан хаягаа шалгана уу<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Картыг хадгалах</translation>

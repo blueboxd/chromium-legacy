@@ -170,7 +170,6 @@ Trokit te një fjalë për të kërkuar. Për ta përsosur kërkimin, preke dhe 
 <translation id="2353636109065292463">Po kontrollon lidhjen e internetit</translation>
 <translation id="2359808026110333948">Vazhdo</translation>
 <translation id="2369533728426058518">hap skedat</translation>
-<translation id="2377295302146152376">Chrome nuk mund të kontrollonte për përditësime</translation>
 <translation id="2387895666653383613">Shkallëzimi i tekstit</translation>
 <translation id="2394602618534698961">Skedarët që shkarkon shfaqen këtu</translation>
 <translation id="2407481962792080328">Kur identifikohesh në "Llogarinë tënde të Google", kjo veçori është e aktivizuar</translation>
@@ -259,7 +258,6 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Kërko ndihmë<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Vendndodhja është joaktive. Aktivizoje te <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Mund ta aktivizosh sinkronizimin në çdo kohë te cilësimet</translation>
-<translation id="3059710691562604940">"Shfletimi i sigurt" është joaktiv. Chrome rekomandon aktivizimin e tij.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> faqeshënues}other{<ph name="BOOKMARKS_COUNT_MANY" /> faqeshënues}}</translation>
 <translation id="3089395242580810162">Hape në skedë "të fshehtë"</translation>
 <translation id="3114012059975132928">Luajtësi i videos</translation>
@@ -320,7 +318,6 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="3522247891732774234">Një përditësim i disponueshëm. Më shumë opsione</translation>
 <translation id="3524138585025253783">Ndërfaqja e përdoruesit për zhvilluesin</translation>
 <translation id="3527085408025491307">Dosje</translation>
-<translation id="3533694711092285624">Nuk ka asnjë fjalëkalim të ruajtur. Chrome mund t'i kontrollojë fjalëkalimet e tua kur ti i ruan ato.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB në dispozicion</translation>
 <translation id="3549657413697417275">Kërko në historikun tënd</translation>
 <translation id="3557336313807607643">Shto te kontaktet</translation>
@@ -360,6 +357,7 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="3892148308691398805">Kopjo tekstin</translation>
 <translation id="3894427358181296146">Shto dosje</translation>
 <translation id="3895926599014793903">Aktivizo me detyrim zmadhimin</translation>
+<translation id="3909763690984331376">Kontrolli i sigurisë <ph name="BEGIN_NEW" />E re<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Po gjen më të mirën nga uebi…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Ndërthur të dhënat e mia</translation>
@@ -570,6 +568,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5581519193887989363">Mund të zgjedhësh gjithmonë se çfarë do të sinkronizosh te <ph name="BEGIN_LINK1" />cilësimet<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Redakto adresën</translation>
 <translation id="5599455543593328020">Modaliteti "i fshehtë"</translation>
+<translation id="5620163320393916465">Nuk ka asnjë fjalëkalim të ruajtur</translation>
 <translation id="5620928963363755975">Gjej skedarët dhe faqet e tua te "Shkarkimet" nga butoni "Më shumë opsione"</translation>
 <translation id="5626134646977739690">Emri:</translation>
 <translation id="5639724618331995626">Lejo të gjitha sajtet</translation>
@@ -581,6 +580,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5686790454216892815">Emri i skedarit është tepër i gjatë</translation>
 <translation id="5694049548840660018">Kthehu te faqja kryesore me lehtësi</translation>
 <translation id="569536719314091526">Përktheje këtë faqe në çdo gjuhë nga butoni "Më shumë opsione"</translation>
+<translation id="5696597120588531049">Chrome mund të të ndihmojë të qëndrosh i sigurt nga nxjerrjet e paautorizuara të të dhënave, faqet e pasigurta të internetit etj.</translation>
 <translation id="5697688514913266141">Skedari yt do të ruhet te <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Modifiko<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Kalo te skeda</translation>
 <translation id="572328651809341494">Skedat e fundit</translation>
@@ -714,6 +714,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="6656545060687952787">Chrome ka nevojë për qasjen te vendndodhja për të skanuar për pajisje. <ph name="BEGIN_LINK" />Përditëso lejet<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Fjalëkalimi</translation>
 <translation id="6659594942844771486">Skeda</translation>
+<translation id="6663079968236414793">Lidhja te teksti</translation>
 <translation id="666573598175432848">Ofrohet një version më i ri i Chrome. Trokit te ky element për të shkuar te "Dyqani i Play".</translation>
 <translation id="666731172850799929">Hape në <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Njoftimi i privatësisë së Chrome</translation>

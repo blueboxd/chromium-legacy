@@ -5398,6 +5398,8 @@ This test verifies that huge CSS grids can be highlighted with the grid Highligh
         995
       ],
       "areaNames": {},
+      "rowLineNameOffsets": [],
+      "columnLineNameOffsets": [],
       "gridBorder": [
         "M",
         8,
@@ -5420,6 +5422,7 @@ This test verifies that huge CSS grids can be highlighted with the grid Highligh
         "showPositiveLineNumbers": true,
         "showNegativeLineNumbers": true,
         "showAreaNames": true,
+        "showLineNames": true,
         "gridBorderColor": "rgba(255, 0, 0, 0)",
         "cellBorderColor": "rgba(128, 0, 0, 0)",
         "rowGapColor": "rgba(0, 255, 0, 0)",

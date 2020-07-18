@@ -26,7 +26,7 @@ DeviceInfoQueryWin::~DeviceInfoQueryWin() {
   }
 }
 
-bool DeviceInfoQueryWin::AddDevice(const base::string16& device_path) {
+bool DeviceInfoQueryWin::AddDevice(const std::wstring& device_path) {
   return SetupDiOpenDeviceInterface(device_info_list_, device_path.c_str(), 0,
                                     nullptr) != FALSE;
 }

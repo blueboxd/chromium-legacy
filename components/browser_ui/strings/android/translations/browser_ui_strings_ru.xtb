@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1647391597548383849">Доступ к камере</translation>
 <translation id="1660204651932907780">Разрешить сайтам воспроизводить звуки (рекомендуется)</translation>
+<translation id="1677097821151855053">Файлы cookie и другие данные, относящиеся к сайту, используются для идентификации его посетителей. Например, они позволяют запоминать учетные данные или подбирать объявления с учетом интересов пользователей. Управлять файлами cookie можно в <ph name="BEGIN_LINK" />разделе настроек<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Удалить данные сайта?</translation>
 <translation id="169515064810179024">Закрыть сайтам доступ к датчикам движения</translation>
 <translation id="1717218214683051432">Датчики движения</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">Разрешить определенному сайту сохранять файлы cookie.</translation>
 <translation id="4046123991198612571">Следующий трек</translation>
 <translation id="4165986682804962316">Настройки сайтов</translation>
+<translation id="4200726100658658164">Открыть настройки геолокации</translation>
 <translation id="4226663524361240545">Вибрация при получении уведомлений</translation>
 <translation id="4242533952199664413">Открыть настройки</translation>
 <translation id="4259722352634471385">Навигация заблокирована: <ph name="URL" /></translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">Все сайты</translation>
 <translation id="6320088164292336938">Вибросигнал</translation>
 <translation id="6388207532828177975">Очистить и сбросить</translation>
+<translation id="6423924377271166037">Удалить файлы cookie</translation>
 <translation id="6439114592976064011">Запретить сайтам использовать устройство и данные виртуальной реальности</translation>
 <translation id="6447842834002726250">Файлы сookie</translation>
 <translation id="6527303717912515753">Поделиться</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">Перемотать назад</translation>
 <translation id="8444433999583714703">Чтобы у приложения "<ph name="APP_NAME" />" был доступ к данным о местоположении, включите геолокацию в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Отключить доступ к устройству</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Используется 1 файл cookie}one{Используется # файл cookie}few{Используются # файла cookie}many{Используются # файлов cookie}other{Используется # файла cookie}}</translation>
 <translation id="8463851957836045671">Сайт работает быстро</translation>
 <translation id="851751545965956758">Не разрешать сайтам подключаться к устройствам</translation>
 <translation id="857943718398505171">Разрешено (рекомендуется)</translation>

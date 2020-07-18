@@ -98,6 +98,7 @@
 <translation id="1995660704900986789">پاور آف کریں</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">پیغام ٹائپ کریں</translation>
+<translation id="2018630726571919839">مجھے کوئی لطیفہ سنائيں</translation>
 <translation id="2050339315714019657">پورٹریٹ</translation>
 <translation id="2067602449040652523">کی بورڈ کی چمک</translation>
 <translation id="209965399369889474">نیٹ ورک سے منسلک نہیں ہے</translation>
@@ -125,6 +126,7 @@
 <translation id="2354174487190027830"><ph name="NAME" /> کو فعال کیا جا رہا ہے</translation>
 <translation id="2359808026110333948">جاری رکھیں</translation>
 <translation id="2365393535144473978">موبائل ڈیٹا فعال کرنے سے بلوٹوتھ فعال ہو جائے گا۔</translation>
+<translation id="2369165858548251131">چینی میں "ہیلو"</translation>
 <translation id="2390318262976603432">مقامی ترتیبات</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">اپ ڈیٹ دستیاب ہے</translation>
@@ -142,6 +144,7 @@
 <translation id="256712445991462162">ڈاک کردہ میگنیفائر</translation>
 <translation id="2575685495496069081">متعدد سائن ان کو غیر فعال کر دیا گیا ہے</translation>
 <translation id="2582112259361606227">اپ ڈیٹ کرنے کیلئے دوبارہ شروع کریں</translation>
+<translation id="2595239820337756193">میل میں 5 ہزار</translation>
 <translation id="2617342710774726426">‏SIM کارڈ مقفل ہے</translation>
 <translation id="2621713457727696555">محفوظ ہے</translation>
 <translation id="2653659639078652383">جمع کرائیں</translation>
@@ -195,6 +198,7 @@
 <translation id="3154351730702813399">آلہ کا منتظم آپ کی براؤزنگ سرگرمی کو مانیٹر کر سکتا ہے۔</translation>
 <translation id="3181441307743005334">ری سٹارٹ کرنے میں کچھ وقت لگ سکتا ہے</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{ایک آلہ سے منسلک ہے}other{# آلات سے منسلک ہے}}</translation>
+<translation id="320207200541803018">ٹائمر سیٹ کریں</translation>
 <translation id="3203405173652969239">سوئچ رسائی فعال ہو گئی</translation>
 <translation id="3207953481422525583">صارف کی ترتیبات</translation>
 <translation id="3217205077783620295">والیوم آن ہے۔ ٹوگل کرنے سے آڈیو خاموش ہو جائے گی۔</translation>
@@ -207,6 +211,7 @@
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> اب بھی بعد میں سائن ان کر سکتا ہے۔</translation>
 <translation id="3321628682574733415">والدین کا غلط کوڈ</translation>
 <translation id="332587331255250389">براہ کرم بیٹری تبدیل کریں</translation>
+<translation id="334252345105450327">ایک اسکرین شاٹ لیں</translation>
 <translation id="3351879221545518001">آپ فی الحال اسکرین کاسٹ کر رہے ہیں۔</translation>
 <translation id="3364721542077212959">اسٹائلس ٹولز</translation>
 <translation id="3368922792935385530">منسلک</translation>
@@ -239,6 +244,7 @@
 <translation id="3631369015426612114">مندرجہ ذیل سے اطلاعات کی اجازت دیں</translation>
 <translation id="3638400994746983214">رازداری کا اسکرین ٹوگل کریں۔ <ph name="STATE_TEXT" />۔</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> نظم کردہ صارف</translation>
+<translation id="3702846122927433391">نائیجیریا میں آبادی</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">علاقہ کیپچر کریں</translation>
 <translation id="371370241367527062">سامنے کا مائیکروفون</translation>
@@ -519,6 +525,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> میں پرانی ریزولیوشن پر لوٹایا جا رہا ہے</translation>
 <translation id="7188494361780961876">مینو کو اسکرین کے اوپر بائیں کونے میں منتقل کر دیا گیا۔</translation>
+<translation id="7189412385142492784">‏Venus کتنا دور ہے</translation>
 <translation id="7246071203293827765">‏<ph name="UPDATE_TEXT" />۔ اپ ڈیٹ کو لاگو کرنے کے لیے Chromebook کو ری سٹارٹ کرنے کی ضرورت ہے۔ اس میں 1 منٹ تک لگ سکتا ہے۔</translation>
 <translation id="7256634071279256947">پیچھے کا مائیکروفون</translation>
 <translation id="726276584504105859">اسپلٹ اسکرین استعمال کرنے کیلئے یہاں گھسیٹیں</translation>
@@ -645,6 +652,7 @@
 <translation id="8649101189709089199">سننے کے لیے منتخب کریں</translation>
 <translation id="8652175077544655965">ترتیبات بند کریں</translation>
 <translation id="8653151467777939995">اطلاع کی ترتیبات دکھائیں۔ اطلاعات آن ہیں</translation>
+<translation id="8660331759611631213">71 کا جَذر المربع</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />، سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">نیٹ ورک کی فہرست دکھائیں۔ <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

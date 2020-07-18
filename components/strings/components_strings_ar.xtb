@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">الصورة التي نسختها</translation>
 <translation id="1150979032973867961">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثقة من خلال نظام تشغيل الكمبيوتر. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="1151972924205500581">كلمة المرور مطلوبة</translation>
-<translation id="1152921474424827756">الدخول إلى <ph name="BEGIN_LINK" />النسخة المخزنة مؤقتًا<ph name="END_LINK" /> من <ph name="URL" /></translation>
 <translation id="1156303062776767266">يتمّ عرض ملف محلي أو مشترك.</translation>
 <translation id="1158211211994409885">أغلق <ph name="HOST_NAME" /> الاتصال على نحو غير متوقع.</translation>
 <translation id="115926840831309955">‏يُرجى التحقق من رمز التحقق من البطاقة (CVC) ثم إعادة المحاولة، أو تعديل تاريخ انتهاء الصلاحية.</translation>
 <translation id="1161325031994447685">‏إعادة الاتصال بـ Wi-Fi</translation>
 <translation id="1165039591588034296">خطأ</translation>
+<translation id="1165174597379888365">تمّت زيارة صفحة</translation>
 <translation id="1175364870820465910">ط&amp;باعة...</translation>
 <translation id="1175875016430184367">وضع ثلاثة دبابيس يمينًا</translation>
 <translation id="1178581264944972037">الإيقاف مؤقتًا</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">الإعلانات</translation>
 <translation id="1919367280705858090">الحصول على مساعدة بخصوص رسالة خطأ محددة</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{بدون}=1{موقع واحد}two{ موقعان (#)}few{# مواقع}many{# موقعًا}other{# موقع}}</translation>
-<translation id="194030505837763158">الانتقال إلى <ph name="LINK" /></translation>
 <translation id="1945968466830820669">‏قد تفقد إمكانية الوصول إلى حساب مؤسستك أو تتعرَّض لسرقة هويتك. لذا، يوصي Chromium بتغيير كلمة مرورك الآن.</translation>
 <translation id="1947454675006758438">وضع دبوس أعلى اليمين</translation>
 <translation id="1959001866257244765">‏المساعدة في تحسين مستوى الأمان على الإنترنت لجميع المستخدمين من خلال إرسال <ph name="BEGIN_WHITEPAPER_LINK" />عناوين URL لبعض الصفحات التي تزورها وعدد محدود من معلومات النظام وبعض أنواع محتوى الصفحات<ph name="END_WHITEPAPER_LINK" /> إلى Google. <ph name="BEGIN_PRIVACY_PAGE_LINK" />سياسة الخصوصية<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,9 +266,9 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{وتطبيق آخر}zero{و# تطبيق آخر}two{وتطبيقان (#) آخران}few{و# تطبيقات أخرى}many{و# تطبيقًا آخر}other{و# تطبيق آخر}}</translation>
 <translation id="2003709556000175978">إعادة ضبط كلمة المرورالآن</translation>
 <translation id="2003775180883135320">عمل أربعة ثقوب بالأعلى</translation>
+<translation id="202072848677994234">تم إرسال هذا النموذج من خلال اتصال إنترنت غير آمن. وتم إيقاف ميزة "الملء التلقائي".</translation>
 <translation id="2025115093177348061">الواقع المعزّز</translation>
 <translation id="2025186561304664664">تم تعيين الخادم الوكيل على التهيئة التلقائية.</translation>
-<translation id="2030481566774242610">هل تقصد <ph name="LINK" />؟</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />التحقق من الخادم الوكيل والجدار الناري<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">الدُرج 7</translation>
 <translation id="204357726431741734">‏يُرجى تسجيل الدخول لاستخدام كلمات المرور المحفوظة في حسابك على Google.</translation>
@@ -335,6 +334,7 @@
 <translation id="2289385804009217824">قطع</translation>
 <translation id="2292556288342944218">تم حظر دخولك إلى الإنترنت</translation>
 <translation id="2293443924986248631">عند تفعيل هذه الميزة، لا يمكن للمواقع الإلكترونية استخدام ملفات تعريف الارتباط لتتبّع نشاط تصفحّك على الإنترنت. وقد تتوقف الميزات عن العمل في بعض المواقع الإلكترونية.</translation>
+<translation id="2295290966866883927">‏يتم إرسال عناوين URL الخاصة بالصفحات التي تزورها Google Cloud أو جهات خارجية للتحليل. على سبيل المثال، قد يتم فحص هذه العناوين لاكتشاف المواقع الإلكترونية غير الآمنة.</translation>
 <translation id="2297722699537546652">‏B5 (مغلف)</translation>
 <translation id="2300306941146563769">لم يتم التحميل</translation>
 <translation id="2310021320168182093">‏Chou2 (مغلف)</translation>
@@ -1047,6 +1047,7 @@
 <translation id="5308380583665731573">اتصال</translation>
 <translation id="5308689395849655368">ميزة الإبلاغ عن الأعطال غير مفعّلة.</translation>
 <translation id="5314967030527622926">أداة إنشاء الكتيبات</translation>
+<translation id="5316812925700871227">تدوير عكس اتجاه عقارب الساعة</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />، <ph name="MATCH_POSITION" /> من <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">اختيار معلومات الاتصال</translation>
@@ -1070,7 +1071,6 @@
 <translation id="5421136146218899937">محو بيانات التصفّح...</translation>
 <translation id="5426179911063097041">يريد موقع <ph name="SITE" /> إرسال إشعارات إليك.</translation>
 <translation id="5430298929874300616">إزالة إشارة مرجعية</translation>
-<translation id="5431657950005405462">لم يتم العثور على ملفك</translation>
 <translation id="5439770059721715174">حدث خطأ في مصادقة المخطط على "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">ترتيب عكسي والوجه للأعلى</translation>
 <translation id="5447765697759493033">لن تتم ترجمة هذا الموقع</translation>
@@ -1444,7 +1444,6 @@
 <translation id="7083258188081898530">الدُرج 9</translation>
 <translation id="7086090958708083563">طلب التحميل مقدّم من المستخدم</translation>
 <translation id="7087282848513945231">مقاطعة</translation>
-<translation id="7090678807593890770">‏البحث في Google عن <ph name="LINK" /></translation>
 <translation id="7108338896283013870">إخفاء</translation>
 <translation id="7108634116785509031">يريد <ph name="HOST" /> استخدام الكاميرا.</translation>
 <translation id="7108819624672055576">تم السماح بواسطة إحدى الإضافات</translation>
@@ -1881,7 +1880,6 @@
 <translation id="893332455753468063">إضافة اسم</translation>
 <translation id="8943282376843390568">ليموني</translation>
 <translation id="8957210676456822347">تفويض المدخل المشروط الوصول إليه</translation>
-<translation id="8958582951173503172">‏عند الإبلاغ عن أي أحداث أمنية من "وصلات Chrome Enterprise"، يتم إرسال البيانات المتعلّقة بالحدث إلى مشرفك. ويمكن أن تتضمن هذه البيانات عناوين URL لصفحات تزورها في Chrome، وأسماء ملفات أو بيانات وصفية، واسم المستخدِم الذي تستخدمه لتسجيل الدخول إلى جهازك وإلى متصفّح Chrome.</translation>
 <translation id="8962950042226115166">موقع إلكتروني مريب</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />اقتراحات:<ph name="MARKUP_2" />التأكد من أن لديك اتصال بيانات<ph name="MARKUP_3" />إعادة تحميل صفحة الويب هذه لاحقًا<ph name="MARKUP_4" />التحقق من العنوان الذي أدخلته<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">حفظ البطاقة</translation>

@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Vágólapra másolt kép</translation>
 <translation id="1150979032973867961">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa az Ön számítógépének operációs rendszere szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="1151972924205500581">Jelszó szükséges</translation>
-<translation id="1152921474424827756">A(z) <ph name="URL" /> egy <ph name="BEGIN_LINK" />tárolt változatának<ph name="END_LINK" /> megtekintése</translation>
 <translation id="1156303062776767266">Helyi vagy megosztott fájlt tekint meg</translation>
 <translation id="1158211211994409885">A(z) <ph name="HOST_NAME" /> váratlanul megszakította a kapcsolatot.</translation>
 <translation id="115926840831309955">Ellenőrizze a CVC-t, majd próbálja újra, vagy módosítsa a lejárati dátumot</translation>
 <translation id="1161325031994447685">Újracsatlakozás Wi-Fi-hálózathoz</translation>
 <translation id="1165039591588034296">Hiba</translation>
+<translation id="1165174597379888365">Oldallátogatás történt</translation>
 <translation id="1175364870820465910">&amp;Nyomtatás...</translation>
 <translation id="1175875016430184367">Három kapocs a jobb oldalon</translation>
 <translation id="1178581264944972037">Szünet</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">Hirdetések</translation>
 <translation id="1919367280705858090">Segítség kérése adott hibaüzenet esetén</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Nincs}=1{1 webhely}other{# webhely}}</translation>
-<translation id="194030505837763158">Ugrás ide: <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Elveszítheti a hozzáférést szervezete fiókjához, vagy visszaélhetnek személyes adataival. A Chromium azt javasolja, hogy azonnal módosítsa jelszavát.</translation>
 <translation id="1947454675006758438">Kapocs jobbra fent</translation>
 <translation id="1959001866257244765">Segítsen az internet biztonságosabbá tételében mindenki számára azzal, hogy továbbítja <ph name="BEGIN_WHITEPAPER_LINK" />egyes felkeresett oldalak URL-jét, valamint korlátozott rendszer-információkat és bizonyos oldaltartalmakat<ph name="END_WHITEPAPER_LINK" /> a Google-nak. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Adatvédelmi irányelvek<ph name="END_PRIVACY_PAGE_LINK" />.</translation>
@@ -267,9 +266,9 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="2001146170449793414">{COUNT,plural, =1{és 1 további}other{és # további}}</translation>
 <translation id="2003709556000175978">Jelszó visszaállítása</translation>
 <translation id="2003775180883135320">Négy lyuk felül</translation>
+<translation id="202072848677994234">Az űrlap beküldése nem biztonságos kapcsolaton keresztül történik. A böngésző letiltotta az automatikus kitöltést.</translation>
 <translation id="2025115093177348061">Kiterjesztett valóság</translation>
 <translation id="2025186561304664664">Automatikusan konfigurálhatóra beállított proxy.</translation>
-<translation id="2030481566774242610">Erre gondolt: <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />A proxy és a tűzfal ellenőrzése<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">7. tálca</translation>
 <translation id="204357726431741734">Jelentkezzen be a Google-fiókjába mentett jelszavak használatához</translation>
@@ -335,6 +334,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="2289385804009217824">Vágás</translation>
 <translation id="2292556288342944218">Az internethez való hozzáférést a rendszer letiltotta</translation>
 <translation id="2293443924986248631">Bekapcsolt állapotban a webhelyek nem tudnak olyan cookie-kat használni, amelyek nyomon követik tevékenységeit az interneten. Előfordulhat, hogy bizonyos webhelyek funkciói nem működnek megfelelően.</translation>
+<translation id="2295290966866883927">A böngésző a felkeresett oldalak URL-címét elemzés céljából elküldi a Google Cloudnak vagy harmadik feleknek. Az elemzés oka lehet például annak az ellenőrzése, hogy nem biztonságos webhelyről van-e szó.</translation>
 <translation id="2297722699537546652">B5 (boríték)</translation>
 <translation id="2300306941146563769">Nincs feltöltve</translation>
 <translation id="2310021320168182093">Chou2 (boríték)</translation>
@@ -1043,6 +1043,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="5308380583665731573">Csatlakozás</translation>
 <translation id="5308689395849655368">A hibabejelentés ki van kapcsolva.</translation>
 <translation id="5314967030527622926">Brosúrakészítő</translation>
+<translation id="5316812925700871227">Forgatás balra</translation>
 <translation id="5317780077021120954">Mentés</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="NUM_MATCHES" /> elemből a következő pozícióban: <ph name="MATCH_POSITION" />.</translation>
 <translation id="5324080437450482387">Kapcsolatfelvételi adatok kiválasztása</translation>
@@ -1066,7 +1067,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="5421136146218899937">Böngészési adatok törlése...</translation>
 <translation id="5426179911063097041">A(z) <ph name="SITE" /> értesítéseket szeretne küldeni Önnek</translation>
 <translation id="5430298929874300616">Könyvjelző törlése</translation>
-<translation id="5431657950005405462">A fájl nem található</translation>
 <translation id="5439770059721715174">Sémaérvényesítési hiba a következőnél: „<ph name="ERROR_PATH" />”: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Fordított sorrend, felfelé fordítva</translation>
 <translation id="5447765697759493033">Nem fordítjuk le ezt a webhelyet</translation>
@@ -1440,7 +1440,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="7083258188081898530">9. tálca</translation>
 <translation id="7086090958708083563">A felhasználó kérte a feltöltést</translation>
 <translation id="7087282848513945231">Megye</translation>
-<translation id="7090678807593890770">Keresés a Google-on a következőre: <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Elrejtés</translation>
 <translation id="7108634116785509031">A(z) <ph name="HOST" /> webhely használni szeretné a kamerát</translation>
 <translation id="7108819624672055576">Bővítmény engedélyezi</translation>
@@ -1877,7 +1876,6 @@ További részletek:
 <translation id="893332455753468063">Név hozzáadása</translation>
 <translation id="8943282376843390568">Limezöld</translation>
 <translation id="8957210676456822347">Hitelesítés hitelesítési portállal</translation>
-<translation id="8958582951173503172">Amikor a Chrome Enterprise Connectors biztonsági eseményt észlel, a böngésző elküldi az eseménnyel kapcsolatos adatokat a rendszergazdának. Az adatok közé tartozhatnak a Chrome-ban felkeresett oldalak URL-jei, fájlnevek és metaadatok, valamint a felhasználónév, amellyel eszközére és a Chrome-ba bejelentkezett.</translation>
 <translation id="8962950042226115166">Gyanús webhely</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Javaslatok:<ph name="MARKUP_2" />Ellenőrizze, hogy van-e adatkapcsolata<ph name="MARKUP_3" />Töltse be újra a weboldalt később<ph name="MARKUP_4" />Ellenőrizze a beírt internetcímet<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Kártya mentése</translation>

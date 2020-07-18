@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Larawang Kinopya Mo</translation>
 <translation id="1150979032973867961">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; hindi pinagkakatiwalaan ng operating system ng iyong computer ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="1151972924205500581">Kinakailangan ang password</translation>
-<translation id="1152921474424827756">Mag-access ng <ph name="BEGIN_LINK" />naka-cache na kopya<ph name="END_LINK" /> ng <ph name="URL" /></translation>
 <translation id="1156303062776767266">Tumitingin ka ng lokal o nakabahaging file</translation>
 <translation id="1158211211994409885">Pinutol ng <ph name="HOST_NAME" /> ang koneksyon nang hindi inaasahan.</translation>
 <translation id="115926840831309955">Tingnan ang iyong CVC at subukan ulit o i-update ang petsa ng pag-expire</translation>
 <translation id="1161325031994447685">Muling kumonekta sa Wi-Fi</translation>
 <translation id="1165039591588034296">Error</translation>
+<translation id="1165174597379888365">Binisita ang page</translation>
 <translation id="1175364870820465910">&amp;I-print...</translation>
 <translation id="1175875016430184367">Triple staple right</translation>
 <translation id="1178581264944972037">I-pause</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">Mga Ad</translation>
 <translation id="1919367280705858090">Humingi ng tulong sa partikular na mensahe ng error</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Wala}=1{1 site}one{# site}other{# na site}}</translation>
-<translation id="194030505837763158">Pumunta sa <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Maaari kang mawalan ng access sa account ng iyong organisasyon o manakawan ng pagkakakilanlan. Inirerekomenda ng Chromium na palitan ang iyong password ngayon.</translation>
 <translation id="1947454675006758438">Staple top right</translation>
 <translation id="1959001866257244765">Tumulong na pahusayin ang seguridad sa web para sa lahat sa pamamagitan ng pagpapadala ng <ph name="BEGIN_WHITEPAPER_LINK" />mga URL ng ilang page na binibisita mo, limitadong impormasyon ng system, at ilang content ng page<ph name="END_WHITEPAPER_LINK" /> sa Google. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Patakaran sa privacy<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,9 +266,9 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="2001146170449793414">{COUNT,plural, =1{at 1 pa}one{at # pa}other{at # pa}}</translation>
 <translation id="2003709556000175978">I-reset na ang iyong password</translation>
 <translation id="2003775180883135320">Quad punch top</translation>
+<translation id="202072848677994234">Isinumite ang form na ito sa pamamagitan ng hindi secure na koneksyon. Naka-disable ang awtomatikong pagsagot</translation>
 <translation id="2025115093177348061">Augmented reality</translation>
 <translation id="2025186561304664664">Nakatakda sa awtomatikong naka-configure ang proxy.</translation>
-<translation id="2030481566774242610">Ang ibig mo bang sabihin ay <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Suriin ang proxy at ang firewall<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Tray 7</translation>
 <translation id="204357726431741734">Mag-sign in para magamit ang mga naka-save na password sa iyong Google Account</translation>
@@ -335,6 +334,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="2289385804009217824">Paikliin</translation>
 <translation id="2292556288342944218">Naka-block ang iyong access sa Internet</translation>
 <translation id="2293443924986248631">Kapag naka-on, ang mga site ay hindi makakagamit ng cookies na sumusubaybay sa iyo sa buong web. Posibleng masira ang mga feature sa ilang site.</translation>
+<translation id="2295290966866883927">Ipinapadala sa Google Cloud o mga third party para sa pagsusuri ang mga URL ng mga page na binibisita mo. Halimbawa, posibleng i-scan ang mga ito para matukoy ang mga hindi ligtas na website.</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2300306941146563769">Hindi na-upload</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
@@ -1047,6 +1047,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="5308380583665731573">Kumonekta</translation>
 <translation id="5308689395849655368">Hindi pinagana ang pag-uulat ng pag-crash.</translation>
 <translation id="5314967030527622926">Booklet maker</translation>
+<translation id="5316812925700871227">I-rotate pakaliwa</translation>
 <translation id="5317780077021120954">I-save</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> ng <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Pumili ng Impormasyon sa Pakikipag-ugnayan</translation>
@@ -1070,7 +1071,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="5421136146218899937">I-clear ang data sa pag-browse...</translation>
 <translation id="5426179911063097041">Gusto ng <ph name="SITE" /> na padalhan ka ng mga notification</translation>
 <translation id="5430298929874300616">Alisin ang bookmark</translation>
-<translation id="5431657950005405462">Hindi nakita ang iyong file</translation>
 <translation id="5439770059721715174">Error sa pagpapatunay ng schema sa "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Baligtarin ang pagkakasunod-sunod nang nakatihaya</translation>
 <translation id="5447765697759493033">Hindi isasalin ang site na ito</translation>
@@ -1444,7 +1444,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="7083258188081898530">Tray 9</translation>
 <translation id="7086090958708083563">Hiniling ng user ang pag-upload</translation>
 <translation id="7087282848513945231">Lalawigan</translation>
-<translation id="7090678807593890770">Hanapin sa Google ang <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Itago</translation>
 <translation id="7108634116785509031">Gustong gamitin ng <ph name="HOST" /> ang iyong camera</translation>
 <translation id="7108819624672055576">Pinayagan ng isang extension</translation>
@@ -1880,7 +1879,6 @@ Mga karagdagang detalye:
 <translation id="893332455753468063">Magdagdag ng Pangalan</translation>
 <translation id="8943282376843390568">Lime</translation>
 <translation id="8957210676456822347">Pagpapahintulot sa Captive Portal</translation>
-<translation id="8958582951173503172">Kapag na-flag ng Chrome Enterprise Connectors ang mga event tungkol sa seguridad, ipapadala sa iyong administrator ang nauugnay na data tungkol sa event. Puwedeng kabilang dito ang mga URL ng mga page na binibisita mo sa Chrome, mga pangalan ng file o metadata, at ang username na iyong ginagamit para mag-sign in sa device mo at sa Chrome.</translation>
 <translation id="8962950042226115166">Kahina-hinalang site</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Mga suhestyon:<ph name="MARKUP_2" />Tiyaking may koneksyon ka ng data<ph name="MARKUP_3" />Muling i-load ang webpage na ito sa ibang pagkakataon<ph name="MARKUP_4" />Tingnan ang inilagay mong address<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">I-save ang card</translation>

@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">ફક્ત ચિહ્નિત કરો</translation>
 <translation id="1038462104119736705">Linux માટે ઓછામાં ઓછી <ph name="INSTALL_SIZE" /> સ્પેસનો સુઝાવ આપવામાં આવે છે. ખાસી સ્પેસ વધારવા માટે, તમારા ડિવાઇસમાંથી ફાઇલો ડિલીટ કરો.</translation>
 <translation id="1039337018183941703">અમાન્ય અથવા દૂષિત ફાઇલ</translation>
+<translation id="104086161873270383">નવી પ્રોફાઇલ</translation>
 <translation id="1041175011127912238">આ પેજ પ્રતિભાવ આપી રહ્યું નથી</translation>
 <translation id="1041263367839475438">ઉપલબ્ધ ડિવાઇસ</translation>
 <translation id="1042174272890264476">તમારા કમ્પ્યુટરની સાથે <ph name="SHORT_PRODUCT_NAME" /> ની RLZ લાઇબ્રેરી બિલ્ટ ઇન પણ આવે છે. RLZ વિશેષ પ્રચારાત્મક ઝુંબેશ દ્વારા ચલાવવામાં આવતી શોધ અને <ph name="SHORT_PRODUCT_NAME" /> ઉપયોગને માપવા માટે બિન-અદ્વિતીય, બિન-વ્યક્તિગત રૂપે ઓળખી શકાય તેવા ટૅગ સોંપે છે. આ લેબલ્સ કેટલીકવાર <ph name="PRODUCT_NAME" /> માં Google શોધ ક્વેરીઝમાં દેખાય છે.</translation>
@@ -104,6 +105,7 @@
 <translation id="1124772482545689468">વપરાશકર્તા</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> જેવું લાગે છે (મૂળ)</translation>
 <translation id="1126809382673880764">જોખમકારક વેબસાઇટ, ડાઉનલોડ અને એક્સ્ટેંશન સામે તમારું રક્ષણ કરતું નથી. Gmail અને Search જેવી Googleની અન્ય સેવાઓમાં, જ્યાં ઉપલબ્ધ હોય, ત્યાં તમને હજી પણ Safe Browsing સંરક્ષણ મળશે.</translation>
+<translation id="112752777279960360">પહેલી વાર આ કમ્પ્યુટર માટે સિક્યુરિટી કી તરીકે કોઈ Android ફોનના ઉપયોગને સેટઅપ કરવા માટે, તમારા ફોન પર Chrome ખોલો અને "સેટિંગ &gt; પાસવર્ડ &gt; ફોનનો સિક્યુરિટી કી તરીકે ઉપયોગ કરો" પર જાઓ. પછી "નવા ડિવાઇસને કનેક્ટ કરો" પર ટૅપ કરો અને આ QR કોડને સ્કૅન કરો.</translation>
 <translation id="1128109161498068552">MIDI ઉપકરણોને ઍક્સેસ કરવા માટે સિસ્ટમના એકમાત્ર સંદેશાઓનો ઉપયોગ કરવાની કોઇપણ સાઇટ્સને  મંજૂરી આપશો નહીં</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">શોધ એંજિનમાં ફેરફાર કરો</translation>
@@ -253,6 +255,7 @@
 <translation id="1306606229401759371">સેટિંગ્સ બદલો</translation>
 <translation id="1307165550267142340">તમારો પિન બનાવ્યો હતો</translation>
 <translation id="1307559529304613120">અરેરે! સિસ્ટમ આ ડિવાઇસ માટે એક લાંબા ગાળાનું API ઍક્સેસ ટોકન સ્ટોર કરવામાં નિષ્ફળ થઈ.</translation>
+<translation id="1313162974556054106">ઉપકરણનું નામ</translation>
 <translation id="1313405956111467313">ઑટોમૅટિક પ્રૉક્સી ગોઠવણ</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">ખુલ્લી હોય તે ટૅબ સહિત, બધી સાઇટમાંથી તમને સાઇન આઉટ કરવામાં આવશે</translation>
@@ -505,6 +508,7 @@
 <translation id="1622054403950683339">વાઇ-ફાઇ નેટવર્ક સાથે જોડાણ તોડો</translation>
 <translation id="1623132449929929218">હાલમાં છબીઓ ઉપલબ્ધ નથી. વૉલપેપરના સંગ્રહો જોવા માટે, કૃપા કરીને ઇન્ટરનેટ સાથે ફરીથી કનેક્ટ કરો.</translation>
 <translation id="1623723619460186680">બ્લૂ લાઇટમાં ઘટાડો</translation>
+<translation id="1624012933569991823">સેટિંગ</translation>
 <translation id="1627276047960621195">ફાઇલ વર્ણનકર્તા</translation>
 <translation id="1627408615528139100">પહેલેથી જ ડાઉનલોડ કરેલ છે</translation>
 <translation id="1628948239858170093">ખોલતા પહેલાં ફાઇલને સ્કૅન કરીએ?</translation>
@@ -698,7 +702,6 @@
 <translation id="184273675144259287">તમારી Linux ઍપ અને ફાઇલોને બદલે પહેલાંનો બૅકઅપ મૂકો</translation>
 <translation id="1842766183094193446">શું તમે ખરેખર ડેમો મોડ ચાલુ કરવા માગો છો?</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" /> ચલાવવા માટે Control-ક્લિક કરો</translation>
-<translation id="1846880379134204029">ગ્રૂપ <ph name="GROUP_NAME" /> - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">ઍમ્બિઅન્ટ મોડ ચાલુ કરો</translation>
 <translation id="1849186935225320012">આ પૃષ્ઠ પાસે MIDI ઉપકરણોનું સંપૂર્ણ નિયંત્રણ છે.</translation>
 <translation id="1850508293116537636">&amp;ઘડિયાળની દિશામાં ફેરવો</translation>
@@ -741,6 +744,7 @@
 <translation id="1887850431809612466">હાર્ડવેર પુનરાવર્તન</translation>
 <translation id="1888523338879380247">{0,plural, =1{ડિવાઇસ અપડેટ કરવાનો છેલ્લો દિવસ}one{# દિવસની અંદર ડિવાઇસ અપડેટ કરો}other{# દિવસની અંદર ડિવાઇસ અપડેટ કરો}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
+<translation id="1891760696839073783"><ph name="DEVICE_NAME" /> પરથી <ph name="ATTACHMENTS" /> મેળવી રહ્યાં છીએ</translation>
 <translation id="189210018541388520">પૂર્ણ સ્ક્રીન ખોલો</translation>
 <translation id="1892341345406963517">નમસ્કાર <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">અન્ય ભાષાઓ</translation>
@@ -1714,6 +1718,7 @@
 <translation id="3103941660000130485">Linux અપગ્રેડ કરવામાં ભૂલ આવી</translation>
 <translation id="3105796011181310544">બદલીને પાછા Google પર આવીએ?</translation>
 <translation id="310671807099593501">સાઇટ બ્લૂટૂથનો ઉપયોગ કરી રહી છે</translation>
+<translation id="3109724472072898302">સંકુચિત</translation>
 <translation id="3115147772012638511">કૅશ માટે રાહ જુએ છે...</translation>
 <translation id="3115580024857770654">બધા નાના કરો</translation>
 <translation id="3116968597797150452">પ્રમાણપત્ર પ્રોફાઇલ</translation>
@@ -1781,7 +1786,6 @@
 <translation id="3192947282887913208">ઑડિયો ફાઇલો</translation>
 <translation id="3199127022143353223">સર્વર્સ</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome આ પાસવર્ડને અત્યારે ચેક કરવાની ભલામણ કરે છે}one{Chrome આ પાસવર્ડને અત્યારે ચેક કરવાની ભલામણ કરે છે}other{Chrome આ પાસવર્ડને અત્યારે ચેક કરવાની ભલામણ કરે છે}}</translation>
-<translation id="3200941271596533635">રીડર મોડને ટૉગલ કરો</translation>
 <translation id="3201422919974259695">ઉપલબ્ધ USB ડિવાઇસ અહીં દેખાશે.</translation>
 <translation id="3202131003361292969">પથ</translation>
 <translation id="3202173864863109533">આ ટૅબનો ઑડિઓ મ્યૂટ કરવામાં આવી રહ્યો છે.</translation>
@@ -1813,6 +1817,7 @@
 <translation id="3253225298092156258">ઉપલબ્ધ નથી</translation>
 <translation id="3253448572569133955">અજાણ એકાઉન્ટ</translation>
 <translation id="3254516606912442756">આપમેળે સમય ઝોન શોધવાનું બંધ છે</translation>
+<translation id="3254715652085014625">તમારા Android ફોન પર Chrome ખોલો અને "સેટિંગ &gt; પાસવર્ડ &gt; સિક્યુરિટી કી તરીકે ફોનનો ઉપયોગ કરો" પર જાઓ અને પછી ત્યાં આપેલી સૂચના અનુસરો.</translation>
 <translation id="3255355328033513170"><ph name="SITE_GROUP_NAME" /> અને તેની હેઠળ આવતી કોઈપણ સાઇટ દ્વારા સ્ટોર કરેલો બધો ડેટા ડિલીટ કરવામાં આવશે. તેમાં કુકીનો સમાવેશ થાય છે. ખુલ્લા ટૅબ સહિત, આ સાઇટમાંથી તમને સાઇન આઉટ કરવામાં આવશે.</translation>
 <translation id="3259723213051400722">કૃપા કરીને ફરી પ્રયાસ કરો.</translation>
 <translation id="3264544094376351444">Sans-Serif ફૉન્ટ</translation>
@@ -3488,6 +3493,7 @@
 <translation id="5390677308841849479">ઘેરો લાલ અને નારંગી</translation>
 <translation id="5390743329570580756">આ માટે મોકલો</translation>
 <translation id="5397794290049113714">તમે</translation>
+<translation id="5398497406011404839">છુપાવેલા બુકમાર્ક</translation>
 <translation id="5398572795982417028">વધુ પડતો મોટો પૃષ્ઠ સંદર્ભ, મર્યાદા <ph name="MAXIMUM_PAGE" /> છે</translation>
 <translation id="5398772614898833570">જાહેરાતો અવરોધિત કરી</translation>
 <translation id="5402815541704507626">મોબાઇલ ડેટાનો ઉપયોગ કરીને અપડેટ ડાઉનલોડ કરો</translation>
@@ -3573,6 +3579,7 @@
 <translation id="5496587651328244253">ગોઠવો</translation>
 <translation id="5497251278400702716">આ ફાઇલ</translation>
 <translation id="5499313591153584299">આ ફાઇલ તમારા કમ્પ્યુટર માટે હાનિકારક હોઇ શકે છે.</translation>
+<translation id="5499453227627332024">તમારા Linux Container માટે કોઈ અપગ્રેડ ઉપલબ્ધ છે. તમે થોડા સમય પછી સેટિંગ ઍપમાંથી પણ અપગ્રેડ કરી શકશો.</translation>
 <translation id="5500709606820808700">સલામતી માટે તપાસ આજે કરવામાં આવી</translation>
 <translation id="5502500733115278303">Firefox પરથી આયાત કરેલું</translation>
 <translation id="5503982651688210506"><ph name="HOST" />ને તમારા કૅમેરાનો ઉપયોગ કરવાની અને તેને ખસેડવાની સાથે તમારા માઇક્રોફોનનો ઉપયોગ કરવાની મંજૂરી આપવાનું ચાલુ રાખો</translation>
@@ -4242,6 +4249,7 @@ USB ડિવાઇસ</translation>
 <translation id="6322653941595359182">તમારી Chromebookમાંથી ટેક્સ્ટ સંદેશા મોકલો અને મેળવો</translation>
 <translation id="6324916366299863871">શૉર્ટકટમાંમાં ફેરફાર કરો</translation>
 <translation id="6325191661371220117">ઑટો લોન્ચ બંધ કરો</translation>
+<translation id="6325525973963619867">નિષ્ફળ થયું</translation>
 <translation id="6326175484149238433">Chrome માંથી દૂર કરો</translation>
 <translation id="6326855256003666642">સક્રિય રાખવા માટેની સંખ્યા</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> માટે તમે આ ડિવાઇસને ડેડલાઇન પહેલાં અપડેટ કરો તે જરૂરી છે.</translation>
@@ -4559,6 +4567,7 @@ USB ડિવાઇસ</translation>
 <translation id="6758056191028427665">અમને જણાવો કે અમે કેવું કાર્ય કરી રહ્યાં છીએ.</translation>
 <translation id="6759193508432371551">ફેક્ટરી ફરીથી સેટ કરો</translation>
 <translation id="6762833852331690540">ચાલુ</translation>
+<translation id="676560328519657314">Google Payમાં તમારી ચુકવણી પદ્ધતિઓ</translation>
 <translation id="6767566652486411142">બીજી ભાષા પસંદ કરો...</translation>
 <translation id="6767639283522617719">ડોમેન જોડી શકાતું નથી. સંસ્થાકીય એકમ માટે સેટિંગ યોગ્ય છે તેની ખાતરી કરો.</translation>
 <translation id="6769557323306147204"><ph name="ORGANIZATION_NAME" /> તમને આ ડિવાઇસ અપડેટ કરવાનો સુઝાવ આપે છે.</translation>
@@ -4731,6 +4740,7 @@ USB ડિવાઇસ</translation>
 <translation id="6972553992270299730"><ph name="ORIGIN" /> આ ફોલ્ડરમાં સાચવેલી ફાઇલો ખોલી શકતું નથી કારણ કે તેમાં સિસ્ટમ ફાઇલો શામેલ છે</translation>
 <translation id="6972629891077993081">HID ડિવાઇસ</translation>
 <translation id="6972754398087986839">પ્રારંભ કરો</translation>
+<translation id="6972887130317925583">ચેડાં કરાયેલો પાસવર્ડ સફળતાપૂર્વક બદલ્યો. કોઈપણ સમયે <ph name="SETTINGS" />માં તમારા પાસવર્ડ ચેક કરો.</translation>
 <translation id="6973611239564315524">Debian 10 માટેનું અપગ્રેડ (Buster) ઉપલબ્ધ છે</translation>
 <translation id="6974609594866392343">ઑફલાઇન ડેમો મોડ</translation>
 <translation id="6977381486153291903">ફર્મવેયર પુનરાવર્તન</translation>
@@ -4842,7 +4852,6 @@ USB ડિવાઇસ</translation>
 <translation id="7099337801055912064">વિશાળ PPD લોડ કરી શકતાં નથી. મહત્તમ કદ 250 kB છે.</translation>
 <translation id="7102687220333134671">સ્વચલિત અપડેટ ચાલુ કરેલ છે</translation>
 <translation id="7102832101143475489">વિનંતીનો સમય સમાપ્ત થઈ ગયો</translation>
-<translation id="7102928824073746774">નામ વિનાનું ગ્રૂપ - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">USBની પસંદગીઓ</translation>
 <translation id="710640343305609397">નેટવર્ક સેટિંગ ખોલો</translation>
 <translation id="7108338896283013870">છુપાવો</translation>
@@ -4918,6 +4927,7 @@ USB ડિવાઇસ</translation>
 <translation id="720110658997053098">આ ઉપકરણને કાયમ માટે કિઓસ્ક મોડમાં રાખો</translation>
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' ડિલીટ કર્યું</translation>
 <translation id="7201420661433230412">ફાઇલો જુઓ</translation>
+<translation id="7203150201908454328">વિસ્તૃત કરેલ</translation>
 <translation id="7203826966018112936">પ્રોફાઇલમાં સ્કૂલનું એકાઉન્ટ ઉમેરવાથી માતાપિતા યોગ્ય નિયંત્રણો હેઠળ સંચાલન કરતી વખતે વેબસાઇટ અને એક્સ્ટેન્શન પર વિદ્યાર્થી તરીકે સાઇન-ઇન કરવાનું સરળ બને છે. આ બાળકોને સ્કૂલના એકાઉન્ટ સાથે સિંક કરેલા બુકમાર્ક, પાસવર્ડ અથવા અન્ય બ્રાઉઝર ડેટાનો ઍક્સેસ આપતું નથી.&lt;br&gt;&lt;br&gt;
     જો તમે સ્કૂલમાં Chromebookનો ઉપયોગ કરતાં હોય અને તમે તમારા બાળકને બધા જરૂરી સ્કૂલવર્કનો ઍક્સેસ છે તેની ખાતરી કરવા માટે તમે હોમ પર શાળાનો અનુભવ બતાવવા માગતા હોય, તો કૃપા કરીને આ Family Link એકાઉન્ટમાંથી સાઇન આઉટ કરીને Chrome OS એકાઉન્ટ પેજમાંથી સ્કૂલના એકાઉન્ટમાં સાઇન ઇન કરો (નોંધ: Family Linkના માતાપિતા યોગ્ય નિયંત્રણો લાગુ થશે નહીં).&lt;br&gt;&lt;br&gt;
     જો તમારું બાળક સ્કૂલમાં Chromebookનો ઉપયોગ કરતું ન હોય અથવા જો તમે Family Linkનો ઉપયોગ કરીને બાળકના એકાઉન્ટને હોમ પર મેનેજ કરવા માગતા હોય, તો કૃપા કરીને આ એકાઉન્ટને સ્કૂલની પ્રોફાઇલમાં ઉમેરવા માટે નીચે આપેલા આગળ બટન પર ક્લિક કરો.</translation>
@@ -5313,7 +5323,6 @@ USB ડિવાઇસ</translation>
 <translation id="7704521324619958564">Play સ્ટોર ખોલો</translation>
 <translation id="7705276765467986571">બુકમાર્ક મૉડેલ લોડ કરી શકાયું નથી. </translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">રીડર મોડને ટૉગલ કરો</translation>
 <translation id="7707108266051544351">આ સાઇટને મોશન સેન્સરનો ઉપયોગ કરવાથી બ્લૉક કરવામાં આવી છે.</translation>
 <translation id="7707922173985738739">મોબાઇલ ડેટાનો ઉપયોગ કરો</translation>
 <translation id="7709152031285164251">નિષ્ફળ થયું - <ph name="INTERRUPT_REASON" /></translation>
@@ -5584,6 +5593,7 @@ USB ડિવાઇસ</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">શૉર્ટકટમાં ફેરફાર કર્યો</translation>
 <translation id="8018313076035239964">વેબસાઇટ કઈ માહિતીનો ઉપયોગ કરી શકે અને તેઓ કઈ કન્ટેન્ટ તમને બતાવી શકે તે નિયંત્રિત કરો</translation>
+<translation id="8022688469248132790">ભૂલની વિગતોનો રિવ્યૂ કરો</translation>
 <translation id="8023801379949507775">એક્સ્ટેન્શન્સ હમણાં અપડેટ કરો</translation>
 <translation id="8026334261755873520">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
@@ -6523,6 +6533,7 @@ USB ડિવાઇસ</translation>
 <translation id="9180380851667544951">સાઇટ તમારી સ્ક્રીનને શેર કરી શકે છે</translation>
 <translation id="9188732951356337132">વપરાશ અને નિદાનનો ડેટા મોકલો. આ ડિવાઇસ હાલમાં Googleને નિદાન, ડિવાઇસ અને ઍપ વપરાશનો ડેટા ઑટોમૅટિક રીતે મોકલી રહ્યું છે. આનો ઉપયોગ તમારા બાળકને ઓળખવા માટે થશે નહીં અને સિસ્ટમ અને ઍપની સ્થિરતા અને અન્ય સુધારણાઓમાં સહાય કરશે. એકત્રીકરણ કરેલો કેટલોક ડેટા Google ઍપ અને ભાગીદારોને પણ મદદ કરશે, જેમ કે Android ડેવલપર. જો તમારા બાળક માટે વધારાની વેબ અને ઍપ પ્રવૃત્તિ સેટિંગ ચાલુ હોય, તો આ ડેટા તેમના Google એકાઉન્ટમાં સાચવવામાં આવી શકે છે. <ph name="BEGIN_LINK2" />વધુ જાણો<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + પૂર્વ-શેર કરેલી કી</translation>
+<translation id="9198090666959937775">સિક્યુરિટી કી તરીકે તમારા Android ફોનનો ઉપયોગ કરો</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" />માં શોધો</translation>
 <translation id="9201023452444595544">બધો ઑફલાઇન ડેટા સાફ કરવામાં આવશે</translation>
 <translation id="9201220332032049474">સ્ક્રીન લૉકના વિકલ્પો</translation>

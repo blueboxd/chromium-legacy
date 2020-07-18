@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Μόνο κρυπτογράφηση</translation>
 <translation id="1038462104119736705">Για το Linux συνιστώνται τουλάχιστον <ph name="INSTALL_SIZE" /> αποθηκευτικού χώρου. Για να αυξήσετε τον δωρεάν αποθηκευτικό χώρο, διαγράψτε αρχεία από τη συσκευή σας.</translation>
 <translation id="1039337018183941703">Μη έγκυρο ή κατεστραμμένο αρχείο</translation>
+<translation id="104086161873270383">Νέο προφίλ</translation>
 <translation id="1041175011127912238">Αυτή η σελίδα δεν αποκρίνεται.</translation>
 <translation id="1041263367839475438">Διαθέσιμες συσκευές</translation>
 <translation id="1042174272890264476">Ο υπολογιστής σας κυκλοφορεί και με ενσωματωμένη τη βιβλιοθήκη RLZ του <ph name="SHORT_PRODUCT_NAME" />. Το RLZ εκχωρεί μια μη μοναδική ετικέτα μη προσωπικής ταυτοποίησης για τη μέτρηση των αναζητήσεων και της χρήσης του <ph name="SHORT_PRODUCT_NAME" /> που προκύπτει από μια συγκεκριμένη καμπάνια προώθησης. Αυτές οι ετικέτες εμφανίζονται μερικές φορές σε ερωτήματα στην Αναζήτηση Google στο <ph name="PRODUCT_NAME" />.</translation>
@@ -232,6 +233,7 @@
 <translation id="1274997165432133392">Εμφάνιση cookie και άλλων δεδομένων ιστότοπου</translation>
 <translation id="1275718070701477396">Επιλεγμένο</translation>
 <translation id="1276994519141842946">Δεν ήταν δυνατή η απεγκατάσταση της εφαρμογής <ph name="APP_NAME" />.</translation>
+<translation id="127946606521051357">Μια συσκευή σε κοντινή απόσταση κάνει κοινή χρήση.</translation>
 <translation id="1280820357415527819">Αναζήτηση για δίκτυα κινητής τηλεφωνίας</translation>
 <translation id="1280965841156951489">Επεξεργασία αρχείων</translation>
 <translation id="1285320974508926690">Να μην γίνεται ποτέ μετάφραση αυτού του ιστότοπου</translation>
@@ -254,6 +256,7 @@
 <translation id="1306606229401759371">Αλλαγή ρυθμίσεων</translation>
 <translation id="1307165550267142340">Το PIN δημιουργήθηκε</translation>
 <translation id="1307559529304613120">Ωχ!  Το σύστημα δεν κατάφερε να αποθηκεύσει το μακροπρόσθεσμο διακριτικό πρόσβασης API για αυτήν τη συσκευή.</translation>
+<translation id="1313162974556054106">Όνομα συσκευής</translation>
 <translation id="1313405956111467313">Αυτόματη διαμόρφωση διακομιστή μεσολάβησης</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">Θα αποσυνδεθείτε από όλους τους ιστοτόπους, συμπεριλαμβανομένων όσων εμφανίζονται σε ανοικτές καρτέλες.</translation>
@@ -704,7 +707,6 @@
 <translation id="184273675144259287">Αντικαταστήστε τις εφαρμογές και τα αρχεία Linux με ένα παλαιότερο αντίγραφο ασφαλείας</translation>
 <translation id="1842766183094193446">Είστε βέβαιοι ότι θέλετε να ενεργοποιήσετε τη λειτουργία επίδειξης;</translation>
 <translation id="1846308012215045257">Κάντε κλικ για εκτέλεση της προσθήκης <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">Ομάδα <ph name="GROUP_NAME" /> - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Ενεργοποίηση Λειτουργίας περιβάλλοντος</translation>
 <translation id="1849186935225320012">Αυτή η σελίδα έχει τον πλήρη έλεγχο των συσκευών MIDI.</translation>
 <translation id="1850508293116537636">Περιστροφή &amp;προς τα δεξιά</translation>
@@ -1220,6 +1222,7 @@
 <translation id="2489918096470125693">Προσθήκη &amp;φακέλου...</translation>
 <translation id="2490481887078769936">Το αρχείο '<ph name="FILE_NAME" />' καταργήθηκε από τη λίστα.</translation>
 <translation id="249113932447298600">Λυπούμαστε, η συσκευή <ph name="DEVICE_LABEL" /> δεν υποστηρίζεται προς το παρόν.</translation>
+<translation id="2492308681814209210">Η συσκευή <ph name="DEVICE_NAME" /> μοιράζεται μαζί σας <ph name="ATTACHMENTS" />.</translation>
 <translation id="2492461744635776704">Προετοιμασία αιτήματος για υπογραφή πιστοποιητικού</translation>
 <translation id="249303669840926644">Αδυναμία ολοκλήρωσης εγγραφής</translation>
 <translation id="2495777824269688114">Ανακαλύψτε περισσότερες λειτουργίες ή λάβετε απαντήσεις. Επιλέξτε το στοιχείο "?" για βοήθεια.</translation>
@@ -1721,6 +1724,7 @@
 <translation id="3103941660000130485">Σφάλμα κατά την αναβάθμιση των Linux</translation>
 <translation id="3105796011181310544">Αλλαγή σε Google;</translation>
 <translation id="310671807099593501">Ο ιστότοπος χρησιμοποιεί bluetooth</translation>
+<translation id="3109724472072898302">Συμπτυγμένο</translation>
 <translation id="3115147772012638511">Αναμονή για προσωρινή μνήμη...</translation>
 <translation id="3115580024857770654">Σύμπτυξη όλων</translation>
 <translation id="3116968597797150452">Προφίλ πιστοποιητικού</translation>
@@ -1788,7 +1792,6 @@
 <translation id="3192947282887913208">Αρχεία ήχου</translation>
 <translation id="3199127022143353223">Διακομιστές</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Το Chrome προτείνει να ελέγξετε άμεσα αυτόν τον κωδικό πρόσβασης.}other{Το Chrome προτείνει να ελέγξετε άμεσα αυτούς τους κωδικούς πρόσβασης.}}</translation>
-<translation id="3200941271596533635">Εναλλαγή λειτουργίας ανάγνωσης</translation>
 <translation id="3201422919974259695">Εδώ θα εμφανίζονται οι διαθέσιμες συσκευές USB.</translation>
 <translation id="3202131003361292969">Διαδρομή</translation>
 <translation id="3202173864863109533">Ο ήχος αυτής της καρτέλας έχει τεθεί σε σίγαση.</translation>
@@ -4152,6 +4155,7 @@
 <translation id="6212039847102026977">Προβολή σύνθετων ιδιοτήτων δικτύου</translation>
 <translation id="6212168817037875041">Απενεργοποίηση οθόνης</translation>
 <translation id="6212752530110374741">Σύνδεσμος ηλεκτρονικού ταχυδρομείου</translation>
+<translation id="6213230117190778270">Λήψη</translation>
 <translation id="6216696360484424239">Αυτόματη σύνδεση</translation>
 <translation id="6218058416316985984">Η συσκευή <ph name="DEVICE_TYPE" /> είναι εκτός σύνδεσης. Συνδεθείτε στο διαδίκτυο και δοκιμάστε ξανά.</translation>
 <translation id="6220413761270491930">Σφάλμα κατά τη φόρτωση της επέκτασης</translation>
@@ -4208,7 +4212,6 @@
 <translation id="6270770586500173387">Αποστολή <ph name="BEGIN_LINK1" />πληροφοριών συστήματος και εφαρμογών<ph name="END_LINK1" /> και <ph name="BEGIN_LINK2" />μετρήσεων<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Παρουσιάστηκε κάποιο σφάλμα (<ph name="ERROR" />) κατά τη λήψη της προσθήκης</translation>
 <translation id="6273677812470008672">Ποιότητα</translation>
-<translation id="6273979226236203550">Ο κωδικός πρόσβασής σας είναι αποθηκευμένος σε αυτήν τη συσκευή και στον Λογαριασμό σας Google. Ποιον θέλετε να διαγράψετε;</translation>
 <translation id="6277105963844135994">Χρονικό όριο δικτύου</translation>
 <translation id="6277518330158259200">Λήψη στιγμιότυπου οθόνης</translation>
 <translation id="6278057325678116358">Χρήση GTK+</translation>
@@ -4252,6 +4255,7 @@
 <translation id="6322653941595359182">Στείλτε και λάβετε μηνύματα κειμένου μέσω του Chromebook</translation>
 <translation id="6324916366299863871">Επεξεργασία συντόμευσης</translation>
 <translation id="6325191661371220117">Απενεργοποίηση αυτόματης εκκίνησης</translation>
+<translation id="6325525973963619867">Απέτυχε</translation>
 <translation id="6326175484149238433">Κατάργηση από το Chrome</translation>
 <translation id="6326855256003666642">Πλήθος Keepalive</translation>
 <translation id="632707535499064463">Ο οργανισμός <ph name="ORGANIZATION_NAME" /> απαιτεί να ενημερώσετε αυτήν τη συσκευή πριν από την προθεσμία.</translation>
@@ -4279,6 +4283,7 @@
 <translation id="6362853299801475928">&amp;Αναφορά προβλήματος...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Προσθήκη οικογένειας και φίλων</translation>
+<translation id="6367985768157257101">Λήψη με τη λειτουργία Κοινοποίηση κοντά;</translation>
 <translation id="636850387210749493">Εγγραφή επιχείρησης</translation>
 <translation id="6370021412472292592">Δεν ήταν δυνατή η φόρτωση της δήλωσης.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4854,7 +4859,6 @@
 <translation id="7099337801055912064">Δεν είναι δυνατή η φόρτωση μεγάλου PPD. Το μέγιστο μέγεθος είναι 250 KB.</translation>
 <translation id="7102687220333134671">Οι αυτόματες ενημερώσεις είναι ενεργοποιημένες</translation>
 <translation id="7102832101143475489">Το χρονικό όριο αιτήματος έληξε</translation>
-<translation id="7102928824073746774">Ομάδα χωρίς όνομα - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Προτιμήσεις USB</translation>
 <translation id="710640343305609397">Άνοιγμα ρυθμίσεων δικτύου</translation>
 <translation id="7108338896283013870">Απόκρυψη</translation>
@@ -4930,6 +4934,7 @@
 <translation id="720110658997053098">Μόνιμη διατήρηση της παρούσας συσκευής σε λειτουργία Kiosk</translation>
 <translation id="7201118060536064622">Το "<ph name="DELETED_ITEM_NAME" />" διαγράφηκε</translation>
 <translation id="7201420661433230412">Προβολή αρχείων</translation>
+<translation id="7203150201908454328">Ανεπτυγμένο</translation>
 <translation id="7203826966018112936">Η προσθήκη ενός σχολικού λογαριασμού σε ένα προφίλ επιτρέπει την εύκολη σύνδεση σε ιστοτόπους και επεκτάσεις ως μαθητής, ενώ εξακολουθούν να ισχύουν οι γονικοί έλεγχοι. Δεν δίνει στο παιδί πρόσβαση σε σελιδοδείκτες, κωδικούς πρόσβασης ή σε άλλα δεδομένα του προγράμματος περιήγησης που συγχρονίζονται με τον σχολικό λογαριασμό.&lt;br&gt;&lt;br&gt;
     Αν το παιδί χρησιμοποιεί Chromebook στο σχολείο και θέλετε να αναπαράγετε τη σχολική εμπειρία στο σπίτι προκειμένου να διασφαλίσετε την πρόσβαση του παιδιού σε όλες τις απαραίτητες σχολικές εργασίες, αποσυνδεθείτε από αυτόν τον λογαριασμό Family Link και συνδεθείτε στον σχολικό λογαριασμό από τη σελίδα λογαριασμών του Chrome OS (σημείωση: Οι γονικοί έλεγχοι του Family Link δεν θα ισχύουν).&lt;br&gt;&lt;br&gt;
     Αν το παιδί σας δεν χρησιμοποιεί Chromebook στο σχολείο ή αν προτιμάτε να διαχειρίζεστε εσείς την εμπειρία του παιδιού στο σπίτι χρησιμοποιώντας το Family Link, κάντε κλικ στο κουμπί Επόμενο παρακάτω, για να προσθέσετε έναν σχολικό λογαριασμό σε αυτό το προφίλ.</translation>
@@ -5325,7 +5330,6 @@
 <translation id="7704521324619958564">Άνοιγμα Play Store</translation>
 <translation id="7705276765467986571">Δεν ήταν δυνατή η φόρτωση μοντέλου σελιδοδείκτη.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Εναλλαγή λειτουργίας ανάγνωσης</translation>
 <translation id="7707108266051544351">Έχει αποκλειστεί η χρήση αισθητήρων κίνησης από αυτόν τον ιστότοπο.</translation>
 <translation id="7707922173985738739">Χρήση δεδομένων κινητής τηλεφωνίας</translation>
 <translation id="7709152031285164251">Αποτυχία - <ph name="INTERRUPT_REASON" /></translation>
@@ -6580,6 +6584,7 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Εισαγωγή φράσης πρόσβασης</translation>
 <translation id="939736085109172342">Νέος φάκελος</translation>
+<translation id="941070664607309480">Κάντε κλικ προκειμένου να γίνεται ορατοί, έτσι ώστε η σελίδα να μπορεί να μοιραστεί δεδομένα μαζί σας.</translation>
 <translation id="942532530371314860">Η εφαρμογή <ph name="APP_NAME" /> μοιράζεται μια καρτέλα Chrome και ήχο.</translation>
 <translation id="945522503751344254">Αποστολή σχολίων</translation>
 <translation id="947329552760389097">&amp;Inspect Elements</translation>

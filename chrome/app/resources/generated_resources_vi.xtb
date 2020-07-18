@@ -37,6 +37,7 @@
 <translation id="1038168778161626396">Chỉ Mã hóa</translation>
 <translation id="1038462104119736705">Linux nên có dung lượng tối thiểu là <ph name="INSTALL_SIZE" />. Để tăng dung lượng trống, hãy xóa bớt tệp khỏi thiết bị.</translation>
 <translation id="1039337018183941703">Tệp lỗi hoặc không hợp lệ</translation>
+<translation id="104086161873270383">Hồ sơ mới</translation>
 <translation id="1041175011127912238">Trang này hiện không phản hồi</translation>
 <translation id="1041263367839475438">Thiết bị hiện có</translation>
 <translation id="1042174272890264476">Máy tính của bạn cũng đi kèm với thư viện RLZ của <ph name="SHORT_PRODUCT_NAME" /> được tích hợp sẵn. RLZ chỉ định thẻ không thể nhận dạng cá nhân, không duy nhất để đo lường các tìm kiếm và mức độ sử dụng <ph name="SHORT_PRODUCT_NAME" /> mà một chiến dịch quảng cáo cụ thể mang lại. Đôi khi các nhãn này xuất hiện trong truy vấn Google Tìm kiếm trong <ph name="PRODUCT_NAME" />.</translation>
@@ -104,7 +105,7 @@
 <translation id="1124772482545689468">Người dùng</translation>
 <translation id="1125550662859510761">Có vẻ như là <ph name="WIDTH" /> x <ph name="HEIGHT" /> (Gốc)</translation>
 <translation id="1126809382673880764">Không bảo vệ bạn trước các trang web, tệp đã tải xuống và tiện ích nguy hiểm. Bạn sẽ vẫn được bảo vệ bằng tính năng Duyệt web an toàn (nếu có) ở các dịch vụ khác của Google, chẳng hạn như Gmail và Tìm kiếm.</translation>
-<translation id="112752777279960360">Để thiết lập điện thoại Android làm khóa bảo mật với máy tính này lần đầu tiên, hãy mở Chrome trên điện thoại rồi chuyển đến phần "Cài đặt &gt; Mật khẩu &gt; Dùng điện thoại làm khóa bảo mật". Sau đó, nhấn vào "Kết nối thiết bị mới" rồi quét mã QR này.</translation>
+<translation id="112752777279960360">Để thiết lập điện thoại Android làm khóa bảo mật cho chiếc máy tính này lần đầu, hãy mở Chrome trên điện thoại rồi chuyển đến phần "Cài đặt &gt; Mật khẩu &gt; Dùng điện thoại làm khóa bảo mật". Sau đó, nhấn vào "Kết nối thiết bị mới" rồi quét mã QR này.</translation>
 <translation id="1128109161498068552">Không cho phép bất cứ trang web nào sử dụng thông báo dành riêng cho hệ thống để truy cập thiết bị MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Chỉnh sửa công cụ tìm kiếm</translation>
@@ -254,6 +255,7 @@
 <translation id="1306606229401759371">Thay đổi cài đặt</translation>
 <translation id="1307165550267142340">Mã PIN của bạn đã được tạo</translation>
 <translation id="1307559529304613120">Rất tiếc! Hệ thống không lưu trữ được mã thông báo truy cập API dài hạn cho thiết bị này.</translation>
+<translation id="1313162974556054106">Tên thiết bị</translation>
 <translation id="1313405956111467313">Cấu hình proxy tự động</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">Bạn sẽ bị đăng xuất khỏi tất cả trang web, bao gồm cả các trang web trên thẻ đang mở</translation>
@@ -704,7 +706,6 @@
 <translation id="184273675144259287">Thay thế các ứng dụng và tệp Linux của bạn bằng bản sao lưu trước đó</translation>
 <translation id="1842766183094193446">Bạn có chắc chắn muốn bật chế độ minh họa không?</translation>
 <translation id="1846308012215045257">Giữ Control khi nhấp để chạy <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">Nhóm <ph name="GROUP_NAME" /> – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">Bật Chế độ môi trường xung quanh</translation>
 <translation id="1849186935225320012">Trang này có quyền kiểm soát toàn bộ thiết bị MIDI.</translation>
 <translation id="1850508293116537636">Xoay &amp;theo chiều kim đồng hồ</translation>
@@ -1721,6 +1722,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3103941660000130485">Lỗi khi nâng cấp Linux</translation>
 <translation id="3105796011181310544">Chuyển lại về Google?</translation>
 <translation id="310671807099593501">Trang web đang sử dụng Bluetooth</translation>
+<translation id="3109724472072898302">Đã thu gọn</translation>
 <translation id="3115147772012638511">Đang chờ bộ nhớ đệm…</translation>
 <translation id="3115580024857770654">Thu gọn tất cả</translation>
 <translation id="3116968597797150452">Hồ sơ chứng chỉ</translation>
@@ -1788,7 +1790,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3192947282887913208">Tệp âm thanh</translation>
 <translation id="3199127022143353223">Máy chủ</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome khuyên bạn nên kiểm tra ngay mật khẩu này}other{Chrome khuyên bạn nên kiểm tra ngay những mật khẩu này}}</translation>
-<translation id="3200941271596533635">Bật/tắt chế độ đọc</translation>
 <translation id="3201422919974259695">Các thiết bị USB có sẵn sẽ xuất hiện ở đây.</translation>
 <translation id="3202131003361292969">Đường dẫn</translation>
 <translation id="3202173864863109533">Âm thanh của tab này hiện bị tắt.</translation>
@@ -3582,7 +3583,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5496587651328244253">Tổ chức</translation>
 <translation id="5497251278400702716">Tệp này</translation>
 <translation id="5499313591153584299">Tệp này có thể có hại cho máy tính của bạn.</translation>
-<translation id="5499453227627332024">Hiện đã có bản nâng cấp cho Vùng chứa Linux. Bạn cũng có thể nâng cấp vào lúc khác trong ứng dụng Cài đặt.</translation>
+<translation id="5499453227627332024">Hiện đã có bản nâng cấp cho Vùng chứa Linux. Bạn cũng có thể nâng cấp sau trong ứng dụng Cài đặt.</translation>
 <translation id="5500709606820808700">Tính năng kiểm tra an toàn đã chạy hôm nay</translation>
 <translation id="5502500733115278303">Đã nhập từ Firefox</translation>
 <translation id="5503982651688210506">Tiếp tục cho phép <ph name="HOST" /> dùng và di chuyển máy ảnh, cũng như sử dụng micrô</translation>
@@ -4207,7 +4208,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6270770586500173387">Gửi <ph name="BEGIN_LINK1" />thông tin hệ thống và ứng dụng<ph name="END_LINK1" /> cũng như <ph name="BEGIN_LINK2" />số liệu<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">Đã xảy ra lỗi (<ph name="ERROR" />) khi tải xuống plugin</translation>
 <translation id="6273677812470008672">Chất lượng</translation>
-<translation id="6273979226236203550">Mật khẩu của bạn được lưu trữ trên thiết bị này và trong Tài khoản Google. Bạn muốn xóa bản nào?</translation>
 <translation id="6277105963844135994">Hết thời gian chờ mạng</translation>
 <translation id="6277518330158259200">Chụp ảnh màn hình</translation>
 <translation id="6278057325678116358">Sử dụng GTK+</translation>
@@ -4251,6 +4251,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6322653941595359182">Gửi và nhận tin nhắn văn bản từ Chromebook của bạn</translation>
 <translation id="6324916366299863871">Chỉnh sửa phím tắt</translation>
 <translation id="6325191661371220117">Tắt tính năng tự động chạy</translation>
+<translation id="6325525973963619867">Lỗi</translation>
 <translation id="6326175484149238433">Xóa khỏi Chrome</translation>
 <translation id="6326855256003666642">Số lượng giữ kết nối</translation>
 <translation id="632707535499064463"><ph name="ORGANIZATION_NAME" /> yêu cầu bạn phải cập nhật thiết bị này trước thời hạn.</translation>
@@ -4853,7 +4854,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7099337801055912064">Không thể tải PPD có kích cỡ lớn. Kích cỡ tối đa là 250 kB.</translation>
 <translation id="7102687220333134671">Tính năng tự động cập nhật đã được bật</translation>
 <translation id="7102832101143475489">Yêu cầu đã hết giờ</translation>
-<translation id="7102928824073746774">Nhóm chưa có tên – <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">Tùy chọn USB</translation>
 <translation id="710640343305609397">Mở tùy chọn cài đặt mạng</translation>
 <translation id="7108338896283013870">Ẩn</translation>
@@ -4929,6 +4929,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="720110658997053098">Vĩnh viễn giữ thiết bị này ở chế độ kiosk</translation>
 <translation id="7201118060536064622">Đã xóa '<ph name="DELETED_ITEM_NAME" />'</translation>
 <translation id="7201420661433230412">Xem tệp</translation>
+<translation id="7203150201908454328">Được mở rộng</translation>
 <translation id="7203826966018112936">Khi thêm tài khoản trường học vào hồ sơ, bạn sẽ dễ dàng đăng nhập vào các trang web và tiện ích với tư cách học sinh, trong khi vẫn hoạt động dưới quyền kiểm soát của cha mẹ. Thao tác này không cấp cho con quyền truy cập vào dấu trang, mật khẩu hoặc các dữ liệu khác trên trình duyệt được đồng bộ hóa với tài khoản trường học.&lt;br&gt;&lt;br&gt;
     Nếu con bạn sử dụng Chromebook ở trường học và bạn muốn mô phỏng trải nghiệm trường học tại nhà nhằm đảm bảo con có quyền truy cập vào tất cả bài tập về nhà cần thiết, vui lòng đăng xuất khỏi tài khoản Family Link này, rồi đăng nhập vào tài khoản trường học trên trang tài khoản Chrome OS (lưu ý: Không áp dụng quyền kiểm soát của cha mẹ trên Family Link).&lt;br&gt;&lt;br&gt;
     Nếu con bạn không sử dụng Chromebook ở trường học hoặc nếu bạn muốn kiểm soát việc sử dụng của con tại nhà bằng Family Link, vui lòng nhấp vào nút Tiếp theo ở bên dưới để thêm tài khoản trường học vào hồ sơ này.</translation>
@@ -5324,7 +5325,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7704521324619958564">Mở Cửa hàng Play</translation>
 <translation id="7705276765467986571">Không thể tải mô hình dấu trang.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">Bật/tắt chế độ đọc</translation>
 <translation id="7707108266051544351">Trang web này đã bị chặn sử dụng cảm biến chuyển động.</translation>
 <translation id="7707922173985738739">Sử dụng dữ liệu di động</translation>
 <translation id="7709152031285164251">Không thành công - <ph name="INTERRUPT_REASON" /></translation>

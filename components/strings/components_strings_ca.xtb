@@ -40,7 +40,6 @@
 <translation id="1131264053432022307">Imatge que has copiat</translation>
 <translation id="1150979032973867961">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el sistema operatiu del vostre ordinador considera que el seu certificat de seguretat no és de confiança. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="1151972924205500581">Es requereix una contrasenya</translation>
-<translation id="1152921474424827756">Accediu a una <ph name="BEGIN_LINK" />còpia emmagatzemada a la memòria cau<ph name="END_LINK" /> de la pàgina <ph name="URL" />.</translation>
 <translation id="1156303062776767266">Estàs consultant un fitxer local o compartit</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ha tancat la connexió de manera inesperada.</translation>
 <translation id="115926840831309955">Comprova el CVC i torna-ho a provar o actualitza la data de caducitat</translation>
@@ -244,7 +243,6 @@
 <translation id="1919345977826869612">Anuncis</translation>
 <translation id="1919367280705858090">Obtenir ajuda amb un missatge d'error específic</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Cap}=1{1 lloc}other{# llocs}}</translation>
-<translation id="194030505837763158">Ves a <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Podries perdre l'accés al compte de la teva organització o ser víctima d'un robatori d'identitat. Chromium et recomana que canviïs la contrasenya ara.</translation>
 <translation id="1947454675006758438">Grapat a la part superior dreta</translation>
 <translation id="1959001866257244765">Per ajudar a millorar la seguretat al web per a tothom, envia a Google <ph name="BEGIN_WHITEPAPER_LINK" />URL d'algunes pàgines que visites, informació limitada del sistema i part del contingut de les pàgines<ph name="END_WHITEPAPER_LINK" />. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Política de privadesa<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,7 +265,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="202072848677994234">Aquest formulari s'envia a través d'una connexió no segura. L'emplenament automàtic està desactivat.</translation>
 <translation id="2025115093177348061">Realitat augmentada</translation>
 <translation id="2025186561304664664">El servidor intermediari està definit perquè es configuri automàticament.</translation>
-<translation id="2030481566774242610">Volíeu dir <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Comproveu el servidor intermediari i el tallafoc<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Safata 7</translation>
 <translation id="204357726431741734">Inicia la sessió per utilitzar les contrasenyes desades al teu Compte de Google</translation>
@@ -1039,6 +1036,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="5308380583665731573">Connecta</translation>
 <translation id="5308689395849655368">La creació d'informes de bloqueig està desactivada.</translation>
 <translation id="5314967030527622926">Creador de fullets</translation>
+<translation id="5316812925700871227">Gira en sentit antihorari</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> de <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Tria la informació de contacte</translation>
@@ -1062,7 +1060,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="5421136146218899937">Esborra dades de navegació...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> et vol enviar notificacions</translation>
 <translation id="5430298929874300616">Suprimeix l'adreça d'interès</translation>
-<translation id="5431657950005405462">No s'ha trobat el fitxer</translation>
 <translation id="5439770059721715174">Error de validació de l'esquema a "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Ordre invers de cara amunt</translation>
 <translation id="5447765697759493033">Aquest lloc web no es traduirà</translation>
@@ -1436,7 +1433,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="7083258188081898530">Safata 9</translation>
 <translation id="7086090958708083563">Pujada sol·licitada per l'usuari</translation>
 <translation id="7087282848513945231">Comtat</translation>
-<translation id="7090678807593890770">Cerqueu <ph name="LINK" /> a Google</translation>
 <translation id="7108338896283013870">Amaga</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> vol utilitzar la càmera</translation>
 <translation id="7108819624672055576">Permès per una extensió</translation>
@@ -1872,7 +1868,6 @@ Detalls addicionals:
 <translation id="893332455753468063">Afegeix un nom</translation>
 <translation id="8943282376843390568">Verd llima</translation>
 <translation id="8957210676456822347">Autorització de portals captius</translation>
-<translation id="8958582951173503172">Quan Chrome Enterprise Connectors marca esdeveniments de seguretat, se n'envien les dades rellevants a l'administrador. Per exemple, URL de pàgines que visites a Chrome, noms o metadades de fitxers i el nom d'usuari que fas servir per iniciar la sessió al dispositiu i a Chrome.</translation>
 <translation id="8962950042226115166">Lloc web sospitós</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Suggeriments:<ph name="MARKUP_2" />Assegureu-vos que teniu connexió de dades<ph name="MARKUP_3" />Torneu a carregar aquesta pàgina web més tard<ph name="MARKUP_4" />Comproveu l'adreça que heu introduït<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Desa la targeta</translation>

@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">檢查互聯網連線</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2369533728426058518">開啟分頁</translation>
-<translation id="2377295302146152376">Chrome 無法檢查更新</translation>
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="2394602618534698961">您下載的檔案會在這裡顯示</translation>
 <translation id="2407481962792080328">登入 Google 帳戶時，系統會啟用此功能</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />取得說明<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">位置資訊功能已關閉，請在「<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />」中開啟此功能。</translation>
 <translation id="3058498974290601450">您可隨時在設定中開啟同步功能</translation>
-<translation id="3059710691562604940">「安全瀏覽」功能已停用。Chrome 建議啟用此功能。</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> 個書籤}other{<ph name="BOOKMARKS_COUNT_MANY" /> 個書籤}}</translation>
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
 <translation id="3114012059975132928">影片播放器</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">有可用的更新。更多選項</translation>
 <translation id="3524138585025253783">開發人員使用者介面</translation>
 <translation id="3527085408025491307">資料夾</translation>
-<translation id="3533694711092285624">沒有已儲存的密碼。儲存密碼時，Chrome 可檢查您的密碼。</translation>
 <translation id="3542235761944717775">可用空間：<ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">搜尋你的記錄</translation>
 <translation id="3557336313807607643">新增至通訊錄</translation>
@@ -571,6 +568,7 @@
 <translation id="5581519193887989363">您隨時可在<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />中選擇要同步的資料。</translation>
 <translation id="5595485650161345191">編輯地址</translation>
 <translation id="5599455543593328020">無痕模式</translation>
+<translation id="5620163320393916465">沒有已儲存的密碼</translation>
 <translation id="5620928963363755975">透過「更多選項」按鈕，喺「下載」主畫面搵您嘅檔案同網頁</translation>
 <translation id="5626134646977739690">名稱：</translation>
 <translation id="5639724618331995626">允許瀏覽所有網站</translation>

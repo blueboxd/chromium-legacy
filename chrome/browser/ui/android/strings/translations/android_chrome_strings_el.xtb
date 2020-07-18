@@ -170,7 +170,6 @@
 <translation id="2353636109065292463">Έλεγχος της σύνδεσής σας στο διαδίκτυο</translation>
 <translation id="2359808026110333948">Συνέχεια</translation>
 <translation id="2369533728426058518">ανοικτές καρτέλες</translation>
-<translation id="2377295302146152376">Το Chrome δεν μπόρεσε να ελέγξει για ενημερώσεις</translation>
 <translation id="2387895666653383613">Κλιμάκωση κειμένου</translation>
 <translation id="2394602618534698961">Εδώ εμφανίζονται τα αρχεία που κατεβάζετε</translation>
 <translation id="2407481962792080328">Αυτή η λειτουργία ενεργοποιείται όταν συνδέεστε στον Λογαριασμό σας Google.</translation>
@@ -259,7 +258,6 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Λάβετε βοήθεια<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Η Τοποθεσία είναι απενεργοποιημένη. Ενεργοποιήστε την στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Μπορείτε να ενεργοποιήσετε τον συγχρονισμό ανά πάσα στιγμή στις ρυθμίσεις</translation>
-<translation id="3059710691562604940">Η Ασφαλής περιήγηση είναι απενεργοποιημένη. Το Chrome συνιστά να την ενεργοποιήσετε.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> σελιδοδείκτης}other{<ph name="BOOKMARKS_COUNT_MANY" /> σελιδοδείκτες}}</translation>
 <translation id="3089395242580810162">Άνοιγμα σε καρτ. ανών. περιήγ.</translation>
 <translation id="3114012059975132928">Πρόγραμμα αναπαραγωγής βίντεο</translation>
@@ -320,7 +318,6 @@
 <translation id="3522247891732774234">Διατίθεται μια ενημέρωση. Περισσότερες επιλογές</translation>
 <translation id="3524138585025253783">Διεπαφή χρήση προγραμματιστή</translation>
 <translation id="3527085408025491307">Φάκελος</translation>
-<translation id="3533694711092285624">Δεν υπάρχουν αποθηκευμένοι κωδικοί πρόσβασης. Το Chrome μπορεί να ελέγξει τους κωδικούς πρόσβασής σας όταν τους αποθηκεύσετε.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB διαθέσιμα</translation>
 <translation id="3549657413697417275">Αναζήτηση στο ιστορικό σας</translation>
 <translation id="3557336313807607643">Προσθήκη στις επαφές</translation>
@@ -360,6 +357,7 @@
 <translation id="3892148308691398805">Αντιγραφή κειμένου</translation>
 <translation id="3894427358181296146">Προσθήκη φακέλου…</translation>
 <translation id="3895926599014793903">Αναγκαστική ενεργοποίηση εστίασης</translation>
+<translation id="3909763690984331376">Έλεγχος ασφαλείας <ph name="BEGIN_NEW" />Νέο<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Εύρεση των καλύτερων στον ιστό…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Συνδυασμός των δεδομένων μου</translation>
@@ -570,6 +568,7 @@
 <translation id="5581519193887989363">Μπορείτε πάντα να επιλέξετε τα στοιχεία που θέλετε να συγχρονίσετε στις <ph name="BEGIN_LINK1" />ρυθμίσεις<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Επεξεργασία διεύθυνσης</translation>
 <translation id="5599455543593328020">Κατάσταση ανώνυμης περιήγησης</translation>
+<translation id="5620163320393916465">Δεν υπάρχουν αποθηκευμένοι κωδικοί πρόσβασης</translation>
 <translation id="5620928963363755975">Βρείτε τα αρχεία και τις σελίδες σας στις Λήψις από το κουμπί Περισσότερες επιλογές</translation>
 <translation id="5626134646977739690">Όνομα:</translation>
 <translation id="5639724618331995626">Να επιτρέπονται όλοι οι ιστότοποι</translation>
@@ -581,6 +580,7 @@
 <translation id="5686790454216892815">Το όνομα του αρχείου είναι πολύ μεγάλο</translation>
 <translation id="5694049548840660018">Επιστρέψτε εύκολα στην αρχική σελίδα</translation>
 <translation id="569536719314091526">Μεταφράστε αυτήν τη σελίδα σε οποιαδήποτε γλώσσα από το κουμπί "Περισσότερες επιλογές"</translation>
+<translation id="5696597120588531049">Το Chrome μπορεί να σας προστατέψει από παραβιάσεις δεδομένων, μη ασφαλείς ιστοτόπους κ.α.</translation>
 <translation id="5697688514913266141">Το αρχείο σας θα αποθηκευτεί στον κατάλογο <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Επεξεργασία<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Εναλλαγή σε καρτέλα</translation>
 <translation id="572328651809341494">Πρόσφατες καρτέλες</translation>
@@ -714,6 +714,7 @@
 <translation id="6656545060687952787">Το Chrome χρειάζεται πρόσβαση στην τοποθεσία, προκειμένου να κάνει σάρωση για συσκευές. <ph name="BEGIN_LINK" />Ενημέρωση δικαιωμάτων<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Κωδικός πρόσβασης</translation>
 <translation id="6659594942844771486">Καρτέλα</translation>
+<translation id="6663079968236414793">Σύνδεσμος προς κείμενο</translation>
 <translation id="666573598175432848">Υπάρχει διαθέσιμη νεότερη έκδοση του Chrome. Πατήστε αυτό το στοιχείο, για να μεταβείτε στο Play Store.</translation>
 <translation id="666731172850799929">Άνοιγμα σε <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Σημείωση Απορρήτου του Chrome</translation>

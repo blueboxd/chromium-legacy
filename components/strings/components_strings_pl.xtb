@@ -40,7 +40,6 @@
 <translation id="1131264053432022307">Skopiowany obraz</translation>
 <translation id="1150979032973867961">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego komputera. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="1151972924205500581">Wymagane hasło</translation>
-<translation id="1152921474424827756">Przejdź do <ph name="BEGIN_LINK" />kopii<ph name="END_LINK" /> <ph name="URL" /> w pamięci podręcznej</translation>
 <translation id="1156303062776767266">Przeglądasz plik lokalny lub udostępniony</translation>
 <translation id="1158211211994409885">Serwer <ph name="HOST_NAME" /> nieoczekiwanie zakończył połączenie.</translation>
 <translation id="115926840831309955">Sprawdź kod CVC i spróbuj ponownie lub popraw datę ważności</translation>
@@ -244,7 +243,6 @@
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1919367280705858090">Uzyskiwanie pomocy w przypadku konkretnego komunikatu o błędzie</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Brak}=1{1 witryna}few{# witryny}many{# witryn}other{# witryny}}</translation>
-<translation id="194030505837763158">Wejdź na <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Możesz stracić dostęp do swojego konta organizacji lub paść ofiarą kradzieży tożsamości. Chromium zaleca natychmiastową zmianę hasła.</translation>
 <translation id="1947454675006758438">Zszywka w prawym górnym rogu</translation>
 <translation id="1959001866257244765">Pomóż nam poprawić bezpieczeństwo wszystkich użytkowników w sieci, wysyłając do Google <ph name="BEGIN_WHITEPAPER_LINK" />adresy URL niektórych odwiedzanych stron, niektóre informacje o systemie oraz część zawartości stron<ph name="END_WHITEPAPER_LINK" />. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Polityka prywatności<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -267,7 +265,6 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="202072848677994234">Ten formularz jest przesyłany przez niezabezpieczone połączenie. Automatyczne wypełnianie zostało wyłączone.</translation>
 <translation id="2025115093177348061">Rzeczywistość rozszerzona</translation>
 <translation id="2025186561304664664">Ustawiono automatyczne konfigurowanie proxy.</translation>
-<translation id="2030481566774242610">Czy chodziło Ci o <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Sprawdź serwer proxy i zaporę sieciową<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Taca 7</translation>
 <translation id="204357726431741734">Zaloguj się, by używać haseł zapisanych na Twoim koncie Google</translation>
@@ -1041,6 +1038,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="5308380583665731573">Połącz</translation>
 <translation id="5308689395849655368">Funkcja zgłaszania awarii jest wyłączona.</translation>
 <translation id="5314967030527622926">Tworzenie broszur</translation>
+<translation id="5316812925700871227">Obróć w lewo</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> z <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Wybierz dane kontaktowe</translation>
@@ -1064,7 +1062,6 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="5421136146218899937">Wyczyść dane przeglądania...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> chce wysyłać Ci powiadomienia</translation>
 <translation id="5430298929874300616">Usuń zakładkę</translation>
-<translation id="5431657950005405462">Nie znaleziono pliku</translation>
 <translation id="5439770059721715174">Błąd podczas sprawdzania poprawności schematu – „<ph name="ERROR_PATH" />”: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Kolejność odwrotna, strona do drukowania skierowana w górę</translation>
 <translation id="5447765697759493033">Ta strona nie zostanie przetłumaczona</translation>
@@ -1438,7 +1435,6 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="7083258188081898530">Taca 9</translation>
 <translation id="7086090958708083563">Użytkownik poprosił o przesłanie</translation>
 <translation id="7087282848513945231">Hrabstwo</translation>
-<translation id="7090678807593890770">Wyszukaj w Google: <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Ukryj</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> chce korzystać z kamery</translation>
 <translation id="7108819624672055576">Dozwolone przez rozszerzenie</translation>
@@ -1874,7 +1870,6 @@ Dodatkowe informacje:
 <translation id="893332455753468063">Dodaj imię i nazwisko lub nazwę firmy</translation>
 <translation id="8943282376843390568">Limonkowy</translation>
 <translation id="8957210676456822347">Autoryzacja portalu przechwytującego</translation>
-<translation id="8958582951173503172">Gdy oprogramowanie sprzęgające Chrome Enterprise oznacza zdarzenia związane z bezpieczeństwem, odpowiednie dane o zdarzeniu są wysyłane do administratora. Mogą one obejmować adresy URL stron odwiedzanych w Chrome, nazwy plików lub metadane oraz nazwę użytkownika, pod którą logujesz się na swoim urządzeniu i w Chrome.</translation>
 <translation id="8962950042226115166">Podejrzana strona</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Sugestie:<ph name="MARKUP_2" />Upewnij się, że działa połączenie transmisji danych.<ph name="MARKUP_3" />Załaduj tę stronę ponownie później.<ph name="MARKUP_4" />Sprawdź wpisany adres.<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Zapisz kartę</translation>

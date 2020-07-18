@@ -170,7 +170,6 @@ Puudutage otsimiseks mis tahes sõna. Otsingu täpsustamiseks puudutage pikalt, 
 <translation id="2353636109065292463">Interneti-ühenduse kontrollimine</translation>
 <translation id="2359808026110333948">Jätka</translation>
 <translation id="2369533728426058518">avatud vahelehed</translation>
-<translation id="2377295302146152376">Chrome ei saanud värskendusi kontrollida</translation>
 <translation id="2387895666653383613">Teksti skaleerimine</translation>
 <translation id="2394602618534698961">Allalaaditud failid kuvatakse siin</translation>
 <translation id="2407481962792080328">Kui logite oma Google'i kontole sisse, lülitatakse see funktsioon sisse</translation>
@@ -259,7 +258,6 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Küsige abi<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Asukoht on välja lülitatud. Lülitage see sisse <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Saate sünkroonimise seadetes alati sisse lülitada</translation>
-<translation id="3059710691562604940">Google'i ohutu sirvimine on välja lülitatud. Chrome soovitab selle sisse lülitada.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> järjehoidja}other{<ph name="BOOKMARKS_COUNT_MANY" /> järjehoidjat}}</translation>
 <translation id="3089395242580810162">Ava inkognito vahelehel</translation>
 <translation id="3114012059975132928">Videopleier</translation>
@@ -320,7 +318,6 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="3522247891732774234">Värskendus on saadaval. Rohkem valikuid</translation>
 <translation id="3524138585025253783">Arendaja kasutajaliides</translation>
 <translation id="3527085408025491307">Kaust</translation>
-<translation id="3533694711092285624">Salvestatud paroole ei ole. Chrome saab teie paroole kontrollida, kui olete need salvestanud.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> kB on saadaval</translation>
 <translation id="3549657413697417275">Otsige oma ajaloost</translation>
 <translation id="3557336313807607643">Kontaktide lisamine</translation>
@@ -360,6 +357,7 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="3892148308691398805">Kopeeri tekst</translation>
 <translation id="3894427358181296146">Kausta lisamine</translation>
 <translation id="3895926599014793903">Sundluba suumimine</translation>
+<translation id="3909763690984331376">Ohutuskontroll <ph name="BEGIN_NEW" />Uus<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Otsitakse parimat, mida veebil on pakkuda …</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Minu andmete kombineerimine</translation>
@@ -570,6 +568,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5581519193887989363">Jaotises <ph name="BEGIN_LINK1" />Seaded<ph name="END_LINK1" /> saate igal ajal valida, mida sünkroonida.</translation>
 <translation id="5595485650161345191">Muuda aadressi</translation>
 <translation id="5599455543593328020">Inkognito režiim</translation>
+<translation id="5620163320393916465">Salvestatud paroole ei ole</translation>
 <translation id="5620928963363755975">Leidke oma failid ja lehed jaotisest Allalaadimised, kasutades nuppu Rohkem valikuid</translation>
 <translation id="5626134646977739690">Nimi:</translation>
 <translation id="5639724618331995626">Luba kõik saidid</translation>
@@ -581,6 +580,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5686790454216892815">Faili nimi on liiga pikk</translation>
 <translation id="5694049548840660018">Võimaldab hõlpsasti avalehele naasta</translation>
 <translation id="569536719314091526">Tõlkige leht mis tahes keelde nupuga Rohkem valikuid</translation>
+<translation id="5696597120588531049">Chrome aitab teid kaitsta andmetega seotud rikkumiste, ebaturvaliste veebisaitide ja muu eest</translation>
 <translation id="5697688514913266141">Teie fail salvestatakse kausta <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Muutke<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Lülitu vahelehele</translation>
 <translation id="572328651809341494">Hiljutised vahelehed</translation>
@@ -714,6 +714,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6656545060687952787">Chrome vajab seadmete skannimiseks juurdepääsu teie asukohale. <ph name="BEGIN_LINK" />Värskendage lube<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Parool</translation>
 <translation id="6659594942844771486">Vaheleht</translation>
+<translation id="6663079968236414793">Link teksti juurde</translation>
 <translation id="666573598175432848">Saadaval on Chrome'i uuem versioon. Puudutage Play poe avamiseks seda elementi.</translation>
 <translation id="666731172850799929">Ava rakenduses <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome'i privaatsusteatis</translation>

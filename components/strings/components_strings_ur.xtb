@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ur">
 <translation id="1008557486741366299">ابھی نہیں</translation>
+<translation id="100957008357583611">اپنا مقام استعمال کریں؟</translation>
 <translation id="1010200102790553230">صفحہ بعد میں لوڈ کریں</translation>
 <translation id="1015730422737071372">اضافی تفصیلات فراہم کریں</translation>
 <translation id="1019413721762100891">آف</translation>
@@ -39,7 +40,6 @@
 <translation id="1131264053432022307">آپ کی کاپی کردہ تصویر</translation>
 <translation id="1150979032973867961">یہ سرور یہ ثابت نہیں کر سکا کہ یہ <ph name="DOMAIN" /> ہے؛ اس کا سیکیورٹی سرٹیفیکیٹ آپ کے کمپیوٹر کے آپریٹنگ سسٹم کے ذریعے بھروسہ مند نہیں ہے۔ یہ غلط کنفیگریشن یا آپ کے کنکشن میں مانع بن رہے کسی حملہ آور کی وجہ سے ہو سکتا ہے۔</translation>
 <translation id="1151972924205500581">پاس ورڈ درکار ہے</translation>
-<translation id="1152921474424827756"><ph name="URL" /> کی <ph name="BEGIN_LINK" />کیش کردہ کاپی<ph name="END_LINK" /> تک رسائی کریں</translation>
 <translation id="1156303062776767266">آپ ایک مقامی یا اشتراک کردہ فائل دیکھ رہے ہیں</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> نے غیر متوقع طور پر کنکشن بند کر دیا۔</translation>
 <translation id="115926840831309955">‏اپنا CVC چیک کریں اور دوبارہ کوشش کریں یا تاریخ اختتام اپ ڈیٹ کریں</translation>
@@ -247,7 +247,6 @@
 <translation id="1919345977826869612">اشتہارات</translation>
 <translation id="1919367280705858090">خرابی کے کسی مخصوص پیغام کے بارے میں مدد حاصل کریں</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{کوئی سائٹ نہیں}=1{1 سائٹ}other{# سائٹس}}</translation>
-<translation id="194030505837763158"><ph name="LINK" /> پر جائیں</translation>
 <translation id="1945968466830820669">‏آپ اپنی تنظیم کے اکاؤنٹ تک رسائی سے محروم ہو سکتے ہیں یا شناخت کی چوری ہو سکتی ہے۔ Chromium آپ کو ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="1947454675006758438">اوپر دائیں طرف سٹیپل</translation>
 <translation id="1959001866257244765">‏<ph name="BEGIN_WHITEPAPER_LINK" />آپ کے ملاحظہ کئے جانے والے چند صفحات کے URLs، سسٹم کی محدود معلومات اور صفحے کا کچھ مواد<ph name="END_WHITEPAPER_LINK" /> Google کو بھیج کر ہر کسی کے لیے ویب پر موجود سیکیورٹی کو بہتر کرنے میں ہماری مدد کریں۔ <ph name="BEGIN_PRIVACY_PAGE_LINK" />رازداری کی پالیسی<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -269,7 +268,6 @@
 <translation id="2003775180883135320">اوپر مستطیل سوراخ</translation>
 <translation id="2025115093177348061">افزودہ حقیقت</translation>
 <translation id="2025186561304664664">پراکسی از خود کنفیگر کردہ پر سیٹ ہے۔</translation>
-<translation id="2030481566774242610">کیا آپ کا مطلب <ph name="LINK" /> ہے؟</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />پراکسی اور فائروال چیک کیا جا رہا ہے<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">ٹرے 7</translation>
 <translation id="204357726431741734">‏اپنے Google اکاؤنٹ میں محفوظ کردہ پاس ورڈز کا استعمال کرنے کے لئے سائن ان کریں</translation>
@@ -1049,6 +1047,7 @@
 <translation id="5308380583665731573">منسلک کریں</translation>
 <translation id="5308689395849655368">کریش رپورٹنگ کو غیر فعال کر دیا گیا ہے۔</translation>
 <translation id="5314967030527622926">کتابچہ بنانے والا</translation>
+<translation id="5316812925700871227">گھڑی کی مخالف سمت میں گھمائیں</translation>
 <translation id="5317780077021120954">محفوظ کریں</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />، <ph name="MATCH_POSITION" /> از <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">رابطے کی معلومات منتخب کریں</translation>
@@ -1072,7 +1071,6 @@
 <translation id="5421136146218899937">براؤزنگ ڈیٹا صاف کریں…</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> آپ کو اطلاعات بھیجنا چاہتی ہے</translation>
 <translation id="5430298929874300616">بُک مارک کو ہٹائیں</translation>
-<translation id="5431657950005405462">آپ کی فائل نہیں ملی</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" پر سکیما کی توثیق میں خرابی: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">اُلٹ ترتیب میں، صفحات کا رُخ اوپر کی جانب</translation>
 <translation id="5447765697759493033">اس سائٹ کا ترجمہ نہیں ہوگا</translation>
@@ -1181,6 +1179,7 @@
 <translation id="5869405914158311789">اس سائٹ تک رسائی حاصل نہیں کی جا سکتی ہے</translation>
 <translation id="5869522115854928033">محفوظ کردہ پاس ورڈز</translation>
 <translation id="5887400589839399685">کارڈ محفوظ کیا گیا</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> کا تقاضہ ہے کہ آپ اپنے ڈیٹا کا بیک اپ لیں اور اس آلہ کو واپس کریں۔</translation>
 <translation id="5895138241574237353">دوبارہ شروع کریں</translation>
 <translation id="5895187275912066135">تاریخ اجراء</translation>
 <translation id="5901630391730855834">پیلا</translation>
@@ -1446,7 +1445,6 @@
 <translation id="7083258188081898530">ٹرے 9</translation>
 <translation id="7086090958708083563">صارف کے ذریعے اپ لوڈ کی درخواست کی گئی</translation>
 <translation id="7087282848513945231">کاؤنٹی</translation>
-<translation id="7090678807593890770">‏<ph name="LINK" /> کو Google پر تلاش کریں</translation>
 <translation id="7108338896283013870">چھپائیں</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> آپ کا کیمرا استعمال کرنا چاہتا ہے</translation>
 <translation id="7108819624672055576">ایک ایکسٹینشین کی جانب سے اجازت یافتہ</translation>
@@ -1882,7 +1880,6 @@
 <translation id="893332455753468063">نام شامل کریں</translation>
 <translation id="8943282376843390568">لائم</translation>
 <translation id="8957210676456822347">کیپٹو پورٹل اجازت دہندگی</translation>
-<translation id="8958582951173503172">‏جب سیکیورٹی ایونٹس پر Chrome انٹرپرائز کنیکٹرز پرچم لگاتا ہے تو اس ایونٹ سے متعلقہ ڈیٹا آپ کے منتظم کو بھیجا جاتا ہے۔ اس میں Chrome میں آپ کے ذریعے ملاحظہ کیے جانے والے صفحات کے URLs، فائل کے نام یا میٹا ڈیٹا اور وہ صارف نام جس کا استعمال آپ اپنے آلہ اور Chrome میں سائن ان کرنے کے لیے استعمال کرتے ہیں، شامل ہو سکتے ہیں۔</translation>
 <translation id="8962950042226115166">مشکوک سائٹ</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />تجاویز:<ph name="MARKUP_2" />یقینی بنائیں کہ آپ کے پاس ڈیٹا کنکشن ہے<ph name="MARKUP_3" />یہ ویب صفحہ بعد میں دوبارہ لوڈ کریں<ph name="MARKUP_4" />اپنا درج کردہ پتہ چيک کریں<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">کارڈ کو محفوظ کریں</translation>

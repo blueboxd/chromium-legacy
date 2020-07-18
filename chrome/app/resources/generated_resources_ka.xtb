@@ -232,6 +232,7 @@
 <translation id="1274997165432133392">ქუქი და საიტის სხვა მონაცემები</translation>
 <translation id="1275718070701477396">შერჩეული</translation>
 <translation id="1276994519141842946"><ph name="APP_NAME" />-ის დეინსტალაცია ვერ მოხერხდა</translation>
+<translation id="127946606521051357">ახლომდებარე მოწყობილობა კონტენტს აზიარებს</translation>
 <translation id="1280820357415527819">მიმდინარეობს მობილური ქსელების ძიება</translation>
 <translation id="1280965841156951489">ფაილების რედაქტირება</translation>
 <translation id="1285320974508926690">არასდროს გადათარგმნო ეს საიტი</translation>
@@ -254,6 +255,7 @@
 <translation id="1306606229401759371">პარამეტრების შეცვლა</translation>
 <translation id="1307165550267142340">PIN-კოდი შექმნილია</translation>
 <translation id="1307559529304613120">სისტემამ ვერ შეინახა გრძელვადიანი API წვდომის ჟეტონი ამ მოწყობილობისთვის.</translation>
+<translation id="1313162974556054106">მოწყობილობის დასახელება</translation>
 <translation id="1313405956111467313">პროქსის ავტომატური კონფიგურაცია</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="1313660246522271310">თქვენ გამოხვალთ ყველა საიტიდან, მათ შორის, გახსნილ ჩანართებზეც</translation>
@@ -704,7 +706,6 @@
 <translation id="184273675144259287">Linux აპებისა და ფაილების ჩანაცვლება წინა სარეზერვო ასლებით</translation>
 <translation id="1842766183094193446">ნამდვილად გსურთ დემო-რეჟიმის ჩართვა?</translation>
 <translation id="1846308012215045257">დააწკაპუნეთ კლავიშზე Control დაჭერით, რათა გაუშვათ <ph name="PLUGIN_NAME" /></translation>
-<translation id="1846880379134204029">ჯგუფი „<ph name="GROUP_NAME" />“ — <ph name="GROUP_CONTENTS" /></translation>
 <translation id="184715642345428649">ემბიენტ რეჟიმის ჩართვა</translation>
 <translation id="1849186935225320012">ეს გვერდი სრულად აკონტროლებს MIDI მოწყობილობებს.</translation>
 <translation id="1850508293116537636">&amp;საათის ისრის მიმართულებით შემოტრიალება</translation>
@@ -1219,6 +1220,7 @@
 <translation id="2489918096470125693">&amp;საქაღალდის დამატება...</translation>
 <translation id="2490481887078769936">„<ph name="FILE_NAME" />“ ამოიშალა სიიდან</translation>
 <translation id="249113932447298600">უკაცრავად, მოწყობილობა <ph name="DEVICE_LABEL" /> ამჟამად არაა მხარდაჭერილი.</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" />-ის მიერ თქვენთვის გაზიარდა <ph name="ATTACHMENTS" />.</translation>
 <translation id="2492461744635776704">მზადდება სერტიფიკატის ხელმოწერის მოთხოვნა</translation>
 <translation id="249303669840926644">რეგისტრაცია ვერ დასრულდა</translation>
 <translation id="2495777824269688114">აღმოაჩინეთ მეტი ფუნქცია, ან მიიღეთ პასუხები თქვენს შეკითხვებზე. დახმარების მისაღებად აირჩიეთ „?“.</translation>
@@ -1720,6 +1722,7 @@
 <translation id="3103941660000130485">Linux-ის ახალ ვერსიაზე გადასვლისას მოხდა შეცდომა</translation>
 <translation id="3105796011181310544">გსურთ Google-ზე დაბრუნება?</translation>
 <translation id="310671807099593501">საიტი იყენებს Bluetooth-კავშირს</translation>
+<translation id="3109724472072898302">აკეცილი</translation>
 <translation id="3115147772012638511">ქეშის ლოდინი…</translation>
 <translation id="3115580024857770654">ყველას ჩაკეცვა</translation>
 <translation id="3116968597797150452">სერტიფიკატის პროფილი</translation>
@@ -1787,7 +1790,6 @@
 <translation id="3192947282887913208">აუდიო ფაილები</translation>
 <translation id="3199127022143353223">სერვერები</translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome გირჩევთ, ახლავე შეამოწმოთ ეს პაროლი}other{Chrome გირჩევთ, ახლავე შეამოწმოთ ეს პაროლები}}</translation>
-<translation id="3200941271596533635">წამკითხველის რეჟიმის გადართვა</translation>
 <translation id="3201422919974259695">აქ გამოჩნდება ხელმისაწვდომი USB-მოწყობილობები.</translation>
 <translation id="3202131003361292969">მდებარეობა</translation>
 <translation id="3202173864863109533">ამ ჩანართის აუდიო გამორთულია.</translation>
@@ -4150,6 +4152,7 @@
 <translation id="6212039847102026977">ქსელის დამატებითი მახასიათებლების ჩვენება</translation>
 <translation id="6212168817037875041">ეკრანის გამორთვა</translation>
 <translation id="6212752530110374741">ბმულის ელფოსტით გაგზავნა</translation>
+<translation id="6213230117190778270">მიღება</translation>
 <translation id="6216696360484424239">ავტომატურად შესვლა</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> ხაზგარეშე რეჟიმშია. დაუკავშირდით ინტერნეტს და ცადეთ ხელახლა.</translation>
 <translation id="6220413761270491930">გაფართოვების ჩატვირთვის ხარვეზი</translation>
@@ -4206,7 +4209,6 @@
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />სისტემისა/აპების ინფორმაციისა<ph name="END_LINK1" /> და <ph name="BEGIN_LINK2" />მეტრიკის<ph name="END_LINK2" /> გაგზავნა</translation>
 <translation id="6272643420381259437">დანამატის ჩამოტვირთვისას შეცდომა (<ph name="ERROR" />) წარმოიქმნა</translation>
 <translation id="6273677812470008672">ხარისხი</translation>
-<translation id="6273979226236203550">პაროლი შენახულია როგორც ამ მოწყობილობაზე, ისე თქვენს Google ანგარიშში. რომლის წაშლა გსურთ?</translation>
 <translation id="6277105963844135994">ქსელის დრო ამოიწურა</translation>
 <translation id="6277518330158259200">ეკრ&amp;ანის ანაბეჭდის გადაღება</translation>
 <translation id="6278057325678116358">GTK+-ის გამოყენება</translation>
@@ -4277,6 +4279,7 @@
 <translation id="6362853299801475928">&amp;მოხსენება პრობლემის შესახებ…</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">დაამატე ოჯახი და მეგობრები</translation>
+<translation id="6367985768157257101">გსურთ, კონტენტის მიღება მახლობლად გაზიარების მეშვეობით?</translation>
 <translation id="636850387210749493">ორგანიზაციის რეგისტრაცია</translation>
 <translation id="6370021412472292592">მანიფესტი ვერ ჩაიტვირთა.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4852,7 +4855,6 @@
 <translation id="7099337801055912064">დიდი ზომის PPD-ის ჩატვირთვა ვერ მოხერხდება. მაქსიმალური ზომაა 250 კბაიტი.</translation>
 <translation id="7102687220333134671">ავტომატური განახლებები ჩართულია</translation>
 <translation id="7102832101143475489">მოთხოვნის დრო ამოიწურა</translation>
-<translation id="7102928824073746774">უსახელო ჯგუფი — <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">USB-ის პარამეტრები</translation>
 <translation id="710640343305609397">ქსელის პარამეტრების გახსნა</translation>
 <translation id="7108338896283013870">დამალვა</translation>
@@ -4928,6 +4930,7 @@
 <translation id="720110658997053098">მოწყობილობის kiosk რეჟიმში სამუდამოდ შენარჩუნება</translation>
 <translation id="7201118060536064622">„<ph name="DELETED_ITEM_NAME" />“ წაიშალა</translation>
 <translation id="7201420661433230412">ფაილების ნახვა</translation>
+<translation id="7203150201908454328">გაშლილი</translation>
 <translation id="7203826966018112936">პროფილში სასწავლებლის ანგარიშის დამატების შემთხვევაში შესაძლებელი იქნება სხვადასხვა ვებსაიტსა და გაფართოებაში მარტივად შესვლა მოსწავლის სტატუსით, მშობელთა მიერ კონტროლის ფუნქციების შენარჩუნებით. თქვენს შვილს არ მიენიჭება წვდომა სანიშნეებზე, პაროლებზე ან ბრაუზერის სხვა მონაცემებზე, რომლებიც სინქრონიზებულია სასწავლებლის ანგარიშთან.&lt;br&gt;&lt;br&gt;
     თუ თქვენი შვილი სასწავლებელში Chromebook-ს იყენებს და მისით სარგებლობის პროცესზე პირდაპირ რეჟიმში გსურთ სახლიდან დაკვირვება (მაგალითად, საკლასო სამუშაოს სათანადოდ შესრულების გასაკონტროლებლად), გამოდით ამ Family Link ანგარიშიდან და შედით სასწავლებლის ანგარიშში Chrome OS ანგარიშების გვერდიდან (შენიშვნა: Family Link-ის მშობელთა მიერ კონტროლის ფუნქციები არ იმოქმედებს).&lt;br&gt;&lt;br&gt;
     თუ თქვენი შვილი სასწავლებელში Chromebook-ს არ იყენებს, ან გამოყენების პროცესის სახლიდან მართვა Family Link-ით გირჩევნიათ, დააწკაპუნეთ ღილაკზე „შემდეგი“ და დაამატეთ სასწავლებლის ანგარიში ამ პროფილს.</translation>
@@ -5323,7 +5326,6 @@
 <translation id="7704521324619958564">Play Store-ის გახსნა</translation>
 <translation id="7705276765467986571">სანიშნის მოდელი ვერ ჩაიტვირთა.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7706963867324547089">წამკითხველის რეჟიმის გადართვა</translation>
 <translation id="7707108266051544351">ამ საიტს აეკრძალა მოძრაობის სენსორების გამოყენება.</translation>
 <translation id="7707922173985738739">მობილური ინტერნეტის გამოყენება</translation>
 <translation id="7709152031285164251">ვერ მოხერხდა - <ph name="INTERRUPT_REASON" /></translation>
@@ -6578,6 +6580,7 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">შეიყვანეთ საიდუმლო ფრაზა</translation>
 <translation id="939736085109172342">ახალი საქაღალდე</translation>
+<translation id="941070664607309480">დააწკაპუნეთ, რომ გახდეთ ხილული და თქვენთანაც გაზიარდეს</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> Chrome-ის ჩანართსა და აუდიოს აზიარებს.</translation>
 <translation id="945522503751344254">შეფასების გაგზავნა</translation>
 <translation id="947329552760389097">ელემენტების შ&amp;ემოწმება</translation>

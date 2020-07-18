@@ -54,7 +54,7 @@ base::Optional<std::string> GetProperty(HDEVINFO dev_info,
     return base::nullopt;
   }
 
-  base::string16 buffer;
+  std::wstring buffer;
   if (!SetupDiGetDeviceProperty(
           dev_info, dev_info_data, &property, &property_type,
           reinterpret_cast<PBYTE>(base::WriteInto(&buffer, required_size)),
@@ -62,7 +62,7 @@ base::Optional<std::string> GetProperty(HDEVINFO dev_info,
     return base::nullopt;
   }
 
-  return base::UTF16ToUTF8(buffer);
+  return base::WideToUTF8(buffer);
 }
 
 base::FilePath FixUpPortName(base::StringPiece port_name) {
@@ -124,7 +124,7 @@ class SerialDeviceEnumeratorWin::UiThreadHelper
   }
 
   void OnDeviceAdded(const GUID& class_guid,
-                     const base::string16& device_path) override {
+                     const std::wstring& device_path) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&SerialDeviceEnumeratorWin::OnPathAdded,
@@ -132,7 +132,7 @@ class SerialDeviceEnumeratorWin::UiThreadHelper
   }
 
   void OnDeviceRemoved(const GUID& class_guid,
-                       const base::string16& device_path) override {
+                       const std::wstring& device_path) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&SerialDeviceEnumeratorWin::OnPathRemoved,
@@ -176,7 +176,7 @@ base::Optional<base::FilePath> SerialDeviceEnumeratorWin::GetPath(
   return FixUpPortName(com_port);
 }
 
-void SerialDeviceEnumeratorWin::OnPathAdded(const base::string16& device_path) {
+void SerialDeviceEnumeratorWin::OnPathAdded(const std::wstring& device_path) {
   base::win::ScopedDevInfo dev_info(
       SetupDiCreateDeviceInfoList(nullptr, nullptr));
   if (!dev_info.is_valid())
@@ -195,8 +195,7 @@ void SerialDeviceEnumeratorWin::OnPathAdded(const base::string16& device_path) {
   EnumeratePort(dev_info.get(), &dev_info_data);
 }
 
-void SerialDeviceEnumeratorWin::OnPathRemoved(
-    const base::string16& device_path) {
+void SerialDeviceEnumeratorWin::OnPathRemoved(const std::wstring& device_path) {
   base::win::ScopedDevInfo dev_info(
       SetupDiCreateDeviceInfoList(nullptr, nullptr));
   if (!dev_info.is_valid())

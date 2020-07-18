@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Teie kopeeritud pilt</translation>
 <translation id="1150979032973867961">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, arvuti operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="1151972924205500581">Parool on nõutav</translation>
-<translation id="1152921474424827756">Hankige juurdepääs aadressi <ph name="URL" /> <ph name="BEGIN_LINK" />vahemällu salvestatud koopiale<ph name="END_LINK" /></translation>
 <translation id="1156303062776767266">Vaatate kohalikku või jagatud faili</translation>
 <translation id="1158211211994409885">Host <ph name="HOST_NAME" /> sulges ootamatult ühenduse.</translation>
 <translation id="115926840831309955">Kontrollige oma CVC-d ja proovige uuesti või värskendage aegumiskuupäeva</translation>
 <translation id="1161325031994447685">Ühendage uuesti WiFi-ga</translation>
 <translation id="1165039591588034296">Viga</translation>
+<translation id="1165174597379888365">Lehte külastatakse</translation>
 <translation id="1175364870820465910">&amp;Prindi...</translation>
 <translation id="1175875016430184367">Kolm kirjaklambrit paremal</translation>
 <translation id="1178581264944972037">Peata</translation>
@@ -246,7 +246,6 @@
 <translation id="1919345977826869612">Reklaamid</translation>
 <translation id="1919367280705858090">Konkreetse veateate puhul abi hankimine</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Ühtegi}=1{1 sait}other{# saiti}}</translation>
-<translation id="194030505837763158">Avage <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Võite kaotada juurdepääsu oma organisatsiooni kontole või teie identiteet võidakse varastada. Chromium soovitab teil kohe oma parooli muuta.</translation>
 <translation id="1947454675006758438">Kirjaklamber paremal ülal</translation>
 <translation id="1959001866257244765">Aidake turvalisust veebis kõigi jaoks suurendada, saates Google'ile <ph name="BEGIN_WHITEPAPER_LINK" />mõne teie külastatud lehe URL-i, piiratud süsteemiteabe ja lehe teatud sisu<ph name="END_WHITEPAPER_LINK" />. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Privaatsuseeskirjad<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -266,9 +265,9 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2001146170449793414">{COUNT,plural, =1{ja veel 1}other{ja veel #}}</translation>
 <translation id="2003709556000175978">Lähtestage oma parool kohe</translation>
 <translation id="2003775180883135320">Neli auku ülal</translation>
+<translation id="202072848677994234">See vorm esitatakse ebaturvalise ühenduse kaudu. Automaatne täitmine on keelatud.</translation>
 <translation id="2025115093177348061">Liitreaalsus</translation>
 <translation id="2025186561304664664">Puhverserver seadistatakse automaatselt.</translation>
-<translation id="2030481566774242610">Kas mõtlesite aadressi <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kontrollige puhverserverit ja tulemüüri<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Salv 7</translation>
 <translation id="204357726431741734">Logige sisse, et kasutada oma Google'i kontole salvestatud paroole</translation>
@@ -334,6 +333,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2289385804009217824">Kärbi</translation>
 <translation id="2292556288342944218">Teie juurdepääs Internetile on blokeeritud</translation>
 <translation id="2293443924986248631">Kui see on sisse lülitatud, ei saa saidid kasutada küpsisefaile, mis jälgivad teid kogu veebis. Mõne saidi funktsioonid ei pruugi töötada.</translation>
+<translation id="2295290966866883927">Teie külastatavate lehtede URL-id saadetakse analüüsimiseks Google Cloudi või kolmandatele osapooltele. Näiteks võidakse neid skannida ebaturvaliste veebisaitide tuvastamiseks.</translation>
 <translation id="2297722699537546652">B5 (ümbrik)</translation>
 <translation id="2300306941146563769">Üles laadimata</translation>
 <translation id="2310021320168182093">Chou2 (ümbrik)</translation>
@@ -393,7 +393,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2552295903035773204">Edaspidi kasutatakse kaartide kinnitamiseks ekraanilukku</translation>
 <translation id="2553853292994445426">Kontrollige turvalise DNS-i seadeid. Olete võib-olla seadistanud turvalise DNS-i serveri, mille ühendus ei toimi.</translation>
 <translation id="2556876185419854533">&amp;Võta muudatus tagasi</translation>
-<translation id="257674075312929031">Rühm</translation>
+<translation id="257674075312929031">Grupeeri</translation>
 <translation id="2586657967955657006">Lõikelaud</translation>
 <translation id="2587730715158995865">Avaldajalt <ph name="ARTICLE_PUBLISHER" />. Lugege seda ja <ph name="OTHER_ARTICLE_COUNT" /> teist lugu.</translation>
 <translation id="2587841377698384444">Kataloogi API ID:</translation>
@@ -1046,6 +1046,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="5308380583665731573">Ühendamine</translation>
 <translation id="5308689395849655368">Krahhide aruandlus on keelatud.</translation>
 <translation id="5314967030527622926">Brošüürilooja</translation>
+<translation id="5316812925700871227">Pööra vastupäeva</translation>
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" />/<ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Valige kontaktteave</translation>
@@ -1069,7 +1070,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="5421136146218899937">Sirvimisandmete kustutamine ...</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> soovib teile saata märguandeid</translation>
 <translation id="5430298929874300616">Järjehoidja eemaldamine</translation>
-<translation id="5431657950005405462">Teie faili ei leitud</translation>
 <translation id="5439770059721715174">Skeemi valideerimise viga asukohas „<ph name="ERROR_PATH" />”: <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Vastupidine järjestus, esikülg ülespoole</translation>
 <translation id="5447765697759493033">Seda saiti ei tõlgita</translation>
@@ -1443,7 +1443,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="7083258188081898530">Salv 9</translation>
 <translation id="7086090958708083563">Kasutaja taotles üleslaadimist</translation>
 <translation id="7087282848513945231">Maakond</translation>
-<translation id="7090678807593890770">Sisestage Google'isse otsing <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Peida</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> soovib kasutada teie kaamerat</translation>
 <translation id="7108819624672055576">Lubas laiendus</translation>
@@ -1879,7 +1878,6 @@ Lisateave:
 <translation id="893332455753468063">Nime lisamine</translation>
 <translation id="8943282376843390568">Laimiroheline</translation>
 <translation id="8957210676456822347">Kontrollportaali volitamine</translation>
-<translation id="8958582951173503172">Kui teenus Chrome Enterprise Connectors märgistab turvalisusega seotud sündmused, saadetakse teie administraatorile asjakohased andmed sündmuse kohta. See võib hõlmata teie Chrome'is külastatud lehtede URL-e, failinimesid või metaandmeid ja kasutajanime, mida kasutate seadmesse ja Chrome'i sisselogimiseks.</translation>
 <translation id="8962950042226115166">Kahtlane sait</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Soovitused.<ph name="MARKUP_2" />Veenduge, et andmesideühendus oleks olemas<ph name="MARKUP_3" />Laadige veebileht hiljem uuesti<ph name="MARKUP_4" />Kontrollige sisestatud aadressi<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Salvesta kaart</translation>

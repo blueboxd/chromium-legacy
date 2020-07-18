@@ -170,7 +170,6 @@ Dodirnite bilo koju riječ da je pretražite. Za fino podešavanje pretraživanj
 <translation id="2353636109065292463">Provjera vaše internetske veze</translation>
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2369533728426058518">otvorene kartice</translation>
-<translation id="2377295302146152376">Chrome nije mogao provjeriti ima li ažuriranja</translation>
 <translation id="2387895666653383613">Promjena veličine teksta</translation>
 <translation id="2394602618534698961">Fajlovi koje preuzmete će se pojaviti ovdje</translation>
 <translation id="2407481962792080328">Kada se prijavite na Google račun, ova funkcija se uključuje</translation>
@@ -259,7 +258,6 @@ Dodirnite i zadržite bilo koju riječ da je pretražite. Za fino podešavanje p
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Potražite pomoć<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Lokacija je isključena; uključite je u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">Sinhronizaciju uvijek možete uključiti u postavkama</translation>
-<translation id="3059710691562604940">Sigurno pregledanje je isključeno. Chrome preporučuje da ga uključite.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> oznaka}one{<ph name="BOOKMARKS_COUNT_MANY" /> oznaka}few{<ph name="BOOKMARKS_COUNT_MANY" /> oznake}other{<ph name="BOOKMARKS_COUNT_MANY" /> oznaka}}</translation>
 <translation id="3089395242580810162">Otvori u anonimnoj kartici</translation>
 <translation id="3114012059975132928">Video plejer</translation>
@@ -320,7 +318,6 @@ Dodirnite i zadržite bilo koju riječ da je pretražite. Za fino podešavanje p
 <translation id="3522247891732774234">Dostupno je ažuriranje. Više opcija</translation>
 <translation id="3524138585025253783">Korisnički interfejs za programere</translation>
 <translation id="3527085408025491307">Folder</translation>
-<translation id="3533694711092285624">Nema sačuvanih lozinki. Chrome može provjeravati vaše lozinke kada ih sačuvate.</translation>
 <translation id="3542235761944717775">Dostupno: <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">Pretražite svoju historiju</translation>
 <translation id="3557336313807607643">Dodaj u kontakte</translation>
@@ -571,6 +568,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5581519193887989363">Uvijek možete odabrati šta želite sinhronizirati u <ph name="BEGIN_LINK1" />postavkama<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Uredite adresu</translation>
 <translation id="5599455543593328020">Anonimni način rada</translation>
+<translation id="5620163320393916465">Nema sačuvanih lozinki</translation>
 <translation id="5620928963363755975">Pronađite fajlove i stranice u meniju Preuzimanja koristeći dugme Više opcija</translation>
 <translation id="5626134646977739690">Naziv:</translation>
 <translation id="5639724618331995626">Dozvoli sve web lokacije</translation>

@@ -170,7 +170,6 @@ Aby coś wyszukać, dotknij dowolnego słowa. Aby doprecyzować wyszukiwanie, na
 <translation id="2353636109065292463">Sprawdzanie połączenia z internetem</translation>
 <translation id="2359808026110333948">Dalej</translation>
 <translation id="2369533728426058518">otwarte karty</translation>
-<translation id="2377295302146152376">Chrome nie udało się sprawdzić dostępności aktualizacji</translation>
 <translation id="2387895666653383613">Skalowanie tekstu</translation>
 <translation id="2394602618534698961">Tutaj pojawią się pobrane pliki</translation>
 <translation id="2407481962792080328">Ta funkcja zostanie włączona, gdy zalogujesz się na swoje konto Google</translation>
@@ -259,7 +258,6 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Poproś o pomoc<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Lokalizacja jest wyłączona. Włącz ją w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="3058498974290601450">W każdej chwili możesz włączyć synchronizację w ustawieniach</translation>
-<translation id="3059710691562604940">Bezpieczne przeglądanie jest wyłączone. Chrome zaleca jego włączenie.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> zakładka}few{<ph name="BOOKMARKS_COUNT_MANY" /> zakładki}many{<ph name="BOOKMARKS_COUNT_MANY" /> zakładek}other{<ph name="BOOKMARKS_COUNT_MANY" /> zakładki}}</translation>
 <translation id="3089395242580810162">Otwórz w karcie incognito</translation>
 <translation id="3114012059975132928">Odtwarzacz</translation>
@@ -320,7 +318,6 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="3522247891732774234">Dostępna jest aktualizacja. Więcej opcji</translation>
 <translation id="3524138585025253783">Interfejs dewelopera</translation>
 <translation id="3527085408025491307">Folder</translation>
-<translation id="3533694711092285624">Brak zapisanych haseł. Chrome może sprawdzać Twoje hasła, gdy je zapiszesz.</translation>
 <translation id="3542235761944717775">Dostępne: <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">Przeszukaj historię</translation>
 <translation id="3557336313807607643">Dodaj do kontaktów</translation>
@@ -571,6 +568,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5581519193887989363">W <ph name="BEGIN_LINK1" />ustawieniach<ph name="END_LINK1" /> możesz wybrać, co chcesz synchronizować.</translation>
 <translation id="5595485650161345191">Edytuj adres</translation>
 <translation id="5599455543593328020">Tryb incognito</translation>
+<translation id="5620163320393916465">Brak zapisanych haseł</translation>
 <translation id="5620928963363755975">Znajdź pliki i strony w Pobranych plikach, używając przycisku Więcej opcji</translation>
 <translation id="5626134646977739690">Nazwa:</translation>
 <translation id="5639724618331995626">Pozwól na otwieranie wszystkich stron</translation>

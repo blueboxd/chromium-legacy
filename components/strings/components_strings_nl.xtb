@@ -40,12 +40,12 @@
 <translation id="1131264053432022307">Afbeelding die je hebt gekopieerd</translation>
 <translation id="1150979032973867961">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je computer. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="1151972924205500581">Wachtwoord vereist</translation>
-<translation id="1152921474424827756">Een <ph name="BEGIN_LINK" />gecacht exemplaar<ph name="END_LINK" /> van <ph name="URL" /> openen</translation>
 <translation id="1156303062776767266">Je bekijkt een lokaal of gedeeld bestand</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> heeft de verbinding onverwacht verbroken.</translation>
 <translation id="115926840831309955">Controleer je CVC en probeer het opnieuw of update de vervaldatum</translation>
 <translation id="1161325031994447685">Maak opnieuw verbinding met wifi</translation>
 <translation id="1165039591588034296">Fout</translation>
+<translation id="1165174597379888365">Pagina is bezocht</translation>
 <translation id="1175364870820465910">&amp;Afdrukken...</translation>
 <translation id="1175875016430184367">Drie nietjes rechts</translation>
 <translation id="1178581264944972037">Onderbreken</translation>
@@ -244,7 +244,6 @@
 <translation id="1919345977826869612">Advertenties</translation>
 <translation id="1919367280705858090">Hulp bij een specifieke foutmelding</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Geen}=1{1 site}other{# sites}}</translation>
-<translation id="194030505837763158">Ga naar <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Je kunt de toegang tot het account van je organisatie kwijtraken of slachtoffer worden van identiteitsdiefstal. Chromium raadt je aan je wachtwoord nu te wijzigen.</translation>
 <translation id="1947454675006758438">Nietje rechtsboven</translation>
 <translation id="1959001866257244765">Help de beveiliging op internet te verbeteren voor iedereen door <ph name="BEGIN_WHITEPAPER_LINK" />URL's van sommige pagina's die je bezoekt, beperkte systeemgegevens en bepaalde paginacontent<ph name="END_WHITEPAPER_LINK" /> naar Google te sturen. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Privacybeleid<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -264,9 +263,9 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2001146170449793414">{COUNT,plural, =1{en 1 andere}other{en # andere}}</translation>
 <translation id="2003709556000175978">Stel je wachtwoord nu opnieuw in</translation>
 <translation id="2003775180883135320">Vier perforaties boven</translation>
+<translation id="202072848677994234">Dit formulier is ingediend via een niet-beveiligde verbinding. Automatisch aanvullen is uitgeschakeld.</translation>
 <translation id="2025115093177348061">Augmented reality</translation>
 <translation id="2025186561304664664">Proxy is ingesteld op automatische configuratie.</translation>
-<translation id="2030481566774242610">Bedoelde je <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Controleer de proxy en firewall<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Lade 7</translation>
 <translation id="204357726431741734">Inloggen om wachtwoorden te gebruiken die zijn opgeslagen in je Google-account</translation>
@@ -332,6 +331,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2289385804009217824">Bijsnijden</translation>
 <translation id="2292556288342944218">Je toegang tot internet wordt geblokkeerd</translation>
 <translation id="2293443924986248631">Als deze optie is ingeschakeld, kunnen sites geen cookies gebruiken die je volgen op internet. Functies op bepaalde sites werken mogelijk niet meer.</translation>
+<translation id="2295290966866883927">URL's van pagina's die je bezoekt, worden voor analyse naar Google Cloud of derden gestuurd. Ze kunnen bijvoorbeeld worden gescand om niet-beveiligde websites te detecteren.</translation>
 <translation id="2297722699537546652">B5 (envelop)</translation>
 <translation id="2300306941146563769">Niet geüpload</translation>
 <translation id="2310021320168182093">Chou2 (envelop)</translation>
@@ -1037,6 +1037,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="5308689395849655368">Crashrapportage is uitgeschakeld.</translation>
 <translation id="5314967030527622926">Boekjesmaker</translation>
+<translation id="5316812925700871227">Linksom draaien</translation>
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> van <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Contactgegevens kiezen</translation>
@@ -1060,7 +1061,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="5421136146218899937">Browsegegevens wissen</translation>
 <translation id="5426179911063097041"><ph name="SITE" /> wil meldingen sturen</translation>
 <translation id="5430298929874300616">Bookmark verwijderen</translation>
-<translation id="5431657950005405462">Je bestand is niet gevonden</translation>
 <translation id="5439770059721715174">Schemavalidatiefout op '<ph name="ERROR_PATH" />': <ph name="ERROR" /></translation>
 <translation id="5443468954631487277">Omgekeerde volgorde met de bedrukte zijde omhoog</translation>
 <translation id="5447765697759493033">Deze site wordt niet vertaald</translation>
@@ -1433,7 +1433,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="7083258188081898530">Lade 9</translation>
 <translation id="7086090958708083563">Upload aangevraagd door gebruiker</translation>
 <translation id="7087282848513945231">County</translation>
-<translation id="7090678807593890770">Zoek op Google naar <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Verbergen</translation>
 <translation id="7108634116785509031"><ph name="HOST" /> wil gebruikmaken van je camera</translation>
 <translation id="7108819624672055576">Toegestaan door een extensie</translation>
@@ -1869,7 +1868,6 @@ Aanvullende informatie:
 <translation id="893332455753468063">Naam toevoegen</translation>
 <translation id="8943282376843390568">Limoengroen</translation>
 <translation id="8957210676456822347">Autorisatie van captive portal</translation>
-<translation id="8958582951173503172">Als er beveiligingsgebeurtenissen door Chrome Enterprise Connectors worden gemarkeerd, worden relevante gegevens over de gebeurtenissen naar je beheerder gestuurd. Deze gegevens zijn bijvoorbeeld URL's van pagina's die je hebt bezocht in Chrome, bestandsnamen of metadata en de gebruikersnaam die je gebruikt om in te loggen op je apparaat en bij Chrome.</translation>
 <translation id="8962950042226115166">Verdachte site</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />Suggesties:<ph name="MARKUP_2" />Controleer of er een gegevensverbinding beschikbaar is<ph name="MARKUP_3" />Laad deze pagina later opnieuw<ph name="MARKUP_4" />Controleer het adres dat je hebt opgegeven<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Pas opslaan</translation>

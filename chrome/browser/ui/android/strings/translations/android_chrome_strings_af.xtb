@@ -170,7 +170,6 @@ Tik op enige woord om te soek. Raak en hou om meer of minder woorde te kies as j
 <translation id="2353636109065292463">Gaan jou internetverbinding na</translation>
 <translation id="2359808026110333948">Gaan voort</translation>
 <translation id="2369533728426058518">oop oortjies</translation>
-<translation id="2377295302146152376">Chome kon nie vir opdaterings kontroleer nie</translation>
 <translation id="2387895666653383613">Verander teksgrootte</translation>
 <translation id="2394602618534698961">Lêers wat jy aflaai, verskyn hier</translation>
 <translation id="2407481962792080328">Hierdie kenmerk word aangeskakel wanneer jy by jou Google-rekening aanmeld</translation>
@@ -259,7 +258,6 @@ Raak en hou enige woord om te soek. Kies meer of minder woorde as jy jou soektog
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Kry hulp<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Ligging is af; skakel dit in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aan.</translation>
 <translation id="3058498974290601450">Jy kan sinkronisering enige tyd in Instellings aanskakel</translation>
-<translation id="3059710691562604940">Veiligblaai is afgeskakel. Chrome beveel aan dat jy dit aanskakel.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> boekmerk}other{<ph name="BOOKMARKS_COUNT_MANY" /> boekmerke}}</translation>
 <translation id="3089395242580810162">Maak in incognito-oortjie oop</translation>
 <translation id="3114012059975132928">Videospeler</translation>
@@ -320,7 +318,6 @@ Raak en hou enige woord om te soek. Kies meer of minder woorde as jy jou soektog
 <translation id="3522247891732774234">Opdatering is beskikbaar. Meer opsies</translation>
 <translation id="3524138585025253783">Ontwikkelaar-UI</translation>
 <translation id="3527085408025491307">Vouer</translation>
-<translation id="3533694711092285624">Geen gestoorde wagwoorde nie. Chrome kan jou wagwoorde nagaan wanneer jy hulle stoor.</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB beskikbaar</translation>
 <translation id="3549657413697417275">Deursoek jou geskiedenis</translation>
 <translation id="3557336313807607643">Voeg by kontakte</translation>
@@ -360,6 +357,7 @@ Raak en hou enige woord om te soek. Kies meer of minder woorde as jy jou soektog
 <translation id="3892148308691398805">Kopieer teks</translation>
 <translation id="3894427358181296146">Voeg vouer by</translation>
 <translation id="3895926599014793903">Dwing aktivering van zoem</translation>
+<translation id="3909763690984331376">Veiligheidskontrole <ph name="BEGIN_NEW" />Nuut<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Soek tans die beste op die web …</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Kombineer my data</translation>
@@ -570,6 +568,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5581519193887989363">Jy kan altyd in <ph name="BEGIN_LINK1" />instellings<ph name="END_LINK1" /> kies wat om te sinkroniseer.</translation>
 <translation id="5595485650161345191">Wysig adres</translation>
 <translation id="5599455543593328020">Incognitomodus</translation>
+<translation id="5620163320393916465">Geen gestoorde wagwoorde nie</translation>
 <translation id="5620928963363755975">Kry jou lêers en bladsye in Aflaaie vanaf die Meer Opsies-knoppie</translation>
 <translation id="5626134646977739690">Naam:</translation>
 <translation id="5639724618331995626">Laat alle werwe toe</translation>
@@ -581,6 +580,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5686790454216892815">Lêernaam is te lank</translation>
 <translation id="5694049548840660018">Gaan maklik terug na die tuisblad toe</translation>
 <translation id="569536719314091526">Vertaal hierdie bladsy in enige taal vanaf die Meer Opsies-knoppie</translation>
+<translation id="5696597120588531049">Chrome kan help om jou teen dataskendings, onveilige webwerwe, en meer te beskerm</translation>
 <translation id="5697688514913266141">Jou lêer sal gestoor word in <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Wysig<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Wissel Na Oortjie</translation>
 <translation id="572328651809341494">Onlangse oortjies</translation>
@@ -714,6 +714,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6656545060687952787">Chrome benodig liggingtoegang om toestelle te soek. <ph name="BEGIN_LINK" />Dateer toestemmings op<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Wagwoord</translation>
 <translation id="6659594942844771486">Oortjie</translation>
+<translation id="6663079968236414793">Skakel na teks</translation>
 <translation id="666573598175432848">'n Nuwer weergawe van Chrome is beskikbaar. Tik op hierdie element om na die Play Winkel toe te gaan.</translation>
 <translation id="666731172850799929">Maak oop in <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome se privaatheidkennisgewing</translation>

@@ -1313,6 +1313,7 @@
   'interactive_ui_tests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
+      'linux-lacros-tester-rel', # https://crbug.com/1106980
     ],
     'modifications': {
       'Linux - Future (dbg)': {  # client.v8.chromium
@@ -2204,6 +2205,9 @@
     },
   },
   'storage_service_unsandboxed_interactive_ui_tests': {
+    'remove_from': [
+      'linux-lacros-tester-rel', # https://crbug.com/1106980
+    ],
     'modifications': {
       'linux-chromeos-chrome': {
         # TODO(crbug.com/970649): Remove this filter.

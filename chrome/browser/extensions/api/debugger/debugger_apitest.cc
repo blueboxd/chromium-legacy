@@ -374,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDebuggerExtensionApiTest, Debugger) {
                                ui::PAGE_TRANSITION_LINK, std::string());
   navigation_manager.WaitForNavigationFinished();
   navigation_manager_iframe.WaitForNavigationFinished();
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   ASSERT_TRUE(
       RunExtensionTestWithArg("debugger", "oopif.html;oopif_frame.html"))

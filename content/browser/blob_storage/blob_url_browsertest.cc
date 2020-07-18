@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToUniqueOriginBlob) {
   // The link should create a new tab.
   Shell* new_shell = new_shell_observer.GetShell();
   WebContents* new_contents = new_shell->web_contents();
-  WaitForLoadStop(new_contents);
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
 
   EXPECT_TRUE(
       base::MatchPattern(new_contents->GetVisibleURL().spec(), "blob:null/*"));
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToSameOriginBlob) {
   // The link should create a new tab.
   Shell* new_shell = new_shell_observer.GetShell();
   WebContents* new_contents = new_shell->web_contents();
-  WaitForLoadStop(new_contents);
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
 
   EXPECT_TRUE(base::MatchPattern(new_contents->GetVisibleURL().spec(),
                                  "blob:" + origin.Serialize() + "/*"));
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToSameOriginBlobWithAuthority) {
   // The link should create a new tab.
   Shell* new_shell = new_shell_observer.GetShell();
   WebContents* new_contents = new_shell->web_contents();
-  WaitForLoadStop(new_contents);
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
 
   // The spoofy URL should not be shown to the user.
   EXPECT_FALSE(
@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, ReplaceStateToAddAuthorityToBlob) {
 
   Shell* new_shell = new_shell_observer.GetShell();
   WebContents* new_contents = new_shell->web_contents();
-  WaitForLoadStop(new_contents);
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
 
   // The spoofy URL should not be shown to the user.
   EXPECT_FALSE(

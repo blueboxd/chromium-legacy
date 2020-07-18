@@ -58,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, MAYBE_OpenSettingsSubpage) {
   content::WebContents* web_contents =
       settings_browser->tab_strip_model()->GetWebContentsAt(0);
 
-  WaitForLoadStop(web_contents);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
 
   EXPECT_EQ(GURL(chrome::GetOSSettingsUrl("manageAccessibility/tts")),
             web_contents->GetLastCommittedURL());

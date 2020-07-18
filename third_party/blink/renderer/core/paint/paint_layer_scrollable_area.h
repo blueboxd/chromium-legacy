@@ -675,10 +675,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   void ScrollControlWasSetNeedsPaintInvalidation() override;
 
-  void SetHorizontalScrollbarVisualRect(const IntRect&);
-  void SetVerticalScrollbarVisualRect(const IntRect&);
-  void SetScrollCornerAndResizerVisualRect(const IntRect&);
-
   bool HasNonCompositedStickyDescendants() const;
 
   IntSize PixelSnappedBorderBoxSize() const;
@@ -799,7 +795,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
     void Trace(Visitor* visitor) const { visitor->Trace(scrollable_area_); }
 
    private:
-    IntRect VisualRect() const final;
     String DebugName() const final;
     DOMNodeId OwnerNodeId() const final;
 

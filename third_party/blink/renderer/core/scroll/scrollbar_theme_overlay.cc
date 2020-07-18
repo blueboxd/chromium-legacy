@@ -149,7 +149,8 @@ void ScrollbarThemeOverlay::PaintThumb(GraphicsContext& context,
                                                   DisplayItem::kScrollbarThumb))
     return;
 
-  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb);
+  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb,
+                           rect);
 
   WebThemeEngine::State state = WebThemeEngine::kStateNormal;
 

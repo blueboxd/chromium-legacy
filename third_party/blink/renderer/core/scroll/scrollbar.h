@@ -170,14 +170,11 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   bool ThumbNeedsRepaint() const { return thumb_needs_repaint_; }
   void ClearThumbNeedsRepaint() { thumb_needs_repaint_ = false; }
 
-  // DisplayItemClient methods.
+  // DisplayItemClient.
   String DebugName() const final {
     return orientation_ == kHorizontalScrollbar ? "HorizontalScrollbar"
                                                 : "VerticalScrollbar";
   }
-  IntRect VisualRect() const final { return visual_rect_; }
-
-  virtual void SetVisualRect(const IntRect& r) { visual_rect_ = r; }
 
   // Marks the scrollbar as needing to be redrawn.
   //
@@ -263,7 +260,6 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   // additional state is necessary.
   bool scrollbar_manipulation_in_progress_on_cc_thread_;
 
-  IntRect visual_rect_;
   IntRect frame_rect_;
   Member<Element> style_source_;
 };

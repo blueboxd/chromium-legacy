@@ -1811,7 +1811,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterReload) {
   // Reload the page.
   content::WebContents* web_contents = GetWebContents();
   web_contents->GetController().Reload(content::ReloadType::NORMAL, false);
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
 
   // Invoke Autofill.
   TryBasicFormFill();

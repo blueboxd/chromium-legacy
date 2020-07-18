@@ -1852,7 +1852,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
         subframe_url.spec().c_str());
     ASSERT_TRUE(ExecuteScript(shell(), script));
 
-    WaitForLoadStop(shell()->web_contents());
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
     FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                               ->GetFrameTree()
@@ -1907,7 +1907,7 @@ IN_PROC_BROWSER_TEST_F(
   // empty document regardless of when/how/if the `src` attribute is set.
 
   ASSERT_TRUE(ExecuteScript(shell(), kNavigateToOneThenTwoScript));
-  WaitForLoadStop(shell()->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()

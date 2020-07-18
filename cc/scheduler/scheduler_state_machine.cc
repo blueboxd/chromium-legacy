@@ -872,9 +872,13 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
     has_pending_tree_ = true;
     pending_tree_needs_first_draw_on_activation_ = true;
     pending_tree_is_ready_for_activation_ = false;
-    // Wait for the new pending tree to become ready to draw, which may happen
-    // before or after activation.
-    active_tree_is_ready_to_draw_ = false;
+    if (!active_tree_needs_first_draw_ ||
+        !settings_.wait_for_all_pipeline_stages_before_draw) {
+      // Wait for the new pending tree to become ready to draw, which may happen
+      // before or after activation (unless we're in full-pipeline mode and
+      // need first draw to come through).
+      active_tree_is_ready_to_draw_ = false;
+    }
   }
 
   // Update state related to forced draws.

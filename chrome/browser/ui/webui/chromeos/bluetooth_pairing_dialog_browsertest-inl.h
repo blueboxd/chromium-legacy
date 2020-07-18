@@ -70,6 +70,6 @@ void BluetoothPairingDialogTest::ShowDialog() {
 
   content::WebUI* webui = dialog->GetWebUIForTest();
   content::WebContents* webui_webcontents = webui->GetWebContents();
-  content::WaitForLoadStop(webui_webcontents);
+  EXPECT_TRUE(content::WaitForLoadStop(webui_webcontents));
   SetWebUIInstance(webui);
 }

@@ -84,7 +84,7 @@ class GestureScrollObserver : public RenderWidgetHost::InputEventObserver {
 // being closed.
 IN_PROC_BROWSER_TEST_F(SyntheticInputTest, DestroyWidgetWithOngoingGesture) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
-  WaitForLoadStop(shell()->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   GestureScrollObserver gesture_observer;
 

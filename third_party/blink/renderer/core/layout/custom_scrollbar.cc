@@ -417,10 +417,4 @@ void CustomScrollbar::ClearPaintFlags() {
     part.value->ClearPaintFlags();
 }
 
-void CustomScrollbar::SetVisualRect(const IntRect& rect) {
-  Scrollbar::SetVisualRect(rect);
-  for (auto& part : parts_)
-    part.value->GetMutableForPainting().FirstFragment().SetVisualRect(rect);
-}
-
 }  // namespace blink

@@ -85,6 +85,7 @@ class MODULES_EXPORT ImageCapture final
   void GetMediaTrackSettings(MediaTrackSettings*) const;
 
   bool HasPanTiltZoomPermissionGranted() const;
+  bool HasZoomPermissionGranted() const;
 
   void Trace(Visitor*) const override;
 

@@ -545,12 +545,12 @@ IN_PROC_BROWSER_TEST_F(DeferAllScriptBrowserTest,
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
   // Wait for initial page load to complete.
-  content::WaitForLoadStop(web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // Navigate to DeferAllScript url expecting a DeferAllScript preview.
   ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
-  content::WaitForLoadStop(web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // Verify good DeferAllScript preview.
   EXPECT_EQ(kDeferredPageExpectedOutput, GetScriptLog(browser()));
@@ -573,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(DeferAllScriptBrowserTest,
       browser(), another_host_url(), WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   base::RunLoop().RunUntilIdle();
-  content::WaitForLoadStop(web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // Verify preview UI not shown.
   EXPECT_FALSE(PreviewsUITabHelper::FromWebContents(web_contents())
@@ -588,7 +588,7 @@ IN_PROC_BROWSER_TEST_F(DeferAllScriptBrowserTest,
   // not trigger).
   web_contents()->GetController().GoBack();
   base::RunLoop().RunUntilIdle();
-  content::WaitForLoadStop(web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // Verify that the page was restored from BackForwardCache.
   histogram_tester.ExpectUniqueSample(
@@ -622,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
   // Wait for initial page load to complete.
-  content::WaitForLoadStop(web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // Override the target decision to |kFalse| to choose not to trigger a
   // preview this navigation.
@@ -634,7 +634,7 @@ IN_PROC_BROWSER_TEST_F(
   // Navigate to DeferAllScript url.
   ui_test_utils::NavigateToURL(browser(), url);
   base::RunLoop().RunUntilIdle();
-  content::WaitForLoadStop(web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // Verify non-DeferAllScript page load.
   EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog(browser()));
@@ -655,7 +655,7 @@ IN_PROC_BROWSER_TEST_F(
       browser(), another_host_url(), WindowOpenDisposition::CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   base::RunLoop().RunUntilIdle();
-  content::WaitForLoadStop(web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.DeferAllScript",
@@ -670,7 +670,7 @@ IN_PROC_BROWSER_TEST_F(
   // not trigger).
   web_contents()->GetController().GoBack();
   base::RunLoop().RunUntilIdle();
-  content::WaitForLoadStop(web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
 
   // Verify that the page was restored from BackForwardCache.
   histogram_tester.ExpectUniqueSample(

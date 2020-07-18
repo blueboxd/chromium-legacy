@@ -116,6 +116,15 @@ public class PageInfoViewTest {
         });
     }
 
+    private void addDefaultSettingPermissions(String url) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            WebsitePreferenceBridge.setContentSettingForPattern(Profile.getLastUsedRegularProfile(),
+                    ContentSettingsType.MEDIASTREAM_MIC, url, "*", ContentSettingValues.DEFAULT);
+            WebsitePreferenceBridge.setContentSettingForPattern(Profile.getLastUsedRegularProfile(),
+                    ContentSettingsType.MEDIASTREAM_CAMERA, url, "*", ContentSettingValues.ASK);
+        });
+    }
+
     @Before
     public void setUp() throws InterruptedException {
         // Some test devices have geolocation disabled. Override LocationUtils for a stable result.
@@ -224,6 +233,18 @@ public class PageInfoViewTest {
         setThirdPartyCookieBlocking(true);
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(mPath));
         mRenderTestRule.render(getPageInfoView(), "PageInfo_PermissionsAndCookieBlocking");
+    }
+
+    /**
+     * Tests PageInfo on a website with default setting permissions.
+     */
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testShowWithDefaultSettingPermissions() throws IOException {
+        addDefaultSettingPermissions(mTestServerRule.getServer().getURL("/"));
+        loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(mPath));
+        mRenderTestRule.render(getPageInfoView(), "PageInfo_DefaultSettingPermissions");
     }
 
     /**

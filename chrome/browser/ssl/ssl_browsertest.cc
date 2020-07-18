@@ -1045,7 +1045,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestMixedContentWithSamePageNavigation) {
   // Go back (which should also be a same-document navigation) and test that the
   // security indicator is still downgraded because of the mixed form.
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
   ssl_test_util::CheckSecurityState(
       tab, CertError::NONE, security_state::NONE,
       AuthState::DISPLAYED_FORM_WITH_INSECURE_ACTION);
@@ -1183,7 +1183,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, GoBackToMixedContent) {
   ssl_test_util::CheckUnauthenticatedState(
       browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
   // After going back, the mixed content indicator should no longer be present.
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 }
@@ -1530,7 +1530,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoBackViaButton) {
 
   // Simulate user clicking on back button (crbug.com/39248).
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   // We should be back at the original good page.
   EXPECT_FALSE(chrome_browser_interstitials::IsShowingInterstitial(tab));
@@ -3476,7 +3476,7 @@ class SSLUIWorkerFetchTest
     // cleared.
     chrome::NewTab(browser());
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-    content::WaitForLoadStop(tab);
+    EXPECT_TRUE(content::WaitForLoadStop(tab));
 
     CheckErrorStateIsCleared();
 
@@ -5409,7 +5409,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 }
 
@@ -5424,7 +5424,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   ASSERT_TRUE(content::ExecuteScript(
       tab, "location.replace(window.location.href + '#1')"));
   observer.Wait();
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 }
 
@@ -5616,7 +5616,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, ClientRedirectSSLState) {
 
   navigation_observer_https.WaitForNavigationFinished();
   navigation_observer_http.WaitForNavigationFinished();
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   ssl_test_util::CheckUnauthenticatedState(tab, AuthState::NONE);
 }
@@ -5657,7 +5657,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, ClientRedirectToMixedContentSSLState) {
 
   navigation_manager_redirect.WaitForNavigationFinished();
   navigation_manager_final_url.WaitForNavigationFinished();
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   ssl_test_util::CheckSecurityState(tab, CertError::NONE,
                                     GetPassiveMixedContentSecurityLevel(),
@@ -5703,7 +5703,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_PushStateSSLState) {
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
   ssl_test_util::CheckAuthenticatedState(tab, AuthState::NONE);
 }
 

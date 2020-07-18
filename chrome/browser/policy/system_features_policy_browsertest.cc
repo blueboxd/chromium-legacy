@@ -32,7 +32,7 @@ class SystemFeaturesPolicyTest : public PolicyTest {
         browser()->tab_strip_model()->GetActiveWebContents();
     ui_test_utils::NavigateToURL(browser(), url);
 
-    content::WaitForLoadStop(web_contents);
+    EXPECT_TRUE(content::WaitForLoadStop(web_contents));
     return web_contents->GetTitle();
   }
 };

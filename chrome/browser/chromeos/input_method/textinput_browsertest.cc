@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   ASSERT_TRUE(helper.ClickElement("text_id", tab));
   helper.WaitForTextInputStateChanged(ui::TEXT_INPUT_TYPE_TEXT);

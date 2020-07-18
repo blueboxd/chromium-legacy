@@ -73,7 +73,6 @@ class CORE_EXPORT CustomScrollbar final : public Scrollbar {
 
   void InvalidateDisplayItemClientsOfScrollbarParts();
   void ClearPaintFlags();
-  void SetVisualRect(const IntRect&) final;
 
   void Trace(Visitor*) const override;
 

@@ -218,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   // an iframe (i.e. http://www.example.com)
   content::TestNavigationObserver observer(web_contents);
   ASSERT_TRUE(content::ExecuteScript(web_contents, "dropFrame()"));
-  WaitForLoadStop(web_contents);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
   content::RenderFrameHost* subframe =
       content::ChildFrameAt(web_contents->GetMainFrame(), 0);
   ASSERT_TRUE(subframe);
@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, FrameErrorPageBlocked) {
   // an iframe (i.e. http://www.example.com)
   content::TestNavigationObserver observer(web_contents);
   ASSERT_TRUE(content::ExecuteScript(web_contents, "dropFrame()"));
-  WaitForLoadStop(web_contents);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
   content::RenderFrameHost* subframe =
       content::ChildFrameAt(web_contents->GetMainFrame(), 0);
   ASSERT_TRUE(subframe);

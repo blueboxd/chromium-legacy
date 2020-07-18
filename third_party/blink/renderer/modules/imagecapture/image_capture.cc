@@ -351,10 +351,9 @@ void ImageCapture::GetMediaTrackCapabilities(
     if (capabilities_->hasTilt())
       capabilities->setTilt(capabilities_->tilt());
   }
-  // TODO(crbug.com/934063): Check HasPanTiltZoomPermissionGranted() as well if
-  // upcoming metrics show that zoom may be moved under this permission.
-  if (capabilities_->hasZoom())
+  if (capabilities_->hasZoom() && HasZoomPermissionGranted()) {
     capabilities->setZoom(capabilities_->zoom());
+  }
 
   if (capabilities_->hasTorch())
     capabilities->setTorch(capabilities_->torch());
@@ -430,9 +429,8 @@ void ImageCapture::SetMediaTrackConstraints(
        !(capabilities_->hasPan() && HasPanTiltZoomPermissionGranted())) ||
       (constraints->hasTilt() &&
        !(capabilities_->hasTilt() && HasPanTiltZoomPermissionGranted())) ||
-      // TODO(crbug.com/934063): Check HasPanTiltZoomPermissionGranted() as well
-      // if upcoming metrics show that zoom may be moved under this permission.
-      (constraints->hasZoom() && !capabilities_->hasZoom()) ||
+      (constraints->hasZoom() &&
+       !(capabilities_->hasZoom() && HasZoomPermissionGranted())) ||
       (constraints->hasTorch() && !capabilities_->hasTorch())) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError, "Unsupported constraint(s)"));
@@ -818,10 +816,9 @@ void ImageCapture::GetMediaTrackSettings(MediaTrackSettings* settings) const {
     if (settings_->hasTilt())
       settings->setTilt(settings_->tilt());
   }
-  // TODO(crbug.com/934063): Check HasPanTiltZoomPermissionGranted() as well if
-  // upcoming metrics show that zoom may be moved under this permission.
-  if (settings_->hasZoom())
+  if (settings_->hasZoom() && HasZoomPermissionGranted()) {
     settings->setZoom(settings_->zoom());
+  }
 
   if (settings_->hasTorch())
     settings->setTorch(settings_->torch());
@@ -887,6 +884,10 @@ bool ImageCapture::HasPanTiltZoomPermissionGranted() const {
   if (!RuntimeEnabledFeatures::MediaCapturePanTiltEnabled())
     return false;
 
+  return pan_tilt_zoom_permission_ == mojom::blink::PermissionStatus::GRANTED;
+}
+
+bool ImageCapture::HasZoomPermissionGranted() const {
   return pan_tilt_zoom_permission_ == mojom::blink::PermissionStatus::GRANTED;
 }
 
@@ -1098,11 +1099,11 @@ void ImageCapture::UpdateMediaTrackCapabilities(
       settings_->setTilt(photo_state->tilt->current);
     }
   }
-  // TODO(crbug.com/934063): Check HasPanTiltZoomPermissionGranted() as well if
-  // upcoming metrics show that zoom may be moved under this permission.
-  if (photo_state->zoom->max != photo_state->zoom->min) {
-    capabilities_->setZoom(MediaSettingsRange::Create(*photo_state->zoom));
-    settings_->setZoom(photo_state->zoom->current);
+  if (HasZoomPermissionGranted()) {
+    if (photo_state->zoom->max != photo_state->zoom->min) {
+      capabilities_->setZoom(MediaSettingsRange::Create(*photo_state->zoom));
+      settings_->setZoom(photo_state->zoom->current);
+    }
   }
 
   if (photo_state->supports_torch)

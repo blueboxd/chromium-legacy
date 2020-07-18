@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest, ViewSource) {
     options_contents = options_contents_added_observer.GetWebContents();
   }
   ASSERT_TRUE(options_contents);
-  content::WaitForLoadStop(options_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(options_contents));
   EXPECT_EQ(extension->GetResourceURL("options.html"),
             options_contents->GetLastCommittedURL());
 
@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest, ViewSource) {
   content::WebContents* view_source_contents =
       view_source_contents_added_observer.GetWebContents();
   ASSERT_TRUE(view_source_contents);
-  content::WaitForLoadStop(view_source_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(view_source_contents));
 
   // Verify that the view-source is present in the tab-strip.
   int new_tabs_count = browser()->tab_strip_model()->count();

@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, OpenSameOriginOutsideMenu) {
   ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
 
   content::WebContents* new_contents = OpenNewTab(kTestPageUrl, false);
-  content::WaitForLoadStop(new_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(new_contents));
 
   EXPECT_FALSE(AttemptPlay(new_contents));
 }
@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, OpenSameOriginFromMenu) {
   ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
 
   content::WebContents* new_contents = OpenNewTab(kTestPageUrl, true);
-  content::WaitForLoadStop(new_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(new_contents));
 
   EXPECT_TRUE(AttemptPlay(new_contents));
 }
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, OpenCrossOriginFromMenu) {
 
   content::WebContents* new_contents = OpenNewTab(
       embedded_test_server()->GetURL("bar.example.com", kTestPagePath), true);
-  content::WaitForLoadStop(new_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(new_contents));
 
   EXPECT_TRUE(AttemptPlay(new_contents));
 }
@@ -195,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, OpenCrossDomainFromMenu) {
 
   content::WebContents* new_contents = OpenNewTab(
       embedded_test_server()->GetURL("example.com", kTestPagePath), true);
-  content::WaitForLoadStop(new_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(new_contents));
 
   EXPECT_FALSE(AttemptPlay(new_contents));
 }
@@ -206,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, OpenWindowFromContextMenu) {
   ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
 
   content::WebContents* new_contents = OpenNewTab(kTestPageUrl, true);
-  content::WaitForLoadStop(new_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(new_contents));
 
   EXPECT_TRUE(AttemptPlay(new_contents));
 }
@@ -217,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, OpenWindowNotContextMenu) {
   ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
 
   content::WebContents* new_contents = OpenNewTab(kTestPageUrl, false);
-  content::WaitForLoadStop(new_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(new_contents));
 
   EXPECT_FALSE(AttemptPlay(new_contents));
 }
@@ -228,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, OpenFromRendererGesture) {
   ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
 
   content::WebContents* new_contents = OpenFromRenderer(kTestPageUrl, true);
-  content::WaitForLoadStop(new_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(new_contents));
 
   EXPECT_TRUE(AttemptPlay(new_contents));
 }
@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest,
   GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
 
   ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
-  content::WaitForLoadStop(GetWebContents());
+  EXPECT_TRUE(content::WaitForLoadStop(GetWebContents()));
 
   EXPECT_TRUE(AttemptPlay(GetWebContents()));
 
@@ -389,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest,
   GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
 
   ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
-  content::WaitForLoadStop(GetWebContents());
+  EXPECT_TRUE(content::WaitForLoadStop(GetWebContents()));
 
   EXPECT_TRUE(AttemptPlay(GetWebContents()));
 
@@ -410,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest,
   GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
 
   ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
-  content::WaitForLoadStop(GetWebContents());
+  EXPECT_TRUE(content::WaitForLoadStop(GetWebContents()));
 
   EXPECT_FALSE(AttemptPlay(GetWebContents()));
 

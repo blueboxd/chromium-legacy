@@ -519,7 +519,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
   EXPECT_TRUE(second_back_nav_observer.WaitForNavigationWithNoImpression());
 
   // Wait for the page to load and render the impression tag.
-  WaitForLoadStop(web_contents());
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
   ImpressionObserver second_impression_observer(web_contents());
   EXPECT_TRUE(ExecJs(shell(), "simulateClick(\'impression_tag\');"));
   EXPECT_EQ(1UL, second_impression_observer.Wait().impression_data);

@@ -660,7 +660,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, Regress427477) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   tab->GetController().GoBack();
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   ASSERT_EQ(1, browser()->tab_strip_model()->count());

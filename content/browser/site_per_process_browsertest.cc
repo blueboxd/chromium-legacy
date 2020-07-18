@@ -472,7 +472,7 @@ bool ConvertJSONToPoint(const std::string& str, gfx::PointF* point) {
 }
 
 void OpenURLBlockUntilNavigationComplete(Shell* shell, const GURL& url) {
-  WaitForLoadStop(shell->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(shell->web_contents()));
   TestNavigationObserver same_tab_observer(shell->web_contents(), 1);
 
   OpenURLParams params(

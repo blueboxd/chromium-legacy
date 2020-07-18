@@ -999,7 +999,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, OnBeforeRequest) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(), page_url);
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
 
   std::string result;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(web_contents,
@@ -1078,7 +1078,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, SWServedBackgroundPage) {
   background_page =
       process_manager()->GetBackgroundHostForExtension(extension->id());
   ASSERT_TRUE(background_page);
-  content::WaitForLoadStop(background_page->host_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(background_page->host_contents()));
 
   EXPECT_EQ("Caught a fetch for /background.html",
             ExtractInnerText(background_page->host_contents()));
@@ -1536,7 +1536,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(), page_url);
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   std::string value;
   ASSERT_TRUE(

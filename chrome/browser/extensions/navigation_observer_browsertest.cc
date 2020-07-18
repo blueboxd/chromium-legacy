@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, NoExtensionsInRefererHeader) {
 
   // Verify that the Referrer header was not present (in particular, it should
   // not reveal the identity of the extension).
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   EXPECT_EQ("None", content::EvalJs(web_contents, "document.body.innerText"));
 
   // Verify that the initiator_origin was present and set to the extension.

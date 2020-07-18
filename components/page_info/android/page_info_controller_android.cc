@@ -173,8 +173,10 @@ void PageInfoControllerAndroid::SetPermissionInfo(
 base::Optional<ContentSetting> PageInfoControllerAndroid::GetSettingToDisplay(
     const PermissionInfo& permission) {
   // All permissions should be displayed if they are non-default.
-  if (permission.setting != CONTENT_SETTING_DEFAULT)
+  if (permission.setting != CONTENT_SETTING_DEFAULT &&
+      permission.setting != permission.default_setting) {
     return permission.setting;
+  }
 
   // Handle exceptions for permissions which need to be displayed even if they
   // are set to the default.

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_WEBRTC_CAMERA_PAN_TILT_ZOOM_PERMISSION_CONTEXT_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_context_base.h"
@@ -34,6 +35,12 @@ class CameraPanTiltZoomPermissionContext
       const GURL& requesting_frame_origin,
       bool user_gesture,
       permissions::BrowserPermissionCallback callback) override;
+#if defined(OS_ANDROID)
+  ContentSetting GetPermissionStatusInternal(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) const override;
+#endif
   bool IsRestrictedToSecureOrigins() const override;
 
   // content_settings::Observer

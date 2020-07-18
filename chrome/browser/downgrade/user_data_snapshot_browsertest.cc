@@ -414,7 +414,7 @@ class TabsSnapshotTest : public UserDataSnapshotBrowserTestBase {
     ASSERT_GE(tab_strip->count(), 2);
     ASSERT_LE(tab_strip->count(), 3);
     if (tab_strip->count() == 3) {
-      content::WaitForLoadStop(tab_strip->GetWebContentsAt(2));
+      EXPECT_TRUE(content::WaitForLoadStop(tab_strip->GetWebContentsAt(2)));
       EXPECT_EQ(tab_strip->GetWebContentsAt(2)->GetURL(), GURL("about:blank"));
     }
 

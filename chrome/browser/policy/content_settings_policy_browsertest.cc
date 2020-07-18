@@ -354,7 +354,7 @@ IN_PROC_BROWSER_TEST_P(ScrollToTextFragmentPolicyTest, RunPolicyTest) {
   ui_test_utils::NavigateToURL(browser(), target_text_url);
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
   ASSERT_TRUE(content::WaitForRenderFrameReady(contents->GetMainFrame()));
 
   content::RenderFrameSubmissionObserver frame_observer(contents);

@@ -8,6 +8,8 @@ source_set("local_device_data") {
     "nearby_share_device_data_updater.h",
     "nearby_share_device_data_updater_impl.cc",
     "nearby_share_device_data_updater_impl.h",
+    "nearby_share_local_device_data_manager.cc",
+    "nearby_share_local_device_data_manager.h",
   ]
 
   deps = [

@@ -2165,7 +2165,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BlockedSrcDocBrowserInitiated) {
                                              GURL(url));
     shell()->LoadURLForFrame(GURL(url), "child-name-0",
                              ui::PAGE_TRANSITION_FORWARD_BACK);
-    WaitForLoadStop(shell()->web_contents());
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
     EXPECT_TRUE(handle_observer.has_committed());
     EXPECT_FALSE(handle_observer.is_error());
     EXPECT_EQ(net::OK, handle_observer.net_error_code());
@@ -2214,7 +2214,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BlockedSrcDocRendererInitiated) {
     // browsers like Firefox aren't allowing this.
     EXPECT_TRUE(ExecJs(subframe, JsReplace("location.href = $1", url)));
     start_observer.Wait();
-    WaitForLoadStop(shell()->web_contents());
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
     EXPECT_TRUE(handle_observer.has_committed());
     EXPECT_FALSE(handle_observer.is_error());

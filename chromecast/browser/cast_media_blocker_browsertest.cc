@@ -46,7 +46,7 @@ class CastMediaBlockerBrowserTest : public CastBrowserTest {
         ::media::GetTestDataFilePath("player.html"), query);
 
     web_contents_ = NavigateToURL(gurl);
-    WaitForLoadStop(web_contents_);
+    EXPECT_TRUE(WaitForLoadStop(web_contents_));
 
     blocker_ = std::make_unique<CastMediaBlocker>(web_contents_);
   }

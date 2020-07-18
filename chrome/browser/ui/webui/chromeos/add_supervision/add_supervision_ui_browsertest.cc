@@ -93,7 +93,7 @@ class AddSupervisionBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, URLParameters) {
   // Open the Add Supervision URL.
   ui_test_utils::NavigateToURL(browser(), add_supervision_webui_url());
-  content::WaitForLoadStop(contents());
+  EXPECT_TRUE(content::WaitForLoadStop(contents()));
 
   // Get the URL from the embedded webview.
   std::string webview_url;
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, URLParameters) {
 IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, ShowOfflineScreen) {
   // Open the Add Supervision URL.
   ui_test_utils::NavigateToURL(browser(), add_supervision_webui_url());
-  content::WaitForLoadStop(contents());
+  EXPECT_TRUE(content::WaitForLoadStop(contents()));
 
   // Webview div should be initially visible.
   ASSERT_TRUE(IsElementVisible(std::string(kGetAddSupervisionUIElementJS) +
@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, ShowOfflineScreen) {
 IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, ShowConfirmSignoutDialog) {
   // Open the Add Supervision URL.
   ui_test_utils::NavigateToURL(browser(), add_supervision_webui_url());
-  content::WaitForLoadStop(contents());
+  EXPECT_TRUE(content::WaitForLoadStop(contents()));
 
   // Request that the dialog close before supervision has been enabled.
   ASSERT_TRUE(content::ExecuteScript(
@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, UMATest) {
 
   // Open the Add Supervision URL.
   ui_test_utils::NavigateToURL(browser(), add_supervision_webui_url());
-  content::WaitForLoadStop(contents());
+  EXPECT_TRUE(content::WaitForLoadStop(contents()));
 
   // Simulate supervision being enabled.
   ASSERT_TRUE(content::ExecuteScript(

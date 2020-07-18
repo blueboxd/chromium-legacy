@@ -296,7 +296,7 @@ class PrintContentBrowserClient : public ChromeContentBrowserClient {
 
   void Wait() {
     message_loop_runner_->Run();
-    content::WaitForLoadStop(preview_dialog_);
+    EXPECT_TRUE(content::WaitForLoadStop(preview_dialog_));
   }
 
  private:

@@ -925,7 +925,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, SameOriginAuxiliary) {
       &success));
   EXPECT_TRUE(success);
   Shell* new_shell = new_shell_observer.GetShell();
-  WaitForLoadStop(new_shell->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
   auto requests = data();
   EXPECT_EQ(2u, requests.size());
@@ -969,7 +969,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, CrossOriginAuxiliary) {
       &success));
   EXPECT_TRUE(success);
   Shell* new_shell = new_shell_observer.GetShell();
-  WaitForLoadStop(new_shell->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
   auto requests = data();
   EXPECT_EQ(2u, requests.size());

@@ -5386,10 +5386,18 @@
       'storage_service_gtests',
     ],
 
-    # TODO(crbug.com/1104291) Make this suite the same as
-    # 'linux_chromeos_gtests' and delete this suite.
-    'linux_lacros_chromeos_gtests': [
+    'linux_lacros_gtests': [
+      # This is:
+      #   linux_chromeos_gtests
+      #   - linux_chromeos_specific_gtests
+      'aura_gtests',
+      'chromium_gtests',
+      'chromium_gtests_for_devices_with_graphical_output',
       'chromium_gtests_for_linux_and_chromeos_only',
+      'chromium_gtests_for_win_and_linux_only',
+      'linux_flavor_specific_chromium_gtests',
+      'non_android_chromium_gtests',
+      'storage_service_gtests',
     ],
 
     'linux_viz_gtests': [

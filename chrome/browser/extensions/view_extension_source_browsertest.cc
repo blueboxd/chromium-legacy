@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(ViewExtensionSourceTest, ViewSourceTabRestore) {
   chrome::RestoreTab(browser());
   wait_for_new_tab.Wait();
   view_source_tab = browser()->tab_strip_model()->GetActiveWebContents();
-  WaitForLoadStop(view_source_tab);
+  EXPECT_TRUE(WaitForLoadStop(view_source_tab));
 
   // Verify the browser-side URLs.  Note that without view-source, the
   // bookmarks extension visible URL would be rewritten to chrome://bookmarks,

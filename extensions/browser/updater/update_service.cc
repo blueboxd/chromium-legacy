@@ -135,14 +135,15 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
       break;
   }
 
-  base::Value attributes(base::Value::Type::DICTIONARY);
-  if (should_perform_action_on_omaha_attributes &&
-      base::FeatureList::IsEnabled(
-          extensions_features::kDisableMalwareExtensionsRemotely)) {
-    attributes = GetExtensionOmahaAttributes(extension_id);
+  if (should_perform_action_on_omaha_attributes) {
+    base::Value attributes(base::Value::Type::DICTIONARY);
+    if (base::FeatureList::IsEnabled(
+            extensions_features::kDisableMalwareExtensionsRemotely)) {
+      attributes = GetExtensionOmahaAttributes(extension_id);
+    }
+    ExtensionSystem::Get(browser_context_)
+        ->PerformActionBasedOnOmahaAttributes(extension_id, attributes);
   }
-  ExtensionSystem::Get(browser_context_)
-      ->PerformActionBasedOnOmahaAttributes(extension_id, attributes);
 }
 
 UpdateService::UpdateService(

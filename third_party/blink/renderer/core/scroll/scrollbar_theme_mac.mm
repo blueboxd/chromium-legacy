@@ -311,7 +311,7 @@ void ScrollbarThemeMac::PaintScrollCorner(GraphicsContext& context,
                                                   DisplayItem::kScrollCorner)) {
     return;
   }
-  DrawingRecorder recorder(context, item, DisplayItem::kScrollCorner);
+  DrawingRecorder recorder(context, item, DisplayItem::kScrollCorner, rect);
 
   GraphicsContextStateSaver state_saver(context);
   context.Translate(rect.X(), rect.Y());
@@ -332,7 +332,8 @@ void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
           context, scrollbar, DisplayItem::kScrollbarThumb)) {
     return;
   }
-  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb);
+  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb,
+                           rect);
 
   GraphicsContextStateSaver state_saver(context);
   context.Translate(rect.X(), rect.Y());

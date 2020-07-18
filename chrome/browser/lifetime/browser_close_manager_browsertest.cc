@@ -760,7 +760,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   auto* browser2 = BrowserList::GetInstance()->get(0) != browser()
                        ? BrowserList::GetInstance()->get(0)
                        : BrowserList::GetInstance()->get(1);
-  content::WaitForLoadStop(browser2->tab_strip_model()->GetWebContentsAt(0));
+  EXPECT_TRUE(content::WaitForLoadStop(
+      browser2->tab_strip_model()->GetWebContentsAt(0)));
 
   // Let's work with second window only.
   // This page has beforeunload handler already.
@@ -772,7 +773,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
       browser2, embedded_test_server()->GetURL("/title2.html"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
-  content::WaitForLoadStop(browser2->tab_strip_model()->GetWebContentsAt(1));
+  EXPECT_TRUE(content::WaitForLoadStop(
+      browser2->tab_strip_model()->GetWebContentsAt(1)));
   EXPECT_FALSE(browser2->tab_strip_model()
                    ->GetWebContentsAt(1)
                    ->NeedToFireBeforeUnloadOrUnload());

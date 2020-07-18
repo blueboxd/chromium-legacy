@@ -443,7 +443,8 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, BackgroundPage) {
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, TargetBlankAnchor) {
   RunTest("testTargetBlankAnchor.csv");
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
-  content::WaitForLoadStop(browser()->tab_strip_model()->GetWebContentsAt(1));
+  EXPECT_TRUE(content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetWebContentsAt(1)));
   EXPECT_EQ(
       GURL(url::kAboutBlankURL),
       browser()->tab_strip_model()->GetWebContentsAt(1)->GetLastCommittedURL());

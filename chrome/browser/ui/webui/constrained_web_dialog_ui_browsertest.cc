@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
   observer.Wait();
 
   // Wait until the entire WebContents has loaded.
-  WaitForLoadStop(dialog_delegate->GetWebContents());
+  EXPECT_TRUE(WaitForLoadStop(dialog_delegate->GetWebContents()));
 
   ASSERT_TRUE(IsShowingWebContentsModalDialog(web_contents));
 
@@ -250,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
   EXPECT_TRUE(IsShowingWebContentsModalDialog(web_contents));
 
   // Wait until the entire WebContents has loaded.
-  WaitForLoadStop(dialog_delegate->GetWebContents());
+  EXPECT_TRUE(WaitForLoadStop(dialog_delegate->GetWebContents()));
 
   gfx::Size initial_dialog_size;
   delegate_ptr->GetDialogSize(&initial_dialog_size);

@@ -380,7 +380,7 @@ class ChromeRenderWidgetHostViewMacHistorySwiperTest
   }
 
   void ExpectUrlAndOffset(const GURL& url, int offset) {
-    content::WaitForLoadStop(GetWebContents());
+    EXPECT_TRUE(content::WaitForLoadStop(GetWebContents()));
     EXPECT_EQ(url, GetWebContents()->GetURL());
 
     const int scroll_offset = GetScrollTop();
@@ -681,7 +681,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
   QueueEndEvents();
   RunQueuedEvents();
 
-  content::WaitForLoadStop(GetWebContents());
+  EXPECT_TRUE(content::WaitForLoadStop(GetWebContents()));
   EXPECT_EQ(url2_, GetWebContents()->GetURL());
 
   // Depending on the timing of the IPCs, some of the initial events might be
@@ -773,7 +773,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
   // Wait for the scroll to end.
   wheel_end_ack_waiter.Wait();
 
-  content::WaitForLoadStop(GetWebContents());
+  EXPECT_TRUE(content::WaitForLoadStop(GetWebContents()));
   EXPECT_EQ(url_iframe_, GetWebContents()->GetURL());
 }
 

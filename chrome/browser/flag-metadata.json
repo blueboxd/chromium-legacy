@@ -928,11 +928,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "discover-feed-ntp-ios",
-    "owners": [ "adamta", "sczs" ],
-    "expiry_milestone": 89
-  },
-  {
     "name": "display-identification",
     "owners": [ "baileyberro", "cros-peripherals@google.com" ],
     "expiry_milestone": 89
@@ -2991,6 +2986,11 @@
     "name": "new-canvas-2d-api",
     "owners": [ "aaronhk", "fserb", "juanmihd", "yiyix" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "new-content-suggestions-feed",
+    "owners": [ "adamta", "sczs", "gogerald" ],
+    "expiry_milestone": 89
   },
   {
     "name": "new-os-settings-search",

@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(LocalNtpNavigationBrowserTest, NtpProcesses) {
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
   content::WebContents* tab1 =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(tab1));
+  ASSERT_NO_FATAL_FAILURE(EXPECT_TRUE(content::WaitForLoadStop(tab1)));
   int tab1_process_id = tab1->GetMainFrame()->GetProcess()->GetID();
   int initial_spare_process_id = -1;
   {
@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(LocalNtpNavigationBrowserTest, NtpProcesses) {
   EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
   content::WebContents* tab2 =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(tab2));
+  ASSERT_NO_FATAL_FAILURE(EXPECT_TRUE(content::WaitForLoadStop(tab2)));
   EXPECT_EQ(tab1->GetLastCommittedURL(), tab2->GetLastCommittedURL());
   EXPECT_EQ(tab1->GetVisibleURL(), tab2->GetVisibleURL());
   int tab2_process_id = tab2->GetMainFrame()->GetProcess()->GetID();

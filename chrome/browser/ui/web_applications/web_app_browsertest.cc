@@ -764,7 +764,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, EmptyTitlesDoNotDisplayUrl) {
   Browser* const app_browser = LaunchWebAppBrowser(app_id);
   content::WebContents* const web_contents =
       app_browser->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   EXPECT_EQ(base::string16(), app_browser->GetWindowTitleForCurrentTab(false));
   NavigateToURLAndWait(app_browser,
                        https_server()->GetURL("app.site.com", "/simple.html"));
@@ -787,7 +787,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, OffScopeUrlsDisplayAppTitle) {
   Browser* const app_browser = LaunchWebAppBrowser(app_id);
   content::WebContents* const web_contents =
       app_browser->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
 
   // When we are within scope, show the page title.
   EXPECT_EQ(base::ASCIIToUTF16("Google"),
@@ -816,7 +816,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, InScopeHttpUrlsDisplayAppTitle) {
   Browser* const app_browser = LaunchWebAppBrowser(app_id);
   content::WebContents* const web_contents =
       app_browser->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
 
   // The page title is "OK" but the page is being served over HTTP, so the app
   // title should be used instead.

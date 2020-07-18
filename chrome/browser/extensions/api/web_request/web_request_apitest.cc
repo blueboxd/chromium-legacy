@@ -812,7 +812,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestNewTab) {
       << message_;
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   ResultCatcher catcher;
 

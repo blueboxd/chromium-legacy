@@ -260,7 +260,7 @@ void ScrollbarThemeAura::PaintThumb(GraphicsContext& gc,
                                                   DisplayItem::kScrollbarThumb))
     return;
 
-  DrawingRecorder recorder(gc, scrollbar, DisplayItem::kScrollbarThumb);
+  DrawingRecorder recorder(gc, scrollbar, DisplayItem::kScrollbarThumb, rect);
 
   WebThemeEngine::State state;
   cc::PaintCanvas* canvas = gc.Canvas();

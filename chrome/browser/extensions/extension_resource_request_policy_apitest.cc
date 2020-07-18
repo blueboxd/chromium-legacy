@@ -434,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
   GURL private_page(
       "chrome-extension://kegmjfcnjamahdnldjmlpachmpielcdk/private.html");
   ASSERT_TRUE(content::ExecuteScript(web_contents, "navigateFrameNow()"));
-  WaitForLoadStop(web_contents);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
   EXPECT_NE(private_page, web_contents->GetLastCommittedURL());
   std::string content;
   EXPECT_TRUE(ExecuteScriptAndExtractString(

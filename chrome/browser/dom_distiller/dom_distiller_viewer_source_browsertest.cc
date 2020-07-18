@@ -636,7 +636,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, UISetsPrefs) {
   view_url = url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme,
                                                    original_url, "Title");
   ViewSingleDistilledPage(view_url, "text/html");
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
 
   // Wait for all currently executing scripts to finish. Otherwise, the
   // distiller object used to send the prefs to the browser from the JavaScript

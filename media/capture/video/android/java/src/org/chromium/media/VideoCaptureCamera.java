@@ -189,6 +189,24 @@ public class VideoCaptureCamera
         return VideoCaptureApi.ANDROID_API1;
     }
 
+    static boolean isPanTiltZoomSupported(int id) {
+        android.hardware.Camera camera;
+        try {
+            camera = android.hardware.Camera.open(id);
+        } catch (RuntimeException ex) {
+            Log.e(TAG, "Camera.open: ", ex);
+            return false;
+        }
+        android.hardware.Camera.Parameters parameters = getCameraParameters(camera);
+        if (parameters == null) {
+            return false;
+        }
+
+        final boolean isZoomSupported = parameters.isZoomSupported();
+        camera.release();
+        return isZoomSupported;
+    }
+
     static int getFacingMode(int id) {
         android.hardware.Camera.CameraInfo cameraInfo = VideoCaptureCamera.getCameraInfo(id);
         if (cameraInfo == null) {

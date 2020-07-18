@@ -199,7 +199,7 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
 
     active_webcontents->GetController().Reload(content::ReloadType::NORMAL,
                                                false);
-    content::WaitForLoadStop(GetActiveWebContents());
+    EXPECT_TRUE(content::WaitForLoadStop(GetActiveWebContents()));
     // Background the tab and reload it so the audio will stop playing if it's
     // still playing.
     GetActiveWebContents()->WasHidden();

@@ -2401,7 +2401,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
                             kTestEnterpriseKioskApp)
           .Wait();
   ASSERT_TRUE(window);
-  content::WaitForLoadStop(window->web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(window->web_contents()));
 
   // Check whether the app can retrieve an OAuth2 access token.
   std::string result;

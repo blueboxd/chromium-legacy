@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest,
                        "f.src = '" + cross_site_url.spec() + "';\n"
                        "document.body.appendChild(f);\n";
   EXPECT_TRUE(ExecuteScript(contents, script));
-  WaitForLoadStop(contents);
+  EXPECT_TRUE(WaitForLoadStop(contents));
 
   // The page should still have focus.  The cross-process subframe navigation
   // above should not try to focus the omnibox, which would make this false.

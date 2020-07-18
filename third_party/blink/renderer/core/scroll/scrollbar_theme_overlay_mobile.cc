@@ -58,7 +58,8 @@ void ScrollbarThemeOverlayMobile::PaintThumb(GraphicsContext& context,
                                                   DisplayItem::kScrollbarThumb))
     return;
 
-  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb);
+  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb,
+                           rect);
   context.FillRect(rect, color_);
 }
 

@@ -1794,7 +1794,7 @@ TEST_F(CompositedLayerMappingTest,
   ASSERT_TRUE(scrollable_area->VerticalScrollbar()->IsOverlayScrollbar());
 
   ASSERT_FALSE(scrollable_area->NeedsCompositedScrolling());
-  EXPECT_FALSE(scrollable_area->VerticalScrollbar()->VisualRect().IsEmpty());
+  EXPECT_FALSE(scrollable_area->VerticalScrollbar()->FrameRect().IsEmpty());
 
   GraphicsLayer* vertical_scrollbar_layer =
       scrollable_area->GraphicsLayerForVerticalScrollbar();

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -150,12 +151,41 @@ bool MediaDevicesPermissionChecker::HasPanTiltZoomPermissionGrantedOnUIThread(
     int render_process_id,
     int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if defined(OS_ANDROID)
+  // The PTZ permission is automatically granted on Android, regardless of the
+  // MediaCapturePanTilt Blink feature state. This way, zoom is not initially
+  // empty in ImageCapture. It is safe to do so because pan and tilt are not
+  // supported on Android.
+  return true;
+#else
   // TODO(crbug.com/934063): Remove when MediaCapturePanTilt Blink feature is
   // enabled by default.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
     return false;
   }
+  return IsPanTiltZoomAllowedOnUIThread(render_process_id, render_frame_id);
+#endif
+}
+
+// static
+// TODO(crbug.com/934063): Remove when MediaCapturePanTilt Blink feature is
+// enabled by default.
+bool MediaDevicesPermissionChecker::HasZoomPermissionGrantedOnUIThread(
+    int render_process_id,
+    int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return IsPanTiltZoomAllowedOnUIThread(render_process_id, render_frame_id);
+#endif
+}
+
+bool MediaDevicesPermissionChecker::IsPanTiltZoomAllowedOnUIThread(
+    int render_process_id,
+    int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
 

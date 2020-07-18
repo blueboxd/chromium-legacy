@@ -1284,7 +1284,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
     // FilterURL.
     EXPECT_TRUE(ExecuteScript(
         tab, "window.popup.location.href = '" + nested_url.spec() + "';"));
-    WaitForLoadStop(popup);
+    EXPECT_TRUE(WaitForLoadStop(popup));
 
     // Because the navigation was blocked, the URL doesn't change.
     EXPECT_NE(nested_url, popup->GetLastCommittedURL());
@@ -1496,7 +1496,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
         tab,
         base::StringPrintf("frames[1].location.href = '%s';",
                            extension2_accessible_redirect.spec().c_str())));
-    WaitForLoadStop(tab);
+    EXPECT_TRUE(WaitForLoadStop(tab));
     frame_deleted_observer.WaitUntilDeleted();
     EXPECT_EQ(extension2_empty,
               ChildFrameAt(main_frame, 1)->GetLastCommittedURL())

@@ -349,7 +349,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, ValidationInterception) {
       browser(),
       embedded_test_server()->GetURL(
           "/extensions/api_test/bindings/validation_interception.html"));
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   ASSERT_FALSE(web_contents->IsCrashed());
   bool caught = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(

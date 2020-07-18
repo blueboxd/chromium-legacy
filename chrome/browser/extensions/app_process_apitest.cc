@@ -722,7 +722,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
   EXPECT_EQ(2U, active_browser_list->size());
   content::WebContents* popup_contents =
       active_browser_list->get(1)->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(popup_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(popup_contents));
 
   content::RenderProcessHost* popup_process =
       popup_contents->GetMainFrame()->GetProcess();
@@ -792,7 +792,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, NavigatePopupFromAppToOutsideApp) {
   EXPECT_EQ(2U, active_browser_list->size());
   content::WebContents* popup_contents =
       active_browser_list->get(1)->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(popup_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(popup_contents));
 
   SiteInstance* popup_instance = popup_contents->GetSiteInstance();
   EXPECT_EQ(app_instance, popup_instance);

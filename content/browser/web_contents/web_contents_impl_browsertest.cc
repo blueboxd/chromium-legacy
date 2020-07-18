@@ -702,7 +702,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                             "document.body.appendChild(a);"
                             "a.click();"));
   WebContents* new_web_contents = new_web_contents_observer.GetWebContents();
-  WaitForLoadStop(new_web_contents);
+  EXPECT_TRUE(WaitForLoadStop(new_web_contents));
   EXPECT_TRUE(new_web_contents_observer.RenderViewCreatedCalled());
 }
 
@@ -1326,7 +1326,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NewNamedWindow) {
         ExecuteScript(shell(), "window.open('about:blank','new_window');"));
 
     Shell* new_shell = new_shell_observer.GetShell();
-    WaitForLoadStop(new_shell->web_contents());
+    EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
     EXPECT_EQ("new_window",
               static_cast<WebContentsImpl*>(new_shell->web_contents())
@@ -1352,7 +1352,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NewNamedWindow) {
     EXPECT_TRUE(success);
 
     Shell* new_shell = new_shell_observer.GetShell();
-    WaitForLoadStop(new_shell->web_contents());
+    EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
     EXPECT_EQ("foo",
               static_cast<WebContentsImpl*>(new_shell->web_contents())
@@ -2245,7 +2245,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   http_response.Done();
   EXPECT_EQ(user_agent_override, http_response.http_request()->headers.at(
                                      net::HttpRequestHeaders::kUserAgent));
-  WaitForLoadStop(shell()->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(user_agent_override,
             EvalJs(shell()->web_contents(), "navigator.userAgent;"));
 }
@@ -2292,14 +2292,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   http_response1.WaitForRequest();
   http_response1.Send(net::HTTP_OK, "text/html", "<html>");
   http_response1.Done();
-  WaitForLoadStop(shell()->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   shell()->web_contents()->GetController().LoadURLWithParams(
       NavigationController::LoadURLParams(
           embedded_test_server()->GetURL("/test2.html")));
   http_response2.WaitForRequest();
   http_response2.Send(net::HTTP_OK, "text/html", "<html>");
   http_response2.Done();
-  WaitForLoadStop(shell()->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   // Register a WebContentsObserver that changes the user-agent.
   const std::string user_agent_override = "foo";
@@ -2318,7 +2318,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   http_response3.Done();
   EXPECT_EQ(user_agent_override, http_response3.http_request()->headers.at(
                                      net::HttpRequestHeaders::kUserAgent));
-  WaitForLoadStop(shell()->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   auto* controller = &(shell()->web_contents()->GetController());
   EXPECT_EQ(1, controller->GetLastCommittedEntryIndex());
   EXPECT_TRUE(shell()
@@ -3081,7 +3081,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_FALSE(new_contents->GetDelegate());
   new_contents->SetDelegate(new_shell);
   new_contents->ResumeLoadingCreatedWebContents();
-  WaitForLoadStop(new_contents);
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
   EXPECT_EQ(url, new_contents->GetLastCommittedURL());
 }
 

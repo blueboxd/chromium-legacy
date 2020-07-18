@@ -3517,7 +3517,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.body.appendChild(frame);\n";
   ASSERT_TRUE(content::ExecuteScript(WebContents(),
                                      inject_data_frame_with_password_form));
-  content::WaitForLoadStop(WebContents());
+  EXPECT_TRUE(content::WaitForLoadStop(WebContents()));
   content::RenderFrameHost* frame =
       ChildFrameAt(WebContents()->GetMainFrame(), 0);
   EXPECT_TRUE(frame->GetLastCommittedURL().SchemeIs(url::kDataScheme));

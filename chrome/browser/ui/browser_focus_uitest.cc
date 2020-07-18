@@ -448,27 +448,27 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
 
   // Open the history tab, focus should be on the tab contents.
   chrome::ShowHistory(browser());
-  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(
-      browser()->tab_strip_model()->GetActiveWebContents()));
+  ASSERT_NO_FATAL_FAILURE(EXPECT_TRUE(content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents())));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 
   // Open the new tab, focus should be on the location bar.
   chrome::NewTab(browser());
-  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(
-      browser()->tab_strip_model()->GetActiveWebContents()));
+  ASSERT_NO_FATAL_FAILURE(EXPECT_TRUE(content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents())));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
 
   // Open the download tab, focus should be on the tab contents.
   chrome::ShowDownloads(browser());
-  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(
-      browser()->tab_strip_model()->GetActiveWebContents()));
+  ASSERT_NO_FATAL_FAILURE(EXPECT_TRUE(content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents())));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 
   // Open about:blank, focus should be on the location bar.
   chrome::AddSelectedTabWithURL(browser(), GURL(url::kAboutBlankURL),
                                 ui::PAGE_TRANSITION_LINK);
-  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(
-      browser()->tab_strip_model()->GetActiveWebContents()));
+  ASSERT_NO_FATAL_FAILURE(EXPECT_TRUE(content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents())));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
 }
 
@@ -707,8 +707,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, AboutBlankNavigationLocationTest) {
   EXPECT_EQ(url1, web_contents->GetVisibleURL());
   // After running the spoof code, |GetActiveWebContents| returns the new tab,
   // not the same as |web_contents|.
-  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(
-      browser()->tab_strip_model()->GetActiveWebContents()));
+  ASSERT_NO_FATAL_FAILURE(EXPECT_TRUE(content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents())));
   EXPECT_FALSE(IsViewFocused(VIEW_ID_OMNIBOX));
 }
 

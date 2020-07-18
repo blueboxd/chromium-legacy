@@ -58,6 +58,8 @@ struct Context {
   PathString* chrome_resource_path;
   // Second output from call back method. Full path of Setup archive/exe.
   PathString* setup_resource_path;
+  // A Windows error code corresponding to an extraction error.
+  DWORD error_code;
 };
 
 // TODO(grt): Frame this in terms of whether or not the brand supports
@@ -275,39 +277,56 @@ void AppendCommandLineFlags(const wchar_t* command_line,
   buffer->append(command_line);
 }
 
-// Windows defined callback used in the EnumResourceNames call. For each
-// matching resource found, the callback is invoked and at this point we write
-// it to disk. We expect resource names to start with 'chrome' or 'setup'. Any
-// other name is treated as an error.
+// Processes a resource of type |type| in |module| on behalf of a call to
+// EnumResourceNames. On each call, |name| contains the name of a resource. A
+// TRUE return value continues the enumeration, whereas FALSE stops it. This
+// function extracts the first resource starting with "chrome" and/or "setup",
+// populating |context| (which must be a pointer to a Context struct) with the
+// path(s) of the extracted file(s). Enumeration stops early in case of error,
+// which includes any unexpected resources or duplicate matching resources.
+// |context|'s |error_code| member may be populated with a Windows error code
+// corresponding to an error condition.
 BOOL CALLBACK OnResourceFound(HMODULE module,
                               const wchar_t* type,
                               wchar_t* name,
-                              LONG_PTR context) {
-  if (!context)
-    return FALSE;
+                              LONG_PTR l_param) {
+  if (!l_param)
+    return FALSE;  // Break: impossible condition.
 
-  Context* ctx = reinterpret_cast<Context*>(context);
+  if (IS_INTRESOURCE(name))
+    return FALSE;  // Break: resources with integer names are unexpected.
+
+  Context& context = *reinterpret_cast<Context*>(l_param);
 
   PEResource resource(name, type, module);
   if (!resource.IsValid() || resource.Size() < 1)
-    return FALSE;
+    return FALSE;  // Break: invalid/empty resources are unexpected.
 
   PathString full_path;
-  if (!full_path.assign(ctx->base_path) || !full_path.append(name) ||
-      !resource.WriteToDisk(full_path.get()))
-    return FALSE;
+  if (!full_path.assign(context.base_path) || !full_path.append(name))
+    return FALSE;  // Break: failed to form the output path.
 
-  if (StrStartsWith(name, kChromeArchivePrefix)) {
-    ctx->chrome_resource_path->assign(full_path);
-  } else if (StrStartsWith(name, kSetupPrefix)) {
-    ctx->setup_resource_path->assign(full_path);
+  if (StrStartsWith(name, kChromeArchivePrefix) &&
+      context.chrome_resource_path->empty()) {
+    if (!resource.WriteToDisk(full_path.get())) {
+      context.error_code = ::GetLastError();
+      return FALSE;  // Break: failed to write resource.
+    }
+    context.chrome_resource_path->assign(full_path);
+  } else if (StrStartsWith(name, kSetupPrefix) &&
+             context.setup_resource_path->empty()) {
+    if (!resource.WriteToDisk(full_path.get())) {
+      context.error_code = ::GetLastError();
+      return FALSE;  // Break: failed to write resource.
+    }
+    context.setup_resource_path->assign(full_path);
   } else {
-    // Resources should either start with 'chrome' or 'setup'. We don't handle
-    // anything else.
+    // Break: unexpected resource names or multiple {chrome,setup}* resources
+    // are unexpected.
     return FALSE;
   }
 
-  return TRUE;
+  return TRUE;  // Continue: advance to the next resource.
 }
 
 #if defined(COMPONENT_BUILD)
@@ -354,18 +373,21 @@ ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
       base_path,
       archive_path,
       setup_path,
+      ERROR_SUCCESS,
   };
 
   // Get the resources of type 'B7' (7zip archive).
   // We need a chrome archive to do the installation. So if there
   // is a problem in fetching B7 resource, just return an error.
   if (!::EnumResourceNames(module, kLZMAResourceType, OnResourceFound,
-                           reinterpret_cast<LONG_PTR>(&context))) {
+                           reinterpret_cast<LONG_PTR>(&context)) ||
+      archive_path->empty()) {
+    const DWORD enum_error = ::GetLastError();
     return ProcessExitResult(UNABLE_TO_EXTRACT_CHROME_ARCHIVE,
-                             ::GetLastError());
+                             enum_error == ERROR_RESOURCE_ENUM_USER_STOP
+                                 ? context.error_code
+                                 : enum_error);
   }
-  if (archive_path->empty())
-    return ProcessExitResult(UNABLE_TO_EXTRACT_CHROME_ARCHIVE);
 
   ProcessExitResult exit_code = ProcessExitResult(SUCCESS_EXIT_CODE);
 
@@ -410,13 +432,15 @@ ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
 
   // setup.exe wasn't sent as 'B7', lets see if it was sent as 'BL'
   // (compressed setup).
+  context.error_code = ERROR_SUCCESS;
   if (!::EnumResourceNames(module, kLZCResourceType, OnResourceFound,
-                           reinterpret_cast<LONG_PTR>(&context))) {
-    return ProcessExitResult(UNABLE_TO_EXTRACT_SETUP_BL, ::GetLastError());
-  }
-  if (setup_path->empty()) {
-    // Neither setup_patch.packed.7z nor setup.ex_ was found.
-    return ProcessExitResult(UNABLE_TO_EXTRACT_SETUP);
+                           reinterpret_cast<LONG_PTR>(&context)) ||
+      setup_path->empty()) {
+    const DWORD enum_error = ::GetLastError();
+    return ProcessExitResult(UNABLE_TO_EXTRACT_SETUP,
+                             enum_error == ERROR_RESOURCE_ENUM_USER_STOP
+                                 ? context.error_code
+                                 : enum_error);
   }
 
   // Uncompress LZ compressed resource. Setup is packed with 'MSCF'

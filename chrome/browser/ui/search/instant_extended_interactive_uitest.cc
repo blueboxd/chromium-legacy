@@ -237,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, Referrer) {
   stream << "link.click();";
   EXPECT_TRUE(content::ExecuteScript(contents, stream.str()));
 
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
   std::string expected_title =
       "Referrer is " + base_url().GetWithEmptyPath().spec();
   EXPECT_EQ(base::ASCIIToUTF16(expected_title), contents->GetTitle());

@@ -2259,7 +2259,7 @@
           ],
         },
         'test_suites': {
-          'gtest_tests': 'linux_lacros_chromeos_gtests',
+          'gtest_tests': 'linux_lacros_gtests',
         },
       },
       'linux-perfetto-rel': {

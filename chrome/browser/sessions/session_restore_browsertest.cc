@@ -232,7 +232,7 @@ class SessionRestoreTest : public InProcessBrowserTest {
       content::WebContents* contents =
           browser->tab_strip_model()->GetWebContentsAt(i);
       contents->GetController().LoadIfNecessary();
-      content::WaitForLoadStop(contents);
+      EXPECT_TRUE(content::WaitForLoadStop(contents));
     }
   }
 

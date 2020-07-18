@@ -755,7 +755,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SubframeOpenerSetForNewWindow) {
       ExecJs(root->child_at(0), JsReplace("window.open($1);", popup_url)));
   Shell* new_shell = new_shell_observer.GetShell();
   WebContents* new_contents = new_shell->web_contents();
-  WaitForLoadStop(new_contents);
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
 
   // Check that the new window's opener points to the correct subframe on
   // original window.
@@ -1284,7 +1284,7 @@ IN_PROC_BROWSER_TEST_F(IsolateIcelandFrameTreeBrowserTest,
           "  iframe_element.onload = () => resolve('done');"
           "  iframe_element.src = 'blob:http://b.is/';"
           "});"));
-  WaitForLoadStop(contents);
+  EXPECT_TRUE(WaitForLoadStop(contents));
 
   // Make sure we did a process transfer back to "b.is".
   const std::string kExpectedSiteURL =

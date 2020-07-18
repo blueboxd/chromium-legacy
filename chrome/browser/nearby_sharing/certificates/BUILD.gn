@@ -8,6 +8,8 @@ source_set("certificates") {
     "common.h",
     "constants.cc",
     "constants.h",
+    "nearby_share_certificate_manager.cc",
+    "nearby_share_certificate_manager.h",
     "nearby_share_decrypted_public_certificate.cc",
     "nearby_share_decrypted_public_certificate.h",
     "nearby_share_encrypted_metadata_key.cc",

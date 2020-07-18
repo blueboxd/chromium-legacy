@@ -54,6 +54,17 @@ void CameraPanTiltZoomPermissionContext::RequestPermission(
                                         user_gesture, std::move(callback));
 }
 
+#if defined(OS_ANDROID)
+ContentSetting CameraPanTiltZoomPermissionContext::GetPermissionStatusInternal(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) const {
+  // The PTZ permission is automatically granted on Android. It is safe to do so
+  // because pan and tilt are not supported on Android.
+  return CONTENT_SETTING_ALLOW;
+}
+#endif
+
 bool CameraPanTiltZoomPermissionContext::IsRestrictedToSecureOrigins() const {
   return true;
 }

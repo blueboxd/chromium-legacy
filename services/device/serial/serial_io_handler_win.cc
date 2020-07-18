@@ -231,14 +231,12 @@ void SerialIoHandlerWin::OnDeviceRemoved(const base::string16& device_path) {
 }
 
 bool SerialIoHandlerWin::PostOpen() {
-  DCHECK(!comm_context_);
   DCHECK(!read_context_);
   DCHECK(!write_context_);
 
   base::CurrentIOThread::Get()->RegisterIOHandler(file().GetPlatformFile(),
                                                   this);
 
-  comm_context_.reset(new base::MessagePumpForIO::IOContext());
   read_context_.reset(new base::MessagePumpForIO::IOContext());
   write_context_.reset(new base::MessagePumpForIO::IOContext());
 
@@ -249,12 +247,8 @@ bool SerialIoHandlerWin::PostOpen() {
   ui_thread_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&UiThreadHelper::Start, helper_));
 
-  // A ReadIntervalTimeout of MAXDWORD will cause async reads to complete
-  // immediately with any data that's available, even if there is none.
-  // This is OK because we never issue a read request until WaitCommEvent
-  // signals that data is available.
   COMMTIMEOUTS timeouts = {0};
-  timeouts.ReadIntervalTimeout = MAXDWORD;
+  timeouts.ReadIntervalTimeout = 1;
   if (!::SetCommTimeouts(file().GetPlatformFile(), &timeouts)) {
     VPLOG(1) << "Failed to set serial timeouts";
     return false;
@@ -268,23 +262,17 @@ void SerialIoHandlerWin::ReadImpl() {
   DCHECK(pending_read_buffer());
   DCHECK(file().IsValid());
 
-  if (is_comm_pending_) {
-    // Reuse the call to WaitCommEvent() from a canceled read.
+  ClearPendingError();
+  if (!IsReadPending())
     return;
-  }
 
-  if (!SetCommMask(file().GetPlatformFile(), EV_RXCHAR)) {
-    VPLOG(1) << "Failed to set serial event flags";
-  }
-
-  event_mask_ = 0;
-  BOOL ok = ::WaitCommEvent(file().GetPlatformFile(), &event_mask_,
-                            &comm_context_->overlapped);
+  BOOL ok = ::ReadFile(file().GetPlatformFile(), pending_read_buffer(),
+                       pending_read_buffer_len(), nullptr,
+                       &read_context_->overlapped);
   if (!ok && GetLastError() != ERROR_IO_PENDING) {
-    VPLOG(1) << "Failed to receive serial event";
+    VPLOG(1) << "Read failed";
     QueueReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
   }
-  is_comm_pending_ = true;
 }
 
 void SerialIoHandlerWin::WriteImpl() {
@@ -305,15 +293,8 @@ void SerialIoHandlerWin::CancelReadImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(file().IsValid());
 
-  if (is_comm_pending_) {
-    // Clearing the event mask will cause an overlapped call to WaitCommEvent()
-    // to complete immediately.
-    if (!SetCommMask(file().GetPlatformFile(), 0))
-      VPLOG(1) << "Failed to clear event mask";
-  } else {
-    if (!PurgeComm(file().GetPlatformFile(), PURGE_RXABORT))
-      VPLOG(1) << "RX abort failed";
-  }
+  if (!PurgeComm(file().GetPlatformFile(), PURGE_RXABORT))
+    VPLOG(1) << "RX abort failed";
 }
 
 void SerialIoHandlerWin::CancelWriteImpl() {
@@ -384,50 +365,7 @@ void SerialIoHandlerWin::OnIOCompleted(
     DWORD bytes_transferred,
     DWORD error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (context == comm_context_.get()) {
-    is_comm_pending_ = false;
-
-    DWORD errors;
-    if (!ClearCommError(file().GetPlatformFile(), &errors, nullptr)) {
-      VPLOG(1) << "Failed to clear communication error";
-      ReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
-      return;
-    }
-
-    if (errors != 0) {
-      if (errors & CE_BREAK) {
-        ReadCompleted(0, mojom::SerialReceiveError::BREAK);
-      } else if (errors & CE_FRAME) {
-        ReadCompleted(0, mojom::SerialReceiveError::FRAME_ERROR);
-      } else if (errors & CE_OVERRUN) {
-        ReadCompleted(0, mojom::SerialReceiveError::OVERRUN);
-      } else if (errors & CE_RXOVER) {
-        ReadCompleted(0, mojom::SerialReceiveError::BUFFER_OVERFLOW);
-      } else if (errors & CE_RXPARITY) {
-        ReadCompleted(0, mojom::SerialReceiveError::PARITY_ERROR);
-      } else {
-        NOTIMPLEMENTED() << "Unexpected communication error: " << std::hex
-                         << errors;
-      }
-      return;
-    }
-
-    if (read_canceled()) {
-      ReadCompleted(bytes_transferred, read_cancel_reason());
-    } else if (error != ERROR_SUCCESS && error != ERROR_OPERATION_ABORTED) {
-      VLOG(1) << "Waiting for communcations event failed: "
-              << logging::SystemErrorCodeToString(error);
-      ReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
-    } else if (pending_read_buffer()) {
-      BOOL ok = ::ReadFile(file().GetPlatformFile(), pending_read_buffer(),
-                           pending_read_buffer_len(), NULL,
-                           &read_context_->overlapped);
-      if (!ok && GetLastError() != ERROR_IO_PENDING) {
-        VPLOG(1) << "Read failed";
-        ReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
-      }
-    }
-  } else if (context == read_context_.get()) {
+  if (context == read_context_.get()) {
     if (read_canceled()) {
       ReadCompleted(bytes_transferred, read_cancel_reason());
     } else if (error == ERROR_SUCCESS || error == ERROR_OPERATION_ABORTED) {
@@ -447,10 +385,10 @@ void SerialIoHandlerWin::OnIOCompleted(
       WriteCompleted(0, mojom::SerialSendError::SYSTEM_ERROR);
       if (error == ERROR_GEN_FAILURE && IsReadPending()) {
         // For devices using drivers such as FTDI, CP2xxx, when device is
-        // disconnected, the context is comm_context_ and the error is
+        // disconnected, the context is |read_context_| and the error is
         // ERROR_OPERATION_ABORTED.
         // However, for devices using CDC-ACM driver, when device is
-        // disconnected, the context is write_context_ and the error is
+        // disconnected, the context is |write_context_| and the error is
         // ERROR_GEN_FAILURE. In this situation, in addition to a write error
         // signal, also need to generate a read error signal
         // mojom::SerialOnReceiveError which will notify the app about the
@@ -460,6 +398,31 @@ void SerialIoHandlerWin::OnIOCompleted(
     }
   } else {
     NOTREACHED() << "Invalid IOContext";
+  }
+}
+
+void SerialIoHandlerWin::ClearPendingError() {
+  DWORD errors;
+  if (!ClearCommError(file().GetPlatformFile(), &errors, nullptr)) {
+    VPLOG(1) << "Failed to clear communication error";
+    ReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
+    return;
+  }
+
+  if (errors & CE_BREAK) {
+    ReadCompleted(0, mojom::SerialReceiveError::BREAK);
+  } else if (errors & CE_FRAME) {
+    ReadCompleted(0, mojom::SerialReceiveError::FRAME_ERROR);
+  } else if (errors & CE_OVERRUN) {
+    ReadCompleted(0, mojom::SerialReceiveError::OVERRUN);
+  } else if (errors & CE_RXOVER) {
+    ReadCompleted(0, mojom::SerialReceiveError::BUFFER_OVERFLOW);
+  } else if (errors & CE_RXPARITY) {
+    ReadCompleted(0, mojom::SerialReceiveError::PARITY_ERROR);
+  } else if (errors != 0) {
+    NOTIMPLEMENTED() << "Unexpected communication error: " << std::hex
+                     << errors;
+    ReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
   }
 }
 

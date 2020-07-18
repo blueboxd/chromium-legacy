@@ -245,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderPageLoadMetricsObserverBrowserTest,
   NavigateTo(redirect_server.GetURL("redirect.com", "/redirect_me"));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   EXPECT_EQ(web_contents->GetLastCommittedURL(), GetOriginURL("/index.html"));
 
   NavigateAway();

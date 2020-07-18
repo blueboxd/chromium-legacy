@@ -3028,29 +3028,31 @@ void PaintLayerScrollableArea::InvalidatePaintOfScrollControlsIfNeeded(
     const PaintInvalidatorContext& context) {
   LayoutBox& box = *GetLayoutBox();
   bool box_geometry_has_been_invalidated = false;
-  SetHorizontalScrollbarVisualRect(InvalidatePaintOfScrollbarIfNeeded(
+  horizontal_scrollbar_visual_rect_ = InvalidatePaintOfScrollbarIfNeeded(
       HorizontalScrollbar(), GraphicsLayerForHorizontalScrollbar(),
       horizontal_scrollbar_previously_was_overlay_,
       horizontal_scrollbar_visual_rect_,
       HorizontalScrollbarNeedsPaintInvalidation(), box,
-      box_geometry_has_been_invalidated, context));
-  SetVerticalScrollbarVisualRect(InvalidatePaintOfScrollbarIfNeeded(
+      box_geometry_has_been_invalidated, context);
+  vertical_scrollbar_visual_rect_ = InvalidatePaintOfScrollbarIfNeeded(
       VerticalScrollbar(), GraphicsLayerForVerticalScrollbar(),
       vertical_scrollbar_previously_was_overlay_,
       vertical_scrollbar_visual_rect_,
       VerticalScrollbarNeedsPaintInvalidation(), box,
-      box_geometry_has_been_invalidated, context));
+      box_geometry_has_been_invalidated, context);
 
-  IntRect scroll_corner_and_resizer_visual_rect = ScrollCornerAndResizerRect();
+  IntRect new_scroll_corner_and_resizer_visual_rect =
+      ScrollCornerAndResizerRect();
   // TODO(crbug.com/1020913): We should not round paint_offset but should
   // consider subpixel accumulation when painting scrollbars.
-  scroll_corner_and_resizer_visual_rect.MoveBy(
+  new_scroll_corner_and_resizer_visual_rect.MoveBy(
       RoundedIntPoint(context.fragment_data->PaintOffset()));
   if (ScrollControlNeedsPaintInvalidation(
-          scroll_corner_and_resizer_visual_rect,
+          new_scroll_corner_and_resizer_visual_rect,
           scroll_corner_and_resizer_visual_rect_,
           ScrollCornerNeedsPaintInvalidation())) {
-    SetScrollCornerAndResizerVisualRect(scroll_corner_and_resizer_visual_rect);
+    scroll_corner_and_resizer_visual_rect_ =
+        new_scroll_corner_and_resizer_visual_rect;
     if (LayoutCustomScrollbarPart* scroll_corner = ScrollCorner()) {
       ObjectPaintInvalidator(*scroll_corner)
           .SlowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
@@ -3070,29 +3072,6 @@ void PaintLayerScrollableArea::InvalidatePaintOfScrollControlsIfNeeded(
   }
 
   ClearNeedsPaintInvalidationForScrollControls();
-}
-
-void PaintLayerScrollableArea::SetHorizontalScrollbarVisualRect(
-    const IntRect& rect) {
-  horizontal_scrollbar_visual_rect_ = rect;
-  if (Scrollbar* scrollbar = HorizontalScrollbar())
-    scrollbar->SetVisualRect(rect);
-}
-
-void PaintLayerScrollableArea::SetVerticalScrollbarVisualRect(
-    const IntRect& rect) {
-  vertical_scrollbar_visual_rect_ = rect;
-  if (Scrollbar* scrollbar = VerticalScrollbar())
-    scrollbar->SetVisualRect(rect);
-}
-
-void PaintLayerScrollableArea::SetScrollCornerAndResizerVisualRect(
-    const IntRect& rect) {
-  scroll_corner_and_resizer_visual_rect_ = rect;
-  if (LayoutCustomScrollbarPart* scroll_corner = ScrollCorner())
-    scroll_corner->GetMutableForPainting().FirstFragment().SetVisualRect(rect);
-  if (LayoutCustomScrollbarPart* resizer = Resizer())
-    resizer->GetMutableForPainting().FirstFragment().SetVisualRect(rect);
 }
 
 void PaintLayerScrollableArea::ScrollControlWasSetNeedsPaintInvalidation() {
@@ -3226,11 +3205,6 @@ PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::OwnerNodeId()
     const {
   return static_cast<const DisplayItemClient*>(scrollable_area_->GetLayoutBox())
       ->OwnerNodeId();
-}
-
-IntRect PaintLayerScrollableArea::ScrollCornerDisplayItemClient::VisualRect()
-    const {
-  return scrollable_area_->scroll_corner_and_resizer_visual_rect_;
 }
 
 String PaintLayerScrollableArea::ScrollCornerDisplayItemClient::DebugName()

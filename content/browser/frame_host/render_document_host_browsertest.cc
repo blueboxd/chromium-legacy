@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostBrowserTest, PopupScriptableNavigate) {
   ShellAddedObserver shell_added_observer;
   EXPECT_TRUE(ExecJs(shell(), JsReplace("w = window.open($1)", url_1)));
   WebContents* new_contents = shell_added_observer.GetShell()->web_contents();
-  WaitForLoadStop(new_contents);
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
 
   // Both content have the same origin, so they are cross-scriptable.
   EXPECT_EQ(new_contents->GetMainFrame()->GetLastCommittedOrigin(),

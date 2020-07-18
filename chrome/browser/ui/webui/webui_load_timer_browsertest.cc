@@ -31,8 +31,8 @@ IN_PROC_BROWSER_TEST_F(WebuiLoadTimerTest, Timers) {
   WebuiLoadTimer timer(browser()->tab_strip_model()->GetActiveWebContents(),
                        kDocumentInitialLoadUmaId, kDocumentLoadCompletedUmaId);
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_TRUE(content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents()));
 
   histogram_tester.ExpectTotalCount(kDocumentInitialLoadUmaId, 1);
   histogram_tester.ExpectTotalCount(kDocumentLoadCompletedUmaId, 1);

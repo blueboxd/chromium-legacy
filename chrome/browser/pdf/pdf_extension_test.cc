@@ -2547,7 +2547,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DidStopLoading) {
 
   // MAIN VERIFICATION: Wait for the main frame to report that is has stopped
   // loading.
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
 }
 
 // This test verifies that it is possible to add an <embed src=pdf> element into

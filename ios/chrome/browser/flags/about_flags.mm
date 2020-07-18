@@ -629,7 +629,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"safety-check-ios", flag_descriptions::kSafetyCheckIOSName,
      flag_descriptions::kSafetyCheckIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSafetyCheckIOS)},
-    {"discover-feed-ntp-ios", flag_descriptions::kDiscoverFeedInNtpName,
+    {"new-content-suggestions-feed", flag_descriptions::kDiscoverFeedInNtpName,
      flag_descriptions::kDiscoverFeedInNtpDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDiscoverFeedInNtp)},
     {"autofill-enable-card-nickname-upstream",

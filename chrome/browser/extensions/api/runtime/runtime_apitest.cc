@@ -329,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   observer.WaitForExtensionUninstalled();
 
   EXPECT_EQ(1, tabs->count());
-  content::WaitForLoadStop(tabs->GetActiveWebContents());
+  EXPECT_TRUE(content::WaitForLoadStop(tabs->GetActiveWebContents()));
   EXPECT_EQ(url::kAboutBlankURL, GetActiveUrl(browser()));
 }
 

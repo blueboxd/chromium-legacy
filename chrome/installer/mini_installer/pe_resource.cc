@@ -34,8 +34,9 @@ bool PEResource::WriteToDisk(const wchar_t* full_path) {
     return false;
 
   const size_t resource_size = Size();
-  HANDLE out_file = ::CreateFile(full_path, GENERIC_WRITE, 0, nullptr,
-                                 CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+  HANDLE out_file =
+      ::CreateFile(full_path, DELETE | GENERIC_WRITE, FILE_SHARE_DELETE,
+                   nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (INVALID_HANDLE_VALUE == out_file)
     return false;
 
@@ -49,7 +50,15 @@ bool PEResource::WriteToDisk(const wchar_t* full_path) {
     DWORD written = 0;
     if (!::WriteFile(out_file, data + total_written,
                      static_cast<DWORD>(write_amount), &written, nullptr)) {
+      const auto write_error = ::GetLastError();
+
+      // Delete the file since the write failed.
+      FILE_DISPOSITION_INFO disposition = {/*DeleteFile=*/TRUE};
+      ::SetFileInformationByHandle(out_file, FileDispositionInfo, &disposition,
+                                   sizeof(disposition));
       ::CloseHandle(out_file);
+
+      ::SetLastError(write_error);
       return false;
     }
     total_written += write_amount;

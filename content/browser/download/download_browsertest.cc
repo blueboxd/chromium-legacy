@@ -1475,7 +1475,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
   Shell* new_shell = new_shell_observer.GetShell();
   ASSERT_TRUE(new_shell);
-  WaitForLoadStop(new_shell->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
   // From the initial tab, navigate the 'foo' window to a download and wait for
   // completion.
@@ -1511,7 +1511,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, InitiatedByWindowOpener_SameSite) {
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
   Shell* new_shell = new_shell_observer.GetShell();
   ASSERT_TRUE(new_shell);
-  WaitForLoadStop(new_shell->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
   // From the initial tab, navigate the 'foo' window to a download and wait for
   // completion.
@@ -1549,7 +1549,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
   Shell* new_shell = new_shell_observer.GetShell();
   ASSERT_TRUE(new_shell);
-  WaitForLoadStop(new_shell->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
   // From the initial tab, navigate the 'foo' window to a download and wait for
   // completion.
@@ -1583,7 +1583,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                             "window.open('" + url.spec() + "', 'foo')"));
   Shell* new_shell = new_shell_observer.GetShell();
   ASSERT_TRUE(new_shell);
-  WaitForLoadStop(new_shell->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
   // From the initial tab, navigate the 'foo' window to a download and wait for
   // completion.
@@ -1616,7 +1616,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                             "window.open('about:blank', 'foo')"));
   Shell* new_shell = new_shell_observer.GetShell();
   ASSERT_TRUE(new_shell);
-  WaitForLoadStop(new_shell->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
   // From the initial tab, navigate the 'foo' window to a download and wait for
   // completion.

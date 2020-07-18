@@ -787,7 +787,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   EXPECT_FALSE(controller.CanGoForward());
 
   web_contents->GetController().GoBack();
-  WaitForLoadStop(web_contents);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
   EXPECT_EQ(1, GetCurrentIndex());
   EXPECT_EQ(base::ASCIIToUTF16("Title: #1"), web_contents->GetTitle());
   EXPECT_TRUE(controller.CanGoBack());

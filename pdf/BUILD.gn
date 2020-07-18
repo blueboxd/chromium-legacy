@@ -22,10 +22,12 @@ if (enable_pdf) {
     include_dirs = [ "//third_party/pdfium" ]
   }
 
-  static_library("pdf") {
+  component("pdf") {
     sources = [ "pdf.cc" ]
 
     configs += [ ":pdf_common_config" ]
+
+    defines = [ "IS_PDF_IMPL" ]
 
     public = [ "pdf.h" ]
 
@@ -33,6 +35,36 @@ if (enable_pdf) {
       ":internal",
       "//base",
     ]
+  }
+
+  component("pdf_ppapi") {
+    sources = [ "pdf_ppapi.cc" ]
+
+    configs += [ ":pdf_common_config" ]
+
+    defines = [ "IS_PDF_PPAPI_IMPL" ]
+
+    public = [ "pdf_ppapi.h" ]
+
+    deps = [
+      ":internal",
+      ":pdf",
+      "//base",
+      "//ppapi/cpp:objects",
+      "//ppapi/cpp/private:internal_module",
+      "//skia",
+      "//v8",
+    ]
+  }
+
+  source_set("features") {
+    sources = [ "pdf_features.cc" ]
+
+    configs += [ ":pdf_common_config" ]
+
+    public = [ "pdf_features.h" ]
+
+    deps = [ "//base" ]
   }
 
   source_set("internal") {
@@ -151,36 +183,6 @@ if (enable_pdf) {
       "//third_party/pdfium",
       "//ui/base",
     ]
-  }
-
-  component("pdf_ppapi") {
-    sources = [ "pdf_ppapi.cc" ]
-
-    configs += [ ":pdf_common_config" ]
-
-    defines = [ "IS_PDF_PPAPI_IMPL" ]
-
-    public = [ "pdf_ppapi.h" ]
-
-    deps = [
-      ":internal",
-      ":pdf",
-      "//base",
-      "//ppapi/cpp:objects",
-      "//ppapi/cpp/private:internal_module",
-      "//skia",
-      "//v8",
-    ]
-  }
-
-  source_set("features") {
-    sources = [ "pdf_features.cc" ]
-
-    configs += [ ":pdf_common_config" ]
-
-    public = [ "pdf_features.h" ]
-
-    deps = [ "//base" ]
   }
 
   source_set("pdf_test_utils") {

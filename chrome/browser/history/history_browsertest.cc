@@ -609,7 +609,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, ReloadBringPageToTop) {
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   tab->GetController().Reload(content::ReloadType::NORMAL, false);
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   urls = GetHistoryContents();
   ASSERT_EQ(2u, urls.size());
@@ -629,7 +629,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, BackForwardBringPageToTop) {
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   std::vector<GURL> urls(GetHistoryContents());
   ASSERT_EQ(2u, urls.size());
@@ -637,7 +637,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, BackForwardBringPageToTop) {
   ASSERT_EQ(url2, urls[1]);
 
   chrome::GoForward(browser(), WindowOpenDisposition::CURRENT_TAB);
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
   urls = GetHistoryContents();
   ASSERT_EQ(2u, urls.size());
   ASSERT_EQ(url2, urls[0]);
@@ -658,7 +658,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, PushStateSetsTitle) {
   // Do a pushState to create a new navigation entry and a new history entry.
   ASSERT_TRUE(content::ExecuteScript(web_contents,
                                      "history.pushState({},'','test.html')"));
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
 
   // This should result in two history entries.
   std::vector<GURL> urls(GetHistoryContents());
@@ -713,7 +713,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, BeforeUnloadCommitDuringPending) {
   // After the pending navigation commits and the new title arrives, there
   // should be another row with the new URL and title.
   manager.WaitForNavigationFinished();
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   base::string16 title3 = web_contents->GetTitle();
   EXPECT_NE(title1, title3);
   {

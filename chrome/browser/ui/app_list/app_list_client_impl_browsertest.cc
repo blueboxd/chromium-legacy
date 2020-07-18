@@ -162,8 +162,8 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowAppInfo) {
   Browser* settings_app =
       chrome::SettingsWindowManager::GetInstance()->FindBrowserForProfile(
           profile());
-  content::WaitForLoadStop(
-      settings_app->tab_strip_model()->GetActiveWebContents());
+  EXPECT_TRUE(content::WaitForLoadStop(
+      settings_app->tab_strip_model()->GetActiveWebContents()));
 
   EXPECT_EQ(
       chrome::GetOSSettingsUrl(

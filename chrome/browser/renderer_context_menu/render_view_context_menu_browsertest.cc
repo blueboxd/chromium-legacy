@@ -740,7 +740,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, RealMenu) {
   // The menu_observer will select "Open in new tab", wait for the new tab to
   // be added.
   tab = add_tab.Wait();
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   // Verify that it's the correct tab.
   EXPECT_EQ(GURL("about:blank"), tab->GetURL());
@@ -777,7 +777,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenInNewTabReferrer) {
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
 
   content::WebContents* tab = add_tab.Wait();
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   // Verify that it's the correct tab.
   ASSERT_EQ(echoheader, tab->GetURL());
@@ -826,7 +826,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenIncognitoNoneReferrer) {
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD, 0);
 
   content::WebContents* tab = add_tab.Wait();
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   // Verify that it's the correct tab.
   ASSERT_EQ(echoheader, tab->GetURL());

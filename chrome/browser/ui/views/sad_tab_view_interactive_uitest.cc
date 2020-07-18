@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(SadTabViewInteractiveUITest,
   ClickOnActionButtonInSadTab();
 
   // Ensure the first WebContents reloads.
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   EXPECT_FALSE(web_contents->IsCrashed());
 
   // Switch to the second tab, reload it too.
@@ -209,6 +209,6 @@ IN_PROC_BROWSER_TEST_F(SadTabViewInteractiveUITest,
   web_contents = tab_strip_model->GetActiveWebContents();
   EXPECT_TRUE(web_contents->IsCrashed());
   ClickOnActionButtonInSadTab();
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   EXPECT_FALSE(web_contents->IsCrashed());
 }

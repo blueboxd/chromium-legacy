@@ -1576,7 +1576,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithHttpWarningsDisabled,
 
   // Verify that after a refresh, the DANGEROUS state is cleared.
   contents->GetController().Reload(content::ReloadType::NORMAL, false);
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
   EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 }
 
@@ -2163,12 +2163,12 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithFormsDangerous,
       browser(), GetURLWithNonLocalHostname(
                      embedded_test_server(),
                      "/textinput/focus_input_on_load.html#fragment"));
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
   EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
 
   // Verify that after a refresh, the DANGEROUS state is cleared.
   contents->GetController().Reload(content::ReloadType::NORMAL, false);
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
   EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 }
 

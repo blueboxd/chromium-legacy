@@ -706,7 +706,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, ReloadAfterKill) {
 
   // Reload the tab.
   tab->GetController().Reload(content::ReloadType::NORMAL, false);
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   // Verify the omnibox contents, URL and icon.
   EXPECT_EQ(base::ASCIIToUTF16(""), omnibox_view_views->GetText());

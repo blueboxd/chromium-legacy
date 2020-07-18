@@ -251,13 +251,13 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, SameDocumentNavigationsAndReload) {
   ASSERT_TRUE(ExecuteScript(web_contents,
                             "window.history.pushState({}, '', 'foo.html')"));
   shell()->GoBackOrForward(-1);
-  WaitForLoadStop(web_contents);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
 
   // Test handler should still have JavaScript allowed after in-page navigation.
   EXPECT_TRUE(test_handler->IsJavascriptAllowed());
 
   shell()->Reload();
-  WaitForLoadStop(web_contents);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
 
   // Verify that after a reload, the test handler has been disallowed.
   EXPECT_FALSE(test_handler->IsJavascriptAllowed());

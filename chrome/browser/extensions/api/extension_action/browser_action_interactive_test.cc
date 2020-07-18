@@ -866,7 +866,7 @@ class NavigatingExtensionPopupInteractiveTest
     TabStripModel* tabs = browser()->tab_strip_model();
     for (int i = 0; i < tabs->count(); i++) {
       content::WebContents* tab_contents = tabs->GetWebContentsAt(i);
-      WaitForLoadStop(tab_contents);
+      EXPECT_TRUE(WaitForLoadStop(tab_contents));
       EXPECT_NE(target_url, tab_contents->GetLastCommittedURL())
           << "Navigating an extension pop-up should not affect tabs.";
     }

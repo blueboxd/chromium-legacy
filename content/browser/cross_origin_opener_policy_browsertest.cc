@@ -793,7 +793,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 
   auto* popup_webcontents =
       static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
-  WaitForLoadStop(popup_webcontents);
+  EXPECT_TRUE(WaitForLoadStop(popup_webcontents));
 
   // The page and its popup should be in different processes even though the
   // process limit was reached.
@@ -824,7 +824,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 
   auto* popup_webcontents =
       static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
-  WaitForLoadStop(popup_webcontents);
+  EXPECT_TRUE(WaitForLoadStop(popup_webcontents));
 
   // The page and its popup should be in different processes even though the
   // process limit was reached.
@@ -1383,11 +1383,11 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   int group_2 = VirtualBrowsingContextGroup(web_contents());
 
   EXPECT_TRUE(ExecJs(web_contents(), "history.back()"));
-  WaitForLoadStop(web_contents());
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
   int group_3 = VirtualBrowsingContextGroup(web_contents());
 
   EXPECT_TRUE(ExecJs(web_contents(), "history.forward()"));
-  WaitForLoadStop(web_contents());
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
   int group_4 = VirtualBrowsingContextGroup(web_contents());
 
   EXPECT_EQ(group_1, group_2);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
@@ -1423,17 +1423,17 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_TRUE(
       ExecJs(current_frame_host(), JsReplace("window.open($1)", url_b)));
   WebContents* popup = shell_observer.GetShell()->web_contents();
-  WaitForLoadStop(popup);
+  EXPECT_TRUE(WaitForLoadStop(popup));
   int group_2 = VirtualBrowsingContextGroup(popup);
 
   // B2 navigates to C3.
   EXPECT_TRUE(ExecJs(popup, JsReplace("location.href = $1;", url_c)));
-  WaitForLoadStop(popup);
+  EXPECT_TRUE(WaitForLoadStop(popup));
   int group_3 = VirtualBrowsingContextGroup(popup);
 
   // C3 navigates back to B4.
   EXPECT_TRUE(ExecJs(popup, JsReplace("history.back()")));
-  WaitForLoadStop(popup);
+  EXPECT_TRUE(WaitForLoadStop(popup));
   int group_4 = VirtualBrowsingContextGroup(popup);
 
   EXPECT_EQ(group_1, group_2);

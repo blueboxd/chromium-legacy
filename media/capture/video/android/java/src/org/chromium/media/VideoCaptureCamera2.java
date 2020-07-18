@@ -1363,6 +1363,18 @@ public class VideoCaptureCamera2 extends VideoCapture {
         }
     }
 
+    public static boolean isPanTiltZoomSupported(int id) {
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(id);
+        if (cameraCharacteristics == null) {
+            return false;
+        }
+
+        final float maxZoom =
+                cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
+        final boolean isZoomSupported = maxZoom > 1.0f;
+        return isZoomSupported;
+    }
+
     public static int getFacingMode(int id) {
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(id);
         if (cameraCharacteristics == null) {

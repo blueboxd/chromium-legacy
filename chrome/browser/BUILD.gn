@@ -3734,6 +3734,7 @@ static_library("browser") {
       "//chrome/browser/media/kaleidoscope/mojom",
       "//chrome/browser/nearby_sharing/certificates",
       "//chrome/browser/nearby_sharing/client",
+      "//chrome/browser/nearby_sharing/contacts",
       "//chrome/browser/nearby_sharing/instantmessaging/proto",
       "//chrome/browser/nearby_sharing/local_device_data",
       "//chrome/browser/nearby_sharing/logging",

@@ -393,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPersisterTest, MoveBetweenBrowsers) {
   TabImpl* restored_tab_3 = static_cast<TabImpl*>(browser2->GetTabs()[0]);
   EXPECT_TRUE(restored_tab_3->web_contents()->GetController().NeedsReload());
   restored_tab_3->web_contents()->GetController().LoadIfNecessary();
-  content::WaitForLoadStop(restored_tab_3->web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(restored_tab_3->web_contents()));
 }
 
 class BrowserPersisterTestWithTwoPersistedIds : public WebLayerBrowserTest {

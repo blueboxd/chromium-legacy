@@ -379,8 +379,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "document.getElementById('example').click();"));
-  content::WaitForLoadStop(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_TRUE(content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents()));
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",

@@ -81,6 +81,14 @@ class VideoCaptureFactory {
     }
 
     @CalledByNative
+    static boolean isPanTiltZoomSupported(int id) {
+        if (isLegacyOrDeprecatedDevice(id)) {
+            return VideoCaptureCamera.isPanTiltZoomSupported(id);
+        }
+        return VideoCaptureCamera2.isPanTiltZoomSupported(id);
+    }
+
+    @CalledByNative
     static int getFacingMode(int id) {
         if (isLegacyOrDeprecatedDevice(id)) {
             return VideoCaptureCamera.getFacingMode(id);

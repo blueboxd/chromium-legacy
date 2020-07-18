@@ -68,21 +68,22 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceDescriptors(
     if (device_name.obj() == NULL)
       continue;
 
-    const int capture_api_type =
-        Java_VideoCaptureFactory_getCaptureApiType(env, camera_id);
-    const int facing_mode =
-        Java_VideoCaptureFactory_getFacingMode(env, camera_id);
     const std::string display_name =
         base::android::ConvertJavaStringToUTF8(device_name);
     const std::string device_id = base::NumberToString(camera_id);
+    const int capture_api_type =
+        Java_VideoCaptureFactory_getCaptureApiType(env, camera_id);
+    bool pan_tilt_zoom_supported =
+        Java_VideoCaptureFactory_isPanTiltZoomSupported(env, camera_id);
+    const int facing_mode =
+        Java_VideoCaptureFactory_getFacingMode(env, camera_id);
 
     // Android cameras are not typically USB devices, and the model_id is
     // currently only used for USB model identifiers, so this implementation
     // just indicates an unknown device model (by not providing one).
     VideoCaptureDeviceDescriptor descriptor(
         display_name, device_id, "" /*model_id*/,
-        static_cast<VideoCaptureApi>(capture_api_type),
-        /*pan_tilt_zoom_supported=*/false,
+        static_cast<VideoCaptureApi>(capture_api_type), pan_tilt_zoom_supported,
         VideoCaptureTransportType::OTHER_TRANSPORT,
         static_cast<VideoFacingMode>(facing_mode));
 

@@ -41,8 +41,8 @@ void SSLClientCertificateSelectorTestBase::SetUpOnMainThread() {
 
   io_loop_finished_event_.Wait();
 
-  content::WaitForLoadStop(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_TRUE(content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
 // Have to release our reference to the auth handler during the test to allow

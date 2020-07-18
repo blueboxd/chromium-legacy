@@ -114,10 +114,9 @@ void ImageCaptureImpl::SetOptions(const std::string& source_id,
                        "ImageCaptureImpl::SetOptions",
                        TRACE_EVENT_SCOPE_PROCESS);
 
-  // TODO(crbug.com/934063): Check "has_zoom" as well if upcoming metrics show
-  // that zoom may be moved under this permission.
-  if ((settings->has_pan || settings->has_tilt) &&
-      !HasPanTiltZoomPermissionGranted()) {
+  if (((settings->has_pan || settings->has_tilt) &&
+       !HasPanTiltZoomPermissionGranted()) ||
+      (settings->has_zoom && !HasZoomPermissionGranted())) {
     std::move(callback).Run(false);
     return;
   }
@@ -160,12 +159,12 @@ ImageCaptureImpl::~ImageCaptureImpl() = default;
 void ImageCaptureImpl::OnGetPhotoState(GetPhotoStateCallback callback,
                                        media::mojom::PhotoStatePtr state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // TODO(crbug.com/934063): Reset "zoom" as well if upcoming metrics show
-  // that zoom may be moved under this permission.
   if (!HasPanTiltZoomPermissionGranted()) {
     state->pan = media::mojom::Range::New();
     state->tilt = media::mojom::Range::New();
+  }
+  if (!HasZoomPermissionGranted()) {
+    state->zoom = media::mojom::Range::New();
   }
   std::move(callback).Run(std::move(state));
 }
@@ -177,5 +176,13 @@ bool ImageCaptureImpl::HasPanTiltZoomPermissionGranted() {
       HasPanTiltZoomPermissionGrantedOnUIThread(
           render_frame_host()->GetProcess()->GetID(),
           render_frame_host()->GetRoutingID());
+}
+
+bool ImageCaptureImpl::HasZoomPermissionGranted() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  return MediaDevicesPermissionChecker::HasZoomPermissionGrantedOnUIThread(
+      render_frame_host()->GetProcess()->GetID(),
+      render_frame_host()->GetRoutingID());
 }
 }  // namespace content

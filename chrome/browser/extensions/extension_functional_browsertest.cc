@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
         &did_create_popup));
     ASSERT_TRUE(did_create_popup);
     content::WebContents* popup_window = new_window_observer.GetWebContents();
-    WaitForLoadStop(popup_window);
+    EXPECT_TRUE(WaitForLoadStop(popup_window));
     tab1_popup = popup_window->GetMainFrame();
   }
   EXPECT_EQ(GURL(url::kAboutBlankURL), tab1_popup->GetLastCommittedURL());

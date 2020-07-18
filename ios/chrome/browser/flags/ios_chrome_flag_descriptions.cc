@@ -196,9 +196,10 @@ const char kDisableProgressBarAnimationName[] =
 const char kDisableProgressBarAnimationDescription[] =
     "Disable progress bar animation when a page loads.";
 
-const char kDiscoverFeedInNtpName[] = "Enable Discover feed in new tab page";
+const char kDiscoverFeedInNtpName[] = "Enable new content Suggestion Feed";
 const char kDiscoverFeedInNtpDescription[] =
-    "When enabled, replaces articles feed with Discover feed in new tab page.";
+    "When enabled, replaces articles feed with new content Suggestion Feed in "
+    "the NTP.";
 
 const char kDownloadInfobarMessagesUIName[] = "Download Infobars Messages UI";
 const char kDownloadInfobarMessagesUIDescription[] =

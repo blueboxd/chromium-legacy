@@ -70,8 +70,8 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
 
     io_loop_finished_event_.Wait();
 
-    content::WaitForLoadStop(
-        browser()->tab_strip_model()->GetActiveWebContents());
+    EXPECT_TRUE(content::WaitForLoadStop(
+        browser()->tab_strip_model()->GetActiveWebContents()));
     net::ClientCertIdentityList cert_identity_list;
     cert_identity_list.push_back(cert_identity_1_->Copy());
     cert_identity_list.push_back(cert_identity_2_->Copy());
@@ -144,8 +144,10 @@ class SSLClientCertificateSelectorMultiTabTest
     ASSERT_TRUE(NULL != browser()->tab_strip_model()->GetWebContentsAt(0));
     ASSERT_TRUE(NULL != browser()->tab_strip_model()->GetWebContentsAt(1));
     ASSERT_TRUE(NULL != browser()->tab_strip_model()->GetWebContentsAt(2));
-    content::WaitForLoadStop(browser()->tab_strip_model()->GetWebContentsAt(1));
-    content::WaitForLoadStop(browser()->tab_strip_model()->GetWebContentsAt(2));
+    EXPECT_TRUE(content::WaitForLoadStop(
+        browser()->tab_strip_model()->GetWebContentsAt(1)));
+    EXPECT_TRUE(content::WaitForLoadStop(
+        browser()->tab_strip_model()->GetWebContentsAt(2)));
 
     net::ClientCertIdentityList cert_identity_list_1;
     cert_identity_list_1.push_back(cert_identity_1_->Copy());

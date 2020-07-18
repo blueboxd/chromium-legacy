@@ -156,7 +156,7 @@ class WebUINavigationBrowserTest : public ContentBrowserTest {
                        EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
     Shell* new_shell = new_shell_observer.GetShell();
     WebContents* new_web_contents = new_shell->web_contents();
-    WaitForLoadStop(new_web_contents);
+    EXPECT_TRUE(WaitForLoadStop(new_web_contents));
 
     EXPECT_EQ(web_url, new_web_contents->GetLastCommittedURL());
 

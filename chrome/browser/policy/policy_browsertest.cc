@@ -1186,7 +1186,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
                base::Value(chrome::kChromeUICreditsURL), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_HOME));
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
   EXPECT_EQ(GURL(chrome::kChromeUICreditsURL), contents->GetURL());
 
   policies.Set(key::kHomepageIsNewTabPage, POLICY_LEVEL_MANDATORY,
@@ -1194,7 +1194,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
                nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_HOME));
-  content::WaitForLoadStop(contents);
+  EXPECT_TRUE(content::WaitForLoadStop(contents));
   EXPECT_TRUE(search::IsInstantNTP(contents));
 }
 
@@ -1394,7 +1394,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
 
   // We have to wait for the navigation to commit since the JS object
   // registration is delayed (see AppWindowCreateFunction::RunAsync).
-  content::WaitForLoadStop(window->web_contents());
+  EXPECT_TRUE(content::WaitForLoadStop(window->web_contents()));
 
   // Verify that the window cannot be toggled into fullscreen mode via apps
   // APIs.

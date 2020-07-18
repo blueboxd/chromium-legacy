@@ -29,17 +29,18 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
   if (!GetScrollableArea().GetLayoutBox()->StyleRef().HasResize())
     return;
 
-  IntRect abs_rect = GetScrollableArea().ResizerCornerRect(kResizerForPointer);
-  if (abs_rect.IsEmpty())
+  IntRect visual_rect =
+      GetScrollableArea().ResizerCornerRect(kResizerForPointer);
+  if (visual_rect.IsEmpty())
     return;
-  abs_rect.MoveBy(paint_offset);
+  visual_rect.MoveBy(paint_offset);
 
   const auto& client = DisplayItemClientForCorner();
   if (const auto* resizer = GetScrollableArea().Resizer()) {
-    if (!cull_rect.Intersects(abs_rect))
+    if (!cull_rect.Intersects(visual_rect))
       return;
     CustomScrollbarTheme::PaintIntoRect(*resizer, context,
-                                        PhysicalRect(abs_rect));
+                                        PhysicalRect(visual_rect));
     return;
   }
 
@@ -47,16 +48,16 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
                                                   DisplayItem::kResizer))
     return;
 
-  DrawingRecorder recorder(context, client, DisplayItem::kResizer);
+  DrawingRecorder recorder(context, client, DisplayItem::kResizer, visual_rect);
 
-  DrawPlatformResizerImage(context, abs_rect);
+  DrawPlatformResizerImage(context, visual_rect);
 
   // Draw a frame around the resizer (1px grey line) if there are any scrollbars
   // present.  Clipping will exclude the right and bottom edges of this frame.
   if (GetScrollableArea().HasNonOverlayOverflowControls()) {
     GraphicsContextStateSaver state_saver(context);
-    context.Clip(abs_rect);
-    IntRect larger_corner = abs_rect;
+    context.Clip(visual_rect);
+    IntRect larger_corner = visual_rect;
     larger_corner.SetSize(
         IntSize(larger_corner.Width() + 1, larger_corner.Height() + 1));
     context.SetStrokeColor(Color(217, 217, 217));
@@ -195,9 +196,9 @@ void ScrollableAreaPainter::PaintScrollbar(GraphicsContext& context,
                                            const CullRect& cull_rect) {
   // TODO(crbug.com/1020913): We should not round paint_offset but should
   // consider subpixel accumulation when painting scrollbars.
-  IntRect rect = scrollbar.FrameRect();
-  rect.MoveBy(paint_offset);
-  if (!cull_rect.Intersects(rect))
+  IntRect visual_rect = scrollbar.FrameRect();
+  visual_rect.MoveBy(paint_offset);
+  if (!cull_rect.Intersects(visual_rect))
     return;
 
   if (scrollbar.IsCustomScrollbar()) {
@@ -206,7 +207,7 @@ void ScrollableAreaPainter::PaintScrollbar(GraphicsContext& context,
     // Prevent composited scroll hit test on the custom scrollbar which always
     // need main thread scrolling.
     context.GetPaintController().RecordScrollHitTestData(
-        scrollbar, DisplayItem::kCustomScrollbarHitTest, nullptr, rect);
+        scrollbar, DisplayItem::kCustomScrollbarHitTest, nullptr, visual_rect);
     return;
   }
 
@@ -232,23 +233,23 @@ void ScrollableAreaPainter::PaintScrollbar(GraphicsContext& context,
   }
   auto delegate = base::MakeRefCounted<ScrollbarLayerDelegate>(
       scrollbar, context.DeviceScaleFactor());
-  ScrollbarDisplayItem::Record(context, scrollbar, type, delegate, rect,
+  ScrollbarDisplayItem::Record(context, scrollbar, type, delegate, visual_rect,
                                scroll_translation, scrollbar.GetElementId());
 }
 
 void ScrollableAreaPainter::PaintScrollCorner(GraphicsContext& context,
                                               const IntPoint& paint_offset,
                                               const CullRect& cull_rect) {
-  IntRect abs_rect = GetScrollableArea().ScrollCornerRect();
-  if (abs_rect.IsEmpty())
+  IntRect visual_rect = GetScrollableArea().ScrollCornerRect();
+  if (visual_rect.IsEmpty())
     return;
-  abs_rect.MoveBy(paint_offset);
+  visual_rect.MoveBy(paint_offset);
 
   if (const auto* scroll_corner = GetScrollableArea().ScrollCorner()) {
-    if (!cull_rect.Intersects(abs_rect))
+    if (!cull_rect.Intersects(visual_rect))
       return;
     CustomScrollbarTheme::PaintIntoRect(*scroll_corner, context,
-                                        PhysicalRect(abs_rect));
+                                        PhysicalRect(visual_rect));
     return;
   }
 
@@ -269,7 +270,7 @@ void ScrollableAreaPainter::PaintScrollCorner(GraphicsContext& context,
 
   const auto& client = DisplayItemClientForCorner();
   theme->PaintScrollCorner(context, GetScrollableArea().VerticalScrollbar(),
-                           client, abs_rect,
+                           client, visual_rect,
                            GetScrollableArea().UsedColorScheme());
 }
 

@@ -599,7 +599,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
     EXPECT_TRUE(
         ExecuteScript(shell()->web_contents(), "window.open('about:blank');"));
     Shell* new_shell = new_shell_observer.GetShell();
-    WaitForLoadStop(new_shell->web_contents());
+    EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
     BlockedURLWarningConsoleObserver console_observer(
         new_shell->web_contents(), kNavigationSuccessfulMessage,
@@ -738,7 +738,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
     EXPECT_TRUE(
         ExecuteScript(shell()->web_contents(), "window.open('about:blank');"));
     Shell* new_shell = new_shell_observer.GetShell();
-    WaitForLoadStop(new_shell->web_contents());
+    EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
     EXPECT_TRUE(NavigateToURL(new_shell, kFilesystemURL1));
     ExecuteScriptAndCheckNavigation(
@@ -785,7 +785,7 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
     EXPECT_TRUE(
         ExecuteScript(shell()->web_contents(), "window.open('about:blank');"));
     Shell* new_shell = new_shell_observer.GetShell();
-    WaitForLoadStop(new_shell->web_contents());
+    EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
 
     EXPECT_TRUE(NavigateToURL(new_shell, kFilesystemURL2));
     ExecuteScriptAndCheckNavigation(

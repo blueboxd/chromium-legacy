@@ -51,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, ReloadDoesntHang) {
 
   // Try reloading.
   tab->GetController().Reload(content::ReloadType::NORMAL, false);
-  content::WaitForLoadStop(tab);
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
 
   // If the WaitForLoadStop doesn't hang forever, we've passed.
 }
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest,
 
   // Try reloading tab one.
   tab1->GetController().Reload(content::ReloadType::NORMAL, false);
-  content::WaitForLoadStop(tab1);
+  EXPECT_TRUE(content::WaitForLoadStop(tab1));
 
   // If the WaitForLoadStop doesn't hang forever, we've passed.
 }
@@ -240,7 +240,7 @@ class JavaScriptDialogDismissalCauseTester {
 
   void Reload() {
     tab_->GetController().Reload(content::ReloadType::NORMAL, false);
-    content::WaitForLoadStop(tab_);
+    EXPECT_TRUE(content::WaitForLoadStop(tab_));
   }
 
   void CallHandleDialog(bool accept, const base::string16* prompt_override) {

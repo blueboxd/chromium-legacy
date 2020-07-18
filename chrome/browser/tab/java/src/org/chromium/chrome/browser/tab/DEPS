@@ -3,7 +3,9 @@ noparent = True
 include_rules = [
   "-chrome",
   "+base/android/java/src/org/chromium/base",
+  "+chrome/browser/android/crypto/java",
   "+chrome/browser/contextmenu/java",
+  "+chrome/browser/tab/java",
   "+chrome/browser/profiles/android/java",
   "+chrome/browser/ui/android/native_page",
   "+components/browser_ui/util/android/java",

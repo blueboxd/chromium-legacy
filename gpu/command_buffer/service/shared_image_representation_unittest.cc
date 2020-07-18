@@ -27,10 +27,13 @@ class SharedImageRepresentationTest : public ::testing::Test {
     auto format = viz::ResourceFormat::RGBA_8888;
     gfx::Size size(256, 256);
     auto color_space = gfx::ColorSpace::CreateSRGB();
+    auto surface_origin = kTopLeft_GrSurfaceOrigin;
+    auto alpha_type = kPremul_SkAlphaType;
     uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
 
     auto backing = std::make_unique<TestSharedImageBacking>(
-        mailbox_, format, size, color_space, usage, 0 /* estimated_size */);
+        mailbox_, format, size, color_space, surface_origin, alpha_type, usage,
+        0 /* estimated_size */);
     factory_ref_ = manager_.Register(std::move(backing), tracker_.get());
   }
 

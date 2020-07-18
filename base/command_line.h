@@ -112,41 +112,27 @@ class BASE_EXPORT CommandLine {
   // Constructs and returns the represented command line string.
   // CAUTION! This should be avoided on POSIX because quoting behavior is
   // unclear.
-  StringType GetCommandLineString() const {
-    return GetCommandLineStringInternal(false);
-  }
+  // CAUTION! If writing a command line to the Windows registry, use
+  // GetCommandLineStringForShell() instead.
+  StringType GetCommandLineString() const;
 
 #if defined(OS_WIN)
-  // Constructs and returns the represented command line string. Assumes the
-  // command line contains placeholders (eg, %1) and quotes any program or
-  // argument with a '%' in it. This should be avoided unless the placeholder is
-  // required by an external interface (eg, the Windows registry), because it is
-  // not generally safe to replace it with an arbitrary string. If possible,
-  // placeholders should be replaced *before* converting the command line to a
-  // string.
-  StringType GetCommandLineStringWithPlaceholders() const {
-    return GetCommandLineStringInternal(true);
-  }
+  // Returns the command-line string in the proper format for the Windows shell,
+  // ending with the argument placeholder "--single-argument %1". The single-
+  // argument switch prevents unexpected parsing of arguments from other
+  // software that cannot be trusted to escape double quotes when substituting
+  // into a placeholder (e.g., "%1" placeholders populated by the Windows
+  // shell).
+  // NOTE: this must be used to generate the command-line string for the shell
+  // even if this command line was parsed from a string with the proper syntax,
+  // because the --single-argument switch is not preserved during parsing.
+  StringType GetCommandLineStringForShell() const;
 #endif
 
   // Constructs and returns the represented arguments string.
   // CAUTION! This should be avoided on POSIX because quoting behavior is
   // unclear.
-  StringType GetArgumentsString() const {
-    return GetArgumentsStringInternal(false);
-  }
-
-#if defined(OS_WIN)
-  // Constructs and returns the represented arguments string. Assumes the
-  // command line contains placeholders (eg, %1) and quotes any argument with a
-  // '%' in it. This should be avoided unless the placeholder is required by an
-  // external interface (eg, the Windows registry), because it is not generally
-  // safe to replace it with an arbitrary string. If possible, placeholders
-  // should be replaced *before* converting the arguments to a string.
-  StringType GetArgumentsStringWithPlaceholders() const {
-    return GetArgumentsStringInternal(true);
-  }
-#endif
+  StringType GetArgumentsString() const;
 
   // Returns the original command line string as a vector of strings.
   const StringVector& argv() const { return argv_; }
@@ -226,13 +212,26 @@ class BASE_EXPORT CommandLine {
   //   CommandLine cl(*CommandLine::ForCurrentProcess());
   //   cl.AppendSwitch(...);
 
-  // Internal version of GetCommandLineString. If |quote_placeholders| is true,
-  // also quotes parts with '%' in them.
-  StringType GetCommandLineStringInternal(bool quote_placeholders) const;
+  // Append switches and arguments, keeping switches before arguments.
+  void AppendSwitchesAndArguments(const StringVector& argv);
 
-  // Internal version of GetArgumentsString. If |quote_placeholders| is true,
-  // also quotes parts with '%' in them.
-  StringType GetArgumentsStringInternal(bool quote_placeholders) const;
+#if defined(OS_WIN)
+  // Initializes by parsing |raw_command_line_string_|, treating everything
+  // after |single_arg_switch_string| + <a single character> as the command
+  // line's single argument, and dropping any arguments previously parsed. The
+  // command line must contain |single_arg_switch_string|, and the argument, if
+  // present, must be separated from |single_arg_switch_string| by one
+  // character.
+  // NOTE: the single-argument switch is not preserved after parsing;
+  // GetCommandLineStringForShell() must be used to reproduce the original
+  // command-line string with single-argument switch.
+  void ParseAsSingleArgument(const StringType& single_arg_switch_string);
+
+  // The string returned by GetCommandLineW(), to be parsed via
+  // ParseFromString(). Empty if this command line was not parsed from a string,
+  // or if ParseFromString() has finished executing.
+  StringPieceType raw_command_line_string_;
+#endif
 
   // The singleton CommandLine representing the current process's command line.
   static CommandLine* current_process_commandline_;

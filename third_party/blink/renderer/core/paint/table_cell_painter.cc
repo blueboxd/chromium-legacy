@@ -72,6 +72,8 @@ void TableCellPainter::PaintBoxDecorationBackground(
     const PhysicalOffset& paint_offset) {
   LayoutTable* table = layout_table_cell_.Table();
   const ComputedStyle& style = layout_table_cell_.StyleRef();
+  if (style.Visibility() != EVisibility::kVisible)
+    return;
   if (!table->ShouldCollapseBorders() &&
       style.EmptyCells() == EEmptyCells::kHide &&
       !layout_table_cell_.FirstChild())
@@ -81,6 +83,7 @@ void TableCellPainter::PaintBoxDecorationBackground(
 
   const DisplayItemClient* client = nullptr;
   PhysicalRect paint_rect;
+  IntRect visual_rect;
   base::Optional<ScopedBoxContentsPaintState> contents_paint_state;
   if (box_decoration_data.IsPaintingScrollingBackground()) {
     // See BoxPainter::PaintBoxDecorationBackground() for explanations.
@@ -91,17 +94,19 @@ void TableCellPainter::PaintBoxDecorationBackground(
     paint_rect.Expand(layout_table_cell_.BorderBoxOutsets());
     client = &layout_table_cell_.GetScrollableArea()
                   ->GetScrollingBackgroundDisplayItemClient();
+    visual_rect = EnclosingIntRect(paint_rect);
   } else {
     paint_rect = PaintRectNotIncludingVisualOverflow(paint_offset);
+    visual_rect = BoxPainter(layout_table_cell_).VisualRect(paint_offset);
     client = &layout_table_cell_;
   }
 
   if (box_decoration_data.ShouldPaint() &&
       !DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, *client, DisplayItem::kBoxDecorationBackground)) {
-    // TODO(chrishtr): the pixel-snapping here is likely incorrect.
     DrawingRecorder recorder(paint_info.context, *client,
-                             DisplayItem::kBoxDecorationBackground);
+                             DisplayItem::kBoxDecorationBackground,
+                             visual_rect);
 
     if (box_decoration_data.ShouldPaintShadow())
       BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect, style);
@@ -147,8 +152,8 @@ void TableCellPainter::PaintMask(const PaintInfo& paint_info,
           paint_info.context, layout_table_cell_, paint_info.phase))
     return;
 
-  DrawingRecorder recorder(paint_info.context, layout_table_cell_,
-                           paint_info.phase);
+  BoxDrawingRecorder recorder(paint_info.context, layout_table_cell_,
+                              paint_info.phase, paint_offset);
   PhysicalRect paint_rect = PaintRectNotIncludingVisualOverflow(paint_offset);
   BoxPainter(layout_table_cell_).PaintMaskImages(paint_info, paint_rect);
 }

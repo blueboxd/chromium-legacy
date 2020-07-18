@@ -38,11 +38,30 @@ TabGroupsIPHController::~TabGroupsIPHController() {
   HandlePromoClose();
 }
 
+bool TabGroupsIPHController::ShouldHighlightContextMenuItem() {
+  // If the bubble is currently showing, the promo hasn't timed out yet.
+  // The promo should continue into the context menu as a highlighted
+  // item.
+  return promo_widget_ != nullptr;
+}
+
 void TabGroupsIPHController::TabContextMenuOpened() {
   if (!promo_widget_)
     return;
 
+  // Assume that the context menu code checked
+  // ShouldHighlightContextMenuItem() and is correctly showing the promo
+  // there.
+  showing_in_menu_ = true;
   promo_widget_->Close();
+}
+
+void TabGroupsIPHController::TabContextMenuClosed() {
+  if (!showing_in_menu_)
+    return;
+
+  showing_in_menu_ = false;
+  Dismissed();
 }
 
 void TabGroupsIPHController::OnTabStripModelChanged(
@@ -93,5 +112,16 @@ void TabGroupsIPHController::OnWidgetDestroying(views::Widget* widget) {
 void TabGroupsIPHController::HandlePromoClose() {
   widget_observer_.Remove(promo_widget_);
   promo_widget_ = nullptr;
+
+  // If the promo continued into the context menu, it hasn't been
+  // dismissed yet. We wait on notifying the backend until the menu
+  // closes at which point the promo is complete.
+  if (!showing_in_menu_)
+    Dismissed();
+}
+
+void TabGroupsIPHController::Dismissed() {
+  DCHECK_EQ(promo_widget_, nullptr);
+  DCHECK(!showing_in_menu_);
   tracker_->Dismissed(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature);
 }

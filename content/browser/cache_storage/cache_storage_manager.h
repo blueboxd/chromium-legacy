@@ -53,18 +53,18 @@ class CONTENT_EXPORT CacheStorageManager
   virtual void GetOriginUsage(
       const url::Origin& origin_url,
       CacheStorageOwner owner,
-      storage::QuotaClient::GetUsageCallback callback) = 0;
+      storage::QuotaClient::GetOriginUsageCallback callback) = 0;
   virtual void GetOrigins(
       CacheStorageOwner owner,
-      storage::QuotaClient::GetOriginsCallback callback) = 0;
+      storage::QuotaClient::GetOriginsForTypeCallback callback) = 0;
   virtual void GetOriginsForHost(
       const std::string& host,
       CacheStorageOwner owner,
-      storage::QuotaClient::GetOriginsCallback callback) = 0;
+      storage::QuotaClient::GetOriginsForHostCallback callback) = 0;
   virtual void DeleteOriginData(
       const url::Origin& origin,
       CacheStorageOwner owner,
-      storage::QuotaClient::DeletionCallback callback) = 0;
+      storage::QuotaClient::DeleteOriginDataCallback callback) = 0;
   virtual void DeleteOriginData(const url::Origin& origin,
                                 CacheStorageOwner owner) = 0;
 

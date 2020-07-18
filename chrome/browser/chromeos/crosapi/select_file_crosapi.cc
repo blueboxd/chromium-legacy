@@ -9,14 +9,17 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/ranges.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chromeos/crosapi/mojom/select_file.mojom.h"
+#include "components/exo/shell_surface_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
+#include "ui/wm/public/activation_client.h"
 #include "url/gurl.h"
 
 namespace {
@@ -54,6 +57,20 @@ ui::SelectFileDialog::FileTypeInfo::AllowedPaths GetUiAllowedPaths(
   }
 }
 
+// TODO(https://crbug.com/1090587): Parent to the ShellSurface that spawned
+// the dialog. For now, parent to the active window, which in practice should be
+// the spawning window.
+aura::Window* GetOwnerWindow() {
+  aura::Window* root = ash::Shell::GetRootWindowForNewWindows();
+  aura::Window* active = ::wm::GetActivationClient(root)->GetActiveWindow();
+  // Check that the active window is still a ShellSurface window.
+  if (active && exo::GetShellSurfaceBaseForWindow(active))
+    return active;
+  // Fallback to the active virtual desk.
+  return ash::Shell::GetContainer(root,
+                                  ash::desks_util::GetActiveDeskContainerId());
+}
+
 // Manages a single open/save dialog. There may be multiple dialogs showing at
 // the same time. Deletes itself when the dialog is closed.
 class SelectFileDialogHolder : public ui::SelectFileDialog::Listener {
@@ -67,11 +84,7 @@ class SelectFileDialogHolder : public ui::SelectFileDialog::Listener {
         SelectFileDialogExtension::Create(this, /*policy=*/nullptr);
 
     SelectFileDialogExtension::Owner owner;
-    // TODO(https://crbug.com/1090587): Parent to the ShellSurface that spawned
-    // the dialog. For now, just put it on the default desktop.
-    owner.window = ash::Shell::GetContainer(
-        ash::Shell::GetRootWindowForNewWindows(),
-        ash::kShellWindowId_DefaultContainerDeprecated);
+    owner.window = GetOwnerWindow();
     // TODO(https://crbug.com/1090587): Replace with ID from Wayland client.
     owner.lacros_window_id = g_next_window_id++;
 

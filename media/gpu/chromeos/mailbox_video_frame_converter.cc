@@ -340,7 +340,8 @@ bool MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
       mailbox, gpu::kPlatformVideoFramePoolClientId,
       std::move(gpu_memory_buffer_handle), *buffer_format,
       gpu::kNullSurfaceHandle, destination_visible_rect.size(),
-      video_frame->ColorSpace(), shared_image_usage);
+      video_frame->ColorSpace(), kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+      shared_image_usage);
   if (!success) {
     OnError(FROM_HERE, "Failed to create shared image.");
     return false;

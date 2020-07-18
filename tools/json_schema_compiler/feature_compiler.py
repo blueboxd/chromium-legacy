@@ -8,6 +8,7 @@ import argparse
 import copy
 from datetime import datetime
 from functools import partial
+import json
 import os
 import re
 import sys
@@ -67,6 +68,10 @@ CC_FILE_END = """
 }  // namespace extensions
 """
 
+# Legacy keys for the allow and blocklists.
+LEGACY_ALLOWLIST_KEY = 'whitelist'
+LEGACY_BLOCKLIST_KEY = 'blacklist'
+
 # Returns true if the list 'l' only contains strings that are a hex-encoded SHA1
 # hashes.
 def ListContainsOnlySha1Hashes(l):
@@ -119,7 +124,7 @@ FEATURE_GRAMMAR = ({
         str: {},
         'shared': True
     },
-    'blacklist': {
+    LEGACY_BLOCKLIST_KEY: {
         list: {
             'subtype':
             str,
@@ -168,8 +173,8 @@ FEATURE_GRAMMAR = ({
     },
     'dependencies': {
         list: {
-            # We allow an empty list of dependencies for child features that want
-            # to override their parents' dependency set.
+            # We allow an empty list of dependencies for child features that
+            # want to override their parents' dependency set.
             'allow_empty': True,
             'subtype': str
         }
@@ -254,7 +259,7 @@ FEATURE_GRAMMAR = ({
         str: {},
         'shared': True
     },
-    'whitelist': {
+    LEGACY_ALLOWLIST_KEY: {
         list: {
             'subtype':
             str,
@@ -309,6 +314,61 @@ def IsFeatureCrossReference(property_name, reverse_property_name, feature,
     return True
   return reverse_reference_value == ('"%s"' % feature.name)
 
+# Verifies that a feature with an allowlist is not available to hosted apps,
+# returning true on success.
+def DoesNotHaveAllowlistForHostedApps(value):
+  if not LEGACY_ALLOWLIST_KEY in value:
+    return True
+
+  # Hack Alert: |value| here has the code for the generated C++ feature. Since
+  # we're looking at the individual values, we do a bit of yucky back-parsing
+  # to get a better look at the feature. This would be cleaner if we were
+  # operating on the JSON feature itself, but we currently never generate a
+  # JSON-based feature object that has all the values inherited from its
+  # parents. Since this is the only scenario we need this type of validation,
+  # doing it in a slightly ugly way isn't too bad. If we need more of these,
+  # we should find a smoother way to do it (e.g. first generate JSON-based
+  # features with inherited properties, do any necessary validation, then
+  # generate the C++ code strings).
+
+  # The feature did not specify extension types; this is fine for e.g.
+  # API features (which would typically rely on a permission feature, which
+  # is required to specify types).
+  if not 'extension_types' in value:
+    return True
+
+  types = value['extension_types']
+  # |types| looks like "{Manifest::TYPE_1, Manifest::TYPE_2}", so just looking
+  # for the "TYPE_HOSTED_APP substring is sufficient.
+  if 'TYPE_HOSTED_APP' not in types:
+    return True
+
+  # Helper to convert our C++ string array like "{\"aaa\", \"bbb\"}" (which is
+  # what the allowlist looks like) to a python list of strings.
+  def cpp_list_to_list(cpp_list):
+    assert type(cpp_list) is str
+    assert cpp_list[0] is '{'
+    assert cpp_list[-1] is '}'
+    new_list = json.loads('[%s]' % cpp_list[1:-1])
+    assert type(new_list) is list
+    return new_list
+
+  # Exceptions (see the feature files).
+  # DO NOT ADD MORE.
+  HOSTED_APP_EXCEPTIONS = [
+      '99060B01DE911EB85FD630C8BA6320C9186CA3AB',
+      'B44D08FD98F1523ED5837D78D0A606EA9D6206E5',
+      '2653F6F6C39BC6EEBD36A09AFB92A19782FF7EB4',
+  ]
+
+  allowlist = cpp_list_to_list(value[LEGACY_ALLOWLIST_KEY])
+  for entry in allowlist:
+    if entry not in HOSTED_APP_EXCEPTIONS:
+      return False
+
+  return True
+
+
 SIMPLE_FEATURE_CPP_CLASSES = ({
   'APIFeature': 'SimpleFeature',
   'ManifestFeature': 'ManifestFeature',
@@ -320,6 +380,8 @@ VALIDATION = ({
   'all': [
     (partial(HasAtLeastOneProperty, ['channel', 'dependencies']),
      'Features must specify either a channel or dependencies'),
+    (DoesNotHaveAllowlistForHostedApps,
+     'Hosted apps are not allowed to use restricted features')
   ],
   'APIFeature': [
     (partial(HasProperty, 'contexts'),
@@ -388,10 +450,10 @@ def GetCodeForFeatureValues(feature_values):
 
     # TODO(devlin): Remove this hack as part of 842387.
     set_key = key
-    if key == "whitelist":
-      set_key = "allowlist"
-    elif key == "blacklist":
-      set_key = "blocklist"
+    if key == LEGACY_ALLOWLIST_KEY:
+      set_key = 'allowlist'
+    elif key == LEGACY_BLOCKLIST_KEY:
+      set_key = 'blocklist'
 
     c.Append('feature->set_%s(%s);' % (set_key, feature_values[key]))
   return c

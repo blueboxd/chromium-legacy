@@ -4,6 +4,7 @@
 
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 
+#include "base/command_line.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"

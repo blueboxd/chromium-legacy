@@ -49,4 +49,16 @@ base::span<const int32_t> WebGLMultiDrawCommon::MakeSpan(
                                    array.GetAsLongSequence().size());
 }
 
+// static
+base::span<const uint32_t> WebGLMultiDrawCommon::MakeSpan(
+    const Uint32ArrayOrUnsignedLongSequence& array) {
+  if (array.IsUint32Array()) {
+    return base::span<const uint32_t>(
+        array.GetAsUint32Array().View()->Data(),
+        array.GetAsUint32Array().View()->lengthAsSizeT());
+  }
+  return base::span<const uint32_t>(array.GetAsUnsignedLongSequence().data(),
+                                    array.GetAsUnsignedLongSequence().size());
+}
+
 }  // namespace blink

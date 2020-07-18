@@ -8,20 +8,25 @@ namespace storage {
 
 SpecialStoragePolicy::Observer::~Observer() = default;
 
-SpecialStoragePolicy::SpecialStoragePolicy() = default;
+SpecialStoragePolicy::SpecialStoragePolicy() {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 SpecialStoragePolicy::~SpecialStoragePolicy() = default;
 
 void SpecialStoragePolicy::AddObserver(Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.AddObserver(observer);
 }
 
 void SpecialStoragePolicy::RemoveObserver(Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.RemoveObserver(observer);
 }
 
 void SpecialStoragePolicy::NotifyGranted(const url::Origin& origin,
                                          int change_flags) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scoped_refptr<SpecialStoragePolicy> protect(this);
   for (auto& observer : observers_)
     observer.OnGranted(origin, change_flags);
@@ -30,6 +35,7 @@ void SpecialStoragePolicy::NotifyGranted(const url::Origin& origin,
 
 void SpecialStoragePolicy::NotifyRevoked(const url::Origin& origin,
                                          int change_flags) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scoped_refptr<SpecialStoragePolicy> protect(this);
   for (auto& observer : observers_)
     observer.OnRevoked(origin, change_flags);
@@ -37,6 +43,7 @@ void SpecialStoragePolicy::NotifyRevoked(const url::Origin& origin,
 }
 
 void SpecialStoragePolicy::NotifyCleared() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scoped_refptr<SpecialStoragePolicy> protect(this);
   for (auto& observer : observers_)
     observer.OnCleared();
@@ -44,6 +51,7 @@ void SpecialStoragePolicy::NotifyCleared() {
 }
 
 void SpecialStoragePolicy::NotifyPolicyChanged() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scoped_refptr<SpecialStoragePolicy> protect(this);
   for (auto& observer : observers_)
     observer.OnPolicyChanged();

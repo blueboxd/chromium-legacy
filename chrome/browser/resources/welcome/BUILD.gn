@@ -16,10 +16,6 @@ group("closure_compile") {
 
 js_type_check("welcome_files") {
   is_polymer3 = true
-  closure_flags = default_closure_args + [
-                    "js_module_root=../../chrome/browser/resources/welcome/",
-                    "js_module_root=./gen/chrome/browser/resources/welcome/",
-                  ]
   deps = [
     ":landing_view",
     ":signin_view",

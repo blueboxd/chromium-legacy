@@ -88,6 +88,53 @@ bool Viewport::CanScroll(const ScrollNode& node,
   return result;
 }
 
+gfx::Vector2dF Viewport::ComputeClampedDelta(
+    const gfx::Vector2dF& scroll_delta) const {
+  // When clamping for the outer viewport, we need to distribute the scroll
+  // between inner and outer to get the clamped value. The returned values
+  // from ComputeScrollDelta are unscaled, so we have to do scaling
+  // conversions each step of the way.
+  ScrollNode* inner_node = InnerScrollNode();
+  gfx::Vector2dF inner_delta =
+      host_impl_->ComputeScrollDelta(*inner_node, scroll_delta);
+
+  float page_scale = host_impl_->active_tree()->page_scale_factor_for_scroll();
+  gfx::Vector2dF unscaled_delta = scroll_delta;
+  unscaled_delta.Scale(1.f / page_scale);
+
+  gfx::Vector2dF remaining_delta = unscaled_delta - inner_delta;
+  remaining_delta.Scale(page_scale);
+
+  const ScrollNode* outer_node = OuterScrollNode();
+  gfx::Vector2dF outer_delta =
+      host_impl_->ComputeScrollDelta(*outer_node, remaining_delta);
+
+  gfx::Vector2dF combined_delta = inner_delta + outer_delta;
+  combined_delta.Scale(page_scale);
+
+  return combined_delta;
+}
+
+gfx::SizeF Viewport::GetInnerViewportSizeExcludingScrollbars() const {
+  DCHECK(InnerScrollNode());
+  ScrollNode* inner_node = InnerScrollNode();
+  gfx::SizeF inner_bounds(inner_node->container_bounds);
+  ScrollNode* outer_node = OuterScrollNode();
+  ScrollbarSet scrollbars = host_impl_->ScrollbarsFor(outer_node->element_id);
+  gfx::SizeF scrollbars_size;
+  for (const auto* scrollbar : scrollbars) {
+    if (scrollbar->orientation() == ScrollbarOrientation::VERTICAL) {
+      scrollbars_size.set_width(scrollbar->bounds().width());
+    } else {
+      DCHECK(scrollbar->orientation() == ScrollbarOrientation::HORIZONTAL);
+      scrollbars_size.set_height(scrollbar->bounds().height());
+    }
+  }
+
+  inner_bounds.Enlarge(-scrollbars_size.width(), -scrollbars_size.height());
+  return inner_bounds;
+}
+
 void Viewport::ScrollByInnerFirst(const gfx::Vector2dF& delta) {
   DCHECK(InnerScrollNode());
   gfx::Vector2dF unused_delta = scroll_tree().ScrollBy(

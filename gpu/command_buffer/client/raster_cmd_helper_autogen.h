@@ -227,6 +227,28 @@ void WritePixelsINTERNALImmediate(GLint x_offset,
   }
 }
 
+void ReadbackImagePixelsINTERNALImmediate(GLint src_x,
+                                          GLint src_y,
+                                          GLuint dst_width,
+                                          GLuint dst_height,
+                                          GLuint row_bytes,
+                                          GLuint dst_sk_color_type,
+                                          GLuint dst_sk_alpha_type,
+                                          GLint shm_id,
+                                          GLuint shm_offset,
+                                          GLuint pixels_offset,
+                                          const GLbyte* mailbox) {
+  const uint32_t size =
+      raster::cmds::ReadbackImagePixelsINTERNALImmediate::ComputeSize();
+  raster::cmds::ReadbackImagePixelsINTERNALImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          raster::cmds::ReadbackImagePixelsINTERNALImmediate>(size);
+  if (c) {
+    c->Init(src_x, src_y, dst_width, dst_height, row_bytes, dst_sk_color_type,
+            dst_sk_alpha_type, shm_id, shm_offset, pixels_offset, mailbox);
+  }
+}
+
 void ConvertYUVMailboxesToRGBINTERNALImmediate(GLenum planes_yuv_color_space,
                                                GLboolean is_nv12,
                                                const GLbyte* mailboxes) {

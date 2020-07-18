@@ -44,7 +44,7 @@ const char* const kHttpsUrl2 = "https://cross_process.com/";
 class MockCaptivePortalTabReloader : public CaptivePortalTabReloader {
  public:
   MockCaptivePortalTabReloader()
-      : CaptivePortalTabReloader(nullptr, nullptr, base::Callback<void()>()) {}
+      : CaptivePortalTabReloader(nullptr, nullptr, base::NullCallback()) {}
 
   MOCK_METHOD1(OnLoadStart, void(bool));
   MOCK_METHOD2(OnLoadCommitted, void(int, net::ResolveErrorInfo));

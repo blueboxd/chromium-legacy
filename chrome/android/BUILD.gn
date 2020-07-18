@@ -272,7 +272,6 @@ android_library("chrome_java") {
     ":chrome_public_android_manifest",
     ":chrome_public_apk_template_resources",
     ":chrome_version_constants",
-    ":critical_persisted_tab_data_proto_java",
     ":partner_location_descriptor_proto_java",
     ":update_proto_java",
     ":usage_stats_proto_java",
@@ -715,11 +714,6 @@ java_cpp_enum("sync_user_settings_enums_java") {
 proto_java_library("partner_location_descriptor_proto_java") {
   proto_path = "java/src/org/chromium/chrome/browser/omnibox/geo"
   sources = [ "$proto_path/partner_location_descriptor.proto" ]
-}
-
-proto_java_library("critical_persisted_tab_data_proto_java") {
-  proto_path = "java/src/org/chromium/chrome/browser/tab/state/proto"
-  sources = [ "$proto_path/critical_persisted_tab_data.proto" ]
 }
 
 proto_java_library("update_proto_java") {

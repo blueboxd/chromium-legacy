@@ -16,17 +16,28 @@ buildflag_header("buildflags") {
 }
 
 if (enable_pdf) {
-  pdf_engine = 0  # 0 PDFium
-
   config("pdf_common_config") {
     configs = [ "//build/config/compiler:noshadowing" ]
 
-    if (pdf_engine == 0) {
-      include_dirs = [ "//third_party/pdfium" ]
-    }
+    include_dirs = [ "//third_party/pdfium" ]
   }
 
   static_library("pdf") {
+    sources = [ "pdf.cc" ]
+
+    configs += [ ":pdf_common_config" ]
+
+    public = [ "pdf.h" ]
+
+    deps = [
+      ":internal",
+      "//base",
+    ]
+  }
+
+  source_set("internal") {
+    visibility = [ ":*" ]
+
     sources = [
       "accessibility.cc",
       "accessibility.h",
@@ -54,12 +65,35 @@ if (enable_pdf) {
       "paint_manager.h",
       "paint_ready_rect.cc",
       "paint_ready_rect.h",
-      "pdf.cc",
       "pdf_engine.h",
       "pdf_init.cc",
       "pdf_init.h",
       "pdf_transform.cc",
       "pdf_transform.h",
+      "pdfium/pdfium_api_string_buffer_adapter.cc",
+      "pdfium/pdfium_api_string_buffer_adapter.h",
+      "pdfium/pdfium_document.cc",
+      "pdfium/pdfium_document.h",
+      "pdfium/pdfium_engine.cc",
+      "pdfium/pdfium_engine.h",
+      "pdfium/pdfium_engine_exports.cc",
+      "pdfium/pdfium_engine_exports.h",
+      "pdfium/pdfium_form_filler.cc",
+      "pdfium/pdfium_form_filler.h",
+      "pdfium/pdfium_mem_buffer_file_read.cc",
+      "pdfium/pdfium_mem_buffer_file_read.h",
+      "pdfium/pdfium_mem_buffer_file_write.cc",
+      "pdfium/pdfium_mem_buffer_file_write.h",
+      "pdfium/pdfium_page.cc",
+      "pdfium/pdfium_page.h",
+      "pdfium/pdfium_permissions.cc",
+      "pdfium/pdfium_permissions.h",
+      "pdfium/pdfium_print.cc",
+      "pdfium/pdfium_print.h",
+      "pdfium/pdfium_range.cc",
+      "pdfium/pdfium_range.h",
+      "pdfium/pdfium_unsupported_features.cc",
+      "pdfium/pdfium_unsupported_features.h",
       "ppapi_migration/bitmap.cc",
       "ppapi_migration/bitmap.h",
       "ppapi_migration/callback.cc",
@@ -79,69 +113,44 @@ if (enable_pdf) {
 
     configs += [ ":pdf_common_config" ]
 
-    public = [ "pdf.h" ]
-
-    friend = [
-      ":pdf_unittests",
-      ":pdf_test_utils",
-      ":pdf_ppapi",
-    ]
-
     deps = [
       ":features",
       "//base",
       "//base:i18n",
+      "//gin",
       "//net",
+      "//pdf/pdfium/fuzzers",
       "//ppapi/cpp:objects",
       "//ppapi/cpp/private:internal_module",
+      "//printing",
       "//skia",
+      "//third_party/pdfium",
       "//ui/base",
       "//ui/gfx/range",
     ]
 
-    if (pdf_engine == 0) {
+    if (is_linux) {
       sources += [
-        "pdfium/pdfium_api_string_buffer_adapter.cc",
-        "pdfium/pdfium_api_string_buffer_adapter.h",
-        "pdfium/pdfium_assert_matching_enums.cc",
-        "pdfium/pdfium_document.cc",
-        "pdfium/pdfium_document.h",
-        "pdfium/pdfium_engine.cc",
-        "pdfium/pdfium_engine.h",
-        "pdfium/pdfium_engine_exports.cc",
-        "pdfium/pdfium_engine_exports.h",
-        "pdfium/pdfium_form_filler.cc",
-        "pdfium/pdfium_form_filler.h",
-        "pdfium/pdfium_mem_buffer_file_read.cc",
-        "pdfium/pdfium_mem_buffer_file_read.h",
-        "pdfium/pdfium_mem_buffer_file_write.cc",
-        "pdfium/pdfium_mem_buffer_file_write.h",
-        "pdfium/pdfium_page.cc",
-        "pdfium/pdfium_page.h",
-        "pdfium/pdfium_permissions.cc",
-        "pdfium/pdfium_permissions.h",
-        "pdfium/pdfium_print.cc",
-        "pdfium/pdfium_print.h",
-        "pdfium/pdfium_range.cc",
-        "pdfium/pdfium_range.h",
-        "pdfium/pdfium_unsupported_features.cc",
-        "pdfium/pdfium_unsupported_features.h",
+        "pdfium/pdfium_font_linux.cc",
+        "pdfium/pdfium_font_linux.h",
       ]
-
-      deps += [
-        "//gin",
-        "//pdf/pdfium/fuzzers",
-        "//printing",
-        "//third_party/pdfium",
-      ]
-
-      if (is_linux) {
-        sources += [
-          "pdfium/pdfium_font_linux.cc",
-          "pdfium/pdfium_font_linux.h",
-        ]
-      }
     }
+  }
+
+  source_set("assert_enums") {
+    visibility = [ ":*" ]
+
+    sources = [ "pdfium/pdfium_assert_matching_enums.cc" ]
+
+    configs += [ ":pdf_common_config" ]
+
+    deps = [
+      ":internal",
+      ":pdf",
+      "//ppapi/c",
+      "//third_party/pdfium",
+      "//ui/base",
+    ]
   }
 
   component("pdf_ppapi") {
@@ -154,6 +163,7 @@ if (enable_pdf) {
     public = [ "pdf_ppapi.h" ]
 
     deps = [
+      ":internal",
       ":pdf",
       "//base",
       "//ppapi/cpp:objects",
@@ -190,7 +200,7 @@ if (enable_pdf) {
     configs += [ "//build/config/compiler:noshadowing" ]
 
     deps = [
-      ":pdf",
+      ":internal",
       "//base",
       "//ppapi/cpp:objects",
       "//testing/gtest",
@@ -209,54 +219,51 @@ if (enable_pdf) {
       "out_of_process_instance_unittest.cc",
       "page_orientation_unittest.cc",
       "pdf_transform_unittest.cc",
+      "pdfium/accessibility_unittest.cc",
+      "pdfium/findtext_unittest.cc",
+      "pdfium/pdfium_engine_exports_unittest.cc",
+      "pdfium/pdfium_engine_unittest.cc",
+      "pdfium/pdfium_form_filler_unittest.cc",
+      "pdfium/pdfium_page_unittest.cc",
+      "pdfium/pdfium_permissions_unittest.cc",
+      "pdfium/pdfium_print_unittest.cc",
+      "pdfium/pdfium_test_base.cc",
+      "pdfium/pdfium_test_base.h",
+      "ppapi_migration/geometry_conversions_unittest.cc",
       "range_set_unittest.cc",
     ]
 
-    configs += [ ":pdf_common_config" ]
+    configs += [
+      ":pdf_common_config",
+      "//v8:external_startup_data",
+    ]
 
     data = [ "test/data/" ]
 
     deps = [
+      ":assert_enums",
       ":features",
+      ":internal",
       ":pdf",
       ":pdf_test_utils",
       "//base",
       "//base/test:run_all_unittests",
       "//base/test:test_support",
+      "//gin",
       "//ppapi/c",
       "//ppapi/cpp:objects",
       "//printing",
       "//skia",
       "//testing/gmock",
       "//testing/gtest",
+      "//third_party/pdfium",
+      "//ui/gfx:test_support",
       "//ui/gfx/geometry",
       "//ui/gfx/range",
     ]
 
-    if (pdf_engine == 0) {
-      sources += [
-        "pdfium/accessibility_unittest.cc",
-        "pdfium/findtext_unittest.cc",
-        "pdfium/pdfium_engine_exports_unittest.cc",
-        "pdfium/pdfium_engine_unittest.cc",
-        "pdfium/pdfium_form_filler_unittest.cc",
-        "pdfium/pdfium_page_unittest.cc",
-        "pdfium/pdfium_permissions_unittest.cc",
-        "pdfium/pdfium_print_unittest.cc",
-        "pdfium/pdfium_test_base.cc",
-        "pdfium/pdfium_test_base.h",
-      ]
-
-      configs += [ "//v8:external_startup_data" ]
-
-      deps += [
-        "//gin",
-        "//third_party/pdfium",
-      ]
-
-      if (v8_use_external_startup_data) {
-        data += [ "$root_out_dir/snapshot_blob.bin" ]
-      }
+    if (v8_use_external_startup_data) {
+      data += [ "$root_out_dir/snapshot_blob.bin" ]
     }
   }
 } else {

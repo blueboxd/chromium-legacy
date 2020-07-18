@@ -871,6 +871,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   bool can_use_msaa() const { return can_use_msaa_; }
 
+  Viewport& viewport() const { return *viewport_.get(); }
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -969,8 +971,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // Returns true if status changed.
   bool UpdateGpuRasterizationStatus();
   void UpdateTreeResourcesForGpuRasterizationIfNeeded();
-
-  Viewport& viewport() const { return *viewport_.get(); }
 
   bool IsTouchDraggingScrollbar(
       LayerImpl* first_scrolling_layer_or_drawn_scrollbar,

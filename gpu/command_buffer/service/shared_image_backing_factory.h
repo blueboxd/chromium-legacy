@@ -9,6 +9,8 @@
 
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -30,6 +32,8 @@ class SharedImageBackingFactory {
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       bool is_thread_safe) = 0;
   virtual std::unique_ptr<SharedImageBacking> CreateSharedImage(
@@ -37,6 +41,8 @@ class SharedImageBackingFactory {
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       base::span<const uint8_t> pixel_data) = 0;
   virtual std::unique_ptr<SharedImageBacking> CreateSharedImage(
@@ -47,6 +53,8 @@ class SharedImageBackingFactory {
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage) = 0;
 
   // Returns true if the specified GpuMemoryBufferType can be imported using

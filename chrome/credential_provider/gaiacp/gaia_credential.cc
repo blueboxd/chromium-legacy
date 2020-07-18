@@ -13,7 +13,6 @@
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "content/public/common/content_switches.h"
-#include "google_apis/gaia/gaia_switches.h"
 
 namespace credential_provider {
 CGaiaCredential::CGaiaCredential() = default;

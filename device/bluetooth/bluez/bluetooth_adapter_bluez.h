@@ -28,6 +28,7 @@
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluetooth_agent_manager_client.h"
 #include "device/bluetooth/dbus/bluetooth_agent_service_provider.h"
+#include "device/bluetooth/dbus/bluetooth_battery_client.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
 #include "device/bluetooth/dbus/bluetooth_input_client.h"
 #include "device/bluetooth/dbus/bluetooth_profile_manager_client.h"
@@ -77,6 +78,7 @@ class BluetoothPairingBlueZ;
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
     : public device::BluetoothAdapter,
       public bluez::BluetoothAdapterClient::Observer,
+      public bluez::BluetoothBatteryClient::Observer,
       public bluez::BluetoothDeviceClient::Observer,
       public bluez::BluetoothInputClient::Observer,
       public bluez::BluetoothAgentManagerClient::Observer,
@@ -285,6 +287,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
   void AdapterAdded(const dbus::ObjectPath& object_path) override;
   void AdapterRemoved(const dbus::ObjectPath& object_path) override;
   void AdapterPropertyChanged(const dbus::ObjectPath& object_path,
+                              const std::string& property_name) override;
+
+  // bluez::BluetoothBatteryClient::Observer override.
+  void BatteryAdded(const dbus::ObjectPath& object_path) override;
+  void BatteryRemoved(const dbus::ObjectPath& object_path) override;
+  void BatteryPropertyChanged(const dbus::ObjectPath& object_path,
                               const std::string& property_name) override;
 
   // bluez::BluetoothDeviceClient::Observer override.

@@ -90,8 +90,9 @@ void TableRowPainter::PaintBoxDecorationBackground(
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  DrawingRecorder recorder(local_paint_info.context, layout_table_row_,
-                           DisplayItem::kBoxDecorationBackground);
+  BoxDrawingRecorder recorder(local_paint_info.context, layout_table_row_,
+                              DisplayItem::kBoxDecorationBackground,
+                              paint_offset);
 
   if (has_box_shadow) {
     BoxPainterBase::PaintNormalBoxShadow(local_paint_info, paint_rect,
@@ -119,7 +120,7 @@ void TableRowPainter::PaintBoxDecorationBackground(
 void TableRowPainter::PaintCollapsedBorders(const PaintInfo& paint_info,
                                             const CellSpan& dirtied_columns) {
   ScopedPaintState paint_state(layout_table_row_, paint_info);
-  base::Optional<DrawingRecorder> recorder;
+  base::Optional<BoxDrawingRecorder> recorder;
 
   if (LIKELY(!layout_table_row_.Table()->ShouldPaintAllCollapsedBorders())) {
     HandleChangedPartialPaint(paint_info, dirtied_columns);
@@ -130,7 +131,8 @@ void TableRowPainter::PaintCollapsedBorders(const PaintInfo& paint_info,
       return;
 
     recorder.emplace(paint_info.context, layout_table_row_,
-                     DisplayItem::kTableCollapsedBorders);
+                     DisplayItem::kTableCollapsedBorders,
+                     paint_state.PaintOffset());
   }
   // Otherwise TablePainter should have created the drawing recorder.
 

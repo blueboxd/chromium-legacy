@@ -231,7 +231,6 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
   if (legend_break_token)
     legend_margins.block_start = LayoutUnit();
 
-  LogicalOffset legend_offset;
   scoped_refptr<const NGLayoutResult> result;
   scoped_refptr<const NGLayoutResult> previous_result;
   LayoutUnit block_offset = legend_margins.block_start;
@@ -327,9 +326,12 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
   // pushed so that the center of the border will be flush with the center
   // of the border-box of the legend.
   // TODO(mstensho): inline alignment
-  legend_offset = LogicalOffset(
+  //
+  // NOTE: For painting purposes, this must be kept in sync with:
+  // NGFieldsetPainter::PaintFieldsetDecorationBackground
+  LogicalOffset legend_offset = {
       BorderScrollbarPadding().inline_start + legend_margins.inline_start,
-      block_offset);
+      block_offset};
 
   container_builder_.AddResult(*result, legend_offset);
   return NGBreakStatus::kContinue;

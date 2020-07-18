@@ -510,7 +510,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       # related to Gold.
       try:
         self._UploadTestResultToSkiaGold(image_name, screenshot, page)
-      except Exception as gold_exception:
+      except Exception as gold_exception:  # pylint: disable=broad-except
         logging.error(str(gold_exception))
       # TODO(https://crbug.com/1043129): Switch this to just "raise" once these
       # tests are run with Python 3. Python 2's behavior with nested try/excepts

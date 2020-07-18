@@ -99,10 +99,13 @@ void JobDelegate::AssertExpectedConcurrency(size_t expected_max_concurrency) {
   // Case 2b:
   const bool updated = task_source_->WaitForConcurrencyIncreaseUpdate(
       recorded_increase_version_);
-  DCHECK(updated ||
-         task_source_->GetMaxConcurrency() <= expected_max_concurrency)
-      << "Value returned by |max_concurrency_callback| is expected to "
-         "decrease, unless NotifyConcurrencyIncrease() is called.";
+  const size_t max_concurrency = task_source_->GetMaxConcurrency();
+  DCHECK(updated || max_concurrency <= expected_max_concurrency)
+      << "Value returned by |max_concurrency_callback| (" << max_concurrency
+      << ") is expected to decrease below or equal to "
+      << expected_max_concurrency
+      << ", unless NotifyConcurrencyIncrease() is called."
+      << "Last ShouldYield() returned " << last_should_yield_;
 
   recorded_increase_version_ = task_source_->GetConcurrencyIncreaseVersion();
   recorded_max_concurrency_ = task_source_->GetMaxConcurrency();

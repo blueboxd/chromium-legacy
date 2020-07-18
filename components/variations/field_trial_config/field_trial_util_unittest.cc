@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -903,6 +904,7 @@ TEST_F(FieldTrialUtilTest, TestEscapeValue) {
   EXPECT_EQ(escaped_str.find(','), std::string::npos);
   EXPECT_EQ(escaped_str.find('*'), std::string::npos);
 
-  EXPECT_EQ(str, UnescapeValue(escaped_str));
+  // Make sure the EscapeValue function is the inverse of base::UnescapeValue.
+  EXPECT_EQ(str, base::UnescapeValue(escaped_str));
 }
 }  // namespace variations

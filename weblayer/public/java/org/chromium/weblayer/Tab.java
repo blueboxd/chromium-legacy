@@ -282,12 +282,12 @@ public class Tab {
         return mMediaCaptureController;
     }
 
-    public void registerTabCallback(@Nullable TabCallback callback) {
+    public void registerTabCallback(@NonNull TabCallback callback) {
         ThreadCheck.ensureOnUiThread();
         mCallbacks.addObserver(callback);
     }
 
-    public void unregisterTabCallback(@Nullable TabCallback callback) {
+    public void unregisterTabCallback(@NonNull TabCallback callback) {
         ThreadCheck.ensureOnUiThread();
         mCallbacks.removeObserver(callback);
     }

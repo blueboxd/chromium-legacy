@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tab.state;
 
+import android.graphics.Color;
+
 import androidx.annotation.VisibleForTesting;
 
 import com.google.protobuf.ByteString;
@@ -12,14 +14,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabAssociatedApp;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.tab.TabStateExtractor;
-import org.chromium.chrome.browser.tab.TabStateFileManager;
-import org.chromium.chrome.browser.tab.TabThemeColorHelper;
-import org.chromium.chrome.browser.tab.WebContentsState;
 import org.chromium.chrome.browser.tab.proto.CriticalPersistedTabData.CriticalPersistedTabDataProto;
 
 import java.util.Locale;
@@ -31,6 +26,8 @@ public class CriticalPersistedTabData extends PersistedTabData {
     private static final String TAG = "CriticalPTD";
     private static final Class<CriticalPersistedTabData> USER_DATA_KEY =
             CriticalPersistedTabData.class;
+
+    private static final int UNSPECIFIED_THEME_COLOR = Color.TRANSPARENT;
 
     private int mParentId;
     private int mRootId;
@@ -126,31 +123,16 @@ public class CriticalPersistedTabData extends PersistedTabData {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     public static CriticalPersistedTabData build(Tab tab) {
-        TabImpl tabImpl = (TabImpl) tab;
-        // TODO(crbug.com/1059634) this can be removed once we access all fields
-        // from CriticalPersistedTabData
-        // The following is only needed as an interim measure until all
-        // fields are migrated to {@link CriticalPersistedTabData}. At that point
-        // This function will only be used to acquire the {@link CriticalPersistedTabData}
-        // from the {@link Tab}.
-        if (tabImpl.isInitialized()) {
-            WebContentsState webContentsState = TabStateExtractor.getWebContentsState(tabImpl);
-            PersistedTabDataConfiguration config = PersistedTabDataConfiguration.get(
-                    CriticalPersistedTabData.class, tab.isIncognito());
-            CriticalPersistedTabData criticalPersistedTabData = new CriticalPersistedTabData(tab,
-                    tab.getParentId(), tab.getId(), tab.getTimestampMillis(),
-                    webContentsState != null ? TabStateFileManager.getContentStateByteArray(
-                            webContentsState.buffer())
-                                             : null,
-                    WebContentsState.CONTENTS_STATE_CURRENT_VERSION, TabAssociatedApp.getAppId(tab),
-                    TabThemeColorHelper.isUsingColorFromTabContents(tab)
-                            ? TabThemeColorHelper.getColor(tab)
-                            : TabState.UNSPECIFIED_THEME_COLOR,
-                    tab.getLaunchTypeAtInitialTabCreation(), config.storage, config.id);
-            return criticalPersistedTabData;
-        }
-        CriticalPersistedTabData criticalPersistedTabData = new CriticalPersistedTabData(tab);
-        criticalPersistedTabData.setRootId(tab.getId());
+        PersistedTabDataConfiguration config = PersistedTabDataConfiguration.get(
+                CriticalPersistedTabData.class, tab.isIncognito());
+        // CriticalPersistedTabData is initialized with default values
+        CriticalPersistedTabData criticalPersistedTabData =
+                new CriticalPersistedTabData(tab, tab.getParentId(), tab.getId(),
+                        tab.getTimestampMillis(), null, -1, "", UNSPECIFIED_THEME_COLOR,
+                        tab.getLaunchTypeAtInitialTabCreation() == null
+                                ? TabLaunchType.FROM_LINK
+                                : tab.getLaunchTypeAtInitialTabCreation(),
+                        config.storage, config.id);
         return criticalPersistedTabData;
     }
 

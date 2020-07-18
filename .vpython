@@ -59,6 +59,13 @@ wheel: <
 >
 
 # Used by:
+#   build/lacros/test_runner.py
+wheel: <
+  name: "infra/python/wheels/parameterized-py2_py3"
+  version: "version:0.7.1"
+>
+
+# Used by:
 #   third_party/catapult
 #
 # This version must be compatible with the version range specified by

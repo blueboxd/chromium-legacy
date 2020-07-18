@@ -74,7 +74,7 @@ class ExtensionSpecialStoragePolicy::CookieSettingsObserver
     // Post a task to avoid any potential re-entrancy issues with
     // |NotifyPolicyChangedImpl()| since it holds a lock while calling back into
     // ExtensionSpecialStoragePolicy.
-    content::GetUIThreadTaskRunner({})->PostTask(
+    content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&CookieSettingsObserver::NotifyPolicyChangedImpl,
                        base::Unretained(this)));

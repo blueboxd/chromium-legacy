@@ -41,6 +41,8 @@ class SharedImageBackingOzone final : public ClearTrackingSharedImageBacking {
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       SurfaceHandle surface_handle);
   ~SharedImageBackingOzone() override;
@@ -82,6 +84,8 @@ class SharedImageBackingOzone final : public ClearTrackingSharedImageBacking {
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       SharedContextState* context_state,
       scoped_refptr<gfx::NativePixmap> pixmap,

@@ -18,6 +18,8 @@ class TestSharedImageBacking : public SharedImageBacking {
                          viz::ResourceFormat format,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
+                         GrSurfaceOrigin surface_origin,
+                         SkAlphaType alpha_type,
                          uint32_t usage,
                          size_t estimated_size);
   // Constructor which uses a provided GL texture ID for the backing.
@@ -25,6 +27,8 @@ class TestSharedImageBacking : public SharedImageBacking {
                          viz::ResourceFormat format,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
+                         GrSurfaceOrigin surface_origin,
+                         SkAlphaType alpha_type,
                          uint32_t usage,
                          size_t estimated_size,
                          GLuint texture_id);

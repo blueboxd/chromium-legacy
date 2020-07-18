@@ -341,14 +341,15 @@ fuzzer_test("ppd_line_reader_fuzzer") {
   deps = [ ":chromeos" ]
 }
 
-fuzzer_test("printer_configuration_fuzzer") {
-  sources = [ "printing/printer_configuration_fuzzer.cc" ]
-  seed_corpus = "printing/uri_fuzzer_seed_corpus"
-  deps = [
-    ":chromeos",
-    "//base",
-  ]
-}
+# Commented out due to crbug.com/1106355
+# fuzzer_test("printer_configuration_fuzzer") {
+#   sources = [ "printing/printer_configuration_fuzzer.cc" ]
+#   seed_corpus = "printing/uri_fuzzer_seed_corpus"
+#   deps = [
+#     ":chromeos",
+#     "//base",
+#   ]
+# }
 
 fuzzer_test("uri_fuzzer") {
   sources = [ "printing/uri_fuzzer.cc" ]

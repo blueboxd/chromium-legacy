@@ -13,7 +13,10 @@ source_set("type_safety") {
     "id_type.h",
     "pass_key.h",
     "strong_alias.h",
+    "token_type.h",
   ]
+
+  deps = [ "//base" ]
 }
 
 source_set("tests") {
@@ -22,6 +25,7 @@ source_set("tests") {
     "id_type_unittest.cc",
     "pass_key_unittest.cc",
     "strong_alias_unittest.cc",
+    "token_type_unittest.cc",
   ]
 
   deps = [

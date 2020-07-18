@@ -737,8 +737,19 @@ bool Scrollbar::IsWindowActive() const {
 IntPoint Scrollbar::ConvertFromRootFrame(
     const IntPoint& point_in_root_frame) const {
   if (scrollable_area_) {
-    IntPoint parent_point =
-        scrollable_area_->ConvertFromRootFrame(point_in_root_frame);
+    IntPoint parent_point;
+    if (scrollable_area_->IsRootFrameLayoutViewport()) {
+      // When operating on the root frame viewport's scrollbar, use the visual
+      // viewport relative position, instead of root frame-relative position.
+      // This allows us to operate on the layout viewport's scrollbar when there
+      // is a page scale factor and visual viewport offsets, since the layout
+      // viewport scrollbars are not affected by these.
+      parent_point = scrollable_area_->ConvertFromRootFrameToVisualViewport(
+          point_in_root_frame);
+    } else {
+      parent_point =
+          scrollable_area_->ConvertFromRootFrame(point_in_root_frame);
+    }
     return scrollable_area_
         ->ConvertFromContainingEmbeddedContentViewToScrollbar(*this,
                                                               parent_point);

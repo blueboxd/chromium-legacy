@@ -22,17 +22,27 @@ void SerialPortImpl::Create(
     mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   // This SerialPortImpl is owned by |receiver| and |watcher|.
-  new SerialPortImpl(path, std::move(receiver), std::move(watcher),
-                     std::move(ui_task_runner));
+  new SerialPortImpl(
+      device::SerialIoHandler::Create(path, std::move(ui_task_runner)),
+      std::move(receiver), std::move(watcher));
+}
+
+// static
+void SerialPortImpl::CreateForTesting(
+    scoped_refptr<SerialIoHandler> io_handler,
+    mojo::PendingReceiver<mojom::SerialPort> receiver,
+    mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher) {
+  // This SerialPortImpl is owned by |receiver| and |watcher|.
+  new SerialPortImpl(std::move(io_handler), std::move(receiver),
+                     std::move(watcher));
 }
 
 SerialPortImpl::SerialPortImpl(
-    const base::FilePath& path,
+    scoped_refptr<SerialIoHandler> io_handler,
     mojo::PendingReceiver<mojom::SerialPort> receiver,
-    mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher)
     : receiver_(this, std::move(receiver)),
-      io_handler_(device::SerialIoHandler::Create(path, ui_task_runner)),
+      io_handler_(std::move(io_handler)),
       watcher_(std::move(watcher)),
       in_stream_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       out_stream_watcher_(FROM_HERE,
@@ -93,8 +103,62 @@ void SerialPortImpl::StartReading(mojo::ScopedDataPipeProducerHandle producer) {
   out_stream_watcher_.ArmOrNotify();
 }
 
-void SerialPortImpl::Flush(FlushCallback callback) {
-  std::move(callback).Run(io_handler_->Flush());
+void SerialPortImpl::Flush(mojom::SerialPortFlushMode mode,
+                           FlushCallback callback) {
+  switch (mode) {
+    case mojom::SerialPortFlushMode::kReceiveAndTransmit:
+      // Do nothing. This case exists to support the chrome.serial.flush()
+      // method.
+      break;
+    case mojom::SerialPortFlushMode::kReceive:
+      io_handler_->CancelRead(mojom::SerialReceiveError::NONE);
+      break;
+    case mojom::SerialPortFlushMode::kTransmit:
+      io_handler_->CancelWrite(mojom::SerialSendError::NONE);
+      break;
+  }
+
+  io_handler_->Flush(mode);
+
+  switch (mode) {
+    case mojom::SerialPortFlushMode::kReceiveAndTransmit:
+      // Do nothing. This case exists to support the chrome.serial.flush()
+      // method.
+      break;
+    case mojom::SerialPortFlushMode::kReceive:
+      if (io_handler_->IsReadPending()) {
+        // Delay closing |out_stream_| because |io_handler_| still holds a
+        // pointer into the shared memory owned by the pipe.
+        read_flush_callback_ = std::move(callback);
+        return;
+      }
+
+      out_stream_watcher_.Cancel();
+      out_stream_.reset();
+      break;
+    case mojom::SerialPortFlushMode::kTransmit:
+      if (io_handler_->IsWritePending()) {
+        // Delay closing |in_stream_| because |io_handler_| still holds a
+        // pointer into the shared memory owned by the pipe.
+        write_flush_callback_ = std::move(callback);
+        return;
+      }
+
+      in_stream_watcher_.Cancel();
+      in_stream_.reset();
+      break;
+  }
+
+  std::move(callback).Run();
+}
+
+void SerialPortImpl::Drain(DrainCallback callback) {
+  if (!in_stream_) {
+    std::move(callback).Run();
+    return;
+  }
+
+  drain_callback_ = std::move(callback);
 }
 
 void SerialPortImpl::GetControlSignals(GetControlSignalsCallback callback) {
@@ -149,6 +213,11 @@ void SerialPortImpl::WriteToPort(MojoResult result,
     // The |in_stream_| has been closed.
     in_stream_watcher_.Cancel();
     in_stream_.reset();
+
+    if (drain_callback_) {
+      io_handler_->Drain();
+      std::move(drain_callback_).Run();
+    }
     return;
   }
   // The code should not reach other cases.
@@ -203,7 +272,7 @@ void SerialPortImpl::ReadFromPortAndWriteOut(
     return;
   }
   // The code should not reach other cases.
-  NOTREACHED();
+  NOTREACHED() << "Unexpected Mojo result: " << result;
 }
 
 void SerialPortImpl::WriteToOutStream(uint32_t bytes_read,
@@ -214,11 +283,20 @@ void SerialPortImpl::WriteToOutStream(uint32_t bytes_read,
   if (error != mojom::SerialReceiveError::NONE) {
     out_stream_watcher_.Cancel();
     out_stream_.reset();
-    if (client_) {
+    if (client_)
       client_->OnReadError(error);
-    }
+    if (read_flush_callback_)
+      std::move(read_flush_callback_).Run();
     return;
   }
+
+  if (read_flush_callback_) {
+    std::move(read_flush_callback_).Run();
+    out_stream_watcher_.Cancel();
+    out_stream_.reset();
+    return;
+  }
+
   out_stream_watcher_.ArmOrNotify();
 }
 

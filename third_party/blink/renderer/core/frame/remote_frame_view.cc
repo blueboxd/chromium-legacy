@@ -104,6 +104,8 @@ void RemoteFrameView::SetViewportIntersection(
   if (new_state != last_intersection_state_) {
     last_intersection_state_ = new_state;
     remote_frame_->Client()->UpdateRemoteViewportIntersection(new_state);
+  } else if (needs_frame_rect_propagation_) {
+    PropagateFrameRects();
   }
 }
 
@@ -118,12 +120,15 @@ void RemoteFrameView::SetNeedsOcclusionTracking(bool needs_tracking) {
 }
 
 void RemoteFrameView::UpdateCompositingRect() {
+  IntRect previous_rect = compositing_rect_;
   compositing_rect_ = IntRect();
   LocalFrameView* local_root_view = ParentLocalRootFrameView();
   LayoutEmbeddedContent* owner_layout_object =
       remote_frame_->OwnerLayoutObject();
-  if (!local_root_view || !owner_layout_object)
+  if (!local_root_view || !owner_layout_object) {
+    needs_frame_rect_propagation_ = true;
     return;
+  }
 
   // For main frames we constrain the rect that gets painted to the viewport.
   // If the local frame root is an OOPIF itself, then we use the root's
@@ -166,6 +171,9 @@ void RemoteFrameView::UpdateCompositingRect() {
   IntPoint compositing_rect_location = compositing_rect_.Location();
   compositing_rect_location.ClampNegativeToZero();
   compositing_rect_.SetLocation(compositing_rect_location);
+
+  if (compositing_rect_ != previous_rect)
+    needs_frame_rect_propagation_ = true;
 }
 
 void RemoteFrameView::Dispose() {

@@ -95,6 +95,7 @@ exec('//recipes.star')
 exec('//notifiers.star')
 
 exec('//subprojects/chromium/subproject.star')
+master_only_exec('//subprojects/codesearch/subproject.star')
 master_only_exec('//subprojects/findit/subproject.star')
 master_only_exec('//subprojects/goma/subproject.star')
 master_only_exec('//subprojects/webrtc/subproject.star')

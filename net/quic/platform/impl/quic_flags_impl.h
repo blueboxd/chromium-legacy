@@ -11,9 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/export_template.h"
-#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
@@ -21,6 +19,12 @@
 #define QUIC_FLAG(type, flag, value) QUIC_EXPORT_PRIVATE extern type flag;
 #include "net/quic/quic_flags_list.h"
 #undef QUIC_FLAG
+
+namespace base {
+class CommandLine;
+template <typename T>
+class NoDestructor;
+}  // namespace base
 
 // API compatibility with new-style flags.
 

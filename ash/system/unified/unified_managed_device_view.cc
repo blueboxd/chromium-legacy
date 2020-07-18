@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/unified_managed_device_view.h"
 
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -25,8 +26,12 @@
 
 namespace ash {
 
-UnifiedManagedDeviceView::UnifiedManagedDeviceView()
-    : icon_(new views::ImageView), label_(new views::Label) {
+UnifiedManagedDeviceView::UnifiedManagedDeviceView(
+    UnifiedSystemTrayController* controller)
+    : Button(this),
+      icon_(new views::ImageView),
+      label_(new views::Label),
+      controller_(controller) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
       kUnifiedManagedDeviceViewPadding, kUnifiedManagedDeviceSpacing));
@@ -44,6 +49,8 @@ UnifiedManagedDeviceView::UnifiedManagedDeviceView()
       AshColorProvider::AshColorMode::kDark));
   AddChildView(label_);
 
+  SetID(VIEW_ID_TRAY_ENTERPRISE);
+
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->system_tray_model()->enterprise_domain()->AddObserver(this);
   Update();
@@ -52,6 +59,11 @@ UnifiedManagedDeviceView::UnifiedManagedDeviceView()
 UnifiedManagedDeviceView::~UnifiedManagedDeviceView() {
   Shell::Get()->system_tray_model()->enterprise_domain()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
+}
+
+void UnifiedManagedDeviceView::ButtonPressed(views::Button* sender,
+                                             const ui::Event& event) {
+  controller_->HandleEnterpriseInfoAction();
 }
 
 void UnifiedManagedDeviceView::OnLoginStatusChanged(LoginStatus status) {
@@ -80,20 +92,20 @@ void UnifiedManagedDeviceView::Update() {
     // Show enterpised managed UI.
     icon_->SetImage(gfx::CreateVectorIcon(kSystemTrayManagedIcon, icon_color));
 
-    if (!enterprise_domain_name.empty()) {
-      label_->SetText(l10n_util::GetStringFUTF16(
-          IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
-          base::UTF8ToUTF16(enterprise_domain_name)));
-    } else {
-      label_->SetText(
-          l10n_util::GetStringUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED));
-    }
-
+    base::string16 managed_string =
+        enterprise_domain_name.empty()
+            ? l10n_util::GetStringUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED)
+            : l10n_util::GetStringFUTF16(
+                  IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
+                  base::UTF8ToUTF16(enterprise_domain_name));
+    label_->SetText(managed_string);
+    SetAccessibleName(managed_string);
     SetVisible(true);
   } else if (session->IsUserSupervised()) {
     // Show supervised user UI (locally supervised or Family Link).
     icon_->SetImage(gfx::CreateVectorIcon(GetSupervisedUserIcon(), icon_color));
     label_->SetText(GetSupervisedUserMessage());
+    SetAccessibleName(GetSupervisedUserMessage());
     SetVisible(true);
   } else {
     SetVisible(false);

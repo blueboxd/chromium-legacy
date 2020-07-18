@@ -241,14 +241,15 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   system_tray_container_->AddChildView(feature_pods_container_);
   system_tray_container_->AddChildView(page_indicator_view_);
   system_tray_container_->AddChildView(sliders_container_);
+
+  if (features::IsManagedDeviceUIRedesignEnabled()) {
+    managed_device_view_ = new UnifiedManagedDeviceView(controller_);
+    add_layered_child(system_tray_container_, managed_device_view_);
+  }
+
   add_layered_child(system_tray_container_, system_info_view_);
 
   system_tray_container_->SetFlexForView(page_indicator_view_);
-
-  if (features::IsManagedDeviceUIRedesignEnabled()) {
-    managed_device_view_ = new UnifiedManagedDeviceView();
-    system_tray_container_->AddChildView(managed_device_view_);
-  }
 
   detailed_view_container_->SetVisible(false);
   add_layered_child(this, detailed_view_container_);
@@ -264,6 +265,10 @@ UnifiedSystemTrayView::~UnifiedSystemTrayView() = default;
 void UnifiedSystemTrayView::SetMaxHeight(int max_height) {
   max_height_ = max_height;
 
+  int managed_device_view_height =
+      managed_device_view_ ? managed_device_view_->GetPreferredSize().height()
+                           : 0;
+
   // FeaturePodsContainer can adjust it's height by reducing the number of rows
   // it uses. It will calculate how many rows to use based on the max height
   // passed here.
@@ -271,7 +276,8 @@ void UnifiedSystemTrayView::SetMaxHeight(int max_height) {
       max_height - top_shortcuts_view_->GetPreferredSize().height() -
       page_indicator_view_->GetPreferredSize().height() -
       sliders_container_->GetExpandedHeight() -
-      system_info_view_->GetPreferredSize().height());
+      system_info_view_->GetPreferredSize().height() -
+      managed_device_view_height);
 }
 
 void UnifiedSystemTrayView::AddFeaturePodButton(FeaturePodButton* button) {
@@ -343,6 +349,9 @@ void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
 }
 
 int UnifiedSystemTrayView::GetExpandedSystemTrayHeight() const {
+  int managed_device_view_height =
+      managed_device_view_ ? managed_device_view_->GetPreferredSize().height()
+                           : 0;
   return (notification_hidden_view_->GetVisible()
               ? notification_hidden_view_->GetPreferredSize().height()
               : 0) +
@@ -350,16 +359,21 @@ int UnifiedSystemTrayView::GetExpandedSystemTrayHeight() const {
          feature_pods_container_->GetExpandedHeight() +
          page_indicator_view_->GetExpandedHeight() +
          sliders_container_->GetExpandedHeight() +
-         system_info_view_->GetPreferredSize().height();
+         system_info_view_->GetPreferredSize().height() +
+         managed_device_view_height;
 }
 
 int UnifiedSystemTrayView::GetCollapsedSystemTrayHeight() const {
+  int managed_device_view_height =
+      managed_device_view_ ? managed_device_view_->GetPreferredSize().height()
+                           : 0;
   return (notification_hidden_view_->GetVisible()
               ? notification_hidden_view_->GetPreferredSize().height()
               : 0) +
          top_shortcuts_view_->GetPreferredSize().height() +
          feature_pods_container_->GetCollapsedHeight() +
-         system_info_view_->GetPreferredSize().height();
+         system_info_view_->GetPreferredSize().height() +
+         managed_device_view_height;
 }
 
 int UnifiedSystemTrayView::GetCurrentHeight() const {

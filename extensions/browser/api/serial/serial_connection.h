@@ -110,7 +110,8 @@ class SerialConnection : public ApiResource,
   virtual void StartPolling(const ReceiveEventCallback& callback);
 
   // Flushes input and output buffers.
-  void Flush(FlushCompleteCallback callback) const;
+  void Flush(device::mojom::SerialPortFlushMode mode,
+             FlushCompleteCallback callback) const;
 
   // Configures some subset of port options for this connection.
   // Omitted options are unchanged.

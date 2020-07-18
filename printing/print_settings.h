@@ -37,7 +37,12 @@ PRINTING_EXPORT base::Optional<bool> IsColorModelSelected(int color_mode);
 PRINTING_EXPORT void GetColorModelForMode(int color_mode,
                                           std::string* color_setting_name,
                                           std::string* color_value);
+
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+// Convert from |color_mode| to a print-color-mode value from PWG 5100.13.
+PRINTING_EXPORT std::string GetIppColorModelForMode(int color_mode);
 #endif
+#endif  // defined(USE_CUPS)
 
 // Inform the printing system that it may embed this user-agent string
 // in its output's metadata.

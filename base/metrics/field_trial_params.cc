@@ -11,11 +11,18 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 
 namespace base {
+
+std::string UnescapeValue(const std::string& value) {
+  return UnescapeURLComponent(
+      value, UnescapeRule::PATH_SEPARATORS |
+                 UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+}
 
 bool AssociateFieldTrialParams(const std::string& trial_name,
                                const std::string& group_name,

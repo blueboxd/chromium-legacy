@@ -3,7 +3,8 @@
 // META: script=/gen/layout_test_data/mojo/public/js/mojo_bindings.js
 // META: script=/gen/mojo/public/mojom/base/unguessable_token.mojom.js
 // META: script=/gen/third_party/blink/public/mojom/serial/serial.mojom.js
-// META: script=resources/serial-test-utils.js
+// META: script=resources/common.js
+// META: script=resources/automation.js
 
 serial_test(async (t, fake) => {
   // Wait for getPorts() to resolve in order to ensure that the Mojo client

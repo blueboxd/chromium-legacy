@@ -498,7 +498,8 @@ Polymer({
      * @private
      */
     computeShowOpenNow_() {
-      return this.data.state === States.ASYNC_SCANNING;
+      const allowOpenNow = loadTimeData.getBoolean('allowOpenNow');
+      return this.data.state === States.ASYNC_SCANNING && allowOpenNow;
     },
 
     /**

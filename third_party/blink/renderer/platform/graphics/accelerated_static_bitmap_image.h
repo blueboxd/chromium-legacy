@@ -175,7 +175,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   scoped_refptr<MailboxRef> mailbox_ref_;
 
-  // The context this SkImage is bound to.
+  // The context this TextureBacking is bound to.
   base::WeakPtr<WebGraphicsContext3DProviderWrapper>
       skia_context_provider_wrapper_;
   sk_sp<MailboxTextureBacking> texture_backing_;

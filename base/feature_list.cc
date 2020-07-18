@@ -199,20 +199,6 @@ void FeatureList::InitializeFromCommandLine(
     const std::string& disable_features) {
   DCHECK(!initialized_);
 
-  // Process disabled features first, so that disabled ones take precedence over
-  // enabled ones (since RegisterOverride() uses insert()).
-  RegisterOverridesFromCommandLine(disable_features, OVERRIDE_DISABLE_FEATURE);
-  RegisterOverridesFromCommandLine(enable_features, OVERRIDE_ENABLE_FEATURE);
-
-  initialized_from_command_line_ = true;
-}
-
-void FeatureList::InitializeFromCommandLineWithFeatureParams(
-    const std::string& enable_features,
-    const std::string& disable_features,
-    FieldTrialParamsDecodeStringFunc decode_data_func) {
-  DCHECK(!initialized_);
-
   std::string parsed_enable_features;
   std::string force_fieldtrials;
   std::string force_fieldtrial_params;
@@ -222,20 +208,32 @@ void FeatureList::InitializeFromCommandLineWithFeatureParams(
   DCHECK(parse_enable_features_result) << StringPrintf(
       "The --%s list is unparsable or invalid, please check the format.",
       ::switches::kEnableFeatures);
-  bool associate_params_result = AssociateFieldTrialParamsFromString(
-      force_fieldtrial_params, decode_data_func);
-  DCHECK(associate_params_result) << StringPrintf(
-      "The field trial parameters part of the --%s list is invalid. Make sure "
-      "you %%-encode the following characters in param values: %%:/.,",
-      ::switches::kEnableFeatures);
 
-  bool create_trials_result =
-      FieldTrialList::CreateTrialsFromString(force_fieldtrials);
-  DCHECK(create_trials_result)
-      << StringPrintf("Invalid field trials are specified in --%s.",
-                      ::switches::kEnableFeatures);
+  // Only create field trials when field_trial_list is available. Some tests
+  // don't have field trial list available.
+  if (FieldTrialList::GetInstance()) {
+    bool associate_params_result = AssociateFieldTrialParamsFromString(
+        force_fieldtrial_params, &UnescapeValue);
+    DCHECK(associate_params_result) << StringPrintf(
+        "The field trial parameters part of the --%s list is invalid. Make "
+        "sure "
+        "you %%-encode the following characters in param values: %%:/.,",
+        ::switches::kEnableFeatures);
 
-  InitializeFromCommandLine(parsed_enable_features, disable_features);
+    bool create_trials_result =
+        FieldTrialList::CreateTrialsFromString(force_fieldtrials);
+    DCHECK(create_trials_result)
+        << StringPrintf("Invalid field trials are specified in --%s.",
+                        ::switches::kEnableFeatures);
+  }
+
+  // Process disabled features first, so that disabled ones take precedence over
+  // enabled ones (since RegisterOverride() uses insert()).
+  RegisterOverridesFromCommandLine(disable_features, OVERRIDE_DISABLE_FEATURE);
+  RegisterOverridesFromCommandLine(parsed_enable_features,
+                                   OVERRIDE_ENABLE_FEATURE);
+
+  initialized_from_command_line_ = true;
 }
 
 void FeatureList::InitializeFromSharedMemory(
@@ -459,11 +457,6 @@ void FeatureList::RestoreInstanceForTesting(
   DCHECK(!g_feature_list_instance);
   // Note: Intentional leak of global singleton.
   g_feature_list_instance = instance.release();
-}
-
-// static
-std::string FeatureList::NoOpDecodeFunc(const std::string& str) {
-  return str;
 }
 
 void FeatureList::FinalizeInitialization() {

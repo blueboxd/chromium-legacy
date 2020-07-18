@@ -33,8 +33,8 @@ class NET_EXPORT ReportSender
  public:
   static const int kLoadFlags;
 
-  using SuccessCallback = base::Callback<void()>;
-  using ErrorCallback = base::Callback<
+  using SuccessCallback = base::OnceCallback<void()>;
+  using ErrorCallback = base::OnceCallback<
       void(const GURL&, int /* net_error */, int /* http_response_code */)>;
 
   // Constructs a ReportSender that sends reports with the
@@ -49,8 +49,8 @@ class NET_EXPORT ReportSender
   void Send(const GURL& report_uri,
             base::StringPiece content_type,
             base::StringPiece report,
-            const SuccessCallback& success_callback,
-            const ErrorCallback& error_callback) override;
+            SuccessCallback success_callback,
+            ErrorCallback error_callback) override;
 
   // net::URLRequest::Delegate implementation.
   void OnResponseStarted(URLRequest* request, int net_error) override;

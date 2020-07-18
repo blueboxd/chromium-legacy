@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/credential_provider/gaiacp/dllmain.h"
+#include "chrome/credential_provider/gaiacp/gaia_credential_provider_module.h"
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"

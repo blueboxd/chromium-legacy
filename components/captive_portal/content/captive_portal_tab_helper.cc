@@ -47,8 +47,8 @@ CaptivePortalTabHelper::CaptivePortalTabHelper(
       login_detector_(new CaptivePortalLoginDetector(captive_portal_service)),
       is_captive_portal_window_(false),
       subscription_(captive_portal_service->RegisterCallback(
-          base::Bind(&CaptivePortalTabHelper::Observe,
-                     base::Unretained(this)))) {
+          base::BindRepeating(&CaptivePortalTabHelper::Observe,
+                              base::Unretained(this)))) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 

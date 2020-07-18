@@ -276,6 +276,11 @@ class ArCoreImpl : public ArCore {
       const base::TimeTicks& frame_time,
       FunctionType&& create_anchor_function);
 
+  // Helper, attempts to configure ArSession's camera for use. Note that this is
+  // happening during initialization, before arcore_session_ is set.
+  // Returns true if configuration succeeded, false otherwise.
+  bool ConfigureCamera(ArSession* ar_session) const;
+
   // Must be last.
   base::WeakPtrFactory<ArCoreImpl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ArCoreImpl);

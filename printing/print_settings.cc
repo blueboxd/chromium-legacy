@@ -10,6 +10,10 @@
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
 
+#if defined(USE_CUPS) && (defined(OS_MACOSX) || defined(OS_CHROMEOS))
+#include <cups/cups.h>
+#endif
+
 namespace printing {
 
 namespace {
@@ -183,6 +187,23 @@ void GetColorModelForMode(int color_mode,
   // The default case is excluded from the above switch statement to ensure that
   // all ColorModel values are determinantly handled.
 }
+
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+std::string GetIppColorModelForMode(int color_mode) {
+  // Accept |UNKNOWN_COLOR_MODEL| for consistency with GetColorModelForMode().
+  if (color_mode == UNKNOWN_COLOR_MODEL)
+    return CUPS_PRINT_COLOR_MODE_MONOCHROME;
+
+  base::Optional<bool> is_color = IsColorModelSelected(color_mode);
+  if (!is_color.has_value()) {
+    NOTREACHED();
+    return std::string();
+  }
+
+  return is_color.value() ? CUPS_PRINT_COLOR_MODE_COLOR
+                          : CUPS_PRINT_COLOR_MODE_MONOCHROME;
+}
+#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #endif  // defined(USE_CUPS)
 
 base::Optional<bool> IsColorModelSelected(int color_mode) {

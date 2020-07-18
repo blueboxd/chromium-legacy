@@ -1306,6 +1306,45 @@ void RasterImplementation::ReadbackYUVPixelsAsync(
   NOTREACHED();
 }
 
+void RasterImplementation::ReadbackImagePixels(
+    const gpu::Mailbox& source_mailbox,
+    const SkImageInfo& dst_info,
+    GLuint dst_row_bytes,
+    int src_x,
+    int src_y,
+    void* dst_pixels) {
+  DCHECK_GE(dst_row_bytes, dst_info.minRowBytes());
+
+  // Get the size of the SkColorSpace while maintaining 8-byte alignment.
+  GLuint pixels_offset = 0;
+  if (dst_info.colorSpace()) {
+    pixels_offset = base::bits::Align(
+        dst_info.colorSpace()->writeToMemory(nullptr), sizeof(uint64_t));
+  }
+
+  GLuint dst_size = dst_info.computeByteSize(dst_row_bytes);
+  GLuint total_size =
+      pixels_offset + base::bits::Align(dst_size, sizeof(uint64_t));
+
+  ScopedSharedMemoryPtr scoped_shared_memory(total_size, transfer_buffer_,
+                                             mapped_memory_.get(), helper());
+  GLint shm_id = scoped_shared_memory.shm_id();
+  GLuint shm_offset = scoped_shared_memory.offset();
+  void* address = scoped_shared_memory.address();
+
+  if (dst_info.colorSpace()) {
+    size_t bytes_written = dst_info.colorSpace()->writeToMemory(address);
+    DCHECK_LE(bytes_written, pixels_offset);
+  }
+
+  helper_->ReadbackImagePixelsINTERNALImmediate(
+      src_x, src_y, dst_info.width(), dst_info.height(), dst_row_bytes,
+      dst_info.colorType(), dst_info.alphaType(), shm_id, shm_offset,
+      pixels_offset, source_mailbox.name);
+  WaitForCmd();
+  memcpy(dst_pixels, static_cast<uint8_t*>(address) + pixels_offset, dst_size);
+}
+
 void RasterImplementation::IssueImageDecodeCacheEntryCreation(
     base::span<const uint8_t> encoded_data,
     const gfx::Size& output_size,

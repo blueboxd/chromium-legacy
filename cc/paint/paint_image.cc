@@ -114,8 +114,12 @@ const sk_sp<SkImage>& PaintImage::GetSkImage() const {
   return cached_sk_image_;
 }
 
-const sk_sp<SkImage>& PaintImage::GetRasterSkImage() const {
-  return cached_sk_image_;
+sk_sp<SkImage> PaintImage::GetRasterSkImage() const {
+  if (cached_sk_image_)
+    return cached_sk_image_;
+  else if (texture_backing_)
+    return texture_backing_->GetSkImageViaReadback();
+  return nullptr;
 }
 
 SkImageInfo PaintImage::GetSkImageInfo() const {

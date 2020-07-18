@@ -91,6 +91,9 @@
 #include "base/win/windows_version.h"
 #include "ui/display/win/screen_win.h"
 #endif  // OS_WIN
+#if BUILDFLAG(IS_CHROMECAST)
+#include "chromecast/chromecast_buildflags.h"
+#endif
 
 namespace content {
 
@@ -563,8 +566,10 @@ void GpuDataManagerImplPrivate::InitializeGpuModes() {
     // Chomecast audio-only builds run with the flag --disable-gpu. The GPU
     // process should not be started in this case.
 #if BUILDFLAG(IS_CHROMECAST)
+#if BUILDFLAG(IS_CAST_AUDIO_ONLY)
     fallback_modes_.clear();
     fallback_modes_.push_back(gpu::GpuMode::DISABLED);
+#endif
 #elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
     CHECK(false) << "GPU acceleration is required on certain platforms!";
 #endif  // IS_CHROMECAST

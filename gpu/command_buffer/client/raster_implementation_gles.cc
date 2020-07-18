@@ -366,6 +366,16 @@ void RasterImplementationGLES::OnReleaseMailbox(
   std::move(release_mailbox).Run();
 }
 
+void RasterImplementationGLES::ReadbackImagePixels(
+    const gpu::Mailbox& source_mailbox,
+    const SkImageInfo& dst_info,
+    GLuint dst_row_bytes,
+    int src_x,
+    int src_y,
+    void* dst_pixels) {
+  NOTREACHED();
+}
+
 GLuint RasterImplementationGLES::CreateAndConsumeForGpuRaster(
     const gpu::Mailbox& mailbox) {
   return mailbox.IsSharedImage()

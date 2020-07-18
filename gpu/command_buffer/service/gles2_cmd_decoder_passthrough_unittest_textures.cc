@@ -18,6 +18,8 @@ std::unique_ptr<TestSharedImageBacking> AllocateTextureAndCreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage) {
   GLuint service_id;
   glGenTextures(1, &service_id);
@@ -26,8 +28,8 @@ std::unique_ptr<TestSharedImageBacking> AllocateTextureAndCreateSharedImage(
                size.height(), 0, GLDataFormat(format), GLDataType(format),
                nullptr /* data */);
   return std::make_unique<TestSharedImageBacking>(
-      mailbox, format, size, color_space, usage, 0 /* estimated_size */,
-      service_id);
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      0 /* estimated_size */, service_id);
 }
 
 }  // namespace
@@ -37,7 +39,7 @@ TEST_F(GLES2DecoderPassthroughTest, CreateAndTexStorage2DSharedImageCHROMIUM) {
   Mailbox mailbox = Mailbox::GenerateForSharedImage();
   auto backing = AllocateTextureAndCreateSharedImage(
       mailbox, viz::ResourceFormat::RGBA_8888, gfx::Size(10, 10),
-      gfx::ColorSpace(), 0);
+      gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, 0);
   GLuint service_id = backing->service_id();
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
       GetSharedImageManager()->Register(std::move(backing), &memory_tracker);
@@ -102,7 +104,8 @@ TEST_F(GLES2DecoderPassthroughTest,
       GetSharedImageManager()->Register(
           AllocateTextureAndCreateSharedImage(
               mailbox, viz::ResourceFormat::RGBA_8888, gfx::Size(10, 10),
-              gfx::ColorSpace(), 0),
+              gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+              0),
           &memory_tracker);
 
   {
@@ -137,7 +140,8 @@ TEST_F(GLES2DecoderPassthroughTest, BeginEndSharedImageAccessCRHOMIUM) {
         GetSharedImageManager()->Register(
             AllocateTextureAndCreateSharedImage(
                 mailbox, viz::ResourceFormat::RGBA_8888, gfx::Size(10, 10),
-                gfx::ColorSpace(), 0),
+                gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
+                kPremul_SkAlphaType, 0),
             &memory_tracker);
     shared_images.emplace_back(std::move(shared_image));
 
@@ -202,7 +206,7 @@ TEST_F(GLES2DecoderPassthroughTest,
   Mailbox mailbox = Mailbox::GenerateForSharedImage();
   auto shared_image_backing = AllocateTextureAndCreateSharedImage(
       mailbox, viz::ResourceFormat::RGBA_8888, gfx::Size(10, 10),
-      gfx::ColorSpace(), 0);
+      gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, 0);
   // Set the shared image to fail BeginAccess.
   shared_image_backing->set_can_access(false);
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
@@ -245,7 +249,8 @@ TEST_F(GLES2DecoderPassthroughTest,
       GetSharedImageManager()->Register(
           AllocateTextureAndCreateSharedImage(
               mailbox, viz::ResourceFormat::RGBA_8888, gfx::Size(10, 10),
-              gfx::ColorSpace(), 0),
+              gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+              0),
           &memory_tracker);
 
   auto& cmd = *GetImmediateAs<

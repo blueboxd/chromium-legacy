@@ -589,6 +589,17 @@ class RasterDecoderImpl final : public RasterDecoder,
                              GLuint shm_offset,
                              GLuint shm_size,
                              const volatile GLbyte* mailbox);
+  void DoReadbackImagePixelsINTERNAL(GLint src_x,
+                                     GLint src_y,
+                                     GLuint dst_width,
+                                     GLuint dst_height,
+                                     GLuint row_bytes,
+                                     GLuint dst_sk_color_type,
+                                     GLuint dst_sk_alpha_type,
+                                     GLint shm_id,
+                                     GLuint shm_offset,
+                                     GLuint pixels_offset,
+                                     const volatile GLbyte* mailbox);
   void DoConvertYUVMailboxesToRGBINTERNAL(GLenum yuv_color_space,
                                           GLboolean is_nv12,
                                           const volatile GLbyte* mailboxes);
@@ -2445,6 +2456,118 @@ void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
   if (!dest_shared_image->IsCleared()) {
     dest_shared_image->SetClearedRect(
         gfx::Rect(x_offset, y_offset, src_width, src_height));
+  }
+}
+
+void RasterDecoderImpl::DoReadbackImagePixelsINTERNAL(
+    GLint src_x,
+    GLint src_y,
+    GLuint dst_width,
+    GLuint dst_height,
+    GLuint row_bytes,
+    GLuint dst_sk_color_type,
+    GLuint dst_sk_alpha_type,
+    GLint shm_id,
+    GLuint shm_offset,
+    GLuint pixels_offset,
+    const volatile GLbyte* mailbox) {
+  if (dst_sk_color_type > kLastEnum_SkColorType) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "ReadbackImagePixels",
+                       "dst_sk_color_type must be a valid SkColorType");
+    return;
+  }
+  if (dst_sk_alpha_type > kLastEnum_SkAlphaType) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "ReadbackImagePixels",
+                       "dst_sk_alpha_type must be a valid SkAlphaType");
+    return;
+  }
+
+  Mailbox source_mailbox = Mailbox::FromVolatile(
+      *reinterpret_cast<const volatile Mailbox*>(mailbox));
+  DLOG_IF(ERROR, !source_mailbox.Verify())
+      << "ReadbackImagePixels was passed an invalid mailbox";
+  auto source_shared_image = shared_image_representation_factory_.ProduceSkia(
+      source_mailbox, shared_context_state_);
+  if (!source_shared_image) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glReadbackImagePixels",
+                       "Unknown mailbox");
+    return;
+  }
+
+  // If present, the color space is serialized into shared memory before the
+  // pixel data.
+  sk_sp<SkColorSpace> dst_color_space;
+  if (pixels_offset > 0) {
+    void* color_space_bytes =
+        GetSharedMemoryAs<void*>(shm_id, shm_offset, pixels_offset);
+    if (!color_space_bytes) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadbackImagePixels",
+                         "Failed to retrieve serialized SkColorSpace.");
+      return;
+    }
+    dst_color_space =
+        SkColorSpace::Deserialize(color_space_bytes, pixels_offset);
+    if (!dst_color_space) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadbackImagePixels",
+                         "Failed to deserialize expected SkColorSpace");
+      return;
+    }
+  }
+
+  SkImageInfo dst_info = SkImageInfo::Make(
+      dst_width, dst_height, static_cast<SkColorType>(dst_sk_color_type),
+      static_cast<SkAlphaType>(dst_sk_alpha_type), std::move(dst_color_space));
+
+  if (row_bytes < dst_info.minRowBytes()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glReadbackImagePixels",
+                       "row_bytes be >= "
+                       "SkImageInfo::minRowBytes() for dest image.");
+    return;
+  }
+
+  std::vector<GrBackendSemaphore> begin_semaphores;
+
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
+      source_scoped_access = source_shared_image->BeginScopedReadAccess(
+          &begin_semaphores, nullptr);
+
+  if (!begin_semaphores.empty()) {
+    bool result = shared_context_state_->gr_context()->wait(
+        begin_semaphores.size(), begin_semaphores.data());
+    DCHECK(result);
+  }
+
+  if (!source_scoped_access) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glReadbackImagePixels",
+                       "Source shared image is not accessible");
+    return;
+  }
+
+  auto src_color_type = viz::ResourceFormatToClosestSkColorType(
+      true /* gpu_compositing */, source_shared_image->format());
+
+  // TODO(http://crbug.com/1034086): We should initialize alpha_type and
+  // origin using metadata stored with the shared image.
+  SkAlphaType src_alpha_type = kPremul_SkAlphaType;
+  auto src_color_space = source_shared_image->color_space().ToSkColorSpace();
+  auto sk_image = SkImage::MakeFromTexture(
+      shared_context_state_->gr_context(),
+      source_scoped_access->promise_image_texture()->backendTexture(),
+      kTopLeft_GrSurfaceOrigin, src_color_type, src_alpha_type,
+      src_color_space);
+
+  void* shm_address = GetSharedMemoryAs<void*>(
+      shm_id, shm_offset + pixels_offset, dst_info.computeByteSize(row_bytes));
+  if (!shm_address) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadbackImagePixels",
+                       "Failed to retrieve memory for readPixels");
+    return;
+  }
+
+  bool success = sk_image->readPixels(dst_info, shm_address, row_bytes, 0, 0);
+  if (!success) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadbackImagePixels",
+                       "Failed to read pixels from SkImage");
   }
 }
 

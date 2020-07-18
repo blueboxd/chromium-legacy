@@ -121,8 +121,10 @@ class CORE_EXPORT NGInkOverflow {
   Type SetType(Type type);
 
   bool TrySetOutsets(Type type,
-                     const PhysicalRect& ink_overflow,
-                     const PhysicalSize& size);
+                     LayoutUnit left_outset,
+                     LayoutUnit top_outset,
+                     LayoutUnit right_outset,
+                     LayoutUnit bottom_outset);
   Type SetSingle(Type type,
                  const PhysicalRect& ink_overflow,
                  const PhysicalSize& size,

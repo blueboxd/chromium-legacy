@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/image_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
@@ -80,7 +81,8 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
     }
   }
 
-  DrawingRecorder recorder(context, layout_video_, paint_info.phase);
+  BoxDrawingRecorder recorder(context, layout_video_, paint_info.phase,
+                              paint_offset);
 
   if (should_display_poster || !force_software_video_paint) {
     // This will display the poster image, if one is present, and otherwise

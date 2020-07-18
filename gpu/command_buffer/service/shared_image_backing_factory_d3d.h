@@ -56,6 +56,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryD3D
                                     viz::ResourceFormat format,
                                     const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
+                                    GrSurfaceOrigin surface_origin,
+                                    SkAlphaType alpha_type,
                                     uint32_t usage);
 
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
@@ -64,6 +66,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryD3D
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       bool is_thread_safe) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
@@ -71,6 +75,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryD3D
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       base::span<const uint8_t> pixel_data) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
@@ -81,6 +87,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryD3D
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage) override;
 
   // Returns true if the specified GpuMemoryBufferType can be imported using
@@ -97,6 +105,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryD3D
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain,
       size_t buffer_index,

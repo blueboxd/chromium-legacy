@@ -26,6 +26,20 @@ namespace {
   DO(ArCamera_getProjectionMatrix)                                 \
   DO(ArCamera_getTrackingState)                                    \
   DO(ArCamera_getViewMatrix)                                       \
+  DO(ArCameraConfig_create)                                        \
+  DO(ArCameraConfig_destroy)                                       \
+  DO(ArCameraConfig_getDepthSensorUsage)                           \
+  DO(ArCameraConfig_getFacingDirection)                            \
+  DO(ArCameraConfig_getImageDimensions)                            \
+  DO(ArCameraConfig_getTextureDimensions)                          \
+  DO(ArCameraConfigFilter_create)                                  \
+  DO(ArCameraConfigFilter_destroy)                                 \
+  DO(ArCameraConfigFilter_setDepthSensorUsage)                     \
+  DO(ArCameraConfigFilter_setTargetFps)                            \
+  DO(ArCameraConfigList_create)                                    \
+  DO(ArCameraConfigList_destroy)                                   \
+  DO(ArCameraConfigList_getItem)                                   \
+  DO(ArCameraConfigList_getSize)                                   \
   DO(ArConfig_create)                                              \
   DO(ArConfig_destroy)                                             \
   DO(ArConfig_getLightEstimationMode)                              \
@@ -72,8 +86,10 @@ namespace {
   DO(ArSession_enableIncognitoMode_private)                        \
   DO(ArSession_getAllAnchors)                                      \
   DO(ArSession_getAllTrackables)                                   \
+  DO(ArSession_getSupportedCameraConfigsWithFilter)                \
   DO(ArSession_pause)                                              \
   DO(ArSession_resume)                                             \
+  DO(ArSession_setCameraConfig)                                    \
   DO(ArSession_setCameraTextureName)                               \
   DO(ArSession_setDisplayGeometry)                                 \
   DO(ArSession_update)                                             \
@@ -156,7 +172,6 @@ bool IsArCoreSupported() {
 
 }  // namespace vr
 
-
 void ArAnchorList_acquireItem(const ArSession* session,
                               const ArAnchorList* anchor_list,
                               int32_t index,
@@ -229,6 +244,93 @@ void ArCamera_getViewMatrix(const ArSession* session,
                             const ArCamera* camera,
                             float* out_matrix) {
   return g_arcore_api->impl_ArCamera_getViewMatrix(session, camera, out_matrix);
+}
+
+void ArCameraConfig_create(const ArSession* session,
+                           ArCameraConfig** out_camera_config) {
+  return g_arcore_api->impl_ArCameraConfig_create(session, out_camera_config);
+}
+
+void ArCameraConfig_destroy(ArCameraConfig* camera_config) {
+  return g_arcore_api->impl_ArCameraConfig_destroy(camera_config);
+}
+
+void ArCameraConfig_getDepthSensorUsage(const ArSession* session,
+                                        const ArCameraConfig* camera_config,
+                                        uint32_t* out_depth_sensor_usage) {
+  return g_arcore_api->impl_ArCameraConfig_getDepthSensorUsage(
+      session, camera_config, out_depth_sensor_usage);
+}
+
+void ArCameraConfig_getFacingDirection(
+    const ArSession* session,
+    const ArCameraConfig* camera_config,
+    ArCameraConfigFacingDirection* out_facing) {
+  return g_arcore_api->impl_ArCameraConfig_getFacingDirection(
+      session, camera_config, out_facing);
+}
+
+void ArCameraConfig_getImageDimensions(const ArSession* session,
+                                       const ArCameraConfig* camera_config,
+                                       int32_t* out_width,
+                                       int32_t* out_height) {
+  return g_arcore_api->impl_ArCameraConfig_getImageDimensions(
+      session, camera_config, out_width, out_height);
+}
+
+void ArCameraConfig_getTextureDimensions(const ArSession* session,
+                                         const ArCameraConfig* camera_config,
+                                         int32_t* out_width,
+                                         int32_t* out_height) {
+  return g_arcore_api->impl_ArCameraConfig_getTextureDimensions(
+      session, camera_config, out_width, out_height);
+}
+
+void ArCameraConfigFilter_create(const ArSession* session,
+                                 ArCameraConfigFilter** out_filter) {
+  return g_arcore_api->impl_ArCameraConfigFilter_create(session, out_filter);
+}
+
+void ArCameraConfigFilter_destroy(ArCameraConfigFilter* filter) {
+  return g_arcore_api->impl_ArCameraConfigFilter_destroy(filter);
+}
+
+void ArCameraConfigFilter_setDepthSensorUsage(
+    const ArSession* session,
+    ArCameraConfigFilter* filter,
+    uint32_t depth_sensor_usage_filters) {
+  return g_arcore_api->impl_ArCameraConfigFilter_setDepthSensorUsage(
+      session, filter, depth_sensor_usage_filters);
+}
+
+void ArCameraConfigFilter_setTargetFps(const ArSession* session,
+                                       ArCameraConfigFilter* filter,
+                                       const uint32_t fps_filters) {
+  return g_arcore_api->impl_ArCameraConfigFilter_setTargetFps(session, filter,
+                                                              fps_filters);
+}
+
+void ArCameraConfigList_create(const ArSession* session,
+                               ArCameraConfigList** out_list) {
+  return g_arcore_api->impl_ArCameraConfigList_create(session, out_list);
+}
+
+void ArCameraConfigList_destroy(ArCameraConfigList* list) {
+  return g_arcore_api->impl_ArCameraConfigList_destroy(list);
+}
+
+void ArCameraConfigList_getItem(const ArSession* session,
+                                const ArCameraConfigList* list,
+                                int32_t index,
+                                ArCameraConfig* out_camera_config) {
+  return g_arcore_api->impl_ArCameraConfigList_getItem(session, list, index,
+                                                       out_camera_config);
+}
+
+void ArCameraConfigList_getSize(const ArSession* session,
+                                const ArCameraConfigList* list,
+                                int32_t* out_size) {
+  return g_arcore_api->impl_ArCameraConfigList_getSize(session, list, out_size);
 }
 
 void ArConfig_create(const ArSession* session, ArConfig** out_config) {
@@ -575,12 +677,25 @@ void ArSession_getAllTrackables(const ArSession* session,
                                                        out_trackable_list);
 }
 
+void ArSession_getSupportedCameraConfigsWithFilter(
+    const ArSession* session,
+    const ArCameraConfigFilter* filter,
+    ArCameraConfigList* list) {
+  return g_arcore_api->impl_ArSession_getSupportedCameraConfigsWithFilter(
+      session, filter, list);
+}
+
 ArStatus ArSession_pause(ArSession* session) {
   return g_arcore_api->impl_ArSession_pause(session);
 }
 
 ArStatus ArSession_resume(ArSession* session) {
   return g_arcore_api->impl_ArSession_resume(session);
+}
+
+ArStatus ArSession_setCameraConfig(const ArSession* session,
+                                   const ArCameraConfig* camera_config) {
+  return g_arcore_api->impl_ArSession_setCameraConfig(session, camera_config);
 }
 
 void ArSession_setCameraTextureName(ArSession* session, uint32_t texture_id) {

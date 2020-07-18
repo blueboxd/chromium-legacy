@@ -353,6 +353,11 @@ bool ArCoreImpl::Initialize(
     return false;
   }
 
+  if (!ConfigureCamera(session.get())) {
+    DLOG(ERROR) << "Failed to configure camera";
+    return false;
+  }
+
   internal::ScopedArCoreObject<ArFrame*> frame;
   ArFrame_create(session.get(),
                  internal::ScopedArCoreObject<ArFrame*>::Receiver(frame).get());
@@ -379,6 +384,206 @@ bool ArCoreImpl::Initialize(
       util::PassKey<ArCoreImpl>(), arcore_session_.get());
   plane_manager_ = std::make_unique<ArCorePlaneManager>(
       util::PassKey<ArCoreImpl>(), arcore_session_.get());
+  return true;
+}
+
+bool ArCoreImpl::ConfigureCamera(ArSession* ar_session) const {
+  internal::ScopedArCoreObject<ArCameraConfigFilter*> camera_config_filter;
+  ArCameraConfigFilter_create(
+      ar_session, internal::ScopedArCoreObject<ArCameraConfigFilter*>::Receiver(
+                      camera_config_filter)
+                      .get());
+  if (!camera_config_filter.is_valid()) {
+    DLOG(ERROR) << "ArCameraConfigFilter_create failed";
+    return false;
+  }
+
+  // We only want to work at 30fps for now.
+  ArCameraConfigFilter_setTargetFps(ar_session, camera_config_filter.get(),
+                                    AR_CAMERA_CONFIG_TARGET_FPS_30);
+  // We do not care if depth sensor is available or not for now.
+  // The default depth sensor usage of the newly created filter is not
+  // documented, so let's set the filter explicitly to accept both cameras with
+  // and without depth sensors.
+  ArCameraConfigFilter_setDepthSensorUsage(
+      ar_session, camera_config_filter.get(),
+      AR_CAMERA_CONFIG_DEPTH_SENSOR_USAGE_REQUIRE_AND_USE |
+          AR_CAMERA_CONFIG_DEPTH_SENSOR_USAGE_DO_NOT_USE);
+
+  internal::ScopedArCoreObject<ArCameraConfigList*> camera_config_list;
+  ArCameraConfigList_create(
+      ar_session, internal::ScopedArCoreObject<ArCameraConfigList*>::Receiver(
+                      camera_config_list)
+                      .get());
+
+  if (!camera_config_list.is_valid()) {
+    DLOG(ERROR) << "ArCameraConfigList_create failed";
+    return false;
+  }
+
+  ArSession_getSupportedCameraConfigsWithFilter(
+      ar_session, camera_config_filter.get(), camera_config_list.get());
+  if (!camera_config_list.is_valid()) {
+    DLOG(ERROR) << "ArSession_getSupportedCameraConfigsWithFilter failed";
+    return false;
+  }
+
+  int32_t available_configs_count;
+  ArCameraConfigList_getSize(ar_session, camera_config_list.get(),
+                             &available_configs_count);
+
+  DVLOG(2) << __func__ << ": ARCore reported " << available_configs_count
+           << " available configurations";
+
+  std::vector<internal::ScopedArCoreObject<ArCameraConfig*>> available_configs;
+  available_configs.reserve(available_configs_count);
+  for (int32_t i = 0; i < available_configs_count; ++i) {
+    internal::ScopedArCoreObject<ArCameraConfig*> camera_config;
+    ArCameraConfig_create(
+        ar_session,
+        internal::ScopedArCoreObject<ArCameraConfig*>::Receiver(camera_config)
+            .get());
+
+    if (!camera_config.is_valid()) {
+      DVLOG(1) << __func__
+               << ": ArCameraConfig_create failed for camera config at index "
+               << i;
+      continue;
+    }
+
+    ArCameraConfigList_getItem(ar_session, camera_config_list.get(), i,
+                               camera_config.get());
+
+    ArCameraConfigFacingDirection facing_direction;
+    ArCameraConfig_getFacingDirection(ar_session, camera_config.get(),
+                                      &facing_direction);
+
+    if (facing_direction != AR_CAMERA_CONFIG_FACING_DIRECTION_BACK) {
+      DVLOG(2)
+          << __func__
+          << ": camera config does not refer to back-facing camera, ignoring";
+      continue;
+    }
+
+#if DCHECK_IS_ON()
+    {
+      int32_t tex_width, tex_height;
+      ArCameraConfig_getTextureDimensions(ar_session, camera_config.get(),
+                                          &tex_width, &tex_height);
+
+      int32_t img_width, img_height;
+      ArCameraConfig_getImageDimensions(ar_session, camera_config.get(),
+                                        &img_width, &img_height);
+
+      uint32_t depth_sensor_usage;
+      ArCameraConfig_getDepthSensorUsage(ar_session, camera_config.get(),
+                                         &depth_sensor_usage);
+
+      DVLOG(3) << __func__
+               << ": matching camera config found, texture dimensions="
+               << tex_width << "x" << tex_height
+               << ", image dimensions= " << img_width << "x" << img_height
+               << ", depth sensor usage=" << depth_sensor_usage;
+    }
+#endif
+
+    available_configs.push_back(std::move(camera_config));
+  }
+
+  if (available_configs.empty()) {
+    DLOG(ERROR) << "No matching configs found";
+    return false;
+  }
+
+  auto best_config = std::max_element(
+      available_configs.begin(), available_configs.end(),
+      [ar_session](const internal::ScopedArCoreObject<ArCameraConfig*>& lhs,
+                   const internal::ScopedArCoreObject<ArCameraConfig*>& rhs) {
+        // true means that lhs is less than rhs
+
+        // We'll prefer the configs with higher total resolution (GPU first,
+        // then CPU), everything else does not matter for us now, but we will
+        // weakly prefer the cameras that support depth sensor (it will be used
+        // as a tie-breaker).
+
+        {
+          int32_t lhs_tex_width, lhs_tex_height;
+          int32_t rhs_tex_width, rhs_tex_height;
+
+          ArCameraConfig_getTextureDimensions(ar_session, lhs.get(),
+                                              &lhs_tex_width, &lhs_tex_height);
+          ArCameraConfig_getTextureDimensions(ar_session, rhs.get(),
+                                              &rhs_tex_width, &rhs_tex_height);
+
+          if (lhs_tex_width * lhs_tex_height !=
+              rhs_tex_width * rhs_tex_height) {
+            return lhs_tex_width * lhs_tex_height <
+                   rhs_tex_width * rhs_tex_height;
+          }
+        }
+
+        {
+          int32_t lhs_img_width, lhs_img_height;
+          int32_t rhs_img_width, rhs_img_height;
+
+          ArCameraConfig_getImageDimensions(ar_session, lhs.get(),
+                                            &lhs_img_width, &lhs_img_height);
+          ArCameraConfig_getImageDimensions(ar_session, rhs.get(),
+                                            &rhs_img_width, &rhs_img_height);
+
+          if (lhs_img_width * lhs_img_height !=
+              rhs_img_width * rhs_img_height) {
+            return lhs_img_width * lhs_img_height <
+                   rhs_img_width * rhs_img_height;
+          }
+        }
+
+        {
+          uint32_t lhs_depth_sensor_usage;
+          uint32_t rhs_depth_sensor_usage;
+
+          ArCameraConfig_getDepthSensorUsage(ar_session, lhs.get(),
+                                             &lhs_depth_sensor_usage);
+          ArCameraConfig_getDepthSensorUsage(ar_session, rhs.get(),
+                                             &rhs_depth_sensor_usage);
+
+          bool lhs_has_depth =
+              lhs_depth_sensor_usage &
+              AR_CAMERA_CONFIG_DEPTH_SENSOR_USAGE_REQUIRE_AND_USE;
+          bool rhs_has_depth =
+              rhs_depth_sensor_usage &
+              AR_CAMERA_CONFIG_DEPTH_SENSOR_USAGE_REQUIRE_AND_USE;
+
+          return lhs_has_depth < rhs_has_depth;
+        }
+      });
+
+#if DCHECK_IS_ON()
+  {
+    int32_t tex_width, tex_height;
+    ArCameraConfig_getTextureDimensions(ar_session, best_config->get(),
+                                        &tex_width, &tex_height);
+
+    int32_t img_width, img_height;
+    ArCameraConfig_getImageDimensions(ar_session, best_config->get(),
+                                      &img_width, &img_height);
+
+    uint32_t depth_sensor_usage;
+    ArCameraConfig_getDepthSensorUsage(ar_session, best_config->get(),
+                                       &depth_sensor_usage);
+    DVLOG(3) << __func__
+             << ": selected camera config with texture dimensions=" << tex_width
+             << "x" << tex_height << ", image dimensions=" << img_width << "x"
+             << img_height << ", depth sensor usage=" << depth_sensor_usage;
+  }
+#endif
+
+  ArStatus status = ArSession_setCameraConfig(ar_session, best_config->get());
+  if (status != AR_SUCCESS) {
+    DLOG(ERROR) << "ArSession_setCameraConfig failed: " << status;
+    return false;
+  }
+
   return true;
 }
 

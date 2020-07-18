@@ -31,12 +31,14 @@ SharedImageBackingFactoryOzone::CreateSharedImage(
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     bool is_thread_safe) {
   DCHECK(!is_thread_safe);
-  return SharedImageBackingOzone::Create(dawn_procs_, shared_context_state_,
-                                         mailbox, format, size, color_space,
-                                         usage, surface_handle);
+  return SharedImageBackingOzone::Create(
+      dawn_procs_, shared_context_state_, mailbox, format, size, color_space,
+      surface_origin, alpha_type, usage, surface_handle);
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -45,6 +47,8 @@ SharedImageBackingFactoryOzone::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     base::span<const uint8_t> pixel_data) {
   NOTIMPLEMENTED_LOG_ONCE();
@@ -60,6 +64,8 @@ SharedImageBackingFactoryOzone::CreateSharedImage(
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage) {
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;

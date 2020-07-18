@@ -4,6 +4,7 @@
 
 #include "components/captive_portal/content/captive_portal_tab_reloader.h"
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -24,9 +25,7 @@ namespace captive_portal {
 class TestCaptivePortalTabReloader : public CaptivePortalTabReloader {
  public:
   explicit TestCaptivePortalTabReloader(content::WebContents* web_contents)
-      : CaptivePortalTabReloader(NULL,
-                                 web_contents,
-                                 base::Callback<void(void)>()) {}
+      : CaptivePortalTabReloader(nullptr, web_contents, base::NullCallback()) {}
 
   ~TestCaptivePortalTabReloader() override {}
 

@@ -12,6 +12,7 @@
 namespace blink {
 
 class DOMException;
+class ScriptPromiseResolver;
 class SerialPort;
 
 class SerialPortUnderlyingSource : public UnderlyingSourceBase {
@@ -37,6 +38,7 @@ class SerialPortUnderlyingSource : public UnderlyingSourceBase {
 
   void ArmWatcher();
   void OnHandleReady(MojoResult, const mojo::HandleSignalsState&);
+  void OnFlush(ScriptPromiseResolver*);
   void ExpectPipeClose();
   void PipeClosed();
   void Close();

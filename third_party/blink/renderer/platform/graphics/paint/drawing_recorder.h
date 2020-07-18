@@ -66,11 +66,16 @@ class PLATFORM_EXPORT DrawingRecorder {
 
   ~DrawingRecorder();
 
+  // Sometimes we don't the the exact visual rect when we create a
+  // DrawingRecorder. This method allows visual rect to be added during
+  // painting.
+  void UniteVisualRect(const IntRect& rect) { visual_rect_.Unite(rect); }
+
  private:
   GraphicsContext& context_;
   const DisplayItemClient& client_;
   const DisplayItem::Type type_;
-  const IntRect visual_rect_;
+  IntRect visual_rect_;
   base::Optional<DOMNodeId> dom_node_id_to_restore_;
 
 #if DCHECK_IS_ON()

@@ -16,6 +16,8 @@ SharedImageBacking::SharedImageBacking(const Mailbox& mailbox,
                                        viz::ResourceFormat format,
                                        const gfx::Size& size,
                                        const gfx::ColorSpace& color_space,
+                                       GrSurfaceOrigin surface_origin,
+                                       SkAlphaType alpha_type,
                                        uint32_t usage,
                                        size_t estimated_size,
                                        bool is_thread_safe)
@@ -23,6 +25,8 @@ SharedImageBacking::SharedImageBacking(const Mailbox& mailbox,
       format_(format),
       size_(size),
       color_space_(color_space),
+      surface_origin_(surface_origin),
+      alpha_type_(alpha_type),
       usage_(usage),
       estimated_size_(estimated_size) {
   DCHECK_CALLED_ON_VALID_THREAD(factory_thread_checker_);
@@ -181,6 +185,8 @@ ClearTrackingSharedImageBacking::ClearTrackingSharedImageBacking(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     size_t estimated_size,
     bool is_thread_safe)
@@ -188,6 +194,8 @@ ClearTrackingSharedImageBacking::ClearTrackingSharedImageBacking(
                          format,
                          size,
                          color_space,
+                         surface_origin,
+                         alpha_type,
                          usage,
                          estimated_size,
                          is_thread_safe) {}

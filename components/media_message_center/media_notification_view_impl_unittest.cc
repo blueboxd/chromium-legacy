@@ -62,12 +62,6 @@ constexpr int kViewWidth = 400;
 constexpr int kViewArtworkWidth = kViewWidth * 0.4;
 const gfx::Size kViewSize(kViewWidth, 400);
 
-// Checks if the view class name is used by a media button.
-bool IsMediaButtonType(const char* class_name) {
-  return class_name == views::ImageButton::kViewClassName ||
-         class_name == views::ToggleImageButton::kViewClassName;
-}
-
 class MockMediaNotificationController : public MediaNotificationController {
  public:
   MockMediaNotificationController() = default;
@@ -227,6 +221,10 @@ class MediaNotificationViewImplTest : public views::ViewsTestBase {
 
   views::View* button_row() const { return view()->button_row_; }
 
+  const views::View* playback_button_container() const {
+    return view()->playback_button_container_;
+  }
+
   views::View* title_artist_row() const { return view()->title_artist_row_; }
 
   views::Label* title_label() const { return view()->title_label_; }
@@ -234,14 +232,12 @@ class MediaNotificationViewImplTest : public views::ViewsTestBase {
   views::Label* artist_label() const { return view()->artist_label_; }
 
   views::Button* GetButtonForAction(MediaSessionAction action) const {
-    const auto& children = button_row()->children();
+    auto buttons = view()->get_buttons_for_testing();
     const auto i = std::find_if(
-        children.begin(), children.end(), [action](const views::View* v) {
-          return (IsMediaButtonType(v->GetClassName()) &&
-                  views::Button::AsButton(v)->tag() ==
-                      static_cast<int>(action));
+        buttons.begin(), buttons.end(), [action](const views::View* v) {
+          return views::Button::AsButton(v)->tag() == static_cast<int>(action);
         });
-    return (i == children.end()) ? nullptr : views::Button::AsButton(*i);
+    return (i == buttons.end()) ? nullptr : views::Button::AsButton(*i);
   }
 
   bool IsActionButtonVisible(MediaSessionAction action) const {
@@ -364,16 +360,14 @@ TEST_F(MAYBE_MediaNotificationViewImplTest, ButtonsSanityCheck) {
   EXPECT_GT(button_row()->width(), 0);
   EXPECT_GT(button_row()->height(), 0);
 
-  EXPECT_EQ(7u, button_row()->children().size());
+  auto buttons = view()->get_buttons_for_testing();
+  EXPECT_EQ(6u, buttons.size());
 
-  for (auto* child : button_row()->children()) {
-    if (!IsMediaButtonType(child->GetClassName()))
-      continue;
-
-    EXPECT_TRUE(child->GetVisible());
-    EXPECT_LT(kMediaButtonIconSize, child->width());
-    EXPECT_LT(kMediaButtonIconSize, child->height());
-    EXPECT_FALSE(views::Button::AsButton(child)->GetAccessibleName().empty());
+  for (auto* button : buttons) {
+    EXPECT_TRUE(button->GetVisible());
+    EXPECT_LT(kMediaButtonIconSize, button->width());
+    EXPECT_LT(kMediaButtonIconSize, button->height());
+    EXPECT_FALSE(views::Button::AsButton(button)->GetAccessibleName().empty());
   }
 
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));

@@ -43,17 +43,17 @@ class AppCacheQuotaClient : public storage::QuotaClient {
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,
-                      GetUsageCallback callback) override;
+                      GetOriginUsageCallback callback) override;
   void GetOriginsForType(blink::mojom::StorageType type,
-                         GetOriginsCallback callback) override;
+                         GetOriginsForTypeCallback callback) override;
   void GetOriginsForHost(blink::mojom::StorageType type,
                          const std::string& host,
-                         GetOriginsCallback callback) override;
+                         GetOriginsForHostCallback callback) override;
   void DeleteOriginData(const url::Origin& origin,
                         blink::mojom::StorageType type,
-                        DeletionCallback callback) override;
+                        DeleteOriginDataCallback callback) override;
   void PerformStorageCleanup(blink::mojom::StorageType type,
-                             base::OnceClosure callback) override;
+                             PerformStorageCleanupCallback callback) override;
 
  private:
   friend class content::AppCacheQuotaClientTest;
@@ -64,7 +64,7 @@ class AppCacheQuotaClient : public storage::QuotaClient {
 
   void DidDeleteAppCachesForOrigin(int rv);
   void GetOriginsHelper(const std::string& opt_host,
-                        GetOriginsCallback callback);
+                        GetOriginsForTypeCallback callback);
   void ProcessPendingRequests();
   void DeletePendingRequests();
   net::CancelableCompletionRepeatingCallback* GetServiceDeleteCallback();
@@ -80,7 +80,7 @@ class AppCacheQuotaClient : public storage::QuotaClient {
 
   // And once it's ready, we can only handle one delete request at a time,
   // so we queue up additional requests while one is in already in progress.
-  DeletionCallback current_delete_request_callback_;
+  DeleteOriginDataCallback current_delete_request_callback_;
   std::unique_ptr<net::CancelableCompletionRepeatingCallback>
       service_delete_callback_;
 

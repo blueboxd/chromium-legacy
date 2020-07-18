@@ -36,20 +36,6 @@ namespace printing {
 
 namespace {
 
-// Convert from a ColorMode setting to a print-color-mode value from PWG 5100.13
-const char* GetColorModelForMode(int color_mode) {
-  const char* mode_string;
-  base::Optional<bool> is_color = IsColorModelSelected(color_mode);
-  if (is_color.has_value()) {
-    mode_string = is_color.value() ? CUPS_PRINT_COLOR_MODE_COLOR
-                                   : CUPS_PRINT_COLOR_MODE_MONOCHROME;
-  } else {
-    mode_string = nullptr;
-  }
-
-  return mode_string;
-}
-
 // Returns a new char buffer which is a null-terminated copy of |value|.  The
 // caller owns the returned string.
 char* DuplicateString(const base::StringPiece value) {
@@ -138,7 +124,7 @@ std::vector<ScopedCupsOption> SettingsToCupsOptions(
   std::vector<ScopedCupsOption> options;
   options.push_back(
       ConstructOption(kIppColor,
-                      GetColorModelForMode(settings.color())));  // color
+                      GetIppColorModelForMode(settings.color())));  // color
   options.push_back(ConstructOption(kIppDuplex, sides));         // duplexing
   options.push_back(
       ConstructOption(kIppMedia,

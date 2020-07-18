@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/embedded_content_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
@@ -52,7 +53,8 @@ void EmbeddedObjectPainter::PaintReplaced(const PaintInfo& paint_info,
 
   PhysicalRect content_rect = layout_embedded_object_.PhysicalContentBoxRect();
   content_rect.Move(paint_offset);
-  DrawingRecorder recorder(context, layout_embedded_object_, paint_info.phase);
+  BoxDrawingRecorder recorder(context, layout_embedded_object_,
+                              paint_info.phase, paint_offset);
 
   Font font = ReplacementTextFont();
   const SimpleFontData* font_data = font.PrimaryFont();

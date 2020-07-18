@@ -2082,6 +2082,10 @@ jumbo_source_set("browser") {
     ]
   }
 
+  if (is_chromecast) {
+    deps += [ "//chromecast:chromecast_buildflags" ]
+  }
+
   if (is_chromecast && is_linux) {
     sources += [
       "tracing/cast_tracing_agent.cc",

@@ -34,6 +34,8 @@ class GPU_GLES2_EXPORT SharedImageVideo
       const Mailbox& mailbox,
       const gfx::Size& size,
       const gfx::ColorSpace color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       scoped_refptr<StreamTextureSharedImageInterface> stream_texture_sii,
       std::unique_ptr<gles2::AbstractTexture> abstract_texture,
       scoped_refptr<SharedContextState> shared_context_state,

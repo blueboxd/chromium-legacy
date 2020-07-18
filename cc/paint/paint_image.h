@@ -234,7 +234,7 @@ class CC_PAINT_EXPORT PaintImage {
   // Avoid using this API unless actual pixels are needed.
   // For other cases, prefer using PaintImage APIs directly or use
   // GetSkImageInfo() for metadata about the SkImage.
-  const sk_sp<SkImage>& GetRasterSkImage() const;
+  sk_sp<SkImage> GetRasterSkImage() const;
 
   SkImageInfo GetSkImageInfo() const;
 

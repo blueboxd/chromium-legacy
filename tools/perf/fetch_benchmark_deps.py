@@ -7,10 +7,11 @@
 
 import argparse
 import json
+import logging
+import multiprocessing
 import optparse
 import os
 import sys
-import logging
 
 from chrome_telemetry_build import chromium_config
 from core import benchmark_finders
@@ -121,8 +122,12 @@ def main(args):
       raw_input(
           'No benchmark name is specified. Fetching all benchmark deps. '
           'Press enter to continue...')
-    for b in benchmark_finders.GetOfficialBenchmarks():
-      deps[b.Name()] = _FetchDepsForBenchmark(b)
+    benchmarks = benchmark_finders.GetOfficialBenchmarks()
+    p = multiprocessing.Pool()
+    results = p.map(_FetchDepsForBenchmark, benchmarks)
+    p.terminate()
+    for benchmark, result in zip(benchmarks, results):
+      deps[benchmark.Name()] = result
 
   if options.output_deps:
     with open(options.output_deps, 'w') as outfile:

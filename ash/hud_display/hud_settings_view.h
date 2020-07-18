@@ -5,6 +5,9 @@
 #ifndef ASH_HUD_DISPLAY_HUD_SETTINGS_VIEW_H_
 #define ASH_HUD_DISPLAY_HUD_SETTINGS_VIEW_H_
 
+#include <memory>
+#include <vector>
+
 #include "ash/hud_display/hud_constants.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/button/button.h"
@@ -12,6 +15,8 @@
 
 namespace ash {
 namespace hud_display {
+
+class HUDCheckboxHandler;
 
 class HUDSettingsView : public views::ButtonListener, public views::View {
  public:
@@ -32,6 +37,9 @@ class HUDSettingsView : public views::ButtonListener, public views::View {
 
   // Shows/hides the view.
   void ToggleVisibility();
+
+ private:
+  std::vector<std::unique_ptr<HUDCheckboxHandler>> checkbox_handlers_;
 };
 
 }  // namespace hud_display

@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/layout/layout_html_canvas.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -58,7 +59,8 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
                                                   paint_info.phase))
     return;
 
-  DrawingRecorder recorder(context, layout_html_canvas_, paint_info.phase);
+  BoxDrawingRecorder recorder(context, layout_html_canvas_, paint_info.phase,
+                              paint_offset);
   ScopedInterpolationQuality interpolation_quality_scope(
       context, InterpolationQualityForCanvas(layout_html_canvas_.StyleRef()));
   canvas->Paint(context, paint_rect, flatten_composited_layers);

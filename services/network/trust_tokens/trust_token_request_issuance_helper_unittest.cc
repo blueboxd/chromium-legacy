@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/no_destructor.h"
 #include "base/test/task_environment.h"
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"

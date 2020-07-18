@@ -278,12 +278,13 @@ ExtensionFunction::ResponseAction SerialFlushFunction::Run() {
   if (!connection)
     return RespondNow(Error(kErrorSerialConnectionNotFound));
 
-  connection->Flush(base::BindOnce(&SerialFlushFunction::OnFlushed, this));
+  connection->Flush(device::mojom::SerialPortFlushMode::kReceiveAndTransmit,
+                    base::BindOnce(&SerialFlushFunction::OnFlushed, this));
   return RespondLater();
 }
 
-void SerialFlushFunction::OnFlushed(bool success) {
-  Respond(OneArgument(std::make_unique<base::Value>(success)));
+void SerialFlushFunction::OnFlushed() {
+  Respond(OneArgument(std::make_unique<base::Value>(true)));
 }
 
 SerialSetPausedFunction::SerialSetPausedFunction() = default;

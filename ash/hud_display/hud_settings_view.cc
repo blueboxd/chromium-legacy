@@ -5,14 +5,75 @@
 #include "ash/hud_display/hud_settings_view.h"
 
 #include "ash/hud_display/hud_properties.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
+#include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/host/host_frame_sink_manager.h"
+#include "ui/aura/env.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
 namespace hud_display {
+
+class HUDCheckboxHandler {
+ public:
+  HUDCheckboxHandler(
+      views::Checkbox* checkbox,
+      base::RepeatingCallback<void(views::Checkbox*)> update_state,
+      base::RepeatingCallback<void(views::Checkbox*)> handle_click)
+      : checkbox_(checkbox),
+        update_state_(update_state),
+        handle_click_(handle_click) {}
+
+  HUDCheckboxHandler(const HUDCheckboxHandler&) = delete;
+  HUDCheckboxHandler& operator=(const HUDCheckboxHandler&) = delete;
+
+  void UpdateState() const { update_state_.Run(checkbox_); }
+  void HandleClick() const { handle_click_.Run(checkbox_); }
+
+  const views::Checkbox* checkbox() const { return checkbox_; }
+
+ private:
+  views::Checkbox* const checkbox_;  // not owned.
+  base::RepeatingCallback<void(views::Checkbox*)> update_state_;
+  base::RepeatingCallback<void(views::Checkbox*)> handle_click_;
+};
+
+namespace {
+
+base::RepeatingCallback<void(views::Checkbox*)> GetUpdateStateCallback(
+    const bool viz::DebugRendererSettings::*field) {
+  return base::BindRepeating(
+      [](const bool viz::DebugRendererSettings::*field,
+         views::Checkbox* checkbox) {
+        checkbox->SetChecked(aura::Env::GetInstance()
+                                 ->context_factory()
+                                 ->GetHostFrameSinkManager()
+                                 ->debug_renderer_settings().*
+                             field);
+      },
+      field);
+}
+
+base::RepeatingCallback<void(views::Checkbox*)> GetHandleClickCallback(
+    bool viz::DebugRendererSettings::*field) {
+  return base::BindRepeating(
+      [](bool viz::DebugRendererSettings::*field, views::Checkbox* checkbox) {
+        viz::HostFrameSinkManager* manager = aura::Env::GetInstance()
+                                                 ->context_factory()
+                                                 ->GetHostFrameSinkManager();
+        viz::DebugRendererSettings debug_settings =
+            manager->debug_renderer_settings();
+        debug_settings.*field = checkbox->GetChecked();
+        manager->UpdateDebugRendererSettings(debug_settings);
+      },
+      field);
+}
+
+}  // anonymous namespace
 
 BEGIN_METADATA(HUDSettingsView)
 METADATA_PARENT_CLASS(View)
@@ -30,33 +91,57 @@ HUDSettingsView::HUDSettingsView() {
   SetLayoutManager(std::move(layout_manager));
   SetBorder(views::CreateSolidBorder(1, kDefaultColor));
 
-  // Use this to add checkboxes like:
-  // add_checkbox(this, base::ASCIIToUTF16("test1"));
   auto add_checkbox = [](HUDSettingsView* self,
-                         const base::string16& text) -> const views::Checkbox* {
+                         const base::string16& text) -> views::Checkbox* {
     auto checkbox = std::make_unique<views::Checkbox>(text, self);
-    const views::Checkbox* result = checkbox.get();
+    views::Checkbox* result = checkbox.get();
     checkbox->SetEnabledTextColors(kDefaultColor);
     checkbox->SetProperty(kHUDClickHandler, HTCLIENT);
     self->AddChildView(std::move(checkbox));
     return result;
   };
 
-  // No checkboxes for now.
-  ALLOW_UNUSED_LOCAL(add_checkbox);
+  checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(
+      add_checkbox(this, base::ASCIIToUTF16("Tint composited content")),
+      GetUpdateStateCallback(
+          &viz::DebugRendererSettings::tint_composited_content),
+      GetHandleClickCallback(
+          &viz::DebugRendererSettings::tint_composited_content)));
+  checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(
+      add_checkbox(this, base::ASCIIToUTF16("Show overdraw feedback")),
+      GetUpdateStateCallback(
+          &viz::DebugRendererSettings::show_overdraw_feedback),
+      GetHandleClickCallback(
+          &viz::DebugRendererSettings::show_overdraw_feedback)));
+  checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(
+      add_checkbox(this, base::ASCIIToUTF16("Show DC layer debug borders")),
+      GetUpdateStateCallback(
+          &viz::DebugRendererSettings::show_dc_layer_debug_borders),
+      GetHandleClickCallback(
+          &viz::DebugRendererSettings::show_dc_layer_debug_borders)));
 }
 
 HUDSettingsView::~HUDSettingsView() = default;
 
 void HUDSettingsView::ButtonPressed(views::Button* sender,
                                     const ui::Event& /*event*/) {
-  const views::Checkbox* checkbox = static_cast<views::Checkbox*>(sender);
-  DVLOG(1) << "HUDSettingsView::ButtonPressed(): "
-           << (checkbox->GetChecked() ? "Checked" : "Uncheked");
+  for (const auto& handler : checkbox_handlers_) {
+    if (sender != handler->checkbox())
+      continue;
+
+    handler->HandleClick();
+    break;
+  }
 }
 
 void HUDSettingsView::ToggleVisibility() {
-  SetVisible(!GetVisible());
+  const bool is_shown = !GetVisible();
+  if (is_shown) {
+    for (const auto& handler : checkbox_handlers_) {
+      handler->UpdateState();
+    }
+  }
+  SetVisible(is_shown);
 }
 
 }  // namespace hud_display

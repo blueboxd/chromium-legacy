@@ -78,9 +78,12 @@ export class Viewport {
    * @param {number} defaultZoom The default zoom level.
    * @param {number} topToolbarHeight The number of pixels that should initially
    *     be left blank above the document for the toolbar.
+   * @param {boolean} topToolbarFixed True if the top toolbar is fixed and does
+   *     not automatically disappear in fit to page mode.
    */
   constructor(
-      window, sizer, content, scrollbarWidth, defaultZoom, topToolbarHeight) {
+      window, sizer, content, scrollbarWidth, defaultZoom, topToolbarHeight,
+      topToolbarFixed) {
     /** @private {!Window} */
     this.window_ = window;
 
@@ -98,6 +101,9 @@ export class Viewport {
 
     /** @private {number} */
     this.topToolbarHeight_ = topToolbarHeight;
+
+    /** @private {boolean} */
+    this.topToolbarFixed_ = topToolbarFixed;
 
     /** @private {function():void} */
     this.viewportChangedCallback_ = function() {};
@@ -798,8 +804,12 @@ export class Viewport {
             'true.');
 
     // First compute the zoom without scrollbars.
+    let height = this.window_.innerHeight;
+    if (this.topToolbarFixed_) {
+      height -= this.topToolbarHeight_;
+    }
     let zoom = this.computeFittingZoomGivenDimensions_(
-        fitWidth, fitHeight, this.window_.innerWidth, this.window_.innerHeight,
+        fitWidth, fitHeight, this.window_.innerWidth, height,
         pageDimensions.width, pageDimensions.height);
 
     // Check if there needs to be any scrollbars.
@@ -826,7 +836,7 @@ export class Viewport {
     // Compute available window space.
     const windowWithScrollbars = {
       width: this.window_.innerWidth,
-      height: this.window_.innerHeight
+      height: height,
     };
     if (needsScrollbars.horizontal) {
       windowWithScrollbars.height -= scrollbarWidth;
@@ -922,9 +932,10 @@ export class Viewport {
       };
       this.setZoomInternal_(this.computeFittingZoom_(dimensions, false, true));
       if (scrollToTopOfPage) {
+        const offset = this.topToolbarFixed_ ? this.topToolbarHeight_ : 0;
         this.position = {
           x: 0,
-          y: this.pageDimensions_[page].y * this.getZoom()
+          y: this.pageDimensions_[page].y * this.getZoom() - offset,
         };
       }
       this.updateViewport_();
@@ -957,9 +968,10 @@ export class Viewport {
       };
       this.setZoomInternal_(this.computeFittingZoom_(dimensions, true, true));
       if (scrollToTopOfPage) {
+        const offset = this.topToolbarFixed_ ? this.topToolbarHeight_ : 0;
         this.position = {
           x: 0,
-          y: this.pageDimensions_[page].y * this.getZoom()
+          y: this.pageDimensions_[page].y * this.getZoom() - offset,
         };
       }
       this.updateViewport_();
@@ -1219,7 +1231,7 @@ export class Viewport {
       // Unless we're in fit to page or fit to height mode, scroll above the
       // page by |this.topToolbarHeight_| so that the toolbar isn't covering it
       // initially.
-      if (!this.isPagedMode_()) {
+      if (!this.isPagedMode_() || this.topToolbarFixed_) {
         toolbarOffset = this.topToolbarHeight_;
       }
       this.position = {

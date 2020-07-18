@@ -17,6 +17,7 @@ class SharedImageRepresentationGLTextureClient {
  public:
   virtual bool SharedImageRepresentationGLTextureBeginAccess() = 0;
   virtual void SharedImageRepresentationGLTextureEndAccess() = 0;
+  virtual void SharedImageRepresentationGLTextureRelease(bool have_context) = 0;
 };
 
 // Representation of a SharedImageBackingGLTexture or SharedImageBackingGLImage
@@ -30,6 +31,7 @@ class SharedImageRepresentationGLTextureImpl
       SharedImageRepresentationGLTextureClient* client,
       MemoryTypeTracker* tracker,
       gles2::Texture* texture);
+  ~SharedImageRepresentationGLTextureImpl() override;
 
  private:
   // SharedImageRepresentationGLTexture:
@@ -171,6 +173,8 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
                               viz::ResourceFormat format,
                               const gfx::Size& size,
                               const gfx::ColorSpace& color_space,
+                              GrSurfaceOrigin surface_origin,
+                              SkAlphaType alpha_type,
                               uint32_t usage,
                               bool is_passthrough);
   SharedImageBackingGLTexture(const SharedImageBackingGLTexture&) = delete;
@@ -234,6 +238,8 @@ class SharedImageBackingGLImage
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       const SharedImageBackingGLCommon::InitializeGLTextureParams& params,
       const SharedImageBackingFactoryGLTexture::UnpackStateAttribs& attribs,
@@ -283,6 +289,7 @@ class SharedImageBackingGLImage
   // SharedImageRepresentationGLTextureClient:
   bool SharedImageRepresentationGLTextureBeginAccess() override;
   void SharedImageRepresentationGLTextureEndAccess() override;
+  void SharedImageRepresentationGLTextureRelease(bool have_context) override;
 
   bool IsPassthrough() const { return is_passthrough_; }
 
@@ -293,10 +300,19 @@ class SharedImageBackingGLImage
   bool BindOrCopyImageIfNeeded();
   bool image_bind_or_copy_needed_ = true;
 
+  void RetainGLTexture();
+  void ReleaseGLTexture(bool have_context);
+  size_t gl_texture_retain_count_ = 0;
+  bool gl_texture_retained_for_legacy_mailbox_ = false;
+
   const SharedImageBackingGLCommon::InitializeGLTextureParams gl_params_;
   const SharedImageBackingFactoryGLTexture::UnpackStateAttribs
       gl_unpack_attribs_;
   const bool is_passthrough_;
+
+  // This is the cleared rect used by ClearedRect and SetClearedRect when
+  // |texture_| is nullptr.
+  gfx::Rect cleared_rect_;
 
   gles2::Texture* rgb_emulation_texture_ = nullptr;
   gles2::Texture* texture_ = nullptr;

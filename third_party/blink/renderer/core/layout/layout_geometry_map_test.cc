@@ -490,8 +490,14 @@ TEST_F(LayoutGeometryMapTest, FloatUnderInlineLayer) {
   }
 
   rgm.PopMappingsToAncestor(span->Layer());
-  EXPECT_EQ(PhysicalRect(203, 104, 10, 8), rgm.MapToAncestor(rect, container));
-  EXPECT_EQ(PhysicalRect(263, 154, 10, 8), rgm.MapToAncestor(rect, nullptr));
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(PhysicalRect(3, 4, 10, 8), rgm.MapToAncestor(rect, container));
+    EXPECT_EQ(PhysicalRect(63, 54, 10, 8), rgm.MapToAncestor(rect, nullptr));
+  } else {
+    EXPECT_EQ(PhysicalRect(203, 104, 10, 8),
+              rgm.MapToAncestor(rect, container));
+    EXPECT_EQ(PhysicalRect(263, 154, 10, 8), rgm.MapToAncestor(rect, nullptr));
+  }
 
   rgm.PushMappingsToAncestor(floating, span);
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {

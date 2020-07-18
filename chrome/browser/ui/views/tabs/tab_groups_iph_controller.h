@@ -25,9 +25,6 @@ class Browser;
 // Manages in-product help for tab groups. Watches for relevant events
 // in a browser window, communicates them to the IPH backend, and
 // displays IPH when appropriate.
-//
-// This doesn't actually show the IPH yet. TODO(crbug.com/1022943): show
-// a promo.
 class TabGroupsIPHController : public TabStripModelObserver,
                                public views::WidgetObserver {
  public:
@@ -40,7 +37,16 @@ class TabGroupsIPHController : public TabStripModelObserver,
   TabGroupsIPHController(Browser* browser, GetTabViewCallback get_tab_view);
   ~TabGroupsIPHController() override;
 
+  // Whether the add-to-new-group item in the tab context menu should be
+  // highlighted. Must be checked before TabContextMenuOpened() is
+  // called.
+  bool ShouldHighlightContextMenuItem();
+
+  // Should be called when a tab context menu is opened.
   void TabContextMenuOpened();
+
+  // Likewise, should be called when a tab context menu is closed.
+  void TabContextMenuClosed();
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(
@@ -53,16 +59,26 @@ class TabGroupsIPHController : public TabStripModelObserver,
   void OnWidgetClosing(views::Widget* widget) override;
   void OnWidgetDestroying(views::Widget* widget) override;
 
+  views::Widget* promo_widget_for_testing() { return promo_widget_; }
+
  private:
   void HandlePromoClose();
+
+  // Notify the backend that the promo finished.
+  void Dismissed();
 
   // The IPH backend for the profile.
   feature_engagement::Tracker* const tracker_;
 
   GetTabViewCallback get_tab_view_;
 
-  // The promo widget. Only non-null while it is showing.
+  // The promo bubble's widget. Only non-null while it is showing.
   views::Widget* promo_widget_ = nullptr;
+
+  // True if the user opened a tab context menu while the bubble was
+  // showing. A promo is now showing in the menu. When true, we wait
+  // until the menu is closed to notify the backend of dismissal.
+  bool showing_in_menu_ = false;
 
   ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
 };

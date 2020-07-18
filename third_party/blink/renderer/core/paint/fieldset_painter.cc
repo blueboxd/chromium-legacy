@@ -36,6 +36,9 @@ FieldsetPaintInfo CreateFieldsetPaintInfo(const LayoutBox& fieldset,
 void FieldsetPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) {
+  if (layout_fieldset_.StyleRef().Visibility() != EVisibility::kVisible)
+    return;
+
   PhysicalRect paint_rect(paint_offset, layout_fieldset_.Size());
   LayoutBox* legend = layout_fieldset_.FindInFlowLegend();
   if (!legend || paint_info.DescendantPaintingBlocked()) {
@@ -53,8 +56,8 @@ void FieldsetPainter::PaintBoxDecorationBackground(
         CreateFieldsetPaintInfo(layout_fieldset_, *legend);
     paint_rect.Contract(fieldset_paint_info.border_outsets);
 
-    DrawingRecorder recorder(paint_info.context, layout_fieldset_,
-                             paint_info.phase);
+    BoxDrawingRecorder recorder(paint_info.context, layout_fieldset_,
+                                paint_info.phase, paint_offset);
 
     if (box_decoration_data.ShouldPaintShadow()) {
       BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect,
@@ -115,8 +118,8 @@ void FieldsetPainter::PaintMask(const PaintInfo& paint_info,
       CreateFieldsetPaintInfo(layout_fieldset_, *legend);
   paint_rect.Contract(fieldset_paint_info.border_outsets);
 
-  DrawingRecorder recorder(paint_info.context, layout_fieldset_,
-                           paint_info.phase);
+  BoxDrawingRecorder recorder(paint_info.context, layout_fieldset_,
+                              paint_info.phase, paint_offset);
   BoxPainter(layout_fieldset_).PaintMaskImages(paint_info, paint_rect);
 }
 

@@ -39,6 +39,8 @@ class SharedImageBackingD3D : public ClearTrackingSharedImageBacking {
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain,
       scoped_refptr<gles2::TexturePassthrough> texture,

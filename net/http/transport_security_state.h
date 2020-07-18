@@ -303,10 +303,10 @@ class NET_EXPORT TransportSecurityState {
     virtual void Send(const GURL& report_uri,
                       base::StringPiece content_type,
                       base::StringPiece report,
-                      const base::Callback<void()>& success_callback,
-                      const base::Callback<void(const GURL&,
-                                                int /* net_error */,
-                                                int /* http_response_code */)>&
+                      base::OnceCallback<void()> success_callback,
+                      base::OnceCallback<void(const GURL&,
+                                              int /* net_error */,
+                                              int /* http_response_code */)>
                           error_callback) = 0;
 
    protected:

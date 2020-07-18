@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
@@ -116,8 +117,8 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info) {
           paint_info.context, layout_image_, DisplayItem::kImageAreaFocusRing))
     return;
 
-  DrawingRecorder recorder(paint_info.context, layout_image_,
-                           DisplayItem::kImageAreaFocusRing);
+  BoxDrawingRecorder recorder(paint_info.context, layout_image_,
+                              DisplayItem::kImageAreaFocusRing, paint_offset);
 
   // FIXME: Clip path instead of context when Skia pathops is ready.
   // https://crbug.com/251206
@@ -169,7 +170,8 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
   if (!has_image) {
     // Draw an outline rect where the image should be.
     IntRect paint_rect = PixelSnappedIntRect(content_rect);
-    DrawingRecorder recorder(context, layout_image_, paint_info.phase);
+    BoxDrawingRecorder recorder(context, layout_image_, paint_info.phase,
+                                paint_offset);
     context.SetStrokeStyle(kSolidStroke);
     context.SetStrokeColor(Color::kLightGray);
     context.SetFillColor(Color::kTransparent);
@@ -180,7 +182,8 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
   PhysicalRect paint_rect = layout_image_.ReplacedContentRect();
   paint_rect.offset += paint_offset;
 
-  DrawingRecorder recorder(context, layout_image_, paint_info.phase);
+  BoxDrawingRecorder recorder(context, layout_image_, paint_info.phase,
+                              paint_offset);
   DCHECK(paint_info.PaintContainer());
   PaintIntoRect(context, paint_rect, content_rect);
 }

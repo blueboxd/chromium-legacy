@@ -7,10 +7,6 @@ import("//tools/polymer/html_to_js.gni")
 
 js_type_check("closure_compile") {
   is_polymer3 = true
-  closure_flags = default_closure_args + [
-                    "js_module_root=../../chrome/browser/resources/welcome/",
-                    "js_module_root=gen/chrome/browser/resources/welcome/",
-                  ]
   deps = [
     ":bookmark_proxy",
     ":module_metrics_proxy",

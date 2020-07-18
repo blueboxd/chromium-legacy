@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_details_marker.h"
 #include "third_party/blink/renderer/core/paint/block_painter.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
@@ -31,8 +32,9 @@ void DetailsMarkerPainter::Paint(const PaintInfo& paint_info) {
     return;
 
   const auto& local_paint_info = paint_state.GetPaintInfo();
-  DrawingRecorder recorder(local_paint_info.context, layout_details_marker_,
-                           local_paint_info.phase);
+  BoxDrawingRecorder recorder(local_paint_info.context, layout_details_marker_,
+                              local_paint_info.phase,
+                              paint_state.PaintOffset());
   const Color color(layout_details_marker_.ResolveColor(GetCSSPropertyColor()));
   local_paint_info.context.SetFillColor(color);
 

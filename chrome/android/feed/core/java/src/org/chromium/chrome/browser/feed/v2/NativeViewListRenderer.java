@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.feed.v2;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -55,17 +57,22 @@ public class NativeViewListRenderer extends RecyclerView.Adapter<NativeViewListR
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        FrameLayout frameLayout = new FrameLayout(parent.getContext());
+        frameLayout.setLayoutParams(
+                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         // viewType is same as position.
         int position = viewType;
+        View v;
         if (mManager.isNativeView(position)) {
-            View v = mManager.getNativeView(position, parent);
-            return new ViewHolder(v);
+            v = mManager.getNativeView(position, parent);
         } else {
-            TextView v = new TextView(ContextUtils.getApplicationContext());
+            TextView textView = new TextView(ContextUtils.getApplicationContext());
             String message = "Unable to render external view";
-            v.setText(message);
-            return new ViewHolder(v);
+            textView.setText(message);
+            v = textView;
         }
+        frameLayout.addView(v);
+        return new ViewHolder(frameLayout);
     }
 
     @Override

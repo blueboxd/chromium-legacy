@@ -46,7 +46,6 @@ luci.list_view(
         'try/chromeos-kevin-rel',
         'try/chromium_presubmit',
         'try/closure_compilation',
-        'try/codesearch-gen-chromium-win-try',
         'try/fuchsia-angle-rel',
         'try/fuchsia-compile-x64-dbg',
         'try/gpu-fyi-try-android-l-nexus-5-32',

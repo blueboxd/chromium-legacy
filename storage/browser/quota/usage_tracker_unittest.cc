@@ -45,7 +45,7 @@ class UsageTrackerTestQuotaClient : public QuotaClient {
 
   void GetOriginUsage(const url::Origin& origin,
                       StorageType type,
-                      GetUsageCallback callback) override {
+                      GetOriginUsageCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
     int64_t usage = GetUsage(origin);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -53,7 +53,7 @@ class UsageTrackerTestQuotaClient : public QuotaClient {
   }
 
   void GetOriginsForType(StorageType type,
-                         GetOriginsCallback callback) override {
+                         GetOriginsForTypeCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
     std::vector<url::Origin> origins;
     for (const auto& origin_usage_pair : origin_usage_map_)
@@ -64,7 +64,7 @@ class UsageTrackerTestQuotaClient : public QuotaClient {
 
   void GetOriginsForHost(StorageType type,
                          const std::string& host,
-                         GetOriginsCallback callback) override {
+                         GetOriginsForHostCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
     std::vector<url::Origin> origins;
     for (const auto& origin_usage_pair : origin_usage_map_) {
@@ -77,7 +77,7 @@ class UsageTrackerTestQuotaClient : public QuotaClient {
 
   void DeleteOriginData(const url::Origin& origin,
                         StorageType type,
-                        DeletionCallback callback) override {
+                        DeleteOriginDataCallback callback) override {
     EXPECT_EQ(StorageType::kTemporary, type);
     origin_usage_map_.erase(origin);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -85,7 +85,7 @@ class UsageTrackerTestQuotaClient : public QuotaClient {
   }
 
   void PerformStorageCleanup(blink::mojom::StorageType type,
-                             base::OnceClosure callback) override {
+                             PerformStorageCleanupCallback callback) override {
     std::move(callback).Run();
   }
 

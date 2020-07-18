@@ -23,6 +23,7 @@
 #include "device/base/features.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluetooth_agent_manager_client.h"
+#include "device/bluetooth/dbus/bluetooth_battery_client.h"
 #include "device/bluetooth/dbus/bluetooth_debug_manager_client.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_characteristic_client.h"
@@ -113,6 +114,11 @@ BluetoothDebugManagerClient*
 bluez::BluezDBusManager::GetBluetoothDebugManagerClient() {
   DCHECK(object_manager_support_known_);
   return client_bundle_->bluetooth_debug_manager_client();
+}
+
+BluetoothBatteryClient* bluez::BluezDBusManager::GetBluetoothBatteryClient() {
+  DCHECK(object_manager_support_known_);
+  return client_bundle_->bluetooth_battery_client();
 }
 
 BluetoothDeviceClient* bluez::BluezDBusManager::GetBluetoothDeviceClient() {

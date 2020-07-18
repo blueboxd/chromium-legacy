@@ -66,19 +66,21 @@ class CONTENT_EXPORT LegacyCacheStorageManager : public CacheStorageManager {
   void GetAllOriginsUsage(
       CacheStorageOwner owner,
       CacheStorageContext::GetUsageInfoCallback callback) override;
-  void GetOriginUsage(const url::Origin& origin_url,
-                      CacheStorageOwner owner,
-                      storage::QuotaClient::GetUsageCallback callback) override;
-  void GetOrigins(CacheStorageOwner owner,
-                  storage::QuotaClient::GetOriginsCallback callback) override;
+  void GetOriginUsage(
+      const url::Origin& origin_url,
+      CacheStorageOwner owner,
+      storage::QuotaClient::GetOriginUsageCallback callback) override;
+  void GetOrigins(
+      CacheStorageOwner owner,
+      storage::QuotaClient::GetOriginsForTypeCallback callback) override;
   void GetOriginsForHost(
       const std::string& host,
       CacheStorageOwner owner,
-      storage::QuotaClient::GetOriginsCallback callback) override;
+      storage::QuotaClient::GetOriginsForHostCallback callback) override;
   void DeleteOriginData(
       const url::Origin& origin,
       CacheStorageOwner owner,
-      storage::QuotaClient::DeletionCallback callback) override;
+      storage::QuotaClient::DeleteOriginDataCallback callback) override;
   void DeleteOriginData(const url::Origin& origin,
                         CacheStorageOwner owner) override;
 
@@ -118,11 +120,12 @@ class CONTENT_EXPORT LegacyCacheStorageManager : public CacheStorageManager {
       std::unique_ptr<std::vector<StorageUsageInfo>> usage_info,
       CacheStorageContext::GetUsageInfoCallback callback);
 
-  void DeleteOriginDidClose(const url::Origin& origin,
-                            CacheStorageOwner owner,
-                            storage::QuotaClient::DeletionCallback callback,
-                            std::unique_ptr<LegacyCacheStorage> cache_storage,
-                            int64_t origin_size);
+  void DeleteOriginDidClose(
+      const url::Origin& origin,
+      CacheStorageOwner owner,
+      storage::QuotaClient::DeleteOriginDataCallback callback,
+      std::unique_ptr<LegacyCacheStorage> cache_storage,
+      int64_t origin_size);
 
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner() const {
     return cache_task_runner_;

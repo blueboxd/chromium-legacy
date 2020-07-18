@@ -4147,6 +4147,18 @@ void RenderFrameImpl::DidCommitNavigation(
                "RenderFrameImpl::didStartProvisionalLoad", "id", routing_id_,
                "url", document_loader->GetUrl().GetString().Utf8());
 
+  // Install factories as early as possible - it needs to happen before the
+  // newly committed document starts any subresource fetches.  In particular,
+  // this needs to happen before invoking
+  // RenderFrameObserver::ReadyToCommitNavigation below.
+  //
+  // Note that |pending_loader_factories_| might be missing in some cases - one
+  // example is when committing an empty document synchronously, without a
+  // roundtrip to the browser process - this is what happens as a result of
+  // `window.open('', '_blank').
+  if (pending_loader_factories_)
+    loader_factories_ = std::move(pending_loader_factories_);
+
   // TODO(dgozman): call DidStartNavigation in various places where we call
   // CommitNavigation() on the frame.
   if (!navigation_state->was_initiated_in_this_frame()) {
@@ -4158,9 +4170,6 @@ void RenderFrameImpl::DidCommitNavigation(
 
   for (auto& observer : observers_)
     observer.ReadyToCommitNavigation(document_loader);
-
-  if (pending_loader_factories_)
-    loader_factories_ = std::move(pending_loader_factories_);
 
   for (auto& observer : observers_)
     observer.DidCreateNewDocument();

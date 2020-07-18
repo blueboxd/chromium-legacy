@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/list_marker.h"
 #include "third_party/blink/renderer/core/layout/list_marker_text.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
@@ -72,8 +73,9 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
   const auto& local_paint_info = paint_state.GetPaintInfo();
   auto box_origin = paint_state.PaintOffset().ToLayoutPoint();
 
-  DrawingRecorder recorder(local_paint_info.context, layout_list_marker_,
-                           local_paint_info.phase);
+  BoxDrawingRecorder recorder(local_paint_info.context, layout_list_marker_,
+                              local_paint_info.phase,
+                              paint_state.PaintOffset());
 
   LayoutRect box(box_origin, layout_list_marker_.Size());
 

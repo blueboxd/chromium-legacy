@@ -157,7 +157,7 @@ TEST_F(PathServiceTest, CheckedGetFailure) {
   constexpr int kBadKey = PATH_END;
   FilePath path;
   EXPECT_FALSE(PathService::Get(kBadKey, &path));
-  EXPECT_CHECK_DEATH(PathService::CheckedGet(kBadKey));
+  EXPECT_DEATH(PathService::CheckedGet(kBadKey), "Failed to get the path");
 }
 
 #endif  // GTEST_HAS_DEATH_TEST

@@ -25,6 +25,14 @@ function calculateScrollbarThickness() {
     return widthBefore - widthAfter;
 }
 
+// Returns the width of a acrollbar button. On platforms where there are no
+// scrollbar buttons (i.e. there are overlay scrollbars) returns 0.
+function calculateScrollbarButtonWidth() {
+    if (internals.overlayScrollbarsEnabled)
+        return 0;
+    return calculateScrollbarThickness();
+}
+
 // Resets scroll offsets (only supports LTR for now).
 function resetScrollOffset(scrollElement) {
   if(scrollElement !== undefined) {
@@ -90,6 +98,7 @@ const SCROLLBAR_SCROLL_PIXELS = 40;
   coordinates).
 */
 function downArrow(scroller) {
+  assert_true(!internals.overlayScrollbarsEnabled);
   const scrollerRect = scroller.getBoundingClientRect();
   const TRACK_WIDTH = calculateScrollbarThickness();
   const BUTTON_WIDTH = TRACK_WIDTH;
@@ -102,6 +111,7 @@ function downArrow(scroller) {
 }
 
 function upArrow(scroller) {
+  assert_true(!internals.overlayScrollbarsEnabled);
   const scrollerRect = scroller.getBoundingClientRect();
   const TRACK_WIDTH = calculateScrollbarThickness();
   const BUTTON_WIDTH = TRACK_WIDTH;
@@ -113,6 +123,7 @@ function upArrow(scroller) {
 }
 
 function leftArrow(scroller) {
+  assert_true(!internals.overlayScrollbarsEnabled);
   const scrollerRect = scroller.getBoundingClientRect();
   const TRACK_WIDTH = calculateScrollbarThickness();
   const BUTTON_WIDTH = TRACK_WIDTH;
@@ -124,6 +135,7 @@ function leftArrow(scroller) {
 }
 
 function rightArrow(scroller) {
+  assert_true(!internals.overlayScrollbarsEnabled);
   const scrollerRect = scroller.getBoundingClientRect();
   const TRACK_WIDTH = calculateScrollbarThickness();
   const BUTTON_WIDTH = TRACK_WIDTH;
@@ -133,4 +145,23 @@ function rightArrow(scroller) {
     y: scrollerRect.bottom  - BUTTON_WIDTH / 2
   };
   return cssClientToCssVisual(right_arrow);
+}
+
+// Returns a point that falls within the given scroller's vertical thumb part.
+function verticalThumb(scroller) {
+  assert_equals(scroller.scrollTop, 0, "verticalThumb() requires scroller to have scrollTop of 0");
+  const TRACK_WIDTH = calculateScrollbarThickness();
+  const BUTTON_WIDTH = calculateScrollbarButtonWidth();
+
+  if (scroller === document.documentElement) {
+    // HTML element is special, since scrollbars are not part of its client rect
+    // and page scale doesn't affect the scrollbars. Use window properties instead.
+    let x = window.innerWidth - TRACK_WIDTH / 2;
+    let y = BUTTON_WIDTH + 6;
+    return {x: x, y: y};
+  }
+  const scrollerRect = scroller.getBoundingClientRect();
+  const thumbPoint = { x : scrollerRect.right - TRACK_WIDTH / 2,
+                       y : scrollerRect.top + BUTTON_WIDTH + 2 };
+  return cssClientToCssVisual(thumbPoint);
 }

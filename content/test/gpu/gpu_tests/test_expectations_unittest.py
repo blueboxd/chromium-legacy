@@ -114,7 +114,7 @@ def _MapGpuDevicesToVendors(tag_sets):
 
 # No good way to reduce the number of return statements to the required level
 # without harming readability.
-# pylint: disable=too-many-return-statements
+# pylint: disable=too-many-return-statements,too-many-branches
 def _IsDriverTagDuplicated(driver_tag1, driver_tag2):
   if driver_tag1 == driver_tag2:
     return True
@@ -160,7 +160,7 @@ def _IsDriverTagDuplicated(driver_tag1, driver_tag2):
     return not gpu_helper.EvaluateVersionComparison(version1, 'le', version2)
   else:
     assert False
-# pylint: enable=too-many-return-statements
+# pylint: enable=too-many-return-statements,too-many-branches
 
 
 def _DoTagsConflict(t1, t2):

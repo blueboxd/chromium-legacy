@@ -239,6 +239,13 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return self.GetOverlayBotConfig(os_version_name, gpu.vendor_id,
                                     gpu.device_id)
 
+  def _GetAndAssertOverlayBotConfig(self):
+    overlay_bot_config = self.GetOverlayBotConfig()
+    if overlay_bot_config is None:
+      self.fail('Overlay bot config can not be determined')
+    assert overlay_bot_config.get('direct_composition', False)
+    return overlay_bot_config
+
   @staticmethod
   def _SwapChainPresentationModeToStr(presentation_mode):
     if presentation_mode == _SWAP_CHAIN_PRESENTATION_MODE_COMPOSED:
@@ -281,6 +288,40 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     else:
       self.fail('Trace markers for GPU category %s were not found' % category)
 
+  def _GetVideoPathExpectations(self, other_args):
+    """Helper method to get expectations for CheckVideoPath.
+
+    Args:
+      other_args: The |other_args| arg passed into the test.
+
+    Returns:
+      A _VideoExpectations instance with zero_copy, pixel_format, and no_overlay
+      filled in.
+    """
+    overlay_bot_config = self._GetAndAssertOverlayBotConfig()
+    expect_yuy2 = other_args.get('expect_yuy2', False)
+    expected = _VideoExpectations()
+    expected.zero_copy = other_args.get('zero_copy', False)
+    expected.pixel_format = "NV12"
+    expected.no_overlay = other_args.get('no_overlay', False)
+
+    supports_nv12_overlays = False
+    if overlay_bot_config.get('supports_overlays', False):
+      supports_yuy2_overlays = False
+      if overlay_bot_config['yuy2_overlay_support'] != 'NONE':
+        supports_yuy2_overlays = True
+      if overlay_bot_config['nv12_overlay_support'] != 'NONE':
+        supports_nv12_overlays = True
+      assert supports_yuy2_overlays or supports_nv12_overlays
+      if expect_yuy2 or not supports_nv12_overlays:
+        if overlay_bot_config['yuy2_overlay_support'] != 'SOFTWARE':
+          expected.pixel_format = "YUY2"
+    if not supports_nv12_overlays or overlay_bot_config[
+        'nv12_overlay_support'] == 'SOFTWARE':
+      expected.zero_copy = False
+
+    return expected
+
   def _EvaluateSuccess_CheckVideoPath(self, category, event_iterator,
                                       other_args):
     """Verifies Chrome goes down the code path as expected.
@@ -293,33 +334,8 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     os_name = self.browser.platform.GetOSName()
     assert os_name and os_name.lower() == 'win'
 
-    # Calculate expectations.
-    other_args = other_args if other_args is not None else {}
-    expect_yuy2 = other_args.get('expect_yuy2', False)
-    zero_copy = other_args.get('zero_copy', False)
-
-    overlay_bot_config = self.GetOverlayBotConfig()
-    if overlay_bot_config is None:
-      self.fail('Overlay bot config can not be determined')
-    assert overlay_bot_config.get('direct_composition', False)
-
-    expected_pixel_format = "NV12"
-    supports_nv12_overlays = False
-    if overlay_bot_config.get('supports_overlays', False):
-      supports_yuy2_overlays = False
-      if overlay_bot_config['yuy2_overlay_support'] != 'NONE':
-        supports_yuy2_overlays = True
-      if overlay_bot_config['nv12_overlay_support'] != 'NONE':
-        supports_nv12_overlays = True
-      assert supports_yuy2_overlays or supports_nv12_overlays
-      if expect_yuy2 or not supports_nv12_overlays:
-        if overlay_bot_config['yuy2_overlay_support'] != 'SOFTWARE':
-          expected_pixel_format = "YUY2"
-    if not supports_nv12_overlays or overlay_bot_config[
-        'nv12_overlay_support'] == 'SOFTWARE':
-      zero_copy = False
-
-    expect_no_overlay = other_args.get('no_overlay', False)
+    other_args = other_args or {}
+    expected = self._GetVideoPathExpectations(other_args)
 
     # Verify expectations through captured trace events.
     for event in event_iterator:
@@ -327,28 +343,48 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         continue
       if event.name != _SWAP_CHAIN_PRESENT_EVENT_NAME:
         continue
-      if expect_no_overlay:
+      if expected.no_overlay:
         self.fail('Expected no overlay got %s' % _SWAP_CHAIN_PRESENT_EVENT_NAME)
       detected_pixel_format = event.args.get('PixelFormat', None)
       if detected_pixel_format is None:
         self.fail('PixelFormat is missing from event %s' %
                   _SWAP_CHAIN_PRESENT_EVENT_NAME)
-      if expected_pixel_format != detected_pixel_format:
+      if expected.pixel_format != detected_pixel_format:
         self.fail('SwapChain pixel format mismatch, expected %s got %s' %
-                  (expected_pixel_format, detected_pixel_format))
+                  (expected.pixel_format, detected_pixel_format))
       detected_zero_copy = event.args.get('ZeroCopy', None)
       if detected_zero_copy is None:
         self.fail('ZeroCopy is missing from event %s' %
                   _SWAP_CHAIN_PRESENT_EVENT_NAME)
-      if zero_copy != detected_zero_copy:
+      if expected.zero_copy != detected_zero_copy:
         self.fail('ZeroCopy mismatch, expected %s got %s' %
-                  (zero_copy, detected_zero_copy))
+                  (expected.zero_copy, detected_zero_copy))
       break
     else:
-      if expect_no_overlay:
+      if expected.no_overlay:
         return
       self.fail(
           'Events with name %s were not found' % _SWAP_CHAIN_PRESENT_EVENT_NAME)
+
+  def _GetOverlayModeExpectations(self, other_args):
+    """Helper method to get expectations for CheckOverlayMode.
+
+    Args:
+      other_args: The |other_args| arg passed into the test.
+
+    Returns:
+      A _VideoExpectations instance with presentation_mode and no_overlay filled
+      in.
+    """
+    overlay_bot_config = self._GetAndAssertOverlayBotConfig()
+    expected = _VideoExpectations()
+    expected.presentation_mode = _SWAP_CHAIN_PRESENTATION_MODE_COMPOSED
+    expected.no_overlay = other_args.get('no_overlay', False)
+
+    if overlay_bot_config.get('supports_overlays', False):
+      if overlay_bot_config['nv12_overlay_support'] != 'SOFTWARE':
+        expected.presentation_mode = _SWAP_CHAIN_PRESENTATION_MODE_OVERLAY
+    return expected
 
   def _EvaluateSuccess_CheckOverlayMode(self, category, event_iterator,
                                         other_args):
@@ -356,18 +392,8 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     os_name = self.browser.platform.GetOSName()
     assert os_name and os_name.lower() == 'win'
 
-    overlay_bot_config = self.GetOverlayBotConfig()
-    if overlay_bot_config is None:
-      self.fail('Overlay bot config can not be determined')
-    assert overlay_bot_config.get('direct_composition', False)
-
-    expected_presentation_mode = _SWAP_CHAIN_PRESENTATION_MODE_COMPOSED
-    if overlay_bot_config.get('supports_overlays', False):
-      if overlay_bot_config['nv12_overlay_support'] != 'SOFTWARE':
-        expected_presentation_mode = _SWAP_CHAIN_PRESENTATION_MODE_OVERLAY
-
-    other_args = other_args if other_args is not None else {}
-    expect_no_overlay = other_args.get('no_overlay', False)
+    other_args = other_args or {}
+    expected = self._GetOverlayModeExpectations(other_args)
 
     presentation_mode_history = []
     for event in event_iterator:
@@ -375,7 +401,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         continue
       if event.name != _GET_STATISTICS_EVENT_NAME:
         continue
-      if expect_no_overlay:
+      if expected.no_overlay:
         self.fail('Expected no overlay got %s' % _GET_STATISTICS_EVENT_NAME)
       detected_presentation_mode = event.args.get('CompositionMode', None)
       if detected_presentation_mode is None:
@@ -383,7 +409,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                   _GET_STATISTICS_EVENT_NAME)
       presentation_mode_history.append(detected_presentation_mode)
 
-    if expect_no_overlay:
+    if expected.no_overlay:
       return
 
     valid_entry_found = False
@@ -393,12 +419,12 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           or mode == _SWAP_CHAIN_GET_FRAME_STATISTICS_MEDIA_FAILED):
         # Be more tolerant to avoid test flakiness
         continue
-      if mode != expected_presentation_mode:
+      if mode != expected.presentation_mode:
         if index >= len(presentation_mode_history) // 2:
           # Be more tolerant for the first half frames in non-overlay mode.
           self.fail('SwapChain presentation mode mismatch, expected %s got %s' %
                     (TraceIntegrationTest._SwapChainPresentationModeToStr(
-                        expected_presentation_mode),
+                        expected.presentation_mode),
                      TraceIntegrationTest._SwapChainPresentationModeListToStr(
                          presentation_mode_history)))
       valid_entry_found = True
@@ -439,6 +465,16 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
             os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
             'trace_test_expectations.txt')
     ]
+
+
+class _VideoExpectations(object):
+  """Struct-like object for passing around video test expectations."""
+
+  def __init__(self):
+    self.pixel_format = None
+    self.zero_copy = None
+    self.no_overlay = None
+    self.presentation_mode = None
 
 
 def load_tests(loader, tests, pattern):

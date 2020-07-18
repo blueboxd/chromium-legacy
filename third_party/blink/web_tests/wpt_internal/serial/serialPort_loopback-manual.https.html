@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="resources/common.js"></script>
+    <script src="resources/manual.js"></script>
+  </head>
+  <body>
+    <p>
+      These tests require a connected serial device configured to act as a
+      "loopback" device, with the transmit and receive pins wired together.
+    </p>
+    <script>
+      manual_loopback_serial_test(async (t, port) => {
+        await port.open({baudrate: 9600, buffersize: 64});
+
+        const data = new Uint8Array(1024);  // Much larger than buffersize above.
+        for (let i = 0; i < data.byteLength; ++i)
+          data[i] = i & 0xff;
+
+        const writer = port.writable.getWriter();
+        writer.write(data);
+        const writePromise = writer.close();
+
+        const reader = port.readable.getReader();
+        const value = await readWithLength(reader, data.byteLength);
+        reader.releaseLock();
+
+        await writePromise;
+
+        compareArrays(value, data);
+
+        await port.close();
+      }, 'Can perform a large write.');
+
+      manual_loopback_serial_test(async (t, port) => {
+        await port.open({baudrate: 115200, buffersize: 64});
+
+        let data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
+
+        let writer = port.writable.getWriter();
+        writer.write(data);
+        // |data| is small enough to be completely transmitted.
+        await writer.close();
+
+        // Wait a little bit for the device to process the incoming data.
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        await port.readable.cancel();
+
+        data = new Uint8Array([9, 10, 11, 12, 13, 14, 15, 16]);
+        writer = port.writable.getWriter();
+        writer.write(data);
+        await writer.close();
+
+        const reader = port.readable.getReader();
+        const value = await readWithLength(reader, data.byteLength);
+        reader.releaseLock();
+
+        compareArrays(value, data);
+
+        await port.close();
+      }, 'Canceling the reader discards buffered data.');
+    </script>
+  </body>
+</html>

@@ -1,4 +1,5 @@
 include_rules = [
+  "+chromecast/chromecast_buildflags.h",
   "+components/metal_util",
   "+components/ui_devtools/buildflags.h",
 ]

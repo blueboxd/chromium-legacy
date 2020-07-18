@@ -12,40 +12,6 @@ async function getFakeSerialPort(fake) {
   return { port, fakePort };
 }
 
-// Compare two Uint8Arrays.
-function compareArrays(actual, expected) {
-  assert_true(actual instanceof Uint8Array, 'actual is Uint8Array');
-  assert_true(expected instanceof Uint8Array, 'expected is Uint8Array');
-  assert_equals(actual.byteLength, expected.byteLength, 'lengths equal');
-  for (let i = 0; i < expected.byteLength; ++i)
-    assert_equals(actual[i], expected[i], `Mismatch at position ${i}.`);
-}
-
-// Pull from |reader| until at least |targetLength| is read or the stream
-// reports done. The data is returned as a combined Uint8Array.
-async function readWithLength(reader, targetLength) {
-  const chunks = [];
-  let actualLength = 0;
-
-  while (true) {
-    let { value, done } = await reader.read();
-    chunks.push(value);
-    actualLength += value.byteLength;
-
-    if (actualLength >= targetLength || done) {
-      // It would be better to allocate |buffer| up front with the number of
-      // of bytes expected but this is the best that can be done without a BYOB
-      // reader to control the amount of data read.
-      const buffer = new Uint8Array(actualLength);
-      chunks.reduce((offset, chunk) => {
-        buffer.set(chunk, offset);
-        return offset + chunk.byteLength;
-      }, 0);
-      return buffer;
-    }
-  }
-}
-
 // Implementation of an UnderlyingSource to create a ReadableStream from a Mojo
 // data pipe consumer handle.
 class DataPipeSource {
@@ -69,7 +35,8 @@ class DataPipeSource {
   }
 
   cancel() {
-    this.watcher_.cancel();
+    if (this.watcher_)
+      this.watcher_.cancel();
     this.consumer_.close();
   }
 
@@ -93,15 +60,18 @@ class DataPipeSink {
   }
 
   async write(chunk, controller) {
-    let {result, numBytes} = this._producer.writeData(chunk);
-    if (result == Mojo.RESULT_OK) {
-      if (numBytes < chunk.byteLength)
-        return this.write(chunk.slice(numBytes), controller);
-    } else if (result == Mojo.RESULT_FAILED_PRECONDITION) {
-      throw new DOMException("The pipe is closed.", "InvalidStateError");
-    } else if (result == Mojo.RESULT_SHOULD_WAIT) {
-      await this.writable();
-      return this.write(chunk, controller);
+    while (true) {
+      let {result, numBytes} = this._producer.writeData(chunk);
+      if (result == Mojo.RESULT_OK) {
+        if (numBytes == chunk.byteLength) {
+          return;
+        }
+        chunk = chunk.slice(numBytes);
+      } else if (result == Mojo.RESULT_FAILED_PRECONDITION) {
+        throw new DOMException('The pipe is closed.', 'InvalidStateError');
+      } else if (result == Mojo.RESULT_SHOULD_WAIT) {
+        await this.writable();
+      }
     }
   }
 
@@ -145,14 +115,17 @@ class FakeSerialPort {
   }
 
   write(data) {
-    this.writer_.write(data);
+    return this.writer_.write(data);
   }
 
-  async read() {
-    let reader = this.readable_.getReader();
-    let result = await reader.read();
-    reader.releaseLock();
-    return result;
+  read() {
+    return this.reader_.read();
+  }
+
+  // Reads from the port until at least |targetLength| is read or the stream is
+  // closed. The data is returned as a combined Uint8Array.
+  readWithLength(targetLength) {
+    return readWithLength(this.reader_, targetLength);
   }
 
   simulateReadError(error) {
@@ -172,7 +145,8 @@ class FakeSerialPort {
   }
 
   simulateWriteError(error) {
-    this.readable_.cancel();
+    this.reader_.cancel();
+    this.reader_ = undefined;
     this.readable_ = undefined;
     this.client_.onSendError(error);
   }
@@ -229,6 +203,7 @@ class FakeSerialPort {
 
   async startWriting(in_stream) {
     this.readable_ = new ReadableStream(new DataPipeSource(in_stream));
+    this.reader_ = this.readable_.getReader();
     if (this.readableResolver_) {
       this.readableResolver_();
       this.readableResolver_ = undefined;
@@ -246,8 +221,24 @@ class FakeSerialPort {
     }
   }
 
-  async flush() {
-    return { success: false };
+  async flush(mode) {
+    switch (mode) {
+      case device.mojom.SerialPortFlushMode.kReceive:
+        this.writer_.abort();
+        this.writer_.releaseLock();
+        this.writer_ = undefined;
+        this.writable_ = undefined;
+        break;
+      case device.mojom.SerialPortFlushMode.kTransmit:
+        this.reader_.cancel();
+        this.reader_ = undefined;
+        this.readable_ = undefined;
+        break;
+    }
+  }
+
+  async drain() {
+    await this.reader_.closed;
   }
 
   async getControlSignals() {

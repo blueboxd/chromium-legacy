@@ -11,9 +11,9 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
-#include <windows.h>
 #include <objbase.h>
 #include <shlobj.h>
+#include <windows.h>
 #include <wrl/client.h>
 #endif
 
@@ -218,9 +218,8 @@ void TestLoadTimingNotReused(const LoadTimingInfo& load_timing_info,
 }
 
 // Same as above, but with proxy times.
-void TestLoadTimingNotReusedWithProxy(
-    const LoadTimingInfo& load_timing_info,
-    int connect_timing_flags) {
+void TestLoadTimingNotReusedWithProxy(const LoadTimingInfo& load_timing_info,
+                                      int connect_timing_flags) {
   EXPECT_FALSE(load_timing_info.socket_reused);
   EXPECT_NE(NetLogSource::kInvalidId, load_timing_info.socket_log_id);
 
@@ -244,8 +243,7 @@ void TestLoadTimingNotReusedWithProxy(
 }
 
 // Same as above, but with a reused socket and proxy times.
-void TestLoadTimingReusedWithProxy(
-    const LoadTimingInfo& load_timing_info) {
+void TestLoadTimingReusedWithProxy(const LoadTimingInfo& load_timing_info) {
   EXPECT_TRUE(load_timing_info.socket_reused);
   EXPECT_NE(NetLogSource::kInvalidId, load_timing_info.socket_log_id);
 
@@ -258,8 +256,7 @@ void TestLoadTimingReusedWithProxy(
             load_timing_info.proxy_resolve_start);
   EXPECT_LE(load_timing_info.proxy_resolve_start,
             load_timing_info.proxy_resolve_end);
-  EXPECT_LE(load_timing_info.proxy_resolve_end,
-            load_timing_info.send_start);
+  EXPECT_LE(load_timing_info.proxy_resolve_end, load_timing_info.send_start);
   EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
   EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_start);
   EXPECT_LE(load_timing_info.receive_headers_start,
@@ -278,8 +275,7 @@ CookieList GetAllCookies(URLRequestContext* request_context) {
   return cookie_list;
 }
 
-void TestLoadTimingCacheHitNoNetwork(
-    const LoadTimingInfo& load_timing_info) {
+void TestLoadTimingCacheHitNoNetwork(const LoadTimingInfo& load_timing_info) {
   EXPECT_FALSE(load_timing_info.socket_reused);
   EXPECT_EQ(NetLogSource::kInvalidId, load_timing_info.socket_log_id);
 
@@ -301,8 +297,7 @@ void TestLoadTimingCacheHitNoNetwork(
     !defined(OS_FUCHSIA)
 // Tests load timing in the case that there is no HTTP response.  This can be
 // used to test in the case of errors or non-HTTP requests.
-void TestLoadTimingNoHttpResponse(
-    const LoadTimingInfo& load_timing_info) {
+void TestLoadTimingNoHttpResponse(const LoadTimingInfo& load_timing_info) {
   EXPECT_FALSE(load_timing_info.socket_reused);
   EXPECT_EQ(NetLogSource::kInvalidId, load_timing_info.socket_log_id);
 
@@ -423,13 +418,9 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
     ASSERT_NE(OK, retval);
     retval_ = retval;
   }
-  void set_redirect_url(const GURL& url) {
-    redirect_url_ = url;
-  }
+  void set_redirect_url(const GURL& url) { redirect_url_ = url; }
 
-  void set_block_on(int block_on) {
-    block_on_ = block_on;
-  }
+  void set_block_on(int block_on) { block_on_ = block_on; }
 
   // Allows the user to check in which state did we block.
   Stage stage_blocked_for_callback() const {
@@ -474,7 +465,7 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
   int retval_;
 
   GURL redirect_url_;  // Used if non-empty during OnBeforeURLRequest.
-  int block_on_;  // Bit mask: in which stages to block.
+  int block_on_;       // Bit mask: in which stages to block.
 
   // Internal variables, not set by not the user:
   // Last blocked stage waiting for user callback (unused if |block_mode_| !=
@@ -641,12 +632,12 @@ class MockCertificateReportSender
   MockCertificateReportSender() = default;
   ~MockCertificateReportSender() override = default;
 
-  void Send(const GURL& report_uri,
-            base::StringPiece content_type,
-            base::StringPiece report,
-            const base::Callback<void()>& success_callback,
-            const base::Callback<void(const GURL&, int, int)>& error_callback)
-      override {
+  void Send(
+      const GURL& report_uri,
+      base::StringPiece content_type,
+      base::StringPiece report,
+      base::OnceCallback<void()> success_callback,
+      base::OnceCallback<void(const GURL&, int, int)> error_callback) override {
     latest_report_uri_ = report_uri;
     latest_report_.assign(report.data(), report.size());
     latest_content_type_.assign(content_type.data(), content_type.size());
@@ -986,13 +977,9 @@ TEST_F(URLRequestTest, RecordsReferrerWithoutInformativePathOrQuery) {
 class URLRequestInterceptorWithLoadTimingInfo : public URLRequestInterceptor {
  public:
   // Static getters for canned response header and data strings.
-  static std::string ok_data() {
-    return URLRequestTestJob::test_data_1();
-  }
+  static std::string ok_data() { return URLRequestTestJob::test_data_1(); }
 
-  static std::string ok_headers() {
-    return URLRequestTestJob::test_headers();
-  }
+  static std::string ok_headers() { return URLRequestTestJob::test_headers(); }
 
   URLRequestInterceptorWithLoadTimingInfo() = default;
   ~URLRequestInterceptorWithLoadTimingInfo() override = default;
@@ -1127,9 +1114,8 @@ TEST_F(URLRequestLoadTimingTest, InterceptLoadTiming) {
   LoadTimingInfo job_load_timing =
       NormalLoadTimingInfo(now, CONNECT_TIMING_HAS_DNS_TIMES, false);
 
-  LoadTimingInfo load_timing_result =
-      RunURLRequestInterceptorLoadTimingTest(
-          job_load_timing, default_context(), interceptor());
+  LoadTimingInfo load_timing_result = RunURLRequestInterceptorLoadTimingTest(
+      job_load_timing, default_context(), interceptor());
 
   // Nothing should have been changed by the URLRequest.
   EXPECT_EQ(job_load_timing.proxy_resolve_start,
@@ -1159,9 +1145,8 @@ TEST_F(URLRequestLoadTimingTest, InterceptLoadTimingProxy) {
   LoadTimingInfo job_load_timing =
       NormalLoadTimingInfo(now, CONNECT_TIMING_HAS_SSL_TIMES, true);
 
-  LoadTimingInfo load_timing_result =
-      RunURLRequestInterceptorLoadTimingTest(
-          job_load_timing, default_context(), interceptor());
+  LoadTimingInfo load_timing_result = RunURLRequestInterceptorLoadTimingTest(
+      job_load_timing, default_context(), interceptor());
 
   // Nothing should have been changed by the URLRequest.
   EXPECT_EQ(job_load_timing.proxy_resolve_start,
@@ -1205,9 +1190,8 @@ TEST_F(URLRequestLoadTimingTest, InterceptLoadTimingEarlyProxyResolution) {
   job_load_timing.connect_timing.connect_end =
       now - base::TimeDelta::FromDays(1);
 
-  LoadTimingInfo load_timing_result =
-      RunURLRequestInterceptorLoadTimingTest(
-          job_load_timing, default_context(), interceptor());
+  LoadTimingInfo load_timing_result = RunURLRequestInterceptorLoadTimingTest(
+      job_load_timing, default_context(), interceptor());
 
   // Proxy times, connect times, and DNS times should all be replaced with
   // request_start.
@@ -1237,9 +1221,8 @@ TEST_F(URLRequestLoadTimingTest,
   job_load_timing.proxy_resolve_start = now - base::TimeDelta::FromDays(4);
   job_load_timing.proxy_resolve_end = now - base::TimeDelta::FromDays(3);
 
-  LoadTimingInfo load_timing_result =
-      RunURLRequestInterceptorLoadTimingTest(
-          job_load_timing, default_context(), interceptor());
+  LoadTimingInfo load_timing_result = RunURLRequestInterceptorLoadTimingTest(
+      job_load_timing, default_context(), interceptor());
 
   // Proxy times and connect times should all be replaced with request_start.
   EXPECT_EQ(load_timing_result.request_start,
@@ -1267,9 +1250,8 @@ TEST_F(URLRequestLoadTimingTest, InterceptLoadTimingEarlyConnect) {
   job_load_timing.connect_timing.connect_end =
       now - base::TimeDelta::FromDays(4);
 
-  LoadTimingInfo load_timing_result =
-      RunURLRequestInterceptorLoadTimingTest(
-          job_load_timing, default_context(), interceptor());
+  LoadTimingInfo load_timing_result = RunURLRequestInterceptorLoadTimingTest(
+      job_load_timing, default_context(), interceptor());
 
   // Connect times, and SSL times should be replaced with request_start.
   EXPECT_EQ(load_timing_result.request_start,
@@ -1300,9 +1282,8 @@ TEST_F(URLRequestLoadTimingTest, InterceptLoadTimingEarlyConnectWithProxy) {
   job_load_timing.connect_timing.connect_end =
       now - base::TimeDelta::FromDays(2);
 
-  LoadTimingInfo load_timing_result =
-      RunURLRequestInterceptorLoadTimingTest(
-          job_load_timing, default_context(), interceptor());
+  LoadTimingInfo load_timing_result = RunURLRequestInterceptorLoadTimingTest(
+      job_load_timing, default_context(), interceptor());
 
   // Connect times should be replaced with proxy_resolve_end.
   EXPECT_EQ(load_timing_result.proxy_resolve_end,
@@ -1606,8 +1587,8 @@ TEST_F(URLRequestTest, DelayedCookieCallback) {
     req->Start();
     d.RunUntilComplete();
 
-    EXPECT_TRUE(d.data_received().find("CookieToNotSend=1")
-                != std::string::npos);
+    EXPECT_TRUE(d.data_received().find("CookieToNotSend=1") !=
+                std::string::npos);
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
   }
@@ -1828,8 +1809,8 @@ TEST_F(URLRequestTest, DoNotSendCookies) {
     req->Start();
     d.RunUntilComplete();
 
-    EXPECT_TRUE(d.data_received().find("CookieToNotSend=1")
-                != std::string::npos);
+    EXPECT_TRUE(d.data_received().find("CookieToNotSend=1") !=
+                std::string::npos);
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
   }
@@ -1846,8 +1827,8 @@ TEST_F(URLRequestTest, DoNotSendCookies) {
     req->Start();
     d.RunUntilComplete();
 
-    EXPECT_TRUE(d.data_received().find("Cookie: CookieToNotSend=1")
-                == std::string::npos);
+    EXPECT_TRUE(d.data_received().find("Cookie: CookieToNotSend=1") ==
+                std::string::npos);
 
     // LOAD_DO_NOT_SEND_COOKIES does not trigger OnGetCookies.
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
@@ -1905,10 +1886,10 @@ TEST_F(URLRequestTest, DoNotSaveCookies) {
     req->Start();
     d.RunUntilComplete();
 
-    EXPECT_TRUE(d.data_received().find("CookieToNotSave=1")
-                == std::string::npos);
-    EXPECT_TRUE(d.data_received().find("CookieToNotUpdate=2")
-                != std::string::npos);
+    EXPECT_TRUE(d.data_received().find("CookieToNotSave=1") ==
+                std::string::npos);
+    EXPECT_TRUE(d.data_received().find("CookieToNotUpdate=2") !=
+                std::string::npos);
 
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
@@ -1946,8 +1927,8 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy) {
     req->Start();
     d.RunUntilComplete();
 
-    EXPECT_TRUE(d.data_received().find("CookieToNotSend=1")
-                != std::string::npos);
+    EXPECT_TRUE(d.data_received().find("CookieToNotSend=1") !=
+                std::string::npos);
 
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
@@ -1970,8 +1951,8 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy) {
     req->Start();
     d.RunUntilComplete();
 
-    EXPECT_TRUE(d.data_received().find("Cookie: CookieToNotSend=1")
-                == std::string::npos);
+    EXPECT_TRUE(d.data_received().find("Cookie: CookieToNotSend=1") ==
+                std::string::npos);
 
     EXPECT_EQ(1, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
@@ -2044,10 +2025,10 @@ TEST_F(URLRequestTest, DoNotSaveCookies_ViaPolicy) {
     req->Start();
     d.RunUntilComplete();
 
-    EXPECT_TRUE(d.data_received().find("CookieToNotSave=1")
-                == std::string::npos);
-    EXPECT_TRUE(d.data_received().find("CookieToNotUpdate=2")
-                != std::string::npos);
+    EXPECT_TRUE(d.data_received().find("CookieToNotSave=1") ==
+                std::string::npos);
+    EXPECT_TRUE(d.data_received().find("CookieToNotUpdate=2") !=
+                std::string::npos);
 
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
@@ -2105,8 +2086,8 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy_Async) {
     req->Start();
     d.RunUntilComplete();
 
-    EXPECT_TRUE(d.data_received().find("CookieToNotSend=1")
-                != std::string::npos);
+    EXPECT_TRUE(d.data_received().find("CookieToNotSend=1") !=
+                std::string::npos);
 
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
@@ -2124,8 +2105,8 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy_Async) {
     req->Start();
     d.RunUntilComplete();
 
-    EXPECT_TRUE(d.data_received().find("Cookie: CookieToNotSend=1")
-                == std::string::npos);
+    EXPECT_TRUE(d.data_received().find("Cookie: CookieToNotSend=1") ==
+                std::string::npos);
 
     EXPECT_EQ(1, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
@@ -2179,10 +2160,10 @@ TEST_F(URLRequestTest, DoNotSaveCookies_ViaPolicy_Async) {
     req->Start();
     d.RunUntilComplete();
 
-    EXPECT_TRUE(d.data_received().find("CookieToNotSave=1")
-                == std::string::npos);
-    EXPECT_TRUE(d.data_received().find("CookieToNotUpdate=2")
-                != std::string::npos);
+    EXPECT_TRUE(d.data_received().find("CookieToNotSave=1") ==
+                std::string::npos);
+    EXPECT_TRUE(d.data_received().find("CookieToNotUpdate=2") !=
+                std::string::npos);
 
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
@@ -2828,7 +2809,6 @@ TEST_F(URLRequestTest, AcceptClockSkewCookieWithWrongDateTimezone) {
   }
 }
 
-
 // Check that it is impossible to change the referrer in the extra headers of
 // an URLRequest.
 TEST_F(URLRequestTest, DoNotOverrideReferrer) {
@@ -3009,10 +2989,10 @@ class URLRequestTestHTTP : public URLRequestTest {
   void HTTPUploadDataOperationTest(const std::string& method) {
     const int kMsgSize = 20000;  // multiple of 10
     const int kIterations = 50;
-    char* uploadBytes = new char[kMsgSize+1];
+    char* uploadBytes = new char[kMsgSize + 1];
     char* ptr = uploadBytes;
     char marker = 'a';
-    for (int idx = 0; idx < kMsgSize/10; idx++) {
+    for (int idx = 0; idx < kMsgSize / 10; idx++) {
       memcpy(ptr, "----------", 10);
       ptr += 10;
       if (idx % 100 == 0) {
@@ -3038,8 +3018,8 @@ class URLRequestTestHTTP : public URLRequestTest {
 
       d.RunUntilComplete();
 
-      ASSERT_EQ(1, d.response_started_count()) << "request failed. Error: "
-                                               << d.request_status();
+      ASSERT_EQ(1, d.response_started_count())
+          << "request failed. Error: " << d.request_status();
 
       EXPECT_FALSE(d.received_data_before_response());
       EXPECT_EQ(uploadBytes, d.data_received());
@@ -3144,10 +3124,9 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateTunnelConnectionFailed) {
 // Tests that we can block and asynchronously return OK in various stages.
 TEST_F(URLRequestTestHTTP, NetworkDelegateBlockAsynchronously) {
   static const BlockingNetworkDelegate::Stage blocking_stages[] = {
-    BlockingNetworkDelegate::ON_BEFORE_URL_REQUEST,
-    BlockingNetworkDelegate::ON_BEFORE_SEND_HEADERS,
-    BlockingNetworkDelegate::ON_HEADERS_RECEIVED
-  };
+      BlockingNetworkDelegate::ON_BEFORE_URL_REQUEST,
+      BlockingNetworkDelegate::ON_BEFORE_SEND_HEADERS,
+      BlockingNetworkDelegate::ON_HEADERS_RECEIVED};
   static const size_t blocking_stages_length = base::size(blocking_stages);
 
   ASSERT_TRUE(http_test_server()->Start());
@@ -4371,8 +4350,8 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfo) {
     log_position = ExpectLogContainsSomewhereAfter(
         entries, log_position + 1, event, NetLogEventPhase::BEGIN);
 
-    log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
-                                                          log_position + 1);
+    log_position =
+        AsyncDelegateLogger::CheckDelegateInfo(entries, log_position + 1);
 
     ASSERT_LT(log_position, entries.size());
     EXPECT_EQ(event, entries[log_position].type);
@@ -4445,8 +4424,8 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoRedirect) {
     log_position = ExpectLogContainsSomewhereAfter(
         entries, log_position + 1, event, NetLogEventPhase::BEGIN);
 
-    log_position = AsyncDelegateLogger::CheckDelegateInfo(entries,
-                                                          log_position + 1);
+    log_position =
+        AsyncDelegateLogger::CheckDelegateInfo(entries, log_position + 1);
 
     ASSERT_LT(log_position, entries.size());
     EXPECT_EQ(event, entries[log_position].type);
@@ -4575,9 +4554,9 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateOnRedirectCancelled) {
   ASSERT_TRUE(http_test_server()->Start());
 
   const AsyncLoggingUrlRequestDelegate::CancelStage kCancelStages[] = {
-    AsyncLoggingUrlRequestDelegate::CANCEL_ON_RECEIVED_REDIRECT,
-    AsyncLoggingUrlRequestDelegate::CANCEL_ON_RESPONSE_STARTED,
-    AsyncLoggingUrlRequestDelegate::CANCEL_ON_READ_COMPLETED,
+      AsyncLoggingUrlRequestDelegate::CANCEL_ON_RECEIVED_REDIRECT,
+      AsyncLoggingUrlRequestDelegate::CANCEL_ON_RESPONSE_STARTED,
+      AsyncLoggingUrlRequestDelegate::CANCEL_ON_READ_COMPLETED,
   };
 
   for (auto cancel_stage : kCancelStages) {
@@ -4881,8 +4860,8 @@ TEST_F(URLRequestTestHTTP, PostEmptyTest) {
 
     d.RunUntilComplete();
 
-    ASSERT_EQ(1, d.response_started_count()) << "request failed. Error: "
-                                             << d.request_status();
+    ASSERT_EQ(1, d.response_started_count())
+        << "request failed. Error: " << d.request_status();
 
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_TRUE(d.data_received().empty());
@@ -4928,8 +4907,8 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
 
     ASSERT_EQ(size, base::ReadFile(path, buf.get(), size));
 
-    ASSERT_EQ(1, d.response_started_count()) << "request failed. Error: "
-                                             << d.request_status();
+    ASSERT_EQ(1, d.response_started_count())
+        << "request failed. Error: " << d.request_status();
 
     EXPECT_FALSE(d.received_data_before_response());
 
@@ -4990,8 +4969,8 @@ void VerifyReceivedDataMatchesChunks(URLRequest* r, TestDelegate* d) {
   const std::string expected_data =
       "abcdthis is a longer chunk than before.\r\n\r\n02323";
 
-  ASSERT_EQ(1, d->response_started_count()) << "request failed. Error: "
-                                            << d->request_status();
+  ASSERT_EQ(1, d->response_started_count())
+      << "request failed. Error: " << d->request_status();
 
   EXPECT_FALSE(d->received_data_before_response());
 
@@ -6606,8 +6585,8 @@ TEST_F(URLRequestTestHTTP, BasicAuthWithCookies) {
     EXPECT_TRUE(d.data_received().find("user/secret") != std::string::npos);
 
     // Make sure we sent the cookie in the restarted transaction.
-    EXPECT_TRUE(d.data_received().find("Cookie: got_challenged=true")
-        != std::string::npos);
+    EXPECT_TRUE(d.data_received().find("Cookie: got_challenged=true") !=
+                std::string::npos);
   }
 
   // Same test as above, except this time the restart is initiated earlier
@@ -6634,8 +6613,8 @@ TEST_F(URLRequestTestHTTP, BasicAuthWithCookies) {
     EXPECT_TRUE(d.data_received().find("user2/secret") != std::string::npos);
 
     // Make sure we sent the cookie in the restarted transaction.
-    EXPECT_TRUE(d.data_received().find("Cookie: got_challenged=true")
-        != std::string::npos);
+    EXPECT_TRUE(d.data_received().find("Cookie: got_challenged=true") !=
+                std::string::npos);
   }
 }
 
@@ -8798,7 +8777,7 @@ TEST_F(HTTPSRequestTest, HTTPSMismatchedTest) {
   ASSERT_TRUE(test_server.Start());
 
   bool err_allowed = true;
-  for (int i = 0; i < 2 ; i++, err_allowed = !err_allowed) {
+  for (int i = 0; i < 2; i++, err_allowed = !err_allowed) {
     TestDelegate d;
     {
       d.set_allow_certificate_errors(err_allowed);
@@ -8833,7 +8812,7 @@ TEST_F(HTTPSRequestTest, HTTPSExpiredTest) {
   // Iterate from false to true, just so that we do the opposite of the
   // previous test in order to increase test coverage.
   bool err_allowed = false;
-  for (int i = 0; i < 2 ; i++, err_allowed = !err_allowed) {
+  for (int i = 0; i < 2; i++, err_allowed = !err_allowed) {
     TestDelegate d;
     {
       d.set_allow_certificate_errors(err_allowed);
@@ -9035,7 +9014,6 @@ TEST_F(HTTPSRequestTest, HSTSPreservesPosts) {
   RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
 
-
   // Per spec, TransportSecurityState expects a domain name, rather than an IP
   // address, so a MockHostResolver is needed to redirect www.somewhere.com to
   // the EmbeddedTestServer.  By default, MockHostResolver maps all hosts
@@ -9166,6 +9144,7 @@ class SSLClientAuthTestDelegate : public TestDelegate {
   int on_certificate_requested_count() {
     return on_certificate_requested_count_;
   }
+
  private:
   int on_certificate_requested_count_;
   base::OnceClosure on_certificate_requested_;
@@ -9498,8 +9477,7 @@ TEST_F(HTTPSRequestTest, ResumeTest) {
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.record_resume = true;
   SpawnedTestServer test_server(
-      SpawnedTestServer::TYPE_HTTPS,
-      ssl_options,
+      SpawnedTestServer::TYPE_HTTPS, ssl_options,
       base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
@@ -9573,8 +9551,7 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.record_resume = true;
   SpawnedTestServer test_server(
-      SpawnedTestServer::TYPE_HTTPS,
-      ssl_options,
+      SpawnedTestServer::TYPE_HTTPS, ssl_options,
       base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
@@ -9605,7 +9582,8 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   session_context.cert_transparency_verifier =
       default_context_.cert_transparency_verifier();
   session_context.ct_policy_enforcer = default_context_.ct_policy_enforcer();
-  session_context.proxy_resolution_service = default_context_.proxy_resolution_service();
+  session_context.proxy_resolution_service =
+      default_context_.proxy_resolution_service();
   session_context.ssl_config_service = default_context_.ssl_config_service();
   session_context.http_auth_handler_factory =
       default_context_.http_auth_handler_factory();
@@ -9707,8 +9685,7 @@ class HTTPSFallbackTest : public TestWithTaskEnvironment {
     delegate_.set_allow_certificate_errors(true);
 
     SpawnedTestServer test_server(
-        SpawnedTestServer::TYPE_HTTPS,
-        ssl_options,
+        SpawnedTestServer::TYPE_HTTPS, ssl_options,
         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
     ASSERT_TRUE(test_server.Start());
 
@@ -9794,8 +9771,7 @@ TEST_F(HTTPSSessionTest, DontResumeSessionsForInvalidCertificates) {
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.record_resume = true;
   SpawnedTestServer test_server(
-      SpawnedTestServer::TYPE_HTTPS,
-      ssl_options,
+      SpawnedTestServer::TYPE_HTTPS, ssl_options,
       base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 

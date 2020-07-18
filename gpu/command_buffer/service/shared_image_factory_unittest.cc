@@ -65,8 +65,9 @@ TEST_F(SharedImageFactoryTest, Basic) {
   auto color_space = gfx::ColorSpace::CreateSRGB();
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
-  EXPECT_TRUE(factory_->CreateSharedImage(mailbox, format, size, color_space,
-                                          surface_handle, usage));
+  EXPECT_TRUE(factory_->CreateSharedImage(
+      mailbox, format, size, color_space, kTopLeft_GrSurfaceOrigin,
+      kPremul_SkAlphaType, surface_handle, usage));
   TextureBase* texture_base = mailbox_manager_.ConsumeTexture(mailbox);
   // Validation of the produced backing/mailbox is handled in individual backing
   // factory unittests.
@@ -82,10 +83,12 @@ TEST_F(SharedImageFactoryTest, DuplicateMailbox) {
   auto color_space = gfx::ColorSpace::CreateSRGB();
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
-  EXPECT_TRUE(factory_->CreateSharedImage(mailbox, format, size, color_space,
-                                          surface_handle, usage));
-  EXPECT_FALSE(factory_->CreateSharedImage(mailbox, format, size, color_space,
-                                           surface_handle, usage));
+  EXPECT_TRUE(factory_->CreateSharedImage(
+      mailbox, format, size, color_space, kTopLeft_GrSurfaceOrigin,
+      kPremul_SkAlphaType, surface_handle, usage));
+  EXPECT_FALSE(factory_->CreateSharedImage(
+      mailbox, format, size, color_space, kTopLeft_GrSurfaceOrigin,
+      kPremul_SkAlphaType, surface_handle, usage));
 
   GpuPreferences preferences;
   GpuDriverBugWorkarounds workarounds;
@@ -95,7 +98,8 @@ TEST_F(SharedImageFactoryTest, DuplicateMailbox) {
       &shared_image_manager_, &image_factory_, nullptr,
       /*enable_wrapped_sk_image=*/false);
   EXPECT_FALSE(other_factory->CreateSharedImage(
-      mailbox, format, size, color_space, surface_handle, usage));
+      mailbox, format, size, color_space, kTopLeft_GrSurfaceOrigin,
+      kPremul_SkAlphaType, surface_handle, usage));
 }
 
 TEST_F(SharedImageFactoryTest, DestroyInexistentMailbox) {

@@ -26,7 +26,8 @@ class SerialIoHandlerWin : public SerialIoHandler,
   void CancelReadImpl() override;
   void CancelWriteImpl() override;
   bool ConfigurePortImpl() override;
-  bool Flush() const override;
+  void Flush(mojom::SerialPortFlushMode mode) const override;
+  void Drain() override;
   mojom::SerialPortControlSignalsPtr GetControlSignals() const override;
   bool SetControlSignals(
       const mojom::SerialHostControlSignals& control_signals) override;

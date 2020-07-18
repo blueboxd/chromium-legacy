@@ -32,7 +32,7 @@ import java.util.concurrent.Callable;
  */
 public class ArTestRuleUtils extends XrTestRuleUtils {
     private static final String DEFAULT_PLAYBACK_FILEPATH =
-            "chrome/test/data/xr/ar_playback_datasets/empty_floor.mp4";
+            "chrome/test/data/xr/ar_playback_datasets/floor_session_12s_30fps.mp4";
     // This must be kept in sync with the ArCore session_settings entry in
     // //chrome/android/javatests/AndroidManifest_monochrome.xml.
     private static final String PLAYBACK_FILE_LOCATION =

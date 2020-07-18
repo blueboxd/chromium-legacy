@@ -100,8 +100,6 @@ class ScopedPaintState {
       : fragment_to_paint_(input.fragment_to_paint_),
         input_paint_info_(input.GetPaintInfo()),
         paint_offset_(input.PaintOffset()) {}
-  // TODO(wangxianzhu): Remove this constructor when we pass ScopedPaintState to
-  // PaintXXX() methods of the same object.
   ScopedPaintState(const PaintInfo& paint_info,
                    const PhysicalOffset& paint_offset,
                    const LayoutObject& object)
@@ -135,8 +133,6 @@ class ScopedBoxContentsPaintState : public ScopedPaintState {
     AdjustForBoxContents(box);
   }
 
-  // TODO(wangxianzhu): Remove this constructor when we pass ScopedPaintState to
-  // PaintXXX() methods of the same object.
   ScopedBoxContentsPaintState(const PaintInfo& paint_info,
                               const PhysicalOffset& paint_offset,
                               const LayoutBox& box)

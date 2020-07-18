@@ -65,12 +65,17 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                          viz::ResourceFormat format,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
+                         GrSurfaceOrigin surface_origin,
+                         SkAlphaType alpha_type,
                          gpu::SurfaceHandle surface_handle,
+
                          uint32_t usage);
   bool CreateSharedImage(const Mailbox& mailbox,
                          viz::ResourceFormat format,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
+                         GrSurfaceOrigin surface_origin,
+                         SkAlphaType alpha_type,
                          uint32_t usage,
                          base::span<const uint8_t> pixel_data);
   bool CreateSharedImage(const Mailbox& mailbox,
@@ -80,6 +85,8 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                          SurfaceHandle surface_handle,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
+                         GrSurfaceOrigin surface_origin,
+                         SkAlphaType alpha_type,
                          uint32_t usage);
   bool UpdateSharedImage(const Mailbox& mailbox);
   bool UpdateSharedImage(const Mailbox& mailbox,
@@ -94,6 +101,8 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                        viz::ResourceFormat format,
                        const gfx::Size& size,
                        const gfx::ColorSpace& color_space,
+                       GrSurfaceOrigin surface_origin,
+                       SkAlphaType alpha_type,
                        uint32_t usage);
   bool PresentSwapChain(const Mailbox& mailbox);
 #endif  // OS_WIN

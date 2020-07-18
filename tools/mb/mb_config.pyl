@@ -821,11 +821,11 @@
     },
 
     'tryserver.chromium.codesearch': {
-      'codesearch-gen-chromium-android-try': 'codesearch_gen_chromium_android_bot',
-      'codesearch-gen-chromium-chromiumos-try': 'codesearch_gen_chromium_chromiumos_bot',
-      'codesearch-gen-chromium-fuchsia-try': 'codesearch_gen_chromium_fuchsia_bot',
-      'codesearch-gen-chromium-linux-try': 'codesearch_gen_chromium_bot',
-      'codesearch-gen-chromium-win-try': 'codesearch_gen_chromium_bot',
+      'gen-android-try': 'codesearch_gen_chromium_android_bot',
+      'gen-chromiumos-try': 'codesearch_gen_chromium_chromiumos_bot',
+      'gen-fuchsia-try': 'codesearch_gen_chromium_fuchsia_bot',
+      'gen-linux-try': 'codesearch_gen_chromium_bot',
+      'gen-win-try': 'codesearch_gen_chromium_bot',
     },
 
     'tryserver.chromium.dawn': {

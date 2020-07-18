@@ -17,6 +17,11 @@ class FocusData {
 
   /** @return {boolean} */
   isValid() {
+    if (this.group.isValidGroup()) {
+      // Ensure it is still valid. Some nodes may have been added
+      // or removed since this was last used.
+      this.group.refreshChildren();
+    }
     return this.group.isValidGroup();
   }
 }

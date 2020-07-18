@@ -55,7 +55,7 @@ void GetOriginsForHostOnFileTaskRunner(FileSystemContext* context,
 }
 
 void DidGetFileSystemQuotaClientOrigins(
-    QuotaClient::GetOriginsCallback callback,
+    QuotaClient::GetOriginsForTypeCallback callback,
     std::vector<url::Origin>* origins_ptr) {
   std::move(callback).Run(*origins_ptr);
 }
@@ -94,7 +94,7 @@ FileSystemQuotaClient::~FileSystemQuotaClient() = default;
 
 void FileSystemQuotaClient::GetOriginUsage(const url::Origin& origin,
                                            StorageType storage_type,
-                                           GetUsageCallback callback) {
+                                           GetOriginUsageCallback callback) {
   DCHECK(!callback.is_null());
 
   FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
@@ -115,8 +115,9 @@ void FileSystemQuotaClient::GetOriginUsage(const url::Origin& origin,
       std::move(callback));
 }
 
-void FileSystemQuotaClient::GetOriginsForType(StorageType storage_type,
-                                              GetOriginsCallback callback) {
+void FileSystemQuotaClient::GetOriginsForType(
+    StorageType storage_type,
+    GetOriginsForTypeCallback callback) {
   DCHECK(!callback.is_null());
 
   auto* origins_ptr = new std::vector<url::Origin>();
@@ -129,9 +130,10 @@ void FileSystemQuotaClient::GetOriginsForType(StorageType storage_type,
                      base::Owned(origins_ptr)));
 }
 
-void FileSystemQuotaClient::GetOriginsForHost(StorageType storage_type,
-                                              const std::string& host,
-                                              GetOriginsCallback callback) {
+void FileSystemQuotaClient::GetOriginsForHost(
+    StorageType storage_type,
+    const std::string& host,
+    GetOriginsForHostCallback callback) {
   DCHECK(!callback.is_null());
 
   auto* origins_ptr = new std::vector<url::Origin>();
@@ -144,9 +146,10 @@ void FileSystemQuotaClient::GetOriginsForHost(StorageType storage_type,
                      base::Owned(origins_ptr)));
 }
 
-void FileSystemQuotaClient::DeleteOriginData(const url::Origin& origin,
-                                             StorageType type,
-                                             DeletionCallback callback) {
+void FileSystemQuotaClient::DeleteOriginData(
+    const url::Origin& origin,
+    StorageType type,
+    DeleteOriginDataCallback callback) {
   FileSystemType fs_type = QuotaStorageTypeToFileSystemType(type);
   DCHECK(fs_type != kFileSystemTypeUnknown);
 
@@ -157,8 +160,9 @@ void FileSystemQuotaClient::DeleteOriginData(const url::Origin& origin,
       std::move(callback));
 }
 
-void FileSystemQuotaClient::PerformStorageCleanup(StorageType type,
-                                                  base::OnceClosure callback) {
+void FileSystemQuotaClient::PerformStorageCleanup(
+    StorageType type,
+    PerformStorageCleanupCallback callback) {
   FileSystemType fs_type = QuotaStorageTypeToFileSystemType(type);
   DCHECK(fs_type != kFileSystemTypeUnknown);
   file_task_runner()->PostTaskAndReply(

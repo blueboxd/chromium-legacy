@@ -144,8 +144,14 @@ std::unique_ptr<OptionsPageInfo> OptionsPageInfo::Create(
         install_warnings->push_back(
             InstallWarning(base::UTF16ToASCII(options_parse_error)));
       }
-      if (options_ui->chrome_style.get())
-        chrome_style = *options_ui->chrome_style;
+      if (options_ui->chrome_style.get()) {
+        if (extension->manifest_version() < 3)
+          chrome_style = *options_ui->chrome_style;
+        else {
+          *error = base::ASCIIToUTF16(errors::kChromeStyleInvalidForManifestV3);
+          return nullptr;
+        }
+      }
       open_in_tab = false;
       if (options_ui->open_in_tab.get())
         open_in_tab = *options_ui->open_in_tab;

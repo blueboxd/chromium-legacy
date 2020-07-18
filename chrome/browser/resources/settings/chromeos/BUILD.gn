@@ -146,6 +146,7 @@ if (optimize_webui) {
 
 group("closure_compile") {
   deps = [
+    ":deep_linking_behavior",
     ":metrics_recorder",
     ":os_page_visibility",
     ":os_route",
@@ -182,6 +183,15 @@ group("closure_compile") {
     # parents instead of here.
     "os_apps_page/app_management_page:closure_compile",
     "os_apps_page/app_management_page/plugin_vm_page:closure_compile",
+  ]
+}
+
+js_library("deep_linking_behavior") {
+  deps = [
+    "..:router",
+    "//chrome/browser/ui/webui/settings/chromeos/constants:mojom_js_library_for_compile",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:load_time_data",
   ]
 }
 
@@ -286,6 +296,17 @@ js_type_check("closure_compile_local_module") {
 
     #":search_handler.m",
   ]
+}
+
+js_library("deep_linking_behavior.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/deep_linking_behavior.m.js" ]
+  deps = [
+    "..:router.m",
+    "//chrome/browser/ui/webui/settings/chromeos/constants:mojom_js_library_for_compile",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("metrics_recorder.m") {
@@ -434,6 +455,7 @@ js_modulizer("modulize") {
     "route_origin_behavior.js",
     "search_handler.js",
     "os_route.js",
+    "deep_linking_behavior.js",
   ]
   namespace_rewrites = os_settings_namespace_rewrites
 }

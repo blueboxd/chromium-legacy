@@ -37,10 +37,13 @@ TEST(SharedImageManagerTest, BasicRefCounting) {
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  auto surface_origin = kTopLeft_GrSurfaceOrigin;
+  auto alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
 
   auto backing = std::make_unique<TestSharedImageBacking>(
-      mailbox, format, size, color_space, usage, kSizeBytes);
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      kSizeBytes);
 
   auto factory_ref = manager.Register(std::move(backing), tracker.get());
   EXPECT_EQ(kSizeBytes, tracker->GetMemRepresented());
@@ -74,10 +77,13 @@ TEST(SharedImageManagerTest, TransferRefSameTracker) {
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  auto surface_origin = kTopLeft_GrSurfaceOrigin;
+  auto alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
 
   auto backing = std::make_unique<TestSharedImageBacking>(
-      mailbox, format, size, color_space, usage, kSizeBytes);
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      kSizeBytes);
 
   auto factory_ref = manager.Register(std::move(backing), tracker.get());
   EXPECT_EQ(kSizeBytes, tracker->GetMemRepresented());
@@ -103,10 +109,13 @@ TEST(SharedImageManagerTest, TransferRefNewTracker) {
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  auto surface_origin = kTopLeft_GrSurfaceOrigin;
+  auto alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
 
   auto backing = std::make_unique<TestSharedImageBacking>(
-      mailbox, format, size, color_space, usage, kSizeBytes);
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      kSizeBytes);
 
   auto factory_ref = manager.Register(std::move(backing), tracker.get());
   EXPECT_EQ(kSizeBytes, tracker->GetMemRepresented());

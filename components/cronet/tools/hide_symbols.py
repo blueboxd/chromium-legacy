@@ -114,12 +114,25 @@ def main():
     options.output_lib,
     options.output_obj,
   ]
+
+  # When compiling for 64bit targets, the symbols in call_with_eh_frame.o are
+  # referenced in assembly and eventually stripped by the call to ld -r above,
+  # perhaps because the linker incorrectly assumes that those symbols are not
+  # used. Using -keep_private_externs fixes the compile issue, but breaks
+  # other parts of cronet. Instead, simply add a second .o file with the
+  # personality routine. Note that this issue was not caught by Chrome tests,
+  # it was only detected when apps tried to link the resulting .a file.
+  if options.current_cpu == 'x64' or options.current_cpu == 'arm64':
+    command += [ 'obj/base/base/call_with_eh_frame.o' ]
+
   subprocess.check_call(command)
 
   if options.use_custom_libcxx:
-    ret = os.system('xcrun nm -u "' + options.output_obj + '" | grep ___cxa_pure_virtual')
+    ret = os.system('xcrun nm -u "' + options.output_obj +
+                    '" | grep ___cxa_pure_virtual')
     if ret == 0:
-      print "ERROR: Found undefined libc++ symbols, is libc++ indcluded in dependencies?"
+      print "ERROR: Found undefined libc++ symbols, " + \
+          "is libc++ indcluded in dependencies?"
       exit(2)
 
 

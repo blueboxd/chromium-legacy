@@ -16,6 +16,8 @@ namespace ui {
 
 namespace {
 
+constexpr int kAlertedCommandId = 2;
+
 class DelegateBase : public SimpleMenuModel::Delegate {
  public:
   DelegateBase() : SimpleMenuModel::Delegate() {}
@@ -35,6 +37,10 @@ class DelegateBase : public SimpleMenuModel::Delegate {
   bool IsCommandIdVisible(int command_id) const override {
     // Commands 0-99 are visible.
     return command_id < 100;
+  }
+
+  bool IsCommandIdAlerted(int command_id) const override {
+    return command_id == kAlertedCommandId;
   }
 
   void ExecuteCommand(int command_id, int event_flags) override {}
@@ -145,6 +151,18 @@ TEST(SimpleMenuModelTest, IsVisibleAtWithDelegateAndCommandNotVisible) {
 
   // Should return false since the command_id 108 is not visible.
   ASSERT_FALSE(simple_menu_model.IsEnabledAt(0));
+}
+
+TEST(SimpleMenuModelTest, IsAlertedAtViaDelegate) {
+  DelegateBase delegate;
+  SimpleMenuModel simple_menu_model(&delegate);
+  simple_menu_model.AddItem(kAlertedCommandId,
+                            base::ASCIIToUTF16("alerted item"));
+  simple_menu_model.AddItem(kAlertedCommandId + 1,
+                            base::ASCIIToUTF16("non-alerted item"));
+
+  EXPECT_TRUE(simple_menu_model.IsAlertedAt(0));
+  EXPECT_FALSE(simple_menu_model.IsAlertedAt(1));
 }
 
 TEST(SimpleMenuModelTest, SetIsNewFeatureAt) {

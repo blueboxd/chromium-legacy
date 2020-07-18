@@ -170,7 +170,8 @@ void SharedImageInterfaceInProcess::CreateSharedImageOnGpuThread(
   LazyCreateSharedImageFactory();
 
   if (!shared_image_factory_->CreateSharedImage(
-          mailbox, format, size, color_space, surface_handle, usage)) {
+          mailbox, format, size, color_space, surface_origin, alpha_type,
+          surface_handle, usage)) {
     // Signal errors by losing the command buffer.
     command_buffer_helper_->SetError();
     return;
@@ -224,7 +225,8 @@ void SharedImageInterfaceInProcess::CreateSharedImageWithDataOnGpuThread(
   LazyCreateSharedImageFactory();
 
   if (!shared_image_factory_->CreateSharedImage(
-          mailbox, format, size, color_space, usage, pixel_data)) {
+          mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+          pixel_data)) {
     // Signal errors by losing the command buffer.
     command_buffer_helper_->SetError();
     return;
@@ -295,7 +297,8 @@ void SharedImageInterfaceInProcess::CreateGMBSharedImageOnGpuThread(
   SurfaceHandle surface_handle = kNullSurfaceHandle;
   if (!shared_image_factory_->CreateSharedImage(
           mailbox, kInProcessCommandBufferClientId, std::move(handle), format,
-          surface_handle, size, color_space, usage)) {
+          surface_handle, size, color_space, surface_origin, alpha_type,
+          usage)) {
     // Signal errors by losing the command buffer.
     // Signal errors by losing the command buffer.
     command_buffer_helper_->SetError();

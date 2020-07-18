@@ -242,7 +242,7 @@ export function getZoomableViewport(
   document.body.appendChild(dummyContent);
   const viewport = new Viewport(
       window, /** @type {!HTMLDivElement} */ (sizer), dummyContent,
-      scrollbarWidth, defaultZoom, topToolbarHeight);
+      scrollbarWidth, defaultZoom, topToolbarHeight, false);
   viewport.setZoomFactorRange([0.25, 0.4, 0.5, 1, 2]);
   return viewport;
 }

@@ -1319,7 +1319,7 @@ TEST_P(PaintLayerScrollableAreaTest, ScrollbarMaximum) {
   EXPECT_EQ(scrollbar->CurrentPos(), scrollbar->Maximum());
 }
 
-TEST_P(PaintLayerScrollableAreaTest, ScrollingBackgroundDisplayItemClient) {
+TEST_P(PaintLayerScrollableAreaTest, ScrollingBackgroundVisualRect) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar { display: none; }
@@ -1344,8 +1344,7 @@ TEST_P(PaintLayerScrollableAreaTest, ScrollingBackgroundDisplayItemClient) {
   EXPECT_EQ(IntRect(2, 3, 101, 200),
             ToLayoutBox(GetLayoutObjectByElementId("scroller"))
                 ->GetScrollableArea()
-                ->GetScrollingBackgroundDisplayItemClient()
-                .VisualRect());
+                ->ScrollingBackgroundVisualRect(PhysicalOffset()));
 }
 
 TEST_P(PaintLayerScrollableAreaTest, RtlScrollOriginSnapping) {

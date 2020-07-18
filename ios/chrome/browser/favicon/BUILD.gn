@@ -23,6 +23,7 @@ source_set("favicon") {
   deps = [
     "//base",
     "//components/favicon/core",
+    "//components/favicon/core:history_implementation",
     "//components/favicon_base",
     "//components/image_fetcher/core",
     "//components/image_fetcher/ios",

@@ -296,32 +296,24 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     feature_status_list = self.tab.EvaluateJavaScript(
         'browserBridge.gpuInfo.featureStatus.featureStatus')
     for name, status in feature_status_list.items():
-      if name == 'webgl':
-        if status != 'unavailable_software':
-          self.fail('WebGL status for SwiftShader failed: %s' % status)
-          return
-      elif name == '2d_canvas':
-        if status != 'unavailable_software':
-          self.fail('2D Canvas status for SwiftShader failed: %s' % status)
-          return
-      else:
-        pass
-    if not sys.platform.startswith('linux'):
-      # On Linux we relaunch GPU process to fallback to SwiftShader, therefore
-      # featureStatusForHardwareGpu isn't available.
-      feature_status_for_hardware_gpu_list = self.tab.EvaluateJavaScript(
-          'browserBridge.gpuInfo.featureStatusForHardwareGpu.featureStatus')
-      for name, status in feature_status_for_hardware_gpu_list.items():
-        if name == 'webgl':
-          if status != 'unavailable_off':
-            self.fail('WebGL status for hardware GPU failed: %s' % status)
-            return
-        elif name == '2d_canvas':
-          if status != 'enabled':
-            self.fail('2D Canvas status for hardware GPU failed: %s' % status)
-            return
-        else:
-          pass
+      if name == 'webgl' and status != 'unavailable_software':
+        self.fail('WebGL status for SwiftShader failed: %s' % status)
+      elif name == '2d_canvas' and status != 'unavailable_software':
+        self.fail('2D Canvas status for SwiftShader failed: %s' % status)
+
+    # On Linux we relaunch GPU process to fallback to SwiftShader, therefore
+    # featureStatusForHardwareGpu isn't available. So finish early if we're on
+    # Linux.
+    if sys.platform.startswith('linux'):
+      return
+
+    feature_status_for_hardware_gpu_list = self.tab.EvaluateJavaScript(
+        'browserBridge.gpuInfo.featureStatusForHardwareGpu.featureStatus')
+    for name, status in feature_status_for_hardware_gpu_list.items():
+      if name == 'webgl' and status != 'unavailable_off':
+        self.fail('WebGL status for hardware GPU failed: %s' % status)
+      elif name == '2d_canvas' and status != 'enabled':
+        self.fail('2D Canvas status for hardware GPU failed: %s' % status)
 
   def _GpuProcess_one_extra_workaround(self, test_path):
     # Start this test by launching the browser with no command line

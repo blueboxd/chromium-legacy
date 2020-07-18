@@ -177,15 +177,17 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                            viz::ResourceFormat format,
                                            const gfx::Size& size,
                                            const gfx::ColorSpace& color_space,
+                                           GrSurfaceOrigin surface_origin,
+                                           SkAlphaType alpha_type,
                                            gpu::SurfaceHandle surface_handle,
                                            uint32_t usage) {
   bool allow_legacy_mailbox = false;
   auto* factory = GetFactoryByUsage(usage, format, &allow_legacy_mailbox);
   if (!factory)
     return false;
-  auto backing = factory->CreateSharedImage(mailbox, format, surface_handle,
-                                            size, color_space, usage,
-                                            IsSharedBetweenThreads(usage));
+  auto backing = factory->CreateSharedImage(
+      mailbox, format, surface_handle, size, color_space, surface_origin,
+      alpha_type, usage, IsSharedBetweenThreads(usage));
   return RegisterBacking(std::move(backing), allow_legacy_mailbox);
 }
 
@@ -193,6 +195,8 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                            viz::ResourceFormat format,
                                            const gfx::Size& size,
                                            const gfx::ColorSpace& color_space,
+                                           GrSurfaceOrigin surface_origin,
+                                           SkAlphaType alpha_type,
                                            uint32_t usage,
                                            base::span<const uint8_t> data) {
   // For now, restrict this to SHARED_IMAGE_USAGE_DISPLAY with optional
@@ -222,8 +226,9 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   }
   if (!factory)
     return false;
-  auto backing = factory->CreateSharedImage(mailbox, format, size, color_space,
-                                            usage, data);
+  auto backing =
+      factory->CreateSharedImage(mailbox, format, size, color_space,
+                                 surface_origin, alpha_type, usage, data);
   if (backing)
     backing->OnWriteSucceeded();
   return RegisterBacking(std::move(backing), allow_legacy_mailbox);
@@ -236,6 +241,8 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                            SurfaceHandle surface_handle,
                                            const gfx::Size& size,
                                            const gfx::ColorSpace& color_space,
+                                           GrSurfaceOrigin surface_origin,
+                                           SkAlphaType alpha_type,
                                            uint32_t usage) {
   // TODO(piman): depending on handle.type, choose platform-specific backing
   // factory, e.g. SharedImageBackingFactoryAHB.
@@ -245,9 +252,9 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                     &allow_legacy_mailbox, handle.type);
   if (!factory)
     return false;
-  auto backing =
-      factory->CreateSharedImage(mailbox, client_id, std::move(handle), format,
-                                 surface_handle, size, color_space, usage);
+  auto backing = factory->CreateSharedImage(
+      mailbox, client_id, std::move(handle), format, surface_handle, size,
+      color_space, surface_origin, alpha_type, usage);
   if (backing)
     backing->OnWriteSucceeded();
   return RegisterBacking(std::move(backing), allow_legacy_mailbox);
@@ -293,6 +300,8 @@ bool SharedImageFactory::CreateSwapChain(const Mailbox& front_buffer_mailbox,
                                          viz::ResourceFormat format,
                                          const gfx::Size& size,
                                          const gfx::ColorSpace& color_space,
+                                         GrSurfaceOrigin surface_origin,
+                                         SkAlphaType alpha_type,
                                          uint32_t usage) {
   if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
     return false;
@@ -303,7 +312,7 @@ bool SharedImageFactory::CreateSwapChain(const Mailbox& front_buffer_mailbox,
   bool allow_legacy_mailbox = true;
   auto backings = d3d_backing_factory->CreateSwapChain(
       front_buffer_mailbox, back_buffer_mailbox, format, size, color_space,
-      usage);
+      surface_origin, alpha_type, usage);
   return RegisterBacking(std::move(backings.front_buffer),
                          allow_legacy_mailbox) &&
          RegisterBacking(std::move(backings.back_buffer), allow_legacy_mailbox);

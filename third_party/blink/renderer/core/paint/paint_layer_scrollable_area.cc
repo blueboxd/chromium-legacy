@@ -490,6 +490,15 @@ IntPoint PaintLayerScrollableArea::ConvertFromRootFrame(
   return view->GetFrameView()->ConvertFromRootFrame(point_in_root_frame);
 }
 
+IntPoint PaintLayerScrollableArea::ConvertFromRootFrameToVisualViewport(
+    const IntPoint& point_in_root_frame) const {
+  LocalFrameView* frame_view = GetLayoutBox()->GetFrameView();
+  DCHECK(frame_view);
+  const auto* page = frame_view->GetPage();
+  const auto& viewport = page->GetVisualViewport();
+  return viewport.RootFrameToViewport(point_in_root_frame);
+}
+
 int PaintLayerScrollableArea::ScrollSize(
     ScrollbarOrientation orientation) const {
   IntSize scroll_dimensions =
@@ -923,6 +932,19 @@ int PaintLayerScrollableArea::PageStep(ScrollbarOrientation orientation) const {
                       ScrollableArea::MinFractionToStepWhenPaging();
   int page_step = max(min_page_step, length - MaxOverlapBetweenPages());
   return max(page_step, 1);
+}
+
+bool PaintLayerScrollableArea::IsRootFrameLayoutViewport() const {
+  LocalFrame* frame = GetLayoutBox()->GetFrame();
+  if (!frame || !frame->View())
+    return false;
+
+  RootFrameViewport* root_frame_viewport =
+      frame->View()->GetRootFrameViewport();
+  if (!root_frame_viewport)
+    return false;
+
+  return &root_frame_viewport->LayoutViewport() == this;
 }
 
 LayoutBox* PaintLayerScrollableArea::GetLayoutBox() const {
@@ -3140,22 +3162,18 @@ IntSize PaintLayerScrollableArea::PixelSnappedBorderBoxSize() const {
       GetLayoutBox()->FirstFragment().PaintOffset());
 }
 
-IntRect
-PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::VisualRect()
-    const {
-  const auto* box = scrollable_area_->GetLayoutBox();
-
-  const auto& paint_offset = box->FirstFragment().PaintOffset();
+IntRect PaintLayerScrollableArea::ScrollingBackgroundVisualRect(
+    const PhysicalOffset& paint_offset) const {
+  const auto* box = GetLayoutBox();
   auto overflow_clip_rect =
       PixelSnappedIntRect(box->OverflowClipRect(paint_offset));
-  auto scroll_size = scrollable_area_->PixelSnappedContentsSize(paint_offset);
+  auto scroll_size = PixelSnappedContentsSize(paint_offset);
   // Ensure scrolling contents are at least as large as the scroll clip
   scroll_size = scroll_size.ExpandedTo(overflow_clip_rect.Size());
   IntRect result(overflow_clip_rect.Location(), scroll_size);
 #if DCHECK_IS_ON()
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    DCHECK_EQ(result,
-              scrollable_area_->layer_->GraphicsLayerBacking()->VisualRect());
+    DCHECK_EQ(result, layer_->GraphicsLayerBacking()->VisualRect());
   }
 #endif
 
@@ -3187,6 +3205,13 @@ PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::VisualRect()
   }
 
   return result;
+}
+
+IntRect
+PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::VisualRect()
+    const {
+  return scrollable_area_->ScrollingBackgroundVisualRect(
+      scrollable_area_->GetLayoutBox()->FirstFragment().PaintOffset());
 }
 
 String

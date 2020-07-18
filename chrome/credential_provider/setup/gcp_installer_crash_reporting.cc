@@ -13,7 +13,6 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "build/branding_buildflags.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gcp_crash_reporter_client.h"
 #include "chrome/credential_provider/gaiacp/gcp_crash_reporting_utils.h"

@@ -143,7 +143,11 @@ class NavigationManager {
    */
   static moveBackward() {
     const navigator = NavigationManager.instance;
-    navigator.setNode_(navigator.node_.previous);
+    if (navigator.node_.isValidAndVisible()) {
+      navigator.setNode_(navigator.node_.previous);
+    } else {
+      NavigationManager.moveToValidNode();
+    }
   }
 
   /**
@@ -151,7 +155,11 @@ class NavigationManager {
    */
   static moveForward() {
     const navigator = NavigationManager.instance;
-    navigator.setNode_(navigator.node_.next);
+    if (navigator.node_.isValidAndVisible()) {
+      navigator.setNode_(navigator.node_.next);
+    } else {
+      NavigationManager.moveToValidNode();
+    }
   }
 
   /**
@@ -251,14 +259,20 @@ class NavigationManager {
   }
 
   /**
-   * When the automation tree changes, check if it affects any nodes we are
-   *     currently listening to.
+   * When the automation tree changes, ensure the group and node we are
+   * currently listening to are fresh. This is only called when the tree change
+   * occurred on the node or group which are currently active.
    * @param {!chrome.automation.TreeChange} treeChange
    * @private
    */
   onTreeChange_(treeChange) {
     if (treeChange.type === chrome.automation.TreeChangeType.NODE_REMOVED) {
+      this.group_.refresh();
       NavigationManager.moveToValidNode();
+    } else if (
+        treeChange.type ===
+        chrome.automation.TreeChangeType.SUBTREE_UPDATE_END) {
+      this.group_.refresh();
     }
   }
 
@@ -283,6 +297,14 @@ class NavigationManager {
         this.desktop_, chrome.automation.EventType.SCROLL_POSITION_CHANGED,
         this.onScrollChange_.bind(this));
 
+    new RepeatedTreeChangeHandler(
+        chrome.automation.TreeChangeObserverFilter.ALL_TREE_CHANGES,
+        this.onTreeChange_.bind(this), {
+          predicate: (treeChange) =>
+              this.group_.findChild(treeChange.target) != null ||
+              this.group_.isEquivalentTo(treeChange.target)
+        });
+
     // The status tray fires a SHOW event when it opens.
     this.desktop_.addEventListener(
         chrome.automation.EventType.SHOW, this.onModalDialog_.bind(this),
@@ -290,9 +312,6 @@ class NavigationManager {
     this.desktop_.addEventListener(
         chrome.automation.EventType.MENU_START, this.onModalDialog_.bind(this),
         false);
-    chrome.automation.addTreeChangeObserver(
-        chrome.automation.TreeChangeObserverFilter.ALL_TREE_CHANGES,
-        this.onTreeChange_.bind(this));
   }
 
   /**

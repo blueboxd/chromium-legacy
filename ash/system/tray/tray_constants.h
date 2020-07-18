@@ -102,7 +102,7 @@ constexpr int kSystemMenuCollapseExpandAnimationDurationMs = 500;
 
 constexpr gfx::Insets kUnifiedMenuItemPadding(0, 16, 16, 16);
 constexpr gfx::Insets kUnifiedSystemInfoViewPadding(0, 16, 16, 16);
-constexpr gfx::Insets kUnifiedManagedDeviceViewPadding(4, 19, 4, 16);
+constexpr gfx::Insets kUnifiedManagedDeviceViewPadding(0, 16, 11, 16);
 constexpr gfx::Insets kUnifiedSliderRowPadding(0, 16, 8, 16);
 constexpr gfx::Insets kUnifiedSliderBubblePadding(12, 0, 4, 0);
 constexpr gfx::Insets kUnifiedSliderPadding(0, 16);
@@ -137,7 +137,7 @@ constexpr gfx::Insets kStackingNotificationClearAllButtonPadding(8, 16);
 // A dark disc with |kTrayItemSize| diameter is drawn in the background.
 constexpr int kTrayTopShortcutButtonIconSize = 20;
 
-constexpr int kUnifiedManagedDeviceSpacing = 4;
+constexpr int kUnifiedManagedDeviceSpacing = 8;
 constexpr int kUnifiedSystemInfoHeight = 16;
 constexpr int kUnifiedSystemInfoSpacing = 8;
 constexpr gfx::Insets kUnifiedSystemInfoDateViewPadding(3);

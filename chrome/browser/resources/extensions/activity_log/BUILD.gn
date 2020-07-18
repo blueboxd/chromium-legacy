@@ -16,10 +16,6 @@ html_to_js("web_components") {
 }
 
 js_type_check("closure_compile_module") {
-  closure_flags = default_closure_args + [
-                    "js_module_root=../../chrome/browser/resources/extensions/",
-                    "js_module_root=./gen/chrome/browser/resources/extensions/",
-                  ]
   is_polymer3 = true
   deps = [
     ":activity_log",

@@ -77,7 +77,7 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   isValidAndVisible() {
-    return true;
+    return this.group_.isValidGroup();
   }
 
   /** @override */

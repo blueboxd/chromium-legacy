@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/fragmentainer_iterator.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
@@ -1937,6 +1938,22 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
   ShouldRespectOverflowClipType clip_behavior = kRespectOverflowClip;
   if (result.GetHitTestRequest().IgnoreClipping())
     clip_behavior = kIgnoreOverflowClip;
+
+  // For the global root scroller, hit test the layout viewport scrollbars
+  // first, as they are visually presented on top of the content.
+  if (GetLayoutObject().IsGlobalRootScroller()) {
+    // There are a number of early outs below that don't apply to the the
+    // global root scroller.
+    DCHECK(!Transform());
+    DCHECK(!Preserves3D());
+    DCHECK(!layout_object.HasClipPath());
+    if (scrollable_area_) {
+      IntPoint point = scrollable_area_->ConvertFromRootFrameToVisualViewport(
+          RoundedIntPoint(recursion_data.location.Point()));
+      if (scrollable_area_->HitTestOverflowControls(result, point))
+        return this;
+    }
+  }
 
   // We can only reach an SVG foreign object's PaintLayer from
   // LayoutSVGForeignObject::NodeAtFloatPoint (because

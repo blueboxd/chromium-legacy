@@ -10,6 +10,7 @@
 Polymer({
   is: 'os-settings-reset-page',
 
+  behaviors: [DeepLinkingBehavior, settings.RouteObserverBehavior],
 
   properties: {
     /** @private */
@@ -30,5 +31,23 @@ Polymer({
   onPowerwashDialogClose_() {
     this.showPowerwashDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.$.powerwash));
+  },
+
+  /**
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} newRoute
+   * @param {!settings.Route} oldRoute
+   * @protected
+   */
+  currentRouteChanged(newRoute, oldRoute) {
+    // Does not apply to this page.
+    if (newRoute != settings.routes.OS_RESET) {
+      return;
+    }
+
+    const settingId = this.getDeepLinkSettingId();
+    if (settingId === chromeos.settings.mojom.Setting.kPowerwash) {
+      this.showDeepLink(settingId);
+    }
   },
 });

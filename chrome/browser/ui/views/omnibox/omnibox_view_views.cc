@@ -2431,6 +2431,15 @@ void OmniboxViewViews::ShowFullURL() {
     elide_after_interaction_animation_->Stop();
   ApplyCaretVisibility();
   FitToLocalBounds();
+
+  // Previous animations or elisions might have faded the path and/or subdomains
+  // to transparent, so reset their color now that they should be visible.
+  ApplyColor(GetOmniboxColor(GetThemeProvider(),
+                             OmniboxPart::LOCATION_BAR_TEXT_DIMMED),
+             gfx::Range(0, GetText().size()));
+  UpdateTextStyle(GetText(), model()->CurrentTextIsURL(),
+                  model()->client()->GetSchemeClassifier());
+
   GetRenderText()->SetElideBehavior(gfx::ELIDE_TAIL);
 }
 

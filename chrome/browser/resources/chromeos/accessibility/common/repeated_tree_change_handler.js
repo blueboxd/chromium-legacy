@@ -10,9 +10,9 @@ class RepeatedTreeChangeHandler {
   /**
    * @param {!chrome.automation.TreeChangeObserverFilter} filter
    * @param {!function(!chrome.automation.TreeChange)} callback
-   * @param {{predicate: (function(!chrome.automation.TreeChange): boolean)}}
-   *     options
-   *         predicate A generic predicate that filters for changes of interest.
+   * @param {{predicate: ((function(!chrome.automation.TreeChange): boolean) |
+   *     undefined)}} options predicate A generic predicate that filters for
+   *     changes of interest.
    */
   constructor(filter, callback, options = {}) {
     /** @private {!Array<!chrome.automation.TreeChange>} */

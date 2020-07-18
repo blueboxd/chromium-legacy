@@ -99,6 +99,8 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/string_or_string_sequence_or_constrain_dom_string_parameters.h",
   "$bindings_modules_v8_output_dir/string_or_unsigned_long.cc",
   "$bindings_modules_v8_output_dir/string_or_unsigned_long.h",
+  "$bindings_modules_v8_output_dir/uint32_array_or_unsigned_long_sequence.cc",
+  "$bindings_modules_v8_output_dir/uint32_array_or_unsigned_long_sequence.h",
   "$bindings_modules_v8_output_dir/unsigned_long_or_unsigned_long_sequence.cc",
   "$bindings_modules_v8_output_dir/unsigned_long_or_unsigned_long_sequence.h",
   "$bindings_modules_v8_output_dir/unsigned_long_enforce_range_sequence_or_gpu_extent_3d_dict.cc",

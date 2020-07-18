@@ -13,14 +13,14 @@
   "do_not_sync": {
     "channel": "stable",
     "component_extensions_auto_granted": false,
-    "extension_types": "all",
+    "extension_types": ["extension"],
     "whitelist": [
       "226CF815E39A363090A1E547D53063472B8279FA"   // Media Router Stable
     ]
   },
   "zoom_without_bubble": {
     "channel": "stable",
-    "extension_types": "all",
+    "extension_types": ["extension"],
     "whitelist": [
       "CBCC42ABED43A4B58FE3810E62AFFA010EB0349F"   // https://crbug.com/538252
     ]

@@ -6,7 +6,6 @@
 
 #include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
 #include "third_party/blink/renderer/core/paint/block_painter.h"
-#include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
@@ -49,7 +48,8 @@ void MultiColumnSetPainter::PaintColumnRules(
     return;
 
   DrawingRecorder recorder(paint_info.context, layout_multi_column_set_,
-                           DisplayItem::kColumnRules);
+                           DisplayItem::kColumnRules,
+                           PixelSnappedIntRect(UnionRect(column_rule_bounds)));
 
   const ComputedStyle& block_style =
       layout_multi_column_set_.MultiColumnBlockFlow()->StyleRef();

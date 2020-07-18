@@ -183,6 +183,12 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
       const gfx::Point& paste_location,
       base::OnceCallback<void()> release_mailbox,
       base::OnceCallback<void(bool)> readback_done) override;
+  void ReadbackImagePixels(const gpu::Mailbox& source_mailbox,
+                           const SkImageInfo& dst_info,
+                           GLuint dst_row_bytes,
+                           int src_x,
+                           int src_y,
+                           void* dst_pixels) override;
   GLuint CreateAndConsumeForGpuRaster(const gpu::Mailbox& mailbox) override;
   void DeleteGpuRasterTexture(GLuint texture) override;
   void BeginGpuRaster() override;

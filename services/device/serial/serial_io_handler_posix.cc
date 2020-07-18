@@ -428,12 +428,27 @@ void SerialIoHandlerPosix::StopWatchingFileWrite() {
   }
 }
 
-bool SerialIoHandlerPosix::Flush() const {
-  if (tcflush(file().GetPlatformFile(), TCIOFLUSH) != 0) {
-    VPLOG(1) << "Failed to flush port";
-    return false;
+void SerialIoHandlerPosix::Flush(mojom::SerialPortFlushMode mode) const {
+  int queue_selector;
+  switch (mode) {
+    case mojom::SerialPortFlushMode::kReceiveAndTransmit:
+      queue_selector = TCIOFLUSH;
+      break;
+    case mojom::SerialPortFlushMode::kReceive:
+      queue_selector = TCIFLUSH;
+      break;
+    case mojom::SerialPortFlushMode::kTransmit:
+      queue_selector = TCOFLUSH;
+      break;
   }
-  return true;
+
+  if (tcflush(file().GetPlatformFile(), queue_selector) != 0)
+    VPLOG(1) << "Failed to flush port";
+}
+
+void SerialIoHandlerPosix::Drain() {
+  if (tcdrain(file().GetPlatformFile()) != 0)
+    VPLOG(1) << "Failed to drain port";
 }
 
 mojom::SerialPortControlSignalsPtr SerialIoHandlerPosix::GetControlSignals()

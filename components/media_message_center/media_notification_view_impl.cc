@@ -185,6 +185,20 @@ MediaNotificationViewImpl::MediaNotificationViewImpl(
   button_row->SetPreferredSize(kMediaNotificationButtonRowSize);
   button_row_ = main_row_->AddChildView(std::move(button_row));
 
+  auto playback_button_container = std::make_unique<views::View>();
+  auto* playback_button_container_layout =
+      playback_button_container->SetLayoutManager(
+          std::make_unique<views::BoxLayout>(
+              views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+              kMediaButtonRowSeparator));
+  playback_button_container_layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
+  // Media playback controls should always be presented left-to-right,
+  // regardless of the local UI direction.
+  playback_button_container->SetMirrored(false);
+  playback_button_container_ =
+      button_row_->AddChildView(std::move(playback_button_container));
+
   CreateMediaButton(
       MediaSessionAction::kPreviousTrack,
       l10n_util::GetStringUTF16(
@@ -203,7 +217,9 @@ MediaNotificationViewImpl::MediaNotificationViewImpl(
       IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PLAY));
   play_pause_button->SetToggledTooltipText(l10n_util::GetStringUTF16(
       IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PAUSE));
-  play_pause_button_ = button_row_->AddChildView(std::move(play_pause_button));
+  play_pause_button->EnableCanvasFlippingForRTLUI(false);
+  play_pause_button_ =
+      playback_button_container_->AddChildView(std::move(play_pause_button));
 
   CreateMediaButton(
       MediaSessionAction::kSeekForward,
@@ -244,6 +260,7 @@ MediaNotificationViewImpl::MediaNotificationViewImpl(
       IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_ENTER_PIP));
   picture_in_picture_button->SetToggledTooltipText(l10n_util::GetStringUTF16(
       IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_EXIT_PIP));
+  picture_in_picture_button->EnableCanvasFlippingForRTLUI(false);
   picture_in_picture_button_ =
       button_row_->AddChildView(std::move(picture_in_picture_button));
 
@@ -321,7 +338,8 @@ void MediaNotificationViewImpl::ButtonPressed(views::Button* sender,
     return;
   }
 
-  if (sender->parent() == button_row_) {
+  if (sender->parent() == button_row_ ||
+      sender->parent() == playback_button_container_) {
     if (item_) {
       item_->OnMediaSessionActionButtonPressed(GetActionFromButtonTag(*sender));
     }
@@ -474,10 +492,7 @@ void MediaNotificationViewImpl::UpdateActionButtonsVisibility() {
       GetTopVisibleActions(enabled_actions_, ignored_actions,
                            GetMaxNumActions(IsActuallyExpanded()));
 
-  for (auto* view : button_row_->children()) {
-    if (view == pip_button_separator_view_)
-      continue;
-
+  for (auto* view : GetButtons()) {
     views::Button* action_button = views::Button::AsButton(view);
     bool should_show =
         base::Contains(visible_actions, GetActionFromButtonTag(*action_button));
@@ -560,7 +575,8 @@ void MediaNotificationViewImpl::CreateMediaButton(
   button->SetAccessibleName(accessible_name);
   button->SetTooltipText(accessible_name);
   button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  button_row_->AddChildView(std::move(button));
+  button->EnableCanvasFlippingForRTLUI(false);
+  playback_button_container_->AddChildView(std::move(button));
 }
 
 MediaNotificationBackground*
@@ -634,16 +650,9 @@ void MediaNotificationViewImpl::UpdateForegroundColor() {
       kMediaButtonIconSize, foreground, disabled_icon_color);
 
   // Update action buttons.
-  for (views::View* child : button_row_->children()) {
+  for (views::View* child : playback_button_container_->children()) {
     // Skip the play pause button since it is a special case.
     if (child == play_pause_button_)
-      continue;
-
-    if (child == picture_in_picture_button_)
-      continue;
-
-    // Skip if the view is not an image button.
-    if (child->GetClassName() != views::ImageButton::kViewClassName)
       continue;
 
     views::ImageButton* button = static_cast<views::ImageButton*>(child);
@@ -658,4 +667,20 @@ void MediaNotificationViewImpl::UpdateForegroundColor() {
   container_->OnColorsChanged(foreground, background);
 }
 
+std::vector<views::View*> MediaNotificationViewImpl::GetButtons() {
+  auto buttons = button_row_->children();
+  buttons.insert(buttons.cbegin(),
+                 playback_button_container_->children().cbegin(),
+                 playback_button_container_->children().cend());
+  buttons.erase(
+      std::remove_if(buttons.begin(), buttons.end(),
+                     [](views::View* view) {
+                       return !(view->GetClassName() ==
+                                    views::ImageButton::kViewClassName ||
+                                view->GetClassName() ==
+                                    views::ToggleImageButton::kViewClassName);
+                     }),
+      buttons.end());
+  return buttons;
+}
 }  // namespace media_message_center

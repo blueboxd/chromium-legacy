@@ -44,6 +44,8 @@ SharedImageBackingScopedHardwareBufferFenceSync::
         viz::ResourceFormat format,
         const gfx::Size& size,
         const gfx::ColorSpace& color_space,
+        GrSurfaceOrigin surface_origin,
+        SkAlphaType alpha_type,
         uint32_t usage,
         size_t estimated_size,
         bool is_thread_safe)
@@ -51,6 +53,8 @@ SharedImageBackingScopedHardwareBufferFenceSync::
                                 format,
                                 size,
                                 color_space,
+                                surface_origin,
+                                alpha_type,
                                 usage,
                                 estimated_size,
                                 is_thread_safe,

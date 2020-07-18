@@ -312,6 +312,8 @@ const char kCannotScriptGallery[] =
 const char kCannotScriptNtp[] = "The New Tab Page cannot be scripted.";
 const char kCannotScriptSigninPage[] =
     "The sign-in page cannot be scripted.";
+const char kChromeStyleInvalidForManifestV3[] =
+    "The chrome_style option cannot be used with manifest version 3.";
 const char kChromeVersionTooLow[] =
     "This extension requires * version * or greater.";
 const char kDeclarativeNetRequestPermissionNeeded[] =

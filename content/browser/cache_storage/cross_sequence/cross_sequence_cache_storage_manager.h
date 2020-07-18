@@ -33,19 +33,21 @@ class CONTENT_EXPORT CrossSequenceCacheStorageManager
   void GetAllOriginsUsage(
       CacheStorageOwner owner,
       CacheStorageContext::GetUsageInfoCallback callback) override;
-  void GetOriginUsage(const url::Origin& origin_url,
-                      CacheStorageOwner owner,
-                      storage::QuotaClient::GetUsageCallback callback) override;
-  void GetOrigins(CacheStorageOwner owner,
-                  storage::QuotaClient::GetOriginsCallback callback) override;
+  void GetOriginUsage(
+      const url::Origin& origin_url,
+      CacheStorageOwner owner,
+      storage::QuotaClient::GetOriginUsageCallback callback) override;
+  void GetOrigins(
+      CacheStorageOwner owner,
+      storage::QuotaClient::GetOriginsForTypeCallback callback) override;
   void GetOriginsForHost(
       const std::string& host,
       CacheStorageOwner owner,
-      storage::QuotaClient::GetOriginsCallback callback) override;
+      storage::QuotaClient::GetOriginsForHostCallback callback) override;
   void DeleteOriginData(
       const url::Origin& origin,
       CacheStorageOwner owner,
-      storage::QuotaClient::DeletionCallback callback) override;
+      storage::QuotaClient::DeleteOriginDataCallback callback) override;
   void DeleteOriginData(const url::Origin& origin,
                         CacheStorageOwner owner) override;
   void SetBlobParametersForCache(

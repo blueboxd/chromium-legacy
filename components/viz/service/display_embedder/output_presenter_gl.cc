@@ -73,9 +73,9 @@ bool PresenterImageGL::Initialize(
     uint32_t shared_image_usage) {
   auto mailbox = gpu::Mailbox::GenerateForSharedImage();
 
-  if (!factory->CreateSharedImage(mailbox, format, size, color_space,
-                                  deps->GetSurfaceHandle(),
-                                  shared_image_usage)) {
+  if (!factory->CreateSharedImage(
+          mailbox, format, size, color_space, kTopLeft_GrSurfaceOrigin,
+          kPremul_SkAlphaType, deps->GetSurfaceHandle(), shared_image_usage)) {
     DLOG(ERROR) << "CreateSharedImage failed.";
     return false;
   }

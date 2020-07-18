@@ -268,6 +268,11 @@ void SerialIoHandlerWin::ReadImpl() {
   DCHECK(pending_read_buffer());
   DCHECK(file().IsValid());
 
+  if (is_comm_pending_) {
+    // Reuse the call to WaitCommEvent() from a canceled read.
+    return;
+  }
+
   if (!SetCommMask(file().GetPlatformFile(), EV_RXCHAR)) {
     VPLOG(1) << "Failed to set serial event flags";
   }
@@ -299,13 +304,23 @@ void SerialIoHandlerWin::WriteImpl() {
 void SerialIoHandlerWin::CancelReadImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(file().IsValid());
-  ::CancelIo(file().GetPlatformFile());
+
+  if (is_comm_pending_) {
+    // Clearing the event mask will cause an overlapped call to WaitCommEvent()
+    // to complete immediately.
+    if (!SetCommMask(file().GetPlatformFile(), 0))
+      VPLOG(1) << "Failed to clear event mask";
+  } else {
+    if (!PurgeComm(file().GetPlatformFile(), PURGE_RXABORT))
+      VPLOG(1) << "RX abort failed";
+  }
 }
 
 void SerialIoHandlerWin::CancelWriteImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(file().IsValid());
-  ::CancelIo(file().GetPlatformFile());
+  if (!PurgeComm(file().GetPlatformFile(), PURGE_TXABORT))
+    VPLOG(1) << "TX abort failed";
 }
 
 bool SerialIoHandlerWin::ConfigurePortImpl() {
@@ -370,6 +385,8 @@ void SerialIoHandlerWin::OnIOCompleted(
     DWORD error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (context == comm_context_.get()) {
+    is_comm_pending_ = false;
+
     DWORD errors;
     if (!ClearCommError(file().GetPlatformFile(), &errors, nullptr)) {
       VPLOG(1) << "Failed to clear communication error";
@@ -446,12 +463,27 @@ void SerialIoHandlerWin::OnIOCompleted(
   }
 }
 
-bool SerialIoHandlerWin::Flush() const {
-  if (!PurgeComm(file().GetPlatformFile(), PURGE_RXCLEAR | PURGE_TXCLEAR)) {
-    VPLOG(1) << "Failed to flush serial port";
-    return false;
+void SerialIoHandlerWin::Flush(mojom::SerialPortFlushMode mode) const {
+  DWORD flags;
+  switch (mode) {
+    case mojom::SerialPortFlushMode::kReceiveAndTransmit:
+      flags = PURGE_RXCLEAR | PURGE_TXCLEAR;
+      break;
+    case mojom::SerialPortFlushMode::kReceive:
+      flags = PURGE_RXCLEAR;
+      break;
+    case mojom::SerialPortFlushMode::kTransmit:
+      flags = PURGE_TXCLEAR;
+      break;
   }
-  return true;
+
+  if (!PurgeComm(file().GetPlatformFile(), flags))
+    VPLOG(1) << "Failed to flush serial port";
+}
+
+void SerialIoHandlerWin::Drain() {
+  if (!FlushFileBuffers(file().GetPlatformFile()))
+    VPLOG(1) << "Failed to drain serial port";
 }
 
 mojom::SerialPortControlSignalsPtr SerialIoHandlerWin::GetControlSignals()

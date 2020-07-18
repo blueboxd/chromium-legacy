@@ -305,6 +305,16 @@ class RootNodeWrapper extends SARootNode {
   }
 
   /** @override */
+  refreshChildren() {
+    const childConstructor = (node) => NodeWrapper.create(node, this);
+    try {
+      RootNodeWrapper.findAndSetChildren(this, childConstructor);
+    } catch (e) {
+      this.invalidated_ = true;
+    }
+  }
+
+  /** @override */
   refresh() {
     // Find the currently focused child.
     let focusedChild = null;
@@ -316,12 +326,9 @@ class RootNodeWrapper extends SARootNode {
     }
 
     // Update this RootNodeWrapper's children.
-    const childConstructor = (node) => NodeWrapper.create(node, this);
-    try {
-      RootNodeWrapper.findAndSetChildren(this, childConstructor);
-    } catch (e) {
+    this.refreshChildren();
+    if (this.invalidated_) {
       this.onUnfocus();
-      this.invalidated_ = true;
       NavigationManager.moveToValidNode();
       return;
     }

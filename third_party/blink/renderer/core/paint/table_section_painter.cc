@@ -292,8 +292,9 @@ void TableSectionPainter::PaintBoxDecorationBackground(
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  DrawingRecorder recorder(paint_info.context, layout_table_section_,
-                           DisplayItem::kBoxDecorationBackground);
+  BoxDrawingRecorder recorder(paint_info.context, layout_table_section_,
+                              DisplayItem::kBoxDecorationBackground,
+                              paint_offset);
   PhysicalRect paint_rect(paint_offset, layout_table_section_.Size());
 
   if (has_box_shadow) {

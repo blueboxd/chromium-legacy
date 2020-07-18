@@ -894,6 +894,7 @@ class TestMailboxBacking : public TextureBacking {
   const SkImageInfo& GetSkImageInfo() override { return info_; }
   gpu::Mailbox GetMailbox() const override { return mailbox_; }
   sk_sp<SkImage> GetAcceleratedSkImage() override { return nullptr; }
+  sk_sp<SkImage> GetSkImageViaReadback() override { return nullptr; }
 
  private:
   gpu::Mailbox mailbox_;
@@ -1868,6 +1869,47 @@ TEST_F(OopPixelTest, ConvertYUVToRGB) {
   sii->DestroySharedImage(sync_token, y_mailbox);
   sii->DestroySharedImage(sync_token, u_mailbox);
   sii->DestroySharedImage(sync_token, v_mailbox);
+}
+
+TEST_F(OopPixelTest, ReadbackImagePixels) {
+  RasterOptions options(gfx::Size(16, 16));
+  SkImageInfo dest_info = SkImageInfo::MakeN32Premul(
+      options.resource_size.width(), options.resource_size.height(),
+      gfx::ColorSpace::CreateSRGB().ToSkColorSpace());
+
+  SkBitmap expected_bitmap;
+  expected_bitmap.allocPixels(dest_info);
+
+  SkCanvas canvas(expected_bitmap);
+  canvas.drawColor(SK_ColorMAGENTA);
+  SkPaint green;
+  green.setColor(SK_ColorGREEN);
+  canvas.drawRect(SkRect::MakeXYWH(1, 2, 3, 4), green);
+
+  auto* ri = raster_context_provider_->RasterInterface();
+  auto* sii = raster_context_provider_->SharedImageInterface();
+  gpu::Mailbox mailbox = CreateMailboxSharedImage(
+      ri, sii, options, viz::ResourceFormat::RGBA_8888);
+  ri->OrderingBarrierCHROMIUM();
+
+  gpu::gles2::GLES2Interface* gl = gles2_context_provider_->ContextGL();
+  UploadPixels(gl, mailbox, options.resource_size, GL_RGBA, GL_UNSIGNED_BYTE,
+               expected_bitmap.getPixels());
+  gl->OrderingBarrierCHROMIUM();
+
+  SkBitmap actual_bitmap;
+  actual_bitmap.allocPixels(dest_info);
+
+  ri->ReadbackImagePixels(mailbox, dest_info, dest_info.minRowBytes(), 0, 0,
+                          actual_bitmap.getPixels());
+  EXPECT_EQ(ri->GetError(), static_cast<unsigned>(GL_NO_ERROR));
+  ri->OrderingBarrierCHROMIUM();
+
+  ExpectEquals(actual_bitmap, expected_bitmap);
+
+  gpu::SyncToken sync_token;
+  gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+  sii->DestroySharedImage(sync_token, mailbox);
 }
 
 // A workaround on Android that forces the use of GLES 2.0 instead of 3.0

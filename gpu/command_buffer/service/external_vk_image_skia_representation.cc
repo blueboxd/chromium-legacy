@@ -164,7 +164,7 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
     begin_semaphores->back().initVulkan(semaphore);
   }
 
-  if (backing_impl()->need_synchronization()) {
+  if (backing_impl()->need_synchronization() && end_semaphores) {
     // Create an |end_access_semaphore_| which will be signalled by the caller.
     end_access_semaphore_ =
         vk_implementation()->CreateExternalSemaphore(backing_impl()->device());
@@ -178,11 +178,12 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
 
 void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
   DCHECK_NE(access_mode_, kNone);
+  DCHECK(backing_impl()->need_synchronization() ||
+         end_access_semaphore_ == VK_NULL_HANDLE);
 
   SemaphoreHandle handle;
-  if (backing_impl()->need_synchronization()) {
-    DCHECK(end_access_semaphore_ != VK_NULL_HANDLE);
-
+  if (backing_impl()->need_synchronization() &&
+      end_access_semaphore_ != VK_NULL_HANDLE) {
     handle = vk_implementation()->GetSemaphoreHandle(vk_device(),
                                                      end_access_semaphore_);
     DCHECK(handle.is_valid());
@@ -191,8 +192,6 @@ void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
     fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(
         end_access_semaphore_);
     end_access_semaphore_ = VK_NULL_HANDLE;
-  } else {
-    DCHECK(end_access_semaphore_ == VK_NULL_HANDLE);
   }
 
   backing_impl()->EndAccess(readonly, std::move(handle), false /* is_gl */);

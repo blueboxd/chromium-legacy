@@ -59,10 +59,14 @@ class SerialPort final : public ScriptWrappable,
 
   const base::UnguessableToken& token() const { return info_->token; }
 
-  void UnderlyingSourceClosed();
-  void UnderlyingSinkClosed();
   ScriptPromise ContinueClose(ScriptState*);
   void AbortClose();
+
+  void Flush(device::mojom::blink::SerialPortFlushMode mode,
+             device::mojom::blink::SerialPort::FlushCallback callback);
+  void Drain(device::mojom::blink::SerialPort::DrainCallback callback);
+  void UnderlyingSourceClosed();
+  void UnderlyingSinkClosed();
 
   void ContextDestroyed();
   void Trace(Visitor*) const override;

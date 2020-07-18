@@ -283,6 +283,7 @@ extern const char kCannotScriptGallery[];
 extern const char kCannotScriptNtp[];
 extern const char kCannotScriptSigninPage[];
 extern const char kCannotUninstallManagedExtension[];
+extern const char kChromeStyleInvalidForManifestV3[];
 extern const char kChromeVersionTooLow[];
 extern const char kDeclarativeNetRequestPermissionNeeded[];
 extern const char kDefaultStateShouldNotBeSet[];

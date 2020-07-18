@@ -419,7 +419,8 @@ class CommandBufferSetup {
       mailbox.SetName(name);
       shared_image_factory_->CreateSharedImage(
           mailbox, viz::RGBA_8888, gfx::Size(256, 256),
-          gfx::ColorSpace::CreateSRGB(), gfx::kNullAcceleratedWidget, usage);
+          gfx::ColorSpace::CreateSRGB(), kTopLeft_GrSurfaceOrigin,
+          kPremul_SkAlphaType, gfx::kNullAcceleratedWidget, usage);
     }
 
 #if defined(GPU_FUZZER_USE_RASTER_DECODER)

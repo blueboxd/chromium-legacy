@@ -972,6 +972,19 @@ void ScrollableArea::InjectGestureScrollEvent(
   // We shouldn't be injecting scrolls for the visual viewport scrollbar, since
   // it is not hit-testable.
   DCHECK(GetLayoutBox());
+
+  if (granularity == ScrollGranularity::kScrollByPrecisePixel ||
+      granularity == ScrollGranularity::kScrollByPixel) {
+    // Pixel-based deltas need to be scaled up by the input event scale factor,
+    // since the GSUs will be scaled down by that factor when being handled.
+    float scale = 1;
+    LocalFrameView* root_view =
+        GetLayoutBox()->GetFrame()->LocalFrameRoot().View();
+    if (root_view)
+      scale = root_view->InputEventsScaleFactor();
+    delta.Scale(scale);
+  }
+
   GetChromeClient()->InjectGestureScrollEvent(
       *GetLayoutBox()->GetFrame(), device,
       gfx::Vector2dF(delta.Width(), delta.Height()), granularity,

@@ -15,6 +15,7 @@
 #include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 
@@ -231,7 +232,7 @@ bool PathService::Get(int key, FilePath* result) {
 
 FilePath PathService::CheckedGet(int key) {
   FilePath path;
-  CHECK(Get(key, &path));
+  LOG_IF(FATAL, !Get(key, &path)) << "Failed to get the path for " << key;
   return path;
 }
 

@@ -48,12 +48,12 @@ class TestCertificateReportSender : public net::ReportSender {
       : ReportSender(nullptr, TRAFFIC_ANNOTATION_FOR_TESTS) {}
   ~TestCertificateReportSender() override {}
 
-  void Send(const GURL& report_uri,
-            base::StringPiece content_type,
-            base::StringPiece serialized_report,
-            const base::RepeatingCallback<void()>& success_callback,
-            const base::RepeatingCallback<void(const GURL&, int, int)>&
-                error_callback) override {
+  void Send(
+      const GURL& report_uri,
+      base::StringPiece content_type,
+      base::StringPiece serialized_report,
+      base::OnceCallback<void()> success_callback,
+      base::OnceCallback<void(const GURL&, int, int)> error_callback) override {
     sent_report_count_++;
     latest_report_uri_ = report_uri;
     latest_serialized_report_.assign(serialized_report.data(),

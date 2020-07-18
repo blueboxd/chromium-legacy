@@ -99,6 +99,8 @@ bool SharedImageStub::CreateSharedImage(const Mailbox& mailbox,
                                         SurfaceHandle surface_handle,
                                         const gfx::Size& size,
                                         const gfx::ColorSpace& color_space,
+                                        GrSurfaceOrigin surface_origin,
+                                        SkAlphaType alpha_type,
                                         uint32_t usage) {
   TRACE_EVENT2("gpu", "SharedImageStub::CreateSharedImage", "width",
                size.width(), "height", size.height());
@@ -114,7 +116,7 @@ bool SharedImageStub::CreateSharedImage(const Mailbox& mailbox,
   }
   if (!factory_->CreateSharedImage(mailbox, client_id, std::move(handle),
                                    format, surface_handle, size, color_space,
-                                   usage)) {
+                                   surface_origin, alpha_type, usage)) {
     LOG(ERROR) << "SharedImageStub: Unable to create shared image";
     OnError();
     return false;
@@ -164,7 +166,9 @@ void SharedImageStub::OnCreateSharedImage(
   }
 
   if (!factory_->CreateSharedImage(params.mailbox, params.format, params.size,
-                                   params.color_space, gpu::kNullSurfaceHandle,
+                                   params.color_space, params.surface_origin,
+                                   params.alpha_type, gpu::kNullSurfaceHandle,
+
                                    params.usage)) {
     LOG(ERROR) << "SharedImageStub: Unable to create shared image";
     OnError();
@@ -217,7 +221,8 @@ void SharedImageStub::OnCreateSharedImageWithData(
       memory.subspan(params.pixel_data_offset, params.pixel_data_size);
 
   if (!factory_->CreateSharedImage(params.mailbox, params.format, params.size,
-                                   params.color_space, params.usage, subspan)) {
+                                   params.color_space, params.surface_origin,
+                                   params.alpha_type, params.usage, subspan)) {
     LOG(ERROR) << "SharedImageStub: Unable to create shared image";
     OnError();
     return;
@@ -243,10 +248,10 @@ void SharedImageStub::OnCreateGMBSharedImage(
                params.size.width(), "height", params.size.height());
   // TODO(piman): add support for SurfaceHandle (for backbuffers for ozone/drm).
   constexpr SurfaceHandle surface_handle = kNullSurfaceHandle;
-  if (!CreateSharedImage(params.mailbox, channel_->client_id(),
-                         std::move(params.handle), params.format,
-                         surface_handle, params.size, params.color_space,
-                         params.usage)) {
+  if (!CreateSharedImage(
+          params.mailbox, channel_->client_id(), std::move(params.handle),
+          params.format, surface_handle, params.size, params.color_space,
+          params.surface_origin, params.alpha_type, params.usage)) {
     return;
   }
 
@@ -316,7 +321,8 @@ void SharedImageStub::OnCreateSwapChain(
 
   if (!factory_->CreateSwapChain(
           params.front_buffer_mailbox, params.back_buffer_mailbox,
-          params.format, params.size, params.color_space, params.usage)) {
+          params.format, params.size, params.color_space, params.surface_origin,
+          params.alpha_type, params.usage)) {
     DLOG(ERROR) << "SharedImageStub: Unable to create swap chain";
     OnError();
     return;

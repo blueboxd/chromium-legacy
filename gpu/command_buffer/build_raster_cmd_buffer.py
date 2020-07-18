@@ -197,6 +197,14 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'trace_level': 2,
   },
+  'ReadbackImagePixelsINTERNAL': {
+    'decoder_func': 'DoReadbackImagePixelsINTERNAL',
+    'internal': True,
+    'type': 'PUT',
+    'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
+    'unit_test': False,
+    'trace_level': 2,
+  },
   'ConvertYUVMailboxesToRGBINTERNAL': {
     'decoder_func': 'DoConvertYUVMailboxesToRGBINTERNAL',
     'internal': True,

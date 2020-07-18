@@ -147,7 +147,8 @@ UnPackStatus LzmaUtilImpl::OpenArchive(const base::FilePath& archivePath) {
 
   archive_file_.Initialize(archivePath, base::File::FLAG_OPEN |
                                             base::File::FLAG_READ |
-                                            base::File::FLAG_EXCLUSIVE_WRITE);
+                                            base::File::FLAG_EXCLUSIVE_WRITE |
+                                            base::File::FLAG_SHARE_DELETE);
   if (archive_file_.IsValid())
     return UNPACK_NO_ERROR;
   error_code_ = ::GetLastError();

@@ -161,6 +161,7 @@ js_type_check("closure_compile") {
     "../common:closure_shim",
     "../common:constants",
     "../common:repeated_event_handler",
+    "../common:repeated_tree_change_handler",
     "../common:tree_walker",
   ]
 }

@@ -20,7 +20,7 @@ native_libraries = [
 ]
 resources = [
   "res/layout/__arcore_education.xml",
-  "res/raw/keep.xml",
+  "res/raw/keep_arcore.xml",
   "res/values-af/values.xml",
   "res/values-am/values.xml",
   "res/values-ar-rEG/values.xml",

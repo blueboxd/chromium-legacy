@@ -66,6 +66,10 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
       pdfAnnotationsEnabled: Boolean,
       pdfFormSaveEnabled: Boolean,
       printingEnabled: Boolean,
+      viewportZoom: {
+        type: Number,
+        observer: 'viewportZoomChanged_',
+      },
 
       fittingType_: Number,
 
@@ -119,6 +123,12 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
   /** @private */
   loadProgressChanged_() {
     this.loading_ = this.loadProgress < 100;
+  }
+
+  /** @private */
+  viewportZoomChanged_() {
+    const zoom = Math.round(this.viewportZoom * 100);
+    this.shadowRoot.querySelector('#zoom-controls input').value = `${zoom}%`;
   }
 
   // <if expr="chromeos">

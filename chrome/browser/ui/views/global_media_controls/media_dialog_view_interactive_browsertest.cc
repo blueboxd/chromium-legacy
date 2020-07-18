@@ -495,6 +495,21 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
     return true;
   }
 
+  views::ImageButton* GetButtonForAction(MediaSessionAction action) {
+    return GetButtonForAction(
+        MediaDialogView::GetDialogViewForTesting()->children().front(),
+        static_cast<int>(action));
+  }
+
+  // Returns true if |target| exists in |base|'s forward focus chain
+  bool ViewFollowsInFocusChain(views::View* base, views::View* target) {
+    for (views::View* cur = base; cur; cur = cur->GetNextFocusableView()) {
+      if (cur == target)
+        return true;
+    }
+    return false;
+  }
+
  protected:
   std::unique_ptr<TestWebContentsPresentationManager> presentation_manager_;
   TestMediaRouter* media_router_ = nullptr;
@@ -506,12 +521,6 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
         button, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
         closure_loop.QuitClosure());
     closure_loop.Run();
-  }
-
-  views::ImageButton* GetButtonForAction(MediaSessionAction action) {
-    return GetButtonForAction(
-        MediaDialogView::GetDialogViewForTesting()->children().front(),
-        static_cast<int>(action));
   }
 
   // Recursively tries to find a views::ImageButton for the given
@@ -598,6 +607,80 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
   // page.
   ClickPlayButtonOnDialog();
   WaitForStart();
+
+  // Clicking on the toolbar icon again should hide the dialog.
+  EXPECT_TRUE(IsDialogVisible());
+  ClickToolbarIcon();
+  EXPECT_FALSE(IsDialogVisible());
+}
+
+IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
+                       ShowsMetadataAndControlsMediaInRTL) {
+  base::i18n::SetICUDefaultLocale("ar");
+  ASSERT_TRUE(base::i18n::IsRTL());
+
+  // The toolbar icon should not start visible.
+  EXPECT_FALSE(IsToolbarIconVisible());
+
+  // Opening a page with media that hasn't played yet should not make the
+  // toolbar icon visible.
+  OpenTestURL();
+  LayoutBrowser();
+  EXPECT_FALSE(IsToolbarIconVisible());
+
+  // Once playback starts, the icon should be visible, but the dialog should not
+  // appear if it hasn't been clicked.
+  StartPlayback();
+  WaitForStart();
+  WaitForVisibleToolbarIcon();
+  EXPECT_TRUE(IsToolbarIconVisible());
+  EXPECT_FALSE(IsDialogVisible());
+
+  // At this point, the toolbar icon has been set visible. Layout the
+  // browser to ensure it can be clicked.
+  LayoutBrowser();
+
+  // Clicking on the toolbar icon should open the dialog.
+  ClickToolbarIcon();
+  WaitForDialogOpened();
+  EXPECT_TRUE(IsDialogVisible());
+
+  // The view containing playback controls should not be mirrored.
+  EXPECT_FALSE(MediaDialogView::GetDialogViewForTesting()
+                   ->GetNotificationsForTesting()
+                   .begin()
+                   ->second->view_for_testing()
+                   ->playback_button_container_for_testing()
+                   ->GetMirrored());
+
+  // The dialog should contain the title and artist. These are taken from
+  // video-with-metadata.html.
+  WaitForDialogToContainText(base::ASCIIToUTF16("Big Buck Bunny"));
+  WaitForDialogToContainText(base::ASCIIToUTF16("Blender Foundation"));
+
+  // Clicking on the pause button in the dialog should pause the media on the
+  // page.
+  ClickPauseButtonOnDialog();
+  WaitForStop();
+
+  // Clicking on the play button in the dialog should play the media on the
+  // page.
+  ClickPlayButtonOnDialog();
+  WaitForStart();
+
+  // In the RTL UI the picture in picture button should be to the left of the
+  // playback control buttons.
+  EXPECT_LT(
+      GetButtonForAction(MediaSessionAction::kEnterPictureInPicture)
+          ->GetMirroredX(),
+      GetButtonForAction(MediaSessionAction::kPlay)->parent()->GetMirroredX());
+
+  // In the RTL UI the focus order should be the same as it is in the LTR UI.
+  // That is the play/pause button logically proceeds the picture in picture
+  // button.
+  EXPECT_TRUE(ViewFollowsInFocusChain(
+      GetButtonForAction(MediaSessionAction::kPlay)->parent(),
+      GetButtonForAction(MediaSessionAction::kEnterPictureInPicture)));
 
   // Clicking on the toolbar icon again should hide the dialog.
   EXPECT_TRUE(IsDialogVisible());

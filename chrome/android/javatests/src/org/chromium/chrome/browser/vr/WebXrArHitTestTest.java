@@ -66,7 +66,7 @@ public class WebXrArHitTestTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    @ArPlaybackFile("chrome/test/data/xr/ar_playback_datasets/floor_short_start_with_plane.mp4")
+    @ArPlaybackFile("chrome/test/data/xr/ar_playback_datasets/floor_session_12s_30fps.mp4")
     public void testHitTestSucceedsWithPlane() {
         mWebXrArTestFramework.loadFileAndAwaitInitialization(
                 "webxr_test_basic_hittest", PAGE_LOAD_TIMEOUT_S);

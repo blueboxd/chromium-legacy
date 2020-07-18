@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
@@ -186,13 +187,14 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
 }
 
 NGInlineBoxState* NGInlineLayoutStateStack::OnCloseTag(
+    const NGConstraintSpace& space,
     NGLogicalLineItems* line_box,
     NGInlineBoxState* box,
     FontBaseline baseline_type,
     bool has_end_edge) {
   DCHECK_EQ(box, &stack_.back());
   box->has_end_edge = has_end_edge;
-  EndBoxState(box, line_box, baseline_type);
+  EndBoxState(space, box, line_box, baseline_type);
   // TODO(kojii): When the algorithm restarts from a break token, the stack may
   // underflow. We need either synthesize a missing box state, or push all
   // parents on initialize.
@@ -200,14 +202,15 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnCloseTag(
   return &stack_.back();
 }
 
-void NGInlineLayoutStateStack::OnEndPlaceItems(NGLogicalLineItems* line_box,
+void NGInlineLayoutStateStack::OnEndPlaceItems(const NGConstraintSpace& space,
+                                               NGLogicalLineItems* line_box,
                                                FontBaseline baseline_type) {
   for (auto it = stack_.rbegin(); it != stack_.rend(); ++it) {
     NGInlineBoxState* box = &(*it);
     if (!box->has_end_edge && box->needs_box_fragment &&
         box->style->BoxDecorationBreak() == EBoxDecorationBreak::kClone)
       box->has_end_edge = true;
-    EndBoxState(box, line_box, baseline_type);
+    EndBoxState(space, box, line_box, baseline_type);
   }
 
   // Up to this point, the offset of inline boxes are stored in placeholder so
@@ -220,11 +223,12 @@ void NGInlineLayoutStateStack::OnEndPlaceItems(NGLogicalLineItems* line_box,
   }
 }
 
-void NGInlineLayoutStateStack::EndBoxState(NGInlineBoxState* box,
+void NGInlineLayoutStateStack::EndBoxState(const NGConstraintSpace& space,
+                                           NGInlineBoxState* box,
                                            NGLogicalLineItems* line_box,
                                            FontBaseline baseline_type) {
   if (box->needs_box_fragment)
-    AddBoxData(box, line_box);
+    AddBoxData(space, box, line_box);
 
   PositionPending position_pending =
       ApplyBaselineShift(box, line_box, baseline_type);
@@ -273,7 +277,8 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
 }
 
 // Add a |BoxData|, for each close-tag that needs a box fragment.
-void NGInlineLayoutStateStack::AddBoxData(NGInlineBoxState* box,
+void NGInlineLayoutStateStack::AddBoxData(const NGConstraintSpace& space,
+                                          NGInlineBoxState* box,
                                           NGLogicalLineItems* line_box) {
   DCHECK(box->needs_box_fragment);
   DCHECK(box->style);
@@ -315,6 +320,8 @@ void NGInlineLayoutStateStack::AddBoxData(NGInlineBoxState* box,
   // An empty box fragment is still flat that we do not have to defer.
   // Also, placeholders cannot be reordred if empty.
   placeholder.rect.offset.inline_offset += box_data.margin_line_left;
+  placeholder.rect.offset +=
+      ComputeRelativeOffsetForInline(space, *box_data.item->Style());
   LayoutUnit advance = box_data.margin_border_padding_line_left +
                        box_data.margin_border_padding_line_right;
   box_data.rect.size.inline_size =
@@ -564,6 +571,37 @@ LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
   }
 
   return position;
+}
+
+void NGInlineLayoutStateStack::ApplyRelativePositioning(
+    const NGConstraintSpace& space,
+    NGLogicalLineItems* line_box) {
+  if (box_data_list_.IsEmpty())
+    return;
+
+  // The final position of any inline boxes, (<span>, etc) are stored on
+  // |BoxData::rect|. As we don't have a mapping from |NGLogicalLineItem| to
+  // |BoxData| we store the accumulated relative offsets, and then apply the
+  // final adjustment at the end of this function.
+  Vector<LogicalOffset, 32> accumulated_offsets(line_box->size());
+
+  for (BoxData& box_data : box_data_list_) {
+    unsigned start = box_data.fragment_start;
+    unsigned end = box_data.fragment_end;
+    const LogicalOffset relative_offset =
+        ComputeRelativeOffsetForInline(space, *box_data.item->Style());
+
+    // Move all children for this box.
+    for (unsigned index = start; index < end; index++) {
+      auto& child = (*line_box)[index];
+      child.rect.offset += relative_offset;
+      accumulated_offsets[index] += relative_offset;
+    }
+  }
+
+  // Apply the final accumulated relative position offset for each box.
+  for (BoxData& box_data : box_data_list_)
+    box_data.rect.offset += accumulated_offsets[box_data.fragment_start];
 }
 
 void NGInlineLayoutStateStack::CreateBoxFragments(

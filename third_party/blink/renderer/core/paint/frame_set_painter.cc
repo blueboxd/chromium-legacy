@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/html/html_frame_set_element.h"
 #include "third_party/blink/renderer/core/layout/layout_frame_set.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -88,8 +89,8 @@ void FrameSetPainter::PaintBorders(const PaintInfo& paint_info,
           paint_info.context, layout_frame_set_, paint_info.phase))
     return;
 
-  DrawingRecorder recorder(paint_info.context, layout_frame_set_,
-                           paint_info.phase);
+  BoxDrawingRecorder recorder(paint_info.context, layout_frame_set_,
+                              paint_info.phase, paint_offset);
 
   LayoutUnit border_thickness(layout_frame_set_.FrameSet()->Border());
   if (!border_thickness)

@@ -299,12 +299,6 @@ try_.chromium_chromiumos_builder(
 )
 
 
-try_.chromium_codesearch_builder(
-    name = 'codesearch-gen-chromium-win-try',
-    os = os.WINDOWS_10,
-)
-
-
 try_.chromium_dawn_builder(
     name = 'linux-dawn-rel',
 )

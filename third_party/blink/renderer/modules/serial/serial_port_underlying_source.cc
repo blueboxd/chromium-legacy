@@ -4,10 +4,12 @@
 
 #include "third_party/blink/renderer/modules/serial/serial_port_underlying_source.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_with_script_scope.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/serial/serial_port.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -41,12 +43,16 @@ ScriptPromise SerialPortUnderlyingSource::pull(ScriptState* script_state) {
 
 ScriptPromise SerialPortUnderlyingSource::Cancel(ScriptState* script_state,
                                                  ScriptValue reason) {
-  // TODO(crbug.com/989653): Rather than calling Close(), cancel() should
-  // trigger a purge of the serial read buffer and wait for the pipe to close to
-  // indicate the purge has been completed.
+  DCHECK(data_pipe_);
+
   Close();
-  ExpectPipeClose();
-  return ScriptPromise::CastUndefined(script_state);
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  serial_port_->Flush(
+      device::mojom::blink::SerialPortFlushMode::kReceive,
+      WTF::Bind(&SerialPortUnderlyingSource::OnFlush, WrapPersistent(this),
+                WrapPersistent(resolver)));
+  return resolver->Promise();
 }
 
 void SerialPortUnderlyingSource::ContextDestroyed() {
@@ -134,6 +140,11 @@ void SerialPortUnderlyingSource::OnHandleReady(
       PipeClosed();
       break;
   }
+}
+
+void SerialPortUnderlyingSource::OnFlush(ScriptPromiseResolver* resolver) {
+  serial_port_->UnderlyingSourceClosed();
+  resolver->Resolve();
 }
 
 void SerialPortUnderlyingSource::ExpectPipeClose() {

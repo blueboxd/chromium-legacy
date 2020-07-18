@@ -96,6 +96,8 @@ std::unique_ptr<SharedImageBackingOzone> SharedImageBackingOzone::Create(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     SurfaceHandle surface_handle) {
   gfx::BufferFormat buffer_format = viz::BufferFormat(format);
@@ -115,8 +117,8 @@ std::unique_ptr<SharedImageBackingOzone> SharedImageBackingOzone::Create(
     return nullptr;
   }
   return base::WrapUnique(new SharedImageBackingOzone(
-      mailbox, format, size, color_space, usage, context_state,
-      std::move(pixmap), std::move(dawn_procs)));
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      context_state, std::move(pixmap), std::move(dawn_procs)));
 }
 
 SharedImageBackingOzone::~SharedImageBackingOzone() = default;
@@ -202,6 +204,8 @@ SharedImageBackingOzone::SharedImageBackingOzone(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     SharedContextState* context_state,
     scoped_refptr<gfx::NativePixmap> pixmap,
@@ -210,6 +214,8 @@ SharedImageBackingOzone::SharedImageBackingOzone(
                                       format,
                                       size,
                                       color_space,
+                                      surface_origin,
+                                      alpha_type,
                                       usage,
                                       GetPixmapSizeInBytes(*pixmap),
                                       false),

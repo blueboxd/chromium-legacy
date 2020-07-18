@@ -42,6 +42,15 @@ _GS_ASH_CHROME_PATH = 'linux-chromeos/chrome-linux-chromeos.zip'
 _PREBUILT_ASH_CHROME_DIR = os.path.join(os.path.dirname(__file__),
                                         'prebuilt_ash_chrome')
 
+# TODO(crbug.com/1104291): Complete this list once the lacros FYI builder is
+# running all the test targets.
+# List of targets that require ash-chrome as a Wayland server in order to run.
+_TARGETS_REQUIRE_ASH_CHROME = [
+    'browser_tests',
+    'components_unittests',
+    'unit_tests',
+]
+
 
 def _GetAshChromeDirPath(version):
   """Returns a path to the dir storing the downloaded version of ash-chrome."""
@@ -153,6 +162,13 @@ def _ParseArguments():
       '"./url_unittests". Any argument unknown to this test runner script will '
       'be forwarded to the command, for example: "--gtest_filter=Suite.Test"')
 
+  arg_parser.add_argument(
+      '-a',
+      '--ash-chrome-version',
+      type=str,
+      help='Version of ash_chrome to use for testing, for example: '
+      '"86.0.4187.0". If not specified, will use the latest version')
+
   args = arg_parser.parse_known_args()
   return args[0], args[1]
 
@@ -160,7 +176,8 @@ def _ParseArguments():
 def Main():
   logging.basicConfig(level=logging.INFO)
   args, forward_args = _ParseArguments()
-  return subprocess.call([args.command] + forward_args)
+  if os.path.basename(args.command) not in _TARGETS_REQUIRE_ASH_CHROME:
+    return subprocess.call([args.command] + forward_args)
 
 
 if __name__ == '__main__':

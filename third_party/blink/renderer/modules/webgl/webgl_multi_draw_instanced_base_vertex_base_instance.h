@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_MULTI_DRAW_INSTANCED_BASE_VERTEX_BASE_INSTANCE_H_
 
 #include "third_party/blink/renderer/bindings/modules/v8/int32_array_or_long_sequence.h"
+#include "third_party/blink/renderer/bindings/modules/v8/uint32_array_or_unsigned_long_sequence.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_extension.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_multi_draw_common.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -32,7 +33,7 @@ class WebGLMultiDrawInstancedBaseVertexBaseInstance final
       GLuint counts_offset,
       Int32ArrayOrLongSequence instance_counts_list,
       GLuint instance_counts_offset,
-      Int32ArrayOrLongSequence baseinstances_list,
+      Uint32ArrayOrUnsignedLongSequence baseinstances_list,
       GLuint baseinstances_offset,
       GLsizei drawcount) {
     multiDrawArraysInstancedBaseInstanceImpl(
@@ -52,7 +53,7 @@ class WebGLMultiDrawInstancedBaseVertexBaseInstance final
       GLuint instance_counts_offset,
       Int32ArrayOrLongSequence basevertices_list,
       GLuint basevertices_offset,
-      Int32ArrayOrLongSequence baseinstances_list,
+      Uint32ArrayOrUnsignedLongSequence baseinstances_list,
       GLuint baseinstances_offset,
       GLsizei drawcount) {
     multiDrawElementsInstancedBaseVertexBaseInstanceImpl(
@@ -72,7 +73,7 @@ class WebGLMultiDrawInstancedBaseVertexBaseInstance final
       GLuint counts_offset,
       const base::span<const int32_t> instance_counts,
       GLuint instance_counts_offset,
-      const base::span<const int32_t> baseinstances,
+      const base::span<const uint32_t> baseinstances,
       GLuint baseinstances_offset,
       GLsizei drawcount);
 
@@ -87,7 +88,7 @@ class WebGLMultiDrawInstancedBaseVertexBaseInstance final
       GLuint instance_counts_offset,
       const base::span<const int32_t> basevertices,
       GLuint basevertices_offset,
-      const base::span<const int32_t> baseinstances,
+      const base::span<const uint32_t> baseinstances,
       GLuint baseinstances_offset,
       GLsizei drawcount);
 };

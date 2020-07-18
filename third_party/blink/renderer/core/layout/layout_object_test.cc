@@ -381,7 +381,10 @@ TEST_F(
       EPosition::kFixed));
 
   auto offset = layout_object->OffsetFromContainer(span_layout_object);
-  EXPECT_EQ(PhysicalOffset(20, 10), offset);
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    EXPECT_EQ(PhysicalOffset(22, 11), offset);
+  else
+    EXPECT_EQ(PhysicalOffset(20, 10), offset);
 
   // Sanity check: Make sure we don't generate anonymous objects.
   EXPECT_EQ(nullptr, body_layout_object->SlowFirstChild()->NextSibling());
@@ -445,8 +448,8 @@ TEST_F(LayoutObjectTest, InlineFloatMismatch) {
   LayoutObject* span =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("span"));
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    // 10px for margin.
-    EXPECT_EQ(PhysicalOffset(10, 0), float_obj->OffsetFromAncestor(span));
+    // 10px for margin + 40px for inset.
+    EXPECT_EQ(PhysicalOffset(50, 0), float_obj->OffsetFromAncestor(span));
   } else {
     // 10px for margin, -40px because float is to the left of the span.
     EXPECT_EQ(PhysicalOffset(-30, 0), float_obj->OffsetFromAncestor(span));

@@ -142,8 +142,8 @@ CaptivePortalService::CaptivePortalService(
   // created before the call to UpdateEnabledState.
   resolve_errors_with_web_service_.Init(
       embedder_support::kAlternateErrorPagesEnabled, pref_service,
-      base::Bind(&CaptivePortalService::UpdateEnabledState,
-                 base::Unretained(this)));
+      base::BindRepeating(&CaptivePortalService::UpdateEnabledState,
+                          base::Unretained(this)));
   ResetBackoffEntry(last_detection_result_);
 
   UpdateEnabledState();

@@ -40,6 +40,7 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/scoped_handle.h"
 
 typedef NTSTATUS(FAR WINAPI* NtOpenDirectoryObjectPfn)(
     OUT PHANDLE DirectoryHandle,

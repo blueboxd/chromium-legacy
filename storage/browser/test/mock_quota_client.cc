@@ -83,7 +83,7 @@ void MockQuotaClient::OnQuotaManagerDestroyed() {}
 
 void MockQuotaClient::GetOriginUsage(const url::Origin& origin,
                                      blink::mojom::StorageType type,
-                                     GetUsageCallback callback) {
+                                     GetOriginUsageCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&MockQuotaClient::RunGetOriginUsage,
                                 weak_factory_.GetWeakPtr(), origin, type,
@@ -91,7 +91,7 @@ void MockQuotaClient::GetOriginUsage(const url::Origin& origin,
 }
 
 void MockQuotaClient::GetOriginsForType(blink::mojom::StorageType type,
-                                        GetOriginsCallback callback) {
+                                        GetOriginsForTypeCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&MockQuotaClient::RunGetOriginsForType,
@@ -100,7 +100,7 @@ void MockQuotaClient::GetOriginsForType(blink::mojom::StorageType type,
 
 void MockQuotaClient::GetOriginsForHost(blink::mojom::StorageType type,
                                         const std::string& host,
-                                        GetOriginsCallback callback) {
+                                        GetOriginsForHostCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&MockQuotaClient::RunGetOriginsForHost,
                                 weak_factory_.GetWeakPtr(), type, host,
@@ -109,21 +109,22 @@ void MockQuotaClient::GetOriginsForHost(blink::mojom::StorageType type,
 
 void MockQuotaClient::DeleteOriginData(const url::Origin& origin,
                                        blink::mojom::StorageType type,
-                                       DeletionCallback callback) {
+                                       DeleteOriginDataCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&MockQuotaClient::RunDeleteOriginData,
                                 weak_factory_.GetWeakPtr(), origin, type,
                                 std::move(callback)));
 }
 
-void MockQuotaClient::PerformStorageCleanup(blink::mojom::StorageType type,
-                                            base::OnceClosure callback) {
+void MockQuotaClient::PerformStorageCleanup(
+    blink::mojom::StorageType type,
+    PerformStorageCleanupCallback callback) {
   std::move(callback).Run();
 }
 
 void MockQuotaClient::RunGetOriginUsage(const url::Origin& origin,
                                         blink::mojom::StorageType type,
-                                        GetUsageCallback callback) {
+                                        GetOriginUsageCallback callback) {
   auto it = origin_data_.find(std::make_pair(origin, type));
   if (it == origin_data_.end()) {
     std::move(callback).Run(0);
@@ -133,7 +134,7 @@ void MockQuotaClient::RunGetOriginUsage(const url::Origin& origin,
 }
 
 void MockQuotaClient::RunGetOriginsForType(blink::mojom::StorageType type,
-                                           GetOriginsCallback callback) {
+                                           GetOriginsForTypeCallback callback) {
   std::vector<url::Origin> origins;
   for (const auto& origin_type_usage : origin_data_) {
     if (type == origin_type_usage.first.second)
@@ -144,7 +145,7 @@ void MockQuotaClient::RunGetOriginsForType(blink::mojom::StorageType type,
 
 void MockQuotaClient::RunGetOriginsForHost(blink::mojom::StorageType type,
                                            const std::string& host,
-                                           GetOriginsCallback callback) {
+                                           GetOriginsForHostCallback callback) {
   std::vector<url::Origin> origins;
   for (const auto& origin_type_usage : origin_data_) {
     if (type == origin_type_usage.first.second &&
@@ -158,7 +159,7 @@ void MockQuotaClient::RunGetOriginsForHost(blink::mojom::StorageType type,
 void MockQuotaClient::RunDeleteOriginData(
     const url::Origin& origin,
     blink::mojom::StorageType storage_type,
-    DeletionCallback callback) {
+    DeleteOriginDataCallback callback) {
   auto error_it = error_origins_.find(std::make_pair(origin, storage_type));
   if (error_it != error_origins_.end()) {
     std::move(callback).Run(

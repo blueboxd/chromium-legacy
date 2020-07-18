@@ -118,7 +118,11 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
       icon.IsVectorIcon() ? ui::ThemedVectorIcon(icon.GetVectorIcon())
                           : ui::ThemedVectorIcon(),
       *type, ui::NORMAL_SEPARATOR);
+
+  if (model->IsAlertedAt(model_index))
+    menu_item_view->SetAlerted();
   menu_item_view->set_is_new(model->IsNewFeatureAt(model_index));
+
   return menu_item_view;
 }
 

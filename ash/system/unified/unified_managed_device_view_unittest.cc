@@ -9,6 +9,8 @@
 #include "ash/shell.h"
 #include "ash/system/model/enterprise_domain_model.h"
 #include "ash/system/model/system_tray_model.h"
+#include "ash/system/unified/unified_system_tray_controller.h"
+#include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
 
 #include "ash/system/unified/unified_system_tray_view.h"
@@ -22,11 +24,16 @@ class UnifiedManagedDeviceViewTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    managed_device_view_ = std::make_unique<UnifiedManagedDeviceView>();
+    model_ = std::make_unique<UnifiedSystemTrayModel>(nullptr);
+    controller_ = std::make_unique<UnifiedSystemTrayController>(model_.get());
+    managed_device_view_ =
+        std::make_unique<UnifiedManagedDeviceView>(controller_.get());
   }
 
   void TearDown() override {
     managed_device_view_.reset();
+    controller_.reset();
+    model_.reset();
     AshTestBase::TearDown();
   }
 
@@ -34,6 +41,8 @@ class UnifiedManagedDeviceViewTest : public AshTestBase {
   std::unique_ptr<UnifiedManagedDeviceView> managed_device_view_;
 
  private:
+  std::unique_ptr<UnifiedSystemTrayModel> model_;
+  std::unique_ptr<UnifiedSystemTrayController> controller_;
   DISALLOW_COPY_AND_ASSIGN(UnifiedManagedDeviceViewTest);
 };
 
@@ -70,8 +79,12 @@ TEST_F(UnifiedManagedDeviceViewNoSessionTest, SupervisedUserDevice) {
   ASSERT_FALSE(session->IsActiveUserSessionStarted());
 
   // Before login the UnifiedManagedDeviceView is invisible.
+  std::unique_ptr<UnifiedSystemTrayModel> model =
+      std::make_unique<UnifiedSystemTrayModel>(nullptr);
+  std::unique_ptr<UnifiedSystemTrayController> controller =
+      std::make_unique<UnifiedSystemTrayController>(model.get());
   std::unique_ptr<UnifiedManagedDeviceView> managed_device_view =
-      std::make_unique<UnifiedManagedDeviceView>();
+      std::make_unique<UnifiedManagedDeviceView>(controller.get());
   EXPECT_FALSE(managed_device_view->GetVisible());
   managed_device_view.reset();
 
@@ -85,7 +98,8 @@ TEST_F(UnifiedManagedDeviceViewNoSessionTest, SupervisedUserDevice) {
   session->UpdateUserSession(std::move(user_session));
 
   // Now the UnifiedManagedDeviceView is visible.
-  managed_device_view = std::make_unique<UnifiedManagedDeviceView>();
+  managed_device_view =
+      std::make_unique<UnifiedManagedDeviceView>(controller.get());
   ASSERT_TRUE(managed_device_view->GetVisible());
 }
 

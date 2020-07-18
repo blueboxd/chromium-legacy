@@ -292,6 +292,11 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     NOTREACHED();
     return point_in_root_frame;
   }
+  virtual IntPoint ConvertFromRootFrameToVisualViewport(
+      const IntPoint& point_in_root_frame) const {
+    NOTREACHED();
+    return point_in_root_frame;
+  }
 
   virtual Scrollbar* HorizontalScrollbar() const { return nullptr; }
   virtual Scrollbar* VerticalScrollbar() const { return nullptr; }
@@ -471,6 +476,10 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual bool IsPaintLayerScrollableArea() const { return false; }
   virtual bool IsRootFrameViewport() const { return false; }
+
+  // Returns true if this is the layout viewport associated with the
+  // RootFrameViewport.
+  virtual bool IsRootFrameLayoutViewport() const { return false; }
 
   virtual bool VisualViewportSuppliesScrollbars() const { return false; }
 

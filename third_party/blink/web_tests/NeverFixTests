@@ -150,6 +150,11 @@ virtual/stable/media/stable/* [ Pass ]
 external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 [ Linux ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass ]
 
+# This test requires a compositor to pass as root scrollbar scrolling is always
+# done on the compositor thread.
+fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar-thumb-scaled.html [ Skip ]
+virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar-thumb-scaled.html [ Pass ]
+
 # Only run fake-Android tests on Linux
 [ Mac ] virtual/android/* [ Skip ]
 [ Win ] virtual/android/* [ Skip ]
@@ -2140,3 +2145,6 @@ virtual/subresource-web-bundles/external/wpt/web-bundle/subresource-loading/* [ 
 
 # No good way to automate this test yet
 external/wpt/native-file-system/showSaveFilePicker-manual.https.html [ Skip ]
+
+# This test requires a physical device connected.
+wpt_internal/serial/serialPort_loopback-manual.https.html [ Skip ]

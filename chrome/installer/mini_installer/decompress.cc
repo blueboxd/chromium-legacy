@@ -96,8 +96,9 @@ FNOPEN(Open) {
   }
 
   scoped_ptr<wchar_t> path(Utf8ToWide(pszFile));
-  HANDLE file = CreateFileW(path, access, FILE_SHARE_READ, nullptr, disposition,
-                            FILE_ATTRIBUTE_NORMAL, nullptr);
+  HANDLE file =
+      CreateFileW(path, access, FILE_SHARE_DELETE | FILE_SHARE_READ, nullptr,
+                  disposition, FILE_ATTRIBUTE_NORMAL, nullptr);
   return reinterpret_cast<INT_PTR>(file);
 }
 

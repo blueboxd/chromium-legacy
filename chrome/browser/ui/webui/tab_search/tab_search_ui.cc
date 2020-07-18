@@ -27,7 +27,8 @@ constexpr char kGeneratedPath[] =
 #endif  // BUILDFLAG(ENABLE_TAB_SEARCH)
 
 TabSearchUI::TabSearchUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui) {
+    : ui::MojoWebUIController(web_ui,
+                              true /* Needed for webui browser tests */) {
 #if BUILDFLAG(ENABLE_TAB_SEARCH)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUITabSearchHost);

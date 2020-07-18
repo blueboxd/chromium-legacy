@@ -738,6 +738,8 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoImageGenerator);
 };
 
+// TODO(jochin): Add support for all OOP-R specific APIs (eg. GetMailbox() and
+// GetSkImageViaReadback())
 class VideoTextureBacking : public cc::TextureBacking {
  public:
   explicit VideoTextureBacking(sk_sp<SkImage> sk_image)
@@ -748,6 +750,7 @@ class VideoTextureBacking : public cc::TextureBacking {
   }
   gpu::Mailbox GetMailbox() const override { return mailbox_; }
   sk_sp<SkImage> GetAcceleratedSkImage() override { return sk_image_; }
+  sk_sp<SkImage> GetSkImageViaReadback() override { return nullptr; }
 
  private:
   const sk_sp<SkImage> sk_image_;

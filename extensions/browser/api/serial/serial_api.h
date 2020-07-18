@@ -186,7 +186,7 @@ class SerialFlushFunction : public SerialExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void OnFlushed(bool success);
+  void OnFlushed();
 };
 
 class SerialGetControlSignalsFunction : public SerialExtensionFunction {

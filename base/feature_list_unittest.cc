@@ -119,8 +119,7 @@ TEST_F(FeatureListTest, InitializeFromCommandLineWithFeatureParams) {
     SCOPED_TRACE(test_case.enable_features);
 
     auto feature_list = std::make_unique<FeatureList>();
-    feature_list->InitializeFromCommandLineWithFeatureParams(
-        test_case.enable_features, "", &FeatureList::NoOpDecodeFunc);
+    feature_list->InitializeFromCommandLine(test_case.enable_features, "");
     test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitWithFeatureList(std::move(feature_list));
 

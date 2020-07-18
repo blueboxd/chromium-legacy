@@ -86,12 +86,15 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     bool is_thread_safe) {
   DCHECK(!is_thread_safe);
   return ExternalVkImageBacking::Create(
       context_state_, command_pool_.get(), mailbox, format, size, color_space,
-      usage, &image_usage_cache_, base::span<const uint8_t>());
+      surface_origin, alpha_type, usage, &image_usage_cache_,
+      base::span<const uint8_t>());
 }
 
 std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
@@ -99,11 +102,13 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     base::span<const uint8_t> pixel_data) {
-  return ExternalVkImageBacking::Create(context_state_, command_pool_.get(),
-                                        mailbox, format, size, color_space,
-                                        usage, &image_usage_cache_, pixel_data);
+  return ExternalVkImageBacking::Create(
+      context_state_, command_pool_.get(), mailbox, format, size, color_space,
+      surface_origin, alpha_type, usage, &image_usage_cache_, pixel_data);
 }
 
 std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
@@ -114,11 +119,14 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage) {
   DCHECK(CanImportGpuMemoryBuffer(handle.type));
   return ExternalVkImageBacking::CreateFromGMB(
       context_state_, command_pool_.get(), mailbox, std::move(handle),
-      buffer_format, size, color_space, usage, &image_usage_cache_);
+      buffer_format, size, color_space, surface_origin, alpha_type, usage,
+      &image_usage_cache_);
 }
 
 bool ExternalVkImageFactory::CanImportGpuMemoryBuffer(

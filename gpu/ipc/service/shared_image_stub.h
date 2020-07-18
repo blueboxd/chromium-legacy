@@ -64,6 +64,8 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
                          SurfaceHandle surface_handle,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
+                         GrSurfaceOrigin surface_origin,
+                         SkAlphaType alpha_type,
                          uint32_t usage);
   bool UpdateSharedImage(const Mailbox& mailbox,
                          const gfx::GpuFenceHandle& in_fence_handle);

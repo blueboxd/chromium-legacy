@@ -11,6 +11,7 @@
 #include "cc/input/scroll_utils.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/scrollbar_controller.h"
+#include "cc/layers/viewport.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scroll_node.h"
 
@@ -100,7 +101,11 @@ InputHandlerPointerResult ScrollbarController::HandlePointerDown(
       Granularity(scrollbar_part, perform_jump_click_on_track);
   if (scrollbar_part == ScrollbarPart::THUMB) {
     drag_state_ = DragState();
-    drag_state_->drag_origin = position_in_widget;
+    bool clipped = false;
+    drag_state_->drag_origin =
+        GetScrollbarRelativePosition(position_in_widget, &clipped);
+    // If the point were clipped we shouldn't have hit tested to a valid part.
+    DCHECK(!clipped);
 
     // Record the current scroller offset. This will be needed to snap the
     // thumb back to its original position if the pointer moves too far away
@@ -236,20 +241,32 @@ float ScrollbarController::GetScrollDeltaForAbsoluteJump() const {
 
   const float delta =
       round(std::abs(desired_thumb_origin - current_thumb_origin));
-  return delta * GetScrollerToScrollbarRatio();
+  return delta * GetScrollerToScrollbarRatio() * GetPageScaleFactorForScroll();
 }
 
 int ScrollbarController::GetScrollDeltaForDragPosition(
     const gfx::PointF pointer_position_in_widget) const {
   const ScrollbarLayerImplBase* scrollbar = ScrollbarLayer();
-  const float pointer_delta =
+  // Convert the move position to scrollbar layer relative for comparison with
+  // |drag_state_| drag_origin. Ignore clipping as if we're within the region
+  // that doesn't cause snapping back, we do want the delta in the appropriate
+  // dimension to cause a scroll.
+  bool clipped = false;
+  const gfx::PointF scrollbar_relative_position(
+      GetScrollbarRelativePosition(pointer_position_in_widget, &clipped));
+  float pointer_delta =
       scrollbar->orientation() == ScrollbarOrientation::VERTICAL
-          ? pointer_position_in_widget.y() - drag_state_->drag_origin.y()
-          : pointer_position_in_widget.x() - drag_state_->drag_origin.x();
+          ? scrollbar_relative_position.y() - drag_state_->drag_origin.y()
+          : scrollbar_relative_position.x() - drag_state_->drag_origin.x();
 
   const float new_offset = pointer_delta * GetScrollerToScrollbarRatio();
-  const float scroll_delta = drag_state_->scroll_position_at_start_ +
-                             new_offset - scrollbar->current_pos();
+  float scroll_delta = drag_state_->scroll_position_at_start_ + new_offset -
+                       scrollbar->current_pos();
+
+  // The scroll delta computed is layer relative. In order to scroll the
+  // correct amount, we have to convert the delta to be unscaled (i.e. multiply
+  // by the page scale factor), as GSU deltas are always unscaled.
+  scroll_delta *= GetPageScaleFactorForScroll();
 
   // Scroll delta floored to match main thread per pixel behavior
   return floorf(scroll_delta);
@@ -326,9 +343,8 @@ InputHandlerPointerResult ScrollbarController::HandlePointerMove(
                                                 ScrollbarOrientation::VERTICAL
                                             ? gfx::ScrollOffset(0, delta)
                                             : gfx::ScrollOffset(delta, 0));
-  const gfx::Vector2dF clamped_scroll_offset(
-      layer_tree_host_impl_->ComputeScrollDelta(
-          *target_node, ScrollOffsetToVector2dF(scroll_offset)));
+  const gfx::Vector2dF clamped_scroll_offset =
+      ComputeClampedDelta(*target_node, ScrollOffsetToVector2dF(scroll_offset));
 
   if (clamped_scroll_offset.IsZero())
     return scroll_result;
@@ -340,6 +356,23 @@ InputHandlerPointerResult ScrollbarController::HandlePointerMove(
   drag_processed_for_current_frame_ = true;
 
   return scroll_result;
+}
+
+gfx::Vector2dF ScrollbarController::ComputeClampedDelta(
+    const ScrollNode& target_node,
+    const gfx::Vector2dF& scroll_delta) const {
+  DCHECK(!target_node.scrolls_inner_viewport);
+  if (target_node.scrolls_outer_viewport)
+    return layer_tree_host_impl_->viewport().ComputeClampedDelta(scroll_delta);
+
+  // ComputeScrollDelta returns a delta accounting for the current page zoom
+  // level. Since we're producing a delta for an injected GSU, we need to get
+  // back to and unscaled delta (i.e. multiply by the page scale factor).
+  gfx::Vector2dF clamped_delta =
+      layer_tree_host_impl_->ComputeScrollDelta(target_node, scroll_delta);
+  const float scale_factor = GetPageScaleFactorForScroll();
+  clamped_delta.Scale(scale_factor);
+  return clamped_delta;
 }
 
 float ScrollbarController::GetScrollerToScrollbarRatio() const {
@@ -585,9 +618,19 @@ int ScrollbarController::GetViewportLength() const {
           ->property_trees()
           ->scroll_tree.FindNodeFromElementId(scrollbar->scroll_element_id());
   DCHECK(scroll_node);
-  return scrollbar->orientation() == ScrollbarOrientation::VERTICAL
-             ? scroll_node->container_bounds.height()
-             : scroll_node->container_bounds.width();
+  if (!scroll_node->scrolls_outer_viewport) {
+    float length = scrollbar->orientation() == ScrollbarOrientation::VERTICAL
+                       ? scroll_node->container_bounds.height()
+                       : scroll_node->container_bounds.width();
+    return length;
+  }
+
+  gfx::SizeF viewport_size = layer_tree_host_impl_->viewport()
+                                 .GetInnerViewportSizeExcludingScrollbars();
+  float length = scrollbar->orientation() == ScrollbarOrientation::VERTICAL
+                     ? viewport_size.height()
+                     : viewport_size.width();
+  return length / GetPageScaleFactorForScroll();
 }
 
 int ScrollbarController::GetScrollDeltaForPercentBasedScroll() const {
@@ -612,6 +655,10 @@ int ScrollbarController::GetScrollDeltaForPercentBasedScroll() const {
   return scrollbar->orientation() == ScrollbarOrientation::VERTICAL
              ? pixel_delta.y()
              : pixel_delta.x();
+}
+
+float ScrollbarController::GetPageScaleFactorForScroll() const {
+  return layer_tree_host_impl_->active_tree()->page_scale_factor_for_scroll();
 }
 
 int ScrollbarController::GetScrollDeltaForScrollbarPart(

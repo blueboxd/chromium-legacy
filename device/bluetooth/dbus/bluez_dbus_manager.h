@@ -26,6 +26,7 @@ namespace bluez {
 // Style Note: Clients are sorted by names.
 class BluetoothAdapterClient;
 class BluetoothAgentManagerClient;
+class BluetoothBatteryClient;
 class BluetoothDebugManagerClient;
 class BluetoothDeviceClient;
 class BluetoothGattCharacteristicClient;
@@ -119,6 +120,7 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
   BluetoothAdapterClient* GetBluetoothAdapterClient();
   BluetoothLEAdvertisingManagerClient* GetBluetoothLEAdvertisingManagerClient();
   BluetoothAgentManagerClient* GetBluetoothAgentManagerClient();
+  BluetoothBatteryClient* GetBluetoothBatteryClient();
   BluetoothDebugManagerClient* GetBluetoothDebugManagerClient();
   BluetoothDeviceClient* GetBluetoothDeviceClient();
   BluetoothGattCharacteristicClient* GetBluetoothGattCharacteristicClient();

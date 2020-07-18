@@ -120,6 +120,11 @@ export class PDFViewerBaseElement extends PolymerElement {
     return 0;
   }
 
+  /** @return {boolean} Whether the top toolbar is fixed (does not auto-hide) */
+  hasFixedToolbar() {
+    return false;
+  }
+
   /**
    * @return {!HTMLDivElement}
    * @protected
@@ -143,6 +148,12 @@ export class PDFViewerBaseElement extends PolymerElement {
    * @protected
    */
   forceFit(view) {}
+
+  /**
+   * @param {number} viewportZoom
+   * @protected
+   */
+  afterZoom(viewportZoom) {}
 
   /**
    * @param {string} query
@@ -232,12 +243,14 @@ export class PDFViewerBaseElement extends PolymerElement {
         1.0;
     this.viewport_ = new Viewport(
         window, this.getSizer(), this.getContent(), getScrollbarWidth(),
-        defaultZoom, this.getToolbarHeight());
+        defaultZoom, this.getToolbarHeight(), this.hasFixedToolbar());
     this.viewport_.setViewportChangedCallback(() => this.viewportChanged_());
     this.viewport_.setBeforeZoomCallback(
         () => this.currentController.beforeZoom());
-    this.viewport_.setAfterZoomCallback(
-        () => this.currentController.afterZoom());
+    this.viewport_.setAfterZoomCallback(() => {
+      this.currentController.afterZoom();
+      this.afterZoom(this.viewport_.getZoom());
+    });
     this.viewport_.setUserInitiatedCallback(
         userInitiated => this.setUserInitiated_(userInitiated));
     window.addEventListener('beforeunload', () => this.resetTrackers_());

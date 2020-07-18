@@ -33,27 +33,29 @@ class CrossSequenceCacheStorageManager::Inner {
 
   void GetOriginUsage(const url::Origin& origin_url,
                       CacheStorageOwner owner,
-                      storage::QuotaClient::GetUsageCallback callback) {
+                      storage::QuotaClient::GetOriginUsageCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     target_manager_->GetOriginUsage(origin_url, owner, std::move(callback));
   }
 
   void GetOrigins(CacheStorageOwner owner,
-                  storage::QuotaClient::GetOriginsCallback callback) {
+                  storage::QuotaClient::GetOriginsForTypeCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     target_manager_->GetOrigins(owner, std::move(callback));
   }
 
-  void GetOriginsForHost(const std::string& host,
-                         CacheStorageOwner owner,
-                         storage::QuotaClient::GetOriginsCallback callback) {
+  void GetOriginsForHost(
+      const std::string& host,
+      CacheStorageOwner owner,
+      storage::QuotaClient::GetOriginsForHostCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     target_manager_->GetOriginsForHost(host, owner, std::move(callback));
   }
 
-  void DeleteOriginData(const url::Origin& origin,
-                        CacheStorageOwner owner,
-                        storage::QuotaClient::DeletionCallback callback) {
+  void DeleteOriginData(
+      const url::Origin& origin,
+      CacheStorageOwner owner,
+      storage::QuotaClient::DeleteOriginDataCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     target_manager_->DeleteOriginData(origin, owner, std::move(callback));
   }
@@ -94,7 +96,7 @@ void CrossSequenceCacheStorageManager::GetAllOriginsUsage(
 void CrossSequenceCacheStorageManager::GetOriginUsage(
     const url::Origin& origin_url,
     CacheStorageOwner owner,
-    storage::QuotaClient::GetUsageCallback callback) {
+    storage::QuotaClient::GetOriginUsageCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   inner_.Post(FROM_HERE, &Inner::GetOriginUsage, origin_url, owner,
               WrapCallbackForCurrentSequence(std::move(callback)));
@@ -102,7 +104,7 @@ void CrossSequenceCacheStorageManager::GetOriginUsage(
 
 void CrossSequenceCacheStorageManager::GetOrigins(
     CacheStorageOwner owner,
-    storage::QuotaClient::GetOriginsCallback callback) {
+    storage::QuotaClient::GetOriginsForTypeCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   inner_.Post(FROM_HERE, &Inner::GetOrigins, owner,
               WrapCallbackForCurrentSequence(std::move(callback)));
@@ -111,7 +113,7 @@ void CrossSequenceCacheStorageManager::GetOrigins(
 void CrossSequenceCacheStorageManager::GetOriginsForHost(
     const std::string& host,
     CacheStorageOwner owner,
-    storage::QuotaClient::GetOriginsCallback callback) {
+    storage::QuotaClient::GetOriginsForHostCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   inner_.Post(FROM_HERE, &Inner::GetOriginsForHost, host, owner,
               WrapCallbackForCurrentSequence(std::move(callback)));
@@ -120,7 +122,7 @@ void CrossSequenceCacheStorageManager::GetOriginsForHost(
 void CrossSequenceCacheStorageManager::DeleteOriginData(
     const url::Origin& origin,
     CacheStorageOwner owner,
-    storage::QuotaClient::DeletionCallback callback) {
+    storage::QuotaClient::DeleteOriginDataCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   inner_.Post(FROM_HERE, &Inner::DeleteOriginData, origin, owner,
               WrapCallbackForCurrentSequence(std::move(callback)));

@@ -40,6 +40,7 @@
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluetooth_agent_manager_client.h"
 #include "device/bluetooth/dbus/bluetooth_agent_service_provider.h"
+#include "device/bluetooth/dbus/bluetooth_battery_client.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_application_service_provider.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_manager_client.h"
@@ -244,6 +245,8 @@ void BluetoothAdapterBlueZ::Shutdown() {
 
   bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->RemoveObserver(
       this);
+  bluez::BluezDBusManager::Get()->GetBluetoothBatteryClient()->RemoveObserver(
+      this);
   bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->RemoveObserver(
       this);
   bluez::BluezDBusManager::Get()->GetBluetoothInputClient()->RemoveObserver(
@@ -281,6 +284,8 @@ void BluetoothAdapterBlueZ::Init() {
   }
 
   bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->AddObserver(
+      this);
+  bluez::BluezDBusManager::Get()->GetBluetoothBatteryClient()->AddObserver(
       this);
   bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->AddObserver(this);
   bluez::BluezDBusManager::Get()->GetBluetoothInputClient()->AddObserver(this);
@@ -639,6 +644,21 @@ void BluetoothAdapterBlueZ::AdapterPropertyChanged(
   } else if (property_name == properties->discovering.name()) {
     DiscoveringChanged(properties->discovering.value());
   }
+}
+
+void BluetoothAdapterBlueZ::BatteryAdded(const dbus::ObjectPath& object_path) {
+  // TODO(b/160905767): Handle it by updating device battery percentage field.
+}
+
+void BluetoothAdapterBlueZ::BatteryRemoved(
+    const dbus::ObjectPath& object_path) {
+  // TODO(b/160905767): Handle it by updating device battery percentage field.
+}
+
+void BluetoothAdapterBlueZ::BatteryPropertyChanged(
+    const dbus::ObjectPath& object_path,
+    const std::string& property_name) {
+  // TODO(b/160905767): Handle it by updating device battery percentage field.
 }
 
 void BluetoothAdapterBlueZ::DeviceAdded(const dbus::ObjectPath& object_path) {

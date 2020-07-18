@@ -55,7 +55,8 @@ zucchini::status::Code MainApply(MainParams params) {
 zucchini::status::Code MainRead(MainParams params) {
   CHECK_EQ(1U, params.file_paths.size());
   base::File input_file(params.file_paths[0],
-                        base::File::FLAG_OPEN | base::File::FLAG_READ);
+                        base::File::FLAG_OPEN | base::File::FLAG_READ |
+                            base::File::FLAG_SHARE_DELETE);
   zucchini::MappedFileReader input(std::move(input_file));
   if (input.HasError()) {
     LOG(ERROR) << "Error with file " << params.file_paths[0].value() << ": "
@@ -74,7 +75,8 @@ zucchini::status::Code MainRead(MainParams params) {
 zucchini::status::Code MainDetect(MainParams params) {
   CHECK_EQ(1U, params.file_paths.size());
   base::File input_file(params.file_paths[0],
-                        base::File::FLAG_OPEN | base::File::FLAG_READ);
+                        base::File::FLAG_OPEN | base::File::FLAG_READ |
+                            base::File::FLAG_SHARE_DELETE);
   zucchini::MappedFileReader input(std::move(input_file));
   if (input.HasError()) {
     LOG(ERROR) << "Error with file " << params.file_paths[0].value() << ": "
@@ -93,14 +95,16 @@ zucchini::status::Code MainDetect(MainParams params) {
 zucchini::status::Code MainMatch(MainParams params) {
   CHECK_EQ(2U, params.file_paths.size());
   using base::File;
-  File old_file(params.file_paths[0], File::FLAG_OPEN | File::FLAG_READ);
+  File old_file(params.file_paths[0], File::FLAG_OPEN | File::FLAG_READ |
+                                          base::File::FLAG_SHARE_DELETE);
   zucchini::MappedFileReader old_image(std::move(old_file));
   if (old_image.HasError()) {
     LOG(ERROR) << "Error with file " << params.file_paths[0].value() << ": "
                << old_image.error();
     return zucchini::status::kStatusFileReadError;
   }
-  File new_file(params.file_paths[1], File::FLAG_OPEN | File::FLAG_READ);
+  File new_file(params.file_paths[1], File::FLAG_OPEN | File::FLAG_READ |
+                                          base::File::FLAG_SHARE_DELETE);
   zucchini::MappedFileReader new_image(std::move(new_file));
   if (new_image.HasError()) {
     LOG(ERROR) << "Error with file " << params.file_paths[1].value() << ": "
@@ -122,7 +126,8 @@ zucchini::status::Code MainMatch(MainParams params) {
 zucchini::status::Code MainCrc32(MainParams params) {
   CHECK_EQ(1U, params.file_paths.size());
   base::File image_file(params.file_paths[0],
-                        base::File::FLAG_OPEN | base::File::FLAG_READ);
+                        base::File::FLAG_OPEN | base::File::FLAG_READ |
+                            base::File::FLAG_SHARE_DELETE);
   zucchini::MappedFileReader image(std::move(image_file));
   if (image.HasError()) {
     LOG(ERROR) << "Error with file " << params.file_paths[0].value() << ": "

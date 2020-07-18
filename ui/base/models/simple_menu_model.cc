@@ -39,6 +39,10 @@ bool SimpleMenuModel::Delegate::IsCommandIdVisible(int command_id) const {
   return true;
 }
 
+bool SimpleMenuModel::Delegate::IsCommandIdAlerted(int command_id) const {
+  return false;
+}
+
 bool SimpleMenuModel::Delegate::IsItemForCommandIdDynamic(
     int command_id) const {
   return false;
@@ -434,6 +438,14 @@ bool SimpleMenuModel::IsVisibleAt(int index) const {
 
   return delegate_->IsCommandIdVisible(command_id) &&
          items_[ValidateItemIndex(index)].visible;
+}
+
+bool SimpleMenuModel::IsAlertedAt(int index) const {
+  const int command_id = GetCommandIdAt(index);
+  if (!delegate_ || command_id == kSeparatorId || command_id == kTitleId)
+    return false;
+
+  return delegate_->IsCommandIdAlerted(command_id);
 }
 
 bool SimpleMenuModel::IsNewFeatureAt(int index) const {

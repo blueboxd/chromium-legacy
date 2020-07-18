@@ -167,8 +167,10 @@ status::Code Generate(const base::FilePath& old_path,
                       bool is_raw,
                       std::string imposed_matches) {
   using base::File;
-  File old_file(old_path, File::FLAG_OPEN | File::FLAG_READ);
-  File new_file(new_path, File::FLAG_OPEN | File::FLAG_READ);
+  File old_file(old_path, File::FLAG_OPEN | File::FLAG_READ |
+                              base::File::FLAG_SHARE_DELETE);
+  File new_file(new_path, File::FLAG_OPEN | File::FLAG_READ |
+                              base::File::FLAG_SHARE_DELETE);
   File patch_file(patch_path, File::FLAG_CREATE_ALWAYS | File::FLAG_READ |
                                   File::FLAG_WRITE | File::FLAG_SHARE_DELETE |
                                   File::FLAG_CAN_DELETE_ON_CLOSE);
@@ -192,8 +194,10 @@ status::Code Apply(const base::FilePath& old_path,
                    const base::FilePath& new_path,
                    bool force_keep) {
   using base::File;
-  File old_file(old_path, File::FLAG_OPEN | File::FLAG_READ);
-  File patch_file(patch_path, File::FLAG_OPEN | File::FLAG_READ);
+  File old_file(old_path, File::FLAG_OPEN | File::FLAG_READ |
+                              base::File::FLAG_SHARE_DELETE);
+  File patch_file(patch_path, File::FLAG_OPEN | File::FLAG_READ |
+                                  base::File::FLAG_SHARE_DELETE);
   File new_file(new_path, File::FLAG_CREATE_ALWAYS | File::FLAG_READ |
                               File::FLAG_WRITE | File::FLAG_SHARE_DELETE |
                               File::FLAG_CAN_DELETE_ON_CLOSE);

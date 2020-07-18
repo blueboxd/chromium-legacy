@@ -2505,10 +2505,32 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
       kSimplifiedDomainDisplayUrlHostnameAndScheme,
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
 
-  // Now focus and blur the omnibox. After blur, the path should fade out again
-  // after another user interaction.
+  // After focus, the URL should be fully unelided.
   omnibox_view()->OnFocus();
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      render_text, gfx::Range(0, kSimplifiedDomainDisplayUrl.size())));
+  EXPECT_NE(SK_ColorTRANSPARENT,
+            omnibox_view()->GetLatestColorForRange(
+                gfx::Range(0, omnibox_view()->GetText().size())));
+  EXPECT_EQ(gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                       kSimplifiedDomainDisplayUrlHostnameAndScheme.size()),
+            omnibox_view()->emphasis_range());
+
+  // After blur, the URL should return to the same state as page load: only
+  // scheme and trivial subdomains elided.
   omnibox_view()->OnBlur();
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                              kSimplifiedDomainDisplayUrl.size())));
+  EXPECT_NE(SK_ColorTRANSPARENT,
+            omnibox_view()->GetLatestColorForRange(
+                gfx::Range(0, omnibox_view()->GetText().size())));
+  EXPECT_EQ(gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                       kSimplifiedDomainDisplayUrlHostnameAndScheme.size()),
+            omnibox_view()->emphasis_range());
+
+  // After a post-blur user interaction, the URL should animate to the
+  // simplified domain.
   omnibox_view()->DidGetUserInteraction(
       blink::WebInputEvent::Type::kGestureScrollBegin);
   elide_animation =

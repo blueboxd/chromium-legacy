@@ -146,6 +146,15 @@ class RasterInterface : public InterfaceBase {
       base::OnceCallback<void()> release_mailbox,
       base::OnceCallback<void(bool)> readback_done) = 0;
 
+  // Synchronously does a readback of SkImage pixels from |source_mailbox| into
+  // caller-owned memory |dst_pixels|.
+  virtual void ReadbackImagePixels(const gpu::Mailbox& source_mailbox,
+                                   const SkImageInfo& dst_info,
+                                   GLuint dst_row_bytes,
+                                   int src_x,
+                                   int src_y,
+                                   void* dst_pixels) = 0;
+
   // Raster via GrContext.
   virtual GLuint CreateAndConsumeForGpuRaster(const gpu::Mailbox& mailbox) = 0;
   virtual void DeleteGpuRasterTexture(GLuint texture) = 0;

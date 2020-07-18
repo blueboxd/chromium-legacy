@@ -508,7 +508,7 @@ base::string16 InstallUtil::GetCurrentDate() {
 bool InstallUtil::ProgramCompare::OpenForInfo(const base::FilePath& path,
                                               base::File* file) {
   DCHECK(file);
-  file->Initialize(path, base::File::FLAG_OPEN);
+  file->Initialize(path, base::File::FLAG_OPEN | base::File::FLAG_SHARE_DELETE);
   return file->IsValid();
 }
 

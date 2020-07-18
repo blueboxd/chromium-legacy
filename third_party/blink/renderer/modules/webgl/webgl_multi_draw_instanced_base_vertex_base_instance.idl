@@ -14,7 +14,7 @@ interface WebGLMultiDrawInstancedBaseVertexBaseInstance {
       GLuint countsOffset,
       (Int32Array or sequence<long>) instanceCountsList,
       GLuint instanceCountsOffset,
-      (Int32Array or sequence<long>) baseInstancesList,
+      (Uint32Array or sequence<unsigned long>) baseInstancesList,
       GLuint baseInstancesOffset,
       GLsizei drawcount);
 
@@ -29,7 +29,7 @@ interface WebGLMultiDrawInstancedBaseVertexBaseInstance {
       GLuint instanceCountsOffset,
       (Int32Array or sequence<long>) baseVerticesList,
       GLuint baseVerticesOffset,
-      (Int32Array or sequence<long>) baseInstancesList,
+      (Uint32Array or sequence<unsigned long>) baseInstancesList,
       GLuint baseInstancesOffset,
       GLsizei drawcount);
 };

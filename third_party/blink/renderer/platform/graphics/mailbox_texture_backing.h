@@ -7,22 +7,32 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_MAILBOX_TEXTURE_BACKING_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_MAILBOX_TEXTURE_BACKING_H_
 
+#include "base/memory/weak_ptr.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
 
 namespace blink {
+class WebGraphicsContext3DProviderWrapper;
 
 class MailboxTextureBacking : public TextureBacking {
  public:
   explicit MailboxTextureBacking(sk_sp<SkImage> sk_image,
                                  const SkImageInfo& info);
+  explicit MailboxTextureBacking(
+      const gpu::Mailbox& mailbox,
+      const SkImageInfo& info,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+          context_provider_wrapper);
   const SkImageInfo& GetSkImageInfo() override;
   gpu::Mailbox GetMailbox() const override;
   sk_sp<SkImage> GetAcceleratedSkImage() override;
+  sk_sp<SkImage> GetSkImageViaReadback() override;
 
  private:
   const sk_sp<SkImage> sk_image_;
-  const SkImageInfo sk_image_info_;
   const gpu::Mailbox mailbox_;
+  const SkImageInfo sk_image_info_;
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
 };
 
 }  // namespace blink

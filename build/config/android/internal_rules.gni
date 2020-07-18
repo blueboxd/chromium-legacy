@@ -863,7 +863,6 @@ template("test_runner_script") {
         executable_args += [
           "--coverage-dir",
           "@WrappedPath(${_rebased_coverage_dir})",
-          "--coverage-on-the-fly",
         ]
       }
     } else if (_test_type == "linker") {
@@ -1840,7 +1839,14 @@ if (enable_java_templates) {
 
     # Create the .jar in lib.java for use by java_binary.
     if (defined(invoker.host_jar_path)) {
-      filter_jar("${target_name}_host") {
+      if (defined(invoker.jacoco_instrument) && invoker.jacoco_instrument) {
+        _filter_jar_target_name = "${target_name}_host__filter_jar"
+        _filter_jar_output_jar = "$target_out_dir/$target_name.host_filter.jar"
+      } else {
+        _filter_jar_target_name = "${target_name}_host"
+        _filter_jar_output_jar = invoker.host_jar_path
+      }
+      filter_jar(_filter_jar_target_name) {
         forward_variables_from(invoker,
                                [
                                  "jar_excluded_patterns",
@@ -1849,7 +1855,7 @@ if (enable_java_templates) {
                                ])
         deps = _deps
         input_jar = _previous_output_jar
-        output_jar = invoker.host_jar_path
+        output_jar = _filter_jar_output_jar
         inputs = []
         if (defined(strip_resource_classes) && strip_resource_classes) {
           inputs += [ invoker.build_config ]
@@ -1859,6 +1865,26 @@ if (enable_java_templates) {
         if (defined(invoker.inputs)) {
           inputs += invoker.inputs
           deps += invoker.input_deps
+        }
+      }
+
+      if (defined(invoker.jacoco_instrument) && invoker.jacoco_instrument) {
+        # Jacoco must run after desugar (or else desugar sometimes fails).
+        # It must run after filtering to avoid the same (filtered) class mapping
+        # to multiple .jar files.
+        # We run offline code coverage processing here rather than with a
+        # javaagent as the desired coverage data was not being generated.
+        # See crbug.com/1097815.
+        jacoco_instr("${target_name}_host") {
+          deps = [ ":$_filter_jar_target_name" ] + invoker.jar_deps
+          forward_variables_from(invoker,
+                                 [
+                                   "java_files",
+                                   "java_sources_file",
+                                 ])
+
+          input_jar_path = _filter_jar_output_jar
+          output_jar_path = invoker.host_jar_path
         }
       }
     }
@@ -1904,7 +1930,8 @@ if (enable_java_templates) {
 
       if (invoker.jacoco_instrument) {
         _filter_jar_target_name = "${target_name}_device__filter_jar"
-        _filter_jar_output_jar = "$target_out_dir/$target_name.filter.jar"
+        _filter_jar_output_jar =
+            "$target_out_dir/$target_name.device_filter.jar"
       } else {
         _filter_jar_target_name = "${target_name}_device"
         _filter_jar_output_jar = invoker.device_jar_path

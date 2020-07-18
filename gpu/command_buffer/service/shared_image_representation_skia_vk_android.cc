@@ -156,7 +156,6 @@ bool SharedImageRepresentationSkiaVkAndroid::BeginAccess(
     std::vector<GrBackendSemaphore>* end_semaphores,
     base::ScopedFD init_read_fence) {
   DCHECK(begin_semaphores);
-  DCHECK(end_semaphores);
   DCHECK(end_access_semaphore_ == VK_NULL_HANDLE);
 
   // Synchronise the read access with the writes.
@@ -182,24 +181,28 @@ bool SharedImageRepresentationSkiaVkAndroid::BeginAccess(
     }
   }
 
-  end_access_semaphore_ =
-      vk_implementation()->CreateExternalSemaphore(vk_device());
+  if (end_semaphores) {
+    end_access_semaphore_ =
+        vk_implementation()->CreateExternalSemaphore(vk_device());
 
-  if (end_access_semaphore_ == VK_NULL_HANDLE) {
-    DLOG(ERROR) << "Failed to create the external semaphore.";
-    if (begin_access_semaphore != VK_NULL_HANDLE) {
-      vkDestroySemaphore(vk_device(), begin_access_semaphore,
-                         nullptr /* pAllocator */);
+    if (end_access_semaphore_ == VK_NULL_HANDLE) {
+      DLOG(ERROR) << "Failed to create the external semaphore.";
+      if (begin_access_semaphore != VK_NULL_HANDLE) {
+        vkDestroySemaphore(vk_device(), begin_access_semaphore,
+                           nullptr /* pAllocator */);
+      }
+      return false;
     }
-    return false;
   }
 
   if (begin_access_semaphore != VK_NULL_HANDLE) {
     begin_semaphores->emplace_back();
     begin_semaphores->back().initVulkan(begin_access_semaphore);
   }
-  end_semaphores->emplace_back();
-  end_semaphores->back().initVulkan(end_access_semaphore_);
+  if (end_semaphores) {
+    end_semaphores->emplace_back();
+    end_semaphores->back().initVulkan(end_access_semaphore_);
+  }
 
   mode_ = readonly ? RepresentationAccessMode::kRead
                    : RepresentationAccessMode::kWrite;
@@ -207,23 +210,28 @@ bool SharedImageRepresentationSkiaVkAndroid::BeginAccess(
 }
 
 void SharedImageRepresentationSkiaVkAndroid::EndAccess(bool readonly) {
-  // There should be a surface_ from the BeginWriteAccess().
-  DCHECK(end_access_semaphore_ != VK_NULL_HANDLE);
-
-  SemaphoreHandle semaphore_handle = vk_implementation()->GetSemaphoreHandle(
-      vk_device(), end_access_semaphore_);
-  auto sync_fd = semaphore_handle.TakeHandle();
-  DCHECK(sync_fd.is_valid());
+  base::ScopedFD sync_fd;
+  if (end_access_semaphore_ != VK_NULL_HANDLE) {
+    SemaphoreHandle semaphore_handle = vk_implementation()->GetSemaphoreHandle(
+        vk_device(), end_access_semaphore_);
+    sync_fd = semaphore_handle.TakeHandle();
+    DCHECK(sync_fd.is_valid());
+  }
 
   if (readonly) {
     android_backing()->EndRead(this, std::move(sync_fd));
   } else {
     android_backing()->EndWrite(std::move(sync_fd));
   }
-  VulkanFenceHelper* fence_helper =
-      context_state_->vk_context_provider()->GetDeviceQueue()->GetFenceHelper();
-  fence_helper->EnqueueSemaphoreCleanupForSubmittedWork(end_access_semaphore_);
-  end_access_semaphore_ = VK_NULL_HANDLE;
+
+  if (end_access_semaphore_ != VK_NULL_HANDLE) {
+    VulkanFenceHelper* fence_helper = context_state_->vk_context_provider()
+                                          ->GetDeviceQueue()
+                                          ->GetFenceHelper();
+    fence_helper->EnqueueSemaphoreCleanupForSubmittedWork(
+        end_access_semaphore_);
+    end_access_semaphore_ = VK_NULL_HANDLE;
+  }
   mode_ = RepresentationAccessMode::kNone;
 }
 

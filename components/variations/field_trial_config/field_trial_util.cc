@@ -167,19 +167,14 @@ void ChooseExperiment(
 
 }  // namespace
 
-std::string UnescapeValue(const std::string& value) {
-  return net::UnescapeURLComponent(
-      value, net::UnescapeRule::PATH_SEPARATORS |
-                 net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
-}
-
 std::string EscapeValue(const std::string& value) {
-  // This needs to be the inverse of UnescapeValue in the anonymous namespace
-  // above.
+  // This needs to be the inverse of UnescapeValue in
+  // base/metrics/field_trial_params.
   std::string net_escaped_str =
       net::EscapeQueryParamValue(value, true /* use_plus */);
 
-  // net doesn't escape '.' and '*' but UnescapeValue() covers those cases.
+  // net doesn't escape '.' and '*' but base::UnescapeValue() covers those
+  // cases.
   std::string escaped_str;
   escaped_str.reserve(net_escaped_str.length());
   for (const char ch : net_escaped_str) {
@@ -195,7 +190,7 @@ std::string EscapeValue(const std::string& value) {
 
 bool AssociateParamsFromString(const std::string& varations_string) {
   return base::AssociateFieldTrialParamsFromString(varations_string,
-                                                   &UnescapeValue);
+                                                   &base::UnescapeValue);
 }
 
 void AssociateParamsFromFieldTrialConfig(

@@ -1,0 +1,78 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "pdf/ppapi_migration/geometry_conversions.h"
+
+#include "ppapi/c/pp_point.h"
+#include "ppapi/c/pp_rect.h"
+#include "ppapi/c/pp_size.h"
+#include "ppapi/cpp/point.h"
+#include "ppapi/cpp/rect.h"
+#include "ppapi/cpp/size.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
+
+namespace chrome_pdf {
+
+TEST(GeometryConversionsTest, PointFromPPPoint) {
+  gfx::Point point = PointFromPPPoint(pp::Point(-1, 2));
+  EXPECT_EQ(point, gfx::Point(-1, 2));
+
+  point = PointFromPPPoint(PP_MakePoint(2, -1));
+  EXPECT_EQ(point, gfx::Point(2, -1));
+}
+
+TEST(GeometryConversionsTest, PPPointFromPoint) {
+  pp::Point pp_cpp_point = PPPointFromPoint(gfx::Point(-1, 2));
+  EXPECT_EQ(pp_cpp_point.x(), -1);
+  EXPECT_EQ(pp_cpp_point.y(), 2);
+
+  PP_Point pp_c_point = PPPointFromPoint(gfx::Point(2, -1));
+  EXPECT_EQ(pp_c_point.x, 2);
+  EXPECT_EQ(pp_c_point.y, -1);
+}
+
+TEST(GeometryConversionsTest, RectFromPPRect) {
+  gfx::Rect rect = RectFromPPRect(pp::Rect(-1, 2, 3, 4));
+  EXPECT_EQ(rect, gfx::Rect(-1, 2, 3, 4));
+
+  rect = RectFromPPRect(PP_MakeRectFromXYWH(2, -1, 4, 3));
+  EXPECT_EQ(rect, gfx::Rect(2, -1, 4, 3));
+}
+
+TEST(GeometryConversionsTest, PPRectFromRect) {
+  pp::Rect pp_cpp_rect = PPRectFromRect(gfx::Rect(-1, 2, 3, 4));
+  EXPECT_EQ(pp_cpp_rect.x(), -1);
+  EXPECT_EQ(pp_cpp_rect.y(), 2);
+  EXPECT_EQ(pp_cpp_rect.width(), 3);
+  EXPECT_EQ(pp_cpp_rect.height(), 4);
+
+  PP_Rect pp_c_rect = PPRectFromRect(gfx::Rect(2, -1, 4, 3));
+  EXPECT_EQ(pp_c_rect.point.x, 2);
+  EXPECT_EQ(pp_c_rect.point.y, -1);
+  EXPECT_EQ(pp_c_rect.size.width, 4);
+  EXPECT_EQ(pp_c_rect.size.height, 3);
+}
+
+TEST(GeometryConversionsTest, SizeFromPPSize) {
+  gfx::Size size = SizeFromPPSize(pp::Size(3, 4));
+  EXPECT_EQ(size, gfx::Size(3, 4));
+
+  size = SizeFromPPSize(PP_MakeSize(4, 3));
+  EXPECT_EQ(size, gfx::Size(4, 3));
+}
+
+TEST(GeometryConversionsTest, PPSizeFromSize) {
+  pp::Size pp_cpp_size = PPSizeFromSize(gfx::Size(3, 4));
+  EXPECT_EQ(pp_cpp_size.width(), 3);
+  EXPECT_EQ(pp_cpp_size.height(), 4);
+
+  PP_Size pp_c_size = PPSizeFromSize(gfx::Size(4, 3));
+  EXPECT_EQ(pp_c_size.width, 4);
+  EXPECT_EQ(pp_c_size.height, 3);
+}
+
+}  // namespace chrome_pdf

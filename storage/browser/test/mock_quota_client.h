@@ -59,32 +59,32 @@ class MockQuotaClient : public QuotaClient {
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,
-                      GetUsageCallback callback) override;
+                      GetOriginUsageCallback callback) override;
   void GetOriginsForType(blink::mojom::StorageType type,
-                         GetOriginsCallback callback) override;
+                         GetOriginsForTypeCallback callback) override;
   void GetOriginsForHost(blink::mojom::StorageType type,
                          const std::string& host,
-                         GetOriginsCallback callback) override;
+                         GetOriginsForHostCallback callback) override;
   void DeleteOriginData(const url::Origin& origin,
                         blink::mojom::StorageType type,
-                        DeletionCallback callback) override;
+                        DeleteOriginDataCallback callback) override;
   void PerformStorageCleanup(blink::mojom::StorageType type,
-                             base::OnceClosure callback) override;
+                             PerformStorageCleanupCallback callback) override;
 
  private:
   ~MockQuotaClient() override;
 
   void RunGetOriginUsage(const url::Origin& origin,
                          blink::mojom::StorageType type,
-                         GetUsageCallback callback);
+                         GetOriginUsageCallback callback);
   void RunGetOriginsForType(blink::mojom::StorageType type,
-                            GetOriginsCallback callback);
+                            GetOriginsForTypeCallback callback);
   void RunGetOriginsForHost(blink::mojom::StorageType type,
                             const std::string& host,
-                            GetOriginsCallback callback);
+                            GetOriginsForTypeCallback callback);
   void RunDeleteOriginData(const url::Origin& origin,
                            blink::mojom::StorageType type,
-                           DeletionCallback callback);
+                           DeleteOriginDataCallback callback);
 
   const scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
   const QuotaClientType client_type_;

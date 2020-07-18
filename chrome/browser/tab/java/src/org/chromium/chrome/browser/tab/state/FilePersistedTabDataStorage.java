@@ -4,18 +4,20 @@
 
 package org.chromium.chrome.browser.tab.state;
 
+import android.content.Context;
+
 import androidx.annotation.MainThread;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.util.AtomicFile;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.File;
@@ -35,6 +37,16 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
         public void onResult(Integer result) {}
     };
     private static final int DECREMENT_SEMAPHORE_VAL = 1;
+
+    private static final String sBaseDirName = "persisted_tab_data_storage";
+    private static class BaseStorageDirectoryHolder {
+        private static File sDirectory;
+
+        static {
+            sDirectory =
+                    ContextUtils.getApplicationContext().getDir(sBaseDirName, Context.MODE_PRIVATE);
+        }
+    }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     protected LinkedList<StorageRequest> mQueue = new LinkedList<>();
@@ -86,8 +98,12 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     protected File getFile(int tabId, String dataId) {
-        return new File(TabStateDirectory.getOrCreateTabbedModeStateDirectory(),
+        return new File(getOrCreateBaseStorageDirectory(),
                 String.format(Locale.ENGLISH, "%d%s", tabId, dataId));
+    }
+
+    public static File getOrCreateBaseStorageDirectory() {
+        return BaseStorageDirectoryHolder.sDirectory;
     }
 
     /**

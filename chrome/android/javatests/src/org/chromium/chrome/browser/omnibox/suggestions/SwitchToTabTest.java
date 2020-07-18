@@ -8,11 +8,11 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.Intent;
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.util.Pair;
+import android.text.TextUtils;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.test.filters.MediumTest;
 
@@ -24,8 +24,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -42,6 +43,7 @@ import org.chromium.chrome.test.util.WaitForFocusHelper;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -90,46 +92,105 @@ public class SwitchToTabTest {
     }
 
     /**
-     * Type the |text| into |activity|'s url_bar, and wait for switch to tab suggestion shows up.
+     * Type the |text| into |activity|'s URL bar, and wait for switch to tab suggestion shows up.
      *
-     * @param activity The Activity which url_bar is in.
+     * @param activity The Activity which URL bar is in.
      * @param locationBarLayout The layout which omnibox suggestions will show in.
-     * @param text The text will be typed into url_bar.
+     * @param tab The tab will be switched to.
      */
-    private void typeAndWaitForTabMatchSuggestions(Activity activity,
-            LocationBarLayout locationBarLayout, String input) throws InterruptedException {
-        typeInOmnibox(activity, input);
+    private void typeAndClickMatchingTabMatchSuggestion(Activity activity,
+            LocationBarLayout locationBarLayout, Tab tab) throws InterruptedException {
+        typeInOmnibox(activity, tab.getTitle());
 
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBarLayout);
         // waitForOmniboxSuggestions only wait until one suggestion shows up, we need to wait util
         // autocomplete return more suggestions.
         CriteriaHelper.pollUiThread(() -> {
-            Criteria.checkThat(findFirstTabMatchOmniboxSuggestion(locationBarLayout).first,
-                    Matchers.not(INVALID_INDEX));
+            OmniboxSuggestion matchSuggestion =
+                    findTabMatchOmniboxSuggestion(locationBarLayout, tab);
+            Criteria.checkThat(matchSuggestion, Matchers.notNullValue());
+
+            OmniboxSuggestionsDropdown suggestionsDropdown =
+                    AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
+                            locationBarLayout.getAutocompleteCoordinator());
+
+            // Make sure data populated to UI
+            int index = findIndexOfTabMatchSuggestionView(suggestionsDropdown, matchSuggestion);
+            Criteria.checkThat(index, Matchers.not(INVALID_INDEX));
+
+            try {
+                clickSuggestionActionAt(suggestionsDropdown, index);
+            } catch (InterruptedException e) {
+                throw new CriteriaNotSatisfiedException(e);
+            }
         });
     }
 
     /**
-     * Find the first switch to tab suggestion in the omnibox suggestion list, and return the
-     * suggestion and its index.
+     * Find the switch to tab suggestion which suggests the |tab|, and return the
+     * suggestion. This method needs to run on the UI thread.
      *
      * @param locationBarLayout The layout which omnibox suggestions will show in.
-     * @return The the first switch to tab suggestion's index, and the suggesstion.
+     * @param tab The tab which the OmniboxSuggestion should suggest.
+     * @return The suggesstion which suggests the |tab|.
      */
-    private Pair<Integer, OmniboxSuggestion> findFirstTabMatchOmniboxSuggestion(
-            LocationBarLayout locationBarLayout) {
-        OmniboxSuggestionsDropdown suggestionsDropdown =
-                AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
-                        locationBarLayout.getAutocompleteCoordinator());
-        // Find the index of the first matching suggestion.
-        for (int i = 0; i < suggestionsDropdown.getItemCount(); ++i) {
-            OmniboxSuggestion suggestion = AutocompleteCoordinatorTestUtils.getOmniboxSuggestionAt(
-                    locationBarLayout.getAutocompleteCoordinator(), i);
-            if (suggestion != null && suggestion.hasTabMatch()) {
-                return new Pair<Integer, OmniboxSuggestion>(i, suggestion);
+    private OmniboxSuggestion findTabMatchOmniboxSuggestion(
+            LocationBarLayout locationBarLayout, Tab tab) {
+        ThreadUtils.assertOnUiThread();
+
+        AutocompleteCoordinator coordinator = locationBarLayout.getAutocompleteCoordinator();
+        // Find the first matching suggestion.
+        for (int i = 0; i < coordinator.getSuggestionCount(); ++i) {
+            OmniboxSuggestion suggestion = coordinator.getSuggestionAt(i);
+            if (suggestion != null && suggestion.hasTabMatch()
+                    && TextUtils.equals(suggestion.getDescription(), tab.getTitle())
+                    && TextUtils.equals(suggestion.getUrl().getSpec(), tab.getUrl().getSpec())) {
+                return suggestion;
             }
         }
-        return new Pair<Integer, OmniboxSuggestion>(INVALID_INDEX, null);
+        return null;
+    }
+
+    /**
+     * Find the index of the tab match suggestion in OmniboxSuggestionsDropdown. This method needs
+     * to run on the UI thread.
+     *
+     * @param suggestionsDropdown The OmniboxSuggestionsDropdown contains all the suggestions.
+     * @param suggestion The OmniboxSuggestion we are looking for in the view.
+     * @return The matching suggestion's index.
+     */
+    private int findIndexOfTabMatchSuggestionView(
+            OmniboxSuggestionsDropdown suggestionsDropdown, OmniboxSuggestion suggestion) {
+        ThreadUtils.assertOnUiThread();
+
+        ViewGroup viewGroup = suggestionsDropdown.getViewGroup();
+        if (viewGroup == null) {
+            return INVALID_INDEX;
+        }
+
+        for (int i = 0; i < viewGroup.getChildCount(); i++) {
+            BaseSuggestionView baseSuggestionView = (BaseSuggestionView) viewGroup.getChildAt(i);
+            if (baseSuggestionView == null) {
+                continue;
+            }
+
+            TextView line1 = baseSuggestionView.findViewById(R.id.line_1);
+            TextView line2 = baseSuggestionView.findViewById(R.id.line_2);
+            if (!TextUtils.equals(suggestion.getDescription(), line1.getText())
+                    || !TextUtils.equals(suggestion.getDisplayText(), line2.getText())) {
+                continue;
+            }
+
+            List<ImageView> buttonsList = baseSuggestionView.getActionButtons();
+            if (buttonsList != null && buttonsList.size() == 1
+                    && TextUtils.equals(baseSuggestionView.getResources().getString(
+                                                R.string.accessibility_omnibox_switch_to_tab),
+                            buttonsList.get(0).getContentDescription())) {
+                return i;
+            }
+        }
+
+        return INVALID_INDEX;
     }
 
     /**
@@ -140,10 +201,12 @@ public class SwitchToTabTest {
      */
     private void clickSuggestionActionAt(OmniboxSuggestionsDropdown suggestionsDropdown, int index)
             throws InterruptedException {
-        // Wait a bit since the button may not able to click.
         ViewGroup viewGroup = suggestionsDropdown.getViewGroup();
         BaseSuggestionView baseSuggestionView = (BaseSuggestionView) viewGroup.getChildAt(index);
+        Assert.assertNotNull("Null suggestion for index: " + index, baseSuggestionView);
+
         List<ImageView> buttonsList = baseSuggestionView.getActionButtons();
+        Assert.assertNotNull(buttonsList);
         Assert.assertEquals(buttonsList.size(), 1);
         TestTouchUtils.performClickOnMainSync(
                 InstrumentationRegistry.getInstrumentation(), buttonsList.get(0));
@@ -171,9 +234,6 @@ public class SwitchToTabTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(message = "https://crbug.com/1101433",
-            sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP_MR1,
-            sdk_is_less_than = Build.VERSION_CODES.N)
     @EnableFeatures("OmniboxTabSwitchSuggestions")
     public void
     testSwitchToTabSuggestion() throws InterruptedException {
@@ -183,34 +243,23 @@ public class SwitchToTabTest {
         final String testHttpsUrl1 = mTestServer.getURL("/chrome/test/data/android/about.html");
         final String testHttpsUrl2 = mTestServer.getURL("/chrome/test/data/android/ok.txt");
         final String testHttpsUrl3 = mTestServer.getURL("/chrome/test/data/android/test.html");
-        mActivityTestRule.loadUrlInNewTab(testHttpsUrl1);
+        final Tab aboutTab = mActivityTestRule.loadUrlInNewTab(testHttpsUrl1);
         mActivityTestRule.loadUrlInNewTab(testHttpsUrl2);
         mActivityTestRule.loadUrlInNewTab(testHttpsUrl3);
 
         LocationBarLayout locationBarLayout =
                 (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
-        typeAndWaitForTabMatchSuggestions(
-                mActivityTestRule.getActivity(), locationBarLayout, "about");
-
-        Pair<Integer, OmniboxSuggestion> matchSuggestion =
-                findFirstTabMatchOmniboxSuggestion(locationBarLayout);
-
-        Assert.assertNotEquals(INVALID_INDEX, (int) matchSuggestion.first);
-        Assert.assertNotNull("No Switch to Tab suggestion returned.", matchSuggestion.second);
-        Assert.assertEquals(matchSuggestion.second.getUrl().getSpec(), testHttpsUrl1);
-
-        OmniboxSuggestionsDropdown suggestionsDropdown =
-                AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
-                        locationBarLayout.getAutocompleteCoordinator());
-        clickSuggestionActionAt(suggestionsDropdown, (int) matchSuggestion.first);
+        typeAndClickMatchingTabMatchSuggestion(
+                mActivityTestRule.getActivity(), locationBarLayout, aboutTab);
 
         CriteriaHelper.pollUiThread(() -> {
             Tab tab = mActivityTestRule.getActivity().getActivityTab();
-            if (tab == null) return false;
+            Criteria.checkThat(tab, Matchers.notNullValue());
+            Criteria.checkThat(tab, Matchers.is(aboutTab));
             // Make sure tab is in either upload page or result page. cannot only verify one of
             // them since on fast device tab jump to result page really quick but on slow device
             // may stay on upload page for a really long time.
-            return tab.getUrlString().equals(testHttpsUrl1);
+            Criteria.checkThat(tab.getUrlString(), Matchers.is(testHttpsUrl1));
         });
     }
 
@@ -225,7 +274,7 @@ public class SwitchToTabTest {
         final String testHttpsUrl2 = mTestServer.getURL("/chrome/test/data/android/ok.txt");
         final String testHttpsUrl3 = mTestServer.getURL("/chrome/test/data/android/test.html");
         // Open the url trying to match in incognito mode.
-        mActivityTestRule.loadUrlInNewTab(testHttpsUrl1, true);
+        final Tab aboutTab = mActivityTestRule.loadUrlInNewTab(testHttpsUrl1, true);
         mActivityTestRule.loadUrlInNewTab(testHttpsUrl2);
         mActivityTestRule.loadUrlInNewTab(testHttpsUrl3);
 
@@ -235,52 +284,51 @@ public class SwitchToTabTest {
         mActivityTestRule.typeInOmnibox("about", false);
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBarLayout);
 
-        Pair<Integer, OmniboxSuggestion> matchSuggestion =
-                findFirstTabMatchOmniboxSuggestion(locationBarLayout);
-
-        Assert.assertNull(
-                "Should no Switch to Incognito Tab from normal tab.", matchSuggestion.second);
+        CriteriaHelper.pollUiThread(() -> {
+            OmniboxSuggestion matchSuggestion =
+                    findTabMatchOmniboxSuggestion(locationBarLayout, aboutTab);
+            Criteria.checkThat(matchSuggestion, Matchers.nullValue());
+        });
     }
 
     @Test
     @MediumTest
     @EnableFeatures("OmniboxTabSwitchSuggestions")
-    public void testSwitchToTabInSearchActiviy() throws InterruptedException {
+    public void testSwitchToTabInSearchActivity() throws InterruptedException {
         mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getInstrumentation().getContext(),
                 ServerCertificate.CERT_OK);
         final String testHttpsUrl1 = mTestServer.getURL("/chrome/test/data/android/about.html");
         final String testHttpsUrl2 = mTestServer.getURL("/chrome/test/data/android/ok.txt");
         final String testHttpsUrl3 = mTestServer.getURL("/chrome/test/data/android/test.html");
-        mActivityTestRule.loadUrlInNewTab(testHttpsUrl1);
+        final Tab aboutTab = mActivityTestRule.loadUrlInNewTab(testHttpsUrl1);
         mActivityTestRule.loadUrlInNewTab(testHttpsUrl2);
         mActivityTestRule.loadUrlInNewTab(testHttpsUrl3);
+        Assert.assertNotEquals(mActivityTestRule.getActivity().getActivityTab(), aboutTab);
 
         final SearchActivity searchActivity = startSearchActivity();
+        CriteriaHelper.pollUiThread(() -> {
+            Tab tab = mActivityTestRule.getActivity().getActivityTab();
+            Criteria.checkThat(tab, Matchers.notNullValue());
+
+            // Make sure chrome fully in background.
+            Criteria.checkThat(tab.getWindowAndroid().getActivityState(),
+                    Matchers.isOneOf(ActivityState.STOPPED, ActivityState.DESTROYED));
+        });
 
         final LocationBarLayout locationBarLayout =
                 (LocationBarLayout) searchActivity.findViewById(R.id.search_location_bar);
-        typeAndWaitForTabMatchSuggestions(searchActivity, locationBarLayout, "about");
-
-        Pair<Integer, OmniboxSuggestion> matchSuggestion =
-                findFirstTabMatchOmniboxSuggestion(locationBarLayout);
-
-        Assert.assertNotEquals(INVALID_INDEX, (int) matchSuggestion.first);
-        Assert.assertNotNull("No Switch to Tab suggestion returned.", matchSuggestion.second);
-        Assert.assertEquals(matchSuggestion.second.getUrl().getSpec(), testHttpsUrl1);
-
-        OmniboxSuggestionsDropdown suggestionsDropdown =
-                AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
-                        locationBarLayout.getAutocompleteCoordinator());
-        clickSuggestionActionAt(suggestionsDropdown, (int) matchSuggestion.first);
+        typeAndClickMatchingTabMatchSuggestion(searchActivity, locationBarLayout, aboutTab);
 
         CriteriaHelper.pollUiThread(() -> {
             Tab tab = mActivityTestRule.getActivity().getActivityTab();
-            if (tab == null) return false;
-            // Make sure tab is in either upload page or result page. cannot only verify one of
-            // them since on fast device tab jump to result page really quick but on slow device
-            // may stay on upload page for a really long time.
-            return tab.getUrlString().equals(testHttpsUrl1);
+            Criteria.checkThat(tab, Matchers.notNullValue());
+            Criteria.checkThat(tab, Matchers.is(aboutTab));
+            Criteria.checkThat(tab.getUrlString(), Matchers.is(testHttpsUrl1));
+            // Make sure tab is loaded and in foreground.
+            Criteria.checkThat(
+                    tab.getWindowAndroid().getActivityState(), Matchers.is(ActivityState.RESUMED));
+            Assert.assertEquals(tab, aboutTab);
         });
     }
 }

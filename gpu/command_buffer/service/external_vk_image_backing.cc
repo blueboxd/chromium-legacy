@@ -156,6 +156,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     const VulkanImageUsageCache* image_usage_cache,
     base::span<const uint8_t> pixel_data,
@@ -222,8 +224,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
   bool use_separate_gl_texture = UseSeparateGLTexture(context_state, format);
   auto backing = std::make_unique<ExternalVkImageBacking>(
       util::PassKey<ExternalVkImageBacking>(), mailbox, format, size,
-      color_space, usage, context_state, std::move(image), command_pool,
-      use_separate_gl_texture);
+      color_space, surface_origin, alpha_type, usage, context_state,
+      std::move(image), command_pool, use_separate_gl_texture);
 
   if (!pixel_data.empty()) {
     size_t stride = BitsPerPixel(format) / 8 * size.width();
@@ -242,6 +244,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
     gfx::BufferFormat buffer_format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     const VulkanImageUsageCache* image_usage_cache) {
   if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, buffer_format)) {
@@ -266,8 +270,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
         UseSeparateGLTexture(context_state, resource_format);
     auto backing = std::make_unique<ExternalVkImageBacking>(
         util::PassKey<ExternalVkImageBacking>(), mailbox, resource_format, size,
-        color_space, usage, context_state, std::move(image), command_pool,
-        use_separate_gl_texture);
+        color_space, surface_origin, alpha_type, usage, context_state,
+        std::move(image), command_pool, use_separate_gl_texture);
     backing->SetCleared();
     return backing;
   }
@@ -283,9 +287,10 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
   if (!shared_memory_wrapper.Initialize(handle, size, resource_format))
     return nullptr;
 
-  auto backing = Create(context_state, command_pool, mailbox, resource_format,
-                        size, color_space, usage, image_usage_cache,
-                        base::span<const uint8_t>(), true /* using_gmb */);
+  auto backing =
+      Create(context_state, command_pool, mailbox, resource_format, size,
+             color_space, surface_origin, alpha_type, usage, image_usage_cache,
+             base::span<const uint8_t>(), true /* using_gmb */);
   if (!backing)
     return nullptr;
 
@@ -299,6 +304,8 @@ ExternalVkImageBacking::ExternalVkImageBacking(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     SharedContextState* context_state,
     std::unique_ptr<VulkanImage> image,
@@ -308,6 +315,8 @@ ExternalVkImageBacking::ExternalVkImageBacking(
                                       format,
                                       size,
                                       color_space,
+                                      surface_origin,
+                                      alpha_type,
                                       usage,
                                       image->device_size(),
                                       false /* is_thread_safe */),

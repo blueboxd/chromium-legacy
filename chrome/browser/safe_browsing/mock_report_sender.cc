@@ -24,8 +24,8 @@ void MockReportSender::Send(
     const GURL& report_uri,
     base::StringPiece content_type,
     base::StringPiece report,
-    const base::Callback<void()>& success_callback,
-    const base::Callback<void(const GURL&, int, int)>& error_callback) {
+    base::OnceCallback<void()> success_callback,
+    base::OnceCallback<void(const GURL&, int, int)> error_callback) {
   latest_report_uri_ = report_uri;
   latest_report_.assign(report.data(), report.size());
   latest_content_type_.assign(content_type.data(), content_type.size());

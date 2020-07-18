@@ -106,8 +106,12 @@ BrowserView* GetSourceBrowserViewInTabDragging() {
 class BrowserTabStripController::TabContextMenuContents
     : public ui::SimpleMenuModel::Delegate {
  public:
-  TabContextMenuContents(Tab* tab, BrowserTabStripController* controller)
-      : tab_(tab), controller_(controller) {
+  TabContextMenuContents(Tab* tab,
+                         BrowserTabStripController* controller,
+                         TabGroupsIPHController* tab_groups_iph_controller)
+      : tab_(tab),
+        controller_(controller),
+        tab_groups_iph_controller_(tab_groups_iph_controller) {
     model_ = controller_->menu_model_factory_->Create(
         this, controller->model_, controller->tabstrip_->GetModelIndexOf(tab));
     menu_runner_ = std::make_unique<views::MenuRunner>(
@@ -118,6 +122,7 @@ class BrowserTabStripController::TabContextMenuContents
   void Cancel() { controller_ = nullptr; }
 
   void RunMenuAt(const gfx::Point& point, ui::MenuSourceType source_type) {
+    tab_groups_iph_controller_->TabContextMenuOpened();
     menu_runner_->RunMenuAt(tab_->GetWidget(), nullptr,
                             gfx::Rect(point, gfx::Size()),
                             views::MenuAnchorPosition::kTopLeft, source_type);
@@ -130,6 +135,17 @@ class BrowserTabStripController::TabContextMenuContents
         static_cast<TabStripModel::ContextMenuCommand>(command_id),
         tab_);
   }
+
+  bool IsCommandIdAlerted(int command_id) const override {
+    return command_id == TabStripModel::CommandAddToNewGroup &&
+           tab_groups_iph_controller_ &&
+           tab_groups_iph_controller_->ShouldHighlightContextMenuItem();
+  }
+
+  void MenuClosed(ui::SimpleMenuModel*) override {
+    tab_groups_iph_controller_->TabContextMenuClosed();
+  }
+
   bool GetAcceleratorForCommandId(int command_id,
                                   ui::Accelerator* accelerator) const override {
     auto* app_controller =
@@ -161,6 +177,8 @@ class BrowserTabStripController::TabContextMenuContents
 
   // A pointer back to our hosting controller, for command state information.
   BrowserTabStripController* controller_;
+
+  TabGroupsIPHController* const tab_groups_iph_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContextMenuContents);
 };
@@ -398,13 +416,9 @@ void BrowserTabStripController::ShowContextMenuForTab(
     Tab* tab,
     const gfx::Point& p,
     ui::MenuSourceType source_type) {
-  context_menu_contents_ = std::make_unique<TabContextMenuContents>(tab, this);
+  context_menu_contents_ = std::make_unique<TabContextMenuContents>(
+      tab, this, browser_view_->tab_groups_iph_controller());
   context_menu_contents_->RunMenuAt(p, source_type);
-
-  TabGroupsIPHController* const iph_controller =
-      browser_view_->tab_groups_iph_controller();
-  if (iph_controller)
-    iph_controller->TabContextMenuOpened();
 }
 
 int BrowserTabStripController::HasAvailableDragActions() const {

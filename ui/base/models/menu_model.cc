@@ -19,6 +19,10 @@ bool MenuModel::IsVisibleAt(int index) const {
   return true;
 }
 
+bool MenuModel::IsAlertedAt(int index) const {
+  return false;
+}
+
 bool MenuModel::IsNewFeatureAt(int index) const {
   return false;
 }

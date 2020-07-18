@@ -47,7 +47,12 @@ class FakeSerialPort : public mojom::SerialPort {
     out_stream_ = std::move(producer);
   }
 
-  void Flush(FlushCallback callback) override { NOTREACHED(); }
+  void Flush(device::mojom::SerialPortFlushMode mode,
+             FlushCallback callback) override {
+    NOTREACHED();
+  }
+
+  void Drain(DrainCallback callback) override { NOTREACHED(); }
 
   void GetControlSignals(GetControlSignalsCallback callback) override {
     NOTREACHED();

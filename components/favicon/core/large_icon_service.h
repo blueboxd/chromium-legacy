@@ -20,7 +20,8 @@ class GURL;
 
 namespace favicon {
 
-// The large icon service provides methods to access large icons.
+// The large icon service provides methods to access large icons. The actual
+// implementation of this uses Google's favicon service.
 class LargeIconService : public KeyedService {
  public:
   // Requests the best large icon for the page at |page_url|.

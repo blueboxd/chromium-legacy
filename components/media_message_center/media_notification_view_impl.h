@@ -91,6 +91,12 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
     return picture_in_picture_button_;
   }
 
+  const views::View* playback_button_container_for_testing() const {
+    return playback_button_container_;
+  }
+
+  std::vector<views::View*> get_buttons_for_testing() { return GetButtons(); }
+
   views::Button* GetHeaderRowForTesting() const;
   base::string16 GetSourceTitleForTesting() const;
 
@@ -113,6 +119,10 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
   bool IsActuallyExpanded() const;
 
   void UpdateForegroundColor();
+
+  // Returns the buttons contained in the button row and playback button
+  // container.
+  std::vector<views::View*> GetButtons();
 
   // Container that receives OnExpanded events.
   MediaNotificationContainer* const container_;
@@ -149,6 +159,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
   // Container views directly attached to this view.
   message_center::NotificationHeaderView* header_row_ = nullptr;
   views::View* button_row_ = nullptr;
+  views::View* playback_button_container_ = nullptr;
   views::View* pip_button_separator_view_ = nullptr;
   views::ToggleImageButton* play_pause_button_ = nullptr;
   views::ToggleImageButton* picture_in_picture_button_ = nullptr;

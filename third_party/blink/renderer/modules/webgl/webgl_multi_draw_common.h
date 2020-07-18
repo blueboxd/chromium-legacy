@@ -7,6 +7,7 @@
 
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/bindings/modules/v8/int32_array_or_long_sequence.h"
+#include "third_party/blink/renderer/bindings/modules/v8/uint32_array_or_unsigned_long_sequence.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_extension.h"
 
 namespace blink {
@@ -27,6 +28,9 @@ class WebGLMultiDrawCommon {
 
   static base::span<const int32_t> MakeSpan(
       const Int32ArrayOrLongSequence& array);
+
+  static base::span<const uint32_t> MakeSpan(
+      const Uint32ArrayOrUnsignedLongSequence& array);
 };
 
 }  // namespace blink

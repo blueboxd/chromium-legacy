@@ -110,6 +110,8 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryD3D::MakeBacking(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain,
     size_t buffer_index,
@@ -175,8 +177,8 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryD3D::MakeBacking(
   texture->SetEstimatedSize(texture_memory_size);
 
   return std::make_unique<SharedImageBackingD3D>(
-      mailbox, format, size, color_space, usage, std::move(swap_chain),
-      std::move(texture), std::move(image), buffer_index,
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      std::move(swap_chain), std::move(texture), std::move(image), buffer_index,
       std::move(d3d11_texture), std::move(shared_handle),
       std::move(dxgi_keyed_mutex));
 }
@@ -188,6 +190,8 @@ SharedImageBackingFactoryD3D::CreateSwapChain(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage) {
   if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
     return {nullptr, nullptr};
@@ -260,17 +264,17 @@ SharedImageBackingFactoryD3D::CreateSwapChain(
   if (!ClearBackBuffer(swap_chain, d3d11_device_))
     return {nullptr, nullptr};
 
-  auto back_buffer_backing =
-      MakeBacking(back_buffer_mailbox, format, size, color_space, usage,
-                  swap_chain, 0 /* buffer_index */, nullptr /* d3d11_texture */,
-                  base::win::ScopedHandle());
+  auto back_buffer_backing = MakeBacking(
+      back_buffer_mailbox, format, size, color_space, surface_origin,
+      alpha_type, usage, swap_chain, 0 /* buffer_index */,
+      nullptr /* d3d11_texture */, base::win::ScopedHandle());
   if (!back_buffer_backing)
     return {nullptr, nullptr};
 
-  auto front_buffer_backing =
-      MakeBacking(front_buffer_mailbox, format, size, color_space, usage,
-                  swap_chain, 1 /* buffer_index */, nullptr /* d3d11_texture */,
-                  base::win::ScopedHandle());
+  auto front_buffer_backing = MakeBacking(
+      front_buffer_mailbox, format, size, color_space, surface_origin,
+      alpha_type, usage, swap_chain, 1 /* buffer_index */,
+      nullptr /* d3d11_texture */, base::win::ScopedHandle());
   if (!front_buffer_backing)
     return {nullptr, nullptr};
 
@@ -284,6 +288,8 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     bool is_thread_safe) {
   DCHECK(!is_thread_safe);
@@ -343,8 +349,9 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
   // ensure we do not leak it.
   base::win::ScopedHandle scoped_shared_handle(shared_handle);
 
-  return MakeBacking(mailbox, format, size, color_space, usage, nullptr, 0,
-                     std::move(d3d11_texture), std::move(scoped_shared_handle));
+  return MakeBacking(mailbox, format, size, color_space, surface_origin,
+                     alpha_type, usage, nullptr, 0, std::move(d3d11_texture),
+                     std::move(scoped_shared_handle));
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -353,6 +360,8 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     base::span<const uint8_t> pixel_data) {
   NOTIMPLEMENTED();
@@ -368,6 +377,8 @@ SharedImageBackingFactoryD3D::CreateSharedImage(
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage) {
   NOTIMPLEMENTED();
   return nullptr;

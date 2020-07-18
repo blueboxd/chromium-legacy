@@ -474,10 +474,11 @@ void SerialConnection::GetInfo(GetInfoCompleteCallback callback) const {
       std::move(resp_callback), nullptr));
 }
 
-void SerialConnection::Flush(FlushCompleteCallback callback) const {
+void SerialConnection::Flush(device::mojom::SerialPortFlushMode mode,
+                             FlushCompleteCallback callback) const {
   DCHECK(serial_port_);
   return serial_port_->Flush(
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
+      mode, mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback)));
 }
 
 void SerialConnection::GetControlSignals(

@@ -307,7 +307,8 @@ gpu::Mailbox StreamTexture::CreateSharedImage(const gfx::Size& coded_size) {
   // TODO(vikassoni): Hardcoding colorspace to SRGB. Figure how if we have a
   // colorspace and wire it here.
   auto shared_image = std::make_unique<SharedImageVideo>(
-      mailbox, coded_size, gfx::ColorSpace::CreateSRGB(), this,
+      mailbox, coded_size, gfx::ColorSpace::CreateSRGB(),
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, this,
       std::move(legacy_mailbox_texture), context_state_, false);
   channel_->shared_image_stub()->factory()->RegisterBacking(
       std::move(shared_image), true /* allow_legacy_mailbox */);

@@ -95,6 +95,7 @@ using DownloadToFileCompleteCallback =
           initWithResponseStartedCallback:std::move(responseStartedCallback)
                          progressCallback:progressCallback]) {
     _postRequestCompleteCallback = std::move(postRequestCompleteCallback);
+    _downloadedData.reset([[NSMutableData alloc] init]);
   }
   return self;
 }
@@ -104,9 +105,6 @@ using DownloadToFileCompleteCallback =
 - (void)URLSession:(NSURLSession*)session
           dataTask:(NSURLSessionDataTask*)dataTask
     didReceiveData:(NSData*)data {
-  if (_downloadedData == nil) {
-    _downloadedData.reset([[NSMutableData alloc] init]);
-  }
   [_downloadedData appendData:data];
 
   int64_t current = 0;
@@ -169,18 +167,15 @@ using DownloadToFileCompleteCallback =
     retryAfterResult = [xRetryAfter intValue];
   }
 
-  NSString* dataToUse =
-      _downloadedData ? [[NSString alloc] initWithData:_downloadedData
-                                              encoding:NSUTF8StringEncoding]
-                      : response.description;
-
   _callbackRunner->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          std::move(_postRequestCompleteCallback),
-          std::make_unique<std::string>(base::SysNSStringToUTF8(dataToUse)),
-          error.code, base::SysNSStringToUTF8(etag),
-          base::SysNSStringToUTF8(cupServerProof), retryAfterResult));
+      base::BindOnce(std::move(_postRequestCompleteCallback),
+                     std::make_unique<std::string>(
+                         reinterpret_cast<const char*>([_downloadedData bytes]),
+                         [_downloadedData length]),
+                     error.code, base::SysNSStringToUTF8(etag),
+                     base::SysNSStringToUTF8(cupServerProof),
+                     retryAfterResult));
 }
 
 @end
@@ -303,10 +298,18 @@ void NetworkFetcher::PostRequest(
   base::scoped_nsobject<NSMutableURLRequest> urlRequest(
       [[NSMutableURLRequest alloc] initWithURL:net::NSURLWithGURL(url)]);
   [urlRequest setHTTPMethod:@"POST"];
-  [urlRequest setHTTPBody:[base::SysUTF8ToNSString(post_data)
-                              dataUsingEncoding:NSUTF8StringEncoding]];
+  base::scoped_nsobject<NSData> body(
+      [[NSData alloc] initWithBytes:post_data.c_str() length:post_data.size()]);
+  [urlRequest setHTTPBody:body];
   [urlRequest addValue:base::SysUTF8ToNSString(content_type)
       forHTTPHeaderField:@"Content-Type"];
+
+  // Post additional headers could overwrite existing headers with the same key,
+  // such as "Content-Type" above.
+  for (const auto& header : post_additional_headers) {
+    [urlRequest setValue:base::SysUTF8ToNSString(header.second)
+        forHTTPHeaderField:base::SysUTF8ToNSString(header.first)];
+  }
   VLOG(1) << "Posting data: " << post_data.c_str();
 
   NSURLSessionDataTask* dataTask = [session dataTaskWithRequest:urlRequest];

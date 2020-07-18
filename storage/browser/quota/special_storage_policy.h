@@ -11,6 +11,7 @@
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "services/network/public/cpp/session_cookie_delete_predicate.h"
 
 class GURL;
@@ -109,7 +110,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SpecialStoragePolicy
   // above notifications.
   void NotifyPolicyChanged();
 
-  base::ObserverList<Observer>::Unchecked observers_;
+  base::ObserverList<Observer>::Unchecked observers_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace storage

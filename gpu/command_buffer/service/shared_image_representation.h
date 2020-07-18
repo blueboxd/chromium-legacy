@@ -68,6 +68,8 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
   viz::ResourceFormat format() const { return backing_->format(); }
   const gfx::Size& size() const { return backing_->size(); }
   const gfx::ColorSpace& color_space() const { return backing_->color_space(); }
+  GrSurfaceOrigin surface_origin() const { return backing_->surface_origin(); }
+  SkAlphaType alpha_type() const { return backing_->alpha_type(); }
   uint32_t usage() const { return backing_->usage(); }
   const gpu::Mailbox& mailbox() const { return backing_->mailbox(); }
   MemoryTypeTracker* tracker() { return tracker_; }
@@ -291,10 +293,11 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
   // Begin the write access. The implementations should insert semaphores into
   // begin_semaphores vector which client will wait on before writing the
   // backing. The ownership of begin_semaphores will be passed to client.
-  // The implementations should also insert semaphores into end_semaphores,
-  // client must submit them with drawing operations which use the backing.
-  // The ownership of end_semaphores are not passed to client. And client must
-  // submit the end_semaphores before calling EndWriteAccess().
+  // The implementations can also optionally insert semaphores into
+  // end_semaphores. If using end_semaphores, the client must submit them with
+  // drawing operations which use the backing. The ownership of end_semaphores
+  // are not passed to client. And client must submit the end_semaphores before
+  // calling EndWriteAccess().
   // The backing can assign end_state, and the caller must reset backing's state
   // to the end_state before calling EndWriteAccess().
   virtual sk_sp<SkSurface> BeginWriteAccess(
@@ -313,10 +316,11 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
   // Begin the read access. The implementations should insert semaphores into
   // begin_semaphores vector which client will wait on before reading the
   // backing. The ownership of begin_semaphores will be passed to client.
-  // The implementations should also insert semaphores into end_semaphores,
-  // client must submit them with drawing operations which use the backing.
-  // The ownership of end_semaphores are not passed to client. And client must
-  // submit the end_semaphores before calling EndReadAccess().
+  // The implementations can also optionally insert semaphores into
+  // end_semaphores. If using end_semaphores, the client must submit them with
+  // drawing operations which use the backing. The ownership of end_semaphores
+  // are not passed to client. And client must submit the end_semaphores before
+  // calling EndReadAccess().
   // The backing can assign end_state, and the caller must reset backing's state
   // to the end_state before calling EndReadAccess().
   virtual sk_sp<SkPromiseImageTexture> BeginReadAccess(

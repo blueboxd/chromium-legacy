@@ -509,9 +509,9 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
                                        switches::kForceDisableVariationIds));
   }
 
-  feature_list->InitializeFromCommandLineWithFeatureParams(
+  feature_list->InitializeFromCommandLine(
       command_line->GetSwitchValueASCII(kEnableFeatures),
-      command_line->GetSwitchValueASCII(kDisableFeatures), &UnescapeValue);
+      command_line->GetSwitchValueASCII(kDisableFeatures));
 
   // This needs to happen here: After the InitializeFromCommandLine() call,
   // because the explicit cmdline --disable-features and --enable-features

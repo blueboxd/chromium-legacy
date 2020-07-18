@@ -33,6 +33,24 @@ void inline ScopedGenericArObject<ArConfig*>::Free(ArConfig* ar_config) {
 }
 
 template <>
+void inline ScopedGenericArObject<ArCameraConfig*>::Free(
+    ArCameraConfig* ar_camera_config) {
+  ArCameraConfig_destroy(ar_camera_config);
+}
+
+template <>
+void inline ScopedGenericArObject<ArCameraConfigFilter*>::Free(
+    ArCameraConfigFilter* ar_camera_config_filter) {
+  ArCameraConfigFilter_destroy(ar_camera_config_filter);
+}
+
+template <>
+void inline ScopedGenericArObject<ArCameraConfigList*>::Free(
+    ArCameraConfigList* ar_camera_config_list) {
+  ArCameraConfigList_destroy(ar_camera_config_list);
+}
+
+template <>
 void inline ScopedGenericArObject<ArPose*>::Free(ArPose* ar_pose) {
   ArPose_destroy(ar_pose);
 }

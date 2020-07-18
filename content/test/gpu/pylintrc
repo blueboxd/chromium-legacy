@@ -2,8 +2,7 @@
 
 # Disable the message, report, category or checker with the given id(s).
 # TODO(crbug.com/1076144): Shrink this list to as small as possible.
-disable=broad-except,
-        fixme,
+disable=fixme,
         invalid-name,
         locally-disabled,
         locally-enabled,
@@ -11,7 +10,6 @@ disable=broad-except,
         star-args,
         too-few-public-methods,
         too-many-arguments,
-        too-many-branches,
         too-many-function-args,
         too-many-instance-attributes,
         too-many-public-methods,
@@ -43,6 +41,11 @@ disable=broad-except,
 # locally-disabled/locally-enabled
 # There are valid cases where we want to selectively enable/disable lint errors
 # in a particular file/scope, e.g. allowing protected access in unittests.
+
+# too-few-public-methods
+# This is supposedly to catch "functions disguised as classes", but we have
+# never had issues with that. We do, however, use a handful of struct-like
+# classes, which this complains about.
 
 
 [REPORTS]

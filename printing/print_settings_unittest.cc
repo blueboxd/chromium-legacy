@@ -5,6 +5,7 @@
 #include "printing/print_settings.h"
 
 #include "base/test/gtest_util.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace printing {
@@ -43,6 +44,19 @@ TEST(PrintSettingsDeathTest, GetColorModelForModeEdges) {
   EXPECT_DCHECK_DEATH(GetColorModelForMode(COLOR_MODEL_LAST + 1,
                                            &color_setting_name, &color_value));
 }
+
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+TEST(PrintSettingsTest, GetIppColorModelForMode) {
+  for (int model = UNKNOWN_COLOR_MODEL; model <= COLOR_MODEL_LAST; ++model)
+    EXPECT_FALSE(GetIppColorModelForMode(model).empty());
+}
+
+TEST(PrintSettingsDeathTest, GetIppColorModelForModeEdges) {
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  EXPECT_DCHECK_DEATH(GetIppColorModelForMode(UNKNOWN_COLOR_MODEL - 1));
+  EXPECT_DCHECK_DEATH(GetIppColorModelForMode(COLOR_MODEL_LAST + 1));
+}
+#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #endif  // defined(USE_CUPS)
 
 }  // namespace printing

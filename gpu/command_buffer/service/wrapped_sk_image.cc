@@ -151,6 +151,8 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
                  viz::ResourceFormat format,
                  const gfx::Size& size,
                  const gfx::ColorSpace& color_space,
+                 GrSurfaceOrigin surface_origin,
+                 SkAlphaType alpha_type,
                  uint32_t usage,
                  size_t estimated_size,
                  SharedContextState* context_state)
@@ -158,6 +160,8 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
                                         format,
                                         size,
                                         color_space,
+                                        surface_origin,
+                                        alpha_type,
                                         usage,
                                         estimated_size,
                                         false /* is_thread_safe */),
@@ -362,11 +366,13 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     bool is_thread_safe) {
   DCHECK(!is_thread_safe);
-  return CreateSharedImage(mailbox, format, size, color_space, usage,
-                           base::span<uint8_t>());
+  return CreateSharedImage(mailbox, format, size, color_space, surface_origin,
+                           alpha_type, usage, base::span<uint8_t>());
 }
 
 std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
@@ -374,13 +380,15 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     base::span<const uint8_t> data) {
   auto info = MakeSkImageInfo(size, format);
   size_t estimated_size = info.computeMinByteSize();
   std::unique_ptr<WrappedSkImage> texture(
-      new WrappedSkImage(mailbox, format, size, color_space, usage,
-                         estimated_size, context_state_));
+      new WrappedSkImage(mailbox, format, size, color_space, surface_origin,
+                         alpha_type, usage, estimated_size, context_state_));
   if (!texture->Initialize(info, data, /*stride=*/0))
     return nullptr;
   return texture;
@@ -394,6 +402,8 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage) {
   DCHECK_EQ(handle.type, gfx::SHARED_MEMORY_BUFFER);
 
@@ -418,9 +428,9 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
     return nullptr;
 
   auto info = MakeSkImageInfo(size, format);
-  std::unique_ptr<WrappedSkImage> texture(
-      new WrappedSkImage(mailbox, format, size, color_space, usage,
-                         info.computeMinByteSize(), context_state_));
+  std::unique_ptr<WrappedSkImage> texture(new WrappedSkImage(
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      info.computeMinByteSize(), context_state_));
   if (!texture->InitializeGMB(info, std::move(shm_wrapper)))
     return nullptr;
 

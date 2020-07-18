@@ -2,7 +2,8 @@
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [800, 600],
+      "bounds": [785, 600],
+      "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },
     {

@@ -304,6 +304,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
       const Scrollbar&,
       const IntPoint&) const override;
   IntPoint ConvertFromRootFrame(const IntPoint&) const override;
+  IntPoint ConvertFromRootFrameToVisualViewport(const IntPoint&) const override;
   int ScrollSize(ScrollbarOrientation) const override;
   FloatPoint ScrollPosition() const override {
     return FloatPoint(ScrollOrigin()) + GetScrollOffset();
@@ -482,6 +483,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool RestoreScrollAnchor(const SerializedAnchor&) override;
   ScrollAnchor* GetScrollAnchor() override { return &scroll_anchor_; }
   bool IsPaintLayerScrollableArea() const override { return true; }
+  bool IsRootFrameLayoutViewport() const override;
 
   LayoutBox* GetLayoutBox() const override;
 
@@ -565,6 +567,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   void Trace(Visitor*) const override;
 
+  IntRect ScrollingBackgroundVisualRect(
+      const PhysicalOffset& paint_offset) const;
   const DisplayItemClient& GetScrollingBackgroundDisplayItemClient() const {
     return scrolling_background_display_item_client_;
   }

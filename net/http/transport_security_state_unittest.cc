@@ -85,7 +85,8 @@ const char* const kGoodPath[] = {
 const char* const kBadPath[] = {
     "sha256/1111111111111111111111111111111111111111111=",
     "sha256/2222222222222222222222222222222222222222222=",
-    "sha256/3333333333333333333333333333333333333333333=", nullptr,
+    "sha256/3333333333333333333333333333333333333333333=",
+    nullptr,
 };
 
 // Constructs a SignedCertificateTimestampAndStatus with the given information
@@ -116,12 +117,12 @@ class MockCertificateReportSender
   MockCertificateReportSender() = default;
   ~MockCertificateReportSender() override = default;
 
-  void Send(const GURL& report_uri,
-            base::StringPiece content_type,
-            base::StringPiece report,
-            const base::Callback<void()>& success_callback,
-            const base::Callback<void(const GURL&, int, int)>& error_callback)
-      override {
+  void Send(
+      const GURL& report_uri,
+      base::StringPiece content_type,
+      base::StringPiece report,
+      base::OnceCallback<void()> success_callback,
+      base::OnceCallback<void(const GURL&, int, int)> error_callback) override {
     latest_report_uri_ = report_uri;
     latest_report_.assign(report.data(), report.size());
     latest_content_type_.assign(content_type.data(), content_type.size());
@@ -153,14 +154,14 @@ class MockFailingCertificateReportSender
   int net_error() { return net_error_; }
 
   // TransportSecurityState::ReportSenderInterface:
-  void Send(const GURL& report_uri,
-            base::StringPiece content_type,
-            base::StringPiece report,
-            const base::Callback<void()>& success_callback,
-            const base::Callback<void(const GURL&, int, int)>& error_callback)
-      override {
+  void Send(
+      const GURL& report_uri,
+      base::StringPiece content_type,
+      base::StringPiece report,
+      base::OnceCallback<void()> success_callback,
+      base::OnceCallback<void(const GURL&, int, int)> error_callback) override {
     ASSERT_FALSE(error_callback.is_null());
-    error_callback.Run(report_uri, net_error_, 0);
+    std::move(error_callback).Run(report_uri, net_error_, 0);
   }
 
  private:
@@ -355,9 +356,7 @@ class TransportSecurityStateTest : public ::testing::Test,
     SetTransportSecurityStateSourceForTesting(nullptr);
   }
 
-  void SetUp() override {
-    crypto::EnsureOpenSSLInit();
-  }
+  void SetUp() override { crypto::EnsureOpenSSLInit(); }
 
   static void DisableStaticPins(TransportSecurityState* state) {
     state->enable_static_pins_ = false;

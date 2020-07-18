@@ -172,7 +172,8 @@ class CC_EXPORT ScrollbarController {
   };
 
   struct CC_EXPORT DragState {
-    // This marks the point at which the drag initiated (relative to the widget)
+    // This marks the point at which the drag initiated (relative to the
+    // scrollbar layer).
     gfx::PointF drag_origin;
 
     // This is needed for thumb snapping when the pointer moves too far away
@@ -217,6 +218,12 @@ class CC_EXPORT ScrollbarController {
       const ScrollbarPart scrollbar_part,
       const bool jump_key_modifier) const;
 
+  // Clamps |scroll_delta| based on the available scrollable amount of
+  // |target_node|. The returned delta includes the page scale factor and is
+  // appropriate for use directly as a delta for GSU.
+  gfx::Vector2dF ComputeClampedDelta(const ScrollNode& target_node,
+                                     const gfx::Vector2dF& scroll_delta) const;
+
   // Returns the rect for the ScrollbarPart.
   gfx::Rect GetRectForScrollbarPart(const ScrollbarPart scrollbar_part) const;
 
@@ -257,6 +264,10 @@ class CC_EXPORT ScrollbarController {
 
   // Returns the pixel delta for a percent-based scroll of the scrollbar
   int GetScrollDeltaForPercentBasedScroll() const;
+
+  // Returns the page scale factor (i.e. pinch zoom factor). This is relevant
+  // for root viewport scrollbar scrolling.
+  float GetPageScaleFactorForScroll() const;
 
   LayerTreeHostImpl* layer_tree_host_impl_;
 

@@ -17,10 +17,14 @@ class Size;
 
 namespace chrome_pdf {
 
-gfx::Rect RectFromPPRect(const PP_Rect& pp_rect);
-gfx::Size SizeFromPPSize(const PP_Size& pp_size);
 gfx::Point PointFromPPPoint(const PP_Point& pp_point);
 PP_Point PPPointFromPoint(const gfx::Point& point);
+
+gfx::Rect RectFromPPRect(const PP_Rect& pp_rect);
+PP_Rect PPRectFromRect(const gfx::Rect& rect);
+
+gfx::Size SizeFromPPSize(const PP_Size& pp_size);
+PP_Size PPSizeFromSize(const gfx::Size& size);
 
 }  // namespace chrome_pdf
 

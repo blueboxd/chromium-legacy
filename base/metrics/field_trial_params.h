@@ -23,6 +23,11 @@ typedef std::map<std::string, std::string> FieldTrialParams;
 // Param string decoding function for AssociateFieldTrialParamsFromString().
 typedef std::string (*FieldTrialParamsDecodeStringFunc)(const std::string& str);
 
+// Unescapes special characters from the given string. Used in
+// AssociateFieldTrialParamsFromString() as one of the feature params decoding
+// functions.
+BASE_EXPORT std::string UnescapeValue(const std::string& value);
+
 // Associates the specified set of key-value |params| with the field trial
 // specified by |trial_name| and |group_name|. Fails and returns false if the
 // specified field trial already has params associated with it or the trial

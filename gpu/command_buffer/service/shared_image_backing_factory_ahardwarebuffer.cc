@@ -135,6 +135,8 @@ class SharedImageBackingAHB : public SharedImageBackingAndroid {
                         viz::ResourceFormat format,
                         const gfx::Size& size,
                         const gfx::ColorSpace& color_space,
+                        GrSurfaceOrigin surface_origin,
+                        SkAlphaType alpha_type,
                         uint32_t usage,
                         base::android::ScopedHardwareBufferHandle handle,
                         size_t estimated_size,
@@ -247,6 +249,8 @@ SharedImageBackingAHB::SharedImageBackingAHB(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     base::android::ScopedHardwareBufferHandle handle,
     size_t estimated_size,
@@ -256,6 +260,8 @@ SharedImageBackingAHB::SharedImageBackingAHB(
                                 format,
                                 size,
                                 color_space,
+                                surface_origin,
+                                alpha_type,
                                 usage,
                                 estimated_size,
                                 is_thread_safe,
@@ -561,6 +567,8 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryAHB::MakeBacking(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     bool is_thread_safe,
     base::span<const uint8_t> pixel_data) {
@@ -649,8 +657,9 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryAHB::MakeBacking(
   }
 
   auto backing = std::make_unique<SharedImageBackingAHB>(
-      mailbox, format, size, color_space, usage, std::move(handle),
-      estimated_size, is_thread_safe, std::move(initial_upload_fd));
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      std::move(handle), estimated_size, is_thread_safe,
+      std::move(initial_upload_fd));
 
   // If we uploaded initial data, set the backing as cleared.
   if (!pixel_data.empty())
@@ -666,10 +675,12 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     bool is_thread_safe) {
-  return MakeBacking(mailbox, format, size, color_space, usage, is_thread_safe,
-                     base::span<uint8_t>());
+  return MakeBacking(mailbox, format, size, color_space, surface_origin,
+                     alpha_type, usage, is_thread_safe, base::span<uint8_t>());
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -678,10 +689,12 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
     viz::ResourceFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage,
     base::span<const uint8_t> pixel_data) {
-  return MakeBacking(mailbox, format, size, color_space, usage, false,
-                     pixel_data);
+  return MakeBacking(mailbox, format, size, color_space, surface_origin,
+                     alpha_type, usage, false, pixel_data);
 }
 
 bool SharedImageBackingFactoryAHB::CanImportGpuMemoryBuffer(
@@ -709,6 +722,8 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
     uint32_t usage) {
   // TODO(vasilyt): support SHARED_MEMORY_BUFFER?
   if (handle.type != gfx::ANDROID_HARDWARE_BUFFER) {
@@ -730,8 +745,8 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
   }
 
   return std::make_unique<SharedImageBackingAHB>(
-      mailbox, resource_format, size, color_space, usage,
-      std::move(handle.android_hardware_buffer), estimated_size, false,
+      mailbox, resource_format, size, color_space, surface_origin, alpha_type,
+      usage, std::move(handle.android_hardware_buffer), estimated_size, false,
       base::ScopedFD());
 }
 

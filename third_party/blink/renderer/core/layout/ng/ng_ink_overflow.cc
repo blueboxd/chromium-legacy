@@ -177,28 +177,26 @@ PhysicalRect NGInkOverflow::SelfAndContents(Type type,
 // Store |ink_overflow| as |SmallRawValue| if possible and returns |true|.
 // Returns |false| if |ink_overflow| is too large for |SmallRawValue|.
 bool NGInkOverflow::TrySetOutsets(Type type,
-                                  const PhysicalRect& ink_overflow,
-                                  const PhysicalSize& size) {
+                                  LayoutUnit left_outset,
+                                  LayoutUnit top_outset,
+                                  LayoutUnit right_outset,
+                                  LayoutUnit bottom_outset) {
   CheckType(type);
   const LayoutUnit max_small_value(
       LayoutUnit::FromRawValue(std::numeric_limits<SmallRawValue>::max()));
-  const LayoutUnit left_outset = -ink_overflow.X();
   if (left_outset > max_small_value)
     return false;
-  const LayoutUnit top_outset = -ink_overflow.Y();
   if (top_outset > max_small_value)
     return false;
-  const LayoutUnit right_outset = ink_overflow.Right() - size.width;
   if (right_outset > max_small_value)
     return false;
-  const LayoutUnit bottom_outset = ink_overflow.Bottom() - size.height;
   if (bottom_outset > max_small_value)
     return false;
   Reset(type);
-  outsets_[0] = left_outset.ClampNegativeToZero().RawValue();
-  outsets_[1] = top_outset.ClampNegativeToZero().RawValue();
-  outsets_[2] = right_outset.ClampNegativeToZero().RawValue();
-  outsets_[3] = bottom_outset.ClampNegativeToZero().RawValue();
+  outsets_[0] = left_outset.RawValue();
+  outsets_[1] = top_outset.RawValue();
+  outsets_[2] = right_outset.RawValue();
+  outsets_[3] = bottom_outset.RawValue();
   return true;
 }
 
@@ -210,8 +208,19 @@ NGInkOverflow::Type NGInkOverflow::SetSingle(Type type,
   CheckType(type);
   DCHECK(HasOverflow(ink_overflow, size));
 
-  if (TrySetOutsets(type, ink_overflow, size))
+  const LayoutUnit left_outset = (-ink_overflow.X()).ClampNegativeToZero();
+  const LayoutUnit top_outset = (-ink_overflow.Y()).ClampNegativeToZero();
+  const LayoutUnit right_outset =
+      (ink_overflow.Right() - size.width).ClampNegativeToZero();
+  const LayoutUnit bottom_outset =
+      (ink_overflow.Bottom() - size.height).ClampNegativeToZero();
+
+  if (TrySetOutsets(type, left_outset, top_outset, right_outset, bottom_outset))
     return SetType(new_small_type);
+
+  const PhysicalRect adjusted_ink_overflow(
+      -left_outset, -top_outset, left_outset + size.width + right_outset,
+      top_outset + size.height + bottom_outset);
 
   switch (type) {
     case kSelfAndContents:
@@ -221,12 +230,12 @@ NGInkOverflow::Type NGInkOverflow::SetSingle(Type type,
     case kNone:
     case kSmallSelf:
     case kSmallContents:
-      single_ = new NGSingleInkOverflow(ink_overflow);
+      single_ = new NGSingleInkOverflow(adjusted_ink_overflow);
       return SetType(new_type);
     case kSelf:
     case kContents:
       DCHECK(single_);
-      single_->ink_overflow = ink_overflow;
+      single_->ink_overflow = adjusted_ink_overflow;
       return SetType(new_type);
   }
   NOTREACHED();

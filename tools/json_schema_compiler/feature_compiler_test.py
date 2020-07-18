@@ -371,6 +371,64 @@ class FeatureCompilerTest(unittest.TestCase):
     self._hasError(
         f, 'list should only have hex-encoded SHA1 hashes of extension ids')
 
+  def testHostedAppsCantUseAllowlistedFeatures_SimpleFeature(self):
+    f = self._parseFeature({
+        'extension_types': ['extension', 'hosted_app'],
+        'whitelist': ['0123456789ABCDEF0123456789ABCDEF01234567'],
+        'channel': 'beta',
+    })
+    f.Validate('PermissionFeature', {})
+    self._hasError(f, 'Hosted apps are not allowed to use restricted features')
+
+  def testHostedAppsCantUseAllowlistedFeatures_ComplexFeature(self):
+    c = feature_compiler.FeatureCompiler(
+        None, None, 'PermissionFeature', None, None, None)
+    c._CompileFeature('invalid_feature',
+        [{
+          'extension_types': ['extension'],
+          'channel': 'beta',
+        }, {
+          'channel': 'beta',
+          'extension_types': ['hosted_app'],
+          'whitelist': ['0123456789ABCDEF0123456789ABCDEF01234567'],
+        }])
+    c._CompileFeature('valid_feature',
+        [{
+          'extension_types': ['extension'],
+          'channel': 'beta',
+          'whitelist': ['0123456789ABCDEF0123456789ABCDEF01234567'],
+        }, {
+          'channel': 'beta',
+          'extension_types': ['hosted_app'],
+        }])
+
+    valid_feature = c._features.get('valid_feature')
+    self.assertTrue(valid_feature)
+    self.assertFalse(valid_feature.GetErrors())
+
+    invalid_feature = c._features.get('invalid_feature')
+    self.assertTrue(invalid_feature)
+    self._hasError(invalid_feature,
+                   'Hosted apps are not allowed to use restricted features')
+
+
+  def testHostedAppsCantUseAllowlistedFeatures_ChildFeature(self):
+    c = feature_compiler.FeatureCompiler(
+        None, None, 'PermissionFeature', None, None, None)
+    c._CompileFeature('parent',
+        {
+          'extension_types': ['hosted_app'],
+          'channel': 'beta',
+        })
+
+    c._CompileFeature('parent.child',
+        {
+          'whitelist': ['0123456789ABCDEF0123456789ABCDEF01234567']
+        })
+    feature = c._features.get('parent.child')
+    self.assertTrue(feature)
+    self._hasError(feature,
+                   'Hosted apps are not allowed to use restricted features')
 
 if __name__ == '__main__':
   unittest.main()

@@ -159,12 +159,8 @@ vars = {
   'cros_boards': Str(''),
   'cros_boards_with_qemu_images': Str(''),
   # Building for CrOS is only supported on linux currently.
-  'checkout_simplechrome': '(checkout_chromeos and host_os == "linux") and ("{cros_boards}" != "")',
-  # Surround the board var in quotes so gclient doesn't try parsing the string
-  # as an expression.
-  # TODO(crbug.com/937821): Replace uses of this var with
-  # 'cros_boards_with_qemu_images' above.
-  'cros_download_vm': '(("{cros_boards}" == "amd64-generic") or ("{cros_boards}" == "betty")) or ("{cros_boards}" == "betty-pi-arc")',
+  'checkout_simplechrome': '"{cros_boards}" != ""',
+  'checkout_simplechrome_with_vms': '"{cros_boards_with_qemu_images}" != ""',
   # Should we build and test for public (ie: full) CrOS images, or private
   # (ie: release) images.
   'use_public_cros_config': 'not checkout_src_internal',
@@ -199,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '2d7afd4824c656b8c05810cff1751b430148fd8b',
+  'skia_revision': '9662fd6cbdfb1103613e197c3ea6b5bfc0c343d5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '9109ad2275ba3f77a6e611d593e5215c742ae589',
+  'v8_revision': '1d62b368a26884aed96eb207ecb2fc499255d474',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -215,7 +211,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'e8dd233c7a85f3c689caf06c226a7f8405a480d3',
+  'swiftshader_revision': 'a8b8ef775c7539254541c5a1070ce2948ae7be5c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -318,11 +314,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': '28652ef368ef2e85e28ddc41bf69cc79705d4865',
+  'shaderc_revision': 'd07e90e7ff543f80a41916cd52b259b279a16611',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '7f4980e7d265d3f2e984dd316dccdb28a9dd86bf',
+  'dawn_revision': '1233b66c90d45c3c2b16a6d0635183201893dffc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -549,7 +545,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'f2dd90e06cca99d66d4e33c99fad0d13180b1e04',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '4216eb6ed560b65e7e5903d12da072a1f322b30d',
       'condition': 'checkout_ios',
   },
 
@@ -899,7 +895,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '320ceb93a21c7b5cee9d8cd95a282d06e1a3f6bd',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '4bbdfa583e743daeb477d848c2be9d18bf0a03a4',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -999,7 +995,7 @@ deps = {
   },
 
   'src/third_party/arcore-android-sdk/src': {
-      'url': Var('chromium_git') + '/external/github.com/google-ar/arcore-android-sdk.git' + '@' + '765ca36d1d03e8d97bcb4d48d407277c3b503f21',
+      'url': Var('chromium_git') + '/external/github.com/google-ar/arcore-android-sdk.git' + '@' + '54861e38cceb406021fc8ece495f82387376af62',
       'condition': 'checkout_android',
   },
 
@@ -1007,7 +1003,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/third_party/arcore-android-sdk-client',
-          'version': 'Ki3Nxeov-cyGeHGIxrhG1teX7zYstsUtg1k-SAQ8CpAC',
+          'version': 'KFu2mHSzZr0ZNOlM_LG5AA5ZIi2_rICieWgkME9IUFYC',
         },
       ],
 
@@ -1330,7 +1326,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': '6w0qlJN7Xw7ZqAjvr5YYRHsrQ-LH90XaBZQZ8KvSHJAC'
+              'version': 'bMBorsHPd-GA42g-lfkvaE5HhiZVCcqkoLNKDzb8ElUC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1480,7 +1476,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'fc4668dae26e1c9ad40eb75919e7e733251fda4b',
+    Var('webrtc_git') + '/src.git' + '@' + '20b701f3d79c499b0981f03fbf3a9b0fe531ac5d',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1552,7 +1548,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0d8628ddce9aa292a44a7207b3f782320f235ced',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7043cea402ac986bcafc584640c09b22419ac378',
     'condition': 'checkout_src_internal',
   },
 
@@ -4874,7 +4870,7 @@ hooks = [
   {
     'name': 'cros_simplechrome_artifacts_with_vm',
     'pattern': '.',
-    'condition': '(checkout_simplechrome and cros_download_vm) and use_public_cros_config',
+    'condition': 'checkout_simplechrome_with_vms and use_public_cros_config',
     'action': [
       'src/third_party/chromite/bin/cros',
       'chrome-sdk',
@@ -4883,7 +4879,7 @@ hooks = [
       '--fallback-versions=10',
       '--nogn-gen',
       '--download-vm',
-      '--boards={cros_boards}',
+      '--boards={cros_boards_with_qemu_images}',
       '--cache-dir=src/build/cros_cache/',
       '--log-level=error',
       '--no-shell',
@@ -4892,7 +4888,7 @@ hooks = [
   {
     'name': 'cros_simplechrome_artifacts_with_no_vm',
     'pattern': '.',
-    'condition': '(checkout_simplechrome and not cros_download_vm) and use_public_cros_config',
+    'condition': 'checkout_simplechrome and use_public_cros_config',
     'action': [
       'src/third_party/chromite/bin/cros',
       'chrome-sdk',

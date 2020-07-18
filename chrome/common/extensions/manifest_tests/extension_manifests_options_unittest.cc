@@ -138,4 +138,15 @@ TEST_F(OptionsPageManifestTest, OptionsPageChromeStyleAndOpenInTab) {
   }
 }
 
+// Tests that the chrome_style flag is not supported in manifest v3 and will
+// trigger an error when specified.
+TEST_F(OptionsPageManifestTest, OptionsPageChromeStyleManifestV3) {
+  LoadAndExpectError(
+      "options_ui_chrome_style_manifest_v3_false.json",
+      extensions::manifest_errors::kChromeStyleInvalidForManifestV3);
+  LoadAndExpectError(
+      "options_ui_chrome_style_manifest_v3_true.json",
+      extensions::manifest_errors::kChromeStyleInvalidForManifestV3);
+}
+
 }  // namespace

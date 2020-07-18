@@ -14,6 +14,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.support.test.filters.SmallTest;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -78,8 +79,10 @@ public class NativeViewListRendererTest {
         mRenderer.bind(mManager);
         NativeViewListRenderer.ViewHolder viewHolder = mRenderer.onCreateViewHolder(
                 new DummyViewGroup(mContext), mRenderer.getItemViewType(1));
-        assertThat(viewHolder.itemView).isInstanceOf(TextView.class);
-        assertEquals("2", ((TextView) viewHolder.itemView).getText());
+        assertThat(viewHolder.itemView).isInstanceOf(FrameLayout.class);
+        FrameLayout frameLayout = (FrameLayout) viewHolder.itemView;
+        assertThat(frameLayout.getChildAt(0)).isInstanceOf(TextView.class);
+        assertEquals("2", ((TextView) frameLayout.getChildAt(0)).getText());
     }
 
     @Test

@@ -41,6 +41,8 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       const VulkanImageUsageCache* image_usage_cache,
       base::span<const uint8_t> pixel_data,
@@ -54,6 +56,8 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
       gfx::BufferFormat buffer_format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
       uint32_t usage,
       const VulkanImageUsageCache* image_usage_cache);
 
@@ -62,6 +66,8 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
                          viz::ResourceFormat format,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
+                         GrSurfaceOrigin surface_origin,
+                         SkAlphaType alpha_type,
                          uint32_t usage,
                          SharedContextState* context_state,
                          std::unique_ptr<VulkanImage> image,

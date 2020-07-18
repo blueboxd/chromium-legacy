@@ -168,11 +168,13 @@ TEST_F(SharedImageBackingFactoryAHBTest, GLSkiaGL) {
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(1, 1);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, surface_handle, size, color_space, usage,
-      false /* is_thread_safe */);
+      mailbox, format, surface_handle, size, color_space, surface_origin,
+      alpha_type, usage, false /* is_thread_safe */);
   EXPECT_TRUE(backing);
 
   GLenum expected_target = GL_TEXTURE_2D;
@@ -234,9 +236,12 @@ TEST_F(SharedImageBackingFactoryAHBTest, InitialData) {
   }
 
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_DISPLAY;
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, size, color_space, usage, initial_data);
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      initial_data);
   EXPECT_TRUE(backing);
 
   std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =
@@ -263,11 +268,13 @@ TEST_F(SharedImageBackingFactoryAHBTest, InvalidFormat) {
   auto format = viz::ResourceFormat::YUV_420_BIPLANAR;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, surface_handle, size, color_space, usage,
-      false /* is_thread_safe */);
+      mailbox, format, surface_handle, size, color_space, surface_origin,
+      alpha_type, usage, false /* is_thread_safe */);
   EXPECT_FALSE(backing);
 }
 
@@ -280,17 +287,19 @@ TEST_F(SharedImageBackingFactoryAHBTest, InvalidSize) {
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(0, 0);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, surface_handle, size, color_space, usage,
-      false /* is_thread_safe */);
+      mailbox, format, surface_handle, size, color_space, surface_origin,
+      alpha_type, usage, false /* is_thread_safe */);
   EXPECT_FALSE(backing);
 
   size = gfx::Size(INT_MAX, INT_MAX);
-  backing = backing_factory_->CreateSharedImage(mailbox, format, surface_handle,
-                                                size, color_space, usage,
-                                                false /* is_thread_safe */);
+  backing = backing_factory_->CreateSharedImage(
+      mailbox, format, surface_handle, size, color_space, surface_origin,
+      alpha_type, usage, false /* is_thread_safe */);
   EXPECT_FALSE(backing);
 }
 
@@ -302,11 +311,13 @@ TEST_F(SharedImageBackingFactoryAHBTest, EstimatedSize) {
   auto format = viz::ResourceFormat::RGBA_8888;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
   auto backing = backing_factory_->CreateSharedImage(
-      mailbox, format, surface_handle, size, color_space, usage,
-      false /* is_thread_safe */);
+      mailbox, format, surface_handle, size, color_space, surface_origin,
+      alpha_type, usage, false /* is_thread_safe */);
   EXPECT_TRUE(backing);
 
   size_t backing_estimated_size = backing->estimated_size();
@@ -554,6 +565,8 @@ GlLegacySharedImage::GlLegacySharedImage(
   mailbox_ = Mailbox::GenerateForSharedImage();
   auto format = viz::ResourceFormat::RGBA_8888;
   auto color_space = gfx::ColorSpace::CreateSRGB();
+  GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;
+  SkAlphaType alpha_type = kPremul_SkAlphaType;
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
 
   // SHARED_IMAGE_USAGE_DISPLAY for skia read and SHARED_IMAGE_USAGE_RASTER for
@@ -562,8 +575,8 @@ GlLegacySharedImage::GlLegacySharedImage(
   if (!is_thread_safe)
     usage |= SHARED_IMAGE_USAGE_DISPLAY;
   backing_ = backing_factory->CreateSharedImage(
-      mailbox_, format, surface_handle, size_, color_space, usage,
-      is_thread_safe);
+      mailbox_, format, surface_handle, size_, color_space, surface_origin,
+      alpha_type, usage, is_thread_safe);
   EXPECT_TRUE(backing_);
 
   // Check clearing.

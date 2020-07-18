@@ -71,7 +71,7 @@ class CaptivePortalTabReloader {
   };
 
   // Function to open a login tab, if there isn't one already.
-  typedef base::Callback<void()> OpenLoginTabCallback;
+  using OpenLoginTabCallback = base::RepeatingCallback<void()>;
 
   // |captive_portal_service| and |web_contents| will only be dereferenced in
   // ReloadTab, MaybeOpenCaptivePortalLoginTab, and CheckForCaptivePortal, so

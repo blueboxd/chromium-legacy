@@ -168,6 +168,9 @@ if (include_js_tests) {
     if (enable_print_preview) {
       sources += [ "print_preview/print_preview_ui_browsertest.js" ]
     }
+    if (enable_tab_search) {
+      sources += [ "tab_search/test/tab_search_browsertest.js" ]
+    }
     if (enable_webui_tab_strip) {
       sources += [ "tab_strip/tab_strip_browsertest.js" ]
     }
@@ -374,6 +377,9 @@ group("closure_compile") {
 
     # TODO(crbug.com/1000989): Add page specific targets here.
   ]
+  if (enable_tab_search) {
+    deps += [ "tab_search/test:closure_compile" ]
+  }
 }
 
 js_type_check("closure_compile_local") {

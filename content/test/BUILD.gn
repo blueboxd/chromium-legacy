@@ -2417,6 +2417,10 @@ test("content_unittests") {
     sources += [ "../browser/xr/service/xr_runtime_manager_unittest.cc" ]
     deps += [ "//device/vr:vr_fakes" ]
   }
+
+  if (is_chromecast) {
+    deps += [ "//chromecast:chromecast_buildflags" ]
+  }
 }
 
 if (enable_nocompile_tests) {

@@ -5,6 +5,7 @@
 #ifndef CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_UTILS_H_
 #define CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_UTILS_H_
 
+#include <windows.h>
 #include <memory>
 #include <string>
 
@@ -15,7 +16,6 @@
 #include "base/version.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_types.h"
-#include "chrome/credential_provider/gaiacp/scoped_handle.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "url/gurl.h"
 

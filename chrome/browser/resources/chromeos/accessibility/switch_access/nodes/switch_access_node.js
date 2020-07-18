@@ -363,8 +363,8 @@ class SARootNode {
     // Must have one interesting child that is not the back button.
     return this.children_
                .filter(
-                   (child) => child.isValidAndVisible() &&
-                       !(child instanceof BackButtonNode))
+                   (child) => !(child instanceof BackButtonNode) &&
+                       child.isValidAndVisible())
                .length >= 1;
   }
 
@@ -383,6 +383,11 @@ class SARootNode {
 
   /** Called when a group is explicitly exited. */
   onExit() {}
+
+  /** Called when a group should recalculate its children. */
+  refreshChildren() {
+    this.children = this.children.filter((child) => child.isValidAndVisible());
+  }
 
   /** Called when the group's children may have changed. */
   refresh() {}

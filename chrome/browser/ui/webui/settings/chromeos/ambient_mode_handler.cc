@@ -124,10 +124,12 @@ void AmbientModeHandler::HandleSetSelectedPhotosContainers(
       // of selected albums.
       settings_->selected_album_ids.clear();
       for (const auto& value : containers->GetList()) {
-        std::string name = value.GetString();
-        auto it = std::find_if(
-            personal_albums_.albums.begin(), personal_albums_.albums.end(),
-            [name](const auto& album) { return album.album_name == name; });
+        const std::string& album_id = value.GetString();
+        auto it = std::find_if(personal_albums_.albums.begin(),
+                               personal_albums_.albums.end(),
+                               [&album_id](const auto& album) {
+                                 return album.album_id == album_id;
+                               });
         CHECK(it != personal_albums_.albums.end());
         settings_->selected_album_ids.emplace_back(it->album_id);
       }
@@ -136,10 +138,12 @@ void AmbientModeHandler::HandleSetSelectedPhotosContainers(
       // For Art gallery, we set the corresponding setting to be enabled or not
       // based on the selections.
       for (auto& art_setting : settings_->art_settings) {
-        std::string title = art_setting.title;
-        auto it = std::find_if(
-            containers->GetList().begin(), containers->GetList().end(),
-            [title](const auto& value) { return value.GetString() == title; });
+        const std::string& album_id = art_setting.album_id;
+        auto it = std::find_if(containers->GetList().begin(),
+                               containers->GetList().end(),
+                               [&album_id](const auto& value) {
+                                 return value.GetString() == album_id;
+                               });
         const bool checked = it != containers->GetList().end();
         art_setting.enabled = checked;
       }
@@ -182,6 +186,7 @@ void AmbientModeHandler::SendPhotosContainers(
     case ash::AmbientModeTopicSource::kGooglePhotos:
       for (const auto& album : personal_albums_.albums) {
         base::Value value(base::Value::Type::DICTIONARY);
+        value.SetKey("albumId", base::Value(album.album_id));
         value.SetKey("title", base::Value(album.album_name));
         value.SetKey("checked",
                      base::Value(base::Contains(settings_->selected_album_ids,
@@ -192,6 +197,7 @@ void AmbientModeHandler::SendPhotosContainers(
     case ash::AmbientModeTopicSource::kArtGallery:
       for (const auto& setting : settings_->art_settings) {
         base::Value value(base::Value::Type::DICTIONARY);
+        value.SetKey("albumId", base::Value(setting.album_id));
         value.SetKey("title", base::Value(setting.title));
         value.SetKey("checked", base::Value(setting.enabled));
         containers.Append(std::move(value));

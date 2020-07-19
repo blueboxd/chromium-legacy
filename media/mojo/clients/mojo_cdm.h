@@ -44,7 +44,7 @@ class MojoCdm : public ContentDecryptionModule,
   using MessageType = CdmMessageType;
 
   MojoCdm(mojo::Remote<mojom::ContentDecryptionModule> remote_cdm,
-          int32_t cdm_id,
+          const base::Optional<base::UnguessableToken>& cdm_id,
           mojo::PendingRemote<mojom::Decryptor> decryptor_remote,
           const SessionMessageCB& session_message_cb,
           const SessionClosedCB& session_closed_cb,
@@ -77,7 +77,7 @@ class MojoCdm : public ContentDecryptionModule,
   // All GetDecryptor() calls must be made on the same thread.
   std::unique_ptr<CallbackRegistration> RegisterEventCB(EventCB event_cb) final;
   Decryptor* GetDecryptor() final;
-  int GetCdmId() const final;
+  base::Optional<base::UnguessableToken> GetCdmId() const final;
 
  private:
   ~MojoCdm() final;
@@ -120,7 +120,7 @@ class MojoCdm : public ContentDecryptionModule,
 
   // CDM ID of the remote CDM. Set after initialization is completed. Must not
   // be invalid if initialization succeeded.
-  int cdm_id_;
+  base::Optional<base::UnguessableToken> cdm_id_;
 
   // The mojo::PendingRemote<mojom::Decryptor> exposed by the remote CDM. Set
   // after initialization is completed and cleared after |decryptor_| is

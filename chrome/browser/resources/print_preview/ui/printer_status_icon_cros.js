@@ -18,6 +18,16 @@ export const PrinterState = {
   UNKNOWN: 2,
 };
 
+/**
+ * Enumeration used to choose styling based on whether this icon is located in
+ * the destination display or the destination dropdown.
+ * @enum {number}
+ */
+export const IconLocation = {
+  DISPLAY: 0,
+  DROPDOWN: 1,
+};
+
 Polymer({
   is: 'printer-status-icon-cros',
 
@@ -29,10 +39,19 @@ Polymer({
      * State of the associated printer. Determines color of the status badge.
      * @type {!PrinterState}
      */
-    state: {
+    printerState: {
       type: Number,
       reflectToAttribute: true,
-    }
+    },
+
+    /**
+     * Location of this icon. Determines color of the background badge.
+     * @type {!IconLocation}
+     */
+    iconLocation: {
+      type: Number,
+      reflectToAttribute: true,
+    },
   },
 
   _template: html`{__html_template__}`,

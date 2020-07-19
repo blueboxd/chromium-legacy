@@ -111,6 +111,10 @@ source_set("gaiacp_lib") {
     "scoped_user_profile.cc",
     "scoped_user_profile.h",
     "stdafx.h",
+    "user_policies.cc",
+    "user_policies.h",
+    "user_policies_manager.cc",
+    "user_policies_manager.h",
     "win_http_url_fetcher.cc",
     "win_http_url_fetcher.h",
   ]

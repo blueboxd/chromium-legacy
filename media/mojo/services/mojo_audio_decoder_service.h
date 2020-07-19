@@ -34,7 +34,7 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService : public mojom::AudioDecoder {
   void Construct(
       mojo::PendingAssociatedRemote<mojom::AudioDecoderClient> client) final;
   void Initialize(const AudioDecoderConfig& config,
-                  int32_t cdm_id,
+                  const base::Optional<base::UnguessableToken>& cdm_id,
                   InitializeCallback callback) final;
 
   void SetDataSource(mojo::ScopedDataPipeConsumerHandle receive_pipe) final;
@@ -76,7 +76,7 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService : public mojom::AudioDecoder {
 
   // The CDM ID and the corresponding CdmContextRef, which must be held to keep
   // the CdmContext alive for the lifetime of the |decoder_|.
-  int cdm_id_ = CdmContext::kInvalidCdmId;
+  base::Optional<base::UnguessableToken> cdm_id_;
   std::unique_ptr<CdmContextRef> cdm_context_ref_;
 
   // The AudioDecoder that does actual decoding work.

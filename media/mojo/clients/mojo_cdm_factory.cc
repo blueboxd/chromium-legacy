@@ -30,7 +30,7 @@ void OnCdmCreated(
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     CdmCreatedCB cdm_created_cb,
     mojo::PendingRemote<mojom::ContentDecryptionModule> cdm_remote,
-    int32_t cdm_id,
+    const base::Optional<base::UnguessableToken>& cdm_id,
     mojo::PendingRemote<mojom::Decryptor> decryptor,
     const std::string& error_message) {
   // Convert from a PendingRemote to Remote so we can verify that it is

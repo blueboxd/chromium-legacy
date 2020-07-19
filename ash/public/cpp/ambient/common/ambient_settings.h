@@ -35,6 +35,9 @@ struct ASH_PUBLIC_EXPORT ArtSetting {
 
   int setting_id = 0;
 
+  // Album ID for Art category, used in Settings UI to select Art categories.
+  std::string album_id;
+
   // Whether the setting is enabled in the Art gallery topic source.
   bool enabled = false;
 
@@ -75,9 +78,6 @@ struct ASH_PUBLIC_EXPORT PersonalAlbum {
   // ID of this album.
   std::string album_id;
 
-  // Whether the album is selected in the Google Photos topic source.
-  bool selected = false;
-
   // UTF-8 encoded.
   std::string album_name;
 
@@ -86,9 +86,6 @@ struct ASH_PUBLIC_EXPORT PersonalAlbum {
 
   // Preview image of this album.
   std::string banner_image_url;
-
-  // Preview images if this is a live album.
-  std::vector<std::string> preview_image_urls;
 };
 
 struct ASH_PUBLIC_EXPORT PersonalAlbums {

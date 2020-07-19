@@ -55,6 +55,7 @@
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
+#include "chrome/credential_provider/gaiacp/user_policies_manager.h"
 #include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "content/public/common/content_switches.h"
@@ -2458,6 +2459,20 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
     authentication_results_->SetKey(
         kKeyLastSuccessfulOnlineLoginMillis,
         base::Value(base::NumberToString(current_time)));
+  }
+
+  base::string16 sid = OLE2CW(user_sid_);
+  if (UserPoliciesManager::Get()->GetTimeDeltaSinceLastPolicyFetch(sid) >
+      kMaxTimeDeltaSinceLastUserPolicyRefresh) {
+    // TODO(crbug.com/976744) Use downscoped token here.
+    base::string16 access_token = GetDictString(*properties, kKeyAccessToken);
+    HRESULT hr = UserPoliciesManager::Get()->FetchAndStoreCloudUserPolicies(
+        sid, base::UTF16ToUTF8(access_token));
+    SecurelyClearString(access_token);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "Failed fetching user policies for user " << sid
+                   << " Error: " << putHR(hr);
+    }
   }
 
   base::string16 local_password =

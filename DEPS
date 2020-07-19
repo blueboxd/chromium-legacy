@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '9662fd6cbdfb1103613e197c3ea6b5bfc0c343d5',
+  'skia_revision': '324e3e521fd4edd0c1b2266521f9a3ad3d59171b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'f31dce202b242fd4312e7338ddb9383ebaf787bd',
+  'v8_revision': 'dc107a0cac324961b46a889778eb52a4a766c088',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,11 +207,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '5a4af4624777b0cd91d299eeeb13222414607f1b',
+  'angle_revision': '08c4d09493bf22418d7eb75dd936ada79095e088',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'a8b8ef775c7539254541c5a1070ce2948ae7be5c',
+  'swiftshader_revision': 'ea6f21a052c97dbfa4890e1d6840db2fe64ba1d8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '19856e664354b32ed421601e7723480c3b51c8cd',
+  'catapult_revision': '4ed789b24fc78f763332fe7dd2b4c31fdb1823ad',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '88d3e25b6b972ed67a2ba506f7d74340482ff490',
+  'devtools_frontend_revision': '426f13e93f99cd03aa07912f84dbfc993a7d1186',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -314,7 +314,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': 'd07e90e7ff543f80a41916cd52b259b279a16611',
+  'shaderc_revision': '13480cb0ab948e00a5a12794bb6d497a43f9b52c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -946,7 +946,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'e46493b9148e0d1e63f55b5890bff503822616e5',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'ae08b5b74c23a23f3b6c41e7266c1cd420cf4f77',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '9eef54b2513ca6b40b47b07d24f453848b65c0df',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1548,7 +1548,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c85f6b9d1233aac15cc7e5d662f014fefd3caf81',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ce63233559331167257f634bd7c791cf5927c1e9',
     'condition': 'checkout_src_internal',
   },
 

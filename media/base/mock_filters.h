@@ -551,12 +551,12 @@ class MockCdmContext : public CdmContext {
                bool(GetMediaFoundationCdmProxyCB get_mf_cdm_proxy_cb));
 #endif
 
-  int GetCdmId() const override;
+  base::Optional<base::UnguessableToken> GetCdmId() const override;
 
-  void set_cdm_id(int cdm_id);
+  void set_cdm_id(const base::UnguessableToken* cdm_id);
 
  private:
-  int cdm_id_ = CdmContext::kInvalidCdmId;
+  base::Optional<base::UnguessableToken> cdm_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCdmContext);
 };

@@ -123,7 +123,9 @@ void MojoRendererService::SetVolume(float volume) {
   renderer_->SetVolume(volume);
 }
 
-void MojoRendererService::SetCdm(int32_t cdm_id, SetCdmCallback callback) {
+void MojoRendererService::SetCdm(
+    const base::Optional<base::UnguessableToken>& cdm_id,
+    SetCdmCallback callback) {
   if (cdm_context_ref_) {
     DVLOG(1) << "Switching CDM not supported";
     std::move(callback).Run(false);
@@ -136,9 +138,16 @@ void MojoRendererService::SetCdm(int32_t cdm_id, SetCdmCallback callback) {
     return;
   }
 
-  auto cdm_context_ref = mojo_cdm_service_context_->GetCdmContextRef(cdm_id);
+  if (!cdm_id) {
+    DVLOG(1) << "The CDM ID is invalid.";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  auto cdm_context_ref =
+      mojo_cdm_service_context_->GetCdmContextRef(cdm_id.value());
   if (!cdm_context_ref) {
-    DVLOG(1) << "CdmContextRef not found for CDM ID: " << cdm_id;
+    DVLOG(1) << "CdmContextRef not found for CDM ID: " << cdm_id.value();
     std::move(callback).Run(false);
     return;
   }

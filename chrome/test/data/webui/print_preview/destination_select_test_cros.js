@@ -192,31 +192,31 @@ suite(printer_status_test_cros.suiteName, function() {
             assertEquals(
                 PrinterState.GOOD,
                 dropdown.$$(`#${escapeForwardSlahes(destination1.key)}`)
-                    .firstChild.state);
+                    .firstChild.printerState);
             assertEquals(
                 PrinterState.GOOD,
                 dropdown.$$(`#${escapeForwardSlahes(destination2.key)}`)
-                    .firstChild.state);
+                    .firstChild.printerState);
             assertEquals(
                 PrinterState.GOOD,
                 dropdown.$$(`#${escapeForwardSlahes(destination3.key)}`)
-                    .firstChild.state);
+                    .firstChild.printerState);
             assertEquals(
                 PrinterState.ERROR,
                 dropdown.$$(`#${escapeForwardSlahes(destination4.key)}`)
-                    .firstChild.state);
+                    .firstChild.printerState);
             assertEquals(
                 PrinterState.ERROR,
                 dropdown.$$(`#${escapeForwardSlahes(destination5.key)}`)
-                    .firstChild.state);
+                    .firstChild.printerState);
             assertEquals(
                 PrinterState.ERROR,
                 dropdown.$$(`#${escapeForwardSlahes(destination6.key)}`)
-                    .firstChild.state);
+                    .firstChild.printerState);
             assertEquals(
                 PrinterState.UNKNOWN,
                 dropdown.$$(`#${escapeForwardSlahes(destination7.key)}`)
-                    .firstChild.state);
+                    .firstChild.printerState);
           });
         });
       });

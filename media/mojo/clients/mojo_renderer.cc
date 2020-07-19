@@ -139,8 +139,8 @@ void MojoRenderer::SetCdm(CdmContext* cdm_context,
     return;
   }
 
-  int32_t cdm_id = cdm_context->GetCdmId();
-  if (cdm_id == CdmContext::kInvalidCdmId) {
+  base::Optional<base::UnguessableToken> cdm_id = cdm_context->GetCdmId();
+  if (!cdm_id) {
     DVLOG(2) << "MojoRenderer only works with remote CDMs but the CDM ID "
                 "is invalid.";
     task_runner_->PostTask(FROM_HERE,

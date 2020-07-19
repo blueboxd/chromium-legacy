@@ -172,7 +172,7 @@ class MojoRendererTest : public ::testing::Test {
                            mojo::PendingRemote<mojom::Decryptor> decryptor,
                            const std::string& error_message) {
     EXPECT_TRUE(!!cdm_service);
-    cdm_context_.set_cdm_id(cdm_service->cdm_id());
+    cdm_context_.set_cdm_id(base::OptionalOrNullptr(cdm_service->cdm_id()));
     mojo_cdm_service_ = std::move(cdm_service);
   }
 
@@ -304,7 +304,8 @@ TEST_F(MojoRendererTest, SetCdm_InvalidCdmId) {
 
 TEST_F(MojoRendererTest, SetCdm_NonExistCdmId) {
   Initialize();
-  cdm_context_.set_cdm_id(1);
+  auto cdm_id = base::UnguessableToken::Create();
+  cdm_context_.set_cdm_id(&cdm_id);
   SetCdmAndExpect(false);
 }
 

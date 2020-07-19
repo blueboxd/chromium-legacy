@@ -7,6 +7,8 @@
 
 #include <wrl/client.h>
 
+#include "base/base_paths_win.h"
+#include "base/test/scoped_path_override.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
@@ -236,6 +238,9 @@ class GlsRunnerTestBase : public ::testing::Test {
   // Default response returned by |fake_http_url_fetcher_factory_| when checking
   // for token handle validity.
   std::string default_token_handle_response_;
+
+  base::ScopedTempDir scoped_temp_program_files_dir_;
+  std::unique_ptr<base::ScopedPathOverride> program_files_override_;
 };
 
 }  // namespace testing

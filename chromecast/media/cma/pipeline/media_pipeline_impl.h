@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "chromecast/media/api/cma_backend.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_client.h"
@@ -45,7 +46,7 @@ class MediaPipelineImpl {
                   std::unique_ptr<CmaBackend> media_pipeline_backend);
 
   void SetClient(const MediaPipelineClient& client);
-  void SetCdm(int cdm_id);
+  void SetCdm(const base::UnguessableToken* cdm_id);
 
   ::media::PipelineStatus InitializeAudio(
       const ::media::AudioDecoderConfig& config,

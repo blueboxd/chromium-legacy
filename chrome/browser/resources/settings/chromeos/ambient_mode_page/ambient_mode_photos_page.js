@@ -100,7 +100,7 @@ Polymer({
     const containers = [];
     checkboxes.forEach((checkbox) => {
       if (checkbox.checked && !checkbox.hidden) {
-        containers.push(checkbox.label);
+        containers.push(checkbox.dataset.id);
       }
     });
     this.browserProxy_.setSelectedPhotosContainers(

@@ -66,7 +66,7 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
 
     auto* cdm_factory = GetCdmFactory();
     if (!cdm_factory) {
-      std::move(callback).Run(mojo::NullRemote(), CdmContext::kInvalidCdmId,
+      std::move(callback).Run(mojo::NullRemote(), base::nullopt,
                               mojo::NullRemote(),
                               "CDM Factory creation failed");
       return;
@@ -105,12 +105,12 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
                            mojo::PendingRemote<mojom::Decryptor> decryptor,
                            const std::string& error_message) {
     if (!cdm_service) {
-      std::move(callback).Run(mojo::NullRemote(), CdmContext::kInvalidCdmId,
+      std::move(callback).Run(mojo::NullRemote(), base::nullopt,
                               mojo::NullRemote(), error_message);
       return;
     }
 
-    int32_t cdm_id = cdm_service->cdm_id();
+    auto cdm_id = cdm_service->cdm_id();
     mojo::PendingRemote<mojom::ContentDecryptionModule> remote;
     cdm_receivers_.Add(std::move(cdm_service),
                        remote.InitWithNewPipeAndPassReceiver());

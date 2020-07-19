@@ -19,8 +19,8 @@ IsolatedPrerenderSubresourceManager::IsolatedPrerenderSubresourceManager(
 
 IsolatedPrerenderSubresourceManager::~IsolatedPrerenderSubresourceManager() {
   if (nsp_handle_) {
-    nsp_handle_->OnCancel();
     nsp_handle_->SetObserver(nullptr);
+    nsp_handle_->OnCancel();
   }
   UMA_HISTOGRAM_COUNTS_100("IsolatedPrerender.Prefetch.Subresources.Quantity",
                            successfully_loaded_subresources_.size());

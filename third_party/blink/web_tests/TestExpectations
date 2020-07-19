@@ -2693,7 +2693,6 @@ crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/referrer-pol
 crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/srcdoc-inherit.http-rp/same-origin/script-tag.http.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/split-http-cache/external/wpt/fetch/http-cache/split-cache.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/origin-when-cross-origin/xhr.http.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/scalefactor200/external/wpt/css/filter-effects/parsing/filter-computed.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/srcdoc.meta/origin/img-tag.http.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/srcdoc-inherit.http-rp/unset/script-tag.http.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/iframe.meta/no-referrer/iframe-tag.http.html [ Timeout ]

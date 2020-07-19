@@ -10,6 +10,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "build/branding_buildflags.h"
@@ -353,6 +354,18 @@ HRESULT GetIdFromSid(const wchar_t* sid, base::string16* id) {
     }
   }
   return HRESULT_FROM_WIN32(ERROR_NONE_MAPPED);
+}
+
+std::string GetUserEmailFromSid(const base::string16& sid) {
+  wchar_t email_id[512];
+  ULONG email_id_size = base::size(email_id);
+  HRESULT hr = GetUserProperty(sid, kUserEmail, email_id, &email_id_size);
+
+  base::string16 email_id_str;
+  if (SUCCEEDED(hr) && email_id_size > 0)
+    email_id_str = base::string16(email_id, email_id_size - 1);
+
+  return base::UTF16ToUTF8(email_id_str);
 }
 
 HRESULT SetUserWinlogonUserListEntry(const base::string16& username,

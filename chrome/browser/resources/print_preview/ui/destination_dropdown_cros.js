@@ -15,7 +15,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 import {Destination, DestinationOrigin} from '../data/destination.js';
 import {PrinterStatusReason} from '../data/printer_status_cros.js';
 
-import {PrinterState} from './printer_status_icon_cros.js';
+import {IconLocation, PrinterState} from './printer_status_icon_cros.js';
 
 Polymer({
   is: 'print-preview-destination-dropdown-cros',
@@ -57,6 +57,9 @@ Polymer({
      * @private
      */
     highlightedIndex_: Number,
+
+    /** Mirroring the enum so that it can be used from HTML bindings. */
+    IconLocation: Object,
   },
 
   listeners: {
@@ -68,6 +71,7 @@ Polymer({
     this.pointerDownListener_ = event => this.onPointerDown_(event);
     document.addEventListener('pointerdown', this.pointerDownListener_);
     this.updateTabIndex_();
+    this.IconLocation = IconLocation;
   },
 
   /** @override */

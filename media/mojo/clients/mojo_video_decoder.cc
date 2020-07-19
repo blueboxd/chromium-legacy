@@ -167,15 +167,15 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  int cdm_id =
-      cdm_context ? cdm_context->GetCdmId() : CdmContext::kInvalidCdmId;
+  base::Optional<base::UnguessableToken> cdm_id =
+      cdm_context ? cdm_context->GetCdmId() : base::nullopt;
 
   // Fail immediately if the stream is encrypted but |cdm_id| is invalid.
   // This check is needed to avoid unnecessary IPC to the remote process.
   // Note that we do not support unsetting a CDM, so it should never happen
   // that a valid CDM ID is available on first initialization but an invalid
   // is passed for reinitialization.
-  if (config.is_encrypted() && CdmContext::kInvalidCdmId == cdm_id) {
+  if (config.is_encrypted() && !cdm_id) {
     DVLOG(1) << __func__ << ": Invalid CdmContext.";
     FailInit(std::move(init_cb),
              StatusCode::kDecoderMissingCdmForEncryptedContent);

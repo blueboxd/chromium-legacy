@@ -81,7 +81,7 @@ class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
   scoped_refptr<::media::ContentDecryptionModule> GetCdm();
 
   // Gets the remote ID of the CDM this is holding.
-  int32_t cdm_id() const { return cdm_id_; }
+  base::Optional<base::UnguessableToken> cdm_id() const { return cdm_id_; }
 
  private:
   MojoCdmService(CdmFactory* cdm_factory, MojoCdmServiceContext* context);
@@ -117,7 +117,7 @@ class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
   std::unique_ptr<mojo::Receiver<mojom::Decryptor>> decryptor_receiver_;
 
   // Set to a valid CDM ID if the |cdm_| is successfully created.
-  int cdm_id_;
+  base::Optional<base::UnguessableToken> cdm_id_;
 
   mojo::AssociatedRemote<mojom::ContentDecryptionModuleClient> client_;
 

@@ -61,7 +61,6 @@ class FakeEncryptedMedia {
    public:
     TestCdmContext(Decryptor* decryptor);
     Decryptor* GetDecryptor() final;
-    int GetCdmId() const final;
 
    private:
     Decryptor* decryptor_;

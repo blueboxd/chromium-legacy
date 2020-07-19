@@ -9,12 +9,15 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/base_paths_win.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_path_override.h"
 #include "base/time/time_override.h"
 
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win_test_data.h"
@@ -25,6 +28,7 @@
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/password_recovery_manager.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
+#include "chrome/credential_provider/gaiacp/user_policies_manager.h"
 #include "chrome/credential_provider/test/gls_runner_test_base.h"
 #include "chrome/credential_provider/test/test_credential.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -3207,6 +3211,104 @@ TEST_P(GcpGaiaCredentialBaseChromeAvailabilityTest, CustomChromeSpecified) {
 INSTANTIATE_TEST_SUITE_P(All,
                          GcpGaiaCredentialBaseChromeAvailabilityTest,
                          ::testing::Values(true, false));
+
+// Test fetching of user cloud policies from the GEM service with different
+// failure scenarios.
+// Parameters are:
+// 1. bool  true:  HTTP call to fetch policies succeeds.
+//          false: Fails the upload call due to invalid response from the GEM
+//                 http server.
+// 2. bool  true:  Policies were fetched recently and don't need refreshing.
+//          false: Policies were never fetched or are very old.
+class GcpGaiaCredentialBaseFetchCloudPoliciesTest
+    : public GcpGaiaCredentialBaseTest,
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {};
+
+TEST_P(GcpGaiaCredentialBaseFetchCloudPoliciesTest, FetchAndStore) {
+  bool fail_fetch_policies = std::get<0>(GetParam());
+  bool policy_refreshed_recently = std::get<1>(GetParam());
+
+  GoogleMdmEnrolledStatusForTesting force_success(true);
+
+  // Create a fake user associated to a gaia id.
+  CComBSTR sid_str;
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                kDefaultUsername, L"password", L"Full Name", L"comment",
+                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid_str));
+  base::string16 sid = OLE2W(sid_str);
+
+  base::string16 fetch_time_millis = L"0";
+  if (policy_refreshed_recently) {
+    fetch_time_millis = base::NumberToString16(
+        base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds());
+  }
+  ASSERT_EQ(S_OK, SetUserProperty(sid, L"last_policy_refresh_time",
+                                  fetch_time_millis));
+
+  // Change token response to an valid one.
+  SetDefaultTokenHandleResponse(kDefaultValidTokenHandleResponse);
+
+  std::string expected_response;
+  if (fail_fetch_policies) {
+    expected_response = "Invalid json response";
+  } else {
+    UserPolicies policies;
+    base::Value policies_value = policies.ToValue();
+    base::JSONWriter::Write(policies_value, &expected_response);
+  }
+
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      UserPoliciesManager::Get()->GetGcpwServiceUserPoliciesUrl(sid),
+      FakeWinHttpUrlFetcher::Headers(), expected_response);
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  // Finish logon successfully.
+  ASSERT_EQ(S_OK, FinishLogonProcess(true, true, 0));
+
+  base::TimeDelta time_since_last_fetch =
+      UserPoliciesManager::Get()->GetTimeDeltaSinceLastPolicyFetch(sid);
+
+  // Expected number of HTTP calls when not fetching user policies since upload
+  // device details is always called.
+  const size_t base_num_http_requests = 1;
+  const size_t requests_created =
+      fake_http_url_fetcher_factory()->requests_created();
+  if (policy_refreshed_recently) {
+    // No new requests for fetching policies.
+    ASSERT_EQ(base_num_http_requests, requests_created);
+  } else {
+    // Verify the fetch status matches expected value.
+    HRESULT hr = UserPoliciesManager::Get()->GetLastFetchStatusForTesting();
+
+    if (!fail_fetch_policies) {
+      ASSERT_TRUE(SUCCEEDED(hr));
+      // One additional request for fetching policies.
+      ASSERT_EQ(1 + base_num_http_requests, requests_created);
+      ASSERT_TRUE(time_since_last_fetch <
+                  kMaxTimeDeltaSinceLastUserPolicyRefresh);
+    } else {
+      ASSERT_TRUE(FAILED(hr));
+      // Two additional requests since we retry on failure.
+      ASSERT_EQ(2 + base_num_http_requests, requests_created);
+      ASSERT_TRUE(time_since_last_fetch >
+                  kMaxTimeDeltaSinceLastUserPolicyRefresh);
+    }
+  }
+
+  ASSERT_EQ(S_OK, ReleaseProvider());
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         GcpGaiaCredentialBaseFetchCloudPoliciesTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 
 }  // namespace testing
 }  // namespace credential_provider

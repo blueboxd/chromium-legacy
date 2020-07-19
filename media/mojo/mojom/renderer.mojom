@@ -21,6 +21,9 @@ struct MediaUrlParams {
   bool is_hls;
 };
 
+// A Mojo equivalent of media::Renderer. Used when audio and video decoding
+// happens outside of the sandboxed render process.
+// See media/mojo/README.md
 interface Renderer {
   // Initializes the Renderer with one or more audio / video |streams|, or a URL
   // via |media_url_params|. Exactly one of |streams| and |media_urls_params|
@@ -46,7 +49,7 @@ interface Renderer {
 
   // Attaches the CDM associated with |cdm_id| to the renderer service,
   // executing the callback with whether the CDM was successfully attached.
-  SetCdm(int32 cdm_id) => (bool success);
+  SetCdm(mojo_base.mojom.UnguessableToken? cdm_id) => (bool success);
 };
 
 interface RendererClient {

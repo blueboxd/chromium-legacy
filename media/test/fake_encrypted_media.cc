@@ -17,10 +17,6 @@ Decryptor* FakeEncryptedMedia::TestCdmContext::GetDecryptor() {
   return decryptor_;
 }
 
-int FakeEncryptedMedia::TestCdmContext::GetCdmId() const {
-  return kInvalidCdmId;
-}
-
 FakeEncryptedMedia::FakeEncryptedMedia(AppBase* app)
     : decryptor_(new AesDecryptor(
           base::BindRepeating(&FakeEncryptedMedia::OnSessionMessage,

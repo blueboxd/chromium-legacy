@@ -170,7 +170,7 @@ void InterfaceFactoryImpl::CreateCdm(const std::string& key_system,
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   CdmFactory* cdm_factory = GetCdmFactory();
   if (!cdm_factory) {
-    std::move(callback).Run(mojo::NullRemote(), CdmContext::kInvalidCdmId,
+    std::move(callback).Run(mojo::NullRemote(), base::nullopt,
                             mojo::NullRemote(), "CDM Factory creation failed");
     return;
   }
@@ -180,8 +180,8 @@ void InterfaceFactoryImpl::CreateCdm(const std::string& key_system,
       base::BindOnce(&InterfaceFactoryImpl::OnCdmServiceCreated,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 #else  // BUILDFLAG(ENABLE_MOJO_CDM)
-  std::move(callback).Run(mojo::NullRemote(), CdmContext::kInvalidCdmId,
-                          mojo::NullRemote(), "Mojo CDM not supported");
+  std::move(callback).Run(mojo::NullRemote(), base::nullopt, mojo::NullRemote(),
+                          "Mojo CDM not supported");
 #endif
 }
 
@@ -268,12 +268,12 @@ void InterfaceFactoryImpl::OnCdmServiceCreated(
     mojo::PendingRemote<mojom::Decryptor> decryptor,
     const std::string& error_message) {
   if (!cdm_service) {
-    std::move(callback).Run(mojo::NullRemote(), CdmContext::kInvalidCdmId,
+    std::move(callback).Run(mojo::NullRemote(), base::nullopt,
                             mojo::NullRemote(), error_message);
     return;
   }
 
-  int32_t cdm_id = cdm_service->cdm_id();
+  auto cdm_id = cdm_service->cdm_id();
   mojo::PendingRemote<mojom::ContentDecryptionModule> remote;
   cdm_receivers_.Add(std::move(cdm_service),
                      remote.InitWithNewPipeAndPassReceiver());

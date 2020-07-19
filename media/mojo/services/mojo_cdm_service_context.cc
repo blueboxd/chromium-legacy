@@ -18,9 +18,8 @@ namespace {
 // Helper function to get the next unique (per-process) CDM ID to be assigned to
 // a CDM. It will be used to locate the CDM by the media players living in the
 // same process.
-int GetNextCdmId() {
-  static int g_next_cdm_id = CdmContext::kInvalidCdmId + 1;
-  return g_next_cdm_id++;
+base::UnguessableToken GetNextCdmId() {
+  return base::UnguessableToken::Create();
 }
 
 }  // namespace
@@ -29,22 +28,24 @@ MojoCdmServiceContext::MojoCdmServiceContext() = default;
 
 MojoCdmServiceContext::~MojoCdmServiceContext() = default;
 
-int MojoCdmServiceContext::RegisterCdm(MojoCdmService* cdm_service) {
+base::UnguessableToken MojoCdmServiceContext::RegisterCdm(
+    MojoCdmService* cdm_service) {
   DCHECK(cdm_service);
-  int cdm_id = GetNextCdmId();
+  base::UnguessableToken cdm_id = GetNextCdmId();
   cdm_services_[cdm_id] = cdm_service;
   DVLOG(1) << __func__ << ": CdmService registered with CDM ID " << cdm_id;
   return cdm_id;
 }
 
-void MojoCdmServiceContext::UnregisterCdm(int cdm_id) {
+void MojoCdmServiceContext::UnregisterCdm(
+    const base::UnguessableToken& cdm_id) {
   DVLOG(1) << __func__ << ": cdm_id = " << cdm_id;
   DCHECK(cdm_services_.count(cdm_id));
   cdm_services_.erase(cdm_id);
 }
 
 std::unique_ptr<CdmContextRef> MojoCdmServiceContext::GetCdmContextRef(
-    int cdm_id) {
+    const base::UnguessableToken& cdm_id) {
   DVLOG(1) << __func__ << ": cdm_id = " << cdm_id;
 
   // Check all CDMs first.

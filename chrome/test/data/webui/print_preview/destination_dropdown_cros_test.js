@@ -294,15 +294,15 @@ suite(destination_dropdown_cros_test.suiteName, function() {
 
         dropdown.value.printerStatusReason = PrinterStatusReason.NO_ERROR;
         dropdown.notifyPath(`value.printerStatusReason`);
-        assertEquals(PrinterState.GOOD, destinationBadge.state);
+        assertEquals(PrinterState.GOOD, destinationBadge.printerState);
 
         dropdown.value.printerStatusReason = PrinterStatusReason.OUT_OF_INK;
         dropdown.notifyPath(`value.printerStatusReason`);
-        assertEquals(PrinterState.ERROR, destinationBadge.state);
+        assertEquals(PrinterState.ERROR, destinationBadge.printerState);
 
         dropdown.value.printerStatusReason = PrinterStatusReason.UNKNOWN_REASON;
         dropdown.notifyPath(`value.printerStatusReason`);
-        assertEquals(PrinterState.UNKNOWN, destinationBadge.state);
+        assertEquals(PrinterState.UNKNOWN, destinationBadge.printerState);
       });
 
   test(
@@ -322,13 +322,13 @@ suite(destination_dropdown_cros_test.suiteName, function() {
         const destinationBadge = dropdown.$$('#destination-badge');
 
         dropdown.value = goodDestination;
-        assertEquals(PrinterState.GOOD, destinationBadge.state);
+        assertEquals(PrinterState.GOOD, destinationBadge.printerState);
 
         dropdown.value = errorDestination;
-        assertEquals(PrinterState.ERROR, destinationBadge.state);
+        assertEquals(PrinterState.ERROR, destinationBadge.printerState);
 
         dropdown.value = unknownDestination;
-        assertEquals(PrinterState.UNKNOWN, destinationBadge.state);
+        assertEquals(PrinterState.UNKNOWN, destinationBadge.printerState);
       });
 
   test(

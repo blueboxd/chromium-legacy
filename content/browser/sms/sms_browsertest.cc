@@ -228,9 +228,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOneSmsRequestPerOrigin) {
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
 
-// Disabled test: https://crbug.com/1052385
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest,
-                       DISABLED_AtMostOneSmsRequestPerOriginPerTab) {
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOneSmsRequestPerOriginPerTab) {
   auto provider = std::make_unique<MockSmsProvider>();
   MockSmsProvider* mock_provider_ptr = provider.get();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));

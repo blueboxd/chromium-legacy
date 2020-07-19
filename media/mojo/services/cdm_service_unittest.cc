@@ -8,8 +8,8 @@
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
-#include "media/base/cdm_context.h"
 #include "media/cdm/default_cdm_factory.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/services/cdm_service.h"
@@ -109,14 +109,14 @@ class CdmServiceTest : public testing::Test {
  private:
   void OnCdmCreated(bool expected_result,
                     mojo::PendingRemote<mojom::ContentDecryptionModule> remote,
-                    int32_t cdm_id,
+                    const base::Optional<base::UnguessableToken>& cdm_id,
                     mojo::PendingRemote<mojom::Decryptor> decryptor,
                     const std::string& error_message) {
     if (!expected_result) {
       EXPECT_FALSE(remote);
       EXPECT_FALSE(decryptor);
       EXPECT_TRUE(!error_message.empty());
-      EXPECT_EQ(cdm_id, CdmContext::kInvalidCdmId);
+      EXPECT_FALSE(cdm_id);
       return;
     }
     EXPECT_TRUE(remote);

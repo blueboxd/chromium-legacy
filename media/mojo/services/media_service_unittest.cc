@@ -162,14 +162,14 @@ class MediaServiceTest : public testing::Test {
  protected:
   void OnCdmCreated(bool expected_result,
                     mojo::PendingRemote<mojom::ContentDecryptionModule> remote,
-                    int32_t cdm_id,
+                    const base::Optional<base::UnguessableToken>& cdm_id,
                     mojo::PendingRemote<mojom::Decryptor> decryptor,
                     const std::string& error_message) {
     if (!expected_result) {
       EXPECT_FALSE(remote);
       EXPECT_FALSE(decryptor);
       EXPECT_TRUE(!error_message.empty());
-      EXPECT_EQ(cdm_id, CdmContext::kInvalidCdmId);
+      EXPECT_FALSE(cdm_id);
       return;
     }
     EXPECT_TRUE(remote);

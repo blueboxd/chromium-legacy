@@ -116,7 +116,7 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
       const media::CdmConfig& cdm_config,
       CreateCdmCallback callback,
       mojo::PendingRemote<media::mojom::ContentDecryptionModule> receiver,
-      int32_t cdm_id,
+      const base::Optional<base::UnguessableToken>& cdm_id,
       mojo::PendingRemote<media::mojom::Decryptor> decryptor,
       const std::string& error_message);
 #endif  // defined(OS_CHROMEOS)

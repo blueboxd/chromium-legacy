@@ -75,11 +75,11 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
   }
 
   // Fail immediately if the stream is encrypted but |cdm_context| is invalid.
-  int cdm_id = (config.is_encrypted() && cdm_context)
-                   ? cdm_context->GetCdmId()
-                   : CdmContext::kInvalidCdmId;
+  base::Optional<base::UnguessableToken> cdm_id;
+  if (config.is_encrypted() && cdm_context)
+    cdm_id = cdm_context->GetCdmId();
 
-  if (config.is_encrypted() && CdmContext::kInvalidCdmId == cdm_id) {
+  if (config.is_encrypted() && !cdm_id) {
     DVLOG(1) << __func__ << ": Invalid CdmContext.";
     FailInit(std::move(init_cb),
              StatusCode::kDecoderMissingCdmForEncryptedContent);

@@ -36,7 +36,7 @@ void RecordConnectionError(bool connection_error_happened) {
 }  // namespace
 
 MojoCdm::MojoCdm(mojo::Remote<mojom::ContentDecryptionModule> remote_cdm,
-                 int32_t cdm_id,
+                 const base::Optional<base::UnguessableToken>& cdm_id,
                  mojo::PendingRemote<mojom::Decryptor> decryptor_remote,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
@@ -50,8 +50,9 @@ MojoCdm::MojoCdm(mojo::Remote<mojom::ContentDecryptionModule> remote_cdm,
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_NE(CdmContext::kInvalidCdmId, cdm_id);
-  DVLOG(2) << __func__ << " cdm_id: " << cdm_id;
+  DCHECK(cdm_id);
+  DVLOG(2) << __func__ << " cdm_id: "
+           << CdmContext::CdmIdToString(base::OptionalOrNullptr(cdm_id_));
   DCHECK(session_message_cb_);
   DCHECK(session_closed_cb_);
   DCHECK(session_keys_change_cb_);
@@ -263,10 +264,11 @@ Decryptor* MojoCdm::GetDecryptor() {
   return decryptor_.get();
 }
 
-int MojoCdm::GetCdmId() const {
+base::Optional<base::UnguessableToken> MojoCdm::GetCdmId() const {
   // Can be called on a different thread.
   base::AutoLock auto_lock(lock_);
-  DVLOG(2) << __func__ << ": cdm_id = " << cdm_id_;
+  DVLOG(2) << __func__ << ": cdm_id = "
+           << CdmContext::CdmIdToString(base::OptionalOrNullptr(cdm_id_));
   return cdm_id_;
 }
 

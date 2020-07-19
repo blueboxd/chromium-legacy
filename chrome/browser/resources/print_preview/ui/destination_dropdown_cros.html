@@ -108,8 +108,8 @@
       </iron-icon>
       <printer-status-icon-cros id="destination-badge"
           hidden="[[!isCurrentDestinationCrosLocal]]"
-          background="grey" state$="[[computePrinterState_(
-                      value.printerStatusReason)]]">
+          icon-location="[[IconLocation.DISPLAY]]"
+          printer-state="[[computePrinterState_( value.printerStatusReason)]]">
       </printer-status-icon-cros>
     </div>
     <div id="destination-display">[[value.displayName]]</div>
@@ -125,8 +125,9 @@
               on-click="onSelect_"
               class$="list-item [[getHighlightedClass_(item.key,
                   highlightedIndex_)]]">
-            <printer-status-icon-cros background="white"
-                state$="[[computePrinterState_(item.printerStatusReason)]]">
+            <printer-status-icon-cros icon-location="[[IconLocation.DROPDOWN]]"
+                printer-state="[[computePrinterState_(
+                    item.printerStatusReason)]]">
             </printer-status-icon-cros>
             <span class="printer-display-name">[[item.displayName]]</span>
           </button>

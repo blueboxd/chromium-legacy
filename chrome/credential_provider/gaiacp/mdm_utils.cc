@@ -58,6 +58,8 @@ constexpr wchar_t kUserPasswordLsaStoreKeyPrefix[] =
 #endif
 const char kErrorKeyInRequestResult[] = "error";
 constexpr int kMaxNumConsecutiveUploadDeviceFailures = 3;
+const base::TimeDelta kMaxTimeDeltaSinceLastUserPolicyRefresh =
+    base::TimeDelta::FromDays(1);
 
 // Overridden in tests to force the MDM enrollment to either succeed or fail.
 enum class EnrollmentStatus {

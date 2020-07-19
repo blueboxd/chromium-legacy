@@ -212,14 +212,17 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
       if (old_space.IsFixedBlockSize())
         return NGLayoutCacheStatus::kNeedsLayout;
 
-      // The intrinsic size of column flex-boxes can depend on the
-      // %-resolution-block-size. This occurs when a flex-box has "max-height:
-      // 100%" or similar on itself.
+      // The intrinsic size of flex-boxes can depend on the %-block-size. This
+      // occurs when:
+      //  - A column flex-box has "max-height: 100%" (or similar) on itself.
+      //  - A row flex-box has "height: 100%" (or similar) and children which
+      //    stretch to this size.
       //
       // Due to this we can't use cached |NGLayoutResult::IntrinsicBlockSize|
       // value, as the following |block_size| calculation would be incorrect.
-      if (style.ResolvedIsColumnFlexDirection() &&
-          layout_result.PhysicalFragment().DependsOnPercentageBlockSize()) {
+      // TODO(dgrogan): We can hit the cache here for row flexboxes when they
+      // don't have stretchy children.
+      if (layout_result.PhysicalFragment().DependsOnPercentageBlockSize()) {
         if (new_space.PercentageResolutionBlockSize() !=
             old_space.PercentageResolutionBlockSize())
           return NGLayoutCacheStatus::kNeedsLayout;

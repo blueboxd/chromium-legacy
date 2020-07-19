@@ -57,9 +57,7 @@ void MojoCdmService::Create(CdmFactory* cdm_factory,
 
 MojoCdmService::MojoCdmService(CdmFactory* cdm_factory,
                                MojoCdmServiceContext* context)
-    : cdm_factory_(cdm_factory),
-      context_(context),
-      cdm_id_(CdmContext::kInvalidCdmId) {
+    : cdm_factory_(cdm_factory), context_(context) {
   DVLOG(1) << __func__;
   DCHECK(cdm_factory_);
   // |context_| can be null.
@@ -68,10 +66,10 @@ MojoCdmService::MojoCdmService(CdmFactory* cdm_factory,
 MojoCdmService::~MojoCdmService() {
   DVLOG(1) << __func__;
 
-  if (!context_ || cdm_id_ == CdmContext::kInvalidCdmId)
+  if (!context_ || !cdm_id_)
     return;
 
-  context_->UnregisterCdm(cdm_id_);
+  context_->UnregisterCdm(cdm_id_.value());
 }
 
 void MojoCdmService::SetClient(
@@ -165,7 +163,8 @@ void MojoCdmService::OnCdmCreated(
 
   if (context_) {
     cdm_id_ = context_->RegisterCdm(this);
-    DVLOG(1) << __func__ << ": CDM successfully registered with ID " << cdm_id_;
+    DVLOG(1) << __func__ << ": CDM successfully registered with ID "
+             << CdmContext::CdmIdToString(base::OptionalOrNullptr(cdm_id_));
   }
 
   // If |cdm| has a decryptor, create the MojoDecryptorService

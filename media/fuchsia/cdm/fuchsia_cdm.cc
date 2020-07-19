@@ -455,10 +455,6 @@ Decryptor* FuchsiaCdm::GetDecryptor() {
   return &decryptor_;
 }
 
-int FuchsiaCdm::GetCdmId() const {
-  return kInvalidCdmId;
-}
-
 FuchsiaCdmContext* FuchsiaCdm::GetFuchsiaCdmContext() {
   return this;
 }

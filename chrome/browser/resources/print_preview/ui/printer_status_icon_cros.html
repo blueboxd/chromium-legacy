@@ -25,15 +25,15 @@
     width: var(--status-badge-radius);
   }
 
-  :host-context([state='0']) #status-badge {
+  :host([printer-state='0']) #status-badge {
     background-color: var(--google-green-700);
   }
 
-  :host-context([state='1']) #status-badge {
+  :host([printer-state='1']) #status-badge {
     background-color: var(--google-red-600);
   }
 
-  :host-context([state='2']) #status-badge {
+  :host([printer-state='2']) #status-badge {
     background-color: var(--google-grey-500);
   }
 
@@ -48,11 +48,11 @@
     width: var(--background-badge-radius);
   }
 
-  :host-context([background='grey']) #background-badge {
+  :host([icon-location='0']) #background-badge {
     background-color: var(--google-grey-refresh-100);
   }
 
-  :host-context([background='white']) #background-badge {
+  :host([icon-location='1']) #background-badge {
     background-color: white;
   }
 

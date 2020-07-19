@@ -6,6 +6,7 @@ module media.mojom;
 
 import "media/mojo/mojom/decryptor.mojom";
 import "url/mojom/url.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 
 // See media::EmeInitDataType.
 [Native]
@@ -64,7 +65,9 @@ struct CdmKeyInformation {
 };
 
 // An interface that represents a CDM in the Encrypted Media Extensions (EME)
-// spec (https://w3c.github.io/encrypted-media/).
+// spec (https://w3c.github.io/encrypted-media/). For security reason, the CDM
+// is running in its own CDM process as the CDM contains untrusted code and
+// handles arbitrary data.
 // See media/base/content_decryption_module.h
 interface ContentDecryptionModule {
 
@@ -145,7 +148,7 @@ interface CdmFactory {
   // the remote Decryptor if the CDM implementation provides one.
   CreateCdm(string key_system, CdmConfig cdm_config) =>
             (pending_remote<ContentDecryptionModule>? cdm,
-             int32 cdm_id,
+             mojo_base.mojom.UnguessableToken? cdm_id,
              pending_remote<Decryptor>? decryptor,
              string error_message);
 };

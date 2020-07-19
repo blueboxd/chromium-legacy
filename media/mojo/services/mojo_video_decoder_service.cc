@@ -162,17 +162,21 @@ void MojoVideoDecoderService::Construct(
       target_color_space);
 }
 
-void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
-                                         bool low_delay,
-                                         int32_t cdm_id,
-                                         InitializeCallback callback) {
+void MojoVideoDecoderService::Initialize(
+    const VideoDecoderConfig& config,
+    bool low_delay,
+    const base::Optional<base::UnguessableToken>& cdm_id,
+    InitializeCallback callback) {
   DVLOG(1) << __func__ << " config = " << config.AsHumanReadableString()
-           << ", cdm_id = " << cdm_id;
+           << ", cdm_id = "
+           << CdmContext::CdmIdToString(base::OptionalOrNullptr(cdm_id));
   DCHECK(!init_cb_);
   DCHECK(callback);
 
-  TRACE_EVENT_ASYNC_BEGIN2("media", kInitializeTraceName, this, "config",
-                           config.AsHumanReadableString(), "cdm_id", cdm_id);
+  TRACE_EVENT_ASYNC_BEGIN2(
+      "media", kInitializeTraceName, this, "config",
+      config.AsHumanReadableString(), "cdm_id",
+      CdmContext::CdmIdToString(base::OptionalOrNullptr(cdm_id)));
 
   init_cb_ = std::move(callback);
 
@@ -184,11 +188,12 @@ void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
   // |cdm_context_ref_| must be kept as long as |cdm_context| is used by the
   // |decoder_|. We do NOT support resetting |cdm_context_ref_| because in
   // general we don't support resetting CDM in the media pipeline.
-  if (cdm_id != CdmContext::kInvalidCdmId) {
-    if (cdm_id_ == CdmContext::kInvalidCdmId) {
+  if (cdm_id) {
+    if (!cdm_id_) {
       DCHECK(!cdm_context_ref_);
       cdm_id_ = cdm_id;
-      cdm_context_ref_ = mojo_cdm_service_context_->GetCdmContextRef(cdm_id);
+      cdm_context_ref_ =
+          mojo_cdm_service_context_->GetCdmContextRef(cdm_id.value());
     } else if (cdm_id != cdm_id_) {
       // TODO(xhwang): Replace with mojo::ReportBadMessage().
       NOTREACHED() << "The caller should not switch CDM";
@@ -202,7 +207,9 @@ void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
       cdm_context_ref_ ? cdm_context_ref_->GetCdmContext() : nullptr;
 
   if (config.is_encrypted() && !cdm_context) {
-    DVLOG(1) << "CdmContext for " << cdm_id << " not found for encrypted video";
+    DVLOG(1) << "CdmContext for "
+             << CdmContext::CdmIdToString(base::OptionalOrNullptr(cdm_id))
+             << " not found for encrypted video";
     OnDecoderInitialized(StatusCode::kDecoderMissingCdmForEncryptedContent);
     return;
   }

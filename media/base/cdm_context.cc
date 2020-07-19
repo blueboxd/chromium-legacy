@@ -21,8 +21,12 @@ Decryptor* CdmContext::GetDecryptor() {
   return nullptr;
 }
 
-int CdmContext::GetCdmId() const {
-  return kInvalidCdmId;
+base::Optional<base::UnguessableToken> CdmContext::GetCdmId() const {
+  return base::nullopt;
+}
+
+std::string CdmContext::CdmIdToString(const base::UnguessableToken* cdm_id) {
+  return cdm_id ? cdm_id->ToString() : "null";
 }
 
 bool CdmContext::RequiresMediaFoundationRenderer() {

@@ -69,7 +69,7 @@ interface InterfaceFactory {
   // the remote Decryptor if the CDM implementation provides one.
   CreateCdm(string key_system, CdmConfig cdm_config) =>
             (pending_remote<ContentDecryptionModule>? cdm,
-             int32 cdm_id,
+             mojo_base.mojom.UnguessableToken? cdm_id,
              pending_remote<Decryptor>? decryptor,
              string error_message);
 };

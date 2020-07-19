@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "base/win/windows_types.h"
 #include "url/gurl.h"
@@ -68,6 +69,10 @@ extern const int kMaxNumConsecutiveUploadDeviceFailures;
 // The URL part that is used when constructing the developer complete URL. When
 // it is empty, developer mode isn't enabled.
 extern const wchar_t kRegDeveloperMode[];
+
+// Maximum allowed time delta after which user policies should be refreshed
+// again.
+extern const base::TimeDelta kMaxTimeDeltaSinceLastUserPolicyRefresh;
 
 // Class used in tests to force either a successful on unsuccessful enrollment
 // to google MDM.

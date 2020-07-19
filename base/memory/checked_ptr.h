@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 
 #define CHECKED_PTR2_USE_NO_OP_WRAPPER 0
+#define CHECKED_PTR2_USE_TRIVIAL_UNWRAPPER 0
 
 // Set it to 1 to avoid branches when checking if per-pointer protection is
 // enabled.
@@ -534,13 +535,21 @@ class CheckedPtr {
   // dereferenced. It is allowed to crash on nullptr (it may or may not),
   // because it knows that the caller will crash on nullptr.
   ALWAYS_INLINE T* GetForDereference() const {
+#if CHECKED_PTR2_USE_TRIVIAL_UNWRAPPER
+    return static_cast<T*>(Impl::UnsafelyUnwrapPtrForComparison(wrapped_ptr_));
+#else
     return static_cast<T*>(Impl::SafelyUnwrapPtrForDereference(wrapped_ptr_));
+#endif
   }
   // This getter is meant for situations where the raw pointer is meant to be
   // extracted outside of this class, but not necessarily with an intention to
   // dereference. It mustn't crash on nullptr.
   ALWAYS_INLINE T* GetForExtraction() const {
+#if CHECKED_PTR2_USE_TRIVIAL_UNWRAPPER
+    return static_cast<T*>(Impl::UnsafelyUnwrapPtrForComparison(wrapped_ptr_));
+#else
     return static_cast<T*>(Impl::SafelyUnwrapPtrForExtraction(wrapped_ptr_));
+#endif
   }
   // This getter is meant *only* for situations where the pointer is meant to be
   // compared (guaranteeing no dereference or extraction outside of this class).

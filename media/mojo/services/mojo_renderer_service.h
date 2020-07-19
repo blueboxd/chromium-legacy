@@ -64,7 +64,8 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   void StartPlayingFrom(base::TimeDelta time_delta) final;
   void SetPlaybackRate(double playback_rate) final;
   void SetVolume(float volume) final;
-  void SetCdm(int32_t cdm_id, SetCdmCallback callback) final;
+  void SetCdm(const base::Optional<base::UnguessableToken>& cdm_id,
+              SetCdmCallback callback) final;
 
   // TODO(tguilbert): Get rid of |bad_message_cb_|, now that it's no longer
   // needed.

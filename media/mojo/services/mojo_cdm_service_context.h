@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/services/media_mojo_export.h"
 
@@ -26,17 +27,18 @@ class MEDIA_MOJO_EXPORT MojoCdmServiceContext {
   ~MojoCdmServiceContext();
 
   // Registers the |cdm_service| and returns a unique (per-process) CDM ID.
-  int RegisterCdm(MojoCdmService* cdm_service);
+  base::UnguessableToken RegisterCdm(MojoCdmService* cdm_service);
 
   // Unregisters the CDM. Must be called before the CDM is destroyed.
-  void UnregisterCdm(int cdm_id);
+  void UnregisterCdm(const base::UnguessableToken& cdm_id);
 
   // Returns the CdmContextRef associated with |cdm_id|.
-  std::unique_ptr<CdmContextRef> GetCdmContextRef(int cdm_id);
+  std::unique_ptr<CdmContextRef> GetCdmContextRef(
+      const base::UnguessableToken& cdm_id);
 
  private:
   // A map between CDM ID and MojoCdmService.
-  std::map<int, MojoCdmService*> cdm_services_;
+  std::map<base::UnguessableToken, MojoCdmService*> cdm_services_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoCdmServiceContext);
 };

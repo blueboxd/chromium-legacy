@@ -452,9 +452,6 @@ Decryptor* AesDecryptor::GetDecryptor() {
   return this;
 }
 
-int AesDecryptor::GetCdmId() const {
-  return kInvalidCdmId;
-}
 
 void AesDecryptor::Decrypt(StreamType stream_type,
                            scoped_refptr<DecoderBuffer> encrypted,

@@ -22,7 +22,6 @@ class CastCdmContext : public ::media::CdmContext {
  public:
   // ::media::CdmContext implementation.
   ::media::Decryptor* GetDecryptor() override;
-  int GetCdmId() const override;
 
   // Returns the decryption context needed to decrypt frames encrypted with
   // |key_id|. Returns null if |key_id| is not available.

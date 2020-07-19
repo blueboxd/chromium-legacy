@@ -463,8 +463,7 @@ void MediaInterfaceProxy::CreateCdm(const std::string& key_system,
 #endif
 
   if (!factory) {
-    std::move(callback).Run(mojo::NullRemote(),
-                            media::CdmContext::kInvalidCdmId,
+    std::move(callback).Run(mojo::NullRemote(), base::nullopt,
                             mojo::NullRemote(), "Unable to find a CDM factory");
     return;
   }
@@ -570,7 +569,7 @@ void MediaInterfaceProxy::OnChromeOsCdmCreated(
     const media::CdmConfig& cdm_config,
     CreateCdmCallback callback,
     mojo::PendingRemote<media::mojom::ContentDecryptionModule> receiver,
-    int32_t cdm_id,
+    const base::Optional<base::UnguessableToken>& cdm_id,
     mojo::PendingRemote<media::mojom::Decryptor> decryptor,
     const std::string& error_message) {
   if (receiver) {
@@ -585,8 +584,7 @@ void MediaInterfaceProxy::OnChromeOsCdmCreated(
   VLOG(1) << "Failed creating Chrome OS CDM, will use library CDM";
   auto* factory = GetCdmFactory(key_system);
   if (!factory) {
-    std::move(callback).Run(mojo::NullRemote(),
-                            media::CdmContext::kInvalidCdmId,
+    std::move(callback).Run(mojo::NullRemote(), base::nullopt,
                             mojo::NullRemote(), "Unable to find a CDM factory");
     return;
   }

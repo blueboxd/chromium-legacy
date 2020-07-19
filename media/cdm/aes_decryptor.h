@@ -67,7 +67,6 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   std::unique_ptr<CallbackRegistration> RegisterEventCB(
       EventCB event_cb) override;
   Decryptor* GetDecryptor() override;
-  int GetCdmId() const override;
 
   // Decryptor implementation.
   void Decrypt(StreamType stream_type,

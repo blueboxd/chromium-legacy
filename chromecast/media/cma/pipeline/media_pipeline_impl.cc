@@ -143,8 +143,9 @@ void MediaPipelineImpl::SetClient(const MediaPipelineClient& client) {
   client_ = client;
 }
 
-void MediaPipelineImpl::SetCdm(int cdm_id) {
-  LOG(INFO) << __FUNCTION__ << " cdm_id=" << cdm_id;
+void MediaPipelineImpl::SetCdm(const base::UnguessableToken* cdm_id) {
+  LOG(INFO) << __FUNCTION__
+            << " cdm_id=" << ::media::CdmContext::CdmIdToString(cdm_id);
   DCHECK(thread_checker_.CalledOnValidThread());
   NOTIMPLEMENTED();
   // TODO(gunsch): SetCdm(int) is not implemented.

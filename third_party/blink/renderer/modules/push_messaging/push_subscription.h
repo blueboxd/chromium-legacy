@@ -34,14 +34,13 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
       mojom::blink::PushSubscriptionPtr subscription,
       ServiceWorkerRegistration* service_worker_registration);
 
-  PushSubscription(
-      const KURL& endpoint,
-      bool user_visible_only,
-      const WTF::Vector<uint8_t>& application_server_key,
-      const WTF::Vector<unsigned char>& p256dh,
-      const WTF::Vector<unsigned char>& auth,
-      ServiceWorkerRegistration* service_worker_registration,
-      const base::Optional<DOMTimeStamp> expiration_time = base::nullopt);
+  PushSubscription(const KURL& endpoint,
+                   bool user_visible_only,
+                   const WTF::Vector<uint8_t>& application_server_key,
+                   const WTF::Vector<unsigned char>& p256dh,
+                   const WTF::Vector<unsigned char>& auth,
+                   const base::Optional<DOMTimeStamp>& expiration_time,
+                   ServiceWorkerRegistration* service_worker_registration);
 
   ~PushSubscription() override;
 
@@ -68,9 +67,9 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
   Member<DOMArrayBuffer> p256dh_;
   Member<DOMArrayBuffer> auth_;
 
-  Member<ServiceWorkerRegistration> service_worker_registration_;
-
   base::Optional<DOMTimeStamp> expiration_time_;
+
+  Member<ServiceWorkerRegistration> service_worker_registration_;
 };
 
 }  // namespace blink

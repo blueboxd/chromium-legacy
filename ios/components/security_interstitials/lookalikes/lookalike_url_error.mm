@@ -11,10 +11,3 @@
 const NSErrorDomain kLookalikeUrlErrorDomain =
     @"com.google.chrome.lookalike_url";
 const NSInteger kLookalikeUrlErrorCode = -1003;
-
-web::WebStatePolicyDecider::PolicyDecision CreateLookalikeErrorDecision() {
-  return web::WebStatePolicyDecider::PolicyDecision::CancelAndDisplayError(
-      [NSError errorWithDomain:kLookalikeUrlErrorDomain
-                          code:kLookalikeUrlErrorCode
-                      userInfo:nil]);
-}

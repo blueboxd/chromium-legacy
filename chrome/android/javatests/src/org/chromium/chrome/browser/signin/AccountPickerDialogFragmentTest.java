@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.test.util.FakeProfileDataSource;
@@ -48,16 +49,22 @@ import java.io.IOException;
  * Use FragmentScenario to test this fragment once we start using fragment from androidx.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags
-        .Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-        @Features.DisableFeatures({ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY})
-        public class AccountPickerDialogFragmentTest extends DummyUiActivityTestCase {
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@DisableFeatures({ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY})
+public class AccountPickerDialogFragmentTest extends DummyUiActivityTestCase {
     @Rule
     public final Features.JUnitProcessor mProcessor = new Features.JUnitProcessor();
 
+    // This test rule is only applied for Legacy AccountPickerDialog fragment.
+    // TODO(crbug.com/1106737): Refactor the tests into two separate files.
+    @Rule
+    public final ChromeRenderTestRule mRenderTestRuleLegacy =
+            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(1).build();
+
+    // This test rule is only applied when MOBILE_IDENTITY_CONSISTENCY feature flag is enabled.
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(1).build();
+            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(2).build();
 
     @Rule
     public final AccountManagerTestRule mAccountManagerTestRule =
@@ -125,7 +132,7 @@ import java.io.IOException;
     @Feature("RenderTest")
     public void testAccountPickerDialogViewLegacy() throws IOException {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        mRenderTestRule.render(
+        mRenderTestRuleLegacy.render(
                 mDialog.getDialog().getWindow().getDecorView(), "account_picker_dialog_legacy");
     }
 
@@ -136,7 +143,7 @@ import java.io.IOException;
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         TestThreadUtils.runOnUiThreadBlocking(() -> mDialog.updateSelectedAccount(mAccountName2));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        mRenderTestRule.render(mDialog.getDialog().getWindow().getDecorView(),
+        mRenderTestRuleLegacy.render(mDialog.getDialog().getWindow().getDecorView(),
                 "account_picker_dialog_update_selected_account");
     }
 
@@ -153,6 +160,6 @@ import java.io.IOException;
     private void addAccount(String accountName, String fullName) {
         ProfileDataSource.ProfileData profileData =
                 new ProfileDataSource.ProfileData(accountName, null, fullName, null);
-        mAccountManagerTestRule.addAccount(accountName, profileData);
+        mAccountManagerTestRule.addAccount(profileData);
     }
 }

@@ -17,4 +17,7 @@ class DummyAccountPickerTargetFragment
 
     @Override
     public void addAccount() {}
+
+    @Override
+    public void goIncognitoMode() {}
 }

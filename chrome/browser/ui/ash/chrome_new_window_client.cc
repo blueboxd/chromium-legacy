@@ -13,6 +13,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
+#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
@@ -620,6 +621,9 @@ void ChromeNewWindowClient::LaunchCameraApp(const std::string& queries,
   apps::LaunchPlatformAppWithUrl(profile, extension,
                                  /*handler_id=*/std::string(), url,
                                  /*referrer_url=*/GURL());
+
+  apps::RecordAppLaunch(extension_misc::kCameraAppId,
+                        apps::mojom::LaunchSource::kFromArc);
 }
 
 void ChromeNewWindowClient::CloseCameraApp() {

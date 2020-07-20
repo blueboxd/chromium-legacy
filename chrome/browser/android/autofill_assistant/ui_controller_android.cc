@@ -326,7 +326,6 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
   ui_delegate_ = ui_delegate;
   ui_delegate_->AddObserver(this);
 
-  captured_debug_context_.clear();
   destroy_timer_.reset();
 
   JNIEnv* env = AttachCurrentThread();
@@ -470,7 +469,8 @@ void UiControllerAndroid::SetupForState() {
 
       // Make sure the user sees the error message.
       ShowContentAndExpandBottomSheet();
-      Detach();
+      SetDestroyOnNavigation();
+      ResetGenericUiControllers();
       return;
 
     case AutofillAssistantState::TRACKING:
@@ -595,7 +595,8 @@ void UiControllerAndroid::OnFeedbackButtonClicked() {
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantUiController_showFeedback(
       env, java_object_,
-      base::android::ConvertUTF8ToJavaString(env, GetDebugContext()));
+      base::android::ConvertUTF8ToJavaString(env,
+                                             ui_delegate_->GetDebugContext()));
 }
 
 void UiControllerAndroid::OnViewEvent(const EventHandler::EventKey& key) {
@@ -649,14 +650,10 @@ void UiControllerAndroid::SnackbarResult(
   std::move(action).Run();
 }
 
-std::string UiControllerAndroid::GetDebugContext() {
-  if (captured_debug_context_.empty() && ui_delegate_) {
-    return ui_delegate_->GetDebugContext();
-  }
-  return captured_debug_context_;
-}
-
 void UiControllerAndroid::DestroySelf() {
+  if (ui_delegate_)
+    ui_delegate_->ShutdownIfNecessary();
+
   self_destruct_observer_.reset();
   client_->DestroyUI();
 }
@@ -898,7 +895,7 @@ void UiControllerAndroid::SetOverlayState(OverlayState state) {
   }
   overlay_state_ = state;
 
-  if (ui_delegate_->ShouldShowOverlay()) {
+  if (ui_delegate_ && ui_delegate_->ShouldShowOverlay()) {
     ApplyOverlayState(state);
   }
 }
@@ -985,25 +982,13 @@ void UiControllerAndroid::SelfDestructObserver::DidStartNavigation(
   ui_controller_->DestroySelf();
 }
 
-void UiControllerAndroid::Detach() {
-  if (!ui_delegate_)
-    return;
-
+void UiControllerAndroid::SetDestroyOnNavigation() {
   auto* web_contents = client_->GetWebContents();
   if (web_contents != nullptr) {
     self_destruct_observer_ = std::make_unique<SelfDestructObserver>(
         web_contents, this, ui_delegate_->GetErrorCausingNavigationId());
   }
-
-  ResetGenericUiControllers();
-
-  // Capture the debug context, for including into a feedback possibly sent
-  // later.
-  captured_debug_context_ = ui_delegate_->GetDebugContext();
-  ui_delegate_->RemoveObserver(this);
-  ui_delegate_ = nullptr;
 }
-
 // Collect user data related methods.
 
 base::android::ScopedJavaLocalRef<jobject>

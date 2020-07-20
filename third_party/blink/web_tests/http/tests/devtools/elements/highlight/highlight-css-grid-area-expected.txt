@@ -97,6 +97,31 @@ grid-with-areas{
   },
   "gridInfo": [
     {
+      "rotationAngle": 0,
+      "columnTrackSizes": [
+        {
+          "computedSize": 195.5,
+          "x": 97.75,
+          "y": 0
+        },
+        {
+          "computedSize": 195.5,
+          "x": 303.25,
+          "y": 0
+        }
+      ],
+      "rowTrackSizes": [
+        {
+          "computedSize": 295.5,
+          "x": 0,
+          "y": 147.75
+        },
+        {
+          "computedSize": 295.5,
+          "x": 0,
+          "y": 453.25
+        }
+      ],
       "rows": [
         "M",
         0,

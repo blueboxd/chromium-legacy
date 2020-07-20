@@ -14,6 +14,7 @@ import android.provider.Browser;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.fragment.app.Fragment;
 import androidx.preference.Preference;
@@ -29,6 +30,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.AndroidSyncSettings;
@@ -220,33 +222,38 @@ public class SyncSettingsUtils {
             return null;
         }
 
+        boolean useNewIcon =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY);
         ProfileSyncService profileSyncService = ProfileSyncService.get();
         if (profileSyncService == null || !AndroidSyncSettings.get().isSyncEnabled()) {
-            return UiUtils.getTintedDrawable(
-                    context, R.drawable.ic_sync_green_40dp, R.color.default_icon_color);
+            return useNewIcon
+                    ? AppCompatResources.getDrawable(context, R.drawable.ic_sync_off_48dp)
+                    : UiUtils.getTintedDrawable(context, R.drawable.ic_sync_green_legacy_40dp,
+                            R.color.default_icon_color);
         }
 
         if (profileSyncService.isSyncDisabledByEnterprisePolicy()) {
-            return UiUtils.getTintedDrawable(
-                    context, R.drawable.ic_sync_error_40dp, R.color.default_icon_color);
-        }
-
-        if (!profileSyncService.isFirstSetupComplete()) {
-            return UiUtils.getTintedDrawable(
-                    context, R.drawable.ic_sync_error_40dp, R.color.default_red);
+            return useNewIcon
+                    ? AppCompatResources.getDrawable(context, R.drawable.ic_sync_off_48dp)
+                    : UiUtils.getTintedDrawable(context, R.drawable.ic_sync_error_legacy_40dp,
+                            R.color.default_icon_color);
         }
 
         if (profileSyncService.isEngineInitialized()
                 && (profileSyncService.hasUnrecoverableError()
                         || profileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE
                         || profileSyncService.isPassphraseRequiredForPreferredDataTypes()
-                        || profileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes())) {
-            return UiUtils.getTintedDrawable(
-                    context, R.drawable.ic_sync_error_40dp, R.color.default_red);
+                        || profileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes()
+                        || !profileSyncService.isFirstSetupComplete())) {
+            return useNewIcon
+                    ? AppCompatResources.getDrawable(context, R.drawable.ic_sync_error_48dp)
+                    : UiUtils.getTintedDrawable(
+                            context, R.drawable.ic_sync_error_legacy_40dp, R.color.default_red);
         }
 
-        return UiUtils.getTintedDrawable(
-                context, R.drawable.ic_sync_green_40dp, R.color.default_green);
+        return useNewIcon ? AppCompatResources.getDrawable(context, R.drawable.ic_sync_on_48dp)
+                          : UiUtils.getTintedDrawable(context, R.drawable.ic_sync_green_legacy_40dp,
+                                  R.color.default_green);
     }
 
     /**

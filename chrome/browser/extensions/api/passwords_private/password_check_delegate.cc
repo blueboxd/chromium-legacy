@@ -259,7 +259,7 @@ PasswordCheckDelegate::GetCompromisedCredentials() {
       api_credential.is_android_credential = true;
       // |formatted_orgin|, |detailed_origin| and |change_password_url| need
       // special handling for Android. Here we use affiliation information
-      // instead of the signon_realm.
+      // instead of the origin.
       const PasswordForm& android_form =
           compromised_credentials_manager_.GetSavedPasswordsFor(credential)[0];
       if (!android_form.app_display_name.empty()) {
@@ -280,7 +280,7 @@ PasswordCheckDelegate::GetCompromisedCredentials() {
       api_credential.is_android_credential = false;
       api_credential.formatted_origin =
           base::UTF16ToUTF8(url_formatter::FormatUrl(
-              GURL(credential.signon_realm),
+              credential.url.GetOrigin(),
               url_formatter::kFormatUrlOmitDefaults |
                   url_formatter::kFormatUrlOmitHTTPS |
                   url_formatter::kFormatUrlOmitTrivialSubdomains |
@@ -288,9 +288,9 @@ PasswordCheckDelegate::GetCompromisedCredentials() {
               net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
       api_credential.detailed_origin =
           base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
-              GURL(credential.signon_realm)));
+              credential.url.GetOrigin()));
       api_credential.change_password_url =
-          std::make_unique<std::string>(credential.signon_realm);
+          std::make_unique<std::string>(credential.url.GetOrigin().spec());
     }
 
     api_credential.id =

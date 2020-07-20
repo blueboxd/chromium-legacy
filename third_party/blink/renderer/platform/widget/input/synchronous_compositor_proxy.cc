@@ -138,7 +138,9 @@ void SynchronousCompositorProxy::DemandDrawHw(
 }
 
 void SynchronousCompositorProxy::WillSkipDraw() {
-  layer_tree_frame_sink_->WillSkipDraw();
+  if (layer_tree_frame_sink_) {
+    layer_tree_frame_sink_->WillSkipDraw();
+  }
 }
 
 struct SynchronousCompositorProxy::SharedMemoryWithSize {

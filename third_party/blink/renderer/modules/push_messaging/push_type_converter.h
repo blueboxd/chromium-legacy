@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_MESSAGING_TYPE_CONVERTER_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_MESSAGING_TYPE_CONVERTER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_TYPE_CONVERTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_TYPE_CONVERTER_H_
 
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-blink.h"
@@ -11,7 +11,6 @@
 namespace blink {
 
 class PushSubscriptionOptions;
-class PushSubscription;
 
 }  // namespace blink
 
@@ -31,4 +30,4 @@ struct TypeConverter<blink::mojom::blink::PushSubscriptionOptionsPtr,
 
 }  // namespace mojo
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_MESSAGING_TYPE_CONVERTER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_TYPE_CONVERTER_H_

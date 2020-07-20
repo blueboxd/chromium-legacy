@@ -61,18 +61,15 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Attaches the UI to the given client, its web contents and delegate.
   //
-  // |web_contents| and |client| must remain valid for the lifetime of this
-  // instance or until Attach() is called again, with different pointers.
-  //
-  // |ui_delegate| must remain valid for the lifetime of this instance or until
-  // either Attach() or Detach() are called.
+  // |web_contents|, |client| and |ui_delegate| must remain valid for the
+  // lifetime of this instance or until Attach() is called again, with different
+  // pointers.
   void Attach(content::WebContents* web_contents,
               Client* client,
               UiDelegate* ui_delegate);
 
-  // Detaches the UI from its delegate. This guarantees the delegate is not
-  // called anymore after the call.
-  void Detach();
+  // Destroys the UI the next time the user navigates.
+  void SetDestroyOnNavigation();
 
   // Returns true if the UI is attached to a delegate.
   bool IsAttached() { return ui_delegate_ != nullptr; }
@@ -281,10 +278,6 @@ class UiControllerAndroid : public ControllerObserver {
   // Timer started when reaching the STOPPED state. It allows keeping the UI up
   // for a few seconds before it destroys itself.
   std::unique_ptr<base::OneShotTimer> destroy_timer_;
-
-  // Debug context captured previously. If non-empty, GetDebugContext() returns
-  // this context.
-  std::string captured_debug_context_;
 
   // Java-side AutofillAssistantUiController object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;

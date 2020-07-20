@@ -74,8 +74,15 @@
 
 namespace blink {
 
-WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
-    : client_(client) {
+WebSharedWorkerImpl::WebSharedWorkerImpl(
+    const base::UnguessableToken& appcache_host_id,
+    WebSharedWorkerClient* client)
+    : reporting_proxy_(MakeGarbageCollected<SharedWorkerReportingProxy>(
+          this,
+          ParentExecutionContextTaskRunners::Create())),
+      worker_thread_(std::make_unique<SharedWorkerThread>(*reporting_proxy_,
+                                                          appcache_host_id)),
+      client_(client) {
   DCHECK(IsMainThread());
 }
 
@@ -88,15 +95,6 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
   if (asked_to_terminate_)
     return;
   asked_to_terminate_ = true;
-
-  if (!worker_thread_) {
-    client_->WorkerScriptLoadFailed(/*error_message=*/"");
-    // The worker thread hasn't been started yet. Immediately notify the client
-    // of worker termination.
-    client_->WorkerContextDestroyed();
-    // |this| is deleted at this point.
-    return;
-  }
   worker_thread_->Terminate();
   // DidTerminateWorkerThread() will be called asynchronously.
 }
@@ -178,7 +176,6 @@ void WebSharedWorkerImpl::StartWorkerContext(
     network::mojom::ContentSecurityPolicyType policy_type,
     network::mojom::IPAddressSpace creation_address_space,
     const WebFetchClientSettingsObject& outside_fetch_client_settings_object,
-    const base::UnguessableToken& appcache_host_id,
     const base::UnguessableToken& devtools_worker_token,
     CrossVariantMojoRemote<
         mojom::blink::WorkerContentSettingsProxyInterfaceBase> content_settings,
@@ -250,11 +247,6 @@ void WebSharedWorkerImpl::StartWorkerContext(
       std::move(browser_interface_broker), BeginFrameProviderParams(),
       nullptr /* parent_feature_policy */, base::UnguessableToken());
 
-  reporting_proxy_ = MakeGarbageCollected<SharedWorkerReportingProxy>(
-      this, ParentExecutionContextTaskRunners::Create());
-  worker_thread_ =
-      std::make_unique<SharedWorkerThread>(*reporting_proxy_, appcache_host_id);
-
   auto thread_startup_data = WorkerBackingThreadStartupData::CreateDefault();
   thread_startup_data.atomics_wait_mode =
       WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow;
@@ -297,9 +289,38 @@ void WebSharedWorkerImpl::TerminateWorkerContext() {
   TerminateWorkerThread();
 }
 
-std::unique_ptr<WebSharedWorker> WebSharedWorker::Create(
+std::unique_ptr<WebSharedWorker> WebSharedWorker::CreateAndStart(
+    const WebURL& script_request_url,
+    mojom::ScriptType script_type,
+    network::mojom::CredentialsMode credentials_mode,
+    const WebString& name,
+    WebSecurityOrigin constructor_origin,
+    const WebString& user_agent,
+    const UserAgentMetadata& ua_metadata,
+    const WebString& content_security_policy,
+    network::mojom::ContentSecurityPolicyType policy_type,
+    network::mojom::IPAddressSpace creation_address_space,
+    const WebFetchClientSettingsObject& outside_fetch_client_settings_object,
+    const base::UnguessableToken& appcache_host_id,
+    const base::UnguessableToken& devtools_worker_token,
+    CrossVariantMojoRemote<
+        mojom::blink::WorkerContentSettingsProxyInterfaceBase> content_settings,
+    CrossVariantMojoRemote<mojom::blink::BrowserInterfaceBrokerInterfaceBase>
+        browser_interface_broker,
+    bool pause_worker_context_on_start,
+    std::unique_ptr<WorkerMainScriptLoadParameters>
+        worker_main_script_load_params,
     WebSharedWorkerClient* client) {
-  return base::WrapUnique(new WebSharedWorkerImpl(client));
+  auto worker =
+      base::WrapUnique(new WebSharedWorkerImpl(appcache_host_id, client));
+  worker->StartWorkerContext(
+      script_request_url, script_type, credentials_mode, name,
+      constructor_origin, user_agent, ua_metadata, content_security_policy,
+      policy_type, creation_address_space, outside_fetch_client_settings_object,
+      devtools_worker_token, std::move(content_settings),
+      std::move(browser_interface_broker), pause_worker_context_on_start,
+      std::move(worker_main_script_load_params));
+  return worker;
 }
 
 }  // namespace blink

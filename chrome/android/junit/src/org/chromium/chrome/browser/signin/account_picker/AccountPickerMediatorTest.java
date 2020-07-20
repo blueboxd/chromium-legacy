@@ -12,14 +12,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.RuntimeEnvironment;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerProperties.AddAccountRowProperties;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerProperties.ExistingAccountRowProperties;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.test.util.FakeProfileDataSource;
@@ -34,6 +37,9 @@ public class AccountPickerMediatorTest {
     private static final String FULL_NAME1 = "Test Account1";
     private static final String ACCOUNT_NAME1 = "test.account1@gmail.com";
     private static final String ACCOUNT_NAME2 = "test.account2@gmail.com";
+
+    @Rule
+    public TestRule mProcessor = new Features.JUnitProcessor();
 
     @Rule
     public final AccountManagerTestRule mAccountManagerTestRule =
@@ -59,7 +65,23 @@ public class AccountPickerMediatorTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
     public void testModelPopulatedWhenStarted() {
+        addAccount(ACCOUNT_NAME1, FULL_NAME1);
+        addAccount(ACCOUNT_NAME2, "");
+        mMediator = new AccountPickerMediator(
+                RuntimeEnvironment.application, mModelList, mListenerMock, ACCOUNT_NAME1);
+        // ACCOUNT_NAME1, ACCOUNT_NAME2, ADD_ACCOUNT, INCOGNITO MODE.
+        Assert.assertEquals(4, mModelList.size());
+        checkItemForExistingAccountRow(0, ACCOUNT_NAME1, FULL_NAME1, /* isSelectedAccount= */ true);
+        checkItemForExistingAccountRow(1, ACCOUNT_NAME2, "", /* isSelectedAccount= */ false);
+        checkItemForAddAccountRow(2);
+        checkItemForIncognitoAccountRow(3);
+    }
+
+    @Test
+    @Features.DisableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+    public void testModelPopulatedWhenStartedLegacy() {
         addAccount(ACCOUNT_NAME1, FULL_NAME1);
         addAccount(ACCOUNT_NAME2, "");
         mMediator = new AccountPickerMediator(
@@ -71,7 +93,25 @@ public class AccountPickerMediatorTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
     public void testModelUpdatedAfterSetSelectedAccountName() {
+        addAccount(ACCOUNT_NAME1, FULL_NAME1);
+        addAccount(ACCOUNT_NAME2, "");
+        mMediator = new AccountPickerMediator(
+                RuntimeEnvironment.application, mModelList, mListenerMock, ACCOUNT_NAME1);
+        mMediator.setSelectedAccountName(ACCOUNT_NAME2);
+        // ACCOUNT_NAME1, ACCOUNT_NAME2, ADD_ACCOUNT, INCOGNITO MODE.
+        Assert.assertEquals(4, mModelList.size());
+        checkItemForExistingAccountRow(
+                0, ACCOUNT_NAME1, FULL_NAME1, /* isSelectedAccount= */ false);
+        checkItemForExistingAccountRow(1, ACCOUNT_NAME2, "", /* isSelectedAccount= */ true);
+        checkItemForAddAccountRow(2);
+        checkItemForIncognitoAccountRow(3);
+    }
+
+    @Test
+    @Features.DisableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+    public void testModelUpdatedAfterSetSelectedAccountNameLegacy() {
         addAccount(ACCOUNT_NAME1, FULL_NAME1);
         addAccount(ACCOUNT_NAME2, "");
         mMediator = new AccountPickerMediator(
@@ -106,9 +146,17 @@ public class AccountPickerMediatorTest {
         verify(mListenerMock).addAccount();
     }
 
+    private void checkItemForIncognitoAccountRow(int position) {
+        MVCListAdapter.ListItem item = mModelList.get(position);
+        Assert.assertEquals(AccountPickerProperties.ItemType.INCOGNITO_ACCOUNT_ROW, item.type);
+        item.model.get(AccountPickerProperties.IncognitoAccountRowProperties.ON_CLICK_LISTENER)
+                .run();
+        verify(mListenerMock).goIncognitoMode();
+    }
+
     private void addAccount(String accountName, String fullName) {
         ProfileDataSource.ProfileData profileData =
                 new ProfileDataSource.ProfileData(accountName, null, fullName, null);
-        mAccountManagerTestRule.addAccount(accountName, profileData);
+        mAccountManagerTestRule.addAccount(profileData);
     }
 }

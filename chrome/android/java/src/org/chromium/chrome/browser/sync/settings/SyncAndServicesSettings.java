@@ -192,7 +192,7 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
         mSyncCategory = (PreferenceCategory) findPreference(PREF_SYNC_CATEGORY);
         mSyncErrorCard = findPreference(PREF_SYNC_ERROR_CARD);
         mSyncErrorCard.setIcon(UiUtils.getTintedDrawable(
-                getActivity(), R.drawable.ic_sync_error_40dp, R.color.default_red));
+                getActivity(), R.drawable.ic_sync_error_legacy_40dp, R.color.default_red));
         mSyncErrorCard.setOnPreferenceClickListener(
                 SyncSettingsUtils.toOnClickListener(this, this::onSyncErrorCardClicked));
         mSyncDisabledByAdministrator = findPreference(PREF_SYNC_DISABLED_BY_ADMINISTRATOR);

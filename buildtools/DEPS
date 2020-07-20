@@ -14,7 +14,7 @@ vars = {
   #
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:d585128cdaf3e6ff7bfd58641965e60c12618eb1',
+  'gn_version': 'git_revision:3028c6a426a4aaf6da91c4ebafe716ae370225fe',
 
   # When changing these, also update the svn revisions in deps_revisions.gni
   'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',

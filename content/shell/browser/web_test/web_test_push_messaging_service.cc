@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
 #include "content/public/browser/permission_type.h"
 #include "content/shell/browser/web_test/web_test_browser_context.h"
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
@@ -37,6 +39,10 @@ const uint8_t kAuthentication[] = {0xA5, 0xD9, 0x3C, 0x43, 0x0C, 0x00,
 
 static_assert(sizeof(kAuthentication) == 12,
               "The fake authentication key must be at least 12 bytes in size.");
+
+base::Time GetFutureTime() {
+  return base::Time::Now() + base::TimeDelta::FromDays(100);
+}
 
 }  // anonymous namespace
 
@@ -79,17 +85,17 @@ void WebTestPushMessagingService::SubscribeFromWorker(
                                 kTestP256Key + base::size(kTestP256Key));
     std::vector<uint8_t> auth(kAuthentication,
                               kAuthentication + base::size(kAuthentication));
-
     const std::string subscription_id = "layoutTestRegistrationId";
     const GURL endpoint = CreateEndpoint(subscription_id);
 
     subscribed_service_worker_registration_ = service_worker_registration_id;
     std::move(callback).Run(
-        subscription_id, endpoint, p256dh, auth,
+        subscription_id, endpoint, GetFutureTime(), p256dh, auth,
         blink::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE);
   } else {
     std::move(callback).Run(
         "registration_id", GURL::EmptyGURL() /* endpoint */,
+        base::nullopt /* expiration_time */,
         std::vector<uint8_t>() /* p256dh */, std::vector<uint8_t>() /* auth */,
         blink::mojom::PushRegistrationStatus::PERMISSION_DENIED);
   }
@@ -105,9 +111,9 @@ void WebTestPushMessagingService::GetSubscriptionInfo(
                               kTestP256Key + base::size(kTestP256Key));
   std::vector<uint8_t> auth(kAuthentication,
                             kAuthentication + base::size(kAuthentication));
-
   const GURL endpoint = CreateEndpoint(subscription_id);
-  std::move(callback).Run(true /* is_valid */, endpoint, p256dh, auth);
+  std::move(callback).Run(true /* is_valid */, endpoint, GetFutureTime(),
+                          p256dh, auth);
 }
 
 bool WebTestPushMessagingService::SupportNonVisibleMessages() {

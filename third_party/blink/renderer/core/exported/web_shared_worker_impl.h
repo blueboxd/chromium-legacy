@@ -69,32 +69,9 @@ struct WorkerMainScriptLoadParameters;
 // WebSharedWorkerClient::WorkerContextDestroyed().
 class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
  public:
-  explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
   ~WebSharedWorkerImpl() override;
 
   // WebSharedWorker methods:
-  void StartWorkerContext(
-      const WebURL&,
-      mojom::ScriptType,
-      network::mojom::CredentialsMode,
-      const WebString& name,
-      WebSecurityOrigin constructor_origin,
-      const WebString& user_agent,
-      const blink::UserAgentMetadata& ua_metadata,
-      const WebString& content_security_policy,
-      network::mojom::ContentSecurityPolicyType,
-      network::mojom::IPAddressSpace,
-      const WebFetchClientSettingsObject& outside_fetch_client_settings_object,
-      const base::UnguessableToken& appcache_host_id,
-      const base::UnguessableToken& devtools_worker_token,
-      CrossVariantMojoRemote<
-          mojom::blink::WorkerContentSettingsProxyInterfaceBase>
-          ontent_settings,
-      CrossVariantMojoRemote<mojom::blink::BrowserInterfaceBrokerInterfaceBase>
-          browser_interface_broker,
-      bool pause_worker_context_on_start,
-      std::unique_ptr<WorkerMainScriptLoadParameters>
-          worker_main_script_load_params) override;
   void Connect(MessagePortChannel) override;
   void TerminateWorkerContext() override;
 
@@ -109,6 +86,33 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
   void DidTerminateWorkerThread();
 
  private:
+  friend class WebSharedWorker;
+
+  WebSharedWorkerImpl(const base::UnguessableToken& appcache_host_id,
+                      WebSharedWorkerClient*);
+
+  void StartWorkerContext(
+      const WebURL&,
+      mojom::ScriptType,
+      network::mojom::CredentialsMode,
+      const WebString& name,
+      WebSecurityOrigin constructor_origin,
+      const WebString& user_agent,
+      const blink::UserAgentMetadata& ua_metadata,
+      const WebString& content_security_policy,
+      network::mojom::ContentSecurityPolicyType,
+      network::mojom::IPAddressSpace,
+      const WebFetchClientSettingsObject& outside_fetch_client_settings_object,
+      const base::UnguessableToken& devtools_worker_token,
+      CrossVariantMojoRemote<
+          mojom::blink::WorkerContentSettingsProxyInterfaceBase>
+          ontent_settings,
+      CrossVariantMojoRemote<mojom::blink::BrowserInterfaceBrokerInterfaceBase>
+          browser_interface_broker,
+      bool pause_worker_context_on_start,
+      std::unique_ptr<WorkerMainScriptLoadParameters>
+          worker_main_script_load_params);
+
   SharedWorkerThread* GetWorkerThread() { return worker_thread_.get(); }
 
   // Shuts down the worker thread. This may synchronously destroy |this|.
@@ -116,8 +120,8 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
 
   void ConnectTaskOnWorkerThread(MessagePortChannel);
 
-  Persistent<SharedWorkerReportingProxy> reporting_proxy_;
-  std::unique_ptr<SharedWorkerThread> worker_thread_;
+  const Persistent<SharedWorkerReportingProxy> reporting_proxy_;
+  const std::unique_ptr<SharedWorkerThread> worker_thread_;
 
   // |client_| owns |this|.
   WebSharedWorkerClient* client_;

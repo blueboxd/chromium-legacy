@@ -23,10 +23,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.UiDisableIf;
 import org.chromium.weblayer.MediaCaptureCallback;
 import org.chromium.weblayer.TestWebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
@@ -86,6 +88,7 @@ public final class MediaCaptureTest {
      */
     @Test
     @MediumTest
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1107380
     public void testMediaCapture_basic() throws Throwable {
         mActivityTestRule.navigateAndWait(
                 mActivityTestRule.getTestServer().getURL("/weblayer/test/data/getusermedia.html"));
@@ -115,6 +118,7 @@ public final class MediaCaptureTest {
      */
     @Test
     @MediumTest
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1107380
     public void testMediaCapture_rememberPermission() throws Throwable {
         mActivityTestRule.navigateAndWait(
                 mActivityTestRule.getTestServer().getURL("/weblayer/test/data/getusermedia.html"));
@@ -144,6 +148,7 @@ public final class MediaCaptureTest {
      */
     @Test
     @MediumTest
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1107380
     public void testMediaCapture_twoStreams() throws Throwable {
         mActivityTestRule.navigateAndWait(
                 mActivityTestRule.getTestServer().getURL("/weblayer/test/data/getusermedia2.html"));
@@ -172,6 +177,7 @@ public final class MediaCaptureTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1107380
     public void testMediaCapture_twoStreamsNotification() throws Throwable {
         mActivityTestRule.navigateAndWait(
                 mActivityTestRule.getTestServer().getURL("/weblayer/test/data/getusermedia2.html"));

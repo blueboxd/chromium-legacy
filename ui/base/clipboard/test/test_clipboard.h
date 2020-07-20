@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -105,13 +106,16 @@ class TestClipboard : public Clipboard {
   struct DataStore {
     DataStore();
     DataStore(const DataStore& other);
+    DataStore& operator=(const DataStore& other);
     ~DataStore();
     void Clear();
-    uint64_t sequence_number;
+    void SetDataSource(std::unique_ptr<ClipboardDataEndpoint> data_src);
+    uint64_t sequence_number = 0;
     base::flat_map<ClipboardFormatType, std::string> data;
     std::string url_title;
     std::string html_src_url;
     SkBitmap image;
+    std::unique_ptr<ClipboardDataEndpoint> data_src = nullptr;
   };
 
   // The non-const versions increment the sequence number as a side effect.
@@ -123,6 +127,8 @@ class TestClipboard : public Clipboard {
   ClipboardBuffer default_store_buffer_;
   mutable base::flat_map<ClipboardBuffer, DataStore> stores_;
   base::Time last_modified_time_;
+
+  std::unique_ptr<ClipboardDlpController> dlp_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClipboard);
 };

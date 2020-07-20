@@ -11,9 +11,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
@@ -105,11 +107,13 @@ class PushMessagingServiceTest : public ::testing::Test {
   // Callback to use when the subscription may have been subscribed.
   void DidRegister(std::string* subscription_id_out,
                    GURL* endpoint_out,
+                   base::Optional<base::Time>* expiration_time_out,
                    std::vector<uint8_t>* p256dh_out,
                    std::vector<uint8_t>* auth_out,
                    base::Closure done_callback,
                    const std::string& registration_id,
                    const GURL& endpoint,
+                   const base::Optional<base::Time>& expiration_time,
                    const std::vector<uint8_t>& p256dh,
                    const std::vector<uint8_t>& auth,
                    blink::mojom::PushRegistrationStatus status) {
@@ -117,6 +121,7 @@ class PushMessagingServiceTest : public ::testing::Test {
               status);
 
     *subscription_id_out = registration_id;
+    *expiration_time_out = expiration_time;
     *endpoint_out = endpoint;
     *p256dh_out = p256dh;
     *auth_out = auth;
@@ -164,6 +169,7 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
 
   std::string subscription_id;
   GURL endpoint;
+  base::Optional<base::Time> expiration_time;
   std::vector<uint8_t> p256dh, auth;
 
   base::RunLoop run_loop;
@@ -179,7 +185,7 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
       origin, kTestServiceWorkerId, std::move(options),
       base::BindOnce(&PushMessagingServiceTest::DidRegister,
                      base::Unretained(this), &subscription_id, &endpoint,
-                     &p256dh, &auth, run_loop.QuitClosure()));
+                     &expiration_time, &p256dh, &auth, run_loop.QuitClosure()));
 
   EXPECT_EQ(0u, subscription_id.size());  // this must be asynchronous
 
@@ -190,6 +196,7 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
   ASSERT_GT(endpoint.spec().size(), 0u);
   ASSERT_GT(p256dh.size(), 0u);
   ASSERT_GT(auth.size(), 0u);
+  ASSERT_EQ(expiration_time, base::nullopt);
 
   // (3) Encrypt a message using the public key and authentication secret that
   // are associated with the subscription.

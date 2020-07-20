@@ -375,16 +375,16 @@ void LocationBarView::SelectAll() {
 void LocationBarView::FocusLocation(bool is_user_initiated) {
   const bool omnibox_already_focused = omnibox_view_->HasFocus();
 
-  if (is_user_initiated)
-    omnibox_view()->model()->Unelide();
-
   omnibox_view_->SetFocus(is_user_initiated);
 
   if (omnibox_already_focused)
     omnibox_view()->model()->ClearKeyword();
 
-  if (is_user_initiated)
-    omnibox_view_->SelectAll(true);
+  if (!is_user_initiated)
+    return;
+
+  omnibox_view_->SelectAll(true);
+  omnibox_view()->model()->Unelide();
 }
 
 void LocationBarView::Revert() {

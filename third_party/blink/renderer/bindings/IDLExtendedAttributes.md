@@ -650,6 +650,28 @@ Each value changes the signature of the Blink methods by adding an additional pa
 
 `[GetterCallWith]` and `[SetterCallWith]` apply to attributes, and only affects the signature of the getter and setter, respectively.
 
+NOTE: The `ExecutionContext` that you can get with [CallWith=ExecutionContext] or that you can extract from [CallWith=ScriptState] is the ExecutionContext associated with the V8 wrapper of the receiver object, which might be different from the ExecutionContext of the document tree to which the receiver object belongs.  See the following example.
+
+```js
+// V8 wrapper of |span| is associated with |windowA|.
+span = windowA.document.createElement("span");
+// |span| belongs to the document tree of |windowB|.
+windowB.document.body.appendChild(span);
+```
+
+```c++
+// Suppose [CallWith=ExecutionContext] void foo();
+void HTMLSpanElement::foo(ExecutionContext* execution_context) {
+  // The ExecutionContext associated with the creation context of the V8 wrapper
+  // of the receiver object.
+  execution_context;  // the ExecutionContext of |windowA|
+
+  // Node::GetExecutionContext() returns the ExecutionContext of the document
+  // tree to which |this| (the receiver object) belongs.
+  GetExecutionContext();  // the ExecutionContext of |windowB|
+}
+```
+
 #### [CallWith=ScriptState] _(m, a*)_
 
 `[CallWith=ScriptState]` is used in a number of places for methods.

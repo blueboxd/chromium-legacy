@@ -127,8 +127,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
             std::move(controller_info), subresource_loader_factory_bundle_);
   }
 
-  impl_ = blink::WebSharedWorker::Create(this);
-  impl_->StartWorkerContext(
+  impl_ = blink::WebSharedWorker::CreateAndStart(
       url_, info->options->type, info->options->credentials,
       blink::WebString::FromUTF8(info->options->name),
       blink::WebSecurityOrigin(constructor_origin),
@@ -139,7 +138,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
           info->outside_fetch_client_settings_object),
       appcache_host_id, devtools_worker_token, std::move(content_settings),
       std::move(browser_interface_broker), pause_on_start,
-      std::move(worker_main_script_load_params));
+      std::move(worker_main_script_load_params), this);
 
   // If the host drops its connection, then self-destruct.
   receiver_.set_disconnect_handler(base::BindOnce(

@@ -419,8 +419,8 @@ void AppServiceImpl::WriteToJSON(
 
   writing_preferred_apps_ = true;
 
-  auto preferred_apps_value =
-      apps::ConvertPreferredAppsToValue(preferred_apps.GetReference());
+  auto preferred_apps_value = apps::ConvertPreferredAppsToValue(
+      preferred_apps.GetReference(), is_share_intents_supported_);
 
   std::string json_string;
   JSONStringValueSerializer serializer(&json_string);
@@ -478,15 +478,16 @@ void AppServiceImpl::ReadCompleted(std::string preferred_apps_string) {
                << error_code << " and error message: " << error_message;
       preferred_apps_.Init();
     } else {
+      preferred_apps_upgraded = IsUpgradedForSharing(*preferred_apps_value);
       auto preferred_apps =
           apps::ParseValueToPreferredApps(*preferred_apps_value);
-      if (is_share_intents_supported_) {
-        preferred_apps_upgraded = UpgradePreferredApps(preferred_apps);
+      if (is_share_intents_supported_ && !preferred_apps_upgraded) {
+        UpgradePreferredApps(preferred_apps);
       }
       preferred_apps_.Init(preferred_apps);
     }
   }
-  if (preferred_apps_upgraded) {
+  if (is_share_intents_supported_ && !preferred_apps_upgraded) {
     LogPreferredAppUpdateAction(PreferredAppsUpdateAction::kUpgraded);
     WriteToJSON(profile_dir_, preferred_apps_);
   }

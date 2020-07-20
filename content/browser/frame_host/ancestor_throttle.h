@@ -37,8 +37,7 @@ class CONTENT_EXPORT AncestorThrottle : public NavigationThrottle {
     SAMEORIGIN,
     ALLOWALL,
     INVALID,
-    CONFLICT,
-    BYPASS
+    CONFLICT
   };
 
   static std::unique_ptr<NavigationThrottle> MaybeCreateThrottleFor(

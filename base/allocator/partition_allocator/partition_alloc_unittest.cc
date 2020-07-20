@@ -2528,21 +2528,19 @@ TEST_F(PartitionAllocTest, TagBasic) {
   PartitionTagSetValue(ptr2, page->bucket->slot_size, kTag2);
   PartitionTagSetValue(ptr3, page->bucket->slot_size, kTag3);
 
-  memset(ptr1, 0, kTestAllocSize);
-  memset(ptr2, 0, kTestAllocSize);
-  memset(ptr3, 0, kTestAllocSize);
+  memset(ptr1, 0, alloc_size);
+  memset(ptr2, 0, alloc_size);
+  memset(ptr3, 0, alloc_size);
 
   EXPECT_EQ(kTag1, PartitionTagGetValue(ptr1));
   EXPECT_EQ(kTag2, PartitionTagGetValue(ptr2));
   EXPECT_EQ(kTag3, PartitionTagGetValue(ptr3));
 
-  EXPECT_TRUE(!memchr(ptr1, static_cast<uint8_t>(kTag1), kTestAllocSize));
-  EXPECT_TRUE(!memchr(ptr2, static_cast<uint8_t>(kTag2), kTestAllocSize));
+  EXPECT_TRUE(!memchr(ptr1, static_cast<uint8_t>(kTag1), alloc_size));
+  EXPECT_TRUE(!memchr(ptr2, static_cast<uint8_t>(kTag2), alloc_size));
   if (sizeof(PartitionTag) > 1) {
-    EXPECT_TRUE(
-        !memchr(ptr1, static_cast<uint8_t>(kTag1 >> 8), kTestAllocSize));
-    EXPECT_TRUE(
-        !memchr(ptr2, static_cast<uint8_t>(kTag2 >> 8), kTestAllocSize));
+    EXPECT_TRUE(!memchr(ptr1, static_cast<uint8_t>(kTag1 >> 8), alloc_size));
+    EXPECT_TRUE(!memchr(ptr2, static_cast<uint8_t>(kTag2 >> 8), alloc_size));
   }
 
   allocator.root()->Free(ptr1);
@@ -2563,42 +2561,6 @@ TEST_F(PartitionAllocTest, TagBasic) {
 
   EXPECT_EQ(kTag3, PartitionTagGetValue(ptr3));
   allocator.root()->Free(ptr3);
-}
-
-#endif
-
-#if ENABLE_TAG_FOR_CHECKED_PTR2
-
-TEST_F(PartitionAllocTest, TagForDirectMap) {
-  size_t request_size = kGenericMinDirectMappedDownsize + kExtraAllocSize;
-  void* ptr1 = allocator.root()->Alloc(request_size, type_name);
-  void* ptr2 = allocator.root()->Alloc(request_size, type_name);
-  EXPECT_TRUE(ptr1);
-  EXPECT_TRUE(ptr2);
-
-  PartitionRoot<ThreadSafe>::Page* page =
-      PartitionRoot<ThreadSafe>::Page::FromPointer(
-          PartitionPointerAdjustSubtract(true, ptr1));
-  EXPECT_TRUE(page);
-
-  constexpr PartitionTag kTag1 = 0xBADA;
-  constexpr PartitionTag kTag2 = 0xDB8A;
-  PartitionTagSetValue(ptr1, kTag1);
-  PartitionTagSetValue(ptr2, kTag2);
-
-  memset(ptr1, 0, request_size);
-  memset(ptr2, 0, request_size);
-  EXPECT_EQ(kTag1, PartitionTagGetValue(ptr1));
-  EXPECT_EQ(kTag2, PartitionTagGetValue(ptr2));
-
-  EXPECT_TRUE(!memchr(ptr1, static_cast<uint8_t>(kTag1 >> 8), kTestAllocSize));
-  EXPECT_TRUE(!memchr(ptr1, static_cast<uint8_t>(kTag1), kTestAllocSize));
-  EXPECT_TRUE(!memchr(ptr2, static_cast<uint8_t>(kTag2 >> 8), kTestAllocSize));
-  EXPECT_TRUE(!memchr(ptr2, static_cast<uint8_t>(kTag2), kTestAllocSize));
-
-  allocator.root()->Free(ptr1);
-  EXPECT_EQ(kTag2, PartitionTagGetValue(ptr2));
-  allocator.root()->Free(ptr2);
 }
 
 #endif

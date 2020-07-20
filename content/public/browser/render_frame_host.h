@@ -304,7 +304,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // changes to the contents resulting from operations executed prior to this
   // call are visible on screen. The call completes asynchronously by running
   // the supplied |callback| with a value of true upon successful completion and
-  // false otherwise (when the frame is destroyed, detached, etc..).
+  // false otherwise when the widget is destroyed.
   using VisualStateCallback = base::OnceCallback<void(bool)>;
   virtual void InsertVisualStateCallback(VisualStateCallback callback) = 0;
 

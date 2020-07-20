@@ -332,6 +332,11 @@
       depends_on: ["ExperimentalProductivityFeatures"],
     },
     {
+      name: "WebShare",
+      feature_policy_name: "web-share",
+      depends_on: ["WebShare"],
+    },
+    {
       name: "WebXr",
       feature_policy_name: "xr-spatial-tracking",
       depends_on: ["WebXR"],

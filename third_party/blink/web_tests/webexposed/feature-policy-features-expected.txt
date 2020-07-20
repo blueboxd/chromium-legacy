@@ -58,5 +58,6 @@ top-navigation
 trust-token-redemption
 usb
 vertical-scroll
+web-share
 xr-spatial-tracking
 

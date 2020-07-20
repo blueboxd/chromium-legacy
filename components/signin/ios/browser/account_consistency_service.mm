@@ -414,7 +414,7 @@ void AccountConsistencyService::FinishedApplyingCookieRequest(bool success) {
         break;
       case REMOVE_CHROME_CONNECTED_COOKIE:
         // Remove request.domain from prefs.
-        update->RemoveWithoutPathExpansion(request.domain, nullptr);
+        update->RemoveKey(request.domain);
         break;
     }
   }

@@ -12,10 +12,12 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerProperties.AddAccountRowProperties;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerProperties.ExistingAccountRowProperties;
+import org.chromium.chrome.browser.signin.account_picker.AccountPickerProperties.IncognitoAccountRowProperties;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerProperties.ItemType;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
@@ -96,6 +98,14 @@ class AccountPickerMediator {
         PropertyModel model =
                 AddAccountRowProperties.createModel(mAccountPickerListener::addAccount);
         mListModel.add(new MVCListAdapter.ListItem(ItemType.ADD_ACCOUNT_ROW, model));
+
+        // Add a "Go incognito mode" row
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
+            PropertyModel incognitoModel = IncognitoAccountRowProperties.createModel(
+                    mAccountPickerListener::goIncognitoMode);
+            mListModel.add(
+                    new MVCListAdapter.ListItem(ItemType.INCOGNITO_ACCOUNT_ROW, incognitoModel));
+        }
     }
 
     private MVCListAdapter.ListItem createExistingAccountRowItem(
@@ -109,11 +119,13 @@ class AccountPickerMediator {
     }
 
     private void updateSelectedAccount() {
-        for (int i = 0; i < mListModel.size() - 1; ++i) {
-            PropertyModel model = mListModel.get(i).model;
-            boolean isSelectedAccount = TextUtils.equals(mSelectedAccountName,
-                    model.get(ExistingAccountRowProperties.PROFILE_DATA).getAccountName());
-            model.set(ExistingAccountRowProperties.IS_SELECTED_ACCOUNT, isSelectedAccount);
+        for (MVCListAdapter.ListItem item : mListModel) {
+            if (item.type == AccountPickerProperties.ItemType.EXISTING_ACCOUNT_ROW) {
+                PropertyModel model = item.model;
+                boolean isSelectedAccount = TextUtils.equals(mSelectedAccountName,
+                        model.get(ExistingAccountRowProperties.PROFILE_DATA).getAccountName());
+                model.set(ExistingAccountRowProperties.IS_SELECTED_ACCOUNT, isSelectedAccount);
+            }
         }
     }
 }

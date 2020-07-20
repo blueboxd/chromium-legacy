@@ -233,7 +233,7 @@ class MockMediaStreamVideoRenderer : public WebMediaStreamVideoRenderer {
   void Pause() override;
 
   // Methods for test use
-  void QueueFrames(const std::vector<int>& timestamps_or_frame_type,
+  void QueueFrames(const Vector<int>& timestamps_or_frame_type,
                    bool opaque_frame = true,
                    bool odd_size_frame = false,
                    int double_size_index = -1,
@@ -316,7 +316,7 @@ void MockMediaStreamVideoRenderer::AddFrame(
 }
 
 void MockMediaStreamVideoRenderer::QueueFrames(
-    const std::vector<int>& timestamp_or_frame_type,
+    const Vector<int>& timestamp_or_frame_type,
     bool opaque_frame,
     bool odd_size_frame,
     int double_size_index,
@@ -880,9 +880,8 @@ TEST_P(WebMediaPlayerMSTest, Playing_Normal) {
 
   MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
 
-  int tokens[] = {0,   33,  66,  100, 133, 166, 200, 233, 266, 300,
-                  333, 366, 400, 433, 466, 500, 533, 566, 600};
-  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
+  Vector<int> timestamps({0, 33, 66, 100, 133, 166, 200, 233, 266, 300, 333,
+                          366, 400, 433, 466, 500, 533, 566, 600});
   provider->QueueFrames(timestamps);
 
   if (enable_surface_layer_for_video_) {
@@ -921,9 +920,9 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPause) {
   MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(false);
 
   const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
-  int tokens[] = {0,   33,  66,  100, 133, kTestBrake, 166, 200, 233, 266,
-                  300, 333, 366, 400, 433, 466,        500, 533, 566, 600};
-  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
+  Vector<int> timestamps({0,   33,  66,  100, 133, kTestBrake, 166,
+                          200, 233, 266, 300, 333, 366,        400,
+                          433, 466, 500, 533, 566, 600});
   provider->QueueFrames(timestamps, opaque_frame, odd_size_frame);
 
   if (enable_surface_layer_for_video_) {
@@ -971,10 +970,9 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
   MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(false);
 
   const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
-  int tokens[] = {0,   33,         66,  100, 133, kTestBrake, 166,
-                  200, 233,        266, 300, 333, 366,        400,
-                  433, kTestBrake, 466, 500, 533, 566,        600};
-  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
+  Vector<int> timestamps({0,   33,         66,  100, 133, kTestBrake, 166,
+                          200, 233,        266, 300, 333, 366,        400,
+                          433, kTestBrake, 466, 500, 533, 566,        600});
   provider->QueueFrames(timestamps, opaque_frame, odd_size_frame);
 
   if (enable_surface_layer_for_video_) {
@@ -1039,8 +1037,7 @@ TEST_P(WebMediaPlayerMSTest, RotationChange) {
   MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
 
   const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
-  int tokens[] = {0, kTestBrake};
-  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
+  Vector<int> timestamps({0, kTestBrake});
   provider->QueueFrames(timestamps, false, false, 17, media::VIDEO_ROTATION_90);
   if (enable_surface_layer_for_video_) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
@@ -1067,8 +1064,7 @@ TEST_P(WebMediaPlayerMSTest, RotationChange) {
   EXPECT_EQ(kStandardWidth, natural_size.height());
 
   // Change rotation.
-  tokens[0] = 33;
-  timestamps = std::vector<int>(tokens, tokens + base::size(tokens));
+  timestamps = Vector<int>({33, kTestBrake});
   provider->QueueFrames(timestamps, false, false, 17, media::VIDEO_ROTATION_0);
   if (enable_surface_layer_for_video_) {
     EXPECT_CALL(*submitter_ptr_, SetRotation(media::VIDEO_ROTATION_0));
@@ -1085,8 +1081,7 @@ TEST_P(WebMediaPlayerMSTest, RotationChange) {
   EXPECT_EQ(kStandardWidth, natural_size.width());
 
   // Change rotation again.
-  tokens[0] = 66;
-  timestamps = std::vector<int>(tokens, tokens + base::size(tokens));
+  timestamps = Vector<int>({66, kTestBrake});
   provider->QueueFrames(timestamps, false, false, 17, media::VIDEO_ROTATION_90);
   if (enable_surface_layer_for_video_) {
     EXPECT_CALL(*submitter_ptr_, SetRotation(media::VIDEO_ROTATION_90));
@@ -1119,8 +1114,7 @@ TEST_P(WebMediaPlayerMSTest, OpacityChange) {
 
   // Push one opaque frame.
   const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
-  int tokens[] = {0, kTestBrake};
-  std::vector<int> timestamps(tokens, tokens + base::size(tokens));
+  Vector<int> timestamps({0, kTestBrake});
   provider->QueueFrames(timestamps, true);
 
   if (enable_surface_layer_for_video_) {
@@ -1147,8 +1141,7 @@ TEST_P(WebMediaPlayerMSTest, OpacityChange) {
   }
 
   // Push one transparent frame.
-  tokens[0] = 33;
-  timestamps = std::vector<int>(tokens, tokens + base::size(tokens));
+  timestamps = Vector<int>({33, kTestBrake});
   provider->QueueFrames(timestamps, false);
   if (enable_surface_layer_for_video_) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
@@ -1161,8 +1154,7 @@ TEST_P(WebMediaPlayerMSTest, OpacityChange) {
   }
 
   // Push another transparent frame.
-  tokens[0] = 66;
-  timestamps = std::vector<int>(tokens, tokens + base::size(tokens));
+  timestamps = Vector<int>({66, kTestBrake});
   provider->QueueFrames(timestamps, true);
   if (enable_surface_layer_for_video_) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(true));
@@ -1192,10 +1184,9 @@ TEST_P(WebMediaPlayerMSTest, BackgroundRendering) {
   MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
 
   const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
-  int tokens[] = {0,   33,         66,  100, 133, kTestBrake, 166,
-                  200, 233,        266, 300, 333, 366,        400,
-                  433, kTestBrake, 466, 500, 533, 566,        600};
-  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
+  Vector<int> timestamps({0,   33,         66,  100, 133, kTestBrake, 166,
+                          200, 233,        266, 300, 333, 366,        400,
+                          433, kTestBrake, 466, 500, 533, 566,        600});
   provider->QueueFrames(timestamps);
 
   if (enable_surface_layer_for_video_) {
@@ -1252,9 +1243,8 @@ TEST_P(WebMediaPlayerMSTest, FrameSizeChange) {
   InitializeWebMediaPlayerMS();
   MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
 
-  int tokens[] = {0,   33,  66,  100, 133, 166, 200, 233, 266, 300,
-                  333, 366, 400, 433, 466, 500, 533, 566, 600};
-  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
+  Vector<int> timestamps({0, 33, 66, 100, 133, 166, 200, 233, 266, 300, 333,
+                          366, 400, 433, 466, 500, 533, 566, 600});
   provider->QueueFrames(timestamps, false, false, 7);
 
   if (enable_surface_layer_for_video_) {
@@ -1290,8 +1280,7 @@ TEST_P(WebMediaPlayerMSTest, CreateHardwareFrames) {
   SetGpuMemoryBufferVideoForTesting();
 
   const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
-  static int tokens[] = {0, kTestBrake};
-  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
+  Vector<int> timestamps({0, kTestBrake});
   provider->QueueFrames(timestamps);
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
@@ -1383,8 +1372,7 @@ TEST_P(WebMediaPlayerMSTest, RequestVideoFrameCallback) {
   MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
 
   const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
-  int tokens[] = {0, 33, kTestBrake, 66, 100, 133, 166};
-  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
+  Vector<int> timestamps({0, 33, kTestBrake, 66, 100, 133, 166});
   provider->QueueFrames(timestamps);
 
   // Verify a basic call to RAF.
@@ -1439,8 +1427,7 @@ TEST_P(WebMediaPlayerMSTest, GetVideoFramePresentationMetadata) {
   MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
 
   const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
-  int tokens[] = {0, kTestBrake, 33, kTestBrake, 66, kTestBrake};
-  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
+  Vector<int> timestamps({0, kTestBrake, 33, kTestBrake, 66, kTestBrake});
   provider->QueueFrames(timestamps);
 
   // Chain calls to video.rAF.

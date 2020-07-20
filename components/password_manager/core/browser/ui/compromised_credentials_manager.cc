@@ -120,6 +120,29 @@ std::vector<CredentialWithPassword> ExtractCompromisedCredentials(
 
 }  // namespace
 
+CredentialView::CredentialView(std::string signon_realm,
+                               GURL url,
+                               base::string16 username,
+                               base::string16 password)
+    : signon_realm(std::move(signon_realm)),
+      url(std::move(url)),
+      username(std::move(username)),
+      password(std::move(password)) {}
+
+CredentialView::CredentialView(const autofill::PasswordForm& form)
+    : signon_realm(form.signon_realm),
+      url(form.url),
+      username(form.username_value),
+      password(form.password_value) {}
+
+CredentialView::CredentialView(const CredentialView& credential) = default;
+CredentialView::CredentialView(CredentialView&& credential) = default;
+CredentialView& CredentialView::operator=(const CredentialView& credential) =
+    default;
+CredentialView& CredentialView::operator=(CredentialView&& credential) =
+    default;
+CredentialView::~CredentialView() = default;
+
 CredentialWithPassword::CredentialWithPassword(const CredentialView& credential)
     : CredentialView(std::move(credential)) {}
 CredentialWithPassword::~CredentialWithPassword() = default;
@@ -129,12 +152,13 @@ CredentialWithPassword::CredentialWithPassword(
 CredentialWithPassword::CredentialWithPassword(CredentialWithPassword&& other) =
     default;
 CredentialWithPassword::CredentialWithPassword(
-    const CompromisedCredentials& credential) {
-  username = credential.username;
-  signon_realm = credential.signon_realm;
-  create_time = credential.create_time;
-  compromise_type = ConvertCompromiseType(credential.compromise_type);
-}
+    const CompromisedCredentials& credential)
+    : CredentialView(credential.signon_realm,
+                     GURL(credential.signon_realm),
+                     credential.username,
+                     /*password=*/{}),
+      create_time(credential.create_time),
+      compromise_type(ConvertCompromiseType(credential.compromise_type)) {}
 
 CredentialWithPassword& CredentialWithPassword::operator=(
     const CredentialWithPassword& other) = default;

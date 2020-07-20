@@ -7035,6 +7035,9 @@ crbug.com/1101699 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-answ
 crbug.com/1101699 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-pranswer.html [ Pass Failure ]
 crbug.com/1101699 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Pass Failure ]
 
+# Temporarily disable to land a devtools change
+crbug.com/1107339 http/tests/devtools/extensions/extensions-api.js [ Pass Failure ]
+
 # Sheriff 2020-07-07
 # Additionally disabled on mac due to crbug.com/988248
 crbug.com/1083302 media/controls/volumechange-muted-attribute.html [ Pass Failure ]

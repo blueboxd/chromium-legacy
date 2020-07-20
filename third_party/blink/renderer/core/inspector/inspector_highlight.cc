@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
@@ -402,6 +403,39 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridHighlightConfigInfo(
   return grid_config_info;
 }
 
+std::unique_ptr<protocol::ListValue> BuildGridTrackSizes(
+    LayoutGrid* layout_grid,
+    GridTrackSizingDirection direction,
+    float scale,
+    LayoutUnit gap) {
+  std::unique_ptr<protocol::ListValue> sizes = protocol::ListValue::create();
+
+  unsigned i = 0;
+  float start = 0;
+  for (LayoutUnit track : layout_grid->TrackSizesForComputedStyle(direction)) {
+    if (i > 0)
+      start += gap;
+    std::unique_ptr<protocol::DictionaryValue> size_info =
+        protocol::DictionaryValue::create();
+    auto adjusted_size = AdjustForAbsoluteZoom::AdjustFloat(
+        track.ToFloat() * scale, layout_grid->StyleRef());
+    size_info->setDouble("computedSize", adjusted_size);
+    // TODO (alexrudenko): Add authored sizes here
+    float offset = start + track / 2;
+    FloatPoint local_arrow_pos(direction == kForColumns ? offset : 0,
+                               direction == kForColumns ? 0 : offset);
+    FloatPoint abs_arrow_pos =
+        layout_grid->LocalToAbsoluteFloatPoint(local_arrow_pos);
+    size_info->setDouble("x", abs_arrow_pos.X());
+    size_info->setDouble("y", abs_arrow_pos.Y());
+    sizes->pushValue(std::move(size_info));
+    start += track;
+    i++;
+  }
+
+  return sizes;
+}
+
 std::unique_ptr<protocol::ListValue> BuildGridPositiveLineNumberOffsets(
     LayoutGrid* layout_grid,
     const Vector<LayoutUnit>& trackPositions,
@@ -549,6 +583,22 @@ std::unique_ptr<protocol::ListValue> BuildGridLineNames(
   return lines;
 }
 
+// Gets the rotation angle of the grid layout (clock-wise).
+int GetRotationAngle(LayoutGrid* layout_grid) {
+  // Local vector has 135deg bearing to the Y axis.
+  int local_vector_bearing = 135;
+  FloatPoint local_a(0, 0);
+  FloatPoint local_b(1, 1);
+  FloatPoint abs_a = layout_grid->LocalToAbsoluteFloatPoint(local_a);
+  FloatPoint abs_b = layout_grid->LocalToAbsoluteFloatPoint(local_b);
+  // Compute bearing of the absolute vector against the Y axis.
+  double theta = atan2(abs_b.X() - abs_a.X(), abs_a.Y() - abs_b.Y());
+  if (theta < 0.0)
+    theta += kTwoPiDouble;
+  int bearing = std::round(rad2deg(theta));
+  return bearing - local_vector_bearing;
+}
+
 std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
     LocalFrameView* containing_view,
     LayoutGrid* layout_grid,
@@ -561,10 +611,21 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   const auto& rows = layout_grid->RowPositions();
   const auto& columns = layout_grid->ColumnPositions();
 
+  grid_info->setInteger("rotationAngle", GetRotationAngle(layout_grid));
+
   auto row_gap =
       layout_grid->GridGap(kForRows) + layout_grid->GridItemOffset(kForRows);
   auto column_gap = layout_grid->GridGap(kForColumns) +
                     layout_grid->GridItemOffset(kForColumns);
+
+  if (grid_highlight_config.show_track_sizes) {
+    grid_info->setValue(
+        "columnTrackSizes",
+        BuildGridTrackSizes(layout_grid, kForColumns, scale, column_gap));
+    grid_info->setValue(
+        "rowTrackSizes",
+        BuildGridTrackSizes(layout_grid, kForRows, scale, row_gap));
+  }
 
   PathBuilder row_builder;
   PathBuilder row_gap_builder;
@@ -780,7 +841,8 @@ InspectorGridHighlightConfig::InspectorGridHighlightConfig()
       show_positive_line_numbers(false),
       show_negative_line_numbers(false),
       show_area_names(false),
-      show_line_names(false) {}
+      show_line_names(false),
+      show_track_sizes(false) {}
 
 InspectorHighlight::InspectorHighlight(
     Node* node,
@@ -1332,6 +1394,7 @@ InspectorGridHighlightConfig InspectorHighlight::DefaultGridConfig() {
   config.show_line_names = true;
   config.grid_border_dash = false;
   config.cell_border_dash = true;
+  config.show_track_sizes = true;
   return config;
 }
 

@@ -106,6 +106,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     ON_CALL(mock_client_, GetWebContents).WillByDefault(Return(web_contents()));
     ON_CALL(mock_client_, GetPasswordManagerClient)
         .WillByDefault(Return(&mock_password_manager_client_));
+    ON_CALL(mock_client_, HasHadUI()).WillByDefault(Return(true));
 
     controller_ = std::make_unique<Controller>(
         web_contents(), &mock_client_, task_environment()->GetMockTickClock(),
@@ -395,7 +396,7 @@ TEST_F(ControllerTest, NoScripts) {
   SetNextScriptResponse(empty);
 
   EXPECT_CALL(mock_client_,
-              Shutdown(Metrics::DropOutReason::NO_INITIAL_SCRIPTS));
+              RecordDropOut(Metrics::DropOutReason::NO_INITIAL_SCRIPTS));
   Start("http://a.example.com/path");
   EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
 }
@@ -409,7 +410,7 @@ TEST_F(ControllerTest, NoRelevantScripts) {
   SetNextScriptResponse(script_response);
 
   EXPECT_CALL(mock_client_,
-              Shutdown(Metrics::DropOutReason::NO_INITIAL_SCRIPTS));
+              RecordDropOut(Metrics::DropOutReason::NO_INITIAL_SCRIPTS));
   Start("http://a.example.com/path");
   EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
 }
@@ -591,7 +592,8 @@ TEST_F(ControllerTest, Autostart) {
   SetupActionsForScript("runnable", runnable_script);
 
   // The script "runnable" stops the flow and shutdowns the controller.
-  EXPECT_CALL(mock_client_, Shutdown(Metrics::DropOutReason::SCRIPT_SHUTDOWN));
+  EXPECT_CALL(mock_client_,
+              RecordDropOut(Metrics::DropOutReason::SCRIPT_SHUTDOWN));
   controller_->PerformUserAction(0);
   EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
 
@@ -707,8 +709,10 @@ TEST_F(ControllerTest, AttachUIWhenContentsFocused) {
   EXPECT_CALL(mock_client_, AttachUI());
   SimulateWebContentsFocused();  // must call AttachUI
 
+  EXPECT_CALL(mock_client_, AttachUI());
   controller_->OnFatalError("test", Metrics::DropOutReason::TAB_CHANGED);
-  SimulateWebContentsFocused();  // must not call AttachUI
+  EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
+  SimulateWebContentsFocused();  // must call AttachUI
 }
 
 TEST_F(ControllerTest, KeepCheckingForElement) {
@@ -1371,7 +1375,7 @@ TEST_F(ControllerTest, BrowseStateStopsOnDifferentDomain) {
   // Shut down once the user moves to a different domain
   EXPECT_CALL(
       mock_client_,
-      Shutdown(Metrics::DropOutReason::DOMAIN_CHANGE_DURING_BROWSE_MODE));
+      RecordDropOut(Metrics::DropOutReason::DOMAIN_CHANGE_DURING_BROWSE_MODE));
   SimulateNavigateToUrl(GURL("http://other-example.com/"));
 }
 
@@ -1451,7 +1455,7 @@ TEST_F(ControllerTest, BrowseStateWithDomainWhitelistCleanup) {
   // Make sure the whitelist got reset with the second prompt action.
   EXPECT_CALL(
       mock_client_,
-      Shutdown(Metrics::DropOutReason::DOMAIN_CHANGE_DURING_BROWSE_MODE));
+      RecordDropOut(Metrics::DropOutReason::DOMAIN_CHANGE_DURING_BROWSE_MODE));
   SimulateNavigateToUrl(GURL("http://c.example.com/"));
 }
 
@@ -1481,7 +1485,7 @@ TEST_F(ControllerTest, PromptStateStopsOnGoBack) {
   EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
 
   // go back.
-  EXPECT_CALL(mock_client_, Shutdown(Metrics::DropOutReason::NAVIGATION));
+  EXPECT_CALL(mock_client_, RecordDropOut(Metrics::DropOutReason::NAVIGATION));
   SetLastCommittedUrl(GURL("http://b.example.com"));
   content::NavigationSimulator::GoBack(web_contents());
 }
@@ -1571,19 +1575,21 @@ TEST_F(ControllerTest, UnexpectedNavigationDuringPromptAction) {
 
   // Renderer (Document) initiated navigation is allowed.
   EXPECT_CALL(mock_client_, Shutdown(_)).Times(0);
+  EXPECT_CALL(mock_client_, RecordDropOut(_)).Times(0);
   content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL("http://a.example.com/page"), web_contents()->GetMainFrame());
   EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
 
   // Expected browser initiated navigation is allowed.
   EXPECT_CALL(mock_client_, Shutdown(_)).Times(0);
+  EXPECT_CALL(mock_client_, RecordDropOut(_)).Times(0);
   controller_->ExpectNavigation();
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL("http://b.example.com/page"));
   EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
 
   // Unexpected browser initiated navigation will cause an error.
-  EXPECT_CALL(mock_client_, Shutdown(Metrics::DropOutReason::NAVIGATION));
+  EXPECT_CALL(mock_client_, RecordDropOut(Metrics::DropOutReason::NAVIGATION));
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL("http://c.example.com/page"));
   EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
@@ -1617,6 +1623,7 @@ TEST_F(ControllerTest, UnexpectedNavigationInRunningState) {
   // Document (not user) initiated navigation while in RUNNING state:
   // The controller keeps going.
   EXPECT_CALL(mock_client_, Shutdown(_)).Times(0);
+  EXPECT_CALL(mock_client_, RecordDropOut(_)).Times(0);
   content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL("http://a.example.com/page"), web_contents()->GetMainFrame());
   EXPECT_EQ(AutofillAssistantState::RUNNING, controller_->GetState());
@@ -1624,6 +1631,7 @@ TEST_F(ControllerTest, UnexpectedNavigationInRunningState) {
   // Expected browser initiated navigation while in RUNNING state:
   // The controller keeps going.
   EXPECT_CALL(mock_client_, Shutdown(_)).Times(0);
+  EXPECT_CALL(mock_client_, RecordDropOut(_)).Times(0);
   controller_->ExpectNavigation();
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL("http://b.example.com/page"));
@@ -1632,7 +1640,7 @@ TEST_F(ControllerTest, UnexpectedNavigationInRunningState) {
   // Unexpected browser initiated navigation while in RUNNING state:
   // The controller stops the scripts, shows an error and shuts down.
   EXPECT_CALL(mock_client_,
-              Shutdown(Metrics::DropOutReason::NAVIGATION_WHILE_RUNNING));
+              RecordDropOut(Metrics::DropOutReason::NAVIGATION_WHILE_RUNNING));
   EXPECT_CALL(mock_observer_, OnStatusMessageChanged(_));
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
       web_contents(), GURL("http://c.example.com/page"));
@@ -1662,7 +1670,7 @@ TEST_F(ControllerTest, NavigationToGooglePropertyDestroysUI) {
   Start();
   EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
 
-  EXPECT_CALL(mock_client_, Shutdown(Metrics::DropOutReason::NAVIGATION));
+  EXPECT_CALL(mock_client_, RecordDropOut(Metrics::DropOutReason::NAVIGATION));
   EXPECT_CALL(mock_client_, DestroyUI);
   GURL google("https://google.com/search");
   SetLastCommittedUrl(google);
@@ -1699,7 +1707,7 @@ TEST_F(ControllerTest, DomainChangeToGooglePropertyDuringBrowseDestroysUI) {
 
   EXPECT_CALL(
       mock_client_,
-      Shutdown(Metrics::DropOutReason::DOMAIN_CHANGE_DURING_BROWSE_MODE));
+      RecordDropOut(Metrics::DropOutReason::DOMAIN_CHANGE_DURING_BROWSE_MODE));
   EXPECT_CALL(mock_client_, DestroyUI);
   GURL google("https://google.com/search");
   SetLastCommittedUrl(google);
@@ -2422,6 +2430,35 @@ TEST_F(ControllerTest, EndPromptWithOnEndNavigation) {
   EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[1].status());
   EXPECT_TRUE(processed_actions_capture[0].prompt_choice().navigation_ended());
   EXPECT_FALSE(processed_actions_capture[1].prompt_choice().navigation_ended());
+}
+
+TEST_F(ControllerTest, CallingShutdownIfNecessaryShutsDownTheFlow) {
+  SupportsScriptResponseProto empty;
+  SetNextScriptResponse(empty);
+
+  EXPECT_CALL(mock_client_,
+              RecordDropOut(Metrics::DropOutReason::NO_INITIAL_SCRIPTS));
+  Start("http://a.example.com/path");
+  EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
+
+  // Note that even if we expect Shutdown to be called with
+  // UI_CLOSED_UNEXPECTEDLY, the reported reason in this case would be
+  // NO_INITIAL_SCRIPTS since the reason passed as argument in Shutdown is
+  // ignore if another reason has been previously reported.
+  EXPECT_CALL(mock_client_,
+              Shutdown(Metrics::DropOutReason::UI_CLOSED_UNEXPECTEDLY));
+  controller_->ShutdownIfNecessary();
+}
+
+TEST_F(ControllerTest, ShutdownDirectlyWhenNeverHadUi) {
+  SupportsScriptResponseProto empty;
+  SetNextScriptResponse(empty);
+
+  EXPECT_CALL(mock_client_, HasHadUI()).WillOnce(Return(false));
+  EXPECT_CALL(mock_client_,
+              Shutdown(Metrics::DropOutReason::NO_INITIAL_SCRIPTS));
+  Start("http://a.example.com/path");
+  EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
 }
 
 }  // namespace autofill_assistant

@@ -1014,9 +1014,6 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // the dtor has run.  (It may also be null in tests.)
   unload_event_monitor_timeout_.reset();
 
-  for (auto& iter : visual_state_callbacks_)
-    std::move(iter.second).Run(false);
-
   // Delete this before destroying the widget, to guard against reentrancy
   // by in-process screen readers such as JAWS.
   browser_accessibility_manager_.reset();
@@ -1616,7 +1613,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Unload_ACK, OnUnloadACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_VisualStateResponse, OnVisualStateResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
   IPC_END_MESSAGE_MAP()
@@ -1825,8 +1821,6 @@ void RenderFrameHostImpl::RenderProcessExited(
   }
   smart_clip_callbacks_.Clear();
 #endif  // defined(OS_ANDROID)
-
-  visual_state_callbacks_.clear();
 
   // Ensure that future remote interface requests are associated with the new
   // process's channel.
@@ -3084,16 +3078,6 @@ void RenderFrameHostImpl::OnSmartClipDataExtracted(int32_t callback_id,
   smart_clip_callbacks_.Remove(callback_id);
 }
 #endif  // defined(OS_ANDROID)
-
-void RenderFrameHostImpl::OnVisualStateResponse(uint64_t id) {
-  auto it = visual_state_callbacks_.find(id);
-  if (it != visual_state_callbacks_.end()) {
-    std::move(it->second).Run(true);
-    visual_state_callbacks_.erase(it);
-  } else {
-    NOTREACHED() << "Received script response for unknown request";
-  }
-}
 
 void RenderFrameHostImpl::RunModalAlertDialog(
     const base::string16& alert_message,
@@ -6617,10 +6601,7 @@ void RenderFrameHostImpl::ActivateFindInPageResultForAccessibility(
 
 void RenderFrameHostImpl::InsertVisualStateCallback(
     VisualStateCallback callback) {
-  static uint64_t next_id = 1;
-  uint64_t key = next_id++;
-  Send(new FrameMsg_VisualStateRequest(routing_id_, key));
-  visual_state_callbacks_.emplace(key, std::move(callback));
+  GetRenderWidgetHost()->InsertVisualStateCallback(std::move(callback));
 }
 
 bool RenderFrameHostImpl::IsRenderFrameCreated() {

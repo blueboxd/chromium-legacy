@@ -26,10 +26,11 @@
     right: 0;
   }
 
- .profiles-container {
+  .profiles-container {
     --grid-gutter: 24px;
     --profile-item-height:178px;
     --profile-item-width: 162px;
+    --scrollbar-width: 4px;
     align-items: center;
     display: grid;
     grid-column-gap: var(--grid-gutter);
@@ -39,9 +40,29 @@
     margin: auto;
     margin-inline-end: 140px;
     margin-inline-start: 140px;
- }
+    max-height: calc((var(--profile-item-height) + var(--grid-gutter)) * 2 +
+        30px);
+    overflow-y: auto;
+    padding-inline-end: var(--scrollbar-width);
+    padding-inline-start: var(--scrollbar-width);
+  }
 
- .profile-item {
+  .profiles-container::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+  }
+
+  /* Track */
+  .profiles-container::-webkit-scrollbar-track {
+    border-radius: var(--scrollbar-width);
+  }
+
+  /* Handle */
+  .profiles-container::-webkit-scrollbar-thumb {
+    background: var(--google-grey-refresh-100);
+    border-radius: var(--scrollbar-width);
+  }
+
+  .profile-item {
     align-items: center;
     border-radius: 12px;
     display: flex;
@@ -49,25 +70,25 @@
     height: var(--profile-item-height);
     justify-content: center;
     width: var(--profile-item-width);
- }
+  }
 
- #addProfile {
-  border: 1px dashed;
-  border-color:  var(--google-grey-400);
- }
+  #addProfile {
+    border: 1px dashed;
+    border-color:  var(--google-grey-400);
+  }
 
- cr-icon-button[iron-icon='profiles:add'] {
-  --cr-icon-button-icon-size: var(--avatar-icon-size);
-  --cr-icon-button-size: 84px;
-  --cr-icon-button-fill-color: var(--google-grey-refresh-100);
-  --cr-icon-button-margin-end: 0px;
-  --cr-icon-button-margin-start: 0px;
-  --cr-icon-button-stroke-color: var(--google-grey-refresh-700);
- }
+  cr-icon-button[iron-icon='profiles:add'] {
+    --cr-icon-button-icon-size: var(--avatar-icon-size);
+    --cr-icon-button-size: 84px;
+    --cr-icon-button-fill-color: var(--google-grey-refresh-100);
+    --cr-icon-button-margin-end: 0;
+    --cr-icon-button-margin-start: 0;
+    --cr-icon-button-stroke-color: var(--google-grey-refresh-700);
+  }
 
- @media (prefers-color-scheme: dark) {
-  /* TODO(msalama): Dark mode mocks not ready yet.*/
- }
+  @media (prefers-color-scheme: dark) {
+    /* TODO(msalama): Dark mode mocks not ready yet.*/
+  }
 </style>
 
 <div id="leftBanner" class="banner"></div>

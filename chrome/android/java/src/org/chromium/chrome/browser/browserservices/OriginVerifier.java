@@ -45,8 +45,10 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -55,14 +57,15 @@ import javax.inject.Inject;
 import dagger.Reusable;
 
 /**
- * Used to verify postMessage origin for a designated package name.
+ * Use to check that an app has a Digital Asset Link relationship with the given origin.
  *
- * Uses Digital Asset Links to confirm that the given origin is associated with the package name as
- * a postMessage origin. It caches any origin that has been verified during the current application
- * lifecycle and reuses that without making any new network requests.
+ * Multiple instances of this object share a static cache, and as such the static
+ * {@link #wasPreviouslyVerified} can be used to check whether any verification has been carried
+ * out.
  *
- * The lifecycle of this object is governed by the owner. The owner has to call
- * {@link OriginVerifier#cleanUp()} for proper cleanup of dependencies.
+ * One instance of this object should be created per package, but {@link #start} may be called
+ * multiple times to verify different origins. This object has a native counterpart that will be
+ * kept alive as it is serving requests, but destroyed once all requests are finished.
  */
 @JNINamespace("customtabs")
 public class OriginVerifier {
@@ -75,8 +78,7 @@ public class OriginVerifier {
     private final String mSignatureFingerprint;
     private final @Relation int mRelation;
     private long mNativeOriginVerifier;
-    @Nullable private OriginVerificationListener mListener;
-    private Origin mOrigin;
+    private final Map<Origin, Set<OriginVerificationListener>> mListeners = new HashMap<>();
     private long mVerificationStartTime;
     @Nullable
     private WebContents mWebContents;
@@ -106,17 +108,19 @@ public class OriginVerifier {
 
     /** Small helper class to post a result of origin verification. */
     private class VerifiedCallback implements Runnable {
+        private final Origin mOrigin;
         private final boolean mResult;
         private final Boolean mOnline;
 
-        public VerifiedCallback(boolean result, Boolean online) {
+        public VerifiedCallback(Origin origin, boolean result, Boolean online) {
+            mOrigin = origin;
             mResult = result;
             mOnline = online;
         }
 
         @Override
         public void run() {
-            originVerified(mResult, mOnline);
+            originVerified(mOrigin, mResult, mOnline);
         }
     }
 
@@ -238,51 +242,64 @@ public class OriginVerifier {
      */
     public void start(@NonNull OriginVerificationListener listener, @NonNull Origin origin) {
         ThreadUtils.assertOnUiThread();
-        mOrigin = origin;
-        mListener = listener;
+        if (mListeners.containsKey(origin)) {
+            // We already have an ongoing verification for that origin, just add the listener.
+            mListeners.get(origin).add(listener);
+            return;
+        } else {
+            mListeners.put(origin, new HashSet<>());
+            mListeners.get(origin).add(listener);
+        }
 
         // Website to app Digital Asset Link verification can be skipped for a specific URL by
         // passing a command line flag to ease development.
         String disableDalUrl = CommandLine.getInstance().getSwitchValue(
                 ChromeSwitches.DISABLE_DIGITAL_ASSET_LINK_VERIFICATION);
-        if (!TextUtils.isEmpty(disableDalUrl)
-                && mOrigin.equals(Origin.create(disableDalUrl))) {
+        if (!TextUtils.isEmpty(disableDalUrl) && origin.equals(Origin.create(disableDalUrl))) {
             Log.i(TAG, "Verification skipped for %s due to command line flag.", origin);
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, new VerifiedCallback(true, null));
+            PostTask.runOrPostTask(
+                    UiThreadTaskTraits.DEFAULT, new VerifiedCallback(origin, true, null));
             return;
         }
 
-        String scheme = mOrigin.uri().getScheme();
+        String scheme = origin.uri().getScheme();
         if (TextUtils.isEmpty(scheme)
                 || !UrlConstants.HTTPS_SCHEME.equals(scheme.toLowerCase(Locale.US))) {
             Log.i(TAG, "Verification failed for %s as not https.", origin);
             BrowserServicesMetrics.recordVerificationResult(
                     BrowserServicesMetrics.VerificationResult.HTTPS_FAILURE);
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, new VerifiedCallback(false, null));
+            PostTask.runOrPostTask(
+                    UiThreadTaskTraits.DEFAULT, new VerifiedCallback(origin, false, null));
             return;
         }
 
-        if (shouldOverrideVerification(mPackageName, mOrigin, mRelation)) {
+        if (shouldOverrideVerification(mPackageName, origin, mRelation)) {
             Log.i(TAG, "Verification succeeded for %s, it was overridden.", origin);
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, new VerifiedCallback(true, null));
+            PostTask.runOrPostTask(
+                    UiThreadTaskTraits.DEFAULT, new VerifiedCallback(origin, true, null));
             return;
         }
 
-        if (isAllowlisted(mPackageName, mOrigin, mRelation)) {
+        if (isAllowlisted(mPackageName, origin, mRelation)) {
             Log.i(TAG, "Verification succeeded for %s, %s, it was allowlisted.", mPackageName,
-                    mOrigin);
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, new VerifiedCallback(true, null));
+                    origin);
+            PostTask.runOrPostTask(
+                    UiThreadTaskTraits.DEFAULT, new VerifiedCallback(origin, true, null));
             return;
         }
 
-        if (mNativeOriginVerifier != 0) cleanUp();
         // Early return for testing without native.
         if (!BrowserStartupController.getInstance().isFullBrowserStarted()) return;
 
         if (mWebContents != null && mWebContents.isDestroyed()) mWebContents = null;
-        mNativeOriginVerifier = OriginVerifierJni.get().init(
-                OriginVerifier.this, mWebContents, Profile.getLastUsedRegularProfile());
-        assert mNativeOriginVerifier != 0;
+
+        // If the native side doesn't exist, create it.
+        if (mNativeOriginVerifier == 0) {
+            mNativeOriginVerifier = OriginVerifierJni.get().init(
+                    OriginVerifier.this, mWebContents, Profile.getLastUsedRegularProfile());
+            assert mNativeOriginVerifier != 0;
+        }
+
         String relationship = null;
         switch (mRelation) {
             case CustomTabsService.RELATION_USE_AS_ORIGIN:
@@ -299,19 +316,13 @@ public class OriginVerifier {
         mVerificationStartTime = SystemClock.uptimeMillis();
         boolean requestSent =
                 OriginVerifierJni.get().verifyOrigin(mNativeOriginVerifier, OriginVerifier.this,
-                        mPackageName, mSignatureFingerprint, mOrigin.toString(), relationship);
+                        mPackageName, mSignatureFingerprint, origin.toString(), relationship);
         if (!requestSent) {
             BrowserServicesMetrics.recordVerificationResult(
                     BrowserServicesMetrics.VerificationResult.REQUEST_FAILURE);
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, new VerifiedCallback(false, false));
+            PostTask.runOrPostTask(
+                    UiThreadTaskTraits.DEFAULT, new VerifiedCallback(origin, false, false));
         }
-    }
-
-    /**
-     * Removes the verification listener, but finishes the ongoing verification process, if any.
-     */
-    public void removeListener() {
-        mListener = null;
     }
 
     private static boolean shouldOverrideVerification(String packageName, Origin origin,
@@ -334,6 +345,8 @@ public class OriginVerifier {
      * Cleanup native dependencies on this object.
      */
     public void cleanUp() {
+        // Only destroy native once we have no other pending verifications.
+        if (!mListeners.isEmpty()) return;
         if (mNativeOriginVerifier == 0) return;
         OriginVerifierJni.get().destroy(mNativeOriginVerifier, OriginVerifier.this);
         mNativeOriginVerifier = 0;
@@ -396,21 +409,22 @@ public class OriginVerifier {
 
     /** Called asynchronously by OriginVerifierJni.get().verifyOrigin. */
     @CalledByNative
-    private void onOriginVerificationResult(int result) {
+    private void onOriginVerificationResult(String originAsString, int result) {
+        Origin origin = Origin.createOrThrow(originAsString);
         switch (result) {
             case RelationshipCheckResult.SUCCESS:
                 BrowserServicesMetrics.recordVerificationResult(
                         BrowserServicesMetrics.VerificationResult.ONLINE_SUCCESS);
-                originVerified(true, true);
+                originVerified(origin, true, true);
                 break;
             case RelationshipCheckResult.FAILURE:
                 BrowserServicesMetrics.recordVerificationResult(
                         BrowserServicesMetrics.VerificationResult.ONLINE_FAILURE);
-                originVerified(false, true);
+                originVerified(origin, false, true);
                 break;
             case RelationshipCheckResult.NO_CONNECTION:
                 Log.i(TAG, "Device is offline, checking saved verification result.");
-                checkForSavedResult();
+                checkForSavedResult(origin);
                 break;
             default:
                 assert false;
@@ -418,20 +432,23 @@ public class OriginVerifier {
     }
 
     /** Deal with the result of an Origin check. Will be called on UI Thread. */
-    private void originVerified(boolean originVerified, Boolean online) {
-        Log.i(TAG, "Verification %s.", (originVerified ? "succeeded" : "failed"));
+    private void originVerified(Origin origin, boolean originVerified, Boolean online) {
         if (originVerified) {
-            Log.d(TAG, "Adding: %s for %s", mPackageName, mOrigin);
-            VerificationResultStore.addRelationship(new Relationship(mPackageName,
-                    mSignatureFingerprint, mOrigin, mRelation));
+            Log.d(TAG, "Adding: %s for %s", mPackageName, origin);
+            VerificationResultStore.addRelationship(
+                    new Relationship(mPackageName, mSignatureFingerprint, origin, mRelation));
         }
 
         // We save the result even if there is a failure as a way of overwriting a previously
         // successfully verified result that fails on a subsequent check.
-        saveVerificationResult(originVerified);
+        saveVerificationResult(origin, originVerified);
 
-        if (mListener != null) {
-            mListener.onOriginVerified(mPackageName, mOrigin, originVerified, online);
+        if (mListeners.containsKey(origin)) {
+            Set<OriginVerificationListener> listeners = mListeners.get(origin);
+            for (OriginVerificationListener listener : listeners) {
+                listener.onOriginVerified(mPackageName, origin, originVerified, online);
+            }
+            mListeners.remove(origin);
         }
 
         if (online != null) {
@@ -445,9 +462,9 @@ public class OriginVerifier {
     /**
      * Saves the result of a verification to Preferences so we can reuse it when offline.
      */
-    private void saveVerificationResult(boolean originVerified) {
+    private void saveVerificationResult(Origin origin, boolean originVerified) {
         Relationship relationship =
-                new Relationship(mPackageName, mSignatureFingerprint, mOrigin, mRelation);
+                new Relationship(mPackageName, mSignatureFingerprint, origin, mRelation);
         if (originVerified) {
             VerificationResultStore.addRelationship(relationship);
         } else {
@@ -458,16 +475,16 @@ public class OriginVerifier {
     /**
      * Checks for a previously saved verification result.
      */
-    private void checkForSavedResult() {
+    private void checkForSavedResult(Origin origin) {
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             boolean verified = VerificationResultStore.isRelationshipSaved(
-                    new Relationship(mPackageName, mSignatureFingerprint, mOrigin, mRelation));
+                    new Relationship(mPackageName, mSignatureFingerprint, origin, mRelation));
 
             BrowserServicesMetrics.recordVerificationResult(verified
                             ? BrowserServicesMetrics.VerificationResult.OFFLINE_SUCCESS
                             : BrowserServicesMetrics.VerificationResult.OFFLINE_FAILURE);
 
-            originVerified(verified, false);
+            originVerified(origin, verified, false);
         }
     }
 

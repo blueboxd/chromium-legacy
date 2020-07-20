@@ -106,7 +106,7 @@ public class SyncErrorInfoBar
 
     private SyncErrorInfoBar(@SyncErrorInfoBarType int type, String title, String detailsMessage,
             String primaryButtonText) {
-        super(R.drawable.ic_sync_error_40dp, R.color.default_red, null, title, null,
+        super(R.drawable.ic_sync_error_legacy_40dp, R.color.default_red, null, title, null,
                 primaryButtonText, null);
         mType = type;
         mDetailsMessage = detailsMessage;

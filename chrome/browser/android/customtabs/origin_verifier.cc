@@ -36,11 +36,10 @@ OriginVerifier::OriginVerifier(JNIEnv* env,
   jobject_.Reset(obj);
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   DCHECK(profile);
-  asset_link_handler_ =
-      std::make_unique<digital_asset_links::DigitalAssetLinksHandler>(
-          content::BrowserContext::GetDefaultStoragePartition(profile)
-              ->GetURLLoaderFactoryForBrowserProcess(),
-          content::WebContents::FromJavaWebContents(jweb_contents));
+  url_loader_factory_ =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess();
+  web_contents_ = content::WebContents::FromJavaWebContents(jweb_contents);
 }
 
 OriginVerifier::~OriginVerifier() = default;
@@ -59,24 +58,30 @@ bool OriginVerifier::VerifyOrigin(JNIEnv* env,
   std::string origin = ConvertJavaStringToUTF8(env, j_origin);
   std::string relationship = ConvertJavaStringToUTF8(env, j_relationship);
 
-  // Multiple calls here will end up resetting the callback on the handler side
-  // and cancelling previous requests.
-  // If during the request this verifier gets killed, the handler and the
-  // UrlFetcher making the request will also get killed, so we won't get any
-  // dangling callback reference issues.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return asset_link_handler_->CheckDigitalAssetLinkRelationshipForAndroidApp(
+
+  auto asset_link_handler =
+      std::make_unique<digital_asset_links::DigitalAssetLinksHandler>(
+          url_loader_factory_, web_contents_);
+
+  auto* asset_link_handler_ptr = asset_link_handler.get();
+
+  return asset_link_handler_ptr->CheckDigitalAssetLinkRelationshipForAndroidApp(
       origin, relationship, fingerprint, package_name,
       base::BindOnce(&customtabs::OriginVerifier::OnRelationshipCheckComplete,
-                     base::Unretained(this)));
+                     base::Unretained(this), std::move(asset_link_handler),
+                     origin));
 }
 
 void OriginVerifier::OnRelationshipCheckComplete(
+    std::unique_ptr<digital_asset_links::DigitalAssetLinksHandler> handler,
+    const std::string& origin,
     RelationshipCheckResult result) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  Java_OriginVerifier_onOriginVerificationResult(env,
-                                                 jobject_,
+  auto j_origin = base::android::ConvertUTF8ToJavaString(env, origin);
+
+  Java_OriginVerifier_onOriginVerificationResult(env, jobject_, j_origin,
                                                  static_cast<jint>(result));
 }
 

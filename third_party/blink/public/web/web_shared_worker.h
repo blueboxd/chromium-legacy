@@ -60,11 +60,10 @@ class BLINK_EXPORT WebSharedWorker {
  public:
   virtual ~WebSharedWorker() {}
 
-  // Instantiate a WebSharedWorker that interacts with the shared worker.
+  // Instantiates a WebSharedWorker that interacts with the shared worker and
+  // starts a worker context.
   // WebSharedWorkerClient given here should own this instance.
-  static std::unique_ptr<WebSharedWorker> Create(WebSharedWorkerClient*);
-
-  virtual void StartWorkerContext(
+  static std::unique_ptr<WebSharedWorker> CreateAndStart(
       const WebURL& script_url,
       mojom::ScriptType script_type,
       network::mojom::CredentialsMode,
@@ -84,7 +83,8 @@ class BLINK_EXPORT WebSharedWorker {
           browser_interface_broker,
       bool pause_worker_context_on_start,
       std::unique_ptr<blink::WorkerMainScriptLoadParameters>
-          worker_main_script_load_params) = 0;
+          worker_main_script_load_params,
+      WebSharedWorkerClient*);
 
   // Sends a connect event to the SharedWorker context.
   virtual void Connect(MessagePortChannel) = 0;

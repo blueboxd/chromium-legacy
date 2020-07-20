@@ -208,7 +208,6 @@ class Controller : public ScriptExecutorDelegate,
   void GetVisualViewport(RectF* visual_viewport) const override;
   void OnFatalError(const std::string& error_message,
                     Metrics::DropOutReason reason) override;
-  void PerformDelayedShutdownIfNecessary();
   void MaybeReportFirstCheckDone();
   ViewportMode GetViewportMode() override;
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
@@ -229,6 +228,7 @@ class Controller : public ScriptExecutorDelegate,
   BasicInteractions* GetBasicInteractions() override;
   const GenericUserInterfaceProto* GetGenericUiProto() const override;
   bool ShouldShowOverlay() const override;
+  void ShutdownIfNecessary() override;
 
  private:
   friend ControllerTest;
@@ -326,6 +326,9 @@ class Controller : public ScriptExecutorDelegate,
   ElementArea* touchable_element_area();
   ScriptTracker* script_tracker();
   bool allow_autostart() { return state_ == AutofillAssistantState::STARTING; }
+
+  void RecordDropOutOrShutdown(Metrics::DropOutReason reason);
+  void PerformDelayedShutdownIfNecessary();
 
   ClientSettings settings_;
   Client* const client_;

@@ -23,10 +23,12 @@
 
 #include "base/pickle.h"
 #include "base/run_loop.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -35,6 +37,8 @@
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_data_endpoint.h"
+#include "ui/base/clipboard/clipboard_dlp_controller.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/clipboard/test/clipboard_test_util.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
@@ -57,6 +61,8 @@ using base::UTF16ToUTF8;
 using testing::Contains;
 
 namespace ui {
+
+class MockClipboardDlpController;
 
 template <typename ClipboardTraits>
 class ClipboardTest : public PlatformTest {
@@ -88,13 +94,39 @@ class ClipboardTest : public PlatformTest {
     return types;
   }
 
+  void AddDlpController() {
+    auto dlp_controller = std::make_unique<MockClipboardDlpController>();
+    dlp_controller_ = dlp_controller.get();
+    ClipboardTest::clipboard().SetClipboardDlpController(
+        std::move(dlp_controller));
+  }
+
+  MockClipboardDlpController* dlp_controller() const { return dlp_controller_; }
+
  private:
 #if defined(USE_X11)
   std::unique_ptr<PlatformEventSource> event_source_;
 #endif
   // Clipboard has a protected destructor, so scoped_ptr doesn't work here.
   Clipboard* clipboard_ = nullptr;
+
+  // MockClipboardDlpController object is owned by ClipboardTest.
+  MockClipboardDlpController* dlp_controller_ = nullptr;
 };
+
+// A mock delegate for testing.
+class MockClipboardDlpController : public ClipboardDlpController {
+ public:
+  MockClipboardDlpController();
+  ~MockClipboardDlpController();
+  MOCK_CONST_METHOD2(IsDataReadAllowed,
+                     bool(const ClipboardDataEndpoint* const data_src,
+                          const ClipboardDataEndpoint* const data_dst));
+};
+
+MockClipboardDlpController::MockClipboardDlpController() = default;
+
+MockClipboardDlpController::~MockClipboardDlpController() = default;
 
 // Hack for tests that need to call static methods of ClipboardTest.
 struct NullClipboardTraits {
@@ -1013,6 +1045,52 @@ TYPED_TEST(ClipboardTest, WriteImageEmptyParams) {
   ScopedClipboardWriter scw(ClipboardBuffer::kCopyPaste);
   scw.WriteImage(SkBitmap());
 }
+
+// DLP is only intended to be used in Chrome OS, so the following DLP related
+// tests are only run on Chrome OS.
+#if defined(OS_CHROMEOS)
+// Test that copy/paste would work normally if the dlp controller didn't
+// restrict the clipboard data.
+TYPED_TEST(ClipboardTest, DlpAllowDataRead) {
+  this->AddDlpController();
+  const base::string16 kTestText(base::UTF8ToUTF16("World"));
+  {
+    ScopedClipboardWriter writer(
+        ClipboardBuffer::kCopyPaste,
+        std::make_unique<ClipboardDataEndpoint>(GURL()));
+    writer.WriteText(kTestText);
+  }
+  auto* dlp_controller = this->dlp_controller();
+  EXPECT_CALL(*dlp_controller, IsDataReadAllowed)
+      .WillRepeatedly(testing::Return(true));
+  base::string16 read_result;
+  this->clipboard().ReadText(ClipboardBuffer::kCopyPaste,
+                             /* data_dst = */ nullptr, &read_result);
+  ::testing::Mock::VerifyAndClearExpectations(dlp_controller);
+  EXPECT_EQ(kTestText, read_result);
+}
+
+// Test that pasting clipboard data would not work if the dlp controller
+// restricted it.
+TYPED_TEST(ClipboardTest, DlpDisallowDataRead) {
+  this->AddDlpController();
+  const base::string16 kTestText(base::UTF8ToUTF16("World"));
+  {
+    ScopedClipboardWriter writer(
+        ClipboardBuffer::kCopyPaste,
+        std::make_unique<ClipboardDataEndpoint>(GURL()));
+    writer.WriteText(kTestText);
+  }
+  auto* dlp_controller = this->dlp_controller();
+  EXPECT_CALL(*dlp_controller, IsDataReadAllowed)
+      .WillRepeatedly(testing::Return(false));
+  base::string16 read_result;
+  this->clipboard().ReadText(ClipboardBuffer::kCopyPaste,
+                             /* data_dst = */ nullptr, &read_result);
+  ::testing::Mock::VerifyAndClearExpectations(dlp_controller);
+  EXPECT_EQ(base::string16(), read_result);
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ui
 

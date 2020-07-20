@@ -2651,38 +2651,23 @@ void RenderFrameSubmissionObserver::OnLocalSurfaceIdChanged(
 MainThreadFrameObserver::MainThreadFrameObserver(
     RenderWidgetHost* render_widget_host)
     : render_widget_host_(render_widget_host),
-      routing_id_(render_widget_host_->GetProcess()->GetNextRoutingID()) {
-  // TODO(lfg): We should look into adding a way to observe RenderWidgetHost
-  // messages similarly to what WebContentsObserver can do with RFH and RVW.
-  render_widget_host_->GetProcess()->AddRoute(routing_id_, this);
-}
+      routing_id_(render_widget_host_->GetProcess()->GetNextRoutingID()) {}
 
-MainThreadFrameObserver::~MainThreadFrameObserver() {
-  render_widget_host_->GetProcess()->RemoveRoute(routing_id_);
-}
+MainThreadFrameObserver::~MainThreadFrameObserver() = default;
 
 void MainThreadFrameObserver::Wait() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  render_widget_host_->Send(new WidgetMsg_WaitForNextFrameForTests(
-      render_widget_host_->GetRoutingID(), routing_id_));
+  static_cast<RenderWidgetHostImpl*>(render_widget_host_)
+      ->InsertVisualStateCallback(base::BindOnce(&MainThreadFrameObserver::Quit,
+                                                 base::Unretained(this)));
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();
 }
 
-void MainThreadFrameObserver::Quit() {
+void MainThreadFrameObserver::Quit(bool) {
   if (quit_closure_)
     std::move(quit_closure_).Run();
-}
-
-bool MainThreadFrameObserver::OnMessageReceived(const IPC::Message& msg) {
-  if (msg.type() == WidgetHostMsg_WaitForNextFrameForTests_ACK::ID &&
-      msg.routing_id() == routing_id_) {
-    GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&MainThreadFrameObserver::Quit, base::Unretained(this)));
-  }
-  return true;
 }
 
 InputMsgWatcher::InputMsgWatcher(RenderWidgetHost* render_widget_host,

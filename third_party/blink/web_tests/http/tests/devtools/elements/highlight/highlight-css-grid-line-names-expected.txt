@@ -97,6 +97,46 @@ grid-with-line-names{
   },
   "gridInfo": [
     {
+      "rotationAngle": 0,
+      "columnTrackSizes": [
+        {
+          "computedSize": 100,
+          "x": 50,
+          "y": 0
+        },
+        {
+          "computedSize": 500,
+          "x": 360,
+          "y": 0
+        },
+        {
+          "computedSize": 20,
+          "x": 630,
+          "y": 0
+        }
+      ],
+      "rowTrackSizes": [
+        {
+          "computedSize": 200,
+          "x": 0,
+          "y": 100
+        },
+        {
+          "computedSize": 200,
+          "x": 0,
+          "y": 310
+        },
+        {
+          "computedSize": 200,
+          "x": 0,
+          "y": 520
+        },
+        {
+          "computedSize": 200,
+          "x": 0,
+          "y": 730
+        }
+      ],
       "rows": [
         "M",
         0,

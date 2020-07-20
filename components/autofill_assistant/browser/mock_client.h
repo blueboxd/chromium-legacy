@@ -35,8 +35,10 @@ class MockClient : public Client {
                      password_manager::PasswordManagerClient*());
   MOCK_METHOD0(GetAccessTokenFetcher, AccessTokenFetcher*());
   MOCK_METHOD1(Shutdown, void(Metrics::DropOutReason reason));
+  MOCK_METHOD1(RecordDropOut, void(Metrics::DropOutReason reason));
   MOCK_METHOD0(AttachUI, void());
   MOCK_METHOD0(DestroyUI, void());
+  MOCK_CONST_METHOD0(HasHadUI, bool());
 
  private:
   std::unique_ptr<MockPersonalDataManager> mock_personal_data_manager_;

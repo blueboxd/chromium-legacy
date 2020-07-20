@@ -71,6 +71,14 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
         mAccountPickerDelegate.addAccount();
     }
 
+    /**
+     * Notifies when the user clicked the "Go Incognito mode" button.
+     */
+    @Override
+    public void goIncognitoMode() {
+        mAccountPickerDelegate.goIncognitoMode();
+    }
+
     PropertyModel getModel() {
         return mModel;
     }

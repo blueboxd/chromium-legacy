@@ -419,6 +419,9 @@ struct BASE_EXPORT PartitionRoot {
 #if ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_MTE_CHECKED_PTR
   internal::PartitionTag current_partition_tag = 0;
 #endif
+#if ENABLE_TAG_FOR_MTE_CHECKED_PTR
+  char* next_tag_bitmap_page = nullptr;
+#endif
 
   // Some pre-computed constants.
   size_t order_index_shifts[kBitsPerSizeT + 1] = {};
@@ -566,15 +569,17 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
     PA_DCHECK(raw_size == size);
     new_slot_size = raw_size;
   }
-  // Layout inside the slot: |tag|cookie|object|[empty]|cookie|
-  //                                    <--a--->
-  //                                    <------b------->
-  //                         <---------------c---------------->
+  // Layout inside the slot: |[tag]|cookie|object|[empty]|cookie|
+  //                                      <--a--->
+  //                                      <------b------->
+  //                         <-----------------c---------------->
   //   a: size
   //   b: size_with_no_extras
   //   c: new_slot_size
   // Note, empty space occurs if the slot size is larger than needed to
   // accommodate the request.
+  // The tag may or may not exist in the slot, depending on CheckedPtr
+  // implementation.
   size_t size_with_no_extras =
       internal::PartitionSizeAdjustSubtract(allow_extras, new_slot_size);
   // The value given to the application is just after the tag and cookie.
@@ -600,7 +605,9 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
   }
 
   if (allow_extras && !bucket->is_direct_mapped()) {
-    internal::PartitionTagSetValue(ret, page->bucket->slot_size,
+    size_t slot_size_with_no_extras = internal::PartitionSizeAdjustSubtract(
+        allow_extras, page->bucket->slot_size);
+    internal::PartitionTagSetValue(ret, slot_size_with_no_extras,
                                    GetNewPartitionTag());
   }
 
@@ -627,8 +634,10 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::Free(void* ptr) {
   PA_DCHECK(IsValidPage(page));
   auto* root = PartitionRoot<thread_safe>::FromPage(page);
   if (root->allow_extras && !page->bucket->is_direct_mapped()) {
+    size_t size_with_no_extras = internal::PartitionSizeAdjustSubtract(
+        root->allow_extras, page->bucket->slot_size);
     // TODO(tasak): clear partition tag. Temporarily set the tag to be 0.
-    internal::PartitionTagClearValue(ptr, page->bucket->slot_size);
+    internal::PartitionTagClearValue(ptr, size_with_no_extras);
   }
   ptr = internal::PartitionPointerAdjustSubtract(root->allow_extras, ptr);
   internal::DeferredUnmap deferred_unmap;

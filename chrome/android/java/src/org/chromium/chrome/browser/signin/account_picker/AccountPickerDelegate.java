@@ -84,4 +84,9 @@ public class AccountPickerDelegate {
                     }
                 });
     }
+
+    /**
+     * Notifies when the user clicked the "Go incognito mode" button.
+     */
+    public void goIncognitoMode() {}
 }

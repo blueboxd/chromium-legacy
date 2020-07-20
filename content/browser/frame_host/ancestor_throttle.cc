@@ -8,6 +8,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/util/ranges/algorithm.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -79,27 +80,15 @@ void RecordXFrameOptionsUsage(XFrameOptionsHistogram usage) {
       XFrameOptionsHistogram::XFRAMEOPTIONS_HISTOGRAM_MAX);
 }
 
-bool HeadersContainFrameAncestorsCSP(const net::HttpResponseHeaders* headers,
-                                     bool include_report_only) {
-  std::vector<std::string> header_names = {"content-security-policy"};
-  if (include_report_only)
-    header_names.push_back("content-security-policy-report-only");
-  for (const auto& header : header_names) {
-    size_t iter = 0;
-    std::string value;
-    while (headers->EnumerateHeader(&iter, header, &value)) {
-      // A content-security-policy is a semicolon-separated list of directives.
-      for (const auto& directive : base::SplitStringPiece(
-               value, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
-        // The trailing " " is intentional; we'd otherwise match
-        // "frame-ancestors-is-not-this-directive".
-        if (base::StartsWith(directive, "frame-ancestors ",
-                             base::CompareCase::INSENSITIVE_ASCII))
-          return true;
-      }
-    }
-  }
-  return false;
+bool HeadersContainFrameAncestorsCSP(
+    const network::mojom::ParsedHeadersPtr& headers) {
+  return util::ranges::any_of(
+      headers->content_security_policy, [](const auto& csp) {
+        return csp->header->type ==
+                   network::mojom::ContentSecurityPolicyType::kEnforce &&
+               csp->directives.count(
+                   network::mojom::CSPDirectiveName::FrameAncestors);
+      });
 }
 
 class FrameAncestorCSPContext : public network::CSPContext {
@@ -285,6 +274,16 @@ AncestorThrottle::CheckResult AncestorThrottle::EvaluateXFrameOptions(
   HeaderDisposition disposition =
       ParseXFrameOptionsHeader(request->GetResponseHeaders(), &header_value);
 
+  // If 'X-Frame-Options' would potentially block the response, check whether
+  // the 'frame-ancestors' CSP directive should take effect instead. See
+  // https://www.w3.org/TR/CSP/#frame-ancestors-and-frame-options
+  if (disposition != HeaderDisposition::NONE &&
+      disposition != HeaderDisposition::ALLOWALL &&
+      HeadersContainFrameAncestorsCSP(request->response()->parsed_headers)) {
+    RecordXFrameOptionsUsage(XFrameOptionsHistogram::BYPASS);
+    return CheckResult::PROCEED;
+  }
+
   switch (disposition) {
     case HeaderDisposition::CONFLICT:
       if (logging == LoggingDisposition::LOG_TO_CONSOLE)
@@ -338,9 +337,6 @@ AncestorThrottle::CheckResult AncestorThrottle::EvaluateXFrameOptions(
 
     case HeaderDisposition::NONE:
       RecordXFrameOptionsUsage(XFrameOptionsHistogram::NONE);
-      return CheckResult::PROCEED;
-    case HeaderDisposition::BYPASS:
-      RecordXFrameOptionsUsage(XFrameOptionsHistogram::BYPASS);
       return CheckResult::PROCEED;
     case HeaderDisposition::ALLOWALL:
       RecordXFrameOptionsUsage(XFrameOptionsHistogram::ALLOWALL);
@@ -522,18 +518,6 @@ AncestorThrottle::HeaderDisposition AncestorThrottle::ParseXFrameOptionsHeader(
       result = current;
     else if (result != current)
       result = HeaderDisposition::CONFLICT;
-  }
-
-  // If 'X-Frame-Options' would potentially block the response, check whether
-  // the 'frame-ancestors' CSP directive should take effect instead. See
-  // https://www.w3.org/TR/CSP/#frame-ancestors-and-frame-options
-  if (result != HeaderDisposition::NONE &&
-      result != HeaderDisposition::ALLOWALL &&
-      // TODO(antoniosartori): Use the already parsed CSP header instead of the
-      // raw headers here as soon as we remove
-      // network::features::kOutOfBlinkFrameAncestors
-      HeadersContainFrameAncestorsCSP(headers, false)) {
-    return HeaderDisposition::BYPASS;
   }
 
   return result;

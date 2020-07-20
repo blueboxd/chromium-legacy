@@ -717,7 +717,9 @@ void PushMessagingServiceImpl::SubscribeEnd(
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth,
     blink::mojom::PushRegistrationStatus status) {
-  std::move(callback).Run(subscription_id, endpoint, p256dh, auth, status);
+  std::move(callback).Run(subscription_id, endpoint,
+                          base::nullopt /* expiration_time*/, p256dh, auth,
+                          status);
 }
 
 void PushMessagingServiceImpl::SubscribeEndWithError(
@@ -798,6 +800,8 @@ void PushMessagingServiceImpl::DidSubscribeWithEncryptionInfo(
 
 // GetSubscriptionInfo methods -------------------------------------------------
 
+// TODO(crbug.com/1104215): Get |expiration_time| from |app_identifier|, where
+// it is stored in profile preferences
 void PushMessagingServiceImpl::GetSubscriptionInfo(
     const GURL& origin,
     int64_t service_worker_registration_id,
@@ -811,6 +815,7 @@ void PushMessagingServiceImpl::GetSubscriptionInfo(
   if (app_identifier.is_null()) {
     std::move(callback).Run(
         false /* is_valid */, GURL::EmptyGURL() /*endpoint*/,
+        base::nullopt /* expiration_time */,
         std::vector<uint8_t>() /* p256dh */, std::vector<uint8_t>() /* auth */);
     return;
   }
@@ -842,6 +847,7 @@ void PushMessagingServiceImpl::DidValidateSubscription(
   if (!is_valid) {
     std::move(callback).Run(
         false /* is_valid */, GURL::EmptyGURL() /* endpoint */,
+        base::nullopt /* expiration_time */,
         std::vector<uint8_t>() /* p256dh */, std::vector<uint8_t>() /* auth */);
     return;
   }
@@ -861,7 +867,8 @@ void PushMessagingServiceImpl::DidGetEncryptionInfo(
   // I/O errors might prevent the GCM Driver from retrieving a key-pair.
   bool is_valid = !p256dh.empty();
   std::move(callback).Run(
-      is_valid, endpoint, std::vector<uint8_t>(p256dh.begin(), p256dh.end()),
+      is_valid, endpoint, base::nullopt /* expiration_time */,
+      std::vector<uint8_t>(p256dh.begin(), p256dh.end()),
       std::vector<uint8_t>(auth_secret.begin(), auth_secret.end()));
 }
 

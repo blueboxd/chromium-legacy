@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/time/time.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -167,14 +168,16 @@ class PushMessagingManager::Core {
   // Public GetSubscription methods on UI thread -------------------------------
 
   // Callback called on UI thread.
-  void GetSubscriptionDidGetInfoOnUI(GetSubscriptionCallback callback,
-                                     const GURL& origin,
-                                     int64_t service_worker_registration_id,
-                                     const std::string& application_server_key,
-                                     bool is_valid,
-                                     const GURL& endpoint,
-                                     const std::vector<uint8_t>& p256dh,
-                                     const std::vector<uint8_t>& auth);
+  void GetSubscriptionDidGetInfoOnUI(
+      GetSubscriptionCallback callback,
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      const std::string& application_server_key,
+      bool is_valid,
+      const GURL& endpoint,
+      const base::Optional<base::Time>& expiration_time,
+      const std::vector<uint8_t>& p256dh,
+      const std::vector<uint8_t>& auth);
 
   // Callback called on UI thread.
   void GetSubscriptionDidUnsubscribe(
@@ -216,6 +219,7 @@ class PushMessagingManager::Core {
   void DidRegister(RegisterData data,
                    const std::string& push_subscription_id,
                    const GURL& endpoint,
+                   const base::Optional<base::Time>& expiration_time,
                    const std::vector<uint8_t>& p256dh,
                    const std::vector<uint8_t>& auth,
                    blink::mojom::PushRegistrationStatus status);
@@ -505,10 +509,14 @@ void PushMessagingManager::Core::DidRequestPermissionInIncognito(
           blink::mojom::PushRegistrationStatus::INCOGNITO_PERMISSION_DENIED));
 }
 
+// TODO(crbug.com/1104215): Handle expiration_time that is passed from push
+// service check if |expiration_time| is valid before saving it in |data| and
+// passing it back in SendSubscriptionSuccess
 void PushMessagingManager::Core::DidRegister(
     RegisterData data,
     const std::string& push_subscription_id,
     const GURL& endpoint,
+    const base::Optional<base::Time>& expiration_time,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth,
     blink::mojom::PushRegistrationStatus status) {
@@ -534,6 +542,8 @@ void PushMessagingManager::Core::DidRegister(
                            : blink::mojom::PushRegistrationStatus::
                                  SUCCESS_FROM_PUSH_SERVICE));
   } else {
+    // TODO(crbug.com/646721): for invalid |expiration_time| send a subscription
+    // error with a new PushRegistrationStatus
     RunOrPostTaskOnThread(
         FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
         base::BindOnce(&PushMessagingManager::SendSubscriptionError, sw_parent_,
@@ -844,6 +854,7 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
     const std::string& application_server_key,
     bool is_valid,
     const GURL& endpoint,
+    const base::Optional<base::Time>& expiration_time,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -861,14 +872,12 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
     blink::mojom::PushGetRegistrationStatus status =
         blink::mojom::PushGetRegistrationStatus::SUCCESS;
 
-    // TODO(crbug.com/1104215): Get expiration_time from push_service in
-    // Core::GetSubscriptionInfoOnUI
     RunOrPostTaskOnThread(
         FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-        base::BindOnce(std::move(callback), status,
-                       blink::mojom::PushSubscription::New(
-                           endpoint, base::nullopt /* expiration_time */,
-                           std::move(options), p256dh, auth)));
+        base::BindOnce(
+            std::move(callback), status,
+            blink::mojom::PushSubscription::New(
+                endpoint, expiration_time, std::move(options), p256dh, auth)));
 
     RecordGetRegistrationStatus(status);
   } else {
@@ -930,6 +939,7 @@ void PushMessagingManager::Core::GetSubscriptionInfoOnUI(
   if (!push_service) {
     std::move(callback).Run(
         false /* is_valid */, GURL::EmptyGURL() /* endpoint */,
+        base::nullopt /* expiration_time */,
         std::vector<uint8_t>() /* p256dh */, std::vector<uint8_t>() /* auth */);
     return;
   }

@@ -84,7 +84,15 @@ class Client {
 
   // Stops autofill assistant for the current WebContents, both controller
   // and UI.
+  // The reason is ignored if RecordDropOut has been previously called.
   virtual void Shutdown(Metrics::DropOutReason reason) = 0;
+
+  // Records the reason of the drop out. Any subsequent reason for the current
+  // run will be ignored.
+  virtual void RecordDropOut(Metrics::DropOutReason reason) = 0;
+
+  // Whether this client has had an UI.
+  virtual bool HasHadUI() const = 0;
 
  protected:
   Client() = default;

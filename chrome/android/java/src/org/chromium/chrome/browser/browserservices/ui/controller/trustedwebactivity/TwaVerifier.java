@@ -44,6 +44,7 @@ public class TwaVerifier implements Verifier, Destroyable {
      */
     @Nullable
     private Set<Origin> mPendingOrigins;
+    private boolean mDestroyed;
 
     /**
      * All the origins that have been successfully verified.
@@ -69,8 +70,7 @@ public class TwaVerifier implements Verifier, Destroyable {
 
     @Override
     public void destroy() {
-        // Verification may finish after activity is destroyed.
-        mOriginVerifier.removeListener();
+        mDestroyed = true;
     }
 
     @Override
@@ -81,6 +81,8 @@ public class TwaVerifier implements Verifier, Destroyable {
         Promise<Boolean> promise = new Promise<>();
         if (getPendingOrigins().contains(origin)) {
             mOriginVerifier.start((packageName, unused, verified, online) -> {
+                if (mDestroyed) return;
+
                 getPendingOrigins().remove(origin);
                 if (verified) mVerifiedOrigins.add(origin);
 

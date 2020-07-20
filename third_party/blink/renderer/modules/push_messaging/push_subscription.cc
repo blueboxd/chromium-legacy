@@ -49,6 +49,19 @@ String ToBase64URLWithoutPadding(DOMArrayBuffer* buffer) {
   return value;
 }
 
+// Converts a {base::Optional<base::Time>} into a
+// {base::Optional<base::DOMTimeStamp>} object.
+// base::Time is in milliseconds from Windows epoch (1601-01-01 00:00:00 UTC)
+// while blink::DOMTimeStamp is in milliseconds from UNIX epoch (1970-01-01
+// 00:00:00 UTC)
+base::Optional<blink::DOMTimeStamp> ToDOMTimeStamp(
+    const base::Optional<base::Time>& time) {
+  if (time)
+    return ConvertSecondsToDOMTimeStamp(time->ToDoubleT());
+
+  return base::nullopt;
+}
+
 }  // namespace
 
 // static
@@ -58,7 +71,8 @@ PushSubscription* PushSubscription::Create(
   return MakeGarbageCollected<PushSubscription>(
       subscription->endpoint, subscription->options->user_visible_only,
       subscription->options->application_server_key, subscription->p256dh,
-      subscription->auth, service_worker_registration);
+      subscription->auth, ToDOMTimeStamp(subscription->expirationTime),
+      service_worker_registration);
 }
 
 PushSubscription::PushSubscription(
@@ -67,8 +81,8 @@ PushSubscription::PushSubscription(
     const WTF::Vector<uint8_t>& application_server_key,
     const WTF::Vector<unsigned char>& p256dh,
     const WTF::Vector<unsigned char>& auth,
-    ServiceWorkerRegistration* service_worker_registration,
-    const base::Optional<DOMTimeStamp> expiration_time)
+    const base::Optional<DOMTimeStamp>& expiration_time,
+    ServiceWorkerRegistration* service_worker_registration)
     : endpoint_(endpoint),
       options_(MakeGarbageCollected<PushSubscriptionOptions>(
           user_visible_only,
@@ -77,8 +91,8 @@ PushSubscription::PushSubscription(
                                      SafeCast<unsigned>(p256dh.size()))),
       auth_(
           DOMArrayBuffer::Create(auth.data(), SafeCast<unsigned>(auth.size()))),
-      service_worker_registration_(service_worker_registration),
-      expiration_time_(expiration_time) {}
+      expiration_time_(expiration_time),
+      service_worker_registration_(service_worker_registration) {}
 
 PushSubscription::~PushSubscription() = default;
 

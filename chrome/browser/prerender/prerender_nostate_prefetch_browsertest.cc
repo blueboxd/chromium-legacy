@@ -76,6 +76,7 @@
 
 using prerender::test_utils::DestructionWaiter;
 using prerender::test_utils::TestPrerender;
+using task_manager::browsertest_util::WaitForTaskManagerRows;
 
 namespace {
 
@@ -1450,6 +1451,16 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 0);
 }
 
+// Ensures that server redirects to a malware page will cancel prerenders.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ServerRedirect) {
+  GURL url = src_server()->GetURL("/prerender/prerender_page.html");
+  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
+      url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
+  PrefetchFromURL(src_server()->GetURL(
+                      CreateServerRedirect("/prerender/prerender_page.html")),
+                  FINAL_STATUS_SAFE_BROWSING, 0);
+}
+
 // If a subresource is unsafe, the corresponding request is cancelled.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
                        PrerenderSafeBrowsingSubresource) {
@@ -1862,6 +1873,32 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchOmniboxBrowserTest,
   // Revert the location bar. This should cancel the prerender.
   GetLocationBar()->Revert();
   prerender->WaitForStop();
+}
+
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, OpenTaskManager) {
+  const base::string16 any_tab = MatchTaskManagerTab("*");
+  const base::string16 original = MatchTaskManagerTab("Prefetch Loader");
+  const base::string16 prefetch_page = MatchTaskManagerTab("Prefetch Page");
+
+  // Show the task manager. This populates the model.
+  chrome::OpenTaskManager(current_browser());
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_tab));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, prefetch_page));
+
+  // Prerender a page in addition to the original tab.
+  PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, original));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_tab));
+
+  // ui_test_utils::NavigateToURL(current_browser(),
+  //                             src_server()->GetURL(kPrefetchPage));
+  // Open a new tab to replace the one closed with all the RenderProcessHosts.
+  ui_test_utils::NavigateToURLWithDisposition(
+      current_browser(), src_server()->GetURL(kPrefetchPage),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, prefetch_page));
 }
 
 }  // namespace prerender

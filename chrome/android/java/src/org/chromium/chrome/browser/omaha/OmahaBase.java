@@ -65,11 +65,14 @@ public class OmahaBase {
         public final String latestVersion;
         public final String downloadUrl;
         public final int serverDate;
+        public final String updateStatus;
 
-        protected VersionConfig(String latestVersion, String downloadUrl, int serverDate) {
+        protected VersionConfig(
+                String latestVersion, String downloadUrl, int serverDate, String updateStatus) {
             this.latestVersion = latestVersion;
             this.downloadUrl = downloadUrl;
             this.serverDate = serverDate;
+            this.updateStatus = updateStatus;
         }
     }
 
@@ -203,6 +206,11 @@ public class OmahaBase {
             return (mRequestErrorCode == RequestFailureException.ERROR_CONNECTIVITY)
                     ? UpdateStatus.OFFLINE
                     : UpdateStatus.FAILED;
+        }
+        // If the version matches exactly, the Omaha server will return status="noupdate" without
+        // providing the latest version number.
+        if (versionConfig.updateStatus != null && versionConfig.updateStatus.equals("noupdate")) {
+            return UpdateStatus.UPDATED;
         }
         Log.i(TAG,
                 "OmahaBase::checkForUpdates(): Received latest version String from Omaha "
@@ -642,6 +650,8 @@ public class OmahaBase {
     static VersionConfig getVersionConfig(SharedPreferences sharedPref) {
         return new VersionConfig(sharedPref.getString(OmahaBase.PREF_LATEST_VERSION, ""),
                 sharedPref.getString(OmahaBase.PREF_MARKET_URL, ""),
-                sharedPref.getInt(OmahaBase.PREF_SERVER_DATE, -2));
+                sharedPref.getInt(OmahaBase.PREF_SERVER_DATE, -2),
+                // updateStatus is only used for the on-demand check.
+                null);
     }
 }

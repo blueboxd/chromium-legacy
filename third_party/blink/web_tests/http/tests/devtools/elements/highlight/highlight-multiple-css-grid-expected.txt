@@ -3,6 +3,31 @@ This test verifies the position and size of the highlight rectangles overlayed o
 {
   "gridHighlights": [
     {
+      "rotationAngle": -90,
+      "columnTrackSizes": [
+        {
+          "computedSize": 50,
+          "x": 118,
+          "y": 1173
+        },
+        {
+          "computedSize": 200,
+          "x": 118,
+          "y": 1023
+        }
+      ],
+      "rowTrackSizes": [
+        {
+          "computedSize": 25,
+          "x": 130.5,
+          "y": 1198
+        },
+        {
+          "computedSize": 25,
+          "x": 170.5,
+          "y": 1198
+        }
+      ],
       "rows": [
         "M",
         173,
@@ -140,6 +165,31 @@ This test verifies the position and size of the highlight rectangles overlayed o
       "isPrimaryGrid": true
     },
     {
+      "rotationAngle": -90,
+      "columnTrackSizes": [
+        {
+          "computedSize": 50,
+          "x": 108,
+          "y": 1183
+        },
+        {
+          "computedSize": 1200,
+          "x": 108,
+          "y": 508
+        }
+      ],
+      "rowTrackSizes": [
+        {
+          "computedSize": 100,
+          "x": 158,
+          "y": 1208
+        },
+        {
+          "computedSize": 100,
+          "x": 278,
+          "y": 1208
+        }
+      ],
       "rows": [
         "M",
         108,

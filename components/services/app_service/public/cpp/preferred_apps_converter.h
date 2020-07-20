@@ -16,12 +16,14 @@ extern const char kValueKey[];
 extern const char kMatchTypeKey[];
 extern const char kAppIdKey[];
 extern const char kIntentFilterKey[];
+extern const char kPreferredAppsKey[];
+extern const char kVersionKey[];
 
 // Convert the PreferredAppsList struct to base::Value to write to JSON file.
 // e.g. for preferred app with |app_id| "abcdefg", and |intent_filter| for url
 // https://www.google.com/abc.
 // The converted base::Value format will be:
-//[ {"app_id": "abcdefg",
+//{"preferred_apps": [ {"app_id": "abcdefg",
 //    "intent_filter": [ {
 //       "condition_type": 0,
 //       "condition_values": [ {
@@ -41,17 +43,21 @@ extern const char kIntentFilterKey[];
 //          "value": "/abc"
 //       } ]
 //    } ]
-// } ]
+// } ],
+// "version": 0}
 base::Value ConvertPreferredAppsToValue(
-    const PreferredAppsList::PreferredApps& preferred_apps);
+    const PreferredAppsList::PreferredApps& preferred_apps,
+    bool upgraded_for_sharing = false);
 
 // Parse the base::Value read from JSON file back to preferred apps struct.
 PreferredAppsList::PreferredApps ParseValueToPreferredApps(
     const base::Value& preferred_apps_value);
 
-// Upgrade the preferred apps struct to contain action in the filters. Return
-// true if |preferred_apps| is upgraded.
-bool UpgradePreferredApps(PreferredAppsList::PreferredApps& preferred_apps);
+// Upgrade the preferred apps struct to contain action in the filters.
+void UpgradePreferredApps(PreferredAppsList::PreferredApps& preferred_apps);
+
+// Check if the preferred apps file already upgraded for supporting sharing.
+bool IsUpgradedForSharing(const base::Value& preferred_apps_value);
 
 }  // namespace apps
 

@@ -62,7 +62,6 @@ namespace resource_coordinator {
 
 namespace {
 
-constexpr char kBlinkPageLifecycleFeature[] = "PageLifecycle";
 constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromSeconds(1);
 
 bool ObserveNavEntryCommitted(const GURL& expected_url,
@@ -151,11 +150,6 @@ class TabManagerTest : public InProcessBrowserTest {
     // Start with a non-null TimeTicks, as there is no discard protection for
     // a tab with a null focused timestamp.
     test_clock_.Advance(kShortDelay);
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    kBlinkPageLifecycleFeature);
   }
 
   void SetUpOnMainThread() override {

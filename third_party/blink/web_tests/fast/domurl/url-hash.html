@@ -20,7 +20,7 @@ test(function() {
 
     url.hash = '#';
     assert_equals(url.hash, '');
-    assert_equals(url.toString(), 'http://www.domain.com/');
+    assert_equals(url.toString(), 'http://www.domain.com/#');
 
     url.hash = 'a';
     assert_equals(url.hash, '#a');

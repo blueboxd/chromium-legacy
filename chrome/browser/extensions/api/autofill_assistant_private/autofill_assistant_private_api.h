@@ -216,6 +216,8 @@ class AutofillAssistantPrivateAPI : public BrowserContextKeyedAPI,
   bool IsAccessibilityEnabled() const override;
   void Shutdown(autofill_assistant::Metrics::DropOutReason reason) override;
   content::WebContents* GetWebContents() const override;
+  void RecordDropOut(Metrics::DropOutReason reason) override;
+  bool HasHadUI() const override;
 
   // BrowserContextKeyedAPI:
   void Shutdown() override;

@@ -383,6 +383,13 @@ bool AutofillAssistantPrivateAPI::IsAccessibilityEnabled() const {
 void AutofillAssistantPrivateAPI::Shutdown(
     autofill_assistant::Metrics::DropOutReason reason) {}
 
+void AutofillAssistantPrivateAPI::RecordDropOut(
+    autofill_assistant::Metrics::DropOutReason reason) {}
+
+void bool AutofillAssistantPrivateAPI::HasHadUI() {
+  return true;
+}
+
 // Note that this method implements autofill_assistant::Client and simply
 // forwards the web_contents associated with the controller. There is no reason
 // to use this method in this context.

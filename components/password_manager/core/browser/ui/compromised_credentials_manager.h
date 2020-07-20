@@ -43,14 +43,20 @@ constexpr CompromiseTypeFlags operator|(CompromiseTypeFlags lhs,
 // Simple struct that augments key values of CompromisedCredentials and a
 // password.
 struct CredentialView {
-  CredentialView() = default;
-  // Enable explicit construction from the autofill::PasswordForm
-  explicit CredentialView(const autofill::PasswordForm& form)
-      : signon_realm(form.signon_realm),
-        username(form.username_value),
-        password(form.password_value) {}
+  CredentialView(std::string signon_realm,
+                 GURL url,
+                 base::string16 username,
+                 base::string16 password);
+  // Enable explicit construction from autofill::PasswordForm for convenience.
+  explicit CredentialView(const autofill::PasswordForm& form);
+  CredentialView(const CredentialView& credential);
+  CredentialView(CredentialView&& credential);
+  CredentialView& operator=(const CredentialView& credential);
+  CredentialView& operator=(CredentialView&& credential);
+  ~CredentialView();
 
   std::string signon_realm;
+  GURL url;
   base::string16 username;
   base::string16 password;
 };

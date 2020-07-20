@@ -135,7 +135,6 @@ using content::WebContents;
 using content::WebContentsObserver;
 using prerender::test_utils::TestPrerender;
 using prerender::test_utils::TestPrerenderContents;
-using task_manager::browsertest_util::WaitForTaskManagerRows;
 
 // crbug.com/708158
 #if !defined(OS_MACOSX) || !defined(ADDRESS_SANITIZER)
@@ -153,13 +152,6 @@ using task_manager::browsertest_util::WaitForTaskManagerRows;
 namespace prerender {
 
 namespace {
-
-const char kPrefetchJpeg[] = "/prerender/image.jpeg";
-
-std::string CreateServerRedirect(const std::string& dest_url) {
-  const char* const kServerRedirectBase = "/server-redirect?";
-  return kServerRedirectBase + net::EscapeQueryParamValue(dest_url, false);
-}
 
 // Returns true if the prerender is expected to abort on its own, before
 // attempting to swap it.
@@ -417,11 +409,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     test_utils::PrerenderInProcessBrowserTest::SetUpOnMainThread();
     prerender::PrerenderManager::SetMode(
         prerender::PrerenderManager::DEPRECATED_PRERENDER_MODE_ENABLED);
-    const testing::TestInfo* const test_info =
-        testing::UnitTest::GetInstance()->current_test_info();
-    // This one test fails with the host resolver redirecting all hosts.
-    if (std::string(test_info->name()) != "PrerenderServerRedirectInIframe")
-      host_resolver()->AddRule("*", "127.0.0.1");
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 
   void TearDownOnMainThread() override {
@@ -781,21 +769,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttpAuthentication) {
                    FINAL_STATUS_AUTH_NEEDED, 0);
 }
 
-// Checks that server-issued redirects within an iframe in a prerendered
-// page will not count as an "alias" for the prerendered page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderServerRedirectInIframe) {
-  std::string redirect_path =
-      CreateServerRedirect("//prerender/prerender_embedded_content.html");
-  base::StringPairs replacement_text;
-  replacement_text.push_back(std::make_pair("REPLACE_WITH_URL", redirect_path));
-  std::string replacement_path = net::test_server::GetFilePathWithReplacements(
-      "/prerender/prerender_with_iframe.html", replacement_text);
-  PrerenderTestURL(replacement_path, FINAL_STATUS_USED, 1);
-  EXPECT_FALSE(
-      UrlIsInPrerenderManager("/prerender/prerender_embedded_content.html"));
-  NavigateToDestURL();
-}
-
 // Checks that the referrer is set when prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrer) {
   PrerenderTestURL("/prerender/prerender_referrer.html", FINAL_STATUS_USED, 1);
@@ -816,75 +789,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoSSLReferrer) {
   NavigateToDestURL();
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerBeforePrerender) {
-  const base::string16 any_prerender = MatchTaskManagerPrerender("*");
-  const base::string16 any_tab = MatchTaskManagerTab("*");
-  const base::string16 original = MatchTaskManagerTab("Preloader");
-  const base::string16 prerender = MatchTaskManagerPrerender("Prerender Page");
-  const base::string16 final = MatchTaskManagerTab("Prerender Page");
-
-  // Show the task manager. This populates the model.
-  chrome::OpenTaskManager(current_browser());
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_tab));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, any_prerender));
-
-  // Prerender a page in addition to the original tab.
-  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
-
-  // A TaskManager entry should appear like "Prerender: Prerender Page"
-  // alongside the original tab entry. There should be just these two entries.
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, prerender));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, original));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, final));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_prerender));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_tab));
-
-  // Swap in the prerendered content.
-  NavigateToDestURL();
-
-  // The "Prerender: " TaskManager entry should disappear, being replaced by a
-  // "Tab: Prerender Page" entry, and nothing else.
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, prerender));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, original));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, final));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_tab));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, any_prerender));
-}
-
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerAfterPrerender) {
-  const base::string16 any_prerender = MatchTaskManagerPrerender("*");
-  const base::string16 any_tab = MatchTaskManagerTab("*");
-  const base::string16 original = MatchTaskManagerTab("Preloader");
-  const base::string16 prerender = MatchTaskManagerPrerender("Prerender Page");
-  const base::string16 final = MatchTaskManagerTab("Prerender Page");
-
-  // Start with two resources.
-  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
-
-  // Show the task manager. This populates the model. Importantly, we're doing
-  // this after the prerender WebContents already exists - the task manager
-  // needs to find it, it can't just listen for creation.
-  chrome::OpenTaskManager(current_browser());
-
-  // A TaskManager entry should appear like "Prerender: Prerender Page"
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, prerender));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, original));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, final));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_prerender));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_tab));
-
-  // Swap in the tab.
-  NavigateToDestURL();
-
-  // The "Prerender: Prerender Page" TaskManager row should disappear, being
-  // replaced by "Tab: Prerender Page"
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, prerender));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, original));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, final));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, any_tab));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, any_prerender));
-}
-
 // Checks that the referrer policy is used when prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrerPolicy) {
   set_loader_path("/prerender/prerender_loader_with_referrer_policy.html");
@@ -901,81 +805,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLReferrerPolicy) {
                    FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
-
-// Test interaction of Safe Browsing with prerender. Parametrized to enable
-// SafeBrowsing Delayed Warnings experiment. The experiment shouldn't delay
-// prerender page loads. Otherwise, the tests will crash or timeout.
-// The experiment only delays phishing warnings so the tests must use a phishing
-// resource.
-class PrerenderSafeBrowsingTest
-    : public PrerenderBrowserTest,
-      public testing::WithParamInterface<
-          testing::tuple<bool /* Enable delayed warnings experiment */>> {
- public:
-  PrerenderSafeBrowsingTest() {
-    if (testing::get<0>(GetParam())) {
-      scoped_feature_list_.InitWithFeatures(
-          /*enabled_features=*/{safe_browsing::kDelayedWarnings},
-          /*disabled_features=*/{});
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// Ensures that we do not prerender pages with a safe browsing
-// interstitial.
-IN_PROC_BROWSER_TEST_P(PrerenderSafeBrowsingTest, TopLevel) {
-  GURL url = embedded_test_server()->GetURL("/prerender/prerender_page.html");
-  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
-      url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
-  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_SAFE_BROWSING,
-                   0);
-}
-
-// Ensures that server redirects to a malware page will cancel prerenders.
-IN_PROC_BROWSER_TEST_P(PrerenderSafeBrowsingTest, ServerRedirect) {
-  GURL url = embedded_test_server()->GetURL("/prerender/prerender_page.html");
-  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
-      url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
-  PrerenderTestURL(CreateServerRedirect("/prerender/prerender_page.html"),
-                   FINAL_STATUS_SAFE_BROWSING, 0);
-}
-
-// Ensures that we do not prerender pages which have a malware subresource.
-IN_PROC_BROWSER_TEST_P(PrerenderSafeBrowsingTest, Subresource) {
-  GURL image_url = embedded_test_server()->GetURL(kPrefetchJpeg);
-  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
-      image_url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
-  base::StringPairs replacement_text;
-  replacement_text.push_back(
-      std::make_pair("REPLACE_WITH_IMAGE_URL", image_url.spec()));
-  std::string replacement_path = net::test_server::GetFilePathWithReplacements(
-      "/prerender/prerender_with_image.html", replacement_text);
-  PrerenderTestURL(replacement_path, FINAL_STATUS_SAFE_BROWSING, 0);
-}
-
-// Ensures that we do not prerender pages which have a malware iframe.
-IN_PROC_BROWSER_TEST_P(PrerenderSafeBrowsingTest, Iframe) {
-  GURL iframe_url = embedded_test_server()->GetURL(
-      "/prerender/prerender_embedded_content.html");
-  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
-      iframe_url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
-  base::StringPairs replacement_text;
-  replacement_text.push_back(
-      std::make_pair("REPLACE_WITH_URL", iframe_url.spec()));
-  std::string replacement_path = net::test_server::GetFilePathWithReplacements(
-      "/prerender/prerender_with_iframe.html", replacement_text);
-  PrerenderTestURL(replacement_path, FINAL_STATUS_SAFE_BROWSING, 0);
-}
-
-INSTANTIATE_TEST_SUITE_P(PrerenderSafeBrowsingTest,
-                         PrerenderSafeBrowsingTest,
-                         testing::Combine(testing::Values(
-                             false,
-                             true)) /* Enable delayed warnings experiment */
-);
 
 }  // namespace prerender
 

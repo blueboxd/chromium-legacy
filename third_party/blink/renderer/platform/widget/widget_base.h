@@ -39,6 +39,7 @@ class ImeEventGuard;
 class LayerTreeView;
 class WidgetBaseClient;
 class WidgetInputHandlerManager;
+class WidgetCompositor;
 
 namespace scheduler {
 class WebRenderWidgetSchedulingState;
@@ -210,6 +211,13 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
                CrossVariantMojoRemote<
                    mojom::blink::PointerLockContextInterfaceBase>)> callback);
 
+  void BindWidgetCompositor(
+      mojo::PendingReceiver<mojom::blink::WidgetCompositor> receiver);
+
+  base::WeakPtr<WidgetBase> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  private:
   bool CanComposeInline();
   void UpdateTextInputStateInternal(bool show_virtual_keyboard,
@@ -237,6 +245,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   base::TimeTicks was_shown_time_ = base::TimeTicks::Now();
   bool has_focus_ = false;
   WidgetBaseInputHandler input_handler_{this};
+  scoped_refptr<WidgetCompositor> widget_compositor_;
 
   // Stores the current selection bounds.
   gfx::Rect selection_focus_rect_;

@@ -1375,6 +1375,7 @@ InspectorOverlayAgent::ToGridHighlightConfig(
       config->getShowGridExtensionLines(false);
   highlight_config->grid_border_dash = config->getGridBorderDash(false);
   highlight_config->cell_border_dash = config->getCellBorderDash(false);
+  highlight_config->show_track_sizes = config->getShowTrackSizes(false);
   highlight_config->grid_color =
       InspectorDOMAgent::ParseColor(config->getGridBorderColor(nullptr));
   highlight_config->cell_color =

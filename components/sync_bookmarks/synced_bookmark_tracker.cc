@@ -5,7 +5,6 @@
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
 
 #include <algorithm>
-#include <set>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -445,6 +444,7 @@ SyncedBookmarkTracker::BuildBookmarkModelMetadata() const {
   sync_pb::BookmarkModelMetadata model_metadata;
   model_metadata.set_bookmarks_full_title_reuploaded(
       bookmarks_full_title_reuploaded_);
+  model_metadata.set_last_sync_time(syncer::TimeToProtoTime(last_sync_time_));
   for (const std::pair<const std::string, std::unique_ptr<Entity>>& pair :
        sync_id_to_entities_map_) {
     DCHECK(pair.second) << " for ID " << pair.first;
@@ -707,7 +707,7 @@ SyncedBookmarkTracker::ReorderUnsyncedEntitiesExceptDeletions(
   //    node. What's left in |nodes| are the roots of the forest.
   // 3. Start at each root in |nodes|, emit the update and recurse over its
   //    children.
-  std::set<const bookmarks::BookmarkNode*> nodes;
+  std::unordered_set<const bookmarks::BookmarkNode*> nodes;
   // Collect nodes with updates
   for (const SyncedBookmarkTracker::Entity* entity : entities) {
     DCHECK(entity->IsUnsynced());

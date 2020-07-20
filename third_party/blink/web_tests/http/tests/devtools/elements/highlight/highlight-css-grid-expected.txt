@@ -98,6 +98,31 @@ paddedGrid{
   },
   "gridInfo": [
     {
+      "rotationAngle": -90,
+      "columnTrackSizes": [
+        {
+          "computedSize": 50,
+          "x": 118,
+          "y": 1173
+        },
+        {
+          "computedSize": 200,
+          "x": 118,
+          "y": 1023
+        }
+      ],
+      "rowTrackSizes": [
+        {
+          "computedSize": 25,
+          "x": 130.5,
+          "y": 1198
+        },
+        {
+          "computedSize": 25,
+          "x": 170.5,
+          "y": 1198
+        }
+      ],
       "rows": [
         "M",
         173,
@@ -334,6 +359,31 @@ nestedGrid{
   },
   "gridInfo": [
     {
+      "rotationAngle": -90,
+      "columnTrackSizes": [
+        {
+          "computedSize": 50,
+          "x": 228,
+          "y": 1083
+        },
+        {
+          "computedSize": 200,
+          "x": 228,
+          "y": 958
+        }
+      ],
+      "rowTrackSizes": [
+        {
+          "computedSize": 25,
+          "x": 240.5,
+          "y": 1108
+        },
+        {
+          "computedSize": 25,
+          "x": 265.5,
+          "y": 1108
+        }
+      ],
       "rows": [
         "M",
         228,

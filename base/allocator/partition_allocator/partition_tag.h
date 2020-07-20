@@ -23,9 +23,7 @@ namespace internal {
 
 // Use 16 bits for the partition tag.
 // TODO(tasak): add a description about the partition tag.
-using PartitionTag = uint16_t;
-
-static constexpr PartitionTag kTagTemporaryInitialValue = 0x0BAD;
+using PartitionTag = uint8_t;
 
 // Allocate extra 16 bytes for the partition tag. 14 bytes are unused
 // (reserved).
@@ -87,8 +85,6 @@ using PartitionTag = uint8_t;
 static_assert(
     sizeof(PartitionTag) == tag_bitmap::kPartitionTagSize,
     "sizeof(PartitionTag) must be equal to bitmap::kPartitionTagSize.");
-
-static constexpr PartitionTag kTagTemporaryInitialValue = 0xAD;
 
 static constexpr size_t kInSlotTagBufferSize = 0;
 
@@ -199,9 +195,8 @@ ALWAYS_INLINE void PartitionTagClearValue(void* ptr, size_t) {}
 #else  // !ENABLE_TAG_FOR_CHECKED_PTR2 && !ENABLE_TAG_FOR_MTE_CHECKED_PTR &&
        // !ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR
 
-using PartitionTag = uint16_t;
+using PartitionTag = uint8_t;
 
-static constexpr PartitionTag kTagTemporaryInitialValue = 0;
 static constexpr size_t kInSlotTagBufferSize = 0;
 
 ALWAYS_INLINE size_t PartitionTagSizeAdjustAdd(size_t size) {

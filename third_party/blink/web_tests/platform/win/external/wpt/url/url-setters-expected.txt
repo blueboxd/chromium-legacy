@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 601 tests; 284 PASS, 317 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 601 tests; 287 PASS, 314 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 FAIL URL: Setting <a://example.net>.protocol = '' The empty string is not a valid scheme. Setter leaves the URL unchanged. assert_equals: expected "a://example.net" but got "file:///A://example.net"
 FAIL <a>: Setting <a://example.net>.protocol = '' The empty string is not a valid scheme. Setter leaves the URL unchanged. assert_equals: expected "a://example.net" but got "file:///A://example.net"
@@ -583,9 +583,9 @@ PASS <area>: Setting <https://example.net?lang=en-US>.hash = '##nav'
 PASS URL: Setting <https://example.net?lang=en-US#nav>.hash = '#main'
 PASS <a>: Setting <https://example.net?lang=en-US#nav>.hash = '#main'
 PASS <area>: Setting <https://example.net?lang=en-US#nav>.hash = '#main'
-FAIL URL: Setting <https://example.net?lang=en-US#nav>.hash = '#' assert_equals: expected "https://example.net/?lang=en-US#" but got "https://example.net/?lang=en-US"
-FAIL <a>: Setting <https://example.net?lang=en-US#nav>.hash = '#' assert_equals: expected "https://example.net/?lang=en-US#" but got "https://example.net/?lang=en-US"
-FAIL <area>: Setting <https://example.net?lang=en-US#nav>.hash = '#' assert_equals: expected "https://example.net/?lang=en-US#" but got "https://example.net/?lang=en-US"
+PASS URL: Setting <https://example.net?lang=en-US#nav>.hash = '#'
+PASS <a>: Setting <https://example.net?lang=en-US#nav>.hash = '#'
+PASS <area>: Setting <https://example.net?lang=en-US#nav>.hash = '#'
 PASS URL: Setting <https://example.net?lang=en-US#nav>.hash = ''
 PASS <a>: Setting <https://example.net?lang=en-US#nav>.hash = ''
 PASS <area>: Setting <https://example.net?lang=en-US#nav>.hash = ''

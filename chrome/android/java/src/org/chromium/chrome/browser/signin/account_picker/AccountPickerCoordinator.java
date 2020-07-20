@@ -8,6 +8,7 @@ import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerProperties.ItemType;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
@@ -34,6 +35,11 @@ public class AccountPickerCoordinator {
          * Notifies when the user clicked the "add account" button.
          */
         void addAccount();
+
+        /**
+         * Notifies when the user clicked the "Go incognito mode" button.
+         */
+        void goIncognitoMode();
     }
 
     private final AccountPickerMediator mMediator;
@@ -59,8 +65,13 @@ public class AccountPickerCoordinator {
         adapter.registerType(ItemType.EXISTING_ACCOUNT_ROW, ExistingAccountRowViewBinder::buildView,
                 ExistingAccountRowViewBinder::bindView);
 
-        view.setAdapter(adapter);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
+            adapter.registerType(ItemType.INCOGNITO_ACCOUNT_ROW,
+                    IncognitoAccountRowViewBinder::buildView,
+                    IncognitoAccountRowViewBinder::bindView);
+        }
 
+        view.setAdapter(adapter);
         mMediator = new AccountPickerMediator(
                 view.getContext(), listModel, listener, selectedAccountName);
     }

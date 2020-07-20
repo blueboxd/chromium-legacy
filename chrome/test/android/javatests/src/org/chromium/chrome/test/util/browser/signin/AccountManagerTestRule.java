@@ -95,9 +95,9 @@ public class AccountManagerTestRule implements TestRule {
      * ProfileDataSource of the fake AccountManagerFacade.
      * @return The account added.
      */
-    public Account addAccount(String accountName, ProfileDataSource.ProfileData profileData) {
-        Account account = addAccount(accountName);
-        mFakeAccountManagerFacade.setProfileData(accountName, profileData);
+    public Account addAccount(ProfileDataSource.ProfileData profileData) {
+        Account account = addAccount(profileData.getAccountName());
+        mFakeAccountManagerFacade.setProfileData(profileData.getAccountName(), profileData);
         return account;
     }
 

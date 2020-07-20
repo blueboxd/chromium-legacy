@@ -772,7 +772,38 @@ TEST(CheckedPtr2OrMTEImpl, CrashOnUseAfterFree) {
   EXPECT_DEATH_IF_SUPPORTED(if (*ptr == 42) return, "");
 }
 
-#endif
+#ifdef ENABLE_TAG_FOR_MTE_CHECKED_PTR
+TEST(CheckedPtr2OrMTEImpl, CrashOnUseAfterFree_WithOffset) {
+  // This test works only if GigaCage is enabled. Bail out otherwise.
+  if (!IsPartitionAllocGigaCageEnabled())
+    return;
+
+  // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
+  // new/delete once PartitionAlloc Everywhere is fully enabled.
+  PartitionAllocGlobalInit(HandleOOM);
+  PartitionAllocator<ThreadSafe> allocator;
+  allocator.init();
+  const uint8_t kSize = 100;
+  void* raw_ptr = allocator.root()->Alloc(kSize * sizeof(uint8_t), "uint8_t");
+  // Use the actual CheckedPtr implementation, not a test substitute, to
+  // exercise real PartitionAlloc paths.
+  CheckedPtr<uint8_t> ptrs[kSize];
+  for (uint8_t i = 0; i < kSize; ++i) {
+    ptrs[i] = static_cast<uint8_t*>(raw_ptr) + i;
+  }
+  for (uint8_t i = 0; i < kSize; ++i) {
+    *ptrs[i] = 42 + i;
+    EXPECT_TRUE(*ptrs[i] == 42 + i);
+  }
+  allocator.root()->Free(raw_ptr);
+  for (uint8_t i = 0; i < kSize; i += 15) {
+    EXPECT_DEATH_IF_SUPPORTED(if (*ptrs[i] == 42 + i) return, "");
+  }
+}
+#endif  // ENABLE_TAG_FOR_MTE_CHECKED_PTR
+
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC) && ENABLE_CHECKED_PTR2_OR_MTE_IMPL &&
+        // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
 }  // namespace internal
 }  // namespace base

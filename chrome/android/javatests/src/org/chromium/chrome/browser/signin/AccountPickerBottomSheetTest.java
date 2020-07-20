@@ -99,8 +99,8 @@ public class AccountPickerBottomSheetTest {
     @Before
     public void setUp() {
         initMocks(this);
-        mAccountManagerTestRule.addAccount(PROFILE_DATA1.getAccountName(), PROFILE_DATA1);
-        mAccountManagerTestRule.addAccount(PROFILE_DATA2.getAccountName(), PROFILE_DATA2);
+        mAccountManagerTestRule.addAccount(PROFILE_DATA1);
+        mAccountManagerTestRule.addAccount(PROFILE_DATA2);
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
@@ -279,6 +279,15 @@ public class AccountPickerBottomSheetTest {
         onView(allOf(withText(PROFILE_DATA1.getAccountName()), withEffectiveVisibility(VISIBLE)))
                 .perform(click());
         checkCollapsedAccountList(PROFILE_DATA1);
+    }
+
+    @Test
+    @MediumTest
+    public void testIncognitoOptionShownOnExpandedSheet() throws Exception {
+        buildAndShowExpandedBottomSheet();
+        onView(withText(R.string.signin_incognito_mode_secondary)).check(matches(isDisplayed()));
+        onView(withText(R.string.signin_incognito_mode_primary)).perform(click());
+        verify(mAccountPickerDelegateMock).goIncognitoMode();
     }
 
     private void checkZeroAccountBottomSheet() {

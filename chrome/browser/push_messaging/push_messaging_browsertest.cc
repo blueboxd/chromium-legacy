@@ -127,6 +127,7 @@ void LegacyRegisterCallback(const base::Closure& done_callback,
 void DidRegister(base::Closure done_callback,
                  const std::string& registration_id,
                  const GURL& endpoint,
+                 const base::Optional<base::Time>& expiration_time,
                  const std::vector<uint8_t>& p256dh,
                  const std::vector<uint8_t>& auth,
                  blink::mojom::PushRegistrationStatus status) {

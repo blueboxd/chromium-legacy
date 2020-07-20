@@ -78,27 +78,6 @@ bool StateNeedsUI(AutofillAssistantState state) {
   return false;
 }
 
-// Returns true if reaching that state signals the end of a flow.
-bool StateEndsFlow(AutofillAssistantState state) {
-  switch (state) {
-    case AutofillAssistantState::TRACKING:
-    case AutofillAssistantState::STOPPED:
-      return true;
-
-    case AutofillAssistantState::INACTIVE:
-    case AutofillAssistantState::STARTING:
-    case AutofillAssistantState::PROMPT:
-    case AutofillAssistantState::RUNNING:
-    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
-    case AutofillAssistantState::MODAL_DIALOG:
-    case AutofillAssistantState::BROWSE:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
 // Check whether a domain is a subdomain of another domain.
 bool IsSubdomainOf(const std::string& subdomain,
                    const std::string& parent_domain) {
@@ -646,6 +625,15 @@ const ClientSettings& Controller::GetClientSettings() const {
   return settings_;
 }
 
+void Controller::ShutdownIfNecessary() {
+  if (!tracking_) {
+    // We expect the DropOutReason to be already reported when we reach this
+    // point and therefore the reason we pass here in the argument should be
+    // ignored.
+    client_->Shutdown(Metrics::DropOutReason::UI_CLOSED_UNEXPECTEDLY);
+  }
+}
+
 void Controller::ReportNavigationStateChanged() {
   for (auto& listener : navigation_listeners_) {
     listener.OnNavigationStateChanged();
@@ -683,7 +671,7 @@ bool Controller::EnterState(AutofillAssistantState state) {
 
   if (!needs_ui_ && StateNeedsUI(state)) {
     RequireUI();
-  } else if (needs_ui_ && StateEndsFlow(state)) {
+  } else if (needs_ui_ && state == AutofillAssistantState::TRACKING) {
     needs_ui_ = false;
   }
 
@@ -948,7 +936,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
     case ScriptExecutor::SHUTDOWN_GRACEFULLY:
       if (!tracking_) {
         EnterStoppedState();
-        client_->Shutdown(Metrics::DropOutReason::SCRIPT_SHUTDOWN);
+        RecordDropOutOrShutdown(Metrics::DropOutReason::SCRIPT_SHUTDOWN);
         return;
       }
       end_state = AutofillAssistantState::TRACKING;
@@ -1521,7 +1509,7 @@ void Controller::OnScriptError(const std::string& error_message,
     return;
   }
 
-  client_->Shutdown(reason);
+  RecordDropOutOrShutdown(reason);
 }
 
 void Controller::OnFatalError(const std::string& error_message,
@@ -1548,7 +1536,20 @@ void Controller::OnFatalError(const std::string& error_message,
     return;
   }
 
-  client_->Shutdown(reason);
+  RecordDropOutOrShutdown(reason);
+}
+
+void Controller::RecordDropOutOrShutdown(Metrics::DropOutReason reason) {
+  // If there is an UI, we wait for it to be closed before shutting down (the UI
+  // will call |ShutdownIfNecessary|).
+  if (client_->HasHadUI()) {
+    // We report right away to make sure we don't lose this reason if the client
+    // is unexpectedly destroyed while the error message is showing (for example
+    // if the tab is closed).
+    client_->RecordDropOut(reason);
+  } else {
+    client_->Shutdown(reason);
+  }
 }
 
 void Controller::PerformDelayedShutdownIfNecessary() {

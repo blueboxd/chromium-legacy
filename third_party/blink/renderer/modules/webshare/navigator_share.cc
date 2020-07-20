@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_share_data.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -199,6 +200,13 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
         DOMExceptionCode::kAbortError,
         "Internal error: window frame is missing (the navigator may be "
         "detached).");
+    return ScriptPromise();
+  }
+
+  if (!ExecutionContext::From(script_state)
+           ->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kWebShare)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "Permission denied");
     return ScriptPromise();
   }
 

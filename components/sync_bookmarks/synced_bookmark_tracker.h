@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_SYNC_BOOKMARKS_SYNCED_BOOKMARK_TRACKER_H_
 #define COMPONENTS_SYNC_BOOKMARKS_SYNCED_BOOKMARK_TRACKER_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -351,7 +350,8 @@ class SyncedBookmarkTracker {
 
   // A map of sync server ids to sync entities. This should contain entries and
   // metadata for almost everything.
-  std::map<std::string, std::unique_ptr<Entity>> sync_id_to_entities_map_;
+  std::unordered_map<std::string, std::unique_ptr<Entity>>
+      sync_id_to_entities_map_;
 
   // A map of bookmark nodes to sync entities. It's keyed by the bookmark node
   // pointers which get assigned when loading the bookmark model. This map is

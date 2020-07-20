@@ -3568,23 +3568,21 @@
       'id': 371,
       'caption': '''Allow download restrictions''',
       'tags': ['local-data-access'],
-      'desc': '''Configures the type of downloads that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will completely block, without letting users override the security decision.
+      'desc': '''Setting the policy means users can't bypass download security decisions.
 
-      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will prevent certain types of downloads, and won't let user bypass the security warnings.
+       Setting the policy to:
 
-      When the 'Block dangerous downloads' option is chosen, all downloads are allowed, except for those that carry Safe Browsing warnings.
+      * Block dangerous downloads means all downloads are allowed, except for those that carry Safe Browsing warnings.
 
-      When the 'Block potentially dangerous downloads' option is chosen, all downloads allowed, except for those that carry Safe Browsing warnings of potentially dangerous downloads.
+      * Block potentially dangerous downloads means all downloads allowed, except for those that carry Safe Browsing warnings of potentially dangerous downloads.
 
-      When the 'Block all downloads' option is chosen, all downloads are blocked.
+      * Block all downloads means all downloads are blocked.
 
-      When the 'Block malicious downloads' option is chosen, all downloads are allowed, except for those that Safe Browsing assesses to be malware with high confidence. Unlike with dangerous downloads, this does not take into account file type, but does take into account the host.
+      * Block malicious downloads means all downloads are allowed, except for those that Safe Browsing assesses to be malware with high confidence. Unlike with dangerous downloads, this does not take into account file type, but does take into account the host.
 
-      When this policy is not set, (or the 'No special restrictions' option is chosen), the downloads will go through the usual security restrictions based on Safe Browsing analysis results.
+      * No special restrictions means the downloads go through the usual security restrictions based on Safe Browsing analysis results.
 
-      Note that these restrictions apply to downloads triggered from web page content, as well as the 'download link...' context menu option. These restrictions do not apply to the save / download of the currently displayed page, nor does it apply to saving as PDF from the printing options.
-
-      See https://developers.google.com/safe-browsing for more info on Safe Browsing.''',
+      Note: These restrictions apply to downloads triggered from webpage content, as well as the Download link... menu option. They don't apply to the download of the currently displayed page or to saving as PDF from the printing options. Read more about Safe Browsing ( https://developers.google.com/safe-browsing ).''',
       'label': '''Download restrictions''',
     },
     {
@@ -3602,13 +3600,11 @@
       'id': 64,
       'caption': '''Set download directory''',
       'tags': ['local-data-access'],
-      'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for downloading files.
+      'desc': '''Setting the policy sets up the directory Chrome uses for downloading files. It uses the provided directory, whether or not users specify one or turned on the flag to be prompted for download location every time.
 
-      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified one or enabled the flag to be prompted for download location every time.
+      Leaving the policy unset means Chrome uses the default download directory, and users can change it.
 
-      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
-
-      If this policy is left not set the default download directory will be used and the user will be able to change it.''',
+      Note: See a list of variables you can use ( https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables ).''',
       'label': '''Set download directory''',
       'arc_support': 'This policy has no effect on Android apps. Android apps always use the default downloads directory and cannot access any files downloaded by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> into a non-default downloads directory.',
     },
@@ -9492,9 +9488,9 @@
       'id': 139,
       'caption': '''Disable Drive in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app''',
       'tags': [],
-      'desc': '''Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app when set to True. In that case, no data is uploaded to Google Drive.
+      'desc': '''Setting the policy to Enabled turns off <ph name="GOOGLE_DRIVE_NAME">Google Drive</ph> syncing in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app. No data is uploaded to Drive.
 
-          If not set or set to False, then users will be able to transfer files to Google Drive.''',
+      Setting the policy to Disabled or leaving it unset lets users transfer files to Drive.''',
       'arc_support': 'This policy does not prevent the user from using the Android Google Drive app. If you want to prevent access to Google Drive, you should disallow installation of the Android Google Drive app as well.',
     },
     {
@@ -9511,9 +9507,9 @@
       'id': 140,
       'caption': '''Disable Google Drive over cellular connections in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app''',
       'tags': [],
-      'desc': '''Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app when using a cellular connection when set to True. In that case, data is only synced to Google Drive when connected via WiFi or Ethernet.
+      'desc': '''Setting the policy to Enabled turns off <ph name="GOOGLE_DRIVE_NAME">Google Drive</ph> syncing in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app when on a cellular connection. Data is only synced to Drive when connected through Wi-Fi or Ethernet.
 
-          If not set or set to False, then users will be able to transfer files to Google Drive via cellular connections.''',
+      Setting the policy to Disabled or leaving it unset lets users transfer files to Drive on cellular connections.''',
       'arc_support': 'This policy has no effect on the Android Google Drive app. If you want to prevent use of Google Drive over cellular connections, you should disallow installation of the Android Google Drive app.',
     },
     {
@@ -14195,9 +14191,9 @@
       'id': 333,
       'caption': '''Enable <ph name="PRODUCT_NAME">Google Cast</ph>''',
       'tags': [],
-      'desc': '''If this policy is set to true or is not set, <ph name="PRODUCT_NAME">Google Cast</ph> will be enabled, and users will be able to launch it from the app menu, page context menus, media controls on Cast-enabled websites, and (if shown) the Cast toolbar icon.
+      'desc': '''Setting the policy to Enabled or leaving it unset turns on <ph name="PRODUCT_NAME">Google Cast</ph>, which users can launch from the app menu, page context menus, media controls on Cast-enabled websites, and (if shown) the Cast toolbar icon.
 
-          If this policy set to false, <ph name="PRODUCT_NAME">Google Cast</ph> will be disabled.'''
+      Setting the policy to Disabled turns off <ph name="PRODUCT_NAME">Google Cast</ph>.'''
     },
     {
       'name': 'ShowCastIconInToolbar',
@@ -14213,11 +14209,11 @@
       'id': 362,
       'caption': '''Show the <ph name="PRODUCT_NAME">Google Cast</ph> toolbar icon''',
       'tags': [],
-      'desc': '''If this policy is set to true, the Cast toolbar icon will always be shown on the toolbar or the overflow menu, and users will not be able to remove it.
+      'desc': '''Setting the policy to Enabled displays the Cast toolbar icon on the toolbar or the overflow menu, and users can't remove it.
 
-          If this policy is set to false or is not set, users will be able to pin or remove the icon via its contextual menu.
+      Setting the policy to Disabled or leaving it unset lets users pin or remove the icon through its contextual menu.
 
-          If the policy "EnableMediaRouter" is set to false, then this policy's value would have no effect, and the toolbar icon would not be shown.'''
+      If the policy <ph name="ENABLE_MEDIA_ROUTER_POLICY_NAME">EnableMediaRouter</ph> is set to Disabled, then this policy's value has no effect, and the toolbar icon doesn't appear.'''
     },
     {
       'name': 'MediaRouterCastAllowAllIPs',
@@ -14233,13 +14229,11 @@
       'id': 437,
       'caption': '''Allow <ph name="PRODUCT_NAME">Google Cast</ph> to connect to Cast devices on all IP addresses.''',
       'tags': [],
-      'desc': '''If this policy is set to true, <ph name="PRODUCT_NAME">Google Cast</ph> will connect to Cast devices on all IP addresses, not just RFC1918/RFC4193 private addresses.
+      'desc': '''Unless <ph name="ENABLE_MEDIA_ROUTER_POLICY_NAME">EnableMediaRouter</ph> is set to Disabled, setting <ph name="MEDIA_ROUTER_CAST_ALLOW_ALL_IPS_POLICY_NAME">MediaRouterCastAllowAllIPs</ph> to Enabled connects <ph name="PRODUCT_NAME">Google Cast</ph> to Cast devices on all IP addresses, not just RFC1918/RFC4193 private addresses.
 
-          If this policy is set to false, <ph name="PRODUCT_NAME">Google Cast</ph> will connect to Cast devices on RFC1918/RFC4193 private addresses only.
+      Setting the policy to Disabled connects <ph name="PRODUCT_NAME">Google Cast</ph> to Cast devices only on RFC1918/RFC4193.
 
-          If this policy is not set, <ph name="PRODUCT_NAME">Google Cast</ph> will connect to Cast devices on RFC1918/RFC4193 private addresses only, unless the CastAllowAllIPs feature is enabled.
-
-          If the policy "EnableMediaRouter" is set to false, then this policy's value would have no effect.'''
+      Leaving the policy unset connects <ph name="PRODUCT_NAME">Google Cast</ph> to Cast devices only on RFC1918/RFC4193, unless the CastAllowAllIPs feature is turned on.'''
     },
     {
       'name': 'ArcBackupRestoreEnabled',
@@ -15706,11 +15700,9 @@
       'id': 395,
       'caption': '''Ask where to save each file before downloading''',
       'tags': [],
-      'desc': '''
-      If the policy is enabled, the user will be asked where to save each file before downloading.
-      If the policy is disabled, downloads will start immediately, and the user will not be asked where to save the file.
-      If the policy is not configured, the user will be able to change this setting.
-      '''
+      'desc': '''Setting the policy to Enabled means users are asked where to save each file before downloading. Setting the policy to Disabled has downloads start immediately, and users aren't asked where to save the file.
+
+      Leaving the policy unset lets users change this setting.'''
     },
     {
       'name': 'UnaffiliatedArcAllowed',
@@ -15970,13 +15962,11 @@
       'id': 401,
       'caption': '''Set default download directory''',
       'tags': ['local-data-access'],
-      'desc': '''Configures the default directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for downloading files.
+      'desc': '''Setting the policy changes the default directory that Chrome downloads files to, but users can change the directory.
 
-      If you set this policy, it will change the default directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> downloads files to. This policy is not mandatory, so the user will be able to change the directory.
+      Leaving the policy unset means Chrome uses its platform-specific default directory.
 
-      If you do not set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use its usual default directory (platform-specific).
-
-      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.''',
+      Note: See a list of variables you can use ( https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables ).''',
     },
     {
       'name': 'DeviceHostnameTemplate',
@@ -18773,10 +18763,9 @@
       'example_value': True,
       'id': 527,
       'caption': '''"Allow Google Assistant to access screen context"''',
-      'desc': '''This policy gives Google Assistant permission to access screen context and send the info to server.
-      If the policy is enabled, Google Assistant will be allowed to access screen context.
-      If the policy is disabled, Google Assistant will not be allowed to access screen context.
-      If not set, users can decide whether to allow Google Assistant to access screen context or not''',
+      'desc': '''Setting the policy to Enabled lets Google Assistant access screen context and send that data to a server. Setting the policy to Disabled keeps Google Assistant from screen context.
+
+      Leaving the policy unset lets users decide to turn this feature on or off.''',
     },
     {
       'name': 'VoiceInteractionHotwordEnabled',
@@ -18792,12 +18781,9 @@
       'example_value': True,
       'id': 529,
       'caption': '''Allow Google Assistant to listen for the voice activation phrase''',
-      'desc': '''This policy gives Google Assistant permission to listen for the voice activation phrase.
+      'desc': '''Setting the policy to Enabled lets Google Assistant listen for the voice activation phrase. Setting the policy to Disabled keeps Google Assistant from listening for the phrase.
 
-      If the policy is enabled, Google Assistant would listen for the voice activation phrase.
-      If the policy is disabled, Google Assistant would not listen for the voice activation phrase.
-      If the policy is not set, users can decide whether to allow Google Assistant to listen for the voice activation phrase.
-      ''',
+      Leaving the policy unset lets users decide to turn this feature on or off.''',
     },
     {
       'name': 'VoiceInteractionQuickAnswersEnabled',

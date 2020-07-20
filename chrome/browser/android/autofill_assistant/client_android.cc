@@ -426,6 +426,7 @@ void ClientAndroid::AttachUI(
       return;
     }
   }
+  has_had_ui_ = true;
 
   if (!ui_controller_android_->IsAttached() ||
       (controller_ != nullptr &&
@@ -534,6 +535,17 @@ bool ClientAndroid::IsAccessibilityEnabled() const {
 
 content::WebContents* ClientAndroid::GetWebContents() const {
   return web_contents_;
+}
+
+void ClientAndroid::RecordDropOut(Metrics::DropOutReason reason) {
+  if (started_)
+    Metrics::RecordDropOut(reason);
+
+  started_ = false;
+}
+
+bool ClientAndroid::HasHadUI() const {
+  return has_had_ui_;
 }
 
 void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {

@@ -39,6 +39,7 @@ struct CORE_EXPORT InspectorGridHighlightConfig {
   bool show_negative_line_numbers;
   bool show_area_names;
   bool show_line_names;
+  bool show_track_sizes;
 };
 
 struct CORE_EXPORT InspectorHighlightConfig {

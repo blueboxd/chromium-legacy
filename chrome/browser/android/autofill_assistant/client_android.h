@@ -111,6 +111,8 @@ class ClientAndroid : public Client,
   bool IsAccessibilityEnabled() const override;
   content::WebContents* GetWebContents() const override;
   void Shutdown(Metrics::DropOutReason reason) override;
+  void RecordDropOut(Metrics::DropOutReason reason) override;
+  bool HasHadUI() const override;
 
   // Overrides AccessTokenFetcher
   void FetchAccessToken(
@@ -153,6 +155,9 @@ class ClientAndroid : public Client,
 
   // True if Start() was called. This turns on the tracking of dropouts.
   bool started_ = false;
+
+  // True if the UI was ever attached.
+  bool has_had_ui_ = false;
 
   std::unique_ptr<UiControllerAndroid> ui_controller_android_;
 

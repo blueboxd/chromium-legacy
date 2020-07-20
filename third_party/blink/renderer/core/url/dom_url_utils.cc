@@ -141,10 +141,13 @@ void DOMURLUtils::setHash(const String& value) {
   // FIXME: have KURL handle the clearing of the fragment component
   // on the same input.
   if (value[0] == '#')
-    kurl.SetFragmentIdentifier(value.length() == 1 ? String()
-                                                   : value.Substring(1));
-  else
-    kurl.SetFragmentIdentifier(value.IsEmpty() ? String() : value);
+    kurl.SetFragmentIdentifier(value.Substring(1));
+  else {
+    if (value.IsEmpty())
+      kurl.RemoveFragmentIdentifier();
+    else
+      kurl.SetFragmentIdentifier(value);
+  }
 
   SetURL(kurl);
 }

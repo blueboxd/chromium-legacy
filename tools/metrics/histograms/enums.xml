@@ -4293,6 +4293,7 @@ Unknown properties are collapsed to zero. -->
   <int value="22" label="User clicked back button"/>
   <int value="23" label="User clicked back button during onboarding"/>
   <int value="24" label="User navigatioin in RUNNING state"/>
+  <int value="25" label="The UI was closed unexpectedly"/>
 </enum>
 
 <enum name="AutofillAssistantFeatureModuleInstallation">
@@ -28608,6 +28609,7 @@ Called by update_feature_policy_enum.py.-->
   <int value="75" label="CrossOriginIsolated"/>
   <int value="76" label="ClipboardRead"/>
   <int value="77" label="ClipboardWrite"/>
+  <int value="78" label="WebShare"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">

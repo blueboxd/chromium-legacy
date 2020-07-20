@@ -239,6 +239,27 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSlotSpan(
 
     root->next_partition_page += total_size;
     root->IncreaseCommittedPages(total_size);
+
+#if ENABLE_TAG_FOR_MTE_CHECKED_PTR
+    PA_DCHECK(root->next_tag_bitmap_page);
+    char* next_tag_bitmap_page = reinterpret_cast<char*>(
+        bits::Align(reinterpret_cast<uintptr_t>(
+                        PartitionTagPointer(root->next_partition_page)),
+                    kSystemPageSize));
+    if (root->next_tag_bitmap_page < next_tag_bitmap_page) {
+#if DCHECK_IS_ON()
+      char* super_page = reinterpret_cast<char*>(
+          reinterpret_cast<uintptr_t>(ret) & kSuperPageBaseMask);
+      char* tag_bitmap = super_page + kPartitionPageSize;
+      PA_DCHECK(next_tag_bitmap_page <= tag_bitmap + kActualTagBitmapSize);
+      PA_DCHECK(next_tag_bitmap_page > tag_bitmap);
+#endif
+      SetSystemPagesAccess(root->next_tag_bitmap_page,
+                           next_tag_bitmap_page - root->next_tag_bitmap_page,
+                           PageReadWrite);
+      root->next_tag_bitmap_page = next_tag_bitmap_page;
+    }
+#endif
     return ret;
   }
 
@@ -289,12 +310,22 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSlotSpan(
   SetSystemPagesAccess(super_page + (kSystemPageSize * 2),
                        kPartitionPageSize - (kSystemPageSize * 2),
                        PageInaccessible);
-  if (kActualTagBitmapSize < kReservedTagBitmapSize) {
-    // Make guard pages between tag bitmap and the first slotspan if possible.
-    SetSystemPagesAccess(tag_bitmap + kActualTagBitmapSize,
-                         kReservedTagBitmapSize - kActualTagBitmapSize,
-                         PageInaccessible);
-  }
+#if ENABLE_TAG_FOR_MTE_CHECKED_PTR
+  // Make the first |total_size| region of the tag bitmap accessible.
+  // The rest of the region is set to inaccessible.
+  char* next_tag_bitmap_page = reinterpret_cast<char*>(
+      bits::Align(reinterpret_cast<uintptr_t>(
+                      PartitionTagPointer(root->next_partition_page)),
+                  kSystemPageSize));
+  PA_DCHECK(next_tag_bitmap_page <= tag_bitmap + kActualTagBitmapSize);
+  PA_DCHECK(next_tag_bitmap_page > tag_bitmap);
+  // |ret| points at the end of the tag bitmap.
+  PA_DCHECK(next_tag_bitmap_page <= ret);
+  SetSystemPagesAccess(next_tag_bitmap_page, ret - next_tag_bitmap_page,
+                       PageInaccessible);
+  root->next_tag_bitmap_page = next_tag_bitmap_page;
+#endif
+
   //  SetSystemPagesAccess(super_page + (kSuperPageSize -
   //  kPartitionPageSize),
   //                             kPartitionPageSize, PageInaccessible);

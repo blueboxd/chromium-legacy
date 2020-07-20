@@ -238,6 +238,9 @@ class UiDelegate {
 
   virtual bool ShouldShowOverlay() const = 0;
 
+  // Notifies the UI deleagate that it should shut down.
+  virtual void ShutdownIfNecessary() = 0;
+
  protected:
   UiDelegate() = default;
 };

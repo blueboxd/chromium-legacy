@@ -32,6 +32,8 @@ async_test(function(test) {
             assert_equals(typeof pushSubscription.endpoint, 'string');
 
             assert_idl_attribute(pushSubscription, 'expirationTime');
+            // TODO(viviy): check for not null after passing expiration time in
+            // PushMessagingManager
             assert_equals(pushSubscription.expirationTime, null);
 
             try {

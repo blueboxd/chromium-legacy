@@ -1863,8 +1863,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDetach();
   void OnUnloadACK();
   void OnContextMenu(const UntrustworthyContextMenuParams& params);
-  void OnVisualStateResponse(uint64_t id);
-
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
   void OnDidStopLoading();
@@ -2474,8 +2472,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // The http status code of the last committed navigation.
   int last_http_status_code_ = 0;
-
-  std::map<uint64_t, VisualStateCallback> visual_state_callbacks_;
 
   // Local root subframes directly own their RenderWidgetHost.
   // Please see comments about the GetLocalRenderWidgetHost() function.

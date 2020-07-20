@@ -24,7 +24,7 @@ jumbo_component("range") {
   }
 
   if (is_mac) {
-    libs = [
+    frameworks = [
       "Foundation.framework",
     ]
   }
